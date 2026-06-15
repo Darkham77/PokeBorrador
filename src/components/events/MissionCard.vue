@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
+import { getItemById, getItemByName } from '@/data/items'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
-defineProps<{
+const props = defineProps<{
   avatar: string
   isAvatarUrl?: boolean
   title: string
@@ -14,11 +16,42 @@ defineProps<{
   btnDisabled: boolean
   isCompleted: boolean
   completedBadgeText?: string
+  rewardId?: string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'action'): void
 }>()
+
+const rewardTooltipTitle = computed(() => {
+  if (props.rewardId) {
+    const item = getItemById(props.rewardId) || getItemByName(props.rewardId)
+    if (item) return item.name
+  }
+  return props.rewardLabel
+})
+
+const rewardTooltipDescription = computed(() => {
+  if (props.rewardId) {
+    const item = getItemById(props.rewardId) || getItemByName(props.rewardId)
+    if (item) return item.desc
+  }
+  
+  // Fallback static descriptions for general rewards
+  const labelLower = props.rewardLabel.toLowerCase()
+  const valLower = props.rewardVal.toLowerCase()
+  if (labelLower.includes('peso') || props.rewardIcon === '₱' || valLower.includes('peso')) {
+    return 'Poké-Pesos (₱). Moneda principal del juego.'
+  }
+  if (labelLower.includes('exp') || labelLower.includes('experiencia') || valLower.includes('exp') || valLower.includes('experiencia')) {
+    return 'Puntos de experiencia para subir el nivel y rango de tu clase.'
+  }
+  if (labelLower.includes('bc') || labelLower.includes('battle coin') || valLower.includes('bc') || valLower.includes('battle coin')) {
+    return 'Battle Coins (BC). Moneda especial de batallas.'
+  }
+  
+  return `Recompensa: ${props.rewardVal}`
+})
 
 const cardRef = ref<HTMLElement | null>(null)
 
@@ -119,13 +152,20 @@ const handleImgError = (e: Event) => {
     </div>
 
     <div class="reward-section">
-      <div class="reward-tag">
-        <span class="reward-icon">{{ rewardIcon }}</span>
-        <div class="reward-info">
-          <span class="label">{{ rewardLabel }}</span>
-          <span class="val">{{ rewardVal }}</span>
+      <PVTooltip
+        :title="rewardTooltipTitle"
+        :description="rewardTooltipDescription"
+        position="top"
+        style="width: 100%;"
+      >
+        <div class="reward-tag">
+          <span class="reward-icon">{{ rewardIcon }}</span>
+          <div class="reward-info">
+            <span class="label">{{ rewardLabel }}</span>
+            <span class="val">{{ rewardVal }}</span>
+          </div>
         </div>
-      </div>
+      </PVTooltip>
       <button 
         class="btn-deliver"
         :disabled="btnDisabled"

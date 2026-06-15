@@ -228,6 +228,7 @@ async function startClassMission(missionId: string) {
         :reward-icon="mission.reward.icon"
         reward-label="Recompensa"
         :reward-val="mission.reward.name + ' x' + mission.reward.qty"
+        :reward-id="mission.reward.id"
         btn-text="ENTREGAR"
         :btn-disabled="!canDeliverMission(mission)"
         :is-completed="mission.completed"

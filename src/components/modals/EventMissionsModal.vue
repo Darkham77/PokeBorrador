@@ -49,13 +49,6 @@ onMounted(() => {
             <span class="sub-title">EVENTOS</span>
           </div>
         </div>
-        
-        <div class="header-stats">
-          <div class="stat-node">
-            <span class="shop-stat-label">DISPONIBLES</span>
-            <span class="value">{{ breedingStore.dailyMissions.filter(m => !m.completed).length }}</span>
-          </div>
-        </div>
       </div>
     </template>
 

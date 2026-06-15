@@ -137,35 +137,9 @@ export function sanitizePokemon(p: Pokemon): void {
     };
 
     const normAbility = normalizeText(p.ability);
-
-    const ABILITY_TRANSLATION_MAP: Record<string, string> = {
-      escape: 'Fuga',
-      metamorfosis: 'Mudar',
-      escudopolvo: 'Polvo escudo',
-      polvoescudo: 'Polvo escudo',
-      correcaminos: 'Fuga',
-      obstruir: 'Insonorizar',
-      escurridizo: 'Flexibilidad',
-      puntocura: 'Cura Natural',
-      chlorophyll: 'Clorofila',
-      overgrow: 'Espesura',
-      blaze: 'Mar llamas',
-      torrent: 'Torrente',
-      static: 'Electricidad estática',
-      puntotoxico: 'Punto tóxico',
-      vistalince: 'Vista lince',
-      focointerno: 'Foco interno',
-      nadorapido: 'Nado rápido',
-      velohumedo: 'Velo húmedo'
-    };
-
-    if (ABILITY_TRANSLATION_MAP[normAbility]) {
-      p.ability = ABILITY_TRANSLATION_MAP[normAbility];
-    } else {
-      const match = Object.keys(ABILITY_DATA).find(k => normalizeText(k) === normAbility);
-      if (match) {
-        p.ability = match;
-      }
+    const match = Object.keys(ABILITY_DATA).find(k => normalizeText(k) === normAbility);
+    if (match) {
+      p.ability = match;
     }
   }
 
@@ -186,24 +160,7 @@ export function sanitizePokemon(p: Pokemon): void {
 
   // 1b. Validar Objeto Equipado (heldItem)
   if (p.heldItem) {
-    const legacyItemMap: Record<string, string> = {
-      pocion: 'potion',
-      super_pocion: 'super_potion',
-      hiper_pocion: 'hyper_potion',
-      pocion_max: 'max_potion',
-      piedra_fuego: 'fire_stone',
-      piedra_agua: 'water_stone',
-      piedra_trueno: 'thunder_stone',
-      piedra_hoja: 'leaf_stone',
-      piedra_luna: 'moon_stone',
-      piedra_solar: 'sun_stone',
-      caramelo_vigor: 'vigor_candy',
-      repelente: 'repel'
-    };
-    const norm = p.heldItem.toLowerCase().trim();
-    const mappedId = legacyItemMap[norm] || p.heldItem;
-
-    const itemData = getItemById(mappedId) || getItemByName(p.heldItem) || getItemById(p.heldItem);
+    const itemData = getItemById(p.heldItem) || getItemByName(p.heldItem);
     if (itemData) {
       p.heldItem = itemData.id;
     } else {
@@ -224,42 +181,6 @@ export function sanitizePokemon(p: Pokemon): void {
     // Resolve ID if missing
     if (!m.id && m.name) {
       m.id = pokemonDataProvider.resolveMoveId(m.name);
-    }
-
-    const LEGACY_ID_MAP: Record<string, string> = {
-      cuerpo_pesado: 'heavy_slam',
-      hiper_colmillo: 'hyper_fang',
-      patada_salto_alta: 'high_jump_kick',
-      pajaro_osado: 'brave_bird',
-      engullir: 'swallow',
-      somnifera: 'sleep_powder',
-      velocidad_extrema: 'extreme_speed',
-      mismodestino: 'destiny_bond',
-      pantalla_humo: 'smokescreen',
-      super_colmillo: 'super_fang',
-      huevo_bomba: 'egg_bomb',
-      hueso_rus: 'bone_rush',
-      mega_patada: 'mega_kick',
-      mega_puno: 'mega_punch',
-      pozo_venenoso: 'toxic_spikes',
-      vampiro: 'horn_leech',
-      psicocorte: 'psycho_cut',
-      arena: 'sand_attack',
-      minimizar: 'minimize',
-      golpe_karatazo: 'karate_chop',
-      mov_sismico: 'seismic_toss',
-      tajo_aereo: 'air_slash',
-      acidificacion: 'acid_armor',
-      recurrente: 'bullet_seed',
-      tormenta_de_arena: 'sandstorm'
-    };
-
-    if (m.id) {
-      const normalizedId = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim();
-      if (LEGACY_ID_MAP[normalizedId]) {
-        logger.warn('Self-Healing', `Migrando ID de movimiento legacy ${m.id} a ${LEGACY_ID_MAP[normalizedId]} para ${p.id}`);
-        m.id = LEGACY_ID_MAP[normalizedId];
-      }
     }
 
     // Si el ID es inválido, intentar recuperar o asignar 'tackle'

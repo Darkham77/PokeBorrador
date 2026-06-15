@@ -88,6 +88,14 @@ export const useInventoryStore = defineStore('inventory', () => {
         return { ...item, qty, name: item.name } as Item
       })
 
+    const isBattleActive = useBattleStore().isBattleActive
+    if (isBattleActive) {
+      items = items.filter(item => {
+        const dbItem = getItemById(item.id)
+        return !(dbItem && dbItem.nonCombat)
+      })
+    }
+
     // Filter by main tab
     if (activeMainTab.value === 'materiales') {
       items = items

@@ -2,18 +2,12 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import EggSprite from '@/components/common/EggSprite.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 
 interface Props {
-  missionsRemaining?: number
-  missionSprites?: string[]
-  gymRematches?: number
-  gymSprites?: string[]
-  eggCount?: number
   rivalEventActive?: boolean
   rivalEventText?: string
   rivalEventIcon?: string
@@ -21,11 +15,6 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  missionsRemaining: 0,
-  missionSprites: () => [],
-  gymRematches: 0,
-  gymSprites: () => [],
-  eggCount: 0,
   rivalEventActive: true,
   rivalEventText: 'Doble chance de encuentro con El Rival durante todo el día',
   rivalEventIcon: '⚡',
@@ -33,7 +22,6 @@ withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'openTab', tab: string): void
   (e: 'openCenter'): void
   (e: 'openEvent'): void
 }>()
@@ -176,121 +164,6 @@ const bannerStyle = computed(() => ({
                   {{ rivalEventText.split(':')[0] }}
                 </span>
                 {{ rivalEventActive ? (rivalEventText.includes(':') ? rivalEventText.split(':')[1] : rivalEventText) : 'No hay eventos activos' }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. Misiones -->
-        <div
-          class="pc-banner"
-          @click.stop="emit('openTab', 'daycare-missions')"
-        >
-          <div class="pc-banner-icon">
-            📜
-          </div>
-          <div class="pc-banner-content-wrapper">
-            <div class="pc-banner-title">
-              MISIONES DIARIAS
-            </div>
-            <div class="pc-banner-inner-flex">
-              <div class="pc-banner-text">
-                ¡Tenés <span>{{ missionsRemaining }}</span> misiones por hacer!
-              </div>
-              <div
-                v-if="missionSprites.length"
-                class="pc-banner-spawns"
-              >
-                <!-- Limit to 3 sprites + counter if more -->
-                <div
-                  v-for="(spriteId, i) in missionSprites.slice(0, 3)"
-                  :key="i"
-                  class="sprite-container"
-                >
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
-                    class="pixelated"
-                    @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none'; ((e.target as HTMLImageElement).nextElementSibling as HTMLElement).style.display = 'flex' }"
-                  >
-                  <div
-                    class="sprite-fallback"
-                    style="display: none;"
-                  >
-                    👤
-                  </div>
-                </div>
-                <div 
-                  v-if="missionSprites.length > 3" 
-                  class="sprite-counter"
-                >
-                  +{{ missionSprites.length - 3 }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Gimnasios -->
-        <div
-          class="pc-banner"
-          @click.stop="emit('openTab', 'gyms')"
-        >
-          <div class="pc-banner-icon">
-            🏆
-          </div>
-          <div class="pc-banner-content-wrapper">
-            <div class="pc-banner-title">
-              GIMNASIOS
-            </div>
-            <div class="pc-banner-inner-flex">
-              <div class="pc-banner-text">
-                Tenés <span>{{ gymRematches }}</span> gimnasios por derrotar
-              </div>
-              <div
-                v-if="gymSprites.length"
-                class="pc-banner-spawns"
-              >
-                <!-- Limit to 4 sprites + counter -->
-                <div
-                  v-for="(spriteId, i) in gymSprites.slice(0, 4)"
-                  :key="i"
-                  class="sprite-container"
-                >
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
-                    class="pixelated"
-                    @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-                  >
-                </div>
-                <div 
-                  v-if="gymSprites.length > 4" 
-                  class="sprite-counter"
-                >
-                  +{{ gymSprites.length - 4 }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. Crianza -->
-        <div
-          class="pc-banner"
-          @click.stop="emit('openTab', 'daycare')"
-        >
-          <div class="pc-banner-icon">
-            <EggSprite
-              size="28"
-              style="image-rendering: pixelated; display: inline-flex; justify-content: center; align-items: center;"
-            />
-          </div>
-          <div class="pc-banner-content-wrapper">
-            <div class="pc-banner-title">
-              CRIANZA
-            </div>
-            <div class="pc-banner-inner-flex">
-              <div class="pc-banner-text">
-                Tenés <span>{{ eggCount }}</span> huevos esperando
               </div>
             </div>
           </div>

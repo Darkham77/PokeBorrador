@@ -38,6 +38,7 @@ const battleItems = computed<BattleItem[]>(() => {
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
+    if (itemData.nonCombat) return
     if (itemData.cat === 'pociones' || itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && !isTrainer)) {
       items.push({ 
         ...itemData, 

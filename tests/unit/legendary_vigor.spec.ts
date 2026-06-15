@@ -1,15 +1,13 @@
 /**
  * tests/unit/legendary_vigor.spec.ts
- * Verifies that legendary pokemon are sanitized to 0 vigor and correctly blocked from daycare.
+ * Verifies that legendary pokemon are sanitized to 0 vigor, correctly blocked from daycare,
+ * and that legacy database properties are cleanly patched using the database migration rules.
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach } from 'vitest'
-import { sanitizePokemon } from '@/logic/pokemonFactory'
 import { useBreedingStore } from '@/stores/breeding'
 import { createPinia, setActivePinia } from 'pinia'
 import type { Pokemon } from '@/types/pokemon'
-import { validateAndSanitize } from '@/logic/auth/saveService'
-import type { SaveData } from '@/logic/auth/saveService'
 
 describe('Legendary Vigor Daycare Block & DB Migration', () => {
   beforeEach(() => {
@@ -44,7 +42,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
     expect(result).toBe(false)
   })
 
-  it('should run database migration simulator and fix all legendaries in team and box', () => {
+  it('should run database migration simulator and fix legendaries, moves, items, and abilities', () => {
     const mockSaveData = {
       trainer: 'TestTrainer',
       team: [
@@ -52,13 +50,21 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           uid: 'pikachu-test',
           id: 'pikachu',
           name: 'Pikachu',
-          vigor: 20
+          vigor: 20,
+          heldItem: 'pocion', // Legacy item
+          ability: 'escape', // Legacy ability
+          moves: [
+            { id: 'somnifera', name: 'Espora' }, // Legacy move
+            { id: 'tackle', name: 'Placaje' }
+          ]
         },
         {
           uid: 'mew-test',
           id: 'mew',
           name: 'Mew',
-          vigor: 12 // Legendary: should be coerced to 0
+          vigor: 12, // Legendary: should be coerced to 0
+          ability: 'Sincronía',
+          moves: []
         }
       ],
       box: [
@@ -66,41 +72,136 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           uid: 'zapdos-test',
           id: 'Zapdos',
           name: 'Zapdos',
-          vigor: 8 // Legendary: should be coerced to 0
+          vigor: 8, // Legendary: should be coerced to 0
+          ability: 'Presión',
+          moves: []
         },
         {
           uid: 'bulbasaur-test',
           id: 'bulbasaur',
           name: 'Bulbasaur',
-          vigor: 20
+          vigor: 20,
+          heldItem: 'caramelo_vigor', // Legacy item
+          ability: 'puntocura', // Legacy ability
+          moves: [
+            { id: 'recurrente', name: 'Semilladora' } // Legacy move
+          ]
         }
       ]
     }
 
-    // JS simulator of the PGSQL legendary repair migration
+    // JS simulator of the PostgreSQL migration rules
     const legendaries = new Set([
       'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
       'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
     ])
 
-    // Update team
-    if (mockSaveData.team) {
-      mockSaveData.team.forEach(p => {
-        if (p && p.id && legendaries.has(p.id.toLowerCase())) {
-          p.vigor = 0
-        }
-      })
+    const legacyItemMap: Record<string, string> = {
+      pocion: 'potion',
+      super_pocion: 'super_potion',
+      hiper_pocion: 'hyper_potion',
+      pocion_max: 'max_potion',
+      piedra_fuego: 'fire_stone',
+      piedra_agua: 'water_stone',
+      piedra_trueno: 'thunder_stone',
+      piedra_hoja: 'leaf_stone',
+      piedra_luna: 'moon_stone',
+      piedra_solar: 'sun_stone',
+      caramelo_vigor: 'vigor_candy',
+      repelente: 'repel'
     }
 
-    // Update box
-    if (mockSaveData.box) {
-      mockSaveData.box.forEach(p => {
-        if (p && p.id && legendaries.has(p.id.toLowerCase())) {
-          p.vigor = 0
-        }
-      })
+    const legacyAbilityMap: Record<string, string> = {
+      escape: 'Fuga',
+      metamorfosis: 'Mudar',
+      escudopolvo: 'Polvo escudo',
+      polvoescudo: 'Polvo escudo',
+      correcaminos: 'Fuga',
+      obstruir: 'Insonorizar',
+      escurridizo: 'Flexibilidad',
+      puntocura: 'Cura Natural',
+      chlorophyll: 'Clorofila',
+      overgrow: 'Espesura',
+      blaze: 'Mar llamas',
+      torrent: 'Torrente',
+      static: 'Electricidad estática',
+      puntotoxico: 'Punto tóxico',
+      vistalince: 'Vista lince',
+      focointerno: 'Foco interno',
+      nadorapido: 'Nado rápido',
+      velohumedo: 'Velo húmedo'
     }
 
+    const legacyMoveMap: Record<string, string> = {
+      cuerpo_pesado: 'heavy_slam',
+      hiper_colmillo: 'hyper_fang',
+      patada_salto_alta: 'high_jump_kick',
+      pajaro_osado: 'brave_bird',
+      engullir: 'swallow',
+      somnifera: 'sleep_powder',
+      velocidad_extrema: 'extreme_speed',
+      mismodestino: 'destiny_bond',
+      pantalla_humo: 'smokescreen',
+      super_colmillo: 'super_fang',
+      huevo_bomba: 'egg_bomb',
+      hueso_rus: 'bone_rush',
+      mega_patada: 'mega_kick',
+      mega_puno: 'mega_punch',
+      pozo_venenoso: 'toxic_spikes',
+      vampiro: 'horn_leech',
+      psicocorte: 'psycho_cut',
+      arena: 'sand_attack',
+      minimizar: 'minimize',
+      golpe_karatazo: 'karate_chop',
+      mov_sismico: 'seismic_toss',
+      tajo_aereo: 'air_slash',
+      acidificacion: 'acid_armor',
+      recurrente: 'bullet_seed',
+      tormenta_de_arena: 'sandstorm'
+    }
+
+    const migratePoke = (p: any) => {
+      if (!p) return
+      
+      // 1. Force legendary vigor to 0
+      if (p.id && legendaries.has(p.id.toLowerCase())) {
+        p.vigor = 0
+      }
+      
+      // 2. Map held items
+      if (p.heldItem) {
+        const itemKey = p.heldItem.toLowerCase().trim()
+        if (legacyItemMap[itemKey]) {
+          p.heldItem = legacyItemMap[itemKey]
+        }
+      }
+      
+      // 3. Map abilities
+      if (p.ability) {
+        const abKey = p.ability.toLowerCase().trim()
+        if (legacyAbilityMap[abKey]) {
+          p.ability = legacyAbilityMap[abKey]
+        }
+      }
+      
+      // 4. Map moves
+      if (p.moves && Array.isArray(p.moves)) {
+        p.moves.forEach((m: any) => {
+          if (m && m.id) {
+            const moveKey = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim()
+            if (legacyMoveMap[moveKey]) {
+              m.id = legacyMoveMap[moveKey]
+            }
+          }
+        })
+      }
+    }
+
+    // Apply migration rules to mock database team and box
+    mockSaveData.team.forEach(migratePoke)
+    mockSaveData.box.forEach(migratePoke)
+
+    // Verification: Legendaries Vigor
     const mew = mockSaveData.team.find(p => p.id === 'mew')
     expect(mew?.vigor).toBe(0)
 
@@ -112,5 +213,15 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
 
     const bulbasaur = mockSaveData.box.find(p => p.id === 'bulbasaur')
     expect(bulbasaur?.vigor).toBe(20)
+
+    // Verification: Mapped legacy properties (Pikachu)
+    expect(pikachu?.heldItem).toBe('potion')
+    expect(pikachu?.ability).toBe('Fuga')
+    expect(pikachu?.moves?.[0]?.id).toBe('sleep_powder')
+
+    // Verification: Mapped legacy properties (Bulbasaur)
+    expect(bulbasaur?.heldItem).toBe('vigor_candy')
+    expect(bulbasaur?.ability).toBe('Cura Natural')
+    expect(bulbasaur?.moves?.[0]?.id).toBe('bullet_seed')
   })
 })

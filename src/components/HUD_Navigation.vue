@@ -8,8 +8,13 @@ import { useModalStore } from '@/stores/modals'
 import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useEventStore } from '@/stores/events'
+import { useGymsStore } from '@/stores/gyms'
+import { getItemById, getItemByName } from '@/data/items'
 import EggSprite from '@/components/common/EggSprite.vue'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+
+import { resolveNormalizedName } from '@/stores/inventoryHelpers'
 
 interface Props {
   position?: string
@@ -41,6 +46,163 @@ const totalSocialNotifications = computed(() => {
 
 const readyEggsCount = computed(() => {
   return (gameStore.state.eggs || []).filter(egg => egg.ready === true || egg.steps <= 0).length
+})
+
+const ballsList = computed(() => {
+  const inventory = gameStore.state.inventory || {}
+  return Object.entries(inventory)
+    .map(([name, qty]) => {
+      const count = qty as number
+      if (count <= 0) return null
+      const found = getItemByName(name) || getItemById(name)
+      if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
+        return { name: found?.name || name, qty: count }
+      }
+      return null
+    })
+    .filter(Boolean) as { name: string, qty: number }[]
+})
+
+const materialItems = computed(() => {
+  const inventory = gameStore.state.inventory || {}
+  const list: { name: string; qty: number; tier: number; icon: string }[] = []
+  
+  for (const [key, qty] of Object.entries(inventory)) {
+    const count = qty as number
+    if (count <= 0) continue
+    const officialName = resolveNormalizedName(key)
+    const found = getItemByName(officialName) || getItemById(officialName)
+    if (found) {
+      let tier: number | null = null
+      if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {
+        tier = 0
+      } else if (found.cat === 'refined_material' || found.sprite?.includes('crafting/tier1/')) {
+        tier = 1
+      } else if (found.cat === 'component' || found.sprite?.includes('crafting/tier2/')) {
+        tier = 2
+      }
+      
+      if (tier !== null) {
+        list.push({
+          name: found.name,
+          qty: count,
+          tier,
+          icon: found.icon || '📦'
+        })
+      }
+    }
+  }
+  return list
+})
+
+const mochilaTooltipDescription = computed(() => {
+  const lines: string[] = []
+  
+  // Section 1: Poké Balls first
+  lines.push('🔴 POKÉ BALLS')
+  if (ballsList.value.length === 0) {
+    lines.push('• Ninguna')
+  } else {
+    ballsList.value.forEach(i => lines.push(`• ${i.name}: ${i.qty}`))
+  }
+  
+  lines.push('') // empty line
+  
+  // Section 2: Materials second
+  lines.push('📦 MATERIALES')
+  const t0 = materialItems.value.filter(i => i.tier === 0)
+  const t1 = materialItems.value.filter(i => i.tier === 1)
+  const t2 = materialItems.value.filter(i => i.tier === 2)
+  
+  if (materialItems.value.length === 0) {
+    lines.push('• Ninguno')
+  } else {
+    if (t0.length > 0) {
+      t0.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+    }
+    if (t1.length > 0) {
+      t1.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+    }
+    if (t2.length > 0) {
+      t2.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+    }
+  }
+  
+  lines.push('')
+  lines.push('Haz clic para abrir el inventario.')
+  return lines.join('\n')
+})
+
+const gymsStore = useGymsStore()
+
+const gymRematchesCount = computed(() => {
+  const defeatedIds = gameStore.state.defeatedGyms || []
+  return gymsStore.gyms.filter(g => !defeatedIds.includes(g.id)).length
+})
+
+const medalsBreakdown = computed(() => {
+  const defeated = gameStore.state.defeatedGyms || []
+  if (defeated.length === 0) {
+    return 'No has ganado ninguna medalla todavía.\n¡Desafía a los Líderes de Gimnasio para obtenerlas!'
+  }
+  
+  const earnedList = gymsStore.gyms
+    .filter(g => defeated.includes(g.id))
+    .map(g => `${g.badge} ${g.badgeName} (${g.leader})`)
+    
+  return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join('\n')}\n\nDesbloquean nuevas zonas y Pokémon.\n\nHaz clic para ver los Gimnasios.`
+})
+
+const warehouseEggsCount = computed(() => breedingStore.warehouseEggs?.length || 0)
+const walkingEggsCount = computed(() => (gameStore.state.eggs || []).length)
+const freeEggSlots = computed(() => Math.max(0, 6 - walkingEggsCount.value))
+
+const crianzaBadgeValue = computed(() => {
+  const ready = readyEggsCount.value
+  if (ready > 0) return ready
+
+  // If there are free slots in the backpack and eggs in the warehouse, show how many can be walked
+  if (freeEggSlots.value > 0 && warehouseEggsCount.value > 0) {
+    return Math.min(freeEggSlots.value, warehouseEggsCount.value)
+  }
+  return 0
+})
+
+const eggsBreakdown = computed(() => {
+  const incubating = gameStore.state.eggs || []
+  const warehouse = breedingStore.warehouseEggs || []
+  
+  const lines: string[] = []
+  
+  if (incubating.length === 0 && warehouse.length === 0) {
+    return 'No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!'
+  }
+  
+  if (incubating.length > 0) {
+    lines.push(`Incubando: ${incubating.length} / 6 huevos`)
+    incubating.forEach((egg, idx) => {
+      if (egg.ready || egg.steps <= 0) {
+        lines.push(`• Huevo ${idx + 1}: ¡Listo para nacer!🐣`)
+      } else {
+        lines.push(`• Huevo ${idx + 1}: ${Math.ceil(egg.steps).toLocaleString()} pasos`)
+      }
+    })
+  } else {
+    lines.push('No hay huevos en incubación.')
+  }
+  
+  lines.push('') // Separador de secciones
+  
+  if (warehouse.length > 0) {
+    lines.push(`En Guardería: ${warehouse.length} huevos sin reclamar🥚`)
+  } else {
+    lines.push('No hay huevos pendientes en la Guardería.')
+  }
+  
+  lines.push('')
+  lines.push('Haz clic para abrir la Guardería.')
+  
+  return lines.join('\n')
 })
 
 const handleMouseEnter = (group: string) => {
@@ -269,40 +431,59 @@ onUnmounted(() => {
     </div>
 
     <!-- 3. MOCHILA -->
-    <PVHUDButton
-      :active="modalStore.isOpen('Inventory')"
-      @click.stop="handleTabChange('bag')"
+    <PVTooltip
+      title="🎒 MOCHILA"
+      :description="mochilaTooltipDescription"
+      position="top"
     >
-      <template #icon>
-        🎒
-      </template>
-      MOCHILA
-    </PVHUDButton>
+      <PVHUDButton
+        :active="modalStore.isOpen('Inventory')"
+        @click.stop="handleTabChange('bag')"
+      >
+        <template #icon>
+          🎒
+        </template>
+        MOCHILA
+      </PVHUDButton>
+    </PVTooltip>
     
     <!-- 4. GIMS -->
-    <PVHUDButton
-      :active="activeTab === 'gyms'"
-      @click.stop="handleTabChange('gyms')"
+    <PVTooltip
+      title="🏆 GIMNASIOS"
+      :description="medalsBreakdown"
+      position="top"
     >
-      <template #icon>
-        🏆
-      </template>
-      GIMS
-    </PVHUDButton>
+      <PVHUDButton
+        :active="activeTab === 'gyms'"
+        :badge-value="gymRematchesCount > 0 ? gymRematchesCount : 0"
+        @click.stop="handleTabChange('gyms')"
+      >
+        <template #icon>
+          🏆
+        </template>
+        GIMS
+      </PVHUDButton>
+    </PVTooltip>
 
     <!-- 5. CRIANZA -->
-    <PVHUDButton
-      :active="activeTab === 'daycare'"
-      :badge-value="readyEggsCount"
-      @click.stop="handleTabChange('daycare')"
+    <PVTooltip
+      title="🥚 CRIANZA"
+      :description="eggsBreakdown"
+      position="top"
     >
-      <template #icon>
-        <span style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
-          <EggSprite size="20" />
-        </span>
-      </template>
-      CRIANZA
-    </PVHUDButton>
+      <PVHUDButton
+        :active="activeTab === 'daycare'"
+        :badge-value="crianzaBadgeValue"
+        @click.stop="handleTabChange('daycare')"
+      >
+        <template #icon>
+          <span style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
+            <EggSprite size="20" />
+          </span>
+        </template>
+        CRIANZA
+      </PVHUDButton>
+    </PVTooltip>
 
     <!-- 6. MARKET (Grupo) -->
     <div 
