@@ -2,6 +2,7 @@
 
 - [x] Punto 1: Corrección de IDs de Ítems en Gimnasios y Robos
 - [x] Punto 2: Legendarios con Vigor 0, Bloqueo de Crianza y Parche de Migración
+  - [x] Parche de base de datos SQL para legendarios con vigor a 0 en team/box
 - [x] Punto 3: Antiparaliz en Tienda por 200 ₽
 - [x] Punto 4: Captura de Ditto Transformado (Preservación de Estado Original)
 - [x] Punto 5: Clima y Horario Neutros en Gimnasios

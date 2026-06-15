@@ -126,15 +126,6 @@ export function sanitizePokemon(p: Pokemon): void {
     p.emoji = base.emoji || p.emoji;
   }
 
-  // Force vigor = 0 for legendary Pokémon
-  const legendaries = new Set([
-    'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-    'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
-  ]);
-  if (p.id && legendaries.has(p.id.toLowerCase())) {
-    p.vigor = 0;
-  }
-
   // 1. Validar Habilidad
   if (p.ability) {
     const normalizeText = (text: string) => {
