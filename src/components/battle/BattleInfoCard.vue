@@ -13,6 +13,7 @@ import { useCombatantStatus } from '@/composables/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { NATURE_DATA } from '@/data/natures'
 
 interface Props {
   pokemon?: Pokemon | null
@@ -231,12 +232,16 @@ const teamBallsStatus = computed(() => {
         <div class="poke-level m-badge-level">
           Nv. {{ isScrambled ? '??' : p.level }}
         </div>
-        <div
+        <PVTooltip
           v-if="!isPlayer && !isScrambled && gameStore.state.playerClass === 'criador'"
-          class="m-badge-nature"
+          position="bottom"
+          :title="p.nature || 'Serio'"
+          :description="NATURE_DATA[(p.nature || 'Serio') as keyof typeof NATURE_DATA]?.desc || 'Sin efecto en estadísticas.'"
         >
-          {{ p.nature || 'Serio' }}
-        </div>
+          <div class="m-badge-nature">
+            {{ p.nature || 'Serio' }}
+          </div>
+        </PVTooltip>
         <PokemonTypePills 
           v-if="!isScrambled"
           :pokemon="p" 
@@ -336,18 +341,32 @@ const teamBallsStatus = computed(() => {
 @use "@/styles/core/tools" as *;
 
 .glass-card {
-  background: Rgba(15, 23, 42, 0.4);
-  backdrop-filter: Blur(12px);
-  -webkit-backdrop-filter: Blur(12px);
-  -webkit-will-change: transform, opacity, backdrop-filter;
-  will-change: transform, opacity, backdrop-filter;
+  position: relative;
+  background: transparent;
   @include gpu-layer;
-  border: 1px solid Rgba(255, 255, 255, 0.15);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   border-radius: 18px;
   padding: 15px;
   min-width: 200px;
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.5), inset 0 0 10px Rgba(255,255,255,0.05);
+  box-shadow: 
+    0 10px 30px Rgba(0,0,0,0.5), 
+    inset 0 0 10px Rgba(255,255,255,0.05),
+    inset 0 0 0 1px Rgba(255, 255, 255, 0.15);
   color: $white;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: Rgba(15, 23, 42, 0.85); /* Más opaco para compensar la falta de blur y mantener legibilidad */
+    border-radius: 17px;
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
 
   @media (max-width: 600px) {
     padding: 8px 10px;
@@ -575,10 +594,21 @@ const teamBallsStatus = computed(() => {
   border: 1px solid Rgba(0, 0, 0, 0.6);
   position: relative;
   box-sizing: border-box;
+  overflow: hidden;
+  background: #ffffff;
   
   &.active {
-    background: linear-gradient(180deg, #ff3e3e 50%, #ffffff 50%);
     box-shadow: 0 0 5px Rgba(255, 62, 62, 0.6);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      background: #ff3e3e;
+    }
   }
   
   &.fainted {

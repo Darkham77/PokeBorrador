@@ -121,7 +121,7 @@ const getHpClass = (pct: number) => {
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 4px;
-  border: 1px solid Rgba(255,255,255,0.1);
+  box-shadow: inset 0 0 0 1px Rgba(255, 255, 255, 0.1);
 
   @media (max-width: 600px) {
     height: 6px;
@@ -143,9 +143,9 @@ const getHpClass = (pct: number) => {
   @include will-animate(width);
 }
 
-.hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
-.hp-mid { background: Linear-Gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); }
-.hp-low { background: Linear-Gradient(90deg, Rgba(239, 68, 68, 1), Rgba(248, 113, 113, 1)); }
+.hp-high { background: #10b981; }
+.hp-mid { background: #f59e0b; }
+.hp-low { background: #ef4444; }
 
 .hp-values {
   @include pixelated;

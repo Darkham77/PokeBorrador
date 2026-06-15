@@ -270,6 +270,10 @@ export function useCombatantStatus(
       }
     }
 
+    if (battleStore.state?.isGym) {
+      return list
+    }
+
     if (weather && weather.type !== 'clear' && weatherAffects) {
       const visualType = weather.visual || weather.type
       const mechType = getMechanicalWeather(weather.type)

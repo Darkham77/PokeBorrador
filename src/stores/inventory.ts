@@ -154,7 +154,8 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (item.qty <= 0) return false
       const resolvedCat = item.cat || 'otros'
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
-      if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
+      // Do not apply the global store searchQuery if a battle is active (to avoid sharing the filter with the battle modal)
+      if (!isBattleActive && searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true
     })
 

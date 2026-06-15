@@ -31,8 +31,9 @@ export function useMoveSlotData(
     let power = md.power
     const attacker = playerInfoRef()
     const defender = battleStore.state?.enemy
-    const weather = battleStore.state?.weather
-    const mechWeather = getMechanicalWeather(weather?.type)
+    const isGym = !!battleStore.state?.isGym
+    const weather = isGym ? null : battleStore.state?.weather
+    const mechWeather = isGym ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
     const cycle = getDayCycle()
 
     if (!attacker) return power
@@ -128,11 +129,12 @@ export function useMoveSlotData(
     if (!md || md.acc === undefined || md.acc === 1000) return md?.acc || 0
 
     let acc = md.acc
-    const weather = battleStore.state?.weather?.type
-    const mechWeather = getMechanicalWeather(weather)
+    const isGym = !!battleStore.state?.isGym
+    const weather = isGym ? null : battleStore.state?.weather?.type
+    const mechWeather = isGym ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather)
     const cycle = getDayCycle()
-    const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
-    const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
+    const isSunActive = !isGym && (mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning')))
+    const isRainActive = !isGym && (mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk')))
 
     const isThunderstorm = weather === 'thunderstorm'
     if ((isRainActive || isThunderstorm) && (md.id === 'thunder' || md.id === 'hurricane')) {
@@ -157,18 +159,19 @@ export function useMoveSlotData(
     const md = moveData.value
     if (!md || !battleStore.isBattleActive) return null
 
-    const weather = battleStore.state?.weather?.type
-    const mechWeather = getMechanicalWeather(weather)
+    const isGym = !!battleStore.state?.isGym
+    const weather = isGym ? null : battleStore.state?.weather
+    const mechWeather = isGym ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
     const cycle = getDayCycle()
 
-    const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
-    const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
-    const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL
+    const isRaining = !isGym && mechWeather === WEATHER_MECHANICAL.RAIN
+    const isSunny = !isGym && mechWeather === WEATHER_MECHANICAL.SUN
+    const isSnowing = !isGym && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)
     const isDayTime = cycle === 'day' || cycle === 'morning'
     const isNightTime = cycle === 'night' || cycle === 'dusk'
 
-    const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime)
-    const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime)
+    const isSunActive = !isGym && (isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime))
+    const isRainActive = !isGym && (isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime))
 
     const moveName = (md.name || '').toLowerCase()
 

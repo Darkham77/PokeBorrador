@@ -56,7 +56,12 @@ const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|
 
 
 
-// Niveles superiores de categorización
+// Local states for battle mode to prevent overwriting/sharing state with main inventory
+const battleActiveCategory = ref('potions')
+const battleActiveMainTab = ref<'productos' | 'materiales'>('productos')
+const battleSearchQuery = ref('')
+
+// Niveles superiores de categorización (Mochila normal)
 const activeMainTab = computed({
   get: () => inventoryStore.activeMainTab,
   set: (val) => { inventoryStore.activeMainTab = val }
@@ -64,37 +69,61 @@ const activeMainTab = computed({
 
 // Observar cambio en pestaña principal para resetear la subcategoría
 watch(activeMainTab, () => {
-  inventoryStore.activeCategory = 'todos'
+  if (!props.battleMode) {
+    inventoryStore.activeCategory = 'todos'
+  }
 })
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed<Item[]>(() => {
-  return (inventoryStore.bagItems as Item[]) || []
+  // Save/restore mainTab & activeCategory temporarily to compute bagItems cleanly
+  const prevTab = inventoryStore.activeMainTab
+  const prevCat = inventoryStore.activeCategory
+  
+  if (props.battleMode) {
+    inventoryStore.activeMainTab = battleActiveMainTab.value
+    inventoryStore.activeCategory = battleActiveCategory.value
+  }
+  
+  let items = (inventoryStore.bagItems as Item[]) || []
+  
+  if (props.battleMode) {
+    inventoryStore.activeMainTab = prevTab
+    inventoryStore.activeCategory = prevCat
+  }
+
+  if (props.battleMode && battleSearchQuery.value) {
+    const q = battleSearchQuery.value.toLowerCase()
+    items = items.filter(item => item.name.toLowerCase().includes(q))
+  }
+  return items
 })
 
 // Local items state to handle smooth transitions on tab switches
 const displayedItems = ref<Item[]>([])
-const lastCategory = ref(inventoryStore.activeCategory)
-const lastSearchQuery = ref(inventoryStore.searchQuery)
+const lastCategory = ref(props.battleMode ? battleActiveCategory.value : inventoryStore.activeCategory)
 const isCategorySwitching = ref(false)
 
 // Battle/Target Auto-category selection
 watch(() => props.show, (val) => {
   if (val) {
-    if (props.initialCategory) {
-      inventoryStore.activeCategory = props.initialCategory
-      if (['raw_material', 'refined_material', 'component'].includes(props.initialCategory)) {
-        activeMainTab.value = 'materiales'
-      } else {
+    if (props.battleMode) {
+      battleSearchQuery.value = ''
+      battleActiveCategory.value = 'potions'
+      battleActiveMainTab.value = 'productos'
+    } else {
+      if (props.initialCategory) {
+        inventoryStore.activeCategory = props.initialCategory
+        if (['raw_material', 'refined_material', 'component'].includes(props.initialCategory)) {
+          activeMainTab.value = 'materiales'
+        } else {
+          activeMainTab.value = 'productos'
+        }
+      } else if (uiStore.inventoryTarget) {
+        inventoryStore.activeCategory = 'utilizables'
         activeMainTab.value = 'productos'
       }
-    } else if (uiStore.inventoryTarget) {
-      inventoryStore.activeCategory = 'utilizables'
-      activeMainTab.value = 'productos'
-    } else if (props.battleMode) {
-      inventoryStore.activeCategory = 'potions'
-      activeMainTab.value = 'productos'
     }
     displayedItems.value = [...filteredItems.value]
     
@@ -108,42 +137,43 @@ watch(() => props.show, (val) => {
   }
 }, { immediate: true })
 
-watch(() => [inventoryStore.activeCategory, inventoryStore.searchQuery, activeMainTab.value], async ([newCat, newQuery]) => {
-  const gridEl = document.querySelector('.inventory-grid-wrapper')
-  if (gridEl) {
-    isCategorySwitching.value = true
-    gsap.killTweensOf(gridEl)
-    
-    // Fade out the entire grid container
-    await gsap.to(gridEl, {
-      opacity: 0,
-      y: 8,
-      duration: 0.12,
-      ease: 'power2.out'
-    })
-    
-    // Update local items
-    lastCategory.value = newCat as string
-    lastSearchQuery.value = newQuery as string
-    displayedItems.value = [...filteredItems.value]
-    
-    // Wait for DOM update
-    await nextTick()
-    
-    // Fade the grid container back in
-    await gsap.to(gridEl, {
-      opacity: 1,
-      y: 0,
-      duration: 0.18,
-      ease: 'power2.out'
-    })
-    
-    isCategorySwitching.value = false
-  } else {
-    lastCategory.value = newCat as string
-    lastSearchQuery.value = newQuery as string
-    displayedItems.value = [...filteredItems.value]
-  }
+watch(() => props.battleMode 
+  ? [battleActiveCategory.value, battleSearchQuery.value, battleActiveMainTab.value]
+  : [inventoryStore.activeCategory, inventoryStore.searchQuery, activeMainTab.value], 
+  async ([newCat]) => {
+    const gridEl = document.querySelector('.inventory-grid-wrapper')
+    if (gridEl) {
+      isCategorySwitching.value = true
+      gsap.killTweensOf(gridEl)
+      
+      // Fade out the entire grid container
+      await gsap.to(gridEl, {
+        opacity: 0,
+        y: 8,
+        duration: 0.12,
+        ease: 'power2.out'
+      })
+      
+      // Update local items
+      lastCategory.value = newCat as string
+      displayedItems.value = [...filteredItems.value]
+      
+      // Wait for DOM update
+      await nextTick()
+      
+      // Fade the grid container back in
+      await gsap.to(gridEl, {
+        opacity: 1,
+        y: 0,
+        duration: 0.18,
+        ease: 'power2.out'
+      })
+      
+      isCategorySwitching.value = false
+    } else {
+      lastCategory.value = newCat as string
+      displayedItems.value = [...filteredItems.value]
+    }
 })
 
 watch(() => filteredItems.value, (newVal) => {
@@ -450,6 +480,29 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
           @cancel="handleCancelSelection"
         />
 
+        <!-- SEARCH BAR FOR BATTLE MODE -->
+        <div
+          v-else
+          class="battle-search-section"
+        >
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              v-model="battleSearchQuery"
+              type="text"
+              placeholder="Buscar objeto..."
+              class="premium-search-input"
+            >
+            <button
+              v-if="battleSearchQuery"
+              class="clear-btn"
+              @click.stop="battleSearchQuery = ''"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
         <!-- GRID AREA -->
         <div class="inventory-grid-wrapper custom-scrollbar">
           <TransitionGroup 
@@ -482,7 +535,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
             </div>
             <div class="empty-text">
               <h3>No hay resultados</h3>
-              <p>{{ inventoryStore.searchQuery ? 'Prueba con otros términos de búsqueda' : 'Esta sección de tu mochila está vacía' }}</p>
+              <p>{{ (battleMode ? battleSearchQuery : inventoryStore.searchQuery) ? 'Prueba con otros términos de búsqueda' : 'Esta sección de tu mochila está vacía' }}</p>
             </div>
           </div>
         </div>
@@ -522,10 +575,66 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
 
   .inventory-main {
     border-radius: 0 0 24px 24px;
+    padding-top: 10px;
   }
 
   :deep(.item-premium-grid) {
     grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important;
+  }
+}
+
+.battle-search-section {
+  padding: 0 20px 12px 20px;
+  @include gpu-layer;
+
+  .search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      font-size: 13px;
+      opacity: 0.5;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      line-height: 1;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    }
+
+    .premium-search-input {
+      width: 100%;
+      background: Rgba(0, 0, 0, 0.2);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 7px 30px 7px 30px;
+      color: white;
+      font-size: 12px;
+
+      &:focus {
+        background: Rgba(0, 0, 0, 0.4);
+        border-color: var(--yellow);
+        box-shadow: 0 0 12px Rgba(255, 214, 10, 0.1);
+        outline: none;
+      }
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 8px;
+      background: none;
+      border: none;
+      color: Rgba(255, 255, 255, 0.5);
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+
+      &:hover { color: white; }
+    }
   }
 }
 

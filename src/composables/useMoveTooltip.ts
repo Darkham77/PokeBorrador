@@ -24,7 +24,8 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
   const modifierInfo = computed(() => {
     if (!battleStore.isBattleActive) return null;
     const move = toValue(moveInput);
-    const weather = battleStore.state?.weather?.type;
+    const isGym = !!battleStore.state?.isGym;
+    const weather = isGym ? undefined : battleStore.state?.weather?.type;
     const cycle = getDayCycle();
     const attacker = battleStore.state?.player;
 
@@ -62,7 +63,8 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     const move = toValue(moveInput);
     const attacker = battleStore.state?.player;
     const defender = battleStore.state?.enemy;
-    const weather = battleStore.state?.weather;
+    const isGym = !!battleStore.state?.isGym;
+    const weather = isGym ? null : battleStore.state?.weather;
     const mechWeather = getMechanicalWeather(weather?.type);
     const cycle = getDayCycle();
 
