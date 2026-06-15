@@ -74,6 +74,31 @@ describe('Real Backup DB Migration Verification', () => {
     tormenta_de_arena: 'sandstorm'
   };
 
+  function normalizeAbilityName(abilityName: string): string {
+    return abilityName.toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  function getLegacyAbilityTranslation(abilityName: string | undefined): string | undefined {
+    if (!abilityName) return undefined;
+    const abKey = normalizeAbilityName(abilityName);
+    return legacyAbilityMap[abKey];
+  }
+
+  function getLegacyItemTranslation(heldItem: string | undefined): string | undefined {
+    if (!heldItem) return undefined;
+    const itemKey = heldItem.toLowerCase().trim();
+    return legacyItemMap[itemKey];
+  }
+
+  function getLegacyMoveTranslation(moveId: string | undefined): string | undefined {
+    if (!moveId) return undefined;
+    const moveKey = moveId.toLowerCase().replace(/[\s_-]+/g, '_').trim();
+    return legacyMoveMap[moveKey];
+  }
+
   function migratePoke(p: any) {
     if (!p) return;
     
@@ -83,32 +108,24 @@ describe('Real Backup DB Migration Verification', () => {
     }
     
     // 2. Mapped held items
-    if (p.heldItem) {
-      const itemKey = p.heldItem.toLowerCase().trim();
-      if (legacyItemMap[itemKey]) {
-        p.heldItem = legacyItemMap[itemKey];
-      }
+    const mappedItem = getLegacyItemTranslation(p.heldItem);
+    if (mappedItem) {
+      p.heldItem = mappedItem;
     }
     
     // 3. Mapped abilities
-    if (p.ability) {
-      // Regexp-based normalize matches the SQL version
-      const abKey = p.ability.toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '');
-      if (legacyAbilityMap[abKey]) {
-        p.ability = legacyAbilityMap[abKey];
-      }
+    const mappedAbility = getLegacyAbilityTranslation(p.ability);
+    if (mappedAbility) {
+      p.ability = mappedAbility;
     }
     
     // 4. Mapped moves
     if (p.moves && Array.isArray(p.moves)) {
       p.moves.forEach((m: any) => {
-        if (m && m.id) {
-          const moveKey = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim();
-          if (legacyMoveMap[moveKey]) {
-            m.id = legacyMoveMap[moveKey];
+        if (m) {
+          const mappedMove = getLegacyMoveTranslation(m.id);
+          if (mappedMove) {
+            m.id = mappedMove;
           }
         }
       });
@@ -156,25 +173,16 @@ describe('Real Backup DB Migration Verification', () => {
           if (p.id && legendaries.has(p.id.toLowerCase()) && p.vigor > 0) {
             legendariesFoundAndFixedCount++;
           }
-          if (p.heldItem && legacyItemMap[p.heldItem.toLowerCase().trim()]) {
+          if (p.heldItem && getLegacyItemTranslation(p.heldItem)) {
             legacyHeldItemsFixedCount++;
           }
-          if (p.ability) {
-            const abKey = p.ability.toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^a-z0-9]/g, '');
-            if (legacyAbilityMap[abKey]) {
-              legacyAbilitiesFixedCount++;
-            }
+          if (getLegacyAbilityTranslation(p.ability)) {
+            legacyAbilitiesFixedCount++;
           }
           if (p.moves && Array.isArray(p.moves)) {
             p.moves.forEach((m: any) => {
-              if (m && m.id) {
-                const moveKey = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim();
-                if (legacyMoveMap[moveKey]) {
-                  legacyMovesFixedCount++;
-                }
+              if (m && getLegacyMoveTranslation(m.id)) {
+                legacyMovesFixedCount++;
               }
             });
           }
@@ -196,28 +204,23 @@ describe('Real Backup DB Migration Verification', () => {
           }
           // Held items must not be legacy
           if (p.heldItem) {
-            const itemKey = p.heldItem.toLowerCase().trim();
-            if (legacyItemMap[itemKey]) {
-              assert.strictEqual(p.heldItem, legacyItemMap[itemKey], `Held item ${p.heldItem} was not migrated to ${legacyItemMap[itemKey]}`);
+            const mappedItem = getLegacyItemTranslation(p.heldItem);
+            if (mappedItem) {
+              assert.strictEqual(p.heldItem, mappedItem, `Held item ${p.heldItem} was not migrated to ${mappedItem}`);
             }
           }
           // Abilities must not be legacy
-          if (p.ability) {
-            const abKey = p.ability.toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^a-z0-9]/g, '');
-            if (legacyAbilityMap[abKey]) {
-              assert.strictEqual(p.ability, legacyAbilityMap[abKey], `Ability ${p.ability} was not migrated to ${legacyAbilityMap[abKey]}`);
-            }
+          const mappedAbility = getLegacyAbilityTranslation(p.ability);
+          if (mappedAbility) {
+            assert.strictEqual(p.ability, mappedAbility, `Ability ${p.ability} was not migrated to ${mappedAbility}`);
           }
           // Moves must not be legacy
           if (p.moves && Array.isArray(p.moves)) {
             p.moves.forEach((m: any) => {
-              if (m && m.id) {
-                const moveKey = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim();
-                if (legacyMoveMap[moveKey]) {
-                  assert.strictEqual(m.id, legacyMoveMap[moveKey], `Move ${m.id} was not migrated to ${legacyMoveMap[moveKey]}`);
+              if (m) {
+                const mappedMove = getLegacyMoveTranslation(m.id);
+                if (mappedMove) {
+                  assert.strictEqual(m.id, mappedMove, `Move ${m.id} was not migrated to ${mappedMove}`);
                 }
               }
             });
