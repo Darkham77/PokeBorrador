@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-BSUTldRL.js";export{e as default,e as supabase};

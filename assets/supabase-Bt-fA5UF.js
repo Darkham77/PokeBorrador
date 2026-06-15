@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-Dz3cUynv.js";export{e as default,e as supabase};

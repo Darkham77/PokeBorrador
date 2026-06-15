@@ -1,0 +1,1 @@
+import{I as e}from"./game-CQFMUHOB.js";export{e as useBreedingStore};
