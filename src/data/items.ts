@@ -780,7 +780,7 @@ export const SHOP_ITEMS = [
     desc: 'Sobras de comida utilizables para cocinar o alimentar Pokémon.'
   },
   {
-    id: 'fresh_water', craftingTier: 0, cat: 'raw_material', sprite: 'crafting/tier0/fresh_water', name: 'Agua Fresca', icon: '🥤', price: 200, bcPrice: 7, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'fresh_water', craftingTier: 0, cat: 'potions', sprite: 'crafting/tier0/fresh_water', name: 'Agua Fresca', icon: '🥤', price: 200, bcPrice: 7, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Agua mineral pura, excelente hidratante.', nonCombat: true
   },
   {
