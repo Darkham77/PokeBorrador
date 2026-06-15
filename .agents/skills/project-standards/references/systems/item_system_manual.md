@@ -69,7 +69,7 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 
 - **Learning**: If the Pokémon has < 4 moves, it learns the new one instantly.
 - **Queue**: If it has 4 moves, it is added to a learning queue (`learnQueue`) for the user to choose which one to forget.
-- **Consumption**: The item is consumed only after confirming the learning.
+- **Consumption**: The item is consumed only after confirming the learning via the queue's `onComplete` callback. If the user cancels the learning interface, the item is not consumed.
 
 ### 2. Evolutionary Stones
 
@@ -80,6 +80,13 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 
 - **Equipping**: When equipping an item, if the Pokémon already had one, it automatically returns to the inventory.
 - **Battle Restriction**: Items cannot be equipped/unequipped during active combat.
+
+### 4. Move Relearner
+
+- **Standard Grid Parity**: Reuses the core `BattleMoveSlot` component directly to render the list of relearnable moves, ensuring type badges, power/accuracy stats, and rich tooltips (`MoveTooltip`) are perfectly identical to combat/detail screens.
+- **Scrollbar Clipping Prevention**: Scrollable moves lists containing hover scaling must define explicit padding (e.g., `4px 6px` on rows and `6px 12px` on list wrapper) to allow components to expand dynamically without clipping borders or causing horizontal scrollbar indicators.
+- **English Key Integrity**: Inventory checks and item consumption MUST query the English item ID `'move_relearner'` instead of Spanish display names.
+- **Deferred Consumption**: Like TMs, if the Pokémon already has 4 moves, the item consumption must be deferred to the learn queue's `onComplete` callback, protecting the player from item loss on cancellation.
 
 ---
 
