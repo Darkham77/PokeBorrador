@@ -55,6 +55,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'revive_max': pokeEffect((p) => revive(p, p.maxHp)),
   'antidote': pokeEffect((p) => clearStatus(p, 'poison')),
   'burn_heal': pokeEffect((p) => clearStatus(p, 'burn')),
+  'paralyze_heal': pokeEffect((p) => clearStatus(p, 'paralysis')),
   'awakening': pokeEffect((p) => clearStatus(p, 'sleep')),
   'ice_heal': pokeEffect((p) => clearStatus(p, 'freeze')),
   'full_heal': pokeEffect((p) => curaTotal(p)),
