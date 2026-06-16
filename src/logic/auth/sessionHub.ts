@@ -1,6 +1,6 @@
 
-import { supabase } from '../supabase.ts'
-import { gameBus } from '../gameBus.ts'
+import { supabase } from '../db/supabase.ts'
+import { gameBus } from '../events/gameBus.ts'
 import { logger } from '../utils/logger.ts'
 import { SESSION_ID } from './sessionId.ts'
 
@@ -73,7 +73,7 @@ export async function reclaimControl() {
   isLocked = false
   logger.info('SessionHub', 'Reclaiming control of the session...');
   
-  const { supabase } = await import('../supabase')
+  const { supabase } = await import('../db/supabase')
   if (supabase.mode === 'online') {
     await supabase.initSession(currentUserId, SESSION_ID)
   }

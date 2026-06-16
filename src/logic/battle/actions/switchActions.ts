@@ -1,5 +1,5 @@
 import type { BattleContext } from '@/types/battleContext';
-import { gameBus } from '@/logic/gameBus';
+import { gameBus } from '@/logic/events/gameBus';
 
 /**
  * Handles switching the active enemy Pokemon with GSAP animation.

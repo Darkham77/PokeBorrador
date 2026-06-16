@@ -6,7 +6,7 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
-import { getArgDateString } from '../timeUtils.ts'
+import { getArgDateString } from '../utils/timeUtils.ts'
 
 
 export interface GuardianBase {

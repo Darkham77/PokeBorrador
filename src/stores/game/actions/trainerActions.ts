@@ -1,7 +1,7 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
 import { gsap } from 'gsap'
-import { levelUpPokemon } from '@/logic/pokemonFactory'
+import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import { usePlayerClassStore } from '@/stores/playerClass'

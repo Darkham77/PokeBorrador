@@ -9,7 +9,7 @@ import { useGameStore } from './game.ts'
 import { useMapStore } from './map.ts'
 import { useErrorStore } from './errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
-import { getServerTime } from '@/logic/timeUtils'
+import { getServerTime } from '@/logic/utils/timeUtils'
 import type { Pokemon } from '@/types/pokemon'
 import type { PendingAward, CompetitionResult } from '@/types/stores'
 

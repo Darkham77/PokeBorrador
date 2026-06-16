@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useGameStore } from './game.ts'
 import { useBattleStore } from './battle.ts'
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon'
 
 interface GymDifficulty {

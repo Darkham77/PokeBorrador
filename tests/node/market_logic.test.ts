@@ -4,8 +4,8 @@ import {
   applyMarketFilters, 
   buildMarketSaleLabel, 
   ensureMarketSoldSeenState 
-} from '../../src/logic/market.ts';
-import type { MarketListing, MarketFilters } from '../../src/logic/market.ts';
+} from '../../src/logic/economy/market.ts';
+import type { MarketListing, MarketFilters } from '../../src/logic/economy/market.ts';
 import type { GameState } from '../../src/types/game.ts';
 
 const mockListing: MarketListing = {

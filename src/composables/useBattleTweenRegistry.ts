@@ -1,5 +1,5 @@
 import gsap from 'gsap'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 
 export function useBattleTweenRegistry() {
   const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()

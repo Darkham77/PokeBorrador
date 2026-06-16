@@ -31,7 +31,7 @@ vi.mock('@/logic/services/assetService', () => ({
   ASSET_TYPES: { ITEM: 'item' }
 }))
 
-vi.mock('@/logic/timeUtils', () => ({
+vi.mock('@/logic/utils/timeUtils', () => ({
   getDayCycle: vi.fn(() => 'day')
 }))
 

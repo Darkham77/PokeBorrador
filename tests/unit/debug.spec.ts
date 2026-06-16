@@ -8,7 +8,7 @@ import type { AuthUser } from '@/types/auth'
 import { mockLocalStorage } from '../helpers/debugSetup.ts'
 import { mockChain } from '../helpers/supabaseMock.ts'
 
-vi.mock('@/logic/supabase', async () => {
+vi.mock('@/logic/db/supabase', async () => {
   const { mockSupabase } = await import('../helpers/supabaseMock.ts')
   return {
     supabase: mockSupabase
@@ -48,7 +48,7 @@ describe('Debug & Security System', () => {
 
   it('blocks and triggers ban if non-admin uses debug in online mode', async () => {
     const auth = useAuthStore()
-    const { supabase } = await import('@/logic/supabase')
+    const { supabase } = await import('@/logic/db/supabase')
     
     // Simulate online session as regular user
     auth.sessionMode = 'online'
@@ -75,7 +75,7 @@ describe('Debug & Security System', () => {
 
   it('authStore handles ban status during login', async () => {
     const auth = useAuthStore()
-    const { supabase } = await import('@/logic/supabase')
+    const { supabase } = await import('@/logic/db/supabase')
 
     // Mock banned profile using stable mockChain
     mockChain.single.mockResolvedValue({ 

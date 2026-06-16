@@ -1,4 +1,4 @@
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
@@ -32,7 +32,7 @@ export function useBreedingActions(
   }
 
   async function executeHatch(egg: PokemonEgg) {
-    const { recalcPokemonStats } = await import('@/logic/pokemonFactory')
+    const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
     
     const speciesId = egg.pokemonId || egg.id
     const p = makePokemon(speciesId, 1, {

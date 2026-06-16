@@ -4,8 +4,8 @@ import { useUIStore } from './ui.ts';
 import { useEventStore } from './events.ts';
 import { useInventoryStore } from './inventory.ts';
 import { FIRE_RED_MAPS } from '@/data/maps';
-import { generateEncounter } from '@/logic/encounters';
-import { syncServerTime, getServerTime } from '@/logic/timeUtils';
+import { generateEncounter } from '@/logic/encounters/encounters';
+import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemByName } from '@/data/items.ts';
 import { logger } from '@/logic/utils/logger';
@@ -71,8 +71,7 @@ export async function executeNavigation(
   callbacks.setCurrentEpochHour(nextHour);
   callbacks.setCurrentMap(locId);
 
-  // 2. Hatch progress
-  gs.hatchEggs();
+  // 2. Hatch progress — steps only reduce via explicit activities (battle, capture, gym, minigame)
 
   // 3. Generate Encounter
   const encounter = battleStore.debugLoopPokemon 
@@ -181,8 +180,8 @@ export async function executeNavigation(
       });
     }
   } else if (wildEnc.type === 'rival') {
-    const { getEvolvedForm } = await import('@/logic/evolutionLogic');
-    const { makePokemon } = await import('@/logic/pokemonFactory');
+    const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic');
+    const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
 
     const trainerNameVal = 'Rival Azul';
     const trainerSpriteVal = 'blue';

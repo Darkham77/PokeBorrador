@@ -5,7 +5,7 @@ import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachi
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 
-vi.mock('@/logic/encounters', () => ({
+vi.mock('@/logic/encounters/encounters', () => ({
   generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey', hp: 50, maxHp: 50 } }))
 }))
 

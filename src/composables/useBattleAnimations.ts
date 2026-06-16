@@ -1,6 +1,6 @@
 import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
 import { gsap } from 'gsap'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import { logger } from '@/logic/utils/logger'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'

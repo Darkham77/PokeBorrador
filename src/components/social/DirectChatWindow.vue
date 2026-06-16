@@ -3,10 +3,10 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { gsap } from 'gsap';
-import { formatTime } from '@/logic/timeUtils';
+import { formatTime } from '@/logic/utils/timeUtils';
 
 
 interface Props {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue'
 import { gsap } from 'gsap'
-import { getPokemonTier } from '@/logic/pokemonUtils'
+import { getPokemonTier } from '@/logic/pokemon/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'

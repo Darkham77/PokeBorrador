@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { useBattleStore } from '@/stores/battle'
 

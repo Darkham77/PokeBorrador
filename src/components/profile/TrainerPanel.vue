@@ -6,7 +6,7 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { useAuthStore } from '@/stores/auth'
 import { useTradeStore } from '@/stores/trade'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const gameStore = useGameStore()

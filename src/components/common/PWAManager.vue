@@ -39,7 +39,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useLoadingStore } from '@/stores/loading'
 import { logger } from '@/logic/utils/logger'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore()

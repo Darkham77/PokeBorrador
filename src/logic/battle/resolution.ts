@@ -1,6 +1,6 @@
 // fallow-ignore-file circular-dependencies
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
@@ -233,7 +233,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
           if (pool.length > 0) {
             const stolen = pool[Math.floor(Math.random() * pool.length)];
             if (stolen) {
-              const { makePokemon } = await import('@/logic/pokemonFactory');
+              const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
               const clone = makePokemon(stolen.id || stolen.name, stolen.level || 5);
               if (clone) {
                 clone.caught = true;

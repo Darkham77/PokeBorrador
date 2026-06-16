@@ -1,9 +1,9 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { runPlayerAction } from '@/logic/battle/battleTurn'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 
-vi.mock('@/logic/gameBus', () => ({
+vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
     emit: vi.fn()
   }
@@ -18,7 +18,7 @@ vi.mock('@/logic/battle/battleFlow', () => ({
   canAttack: vi.fn(() => true)
 }))
 
-vi.mock('@/logic/pokemonFactory', () => ({
+vi.mock('@/logic/pokemon/pokemonFactory', () => ({
   recalcPokemonStats: vi.fn()
 }))
 

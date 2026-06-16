@@ -2,14 +2,14 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES } from '@/data/natures';
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/constants';
-import { getMovesAtLevel } from '@/logic/pokemonUtils';
+import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
-import { getExpNeededPure, calcStatsPure } from './pokemon/statsMath.ts';
-import { generateIvPure } from './pokemon/generationMath.ts';
-import { logger } from './utils/logger.ts';
+import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
+import { generateIvPure } from './generationMath.ts';
+import { logger } from '../utils/logger.ts';
 import { ABILITY_DATA } from '@/data/abilities';
 import { getItemById, getItemByName } from '@/data/items';
 

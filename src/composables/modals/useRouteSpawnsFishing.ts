@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getWeatherMultiplier } from '@/logic/weatherUtils'
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'

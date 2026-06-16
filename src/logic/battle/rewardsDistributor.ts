@@ -118,7 +118,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
               const team = ctx.gs.state.team || []
               if (team.length > 0) {
                 const expPerPoke = Math.floor(expReward / team.length)
-                import('@/logic/pokemonFactory').then(({ getExpNeeded, levelUpPokemon }) => {
+                import('@/logic/pokemon/pokemonFactory').then(({ getExpNeeded, levelUpPokemon }) => {
                   for (const p of team) {
                     if (p.level >= 100) continue
                     p.exp += expPerPoke
@@ -198,7 +198,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         const lvlData = levelUpMap.get(p.uid)!
         lvlData.levelsGained += reward.levelsGained
         
-        const { levelUpPokemon } = await import('@/logic/pokemonFactory')
+        const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory')
         for (let i = 0; i < reward.levelsGained; i++) {
           const pendingMoves = levelUpPokemon(p)
           if (pendingMoves) {
@@ -310,7 +310,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       if (p.heldItem === 'everstone') {
         ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p)
       } else {
-        const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
+        const { checkLevelUpEvolution } = await import('../evolution/evolutionLogic.ts')
         const targetId = checkLevelUpEvolution(p)
         if (targetId) {
           const uiStore = useUIStore()
@@ -378,7 +378,7 @@ export async function awardDebugExp(ctx: BattleContext) {
       await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
       
       const allPendingMoves: PokemonMove[] = []
-      const { levelUpPokemon } = await import('@/logic/pokemonFactory')
+      const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory')
       for (let i = 0; i < reward.levelsGained; i++) {
         const pendingMoves = levelUpPokemon(teamPoke)
         if (pendingMoves) {
@@ -417,7 +417,7 @@ export async function awardDebugExp(ctx: BattleContext) {
       if (teamPoke.heldItem === 'everstone') {
         ctx.addLog(`${teamPoke.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', teamPoke)
       } else {
-        const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
+        const { checkLevelUpEvolution } = await import('../evolution/evolutionLogic.ts')
         const targetId = checkLevelUpEvolution(teamPoke)
         if (targetId) {
           const uiStore = useUIStore()

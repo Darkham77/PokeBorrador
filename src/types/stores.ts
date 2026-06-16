@@ -6,7 +6,7 @@ import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateM
 import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import { AuthUser } from './auth.ts';
 import { DBRouter } from '@/logic/db/dbRouter';
-import { DayPhase, Season } from '@/logic/timeUtils';
+import { DayPhase, Season } from '@/logic/utils/timeUtils';
 
 export interface WorldMap {
   id: string;

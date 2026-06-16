@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
-import { getDayCycle } from '@/logic/timeUtils'
+import { getDayCycle } from '@/logic/utils/timeUtils'
 import { MOVE_DATA } from '@/data/moves'
 import { useBattleStore } from '@/stores/battle'
 import type { Pokemon, Move } from '@/types/pokemon'

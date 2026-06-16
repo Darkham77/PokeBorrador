@@ -1,4 +1,4 @@
-import { makePokemon, sanitizePokemon } from '@/logic/pokemonFactory'
+import { makePokemon, sanitizePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'

@@ -7,9 +7,9 @@ import { useDocumentListener } from '@/composables/useWindowListener';
 import { useChatStore } from '@/stores/chat';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
-import { formatTime } from '@/logic/timeUtils';
+import { formatTime } from '@/logic/utils/timeUtils';
 
 
 const chatStore = useChatStore();

@@ -14,7 +14,7 @@ import { useStatHover } from '@/composables/useStatHover'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'

@@ -7,8 +7,8 @@ import { calculateDamage, getEffectiveSpeed } from '@/logic/battle/battleEngine'
 import type { Pokemon } from '@/types/pokemon';
 
 // Mock day cycle for deterministic results in tests
-vi.mock('@/logic/timeUtils', async () => {
-  const actual = await vi.importActual('@/logic/timeUtils') as object;
+vi.mock('@/logic/utils/timeUtils', async () => {
+  const actual = await vi.importActual('@/logic/utils/timeUtils') as object;
   return {
     ...actual,
     getDayCycle: vi.fn(() => 'day'),

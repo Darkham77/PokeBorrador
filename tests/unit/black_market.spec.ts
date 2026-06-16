@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBoxStore } from '@/stores/box'
 import { useGameStore } from '@/stores/game'
-import { calculateRocketSellPrice } from '@/logic/pokemonUtils'
+import { calculateRocketSellPrice } from '@/logic/pokemon/pokemonUtils'
 import type { Pokemon } from '@/types/pokemon'
 
 describe('Black Market (Team Rocket) Sales Logic', () => {

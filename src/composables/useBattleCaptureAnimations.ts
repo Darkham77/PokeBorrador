@@ -1,5 +1,5 @@
 import { ref, computed, toValue, type MaybeRefOrGetter } from 'vue'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'

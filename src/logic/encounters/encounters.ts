@@ -1,8 +1,8 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { GAME_RATIOS } from '@/data/constants';
-import { makePokemon } from '@/logic/pokemonFactory';
-import { getDayCycle } from '@/logic/timeUtils';
-import { getWeatherMultiplier } from '@/logic/weatherUtils';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { getDayCycle } from '@/logic/utils/timeUtils';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon';

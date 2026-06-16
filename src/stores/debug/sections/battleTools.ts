@@ -1,9 +1,9 @@
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
-import { levelUpPokemon } from '@/logic/pokemonFactory'
+import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 

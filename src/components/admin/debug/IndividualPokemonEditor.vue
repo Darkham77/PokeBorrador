@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory'
-import { generateRandomIVs } from '@/logic/pokemonUtils'
+import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory'
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'

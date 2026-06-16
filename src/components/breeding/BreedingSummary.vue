@@ -6,7 +6,7 @@ import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/bre
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 import gsap from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { getServerTime } from '@/logic/timeUtils'
+import { getServerTime } from '@/logic/utils/timeUtils'
 
 const breedingStore = useBreedingStore()
 const classStore = usePlayerClassStore()

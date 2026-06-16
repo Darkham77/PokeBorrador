@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
-import type { MarketFilters } from '@/logic/market'
+import type { MarketFilters } from '@/logic/economy/market'
 
 interface Props {
   context: string // 'explore' or 'my-inventory'

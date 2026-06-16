@@ -1,6 +1,6 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
-import { recalcPokemonStats } from '@/logic/pokemonFactory';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, PokemonMove } from '@/types/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/database';
 

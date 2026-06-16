@@ -7,7 +7,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import HPBar from './HPBar.vue'
 import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
-import { supabase } from '@/logic/supabase'
+import { supabase } from '@/logic/db/supabase'
 import { getStatBreakdown } from '@/logic/battle/battleEngine'
 import { useCombatantStatus } from '@/composables/useCombatantStatus'
 

@@ -8,8 +8,8 @@ export async function buildTrainerTeam(
   trainerLv: number,
   teamSize: number
 ): Promise<Pokemon[]> {
-  const { getEvolvedForm } = await import('@/logic/evolutionLogic');
-  const { makePokemon } = await import('@/logic/pokemonFactory');
+  const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic');
+  const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
 
   const enemyTeam: Pokemon[] = [];
   for (let i = 0; i < teamSize; i++) {

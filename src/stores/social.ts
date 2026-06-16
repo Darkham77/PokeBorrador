@@ -10,7 +10,7 @@ import { useChatStore } from './chat.ts'
 import { useLeaderboardStore } from './leaderboard.ts'
 import { usePlayerSearchStore } from './playerSearch.ts'
 import { logger } from '@/logic/utils/logger'
-import { parseInstantSafe } from '@/logic/timeUtils'
+import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { GameState } from '@/types/game'
 
 

@@ -81,7 +81,7 @@ const prepareResult = async () => {
   }
   
   if (props.egg) {
-    const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemonFactory')
+    const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
     const p = makePokemon(String(props.egg.pokemonId || props.egg.id || ''), 1, {
       isShiny: !!props.egg.isShiny,
       isGuardian: !!props.egg.isGuardian,

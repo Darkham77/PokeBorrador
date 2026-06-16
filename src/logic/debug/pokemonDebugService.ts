@@ -1,6 +1,6 @@
 
 
-import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory';
+import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory';
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle';
 import { useUIStore } from '@/stores/ui';
@@ -206,7 +206,7 @@ export const pokemonDebugService = {
         break;
 
       case 'fishing_minigame': {
-        const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounterUI')
+        const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
         showFishingIntro(p, 50, () => {
           startFishingMinigame(
@@ -231,7 +231,7 @@ export const pokemonDebugService = {
       }
 
       case 'archaeology_minigame': {
-        const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounterUI')
+        const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
         showArchaeologyIntro(p, 50, () => {
           startArchaeologyMinigame(

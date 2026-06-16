@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useCosmeticsStore } from '@/stores/cosmetics'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 
 interface AvatarStyle {
   id: string

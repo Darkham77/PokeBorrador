@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemonFactory';
+import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon';
 
 // Mock dependencies

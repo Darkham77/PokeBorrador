@@ -94,7 +94,7 @@ export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, bree
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
       
       if (id === 'wild') {
-        const { generateEncounter } = await import('@/logic/encounters')
+        const { generateEncounter } = await import('@/logic/encounters/encounters')
         const encounter = await generateEncounter(mapStore.currentMap || 'plains', game.state)
         if (encounter && (encounter as { pokemon: Pokemon }).pokemon) {
           await pokemonDebugService.triggerEncounter((encounter as { pokemon: Pokemon }).pokemon)

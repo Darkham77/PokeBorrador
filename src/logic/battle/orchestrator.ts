@@ -70,7 +70,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
   logger.info('Orchestrator', `wasSearching evaluated: ${wasSearching} (wasSearchingOpt: ${wasSearchingOpt})`)
   
-  const { sanitizePokemon } = await import('@/logic/pokemonFactory')
+  const { sanitizePokemon } = await import('@/logic/pokemon/pokemonFactory')
   const { useMapStore } = await import('@/stores/map')
   const mapStore = useMapStore() as unknown as MapStore
   const finalEnemyPoke = enemyPoke

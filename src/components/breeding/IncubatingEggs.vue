@@ -10,6 +10,8 @@ const gameStore = useGameStore()
 const modalStore = useModalStore()
 
 const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs || [])
+const regularEggs = computed(() => eggs.value.filter(e => !e.isNpc))
+const npcEggs = computed(() => eggs.value.filter(e => e.isNpc))
 
 const getEggName = (egg: PokemonEgg) => {
   if (egg.scanned || egg.predictedInfo) {
@@ -20,12 +22,16 @@ const getEggName = (egg: PokemonEgg) => {
 }
 
 const getProgress = (egg: PokemonEgg) => {
-  const totalSteps = 2500
-  const walked = Math.max(0, totalSteps - egg.steps)
+  if (!egg.totalSteps) {
+    // Legacy egg: no original total saved, show as indeterminate
+    return { walked: 0, total: egg.steps, percentage: 0, isLegacy: true }
+  }
+  const walked = Math.max(0, egg.totalSteps - egg.steps)
   return {
     walked,
-    total: totalSteps,
-    percentage: Math.min(100, Math.max(0, (walked / totalSteps) * 100))
+    total: egg.totalSteps,
+    percentage: Math.min(100, Math.max(0, (walked / egg.totalSteps) * 100)),
+    isLegacy: false
   }
 }
 
@@ -44,9 +50,12 @@ const hatchEgg = (egg: PokemonEgg) => {
       <div class="actions">
         <div
           class="count-badge"
-          :class="{ empty: eggs.length === 0 }"
+          :class="{ empty: regularEggs.length === 0 }"
         >
-          {{ eggs.length }} / 6
+          {{ regularEggs.length }} / 6
+          <template v-if="npcEggs.length > 0">
+            <span class="npc-badge">+{{ npcEggs.length }} NPC</span>
+          </template>
         </div>
       </div>
     </header>
@@ -102,8 +111,15 @@ const hatchEgg = (egg: PokemonEgg) => {
                 />
               </div>
               <div class="progress-text">
-                <span class="steps-val">{{ Math.floor(getProgress(egg).walked).toLocaleString() }} / {{ getProgress(egg).total.toLocaleString() }} pasos</span>
-                <span class="pct-val">{{ Math.round(getProgress(egg).percentage) }}%</span>
+                <span class="steps-val">
+                  <template v-if="getProgress(egg).isLegacy">
+                    {{ Math.ceil(egg.steps).toLocaleString() }} pasos restantes
+                  </template>
+                  <template v-else>
+                    {{ Math.floor(getProgress(egg).walked).toLocaleString() }} / {{ getProgress(egg).total.toLocaleString() }} pasos
+                  </template>
+                </span>
+                <span class="pct-val">{{ getProgress(egg).isLegacy ? '?' : Math.round(getProgress(egg).percentage) + '%' }}</span>
               </div>
             </div>
           </div>
@@ -180,6 +196,20 @@ const hatchEgg = (egg: PokemonEgg) => {
   border-radius: 99px;
   font-size: 12px;
   font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .npc-badge {
+    font-size: 9px;
+    font-weight: 700;
+    background: Rgba(56, 189, 248, 0.15);
+    border: 1px solid Rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 99px;
+    @include pixelated;
+  }
 
   &.empty {
     background: Rgba(148, 163, 184, 0.1);

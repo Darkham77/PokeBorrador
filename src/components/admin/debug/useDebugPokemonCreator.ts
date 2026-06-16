@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { generateRandomIVs } from '@/logic/pokemonUtils'
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import type { MapLocation } from '@/types/encounters'

@@ -1,4 +1,4 @@
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battleContext'
 
 export async function executeFlee(ctx: BattleContext) {

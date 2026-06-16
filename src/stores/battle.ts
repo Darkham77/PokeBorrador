@@ -1,7 +1,7 @@
 // fallow-ignore-file circular-dependencies
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
-import { sleep } from '@/logic/timeUtils'
+import { sleep } from '@/logic/utils/timeUtils'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage.ts'
@@ -328,7 +328,7 @@ export const useBattleStore = defineStore('battle', () => {
           const isBug = t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
           
           if (isBug && Math.random() < 0.20) {
-            const { makePokemon } = await import('@/logic/pokemonFactory');
+            const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
             const clone = makePokemon(cap.id || cap.name, cap.level || 5);
             if (clone) {
               clone.caught = true;

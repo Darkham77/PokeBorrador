@@ -5,7 +5,7 @@ import { defineComponent, ref } from 'vue'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 
 // Mock gameBus
-vi.mock('@/logic/gameBus', () => ({
+vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
     on: vi.fn(),
     off: vi.fn(),

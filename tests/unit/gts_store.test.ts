@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useGTSStore } from '../../src/stores/gts.ts';
 import { useGameStore } from '../../src/stores/game.ts';
 import { useUIStore } from '../../src/stores/ui.ts';
-import type { MarketListing } from '../../src/logic/market.ts';
+import type { MarketListing } from '../../src/logic/economy/market.ts';
 
 describe('GTS Store', () => {
   beforeEach(() => {

@@ -17,7 +17,7 @@ const handleApplyNature = (nature: string) => {
   naturePokemon.value.nature = nature
   
   // Recalc stats
-  import('@/logic/pokemonFactory').then(({ recalcPokemonStats }) => {
+  import('@/logic/pokemon/pokemonFactory').then(({ recalcPokemonStats }) => {
     if (naturePokemon.value) {
       recalcPokemonStats(naturePokemon.value)
       uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${nature}!`, '✨')

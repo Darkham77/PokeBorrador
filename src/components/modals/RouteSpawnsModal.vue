@@ -88,6 +88,7 @@ let timerTween: gsap.core.Tween | null = null
 const tickTime = () => {
   const classData = gameStore.state.classData || {}
   const now = Temporal.Now.instant().epochMilliseconds
+  let expired = false
 
   if (playerClass.value === 'rocket' && classData.extortedRouteId === props.map.id) {
     const timestamp = Number(classData.extortedRouteTimestamp || 0)
@@ -99,6 +100,7 @@ const tickTime = () => {
       timeRemainingText.value = `${hours}h ${mins}m ${secs}s`
     } else {
       timeRemainingText.value = ''
+      expired = true
     }
   } else if (playerClass.value === 'entrenador' && classData.officialRouteId === props.map.id) {
     const timestamp = Number(classData.officialRouteTimestamp || 0)
@@ -109,15 +111,21 @@ const tickTime = () => {
       timeRemainingText.value = `${mins}m ${secs}s`
     } else {
       timeRemainingText.value = ''
+      expired = true
     }
   } else {
     timeRemainingText.value = ''
+  }
+
+  if (expired) {
+    gameStore.checkRouteExpirations()
   }
 
   timerTween = gsap.delayedCall(1, tickTime)
 }
 
 onMounted(() => {
+  gameStore.checkRouteExpirations()
   tickTime()
 })
 

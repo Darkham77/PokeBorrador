@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/trainer'
 import type { Pokemon } from '@/types/pokemon'
 
-vi.mock('@/logic/pokemonFactory', () => ({
+vi.mock('@/logic/pokemon/pokemonFactory', () => ({
   makePokemon: vi.fn(),
   levelUpPokemon: vi.fn((p) => {
     p.level++

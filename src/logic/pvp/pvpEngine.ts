@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/timeUtils'
+import { sleep } from '@/logic/utils/timeUtils'
 
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'

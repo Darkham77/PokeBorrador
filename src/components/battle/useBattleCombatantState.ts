@@ -11,7 +11,7 @@ import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useCombatShadowStore } from '@/stores/combatShadows';
 import { useBattleStore } from '@/stores/battle';
-import { gameBus } from '@/logic/gameBus';
+import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { Pokemon } from '@/types/pokemon';
 import type { BattleStages } from '@/types/battle';

@@ -26,10 +26,18 @@ const modalStore = useModalStore()
 const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs ?? [])
 
 // ─── Progress Calculation ─────────────────────────────────────────────────────
-const TOTAL_STEPS = 2500
-
 function getProgress(egg: PokemonEgg): number {
-  return Math.min(100, Math.max(0, ((TOTAL_STEPS - egg.steps) / TOTAL_STEPS) * 100))
+  if (!egg.totalSteps) return 0  // legacy egg: can't compute % without original total
+  return Math.min(100, Math.max(0, ((egg.totalSteps - egg.steps) / egg.totalSteps) * 100))
+}
+
+function getStepsLabel(egg: PokemonEgg): string {
+  if (egg.totalSteps) {
+    const walked = Math.max(0, egg.totalSteps - egg.steps)
+    return `${Math.floor(walked).toLocaleString()} / ${egg.totalSteps.toLocaleString()} pasos`
+  }
+  // Legacy egg: show remaining steps countdown
+  return `${Math.ceil(egg.steps).toLocaleString()} pasos restantes`
 }
 
 function isReady(egg: PokemonEgg): boolean {
@@ -183,9 +191,9 @@ function hatchEgg(egg: PokemonEgg): void {
             />
           </div>
 
-          <!-- Steps remaining -->
+          <!-- Steps label -->
           <div class="steps-remaining">
-            {{ isReady(egg) ? 'Toca para eclosionar' : `${Math.ceil(egg.steps).toLocaleString()} pasos` }}
+            {{ isReady(egg) ? 'Toca para eclosionar' : getStepsLabel(egg) }}
           </div>
         </div>
       </div>

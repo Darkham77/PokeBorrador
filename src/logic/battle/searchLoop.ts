@@ -1,5 +1,5 @@
 import { TRAINER_TYPES } from '@/data/trainerTypes'
-import { generateEncounter } from '@/logic/encounters'
+import { generateEncounter } from '@/logic/encounters/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { getRandomQuoteForTrainer } from '@/data/trainerPhrases.ts'
@@ -81,7 +81,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     
     // Cazabichos: Aroma Atractivo (0.5% chance for Scyther/Pinsir spawn)
     if (ctx.gs.state.playerClass === 'cazabichos' && Math.random() < 0.005) {
-      const { makePokemon } = await import('@/logic/pokemonFactory')
+      const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
       const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
       const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
       const currentMapData = mapsList.find(m => m.id === (locId || ''))
@@ -170,8 +170,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.isRival = false
         }
       } else if (encounter.type === 'rival') {
-        const { getEvolvedForm } = await import('@/logic/evolutionLogic')
-        const { makePokemon } = await import('@/logic/pokemonFactory')
+        const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic')
+        const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
 
         const trainerNameVal = 'Rival Azul'
         const trainerSpriteVal = 'blue'

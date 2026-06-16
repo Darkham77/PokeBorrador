@@ -8,12 +8,15 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import EggSprite from '@/components/common/EggSprite.vue';
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
 
 const breedingStore = useBreedingStore();
 const uiStore = useUIStore();
 const gameStore = useGameStore();
+
+const isCriador = computed(() => gameStore.state.playerClass === 'criador');
+const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= 20);
 
 const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo';
 
@@ -28,7 +31,7 @@ const cooldownText = ref('');
 let cooldownTicker: gsap.core.Tween | null = null;
 
 const checkCooldown = () => {
-  if (gameStore.state.playerClass !== 'criador') {
+  if (!isCriador.value || !isLevelAdequate.value) {
     cooldownText.value = '';
     return;
   }
@@ -60,22 +63,37 @@ const checkCooldown = () => {
   cooldownTicker = gsap.delayedCall(1, checkCooldown);
 };
 
-onMounted(() => {
-  checkCooldown();
-});
+watch(
+  [() => gameStore.state.playerClass, () => gameStore.state.classLevel, () => gameStore.state.classData?.lastEggScanDate],
+  () => {
+    if (cooldownTicker) {
+      cooldownTicker.kill();
+      cooldownTicker = null;
+    }
+    checkCooldown();
+  },
+  { immediate: true }
+);
 
 onUnmounted(() => {
   if (cooldownTicker) cooldownTicker.kill();
 });
 
 const handleClaim = (egg: DaycareEgg) => {
+  // Early slot guard — show toast immediately without opening any dialog
+  const regularEggs = (gameStore.state.eggs || []).filter(e => !e.isNpc);
+  if (regularEggs.length >= 6) {
+    uiStore.notify('Tu incubadora está llena. Puedes llevar un máximo de 6 huevos.', '🥚');
+    return;
+  }
+
   const cost = egg.inherited_ivs?._cost as number || 0;
   const isScanned = !!egg.inherited_ivs?._scanned;
   const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
   
   const lastScan = gameStore.state.classData?.lastEggScanDate;
   const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
-  const canScan = gameStore.state.playerClass === 'criador' && (!lastScan || !lastScan.startsWith(todayStr));
+  const canScan = isCriador.value && isLevelAdequate.value && (!lastScan || !lastScan.startsWith(todayStr));
 
   if (canScan && !isScanned) {
     uiStore.openConfirm({
@@ -328,8 +346,16 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
           </div>
         </div>
 
-        <div class="egg-hover-action">
-          RECOGER
+        <div 
+          class="egg-hover-action"
+          :class="{ 'two-lines': isCriador && isLevelAdequate && !egg.inherited_ivs?._scanned }"
+        >
+          <template v-if="isCriador && isLevelAdequate && !egg.inherited_ivs?._scanned">
+            ESCANEAR<br>O<br>RECOGER
+          </template>
+          <template v-else>
+            RECOGER
+          </template>
         </div>
       </div>
     </div>
@@ -545,6 +571,13 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
   z-index: 5;
   white-space: nowrap;
   border: 1px solid Rgba(255, 255, 255, 0.1);
+
+  &.two-lines {
+    white-space: normal;
+    width: 80%;
+    line-height: 1.4;
+    padding: 6px 8px;
+  }
 }
 
 .egg-trash-btn {

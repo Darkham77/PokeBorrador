@@ -12,7 +12,7 @@ import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { validateUserProfile } from '@/logic/validation/schemas';
-import { sanitizePokemon } from '@/logic/pokemonFactory';
+import { sanitizePokemon } from '@/logic/pokemon/pokemonFactory';
 
 export interface SaveResult {
   success?: boolean;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { evolvePokemonData } from '@/logic/evolutionLogic';
+import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon, PokemonMove } from '@/types/pokemon';

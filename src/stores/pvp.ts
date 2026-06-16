@@ -10,7 +10,7 @@ import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon'
-import { GAME_TIMEZONE, parseZonedTime } from '@/logic/timeUtils'
+import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 
 
 export const RANKED_REWARD_TIER_MARKS = [

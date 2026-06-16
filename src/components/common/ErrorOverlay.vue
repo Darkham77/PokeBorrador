@@ -92,13 +92,17 @@ const transitionHooks = useGsapTransition({
             </div>
 
             <div class="error-user-action-container">
-              <div class="error-sub-title">
+              <label
+                for="error-overlay-user-action"
+                class="error-sub-title error-label-block"
+              >
                 ¿QUÉ ESTABAS HACIENDO?
-              </div>
-              <textarea
-                v-model="errorStore.activeError.userAction"
-                placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
-              />
+                <textarea
+                  id="error-overlay-user-action"
+                  v-model="errorStore.activeError.userAction"
+                  placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
+                />
+              </label>
               <div class="sub-text">
                 Esta información nos ayuda a reproducir and arreglar el error más rápido.
               </div>
@@ -254,6 +258,11 @@ const transitionHooks = useGsapTransition({
 .error-user-action-container {
   margin-top: 15px;
   margin-bottom: 15px;
+
+  .error-label-block {
+    display: block;
+    cursor: default;
+  }
 
   textarea {
     width: 100%;

@@ -1,7 +1,7 @@
 import { ref, computed, type Ref } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
+import { POKEMON_SPRITE_IDS } from '@/logic/constants/pokedexConstants'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { GameState, PokedexItem } from '@/types/game'
 

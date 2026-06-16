@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
-import { supabase } from './supabase.ts';
-import { safeStorage } from './utils/storage.ts';
-import { logger } from './utils/logger.ts';
+import { supabase } from '../db/supabase.ts';
+import { safeStorage } from './storage.ts';
+import { logger } from './logger.ts';
 
 export const GAME_TIMEZONE = 
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||

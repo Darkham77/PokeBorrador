@@ -5,7 +5,7 @@ import { useSocialStore } from '@/stores/social';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import TradeAssetsGrid from './TradeAssetsGrid.vue';
 import type { TradeOffer } from '@/types/stores';
 

@@ -284,12 +284,19 @@ export const useBreedingStore = defineStore('breeding', () => {
     const egg = warehouseEggs.value[eggIndex];
     if (!egg) return;
 
+    if (!gameStore.state.eggs) gameStore.state.eggs = [];
+
+    // Slot limit: max 6 regular eggs. Slot 7 is reserved for NPC quest eggs only.
+    const regularEggs = gameStore.state.eggs.filter(e => !e.isNpc);
+    if (regularEggs.length >= 6) {
+      uiStore.notify('Tu incubadora está llena. Puedes llevar un máximo de 6 huevos.', '🥚');
+      return;
+    }
+
     if (gameStore.state.money < egg.cost) {
       uiStore.notify(`No tienes suficiente dinero ($${egg.cost.toLocaleString()}).`, '💰');
       return;
     }
-
-    if (!gameStore.state.eggs) gameStore.state.eggs = [];
     
     const eggToPush = eggFactory.createPokemonEgg({
       species: egg.species,
@@ -314,6 +321,10 @@ export const useBreedingStore = defineStore('breeding', () => {
   function scanEgg(eggId: string) {
     if (classStore.playerClass !== 'criador') {
       uiStore.notify('Solo los Criadores pueden escanear huevos.', '🔒');
+      return;
+    }
+    if ((gameStore.state.classLevel || 1) < 20) {
+      uiStore.notify('Necesitas nivel 20 de Criador para usar el escáner.', '🔒');
       return;
     }
     
@@ -367,8 +378,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     daycareMissionsStore.completeMission(missionIndex, pokemonUid);
   }
 
-  function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym') {
-    const REDUCTIONS = { battle: 2, capture: 3, gym: 10 };
+  function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym' | 'minigame') {
+    const REDUCTIONS = { battle: 2, capture: 3, gym: 10, minigame: 1 };
     const reduction = REDUCTIONS[activity] || 0;
     if (reduction === 0) return;
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import { formatPlayerClass, formatFaction } from '@/logic/utils/formatters'
 
 interface ProfileData {

@@ -18,7 +18,7 @@ import {
   markMarketSoldSeen,
   type MarketListing,
   type MarketFilters
-} from '../../src/logic/market.ts';
+} from '../../src/logic/economy/market.ts';
 
 import type { GameState } from '../../src/types/game.ts';
 

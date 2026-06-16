@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AuthUser } from '@/types/auth'
 import type { GameState, NotificationItem } from '@/types/game'
-import { GAME_TIMEZONE } from '@/logic/timeUtils'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 
 export interface ProfileData {

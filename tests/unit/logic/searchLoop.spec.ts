@@ -3,7 +3,7 @@ import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battleContext'
 
-vi.mock('@/logic/encounters', () => ({
+vi.mock('@/logic/encounters/encounters', () => ({
   generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey' } }))
 }))
 

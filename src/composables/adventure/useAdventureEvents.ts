@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import type { Pokemon } from '@/types/pokemon'
 import type { MapLocation } from '@/types/encounters'

@@ -4,7 +4,7 @@ import { useInventoryStore } from './inventory.ts';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
-import { generateRandomIVs } from '@/logic/pokemonUtils';
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding';
@@ -104,8 +104,7 @@ export function executeCloneFossil(
     isShiny,
     cost: 0, // Paid upfront
     tint: 'rgba(139, 90, 43, 0.7)',
-    isAncestral: true,
-    steps: 2500
+    isAncestral: true
   });
 
   warehouseEggs.value.push(egg);

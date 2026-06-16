@@ -3,7 +3,7 @@ import type { BattleContext } from '@/types/battleContext';
 import type { Pokemon } from '@/types/pokemon';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
-import { gameBus } from '@/logic/gameBus';
+import { gameBus } from '@/logic/events/gameBus';
 import { getItemById } from '@/data/items';
 
 /**

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { generateEncounter } from '@/logic/encounters'
+import { generateEncounter } from '@/logic/encounters/encounters'
 
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
@@ -10,7 +10,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   }
 }));
 
-vi.mock('@/logic/pokemonFactory', () => ({
+vi.mock('@/logic/pokemon/pokemonFactory', () => ({
   makePokemon: vi.fn((id, lv) => ({ id, lv, name: id }))
 }));
 
@@ -34,7 +34,7 @@ vi.mock('@/stores/events', () => ({
   }))
 }));
 
-vi.mock('@/logic/timeUtils', () => ({
+vi.mock('@/logic/utils/timeUtils', () => ({
   getDayCycle: vi.fn(() => 'day')
 }));
 

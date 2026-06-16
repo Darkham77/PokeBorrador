@@ -9,7 +9,7 @@ import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
-import { calculateTotalPower } from '@/logic/pokemonUtils'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 
 import type { Pokemon } from '@/types/pokemon'
 

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 
 export const useErrorStore = defineStore('error', () => {
   interface ErrorData {

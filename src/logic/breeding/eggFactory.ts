@@ -78,6 +78,7 @@ export const eggFactory = {
       uid: eggUid,
       id: params.species,
       steps: steps,
+      totalSteps: steps,
       ready: steps <= 0,
       ivs: params.ivs,
       nature: params.nature,

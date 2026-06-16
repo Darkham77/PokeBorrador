@@ -9,7 +9,7 @@ import { usePWA } from '@/composables/usePWA'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/official_servers'
-import { switchServer } from '@/logic/supabase'
+import { switchServer } from '@/logic/db/supabase'
 import { safeStorage } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
 

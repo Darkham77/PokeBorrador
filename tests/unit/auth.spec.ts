@@ -5,11 +5,11 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
-import { supabase } from '@/logic/supabase'
+import { supabase } from '@/logic/db/supabase'
 import type { User } from '@supabase/supabase-js'
 
 // Mock de Supabase
-vi.mock('@/logic/supabase', () => ({
+vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     auth: {
       signInWithPassword: vi.fn(),

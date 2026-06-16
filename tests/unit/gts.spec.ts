@@ -6,7 +6,7 @@ import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
-import type { MarketListing } from '@/logic/market'
+import type { MarketListing } from '@/logic/economy/market'
 import type { DBRouter } from '@/logic/db/dbRouter'
 
 describe('GTS Store', () => {

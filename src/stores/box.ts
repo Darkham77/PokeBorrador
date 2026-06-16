@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
-import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
+import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import { useBoxFilters } from '@/composables/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon'
 

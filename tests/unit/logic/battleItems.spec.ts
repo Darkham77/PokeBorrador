@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleItemUsage } from '@/logic/battle/battleItems'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 
-vi.mock('@/logic/gameBus', () => ({
+vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
     emit: vi.fn()
   }

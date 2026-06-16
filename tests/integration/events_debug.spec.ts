@@ -15,7 +15,7 @@ const mockChain = {
   then: vi.fn().mockResolvedValue({ data: [], error: null })
 }
 
-vi.mock('@/logic/supabase', () => ({
+vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     auth: { getSession: vi.fn(() => Promise.resolve({ data: { session: null } })) },
     from: vi.fn(() => mockChain),

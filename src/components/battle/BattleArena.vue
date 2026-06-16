@@ -6,14 +6,14 @@ import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
-import { getRouteWeather } from '@/logic/weatherUtils'
+import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 
 const debugStore = useDebugStore()
 const isDebugActive = computed(() => {
   return debugStore.canAccess && typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
 })
-const BattleDebugTools = defineAsyncComponent(() => import('./battle/BattleDebugTools.vue')) as Component
+const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
 
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
@@ -26,9 +26,9 @@ const isSmallScreen = computed(() => {
 
 
 // Sub-components
-import BattleLog from './battle/BattleLog.vue'
-import BattleArenaView from './battle/BattleArenaView.vue'
-import BattleArenaControls from './battle/BattleArenaControls.vue'
+import BattleLog from './BattleLog.vue'
+import BattleArenaView from './BattleArenaView.vue'
+import BattleArenaControls from './BattleArenaControls.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 

@@ -2,7 +2,7 @@
 
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { formatTime } from '@/logic/timeUtils'
+import { formatTime } from '@/logic/utils/timeUtils'
 
 const uiStore = useUIStore()
 

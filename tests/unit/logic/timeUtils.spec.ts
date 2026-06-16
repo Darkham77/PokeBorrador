@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDisplayDate } from '@/logic/timeUtils';
+import { formatDisplayDate } from '@/logic/utils/timeUtils';
 
 describe('Time Utilities', () => {
   it('should format ISO dates to standard display format (GMT-3)', () => {

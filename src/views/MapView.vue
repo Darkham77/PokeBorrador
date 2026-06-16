@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue' // HMR Trigger
+import { computed, onMounted } from 'vue' // HMR Trigger
 import { useGameStore } from '@/stores/game'
 import { useMapStore, type PendingAward } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
@@ -23,6 +23,10 @@ const uiStore = useUIStore()
 const eventStore = useEventStore()
 const modalStore = useModalStore()
 const breedingStore = useBreedingStore()
+
+onMounted(() => {
+  gameStore.checkRouteExpirations()
+})
 
 const navigateToMap = async (loc: MapLocation | string | number) => {
   if (modalStore.isOpen('Confirm')) return

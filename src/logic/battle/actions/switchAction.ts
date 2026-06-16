@@ -1,5 +1,5 @@
-import { sleep } from '@/logic/timeUtils'
-import { gameBus } from '@/logic/gameBus'
+import { sleep } from '@/logic/utils/timeUtils'
+import { gameBus } from '@/logic/events/gameBus'
 import { clearVolatileStatus } from '../battleStatus.ts'
 import { handleEntryAbilities } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'

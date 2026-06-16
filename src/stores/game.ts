@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth.ts'
-import { supabase } from '@/logic/supabase'
+import { supabase } from '@/logic/db/supabase'
 import { INITIAL_STATE } from './gameInitialState.ts'
 import type { GameState } from '@/types/game'
 
@@ -73,7 +73,7 @@ export const useGameStore = defineStore('game', () => {
 
     if (res.success) {
       // Sync time ONLY after successful load/auth
-      const { syncServerTime } = await import('@/logic/timeUtils')
+      const { syncServerTime } = await import('@/logic/utils/timeUtils')
       await syncServerTime()
       
       isDataLoaded.value = true
@@ -81,6 +81,9 @@ export const useGameStore = defineStore('game', () => {
       
       // Sanitize all pokemon to update types/metadata from DB
       sanitizeAll()
+
+      // Clear expired routes
+      checkRouteExpirations()
 
 
       // Initialize Session Hub for multi-tab/device locking
@@ -109,6 +112,38 @@ export const useGameStore = defineStore('game', () => {
           logger.error('Social', `Error al cargar notificaciones iniciales: ${(err as Error).message}`)
         })
       }
+    }
+  }
+
+  function checkRouteExpirations(): void {
+    if (!state.classData) return
+    const now = Temporal.Now.instant().epochMilliseconds
+
+    let changed = false
+
+    // 1. Rocket extorted route expiration (24 hours)
+    if (state.classData.extortedRouteId && state.classData.extortedRouteTimestamp) {
+      const timestamp = Number(state.classData.extortedRouteTimestamp || 0)
+      if ((now - timestamp) > 24 * 3600 * 1000) {
+        logger.info('CLASS', `Extortion of route ${state.classData.extortedRouteId} expired. Clearing.`)
+        state.classData.extortedRouteId = null
+        state.classData.extortedRouteTimestamp = null
+        changed = true
+      }
+    }
+
+    // 2. Trainer official route active expiration (30 minutes)
+    if (state.classData.officialRouteId && state.classData.officialRouteTimestamp) {
+      const timestamp = Number(state.classData.officialRouteTimestamp || 0)
+      if ((now - timestamp) > 30 * 60 * 1000) {
+        logger.info('CLASS', `Patrol on official route ${state.classData.officialRouteId} finished. Clearing active status.`)
+        state.classData.officialRouteId = null
+        changed = true
+      }
+    }
+
+    if (changed) {
+      scheduleSave()
     }
   }
 
@@ -212,6 +247,7 @@ export const useGameStore = defineStore('game', () => {
     saveGame: save, // Alias
     isSandboxActive,
     enterSandboxMode,
-    exitSandboxMode
+    exitSandboxMode,
+    checkRouteExpirations
   }
 })

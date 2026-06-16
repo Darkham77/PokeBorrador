@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/official_servers';
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
-import { switchServer, supabase } from '@/logic/supabase';
+import { switchServer, supabase } from '@/logic/db/supabase';
 
 // Mock de localStorage para entorno Node/JSDOM
 const localStorageMock = (() => {

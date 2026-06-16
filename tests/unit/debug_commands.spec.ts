@@ -27,7 +27,7 @@ const callDebug = (cmd: string, ...args: unknown[]) => {
 import { mockLocalStorage } from '../helpers/debugSetup.ts'
 import { mockChain } from '../helpers/supabaseMock.ts'
 
-vi.mock('@/logic/supabase', async () => {
+vi.mock('@/logic/db/supabase', async () => {
   const { mockSupabase } = await import('../helpers/supabaseMock.ts')
   return {
     supabase: mockSupabase

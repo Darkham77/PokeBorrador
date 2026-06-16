@@ -1,7 +1,7 @@
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
-import { getDayCycle } from '@/logic/timeUtils';
+import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { WEATHER_REGISTRY } from './weather/weatherRegistry';
+import { WEATHER_REGISTRY } from './weatherRegistry';
 
 type WeatherProbabilityTable = Record<string, number>;
 type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
@@ -10,7 +10,7 @@ const WEATHER_BUFF_MULTIPLIER = 1.5;
 const WEATHER_DEBUFF_MULTIPLIER = 0.4;
 const WEATHER_BLOCK_MULTIPLIER = 0;
 
-import { mulberry32, hashString } from './utils/math.ts';
+import { mulberry32, hashString } from '../utils/math.ts';
 
 
 

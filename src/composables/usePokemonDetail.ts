@@ -4,13 +4,13 @@ import type { MaybeRefOrGetter } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
+import { POKEMON_SPRITE_IDS } from '@/logic/constants/pokedexConstants'
 import { MOVE_DATA } from '@/data/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon'
 import type { MoveBaseData } from '@/types/database'
-import { GAME_TIMEZONE } from '@/logic/timeUtils'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 interface EvolutionEntry {
   type: 'level' | 'stone' | 'trade';

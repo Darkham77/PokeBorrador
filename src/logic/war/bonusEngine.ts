@@ -1,6 +1,6 @@
 
 import { calculateMapBonuses } from './warEngine.ts'
-import { recalcPokemonStats } from '@/logic/pokemonFactory'
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon, PokemonIVs } from '@/types/pokemon'
 import type { DominanceInfo } from '@/types/stores'
 

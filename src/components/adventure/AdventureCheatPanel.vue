@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useShopStore } from '@/stores/shop'
 import { SHOP_ITEMS } from '@/data/items'
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
 const props = defineProps<{
   injectedItems: Set<string>

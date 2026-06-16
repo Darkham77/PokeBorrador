@@ -4,11 +4,11 @@ import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
 import { FIRE_RED_MAPS } from '@/data/maps'
-import { getDayCycle, getSeason, getServerTime } from '@/logic/timeUtils'
-import { getRouteWeather } from '@/logic/weatherUtils'
+import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
+import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { useGameStore } from './game.ts'
 import type { Event } from '@/logic/events/eventEngine'
-import type { DayPhase, Season } from '@/logic/timeUtils'
+import type { DayPhase, Season } from '@/logic/utils/timeUtils'
 
 export interface PendingAward {
   id: string;

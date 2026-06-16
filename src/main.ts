@@ -21,7 +21,7 @@ import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue'
 import { gsapNick } from '@/directives/gsapNick'
 import { gsapLoop } from '@/directives/gsapLoop'
 import { gsapHover } from '@/directives/gsapHover'
-import { initGlobalHoverSystem } from '@/logic/globalHover'
+import { initGlobalHoverSystem } from '@/logic/hover/globalHover'
 
 const app = createApp(App)
 const pinia = createPinia()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social.js'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 
 const socialStore = useSocialStore()
 

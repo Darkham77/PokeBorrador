@@ -15,14 +15,14 @@ import {
   type PureBattleWeather,
   type PureBattleStages
 } from './battleMath.ts';
-import { getDayCycle } from '../timeUtils.ts';
+import { getDayCycle } from '../utils/timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 import { useBattleStore } from '@/stores/battle';
 
-import type { DayPhase } from '@/logic/timeUtils';
+import type { DayPhase } from '@/logic/utils/timeUtils';
 
 export interface DamageOptions {
   atkStages?: number;

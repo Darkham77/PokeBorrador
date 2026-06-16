@@ -4,7 +4,7 @@ import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { gsap } from 'gsap'
-import { gameBus } from '@/logic/gameBus'
+import { gameBus } from '@/logic/events/gameBus'
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];

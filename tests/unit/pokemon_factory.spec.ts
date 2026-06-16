@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory';
+import { makePokemon, levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -49,7 +49,7 @@ vi.mock('@/stores/war', () => ({
   }))
 }));
 
-vi.mock('@/logic/pokemonUtils', () => ({
+vi.mock('@/logic/pokemon/pokemonUtils', () => ({
   getMovesAtLevel: vi.fn(() => [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }])
 }));
 

@@ -1,5 +1,5 @@
 
-import { checkStoneEvolution } from '../evolutionLogic.ts';
+import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
 import { TM_COMPAT, GAME_TMS } from '../../data/pokedex.ts';
 import { useBuffsStore } from '@/stores/buffs';
 import type { Pokemon } from '@/types/pokemon';

@@ -9,10 +9,10 @@ import { useBoxFilters } from '@/composables/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon'
 
 // Sub-componentes
-import BoxHeader from './box/BoxHeader.vue'
-import BoxTabs from './box/BoxTabs.vue'
-import BoxFilters from './box/BoxFilters.vue'
-import BoxGrid from './box/BoxGrid.vue'
+import BoxHeader from './BoxHeader.vue'
+import BoxTabs from './BoxTabs.vue'
+import BoxFilters from './BoxFilters.vue'
+import BoxGrid from './BoxGrid.vue'
 
 const gameStore = useGameStore()
 const boxStore = useBoxStore()

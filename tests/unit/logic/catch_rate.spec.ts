@@ -3,15 +3,15 @@ import { calculateCatchRate } from '@/logic/battle/battleEngine'
 import type { Pokemon } from '@/types/pokemon'
 
 // Mock getDayCycle to control time in tests
-vi.mock('@/logic/timeUtils', async () => {
-  const actual = await vi.importActual('@/logic/timeUtils')
+vi.mock('@/logic/utils/timeUtils', async () => {
+  const actual = await vi.importActual('@/logic/utils/timeUtils')
   return {
     ...actual,
     getDayCycle: vi.fn(() => 'day')
   }
 })
 
-import { getDayCycle } from '@/logic/timeUtils'
+import { getDayCycle } from '@/logic/utils/timeUtils'
 
 describe('Capture Formula (battleEngine.js)', () => {
   const mockPokemon = {

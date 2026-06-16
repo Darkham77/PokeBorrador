@@ -184,7 +184,9 @@ const eggsBreakdown = computed(() => {
       if (egg.ready || egg.steps <= 0) {
         lines.push(`• Huevo ${idx + 1}: ¡Listo para nacer!🐣`)
       } else {
-        lines.push(`• Huevo ${idx + 1}: ${Math.ceil(egg.steps).toLocaleString()} pasos`)
+        const total = egg.totalSteps ?? egg.steps
+        const walked = Math.max(0, total - egg.steps)
+        lines.push(`• Huevo ${idx + 1}: ${Math.floor(walked).toLocaleString()} / ${total.toLocaleString()} pasos`)
       }
     })
   } else {

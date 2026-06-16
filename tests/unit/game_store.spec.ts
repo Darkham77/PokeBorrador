@@ -22,7 +22,7 @@ const mockQuery = {
   })
 }
 
-vi.mock('@/logic/supabase', () => ({
+vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     from: vi.fn(() => mockQuery),
     updateConfig: vi.fn(),

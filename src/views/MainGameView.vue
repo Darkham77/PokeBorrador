@@ -14,11 +14,11 @@ import { useMainLayout } from '@/composables/useMainLayout'
 import { logger } from '@/logic/utils/logger'
 
 // Sub-components
-import TitleScreen from '@/components/TitleScreen.vue'
-import ActionButtons from '@/components/ActionButtons.vue'
-import TrainerPanel from '@/components/TrainerPanel.vue'
-import HUD_Navigation from '@/components/HUD_Navigation.vue'
-import InventoryPills from '@/components/InventoryPills.vue'
+import TitleScreen from '@/components/game/TitleScreen.vue'
+import ActionButtons from '@/components/ui/ActionButtons.vue'
+import TrainerPanel from '@/components/profile/TrainerPanel.vue'
+import HUD_Navigation from '@/components/ui/HUD_Navigation.vue'
+import InventoryPills from '@/components/inventory/InventoryPills.vue'
 import PvPArena from '@/components/battle/PvPArena.vue'
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
@@ -26,7 +26,7 @@ import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
 import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
 
 // Tab components
-import BoxView from '@/components/BoxView.vue'
+import BoxView from '@/components/box/BoxView.vue'
 
 // Lazy loaded views
 const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue'))

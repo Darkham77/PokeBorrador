@@ -4,7 +4,7 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
-import { normalizeZonedDateTime } from '../timeUtils.ts'
+import { normalizeZonedDateTime } from '../utils/timeUtils.ts'
 
 
 export const WAR_PTS_TABLE: Record<string, { win: number; lose: number }> = {

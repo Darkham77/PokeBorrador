@@ -156,6 +156,7 @@ export interface PokemonEgg {
   id: string;
   pokemonId?: string;
   steps: number;
+  totalSteps?: number;
   ready: boolean;
   isShiny?: boolean;
   isGuardian?: boolean;

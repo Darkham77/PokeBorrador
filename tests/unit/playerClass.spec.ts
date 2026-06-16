@@ -10,7 +10,7 @@ import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleContext } from '@/types/battleContext'
 
-vi.mock('@/logic/supabase', () => ({
+vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({ 

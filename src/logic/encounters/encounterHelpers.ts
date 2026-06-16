@@ -1,5 +1,5 @@
 import { GAME_RATIOS } from '@/data/constants';
-import { makePokemon } from '@/logic/pokemonFactory';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import type { Pokemon } from '@/types/pokemon';

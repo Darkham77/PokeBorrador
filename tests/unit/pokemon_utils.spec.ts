@@ -2,7 +2,7 @@
  * tests/unit/pokemon_utils.spec.ts
  */
 import { describe, it, expect, vi } from 'vitest'
-import { getTypeEffectivenessMsg, getMoveDescription, generateRandomIVs } from '@/logic/pokemonUtils'
+import { getTypeEffectivenessMsg, getMoveDescription, generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 
 import type { MoveBaseData } from '@/types/database'
 

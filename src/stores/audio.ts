@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { logger } from '@/logic/utils/logger';
-import { gameBus } from '@/logic/gameBus';
-import * as engine from '@/logic/audioEngine';
+import { gameBus } from '@/logic/events/gameBus';
+import * as engine from '@/logic/audio/audioEngine';
 
 /**
  * AudioStore

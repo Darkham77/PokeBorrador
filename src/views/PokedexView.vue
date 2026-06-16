@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/pokedexConstants'
+import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants'
 import { usePokedex } from '@/composables/usePokedex'
 
 // Components

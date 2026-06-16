@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import gsap from 'gsap'
 import { SHOP_ITEMS } from '@/data/items'
 
 interface ShopItem {
@@ -31,6 +32,16 @@ function addTenOfEach() {
     })
   }
 }
+
+function onBtnEnter(e: Event) {
+  gsap.to(e.currentTarget as HTMLElement, { y: -2, duration: 0.2, ease: 'power2.out' })
+}
+function onBtnLeave(e: Event) {
+  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: 0.15, ease: 'power2.in' })
+}
+function onBtnDown(e: Event) {
+  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: 0.1, ease: 'power2.in' })
+}
 </script>
 
 <template>
@@ -38,6 +49,11 @@ function addTenOfEach() {
     <button
       class="add-all-btn"
       @click.stop="addTenOfEach"
+      @mouseenter="onBtnEnter"
+      @mouseleave="onBtnLeave"
+      @mousedown="onBtnDown"
+      @focus="onBtnEnter"
+      @blur="onBtnLeave"
     >
       ⚡ Agregar 10 de cada uno
     </button>
@@ -101,17 +117,11 @@ function addTenOfEach() {
   font-weight: bold;
   cursor: pointer;
   @include pixelated;
-  transition: all 0.2s ease;
   box-shadow: 0 4px 12px Rgba(126, 34, 206, 0.3);
 
   &:hover {
-    transform: Translatey(-2px);
     box-shadow: 0 6px 16px Rgba(126, 34, 206, 0.5);
     background: linear-gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
-  }
-
-  &:active {
-    transform: Translatey(0);
   }
 }
 

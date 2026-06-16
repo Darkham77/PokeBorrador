@@ -13,7 +13,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { useModalStore } from '@/stores/modals'
-import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
+import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 

@@ -8,7 +8,7 @@ import { useEvolutionStore } from '@/stores/evolution'
 import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon'
 
-vi.mock('@/logic/supabase', () => ({
+vi.mock('@/logic/db/supabase', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({ eq: vi.fn(() => ({ single: vi.fn() })) }))
@@ -41,7 +41,7 @@ vi.mock('@/stores/auth', () => ({
 }))
 
 // Mock de la lógica base para no depender de la DB completa de pokémon
-vi.mock('@/logic/evolutionLogic', () => ({
+vi.mock('@/logic/evolution/evolutionLogic', () => ({
   evolvePokemonData: vi.fn((pokemon, targetId) => {
     const fromId = pokemon.id;
     pokemon.id = targetId;
