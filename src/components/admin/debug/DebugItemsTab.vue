@@ -22,10 +22,25 @@ async function addItem(item: ShopItem, qty = 10) {
   const win = window as unknown as { __VITE_DEBUG__: { addItem: (name: string, qty: number) => void } }
   win.__VITE_DEBUG__.addItem(item.name, qty)
 }
+
+function addTenOfEach() {
+  const win = window as unknown as { __VITE_DEBUG__: { addItem: (name: string, qty: number) => void } }
+  if (win.__VITE_DEBUG__ && typeof win.__VITE_DEBUG__.addItem === 'function') {
+    (SHOP_ITEMS as ShopItem[]).forEach(item => {
+      win.__VITE_DEBUG__.addItem(item.name, 10)
+    })
+  }
+}
 </script>
 
 <template>
   <div class="items-debug">
+    <button
+      class="add-all-btn"
+      @click.stop="addTenOfEach"
+    >
+      ⚡ Agregar 10 de cada uno
+    </button>
     <input
       v-model="searchQuery"
       type="text"
@@ -73,6 +88,31 @@ async function addItem(item: ShopItem, qty = 10) {
   font-size: 16px;
   
   &:focus { outline: none; border-color: var(--purple); }
+}
+
+.add-all-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  @include pixelated;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px Rgba(126, 34, 206, 0.3);
+
+  &:hover {
+    transform: Translatey(-2px);
+    box-shadow: 0 6px 16px Rgba(126, 34, 206, 0.5);
+    background: linear-gradient(135deg, #b55fe6 0%, #8b2ad6 100%);
+  }
+
+  &:active {
+    transform: Translatey(0);
+  }
 }
 
 .items-grid {

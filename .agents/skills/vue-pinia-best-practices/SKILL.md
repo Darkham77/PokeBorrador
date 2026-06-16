@@ -29,6 +29,7 @@ Pinia best practices, common gotchas, and state management patterns.
 - **State Synchronization (Cross-Store)**: When a local store property must reflect and persist in a global state (e.g., `gameStore.state`), use a `computed` property with a getter and setter. This ensures 1:1 synchronization and avoids "ghost" local state that desyncs from the source of truth after persistence cycles.
 - **Circular Dependency Resolution**: To break loops between stores (e.g., `ui` -> `game` -> `ui`), move shared state to an independent "leaf" store (e.g., `profileStore`) that doesn't import the other stores. If cross-imports are unavoidable, use `useOtherStore()` locally inside actions instead of at the top level.
 - **UI State Toggles (Auto-fill Protection)**: When implementing automated UI features (e.g., auto-filling PVP/War teams), ALWAYS provide reactive bypass flags (e.g., `pvpAutoFillDisabled`) in the `uiStore`. This allows administrative or debug operations to override automation without complex logic branches.
+- **Conditional Filter Isolation in Getters**: When a global store getter is consumed by multiple contexts or modal instances (such as a shared inventory list), do not unconditionally apply filters (like search queries) that are only meant for one specific context. Instead, conditionally bypass the filtering logic inside the getter (e.g., check `!isBattleActive`) and allow the component to perform its own local filtering to keep the contexts isolated.
 
 ## Timers & Side Effects
 
