@@ -34,6 +34,7 @@ export interface PureMove {
 export interface PureBattleWeather {
   type: string;
   turns: number;
+  visual?: string;
 }
 
 export interface PureBattleStages {

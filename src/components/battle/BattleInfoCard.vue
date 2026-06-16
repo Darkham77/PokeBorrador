@@ -360,7 +360,7 @@ const teamBallsStatus = computed(() => {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: calc(var(--z-base) - 1);
     background: Rgba(15, 23, 42, 0.85); /* Más opaco para compensar la falta de blur y mantener legibilidad */
     border-radius: 17px;
     pointer-events: none;

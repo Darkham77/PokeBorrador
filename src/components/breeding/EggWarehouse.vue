@@ -568,7 +568,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
   text-align: center;
   box-shadow: 0 4px 15px Rgba($pokecenter-pink, 0.4);
   pointer-events: none;
-  z-index: 5;
+  z-index: var(--z-map-grass-back);
   white-space: nowrap;
   border: 1px solid Rgba(255, 255, 255, 0.1);
 
@@ -595,6 +595,6 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
   justify-content: center;
   font-size: 10px;
   cursor: pointer;
-  z-index: 10;
+  z-index: var(--z-map-spawns);
 }
 </style>

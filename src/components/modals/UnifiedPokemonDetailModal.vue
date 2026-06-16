@@ -3,6 +3,7 @@
 import { ref, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useInventoryStore } from '@/stores/inventory'
 import { usePokemonDetail } from '@/composables/usePokemonDetail'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -121,13 +122,11 @@ const handleBuy = () => {
 }
 
 const handleEvolve = () => {
-  const win = window as unknown as { 
-    showStonePicker?: (index: number) => void 
-  }
-  if (typeof win.showStonePicker === 'function') {
-    emit('close');
-    win.showStonePicker(props.index)
-  }
+  const inventoryStore = useInventoryStore()
+  inventoryStore.activeMainTab = 'productos'
+  inventoryStore.activeCategory = 'stones'
+  emit('close')
+  uiStore.toggleInventory(finalContext.value as 'team' | 'box', finalIndex.value)
 }
 
 const hexToRgb = (hex: string) => {
@@ -400,7 +399,7 @@ const handleReorderMoves = (from: number, to: number) => {
 
       <PokemonActionFooter
         v-if="isInstance"
-        :context="context"
+        :context="finalContext"
         :extra="extra"
         :can-evolve-stone="canStoneEvolve"
         @buy="handleBuy"

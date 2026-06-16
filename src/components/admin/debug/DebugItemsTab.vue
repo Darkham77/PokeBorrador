@@ -3,6 +3,10 @@ import { ref, computed } from 'vue'
 import gsap from 'gsap'
 import { SHOP_ITEMS } from '@/data/items'
 
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { useInventoryStore } from '@/stores/inventory'
+
 interface ShopItem {
   id: string
   name: string
@@ -19,18 +23,22 @@ const filteredItems = computed(() => {
   ).slice(0, 15)
 })
 
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const inventoryStore = useInventoryStore()
+
 async function addItem(item: ShopItem, qty = 10) {
-  const win = window as unknown as { __VITE_DEBUG__: { addItem: (name: string, qty: number) => void } }
-  win.__VITE_DEBUG__.addItem(item.name, qty)
+  inventoryStore.addItem(item.id, qty)
 }
 
 function addTenOfEach() {
-  const win = window as unknown as { __VITE_DEBUG__: { addItem: (name: string, qty: number) => void } }
-  if (win.__VITE_DEBUG__ && typeof win.__VITE_DEBUG__.addItem === 'function') {
-    (SHOP_ITEMS as ShopItem[]).forEach(item => {
-      win.__VITE_DEBUG__.addItem(item.name, 10)
-    })
-  }
+  const inventory = { ...gameStore.state.inventory }
+  ;(SHOP_ITEMS as ShopItem[]).forEach(item => {
+    inventory[item.id] = (inventory[item.id] || 0) + 10
+  })
+  gameStore.state.inventory = inventory
+  gameStore.save(false)
+  uiStore.notify('Agregados 10 de cada objeto', '🎒')
 }
 
 function onBtnEnter(e: Event) {

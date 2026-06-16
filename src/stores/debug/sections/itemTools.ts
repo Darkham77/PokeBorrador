@@ -12,7 +12,9 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     action: (name: string, qty = 10) => {
       const item = getItemByName(name) || getItemById(name)
       const key = item ? item.id : name
-      game.state.inventory[key] = ((game.state.inventory[key] as number) || 0) + qty
+      const inventory = { ...game.state.inventory }
+      inventory[key] = ((inventory[key] as number) || 0) + qty
+      game.state.inventory = inventory
       ui.notify(`Debug: +${qty} ${item ? item.name : name}`, '🎒')
       game.saveGame(false)
     },
@@ -25,9 +27,11 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     command: 'fillInventory',
     category: 'items',
     action: (qty = 50) => {
+      const inventory = { ...game.state.inventory }
       SHOP_ITEMS.forEach(item => {
-        game.state.inventory[item.id] = qty
+        inventory[item.id] = qty
       })
+      game.state.inventory = inventory
       ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒')
       game.saveGame(false)
     },

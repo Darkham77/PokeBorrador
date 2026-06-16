@@ -59,9 +59,10 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   if (active.isGym && active.gymId) {
     const gid = active.gymId
     const diff = active.difficulty || 'easy'
+    const isFirstTimeGym = !ctx.gs.state.defeatedGyms.includes(gid)
     
     // Registrar victoria global (Medalla)
-    if (!ctx.gs.state.defeatedGyms.includes(gid)) {
+    if (isFirstTimeGym) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
       if (active.rewardTM) { 
         const tm = active.rewardTM
@@ -69,8 +70,29 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
         ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
         ctx.addLog(`¡Recibiste la ${itemObj?.name || tm}!`, 'log-info', tmId) 
+        ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tm}!`, '🎒')
       }
       ctx.uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
+    } else {
+      // Rematch TM chance
+      const { useGymsStore } = await import('@/stores/gyms')
+      const gymsStore = useGymsStore()
+      const gym = gymsStore.gyms.find(g => g.id === gid)
+      if (gym && gym.rewardTM) {
+        const tmReward = gym.rewardTM
+        const key = diff as 'easy' | 'normal' | 'hard'
+        let tmChance = 0
+        if (key === 'normal') tmChance = 0.03
+        else if (key === 'hard') tmChance = 0.05
+        
+        if (tmChance > 0 && Math.random() < tmChance) {
+          const itemObj = getItemByName(tmReward) || getItemById(tmReward)
+          const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
+          ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
+          ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)
+          ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tmReward}!`, '🎒')
+        }
+      }
     }
 
     // Registrar progreso específico por dificultad
@@ -84,73 +106,61 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         prog[key] = true
         ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆')
         
-        // Award Gym Difficulty-Specific rewards dynamically
-        import('@/stores/gyms').then(({ useGymsStore }) => {
-          const gymsStore = useGymsStore()
-          const gym = gymsStore.gyms.find(g => g.id === gid)
-          if (gym && gym.difficulties) {
-            const diffData = gym.difficulties[key]
-            if (diffData && diffData.levels) {
-              const avgLevel = diffData.levels.reduce((a: number, b: number) => a + b, 0) / diffData.levels.length
-              
-              const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
-              const mult = mults[key] || 1
-              
-              const expReward = Math.floor(avgLevel * 180 * mult)
-              const moneyReward = Math.floor(avgLevel * 30 * mult)
-              const tmReward = gym.rewardTM
+        // Award Gym Difficulty-Specific rewards dynamically (Bulk Money and EXP only, NO unconditional TM)
+        const { useGymsStore } = await import('@/stores/gyms')
+        const gymsStore = useGymsStore()
+        const gym = gymsStore.gyms.find(g => g.id === gid)
+        if (gym && gym.difficulties) {
+          const diffData = gym.difficulties[key]
+          if (diffData && diffData.levels) {
+            const avgLevel = diffData.levels.reduce((a: number, b: number) => a + b, 0) / diffData.levels.length
+            
+            const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
+            const mult = mults[key] || 1
+            
+            const expReward = Math.floor(avgLevel * 180 * mult)
+            const moneyReward = Math.floor(avgLevel * 30 * mult)
 
-              // 1. Award Money
-              ctx.gs.state.money += moneyReward
-              ctx.addLog(`¡Bono de Gimnasio: Recibiste ₽${moneyReward}!`, 'log-success', 'player')
-              ctx.uiStore.notify(`¡Obtuviste ₽${moneyReward}!`, '💰')
+            // 1. Award Money
+            ctx.gs.state.money += moneyReward
+            ctx.addLog(`¡Bono de Gimnasio: Recibiste ₽${moneyReward}!`, 'log-success', 'player')
+            ctx.uiStore.notify(`¡Obtuviste ₽${moneyReward}!`, '💰')
 
-              // 2. Award TM
-              if (tmReward) {
-                const itemObj = getItemByName(tmReward) || getItemById(tmReward)
-                const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
-                ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
-                ctx.addLog(`¡Bono de Gimnasio: Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)
-                ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tmReward}!`, '🎒')
-              }
-
-              // 3. Award EXP (distributed)
-              const team = ctx.gs.state.team || []
-              if (team.length > 0) {
-                const expPerPoke = Math.floor(expReward / team.length)
-                import('@/logic/pokemon/pokemonFactory').then(({ getExpNeeded, levelUpPokemon }) => {
-                  for (const p of team) {
-                    if (p.level >= 100) continue
-                    p.exp += expPerPoke
-                    
-                    let leveledUp = false
-                    let tempLevel = p.level
-                    let tempExpNeeded = p.expNeeded || getExpNeeded(tempLevel)
-                    
-                    while (p.exp >= tempExpNeeded && tempLevel < 100) {
-                      p.exp -= tempExpNeeded
-                      leveledUp = true
-                      tempLevel++
-                      tempExpNeeded = getExpNeeded(tempLevel)
-                    }
-                    
-                    if (leveledUp) {
-                      const diffLevels = tempLevel - p.level
-                      p.level = tempLevel
-                      p.expNeeded = tempLevel >= 100 ? Infinity : tempExpNeeded
-                      for (let i = 0; i < diffLevels; i++) {
-                        levelUpPokemon(p)
-                      }
-                      ctx.addLog(`¡Bono de Gimnasio: ${p.name} subió al nivel ${p.level}!`, 'log-success', p)
-                    }
-                    ctx.addLog(`¡Bono de Gimnasio: ${p.name} ganó ${expPerPoke} EXP!`, 'log-success', p)
+            // 2. Award EXP (distributed)
+            const team = ctx.gs.state.team || []
+            if (team.length > 0) {
+              const expPerPoke = Math.floor(expReward / team.length)
+              const { getExpNeeded, levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory')
+              for (const p of team) {
+                if (p.level >= 100) continue
+                p.exp += expPerPoke
+                
+                let leveledUp = false
+                let tempLevel = p.level
+                let tempExpNeeded = p.expNeeded || getExpNeeded(tempLevel)
+                
+                while (p.exp >= tempExpNeeded && tempLevel < 100) {
+                  p.exp -= tempExpNeeded
+                  leveledUp = true
+                  tempLevel++
+                  tempExpNeeded = getExpNeeded(tempLevel)
+                }
+                
+                if (leveledUp) {
+                  const diffLevels = tempLevel - p.level
+                  p.level = tempLevel
+                  p.expNeeded = tempLevel >= 100 ? Infinity : tempExpNeeded
+                  for (let i = 0; i < diffLevels; i++) {
+                    levelUpPokemon(p)
                   }
-                })
-                ctx.uiStore.notify(`¡Tu equipo ganó ${expReward} EXP de bono!`, '✨')
+                  ctx.addLog(`¡Bono de Gimnasio: ${p.name} subió al nivel ${p.level}!`, 'log-success', p)
+                }
+                ctx.addLog(`¡Bono de Gimnasio: ${p.name} ganó ${expPerPoke} EXP!`, 'log-success', p)
               }
+              ctx.uiStore.notify(`¡Tu equipo ganó ${expReward} EXP de bono!`, '✨')
             }
           }
-        })
+        }
       }
       prog.attempts++
     }

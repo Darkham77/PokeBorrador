@@ -47,7 +47,7 @@ export function useMoveSlotData(
     // 2. Weather
     let weatherMult = 1
     if (weather && weather.turns !== 0) {
-      const wType = weather.type.toLowerCase()
+      const wType = (weather.visual || weather.type).toLowerCase()
       if (mechWeather === WEATHER_MECHANICAL.SUN) {
         if (moveType === 'fire') weatherMult = 1.5
         if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { GameState } from '../../src/types/game';
+import type { GameState } from '../../src/types/game.ts';
 
 describe('Real Backup DB Migration Verification', () => {
   const legendaries = new Set([

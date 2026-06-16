@@ -55,6 +55,7 @@ const viewport: AuditRule = {
 const gpuGaps: AuditRule = {
   regex: /(backdrop-filter|filter):/gi,
   message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
+  severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
     const start = Math.max(0, match.index - 500);
     const end = Math.min(content.length, match.index + 500);
@@ -92,6 +93,25 @@ const gpuGaps: AuditRule = {
 const legacyDates: AuditRule = {
   regex: /new Date\(|Date\.now\(\)/g,
   message: "Uso de 'Date' detectado. Usa 'Temporal'.",
+  severity: 'error',
+  check: (filePath: string) => {
+    const lowerPath = filePath.toLowerCase();
+    const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('mock');
+    return !isTestOrMock;
+  },
+  fixable: false
+};
+
+const hardcodedTimezone: AuditRule = {
+  regex: /toZonedDateTimeISO\(\s*['"]([^'"]+)['"]\s*\)|toPlainDateTime\(\s*['"]([^'"]+)['"]\s*\)|Temporal\.TimeZone\.from\(\s*['"]([^'"]+)['"]\s*\)/g,
+  message: (match: string) => `Timezone hardcodeado detectado: '${match}'. Usa la variable global 'GAME_TIMEZONE' importada desde '@/logic/utils/timeUtils' para respetar la configuración del servidor.`,
+  severity: 'error',
+  check: (filePath: string) => {
+    if (filePath.endsWith('timeUtils.ts')) return false;
+    const lowerPath = filePath.toLowerCase();
+    const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('mock');
+    return !isTestOrMock;
+  },
   fixable: false
 };
 
@@ -105,6 +125,7 @@ const esmExtensions: AuditRule = {
   // Match relative imports WITHOUT an extension (not .ts, .js, or .vue at the end)
   regex: /import .* from ['"](\.\.[^'"]*(?<!\.[jt]s)(?<!\.vue))['"]|import .* from ['"](\.[^/][^'"]*(?<!\.[jt]s)(?<!\.vue))['"]/g,
   message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js 26+ nativo las extensiones son obligatorias.`,
+  severity: 'error',
   // Fix: only add .ts when the path doesn't already end with .vue, .js, or .ts
   fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(['"])/g, '$1$2.ts$3'),
   // Only applies to pure .ts files in src/logic, scripts — NOT .vue files (handled by Vite resolver)
@@ -250,7 +271,7 @@ const zIndexAudit: AuditRule = {
 
     return `Z-Index hardcodeado fuera de estándar: '${match}'. Define una nueva capa en 'visuals.ts' o usa una existente.`;
   },
-  severity: 'warning',
+  severity: 'error',
   fix: (match: string) => {
     const valMatch = match.match(/-?\d+/);
     if (!valMatch) return match;
@@ -285,7 +306,7 @@ const zIndexAudit: AuditRule = {
 };
 
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -311,7 +332,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const allRules: AuditRule[] = [legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot];
+      const allRules: AuditRule[] = [legacyDates, config.hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot];
       let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración

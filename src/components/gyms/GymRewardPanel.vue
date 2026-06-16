@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useGymsStore } from '@/stores/gyms'
 
 interface GymDifficulty {
   pokemon: string[];
@@ -28,6 +29,11 @@ const props = defineProps<{
 const _ASSET_TYPES = ASSET_TYPES
 const _getAssetUrl = getAssetUrl
 
+const gymsStore = useGymsStore()
+
+const isGymDefeated = computed(() => gymsStore.isGymDefeated(props.gym.id))
+const isDifficultyDefeated = computed(() => gymsStore.isDifficultyDefeated(props.gym.id, props.difficulty))
+
 const estimatedRewards = computed(() => {
   if (!props.gym?.difficulties) return { money: 0, exp: 0 }
   
@@ -45,6 +51,19 @@ const estimatedRewards = computed(() => {
     exp: Math.floor(avgLevel * 180 * mult)
   }
 })
+
+const tmRewardText = computed(() => {
+  if (!isGymDefeated.value) {
+    return `+ ${props.gym.rewardTM} (Garantizado 1ª vez)`
+  }
+  if (props.difficulty === 'normal') {
+    return `+ ${props.gym.rewardTM} (3% Prob. Rematch)`
+  }
+  if (props.difficulty === 'hard') {
+    return `+ ${props.gym.rewardTM} (5% Prob. Rematch)`
+  }
+  return `+ ${props.gym.rewardTM} (0% Prob. Rematch)`
+})
 </script>
 
 <template>
@@ -53,16 +72,42 @@ const estimatedRewards = computed(() => {
       :src="_getAssetUrl(_ASSET_TYPES.BADGE, gym.id)" 
       :alt="gym.badgeName"
       class="reward-badge-img"
+      :class="{ 'claimed-badge': isGymDefeated }"
     >
     <div class="medal-detail">
       <span class="reward-title">RECOMPENSA DE VICTORIA</span>
       <span class="medal-name">{{ gym.badgeName }}</span>
       
       <div class="reward-grid">
-        <span class="tm-reward">+ {{ gym.rewardTM }}</span>
+        <span 
+          class="tm-reward" 
+          :class="{ 
+            'tm-claimed': isGymDefeated, 
+            'tm-chance-normal': isGymDefeated && difficulty === 'normal',
+            'tm-chance-hard': isGymDefeated && difficulty === 'hard'
+          }"
+        >
+          {{ tmRewardText }}
+        </span>
         <div class="reward-extras">
-          <span class="reward-pill exp">✨ {{ estimatedRewards.exp }} XP</span>
-          <span class="reward-pill money">₱ {{ estimatedRewards.money }}</span>
+          <template v-if="!isDifficultyDefeated">
+            <span class="reward-pill exp">✨ {{ estimatedRewards.exp }} XP (Bono 1ª vez)</span>
+            <span class="reward-pill money">₽ {{ estimatedRewards.money }} (Bono 1ª vez)</span>
+          </template>
+          <template v-else>
+            <span
+              class="reward-pill exp claimed"
+              title="Bono ya reclamado. Solo recompensa estándar de combate."
+            >
+              <s>✨ {{ estimatedRewards.exp }} XP</s> (Reclamado)
+            </span>
+            <span
+              class="reward-pill money claimed"
+              title="Bono ya reclamado. Solo recompensa estándar de combate."
+            >
+              <s>₽ {{ estimatedRewards.money }}</s> (Reclamado)
+            </span>
+          </template>
         </div>
       </div>
     </div>
@@ -77,11 +122,11 @@ const estimatedRewards = computed(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(0, 0, 0, 0.35);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 10px 14px;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 2px 8px Rgba(0, 0, 0, 0.4);
 }
 
 .reward-badge-img {
@@ -89,7 +134,12 @@ const estimatedRewards = computed(() => {
   height: 24px;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: Drop-Shadow(0 0 4px rgba(255, 215, 0, 0.4));
+  filter: Drop-Shadow(0 0 4px Rgba(255, 215, 0, 0.4));
+  will-change: filter;
+
+  &.claimed-badge {
+    filter: Drop-Shadow(0 0 6px Rgba(255, 215, 0, 0.75));
+  }
 }
 
 .medal-detail {
@@ -111,7 +161,7 @@ const estimatedRewards = computed(() => {
   @include pixelated;
   font-size: 8px;
   color: $coin-gold;
-  text-shadow: 0 0 8px rgba(255, 214, 10, 0.3);
+  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;
@@ -129,11 +179,31 @@ const estimatedRewards = computed(() => {
   @include pixelated;
   font-size: 6px;
   color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.1);
   padding: 2px 6px;
   border-radius: 4px;
   align-self: flex-start;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+
+  &.tm-claimed {
+    opacity: 0.5;
+    background: Rgba(255, 255, 255, 0.03);
+    color: #aaa;
+  }
+
+  &.tm-chance-normal {
+    opacity: 1;
+    color: #4cc9f0;
+    background: Rgba(76, 201, 240, 0.05);
+    border: 1px dashed Rgba(76, 201, 240, 0.3);
+  }
+
+  &.tm-chance-hard {
+    opacity: 1;
+    color: #ffd700;
+    background: Rgba(255, 215, 0, 0.05);
+    border: 1px dashed Rgba(255, 215, 0, 0.3);
+  }
 }
 
 .reward-extras {
@@ -150,14 +220,25 @@ const estimatedRewards = computed(() => {
 
   &.exp {
     color: #4cc9f0;
-    background: rgba(76, 201, 240, 0.1);
-    border-color: rgba(76, 201, 240, 0.2);
+    background: Rgba(76, 201, 240, 0.1);
+    border-color: Rgba(76, 201, 240, 0.2);
   }
 
   &.money {
     color: #ffd700;
-    background: rgba(255, 215, 0, 0.1);
-    border-color: rgba(255, 215, 0, 0.2);
+    background: Rgba(255, 215, 0, 0.1);
+    border-color: Rgba(255, 215, 0, 0.2);
+  }
+
+  &.claimed {
+    color: #888;
+    background: Rgba(255, 255, 255, 0.03);
+    border-color: Rgba(255, 255, 255, 0.05);
+    opacity: 0.55;
+    
+    s {
+      opacity: 0.7;
+    }
   }
 }
 </style>

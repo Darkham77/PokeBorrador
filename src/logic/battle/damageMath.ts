@@ -282,7 +282,7 @@ export function calculateDamagePure(
   // Weather multiplier
   let weatherMult = 1;
   if (!isGym && weather && weather.turns !== 0) {
-    const wType = weather.type.toLowerCase();
+    const wType = (weather.visual || weather.type).toLowerCase();
     if (mechWeather === WEATHER_KEYS.SUN) {
       if (moveType === 'fire')  weatherMult = 1.5;
       if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5; // Heatwave evaporates water

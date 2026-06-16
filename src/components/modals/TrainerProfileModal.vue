@@ -3,6 +3,7 @@ import { watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { formatCurrency } from '@/logic/utils/formatters'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
@@ -78,8 +79,11 @@ const formatDate = (isoStr: string | null | undefined) => {
   if (!isoStr) return '---'
   try {
     const inst = Temporal.Instant.from(isoStr)
-    const date = new Date(inst.epochMilliseconds)
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE)
+    const day = String(zdt.day).padStart(2, '0')
+    const month = String(zdt.month).padStart(2, '0')
+    const year = zdt.year
+    return `${day}/${month}/${year}`
   } catch (_) {
     return '---'
   }

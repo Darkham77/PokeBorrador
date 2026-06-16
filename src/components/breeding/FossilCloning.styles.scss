@@ -322,7 +322,7 @@
   border-radius: 8px;
   padding: 8px 12px;
   box-shadow: 0 4px 12px Rgba(220, 38, 38, 0.4);
-  z-index: 10;
+  z-index: var(--z-map-spawns);
   white-space: nowrap;
   pointer-events: none;
   font-size: 8px; // Scale for Press Start 2P/pixel fonts

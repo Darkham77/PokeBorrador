@@ -2,8 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { GameState } from '../../src/types/game';
-import type { Pokemon } from '../../src/types/pokemon';
+import type { GameState } from '../../src/types/game.ts';
+import type { Pokemon } from '../../src/types/pokemon.ts';
 
 describe('Pokedex Migration Logic Test', () => {
   it('correctly syncs Pokedex from box and team for Angianemar and updates save ID', () => {

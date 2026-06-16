@@ -22,6 +22,7 @@ import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 interface Props {
   show?: boolean
@@ -76,8 +77,11 @@ const formatDate = (isoStr: string | null | undefined) => {
   if (!isoStr) return '---'
   try {
     const inst = Temporal.Instant.from(isoStr)
-    const date = new Date(inst.epochMilliseconds)
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE)
+    const day = String(zdt.day).padStart(2, '0')
+    const month = String(zdt.month).padStart(2, '0')
+    const year = zdt.year
+    return `${day}/${month}/${year}`
   } catch (_) {
     return '---'
   }

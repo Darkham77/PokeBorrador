@@ -218,6 +218,8 @@ export function useAdventureRouting(options: {
         buffsStore.addBuff('incense', 30 * 60, type)
       }
     })
+
+    selectedTravelItems.value.clear()
     
     showPreTravelModal.value = false
     pendingManualDestination.value = null

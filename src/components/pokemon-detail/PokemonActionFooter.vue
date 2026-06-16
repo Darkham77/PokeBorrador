@@ -26,7 +26,7 @@ const canBuy = computed(() => {
 })
 
 const hasActions = computed(() => {
-  if (props.context === 'team') return props.canEvolveStone
+  if (props.context === 'team' || props.context === 'box') return props.canEvolveStone
   if (props.context === 'market') return !!props.extra
   return false
 })
@@ -39,7 +39,7 @@ const hasActions = computed(() => {
   >
     <!-- Evolution Action -->
     <button
-      v-if="context === 'team' && canEvolveStone"
+      v-if="(context === 'team' || context === 'box') && canEvolveStone"
       class="action-btn evolutionary"
       @click.stop="emit('evolve')"
     >
