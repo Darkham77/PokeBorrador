@@ -1,0 +1,1 @@
+import{t as e}from"./npcSpriteRouter-DUpu1N8H.js";export{e as classifyNpcArchetype};
