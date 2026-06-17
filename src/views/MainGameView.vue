@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, defineAsyncComponent, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useBodyClass } from '@/composables/useBodyClass'
+import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
@@ -10,7 +10,7 @@ import { useEventStore } from '@/stores/events'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
-import { useMainLayout } from '@/composables/useMainLayout'
+import { useMainLayout } from '@/composables/ui/useMainLayout'
 import { logger } from '@/logic/utils/logger'
 
 // Sub-components

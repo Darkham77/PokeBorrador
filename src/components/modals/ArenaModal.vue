@@ -9,7 +9,7 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import ArenaMilestoneTrack from '@/components/modals/ArenaMilestoneTrack.vue'
 import { gsap } from 'gsap'
-import { useGsapTransition } from '@/composables/useGsapTransition'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
 interface Props {
   show?: boolean

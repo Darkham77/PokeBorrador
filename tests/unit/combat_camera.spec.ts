@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
-import { useCombatCamera } from '@/composables/useCombatCamera'
+import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 
 // Mock gameBus
 vi.mock('@/logic/events/gameBus', () => ({

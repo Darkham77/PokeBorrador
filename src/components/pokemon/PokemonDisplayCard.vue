@@ -3,7 +3,7 @@ import { ref, inject, computed, type ComputedRef } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { useUIStore } from '@/stores/ui'
-import { useElementVisibility } from '@/composables/useElementVisibility'
+import { useElementVisibility } from '@/composables/ui/useElementVisibility'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'

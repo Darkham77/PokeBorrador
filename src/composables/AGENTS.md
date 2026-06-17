@@ -19,5 +19,7 @@ Frontend Developers.
 ## Child DOX Index
 
 - [adventure/](./adventure/): World movement, simulations, camera coordinates tracking, and layout scales.
+- [battle/](./battle/): Visual sequences, Phaser canvases coordinate managers, combat cameras, and active status tracking hooks.
 - [map/](./map/): Map card animations and sprite observers.
 - [modals/](./modals/): Interactive modal triggers and queue handlers.
+- [ui/](./ui/): Application responsive panels, layouts, inputs animations, and dynamic tooltips positioning.

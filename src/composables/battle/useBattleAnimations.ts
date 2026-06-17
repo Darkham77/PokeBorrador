@@ -4,9 +4,9 @@ import { gameBus } from '@/logic/events/gameBus'
 import { logger } from '@/logic/utils/logger'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
-import { useBattleCaptureAnimations } from '@/composables/useBattleCaptureAnimations'
-import { useBattleTrainerAnimations } from '@/composables/useBattleTrainerAnimations'
-import { useBattleWildAnimations } from '@/composables/useBattleWildAnimations'
+import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations'
+import { useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations'
+import { useBattleWildAnimations } from '@/composables/battle/useBattleWildAnimations'
 
 export function useBattleAnimations(
   battleStore: ReturnType<typeof useBattleStore>, 

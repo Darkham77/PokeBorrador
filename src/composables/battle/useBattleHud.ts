@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useGameStore } from '@/stores/game'
 import type { useBattleStore } from '@/stores/battle'
-import type { useBattleAnimations } from '@/composables/useBattleAnimations'
+import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
 import type { Pokemon } from '@/types/pokemon'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 

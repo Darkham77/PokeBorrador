@@ -12,7 +12,7 @@ import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGri
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import { useTrainerProfile } from './useTrainerProfile'
-import { useStatHover } from '@/composables/useStatHover'
+import { useStatHover } from '@/composables/ui/useStatHover'
 
 interface Props {
   show?: boolean

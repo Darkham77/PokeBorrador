@@ -4,7 +4,7 @@ import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
-import { isFlying } from '@/composables/useBattleShadows'
+import { isFlying } from '@/composables/battle/useBattleShadows'
 
 interface SparkleData {
   id: string | number

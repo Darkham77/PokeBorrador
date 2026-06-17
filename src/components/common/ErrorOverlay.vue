@@ -2,7 +2,7 @@
 
 import { ref } from 'vue'
 import gsap from 'gsap'
-import { useGsapTransition } from '@/composables/useGsapTransition'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'

@@ -10,7 +10,7 @@ import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
-import { useCombatCamera } from '@/composables/useCombatCamera'
+import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
@@ -20,9 +20,9 @@ import { usePlayerClassStore } from '@/stores/playerClass.ts'
 import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
 
 // Composables
-import { useBattleShadows } from '@/composables/useBattleShadows'
-import { useBattleAnimations } from '@/composables/useBattleAnimations'
-import { useBattleHud } from '@/composables/useBattleHud'
+import { useBattleShadows } from '@/composables/battle/useBattleShadows'
+import { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
+import { useBattleHud } from '@/composables/battle/useBattleHud'
 import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
 
 // Componentes

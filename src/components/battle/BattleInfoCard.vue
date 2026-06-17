@@ -9,7 +9,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
 import { supabase } from '@/logic/db/supabase'
 import { getStatBreakdown } from '@/logic/battle/battleEngine'
-import { useCombatantStatus } from '@/composables/useCombatantStatus'
+import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'

@@ -10,7 +10,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { useModalStore } from '@/stores/modals'
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile'
-import { useStatHover } from '@/composables/useStatHover'
+import { useStatHover } from '@/composables/ui/useStatHover'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'

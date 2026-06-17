@@ -17,7 +17,7 @@ import type { Pokemon } from '@/types/pokemon'
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
-import { useGridTransitions } from '@/composables/useGridTransitions'
+import { useGridTransitions } from '@/composables/ui/useGridTransitions'
 import InventoryControls from './inventory/InventoryControls.vue'
 import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 import InventoryActionMenu from './inventory/InventoryActionMenu.vue'

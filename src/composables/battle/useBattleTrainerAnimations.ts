@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
-import type { SeatState } from '@/composables/useBattleSeats'
+import type { SeatState } from '@/composables/battle/useBattleSeats'
 
 export function useBattleTrainerAnimations(seats: Ref<Record<string, SeatState>>) {
   // Trainer visual states

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useVirtualPosition } from '@/composables/useVirtualPosition'
+import { useVirtualPosition } from '@/composables/ui/useVirtualPosition'
 
 /**
  * VirtualEntity

@@ -3,7 +3,7 @@
 
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { gsap } from 'gsap';
-import { useDocumentListener } from '@/composables/useWindowListener';
+import { useDocumentListener } from '@/composables/ui/useWindowListener';
 import { useChatStore } from '@/stores/chat';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';

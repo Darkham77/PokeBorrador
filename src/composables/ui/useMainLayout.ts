@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted, type Ref, type ComponentPublicInstance } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
+import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener'
 
 export function useMainLayout(
   hudRef: Ref<HTMLElement | null>, 

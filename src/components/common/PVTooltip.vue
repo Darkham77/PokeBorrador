@@ -6,7 +6,7 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null
 <script setup lang="ts">
 import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
-import { useTooltipPosition } from '@/composables/useTooltipPosition'
+import { useTooltipPosition } from '@/composables/ui/useTooltipPosition'
 
 const props = defineProps({
   title: { type: String, default: '' },

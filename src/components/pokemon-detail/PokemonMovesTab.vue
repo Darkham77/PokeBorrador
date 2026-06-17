@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useWindowListener } from '@/composables/useWindowListener'
+import { useWindowListener } from '@/composables/ui/useWindowListener'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'

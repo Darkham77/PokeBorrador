@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useInputAnimations } from '@/composables/useInputAnimations'
+import { useInputAnimations } from '@/composables/ui/useInputAnimations'
 
 interface Props {
   loading: boolean

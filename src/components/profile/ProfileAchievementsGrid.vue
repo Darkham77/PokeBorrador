@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useStatHover } from '@/composables/useStatHover'
+import { useStatHover } from '@/composables/ui/useStatHover'
 
 interface Props {
   rankedMaxElo: number

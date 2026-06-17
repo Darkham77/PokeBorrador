@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useBattleBackground } from '@/composables/useBattleBackground'
+import { useBattleBackground } from '@/composables/battle/useBattleBackground'
 
 interface Props {
   locationId?: string

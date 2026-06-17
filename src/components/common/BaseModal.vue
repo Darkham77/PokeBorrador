@@ -136,7 +136,7 @@
 
 import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
 import { gsap } from 'gsap'
-import { useBodyClass } from '@/composables/useBodyClass'
+import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import { Z_LAYERS } from '@/logic/constants/visuals'
