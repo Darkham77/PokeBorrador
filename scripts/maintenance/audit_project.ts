@@ -817,20 +817,20 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   const violations: Violation[] = [];
   const rootDir = process.cwd();
 
-  // Build set of gitignored paths so we don't flag links to intentionally
-  // local-only dirs (e.g. supabase/docker/, supabase/generated/) as broken.
+  // Build set of gitignored paths by parsing .gitignore directly.
+  // NOTE: 'git ls-files --others --ignored' only lists paths that EXIST on disk.
+  // In CI checkouts the gitignored dirs are absent, so that set would be empty.
+  // Parsing .gitignore directly works regardless of whether the paths exist.
   const gitIgnoredPaths = new Set<string>();
   try {
-    const { execSync } = await import('node:child_process');
-    const raw = execSync(
-      'git ls-files --others --ignored --exclude-standard --directory',
-      { cwd: rootDir, encoding: 'utf-8' }
-    );
-    for (const line of raw.split('\n')) {
+    const gitignoreRaw = await fs.readFile(path.join(rootDir, '.gitignore'), 'utf-8');
+    for (const line of gitignoreRaw.split('\n')) {
       const trimmed = line.trim().replace(/\/$/, '');
-      if (trimmed) gitIgnoredPaths.add(path.resolve(rootDir, trimmed));
+      // Skip comments, empty lines, and glob patterns (handle only plain paths)
+      if (!trimmed || trimmed.startsWith('#') || trimmed.includes('*') || trimmed.includes('?')) continue;
+      gitIgnoredPaths.add(path.resolve(rootDir, trimmed));
     }
-  } catch { /* outside a git repo or git not available — skip silently */ }
+  } catch { /* no .gitignore found — skip silently */ }
 
   
   // Recursivamente busca todos los directorios del proyecto (no ignorados)
