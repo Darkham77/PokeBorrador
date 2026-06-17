@@ -816,6 +816,22 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
 async function checkDoxIntegrity(): Promise<Violation[]> {
   const violations: Violation[] = [];
   const rootDir = process.cwd();
+
+  // Build set of gitignored paths so we don't flag links to intentionally
+  // local-only dirs (e.g. supabase/docker/, supabase/generated/) as broken.
+  const gitIgnoredPaths = new Set<string>();
+  try {
+    const { execSync } = await import('node:child_process');
+    const raw = execSync(
+      'git ls-files --others --ignored --exclude-standard --directory',
+      { cwd: rootDir, encoding: 'utf-8' }
+    );
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim().replace(/\/$/, '');
+      if (trimmed) gitIgnoredPaths.add(path.resolve(rootDir, trimmed));
+    }
+  } catch { /* outside a git repo or git not available — skip silently */ }
+
   
   // Recursivamente busca todos los directorios del proyecto (no ignorados)
   const doxDirs: string[] = [];
@@ -978,6 +994,13 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
         if (!cleanTarget) continue;
         
         const absoluteTarget = path.resolve(dirPath, cleanTarget);
+
+        // Skip validation for paths intentionally excluded via .gitignore
+        // (they exist locally but are absent in CI checkouts).
+        const isGitIgnored = gitIgnoredPaths.has(absoluteTarget) ||
+          [...gitIgnoredPaths].some(p => absoluteTarget.startsWith(p + path.sep));
+        if (isGitIgnored) continue;
+
         try {
           await fs.stat(absoluteTarget);
         } catch (err) {
