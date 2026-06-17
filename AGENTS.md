@@ -91,6 +91,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - DOX is highly performant AGENTS.md hierarchy installed here
 - Agent must follow DOX instructions across any edits
 - **Relative Paths Mandate**: All links to other files and indices in all `AGENTS.md` files MUST use relative paths (e.g. `./database/AGENTS.md` or `../database/AGENTS.md`). Absolute paths (e.g., `file:///C:/...` or absolute file system URLs) are strictly forbidden to ensure portability across different development environments. If any absolute paths are found in any `AGENTS.md` files, they must be corrected to relative paths immediately.
+- **Gitignored Paths in DOX Indices**: Directories or files that exist locally but are excluded via `.gitignore` (e.g. credential folders, generated local configs) MUST still be referenced in their parent's Child DOX Index if they represent a real domain boundary. Mark them with the suffix `_(gitignored — reason)_` so agents and reviewers understand why they are absent from the repo. The DOX audit engine skips existence checks for gitignored paths automatically, so these entries will never produce CI failures.
 
 ## Core Contract
 

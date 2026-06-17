@@ -17,6 +17,6 @@ Cloud / Backend Engineers.
 
 # Child DOX Index
 
-- [docker/](./docker/): Local Docker configurations.
-- [generated/](./generated/): Generated files and schemas.
+- [docker/](./docker/): Local Docker configurations. _(gitignored — contains local credentials, not in repo)_
+- [generated/](./generated/): Generated files and schemas. _(gitignored — local-only environment files)_
 - [setup_supabase.ts](./setup_supabase.ts): Script to automate database setup.
