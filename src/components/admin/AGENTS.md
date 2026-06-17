@@ -21,5 +21,3 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [debug/](./debug/AGENTS.md): Administrative dashboards and system state simulation tools.
-
-

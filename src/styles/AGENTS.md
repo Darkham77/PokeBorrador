@@ -24,4 +24,3 @@ UI / Frontend Developers.
 - [layouts/](./layouts/AGENTS.md): Standard grid shells and flex layouts.
 - [tokens/](./tokens/AGENTS.md): Centralized variables, colors, sizing, and animations constants.
 - [views/](./views/AGENTS.md): Route-view level fullpage styles.
-

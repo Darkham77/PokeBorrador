@@ -66,4 +66,3 @@ Logic Developers / Game Designers.
 - [validation/](./validation/): Input validators and data schema checking.
 - [war/](./war/): Factions point calculators.
 - [weather/](./weather/): Weather effects multipliers.
-

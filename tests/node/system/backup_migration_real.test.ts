@@ -4,6 +4,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { GameState } from '../../../src/types/system/game.ts';
 
+/** Forma mínima de un Pokémon tal como aparece en los archivos de backup JSON. */
+interface RawPokemon {
+  id?: string;
+  name?: string;
+  vigor?: number;
+  heldItem?: string;
+  ability?: string;
+  moves?: Array<{ id?: string } | null>;
+}
+
 describe('Real Backup DB Migration Verification', () => {
   const legendaries = new Set([
     'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
@@ -99,7 +109,7 @@ describe('Real Backup DB Migration Verification', () => {
     return legacyMoveMap[moveKey];
   }
 
-  function migratePoke(p: any) {
+  function migratePoke(p: RawPokemon | null | undefined): void {
     if (!p) return;
     
     // 1. Legendaries to 0 vigor
@@ -121,7 +131,7 @@ describe('Real Backup DB Migration Verification', () => {
     
     // 4. Mapped moves
     if (p.moves && Array.isArray(p.moves)) {
-      p.moves.forEach((m: any) => {
+      p.moves.forEach((m: { id?: string } | null) => {
         if (m) {
           const mappedMove = getLegacyMoveTranslation(m.id);
           if (mappedMove) {
@@ -156,7 +166,7 @@ describe('Real Backup DB Migration Verification', () => {
       let legacyAbilitiesFixedCount = 0;
       let legacyMovesFixedCount = 0;
 
-      gameSaves.forEach((saveWrapper: any) => {
+      gameSaves.forEach((saveWrapper: { save_data: string | GameState }) => {
         let saveData: GameState;
         if (typeof saveWrapper.save_data === 'string') {
           saveData = JSON.parse(saveWrapper.save_data);
@@ -164,13 +174,13 @@ describe('Real Backup DB Migration Verification', () => {
           saveData = saveWrapper.save_data;
         }
 
-        const team = saveData.team || [];
-        const box = saveData.box || [];
+        const team = (saveData.team || []) as unknown as RawPokemon[]
+        const box = (saveData.box || []) as unknown as RawPokemon[]
 
         // Track properties before migration to ensure they change
-        const preCheck = (p: any) => {
+        const preCheck = (p: RawPokemon | null | undefined): void => {
           if (!p) return;
-          if (p.id && legendaries.has(p.id.toLowerCase()) && p.vigor > 0) {
+          if (p.id && legendaries.has(p.id.toLowerCase()) && (p.vigor ?? 0) > 0) {
             legendariesFoundAndFixedCount++;
           }
           if (p.heldItem && getLegacyItemTranslation(p.heldItem)) {
@@ -180,7 +190,7 @@ describe('Real Backup DB Migration Verification', () => {
             legacyAbilitiesFixedCount++;
           }
           if (p.moves && Array.isArray(p.moves)) {
-            p.moves.forEach((m: any) => {
+            p.moves.forEach((m: { id?: string } | null) => {
               if (m && getLegacyMoveTranslation(m.id)) {
                 legacyMovesFixedCount++;
               }
@@ -196,7 +206,7 @@ describe('Real Backup DB Migration Verification', () => {
         box.forEach(migratePoke);
 
         // Assertions post-migration
-        const postCheck = (p: any) => {
+        const postCheck = (p: RawPokemon | null | undefined): void => {
           if (!p) return;
           // Legendaries must have 0 vigor
           if (p.id && legendaries.has(p.id.toLowerCase())) {
@@ -216,7 +226,7 @@ describe('Real Backup DB Migration Verification', () => {
           }
           // Moves must not be legacy
           if (p.moves && Array.isArray(p.moves)) {
-            p.moves.forEach((m: any) => {
+            p.moves.forEach((m: { id?: string } | null) => {
               if (m) {
                 const mappedMove = getLegacyMoveTranslation(m.id);
                 if (mappedMove) {

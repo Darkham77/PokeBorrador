@@ -24,5 +24,3 @@ Frontend Developers / Systems Engineers.
 - [pokemon-detail/](./pokemon-detail/AGENTS.md): Detail view presentation styles.
 - [pokemon-selection/](./pokemon-selection/AGENTS.md): Pokemon select cards styles.
 - [weather/](./weather/AGENTS.md): Background atmospheric weather visuals.
-
-

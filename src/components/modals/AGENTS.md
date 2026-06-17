@@ -26,4 +26,3 @@ Frontend Developers / Systems Engineers.
 - [reputation-shop/](./reputation-shop/AGENTS.md): Sub-cards and components for reputation shop.
 - [shop/](./shop/AGENTS.md): Sub-cards, search tools, and cart panels for standard shops.
 - [war-shop/](./war-shop/AGENTS.md): Sub-cards, item grids, and purchase validations for war shop.
-

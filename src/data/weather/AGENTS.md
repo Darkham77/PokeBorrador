@@ -21,4 +21,3 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [kanto/](./kanto/): Weather databases and schedules configuration for Kanto routes.
-

@@ -21,4 +21,3 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [sections/](./sections/): Segmented modules for editing specific parts of the developer tool state.
-

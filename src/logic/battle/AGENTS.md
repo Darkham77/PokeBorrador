@@ -22,4 +22,3 @@ Frontend Developers / Systems Engineers.
 
 - [actions/](./actions/AGENTS.md): Combat action triggers and move execution steps.
 - [ai/](./ai/AGENTS.md): NPC opponent move priority decision and scoring logic.
-

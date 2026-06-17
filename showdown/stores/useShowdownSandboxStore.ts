@@ -378,7 +378,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
 
       // 3. Crear Web Worker dinámico
       this.worker = new Worker(
-        new URL('./sandbox_db/ShowdownWorker.ts', import.meta.url),
+        new URL('../sandbox_db/ShowdownWorker.ts', import.meta.url),
         { type: 'module' }
       );
 

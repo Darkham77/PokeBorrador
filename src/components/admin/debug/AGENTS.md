@@ -14,4 +14,3 @@ Backend and Systems Developers.
 ## Child DOX Index
 
 - [shared/](./shared/AGENTS.md): Reusable debug components and forms.
-

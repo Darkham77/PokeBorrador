@@ -21,4 +21,3 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [mixins/](./mixins/AGENTS.md): Visual SASS/SCSS helper mixins.
-
