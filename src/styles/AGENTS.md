@@ -1,0 +1,26 @@
+# Purpose
+
+Manage styling tokens, visual system designs, SCSS mixins, views layout configurations, and component themes.
+
+## Ownership
+
+UI / Frontend Developers.
+
+## Local Contracts
+
+- **SASS Trap Engine Compliance**: All standard CSS/SASS capitalization transformations are automatically processed during Vite builds by the traps plugin. Standard lowercase functions are completely acceptable in the source files.
+- **SASS @use Import Mandate**: Direct `@import` rules are prohibited. All imports must utilize `@use` or `@forward` namespaces.
+- **Zero Global Clashing**: View-specific style files (`src/styles/views/`) must avoid overriding base styles using `!important` unless strictly verified to prevent layout regressions on nested visual structures.
+
+## Work Guidance
+
+- Keep design variables (such as palette colors or border-radius configurations) centralized under `tokens/` and `core/` files.
+- Visual properties that vary dynamically with component states must prefer CSS variables injected via `:style` properties rather than deep selectors.
+
+## Child DOX Index
+
+- [components/](./components/): Component-level specific visual styling definitions.
+- [core/](./core/): System base configurations, typography overrides, and mixins.
+- [layouts/](./layouts/): Standard grid shells and flex layouts.
+- [tokens/](./tokens/): Centralized variables, colors, sizing, and animations constants.
+- [views/](./views/): Route-view level fullpage styles.
