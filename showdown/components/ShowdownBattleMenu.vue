@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 import ShowdownMoveTooltip from './ShowdownMoveTooltip.vue';
 import showdownDB from '../sandbox_db/data/showdown_db_es.json';
 import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';

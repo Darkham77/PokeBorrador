@@ -17,8 +17,8 @@ import {
   calculateEscapeChance
 } from './battleFormulas.ts';
 
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleStages, BattleWeather } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages, BattleWeather } from '@/types/battle/battle';
 
 export {
   getEffectiveStat, 

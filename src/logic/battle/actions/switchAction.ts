@@ -3,7 +3,7 @@ import { gameBus } from '@/logic/events/gameBus'
 import { clearVolatileStatus } from '../battleStatus.ts'
 import { handleEntryAbilities } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'
-import type { BattleContext } from '@/types/battleContext'
+import type { BattleContext } from '@/types/battle/battleContext'
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
   const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, exitingPlayer, animations, playerStages, enemyStages, persistBattle, handleFaint } = ctx

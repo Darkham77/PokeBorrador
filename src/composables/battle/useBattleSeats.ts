@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export interface AnimSlotState {
   animState: 'catching' | 'trapped' | 'releasing' | null;

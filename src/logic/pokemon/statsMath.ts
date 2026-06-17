@@ -7,7 +7,7 @@
  * @module statsMath
  */
 
-import { MAX_POKEMON_LEVEL } from '../../data/constants.ts';
+import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
 
 /**
  * Calculates the EXP needed for the current level.

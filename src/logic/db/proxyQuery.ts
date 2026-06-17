@@ -3,7 +3,7 @@
 
 import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine.ts';
 import type { DBRouter } from './dbRouter.ts';
-import type { DBResponse, ProxyQueryChainItem } from '@/types/database';
+import type { DBResponse, ProxyQueryChainItem } from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
 
 /**

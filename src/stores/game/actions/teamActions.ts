@@ -1,6 +1,6 @@
 import { useUIStore } from '@/stores/ui'
-import type { GameState } from '@/types/game'
-import type { Pokemon } from '@/types/pokemon'
+import type { GameState } from '@/types/system/game'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export function useTeamActions(state: GameState, scheduleSave: () => Promise<void>) {
   function autoFillPvpTeam() {

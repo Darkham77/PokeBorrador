@@ -1,8 +1,8 @@
-import { MOVE_DATA } from '@/data/moves';
+import { MOVE_DATA } from '@/data/battle/moves';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import { calculateDamagePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Move } from '@/types/pokemon';
+import type { Move } from '@/types/pokemon/pokemon';
 
 /**
  * Gets modifier info for a move based on weather and cycle.

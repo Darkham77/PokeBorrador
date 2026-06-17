@@ -1,8 +1,8 @@
 
 import { calculateMapBonuses } from './warEngine.ts'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import type { Pokemon, PokemonIVs } from '@/types/pokemon'
-import type { DominanceInfo } from '@/types/stores'
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
+import type { DominanceInfo } from '@/types/system/stores'
 
 /**
  * Applies map dominance bonuses to a generated Pokémon.

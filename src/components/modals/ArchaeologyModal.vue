@@ -3,7 +3,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const fossilSprite = computed(() => {

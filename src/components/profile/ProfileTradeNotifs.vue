@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useTradeStore } from '@/stores/trade'
 import { useGameStore } from '@/stores/game'
-import type { TradeOffer } from '@/types/stores'
+import type { TradeOffer } from '@/types/system/stores'
 
 const tradeStore = useTradeStore()
 const gameStore = useGameStore()

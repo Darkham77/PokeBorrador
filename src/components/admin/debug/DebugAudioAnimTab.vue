@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import DebugActionList from './DebugActionList.vue'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
 
 import { 
   DEBUG_SOUNDS, 

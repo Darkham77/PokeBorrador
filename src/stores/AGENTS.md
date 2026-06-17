@@ -26,5 +26,9 @@ State Architects / Frontend Developers.
 
 ## Child DOX Index
 
-- [debug/](./debug/): Stores managing offline CLI state injectors.
-- [game/](./game/): Primary loops, save game state manager.
+- [battle/](./battle/AGENTS.md): Battle engine state, buffs, and combatant shadows.
+- [debug/](./debug/AGENTS.md): Stores managing offline CLI state injectors.
+- [game/](./game/AGENTS.md): Primary loops, save game state manager.
+- [inventory/](./inventory/AGENTS.md): Player inventory, helper utilities, and shop actions.
+- [player/](./player/AGENTS.md): Character classes, cosmetic frame selectors, and profiles.
+- [social/](./social/AGENTS.md): Chat logs, social networks, and cosmetic frames.

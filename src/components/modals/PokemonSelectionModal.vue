@@ -12,7 +12,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 

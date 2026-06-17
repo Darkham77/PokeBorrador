@@ -1,9 +1,9 @@
-import { GAME_RATIOS } from '@/data/constants';
+import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
-import type { Pokemon } from '@/types/pokemon';
-import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 
 /**

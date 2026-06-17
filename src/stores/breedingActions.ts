@@ -1,13 +1,13 @@
-import { useGameStore } from './game.ts';
-import { useUIStore } from './ui.ts';
-import { useInventoryStore } from './inventory.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory.ts';
 import { eggFactory } from '@/logic/breeding/eggFactory';
-import { POKEMON_DB } from '@/data/pokemonDB';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { Ref } from 'vue';
-import type { DaycareEgg } from '@/types/breeding';
+import type { DaycareEgg } from '@/types/breeding/breeding';
 
 export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
   const countPerfect = (p: Pokemon) => {

@@ -1,4 +1,4 @@
-import type { MoveAction } from '@/types/battle';
+import type { MoveAction } from '@/types/battle/battle';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '../../weather/weatherRegistry.ts';
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {

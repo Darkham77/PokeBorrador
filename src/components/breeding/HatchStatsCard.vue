@@ -4,9 +4,9 @@
  * Tarjeta premium de estadísticas del Pokémon eclosionado.
  */
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/natures'
-import { ABILITY_DATA } from '@/data/abilities'
-import type { Pokemon } from '@/types/pokemon'
+import { NATURE_DATA } from '@/data/battle/natures'
+import { ABILITY_DATA } from '@/data/battle/abilities'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { computed } from 'vue'

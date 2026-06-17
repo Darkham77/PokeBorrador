@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import type { Ref } from 'vue'
 import { KANTO_NODE_POSITIONS, KANTO_CONNECTIONS } from '../../../test aventura/kantoGraph.ts'
 import type { GraphEdge } from '../../../test aventura/kantoGraph.ts'
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 
 
 const POKEMON_CENTER_NODES = new Set([

@@ -1,4 +1,4 @@
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { hasPokemonTag } from '@/logic/constants/tags'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 

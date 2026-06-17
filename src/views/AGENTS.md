@@ -23,14 +23,9 @@ Core Frontend.
 
 ## Child DOX Index
 
-This directory contains the primary views for routing and layouts:
-
-- [AdventureTestView.vue](./AdventureTestView.vue): Overworld grid rendering and tile-based movement view.
-- [BagView.vue](./BagView.vue): Inventory and items view.
-- [GameView.vue](./GameView.vue): General view wrapper.
-- [GymsView.vue](./GymsView.vue): Badge display and gym leaders/rematches view.
-- [LoginView.vue](./LoginView.vue): User login and signup interface.
-- [MainGameView.vue](./MainGameView.vue): Combined dashboard, stats, and navigation layout.
-- [MapView.vue](./MapView.vue): World map view.
-- [PokedexView.vue](./PokedexView.vue): Pokemon catalog and details view.
-- [SocialView.vue](./SocialView.vue): Chat logs, active players list, and private messaging view.
+- [adventure/](./adventure/): Overworld adventure, map exploration, and pathfinding views.
+- [auth/](./auth/): User authentication, login, and registration views.
+- [game/](./game/): Core game dashboard, map, and progression views.
+- [inventory/](./inventory/): Inventory and item management views.
+- [pokemon/](./pokemon/): Pokémon catalog and details views.
+- [social/](./social/): Social interaction, chat rooms, and multiplayer networking views.

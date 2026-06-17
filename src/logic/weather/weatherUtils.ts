@@ -1,4 +1,4 @@
-import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
+import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { WEATHER_REGISTRY } from './weatherRegistry';

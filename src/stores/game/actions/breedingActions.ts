@@ -2,8 +2,8 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
-import type { GameState } from '@/types/game'
-import type { Pokemon, PokemonEgg } from '@/types/pokemon'
+import type { GameState } from '@/types/system/game'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
 
 export function useBreedingActions(
   state: GameState, 

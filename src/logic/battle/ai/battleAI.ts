@@ -1,6 +1,6 @@
 import { getCombinedEffectiveness } from '../battleEngine.ts'
-import type { Pokemon, Move } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
 
 /**
  * Motor de Inteligencia Artificial para el Combate

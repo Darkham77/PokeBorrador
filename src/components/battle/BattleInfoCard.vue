@@ -5,15 +5,15 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import HPBar from './HPBar.vue'
-import { useBattleStore } from '@/stores/battle'
-import { useProfileStore } from '@/stores/profile'
+import { useBattleStore } from '@/stores/battle/battle'
+import { useProfileStore } from '@/stores/player/profile'
 import { supabase } from '@/logic/db/supabase'
 import { getStatBreakdown } from '@/logic/battle/battleEngine'
 import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { NATURE_DATA } from '@/data/natures'
+import { NATURE_DATA } from '@/data/battle/natures'
 
 interface Props {
   pokemon?: Pokemon | null

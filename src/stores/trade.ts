@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, computed } from 'vue'
-import { useAuthStore } from './auth.ts'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
-import { useSocialStore } from './social.ts'
-import { useAudioStore } from './audio.ts'
-import { useLoadingStore } from './loading.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
+import { useSocialStore } from '@/stores/social/social.ts'
+import { useAudioStore } from '@/stores/audio.ts'
+import { useLoadingStore } from '@/stores/loading.ts'
 import { logger } from '@/logic/utils/logger'
 import { validateTradeOffer } from '@/logic/validation/schemas'
 import type { 
   TradeOffer
-} from '@/types/stores'
-import type { Pokemon } from '@/types/pokemon'
-import type { GameState } from '@/types/game'
+} from '@/types/system/stores'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { GameState } from '@/types/system/game'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export const useTradeStore = defineStore('trade', () => {

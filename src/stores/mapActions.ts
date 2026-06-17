@@ -1,22 +1,22 @@
-import { useGameStore } from './game.ts';
-import { useBattleStore } from './battle.ts';
-import { useUIStore } from './ui.ts';
-import { useEventStore } from './events.ts';
-import { useInventoryStore } from './inventory.ts';
-import { FIRE_RED_MAPS } from '@/data/maps';
+import { useGameStore } from '@/stores/game.ts';
+import { useBattleStore } from '@/stores/battle/battle.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useEventStore } from '@/stores/events.ts';
+import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { generateEncounter } from '@/logic/encounters/encounters';
 import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getItemByName } from '@/data/items.ts';
+import { getItemByName } from '@/data/inventory/items.ts';
 import { logger } from '@/logic/utils/logger';
-import { TRAINER_TYPES } from '@/data/trainerTypes';
-import { getRandomQuoteForTrainer } from '@/data/trainerPhrases';
+import { TRAINER_TYPES } from '@/data/player/trainerTypes';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { Pokemon } from '@/types/pokemon';
-import type { MapLocation } from '@/types/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 import type { Event } from '@/logic/events/eventEngine';
-import type { DominanceInfo } from '@/types/stores';
+import type { DominanceInfo } from '@/types/system/stores';
 
 export async function executeNavigation(
   locId: string,

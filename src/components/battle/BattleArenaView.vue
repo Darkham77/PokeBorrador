@@ -3,7 +3,7 @@
 import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
@@ -14,16 +14,16 @@ import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
-import type { Pokemon } from '@/types/pokemon'
-import { GYMS } from '@/data/gyms.ts'
-import { usePlayerClassStore } from '@/stores/playerClass.ts'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import { GYMS } from '@/data/world/gyms.ts'
+import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
 
 // Composables
 import { useBattleShadows } from '@/composables/battle/useBattleShadows'
 import { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
 import { useBattleHud } from '@/composables/battle/useBattleHud'
-import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
+import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals'
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
@@ -55,6 +55,15 @@ const enemy = computed(() => battle.value?.enemy)
 const player = computed(() => battle.value?.player)
 const p1Pos = computed(() => getCombatantPosition('player'))
 const p2Pos = computed(() => getCombatantPosition('enemy'))
+
+// Semilla única por encuentro: se regenera al inicio de cada combate para que
+// los arbustos (CombatGrass) sean visualmente distintos en cada batalla.
+const grassSeed = ref(Math.floor(Math.random() * 1000000))
+watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
+  if (newUid && newUid !== oldUid) {
+    grassSeed.value = Math.floor(Math.random() * 1000000)
+  }
+})
 
 const trainerShadowUrl = ref('')
 onMounted(() => {
@@ -398,7 +407,7 @@ const handleArchaeologyFail = async () => {
     emoji = '🐚'
   }
   
-  const { getItemByName } = await import('@/data/items')
+  const { getItemByName } = await import('@/data/inventory/items')
   const itemData = getItemByName(fossilName)
   const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 
@@ -567,6 +576,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
               layer="back"
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
+              :seed="grassSeed"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
               :hide-instant="enemyIsFloating"
@@ -723,6 +733,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
               layer="front"
               :location-id="battle?.locationId"
               :ground-y="enemyGroundY"
+              :seed="grassSeed"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
               :force-behind="bushIsBehind"

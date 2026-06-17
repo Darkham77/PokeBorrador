@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
-import { useChatStore } from '@/stores/chat';
+import { useChatStore } from '@/stores/social/chat';
 import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';

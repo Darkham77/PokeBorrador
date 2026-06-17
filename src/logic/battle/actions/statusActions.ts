@@ -1,8 +1,8 @@
 
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleStages, LogFn } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages, LogFn } from '@/types/battle/battle';
 
-import type { BattleContext } from '@/types/battleContext';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 export type MoveAction = (
   src: Pokemon, 

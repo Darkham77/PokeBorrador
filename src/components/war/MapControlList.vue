@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { useMapStore } from '@/stores/map'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const warStore = useWarStore()

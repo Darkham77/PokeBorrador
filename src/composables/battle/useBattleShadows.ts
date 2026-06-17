@@ -1,12 +1,12 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { useCombatShadowStore } from '@/stores/combatShadows'
+import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
-import { ANIMATED_SPRITE_DATABASE } from '@/data/animatedSpriteDatabase'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { ANIMATED_SPRITE_DATABASE } from '@/data/pokemon/animatedSpriteDatabase'
 
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { logger } from '@/logic/utils/logger'
 
 function resolveAnimatedKey(pokemonId: string | number | null | undefined, isBack = false): string | null {

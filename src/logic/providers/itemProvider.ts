@@ -1,8 +1,8 @@
 
 import { itemEffects } from '../items/itemEffects.ts';
-import type { Pokemon } from '@/types/pokemon';
-import { getItemById } from '@/data/items';
-import type { Item } from '@/types/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getItemById } from '@/data/inventory/items';
+import type { Item } from '@/types/inventory/items';
 
 /**
  * Proveedor Central de Lógica de Objetos

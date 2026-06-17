@@ -8,8 +8,8 @@
  */
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables'
-import { FIRE_RED_MAPS } from '@/data/maps'
+import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'

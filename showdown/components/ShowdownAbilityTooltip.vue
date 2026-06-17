@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ABILITY_DATA } from '../../src/data/abilities';
+import { ABILITY_DATA } from '../../src/data/battle/abilities';
 import gsap from 'gsap';
 
 interface Props {

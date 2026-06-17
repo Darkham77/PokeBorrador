@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
-import type { MapLocation } from '@/types/encounters'
-import { GAME_RATIOS } from '@/data/constants'
+import type { MapLocation } from '@/types/pokemon/encounters'
+import { GAME_RATIOS } from '@/data/system/constants'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 

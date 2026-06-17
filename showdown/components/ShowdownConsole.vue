@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue';
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 
 const store = useShowdownSandboxStore();
 const consoleBody = ref<HTMLElement | null>(null);
@@ -73,11 +73,11 @@ onMounted(() => {
   width: 320px;
   height: 100%;
   background: #030509;
-  border-left: 2px solid rgba(255, 255, 255, 0.12);
+  border-left: 2px solid Rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
   z-index: 80;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: -10px 0 30px Rgba(0, 0, 0, 0.5);
 
   @media (max-width: 1000px) {
     width: 250px;
@@ -99,7 +99,7 @@ onMounted(() => {
   align-items: center;
   padding: 12px 16px;
   background: #0f1220;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
 
   .console-title {
     font-family: var(--font-pixel);
@@ -110,7 +110,7 @@ onMounted(() => {
 
   .clear-console-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.2);
     color: var(--gray, #86868b);
     padding: 3px 8px;
     border-radius: 4px;
@@ -142,21 +142,21 @@ onMounted(() => {
     width: 6px;
   }
   &::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.2);
+    background: Rgba(0,0,0,0.2);
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
+    background: Rgba(255,255,255,0.1);
     border-radius: 3px;
   }
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.2);
+    background: Rgba(255,255,255,0.2);
   }
 }
 
 .console-line {
   word-break: break-word;
   white-space: pre-wrap;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.03);
+  border-bottom: 1px dashed Rgba(255, 255, 255, 0.03);
   padding-bottom: 6px;
 
   &.log-start { color: #f5f5f7; font-weight: bold; }
@@ -166,7 +166,7 @@ onMounted(() => {
   &.log-faint { color: #ef4444; font-weight: bold; }
   &.log-supereffective { color: #fbbf24; font-weight: bold; }
   &.log-resisted { color: #9ca3af; }
-  &.log-crit { color: #f97316; font-weight: bold; text-shadow: 0 0 5px rgba(249, 115, 22, 0.4); }
+  &.log-crit { color: #f97316; font-weight: bold; text-shadow: 0 0 5px Rgba(249, 115, 22, 0.4); }
   &.log-ability { color: #60a5fa; font-weight: bold; }
   &.log-status { color: #c084fc; }
   &.log-weather { color: #38bdf8; }

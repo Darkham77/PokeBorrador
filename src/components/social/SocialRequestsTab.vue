@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, nextTick } from 'vue'
-import { useSocialStore, type PendingRequest } from '@/stores/social'
+import { useSocialStore, type PendingRequest } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import TrainerCard from './TrainerCard.vue'
 import { gsap } from 'gsap'

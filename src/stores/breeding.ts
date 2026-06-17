@@ -1,9 +1,9 @@
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useGameStore } from './game.ts';
-import { useUIStore } from './ui.ts';
-import { useAuthStore } from './auth.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
+import { useAuthStore } from '@/stores/auth.ts';
 import gsap from 'gsap';
 import { 
   checkCompatibility, 
@@ -15,13 +15,13 @@ import {
 } from '@/logic/breeding/breedingEngine';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
-import { POKEMON_DB } from '@/data/pokemonDB';
-import { usePlayerClassStore } from './playerClass.ts';
-import { useEventStore } from './events.ts';
-import { useDaycareMissionsStore } from './daycareMissions.ts';
-import { calculateBreedingCost, executeCloneFossil } from './breedingActions.ts';
-import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
+import { useEventStore } from '@/stores/events.ts';
+import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
+import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
+import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();

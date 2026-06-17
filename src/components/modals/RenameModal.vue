@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { useProfileStore } from '@/stores/profile'
+import { useProfileStore } from '@/stores/player/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'

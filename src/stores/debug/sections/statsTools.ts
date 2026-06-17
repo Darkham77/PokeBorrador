@@ -1,5 +1,5 @@
 import type { DebugSystem, DebugContext } from '@/stores/debug'
-import { TRAINER_RANKS } from '@/data/trainer'
+import { TRAINER_RANKS } from '@/data/player/trainer'
 
 
 export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContext) {
@@ -173,7 +173,7 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
         
         const tm = gym.rewardTM
         if (tm) {
-          import('@/data/items').then(({ getItemByName, getItemById }) => {
+          import('@/data/inventory/items').then(({ getItemByName, getItemById }) => {
             const itemObj = getItemByName(tm) || getItemById(tm)
             const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
             game.state.inventory[tmId] = (game.state.inventory[tmId] || 0) + 1

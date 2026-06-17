@@ -2,7 +2,7 @@
 import { useUIStore } from '@/stores/ui'
 
 import { ref, onMounted, watch, computed } from 'vue';
-import { useSocialStore } from '@/stores/social';
+import { useSocialStore } from '@/stores/social/social';
 import { useTradeStore } from '@/stores/trade';
 import { useGameStore } from '@/stores/game';
 import BaseModal from '@/components/common/BaseModal.vue';

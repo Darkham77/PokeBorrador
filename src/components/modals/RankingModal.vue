@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { useSocialStore } from '@/stores/social'
+import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import { gsap } from 'gsap'
 

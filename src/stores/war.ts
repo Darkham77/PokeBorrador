@@ -2,13 +2,13 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useAuthStore } from './auth.ts'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
 import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, WEEKLY_WIN_BONUS_COINS } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
-import type { DominanceInfo } from '@/types/stores'
+import type { DominanceInfo } from '@/types/system/stores'
 
 interface WarPointsRecord {
   map_id: string

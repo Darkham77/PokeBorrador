@@ -14,7 +14,7 @@ import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const { getHpColor } = useBattleVisuals()
 const uiStore = useUIStore()

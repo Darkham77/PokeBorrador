@@ -2,7 +2,7 @@
 // fallow-ignore-file security-sink
 import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
-import { libraryContent, libraryCategories } from '@/data/libraryData'
+import { libraryContent, libraryCategories } from '@/data/system/libraryData'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 interface Props {

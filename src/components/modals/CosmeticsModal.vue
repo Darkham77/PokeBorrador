@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { useCosmeticsStore } from '@/stores/cosmetics'
-import { useProfileStore } from '@/stores/profile'
+import { useCosmeticsStore } from '@/stores/player/cosmetics'
+import { useProfileStore } from '@/stores/player/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle'
-import { getItemById } from '@/data/items'
+import { useBattleStore } from '@/stores/battle/battle'
+import { getItemById } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'

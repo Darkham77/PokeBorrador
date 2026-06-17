@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useCombatShadowStore } from '@/stores/combatShadows'
+import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 interface Props {

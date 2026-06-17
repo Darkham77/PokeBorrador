@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
-import { useShopStore } from '@/stores/shop'
+import { useShopStore } from '@/stores/inventory/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
@@ -10,7 +10,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   show?: boolean

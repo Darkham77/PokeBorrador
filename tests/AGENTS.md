@@ -24,5 +24,9 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
-- [node/](./node/): Pure logic tests running under the native Node.js runner.
-- [unit/](./unit/): Unit tests for Vue components and stores.
+- [helpers/](./helpers/AGENTS.md): Seed helper functions and setup configurations.
+- [integration/](./integration/AGENTS.md): Multi-module flow validation test suites.
+- [node/](./node/AGENTS.md): Pure logic tests running under the native Node.js runner.
+- [unit/](./unit/AGENTS.md): Unit tests for Vue components and stores.
+
+

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';
 import showdownDB from '../sandbox_db/data/showdown_db_es.json';
 import moveTranslations from '../sandbox_db/data/move_translations.json';

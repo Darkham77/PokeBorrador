@@ -1,4 +1,4 @@
-import type { MoveAction } from '@/types/battle';
+import type { MoveAction } from '@/types/battle/battle';
 
 export const WEATHER_ACTIONS: Record<string, MoveAction> = {
   'sun': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {

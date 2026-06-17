@@ -10,7 +10,7 @@
  * @module pokemonMath
  */
 
-import type { MoveBaseData } from '../../types/database.ts';
+import type { MoveBaseData } from '../../types/system/database.ts';
 
 // ── Type Effectiveness ────────────────────────────────────────────────────────
 

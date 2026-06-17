@@ -3,9 +3,9 @@
  * Serializes the current state into a format suitable for database storage.
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.
  */
-import type { Pokemon } from '@/types/pokemon';
-import type { GameState } from '@/types/game';
-import type { AuthUser } from '@/types/auth';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
+import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';

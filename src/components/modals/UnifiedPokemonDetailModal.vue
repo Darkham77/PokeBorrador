@@ -3,8 +3,8 @@
 import { ref, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory'
-import { usePokemonDetail } from '@/composables/usePokemonDetail'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { usePokemonDetail } from '@/composables/pokemon/usePokemonDetail'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -19,7 +19,7 @@ import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
 import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 
 interface Props {

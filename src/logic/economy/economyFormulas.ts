@@ -3,7 +3,7 @@
  * ECONOMY FORMULAS
  * Centralized logic for shop costs, healing prices, and penalties.
  */
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getPokemonTier } from '../pokemon/tierEngine.ts';
 
 /**

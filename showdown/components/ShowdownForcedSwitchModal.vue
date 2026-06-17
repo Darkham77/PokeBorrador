@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 
 const store = useShowdownSandboxStore();
 
@@ -54,8 +54,8 @@ const handleSwitchSelection = (targetIndex: number) => {
 .forced-switch-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5, 7, 12, 0.85);
-  backdrop-filter: blur(8px);
+  background: Rgba(5, 7, 12, 0.85);
+  backdrop-filter: Blur(8px);
   z-index: 900;
   display: flex;
   align-items: center;
@@ -64,9 +64,9 @@ const handleSwitchSelection = (targetIndex: number) => {
 }
 
 .forced-switch-panel {
-  background: rgba(15, 18, 32, 0.95);
-  border: 2px solid rgba(255, 69, 58, 0.3);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 69, 58, 0.15);
+  background: Rgba(15, 18, 32, 0.95);
+  border: 2px solid Rgba(255, 69, 58, 0.3);
+  box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.8), 0 0 30px Rgba(255, 69, 58, 0.15);
   border-radius: 16px;
   padding: 24px;
   max-width: 500px;
@@ -81,7 +81,7 @@ const handleSwitchSelection = (targetIndex: number) => {
     color: var(--red, #ff453a);
     text-align: center;
     margin: 0;
-    text-shadow: 0 0 10px rgba(255, 69, 58, 0.3);
+    text-shadow: 0 0 10px Rgba(255, 69, 58, 0.3);
   }
 
   .forced-subtitle {
@@ -104,8 +104,8 @@ const handleSwitchSelection = (targetIndex: number) => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: Rgba(255, 255, 255, 0.04);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 8px 12px;
   cursor: pointer;
@@ -137,14 +137,14 @@ const handleSwitchSelection = (targetIndex: number) => {
   }
 
   &:hover:not(.disabled) {
-    background: rgba(10, 132, 255, 0.1);
+    background: Rgba(10, 132, 255, 0.1);
     border-color: var(--blue, #0a84ff);
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
   }
 
   &.fainted-combatant {
     border-color: var(--red, #ff453a);
-    background: rgba(255, 69, 58, 0.05);
+    background: Rgba(255, 69, 58, 0.05);
     opacity: 0.4;
     cursor: not-allowed;
   }

@@ -4,12 +4,12 @@ import gsap from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
-import { useInventoryStore } from '@/stores/inventory'
-import { getItemById, getItemByName } from '@/data/items'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()

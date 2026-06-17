@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, onUnmounted, ref, type CSSProperties } from 'vue';
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 import ShowdownHudCard from './ShowdownHudCard.vue';
 import ShowdownWeatherTooltip from './ShowdownWeatherTooltip.vue';
 import VirtualSpace from '@/components/battle/VirtualSpace.vue';

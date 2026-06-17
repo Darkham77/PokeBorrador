@@ -6,7 +6,7 @@
  * Part of the specialized Pokemon Logic context.
  */
 
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface TierConfig {
   min: number;

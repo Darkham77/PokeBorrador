@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useTradeStore } from '@/stores/trade';
-import { useSocialStore } from '@/stores/social';
+import { useSocialStore } from '@/stores/social/social';
 import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import TradeAssetsGrid from './TradeAssetsGrid.vue';
-import type { TradeOffer } from '@/types/stores';
+import type { TradeOffer } from '@/types/system/stores';
 
 type CardMode = 'incoming' | 'outgoing' | 'accepted';
 

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useGameStore } from './game.ts'
+import { useGameStore } from '@/stores/game.ts'
 import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
-import type { LeaderboardEntry } from './social.ts'
+import type { LeaderboardEntry } from '@/stores/social/social.ts'
 
 interface ProfileRow {
   id: string

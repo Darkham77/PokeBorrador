@@ -4,8 +4,8 @@ import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemByName, getItemById } from '@/data/items';
-import type { ClaimItem } from '@/types/game';
+import { getItemByName, getItemById } from '@/data/inventory/items';
+import type { ClaimItem } from '@/types/system/game';
 
 interface PokemonAssetData {
   id: number;

@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, nextTick } from 'vue'
-import { useSocialStore } from '@/stores/social'
-import { useChatStore } from '@/stores/chat'
+import { useSocialStore } from '@/stores/social/social'
+import { useChatStore } from '@/stores/social/chat'
 import { useTradeStore } from '@/stores/trade'
 import { useUIStore } from '@/stores/ui'
 import TrainerCard from './TrainerCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
 
-import type { Friend } from '@/stores/social'
+import type { Friend } from '@/stores/social/social'
 
 const socialStore = useSocialStore()
 const chatStore = useChatStore()

@@ -2,8 +2,8 @@
 import { POKEMON_SPRITE_IDS } from '@/logic/constants/pokedexConstants';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
-import { MAPS_WITH_CYCLES } from '@/data/map-assets';
-import { getItemById } from '@/data/items';
+import { MAPS_WITH_CYCLES } from '@/data/world/map-assets';
+import { getItemById } from '@/data/inventory/items';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.

@@ -6,15 +6,15 @@ import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
   ANIMATED_VARIATION_FRAMES,
-} from '@/data/animatedSpriteDatabase';
-import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase';
+} from '@/data/pokemon/animatedSpriteDatabase';
+import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { useCombatShadowStore } from '@/stores/combatShadows';
-import { useBattleStore } from '@/stores/battle';
+import { useCombatShadowStore } from '@/stores/battle/combatShadows';
+import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleStages } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages } from '@/types/battle/battle';
 
 export interface SparkleData {
   id: string | number;

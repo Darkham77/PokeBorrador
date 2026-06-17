@@ -1,9 +1,9 @@
 
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { TRAINER_RANKS } from '@/data/trainer';
+import { TRAINER_RANKS } from '@/data/player/trainer';
 
 import { validateAndSanitize } from './saveService.ts';
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
@@ -13,8 +13,8 @@ import { logger } from '@/logic/utils/logger';
  * Ported from legacy 01_auth.js 'onLogin' logic.
  */
 
-import type { GameState } from '@/types/game';
-import type { AuthUser } from '@/types/auth';
+import type { GameState } from '@/types/system/game';
+import type { AuthUser } from '@/types/auth/auth';
 
 export interface LoadResult {
   data: GameState | null;

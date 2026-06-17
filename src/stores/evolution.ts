@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
-import type { Pokemon, PokemonMove } from '@/types/pokemon';
+import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
 
 export const useEvolutionStore = defineStore('evolution', () => {
   const gameStore = useGameStore();

@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue'
 import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 
 /**
  * useCombatCamera

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import { getItemByName, getItemById } from '@/data/items'
+import { getItemByName, getItemById } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   title: string

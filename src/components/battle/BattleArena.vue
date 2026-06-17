@@ -2,7 +2,7 @@
 
 import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'

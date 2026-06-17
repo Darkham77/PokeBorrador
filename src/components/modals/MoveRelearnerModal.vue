@@ -2,12 +2,12 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { POKEMON_DB } from '@/data/pokemonDB'
-import { EVOLUTION_TABLE } from '@/data/evolutionData'
-import { MOVE_DATA } from '@/data/moves'
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
+import { EVOLUTION_TABLE } from '@/data/pokemon/evolutionData'
+import { MOVE_DATA } from '@/data/battle/moves'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
-import type { Pokemon, Move } from '@/types/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface LearnsetEntry {
   lv: number

@@ -4,8 +4,8 @@
  */
 import { DBRouter } from './dbRouter.ts'
 import { safeStorage } from '../utils/storage.ts'
-import type { DBMode } from '@/types/database'
-import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '../../data/official_servers.ts'
+import type { DBMode } from '@/types/system/database'
+import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '../../data/system/official_servers.ts'
 
 // Identify if the instance is running in a local context
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')

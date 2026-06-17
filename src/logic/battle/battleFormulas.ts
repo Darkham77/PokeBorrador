@@ -16,11 +16,11 @@ import {
   type PureBattleStages
 } from './battleMath.ts';
 import { getDayCycle } from '../utils/timeUtils.ts';
-import type { Pokemon, Move } from '@/types/pokemon';
-import type { BattleStages, BattleWeather } from '@/types/battle';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { BattleStages, BattleWeather } from '@/types/battle/battle';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-import { useBattleStore } from '@/stores/battle';
+import { useBattleStore } from '@/stores/battle/battle';
 
 import type { DayPhase } from '@/logic/utils/timeUtils';
 

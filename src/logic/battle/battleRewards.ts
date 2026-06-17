@@ -1,5 +1,5 @@
-import type { Pokemon } from '@/types/pokemon';
-import { MAX_POKEMON_LEVEL } from '@/data/constants';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getExpNeededPure } from '../pokemon/statsMath.ts';
 
 /**

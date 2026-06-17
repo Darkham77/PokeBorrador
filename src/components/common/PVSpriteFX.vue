@@ -6,11 +6,11 @@
  */
 import { computed, inject, type Ref, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { gsap } from 'gsap'
 import PVStatusFX from './PVStatusFX.vue'
 import PVAuraFX from './PVAuraFX.vue'
-import { resolveEffectSettings } from '@/data/fx-configs'
+import { resolveEffectSettings } from '@/data/battle/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 interface FXData {

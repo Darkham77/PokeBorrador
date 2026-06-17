@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ShopItem } from '@/types/items'
+import type { ShopItem } from '@/types/inventory/items'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const props = defineProps<{

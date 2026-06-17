@@ -8,8 +8,8 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { STONE_EVOLUTIONS } from '@/data/evolutionData';
-import { getItemByName } from '@/data/items';
+import { STONE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
+import { getItemByName } from '@/data/inventory/items';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 

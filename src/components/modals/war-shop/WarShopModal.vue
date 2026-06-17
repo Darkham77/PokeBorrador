@@ -3,14 +3,14 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { useWarStore } from '@/stores/war'
-import { SHOP_ITEMS } from '@/data/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import SortControls from '@/components/common/SortControls.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
-import type { ShopItem } from '@/types/items'
+import type { ShopItem } from '@/types/inventory/items'
 
 const uiStore = useUIStore()
 const warStore = useWarStore()

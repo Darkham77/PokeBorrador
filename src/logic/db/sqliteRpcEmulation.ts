@@ -1,6 +1,6 @@
 import { initSQLite } from './sqliteEngine.ts';
 import { logger } from '../utils/logger.ts';
-import type { DBResponse } from '@/types/database';
+import type { DBResponse } from '@/types/system/database';
 
 // Import sub-modules for offline RPC emulations
 import { emulateChangeUsername } from './rpcEmulations/profileRpc.ts';

@@ -2,13 +2,13 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
-import { useAuthStore } from './auth.ts'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
-import { usePvPStore } from './pvp.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
+import { usePvPStore } from '@/stores/pvp.ts'
 import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnResult, type PvPAction } from '@/logic/pvp/pvpEngine'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 
 export interface BattleInvite {

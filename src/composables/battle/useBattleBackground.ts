@@ -1,5 +1,5 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { MAP_ROUTE_MAPPING, AVAILABLE_BATTLE_MAPS } from '@/data/map-assets'
+import { MAP_ROUTE_MAPPING, AVAILABLE_BATTLE_MAPS } from '@/data/world/map-assets'
 
 const CYCLE_SUFFIXES: Record<string, string> = {
   // English keys

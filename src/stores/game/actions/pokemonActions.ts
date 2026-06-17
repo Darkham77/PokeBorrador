@@ -2,9 +2,9 @@ import { makePokemon, sanitizePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
-import type { GameState } from '@/types/game'
-import type { Pokemon, PokemonEgg } from '@/types/pokemon'
-import { getItemByName, getItemById } from '@/data/items'
+import type { GameState } from '@/types/system/game'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
+import { getItemByName, getItemById } from '@/data/inventory/items'
 
 export function usePokemonActions(
   state: GameState, 

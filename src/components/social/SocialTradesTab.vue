@@ -5,8 +5,8 @@ import { useGameStore } from '@/stores/game';
 import { gsap } from 'gsap';
 import TradeCard from '@/components/social/TradeCard.vue';
 import ClaimCard from '@/components/social/ClaimCard.vue';
-import type { TradeOffer } from '@/types/stores';
-import type { ClaimItem } from '@/types/game';
+import type { TradeOffer } from '@/types/system/stores';
+import type { ClaimItem } from '@/types/system/game';
 
 type SubTab = 'received' | 'sent' | 'claims';
 

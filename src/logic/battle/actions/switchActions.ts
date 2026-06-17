@@ -1,4 +1,4 @@
-import type { BattleContext } from '@/types/battleContext';
+import type { BattleContext } from '@/types/battle/battleContext';
 import { gameBus } from '@/logic/events/gameBus';
 
 /**

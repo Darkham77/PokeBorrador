@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 import ShowdownBattleMenu from './ShowdownBattleMenu.vue';
 import ShowdownForcedSwitchModal from './ShowdownForcedSwitchModal.vue';
 
@@ -30,9 +30,9 @@ const store = useShowdownSandboxStore();
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   height: 160px;
-  background: rgba(13, 17, 23, 0.95);
-  border-top: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+  background: Rgba(13, 17, 23, 0.95);
+  border-top: 2px solid Rgba(255, 255, 255, 0.15);
+  box-shadow: 0 -10px 40px Rgba(0, 0, 0, 0.7);
   z-index: 50;
 
   @media (max-width: 800px) {
@@ -44,10 +44,10 @@ const store = useShowdownSandboxStore();
 
 .dialogue-box {
   padding: 24px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid Rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
-  background: rgba(5, 5, 10, 0.5);
+  background: Rgba(5, 5, 10, 0.5);
 
   .dialogue-text {
     font-family: var(--font-pixel);
@@ -55,12 +55,12 @@ const store = useShowdownSandboxStore();
     line-height: 1.8;
     color: #f5f5f7;
     margin: 0;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 2px Rgba(0, 0, 0, 0.8);
   }
 
   @media (max-width: 800px) {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
     padding: 16px;
   }
 }

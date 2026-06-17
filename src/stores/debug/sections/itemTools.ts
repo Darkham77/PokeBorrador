@@ -1,5 +1,5 @@
 
-import { getItemByName, getItemById, SHOP_ITEMS } from '@/data/items'
+import { getItemByName, getItemById, SHOP_ITEMS } from '@/data/inventory/items'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 

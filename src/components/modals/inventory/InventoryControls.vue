@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useInventoryStore } from '@/stores/inventory'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import SortControls from '@/components/common/SortControls.vue'
 

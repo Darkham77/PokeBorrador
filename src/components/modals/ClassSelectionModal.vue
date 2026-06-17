@@ -2,8 +2,8 @@
 import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue';
 import { gsap } from 'gsap';
-import { usePlayerClassStore } from '@/stores/playerClass';
-import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';

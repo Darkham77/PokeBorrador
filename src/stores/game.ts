@@ -2,18 +2,18 @@
 import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
-import { useAuthStore } from './auth.ts'
+import { useAuthStore } from '@/stores/auth.ts'
 import { supabase } from '@/logic/db/supabase'
-import { INITIAL_STATE } from './gameInitialState.ts'
-import type { GameState } from '@/types/game'
+import { INITIAL_STATE } from '@/stores/gameInitialState.ts'
+import type { GameState } from '@/types/system/game'
 
 
 // Actions Modules
-import { useSaveActions } from './game/actions/saveActions.ts'
-import { usePokemonActions } from './game/actions/pokemonActions.ts'
-import { useTrainerActions } from './game/actions/trainerActions.ts'
-import { useBreedingActions } from './game/actions/breedingActions.ts'
-import { useTeamActions } from './game/actions/teamActions.ts'
+import { useSaveActions } from '@/stores/game/actions/saveActions.ts'
+import { usePokemonActions } from '@/stores/game/actions/pokemonActions.ts'
+import { useTrainerActions } from '@/stores/game/actions/trainerActions.ts'
+import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts'
+import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
 
 import { DBRouter } from '@/logic/db/dbRouter'
 
@@ -100,7 +100,7 @@ export const useGameStore = defineStore('game', () => {
         })
 
         // Cargar datos sociales y notificar solicitudes pendientes al iniciar sesión
-        import('./social.ts').then(async ({ useSocialStore }) => {
+        import('@/stores/social/social.ts').then(async ({ useSocialStore }) => {
           const socialStore = useSocialStore()
           await socialStore.loadSocialData()
           if (socialStore.pendingRequests.length > 0) {

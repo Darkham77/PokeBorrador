@@ -10,7 +10,7 @@ import MapCardSpawns from './MapCardSpawns.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
@@ -20,15 +20,15 @@ import { logger } from '@/logic/utils/logger'
 import { useMapCardObservers } from '@/composables/map/useMapCardObservers'
 import { useMapCardSprites } from '@/composables/map/useMapCardSprites'
 import { useMapCardAnimations } from '@/composables/map/useMapCardAnimations'
-import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
+import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals'
 import { useMapCardState } from './useMapCardState'
 
 // Flare URLs for spawn auras
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')
 const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2')
 
-import type { MapLocation } from '@/types/encounters'
-import type { DominanceInfo } from '@/types/stores'
+import type { MapLocation } from '@/types/pokemon/encounters'
+import type { DominanceInfo } from '@/types/system/stores'
 
 interface SpawnPool {
   generic: string[]

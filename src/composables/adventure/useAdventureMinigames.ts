@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
 const FOSSIL_POKEMON_IDS = ['omanyte', 'kabuto', 'aerodactyl'] as const

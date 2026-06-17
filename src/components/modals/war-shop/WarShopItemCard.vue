@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useShopStore } from '@/stores/shop'
+import { useShopStore } from '@/stores/inventory/shop'
 import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'

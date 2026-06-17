@@ -2,12 +2,12 @@
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
-import { getItemById, getItemByName } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import PokemonSelectionFilters from '../modals/PokemonSelectionFilters.vue'
 import SortControls from '@/components/common/SortControls.vue'
 import MarketItemCard from './MarketItemCard.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const game = useGameStore()

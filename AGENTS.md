@@ -174,10 +174,13 @@ When the user requests a durable behavior change, record it here or in the relev
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
 - [scripts/AGENTS.md](./scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.
+- [showdown/AGENTS.md](./showdown/AGENTS.md): Showdown sandbox offline combat simulation and testing logic.
 - [src/components/AGENTS.md](./src/components/AGENTS.md): Reusable visual UI components, styling compliance, and Retro-Modern aesthetics.
 - [src/composables/AGENTS.md](./src/composables/AGENTS.md): Reusable composition state logic and lifecycle helpers.
 - [src/data/AGENTS.md](./src/data/AGENTS.md): Static game databases, data configurations, and asset catalogs.
+- [src/directives/AGENTS.md](./src/directives/AGENTS.md): Custom Vue directives.
 - [src/logic/AGENTS.md](./src/logic/AGENTS.md): Core battle engine mechanics, math formulas, translations, and DBRouter boundaries.
+- [src/router/AGENTS.md](./src/router/AGENTS.md): Application router and navigation guards.
 - [src/stores/AGENTS.md](./src/stores/AGENTS.md): Pinia state management, state validation, and serialization prevention rules.
 - [src/styles/AGENTS.md](./src/styles/AGENTS.md): UI styling tokens, SASS mixins, and views styling rules.
 - [src/types/AGENTS.md](./src/types/AGENTS.md): TypeScript global contracts and types definitions.

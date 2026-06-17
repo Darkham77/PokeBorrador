@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { translateType } from '@/data/types'
+import { translateType } from '@/data/battle/types'
 
 interface Props {
   type: string

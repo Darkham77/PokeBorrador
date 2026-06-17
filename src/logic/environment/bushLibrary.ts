@@ -8,7 +8,7 @@
  */
 
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
-import { FIRE_RED_MAPS } from '../../data/maps.ts';
+import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 import { mulberry32 } from '../utils/math.ts';
 
 export { BUSH_FAMILIES, type BushFamily };

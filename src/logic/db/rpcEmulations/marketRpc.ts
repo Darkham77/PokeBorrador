@@ -1,6 +1,6 @@
 import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
-import type { DBResponse } from '@/types/database';
+import type { DBResponse } from '@/types/system/database';
 
 interface OfflineSaveData {
   box?: Record<string, unknown>[];

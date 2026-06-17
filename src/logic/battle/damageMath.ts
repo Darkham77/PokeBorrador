@@ -6,7 +6,7 @@ import type {
   PureDamageOptions,
   PureDamageResult
 } from './battleMathTypes.ts';
-import { TYPE_CHART, type PokemonType } from '../../data/types.ts';
+import { TYPE_CHART, type PokemonType } from '../../data/battle/types.ts';
 
 export const CURRENT_GENERATION = 2;
 export const ACTIVE_RULE_SET = 2;

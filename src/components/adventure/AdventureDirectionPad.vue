@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MapCard from '@/components/map/MapCard.vue'
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 import { gsapHover as vGsapHover } from '@/directives/gsapHover'
 
 interface ConnectionItem {

@@ -1,8 +1,8 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon, PokemonMove } from '@/types/pokemon';
-import type { PokemonData, LearnsetMove } from '@/types/database';
+import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import type { PokemonData, LearnsetMove } from '@/types/system/database';
 
 /**
  * Realiza la evolución de los datos de un Pokémon.

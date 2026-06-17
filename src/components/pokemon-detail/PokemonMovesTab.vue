@@ -6,7 +6,7 @@ import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
-import type { Move } from '@/types/pokemon'
+import type { Move } from '@/types/pokemon/pokemon'
 
 interface MoveDetail extends Move {
   level?: number

@@ -10,8 +10,8 @@
  * @module itemMath
  */
 
-import type { Pokemon } from '../../types/pokemon.ts';
-import type { ItemEffectResult } from '../../types/items.ts';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { ItemEffectResult } from '../../types/inventory/items.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
 

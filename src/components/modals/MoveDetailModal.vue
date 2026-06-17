@@ -2,10 +2,10 @@
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import { MOVE_DATA } from '@/data/moves'
+import { MOVE_DATA } from '@/data/battle/moves'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
-import type { MoveBaseData } from '@/types/database'
+import type { MoveBaseData } from '@/types/system/database'
 
 interface Props {
   show?: boolean

@@ -1,8 +1,8 @@
 import { logger } from '@/logic/utils/logger'
 import { useDebugStore } from '@/stores/debug'
-import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
+import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
 
 export function setupBattleDebug(ctx: BattleContext) {
   if (typeof window === 'undefined') return

@@ -1,12 +1,12 @@
-import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
-import { MAX_POKEMON_LEVEL } from '@/data/constants'
+import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/player/trainer'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
-import { usePlayerClassStore } from '@/stores/playerClass'
-import type { GameState } from '@/types/game'
-import type { Pokemon } from '@/types/pokemon'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
+import type { GameState } from '@/types/system/game'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export function useTrainerActions(state: GameState, scheduleSave: () => Promise<void>) {
   function getTrainerRank() {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
-import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
+import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemByName } from '@/data/items'
+import { getItemByName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'

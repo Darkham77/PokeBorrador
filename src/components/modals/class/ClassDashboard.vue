@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { gsap } from 'gsap'
-import { type ClassDefinition } from '@/stores/playerClass'
+import { type ClassDefinition } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 

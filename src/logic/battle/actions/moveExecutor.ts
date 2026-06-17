@@ -6,9 +6,9 @@ import { gameBus } from '@/logic/events/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { MOVE_DATA } from '@/data/moves'
-import type { BattleContext } from '@/types/battleContext'
-import type { Move } from '@/types/pokemon'
+import { MOVE_DATA } from '@/data/battle/moves'
+import type { BattleContext } from '@/types/battle/battleContext'
+import type { Move } from '@/types/pokemon/pokemon'
 import { logger } from '@/logic/utils/logger'
 
 export async function executeMoveAction(

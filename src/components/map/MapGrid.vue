@@ -9,7 +9,7 @@ import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { useMapStore } from '@/stores/map'
 
 
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 
 
 
@@ -22,7 +22,7 @@ interface Props {
   classData?: { extortedRouteId?: string | null; officialRouteId?: string | null }
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
-  dominanceData?: Record<string, import('@/types/stores').DominanceInfo>
+  dominanceData?: Record<string, import('@/types/system/stores').DominanceInfo>
   dailyGuardianCaptures?: string[]
 }
 

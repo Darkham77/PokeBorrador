@@ -32,6 +32,14 @@ Logic Developers / Game Designers.
 
 ## Child DOX Index
 
+- [hover/AGENTS.md](./hover/AGENTS.md): Auto-indexed sub-module.
+
+- [evolution/AGENTS.md](./evolution/AGENTS.md): Auto-indexed sub-module.
+
+- [encounters/AGENTS.md](./encounters/AGENTS.md): Auto-indexed sub-module.
+
+- [audio/AGENTS.md](./audio/AGENTS.md): Auto-indexed sub-module.
+
 - [auth/](./auth/): Local and online authentication routers.
 - [battle/](./battle/): FSM orchestrators, combat engine, moves database.
 - [breeding/](./breeding/): Breeding formulas, daycare constraints.
@@ -52,7 +60,10 @@ Logic Developers / Game Designers.
 - [pokemon/](./pokemon/): Pokemon stats growth, factories, and sanitization.
 - [providers/](./providers/): Showdown move translation providers.
 - [pvp/](./pvp/): Matchmaking routers, network sync.
+- [render/](./render/): Graphic animation workers and canvas rendering.
 - [services/](./services/): External assets and network API managers.
 - [utils/](./utils/): Shared formatting libraries.
+- [validation/](./validation/): Input validators and data schema checking.
 - [war/](./war/): Factions point calculators.
 - [weather/](./weather/): Weather effects multipliers.
+

@@ -1,6 +1,6 @@
 
 import { useModalStore } from '@/stores/modals'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 /**
  * Triggers the flicker and exclamation animation for a rival encounter.

@@ -1,5 +1,5 @@
-import type { DaycareEgg } from '@/types/breeding';
-import type { PokemonEgg, PokemonIVs } from '@/types/pokemon';
+import type { DaycareEgg } from '@/types/breeding/breeding';
+import type { PokemonEgg, PokemonIVs } from '@/types/pokemon/pokemon';
 
 interface DaycareEggParams {
   id?: string;

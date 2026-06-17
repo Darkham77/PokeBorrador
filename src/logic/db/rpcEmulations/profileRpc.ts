@@ -1,6 +1,6 @@
 import { queryLocal } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
-import type { DBResponse } from '@/types/database';
+import type { DBResponse } from '@/types/system/database';
 
 export async function emulateChangeUsername(
   _sqliteDb: SQLiteDatabase,

@@ -2,7 +2,7 @@
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { POKEMON_TAGS, POKEMON_BADGES } from '@/logic/constants/tags'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   isDaycareContext?: boolean

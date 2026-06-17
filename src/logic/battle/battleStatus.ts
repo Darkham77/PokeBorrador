@@ -3,8 +3,8 @@
  * Portado de js/07_battle.js para cumplir con el estándar modular v6.
  */
 
-import type { Pokemon, PokemonStatus } from '@/types/pokemon'
-import type { BattleContext } from '@/types/battleContext'
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon'
+import type { BattleContext } from '@/types/battle/battleContext'
 
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';

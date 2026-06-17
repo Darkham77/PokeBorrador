@@ -1,12 +1,12 @@
 
 import { checkStoneEvolution } from '../evolution/evolutionLogic.ts';
-import { TM_COMPAT, GAME_TMS } from '../../data/pokedex.ts';
-import { useBuffsStore } from '@/stores/buffs';
-import type { Pokemon } from '@/types/pokemon';
-import type { ItemEffectResult } from '@/types/items';
-import type { GameState } from '@/types/game';
-import { MAX_POKEMON_LEVEL } from '@/data/constants';
-import { getItemByName, getItemById } from '../../data/items.ts';
+import { TM_COMPAT, GAME_TMS } from '../../data/pokemon/pokedex.ts';
+import { useBuffsStore } from '@/stores/battle/buffs';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { ItemEffectResult } from '@/types/inventory/items';
+import type { GameState } from '@/types/system/game';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { getItemByName, getItemById } from '../../data/inventory/items.ts';
 
 
 interface TMData {

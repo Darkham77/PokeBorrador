@@ -1,0 +1,262 @@
+<script setup lang="ts">
+import { computed, onMounted } from 'vue' // HMR Trigger
+import { useGameStore } from '@/stores/game'
+import { useMapStore, type PendingAward } from '@/stores/map'
+import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
+import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
+import WalkedEggsPanel from '@/components/breeding/WalkedEggsPanel.vue'
+import MapGrid from '@/components/map/MapGrid.vue'
+import { useUIStore } from '@/stores/ui'
+import { useEventStore } from '@/stores/events'
+import { GYMS } from '@/data/world/gyms'
+import { useModalStore } from '@/stores/modals'
+import type { DaycareMission } from '@/types/breeding/breeding'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import type { MapLocation } from '@/types/pokemon/encounters'
+import { pokemonNeedsHealing, calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import { useBreedingStore } from '@/stores/breeding'
+
+const gameStore = useGameStore()
+const mapStore = useMapStore()
+const uiStore = useUIStore()
+const eventStore = useEventStore()
+const modalStore = useModalStore()
+const breedingStore = useBreedingStore()
+
+onMounted(() => {
+  gameStore.checkRouteExpirations()
+})
+
+const navigateToMap = async (loc: MapLocation | string | number) => {
+  if (modalStore.isOpen('Confirm')) return
+  const id = typeof loc === 'object' ? loc.id : String(loc)
+  
+  // Lógica de extorsión del Team Rocket
+  if (gameStore.state.playerClass === 'rocket' && id.startsWith('route')) {
+    const classData = gameStore.state.classData || {}
+    const now = Temporal.Now.instant().epochMilliseconds
+    const extTimestamp = Number(classData.extortedRouteTimestamp || 0)
+    const isExpired = !classData.extortedRouteId || (now - extTimestamp > 24 * 3600 * 1000)
+
+    if (isExpired) {
+      modalStore.open('Confirm', {
+        title: '🏴‍☠️ RUTA DE EXTORSISÓN',
+        message: `¿Quieres extorsionar la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} durante las próximas 24 horas para ganar x1.5 ₽?`,
+        confirmText: 'EXTORSIONAR',
+        cancelText: 'IGNORAR',
+        variant: 'retro',
+        onConfirm: async () => {
+          if (!gameStore.state.classData) {
+            gameStore.state.classData = {
+              captureStreak: 0,
+              longestStreak: 0,
+              reputation: 0,
+              blackMarketSales: 0,
+              criminality: 0,
+              blackMarketDaily: { date: '', items: [], purchased: [] }
+            }
+          }
+          gameStore.state.classData.extortedRouteId = id
+          gameStore.state.classData.extortedRouteTimestamp = String(now)
+          uiStore.notify(`¡Has tomado control y extorsionado la ${id.toUpperCase().replace('ROUTE', 'Ruta ')}!`, '💰')
+          await gameStore.save(false)
+          mapStore.navigate(id)
+        },
+        onCancel: () => {
+          mapStore.navigate(id)
+        }
+      })
+      return
+    }
+  }
+
+  // Lógica de Ruta Oficial del Entrenador
+  if (gameStore.state.playerClass === 'entrenador' && id.startsWith('route')) {
+    const classData = gameStore.state.classData || {}
+    const now = Temporal.Now.instant().epochMilliseconds
+    const offTimestamp = Number(classData.officialRouteTimestamp || 0)
+    const isExpired = !classData.officialRouteId || (now - offTimestamp > 24 * 3600 * 1000)
+
+    if (isExpired) {
+      modalStore.open('Confirm', {
+        title: '📍 RUTA OFICIAL',
+        message: `¿Quieres marcar la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} como tu Ruta Oficial hoy? Durante 30 minutos ganarás +1 REP por cada combate ganado aquí.`,
+        confirmText: 'ESTABLECER',
+        cancelText: 'IGNORAR',
+        variant: 'retro',
+        onConfirm: async () => {
+          if (!gameStore.state.classData) {
+            gameStore.state.classData = {
+              captureStreak: 0,
+              longestStreak: 0,
+              reputation: 0,
+              blackMarketSales: 0,
+              criminality: 0,
+              blackMarketDaily: { date: '', items: [], purchased: [] }
+            }
+          }
+          gameStore.state.classData.officialRouteId = id
+          gameStore.state.classData.officialRouteTimestamp = String(now)
+          uiStore.notify(`¡Estableciste la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} como tu Ruta Oficial!`, '📍')
+          await gameStore.save(false)
+          mapStore.navigate(id)
+        },
+        onCancel: () => {
+          mapStore.navigate(id)
+        }
+      })
+      return
+    }
+  }
+
+  mapStore.navigate(id)
+}
+
+const openTab = (tab: string) => {
+  if (tab === 'daycare') {
+    modalStore.open('Daycare')
+  } else if (tab === 'daycare-missions') {
+    modalStore.open('EventMissions')
+  } else {
+    uiStore.activeTab = tab
+  }
+}
+
+const openCenter = () => {
+  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
+  
+  if (!needsHeal) {
+    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
+    return
+  }
+
+  // Validación de Cooldown
+  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
+  if (cooldownSecs > 0 && gameStore.state.lastPokemonCenterHeal) {
+    const timeElapsed = Temporal.Now.instant().epochMilliseconds - gameStore.state.lastPokemonCenterHeal
+    const cooldownMs = cooldownSecs * 1000
+    if (timeElapsed < cooldownMs) {
+      const remainingMs = cooldownMs - timeElapsed
+      const totalRemainingSecs = Math.ceil(remainingMs / 1000)
+      const mins = Math.floor(totalRemainingSecs / 60)
+      const secs = totalRemainingSecs % 60
+      const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`
+      uiStore.notify(`El Centro Pokémon está en mantenimiento. Disponible en ${formattedTime}.`, '🏥')
+      return
+    }
+  }
+  
+  modalStore.open('PokemonCenter')
+}
+
+// Mapeo de misiones para los sprites
+const missionSprites = computed(() => {
+  const missions = (gameStore.state.daycare_missions || []).filter(m => !m.completed)
+  return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4) as string[]
+})
+
+const gymSprites = computed(() => {
+  const defeatedIds = gameStore.state.defeatedGyms || []
+  return GYMS.filter(g => !defeatedIds.includes(g.id))
+    .slice(0, 8)
+    .map(g => g.sprite)
+})
+
+const activeEventData = computed(() => {
+  const active = (eventStore.activeEvents as GameEvent[])?.[0]
+  if (!active) return { active: false, text: 'No hay eventos activos en este momento', icon: '⚡' }
+  return {
+    active: true,
+    text: `${active.name}: ${active.description}`,
+    icon: active.icon || '⚡'
+  }
+})
+
+const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward) => ({
+  event_id: a.id,
+  event_name: (a.data.event_name as string) || 'Evento Especial'
+})))
+</script>
+
+<template>
+  <div class="map-view-container legacy-ui">
+    <!-- Header de Eventos -->
+    <MapEventCarousel
+      v-if="mapStore.activeEvents.length > 0 || mappedAwards.length > 0"
+      :events="mapStore.activeEvents"
+      :awards="mappedAwards"
+      @open-event="navigateToMap"
+      @open-award="navigateToMap"
+    />
+
+    <!-- Estatus Superior (PC, Guardería, etc) -->
+    <MapStatusSummary
+      :missions-remaining="breedingStore.fulfillableMissionsCount"
+      :mission-sprites="missionSprites"
+      :gym-rematches="8 - (gameStore.state.defeatedGyms?.length || 0)" 
+      :gym-sprites="gymSprites"
+      :egg-count="breedingStore.warehouseEggs?.length || 0"
+      :rival-event-active="activeEventData.active"
+      :rival-event-text="activeEventData.text"
+      :rival-event-icon="activeEventData.icon"
+      @open-tab="openTab"
+      @open-center="openCenter"
+      @open-event="modalStore.open('EventDetail', { event: eventStore.activeEvents[0] })"
+    />
+
+    <!-- Walking eggs progress panel -->
+    <WalkedEggsPanel />
+
+    <!-- Localizaciones (Grilla de Mapas) -->
+    <div class="legacy-divider">
+      <span class="divider-text">REGIÓN DE KANTO</span>
+    </div>
+
+    <MapGrid
+      :maps="mapStore.maps"
+      :badge-count="gameStore.state.badges || 0"
+      :cycle="mapStore.currentCycle"
+      :weather="mapStore.globalWeather || undefined"
+      :player-class="gameStore.state.playerClass || undefined"
+      :class-data="gameStore.state.classData"
+      :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
+      :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"
+      :dominance-data="mapStore.mapWinners"
+      :daily-guardian-captures="mapStore.dailyGuardianCaptures"
+      @navigate="navigateToMap"
+    />
+  </div>
+</template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+.map-view-container {
+  padding: 0 0 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.legacy-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0 20px;
+}
+
+.legacy-divider::before,
+.legacy-divider::after {
+  content: '';
+  flex: 1;
+  height: 4px;
+  background: Rgba(255, 255, 255, 0.1);
+}
+
+.divider-text {
+  @include pixelated;
+  font-size: 10px;
+  color: var(--gray);
+  letter-spacing: 2px;
+}
+
+</style>

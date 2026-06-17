@@ -5,11 +5,11 @@
  */
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemByName, getItemById } from '@/data/items';
-import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { getItemByName, getItemById } from '@/data/inventory/items';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { logger } from '../utils/logger.ts';
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleLog, BattleSource } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleLog, BattleSource } from '@/types/battle/battle';
 
 interface LogContext {
   gs: {

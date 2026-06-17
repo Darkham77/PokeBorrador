@@ -3,18 +3,18 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useSocialStore } from '@/stores/social'
+import { useSocialStore } from '@/stores/social/social'
 import { useModalStore } from '@/stores/modals'
 import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useEventStore } from '@/stores/events'
 import { useGymsStore } from '@/stores/gyms'
-import { getItemById, getItemByName } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 import EggSprite from '@/components/common/EggSprite.vue'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-import { resolveNormalizedName } from '@/stores/inventoryHelpers'
+import { resolveNormalizedName } from '@/stores/inventory/inventoryHelpers'
 
 interface Props {
   position?: string

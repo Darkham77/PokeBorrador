@@ -3,10 +3,10 @@ import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
-import { MAX_POKEMON_LEVEL } from '@/data/constants'
-import { NATURE_DATA } from '@/data/natures'
-import { ABILITY_DATA } from '@/data/abilities'
-import { SHOP_ITEMS } from '@/data/items'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { NATURE_DATA } from '@/data/battle/natures'
+import { ABILITY_DATA } from '@/data/battle/abilities'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 
 // Subcomponents
 import DebugSearchSelect from './DebugSearchSelect.vue'
@@ -15,7 +15,7 @@ import PokemonMovePicker from './PokemonMovePicker.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import PokemonBaseStats from './PokemonBaseStats.vue'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const props = defineProps<{
   pokemon: Pokemon

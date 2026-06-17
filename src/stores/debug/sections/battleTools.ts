@@ -1,8 +1,8 @@
 import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
-import { useBattleStore } from '@/stores/battle'
-import type { Pokemon } from '@/types/pokemon'
-import { MAX_POKEMON_LEVEL } from '@/data/constants'
+import { useBattleStore } from '@/stores/battle/battle'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
@@ -161,7 +161,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
     command: 'setStatus',
     description: 'Cambiar estado de un pokemon (burn, poison, paralysis, freeze, sleep, null). Toggle si ya lo tiene.',
     action: (side: string, status: string) => {
-      import('@/stores/battle').then(({ useBattleStore }) => {
+      import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const poke = side === 'player' 
           ? battle.state?.player 
@@ -193,7 +193,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
     command: 'setSecondaryStatus',
     description: 'Cambiar estados secundarios (confused, attracted, cursed, seeded). Toggle automático.',
     action: (side: string, type: string) => {
-      import('@/stores/battle').then(({ useBattleStore }) => {
+      import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const poke = (side === 'player' 
           ? battle.state?.player 
@@ -228,7 +228,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
     command: 'setStatStage',
     description: 'Cambiar nivel de estadística (-6 a +6).',
     action: (side: string, stat: string, val: string) => {
-      import('@/stores/battle').then(({ useBattleStore }) => {
+      import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
         const sKey = stat
@@ -248,7 +248,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
     command: 'modifyStatStage',
     description: 'Modificar nivel de estadística relativo (ej: +1, -1).',
     action: (side: string, stat: string, delta: string) => {
-      import('@/stores/battle').then(({ useBattleStore }) => {
+      import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
         const sKey = stat
@@ -268,7 +268,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
     command: 'setFieldEffect',
     description: 'Activar efecto de campo (screens, weather). Toggle automático.',
     action: (side: string, effect: string, val: string) => {
-      import('@/stores/battle').then(({ useBattleStore }) => {
+      import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
         

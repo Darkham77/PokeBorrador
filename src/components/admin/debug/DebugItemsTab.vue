@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import gsap from 'gsap'
-import { SHOP_ITEMS } from '@/data/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useInventoryStore } from '@/stores/inventory'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 
 interface ShopItem {
   id: string

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { usePlayerClassStore, type ClassDefinition } from '@/stores/playerClass'
-import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/playerClasses'
+import { usePlayerClassStore, type ClassDefinition } from '@/stores/player/playerClass'
+import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
 import gsap from 'gsap'
 
 interface Props {

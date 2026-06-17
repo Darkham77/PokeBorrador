@@ -1,6 +1,6 @@
 import type { DebugSystem, DebugContext } from '@/stores/debug'
-import type { Pokemon } from '@/types/pokemon'
-import { POKEMON_DB } from '@/data/pokemonDB'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 
 export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, breedingStore }: DebugContext) {
   debug.register({

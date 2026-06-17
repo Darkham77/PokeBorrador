@@ -1,15 +1,15 @@
 // [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
-import { POKEMON_DB } from '@/data/pokemonDB';
-import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/abilities';
-import { MOVE_DATA } from '@/data/moves';
-import { GYMS } from '@/data/gyms';
-import { FIRE_RED_MAPS } from '@/data/maps';
-import { NATURE_DATA } from '@/data/natures';
-import { SPECIES_METADATA } from '@/data/speciesMetadata';
-import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokedex';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/battle/abilities';
+import { MOVE_DATA } from '@/data/battle/moves';
+import { GYMS } from '@/data/world/gyms';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { NATURE_DATA } from '@/data/battle/natures';
+import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
+import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex';
 
-import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
+import { getSpriteUrl, getBackSpriteUrl } from '@/data/pokemon/spriteMapping';
 import type { 
     PokemonBaseData, 
     AbilityBaseData, 
@@ -18,7 +18,7 @@ import type {
     PokemonAesthetics,
     PokemonData,
     NatureBaseData
-} from '@/types/database';
+} from '@/types/system/database';
 
 /**
  * PokemonDataProvider

@@ -1,6 +1,6 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon';
-import type { GameState } from '@/types/game';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GameState } from '@/types/system/game';
 
 /**
  * fossilEngine.ts

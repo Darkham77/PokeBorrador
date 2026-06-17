@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory'
-import { useShopStore } from '@/stores/shop'
-import { SHOP_ITEMS } from '@/data/items'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { useShopStore } from '@/stores/inventory/shop'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
 const props = defineProps<{

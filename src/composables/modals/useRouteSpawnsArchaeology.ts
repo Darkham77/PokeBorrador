@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 
 interface ArchaeologyRewardData {
   name: string

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NATURE_DATA } from '../../src/data/natures';
+import { NATURE_DATA } from '../../src/data/battle/natures';
 import gsap from 'gsap';
 
 interface Props {

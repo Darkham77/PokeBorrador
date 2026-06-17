@@ -1,16 +1,16 @@
 import { computed, type Ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
-import { translateType } from '@/data/types'
+import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets'
+import { translateType } from '@/data/battle/types'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather, getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
-import type { MapLocation } from '@/types/encounters'
-import type { DominanceInfo } from '@/types/stores'
+import type { MapLocation } from '@/types/pokemon/encounters'
+import type { DominanceInfo } from '@/types/system/stores'
 
 interface SpawnPool {
   generic: string[]

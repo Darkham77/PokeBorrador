@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/natures'
-import { ABILITY_DATA } from '@/data/abilities'
-import type { Pokemon } from '@/types/pokemon'
+import { NATURE_DATA } from '@/data/battle/natures'
+import { ABILITY_DATA } from '@/data/battle/abilities'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   pokemon: Pokemon

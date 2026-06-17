@@ -2,9 +2,9 @@
 // fallow-ignore-file security-sink
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
-import { PLAYER_CLASSES } from '@/data/playerClasses'
+import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()

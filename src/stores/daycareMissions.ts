@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
-import { useGameStore } from './game.ts';
-import { useUIStore } from './ui.ts';
+import { useGameStore } from '@/stores/game.ts';
+import { useUIStore } from '@/stores/ui.ts';
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
-import type { DaycareMission } from '@/types/breeding';
-import type { Pokemon } from '@/types/pokemon';
+import type { DaycareMission } from '@/types/breeding/breeding';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
   const gameStore = useGameStore();

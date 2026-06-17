@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 
 const classStore = usePlayerClassStore()
 const uiStore = useUIStore()

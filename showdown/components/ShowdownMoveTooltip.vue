@@ -8,7 +8,7 @@ import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';
 import ShowdownMoveMathBreakdown from './ShowdownMoveMathBreakdown.vue';
 import gsap from 'gsap';
 
-import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { useShowdownSandboxStore } from '../stores/useShowdownSandboxStore';
 import { calculateDamageRange } from '../logic/showdownMath';
 import type { SandboxPokemon } from '../logic/showdownMath';
 

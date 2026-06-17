@@ -6,7 +6,7 @@ import { formatTime } from '@/logic/utils/timeUtils'
 
 const uiStore = useUIStore()
 
-import type { NotificationItem } from '@/types/game'
+import type { NotificationItem } from '@/types/system/game'
 
 interface Props {
   history?: NotificationItem[]

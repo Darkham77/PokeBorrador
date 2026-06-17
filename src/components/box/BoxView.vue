@@ -4,9 +4,9 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/playerClass'
-import { useBoxFilters } from '@/composables/useBoxFilters'
-import type { Pokemon } from '@/types/pokemon'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
+import { useBoxFilters } from '@/composables/pokemon/useBoxFilters'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Sub-componentes
 import BoxHeader from './BoxHeader.vue'

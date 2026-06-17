@@ -58,7 +58,8 @@ graph TD
 
     Recovery --> Cleanup[6. Workspace Cleanup]
     Cleanup --> Walkthrough[7. Walkthrough Generation]
-    Walkthrough --> Lessons[8. Lessons Extraction]
+    Walkthrough --> DoxPass[7.1 DOX Update & Pass]
+    DoxPass --> Lessons[8. Lessons Extraction]
     Lessons --> LessonApproval[8.1 Lesson Approval]
 
     LessonApproval -->|Rejected| Lessons
@@ -204,6 +205,15 @@ Create or update the `walkthrough.md` artifact.
 - **Content**: Summarize the changes made, the files affected, and the verification results.
 - **Evidence**: Embed any relevant screenshots or recordings produced during the task.
 
+### 7.1 DOX Maintenance (The DOX Pass) (MANDATORY)
+
+Before proceeding to lessons extraction, you MUST perform a complete DOX check:
+
+1. **Verify Changed Paths**: Review all modified files against their corresponding `AGENTS.md` files in their folder tree.
+2. **Update Contracts and Content**: If the changes modified any purpose, rules, contracts, parameters, or configurations, update the nearest owning `AGENTS.md` to reflect these updates.
+3. **Index Refresh**: If any new directory with an `AGENTS.md` file was created, add it to its parent's `Child DOX Index`.
+4. **Run DOX Audit**: Verify that `npm run audit` runs successfully and reports 0 errors in the `DOX (AGENTS.md) Integrity` category. Any DOX errors must be fixed before proceeding.
+
 ### 8. Lessons Extraction (LOCAL) 🛑
 
 Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/GSAP optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
@@ -272,9 +282,10 @@ See [commit-standards.md](./references/commit-standards.md) for the full Elegant
 2. [ ] Run `npm run build` to verify compilation (Step 3.5).
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Walkthrough Generation (Step 7).
-5. [ ] Extract lessons (Step 8). **Wait for 🛑 Lesson Approval**.
-6. [ ] **Wait for ✅ Skill Implementation Verification** (Step 8.2).
-7. [ ] Final Optimization Commit (Step 9)."
+5. [ ] DOX Maintenance & Audit (Step 7.1).
+6. [ ] Extract lessons (Step 8). **Wait for 🛑 Lesson Approval**.
+7. [ ] **Wait for ✅ Skill Implementation Verification** (Step 8.2).
+8. [ ] Final Optimization Commit (Step 9)."
 
 ---
 

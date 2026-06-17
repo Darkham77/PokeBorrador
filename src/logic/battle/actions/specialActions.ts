@@ -1,10 +1,10 @@
-import type { MoveAction, LogFn } from '@/types/battle';
-import type { BattleContext } from '@/types/battleContext';
-import type { Pokemon } from '@/types/pokemon';
+import type { MoveAction, LogFn } from '@/types/battle/battle';
+import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
-import { getItemById } from '@/data/items';
+import { getItemById } from '@/data/inventory/items';
 
 /**
  * Helper to transition and execute the release sequence when a Pokemon is sent into battle.

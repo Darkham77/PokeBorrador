@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { sleep } from '@/logic/utils/timeUtils'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokedex'
+import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex'
 import { gameBus } from '@/logic/events/gameBus'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { ANIMATED_SPRITE_DATABASE } from '@/data/animatedSpriteDatabase'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
+import { ANIMATED_SPRITE_DATABASE } from '@/data/pokemon/animatedSpriteDatabase'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 

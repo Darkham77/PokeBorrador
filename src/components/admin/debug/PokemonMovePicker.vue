@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { MOVE_DATA } from '@/data/moves'
+import { MOVE_DATA } from '@/data/battle/moves'
 
 interface Props {
   modelValue: (string | null)[]

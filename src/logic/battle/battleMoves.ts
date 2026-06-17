@@ -1,5 +1,5 @@
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleStages, LogFn, BattleState } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages, LogFn, BattleState } from '@/types/battle/battle';
 
 export function applyMoveEffect(effect: string | null | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, options: { b?: BattleState | null } = {}) {
   const { b } = options;

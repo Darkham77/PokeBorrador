@@ -1,4 +1,4 @@
-import type { MoveAction } from '@/types/battle';
+import type { MoveAction } from '@/types/battle/battle';
 
 export const STAT_ACTIONS: Record<string, MoveAction> = {
   'atk+1': (src, _tgt, srcStages, _tgtStages, addLogFn) => {

@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { useModalStore } from '@/stores/modals'
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
 import RouteSpawnsTable, { type SpawnItem, type ArchaeologyRewardItem } from './RouteSpawnsTable.vue'
 

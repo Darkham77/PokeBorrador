@@ -1,9 +1,9 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { PLAYER_CLASSES } from '@/data/playerClasses'
+import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import { useAuthStore } from '@/stores/auth'
-import { useChatStore } from '@/stores/chat'
-import { useSocialStore, type Friend } from '@/stores/social'
+import { useChatStore } from '@/stores/social/chat'
+import { useSocialStore, type Friend } from '@/stores/social/social'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 
 export interface ProfileRow {

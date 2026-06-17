@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
-import { useInventoryStore } from '@/stores/inventory'
-import { getItemById, getItemByName } from '@/data/items'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()

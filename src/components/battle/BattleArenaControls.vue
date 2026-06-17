@@ -2,7 +2,7 @@
 
 import { computed, watch } from 'vue'
 import { gsap } from 'gsap'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
@@ -11,7 +11,7 @@ import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Debug tools are now handled by BattleArena sidebar
 

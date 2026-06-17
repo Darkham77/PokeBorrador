@@ -1,8 +1,8 @@
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages, LogFn, BattleWeather } from '@/types/battle/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
-import type { BattleContext } from '@/types/battleContext'
+import type { BattleContext } from '@/types/battle/battleContext'
 
 export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn) {
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA

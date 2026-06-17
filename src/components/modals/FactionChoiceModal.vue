@@ -4,7 +4,7 @@
  * Standardized modal for faction selection.
  */
 import { ref } from 'vue'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 

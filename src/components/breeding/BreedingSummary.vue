@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingEngine'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 import gsap from 'gsap'

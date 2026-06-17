@@ -2,13 +2,13 @@
 import { computed, ref, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/natures'
+import { NATURE_DATA } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
-import { getItemByName } from '@/data/items'
+import { getItemByName } from '@/data/inventory/items'
 
 interface Props {
   slotId: string

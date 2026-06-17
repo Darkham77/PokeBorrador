@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { CATEGORY_LABELS } from '@/data/items'
+import { CATEGORY_LABELS } from '@/data/inventory/items'
 
 interface Props {
   activeCategory: string

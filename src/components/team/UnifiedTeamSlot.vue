@@ -3,7 +3,7 @@ import { computed, ref, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   pokemon?: Pokemon | null

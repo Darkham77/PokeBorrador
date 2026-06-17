@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick } from 'vue'
-import { useSocialStore } from '@/stores/social'
+import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import TrainerCard from './TrainerCard.vue'
 import { gsap } from 'gsap'

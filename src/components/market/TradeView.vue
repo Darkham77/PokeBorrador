@@ -7,9 +7,9 @@ import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from '../social/TradeSidePanel.vue'
 import TradeFooter from '../social/TradeFooter.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gsap } from 'gsap'
-import { getItemById, getItemByName } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 
 interface Props {
   show?: boolean

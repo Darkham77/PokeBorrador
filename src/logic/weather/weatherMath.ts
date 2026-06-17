@@ -90,7 +90,7 @@ export function getRouteWeatherPure(
 
 // ── Global Session Weather Seed & AnimSeed ─────────────────────────────────────
 
-import { FIRE_RED_MAPS } from '../../data/maps.ts';
+import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 
 let sessionWeatherSeed = 500;
 if (typeof window !== 'undefined') {

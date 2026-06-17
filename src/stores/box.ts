@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
-import { useBoxFilters } from '@/composables/useBoxFilters'
-import type { Pokemon } from '@/types/pokemon'
+import { useBoxFilters } from '@/composables/pokemon/useBoxFilters'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
-import { usePlayerClassStore } from './playerClass.ts'
+import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()

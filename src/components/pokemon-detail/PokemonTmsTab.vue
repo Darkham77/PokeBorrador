@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import { GAME_TMS, TM_COMPAT } from '@/data/pokedex'
+import { GAME_TMS, TM_COMPAT } from '@/data/pokemon/pokedex'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 

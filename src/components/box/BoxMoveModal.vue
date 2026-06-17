@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   pokemon: Pokemon

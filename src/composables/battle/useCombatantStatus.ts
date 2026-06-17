@@ -1,12 +1,12 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
-import type { useBattleStore } from '@/stores/battle'
+import type { useBattleStore } from '@/stores/battle/battle'
 import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP, STATUS_NAME_MAP } from '@/logic/battle/battleUiUtils'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
-import { ABILITY_DATA } from '@/data/abilities'
+import { ABILITY_DATA } from '@/data/battle/abilities'
 import { getStatMultiplier } from '@/logic/battle/battleEngine'
-import type { Pokemon } from '@/types/pokemon'
-import { VOLATILE_STATUS_LIST, CYCLE_WEATHER_DEFAULTS } from '@/data/volatileStatusMap'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import { VOLATILE_STATUS_LIST, CYCLE_WEATHER_DEFAULTS } from '@/data/battle/volatileStatusMap'
 
 function formatAbilityDescription(desc: string): string {
   const lines: string[] = []

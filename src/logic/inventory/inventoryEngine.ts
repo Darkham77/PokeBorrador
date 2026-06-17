@@ -1,7 +1,7 @@
 
-import { SHOP_ITEMS } from '@/data/items';
+import { SHOP_ITEMS } from '@/data/inventory/items';
 import { getAssetUrl, ASSET_TYPES } from '../services/assetService.ts';
-import type { Inventory } from '@/types/items';
+import type { Inventory } from '@/types/inventory/items';
 
 /**
  * Inventory logic engine for non-battle interactions.

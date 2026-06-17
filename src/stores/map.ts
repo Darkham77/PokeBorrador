@@ -3,10 +3,10 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
-import { FIRE_RED_MAPS } from '@/data/maps'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
-import { useGameStore } from './game.ts'
+import { useGameStore } from '@/stores/game.ts'
 import type { Event } from '@/logic/events/eventEngine'
 import type { DayPhase, Season } from '@/logic/utils/timeUtils'
 
@@ -68,7 +68,7 @@ export const useMapStore = defineStore('map', () => {
   const lastNavigateTime = ref(0)
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
   const dailyGuardianCaptures = ref<string[]>([])
-  const mapWinners = ref<Record<string, import('@/types/stores').DominanceInfo>>({}) // locId -> winner
+  const mapWinners = ref<Record<string, import('@/types/system/stores').DominanceInfo>>({}) // locId -> winner
   const pendingAwards = ref<PendingAward[]>([])
   
   const setGlobalSeason = (s: string | null) => {

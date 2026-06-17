@@ -15,7 +15,7 @@ import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { PokemonEgg } from '@/types/pokemon'
+import type { PokemonEgg } from '@/types/pokemon/pokemon'
 import EggSprite from '@/components/common/EggSprite.vue'
 
 // ─── Stores ───────────────────────────────────────────────────────────────────

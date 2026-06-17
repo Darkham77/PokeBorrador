@@ -10,7 +10,7 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const uiStore = useUIStore()
 

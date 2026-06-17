@@ -8,10 +8,10 @@ import { useAuthStore } from '@/stores/auth'
 import type { MarketListing } from '@/logic/economy/market'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
-import { getItemById } from '@/data/items'
+import { getItemById } from '@/data/inventory/items'
 
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 

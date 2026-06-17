@@ -1,12 +1,12 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { GAME_RATIOS } from '@/data/constants';
+import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
-import type { Pokemon } from '@/types/pokemon';
-import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/encounters';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import {
   getEncounterPool,

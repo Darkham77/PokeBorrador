@@ -1,9 +1,9 @@
 <!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
 
-import { useMoveTooltip } from '@/composables/useMoveTooltip'
-import { useBattleStore } from '@/stores/battle'
-import type { Move } from '@/types/pokemon'
+import { useMoveTooltip } from '@/composables/battle/useMoveTooltip'
+import { useBattleStore } from '@/stores/battle/battle'
+import type { Move } from '@/types/pokemon/pokemon'
 
 interface Props {
   move: Move

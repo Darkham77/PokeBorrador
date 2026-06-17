@@ -2,7 +2,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   id?: string

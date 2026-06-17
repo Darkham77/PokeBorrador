@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TradeOffer } from '@/types/stores';
+import type { TradeOffer } from '@/types/system/stores';
 
 const props = defineProps<{
   trade: TradeOffer;

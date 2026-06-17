@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { useAuthStore } from '@/stores/auth'
 import { useTradeStore } from '@/stores/trade'

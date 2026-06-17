@@ -2,8 +2,8 @@
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
-import { POKEMON_DB } from '@/data/pokemonDB';
-import type { DaycareEgg } from '@/types/breeding';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import type { DaycareEgg } from '@/types/breeding/breeding';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import EggSprite from '@/components/common/EggSprite.vue';
 

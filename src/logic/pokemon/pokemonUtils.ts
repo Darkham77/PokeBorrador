@@ -2,7 +2,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
-import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
+import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
 
 export { getPokemonTier };
 
@@ -42,7 +42,7 @@ export function calculateRocketSellPrice(p: Pokemon): number {
   // Formula: (Level * 50 + (Total IVs / 186) * 500) * 0.8 (Rocket Cut)
   return Math.floor((p.level * 50 + (totalIvs / 186) * 500) * 0.8);
 }
-import type { LearnsetMove, MoveBaseData } from '@/types/database';
+import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)

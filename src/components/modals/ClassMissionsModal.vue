@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useGameStore } from '@/stores/game'
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import BaseModal from '@/components/common/BaseModal.vue'

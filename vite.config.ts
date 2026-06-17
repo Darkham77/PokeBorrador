@@ -6,8 +6,8 @@ import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 
-import { generateMigrations } from './scripts/generate_migrations.ts'
-import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.ts'
+import { generateMigrations } from './scripts/database/generate_migrations.ts'
+import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
 

@@ -7,7 +7,7 @@
  * data sources (Team, PC, Encounters) without creating intermediate arrays.
  */
 
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export class PokedexAggregator {
   /**

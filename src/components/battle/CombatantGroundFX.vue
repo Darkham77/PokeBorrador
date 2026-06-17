@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
 
 interface Props {
   side: 'player' | 'enemy'

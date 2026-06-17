@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { RealtimeChannel } from '@supabase/supabase-js'
-import { useAuthStore } from './auth.ts'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
-import { useAudioStore } from './audio.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
+import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing } from '@/logic/economy/market'
-import { SHOP_ITEMS } from '@/data/items'
-import type { GameState } from '@/types/game'
-import type { Pokemon } from '@/types/pokemon'
+import { SHOP_ITEMS } from '@/data/inventory/items'
+import type { GameState } from '@/types/system/game'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export const useGTSStore = defineStore('gts', () => {
   const auth = useAuthStore()

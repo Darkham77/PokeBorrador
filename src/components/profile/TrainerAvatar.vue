@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, type CSSProperties, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import gsap from 'gsap';
 

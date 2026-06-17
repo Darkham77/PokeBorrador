@@ -2,11 +2,11 @@
 
 import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory';
 import { useGameStore } from '@/stores/game';
-import { useBattleStore } from '@/stores/battle';
+import { useBattleStore } from '@/stores/battle/battle';
 import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
 
 interface DebugPokemon extends Pokemon {

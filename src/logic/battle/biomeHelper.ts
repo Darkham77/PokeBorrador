@@ -1,4 +1,4 @@
-import { FIRE_RED_MAPS } from '@/data/maps';
+import { FIRE_RED_MAPS } from '@/data/world/maps';
 
 /**
  * Resolves the active biome and tags for a given location ID.

@@ -2,7 +2,7 @@
 import { useUIStore } from '@/stores/ui'
 import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useShopStore } from '@/stores/shop'
+import { useShopStore } from '@/stores/inventory/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'

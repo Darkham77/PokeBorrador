@@ -9,6 +9,8 @@ interface Props {
   locationId?: string
   layer: 'back' | 'front'
   groundY: string
+  /** Semilla de azar única por combate, generada por el padre. */
+  seed?: number
   visible?: boolean
   instant?: boolean
   // ENCOUNTER_ANIM - Paso BUSHES_BACK: mueve la capa frontal detrás del sprite durante el salto
@@ -18,6 +20,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   locationId: 'route1',
+  seed: undefined,
   visible: true,
   instant: false,
   forceBehind: false,
@@ -57,11 +60,11 @@ const bushes: Record<'front' | 'back', BushConfig[]> = {
   ]
 }
 
-// Semilla aleatoria real para que cada encuentro sea único (según requerimiento del usuario)
-const sessionSeed = Math.floor(Math.random() * 1000000)
-
+// La semilla viene del padre (generada al iniciar cada combate) para garantizar
+// que los arbustos varíen entre encuentros. Fallback a un valor estable si no se provee.
 const activeBushes = computed<ResolvedBushConfig[]>(() => {
-  return getActiveBushesForMap(props.locationId, props.layer, sessionSeed, bushes[props.layer])
+  const seed = props.seed ?? 0
+  return getActiveBushesForMap(props.locationId, props.layer, seed, bushes[props.layer])
 })
 
 const bushRefs = ref<HTMLElement[]>([])

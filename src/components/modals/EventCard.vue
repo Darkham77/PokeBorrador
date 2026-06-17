@@ -5,7 +5,7 @@ import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   event: GameEvent

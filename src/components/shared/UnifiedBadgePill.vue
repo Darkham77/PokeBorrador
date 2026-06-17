@@ -4,7 +4,7 @@ import { getPokemonVisualBadges, getPokemonEditorBadges } from '@/logic/constant
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { TagDefinition } from '@/logic/constants/tags'
 
 interface Props {

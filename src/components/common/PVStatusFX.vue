@@ -6,9 +6,9 @@
  */
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { gsap } from 'gsap'
-import { useParticleEngine, type ParticleSystemOptions } from '@/composables/useParticleEngine'
+import { useParticleEngine, type ParticleSystemOptions } from '@/composables/effects/useParticleEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { resolveEffectSettings } from '@/data/fx-configs'
+import { resolveEffectSettings } from '@/data/battle/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 interface FXData {

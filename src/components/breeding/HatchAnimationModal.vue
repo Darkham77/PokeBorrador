@@ -8,7 +8,7 @@ import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import type { Pokemon, PokemonEgg } from '@/types/pokemon'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
 import HatchStatsCard from '@/components/breeding/HatchStatsCard.vue'
 import { getAuraStyles } from '@/logic/breeding/hatchAuras'

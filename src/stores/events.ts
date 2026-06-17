@@ -3,15 +3,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
-import { useAuthStore } from './auth.ts'
-import { useUIStore } from './ui.ts'
-import { useGameStore } from './game.ts'
-import { useMapStore } from './map.ts'
-import { useErrorStore } from './errorStore.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useUIStore } from '@/stores/ui.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useMapStore } from '@/stores/map.ts'
+import { useErrorStore } from '@/stores/errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
-import type { Pokemon } from '@/types/pokemon'
-import type { PendingAward, CompetitionResult } from '@/types/stores'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PendingAward, CompetitionResult } from '@/types/system/stores'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()

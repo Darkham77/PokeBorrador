@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useUIStore } from '@/stores/ui'
-import { getItemById } from '@/data/items'
-import { isItemUsableOutsideCombat } from '@/stores/inventory'
-import type { Item } from '@/stores/inventory'
+import { getItemById } from '@/data/inventory/items'
+import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory'
+import type { Item } from '@/stores/inventory/inventory'
 
 interface Props {
   show: boolean

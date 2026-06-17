@@ -7,7 +7,7 @@ import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler'
 import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse, checkAppVersionCompatibility, type AppCompatibilityResponse } from '@/logic/db/dbRouter'
 
-import MainGameView from '@/views/MainGameView.vue'
+import MainGameView from '@/views/game/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
@@ -22,18 +22,18 @@ import AppVersionLockOverlay from '@/components/overlays/AppVersionLockOverlay.v
 import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
 import { gameBus } from '@/logic/events/gameBus'
 import { useUIStore } from '@/stores/ui'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useWindowListener } from '@/composables/ui/useWindowListener'
 import { useAudioStore } from '@/stores/audio'
 import { logger } from '@/logic/utils/logger'
 
-import { useProfileStore } from '@/stores/profile'
-import { useSocialStore } from '@/stores/social'
+import { useProfileStore } from '@/stores/player/profile'
+import { useSocialStore } from '@/stores/social/social'
 import { useRoute } from 'vue-router'
-import { useBackNavigation } from '@/composables/useBackNavigation'
-import { usePWA } from '@/composables/usePWA'
+import { useBackNavigation } from '@/composables/system/useBackNavigation'
+import { usePWA } from '@/composables/system/usePWA'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()

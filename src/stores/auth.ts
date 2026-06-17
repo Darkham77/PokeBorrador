@@ -4,10 +4,10 @@ import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
 import { supabase } from '@/logic/db/supabase'
 import { syncServerTime } from '@/logic/utils/timeUtils'
-import { useLoadingStore } from './loading.ts'
+import { useLoadingStore } from '@/stores/loading.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SESSION_ID } from '@/logic/auth/sessionId'
-import type { AuthUser, SessionMode } from '@/types/auth'
+import type { AuthUser, SessionMode } from '@/types/auth/auth'
 import type { Session } from '@supabase/supabase-js'
 
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')

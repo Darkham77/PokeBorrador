@@ -1,17 +1,17 @@
 import { computed, watch, ref } from 'vue'
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
-import { usePlayerClassStore } from '@/stores/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
-import { GYMS } from '@/data/gyms.ts'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { GYMS } from '@/data/world/gyms.ts'
 import { logger } from '@/logic/utils/logger'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export function useBattleArena(
   p1Pos: { x: number; y: number },
@@ -186,7 +186,7 @@ export function useBattleArena(
       emoji = '🐚'
     }
     
-    const { getItemByName } = await import('@/data/items')
+    const { getItemByName } = await import('@/data/inventory/items')
     const itemData = getItemByName(fossilName)
     const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 

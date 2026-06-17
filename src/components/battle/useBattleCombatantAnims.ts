@@ -2,8 +2,8 @@ import { watch, type Ref, nextTick, type ComputedRef, computed } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
 
 interface SparkleData {

@@ -2,14 +2,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 
-import { useAuthStore } from './auth.ts'
-import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
+import { useAuthStore } from '@/stores/auth.ts'
+import { useGameStore } from '@/stores/game.ts'
+import { useUIStore } from '@/stores/ui.ts'
 import { logger } from '@/logic/utils/logger'
-import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
+import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 
 

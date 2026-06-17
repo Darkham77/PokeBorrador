@@ -3,10 +3,10 @@ import { sleep } from '@/logic/utils/timeUtils'
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
 import { applyMoveEffect } from '@/logic/battle/battleMoves'
-import { MOVE_DATA } from '@/data/moves'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
-import type { MoveBaseData } from '@/types/database'
+import { MOVE_DATA } from '@/data/battle/moves'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleStages } from '@/types/battle/battle'
+import type { MoveBaseData } from '@/types/system/database'
 
 /**
  * Resolves a turn in a Live PvP battle. (Host only)

@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
-import { POKEMON_DB } from '@/data/pokemonDB'
-import type { PokemonEgg } from '@/types/pokemon'
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
+import type { PokemonEgg } from '@/types/pokemon/pokemon'
 import EggSprite from '@/components/common/EggSprite.vue'
 
 const gameStore = useGameStore()

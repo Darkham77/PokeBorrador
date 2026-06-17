@@ -6,7 +6,7 @@ import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
-import type { MapLocation } from '@/types/encounters'
+import type { MapLocation } from '@/types/pokemon/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
 
 interface FishingSpawnData {

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
-import type { Pokemon, Move } from '@/types/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
   show?: boolean

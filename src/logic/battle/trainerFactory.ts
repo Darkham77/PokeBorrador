@@ -1,4 +1,4 @@
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 /**
  * Builds a list of Pokémon for a trainer based on a pool of archetypes, level, and team size.

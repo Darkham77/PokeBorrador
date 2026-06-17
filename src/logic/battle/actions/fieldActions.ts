@@ -1,4 +1,4 @@
-import type { MoveAction } from '@/types/battle';
+import type { MoveAction } from '@/types/battle/battle';
 
 export const FIELD_ACTIONS: Record<string, MoveAction> = {
   'reflect': (src, _tgt, srcStages, _tgtStages, addLogFn, _battleCtx) => {

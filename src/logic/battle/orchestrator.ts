@@ -5,12 +5,12 @@ import { nextTick } from 'vue'
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
-import { FIRE_RED_MAPS } from '@/data/maps'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
-import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon } from '@/types/pokemon'
-import type { BattleState, BattleStages, BattleLog } from '@/types/battle'
-import type { UIStore, MapStore } from '@/types/stores'
+import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
+import type { UIStore, MapStore } from '@/types/system/stores'
 
 export interface BattleOptions {
   isGym?: boolean;
@@ -489,7 +489,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         // Criminalidad +10
         ctx.classStore.addCriminality(10);
         
-        const { getItemById } = await import('@/data/items');
+        const { getItemById } = await import('@/data/inventory/items');
         const itemDef = getItemById(stolenItem);
         const itemName = itemDef?.name || stolenItem;
         
@@ -519,7 +519,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         const maxLimit = calculateMaxNpcRobberyLimit(avgLevel);
         const playerInventory = ctx.gs.state.inventory || {};
         
-        const { getItemByName, getItemById } = await import('@/data/items');
+        const { getItemByName, getItemById } = await import('@/data/inventory/items');
         
         const availableItems = Object.keys(playerInventory).filter(k => {
           if ((playerInventory[k] || 0) <= 0) return false;

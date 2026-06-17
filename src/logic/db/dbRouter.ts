@@ -9,7 +9,7 @@ import { initSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
 import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
 import { logger } from '../utils/logger.ts';
-import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/database';
+import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
 
 export type { DBCompatibilityResponse };
 
@@ -289,8 +289,8 @@ export class DBRouter {
     if (this.mode === 'offline') {
       // Usar BroadcastChannel nativo del navegador para emular Supabase Realtime entre pestañas locales
       const bc = new BroadcastChannel(name);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let broadcastCallback: any = null;
+      type RealtimeCallback = (payload: { type: string; event: string; payload: Record<string, unknown>; [key: string]: unknown }) => void;
+      let broadcastCallback: RealtimeCallback | null = null;
 
       bc.onmessage = (event) => {
         if (broadcastCallback && event.data?.type === 'broadcast') {
@@ -299,8 +299,11 @@ export class DBRouter {
       };
 
       const mockChannel = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        on: (type: any, _filter: any, callback: any) => {
+        on: (
+          type: 'broadcast' | 'presence' | 'postgres_changes' | string,
+          _filter: Record<string, unknown> | string,
+          callback: RealtimeCallback
+        ) => {
           logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
           if (type === 'broadcast') {
             broadcastCallback = callback;

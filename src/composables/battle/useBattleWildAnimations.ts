@@ -2,7 +2,7 @@ import { ref, toValue, type MaybeRefOrGetter } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export function useBattleWildAnimations(
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>

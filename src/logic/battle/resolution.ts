@@ -1,8 +1,8 @@
 // fallow-ignore-file circular-dependencies
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
-import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon } from '@/types/pokemon'
+import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
@@ -329,7 +329,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
         uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰');
       }
       if (stolen.items) {
-        const { getItemByName, getItemById } = await import('@/data/items');
+        const { getItemByName, getItemById } = await import('@/data/inventory/items');
         for (const [itemId, qty] of Object.entries(stolen.items)) {
           if (qty && (qty as number) > 0) {
             if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};

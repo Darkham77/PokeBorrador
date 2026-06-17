@@ -3,7 +3,7 @@
  * src/logic/player/classEngine.ts
  * Core engine for calculating class modifiers and mission validation.
  */
-import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 
 export interface ModifierContext {
   isPvP?: boolean;

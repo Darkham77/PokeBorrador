@@ -8,11 +8,11 @@ import gsap from 'gsap'
 import { calculateCatchRate } from './battleEngine.ts'
 import { useItemOnPokemon } from '../providers/itemProvider.ts'
 import { gameBus } from '@/logic/events/gameBus'
-import type { Pokemon } from '@/types/pokemon'
-import type { EventStore, AudioStore, BattleStore } from '@/types/stores'
-import type { LogFn } from '@/types/battle'
-import type { BattleContext } from '@/types/battleContext'
-import { getItemName } from '@/data/items'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { EventStore, AudioStore, BattleStore } from '@/types/system/stores'
+import type { LogFn } from '@/types/battle/battle'
+import type { BattleContext } from '@/types/battle/battleContext'
+import { getItemName } from '@/data/inventory/items'
 
 interface ItemUsageOptions {
   eventStore: EventStore;

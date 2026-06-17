@@ -1,12 +1,12 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useModalStore } from './modals.ts'
-import { useBattleStore } from './battle.ts'
+import { useModalStore } from '@/stores/modals.ts'
+import { useBattleStore } from '@/stores/battle/battle.ts'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
-import { useNotificationStore, type UINotification } from './notifications.ts'
-import type { Pokemon, Move } from '@/types/pokemon'
+import { useNotificationStore, type UINotification } from '@/stores/notifications.ts'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
 
 export type { UINotification };

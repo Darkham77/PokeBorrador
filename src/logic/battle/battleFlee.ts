@@ -1,5 +1,5 @@
 import { gameBus } from '@/logic/events/gameBus'
-import type { BattleContext } from '@/types/battleContext'
+import type { BattleContext } from '@/types/battle/battleContext'
 
 export async function executeFlee(ctx: BattleContext) {
   if (ctx.isProcessing.value) return

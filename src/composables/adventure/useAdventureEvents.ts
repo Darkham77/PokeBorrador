@@ -1,18 +1,18 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import { FIRE_RED_MAPS } from '@/data/maps'
-import type { Pokemon } from '@/types/pokemon'
-import type { MapLocation } from '@/types/encounters'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
+import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { MapLocation } from '@/types/pokemon/encounters'
 import { useGameStore } from '@/stores/game'
-import { useBattleStore } from '@/stores/battle'
-import { useInventoryStore } from '@/stores/inventory'
-import { useShopStore } from '@/stores/shop'
+import { useBattleStore } from '@/stores/battle/battle'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { useShopStore } from '@/stores/inventory/shop'
 import { useMapStore } from '@/stores/map'
 
 
-import { TRAINER_TYPES } from '@/data/trainerTypes'
-import { getRandomQuoteForTrainer } from '@/data/trainerPhrases'
+import { TRAINER_TYPES } from '@/data/player/trainerTypes'
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases'
 import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
 interface AdventureEventsConfig {

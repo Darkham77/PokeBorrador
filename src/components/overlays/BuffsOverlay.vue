@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useBuffsStore } from '@/stores/buffs'
+import { useBuffsStore } from '@/stores/battle/buffs'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()

@@ -1,12 +1,12 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards.ts'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
-import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon, PokemonMove } from '@/types/pokemon'
+import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemByName, getItemById } from '@/data/items'
+import { getItemByName, getItemById } from '@/data/inventory/items'
 
-import type { BattleState } from '@/types/battle.ts'
+import type { BattleState } from '@/types/battle/battle.ts'
 
 export function registerRewardCombatant(active: BattleState | null) {
   if (!active) return

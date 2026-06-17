@@ -3,7 +3,7 @@ import { ref, computed, onUnmounted } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
-import type { Pokemon, Move } from '@/types/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
   moves: (Move | null)[]

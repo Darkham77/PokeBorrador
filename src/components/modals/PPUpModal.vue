@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
-import type { Move } from '@/types/pokemon'
+import type { Move } from '@/types/pokemon/pokemon'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()

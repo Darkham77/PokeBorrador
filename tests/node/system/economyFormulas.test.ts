@@ -1,0 +1,90 @@
+
+import test from 'node:test';
+import assert from 'node:assert';
+import { calculateIndividualHealCost, calculateTotalHealCost, calculatePokemonCenterCooldown } from '../../../src/logic/economy/economyFormulas.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+
+test('Economy Formulas - Individual Heal Cost (Rocket)', async (t) => {
+  const dummyPokemon: Partial<Pokemon> = {
+    name: 'Bulbasaur',
+    ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } // Total 60 -> Tier D (Mult 1.2)
+  };
+
+  await t.test('calculates correct cost for Tier D at level 10', () => {
+    // Base = 20 + (10 * 3) = 50
+    // Total = 50 * 1.2 = 60
+    const cost = calculateIndividualHealCost(dummyPokemon as Pokemon, 10, 'rocket');
+    assert.strictEqual(cost, 60);
+  });
+
+  await t.test('calculates correct cost for Tier S+ at level 50', () => {
+    const legendary: Partial<Pokemon> = {
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } // Total 186 -> Tier S+ (Mult 10)
+    };
+    // Base = 20 + (50 * 3) = 170
+    // Total = 170 * 10 = 1700
+    const cost = calculateIndividualHealCost(legendary as Pokemon, 50, 'rocket');
+    assert.strictEqual(cost, 1700);
+  });
+
+  await t.test('returns 0 for non-rocket class', () => {
+    const cost = calculateIndividualHealCost(dummyPokemon as Pokemon, 50, 'trainer');
+    assert.strictEqual(cost, 0);
+  });
+});
+
+test('Economy Formulas - Total Team Heal Cost', async (t) => {
+  const p1: Partial<Pokemon> = {
+    hp: 10, maxHp: 100, // Damaged
+    ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } // Tier D (Mult 1.2)
+  };
+  const p2: Partial<Pokemon> = {
+    hp: 100, maxHp: 100, // Healthy
+    ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
+  };
+
+  await t.test('sums only damaged pokemon', () => {
+    // Lv 10 -> Base 50 -> Tier D (1.2) -> 60 per pokemon
+    const team = [p1 as Pokemon, p2 as Pokemon, null, null, null, null];
+    const total = calculateTotalHealCost(team, 10, 'rocket');
+    assert.strictEqual(total, 60);
+  });
+
+  await t.test('includes PP depletion as damaged', () => {
+    const p3 = {
+      hp: 100, maxHp: 100,
+      moves: [{ name: 'Tackle', pp: 5, maxPP: 35 }], // Needs PP
+      ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
+    } as unknown as Pokemon;
+    const team = [p3];
+    const total = calculateTotalHealCost(team, 10, 'rocket');
+    assert.strictEqual(total, 60);
+  });
+});
+
+test('Economy Formulas - Pokemon Center Cooldown', async (t) => {
+  await t.test('returns 0 for level <= 1', () => {
+    assert.strictEqual(calculatePokemonCenterCooldown(1), 0);
+    assert.strictEqual(calculatePokemonCenterCooldown(0), 0);
+  });
+
+  await t.test('calculates correct cooldown for level 2', () => {
+    // (2 - 1)^1.5 * 5.5 = 1 * 5.5 = 5.5 -> Math.floor = 5
+    assert.strictEqual(calculatePokemonCenterCooldown(2), 5);
+  });
+
+  await t.test('calculates correct cooldown for level 5', () => {
+    // (5 - 1)^1.5 * 5.5 = 4^1.5 * 5.5 = 8 * 5.5 = 44
+    assert.strictEqual(calculatePokemonCenterCooldown(5), 44);
+  });
+
+  await t.test('calculates correct cooldown for level 10', () => {
+    // (10 - 1)^1.5 * 5.5 = 9^1.5 * 5.5 = 27 * 5.5 = 148.5 -> Math.floor = 148
+    assert.strictEqual(calculatePokemonCenterCooldown(10), 148);
+  });
+
+  await t.test('calculates correct cooldown for level 30', () => {
+    // (30 - 1)^1.5 * 5.5 = 29^1.5 * 5.5 = 156.17 * 5.5 = 858.9 -> Math.floor = 858
+    assert.strictEqual(calculatePokemonCenterCooldown(30), 858);
+  });
+});

@@ -1,6 +1,6 @@
 
-import { getItemByName, getItemById } from '@/data/items'
-import type { Pokemon } from '@/types/pokemon'
+import { getItemByName, getItemById } from '@/data/inventory/items'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 /**
  * TAG_DEFINITIONS - The Single Source of Truth for all Pokemon classification tags.

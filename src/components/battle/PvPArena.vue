@@ -7,7 +7,7 @@ import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import { useModalStore } from '@/stores/modals'
 import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const gameStore = useGameStore()
 const livePvP = useLivePvPStore()

@@ -2,7 +2,7 @@
  * hatchAuras.ts
  * Utilidades de configuración de auras y colores para la eclosión de huevos.
  */
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export const TYPE_AURA_COLORS: Record<string, { c1: string; c2: string }> = {
   normal: { c1: 'rgba(168, 168, 120, 0.95)', c2: 'rgba(120, 120, 90, 0.8)' },

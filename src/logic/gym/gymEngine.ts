@@ -16,7 +16,7 @@ export const GYM_RATIOS = {
   rematchTMRateHard: 0.05
 };
 
-import type { GameState } from '@/types/game';
+import type { GameState } from '@/types/system/game';
 
 export interface GymVictoryResult {
   tmDropped: boolean;

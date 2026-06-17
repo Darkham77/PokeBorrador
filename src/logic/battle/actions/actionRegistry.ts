@@ -1,6 +1,6 @@
 
-import type { Pokemon } from '@/types/pokemon';
-import type { BattleStages, LogFn } from '@/types/battle';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages, LogFn } from '@/types/battle/battle';
 import { STAT_ACTIONS } from './statActions.ts';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { HEALING_ACTIONS } from './healingActions.ts';
@@ -8,7 +8,7 @@ import { WEATHER_ACTIONS } from './weatherActions.ts';
 import { FIELD_ACTIONS } from './fieldActions.ts';
 import { SPECIAL_ACTIONS } from './specialActions.ts';
 import { logger } from '@/logic/utils/logger';
-import type { BattleContext } from '@/types/battleContext';
+import type { BattleContext } from '@/types/battle/battleContext';
 
 /**
  * Registro Central de Acciones y Efectos

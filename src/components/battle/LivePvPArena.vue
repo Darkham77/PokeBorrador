@@ -4,9 +4,9 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
-import { useChatStore } from '@/stores/chat'
+import { useChatStore } from '@/stores/social/chat'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { PLAYER_CLASSES } from '@/data/playerClasses'
+import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
 
 const livePvP = useLivePvPStore()

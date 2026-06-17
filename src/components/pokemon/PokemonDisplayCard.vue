@@ -11,7 +11,7 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
   pokemon: Pokemon

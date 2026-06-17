@@ -4,11 +4,11 @@ import { computed } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import { formatCurrency } from '@/logic/utils/formatters'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useUIStore } from '@/stores/ui'
-import { getItemById } from '@/data/items'
+import { getItemById } from '@/data/inventory/items'
 
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 

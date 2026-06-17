@@ -3,7 +3,7 @@
  * src/logic/pokemon/evolutionEngine.ts
  * Centralized logic for traversing pokemon evolution chains.
  */
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
 
 /**
  * Get species history from base form up to the given id.

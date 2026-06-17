@@ -3,8 +3,8 @@ import * as path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { extractGen3Logic, type ShowdownLocalDB } from './extract_logic.ts';
 import { downloadAllSprites } from './fetch_sprites.ts';
-import { ABILITY_DATA } from '../../../src/data/abilities.ts';
-import { POKEMON_DB } from '../../../src/data/pokemonDB.ts';
+import { ABILITY_DATA } from '../../../src/data/battle/abilities.ts';
+import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 
 // Rutas de salida para los datos lógicos
 const DATA_DIR = path.resolve('showdown/sandbox_db/data');

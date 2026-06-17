@@ -1,13 +1,13 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import { findShortestPath } from '../../../test aventura/kantoGraph.ts'
-import { FIRE_RED_MAPS } from '@/data/maps'
-import { SHOP_ITEMS } from '@/data/items'
-import type { Pokemon, Move } from '@/types/pokemon'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { SHOP_ITEMS } from '@/data/inventory/items'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
-import { useShopStore } from '@/stores/shop'
-import { useInventoryStore } from '@/stores/inventory'
-import { useBuffsStore } from '@/stores/buffs'
+import { useShopStore } from '@/stores/inventory/shop'
+import { useInventoryStore } from '@/stores/inventory/inventory'
+import { useBuffsStore } from '@/stores/battle/buffs'
 
 export function useAdventureRouting(options: {
   gameStore: ReturnType<typeof useGameStore>

@@ -19,8 +19,9 @@ UI / Frontend Developers.
 
 ## Child DOX Index
 
-- [components/](./components/): Component-level specific visual styling definitions.
-- [core/](./core/): System base configurations, typography overrides, and mixins.
-- [layouts/](./layouts/): Standard grid shells and flex layouts.
-- [tokens/](./tokens/): Centralized variables, colors, sizing, and animations constants.
-- [views/](./views/): Route-view level fullpage styles.
+- [components/](./components/AGENTS.md): Component-level specific visual styling definitions.
+- [core/](./core/AGENTS.md): System base configurations, typography overrides, and mixins.
+- [layouts/](./layouts/AGENTS.md): Standard grid shells and flex layouts.
+- [tokens/](./tokens/AGENTS.md): Centralized variables, colors, sizing, and animations constants.
+- [views/](./views/AGENTS.md): Route-view level fullpage styles.
+

@@ -4,10 +4,10 @@
  * Logic for generating and validating Daycare Daily Missions.
  */
 
-import { POKEMON_DB } from '@/data/pokemonDB';
-import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/trainerTypes';
+import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 
 export interface MissionRequirement {
   type: string;

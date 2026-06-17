@@ -1,7 +1,7 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { getEffectiveSpeed } from './battleEngine.ts'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
-import type { BattleContext } from '@/types/battleContext'
+import type { BattleContext } from '@/types/battle/battleContext'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 

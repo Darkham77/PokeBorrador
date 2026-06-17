@@ -21,3 +21,13 @@ State & Type Architects.
 ## Verification
 
 - `npm run lint` or `vue-tsc --noEmit` to verify type system compilation.
+
+## Child DOX Index
+
+- [auth/](./auth/AGENTS.md): Authentication type definitions.
+- [battle/](./battle/AGENTS.md): Battle engine data structures and configurations.
+- [breeding/](./breeding/AGENTS.md): Daycare and cloning formulas parameters.
+- [gym/](./gym/AGENTS.md): Gym metrics and rematch types.
+- [inventory/](./inventory/AGENTS.md): Item structures.
+- [pokemon/](./pokemon/AGENTS.md): Pokemon factory objects.
+- [system/](./system/AGENTS.md): Database, environment config, and application store mappings.

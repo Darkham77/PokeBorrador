@@ -18,8 +18,12 @@ Frontend Developers.
 
 ## Child DOX Index
 
-- [adventure/](./adventure/): World movement, simulations, camera coordinates tracking, and layout scales.
-- [battle/](./battle/): Visual sequences, Phaser canvases coordinate managers, combat cameras, and active status tracking hooks.
-- [map/](./map/): Map card animations and sprite observers.
-- [modals/](./modals/): Interactive modal triggers and queue handlers.
-- [ui/](./ui/): Application responsive panels, layouts, inputs animations, and dynamic tooltips positioning.
+- [adventure/](./adventure/AGENTS.md): World movement, simulations, camera coordinates tracking, and layout scales.
+- [battle/](./battle/AGENTS.md): Visual sequences, Phaser canvases coordinate managers, combat cameras, and active status tracking hooks.
+- [effects/](./effects/AGENTS.md): Particle engines and weather visuals multipliers.
+- [map/](./map/AGENTS.md): Map card animations and sprite observers.
+- [modals/](./modals/AGENTS.md): Interactive modal triggers and queue handlers.
+- [pokemon/](./pokemon/AGENTS.md): Pokedex search filters and details view logic.
+- [pvp/](./pvp/AGENTS.md): Ranked queue checkers and queue animations triggers.
+- [system/](./system/AGENTS.md): Native back navigation helpers and PWA service updates.
+- [ui/](./ui/AGENTS.md): Application responsive panels, layouts, inputs animations, and dynamic tooltips positioning.

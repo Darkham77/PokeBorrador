@@ -9,23 +9,23 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
+      component: () => import('@/views/auth/LoginView.vue'),
     },
     {
       path: '/showdown-sandbox',
       name: 'showdown-sandbox',
-      component: () => import('../../showdown/ShowdownSandboxView.vue'),
+      component: () => import('../../showdown/views/ShowdownSandboxView.vue'),
     },
 
     {
       path: '/',
-      component: () => import('@/views/GameView.vue'),
+      component: () => import('@/views/game/GameView.vue'),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
           name: 'map',
-          component: () => import('@/views/MapView.vue'),
+          component: () => import('@/views/game/MapView.vue'),
         },
         // {
         //   path: 'team',
@@ -35,24 +35,24 @@ const router = createRouter({
         {
           path: 'pokedex',
           name: 'pokedex',
-          component: () => import('@/views/PokedexView.vue'),
+          component: () => import('@/views/pokemon/PokedexView.vue'),
         },
         {
           path: 'social',
           name: 'social',
-          component: () => import('@/views/SocialView.vue'),
+          component: () => import('@/views/social/SocialView.vue'),
         },
         {
           path: 'bag',
           name: 'bag',
-          component: () => import('@/views/BagView.vue'),
+          component: () => import('@/views/inventory/BagView.vue'),
         }
       ]
     },
     {
       path: '/test-aventura',
       name: 'test-aventura',
-      component: () => import('@/views/AdventureTestView.vue')
+      component: () => import('@/views/adventure/AdventureTestView.vue')
     }
   ],
 })

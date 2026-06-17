@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface StatDisplay {
   id: string

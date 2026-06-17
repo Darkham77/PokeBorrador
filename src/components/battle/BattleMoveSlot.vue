@@ -6,8 +6,8 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import { useMoveSlotData } from '@/composables/useMoveSlotData'
-import type { Pokemon, Move } from '@/types/pokemon'
+import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
   move: Move | null

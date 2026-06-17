@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
-import { getItemById, getItemByName } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps<{

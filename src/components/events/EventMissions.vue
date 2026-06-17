@@ -5,12 +5,12 @@ import { useBreedingStore } from '@/stores/breeding';
 import { useModalStore } from '@/stores/modals';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
-import { usePlayerClassStore } from '@/stores/playerClass';
+import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { CLASS_MISSIONS } from '@/data/playerClasses';
+import { CLASS_MISSIONS } from '@/data/player/playerClasses';
 import MissionCard from './MissionCard.vue';
-import type { DaycareMission } from '@/types/breeding';
-import type { Pokemon } from '@/types/pokemon';
+import type { DaycareMission } from '@/types/breeding/breeding';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 const breedingStore = useBreedingStore();
 const modalStore = useModalStore();

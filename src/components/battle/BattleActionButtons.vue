@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBattleStore } from '@/stores/battle'
+import { useBattleStore } from '@/stores/battle/battle'
 import BattleBallPicker from './BattleBallPicker.vue'
 
 interface Props {
