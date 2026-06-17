@@ -7,8 +7,7 @@ description: MANDATORY safeguard for repository operations. You MUST trigger and
 
 ## Triggering
 
-> [!IMPORTANT]
-> **PROMPT-DRIVEN TRIGGER**: This skill MUST be used whenever the user explicitly asks to commit or push changes (e.g., "commit", "push", "git commit", "upload changes"). It MUST NOT be used for automatic agent internal saves or background operations unless the user initiates the command.
+> [!IMPORTANT] **PROMPT-DRIVEN TRIGGER**: This skill MUST be used whenever the user explicitly asks to commit or push changes (e.g., "commit", "push", "git commit", "upload changes"). It MUST NOT be used for automatic agent internal saves or background operations unless the user initiates the command.
 
 This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages the project's internal validation scripts (SASS Traps, Hybrid Detection) and standard linting/testing to guarantee a production-ready state.
 
@@ -24,38 +23,54 @@ graph TD
     Tracking --> GapAnalysis[2. Test Gap Analysis]
     GapAnalysis --> |"Missing Tests Detected?"| CreateTests[2.1 Create Unit Tests SUB-TASK]
     CreateTests --> Verification[3. Active Verification Cycle]
-    GapAnalysis --> Verification
-    
+    GapAnalysis --> MissingTests{Missing Tests?}
+
+    MissingTests -->|Yes| CreateTests[2.1 Create Unit Tests SUB-TASK]
+    MissingTests -->|No| Verification
+
+    CreateTests --> Verification
+
     subgraph "The Zero-Warning Audit"
         Verification --> FullAudit[3.1 Full Project Audit]
         FullAudit --> AutoFix[3.2 Automatic Repair Pass]
-        AutoFix --> ManualDiscovery[3.3 Manual Repair Discovery]
-        ManualDiscovery --> ManualFix[3.4 Manual Repair Phase]
+        AutoFix --> ManualDiscovery[3.3 Autonomous Repair Discovery]
+        ManualDiscovery --> ManualFix[3.4 Autonomous Repair Phase]
         ManualFix --> FinalAudit[3.5 Final Validation Pass]
-        
+
         FinalAudit --> Lint[Linting]
         Lint --> Types[Type-Safety]
         Types --> Build[Production Build]
         Build --> UnitTests[Unit Tests]
-        UnitTests --> Global[Global Compliance]
+        UnitTests --> HealthScore[Health Score Comparison]
+        HealthScore --> Global[Global Compliance]
     end
-    
-    Global --> DBCheck{DB Changes?}
+
+    Global --> ValidationGate{Validation Successful?}
+
+    ValidationGate -->|No| Verification
+
+    ValidationGate -->|Yes| HealthCompare{Health Score Regressed?}
+
+    HealthCompare -->|Yes| Verification
+
+    HealthCompare -->|No| DBCheck{DB Changes?}
+
     DBCheck -->|Yes| DBSync[4. Database Parity Sync]
-    DBCheck -->|No| Recovery[5. Failure Recovery]
-    DBSync --> Recovery
-    
-    Recovery -->|FAIL| Verification
-    Recovery -->|PASS| Cleanup[6. Workspace Cleanup]
+    DBCheck -->|No| Cleanup[6. Workspace Cleanup]
+
+    DBSync --> Cleanup
     Cleanup --> Walkthrough[7. Walkthrough Update]
     Walkthrough --> Lessons[8. Lessons Extraction]
     Lessons --> LessonApproval[8.1 Lesson Approval]
-    LessonApproval --> SkillVerification[8.2 Skill Implementation Verification]
-    
-    SkillVerification --> Commit[9. Final Optimization Commit]
+
+    LessonApproval -->|Rejected| Lessons
+    LessonApproval -->|Approved| SkillVerification[8.2 Skill Implementation Verification]
+
+    SkillVerification -->|Rejected| Lessons
+    SkillVerification -->|Approved| Commit[9. Final Optimization Commit]
     Commit --> Notify[10. Final Status & Instructions]
     Notify --> End((END))
-    
+
     style Start fill:#f9f,stroke:#333,stroke-width:4px
     style End fill:#f9f,stroke:#333,stroke-width:4px
     style Recovery fill:#ff9,stroke:#333,stroke-width:2px
@@ -97,43 +112,70 @@ Review all modified files in `src/logic/`.
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
 
-You MUST run these commands and fix EVERY issue until a clean pass is achieved. 
+You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
-> [!IMPORTANT]
-> **Trivial Changes Validation Exemption**: Do NOT run heavy linting, type-checking, or full audits for trivial, single-word, or single-character modifications (e.g. changing `true` to `false` or updating comments) to conserve system resources and development speed.
+> [!IMPORTANT] **Trivial Changes Validation Exemption**: Do NOT run heavy linting, type-checking, or full audits for trivial, single-word, or single-character modifications (e.g. changing `true` to `false` or updating comments) to conserve system resources and development speed.
 
-> [!IMPORTANT]
-> **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
+> [!IMPORTANT] **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
 
 **THE MANDATORY AUDIT PIPELINE:**
 
-1.  **Full Audit Pass**: `npm run audit:full`
-    - This command captures EVERYTHING (SASS, GPU, FSM, SQL, Items, Moves, Abilities).
-    - **CRITICAL**: You MUST NOT skip this. It is the only way to ensure total system integrity.
-    - **Context Protection**: If the audit outputs a massive log that threatens to saturate the context window, run the validation scripts using their summary or report variants to keep console logs clean:
-      - For high-level summaries: `npm run audit:summary`, `npm run validate:items:summary`, `npm run validate:abilities:summary`, `npm run validate:moves:summary`, `npm run validate:sandbox:summary`, or `npm run validate:fsm:summary`.
-      - For redirecting full outputs to files: `npm run audit:report` (writes to `scratch/audit_report.txt`), `npm run validate:items:report` (writes to `scratch/items_report.txt`), `npm run validate:abilities:report` (writes to `scratch/abilities_report.txt`), `npm run validate:moves:report` (writes to `scratch/moves_report.txt`), `npm run validate:sandbox:report` (writes to `scratch/sandbox_report.txt`), or `npm run validate:fsm:report` (writes to `scratch/fsm_report.txt`). All validation/audit reports MUST be generated under the `scratch/` folder. Read these output files using `view_file` to review issues.
-2.  **Automatic Repair**: `npm run audit:fix`
-    - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
-3.  **Manual Repair Discovery (THE REPORT)**:
-    - Review the output of `audit:full` (or the generated report files) again.
-    - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
-    - **Targeted Fallow Audit**: Always compare against the remote main branch on GitHub (`origin/main`) to capture all local unpushed/unverified changes (including the snapshot commit and any bad commits made prior to running `/safe-commit`):
-      - Run `git fetch origin main` to ensure the local ref for `origin/main` is up to date with GitHub.
-      - Run `npx fallow audit --changed-since origin/main` to audit the changes. To prevent context saturation, direct the output to a file inside the `scratch/` directory: `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt`. Use `view_file` to analyze the report and ensure that the modified/introduced code does not introduce new dead code, unused exports, duplication, or excessive complexity.
-    - **MANDATORY**: List all these issues, audit warnings, lint errors, AND Fallow recommendations for the modified files in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
-4.  **Manual Repair Phase**:
-    - Fix each identified issue manually in the code.
-    - If a `z-index` is hardcoded, find the correct variable in `visuals.ts`.
-    - If a `filter` is missing `will-change`, add it.
-5.  **Final Validation Pass**:
-    - `npm run validate:types`
-    - `npm run lint`
-    - **Health Regression Check**: Run `npx fallow health --score` to capture the final health score and compare it explicitly with the starting health score captured in Step 0.2. If the final score has regressed (i.e. is lower than the starting health score), this is a validation failure. You MUST identify the complexity hotspots or issues introduced by your changes, refactor them, and re-run the validation until the health score is equal to or greater than the baseline starting score.
-    - `npx fallow dupes --fail-on-issues` (Ensure zero duplicate/clone issues)
-    - `npx fallow security --fail-on-issues` (Ensure zero security candidate issues)
-    - `npm run test`
-    - `npm run build`
+1. **Full Audit Pass**: `npm run audit:full`
+   - This command captures EVERYTHING (SASS, GPU, FSM, SQL, Items, Moves, Abilities).
+   - **CRITICAL**: You MUST NOT skip this. It is the only way to ensure total system integrity.
+   - **Context Protection**: If the audit outputs a massive log that threatens to saturate the context window, run the validation scripts using their summary or report variants to keep console logs clean:
+     - For high-level summaries: `npm run audit:summary`, `npm run validate:items:summary`, `npm run validate:abilities:summary`, `npm run validate:moves:summary`, `npm run validate:sandbox:summary`, or `npm run validate:fsm:summary`.
+     - For redirecting full outputs to files: `npm run audit:report` (writes to `scratch/audit_report.txt`), `npm run validate:items:report` (writes to `scratch/items_report.txt`), `npm run validate:abilities:report` (writes to `scratch/abilities_report.txt`), `npm run validate:moves:report` (writes to `scratch/moves_report.txt`), `npm run validate:sandbox:report` (writes to `scratch/sandbox_report.txt`), or `npm run validate:fsm:report` (writes to `scratch/fsm_report.txt`). All validation/audit reports MUST be generated under the `scratch/` folder. Read these output files using `view_file` to review issues.
+2. **Automatic Repair**: `npm run audit:fix`
+   - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
+
+   > [!IMPORTANT]
+   >
+   > The terms "Discovery" and "Repair" refer to actions performed by the AI agent.
+   >
+   > User intervention is NOT expected for:
+   >
+   > - Lint fixes
+   > - Type fixes
+   > - Audit repairs
+   > - Missing tests
+   > - Build failures
+   > - Security warnings
+   > - Fallow recommendations
+   >
+   > The user should only be consulted when business, gameplay, product, or architectural decisions require human judgment.
+
+3. **Autonomous Repair Discovery (THE REPORT)**:
+   - Review the output of `audit:full` (or the generated report files) again.
+   - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
+   - **Targeted Fallow Audit**: Always compare against the remote main branch on GitHub (`origin/main`) to capture all local unpushed/unverified changes (including the snapshot commit and any bad commits made prior to running `/safe-commit`):
+     - Run `git fetch origin main` to ensure the local ref for `origin/main` is up to date with GitHub.
+     - Run `npx fallow audit --changed-since origin/main` to audit the changes. To prevent context saturation, direct the output to a file inside the `scratch/` directory: `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt`. Use `view_file` to analyze the report and ensure that the modified/introduced code does not introduce new dead code, unused exports, duplication, or excessive complexity.
+   - **MANDATORY**: List all these issues, audit warnings, lint errors, AND Fallow recommendations for the modified files in your response to the user as a "Technical Debt Report" before proceeding to repair them autonomously.
+4. **Manual Repair Phase**:
+   - Fix each identified issue autonomously in the code.
+   - If a `z-index` is hardcoded, find the correct variable in `visuals.ts`.
+   - If a `filter` is missing `will-change`, add it.
+
+### Escalation Rule
+
+The AI MUST continue autonomously unless one of the following conditions occurs:
+
+- Multiple valid architectural solutions exist.
+- Business requirements are unclear.
+- Gameplay behaviour is ambiguous.
+- Product direction requires explicit approval.
+
+Only under these conditions may the AI request user intervention.
+
+1. **Final Validation Pass**:
+   - `npm run validate:types`
+   - `npm run lint`
+   - `npx fallow dupes --fail-on-issues` (Ensure zero duplicate/clone issues)
+   - `npx fallow security --fail-on-issues` (Ensure zero security candidate issues)
+   - `npm run test`
+   - **Health Regression Check**: Run `npx fallow health --score` to capture the final health score and compare it explicitly with the starting health score captured in Step 0.2. If the final score has regressed (i.e. is lower than the starting health score), this is a validation failure. You MUST identify the complexity hotspots or issues introduced by your changes, refactor them, and re-run the validation until the health score is equal to or greater than the baseline starting score.
+   - `npm run build`
 
 ### 4. Database Triple Parity Sync
 
@@ -148,11 +190,9 @@ If the database schema has changed:
 
 - If any check fails, fix the issue and **RE-START Step 3**. A fix for a lint error might break a build or introduce a SASS trap.
 
-> [!CAUTION]
-> **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
+> [!CAUTION] **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
 
-> [!IMPORTANT]
-> **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or **upon finalizing a logical phase**, you MUST explicitly update the **task** and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
+> [!IMPORTANT] **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or **upon finalizing a logical phase**, you MUST explicitly update the **task** and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks (including newly discovered sub-tasks) are completed.
 
 ### 6. Workspace Cleanup (MANDATORY)
 
@@ -203,14 +243,19 @@ Notify the user that the commits (Snapshot and Optimization) have been successfu
 - **Zero Audit Failures**: The project is now fully migrated. Under NO circumstances are audit failures (SASS, Aesthetics, Length, FSM, Types, Lint) allowed in any commit. Every single commit must be 100% clean and compliant with the validation pipeline.
 - **DATABASE & REMOTE SYNCHRONIZATION ALERT**: You MUST display a prominent warning notice at the very end of your response to the user. Inform the user that they must push their changes to the remote repository and update the database schemas on the servers, or they will not be able to enter the game. Provide clear example commands for doing this:
   - **Pushing changes to remote**:
+
     ```bash
     git push origin main
     ```
+
   - **Updating database on a specific server**:
+
     ```bash
     npm run servers:db:update -- --server=<profile>
     ```
+
   - **Updating database on all configured servers**:
+
     ```bash
     npm run servers:db:update -- --all
     ```
@@ -251,21 +296,18 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 
 ## Example Recovery Strategy
 
-**Correct Behavior after a fix:**
-"Fixed lowercase filter collision in `MapCard.vue`.
-**Workflow Projection**:
+**Correct Behavior after a fix:** "Fixed lowercase filter collision in `MapCard.vue`. **Workflow Projection**:
 
-1. [ ] Re-run `audit_project.py` (Step 3).
+1. [ ] Re-run `npm run audit:full` (Step 3).
 2. [ ] Run `npm run build` to verify compilation.
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
 5. [ ] **Wait for Lesson Approval** (Step 8.1).
 6. [ ] **Wait for Skill Implementation Verification** (Step 8.2).
-7. [ ] Final Optimization Commit (Step 9).
-"
+7. [ ] Final Optimization Commit (Step 9). "
 
 ### 11. Rigor Enforcement (Anti-Shortcut Rule)
 
 - **No Phase-Jumping**: It is strictly forbidden to execute steps 9 or 10 if steps 1-8 are not fully documented and checked in the **task**.
 - **Test Implementation Check**: You are FORBIDDEN from committing if there are identified "Missing Tests" in Step 2 that haven't been implemented and marked as `[x]`.
-- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task updated with the result of the *previous* tool call?". If not, update it first.
+- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task updated with the result of the _previous_ tool call?". If not, update it first.
