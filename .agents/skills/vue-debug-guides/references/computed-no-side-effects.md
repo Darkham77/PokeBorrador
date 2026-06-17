@@ -21,6 +21,7 @@ Computed properties are designed to declaratively describe how to derive a value
 - [ ] Use event handlers for user-triggered actions
 
 **Incorrect:**
+
 ```vue
 <script setup>
 import { ref, computed } from 'vue'
@@ -56,6 +57,7 @@ const processedData = computed(() => {
 ```
 
 **Correct:**
+
 ```vue
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
@@ -104,4 +106,5 @@ function increment() {
 | Timer setup | `setTimeout()` | Use lifecycle hook |
 
 ## Reference
+
 - [Vue.ts Computed Properties - Getters Should Be Side-Effect Free](https://vuejs.org/guide/essentials/computed.html#getters-should-be-side-effect-free)

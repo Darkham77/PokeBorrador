@@ -21,6 +21,7 @@ tags: [vue3, typescript, options-api, defineComponent, type-inference]
 Vue's Options API relies heavily on the `this` context, which TypeScript cannot automatically type without `defineComponent`:
 
 **BAD - No type inference:**
+
 ```typescript
 // No defineComponent - 'this' is typed as 'any'
 export default {
@@ -43,6 +44,7 @@ export default {
 ```
 
 **GOOD - Full type inference:**
+
 ```typescript
 import { defineComponent } from 'vue'
 

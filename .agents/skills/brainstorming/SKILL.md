@@ -58,7 +58,7 @@ Your goal here is **shared clarity**, not speed.
 **The Rules of Dialogue:**
 
 - **One Question per Message**: Never ask multiple questions in a single message.
-- **Prefer Multiple-Choice**: When possible, provide 2–4 clear options. **ALWAYS present these options as a vertical list** (one per line) for better readability.
+- **Use `ask_question` for Multiple-Choice**: When asking a question with discrete options, you MUST call the `ask_question` tool instead of writing options as plain text. This renders an interactive UI the user can click. The tool always includes a built-in write-in field — do not add an "Other" option manually. Use open-ended plain text questions only when the answer space is truly unbounded.
 - **Precision Over Ambiguity**: Use open-ended questions only when you need to explore a totally unknown area.
 - **Decomposition**: If a topic needs depth, split it into multiple sequential questions.
 

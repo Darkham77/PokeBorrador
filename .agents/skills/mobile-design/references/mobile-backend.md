@@ -24,7 +24,7 @@ Mobile clients are DIFFERENT from web clients:
 
 ## 🚫 AI MOBILE BACKEND ANTI-PATTERNS
 
-### These are common AI mistakes when building mobile backends:
+### These are common AI mistakes when building mobile backends
 
 | ❌ AI Default | Why It's Wrong | ✅ Mobile-Correct |
 | :--- | :--- | :--- |
@@ -457,30 +457,35 @@ ALERTS:
 ## 📝 MOBILE BACKEND CHECKLIST
 
 ### Before API Design
+
 - [ ] Identified mobile-specific requirements?
 - [ ] Planned offline behavior?
 - [ ] Designed sync strategy?
 - [ ] Considered bandwidth constraints?
 
 ### For Every Endpoint
+
 - [ ] Response as small as possible?
 - [ ] Pagination cursor-based?
 - [ ] Proper caching headers?
 - [ ] Mobile error format with actions?
 
 ### Authentication
+
 - [ ] Token refresh implemented?
 - [ ] Silent re-auth flow?
 - [ ] Multi-device logout?
 - [ ] Secure token storage guidance?
 
 ### Push Notifications
+
 - [ ] FCM + APNs configured?
 - [ ] Token lifecycle managed?
 - [ ] Silent vs display push defined?
 - [ ] Sensitive data NOT in push payload?
 
 ### Release
+
 - [ ] Version check endpoint ready?
 - [ ] Feature flags configured?
 - [ ] Force update mechanism?

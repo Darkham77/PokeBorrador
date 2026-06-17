@@ -21,6 +21,7 @@ Don't avoid abstraction entirely, but be mindful of component depth in frequentl
 - Focus optimization efforts on the most-rendered components
 
 **BAD:**
+
 ```vue
 <!-- BAD: Deep abstraction in list items -->
 <template>
@@ -47,6 +48,7 @@ Don't avoid abstraction entirely, but be mindful of component depth in frequentl
 ```
 
 **GOOD:**
+
 ```vue
 <!-- GOOD: Flattened structure in list items -->
 <template>

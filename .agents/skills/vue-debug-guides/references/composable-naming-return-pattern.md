@@ -18,6 +18,7 @@ tags: [vue3, composables, composition-api, naming, conventions, refs]
 - [ ] Document the returned refs for consumers
 
 **Incorrect:**
+
 ```javascript
 // WRONG: No "use" prefix - unclear it's a composable
 export function mousePosition() {
@@ -45,6 +46,7 @@ export function useCounter() {
 ```
 
 **Correct:**
+
 ```javascript
 // CORRECT: "use" prefix and returns plain object with refs
 export function useMouse() {
@@ -135,5 +137,6 @@ const { count, doubleCount, increment, reset } = useCounter(10)
 | `useWindowSize` | `getWindowSize` | "get" implies synchronous getter |
 
 ## Reference
+
 - [Vue.ts Composables - Conventions and Best Practices](https://vuejs.org/guide/reusability/composables.html#conventions-and-best-practices)
 - [Vue.ts Composables - Return Values](https://vuejs.org/guide/reusability/composables.html#return-values)

@@ -233,6 +233,7 @@ const sort = useRouteQuery('sort', 'newest')
 ```
 
 ## Reference
+
 - [VueUse - useRouteQuery](https://vueuse.org/router/useRouteQuery/)
 - [Vue Router - Query Parameters](https://router.vuejs.org/guide/essentials/passing-props.html#passing-props-to-route-components)
 - [Mastering Pinia - URL State](https://masteringpinia.com/blog/top-5-mistakes-to-avoid-when-using-pinia)

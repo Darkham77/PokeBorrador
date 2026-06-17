@@ -46,6 +46,7 @@ const currentView = computed(() => {
 ```
 
 **What happens:**
+
 1. Component mounts, adds listener
 2. Component unmounts (e.g., route change, v-if toggle)
 3. Component mounts again, adds ANOTHER listener
@@ -205,5 +206,6 @@ const { currentView } = useHashRouter({
 5. **Composables help encapsulate cleanup logic** - Reusable and automatic
 
 ## Reference
+
 - [Vue.ts Routing Documentation](https://vuejs.org/guide/scaling-up/routing.html)
 - [Vue Router Official Library](https://router.vuejs.org/)

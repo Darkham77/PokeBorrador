@@ -39,6 +39,7 @@ router.beforeEach((to, from) => {
 ```
 
 **Error you'll see:**
+
 ```text
 [Vue Router warn]: Detected an infinite redirection in a navigation guard when going from "/" to "/login". Aborting to avoid a Stack Overflow.
 ```
@@ -183,5 +184,6 @@ router.afterEach((to, from) => {
 5. **Have an escape hatch** - Error page or max redirect count
 
 ## Reference
+
 - [Vue Router Navigation Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html)
 - [Vue Router Route Meta Fields](https://router.vuejs.org/guide/advanced/meta.html)

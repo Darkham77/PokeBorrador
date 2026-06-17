@@ -21,6 +21,7 @@ When writing JSX in Vue, use the same attribute names you would use in regular H
 - [ ] Configure TypeScript properly for Vue JSX type inference
 
 **Incorrect (React-style):**
+
 ```jsx
 // AVOID: React conventions cause TypeScript errors in Vue JSX
 // (Vue runtime is lenient and converts these, but types don't allow them)
@@ -49,6 +50,7 @@ const Button = () => (
 ```
 
 **Correct (Vue-style):**
+
 ```jsx
 // CORRECT: Use standard HTML attributes
 export default {
@@ -138,4 +140,5 @@ export default {
 ```
 
 ## Reference
+
 - [Vue.ts JSX and TSX](https://vuejs.org/guide/extras/render-function.html#jsx-tsx)

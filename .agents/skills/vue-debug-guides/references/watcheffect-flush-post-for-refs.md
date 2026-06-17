@@ -20,6 +20,7 @@ This timing issue is particularly confusing because the watcher runs, but the re
 - [ ] Consider using `watch` with explicit ref watching instead
 
 **Incorrect:**
+
 ```vue
 <script setup>
 import { ref, watchEffect } from 'vue'
@@ -64,6 +65,7 @@ watchEffect(() => {
 ```
 
 **Correct:**
+
 ```vue
 <script setup>
 import { ref, watchEffect } from 'vue'
@@ -172,5 +174,6 @@ watchSyncEffect(() => { ... }) // Shorthand
 | Performance-critical sync updates | `sync` (with caution) |
 
 ## Reference
+
 - [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
 - [Vue.ts watchEffect API](https://vuejs.org/api/reactivity-core.html#watcheffect)

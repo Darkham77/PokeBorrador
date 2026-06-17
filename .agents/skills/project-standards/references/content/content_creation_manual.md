@@ -29,10 +29,10 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 
 ### Step 0: Get data from PokeAPI
 
-Run the fetch script (located in `.agents/skills/add-pokemon/scripts/fetch_pokemon.ts`) passing the name in English:
+Run the fetch script:
 
 ```bash
-node .agents/skills/add-pokemon/scripts/fetch_pokemon.ts <name>
+node --experimental-strip-types .agents/skills/project-standards/scripts/content/fetch_pokemon.ts <name>
 ```
 
 This generates a `_output/<pokemon>_code.txt` file with blocks ready to copy.

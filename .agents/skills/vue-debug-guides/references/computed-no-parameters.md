@@ -18,6 +18,7 @@ tags: [vue3, computed, methods, parameters, common-mistake]
 - [ ] Prefer method calls in templates for parameterized operations
 
 **Incorrect:**
+
 ```vue
 <template>
   <!-- BAD: Computed properties don't accept parameters like this -->
@@ -55,6 +56,7 @@ export default {
 ```
 
 **Correct:**
+
 ```vue
 <template>
   <!-- GOOD: Use method for parameterized operations -->
@@ -155,5 +157,6 @@ function filterByStatus(status) {
 ```
 
 ## Reference
+
 - [Vue.ts Computed Properties](https://vuejs.org/guide/essentials/computed.html)
 - [Vue.ts Methods](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#declaring-methods)

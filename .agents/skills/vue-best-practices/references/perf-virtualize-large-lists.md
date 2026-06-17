@@ -30,6 +30,7 @@ Use a virtualization library when dealing with lists that could exceed 50-100 it
 | `vueuc/VVirtualList` | Naive UI projects | Part of Naive UI ecosystem |
 
 **BAD:**
+
 ```vue
 <template>
   <!-- BAD: Renders ALL 10,000 items immediately -->
@@ -56,6 +57,7 @@ onMounted(async () => {
 ```
 
 **GOOD:**
+
 ```vue
 <template>
   <!-- GOOD: Only renders ~20 visible items at a time -->

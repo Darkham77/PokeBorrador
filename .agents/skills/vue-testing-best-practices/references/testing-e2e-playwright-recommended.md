@@ -34,6 +34,7 @@ npm init playwright@latest
 ```
 
 **playwright.config.ts:**
+
 ```typescript
 import { defineConfig, devices } from '@playwright/test'
 
@@ -237,6 +238,7 @@ npx playwright codegen localhost:5173
 ```
 
 ## Reference
+
 - [Playwright Documentation](https://playwright.dev/)
 - [Vue.ts E2E Testing Recommendations](https://vuejs.org/guide/scaling-up/testing#e2e-testing)
 - [Playwright Best Practices](https://playwright.dev/docs/best-practices)

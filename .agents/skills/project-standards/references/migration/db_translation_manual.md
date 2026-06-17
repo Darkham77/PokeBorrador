@@ -105,4 +105,3 @@ All seed data in migration SQL files (including daily missions, items, and arena
 ## Testing & Validation
 
 All new SQL patterns MUST be added to the unit test suite in `../../../../tests/unit/db_translation.spec.ts`.
-

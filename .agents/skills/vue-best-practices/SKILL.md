@@ -239,7 +239,6 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Pinia Ref Unwrapping in TypeScript Composables**: Inside `.ts` helper files or external Vue composables, properties from Pinia setup stores (e.g. `store.state` or read-only `computed` properties) might not automatically unwrap as they do in SFC templates. Always use `toValue` (e.g. `toValue(store.state)`) when accessing nested properties, executing event dispatches, or performing identity comparisons to ensure you are working with the raw runtime object.
 - **Primitive Value Comparison for Global Events**: When passing entity objects via global event buses (like `gameBus`) and comparing them within listeners (e.g. `data.pokemon.uid === props.pokemon?.uid`), compare primitive fields (like a string `uid` or `id`) instead of full object references. This guards against mismatches caused by Vue reactivity proxies, reactive wraps, or deep-cloned snapshots.
 
-
 ## 6) Final self-check before finishing
 
 - Core behavior works and matches requirements.

@@ -18,6 +18,7 @@ tags: [vue3, watch, watchers, flush, DOM, timing, post]
 - [ ] Remember default timing is ideal for most non-DOM operations
 
 **Incorrect:**
+
 ```vue
 <script setup>
 import { ref, watch, watchEffect } from 'vue'
@@ -52,6 +53,7 @@ watchEffect(() => {
 ```
 
 **Correct:**
+
 ```vue
 <script setup>
 import { ref, watch, watchEffect, watchPostEffect } from 'vue'
@@ -186,4 +188,5 @@ function addMessage(text) {
 ```
 
 ## Reference
+
 - [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)

@@ -84,6 +84,7 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
 
 - **Divider Collapse in `flex-direction: column`**: An empty `<div>` used as a visual separator inside a `display: flex; flex-direction: column` container is treated as a flex item with zero intrinsic size, causing it to collapse to `0px` height and become invisible.
   - **Fix**: Force it out of the flex flow:
+
     ```scss
     .section-divider {
       display: block !important;
@@ -93,6 +94,7 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
       flex-shrink: 0;
     }
     ```
+
   - **Why**: `display: block !important` prevents the parent flex context from controlling the element's size, allowing `height` and `min-height` to take effect.
 
 - **CSS Grid Card Width Overrides**: When displaying interactive cards (such as shops, markets, or box grids) inside a responsive CSS Grid, avoid applying hardcoded static width or `max-width` overrides directly to the card elements to restrict their dimensions. Doing so creates empty vertical/horizontal alignment gaps and causes layout shifting when hover scale animations are triggered. Allow cards to fill grid cells naturally, and delegate layout containment to the parent CSS Grid container.
@@ -138,7 +140,6 @@ The legacy `@import` directive is deprecated. This project strictly follows the 
 > **SASS @import Deprecation**: The use of `@import` for SASS files is strictly prohibited. It is deprecated and will be removed in Dart Sass 3.0.0.
 > **Detection**: Any warning in the console stating `Sass @import rules are deprecated` MUST be fixed immediately by migrating to `@use`.
 > **Fix**: Replace `@import "path";` with `@use "path" as *;` (if you need global members) or `@use "path";` (and access via namespace).
-
 > [!CAUTION]
 > **Production Build Mixin Isolation Trap**: Vite's HMR dev mode resolves SASS mixins globally across partials, which can mask missing `@use` declarations. However, Vite's production bundler compiles each partial in **isolation**. A subfile (e.g., `_pokemon.scss`) that uses a mixin defined in another subfile (e.g., `text-outline` from `_layout.scss`) **MUST** explicitly `@use '_layout' as *;` locally, even if the HMR dev build appears to work without it.
 > **Symptom**: The application works flawlessly in `npm run dev` but throws a `Undefined mixin` compile error on `npm run build`.

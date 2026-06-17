@@ -8,15 +8,15 @@ State Architects / Frontend Developers.
 
 ## Local Contracts
 
-- Strict data sanitization when updating/switching entities (e.g., active Pokemon movesets).
+- Strict data sanitization when updating/switching entities: auto-complete up to 4 moves with STAB guarantee, deduplicate via `Set`, filter empty/invalid entries.
 - Bypassing static browser alias loading (`@/`) in Node.js test runs using dynamic store loading.
 
 ## Work Guidance
 
 - Zero serialization (`JSON.stringify`) in watch handlers to prevent severe CPU lag.
 - Define explicit local type interfaces for mocks rather than using `any` (Zero-Any policy).
-- Ensure explicit error propagation in dynamic dynamic imports (never silent `.catch(() => {})`).
-- Synchronize player gender selection state during authentication (sign up only).
+- Ensure explicit error propagation in dynamic imports (never silent `.catch(() => {})`).
+- **Gender is a Save Property**: The player's gender (`'h'` | `'m'`) is set once at signup and persists in the save. Login flows MUST NEVER ask for gender — only signup/registration forms include the gender selector. Use separate components for login (no gender) and signup (with gender).
 - When visual/state variables are modified, keep them atomic and fully initialized to prevent race conditions in HUD layers.
 
 ## Verification

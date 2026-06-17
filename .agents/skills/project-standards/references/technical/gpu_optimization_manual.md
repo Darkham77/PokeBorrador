@@ -59,6 +59,9 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Statically Precompute Dense Matrix Data**: For dense, repetitive structures (like large tables of weather patterns across multiple maps with lists of sprites), do not rely on dynamic computed getters that loop over maps and resolve asset URLs repeatedly. Pre-compute the data array statically at the module/script level exactly once on load. Combine this with lazy rendering/accordion structures to only mount visible DOM nodes, reducing compositor pressure and preserving 60 FPS.
 - **Zero Serialization in Watchers**: Never run `JSON.stringify` inside reactive watchers. Deep watchers (`{ deep: true }`) must be used with caution, and heavy serializations inside watcher cycles must be completely avoided as they saturate the CPU and cause heavy frame drops.
 - **IntersectionObserver Viewport Root**: When registering an `IntersectionObserver` for visibility or zoom tracking (especially in dynamically scaled components like `#zoomable-content`), you must set `root: null` or completely omit the root property. Specifying a custom DOM element as root breaks visibility calculations under browser CSS transforms (scale/zoom), causing items to be falsely flagged as hidden and freezing visual effects.
+- **Interface Zoom Restrictions on Canvas Viewports**: Do NOT apply CSS `zoom` or scale transforms to elements rendering a game canvas (like Phaser's `.battle-arena`), as it distorts pointer coordinate mapping and camera calculations. Apply the zoom factor (`--app-zoom`) selectively to UI sidebars/panels (e.g., chat log, action panels) and dynamically scale grid layouts using calculation variables (e.g., `calc(320px * var(--app-zoom, 1))`).
+- **Tooltip Scale & Boundary Adaptability**: When using teleported tooltips under a zoomed/scaled view, do not scale the parent `.pv-tooltip-teleported` — it breaks absolute positioning calculations. Instead, apply the scale transform to the inner animation wrapper (`.tooltip-animate-wrapper`) and scale the parent's `min-width`/`max-width` proportionally with the zoom factor to prevent text wrapping or layout clipping.
+- **UI Tab Integrity**: To prevent unwanted vertical scroll indicators in horizontal tab bars with `overflow-x: auto`, apply `overflow-y: hidden` and `flex-shrink: 0`. This avoids layout calculation errors caused by vertical padding or sub-pixel overflow.
 
 ---
 
@@ -118,6 +121,3 @@ To prevent resource leakages and redundant thread compilation overhead in views 
 
 - **Canvas Preservation via v-show**: When a view hosting an OffscreenCanvas container goes off-screen (e.g. scrolled out of the viewport), prefer using `v-show` instead of `v-if` to hide it. This keeps the `<canvas>` DOM element mounted and preserves the transferred canvas rendering context, avoiding the need to perform a full thread reconstruction when returning to view.
 - **Worker Bucle Pausing**: Do not terminate workers dynamically on high-frequency visibility events (like scrolling). Instead, implement `PAUSE` and `RESUME` message handlers within the Web Worker to stop the `requestAnimationFrame` render loop while off-screen and restart it dynamically when visible, completely avoiding redundant `new Worker()` instantations and compilation Blobs.
-
-
-

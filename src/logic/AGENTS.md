@@ -10,6 +10,8 @@ Logic Developers / Game Designers.
 
 - DBRouter-enforced isolation between online (Supabase) and offline (SQLite) data.
 - Complete separation of calculations from visual code (Pure Modules Pattern).
+- **Asset ID Immutability**: Asset/item IDs MUST pass through the system without transformation (no `.toLowerCase()`, `.replace(/_/g, '')`). The asset service resolves by exact ID. If an ID arrives malformed, throw an explicit `Error`.
+- **No Silent Fallbacks**: In capture/combat animations requiring a valid asset ID (e.g., Pokéball), hardcoded fallbacks (`ballId = 'pokeball'`) are STRICTLY FORBIDDEN. Always throw a descriptive `Error` so the root cause is visible.
 
 ## Work Guidance
 
@@ -18,7 +20,10 @@ Logic Developers / Game Designers.
 - Use explicit `.ts` extensions for relative imports in Node.js utility contexts.
 - Localize altered statuses in combat using the central Spanish `STATUS_NAME_MAP` translation dictionary.
 - All check logic on equipped items must use English IDs (`exp_share`, etc.); Spanish translations are strictly for UI presentation.
+- When writing UI conditionals on database models (e.g., war factions), compare against official DB values in Spanish (`'poder'`, not `'power'`).
 - Decouple components using `GameBus` signals rather than tight dependencies.
+- **Trainer Archetype SSoT**: All archetype definitions (name, sprite, pool, key) live exclusively in `src/data/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy.
+- **Move Description Fallback Chain**: Spanish move translations MUST follow: ① `pokemonDataProvider` → ② `move_descriptions.json` → ③ Showdown `shortDesc`. No English leaks.
 
 ## Verification
 

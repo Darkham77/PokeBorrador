@@ -164,7 +164,6 @@ All spacing and sizing in multiples of 8:
 
 ---
 
-
 > **Note for Poké Vicio**: All project-specific UI rules (Hybrid Retro-Modern, SASS filters, specific badge layouts) have been moved to the [Manual de Estándares UI/UX](../project-standards/references/ui_ux_standards.md).
 
 ---
@@ -205,6 +204,7 @@ width = N × card_width + (N-1) × gap + padding_left + padding_right + scrollba
 ```
 
 **Example — 6 Pokémon cards (Poké Vicio):**
+
 - `6 × 115px` (cards) + `5 × 6px` (gaps) + `4px + 4px` (grid padding) + `17px` (scrollbar) = **745px**
 
 ```scss

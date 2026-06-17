@@ -18,6 +18,7 @@ tags: [vue3, computed, arrays, mutation, sort, reverse]
 - [ ] Be aware which array methods mutate vs return new arrays
 
 **Incorrect:**
+
 ```vue
 <script setup>
 import { ref, computed } from 'vue'
@@ -56,6 +57,7 @@ const sortedUsers = computed(() => {
 ```
 
 **Correct:**
+
 ```vue
 <script setup>
 import { ref, computed } from 'vue'
@@ -144,5 +146,6 @@ const deepCopied = computed(() => {
 ```
 
 ## Reference
+
 - [Vue.ts Computed Properties - Avoid Mutating Computed Value](https://vuejs.org/guide/essentials/computed.html#avoid-mutating-computed-value)
 - [MDN Array Methods](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)

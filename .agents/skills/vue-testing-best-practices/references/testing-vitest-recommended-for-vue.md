@@ -31,6 +31,7 @@ npm install -D vitest @vue/test-utils jsdom
 ```
 
 **vite.config.ts:**
+
 ```javascript
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -49,6 +50,7 @@ export default defineConfig({
 ```
 
 **package.tson:**
+
 ```json
 {
   "scripts": {
@@ -60,6 +62,7 @@ export default defineConfig({
 ```
 
 **tsconfig.tson (if using TypeScript):**
+
 ```json
 {
   "compilerOptions": {
@@ -167,6 +170,7 @@ export default defineConfig({
 ## Common Patterns
 
 ### Mocking Modules
+
 ```javascript
 import { vi } from 'vitest'
 
@@ -176,6 +180,7 @@ vi.mock('@/api/users', () => ({
 ```
 
 ### Testing with Fake Timers
+
 ```javascript
 import { vi, beforeEach, afterEach } from 'vitest'
 
@@ -199,6 +204,7 @@ test('debounced search', async () => {
 ```
 
 ## Reference
+
 - [Vitest Documentation](https://vitest.dev/)
 - [Vue.ts Testing Guide](https://vuejs.org/guide/scaling-up/testing)
 - [Vue Test Utils](https://test-utils.vuejs.org/)

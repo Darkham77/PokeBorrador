@@ -172,5 +172,6 @@ const user = route.meta.user
 5. **beforeRouteUpdate and beforeRouteLeave have component access** - They run when component exists
 
 ## Reference
+
 - [Vue Router In-Component Guards](https://router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards)
 - [Vue Router Navigation Resolution Flow](https://router.vuejs.org/guide/advanced/navigation-guards.html#the-full-navigation-resolution-flow)

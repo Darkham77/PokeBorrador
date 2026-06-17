@@ -44,6 +44,7 @@ onMounted(async () => {
 ```
 
 **Scenario:**
+
 1. Visit `/users/1` - Component mounts, fetches User 1 data
 2. Navigate to `/users/2` - Component is REUSED, onMounted doesn't run
 3. UI still shows User 1's data!
@@ -108,6 +109,7 @@ onBeforeRouteUpdate(async (to, from) => {
 ```
 
 **Tradeoffs:**
+
 - Simple but less performant
 - Destroys and recreates component on every param change
 - Loses component state
@@ -177,5 +179,6 @@ const { data: user, loading, error } = useRouteData('id', fetchUser)
 5. **`:key="route.fullPath"` is a sledgehammer** - Use only when necessary
 
 ## Reference
+
 - [Vue Router Dynamic Route Matching](https://router.vuejs.org/guide/essentials/dynamic-matching.html#reacting-to-params-changes)
 - [Vue School: Reacting to Param Changes](https://vueschool.io/lessons/reacting-to-param-changes)

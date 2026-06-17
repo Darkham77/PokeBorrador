@@ -9,10 +9,12 @@ GitHub supports native alert banners (`> [!NOTE]`, `> [!IMPORTANT]`, `> [!TIP]`,
 ### Column 0 Constraint
 
 For the markdown parser to correctly render an alert banner instead of a standard blockquote:
+
 - The blockquote quote character `>` **MUST** begin at column 0 of the line.
-- There must be no preceding indentation, spaces, list bullet points (`- `), or list numbers.
+- There must be no preceding indentation, spaces, list bullet points (`-`), or list numbers.
 
 #### ❌ Incorrect Indentations
+
 ```markdown
   > [!NOTE]
   > This is indented by spaces and will not render as a banner.
@@ -22,6 +24,7 @@ For the markdown parser to correctly render an alert banner instead of a standar
 ```
 
 #### 👍 Correct Setup
+
 ```markdown
 > [!NOTE]
 > This starts at column 0 and will render as a native blue note banner.
@@ -34,10 +37,12 @@ Placing a native alert banner in the middle of a numbered list breaks the list p
 ### Structural Segregation
 
 To maintain continuous numbering:
+
 1. Conclude the ordered list before introducing the alert block.
 2. Structure the documentation into distinct header subsections if notes are lengthy or critical.
 
 #### ❌ Incorrect List Interruption
+
 ```markdown
 1. First step.
 2. Second step.
@@ -47,6 +52,7 @@ To maintain continuous numbering:
 ```
 
 #### 👍 Correct List Separation
+
 ```markdown
 1. First step.
 2. Second step.
@@ -62,6 +68,7 @@ To maintain continuous numbering:
 To ensure cross-compatibility and easy navigation within development environments:
 
 ### Clickable File Links
+
 - Always use standard markdown link syntax with the `file://` scheme and absolute paths: `[link text](file:///absolute/path/to/file)`.
 - For specific line ranges, append the line anchor: `[link text](file:///absolute/path/to/file#L123-L145)`.
 - **Rigor**: Never surround the link text with backticks. That breaks the rendering and formatting of clickable links in many IDE previews.
@@ -69,6 +76,7 @@ To ensure cross-compatibility and easy navigation within development environment
   - 👍 Correct: `[utils.py](file:///path/to/utils.py)`
 
 ### Embedding Media
+
 - To embed images and videos, you **MUST** use the image syntax: `![caption](/absolute/path/to/file.jpg)`. Standard links will not display the media inline.
 - Provide a brief, descriptive caption.
 - **Artifact Sandbox**: If you are embedding a file in an artifact or markdown file and it is not already in the designated assets/artifacts folder, you **MUST** first copy it to the local media directory before referencing it.

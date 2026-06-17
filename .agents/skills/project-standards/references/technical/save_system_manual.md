@@ -44,6 +44,7 @@ When reading files from OPFS (e.g., local saves or SQLite binary storage):
 
 - **Creation Flag**: When opening a file for reading, ALWAYS set `{ create: false }` in `getFileHandle`. Using `{ create: true }` on a missing file creates an empty 0-byte file, causing subsequent JSON parsers to crash with `Unexpected end of JSON input`.
 - **Zero-Byte & NotFound Handling**: Gracefully handle `NotFoundError` and files with `size === 0` by returning `null` or default state instead of throwing exceptions.
+- **Domain + Port Sandbox Isolation**: Browser databases (LocalStorage, IndexedDB, OPFS) are strictly isolated by `Protocol + Domain + Port`. In local dev, if Vite falls back to a different port (e.g., `5174` because `5173` is occupied), a blank database state will load. Always verify the active browser address before running DB restore operations.
 
 ### 7. Database Migration Concurrency Lock
 
@@ -210,6 +211,14 @@ To avoid infinite reactive feedback loops or blocked visual states when Pinia st
 - **Preserve Active State**: During live synchronization or deep watches, reference the current runtime state of the reactive store proxy (e.g., `privateChats[id].isCollapsed`) instead of resetting it to static defaults, preserving active user interactions.
 - **Temporal Dead Zone Avoidance**: When declaring reactive variables that are referenced by sync helpers during initialization, declare them empty first and populate them afterwards to avoid `ReferenceError` temporal dead zone crashes.
 
+### 4. F5 Refresh Persistence & Serialization
+
+When introducing new reactive properties in the main `GameState` that dictate timer offsets, cooldowns, or state triggers:
+
+- Register the property in the `SaveData` interface.
+- Map it inside the returned payload of `serializeState()` in `saveService.ts`.
+- Backfill a clean default (e.g., `0` or `null`) inside `normalizeData()` of `loadService.ts` to ensure compatibility for users loading older profiles.
+
 ---
 
 ## 🛡️ Administrative Security
@@ -233,6 +242,8 @@ Pokémon created by debug tools or legacy systems may lack critical properties (
 - **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.ts`) to fill in missing data from `MOVE_DATA`.
 - **Level & Experience Cap**: Sanitization must enforce `MAX_POKEMON_LEVEL = 100`. If a Pokémon's level exceeds 100, it must be adjusted to 100. If it is exactly 100, its `exp` must be reset to `0` and `expNeeded` set to `Infinity`. If it is below 100 but `exp` is equal to or greater than `expNeeded`, `exp` must be clamped to `expNeeded - 1` to prevent corrupted states.
 - **Infinity JSON Serialization**: Because `JSON.stringify(Infinity)` serializes to `null`, `expNeeded` values mapped to `Infinity` for level 100 Pokémon will load as `null` or `0` from databases. The self-healing checker MUST silently restore these to `Infinity` without emitting warnings or triggering self-healing logs.
+- **Legacy Egg Schema Fallback**: When loading eggs from older saves (where `egg.id` contains a numeric timestamp and species is stored in `egg.pokemonId`), apply a fallback: prioritize `egg.pokemonId || egg.id` when looking up species data. During `sanitizeAll()`, automatically migrate these records by assigning the species name to `id` and ensuring a unique `uid` to prevent simultaneous deletion of multiple legacy eggs during hatching.
+- **Global Entity ID Migration & Self-Healing**: When migrating entity IDs (e.g., move IDs, item IDs) to standardized schemas (official English PokeAPI names), ensure UI display names remain unchanged (keep Spanish translations) and implement on-the-fly self-healing conversions (inventory keys, `pokemon.heldItem`, learnsets) during `sanitizeAll()` to ensure absolute backward compatibility and prevent loss of user progress.
 
 ---
 

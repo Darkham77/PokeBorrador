@@ -21,6 +21,7 @@ Dynamic arguments allow runtime determination of which attribute or event to bin
 - [ ] Use `null` to explicitly remove a binding
 
 **Incorrect:**
+
 ```vue
 <template>
   <!-- ERROR: Spaces and quotes not allowed in dynamic arguments -->
@@ -44,6 +45,7 @@ const someAttr = 'href'
 ```
 
 **Correct:**
+
 ```vue
 <template>
   <!-- OK: Simple variable reference -->
@@ -142,5 +144,6 @@ const attr6 = { foo: 1 } // Warning: should be string
 ```
 
 ## Reference
+
 - [Vue.ts Template Syntax - Dynamic Arguments](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-arguments)
 - [Vue.ts Template Syntax - Dynamic Argument Value Constraints](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-value-constraints)

@@ -141,4 +141,3 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **Rarity Highlight Aesthetics**: Highlighting item rarity (tiers) is done using a `.item-bg-glow` container with a radial gradient matching the tier color (rare = `#3b82f6`, epic = `#a855f7`, legend = `var(--yellow)`) placed behind the clean item sprite. Cards should avoid having a dark background or container behind the sprite.
 - **Price Pills Grid Layout**: To prevent overlapping text in list views, display the stock count and the official purchase shop price (`TIENDA: ₱[price]`) on the top line, and the GTS statistics pills (MIN, PROM, MAX) on a separate line below it.
 - **Suggested Market Price**: When publishing items to the GTS, default the initial suggested price input in the form to the shop sell price (50% of the shop purchase price) to match the value players get when selling directly to standard shops.
-

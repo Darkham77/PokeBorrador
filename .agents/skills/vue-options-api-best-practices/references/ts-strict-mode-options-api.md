@@ -22,6 +22,7 @@ tags: [typescript, options-api, tsconfig, this-typing, configuration]
 TypeScript's default behavior without strict mode allows implicit `any` typing, which defeats the purpose of using TypeScript with Vue's Options API.
 
 **tsconfig.tson without strict mode:**
+
 ```json
 {
   "compilerOptions": {
@@ -32,6 +33,7 @@ TypeScript's default behavior without strict mode allows implicit `any` typing, 
 ```
 
 **Component with hidden type errors:**
+
 ```typescript
 import { defineComponent } from 'vue'
 
@@ -58,6 +60,7 @@ All of the above errors compile successfully without strict mode because `this` 
 ## Correct Configuration
 
 **Recommended tsconfig.tson:**
+
 ```json
 {
   "compilerOptions": {
@@ -72,6 +75,7 @@ All of the above errors compile successfully without strict mode because `this` 
 ```
 
 **Minimum for Options API type safety:**
+
 ```json
 {
   "compilerOptions": {
@@ -150,6 +154,7 @@ methods: {
 ```
 
 Fix with proper null checks:
+
 ```typescript
 methods: {
   getFirst() {

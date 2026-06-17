@@ -30,6 +30,7 @@ Understanding these differences is crucial when working with numeric forms, espe
 | `"abc"` | `'abc'` (original string) | `NaN` |
 
 **Problem - Unexpected types:**
+
 ```html
 <script setup>
 import { ref, computed } from 'vue'
@@ -59,6 +60,7 @@ function validatePrice() {
 ```
 
 **Solution - Handle empty string explicitly:**
+
 ```html
 <script setup>
 import { ref, computed } from 'vue'
@@ -86,6 +88,7 @@ const safePrice = computed(() => {
 ```
 
 **Solution - Custom input handling for strict parsing:**
+
 ```html
 <script setup>
 import { ref } from 'vue'
@@ -121,4 +124,5 @@ function handlePriceInput(event) {
 ```
 
 ## Reference
+
 - [Vue.ts Form Input Bindings - .number](https://vuejs.org/guide/essentials/forms.html#number)

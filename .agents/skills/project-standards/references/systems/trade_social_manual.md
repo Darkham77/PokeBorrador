@@ -55,4 +55,3 @@ To guarantee reliable message delivery across active sessions and maintain an im
 ## 🔴 Notification Badges & Aggregation
 
 1. **Submenu Aggregation**: The notification badge on grouped primary HUD buttons (such as `SOCIAL`, which hosts chats, friend requests, and event missions) MUST represent the mathematical sum of all individual unread or actionable notifications within its submenus. This ensures no notifications remain hidden or "orphaned" under nested panels.
-

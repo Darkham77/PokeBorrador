@@ -118,7 +118,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
 - **Dynamic Variable Binding**: Context-dependent visual effects (glows, auras) MUST use dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) injected from the template to allow SCSS to remain generic.
 - **Silhouette Integrity**: When rendering "Search Mode" or silhouetted Pokémon, use a solid black appearance (`filter: Brightness(0)`). To ensure visibility against dark battle backgrounds, ALWAYS apply a subtle white `drop-shadow(0 0 1px white)`.
-- **Reactive Silhouette Invalidation**: When caching pre-rendered outline/silhouette sprites asynchronously, ensure the cache key is compounded with the reactivity state (e.g. `const key = `${item.key}-${item.isCaught}``). This forces the outline generator to correctly re-evaluate and render the colored outline when the caught debug status changes in the UI.
+- **Reactive Silhouette Invalidation**: When caching pre-rendered outline/silhouette sprites asynchronously, ensure the cache key is compounded with the reactivity state (e.g. `const key =`${item.key}-${item.isCaught}``). This forces the outline generator to correctly re-evaluate and render the colored outline when the caught debug status changes in the UI.
 - **Advanced SVG Silhouette (Subtraction Pattern)**: For pixel-perfect silhouettes with borders, use an SVG filter with a "Subtraction" algorithm:
   1. **Dilate** the SourceAlpha (e.g., 1.5px).
   2. **Subtract** the original SourceAlpha (`operator="out"`) to isolate the "ring".
@@ -627,11 +627,13 @@ To prevent overloading the HUD with irrelevant information, weather and time cyc
 ### 24. Special/Atypical Elemental Types in Audits
 
 To prevent false positive translation leaks in static database validations:
-- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the *Maldición (Curse)* move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
+
+- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the _Maldición (Curse)_ move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
 
 ### 25. High-Fidelity Vue 3 GSAP Tooltip Coordination
 
 To ensure optimal GPU performance and eliminate race conditions or memory leaks in dynamic layouts:
+
 - **Zero-Timer & Zero-Variable Coordination**: When showing dynamic tooltips on hover or tap (e.g., abilities, natures), do NOT use manual CSS transition timers, `setTimeout`, or custom coordination state variables in JS.
 - **Vue Transition Lifecycle hooks**: Bind GSAP transitions directly to Vue's `<Transition :css="false">` lifecycle hooks (`@before-enter`, `@enter`, `@leave`). Set the initial transparent state in `beforeEnter`, execute the animation inside `enter` (calling the `done` callback on complete), and reverse it cleanly in `leave`, ensuring smooth 60fps animations.
 
@@ -699,6 +701,7 @@ When designing card grids or summary cards (e.g. PC Box menu slots, item lists) 
 ### 30. GSAP Hover Border Registration and Clean-up
 
 When using the global GSAP hover engine to animate borders or box-shadows on interactive cards, lists, or containers:
+
 - **Registry Mandate**: The component's base class (e.g., `trainer-card`) MUST be registered in the `HOVER_VISUAL_BORDER_CLASSES` array within `src/logic/hoverHelpers.ts`.
 - **Why**: The hover leave engine (`triggerLeave` in `hoverLeave.ts`) relies on `hasVisualBorders` to detect if the element has custom borders. If the class is not registered, the engine will skip cleaning up the border properties on mouse leave, leaving the hover styles stuck (e.g., permanently white or colored).
 - **GSAP and CSS Conflict Avoidance**: Ensure the CSS stylesheet does not declare `transition: border-color` or custom `:hover` border colors that fight with GSAP's style injections.
@@ -706,11 +709,6 @@ When using the global GSAP hover engine to animate borders or box-shadows on int
 ### 31. Aesthetic Scaling of Status Badges and HUD Overlapping Prevention
 
 When displaying multiple status badges or condition tags side by side (e.g., status/buff rows in combat HUD panels):
+
 - **Dynamic Width & Alignment**: Status badges (`.m-status-tag`) containing text/number overlays (e.g., stage value modifiers `▲1`, `▼2`) must use `min-width` (e.g., `16px` on desktop, `12px` on mobile) and `width: auto` instead of fixed widths. This prevents stage numbers from overflowing and overlapping adjacent badges.
 - **Compact Spacing**: Use zero padding (`padding: 0`) and small flex gap settings (e.g., `gap: 3px` on desktop, `gap: 2px` on mobile) on the parent container (`.status-container`) to keep status rows compact, tight, and aligned, expanding dynamically only when numeric modifiers are active.
-
-
-
-
-
-

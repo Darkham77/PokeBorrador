@@ -19,10 +19,10 @@ When the system generates a high-level wild Pokémon, it applies an automatic ev
 ## 4. Manual Cancellation (The B-Button)
 
 During the visual sequence of an evolution (specifically during `intro` and `flashing` stages), the player can click the **B-Button** to cancel the process:
+
 - A text is displayed: `¿Eh? ¡[Pokémon] ha dejado de evolucionar!`.
 - **Restriction**: Cancellation is only allowed for level-up / happiness evolutions. Evolutions triggered via Evolutionary Stones or Trades CANNOT be cancelled.
 
 ## 5. Passive Prevention (Piedra Eterna / Everstone)
 
 If a Pokémon holds `"Piedra Eterna"` (Everstone), any level-up or trade evolution is blocked automatically, skipping the sequence entirely.
-

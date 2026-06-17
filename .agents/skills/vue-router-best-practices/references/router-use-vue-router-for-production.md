@@ -178,6 +178,7 @@ const router = createRouter({
 6. **New features keep coming** - Data Loading API, View Transitions
 
 ## Reference
+
 - [Vue.ts Routing Guide](https://vuejs.org/guide/scaling-up/routing.html)
 - [Vue Router Documentation](https://router.vuejs.org/)
 - [Vue Router Getting Started](https://router.vuejs.org/guide/)

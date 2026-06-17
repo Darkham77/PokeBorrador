@@ -39,7 +39,9 @@ graph TD
 ## 2. Naming Conventions & Suffix Analysis
 
 ### Raw Source Naming
+
 Raw sheets must be named using the Pokémon's national Pokédex ID followed by a gender/form suffix:
+
 - `{pokemonId}.png` (e.g., `14.png`)
 - `{pokemonId}_{variant}.png` (e.g., `201_3.png`)
 - `{pokemonId}_{gender}.png` (e.g., `41_f.png`, `14f.png`, `14m.png`)
@@ -49,7 +51,9 @@ Raw sheets must be named using the Pokémon's national Pokédex ID followed by a
 > Raw suffixes always start with an underscore (`_`) or represent explicit gender symbols (`f`, `m`). They must **never** start with `i`, `v`, or `a`.
 
 ### Output Naming
+
 The optimization script splits sheets into two functional states:
+
 - **Idle State (`i`)**: `{pokemonId}i{suffix}.png` (e.g., `14i.png`, `215i_1_f.png`)
 - **Variation/Attack State (`v`)**: `{pokemonId}v{suffix}.png` (e.g., `215v_1_f.png`)
 
@@ -60,13 +64,16 @@ The optimization script splits sheets into two functional states:
 The script `scripts/optimize_sprites.ts` automates spritesheet analysis by comparing individual frame pixel buffers (using `sharp` raw buffers).
 
 ### Segmentation Algorithm
+
 1. **Cycle Detection**: Compares frame buffers with a similarity threshold. Finds repeating loops of frames to determine the **Idle** animation range.
 2. **Attack Extraction**: Any frames outside the detected idle loop are isolated. If an attack animation exceeds 2 frames, it is extracted as a separate **Variation (`v`)** sheet.
 3. **Double Processing Guard**: The processing worker checks the file suffix. If it starts with `i`, `v`, or `a`, it is immediately ignored. This prevents infinite conversion loops (e.g., re-processing `14i.png` into `14ii.png`).
 4. **Source Deletion**: The raw source spritesheet (e.g., `14.png`) is unlinked immediately after splitting to prevent the WebP pipeline from compiling un-suffixed fallbacks.
 
 ### Frame Padding Spec
+
 To avoid subpixel texture bleeding and rendering seams in Phaser/WebGL when sprites are scaled:
+
 - Each frame is extracted as a square (`height × height`).
 - A transparent border of **1px** is added to all four sides (`top`, `bottom`, `left`, `right`).
 - The resulting spritesheet has frames of size `original_size + 2`.
@@ -78,7 +85,9 @@ To avoid subpixel texture bleeding and rendering seams in Phaser/WebGL when spri
 During `npm run assets:convert` (run by `scripts/convert_assets.ts`), all processed `i` and `v` spritesheets are converted to **lossless WebP** and scanned to compile the metadata registry in [animatedSpriteDatabase.ts](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/data/animatedSpriteDatabase.ts).
 
 ### Database Schema
+
 Each sprite entry yields:
+
 - `frames`: Total frames count in the horizontal strip.
 - `size`: Frame dimensions (including the +2px padding).
 - `feetY` / `feetX`: Ground anchoring coordinates [0-1] calculated using transparency boundary boxes of the first frame.

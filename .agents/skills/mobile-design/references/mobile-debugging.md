@@ -19,10 +19,11 @@ Web Debugging:      Mobile Debugging:
 ```
 
 **Key Differences:**
-1.  **Native Layer:** JS code works, but app crashes? It's likely native (Java/Obj-C).
-2.  **Deployment:** You can't just "refresh". State gets lost or stuck.
-3.  **Network:** SSL Pinning, proxy settings are harder.
-4.  **Device Logs:** `adb logcat` and `Console.app` are your truth.
+
+1. **Native Layer:** JS code works, but app crashes? It's likely native (Java/Obj-C).
+2. **Deployment:** You can't just "refresh". State gets lost or stuck.
+3. **Network:** SSL Pinning, proxy settings are harder.
+4. **Device Logs:** `adb logcat` and `Console.app` are your truth.
 
 ---
 
@@ -64,14 +65,16 @@ Web Debugging:      Mobile Debugging:
 ### 🕵️ "The App Just Crashed" (Red Screen vs Crash to Home)
 
 **Scenario A: Red Screen (JS Error)**
+
 - **Cause:** Undefined is not an object, import error.
 - **Fix:** Read the stack trace on screen. It's usually clear.
 
 **Scenario B: Crash to Home Screen (Native Crash)**
+
 - **Cause:** Native module failure, memory OOM, permission usage without declaration.
 - **Tools:**
-    - **Android:** `adb logcat *:E` (Filter for Errors)
-    - **iOS:** Open Xcode → Window → Devices → View Device Logs
+  - **Android:** `adb logcat *:E` (Filter for Errors)
+  - **iOS:** Open Xcode → Window → Devices → View Device Logs
 
 > **💡 Pro Tip:** If app crashes immediately on launch, it's almost 100% a native configuration issue (Info.plist, AndroidManifest.xml).
 
@@ -81,31 +84,36 @@ Web Debugging:      Mobile Debugging:
 **Mobile:** *You usually can't see this easily.*
 
 **Solution 1: Reactotron/Flipper**
+
 - View network requests in the monitoring app.
 
 **Solution 2: Proxy (Charles/Proxyman)**
+
 - **Hard but powerful.** See ALL traffic even from native SDKs.
 - Requires installing SSL cert on device.
 
 ### 🐢 "The UI is Laggy" (Performance)
 
 **Don't guess.** measure.
+
 - **React Native:** Performance Monitor (Shake menu).
 - **Android:** "Profile GPU Rendering" in Developer Options.
 - **Issues:**
-    - **JS FPS drop:** Heavy calculation in JS thread.
-    - **UI FPS drop:** Too many views, intricate hierarchy, heavy images.
+  - **JS FPS drop:** Heavy calculation in JS thread.
+  - **UI FPS drop:** Too many views, intricate hierarchy, heavy images.
 
 ---
 
 ## 3. Platform-Specific Nightmares
 
 ### Android
+
 - **Gradle Sync Fail:** Usually Java version mismatch or duplicate classes.
 - **Emulator Network:** Emulator `localhost` is `10.0.2.2`, NOT `127.0.0.1`.
 - **Cached Builds:** `./gradlew clean` is your best friend.
 
 ### iOS
+
 - **Pod Issues:** `pod deintegrate && pod install`.
 - **Signing Errors:** Check Team ID and Bundle Identifier.
 - **Cache:** Xcode → Product → Clean Build Folder.

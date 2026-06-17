@@ -18,6 +18,7 @@ tags: [vue3, component-registration, naming-conflicts, global-local, debugging]
 - [ ] When overriding third-party components, document and test thoroughly
 
 **Incorrect:**
+
 ```javascript
 // main.ts
 import { createApp } from 'vue'
@@ -54,6 +55,7 @@ import MyButton from './MyButton.vue'
 ```
 
 **Correct:**
+
 ```javascript
 // main.ts - use prefixes for global components
 import { createApp } from 'vue'
@@ -155,5 +157,6 @@ import { Button as ElButton } from 'element-plus'
 | Layout components | `*Layout` suffix | `DefaultLayout`, `AdminLayout` |
 
 ## Reference
+
 - [Vue.ts Component Registration](https://vuejs.org/guide/components/registration.html)
 - [GitHub Issue: Global component naming conflicts](https://github.com/vuejs/vue/issues/4434)

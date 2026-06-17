@@ -151,4 +151,3 @@ To prevent logic desynchronization and ensure consistent state behavior across g
 
 1. **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple components or views (e.g., battle-specific `ArchaeologyMinigame.vue` and general-purpose `ArchaeologyModal.vue`), any logic-affecting rules, modifiers, or reward changes MUST be implemented consistently across all versions.
 2. **Modal Callback & Lifecycle Synchronization**: When introducing or refactoring cleanup actions (such as `onCloseCallback` or custom close hooks) inside standard modals, wrap the execution in a local handler (e.g., `handleCloseModal`) that triggers both the local event emits (like `@close`) and the external callbacks, maintaining clean parent-child orchestration.
-

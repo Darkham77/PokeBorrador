@@ -90,6 +90,7 @@ To ensure minimal data transfer and optimal load times, all visual assets must b
 #### Asset Registry Mandate
 
 Every new asset category MUST be explicitly registered in:
+
 1. `ASSET_TYPES` constant in `src/logic/services/assetService.ts`.
 2. The `getAssetUrl` switch-case logic to handle path resolution.
 3. The `AssetPipeline` (`convert_assets.ts`) to ensure it's mirrored from `_raw-assets`.
@@ -141,6 +142,7 @@ To ensure visual consistency between terrestrial and flying Pokémon, the follow
 ## ⚙️ NPC Sprite Pipeline & Catalog
 
 The NPC sprite catalog (`npcSpriteCatalog.ts`) is automatically generated from the raw images in the assets folder via `scripts/convert_assets.ts`:
+
 - **Archetype Synchronization**: To introduce new trainer categories or custom NPC archetypes, ensure you map the new archetype name and its parsing keywords to `ARCHETYPE_KEYWORDS_LOCAL` in `convert_assets.ts`.
 - **Automatic Matching**: The script scans files in `_raw-assets/public/assets/sprites/npc/` matching filenames containing the keywords, classifying them, and exporting them in `npcSpriteCatalog.ts` under the new archetype key.
 

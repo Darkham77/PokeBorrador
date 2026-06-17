@@ -108,7 +108,9 @@ When computing the route spawn grid (`spawnGrid` in `MapCard.vue`), if the map c
 ## 8. Weather & Terrain Resolution Rules
 
 ### 8.1 Dual-Type Modifier Evaluation
+
 When evaluating weather spawn modifiers (boosts, debuffs, or blocks in `getWeatherMultiplier`), calculations must evaluate both the primary type (`type`) and the secondary type (`type2`). Dual-type species (such as Pidgey, which is Normal/Flying) must be subject to blocks affecting either of their types (e.g. storm blocking Flying types) to prevent invalid encounters from appearing on the map or report list.
 
 ### 8.2 Comprehensive Terrain Tags Display
+
 When presenting map terrain tags (under "Entorno" or similar details panel), avoid nesting ternaries in Vue templates which limit display to the first matching tag. Implement a computed list (e.g. `terrainTags`) to list all active environment flags (such as both Crystal Cave and Cave, or Volcano and Plains) simultaneously.

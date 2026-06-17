@@ -23,6 +23,7 @@ tags: [vue3, attrs, fallthrough-attributes, composition-api, reactivity]
 Hyphenated attribute names preserve their original casing in JavaScript, so dot notation does not work for keys that include `-`.
 
 **BAD:**
+
 ```vue
 <script setup>
 import { useAttrs } from 'vue'
@@ -37,6 +38,7 @@ console.log(attrs['@click'])    // undefined
 ```
 
 **GOOD:**
+
 ```vue
 <script setup>
 import { useAttrs } from 'vue'
@@ -70,6 +72,7 @@ console.log(attrs.onMouseEnter)
 `useAttrs()` always reflects the latest values, but it is intentionally not reactive for watcher tracking.
 
 **BAD:**
+
 ```vue
 <script setup>
 import { watch, watchEffect, useAttrs } from 'vue'
@@ -90,6 +93,7 @@ watchEffect(() => {
 ```
 
 **GOOD:**
+
 ```vue
 <script setup>
 import { onUpdated, useAttrs } from 'vue'
@@ -103,6 +107,7 @@ onUpdated(() => {
 ```
 
 **GOOD:**
+
 ```vue
 <script setup>
 import { watch } from 'vue'

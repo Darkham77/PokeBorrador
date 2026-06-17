@@ -176,8 +176,8 @@ File to edit: UserService.ts
 | **database-architect** | Schema Validate | `python .agents/skills/database-design/scripts/schema_validator.py .` |
 | **security-auditor** | Security Scan | `python .agents/skills/vulnerability-scanner/scripts/security_scan.py .` |
 | **test-engineer** | Playwright | `python .agents/skills/webapp-testing/scripts/playwright_runner.py <url>` |
-| **Any agent** | Lint Check | `python .agents/skills/lint-and-validate/scripts/lint_runner.py .` |
-| **Any agent** | Type Coverage | `python .agents/skills/lint-and-validate/scripts/type_coverage.py .` |
+| **Any agent** | Lint & Types | `npm run lint` (includes type-check via `vue-tsc`) |
+| **Any agent** | Full Audit | `npm run audit:full` (SASS, GPU, FSM, SQL, Items, Moves) |
 
 > ❌ **WRONG:** `test-engineer` running `security_scan.py`
 > ✅ **CORRECT:** `security-auditor` running `security_scan.py`
