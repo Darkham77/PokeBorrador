@@ -1,82 +1,97 @@
 ---
 name: extract-lessons
-description: "Extracts lessons learned from the current conversation (user feedback, bugs fixed, patterns discovered, mistakes corrected) and distributes them ONLY into the appropriate existing LOCAL project skills or creates new local project skills. Use when: (1) a conversation is ending and knowledge should be preserved, (2) the user explicitly asks to capture lessons, or (3) significant debugging/refactoring revealed reusable patterns. NEVER update global skills."
+description: "Use when a conversation ends, after bug fixing, after refactoring, after receiving user corrections, after discovering reusable patterns, or whenever knowledge should be preserved into local project skills (such as @/project-standards or local .agents/skills/). NEVER update global skills."
 ---
 
 # Extract Lessons
 
+## Overview Workflow
+
+```mermaid
+graph TD
+    A[Start: Task Ends / Refactor Done] --> B[Phase 0: Deduplicate Lessons]
+    B --> C[Phase 1: Collect Lessons from Context]
+    C --> D[Phase 2: Map to Local Skills]
+    D --> E{Is Project-Specific?}
+    E -- Yes --> F[Target: @/project-standards]
+    E -- No --> G{Does Local Skill Exist?}
+    G -- Yes --> H[Target: Existing Local Skill]
+    G -- No --> I[Target: Create New Local Skill]
+    F & H & I --> J[Generate Mapping Table]
+    J --> K[HARD STOP: Wait for User OK]
+    K --> L[Phase 3: Distribute via @/skill-creator]
+```
+
 ## Workflow
+
+### Phase 0: Deduplicate Lessons
+
+Before mapping or writing anything, scan your context and merge equivalent or overlapping lessons to prevent contaminating the skills database with redundant rules.
+
+**Examples:**
+- "Always validate null variables" + "Check undefined objects before accessing properties"  
+  → **Merged:** "Validate values and check for undefined/null before property access to avoid runtime crashes."
 
 ### Phase 1: Collect Lessons
 
-Scan the full conversation history, artifacts, tasks, scratchpads, implementation plans, walkthrough, etc, for:
+Scan all accessible conversation context, artifacts, tasks, scratchpads, plans, and walkthroughs for:
 
-| Source                     | Example                                                             |
-| :------------------------- | :------------------------------------------------------------------ |
-| **User corrections**       | "Ese borde no es pixel-art" → `@/project-standards` (Aesthetics)    |
-| **Bugs fixed**             | `p.moves.some` is undefined → `@/project-standards` (Validation)    |
-| **Workarounds discovered** | SASS capitalization collision → `@/project-standards` (Styling)     |
-| **Infrastructure issues**  | Vite proxy mismatch, port busy → Generic Dev Ops rules              |
-| **Repeated patterns**      | Vue `computed` vs `ref` optimization → Generic Vue.ts patterns      |
-| **Aesthetic feedback**     | "Use Glassmorphism for panels" → `@/project-standards` (UI/UX)      |
+| Source | Example | Target Category |
+| :--- | :--- | :--- |
+| **User corrections** | "That border is not pixel-art" | UI/Aesthetics standards |
+| **Bugs fixed** | `p.moves.some` is undefined | Data/Validation safety |
+| **Workarounds discovered** | SASS capitalization collision resolved | Build/Styling integration |
+| **Infrastructure issues** | Vite proxy mismatch, port busy | Local environment setup |
+| **Repeated patterns** | Vue `computed` vs `ref` optimization | Reactive architecture |
+| **Aesthetic feedback** | "Use Glassmorphism for panels" | Visual UI/UX specification |
 
-Produce a numbered **Lessons List** with one-line summaries.
+Produce a numbered **Lessons List** with concise, action-oriented one-line summaries.
 
 ### Phase 2: Map to Skills
 
-For each lesson, determine the **target skill**:
+For each consolidated lesson, determine the correct local target:
 
-1. Read the list of existing skills from the skill descriptions. **CRITICAL: You must EXCLUDE any global skills (e.g., skills located outside the current workspace or in generic directories like Google Drive). ONLY consider skills that are local to the current project's `.agents/skills/` directory.**
-2. **Detect Target Language**: Before drafting any modification, inspect the target skill or documentation files to detect the primary language in which they are written (e.g., English or Spanish).
-3. **Prioritize @/project-standards**: If the lesson involves game rules, game-specific styles (SASS/UI), game mechanisms, formulas, or project-specific architecture, it **MUST** be mapped to **@/project-standards** (or one of its reference manuals in `@/project-standards/references/`).
-4. Only map to other skills if the knowledge is **genuinely generic** and tool-related (e.g., Vue.ts best practices, Javascript patterns, Markdown formatting standards, or Skill Creation protocols) and a dedicated local skill already exists for it.
-5. If no existing local skill covers a *generic* lesson → mark it for **new skill creation** (which must also be saved locally in the project).
+1. **Verify Local Path**: Inspect `.agents/skills/` to ensure the target skill resides in the local workspace. **NEVER map to or update global skills.** If the list of local skills cannot be obtained, stop and ask the user for the local skill inventory.
+2. **Detect Target Language**: Detect the primary language of the target skill file based on the dominant language of its explanatory prose (>70% of non-code text).
+3. **Decide the Target (Decision Matrix)**:
+   - **Game mechanics, core architecture, styling/UI specs, or project assets** → `@/project-standards` (or its references).
+   - **Generic programming patterns / tools** (e.g. Vue.ts, TypeScript, Git, Markdown) → Specific local skill (e.g., `@/vue-best-practices`, `@/safe-commit`).
+   - **Uncovered generic patterns** (expected to recur in future tasks) → Mark for **new skill creation** (ONLY if expected to recur across multiple future tasks).
+4. **Language Preservation**: Prepare updates in the target language detected. Do not mix languages.
 
-Produce a **mapping table** including the detected language of each target file:
+Produce a **Mapping Table**:
 
-```text
-| # | Lesson | Target Skill | Action | Language Detected |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | ... | `skill-name` | UPDATE | English |
-| 2 | ... | `new-skill-name` | CREATE | Spanish |
-```
+| # | Lesson Summary | Target Local Skill / Path | Action (UPDATE/CREATE) | Target Language |
+| :-| :------------- | :------------------------ | :--------------------- | :-------------- |
+| 1 | Fix UI borders | `.agents/skills/project-standards/references/ui.md` | UPDATE | English |
 
-**MANDATORY VERIFICATION (HARD STOP)**: You MUST present the Lessons List and Mapping Table to the user and wait for their explicit "ok" or feedback before proceeding to Phase 3. You are FORBIDDEN from modifying any skill files until this approval is received.
+> [!IMPORTANT]
+> **MANDATORY VERIFICATION (HARD STOP):** Present the Lessons List and Mapping Table to the user. You MUST wait for their explicit approval before editing any files.
 
 ### Phase 3: Distribute
 
-For each lesson in the mapping table:
+For each approved lesson in the mapping table:
 
 #### UPDATE existing skill
 
-1. **Mandatory Editor**: ALWAYS use **@/skill-creator** as the skill editor. For simple knowledge updates (lessons), you **MUST** skip the evaluation/benchmarking phase. Never use a `browser_subagent` to extract lessons.
-2. Read the target skill's `SKILL.md`.
-3. **Preserve Compatibility**: When adding the lesson, take extreme care NOT to remove or "summarize away" existing rules or lines unless they are explicitly incompatible with the new changes or were requested to be removed. Removing functionality for the sake of brevity is a regression.
-4. Add the lesson as a new rule, guideline, or pattern in the appropriate section.
-5. Keep it concise — one rule or one code block per lesson. Explain the **why** behind the rule instead of using heavy-handed MUSTs.
-6. **Optimize Triggering**: Evaluate if the current `description` in the YAML frontmatter still covers the new logic. If necessary, use @/skill-creator to refine the description to ensure proper triggering.
-7. **Never duplicate** information already in the skill or other skills. Use references: `see @/other-skill`.
-8. If the lesson fits better as a reference file or if `SKILL.md` is approaching 500 lines, add it to a `references/` directory.
-9. **Synchronized Updates**: ALWAYS verify and update any associated `references/`, `scripts/`, or diagnostic tools (e.g., Python check scripts) linked to the skill. Ensure all technical documentation and automated rules remain in parity with the new knowledge to avoid architectural contradictions.
-10. **Language Preservation**: Write the new rule, lesson, or documentation block in the exact same language as the target skill's `SKILL.md` or associated reference files. For example, if a skill's `SKILL.md` is written in English, any new additions, descriptions, or explanations MUST be written in English. Do not mix languages (e.g., do not add Spanish text into an English document). All non-code, human-readable explanatory text must adhere strictly to the target document's original language.
+1. **Mandatory Editor**: ALWAYS edit via the `@/skill-creator` instructions. Skip evaluation/benchmarking for simple updates. Never use a `browser_subagent`.
+2. **Zero-Regression Rule**: Preserve all existing instructions. Trimming compatible text for "conciseness" is forbidden.
+3. **Write concise additions**: Explain the **why** behind rules so the model understands the logic. Limit additions to 2-3 lines per lesson.
+4. **Physical Size Limit**: If the projected size of `SKILL.md` exceeds 450 lines, move technical details/snippets to a reference file under `references/` and keep only a 2-line pointer in the main skill file.
+5. **Synchronized Updates**: Ensure any corresponding tests, `references/`, or diagnostic scripts are updated in parity during the same turn.
+6. **Language Preservation**: Write all explanatory prose in the exact target language detected. Do not mix languages within a single file.
 
 #### CREATE new skill
 
-1. **Mandatory Editor**: ALWAYS use **@/skill-creator** — follow its full process (init, edit, package).
-2. Write "pushy" descriptions in the YAML frontmatter that detail both *what* the skill does and *specific contexts for when to use it* to ensure proper triggering.
-3. Use progressive disclosure: keep `SKILL.md` under 500 lines and use `references/` or `scripts/` for larger pieces.
-4. Reference existing skills instead of duplicating (e.g., `see @/add-error-handling`).
+1. **Mandatory Editor**: ALWAYS use the `@/skill-creator` workflow (init, edit, package).
+2. **Triggering**: Write pushy descriptions detailing *what* the skill does and *when* to trigger.
+3. **Avoid Skill Explosion**: Create a new skill ONLY if the pattern is generic and expected to recur across multiple future tasks. Otherwise, consolidate it into an existing skill.
+4. **Architecture**: Keep `SKILL.md` under 450 lines, using references and scripts for dense data.
 
 ## Rules
 
-- **Local Skills Only**: NEVER update global skills (skills located outside the current project's repository, such as those in generic user folders or Google Drive). Only update or create skills that belong to the current project's local workspace.
-- **Skill-Creator usage**: Every creation or modification of a skill MUST be handled via the @/skill-creator workflow.
+- **Local Scope Only**: Update or create skills exclusively within the local `.agents/skills/` directory.
 - **Zero-Regression Rule**: Never remove existing compatible lines or functionality during an update. Trimming for "conciseness" is forbidden if it removes distinct instructional value.
 - **No duplication**: Before adding, search existing skills with `grep_search` to verify the information isn't already present.
 - **Project-Standards Priority**: Any knowledge that is intrinsic to the game (mechanics, specific styles, logic, lore-based UI) MUST be directed to @/project-standards or its manuals. Other skills are only for generic technical or architectural patterns.
-- **Explain the "Why"**: Substitute rigid MUSTs with explanations of the task semantics so the AI understands reasoning.
-- **Concise additions**: Each lesson = max 2-3 lines added to a skill. Use code blocks only if the pattern is non-obvious.
-- **Cross-references**: Use `@/skill-name` to reference related skills instead of repeating their content.
-- **Preserve structure**: Follow the existing formatting conventions of each target skill (numbered lists, tables, code blocks).
-- **Parity Mandate**: Every skill update MUST be reflected in its entire ecosystem. If a rule changes, the corresponding documentation in `references/` and validation logic in `scripts/` MUST be updated in the same turn.
-- **Language Preservation (Strict)**: ALWAYS respect the original language of the skill or documentation file being modified. It is strictly forbidden to mix languages (such as adding Spanish text to a skill or reference document written in English). Only technical elements like variable names, code tokens, and code blocks may be written in their natural programming language, but all explanatory, descriptive, or communicative prose must conform entirely to the document's original language.
+- **Language Preservation (Strict)**: ALWAYS respect the original language of the skill or documentation file being modified. It is strictly forbidden to mix languages. All explanatory, descriptive, or communicative prose must conform entirely to the document's original language.
