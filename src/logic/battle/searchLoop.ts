@@ -1,8 +1,7 @@
-import { TRAINER_TYPES } from '@/data/player/trainerTypes'
+import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner'
 import { generateEncounter } from '@/logic/encounters/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases.ts'
 import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -11,7 +10,6 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { nextTick } from 'vue'
-import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -75,7 +73,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       shinyMultiplier: (eventStore.globalMultipliers?.shiny || 1) * (debugMults.shiny || 1),
       eventTrainerBonus: (eventStore.globalMultipliers?.trainer || 1) * (debugMults.trainer || 1),
       eventFishingBonus: (eventStore.globalMultipliers?.fishing || 1) * (debugMults.fishing || 1),
-      eventRivalBonus: (eventStore.globalMultipliers?.rival || 1) * (debugMults.rival || 1)
+      eventRivalBonus: (eventStore.globalMultipliers?.rival || 1) * (debugMults.rival || 1),
+      weather: mapStore.currentWeather,
+      cycle: mapStore.currentCycle
     }
     
     let encounter = null
@@ -108,96 +108,28 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     if (encounter) {
       if (encounter.type === 'trainer') {
-        ctx.gs.state.trainerChance = 5
-        
-        const { buildTrainerTeam } = await import('./trainerFactory')
-        const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
-
-        const isMaxCriminality = (ctx.gs.state.playerClass === 'rocket' && (ctx.gs.state.classData?.criminality ?? 0) >= 100)
-        const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
-        const currentMapData = mapsList.find(m => m.id === (locId || ''))
-        const baseLv = currentMapData?.lv?.[0] || 5
-
-        let tName = 'Entrenador'
-        let tSprite = 'youngster'
-        const enemyTeam: Pokemon[] = []
-
-        let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!'
-        let typeKey: keyof typeof TRAINER_TYPES = 'default'
-        if (isMaxCriminality) {
-          const t = TRAINER_TYPES['policeman']
-          tName = t.name
-          const availableSprites = getSpritesForArchetype('policeman')
-          const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
-          tSprite = chosenSprite || t.sprite
-          tQuote = getRandomQuoteForTrainer('policeman')
-
-          const criminality = ctx.gs.state.classData?.criminality || 100
-          const excess = Math.max(0, criminality - 100)
-          const bonusLv = Math.floor(excess / 50)
-          const trainerLv = baseLv + 5 + bonusLv
-          const teamSize = Math.floor(Math.random() * 2) + 3
-
-          const team = await buildTrainerTeam(t.pool, trainerLv, teamSize)
-          enemyTeam.push(...team)
-        } else {
-          const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
-          typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
-          const t = TRAINER_TYPES[typeKey]
-          tName = t.name
-          const availableSprites = getSpritesForArchetype(typeKey)
-          const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
-          if (!chosenSprite) {
-            throw new Error(`[searchLoop] Failed to find sprites for archetype: ${typeKey}`)
-          }
-          tSprite = chosenSprite
-          tQuote = getRandomQuoteForTrainer(typeKey)
-          const trainerLv = baseLv + 2
-          const teamSize = Math.floor(Math.random() * 3) + 1
-
-          const { buildTrainerTeam } = await import('./trainerFactory')
-          const team = await buildTrainerTeam(t.pool, trainerLv, teamSize)
-          enemyTeam.push(...team)
-        }
+        const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(ctx.gs.state, locId || '')
 
         if (enemyTeam.length > 0 && enemyTeam[0]) {
           generatedPoke = enemyTeam[0]
           ctx.activeBattle.value.isTrainer = true
           ctx.activeBattle.value.enemyTeam = enemyTeam
-          ctx.activeBattle.value.trainerName = tName
-          ctx.activeBattle.value.trainerSprite = tSprite
-          ctx.activeBattle.value.trainerArchetype = isMaxCriminality ? 'policeman' : TRAINER_TYPES[typeKey].archetype
-          ctx.activeBattle.value.quote = tQuote
+          ctx.activeBattle.value.trainerName = name
+          ctx.activeBattle.value.trainerSprite = sprite
+          ctx.activeBattle.value.trainerArchetype = archetype
+          ctx.activeBattle.value.quote = quote
           ctx.activeBattle.value.isRival = false
         }
       } else if (encounter.type === 'rival') {
-        const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic')
-        const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
-
-        const trainerNameVal = 'Rival Azul'
-        const trainerSpriteVal = 'blue'
-        
-        const teamSize = Math.max(3, ctx.gs.state.team.length || 1)
-        const avgLevel = ctx.gs.state.team.reduce((sum, p) => sum + p.level, 0) / (ctx.gs.state.team.length || 1)
-        const rivalLevel = Math.floor(avgLevel) + 2
-
-        const rivalPoolBase = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']
-        const shuffledPool = [...rivalPoolBase].sort(() => Math.random() - 0.5).slice(0, teamSize)
-
-        const enemyTeam: Pokemon[] = shuffledPool.map(id => {
-          const species = getEvolvedForm(id, rivalLevel)
-          const p = makePokemon(species, rivalLevel) as Pokemon
-          if (p) (p as Pokemon & { _revealed?: boolean })._revealed = true
-          return p
-        }).filter((p): p is Pokemon => !!p)
+        const { name, sprite, enemyTeam } = await buildRivalEncounter(ctx.gs.state.team)
 
         if (enemyTeam.length > 0 && enemyTeam[0]) {
           generatedPoke = enemyTeam[0]
           ctx.activeBattle.value.isTrainer = true
           ctx.activeBattle.value.enemyTeam = enemyTeam
-          ctx.activeBattle.value.trainerName = trainerNameVal
-          ctx.activeBattle.value.trainerSprite = trainerSpriteVal
-          ctx.activeBattle.value.trainerArchetype = 'trainers'
+          ctx.activeBattle.value.trainerName = name
+          ctx.activeBattle.value.trainerSprite = sprite
+          ctx.activeBattle.value.trainerArchetype = 'rival'
           ctx.activeBattle.value.isRival = true
         }
       } else {

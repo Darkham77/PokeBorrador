@@ -122,6 +122,11 @@ export function checkSpecialEncounters(
   // 0. Debug: 50% trainer override
   const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>;
   const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined;
+  
+  if (debug?.forceRival) {
+    return { type: 'rival' };
+  }
+
   if (!options.forceEncounter && debug?.trainerChance50) {
     if (Math.random() < 0.50) {
       return { type: 'trainer' };

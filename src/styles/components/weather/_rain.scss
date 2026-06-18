@@ -1,7 +1,7 @@
 .weather-overlay {
   // Lluvia Normal (Vertical)
   &.rain {
-    background: rgba(0, 15, 30, 0.1);
+    background: Rgba(0, 15, 30, 0.1);
     mix-blend-mode: screen;
 
     & .rain-layer {
@@ -28,7 +28,7 @@
 
   // Tormenta (Diagonal + Rayos)
   &.storm {
-    background: rgba(0, 10, 25, 0.3);
+    background: Rgba(0, 10, 25, 0.3);
     
     & .rain-layer {
       mix-blend-mode: screen; 
@@ -63,20 +63,20 @@
       bottom: 0;
       width: 120px;
       left: calc(var(--lx, 50) * 1%);
-      transform: translateX(-50%);
+      transform: Translatex(-50%);
       z-index: var(--z-map-spawns);
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='240' viewBox='0 0 100 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='50,0 40,80 60,70 30,150 50,140 20,240' fill='none' stroke='white' stroke-width='4' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='240' viewBox='0 0 100 240' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='50,0 40,80 60,70 30,150 50,140 20,240' fill='none' stroke='white' stroke-width='4' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-size: 100% 100%;
       opacity: 0;
       will-change: transform, opacity;
       image-rendering: pixelated;
-      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 1));
+      filter: Drop-Shadow(0 0 8px Rgba(255, 255, 255, 1));
     }
   }
 
   &.heavy_rain {
-    background: rgba(0, 5, 20, 0.2);
+    background: Rgba(0, 5, 20, 0.2);
     mix-blend-mode: screen;
 
     & .rain-layer {

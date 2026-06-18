@@ -94,3 +94,145 @@ export function getWeatherMultiplier(id: string, weather: string): number {
 
   return 1.0;
 }
+
+import { translateType } from '@/data/battle/types';
+
+/**
+ * Generates the modifiers text block for a weather (boosts, debuffs, blocks).
+ */
+export function getWeatherModifiersDescription(weather: string): string {
+  const w = weather.toLowerCase();
+  const entry = WEATHER_REGISTRY[w];
+  const mods = entry?.modifiers;
+  if (!mods) return '';
+
+  const formatList = (list?: string[]) => (list || []).map(translateType).join(', ');
+  
+  const lines = [];
+  if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`);
+  if (mods.debuff?.length) lines.push(`▼ ${formatList(mods.debuff)}`);
+  if (mods.block?.length) lines.push(`🚫 ${formatList(mods.block)}`);
+  
+  return lines.length ? `\n${lines.join('\n')}` : '';
+}
+
+import { isDisputePhase } from '@/logic/war/warEngine';
+import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { GAME_RATIOS } from '@/data/system/constants';
+import type { EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
+
+export interface NpcChanceInfo {
+  name: string;
+  chance: number;
+  type: string;
+  active: boolean;
+  details?: string;
+}
+
+/**
+ * Calcula las probabilidades de encuentros especiales y entrenadores para una ruta.
+ */
+export function getNpcEncounterChances(
+  locId: string,
+  state: EncounterState,
+  options: EncounterOptions = {},
+  allMapIds: string[]
+): NpcChanceInfo[] {
+  const result: NpcChanceInfo[] = [];
+
+  // 1. Rival
+  const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>;
+  const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined;
+  
+  let rivalChance = GAME_RATIOS.encounters.rival;
+  const eventRivalBonus = options.eventRivalBonus || 1;
+  rivalChance *= eventRivalBonus;
+
+  if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
+    const gymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+    const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
+    if (allGymsHard) {
+      rivalChance *= 2;
+    }
+  }
+
+  const hasRivalOverride = !!debug?.forceRival;
+  const finalRivalChance = hasRivalOverride ? 1.0 : rivalChance;
+
+  result.push({
+    name: 'Rival',
+    chance: finalRivalChance * 100,
+    type: 'rival',
+    active: true,
+    details: hasRivalOverride ? 'Forzado por Debug' : undefined
+  });
+
+  // 2. Defender
+  let hasDefender = false;
+  if (!isDisputePhase()) {
+    if (state.faction) {
+      const dominance = (options.dominanceData || {})[locId];
+      const winner = dominance?.winner || null;
+      if (winner && winner !== state.faction) {
+        hasDefender = true;
+      }
+    }
+  }
+  result.push({
+    name: 'Defensor de Facción',
+    chance: hasDefender ? 20.0 : 0.0,
+    type: 'defender',
+    active: hasDefender
+  });
+
+  // 3. Guardian (Alfa)
+  const guardian = getGuardianData(locId, allMapIds);
+  let hasGuardian = false;
+  if (guardian) {
+    const capturedToday = (state.dailyGuardianCaptures || []).includes(locId);
+    if (!capturedToday) {
+      hasGuardian = true;
+    }
+  }
+  result.push({
+    name: 'Guardián (Alfa)',
+    chance: hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0,
+    type: 'guardian',
+    active: hasGuardian
+  });
+
+  // 4. Trainer / Policía
+  const repelActive = (state.repelSecs || 0) > 0;
+  const trainerBonus = options.eventTrainerBonus || 1;
+  const criminality = state.classData?.criminality || 0;
+  const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
+
+  let baseTrainerChance = 0;
+  if (repelActive) {
+    baseTrainerChance = GAME_RATIOS.encounters.trainerRepel * 100;
+  } else {
+    baseTrainerChance = isRocketMaxCrim
+      ? (criminality / 10) * trainerBonus
+      : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
+  }
+
+  if (isRocketMaxCrim) {
+    result.push({
+      name: 'Oficial de Policía',
+      chance: baseTrainerChance,
+      type: 'police',
+      active: true,
+      details: repelActive ? 'Repelente' : `Crim: ${criminality}`
+    });
+  } else {
+    result.push({
+      name: 'Entrenador Común',
+      chance: baseTrainerChance,
+      type: 'trainer',
+      active: true,
+      details: repelActive ? 'Repelente' : undefined
+    });
+  }
+
+  return result;
+}

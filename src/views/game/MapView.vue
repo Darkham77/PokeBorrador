@@ -16,6 +16,8 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 import { pokemonNeedsHealing, calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -31,9 +33,11 @@ onMounted(() => {
 const navigateToMap = async (loc: MapLocation | string | number) => {
   if (modalStore.isOpen('Confirm')) return
   const id = typeof loc === 'object' ? loc.id : String(loc)
+  const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+  const targetMap = maps.find(m => m.id === id)
   
   // Lógica de extorsión del Team Rocket
-  if (gameStore.state.playerClass === 'rocket' && id.startsWith('route')) {
+  if (gameStore.state.playerClass === 'rocket' && isMapExtortable(targetMap)) {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
     const extTimestamp = Number(classData.extortedRouteTimestamp || 0)
@@ -42,7 +46,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     if (isExpired) {
       modalStore.open('Confirm', {
         title: '🏴‍☠️ RUTA DE EXTORSISÓN',
-        message: `¿Quieres extorsionar la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} durante las próximas 24 horas para ganar x1.5 ₽?`,
+        message: getExtortionConfirmMessage(targetMap?.name || id),
         confirmText: 'EXTORSIONAR',
         cancelText: 'IGNORAR',
         variant: 'retro',
@@ -59,7 +63,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
           }
           gameStore.state.classData.extortedRouteId = id
           gameStore.state.classData.extortedRouteTimestamp = String(now)
-          uiStore.notify(`¡Has tomado control y extorsionado la ${id.toUpperCase().replace('ROUTE', 'Ruta ')}!`, '💰')
+          uiStore.notify(`¡Has tomado control y extorsionado la ${targetMap?.name || id}!`, '💰')
           await gameStore.save(false)
           mapStore.navigate(id)
         },
@@ -72,7 +76,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   }
 
   // Lógica de Ruta Oficial del Entrenador
-  if (gameStore.state.playerClass === 'entrenador' && id.startsWith('route')) {
+  if (gameStore.state.playerClass === 'entrenador' && isMapExtortable(targetMap)) {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
     const offTimestamp = Number(classData.officialRouteTimestamp || 0)
@@ -81,7 +85,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     if (isExpired) {
       modalStore.open('Confirm', {
         title: '📍 RUTA OFICIAL',
-        message: `¿Quieres marcar la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} como tu Ruta Oficial hoy? Durante 30 minutos ganarás +1 REP por cada combate ganado aquí.`,
+        message: getOfficialRouteConfirmMessage(targetMap?.name || id),
         confirmText: 'ESTABLECER',
         cancelText: 'IGNORAR',
         variant: 'retro',
@@ -98,7 +102,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
           }
           gameStore.state.classData.officialRouteId = id
           gameStore.state.classData.officialRouteTimestamp = String(now)
-          uiStore.notify(`¡Estableciste la ${id.toUpperCase().replace('ROUTE', 'Ruta ')} como tu Ruta Oficial!`, '📍')
+          uiStore.notify(`¡Estableciste la ${targetMap?.name || id} como tu Ruta Oficial!`, '📍')
           await gameStore.save(false)
           mapStore.navigate(id)
         },

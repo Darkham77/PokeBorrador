@@ -6,8 +6,8 @@ import { translateType } from '@/data/battle/types'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
-import { getRouteWeather, getWeatherMultiplier } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
+import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription } from '@/logic/weather/weatherUtils'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { DominanceInfo } from '@/types/system/stores'
@@ -76,18 +76,8 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   })
 
   const weatherModifiersDescription = computed(() => {
-    const entry = WEATHER_REGISTRY[computedWeather.value as string]
-    const mods = entry?.modifiers
-    if (!mods) return ''
-
-    const formatList = (list?: string[]) => (list || []).map(translateType).join(', ')
-    
-    const lines = []
-    if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`)
-    if (mods.debuff?.length) lines.push(`▼ ${formatList(mods.debuff)}`)
-    if (mods.block?.length) lines.push(`🚫 ${formatList(mods.block)}`)
-    
-    return lines.length ? `\n\n${lines.join('\n')}` : ''
+    const desc = getWeatherModifiersDescription(computedWeather.value)
+    return desc ? `\n\n${desc}` : ''
   })
 
   const cardSeed = computed(() => {

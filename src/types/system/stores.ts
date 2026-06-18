@@ -215,7 +215,8 @@ export interface WarStore {
   mapDominance: Record<string, DominanceInfo>;
   isLoading: boolean;
   dailyGuardianCaptures: string[];
-  addPoints: (mapId: string, eventType: string, success: boolean) => Promise<number>;
+  addPoints: (mapId: string, eventType: string, success: boolean, customPoints?: number) => Promise<number>;
+  claimGuardian: (mapId: string, isDefeat?: boolean) => Promise<void>;
   resolveWeeklySeason: () => Promise<void>;
 }
 

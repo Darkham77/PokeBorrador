@@ -418,7 +418,6 @@ onMounted(() => {
                 :is-locked="false"
                 :cycle="mapStore.currentCycle"
                 :weather="getWeatherForMap(nodeId)"
-                :forced-weather="getWeatherForMap(nodeId)"
                 :badge-count="8"
                 :spawn-pool="getSpawnPoolForMap(mapLocationsById[nodeId] as MapLocation)"
                 @navigate="startManualTravel(nodeId)"

@@ -1,13 +1,20 @@
 <script setup lang="ts">
 
-import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
-import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { useGameStore } from '@/stores/game'
+import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { getEncounterPool } from '@/logic/encounters/encounters'
+import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
+import type { MapLocation } from '@/types/pokemon/encounters'
+import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing'
+import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology'
 
 const debugStore = useDebugStore()
 const isDebugActive = computed(() => {
@@ -18,6 +25,7 @@ const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.v
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 const mapStore = useMapStore()
+const gameStore = useGameStore()
 
 // Responsive logic
 const isSmallScreen = computed(() => {
@@ -63,6 +71,138 @@ const weatherName = computed(() => {
   if (visual) return visual.label
   const mech = getMechanicalWeather(computedWeather.value as string)
   return WEATHER_UI_METADATA[mech]?.label || 'Normal'
+})
+
+const mapsList = computed(() => pokemonDataProvider.getMaps() as unknown as MapLocation[])
+
+const mapPropForModal = computed(() => {
+  const locId = battle.value?.locationId || 'route1'
+  return mapsList.value.find(m => m.id === locId) as MapLocation
+})
+
+const routeSpawnsProps = reactive({
+  map: computed(() => mapPropForModal.value || mapsList.value[0]),
+  weather: computed(() => computedWeather.value || 'clear'),
+  cycle: computed(() => mapStore.currentCycle || 'day')
+})
+
+const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps as unknown as { map: MapLocation; weather: string; cycle: string })
+const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps as unknown as { map: MapLocation; weather: string; cycle: string })
+
+const weatherTooltipDescription = computed(() => {
+  const baseModifiers = getWeatherModifiersDescription(computedWeather.value)
+  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${baseModifiers ? `\n${baseModifiers}` : ''}`
+  if (!isDebugActive.value) return baseDesc
+
+  const locId = battle.value?.locationId || 'route1'
+  const loc = mapsList.value.find(m => m.id === locId)
+  if (!loc) return baseDesc
+
+  const cycle = mapStore.currentCycle || 'day'
+  const weather = computedWeather.value || 'clear'
+  const activeEvents = mapStore.activeEvents || []
+
+  const lines: string[] = []
+
+  // 1. Wild Spawns
+  if (loc.wild) {
+    const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents)
+    const poolCopy = [...pool]
+    const ratesCopy = [...rates]
+
+    if (weather && weather !== 'clear') {
+      const visitorIndices = ratesCopy.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
+      const nativeIndices = ratesCopy.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
+
+      let wConfig = loc.weather?.[weather]
+      if (!wConfig && weather) {
+        const family = getWeatherFamily(weather)
+        if (family && loc.weather?.[family]) {
+          wConfig = loc.weather[family]
+        }
+      }
+      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : []
+
+      nativeIndices.forEach(idx => {
+        const spId = poolCopy[idx]
+        if (spId) {
+          const isExclusive = exclusives.includes(spId)
+          if (!isExclusive) {
+            ratesCopy[idx] = (ratesCopy[idx] || 0) * getWeatherMultiplier(spId, weather)
+          }
+        }
+      })
+
+      if (visitorIndices.length > 0) {
+        const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (ratesCopy[idx] || 0), 0)
+        const visitorQuota = totalNativeWeight / 9
+        const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(ratesCopy[idx] || 0), 0)
+        
+        visitorIndices.forEach(idx => {
+          const relativeWeight = Math.abs(ratesCopy[idx] || 0) / (sumRelativeWeights || 1)
+          ratesCopy[idx] = visitorQuota * relativeWeight
+        })
+      }
+    }
+
+    const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0)
+    if (totalRate > 0) {
+      lines.push(`\n\nChances actuales (Hierba/Tierra):`)
+      let wConfig = loc.weather?.[weather]
+      if (!wConfig && weather) {
+        const family = getWeatherFamily(weather)
+        if (family && loc.weather?.[family]) {
+          wConfig = loc.weather[family]
+        }
+      }
+      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : []
+      const visitors = wConfig?.visitors ? (Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors)) : []
+
+      poolCopy.forEach((spId, idx) => {
+        const rateVal = ratesCopy[idx] || 0
+        const pct = (rateVal / totalRate) * 100
+        const name = spId.charAt(0).toUpperCase() + spId.slice(1)
+        
+        let tag = ''
+        if (exclusives.includes(spId)) {
+          tag = ' (Exclusivo)'
+        } else if (visitors.includes(spId)) {
+          tag = ' (Visitante)'
+        }
+        
+        lines.push(`• ${name}: ${pct.toFixed(1)}%${tag}`)
+      })
+    }
+  }
+
+  // 2. Fishing Spawns
+  if (fishingSpawns.value && fishingSpawns.value.length > 0) {
+    lines.push(`\n🎣 Pesca:`)
+    fishingSpawns.value.forEach((fs: { name: string; percentage: number }) => {
+      lines.push(`• ${fs.name}: ${fs.percentage.toFixed(1)}%`)
+    })
+  }
+
+  // 3. Archaeology Rewards
+  if (archaeologyRewards.value && archaeologyRewards.value.length > 0) {
+    lines.push(`\n⛏️ Arqueología:`)
+    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => {
+      lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
+    })
+  }
+
+  // 4. NPC / Special Encounters
+  const mapIds = mapsList.value.map(m => m.id)
+  const npcChances = getNpcEncounterChances(locId, gameStore.state, {}, mapIds)
+  if (npcChances && npcChances.length > 0) {
+    lines.push(`\n👥 Encuentros Especiales:`)
+    npcChances.forEach(npc => {
+      const details = npc.details ? ` (${npc.details})` : ''
+      lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`)
+    })
+  }
+
+  return baseDesc + lines.join('\n')
 })
 
 import type { ComponentPublicInstance } from 'vue'
@@ -200,7 +340,7 @@ const handleClose = () => {
         ref="envPillRef"
         class="location-tag tag-wild"
         :title="'ESTADO AMBIENTAL'"
-        :description="`Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}`"
+        :description="weatherTooltipDescription"
         position="top"
       >
         <span class="pill-content">

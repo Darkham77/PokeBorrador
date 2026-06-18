@@ -28,7 +28,7 @@ export const TRAINER_TYPES = {
   'pokefan': { name: 'Pokéfan', sprite: 'pokefan', archetype: 'pokefan' as NpcArchetype, pool: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'] },
   'policeman': { name: 'Oficial de Policía', sprite: 'policeman', archetype: 'policeman' as NpcArchetype, pool: ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot'] },
   'artista': { name: 'Artista', sprite: 'artist', archetype: 'artista' as NpcArchetype, pool: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'] },
-  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters', archetype: 'trainers' as NpcArchetype, pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] },
+  'rival': { name: 'Entrenador Élite', sprite: 'youngster-masters', archetype: 'rival' as NpcArchetype, pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] },
   'default': { name: 'Joven', sprite: 'youngster', archetype: 'default' as NpcArchetype, pool: ['rattata', 'pidgey', 'spearow', 'ekans', 'sandshrew', 'zubat'] }
 } as const;
 

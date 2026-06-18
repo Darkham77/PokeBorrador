@@ -61,6 +61,7 @@ export interface MapLocation {
       fishingVisitors?: string[] | Record<string, number | undefined>;
     } | undefined;
   };
+  trainerChances?: Record<string, number>;
 }
 
 export interface EncounterOptions {
@@ -68,6 +69,7 @@ export interface EncounterOptions {
   activeEvents?: Event[];
   shinyMultiplier?: number;
   weather?: string;
+  cycle?: string;
   dominanceData?: Record<string, DominanceInfo> | null;
   eventTrainerBonus?: number;
   eventFishingBonus?: number;

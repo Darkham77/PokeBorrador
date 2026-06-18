@@ -92,6 +92,7 @@ export const useDebugStore = defineStore('debug', () => {
   }
 
   const trainerChance50 = ref(false)
+  const forceRival = ref(false)
   const debugMultipliers = ref({
     shiny: 1,
     trainer: 1,
@@ -123,6 +124,7 @@ export const useDebugStore = defineStore('debug', () => {
     // Bind reactive state directly to the window object so static logic can access them
     const debugObj = window.__VITE_DEBUG__ as unknown as Record<string, unknown>
     debugObj.trainerChance50 = trainerChance50.value
+    debugObj.forceRival = forceRival.value
     debugObj.multipliers = debugMultipliers.value
 
     tools.value.forEach(tool => {
@@ -164,7 +166,7 @@ export const useDebugStore = defineStore('debug', () => {
     }
   }
 
-  watch([trainerChance50, debugMultipliers], () => {
+  watch([trainerChance50, debugMultipliers, forceRival], () => {
     updateGlobalProxy()
   }, { deep: true })
 
@@ -180,6 +182,7 @@ export const useDebugStore = defineStore('debug', () => {
     unregister,
     updateGlobalProxy,
     trainerChance50,
+    forceRival,
     debugMultipliers
   }
 })

@@ -300,7 +300,7 @@ export function useAdventureSimulation() {
   }
 
   function getWeatherForMap(mapId: string): string {
-    return getRouteWeather(mapId, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+    return mapStore.globalWeather || getRouteWeather(mapId, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
   }
 
   watch(showMarker, async (visible: boolean) => {

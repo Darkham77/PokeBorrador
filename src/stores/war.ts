@@ -78,11 +78,11 @@ export const useWarStore = defineStore('war', () => {
    * Adds war points for the current faction.
    * Logic handles Daily Cap and Faction requirement.
    */
-  async function addPoints(mapId: string, eventType: string, success: boolean) {
+  async function addPoints(mapId: string, eventType: string, success: boolean, customPoints?: number) {
     if (!faction.value || !isDisputeActive.value || !gameStore.db) return 0
     
-    // 1. Calculate points from Engine
-    const pts = getPointReward(eventType, success)
+    // 1. Calculate points from Engine or use custom override
+    const pts = customPoints !== undefined ? customPoints : getPointReward(eventType, success)
     if (pts <= 0) return 0
 
     // 2. Daily PT Cap Check (Isolated by World)
@@ -211,7 +211,7 @@ export const useWarStore = defineStore('war', () => {
       if (!dailyGuardianCaptures.value.includes(mapId)) {
         dailyGuardianCaptures.value.push(mapId)
       }
-      await addPoints(mapId, 'GUARDIAN', true) // Points logic handles Coins/State
+      await addPoints(mapId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
       uiStore.notify(`¡Guardián ${isDefeat ? 'Derrotado' : 'Capturado'}! +${ptsAwarded} PT.`, '🏆')
     }
   }

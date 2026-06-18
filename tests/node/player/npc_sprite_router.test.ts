@@ -39,7 +39,7 @@ describe('NPC Sprite Router Classification', () => {
   });
 
   it('correctly classifies master-level sprites as trainers', () => {
-    assert.strictEqual(classifyNpcArchetype('red-masters'), 'trainers');
+    assert.strictEqual(classifyNpcArchetype('red-masters'), 'rival');
   });
 });
 

@@ -31,7 +31,7 @@ export const useMapStore = defineStore('map', () => {
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
 
   // Sync epoch hour every second for real-time feeling
-  if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+  if (typeof window !== 'undefined') {
     const updateEpoch = () => {
       currentEpochHour.value = Math.floor(getServerTime() / 3600000)
       gsap.delayedCall(1, updateEpoch)
@@ -98,6 +98,7 @@ export const useMapStore = defineStore('map', () => {
         lastNavigateTime: lastNavigateTime.value,
         lastTrainerChanceIncrementAt: lastTrainerChanceIncrementAt.value,
         currentWeather: currentWeather.value,
+        currentCycle: currentCycle.value,
         activeEvents: activeEvents.value,
         mapWinners: mapWinners.value
       },

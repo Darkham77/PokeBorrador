@@ -9,6 +9,7 @@ import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
 import RouteSpawnsTable, { type SpawnItem, type ArchaeologyRewardItem } from './RouteSpawnsTable.vue'
+import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 
 interface Props {
   show?: boolean
@@ -142,7 +143,7 @@ const toggleExtortion = () => {
 
   modalStore.open('Confirm', {
     title: '🏴‍☠️ RUTA DE EXTORSISÓN',
-    message: `REGLAS DE EXTORSISÓN:\n\n1. Al extorsionar una ruta, tomarás control de ella por las próximas 24 horas.\n2. Los pesos (₽) ganados contra entrenadores (NPCs) en esta ruta se multiplicarán por x1.5.\n3. Solo puedes extorsionar una ruta a la vez.\n\n¿Quieres extorsionar la ${props.map.name.toUpperCase()} hoy?`,
+    message: getExtortionConfirmMessage(props.map.name),
     confirmText: 'EXTORSIONAR',
     cancelText: 'CANCELAR',
     variant: 'retro',
@@ -173,7 +174,7 @@ const toggleOfficialRoute = () => {
 
   modalStore.open('Confirm', {
     title: '📍 RUTA OFICIAL',
-    message: `REGLAS DE RUTA OFICIAL:\n\n1. La Ruta Oficial te permite declarar una zona de patrullaje especial.\n2. Durante los próximos 30 minutos, cada combate ganado aquí otorgará +1 punto de Reputación.\n3. Solo puedes marcar una ruta oficial una vez cada 24 horas.\n\n¿Quieres marcar la ${props.map.name.toUpperCase()} como tu Ruta Oficial?`,
+    message: getOfficialRouteConfirmMessage(props.map.name),
     confirmText: 'ESTABLECER',
     cancelText: 'CANCELAR',
     variant: 'retro',
@@ -229,7 +230,8 @@ const {
   archaeologyRewards,
   getWildSpawnTooltip,
   getFishingSpawnTooltip,
-  getArchaeologySpawnTooltip
+  getArchaeologySpawnTooltip,
+  npcSpawns
 } = useRouteSpawnsCalculation(props)
 </script>
 
@@ -458,7 +460,7 @@ const {
 
             <!-- Class specific button actions in RouteSpawnsModal -->
             <div
-              v-if="map.id.startsWith('route')"
+              v-if="isMapExtortable(map)"
               class="class-actions-container"
             >
               <!-- Entrenador activation action -->
@@ -544,6 +546,59 @@ const {
         :get-category-tooltip="getCategoryTooltip"
         :get-tooltip-data="(getArchaeologySpawnTooltip as unknown as (item: SpawnItem | ArchaeologyRewardItem) => Record<string, unknown>)"
       />
+
+      <!-- NPC / Special Encounters List -->
+      <div
+        v-if="npcSpawns && npcSpawns.length"
+        class="spawns-section npc-section"
+      >
+        <h3 class="section-title-pixel">
+          👥 ENCUENTROS ESPECIALES Y NPCS
+        </h3>
+        <div class="spawns-report-scroll">
+          <div class="report-table-header">
+            <div class="col-pokemon">
+              Encuentro
+            </div>
+            <div class="col-types">
+              Tipo / Rol
+            </div>
+            <div class="col-multiplier">
+              Detalles
+            </div>
+            <div class="col-prob">
+              Prob. Paso
+            </div>
+          </div>
+          <div class="report-rows">
+            <div
+              v-for="npc in npcSpawns"
+              :key="npc.type"
+              class="report-row"
+              :class="{ 'gray-text': !npc.active }"
+            >
+              <div class="col-pokemon font-bold">
+                {{ npc.name }}
+              </div>
+              <div
+                class="col-types font-bold text-gray"
+                style="text-transform: uppercase;"
+              >
+                {{ npc.type }}
+              </div>
+              <div class="col-multiplier">
+                {{ npc.details || 'Estándar' }}
+              </div>
+              <div
+                class="col-prob font-bold"
+                :class="npc.chance > 0 ? 'bonus-text' : 'gray-text'"
+              >
+                {{ npc.chance.toFixed(1) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </BaseModal>
 </template>

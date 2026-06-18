@@ -125,7 +125,7 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
     "Busco plasmar en mi lienzo a un ${pokemon} que tenga ${req}.",
     "¡Qué elegancia! Necesito un ${pokemon} con ${req} para completar mi coreografía."
   ],
-  'trainers': [
+  'rival': [
     "Busco poner a prueba mi estrategia. ¿Tienes un ${pokemon} con ${req}?",
     "Un verdadero maestro busca la perfección. Tráeme un ${pokemon} con ${req}.",
     "Demuestra tu valía. Consígueme un ${pokemon} con ${req} para nuestro duelo teórico."

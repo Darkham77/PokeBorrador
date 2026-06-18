@@ -53,8 +53,38 @@ export async function calculateBattleRewards(ctx: BattleContext) {
 
   // Faction points using the primary opponent
   const primaryEnemy = combatants[0]
-  if (primaryEnemy?.isGuardian) await ctx.warStore.addPoints(locId, 'guardian', true)
-  else await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
+  if (primaryEnemy?.isGuardian) {
+    await ctx.warStore.claimGuardian(locId, !active.isCapture)
+  } else {
+    await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
+  }
+
+  // Rival special rewards (drop ticket/masterball)
+  if (active.isRival) {
+    const randRec = Math.random() * 100
+    let rewardedItemKey = ''
+    if (randRec < 20) {
+      rewardedItemKey = 'master_ball'
+    } else if (randRec < 40) {
+      rewardedItemKey = 'ticket_shiny'
+    } else if (randRec < 60) {
+      rewardedItemKey = 'ticket_safari'
+    } else if (randRec < 80) {
+      rewardedItemKey = 'ticket_cerulean'
+    } else if (randRec < 95) {
+      rewardedItemKey = 'ticket_articuno'
+    } else {
+      rewardedItemKey = 'ticket_mewtwo'
+    }
+
+    if (rewardedItemKey) {
+      const itemObj = getItemById(rewardedItemKey)
+      const rewardedItemName = itemObj?.name || rewardedItemKey
+      ctx.gs.state.inventory[rewardedItemKey] = (ctx.gs.state.inventory[rewardedItemKey] || 0) + 1
+      ctx.addLog(`¡El Rival dejó caer una ${rewardedItemName}!`, 'log-catch', rewardedItemKey)
+      ctx.uiStore.notify(`¡Recibiste ${rewardedItemName}! 🎁`, '🎁')
+    }
+  }
   
   if (active.isGym && active.gymId) {
     const gid = active.gymId

@@ -4,7 +4,7 @@
  */
 
 export type NpcArchetype =
-  | 'trainers'      // Renowned masters
+  | 'rival'         // Renowned masters / rivals
   | 'caza_bichos'   // Bug Catcher / Bug Maniac
   | 'ornitologo'    // Bird Keeper
   | 'cientifico'    // Scientist / Super Nerd
@@ -26,7 +26,7 @@ export type NpcArchetype =
 
 // Mapping of archetypes to keywords found in sprite filenames or NPC names
 const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
-  trainers: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
+  rival: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
   caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos', 'aaron', 'katy', 'bugsy', 'burgh'],
   ornitologo: ['birdkeeper', 'ornitologo', 'pajaro', 'falkner', 'kahili', 'skyla', 'skytrainer', 'winona', 'pilot'],
   cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor', 'blaine', 'briar', 'clemont', 'colress', 'elm', 'juniper', 'kukui', 'laventon', 'magnolia', 'miriam', 'molayne', 'nurse', 'oak', 'raifort', 'rowan', 'sada', 'salvatore', 'samsonoak', 'sonia', 'sophocles', 'sycamore', 'thorton', 'turo'],

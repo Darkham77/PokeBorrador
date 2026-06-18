@@ -260,7 +260,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   const loc = maps.find(l => l.id === locId);
   if (!loc) return null;
 
-  const cycle = getDayCycle();
+  const cycle = options.cycle || getDayCycle();
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const allMapIds = maps.map(m => m.id);

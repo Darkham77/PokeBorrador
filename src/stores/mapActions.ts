@@ -3,15 +3,13 @@ import { useBattleStore } from '@/stores/battle/battle.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useInventoryStore } from '@/stores/inventory/inventory.ts';
-import { FIRE_RED_MAPS } from '@/data/world/maps';
+
 import { generateEncounter } from '@/logic/encounters/encounters';
 import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemByName } from '@/data/inventory/items.ts';
 import { logger } from '@/logic/utils/logger';
-import { TRAINER_TYPES } from '@/data/player/trainerTypes';
-import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
-import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
+import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 
@@ -26,6 +24,7 @@ export async function executeNavigation(
     lastNavigateTime: number;
     lastTrainerChanceIncrementAt: number;
     currentWeather: string;
+    currentCycle: string;
     activeEvents: Event[];
     mapWinners: Record<string, DominanceInfo>;
   },
@@ -89,6 +88,7 @@ export async function executeNavigation(
         dominanceData: state.mapWinners,
         shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
         weather: state.currentWeather,
+        cycle: state.currentCycle,
         eventFishingBonus: eventStore.globalMultipliers?.fishing || 1
       });
 
@@ -118,53 +118,9 @@ export async function executeNavigation(
   } else if (wildEnc.type === 'defender') {
     uiStore.notify(`¡Defensor del Team ${wildEnc.faction?.toUpperCase()} detectado!`, '⚔️');
   } else if (wildEnc.type === 'trainer') {
-    gs.state.trainerChance = 5;
     callbacks.setLastTrainerChanceIncrementAt(now);
 
-    const { buildTrainerTeam } = await import('@/logic/battle/trainerFactory');
-
-    const isMaxCriminality = (gs.state.playerClass === 'rocket' && (gs.state.classData?.criminality ?? 0) >= 100);
-    const targetMap = FIRE_RED_MAPS.find(m => m.id === locId);
-    const baseLv = targetMap?.lv?.[0] || 5;
-
-    let tName = 'Entrenador';
-    let tSprite = 'youngster';
-    let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!';
-    const enemyTeam: Pokemon[] = [];
-
-    let typeKey: keyof typeof TRAINER_TYPES = 'default';
-    if (isMaxCriminality) {
-      const t = TRAINER_TYPES['policeman'];
-      tName = t.name;
-      const availableSprites = getSpritesForArchetype('policeman');
-      const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)];
-      tSprite = chosenSprite || t.sprite;
-      tQuote = getRandomQuoteForTrainer('policeman');
-      const criminality = gs.state.classData?.criminality || 100;
-      const excess = Math.max(0, criminality - 100);
-      const bonusLv = Math.floor(excess / 50);
-      const trainerLv = baseLv + 5 + bonusLv;
-      const teamSize = Math.floor(Math.random() * 2) + 3;
-
-      const team = await buildTrainerTeam(t.pool as unknown as string[], trainerLv, teamSize);
-      enemyTeam.push(...team);
-    } else {
-      const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>;
-      typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos';
-      const t = TRAINER_TYPES[typeKey];
-      
-      tName = t.name;
-      // Pick a random sprite from the full archetype catalog (not just the hardcoded fallback)
-      const archetypeSprites = getSpritesForArchetype(t.archetype);
-      tSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)] || t.sprite;
-      tQuote = getRandomQuoteForTrainer(typeKey);
-      const trainerLv = baseLv + 2;
-      const teamSize = Math.floor(Math.random() * 3) + 1;
-
-      const { buildTrainerTeam } = await import('@/logic/battle/trainerFactory');
-      const team = await buildTrainerTeam(t.pool as unknown as string[], trainerLv, teamSize);
-      enemyTeam.push(...team);
-    }
+    const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(gs.state, locId);
 
     if (enemyTeam.length > 0 && enemyTeam[0]) {
       battleStore._startBattle(enemyTeam[0], {
@@ -172,33 +128,15 @@ export async function executeNavigation(
         wasSearching: true,
         isTrainer: true,
         enemyTeam,
-        trainerName: tName,
-        trainerSprite: tSprite,
-        trainerArchetype: isMaxCriminality ? 'policeman' : TRAINER_TYPES[typeKey].archetype,
-        trainerQuote: tQuote,
+        trainerName: name,
+        trainerSprite: sprite,
+        trainerArchetype: archetype,
+        trainerQuote: quote,
         cannotEscape: true
       });
     }
   } else if (wildEnc.type === 'rival') {
-    const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic');
-    const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-
-    const trainerNameVal = 'Rival Azul';
-    const trainerSpriteVal = 'blue';
-    
-    const teamSize = Math.max(3, gs.state.team.length || 1);
-    const avgLevel = gs.state.team.reduce((sum, p) => sum + p.level, 0) / (gs.state.team.length || 1);
-    const rivalLevel = Math.floor(avgLevel) + 2;
-
-    const rivalPoolBase = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard'];
-    const shuffledPool = [...rivalPoolBase].sort(() => Math.random() - 0.5).slice(0, teamSize);
-
-    const enemyTeam: Pokemon[] = shuffledPool.map(id => {
-      const species = getEvolvedForm(id, rivalLevel);
-      const p = makePokemon(species, rivalLevel) as Pokemon;
-      if (p) (p as Pokemon & { _revealed?: boolean })._revealed = true;
-      return p;
-    }).filter((p): p is Pokemon => !!p);
+    const { name, sprite, enemyTeam } = await buildRivalEncounter(gs.state.team);
 
     if (enemyTeam.length > 0 && enemyTeam[0]) {
       battleStore._startBattle(enemyTeam[0], {
@@ -206,9 +144,9 @@ export async function executeNavigation(
         wasSearching: true,
         isTrainer: true,
         enemyTeam,
-        trainerName: trainerNameVal,
-        trainerSprite: trainerSpriteVal,
-        trainerArchetype: 'trainers',
+        trainerName: name,
+        trainerSprite: sprite,
+        trainerArchetype: 'rival',
         isRival: true,
         cannotEscape: true
       });

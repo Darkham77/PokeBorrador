@@ -199,7 +199,7 @@ const TRAINER_PERSONALITIES: Record<string, string[]> = {
   ranger: ["audaz", "relajado"],
   pokefan: ["entusiasta", "timido"],
   artista: ["misterioso", "entusiasta"],
-  trainers: ["competitivo", "inteligente"],
+  rival: ["competitivo", "inteligente"],
   default: ["entusiasta", "competitivo"]
 };
 

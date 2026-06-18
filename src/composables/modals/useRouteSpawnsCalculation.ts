@@ -4,6 +4,8 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 import { GAME_RATIOS } from '@/data/system/constants'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
+import { getNpcEncounterChances } from '@/logic/weather/weatherUtils'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 import { useRouteSpawnsWild } from './useRouteSpawnsWild'
 import { useRouteSpawnsFishing } from './useRouteSpawnsFishing'
@@ -297,6 +299,12 @@ export function useRouteSpawnsCalculation(
     }
   }
 
+  const npcSpawns = computed(() => {
+    const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+    const mapIds = maps.map(m => m.id)
+    return getNpcEncounterChances(props.map.id, gameStore.state, {}, mapIds)
+  })
+
   return {
     weatherEmoji,
     weatherLabel,
@@ -318,6 +326,7 @@ export function useRouteSpawnsCalculation(
     archaeologyRewards,
     getWildSpawnTooltip,
     getFishingSpawnTooltip,
-    getArchaeologySpawnTooltip
+    getArchaeologySpawnTooltip,
+    npcSpawns
   }
 }

@@ -84,6 +84,17 @@ onMounted(() => {
             style="width: 16px; height: 16px; cursor: pointer;"
           >
         </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span
+            class="field-label"
+            style="margin-bottom: 0;"
+          >Forzar 100% encuentros con Rival</span>
+          <input 
+            v-model="debugStore.forceRival" 
+            type="checkbox" 
+            style="width: 16px; height: 16px; cursor: pointer;"
+          >
+        </div>
       </div>
     </div>
 
