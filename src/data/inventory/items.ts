@@ -304,7 +304,7 @@ export const SHOP_ITEMS = [
     desc: 'Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min.'
   },
   {
-    id: 'pp_up', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/pp_up', name: 'Subida de PP', icon: '📈', price: 30000, bcPrice: 1000, warPrice: 100, unlockLv: 8, tier: 'epic', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'pp_up', craftingTier: 3, cat: 'otros', type: 'usable', sprite: 'crafting/tier3/pp_up', name: 'Subida de PP', icon: '📈', price: 30000, bcPrice: 1000, warPrice: 100, unlockLv: 8, tier: 'epic', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta los PP máximos de un movimiento en un 20%.'
   },
   {

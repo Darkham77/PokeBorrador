@@ -218,7 +218,9 @@ export function sanitizePokemon(p: Pokemon): void {
       m.acc = moveData.acc || 100;
       m.cat = moveData.cat || 'physical';
       m.effect = moveData.effect;
-      m.maxPP = moveData.pp || 35;
+      // Preserve maxPP if upgraded via pp_up/pp_max — only reset if corrupted (< basePP)
+      const basePP = moveData.pp || 35;
+      if (!m.maxPP || m.maxPP < basePP) m.maxPP = basePP;
       m.selfKO = moveData.selfKO;
       m.recoil = moveData.recoil;
       m.drain = moveData.drain;

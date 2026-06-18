@@ -2,8 +2,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useInventoryStore } from '@/stores/inventory/inventory'
+import { isItemUsableOutsideCombat, useInventoryStore } from '@/stores/inventory/inventory'
 import { useGameStore } from '@/stores/game'
+import { getItemById } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Mock components and external logic
@@ -154,5 +155,12 @@ describe('Inventory Store', () => {
     expect(magnetItem).toBeDefined()
     expect(magnetItem?.id).toBe('magnet')
     expect(magnetItem?.qty).toBe(2)
+  })
+
+  it('treats PP Up as usable in the bag filters', () => {
+    const ppUp = getItemById('pp_up')
+
+    expect(ppUp).toBeDefined()
+    expect(isItemUsableOutsideCombat(ppUp)).toBe(true)
   })
 })
