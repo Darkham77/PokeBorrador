@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-CzZ_MGgm.js";export{e as default,e as supabase};
