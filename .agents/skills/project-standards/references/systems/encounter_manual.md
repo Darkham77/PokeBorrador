@@ -91,3 +91,19 @@ For players belonging to the Team Rocket class, reaching maximum criminality (10
 
 - **Archetype and Sprite Selection**: The system utilizes the dedicated `policeman` archetype. Instead of fallback sprites (e.g., `tamer`), it dynamically selects a random sprite from the policeman catalog pool (`policeman`, `policeman-gen4`, `policeman-gen7`, `policeman-gen8`) to provide visual variety.
 - **Encounter Stats**: Level scaling is derived from the map's base level plus an incremental level bonus scaled by criminality exceeding 100%.
+
+---
+
+## 8. Castform Weather Family Spawn Generation Standards
+
+To prevent data drift and manual omissions when registering Castform in spawn tables, the map configurations MUST follow the `WEATHER_FAMILIES` grouping layout:
+
+1. **Weather Family Mapping Rules:**
+   - **Rain Family** (`rain`, `heavy_rain`, `storm`, `thunderstorm`): Castform MUST be blended as a weather-exclusive (`exclusive`) species on maps designated to have rainy environments.
+   - **Sun Family** (`sun`, `sunny`, `heatwave`, `intense_sun`): Castform MUST be blended as a weather visitor (`visitors`) with a balanced relative weight (e.g., 30 to 50) on maps designated to have hot or desert environments.
+   - **Snow Family** (`snow`, `blizzard`, `cold`, `hail`, `coldwave`): Castform MUST be blended as a weather visitor (`visitors`) with a balanced relative weight on maps designated to have snowy or mountain environments.
+
+2. **Integration Constraint:**
+   - Always mix Castform without overriding existing weather-exclusives or visitors.
+   - Castform must always spawn in its base Normal Form when encountered wild.
+

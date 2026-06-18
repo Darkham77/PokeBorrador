@@ -149,7 +149,9 @@ export interface Pokemon {
   isAncestral?: boolean;
   choiceMove?: string;
   originalDitto?: Partial<Pokemon>;
+  form?: string;
 }
+
 
 export interface PokemonEgg {
   uid: string;

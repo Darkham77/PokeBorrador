@@ -1,11 +1,59 @@
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
+import { getWeatherFamily } from '../../data/system/weatherFamilies.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 
-export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn) {
+export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn) {
+  if (!pokemon) return;
+  if (pokemon.id !== 'castform') return;
+  if (pokemon.ability !== 'Predicción') return;
+
+  const family = weatherType ? getWeatherFamily(weatherType) : null;
+  let targetForm = 'normal';
+  let targetType = 'normal';
+
+  if (family === WEATHER_MECHANICAL.SUN) {
+    targetForm = 'sunny';
+    targetType = 'fire';
+  } else if (family === WEATHER_MECHANICAL.RAIN) {
+    targetForm = 'rainy';
+    targetType = 'water';
+  } else if (family === WEATHER_MECHANICAL.SNOW || family === WEATHER_MECHANICAL.HAIL) {
+    targetForm = 'snowy';
+    targetType = 'ice';
+  } else {
+    // Si no entra en ninguna de las familias (ej: viento, niebla, arena o despejado), vuelve a Normal
+    targetForm = 'normal';
+    targetType = 'normal';
+  }
+
+  const currentForm = pokemon.form || 'normal';
+
+  if (currentForm !== targetForm) {
+    pokemon.form = targetForm;
+    pokemon.type = targetType;
+    pokemon.type2 = undefined; // Las formas de Castform tienen un solo tipo
+
+    const formLabels: Record<string, string> = { sunny: 'Soleada', rainy: 'Lluvia', snowy: 'Nieve' };
+    if (targetForm === 'normal') {
+      // Solo logueamos si venía de otra forma real y volvió a la normal
+      if (currentForm !== 'normal') {
+        addLog(`¡La habilidad Predicción de ${pokemon.name} lo devolvió a su forma normal!`, 'log-info', pokemon);
+      }
+    } else {
+      addLog(`¡La habilidad Predicción de ${pokemon.name} lo transformó en su Forma ${formLabels[targetForm]}!`, 'log-info', pokemon);
+    }
+  }
+}
+
+export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn, weatherType?: string) {
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
+
+  // Actualizar forma de Castform al entrar
+  updateCastformForm(playerPoke, weatherType, addLog);
+  updateCastformForm(enemyPoke, weatherType, addLog);
 
   if (playerPoke.ability === 'Intimidación') {
     enemyStages.atk = Math.max(-6, enemyStages.atk - 1)

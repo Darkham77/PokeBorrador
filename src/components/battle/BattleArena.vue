@@ -40,6 +40,9 @@ const cycleEmoji = computed(() => {
 })
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 const computedWeather = computed(() => {
+  if (battle.value?.weather && battle.value.weather.turns !== -1) {
+    return battle.value.weather.visual || battle.value.weather.type
+  }
   if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })

@@ -17,6 +17,8 @@ import {
   calculateEncounterTypeWeights
 } from './encounterHelpers.ts';
 
+import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
+
 export { getEncounterPool, selectFromPool };
 
 /**
@@ -115,7 +117,13 @@ function generateFishingEncounter(
   const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0);
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: shinyMult }) as Pokemon;
   if (pokemon) {
-    const weatherCfg = loc.weather?.[weather];
+    let weatherCfg = loc.weather?.[weather];
+    if (!weatherCfg && weather && weather !== 'clear') {
+      const family = getWeatherFamily(weather);
+      if (family && loc.weather?.[family]) {
+        weatherCfg = loc.weather[family];
+      }
+    }
     const isVisitor = !!(weatherCfg?.visitors && (
       (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
       (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
@@ -160,10 +168,16 @@ function generateGroundEncounter(
     const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
     const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
 
-     const wConfig = loc.weather?.[weather];
-     const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+      let wConfig = loc.weather?.[weather];
+      if (!wConfig && weather && weather !== 'clear') {
+        const family = getWeatherFamily(weather);
+        if (family && loc.weather?.[family]) {
+          wConfig = loc.weather[family];
+        }
+      }
+      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
 
-     nativeIndices.forEach(idx => {
+      nativeIndices.forEach(idx => {
        const spId = pool[idx];
        if (spId) {
          const isExclusive = exclusives.includes(spId);
@@ -205,7 +219,13 @@ function generateGroundEncounter(
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
   if (!pokemon) return null;
 
-  const weatherCfg = loc.weather?.[weather];
+  let weatherCfg = loc.weather?.[weather];
+  if (!weatherCfg && weather && weather !== 'clear') {
+    const family = getWeatherFamily(weather);
+    if (family && loc.weather?.[family]) {
+      weatherCfg = loc.weather[family];
+    }
+  }
   const isVisitor = !!(weatherCfg?.visitors && (
     (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
     (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))

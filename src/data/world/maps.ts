@@ -56,9 +56,17 @@ export const FIRE_RED_MAPS = [
           "castform": 100
         }
       },
-      "storm": {
+      "sun": {
         "visitors": {
-          "pikachu": 100
+          "growlithe": 40,
+          "vulpix": 40,
+          "castform": 20
+        }
+      },
+      "snow": {
+        "visitors": {
+          "dewgong": 80,
+          "castform": 20
         }
       },
       "fog": {
@@ -66,83 +74,10 @@ export const FIRE_RED_MAPS = [
           "gastly": 100
         }
       },
-      "snow": {
-        "visitors": {
-          "dewgong": 100
-        }
-      },
-      "blizzard": {
-        "visitors": {
-          "jynx": 95
-        },
-        "exclusive": {
-          "articuno": 5
-        }
-      },
       "wind": {
         "visitors": {
           "pidgeotto": 80,
           "butterfree": 20
-        }
-      },
-      "cold": {
-        "visitors": {
-          "dewgong": 100
-        }
-      },
-      "heavy_rain": {
-        "visitors": {
-          "slowpoke": 40,
-          "slowbro": 30,
-          "gloom": 30
-        },
-        "exclusive": {
-          "castform": 100
-        }
-      },
-      "thunderstorm": {
-        "visitors": {
-          "raichu": 50,
-          "jolteon": 45
-        },
-        "exclusive": {
-          "zapdos": 5
-        }
-      },
-      "heatwave": {
-        "visitors": {
-          "arcanine": 50,
-          "ponyta": 50
-        }
-      },
-      "mist": {
-        "visitors": {
-          "drowzee": 50,
-          "venonat": 50
-        }
-      },
-      "strong_winds": {
-        "visitors": {
-          "pidgeotto": 50,
-          "fearow": 50
-        }
-      },
-      "sun": {
-        "visitors": {
-          "growlithe": 50,
-          "vulpix": 50
-        }
-      },
-      "intense_sun": {
-        "visitors": {
-          "ponyta": 60,
-          "tangela": 40
-        }
-      },
-      "coldwave": {
-        "visitors": {
-          "cloyster": 50,
-          "jynx": 50
         }
       }
     }
@@ -211,11 +146,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "slowpoke": 50,
           "bellsprout": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "bulbasaur": 10
+          "bulbasaur": 10,
+          "castform": 30
         },
         "exclusive": {
           "sunflora": 100
@@ -246,17 +185,24 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "slowpoke": 50,
           "slowbro": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "pikachu": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "strong_winds": {
@@ -269,18 +215,25 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "pikachu": 60,
           "magnemite": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -365,6 +318,9 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "scyther": 20,
           "paras": 80
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "storm": {
@@ -372,7 +328,8 @@ export const FIRE_RED_MAPS = [
           "voltorb": 90
         },
         "exclusive": {
-          "raichu": 10
+          "raichu": 10,
+          "castform": 100
         }
       },
       "fog": {
@@ -391,29 +348,38 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "scyther": 50,
           "pinsir": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "electabuzz": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "heatwave": {
         "visitors": {
           "magmar": 50,
-          "rapidash": 50
+          "rapidash": 50,
+          "castform": 30
         }
       },
       "wind": {
@@ -425,30 +391,41 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       },
       "hail": {
         "visitors": {
           "jynx": 80,
           "smoochum": 20
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "blizzard": {
         "visitors": {
           "jynx": 70,
           "lapras": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -548,11 +525,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "pikachu": 80,
           "magnemite": 20
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "ponyta": 100
+          "ponyta": 100,
+          "castform": 30
         }
       },
       "sandstorm": {
@@ -573,6 +554,9 @@ export const FIRE_RED_MAPS = [
       "thunderstorm": {
         "visitors": {
           "raichu": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
@@ -584,6 +568,9 @@ export const FIRE_RED_MAPS = [
       "coldwave": {
         "visitors": {
           "jynx": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "blizzard": {
@@ -591,7 +578,8 @@ export const FIRE_RED_MAPS = [
           "jynx": 95
         },
         "exclusive": {
-          "articuno": 5
+          "articuno": 5,
+          "castform": 100
         }
       },
       "mist": {
@@ -620,12 +608,16 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "poliwag": 70,
           "psyduck": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -649,12 +641,16 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "poliwhirl": 70,
           "golduck": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -663,7 +659,8 @@ export const FIRE_RED_MAPS = [
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -678,6 +675,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -772,7 +772,8 @@ export const FIRE_RED_MAPS = [
       },
       "sun": {
         "visitors": {
-          "growlithe": 100
+          "growlithe": 100,
+          "castform": 30
         }
       },
       "fog": {
@@ -783,7 +784,8 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "dewgong": 50
+          "dewgong": 50,
+          "castform": 30
         }
       },
       "dust_storm": {
@@ -811,7 +813,8 @@ export const FIRE_RED_MAPS = [
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "strong_winds": {
@@ -824,11 +827,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       }
     }
@@ -930,13 +937,15 @@ export const FIRE_RED_MAPS = [
       "coldwave": {
         "visitors": {
           "cloyster": 100
-        }
+        },
+        "exclusive": {}
       },
       "blizzard": {
         "visitors": {
           "jynx": 80,
           "lapras": 20
-        }
+        },
+        "exclusive": {}
       },
       "dust_storm": {
         "visitors": {
@@ -1039,11 +1048,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "slowpoke": 50,
           "bellsprout": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "vulpix": 100
+          "vulpix": 100,
+          "castform": 30
         }
       },
       "sandstorm": {
@@ -1064,17 +1077,22 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "slowbro": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
         "visitors": {
-          "ninetales": 100
+          "ninetales": 100,
+          "castform": 30
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "strong_winds": {
@@ -1086,13 +1104,17 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -1183,11 +1205,17 @@ export const FIRE_RED_MAPS = [
         },
         "fishingVisitors": {
           "poliwag": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "storm": {
         "visitors": {
           "pikachu": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "fog": {
@@ -1203,6 +1231,9 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "poliwrath": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
@@ -1211,7 +1242,8 @@ export const FIRE_RED_MAPS = [
           "dragonite": 10
         },
         "exclusive": {
-          "zapdos": 5
+          "zapdos": 5,
+          "castform": 100
         }
       },
       "mist": {
@@ -1226,7 +1258,8 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -1236,7 +1269,8 @@ export const FIRE_RED_MAPS = [
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -1264,7 +1298,8 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -1279,6 +1314,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -1351,11 +1389,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "slowpoke": 50,
           "starmie": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "charmander": 10
+          "charmander": 10,
+          "castform": 30
         }
       },
       "fog": {
@@ -1366,6 +1408,9 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "slowbro": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
@@ -1377,6 +1422,9 @@ export const FIRE_RED_MAPS = [
       "thunderstorm": {
         "visitors": {
           "electabuzz": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "mist": {
@@ -1388,13 +1436,17 @@ export const FIRE_RED_MAPS = [
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "storm": {
         "visitors": {
           "pikachu": 60,
           "magnemite": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "wind": {
@@ -1405,13 +1457,17 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -1491,7 +1547,8 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         }
       },
       "fog": {
@@ -1503,6 +1560,9 @@ export const FIRE_RED_MAPS = [
       "rain": {
         "visitors": {
           "slowpoke": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "wind": {
@@ -1519,6 +1579,9 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "slowbro": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "strong_winds": {
@@ -1534,24 +1597,30 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "ponyta": 100
+          "ponyta": 100,
+          "castform": 30
         }
       },
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       }
     }
@@ -1649,16 +1718,23 @@ export const FIRE_RED_MAPS = [
         },
         "fishingExclusive": {
           "golduck": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "storm": {
         "visitors": {
           "magnemite": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "ponyta": 100
+          "ponyta": 100,
+          "castform": 30
         }
       },
       "wind": {
@@ -1669,11 +1745,17 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "poliwrath": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "raichu": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
@@ -1706,7 +1788,8 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "ponyta": 100
+          "ponyta": 100,
+          "castform": 30
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -1716,7 +1799,8 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -1731,6 +1815,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -1795,6 +1882,9 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "voltorb": 80,
           "electrode": 20
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sandstorm": {
@@ -1811,6 +1901,9 @@ export const FIRE_RED_MAPS = [
       "thunderstorm": {
         "visitors": {
           "electrode": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "dust_storm": {
@@ -1828,18 +1921,23 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "bellsprout": 50,
           "oddish": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "heatwave": {
@@ -1852,18 +1950,25 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "weepinbell": 50,
           "gloom": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -1971,7 +2076,8 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "cloyster": 50,
           "jynx": 50
-        }
+        },
+        "exclusive": {}
       }
     }
   },
@@ -2061,7 +2167,8 @@ export const FIRE_RED_MAPS = [
       },
       "sun": {
         "visitors": {
-          "primeape": 100
+          "primeape": 100,
+          "castform": 30
         }
       },
       "fog": {
@@ -2076,7 +2183,8 @@ export const FIRE_RED_MAPS = [
       },
       "heatwave": {
         "visitors": {
-          "primeape": 100
+          "primeape": 100,
+          "castform": 30
         }
       },
       "wind": {
@@ -2087,7 +2195,8 @@ export const FIRE_RED_MAPS = [
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "strong_winds": {
@@ -2099,13 +2208,17 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -2216,7 +2329,8 @@ export const FIRE_RED_MAPS = [
       "coldwave": {
         "visitors": {
           "dewgong": 100
-        }
+        },
+        "exclusive": {}
       },
       "dust_storm": {
         "visitors": {
@@ -2226,7 +2340,8 @@ export const FIRE_RED_MAPS = [
       "blizzard": {
         "visitors": {
           "cloyster": 100
-        }
+        },
+        "exclusive": {}
       },
       "mist": {
         "visitors": {
@@ -2315,11 +2430,17 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "pikachu": 80,
           "electabuzz": 20
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "rain": {
         "visitors": {
           "slowpoke": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "fog": {
@@ -2339,18 +2460,25 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "cloyster": 100
+          "cloyster": 100,
+          "castform": 30
         }
       },
       "thunderstorm": {
         "visitors": {
           "electabuzz": 90,
           "zapdos": 10
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heavy_rain": {
         "visitors": {
           "slowbro": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "mist": {
@@ -2362,7 +2490,8 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         }
       },
       "heatwave": {
@@ -2574,7 +2703,8 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "arcanine": 50,
-          "ninetales": 50
+          "ninetales": 50,
+          "castform": 30
         }
       },
       "fog": {
@@ -2590,12 +2720,16 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "exeggutor": 100
+          "exeggutor": 100,
+          "castform": 30
         }
       },
       "rain": {
         "visitors": {
           "slowpoke": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "wind": {
@@ -2610,17 +2744,24 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       },
       "heavy_rain": {
         "visitors": {
           "gyarados": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "jolteon": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "mist": {
@@ -2633,11 +2774,15 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       }
     }
@@ -2806,16 +2951,23 @@ export const FIRE_RED_MAPS = [
         },
         "fishingExclusive": {
           "poliwhirl": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "storm": {
         "visitors": {
           "dragonair": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
-          "tangela": 100
+          "tangela": 100,
+          "castform": 30
         }
       },
       "strong_winds": {
@@ -2839,11 +2991,17 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "gyarados": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "dragonite": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
@@ -2863,7 +3021,8 @@ export const FIRE_RED_MAPS = [
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -2873,7 +3032,8 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -2888,6 +3048,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -2965,7 +3128,8 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "vileplume": 50,
-          "victreebel": 50
+          "victreebel": 50,
+          "castform": 30
         }
       },
       "fog": {
@@ -2988,29 +3152,42 @@ export const FIRE_RED_MAPS = [
       "heavy_rain": {
         "visitors": {
           "poliwrath": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
         "visitors": {
           "dragonair": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "rain": {
         "visitors": {
           "slowpoke": 50,
           "poliwag": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "intense_sun": {
         "visitors": {
           "ponyta": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "storm": {
         "visitors": {
           "pikachu": 60,
           "magnemite": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "wind": {
@@ -3021,13 +3198,17 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "coldwave": {
         "visitors": {
           "cloyster": 50,
           "jynx": 50
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -3159,12 +3340,16 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "psyduck": 70,
           "golduck": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "sun": {
         "visitors": {
           "exeggutor": 60,
-          "tangela": 40
+          "tangela": 40,
+          "castform": 30
         }
       },
       "sandstorm": {
@@ -3189,7 +3374,8 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "tangela": 100
+          "tangela": 100,
+          "castform": 30
         }
       },
       "dust_storm": {
@@ -3219,6 +3405,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "poliwhirl": 70,
           "golduck": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "storm": {
@@ -3229,6 +3418,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "tentacool": 60,
           "horsea": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "thunderstorm": {
@@ -3239,12 +3431,16 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "tentacruel": 60,
           "seadra": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -3259,11 +3455,15 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -3278,6 +3478,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "blizzard": {
@@ -3288,6 +3491,9 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -3420,12 +3626,14 @@ export const FIRE_RED_MAPS = [
         },
         "fishingExclusive": {
           "kingler": 100
-        }
+        },
+        "exclusive": {}
       },
       "heavy_rain": {
         "visitors": {
           "cloyster": 100
-        }
+        },
+        "exclusive": {}
       },
       "mist": {
         "visitors": {
@@ -3549,7 +3757,8 @@ export const FIRE_RED_MAPS = [
       "heatwave": {
         "exclusive": {
           "moltres": 5
-        }
+        },
+        "visitors": {}
       },
       "fog": {
         "visitors": {
@@ -3572,7 +3781,8 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "cloyster": 50,
           "jynx": 50
-        }
+        },
+        "exclusive": {}
       }
     }
   },
@@ -3673,6 +3883,9 @@ export const FIRE_RED_MAPS = [
       "storm": {
         "visitors": {
           "magneton": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "wind": {
@@ -3694,6 +3907,9 @@ export const FIRE_RED_MAPS = [
       "thunderstorm": {
         "visitors": {
           "dragonite": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "heatwave": {
@@ -3704,7 +3920,8 @@ export const FIRE_RED_MAPS = [
       "cold": {
         "visitors": {
           "jynx": 50,
-          "smoochum": 50
+          "smoochum": 50,
+          "castform": 30
         }
       },
       "mist": {
@@ -3722,24 +3939,32 @@ export const FIRE_RED_MAPS = [
       "sun": {
         "visitors": {
           "growlithe": 50,
-          "vulpix": 50
+          "vulpix": 50,
+          "castform": 30
         }
       },
       "snow": {
         "visitors": {
-          "jynx": 100
+          "jynx": 100,
+          "castform": 30
         }
       },
       "hail": {
         "visitors": {
           "jynx": 80,
           "smoochum": 20
+        },
+        "exclusive": {
+          "castform": 100
         }
       },
       "blizzard": {
         "visitors": {
           "jynx": 70,
           "lapras": 30
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }
@@ -3874,7 +4099,8 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "jynx": 90,
           "lapras": 10
-        }
+        },
+        "exclusive": {}
       },
       "mist": {
         "visitors": {
@@ -4020,7 +4246,8 @@ export const FIRE_RED_MAPS = [
         "fishingVisitors": {
           "shellder": 60,
           "seel": 40
-        }
+        },
+        "exclusive": {}
       }
     }
   }

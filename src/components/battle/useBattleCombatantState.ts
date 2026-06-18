@@ -1,6 +1,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, toValue } from 'vue';
 import gsap from 'gsap';
-import { getAssetUrl, ASSET_TYPES, POKEMON_SPRITE_IDS } from '@/logic/services/assetService';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
 import {
   ANIMATED_SPRITE_DATABASE,
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
@@ -101,9 +102,10 @@ export function useBattleCombatantState(
 
   const spriteKey = computed(() => {
     if (!props.pokemon) return '';
-    const id = props.pokemon.id;
+    const formSuffix = props.pokemon.form && props.pokemon.form !== 'normal' ? `-${props.pokemon.form}` : '';
+    const id = `${props.pokemon.id}${formSuffix}`;
     const stringId = String(id).toLowerCase();
-    const num = (POKEMON_SPRITE_IDS as Record<string, number>)[stringId] || id;
+    const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] || id;
     return String(num);
   });
 
@@ -203,7 +205,8 @@ export function useBattleCombatantState(
 
   const imageUrl = computed(() => {
     if (!props.pokemon) return '';
-    return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+    const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id
+    return getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
       isShiny: !!props.pokemon.isShiny,
       isBack: isPlayer.value,
       isAnimated: isAnimated.value,

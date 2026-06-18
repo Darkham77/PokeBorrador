@@ -467,7 +467,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.addLog(startMsg, 'log-info', initialEnemy)
   logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
   
-  handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
+  handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog, ctx.activeBattle.value?.weather?.type)
   
   if (isTrainer || isGym) await ctx.gs.scheduleSave()
 

@@ -16,6 +16,7 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     return validMoves[Math.floor(Math.random() * validMoves.length)] || null
   }
 
+
   // Si es Entrenador o Gimnasio, usa lógica de puntuación
   let bestMove = validMoves[0]
   let maxScore = -1

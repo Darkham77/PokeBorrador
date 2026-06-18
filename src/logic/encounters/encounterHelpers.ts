@@ -2,6 +2,7 @@ import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
@@ -20,12 +21,25 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
   while (rates.length < pool.length) rates.push(10);
  
   // 1. Inyección por Clima (Visitantes y Exclusivos)
-  const wConfig = loc.weather?.[weather];
+  let wConfig = loc.weather?.[weather];
+  
+  // Fallback to weather family if exact weather configuration does not exist
+  if (!wConfig && weather && weather !== 'clear') {
+    const family = getWeatherFamily(weather);
+    if (family && loc.weather?.[family]) {
+      wConfig = loc.weather[family];
+    }
+  }
+
   if (weather && weather !== 'clear' && wConfig) {
     // Especies Exclusivas (Pesos dinámicos o base 5)
     if (wConfig.exclusive) {
       const exclusives = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
       exclusives.forEach(id => {
+        // Castform no debe aparecer en forma soleado si es de noche
+        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
+          return;
+        }
         if (!pool.includes(id)) {
           pool.push(id);
           const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
@@ -38,6 +52,10 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
     if (wConfig.visitors) {
       const visitors = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
       visitors.forEach(id => {
+        // Castform no debe aparecer en forma soleado si es de noche
+        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
+          return;
+        }
         if (!pool.includes(id)) {
           pool.push(id);
           const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
@@ -46,6 +64,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
       });
     }
   }
+
 
   // 2. Apply Event Injections
   activeEvents.forEach(ev => {

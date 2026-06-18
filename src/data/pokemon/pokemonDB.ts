@@ -644,4 +644,19 @@ export const POKEMON_DB = {
     hp: 55, atk: 55, def: 50, spa: 45, spd: 65, catchRate: 45, spe: 55,
     learnset: [{ lv: 1, id: 'tackle', name: 'Placaje', pp: 35 }, { lv: 1, id: 'tail_whip', name: 'Látigo', pp: 30 }, { lv: 8, id: 'sand_attack', name: 'Ataque Arena', pp: 15 }, { lv: 16, id: 'growl', name: 'Gruñido', pp: 40 }]
   },
+  castform: {
+    name: 'Castform', emoji: '🌦️', type: 'normal',
+    hp: 70, atk: 70, def: 70, spa: 70, spd: 70, catchRate: 45, spe: 70,
+    learnset: [
+      { lv: 1, id: 'tackle', name: 'Placaje', pp: 35 },
+      { lv: 10, id: 'water_gun', name: 'Pistola Agua', pp: 25 },
+      { lv: 20, id: 'ember', name: 'Ascuas', pp: 25 },
+      { lv: 30, id: 'powder_snow', name: 'Nieve Polvo', pp: 25 },
+      { lv: 40, id: 'sunny_day', name: 'Día Soleado', pp: 5 },
+      { lv: 40, id: 'rain_dance', name: 'Danza Lluvia', pp: 5 },
+      { lv: 40, id: 'hail', name: 'Granizo', pp: 10 },
+      { lv: 50, id: 'weather_ball', name: 'Meteorobola', pp: 10 }
+    ]
+  }
 };
+

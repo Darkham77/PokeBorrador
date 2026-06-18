@@ -27,7 +27,8 @@ const enemyGender = ref('')
 
 const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
   const parts = fullId.split('_')
-  const spriteIds = POKEMON_SPRITE_IDS as Record<string, number>
+  const spriteIds = POKEMON_SPRITE_IDS as Record<string, number | string>
+
 
   // Try progressively shorter prefixes to find a POKEMON_SPRITE_IDS match
   // e.g. "nidoran_f_1" -> try "nidoran_f_1", "nidoran_f", "nidoran"

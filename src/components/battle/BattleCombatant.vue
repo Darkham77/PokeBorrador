@@ -119,7 +119,8 @@ watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAni
   currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
   if (!props.pokemon) return
 
-  const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+  const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id
+  const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
     isShiny: !!props.pokemon.isShiny,
     isBack: props.side === 'player',
     isAnimated: true,
@@ -132,6 +133,33 @@ watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAni
     animateSpritesheet()
   })
 }, { immediate: true })
+
+// Watcher para la transformación visual (con GSAP)
+watch(
+  [() => props.pokemon?.id, () => props.pokemon?.form],
+  (newVal, oldVal) => {
+    if (oldVal[0] && (newVal[0] !== oldVal[0] || newVal[1] !== oldVal[1])) {
+      const el = spriteRotationRef.value
+      if (!el) return
+      
+      const tl = gsap.timeline()
+      tl.to(el, {
+        scaleY: 1.5,
+        scaleX: 0.15,
+        filter: 'brightness(4) contrast(1.5)',
+        duration: 0.18,
+        ease: 'power2.in'
+      })
+      .to(el, {
+        scaleY: 1,
+        scaleX: 1,
+        filter: 'brightness(1) contrast(1)',
+        duration: 0.25,
+        ease: 'back.out(2)'
+      })
+    }
+  }
+)
 
 const animateSpritesheet = () => {
   if (animTween.value) {

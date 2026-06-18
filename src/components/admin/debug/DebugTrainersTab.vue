@@ -39,7 +39,7 @@ const {
 
 function handleSpriteError(e: Event, id: string, isShiny = false) {
   const target = e.target as HTMLImageElement
-  const num = (POKEMON_SPRITE_IDS as Record<string, number>)[id.toLowerCase()] || 1
+  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[id.toLowerCase()] || 1
   const folder = isShiny ? 'shiny/' : ''
   target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${folder}${num}.png`
 }

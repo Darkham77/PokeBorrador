@@ -27,6 +27,7 @@ Este directorio contiene la documentación técnica completa del juego **Poké V
 | `15_balance_y_probabilidades.md` | Análisis de balance, probabilidades, recomendaciones       |
 | `16_clima.md`                    | Ciclo día/noche, estaciones, efectos de clima y spawns     |
 | `17_clases.md`                   | Sistema de especialidades (Rocket, Cazabichos, etc.)       |
+| `18_castform.md`                 | Mecánicas de cambio de forma de Castform (Forecast, etc.)  |
 
 ---
 

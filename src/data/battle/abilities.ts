@@ -62,7 +62,9 @@ export const ABILITY_DATA = {
   'Foco interno': { desc: '🚫 Evita que el Pokémon pueda retroceder.' },
   'Rivalidad': { desc: '▲ Aumenta el Ataque (+25%) contra rivales del mismo género.' },
   'Muro Mágico': { desc: '🚫 Protege de cualquier daño indirecto (clima, veneno, etc.).' },
+  'Predicción': { desc: '• Modifica la forma y tipo de Castform según el clima activo en combate.' }
 };
+
 
 
 export const POKEMON_ABILITIES = {
@@ -145,5 +147,7 @@ export const POKEMON_ABILITIES = {
   mewtwo: ['Presión'], mew: ['Sincronía'],
   // Babies
   pichu: ['Electricidad estática'], magby: ['Cuerpo Llama'], elekid: ['Electricidad estática'], 
-  cleffa: ['Cura Natural'], igglybuff: ['Cura Natural'], togepi: ['Foco interno']
+  cleffa: ['Cura Natural'], igglybuff: ['Cura Natural'], togepi: ['Foco interno'],
+  castform: ['Predicción']
 };
+

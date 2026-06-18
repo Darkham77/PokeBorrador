@@ -4,6 +4,7 @@ import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/ba
 import type { BattleContext } from '@/types/battle/battleContext'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
+import { updateCastformForm } from './battleFlow.ts'
 
 /**
  * Handles the turn logic for a single move execution.
@@ -15,6 +16,12 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   if (!p || !e) {
     logger.warn('BattleTurn', 'Aborting turn: Player or Enemy is null', { p, e })
     return
+  }
+
+  // Transformar Castform antes de decidir y evaluar movimientos de IA
+  if (store.activeBattle.value) {
+    updateCastformForm(p, store.activeBattle.value.weather?.type, store.addLog)
+    updateCastformForm(e, store.activeBattle.value.weather?.type, store.addLog)
   }
 
   const fsm = store.fsm

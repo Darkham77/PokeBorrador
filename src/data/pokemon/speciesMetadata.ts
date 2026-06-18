@@ -1510,5 +1510,12 @@ export const SPECIES_METADATA = {
     "height": 0.6,
     "weight": 5,
     "description": "Este Pokémon vaga por el tiempo. La hierba y los árboles crecen por los campos por donde pasa."
+  },
+  "castform": {
+    "category": "Pokémon Clima",
+    "height": 0.3,
+    "weight": 0.8,
+    "description": "Su tipo y aspecto físico varían según el clima del momento. Los cambios climáticos alteran sus moléculas."
   }
 };
+

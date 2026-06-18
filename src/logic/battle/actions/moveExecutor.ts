@@ -1,6 +1,6 @@
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import { canAttack } from '@/logic/battle/battleFlow'
+import { canAttack, updateCastformForm } from '@/logic/battle/battleFlow'
 import { dispatchMoveEffect } from './actionRegistry.ts'
 import { gameBus } from '@/logic/events/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
@@ -19,6 +19,12 @@ export async function executeMoveAction(
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
   if (!p || !e) return
+
+  // Actualización al inicio del turno del atacante (antes de pegar)
+  if (store.activeBattle.value) {
+    updateCastformForm(p, store.activeBattle.value.weather?.type, store.addLog)
+    updateCastformForm(e, store.activeBattle.value.weather?.type, store.addLog)
+  }
 
   const attacker = side === 'player' ? p : e
   const defender = side === 'player' ? e : p
@@ -251,6 +257,10 @@ export async function executeMoveAction(
         store.addLog,
         store
       )
+      
+      // Si el efecto del movimiento modificó el clima, actualizamos a Castform inmediatamente en este mismo turno
+      updateCastformForm(p, store.activeBattle.value.weather?.type, store.addLog)
+      updateCastformForm(e, store.activeBattle.value.weather?.type, store.addLog)
     }
   } catch (err) {
     logger.error('Battle', `Error in executeMoveAction: ${(err as Error).message}`)

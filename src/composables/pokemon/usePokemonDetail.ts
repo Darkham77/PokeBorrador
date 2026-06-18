@@ -4,7 +4,7 @@ import type { MaybeRefOrGetter } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/logic/constants/pokedexConstants'
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
 import { MOVE_DATA } from '@/data/battle/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -63,11 +63,11 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!speciesRaw.value) return null
     const s = speciesRaw.value
     const types = Array.isArray(s.type) ? s.type : [s.type]
-    const nationalId = POKEMON_SPRITE_IDS[targetSpeciesId.value] || 0
+    const nationalId = String((POKEMON_SPRITE_IDS as Record<string, number | string>)[targetSpeciesId.value] || 0)
     
     return {
       ...s,
-      nationalId: nationalId.toString(),
+      nationalId,
       type: types,
       stats: {
         hp: s.hp || 0,

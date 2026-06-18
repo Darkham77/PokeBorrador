@@ -2,6 +2,8 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
+import { getWeatherFamily } from '../../../src/data/system/weatherFamilies.ts';
+
 
 const BANNED_INDOORS = [
   'sun', 'intense_sun', 
@@ -137,6 +139,7 @@ describe('Weather Integrity & Biome Restrictions', () => {
         
         const archaeology = map.archaeology as { pool?: string[] } | undefined;
         if (archaeology?.pool) {
+          assert.ok(Array.isArray(archaeology.pool));
           archaeology.pool.forEach(id => nativeSpawns.add(id));
         }
 
@@ -159,6 +162,74 @@ describe('Weather Integrity & Biome Restrictions', () => {
         }
       });
 
+      // Validar las reglas climáticas de Castform específicas si la ruta tiene configurado clima
+      test('Castform weather integration validation', () => {
+        // 1. Castform no debe aparecer en interiores o cuevas
+        if (isIndoors || isCave) {
+          const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+          if (weather) {
+            Object.entries(weather).forEach(([weatherType, cfg]) => {
+              const hasCastformInVisitors = cfg.visitors ? (
+                Array.isArray(cfg.visitors) ? cfg.visitors.includes('castform') : 'castform' in cfg.visitors
+              ) : false;
+              const hasCastformInExclusives = cfg.exclusive ? (
+                Array.isArray(cfg.exclusive) ? cfg.exclusive.includes('castform') : 'castform' in cfg.exclusive
+              ) : false;
+              assert.ok(!hasCastformInVisitors, `Castform must not be present as visitor in indoors/cave map ${map.id} under weather "${weatherType}"`);
+              assert.ok(!hasCastformInExclusives, `Castform must not be present as exclusive in indoors/cave map ${map.id} under weather "${weatherType}"`);
+            });
+          }
+          return;
+        }
+
+        const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+        if (!weather) return;
+
+        Object.entries(weather).forEach(([weatherType, cfg]) => {
+          const family = getWeatherFamily(weatherType);
+          if (!family) return;
+
+          const hasCastformInVisitors = cfg.visitors ? (
+            Array.isArray(cfg.visitors) ? cfg.visitors.includes('castform') : 'castform' in cfg.visitors
+          ) : false;
+
+          const hasCastformInExclusives = cfg.exclusive ? (
+            Array.isArray(cfg.exclusive) ? cfg.exclusive.includes('castform') : 'castform' in cfg.exclusive
+          ) : false;
+
+          if (family === 'rain') {
+            // En lluvia Castform debe ser exclusivo obligatoriamente
+            assert.ok(hasCastformInExclusives, `Castform must be present as exclusive in rain weather "${weatherType}" on map ${map.id}`);
+            assert.ok(!hasCastformInVisitors, `Castform must not be visitor in rain weather "${weatherType}" on map ${map.id}`);
+          } else if (family === 'sun' || family === 'snow') {
+            // Verificamos si es un clima soleado y si es posible por la noche en este mapa
+            let isSunnyAtNight = false;
+            if (family === 'sun') {
+              const weatherData = TYPED_WEATHER[mapId];
+              if (weatherData) {
+                Object.values(weatherData).forEach(seasonData => {
+                  const nightTable = seasonData['night'];
+                  if (nightTable && nightTable?.[weatherType] !== undefined && nightTable[weatherType] > 0) {
+                    isSunnyAtNight = true;
+                  }
+                });
+              }
+            }
+
+            if (isSunnyAtNight) {
+              // Si es posible de noche, Castform NO debe estar para evitar aparecer en forma soleado de noche
+              assert.ok(!hasCastformInVisitors, `Castform must not be present as visitor in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`);
+              assert.ok(!hasCastformInExclusives, `Castform must not be present as exclusive in sunny weather "${weatherType}" because it can occur at night on map ${map.id}`);
+            } else {
+              // En sol/nieve normal Castform debe ser visitante obligatoriamente
+              assert.ok(hasCastformInVisitors, `Castform must be present as visitor in sun/snow weather "${weatherType}" on map ${map.id}`);
+              assert.ok(!hasCastformInExclusives, `Castform must not be exclusive in sun/snow weather "${weatherType}" on map ${map.id}`);
+            }
+          }
+        });
+      });
+
     });
   });
 });
+

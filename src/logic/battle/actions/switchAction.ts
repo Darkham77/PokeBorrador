@@ -79,7 +79,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   }
   
   if (activeBattle.value && activeBattle.value.enemy) {
-    handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
+    handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog, activeBattle.value.weather?.type)
   }
   persistBattle()
   

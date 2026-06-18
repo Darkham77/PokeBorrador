@@ -1,7 +1,7 @@
 import { ref, computed, type Ref } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_SPRITE_IDS } from '@/logic/constants/pokedexConstants'
+import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { GameState, PokedexItem } from '@/types/system/game'
 
@@ -33,7 +33,7 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<string[]>, _cur
       const data = pokemonDataProvider.getPokemonData(id) || { name: id }
       
       // Use POKEMON_SPRITE_IDS as the authority for the national number
-      const nationalNum = POKEMON_SPRITE_IDS[id] || 0
+      const nationalNum = parseInt(String((POKEMON_SPRITE_IDS as Record<string, number | string>)[id] || 0))
       
       return {
         id,

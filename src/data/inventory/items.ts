@@ -264,43 +264,43 @@ export const SHOP_ITEMS = [
     desc: 'Permite cambiar la habilidad de un Pokémon si tiene más de una.'
   },
   {
-    id: 'ticket_shiny', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Shiny', icon: '✨', price: 150000, bcPrice: 5000, warPrice: 500, unlockLv: 15, tier: 'legend', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ticket_shiny', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Shiny', icon: '✨', price: 150000, bcPrice: 5000, warPrice: 500, unlockLv: 15, tier: 'legend', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta la probabilidad de encontrar Pokémon Variocolor durante 1 hora.'
   },
   {
-    id: 'amulet_coin', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/amulet_coin', name: 'Moneda Amuleto', icon: '💰', price: 75000, bcPrice: 2500, warPrice: 250, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'amulet_coin', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/amulet_coin', name: 'Moneda Amuleto', icon: '💰', price: 75000, bcPrice: 2500, warPrice: 250, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Duplica el dinero ganado en batallas durante 1 hora.'
   },
   {
-    id: 'ticket_safari', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Safari', icon: '🦁', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ticket_safari', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Safari', icon: '🦁', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Acceso especial o mejoras en la Zona Safari durante 30 min.'
   },
   {
-    id: 'ticket_cerulean', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Cueva Celeste', icon: '🌌', price: 120000, bcPrice: 4000, warPrice: 400, unlockLv: 25, tier: 'legend', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ticket_cerulean', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Cueva Celeste', icon: '🌌', price: 120000, bcPrice: 4000, warPrice: 400, unlockLv: 25, tier: 'legend', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta la probabilidad de raros en la Cueva Celeste durante 30 min.'
   },
   {
-    id: 'incense_fire', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fuego', icon: '🔥', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_fire', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fuego', icon: '🔥', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Fuego durante 30 min.'
   },
   {
-    id: 'incense_water', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Agua', icon: '💧', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_water', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Agua', icon: '💧', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Agua durante 30 min.'
   },
   {
-    id: 'incense_grass', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Planta', icon: '🌿', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_grass', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Planta', icon: '🌿', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Planta durante 30 min.'
   },
   {
-    id: 'incense_normal', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Normal', icon: '⚪', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_normal', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Normal', icon: '⚪', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Normal durante 30 min.'
   },
   {
-    id: 'incense_ghost', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fantasma', icon: '👻', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_ghost', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fantasma', icon: '👻', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Fantasma durante 30 min.'
   },
   {
-    id: 'incense_psychic', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Psíquico', icon: '🔮', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_psychic', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Psíquico', icon: '🔮', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min.'
   },
   {
@@ -308,55 +308,55 @@ export const SHOP_ITEMS = [
     desc: 'Aumenta los PP máximos de un movimiento en un 20%.'
   },
   {
-    id: 'lucky_egg', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/lucky_egg', name: 'Huevo Suerte Pequeño', icon: '🥚', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 12, tier: 'legend', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'lucky_egg', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/lucky_egg', name: 'Huevo Suerte Pequeño', icon: '🥚', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 12, tier: 'legend', type: 'booster', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta la EXP ganada en un 50% durante 30 minutos.'
   },
   {
-    id: 'repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/repel', name: 'Repelente', icon: '🚫', price: 20000, bcPrice: 500, warPrice: 67, unlockLv: 1, tier: 'common', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/repel', name: 'Repelente', icon: '🚫', price: 20000, bcPrice: 500, warPrice: 67, unlockLv: 1, tier: 'common', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 10 min.'
   },
   {
-    id: 'super_repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/super_repel', name: 'Superrepelente', icon: '🚫', price: 40000, bcPrice: 1000, warPrice: 134, unlockLv: 3, tier: 'rare', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'super_repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/super_repel', name: 'Superrepelente', icon: '🚫', price: 40000, bcPrice: 1000, warPrice: 134, unlockLv: 3, tier: 'rare', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 20 min.'
   },
   {
-    id: 'max_repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/max_repel', name: 'Máximo Repelente', icon: '🚫', price: 60000, bcPrice: 1500, warPrice: 200, unlockLv: 22, tier: 'epic', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'max_repel', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/max_repel', name: 'Máximo Repelente', icon: '🚫', price: 60000, bcPrice: 1500, warPrice: 200, unlockLv: 22, tier: 'epic', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.'
   },
   {
-    id: 'fishing_rod', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_0', name: 'Caña de pescar', icon: '🎣', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'fishing_rod', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_0', name: 'Caña de pescar', icon: '🎣', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube mucho la pesca por 20 min. Ver % exacto en el mapa.'
   },
   {
-    id: 'fishing_rod_good', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_1', name: 'Caña Buena', icon: '🎣', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'fishing_rod_good', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_1', name: 'Caña Buena', icon: '🎣', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la pesca por 40 min y bonifica la aparición de Pokémon raros (+500 pts).'
   },
   {
-    id: 'fishing_rod_super', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_2', name: 'Supercaña', icon: '🎣', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'fishing_rod_super', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/fishing_rod_2', name: 'Supercaña', icon: '🎣', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la pesca por 60 min, bonifica raros (+1000 pts) y aumenta la chance de Shiny x1.5.'
   },
   {
-    id: 'pickaxe', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_0', name: 'Pico de excavación', icon: '⛏️', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'pickaxe', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_0', name: 'Pico de excavación', icon: '⛏️', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 20 min. Ver % exacto en el mapa.'
   },
   {
-    id: 'pickaxe_silver', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_1', name: 'Pico Bueno', icon: '⛏️', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'pickaxe_silver', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_1', name: 'Pico Bueno', icon: '⛏️', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 40 min. Bonifica minerales y gemas (+500 pts).'
   },
   {
-    id: 'pickaxe_gold', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_2', name: 'Superpico', icon: '⛏️', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'pickaxe_gold', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/pickaxe_2', name: 'Superpico', icon: '⛏️', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 60 min. Bonifica minerales y gemas (+1000 pts).'
   },
   {
-    id: 'brush', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_0', name: 'Pincel de excavación', icon: '🖌️', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'brush', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_0', name: 'Pincel de excavación', icon: '🖌️', price: 15000, bcPrice: 1500, warPrice: 50, unlockLv: 1, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 20 min. Bonifica fósiles.'
   },
   {
-    id: 'brush_good', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_1', name: 'Pincel Bueno', icon: '🖌️', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'brush_good', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_1', name: 'Pincel Bueno', icon: '🖌️', price: 35000, bcPrice: 3500, warPrice: 117, unlockLv: 10, tier: 'rare', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 40 min. Bonifica fósiles (+500 pts).'
   },
   {
-    id: 'brush_super', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_2', name: 'Superpincel', icon: '🖌️', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'brush_super', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/brush_2', name: 'Superpincel', icon: '🖌️', price: 65000, bcPrice: 6500, warPrice: 217, unlockLv: 20, tier: 'epic', type: 'usable', isGlobal: true, showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Sube la arqueología por 60 min. Bonifica fósiles (+1000 pts).'
   },
   {
@@ -508,15 +508,15 @@ export const SHOP_ITEMS = [
     desc: 'Equipado: Potencia ataques de tipo Fantasma (+20%).'
   },
   {
-    id: 'ticket_articuno', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Articuno', icon: '❄️', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ticket_articuno', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Articuno', icon: '❄️', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta la probabilidad de que aparezca Articuno en las Islas Espuma (30 min).'
   },
   {
-    id: 'ticket_mewtwo', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Mewtwo', icon: '✨', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'legend', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ticket_mewtwo', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/eon_ticket', name: 'Ticket Mewtwo', icon: '✨', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'legend', type: 'booster', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Aumenta la probabilidad de que aparezca Mewtwo en la Cueva Celeste (30 min).'
   },
   {
-    id: 'iv_scanner', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/poke_radar', name: 'Escáner de IVs', icon: '🔍', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'iv_scanner', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/poke_radar', name: 'Escáner de IVs', icon: '🔍', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', isGlobal: true, showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Revela los IVs totales de los Pokémon salvajes durante 1 hora.'
   },
   {

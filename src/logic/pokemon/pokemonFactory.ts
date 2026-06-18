@@ -120,8 +120,12 @@ export function sanitizePokemon(p: Pokemon): void {
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
   const base = pokemonDataProvider.getPokemonData(p.id);
   if (base) {
-    p.type = base.type;
-    p.type2 = base.type2;
+    // Si es Castform y tiene una forma activa diferente de normal, no sobreescribir su tipo con el base de la base de datos (que es siempre normal)
+    const isCastformForm = p.id === 'castform' && p.form && p.form !== 'normal';
+    if (!isCastformForm) {
+      p.type = base.type;
+      p.type2 = base.type2;
+    }
     p.isFloating = base.isFloating;
     p.emoji = base.emoji || p.emoji;
   }

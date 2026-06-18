@@ -238,9 +238,11 @@ const {
 
 const computedWeather = computed(() => {
   if (battle.value?.isGym) return 'clear'
-  // Fuente de verdad visual: siempre usar el clima ACTUAL del mapa (igual que la vista del mapa).
-  // El campo battle.weather.type sigue siendo la referencia mecánica para el motor de combate.
-  // Prioridad: Clima global de eventos > Clima determinístico de la ruta actual
+  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1
+  if (battle.value?.weather && battle.value.weather.turns !== -1) {
+    return battle.value.weather.visual || battle.value.weather.type
+  }
+  // De lo contrario, cae en el clima global o del mapa
   if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
