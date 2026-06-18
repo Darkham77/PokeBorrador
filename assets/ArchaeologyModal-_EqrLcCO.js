@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-LtHunc8G.js";export{e as default};

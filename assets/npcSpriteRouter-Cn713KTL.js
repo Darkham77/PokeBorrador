@@ -1,0 +1,1 @@
+import{n as e,t}from"./npcSpriteRouter-DVn7AvOD.js";export{t as classifyNpcArchetype,e as getSpritesForArchetype};

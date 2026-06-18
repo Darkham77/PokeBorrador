@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-CMt1uw_C.js";export{e as default};

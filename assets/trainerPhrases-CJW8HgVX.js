@@ -1,0 +1,1 @@
+import{t as e}from"./game-data-Ccu5Ob-t.js";export{e as getRandomQuoteForTrainer};
