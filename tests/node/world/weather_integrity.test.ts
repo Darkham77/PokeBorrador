@@ -2,7 +2,6 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
-import { getWeatherFamily } from '../../../src/data/system/weatherFamilies.ts';
 
 
 const BANNED_INDOORS = [
@@ -186,8 +185,9 @@ describe('Weather Integrity & Biome Restrictions', () => {
         if (!weather) return;
 
         Object.entries(weather).forEach(([weatherType, cfg]) => {
-          const family = getWeatherFamily(weatherType);
-          if (!family) return;
+          const isExclusiveWeather = ['rain', 'storm', 'thunderstorm', 'heavy_rain', 'hail', 'blizzard', 'coldwave'].includes(weatherType);
+          const isVisitorWeather = ['sun', 'intense_sun', 'snow', 'cold'].includes(weatherType);
+          if (!isExclusiveWeather && !isVisitorWeather) return;
 
           const hasCastformInVisitors = cfg.visitors ? (
             Array.isArray(cfg.visitors) ? cfg.visitors.includes('castform') : 'castform' in cfg.visitors
@@ -197,14 +197,14 @@ describe('Weather Integrity & Biome Restrictions', () => {
             Array.isArray(cfg.exclusive) ? cfg.exclusive.includes('castform') : 'castform' in cfg.exclusive
           ) : false;
 
-          if (family === 'rain') {
-            // En lluvia Castform debe ser exclusivo obligatoriamente
-            assert.ok(hasCastformInExclusives, `Castform must be present as exclusive in rain weather "${weatherType}" on map ${map.id}`);
-            assert.ok(!hasCastformInVisitors, `Castform must not be visitor in rain weather "${weatherType}" on map ${map.id}`);
-          } else if (family === 'sun' || family === 'snow') {
+          if (isExclusiveWeather) {
+            // En clima severo/lluvia Castform debe ser exclusivo obligatoriamente
+            assert.ok(hasCastformInExclusives, `Castform must be present as exclusive in rain/hail weather "${weatherType}" on map ${map.id}`);
+            assert.ok(!hasCastformInVisitors, `Castform must not be visitor in rain/hail weather "${weatherType}" on map ${map.id}`);
+          } else if (isVisitorWeather) {
             // Verificamos si es un clima soleado y si es posible por la noche en este mapa
             let isSunnyAtNight = false;
-            if (family === 'sun') {
+            if (weatherType === 'sun' || weatherType === 'intense_sun') {
               const weatherData = TYPED_WEATHER[mapId];
               if (weatherData) {
                 Object.values(weatherData).forEach(seasonData => {

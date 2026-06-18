@@ -288,4 +288,5 @@ export const MOVE_DATA: Record<string, MoveBaseData> = {
   'skill_swap': { id: 'skill_swap', name: 'Intercambio',  power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 10, effect: 'skill_swap'  },
   'snatch': { id: 'snatch', name: 'Robo',  power: 0, acc: 100, type: 'dark', cat: 'status', pp: 10, effect: 'snatch'  },
   'overheat': { id: 'overheat', name: 'Sofoco',  power: 130, acc: 90, type: 'fire', cat: 'special', pp: 5, effect: 'stat_down_self_spa_2'  },
+  'weather_ball': { id: 'weather_ball', name: 'Meteorobola', power: 50, acc: 100, type: 'normal', cat: 'special', pp: 10 }
 };

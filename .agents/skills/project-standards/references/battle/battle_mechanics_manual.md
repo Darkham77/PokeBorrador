@@ -98,7 +98,16 @@ The available contact abilities are:
 - **Flame Body**: Burn.
 - **Effect Spore**: Randomly causes sleep, paralysis, or poison.
 
-### 4. Special Offensive
+### 4. Forecast (Predicción) & Weather Families
+
+- **Trigger Timing**: Forecast checks and updates Castform's form immediately at the beginning of its turn (before choosing or executing a move) and right after any weather-changing move is executed.
+- **Weather Families Mapping**: Castform only transforms under specific weather family groups resolved via `getWeatherFamily`:
+  - **Sun Family** (e.g., `sun`, `heatwave`, `intense_sun`): Sunny Form (Fire type).
+  - **Rain Family** (e.g., `rain`, `storm`, `heavy_rain`): Rainy Form (Water type).
+  - **Snow Family** (e.g., `snow`, `cold`, `hail`, `blizzard`, `coldwave`): Snowy Form (Ice type).
+- **Default State**: Under any other weather condition (e.g., `wind`, `strong_winds`, `fog`, `mist`, `sandstorm`, `dust_storm` or clear), Castform returns to its `normal` form (Normal type).
+
+### 5. Special Offensive
 
 ---
 

@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables'
-import { WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
+import { WEATHER_REGISTRY, getMechanicalWeather } from '@/logic/weather/weatherRegistry'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import { getWeatherFamily } from '@/data/system/weatherFamilies'
 
 describe('Weather tables coverage and integrity', () => {
   it('should ensure all registered weather conditions are used at least once in the map tables', () => {
@@ -223,7 +224,11 @@ describe('Weather visitor and exclusive type compatibility', () => {
 
       const weatherCfg = map.weather || {}
       possibleWeathers.forEach(wKey => {
-        const cfg = weatherCfg[wKey]
+        // Obtenemos la familia mecánica del clima (por ej. si es 'heatwave' se puede configurar bajo 'sun')
+        const family = getWeatherFamily(wKey) || getMechanicalWeather(wKey)
+        
+        // Un clima está configurado si tiene asignados encuentros en su ID específico o en su familia climática
+        const cfg = weatherCfg[wKey] || (family ? weatherCfg[family] : undefined)
         const hasTerrestrial = cfg?.visitors && Object.keys(cfg.visitors).length > 0
         const hasTerrestrialExcl = cfg?.exclusive && Object.keys(cfg.exclusive).length > 0
         const hasFishing = cfg?.fishingVisitors && Object.keys(cfg.fishingVisitors).length > 0

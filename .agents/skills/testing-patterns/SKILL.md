@@ -172,6 +172,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | **Asset Resolution Parity** | When migrating assets from external to local, ALWAYS update the corresponding unit tests (e.g., `assets.spec.ts`) to verify the new local path resolution and `.webp` extension. |
 | **Sanitization & Recovery** | For "Self-Healing" systems (e.g., legacy data repair), ALWAYS add unit tests that simulate partially corrupt objects to verify successful recovery and prevent reference errors. |
 | **TypeScript Global Declarations** | Const globals defined in config files (like `__APP_VERSION__` in `vite.config.ts`) must be explicitly declared in tests using `declare const VAR: type;` to satisfy the TypeScript compiler during pre-commit checks (`vue-tsc --noEmit`). |
+| **Static Imports over Dynamic Require** | In ESM-based test graphs (especially with Vitest or Node.js native test runners containing top-level await), dynamic `require()` statements inside loop blocks or helper files will trigger compiler/execution crashes. Use static `import` at the top of the test file instead. |
+| **Decoupling Integrity Tests** | Verification tests validating static data integrity (e.g., map configurations) should check against explicit/static registries rather than relying on runtime combat-mechanic helpers (which are subject to dynamic rule changes) to avoid flaky assertions. |
 
 ---
 

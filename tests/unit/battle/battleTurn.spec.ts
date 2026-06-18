@@ -15,7 +15,8 @@ vi.mock('@/logic/battle/battleEngine', () => ({
 }))
 
 vi.mock('@/logic/battle/battleFlow', () => ({
-  canAttack: vi.fn(() => true)
+  canAttack: vi.fn(() => true),
+  updateCastformForm: vi.fn()
 }))
 
 vi.mock('@/logic/pokemon/pokemonFactory', () => ({

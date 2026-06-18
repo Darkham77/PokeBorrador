@@ -4,7 +4,7 @@ import { WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../../logic/weather/weathe
 // Extract dynamically from WEATHER_REGISTRY matching the mechanical weather types
 export const WEATHER_FAMILIES: Record<string, string[]> = {
   [WEATHER_MECHANICAL.RAIN]: Object.keys(WEATHER_REGISTRY).filter(
-    key => WEATHER_REGISTRY[key]?.mech === WEATHER_MECHANICAL.RAIN || WEATHER_REGISTRY[key]?.mech === WEATHER_MECHANICAL.HAIL || key === 'thunderstorm'
+    key => WEATHER_REGISTRY[key]?.mech === WEATHER_MECHANICAL.RAIN || key === 'thunderstorm'
   ),
   [WEATHER_MECHANICAL.SUN]: Object.keys(WEATHER_REGISTRY).filter(
     key => WEATHER_REGISTRY[key]?.mech === WEATHER_MECHANICAL.SUN
