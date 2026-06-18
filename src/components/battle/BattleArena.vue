@@ -92,7 +92,7 @@ const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps as unk
 const weatherTooltipDescription = computed(() => {
   const baseModifiers = getWeatherModifiersDescription(computedWeather.value)
   const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${baseModifiers ? `\n${baseModifiers}` : ''}`
-  if (!isDebugActive.value) return baseDesc
+  if (!debugStore.isAdminOrOffline) return baseDesc
 
   const locId = battle.value?.locationId || 'route1'
   const loc = mapsList.value.find(m => m.id === locId)

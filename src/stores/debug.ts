@@ -70,6 +70,12 @@ export const useDebugStore = defineStore('debug', () => {
     return auth.sessionMode === 'offline'
   })
 
+  // True for offline mode OR online admins — used to show advanced info (tooltips, spawn details)
+  // without requiring the full debug panel (which needs __VITE_DEBUG__ active)
+  const isAdminOrOffline = computed(() => {
+    return auth.sessionMode === 'offline' || auth.user?.role === 'admin'
+  })
+
   function securityCheck() {
     if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
       logger.error('SECURITY', 'Unauthorized debug access detected. Banning user and force logout.')
@@ -177,6 +183,7 @@ export const useDebugStore = defineStore('debug', () => {
   return {
     tools,
     canAccess,
+    isAdminOrOffline,
     securityCheck,
     register,
     unregister,
