@@ -60,3 +60,7 @@ refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD
 - Messages without a bulleted list for changes involving 2+ files.
 - Vague descriptions like "minor changes" or "various fixes" without specifying the technical "what".
 - Commit messages written from memory instead of reviewing the actual `git diff`.
+
+## Environment Notes
+
+- **PowerShell command chaining**: PowerShell does NOT support && as a command separator (it is a ParserError). Always use ; to chain sequential commands (e.g., git add -A; git status). Note that ; runs the second command unconditionally — if conditional execution is needed, use if ( -eq 0) { ... }.

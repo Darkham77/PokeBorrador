@@ -121,3 +121,13 @@ To prevent resource leakages and redundant thread compilation overhead in views 
 
 - **Canvas Preservation via v-show**: When a view hosting an OffscreenCanvas container goes off-screen (e.g. scrolled out of the viewport), prefer using `v-show` instead of `v-if` to hide it. This keeps the `<canvas>` DOM element mounted and preserves the transferred canvas rendering context, avoiding the need to perform a full thread reconstruction when returning to view.
 - **Worker Bucle Pausing**: Do not terminate workers dynamically on high-frequency visibility events (like scrolling). Instead, implement `PAUSE` and `RESUME` message handlers within the Web Worker to stop the `requestAnimationFrame` render loop while off-screen and restart it dynamically when visible, completely avoiding redundant `new Worker()` instantations and compilation Blobs.
+
+---
+
+## 10. SVG Atmospheric Effects: Full-Screen Coverage
+
+For SVG-based atmospheric effects (e.g., lightning bolts, storm flashes) that must start from the very top of their parent container:
+
+- **Use preserveAspectRatio="none"**: Without this attribute, the SVG viewport scales uniformly and may introduce top/bottom padding, causing effects to appear detached from the screen edge.
+- **Scope is narrow**: Only apply to SVGs whose sole job is covering the full parent height (e.g., AtmosphereLayer lightning). Never apply to game sprites, icons, or any SVG with meaningful proportions.
+- **Other effects unaffected**: Modifying preserveAspectRatio on one SVG does not affect sibling CSS overlays, canvas layers, or other weather FX — they remain independent.

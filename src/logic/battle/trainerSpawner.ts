@@ -3,7 +3,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 
 // Configuración genérica por defecto de probabilidades y pesos
-export const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
+const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
   rival: 0.001,      // 0.1% de probabilidad absoluta
   policeman: 0.0,    // 0% (solo policía con criminalidad, o vía customChances/overrides)
   caza_bichos: 1.0,
@@ -30,7 +30,7 @@ export const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
  * Los chances absolutos (valores muy pequeños o específicos como rival y policeman) se evalúan primero.
  * El resto de la probabilidad se distribuye proporcionalmente según sus pesos relativos.
  */
-export function selectTrainerArchetype(
+function selectTrainerArchetype(
   customChances?: Partial<Record<TrainerTypeKey, number>>,
   isMaxCriminality = false
 ): TrainerTypeKey {
