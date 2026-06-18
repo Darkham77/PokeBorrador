@@ -139,6 +139,13 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
         e.originalDitto = undefined;
       }
 
+      // Castform: always revert to Normal form on capture (like Ditto)
+      if (e.id === 'castform' && e.form && e.form !== 'normal') {
+        e.form = 'normal';
+        e.type = 'normal';
+        e.type2 = undefined;
+      }
+
       // Captured!
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')

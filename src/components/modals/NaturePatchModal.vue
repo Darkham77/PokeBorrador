@@ -2,14 +2,21 @@
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { NATURES } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+const inventoryStore = useInventoryStore()
 
-const naturePokemon = computed(() => uiStore.activePokemonForNature)
+const naturePokemon = computed(() => {
+  const target = uiStore.activePokemonForNature
+  if (!target) return null
+  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
+  return list[target.index] ?? null
+})
 const sortedNatures = [...NATURES].sort()
 
 const handleApplyNature = (nature: string) => {
@@ -22,6 +29,8 @@ const handleApplyNature = (nature: string) => {
       recalcPokemonStats(naturePokemon.value)
       uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${nature}!`, '✨')
     }
+    // Consume only after confirming
+    inventoryStore.removeItem('nature_patch', 1)
     uiStore.isNaturePatchOpen = false
     uiStore.activePokemonForNature = null
     gameStore.save()

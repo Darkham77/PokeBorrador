@@ -2,13 +2,20 @@
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+const inventoryStore = useInventoryStore()
 
-const abilityPokemon = computed(() => uiStore.activePokemonForAbility)
+const abilityPokemon = computed(() => {
+  const target = uiStore.activePokemonForAbility
+  if (!target) return null
+  const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
+  return list[target.index] ?? null
+})
 const availableAbilities = computed<string[]>(() => {
   if (!abilityPokemon.value) return []
   return pokemonDataProvider.getSpeciesAbilities(abilityPokemon.value.id)
@@ -23,6 +30,8 @@ const handleApplyAbility = (ability: string) => {
   
   const old = abilityPokemon.value.ability
   abilityPokemon.value.ability = ability
+  // Consume only after confirming
+  inventoryStore.removeItem('ability_pill', 1)
   uiStore.notify(`¡Habilidad cambiada: ${old} → ${ability}!`, '💊')
   uiStore.isAbilityPillOpen = false
   uiStore.activePokemonForAbility = null

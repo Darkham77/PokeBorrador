@@ -208,4 +208,11 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.snatching = false
   poke.tormentActive = false
   poke.bound = 0
+
+  // Castform: form is battle-volatile — always revert to Normal on exit
+  if (poke.id === 'castform' && poke.form && poke.form !== 'normal') {
+    poke.form = 'normal'
+    poke.type = 'normal'
+    poke.type2 = undefined
+  }
 }

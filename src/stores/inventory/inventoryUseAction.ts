@@ -108,15 +108,18 @@ export function executeUseItem(
         });
       }
     } else if (result.resultType === 'nature_patch') {
-      uiStore.activePokemonForNature = pokemon;
+      uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
       uiStore.isNaturePatchOpen = true;
+      shouldConsumeImmediately = false; // Handled by NaturePatchModal on confirm
     } else if (result.resultType === 'pp_up' || result.resultType === 'pp_max') {
-      uiStore.activePokemonForPPUp = pokemon;
+      uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
       uiStore.activeItemForPPUp = itemId;
       uiStore.isPPUpOpen = true;
+      shouldConsumeImmediately = false; // Handled by PPUpModal on confirm
     } else if (result.resultType === 'ability_pill') {
-      uiStore.activePokemonForAbility = pokemon;
+      uiStore.activePokemonForAbility = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
       uiStore.isAbilityPillOpen = true;
+      shouldConsumeImmediately = false; // Handled by AbilityPillModal on confirm
     }
 
     if (shouldConsumeImmediately) {

@@ -122,10 +122,10 @@ export const useUIStore = defineStore('ui', () => {
   const evolutionData = ref<EvolutionData | null>(null)
   const currentMoveToLearn = ref<LearnItem | null>(null)
   const learnQueue = ref<LearnItem[]>([])
-  const activePokemonForNature = ref<Pokemon | null>(null)
-  const activePokemonForPPUp = ref<Pokemon | null>(null)
+  const activePokemonForNature = ref<{ context: 'team' | 'box'; index: number } | null>(null)
+  const ppUpTarget = ref<{ context: 'team' | 'box'; index: number } | null>(null)
   const activeItemForPPUp = ref<string | null>(null)
-  const activePokemonForAbility = ref<Pokemon | null>(null)
+  const activePokemonForAbility = ref<{ context: 'team' | 'box'; index: number } | null>(null)
   
   // Detalle data
   const selectedPokemon = ref<Pokemon | null>(null)
@@ -452,7 +452,7 @@ export const useUIStore = defineStore('ui', () => {
     isNaturePatchOpen,
     activePokemonForNature,
     isPPUpOpen,
-    activePokemonForPPUp,
+    activePokemonForPPUp: ppUpTarget,
     activeItemForPPUp,
     isAbilityPillOpen,
     activePokemonForAbility,
