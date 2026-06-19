@@ -4,8 +4,6 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 
 // Subcomponents

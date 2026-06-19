@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import MapCard from './MapCard.vue'
-import { getEncounterPool } from '@/logic/encounters/encounters'
 import { useEventStore } from '@/stores/events'
 import { getGuardianData } from '@/logic/war/guardianEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'

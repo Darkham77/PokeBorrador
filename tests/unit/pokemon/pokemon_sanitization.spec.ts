@@ -167,7 +167,7 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
 describe('Player State Buff Timer Sanitization', () => {
   it('should sanitize active buff timers that exceed the maximum limit of the database item descriptions', () => {
     // Simulating player state structure
-    const state: Record<string, any> = {
+    const state: Record<string, unknown> = {
       repelSecs: 99999,
       luckyEggSecs: 1500,
       amuletCoinSecs: 88888,
@@ -181,10 +181,11 @@ describe('Player State Buff Timer Sanitization', () => {
     
     // Simulate sanitizeAll logic
     buffFields.forEach(field => {
-      if (state[field] !== undefined && typeof state[field] === 'number') {
+      const val = state[field]
+      if (val !== undefined && typeof val === 'number') {
         const maxAllowedSecs = getMaxBuffDuration(field);
-        if (state[field] > maxAllowedSecs) {
-          state[field] = maxAllowedSecs;
+        if (val > maxAllowedSecs) {
+          (state as Record<string, number>)[field] = maxAllowedSecs;
         }
       }
     });

@@ -14,8 +14,7 @@ import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages, SparkleData, BattleCombatantProps } from '@/types/battle/battle';
+import type { BattleCombatantProps } from '@/types/battle/battle';
 
 
 interface SmokeParticle {

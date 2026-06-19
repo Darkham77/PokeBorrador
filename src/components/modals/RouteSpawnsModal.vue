@@ -564,7 +564,6 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value as unknow
         weather-label=""
         :get-tooltip-data="() => ({})"
       />
-
     </div>
   </BaseModal>
 </template>

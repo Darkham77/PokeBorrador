@@ -1,8 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
-import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonIVs } from '@/types/pokemon/pokemon'
 
