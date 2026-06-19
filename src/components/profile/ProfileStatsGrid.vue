@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { formatCurrency } from '@/logic/utils/formatters'
+import { useStatHover } from '@/composables/ui/useStatHover'
+
 interface Stats {
   wins?: number
   trainersDefeated?: number
@@ -14,37 +17,70 @@ interface Props {
 
 defineProps<Props>()
 
-import { formatCurrency } from '@/logic/utils/formatters'
-
 const formatNum = (num: number) => formatCurrency(num)
+
+const { handleStatEnter, handleStatLeave } = useStatHover({
+  money: {
+    border: 'rgba(107, 203, 119, 0.2)',
+    background: 'linear-gradient(135deg, rgba(107, 203, 119, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  },
+  bc: {
+    border: 'rgba(199, 125, 255, 0.2)',
+    background: 'linear-gradient(135deg, rgba(199, 125, 255, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  }
+})
 </script>
 
 <template>
   <div class="profile-stat-grid-legacy">
-    <div class="legacy-stat-item">
+    <div 
+      class="legacy-stat-item"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">{{ level }}</span>
       <span class="legacy-stat-lbl">Nivel</span>
     </div>
-    <div class="legacy-stat-item">
+    <div 
+      class="legacy-stat-item"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">{{ badges }}</span>
       <span class="legacy-stat-lbl">Medallas</span>
     </div>
-    <div class="legacy-stat-item">
+    <div 
+      class="legacy-stat-item"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">{{ stats?.wins ?? 0 }}</span>
       <span class="legacy-stat-lbl">Vics. Salvaje</span>
     </div>
-    <div class="legacy-stat-item">
+    <div 
+      class="legacy-stat-item"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">{{ stats?.trainersDefeated ?? 0 }}</span>
       <span class="legacy-stat-lbl">Entr. Derrotados</span>
     </div>
-    <div class="legacy-stat-item highlight money">
+    <div 
+      class="legacy-stat-item highlight money"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">
         <span class="currency-icon-money">₽</span>
         {{ formatNum(money ?? 0) }}
       </span>
       <span class="legacy-stat-lbl">Dinero</span>
     </div>
-    <div class="legacy-stat-item highlight bc">
+    <div 
+      class="legacy-stat-item highlight bc"
+      @mouseenter="handleStatEnter"
+      @mouseleave="handleStatLeave"
+    >
       <span class="legacy-stat-val">
         <i class="fas fa-coins currency-icon-bc" />
         {{ formatNum(battleCoins ?? 0) }}
@@ -56,6 +92,7 @@ const formatNum = (num: number) => formatCurrency(num)
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .profile-stat-grid-legacy {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -71,15 +108,7 @@ const formatNum = (num: number) => formatCurrency(num)
   display: flex;
   flex-direction: column;
   gap: 10px;
-  
   @include gpu-layer;
-
-  &:hover {
-    background: Rgba(30, 41, 59, 0.5);
-    border-color: Rgba(255, 214, 10, 0.2);
-    box-shadow: 0 0 0 1px Rgba(255, 214, 10, 0.2);
-    transform: Translatey(-2px);
-  }
 
   &.highlight {
     &.money {
@@ -131,7 +160,6 @@ const formatNum = (num: number) => formatCurrency(num)
   align-items: center;
   justify-content: center;
   gap: 8px;
-  @include pixelated;
 }
 
 .legacy-stat-lbl {
@@ -140,7 +168,5 @@ const formatNum = (num: number) => formatCurrency(num)
   color: Rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
-  @include pixelated;
 }
 </style>
-

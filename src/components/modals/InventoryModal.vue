@@ -601,53 +601,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
   @include gpu-layer;
 
   .search-input-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      font-size: 13px;
-      opacity: 0.5;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      line-height: 1;
-      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    }
-
-    .premium-search-input {
-      width: 100%;
-      background: Rgba(0, 0, 0, 0.2);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 7px 30px 7px 30px;
-      color: white;
-      font-size: 12px;
-
-      &:focus {
-        background: Rgba(0, 0, 0, 0.4);
-        border-color: var(--yellow);
-        box-shadow: 0 0 12px Rgba(255, 214, 10, 0.1);
-        outline: none;
-      }
-    }
-
-    .clear-btn {
-      position: absolute;
-      right: 8px;
-      background: none;
-      border: none;
-      color: Rgba(255, 255, 255, 0.5);
-      font-size: 16px;
-      cursor: pointer;
-      line-height: 1;
-      padding: 0;
-
-      &:hover { color: white; }
-    }
+    @include premium-search-input;
   }
 }
 

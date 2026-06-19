@@ -298,3 +298,4 @@ See [commit-standards.md](./references/commit-standards.md) for the full Elegant
 - **No Phase-Jumping**: It is strictly forbidden to execute Steps 9 or 10 if Steps 1–8 are not fully documented and checked in the **task**.
 - **Test Implementation Check**: You are FORBIDDEN from committing if there are identified "Missing Tests" in Step 2 that haven't been implemented and marked as `[x]`.
 - **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task updated with the result of the *previous* tool call?". If not, update it first.
+- **Fallow Bypass Prohibition (`.fallowrc.json`)**: It is STRICTLY FORBIDDEN to modify `.fallowrc.json` (such as adding ignored dependencies, files, or exports) solely to bypass Fallow errors in order to pass the commit gate. Every single error must be properly FIXED in the source code, regardless of the time or delay required. Shortcuts or configuration bypasses are forbidden.

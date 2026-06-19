@@ -3,7 +3,8 @@ import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 
 defineProps<{
   clientVersion?: string | number
-  dbVersion?: string | number
+  targetVersion?: string | number
+  lockType: 'database' | 'server'
 }>()
 
 const emit = defineEmits<{
@@ -15,13 +16,18 @@ const emit = defineEmits<{
 <template>
   <PVLoadingOverlay
     theme="error"
-    title="SERVIDOR DESACTUALIZADO"
-    :message="`Tu cliente (v${clientVersion || 0}) es más moderno que el servidor (v${dbVersion || 0}).`"
+    :title="lockType === 'server' ? 'COMPILACIÓN DEL SERVIDOR ANTIGUA' : 'SERVIDOR DESACTUALIZADO'"
+    :message="lockType === 'server' 
+      ? `Tu cliente (compilación ${clientVersion || 'N/A'}) es más moderno que el servidor (compilación ${targetVersion || 'N/A'}).`
+      : `Tu cliente (v${clientVersion || 0}) es más moderno que el servidor (v${targetVersion || 0}).`"
     icon="⚠️"
     :show-spinner="false"
   >
     <p class="admin-note">
-      Por favor, contacta al administrador para actualizar la base de datos.
+      {{ lockType === 'server' 
+        ? 'Por favor, espera a que el servidor web sea actualizado con la última compilación.'
+        : 'Por favor, contacta al administrador para actualizar la base de datos.' 
+      }}
     </p>
 
     <template #actions>

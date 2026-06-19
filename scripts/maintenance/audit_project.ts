@@ -1037,10 +1037,23 @@ async function main() {
   
   // Consistency Check
   const syncErrors = await checkZIndexConsistency(!!values.fix);
+  const syncViolations: Violation[] = [];
   if (syncErrors.length > 0) {
     console.log(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
     syncErrors.forEach(e => console.log(styleText('yellow', `  -> ${e}`)));
-    if (!values.fix) console.log(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
+    if (!values.fix) {
+      console.log(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
+      for (const err of syncErrors) {
+        syncViolations.push({
+          file: path.resolve(process.cwd(), 'src/styles/core/_variables.scss'),
+          line: 1,
+          message: `Desincronización de z-index: ${err}`,
+          context: 'z-index',
+          severity: 'error',
+          fixable: true
+        });
+      }
+    }
   }
 
   // DOX / AGENTS.md Integrity Check
@@ -1057,7 +1070,7 @@ async function main() {
     files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
   }
 
-  let all: Violation[] = [...doxErrors];
+  let all: Violation[] = [...syncViolations, ...doxErrors];
   for (const f of files) {
     all = all.concat(await auditFile(f, !!values.fix));
   }
@@ -1167,4 +1180,7 @@ async function main() {
     process.exit(1);
   }
 }
-main();
+main().catch(err => {
+  console.error(styleText('red', `\n💥 Error fatal en el audit: ${err.message}`));
+  process.exit(1);
+});

@@ -281,10 +281,10 @@ const close = () => {
             class="shop-empty-state"
           >
             <span class="empty-icon">🔍</span>
-            <div class="empty-text">
+            <span class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>
-            </div>
+            </span>
           </div>
         </div>
       </div>

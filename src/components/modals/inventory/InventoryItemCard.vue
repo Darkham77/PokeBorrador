@@ -314,23 +314,7 @@ onMounted(() => {
     .item-bg-glow { background: radial-gradient(circle, Rgba(148, 163, 184, 0.12) 0%, transparent 70%); }
   }
 
-  &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.55);
-    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.18) 0%, transparent 70%); }
-  }
-
-  &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.55);
-    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.18) 0%, transparent 70%); }
-  }
-
-  &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.65);
-    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
-    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.2) 0%, transparent 70%); }
-  }
+  @include item-tier-card;
 
   .item-visual-wrap {
     flex: 1;

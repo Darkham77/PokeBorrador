@@ -233,29 +233,11 @@ onMounted(() => {
 }
 
 .message-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-
-  .username {
-    font-size: 11px;
-    font-weight: 700;
-    color: Rgba(226, 232, 240, 1);
-  }
-
-  .time {
-    font-size: 9px;
-    color: Rgba(255, 255, 255, 0.5);
-  }
+  @include chat-message-meta;
 }
 
 .text {
-  font-size: 13px;
-  color: Rgba(203, 213, 225, 1);
-  line-height: 1.4;
-  word-break: break-all;
-  margin: 0;
+  @include chat-message-text;
 }
 
 .chat-footer {

@@ -18,7 +18,6 @@ import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 import VersionLockOverlay from '@/components/overlays/VersionLockOverlay.vue'
-import AppVersionLockOverlay from '@/components/overlays/AppVersionLockOverlay.vue'
 import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
 import { gameBus } from '@/logic/events/gameBus'
 import { useUIStore } from '@/stores/ui'
@@ -405,7 +404,8 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       >
         <VersionLockOverlay
           :client-version="dbVersionInfo?.client"
-          :db-version="dbVersionInfo?.db"
+          :target-version="dbVersionInfo?.db"
+          lock-type="database"
           @retry="handleRetry"
           @logout="handleLogout"
         />
@@ -416,9 +416,10 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         v-else-if="appIncompatible"
         to="body"
       >
-        <AppVersionLockOverlay
+        <VersionLockOverlay
           :client-version="appVersionInfo?.client"
-          :server-version="appVersionInfo?.server"
+          :target-version="appVersionInfo?.server"
+          lock-type="server"
           @retry="handleRetry"
           @logout="handleLogout"
         />

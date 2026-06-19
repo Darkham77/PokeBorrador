@@ -30,7 +30,7 @@ interface Props {
 
 defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'travel', target: string): void
   (e: 'explore'): void
   (e: 'heal'): void
@@ -41,56 +41,53 @@ defineEmits<{
   <div class="adv-manual-travel-arena">
     <!-- Left Column -->
     <div class="adv-manual-col adv-manual-left">
-      <button
+      <template
         v-for="conn in adjacentConnections.left"
         :key="conn.target"
-        v-gsap-hover
-        class="adv-manual-btn"
-        :disabled="isTraveling || !hasHealthyTeam"
-        @click="$emit('travel', conn.target)"
       >
-        <div class="dir-icon">
-          ⬅️
-        </div>
-        <div class="dir-label">
-          {{ conn.label }}
-        </div>
-        <div
-          v-if="conn.mo"
-          class="dir-mo"
-          :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
+        <button
+          v-gsap-hover
+          class="adv-manual-btn"
+          :disabled="isTraveling || !hasHealthyTeam"
+          @click="emit('travel', conn.target)"
         >
-          {{ conn.mo }}
-        </div>
-      </button>
+          <span class="dir-icon">⬅️</span>
+          <span class="dir-label">{{ conn.label }}</span>
+          <span
+            v-if="conn.mo"
+            :class="['dir-mo', { 'mo-missing': !activeHMs.has(conn.mo) }]"
+          >
+            {{ conn.mo }}
+          </span>
+        </button>
+      </template>
     </div>
 
     <!-- Center Column -->
     <div class="adv-manual-center">
       <!-- Top Section -->
       <div class="adv-manual-top">
-        <button
+        <template
           v-for="conn in adjacentConnections.top"
           :key="conn.target"
-          v-gsap-hover
-          class="adv-manual-btn"
-          :disabled="isTraveling || !hasHealthyTeam"
-          @click="$emit('travel', conn.target)"
         >
-          <div class="dir-icon">
-            ⬆️
-          </div>
-          <div class="dir-label">
-            {{ conn.label }}
-          </div>
-          <div
-            v-if="conn.mo"
-            class="dir-mo"
-            :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
+          <button
+            v-gsap-hover
+            class="adv-manual-btn"
+            :disabled="isTraveling || !hasHealthyTeam"
+            @click="emit('travel', conn.target)"
           >
-            {{ conn.mo }}
-          </div>
-        </button>
+            <div class="dir-icon">⬆️</div>
+            <div class="dir-label">{{ conn.label }}</div>
+            <div
+              v-if="conn.mo"
+              class="dir-mo"
+              :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
+            >
+              {{ conn.mo }}
+            </div>
+          </button>
+        </template>
       </div>
 
       <!-- Map Card Core Container -->
@@ -116,7 +113,7 @@ defineEmits<{
             v-gsap-hover
             class="adv-action-btn explore-btn"
             :disabled="!hasHealthyTeam"
-            @click="$emit('explore')"
+            @click="emit('explore')"
           >
             🔍 Explorar Zona
           </button>
@@ -124,7 +121,7 @@ defineEmits<{
             v-if="pokemonCenterNodes.has(originMap)"
             v-gsap-hover
             class="adv-action-btn heal-btn"
-            @click="$emit('heal')"
+            @click="emit('heal')"
           >
             🏥 Centro Pokémon
           </button>
@@ -133,55 +130,53 @@ defineEmits<{
 
       <!-- Bottom Section -->
       <div class="adv-manual-bottom">
-        <button
+        <template
           v-for="conn in adjacentConnections.bottom"
           :key="conn.target"
-          v-gsap-hover
-          class="adv-manual-btn"
-          :disabled="isTraveling || !hasHealthyTeam"
-          @click="$emit('travel', conn.target)"
         >
-          <div class="dir-icon">
-            ⬇️
-          </div>
-          <div class="dir-label">
-            {{ conn.label }}
-          </div>
-          <div
-            v-if="conn.mo"
-            class="dir-mo"
-            :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
+          <button
+            v-gsap-hover
+            class="adv-manual-btn"
+            :disabled="isTraveling || !hasHealthyTeam"
+            @click="emit('travel', conn.target)"
           >
-            {{ conn.mo }}
-          </div>
-        </button>
+            <p class="dir-icon">⬇️</p>
+            <p class="dir-label">{{ conn.label }}</p>
+            <p
+              v-if="conn.mo"
+              class="dir-mo"
+              :class="!activeHMs.has(conn.mo) ? 'mo-missing' : ''"
+            >
+              {{ conn.mo }}
+            </p>
+          </button>
+        </template>
       </div>
     </div>
 
     <!-- Right Column -->
     <div class="adv-manual-col adv-manual-right">
-      <button
+      <template
         v-for="conn in adjacentConnections.right"
         :key="conn.target"
-        v-gsap-hover
-        class="adv-manual-btn"
-        :disabled="isTraveling || !hasHealthyTeam"
-        @click="$emit('travel', conn.target)"
       >
-        <div class="dir-icon">
-          ➡️
-        </div>
-        <div class="dir-label">
-          {{ conn.label }}
-        </div>
-        <div
-          v-if="conn.mo"
-          class="dir-mo"
-          :class="{ 'mo-missing': !activeHMs.has(conn.mo) }"
+        <button
+          v-gsap-hover
+          class="adv-manual-btn"
+          :disabled="isTraveling || !hasHealthyTeam"
+          @click="emit('travel', conn.target)"
         >
-          {{ conn.mo }}
-        </div>
-      </button>
+          <strong class="dir-icon">➡️</strong>
+          <strong class="dir-label">{{ conn.label }}</strong>
+          <strong
+            v-if="conn.mo"
+            class="dir-mo"
+            :class="[!activeHMs.has(conn.mo) && 'mo-missing']"
+          >
+            {{ conn.mo }}
+          </strong>
+        </button>
+      </template>
     </div>
   </div>
 </template>

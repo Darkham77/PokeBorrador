@@ -1,6 +1,58 @@
 // src/styles/core/mixins/_buttons.scss
 @use "sass:color";
 @use "layout" as *;
+@use "../gpu" as *;
+@use "shell" as *;
+
+@mixin gender-select-buttons($radius: 12px) {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+
+  .gender-select-btn {
+    flex: 1;
+    background: Rgba(0, 0, 0, 0.4);
+    border: 2px solid Rgba(255, 255, 255, 0.1);
+    border-radius: $radius;
+    padding: 10px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: Rgba(255, 255, 255, 0.6);
+    will-change: transform;
+    @include pixelated;
+
+    &:hover {
+      border-color: Rgba(255, 255, 255, 0.3);
+      color: var(--white);
+    }
+
+    &.male {
+      &.active {
+        border-color: Rgba(59, 139, 255, 1);
+        background: Rgba(59, 139, 255, 0.15);
+        color: Rgba(59, 139, 255, 1);
+        text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
+        box-shadow: 0 0 12px Rgba(59, 139, 255, 0.1);
+      }
+    }
+
+    &.female {
+      &.active {
+        border-color: Rgba(255, 110, 255, 1);
+        background: Rgba(255, 110, 255, 0.15);
+        color: Rgba(255, 110, 255, 1);
+        text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
+        box-shadow: 0 0 12px Rgba(255, 110, 255, 0.1);
+      }
+    }
+  }
+}
+
 
 // ── PREMIUM BUTTONS (Vicio Design System) ────────────────────────────────────
 
@@ -212,3 +264,122 @@
     // Press shrink is handled by GSAP
   }
 }
+
+@mixin item-tier-card {
+  &.tier-rare {
+    border-color: Rgba(59, 130, 246, 0.55);
+    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.18) 0%, transparent 70%); }
+  }
+
+  &.tier-epic {
+    border-color: Rgba(168, 85, 247, 0.55);
+    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.18) 0%, transparent 70%); }
+  }
+
+  &.tier-legend {
+    border-color: Rgba(245, 158, 11, 0.65);
+    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.2) 0%, transparent 70%); }
+  }
+}
+
+@mixin premium-header {
+  padding: 12px 24px;
+  border-radius: 20px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  margin-bottom: 0;
+  @include gpu-layer;
+  @include shell-premium;
+
+  .header-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    @include responsive(hud-mobile) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+}
+
+@mixin premium-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 13px;
+    opacity: 0.5;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  }
+
+  .premium-search-input {
+    width: 100%;
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 7px 30px 7px 30px;
+    color: white;
+    font-size: 12px;
+
+    &:focus {
+      background: Rgba(0, 0, 0, 0.4);
+      border-color: var(--yellow);
+      box-shadow: 0 0 12px Rgba(255, 214, 10, 0.1);
+      outline: none;
+    }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: Rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+
+    &:hover { color: white; }
+  }
+}
+
+@mixin chat-message-text {
+  font-size: 13px;
+  color: Rgba(203, 213, 225, 1);
+  line-height: 1.4;
+  word-break: break-all;
+  margin: 0;
+}
+
+@mixin chat-message-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+
+  .username {
+    font-size: 11px;
+    font-weight: 700;
+    color: Rgba(226, 232, 240, 1);
+  }
+
+  .time {
+    font-size: 9px;
+    color: Rgba(255, 255, 255, 0.5);
+  }
+}
+
+

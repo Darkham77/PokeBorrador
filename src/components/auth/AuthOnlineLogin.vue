@@ -118,70 +118,9 @@ const handleServerSelect = (e: Event) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+@import "@/styles/views/_login.scss";
 
 .online-login-form {
   width: 100%;
-}
-
-.server-list-container {
-  margin-bottom: 16px;
-  
-  .label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .server-label {
-    display: block;
-    @include pixelated;
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-  }
-
-  .status-indicator {
-    @include pixelated;
-    font-size: 8px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    
-    &.checking { color: $yellow; }
-    &.online { 
-      color: #00ff00;
-      text-shadow: 0 0 5px Rgba(0, 255, 0, 0.5);
-    }
-    &.offline { color: #ff4444; }
-  }
-}
-
-.internet-alert {
-  background: Rgba(255, 68, 68, 0.2);
-  border: 1px solid #ff4444;
-  color: #ff4444;
-  @include pixelated;
-  font-size: 10px;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  text-align: center;
-  will-change: opacity;
-}
-
-.server-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 40px !important;
-  border-color: Rgba(255, 255, 255, 0.2);
-  
-  option {
-    background: #1a1a1a;
-    color: white;
-  }
 }
 </style>

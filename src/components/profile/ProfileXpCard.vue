@@ -200,22 +200,7 @@ watch(trainerExpPct, (newPct) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-
-.profile-section-card {
-  padding: 20px;
-  background: Rgba(255, 255, 255, 0.02);
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-
-  .section-label {
-    @include pixelated;
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.3);
-    margin-bottom: 16px;
-    letter-spacing: 1px;
-  }
-}
+@import "@/styles/components/_profile-shared.scss";
 
 .xp-card {
   .xp-details {

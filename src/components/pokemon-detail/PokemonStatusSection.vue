@@ -270,7 +270,7 @@ const abilityStyle = computed(() => ({
   display: inline-block !important;
   vertical-align: middle !important;
   position: relative !important;
-  top: -3px !important;
+  top: -1px !important;
   font-size: 10px;
   line-height: 1;
 }

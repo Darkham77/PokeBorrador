@@ -323,34 +323,18 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 }
 
 .message-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
+  @include chat-message-meta;
 
-    .username {
-      font-size: 11px;
-      font-weight: 700;
-      color: Rgba(226, 232, 240, 1);
-
+  .username {
     &.rocket { color: Rgba(248, 113, 113, 1); }
     &.cazabichos { color: Rgba(74, 222, 128, 1); }
     &.criador { color: Rgba(192, 132, 252, 1); }
     &.entrenador { color: Rgba(96, 165, 250, 1); }
   }
-
-  .time {
-    font-size: 9px;
-    color: Rgba(255, 255, 255, 0.5);
-  }
 }
 
 .text {
-  font-size: 13px;
-  color: Rgba(203, 213, 225, 1);
-  line-height: 1.4;
-  word-break: break-all;
-  margin: 0;
+  @include chat-message-text;
 }
 
 .chat-footer {

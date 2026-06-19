@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, nextTick } from 'vue'
+import { watch, nextTick, computed } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { formatCurrency } from '@/logic/utils/formatters'
@@ -113,6 +113,23 @@ const close = () => {
 
 // GSAP hover handlers via shared composable
 const { handleStatEnter, handleStatLeave } = useStatHover()
+
+const activityStats = computed(() => [
+  { label: 'Tiempo Jugado', value: `${playtimeHours.value}h`, class: 'yellow-text' },
+  { label: 'Miembro Desde', value: formatDate(createdAt.value) },
+  { label: 'Última Partida', value: isOwnProfile.value ? 'Activo Ahora' : formatDate(lastPlayedAt.value) }
+])
+
+const classStats = computed(() => {
+  const stats = []
+  if (playerClass.value === 'rocket') {
+    stats.push({ label: 'Criminalidad', value: `${criminality.value}%`, class: 'danger-text' })
+  } else if (playerClass.value === 'entrenador') {
+    stats.push({ label: 'Reputación', value: reputation.value, class: 'primary-text' })
+  }
+  stats.push({ label: 'Mayor Racha', value: captureStreak.value, class: 'yellow-text' })
+  return stats
+})
 
 
 // Watch loading state to animate the spinner via GSAP
@@ -342,30 +359,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div class="stats-grid">
             <div
-              v-if="playerClass === 'rocket'"
+              v-for="stat in classStats"
+              :key="stat.label"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"
             >
-              <span class="stat-val danger-text">{{ criminality }}%</span>
-              <span class="stat-lbl">Criminalidad</span>
-            </div>
-            <div
-              v-else-if="playerClass === 'entrenador'"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val primary-text">{{ reputation }}</span>
-              <span class="stat-lbl">Reputación</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val yellow-text">{{ captureStreak }}</span>
-              <span class="stat-lbl">Mayor Racha</span>
+              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
+              <span class="stat-lbl">{{ stat.label }}</span>
             </div>
           </div>
         </div>
@@ -377,28 +378,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div class="stats-grid">
             <div
+              v-for="stat in activityStats"
+              :key="stat.label"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"
             >
-              <span class="stat-val yellow-text">{{ playtimeHours }}h</span>
-              <span class="stat-lbl">Tiempo Jugado</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ formatDate(createdAt) }}</span>
-              <span class="stat-lbl">Miembro Desde</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ isOwnProfile ? 'Activo Ahora' : formatDate(lastPlayedAt) }}</span>
-              <span class="stat-lbl">Última Partida</span>
+              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
+              <span class="stat-lbl">{{ stat.label }}</span>
             </div>
           </div>
         </div>

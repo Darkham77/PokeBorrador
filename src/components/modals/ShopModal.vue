@@ -148,7 +148,7 @@ const close = () => {
           </div>
 
           <!-- Empty State -->
-          <div
+          <section
             v-else
             class="shop-empty-state"
           >
@@ -157,7 +157,7 @@ const close = () => {
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>

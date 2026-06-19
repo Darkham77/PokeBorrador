@@ -1,0 +1,148 @@
+/* --- COMPARTIDO PARA COSMÉTICOS Y MARCOS --- */
+.style-section {
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    h3 { font-size: 18px; color: var(--white); font-weight: 700; }
+    .badge {
+      font-size: 9px;
+      background: Rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: Rgba(148, 163, 184, 1);
+      font-weight: 800;
+    }
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--gray);
+    margin-bottom: 24px;
+  }
+}
+
+.styles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.style-card {
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  will-change: transform, filter;
+  position: relative;
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.06);
+    transform: Translatey(-4px);
+    border-color: Rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    background: Rgba(59, 130, 246, 0.08);
+    border-color: Rgba(59, 130, 246, 1);
+    box-shadow: 0 0 20px Rgba(59, 130, 246, 0.15);
+  }
+
+  &.locked {
+    opacity: 0.6;
+    filter: Grayscale(0.85);
+    cursor: not-allowed;
+    background: Rgba(0, 0, 0, 0.25);
+    border-color: Rgba(255, 255, 255, 0.03);
+    
+    &:hover {
+      transform: none;
+      background: Rgba(0, 0, 0, 0.25);
+      border-color: Rgba(255, 255, 255, 0.03);
+    }
+  }
+
+  .style-meta {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    
+    .style-name {
+      display: block;
+      font-size: 11px;
+      color: Rgba(148, 163, 184, 1);
+      font-weight: 600;
+    }
+    
+    .status-tag {
+      font-size: 9px;
+      color: Rgba(59, 130, 246, 1);
+      font-weight: 800;
+      display: block;
+    }
+
+    .lock-tag {
+      font-size: 8px;
+      font-weight: 800;
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+
+      &.locked {
+        color: #ef4444;
+        background: Rgba(239, 68, 68, 0.1);
+        border: 1px solid Rgba(239, 68, 68, 0.25);
+      }
+
+      &.unlocked {
+        color: #4ade80;
+        background: Rgba(34, 197, 94, 0.15);
+        border: 1px solid Rgba(34, 197, 94, 0.3);
+      }
+
+      &.cazabichos {
+        color: #22c55e !important;
+        background: Rgba(34, 197, 94, 0.1) !important;
+        border: 1px solid Rgba(34, 197, 94, 0.3) !important;
+      }
+
+      &.criador {
+        color: #a855f7 !important;
+        background: Rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid Rgba(168, 85, 247, 0.3) !important;
+      }
+
+      &.rocket {
+        color: #ef4444 !important;
+        background: Rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid Rgba(239, 68, 68, 0.3) !important;
+      }
+
+      &.entrenador {
+        color: #3b82f6 !important;
+        background: Rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid Rgba(59, 130, 246, 0.3) !important;
+      }
+
+      &.union {
+        color: #00d2ff !important;
+        background: Rgba(0, 210, 255, 0.15) !important;
+        border: 1px solid Rgba(0, 210, 255, 0.3) !important;
+      }
+
+      &.poder {
+        color: #ff3300 !important;
+        background: Rgba(255, 51, 0, 0.15) !important;
+        border: 1px solid Rgba(255, 51, 0, 0.3) !important;
+      }
+    }
+  }
+}

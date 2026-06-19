@@ -1,0 +1,51 @@
+/* --- PREMIUM HEADER STRUCTURE SHARED STYLING --- */
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .header-main-title {
+    @include pixelated;
+    font-size: 10px;
+    color: var(--white);
+    letter-spacing: 2px;
+    margin: 0;
+  }
+
+  .header-sub-title {
+    @include pixelated;
+    font-size: 7px;
+    color: var(--gray);
+    opacity: 0.6;
+    margin: 0;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.integrated-badge {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 6px 16px;
+  gap: 16px;
+
+  .badge-divider {
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@include responsive(hud-mobile) {
+  .header-left {
+    .header-main-title { font-size: 8px; }
+    .header-sub-title { font-size: 6px; }
+  }
+}

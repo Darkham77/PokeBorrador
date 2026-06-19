@@ -211,24 +211,7 @@ const getTierColor = (tier?: string) => {
     border-radius: inherit; // Mantener la forma
   }
 
-  // TIER VARIANTS — base borders, GSAP handles hover amplification
-  &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.55);
-    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(59, 130, 246, 0.18) 0%, Transparent 70%); }
-  }
-
-  &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.55);
-    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(168, 85, 247, 0.18) 0%, Transparent 70%); }
-  }
-
-  &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.65);
-    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.2) 0%, Transparent 70%); }
-  }
+  @include item-tier-card;
 }
 
 .card-inner {

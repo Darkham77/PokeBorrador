@@ -25,7 +25,7 @@
   },
   "ignoreExports": [
     {
-      "file": "src/logic/pokedexConstants.ts",
+      "file": "src/logic/constants/pokedexConstants.ts",
       "exports": ["POKEDEX_SPECIES_COUNT", "MAX_POKEDEX_ID", "GENERATION_COUNTS", "REGIONAL_POKEDEX_COUNT", "GAME_TMS", "TM_COMPAT"]
     },
     {
@@ -37,8 +37,8 @@
       "exports": ["Item"]
     },
     {
-      "file": "src/data/items.ts",
-      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER"]
+      "file": "src/data/inventory/items.ts",
+      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER", "BUFF_FIELD_TO_ITEM_IDS"]
     },
     {
       "file": "src/data/trainer.ts",
@@ -49,19 +49,19 @@
       "exports": ["DaycareMission"]
     },
     {
-      "file": "src/data/constants.ts",
+      "file": "src/data/system/constants.ts",
       "exports": ["STAGE_MULT", "ACC_STAGE_MULT"]
     },
     {
-      "file": "src/data/playerClasses.ts",
+      "file": "src/data/player/playerClasses.ts",
       "exports": ["REPUTATION_SHOP_ITEMS"]
     },
     {
-      "file": "src/data/pokedex.ts",
+      "file": "src/data/pokemon/pokedex.ts",
       "exports": ["PDEX_TYPE_COLORS", "POKEMON_SPRITE_IDS"]
     },
     {
-      "file": "src/data/rankedData.ts",
+      "file": "src/data/system/rankedData.ts",
       "exports": ["RANKED_TIER_ORDER", "RANKED_TYPES", "RANKED_TYPE_META"]
     },
     {
@@ -69,7 +69,7 @@
       "exports": ["POKEMON_SPRITE_IDS"]
     },
     {
-      "file": "src/data/types.ts",
+      "file": "src/data/battle/types.ts",
       "exports": ["TYPE_TRANSLATIONS"]
     },
     {
@@ -125,11 +125,11 @@
       "exports": ["HEAL_COST_TIER_MULTIPLIERS"]
     },
     {
-      "file": "src/logic/encounterUI.ts",
+      "file": "src/logic/encounters/encounterUI.ts",
       "exports": ["triggerRivalSequence"]
     },
     {
-      "file": "src/logic/encounters.ts",
+      "file": "src/logic/encounters/encounters.ts",
       "exports": ["selectFromPool"]
     },
     {
@@ -141,7 +141,7 @@
       "exports": ["isNewEntryBetter"]
     },
     {
-      "file": "src/logic/evolutionLogic.ts",
+      "file": "src/logic/evolution/evolutionLogic.ts",
       "exports": ["checkTradeEvolution"]
     },
     {
@@ -161,7 +161,7 @@
       "exports": ["getTypeEffectiveness"]
     },
     {
-      "file": "src/logic/pokemonFactory.ts",
+      "file": "src/logic/pokemon/pokemonFactory.ts",
       "exports": ["assignGender", "ensurePokemonGender"]
     },
     {
@@ -173,11 +173,11 @@
       "exports": ["useAssets"]
     },
     {
-      "file": "src/logic/supabase.ts",
+      "file": "src/logic/db/supabase.ts",
       "exports": ["default"]
     },
     {
-      "file": "src/logic/timeUtils.ts",
+      "file": "src/logic/utils/timeUtils.ts",
       "exports": ["getServerInstant", "getGMT3Date"]
     },
     {
@@ -219,6 +219,30 @@
     {
       "file": "test aventura/kantoGraph.ts",
       "exports": ["getGraphEdges"]
+    },
+    {
+      "file": "src/data/pokemon/animatedSpriteDatabase.ts",
+      "exports": ["MAX_ANIMATED_SPRITE_SIZE"]
+    },
+    {
+      "file": "src/data/system/weatherFamilies.ts",
+      "exports": ["WEATHER_FAMILIES"]
+    },
+    {
+      "file": "src/logic/utils/itemTierResolver.ts",
+      "exports": ["ITEM_TIER_LABELS", "ITEM_TIER_COLORS"]
+    },
+    {
+      "file": "src/logic/utils/routeSpawnHelpers.ts",
+      "exports": ["translateWeather"]
+    },
+    {
+      "file": "src/logic/validation/schemas.ts",
+      "exports": ["userProfileSchema", "networkActionSchema", "trainerNameSchema", "chatMessageSchema", "tradeOfferSchema"]
+    },
+    {
+      "file": "src/stores/inventory/inventoryHelpers.ts",
+      "exports": ["getItemTier", "isItemProduct", "getAdjustedProductCategory"]
     }
   ]
 }

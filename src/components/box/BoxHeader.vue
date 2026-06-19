@@ -71,63 +71,12 @@ onMounted(() => {
 @use "@/styles/core/tools" as *;
 
 .box-header-premium {
-  padding: 12px 24px;
-  border-radius: 20px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 0;
-  @include gpu-layer;
-  @include shell-premium;
-
-  .header-layout {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-
-    @include responsive(hud-mobile) {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
+  @include premium-header;
 }
 
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  .header-main-title {
-    @include pixelated;
-    font-size: 10px;
-    color: var(--white);
-    letter-spacing: 2px;
-    margin: 0;
-  }
-
-  .header-sub-title {
-    @include pixelated;
-    font-size: 7px;
-    color: var(--gray);
-    opacity: 0.6;
-    margin: 0;
-  }
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+@import "@/styles/components/_premium-header-shared.scss";
 
 .integrated-badge {
-  display: flex;
-  align-items: center;
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 6px 16px;
-  gap: 16px;
-
   .status-group {
     display: flex;
     align-items: center;
@@ -144,12 +93,6 @@ onMounted(() => {
 
     .badge-label { @include pixelated; font-size: 6px; color: var(--gray); }
     .badge-value { @include pixelated; font-size: 7px; color: var(--white); }
-  }
-
-  .badge-divider {
-    width: 1px;
-    height: 14px;
-    background: Rgba(255, 255, 255, 0.1);
   }
 
   .hint-group {
@@ -177,13 +120,6 @@ onMounted(() => {
 
   .cancel-btn {
     @include btn-vicio('danger', 'sm');
-  }
-}
-
-@include responsive(hud-mobile) {
-  .header-left {
-    .header-main-title { font-size: 8px; }
-    .header-sub-title { font-size: 6px; }
   }
 }
 </style>

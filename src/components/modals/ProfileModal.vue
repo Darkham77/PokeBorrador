@@ -89,6 +89,23 @@ const formatDate = (isoStr: string | null | undefined) => {
 
 const { handleStatEnter, handleStatLeave } = useStatHover()
 
+const activityStats = computed(() => [
+  { label: 'Tiempo Jugado', value: `${playtimeHours.value}h`, class: 'yellow-text' },
+  { label: 'Miembro Desde', value: formatDate(createdAt.value) },
+  { label: 'Última Partida', value: 'Activo Ahora' }
+])
+
+const classStats = computed(() => {
+  const stats = []
+  if (playerClass.value === 'rocket') {
+    stats.push({ label: 'Criminalidad', value: `${criminality.value}%`, class: 'danger-text' })
+  } else if (playerClass.value === 'entrenador') {
+    stats.push({ label: 'Reputación', value: reputation.value, class: 'primary-text' })
+  }
+  stats.push({ label: 'Mayor Racha', value: captureStreak.value, class: 'yellow-text' })
+  return stats
+})
+
 const factionLabel = computed(() => {
   const f = gs.value.faction
   if (!f) return 'Sin Bando'
@@ -365,30 +382,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div class="stats-grid">
             <div
-              v-if="playerClass === 'rocket'"
+              v-for="stat in classStats"
+              :key="stat.label"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"
             >
-              <span class="stat-val danger-text">{{ criminality }}%</span>
-              <span class="stat-lbl">Criminalidad</span>
-            </div>
-            <div
-              v-else-if="playerClass === 'entrenador'"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val primary-text">{{ reputation }}</span>
-              <span class="stat-lbl">Reputación</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val yellow-text">{{ captureStreak }}</span>
-              <span class="stat-lbl">Mayor Racha</span>
+              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
+              <span class="stat-lbl">{{ stat.label }}</span>
             </div>
           </div>
         </div>
@@ -400,28 +401,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div class="stats-grid">
             <div
+              v-for="stat in activityStats"
+              :key="stat.label"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"
             >
-              <span class="stat-val yellow-text">{{ playtimeHours }}h</span>
-              <span class="stat-lbl">Tiempo Jugado</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ formatDate(createdAt) }}</span>
-              <span class="stat-lbl">Miembro Desde</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">Activo Ahora</span>
-              <span class="stat-lbl">Última Partida</span>
+              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
+              <span class="stat-lbl">{{ stat.label }}</span>
             </div>
           </div>
         </div>
@@ -473,22 +460,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 @use "@/styles/core/tools" as *;
 @use "@/styles/components/cosmetics" as *;
 
-.profile-panel-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: transparent;
-  will-change: transform, filter, opacity, backdrop-filter;
-  backdrop-filter: Blur(12px);
-  @include gpu-layer;
-  
-  // Custom backgrounds by class fading to transparent
-  .rocket & { background: Linear-Gradient(180deg, Rgba(239, 68, 68, 0.15) 0%, transparent 60%); }
-  .cazabichos & { background: Linear-Gradient(180deg, Rgba(34, 197, 94, 0.15) 0%, transparent 60%); }
-  .entrenador & { background: Linear-Gradient(180deg, Rgba(59, 130, 246, 0.15) 0%, transparent 60%); }
-  .criador & { background: Linear-Gradient(180deg, Rgba(168, 85, 247, 0.15) 0%, transparent 60%); }
-}
+
 
 .profile-header-premium {
   display: none;
@@ -765,76 +737,5 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 }
 
-/* Stats grids */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.stat-item {
-  background: Rgba(15, 23, 42, 0.95);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 16px 12px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  @include gpu-layer;
-
-  &.pvp {
-    background: linear-gradient(135deg, Rgba(236, 72, 153, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-    border-color: Rgba(236, 72, 153, 0.2);
-
-    .stat-val.ELO {
-      color: #f472b6;
-      text-shadow: 0 0 10px Rgba(236, 72, 153, 0.4);
-    }
-  }
-
-  &.highlight-war-points {
-    background: linear-gradient(135deg, Rgba(59, 130, 246, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-    border-color: Rgba(59, 130, 246, 0.2);
-
-    .stat-val, .icon-war {
-      color: #60a5fa;
-      text-shadow: 0 0 10px Rgba(59, 130, 246, 0.4);
-    }
-  }
-
-  &.highlight-war-coins {
-    background: linear-gradient(135deg, Rgba(251, 191, 36, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-    border-color: Rgba(251, 191, 36, 0.2);
-
-    .stat-val, .icon-war-coin {
-      color: #fbbf24;
-      text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4);
-    }
-  }
-}
-
-.stat-val {
-  @include pixelated;
-  font-size: 14px;
-  color: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.stat-lbl {
-  @include pixelated;
-  font-size: 6px;
-  color: Rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Colors & Helpers */
-.danger-text { color: #f87171 !important; text-shadow: 0 0 10px Rgba(239, 68, 68, 0.4); }
-.primary-text { color: #60a5fa !important; text-shadow: 0 0 10px Rgba(59, 130, 246, 0.4); }
-.yellow-text { color: #fbbf24 !important; text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4); }
-.shiny-text { color: #fbbf24 !important; text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4); }
+@import "@/styles/components/_profile-shared.scss";
 </style>

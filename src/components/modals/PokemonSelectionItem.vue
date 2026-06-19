@@ -44,8 +44,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
-  (e: 'openDetail', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
-  (e: 'open-detail', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
 }>()
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
@@ -104,6 +102,7 @@ function handleClick() {
         <button
           type="button"
           class="btn-info-detail-trigger"
+          v-gsap-hover="{ scale: 1.05, y: 0 }"
           @click.stop="handleOpenDetail"
         >
           ?
@@ -429,7 +428,7 @@ function handleClick() {
   position: absolute;
   top: -23px;
   left: -23px;
-  z-index: 20;
+  z-index: var(--z-map-ui);
 }
 
 .btn-info-detail-trigger {
@@ -449,17 +448,11 @@ function handleClick() {
   padding-right: 4px;
   cursor: pointer;
   box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.6);
-  transition: all 0.15s ease;
   box-sizing: border-box;
 
   &:hover {
-    transform: Scale(1.05);
     background: Rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 10px var(--tier-color);
-  }
-
-  &:active {
-    transform: Scale(0.95);
   }
 }
 </style>

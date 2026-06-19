@@ -264,9 +264,9 @@ const handleItemImageError = (e: Event) => {
     }
 
     &.is-inactive {
-      opacity: 0.35;
+      opacity: 0.65;
       will-change: transform, filter, opacity;
-      filter: Grayscale(1) Brightness(1.8);
+      filter: Grayscale(0.8) Brightness(1.3);
       transform: none;
       background: transparent !important;
       box-shadow: none !important;

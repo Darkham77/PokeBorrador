@@ -4,6 +4,7 @@ interface StatHoverClassMap {
   pvp?: { border: string; background: string }
   'highlight-war-points'?: { border: string; background: string }
   'highlight-war-coins'?: { border: string; background: string }
+  [key: string]: { border: string; background: string } | undefined
 }
 
 const DEFAULT_CLASSES: StatHoverClassMap = {
@@ -40,7 +41,7 @@ export function useStatHover(classMap: StatHoverClassMap = DEFAULT_CLASSES) {
 
     const keys = Object.keys(classMap) as Array<keyof StatHoverClassMap>
     for (const cls of keys) {
-      if (el.classList.contains(cls)) {
+      if (el.classList.contains(cls as string)) {
         baseBorderColor = classMap[cls]!.border
         baseBackground = classMap[cls]!.background
         break
