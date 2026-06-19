@@ -1,3 +1,5 @@
+@use "@/styles/core/tools" as *;
+
 /* --- PREMIUM HEADER STRUCTURE SHARED STYLING --- */
 .header-left {
   display: flex;
@@ -30,8 +32,8 @@
 .integrated-badge {
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 6px 16px;
   gap: 16px;
@@ -39,7 +41,7 @@
   .badge-divider {
     width: 1px;
     height: 14px;
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
   }
 }
 

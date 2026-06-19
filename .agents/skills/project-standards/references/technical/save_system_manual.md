@@ -219,6 +219,14 @@ When introducing new reactive properties in the main `GameState` that dictate ti
 - Map it inside the returned payload of `serializeState()` in `saveService.ts`.
 - Backfill a clean default (e.g., `0` or `null`) inside `normalizeData()` of `loadService.ts` to ensure compatibility for users loading older profiles.
 
+### 5. Runtime Schema Validation (Valibot)
+
+When validating the savefile structure using Valibot:
+
+- **Hybrid Schema Validation**: Critical fields (such as `id` and `uid` on Pokémon or basic account IDs) MUST be strictly validated. If critical properties are missing or corrupted, the validation must fail and trigger the rollback/error handler. Secondary/optional fields (like `isShiny`, `friendship`, or new features) MUST utilize Valibot's `fallback()` or `optional()` methods to assign safe default values gracefully instead of failing the entire load/save operation.
+- **Auto-Save Validation Throttling**: Because checking large arrays of box Pokémon can cause CPU overhead, deep Valibot validation of the box/team array MUST be skipped during periodic 60-second auto-saves if the state is not marked as "dirty" (i.e., no changes were made to the boxes or team since the last successful validation). Full validation must always be executed during initial load (`loadBestSave`) and on critical manual saves (e.g., trades, badge acquisition).
+
+
 ---
 
 ## 🛡️ Administrative Security

@@ -69,12 +69,11 @@ onMounted(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/premium-header-shared" as *;
 
 .box-header-premium {
   @include premium-header;
 }
-
-@import "@/styles/components/_premium-header-shared.scss";
 
 .integrated-badge {
   .status-group {

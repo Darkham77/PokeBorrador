@@ -118,7 +118,7 @@ const handleServerSelect = (e: Event) => {
 </template>
 
 <style scoped lang="scss">
-@import "@/styles/views/_login.scss";
+@use "@/styles/views/login" as *;
 
 .online-login-form {
   width: 100%;

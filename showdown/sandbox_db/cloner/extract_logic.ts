@@ -35,6 +35,7 @@ export interface ExtractedMove {
   basePower: number;
   accuracy: number | true;
   pp: number;
+  priority: number;
   desc?: string;
   shortDesc: string;
 }
@@ -90,6 +91,7 @@ export function extractGen3Logic(): ShowdownLocalDB {
       basePower: move.basePower,
       accuracy: move.accuracy,
       pp: move.pp,
+      priority: move.priority,
       desc: move.desc,
       shortDesc: move.shortDesc,
     };

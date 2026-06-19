@@ -11,7 +11,7 @@ import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { validateUserProfile } from '@/logic/validation/schemas';
+import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
 import { sanitizePokemon } from '@/logic/pokemon/pokemonFactory';
 
 export interface SaveResult {
@@ -280,6 +280,9 @@ export function serializeState(state: GameState): SaveData {
   };
 }
 
+let lastBoxHash = '';
+let lastValidatedBox: Pokemon[] = [];
+
 /**
  * Validates the state before saving to prevent cache hacking or data corruption.
  */
@@ -287,18 +290,53 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   if (!data) return { valid: false, data: {} as SaveData, issues: [], error: 'No data' };
   
   const issues: string[] = [];
+
+  // Calculate box hash to check if it's dirty
+  const currentBoxHash = (data.box || []).map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
+  const isBoxDirty = !lastBoxHash || currentBoxHash !== lastBoxHash || lastValidatedBox.length !== (data.box || []).length;
+
+  let parsedResult;
+  if (!isBoxDirty && lastValidatedBox.length > 0) {
+    // Optimization: Skip box validation by temporarily substituting it with a validated clone
+    const testData = { ...data, box: [] };
+    parsedResult = validateSaveData(testData);
+    if (parsedResult.success) {
+      // Restore the original box array
+      parsedResult.output.box = data.box as unknown as typeof parsedResult.output.box;
+    }
+  } else {
+    parsedResult = validateSaveData(data);
+    if (parsedResult.success) {
+      lastBoxHash = currentBoxHash;
+      lastValidatedBox = parsedResult.output.box as unknown as Pokemon[];
+    }
+  }
+
+  if (!parsedResult.success) {
+    const errorMsg = parsedResult.issues.map(i => `${i.path?.[0]?.key || 'campo'}: ${i.message}`).join(', ');
+    logger.error('SAVE', 'Error de validación estructural crítico:', parsedResult.issues);
+    return {
+      valid: false,
+      data,
+      issues: parsedResult.issues.map(i => i.message),
+      error: 'Error de validación: ' + errorMsg
+    };
+  }
+
+  // Sanitized data from Valibot (with fallbacks applied!)
+  const sanitizedData = parsedResult.output as unknown as SaveData;
   
   // 1. Basic numeric validation
-  if (data.money < 0) { data.money = 0; issues.push('Dinero negativo corregido'); }
-  if (data.battleCoins < 0) { data.battleCoins = 0; issues.push('BattleCoins negativos corregidos'); }
-  if (data.trainerLevel < 1) { data.trainerLevel = 1; issues.push('Nivel inválido corregido'); }
+  if (sanitizedData.money < 0) { sanitizedData.money = 0; issues.push('Dinero negativo corregido'); }
+  if (sanitizedData.battleCoins < 0) { sanitizedData.battleCoins = 0; issues.push('BattleCoins negativos corregidos'); }
+  if (sanitizedData.trainerLevel < 1) { sanitizedData.trainerLevel = 1; issues.push('Nivel inválido corregido'); }
   
   // 2. Inventory sanity
-  if (data.inventory) {
-    Object.keys(data.inventory).forEach(item => {
-      const qty = data.inventory[item]
+  if (sanitizedData.inventory) {
+    Object.keys(sanitizedData.inventory).forEach(item => {
+      const qty = sanitizedData.inventory[item]
       if (typeof qty === 'number' && qty < 0) {
-        data.inventory[item] = 0;
+        sanitizedData.inventory[item] = 0;
         issues.push(`Cantidad negativa de ${item} corregida`);
       }
     });
@@ -334,15 +372,15 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     }
   };
 
-  if (data.team) {
-    data.team.forEach((p) => {
+  if (sanitizedData.team) {
+    sanitizedData.team.forEach((p) => {
       checkPoke(p, 'equipo');
       sanitizeMoves(p);
       sanitizePokemon(p);
     });
   }
-  if (data.box) {
-    data.box.forEach((p) => {
+  if (sanitizedData.box) {
+    sanitizedData.box.forEach((p) => {
       checkPoke(p, 'caja');
       sanitizeMoves(p);
       sanitizePokemon(p);
@@ -352,16 +390,16 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   if (duplicateUids.size > 0) {
     // We sanitize by removing subsequent duplicates
     const finalUids = new Set<string>();
-    if (Array.isArray(data.team)) {
-      data.team = data.team.filter((p) => {
+    if (Array.isArray(sanitizedData.team)) {
+      sanitizedData.team = sanitizedData.team.filter((p) => {
         if (!p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
         return true;
       });
     }
-    if (Array.isArray(data.box)) {
-      data.box = data.box.filter((p) => {
+    if (Array.isArray(sanitizedData.box)) {
+      sanitizedData.box = sanitizedData.box.filter((p) => {
         if (!p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
@@ -372,7 +410,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
 
   return { 
     valid: true, 
-    data, 
+    data: sanitizedData, 
     hadDuplicates: duplicateUids.size > 0,
     issues 
   };

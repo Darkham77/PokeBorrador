@@ -9,6 +9,8 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 
 Ask the questions one at a time, waiting for feedback on each question before continuing.
 
+When asking a question with discrete options, you MUST call the `ask_question` tool instead of writing options as plain text. This renders an interactive UI the user can click. Use open-ended plain text questions only when the answer space is truly unbounded.
+
 If a question can be answered by exploring the codebase, explore the codebase instead.
 
 </what-to-do>

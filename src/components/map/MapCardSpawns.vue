@@ -112,7 +112,7 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-@import "./MapCard.styles.scss";
+@use "./MapCard.styles" as *;
 
 .spawn-tooltip-trigger {
   position: relative;

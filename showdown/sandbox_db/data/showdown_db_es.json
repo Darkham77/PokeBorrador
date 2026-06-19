@@ -12066,6 +12066,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce.",
       "shortDesc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce."
     },
@@ -12077,6 +12078,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Rocía a los enemigos con un ácido corrosivo. Puede bajar la Defensa Especial.",
       "shortDesc": "Rocía a los enemigos con un ácido corrosivo. Puede bajar la Defensa Especial."
     },
@@ -12088,6 +12090,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataque prehistórico que puede subir todas las características.",
       "shortDesc": "Ataque prehistórico que puede subir todas las características."
     },
@@ -12099,8 +12102,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "El usuario realiza un movimiento elegido al azar de entre los de su equipo.",
-      "shortDesc": "El usuario realiza un movimiento elegido al azar de entre los de su equipo."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "astonish": {
       "id": "astonish",
@@ -12110,6 +12114,7 @@
       "basePower": 30,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Lanza un grito tan tremendo que impresiona y puede amedrentar al objetivo.",
       "shortDesc": "Lanza un grito tan tremendo que impresiona y puede amedrentar al objetivo."
     },
@@ -12121,6 +12126,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Ataque de todo el equipo Pokémon. Cuantos más haya, más veces se atacará.",
       "shortDesc": "Ataque de todo el equipo Pokémon. Cuantos más haya, más veces se atacará."
     },
@@ -12132,8 +12138,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
-      "desc": "El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido.",
-      "shortDesc": "El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "blizzard": {
       "id": "blizzard",
@@ -12143,6 +12150,7 @@
       "basePower": 120,
       "accuracy": 70,
       "pp": 5,
+      "priority": 0,
       "desc": "Tormenta de hielo que puede llegar a congelar.",
       "shortDesc": "Tormenta de hielo que puede llegar a congelar."
     },
@@ -12154,6 +12162,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Potente ataque que también es capaz de destruir barreras como Pantalla de Luz y Reflejo.",
       "shortDesc": "Potente ataque que también es capaz de destruir barreras como Pantalla de Luz y Reflejo."
     },
@@ -12165,6 +12174,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Recarga energía para potenciar el siguiente movimiento de tipo Eléctrico. También sube la Defensa Especial.",
       "shortDesc": "Recarga energía para potenciar el siguiente movimiento de tipo Eléctrico. También sube la Defensa Especial."
     },
@@ -12176,6 +12186,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Cambia el tipo del usuario por el del primero de sus movimientos.",
       "shortDesc": "Cambia el tipo del usuario por el del primero de sus movimientos."
     },
@@ -12187,6 +12198,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "El usuario cambia de tipo para hacerse resistente al último tipo de movimiento usado por el objetivo.",
       "shortDesc": "El usuario cambia de tipo para hacerse resistente al último tipo de movimiento usado por el objetivo."
     },
@@ -12198,6 +12210,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -5,
       "desc": "Devuelve un golpe físico por duplicado.",
       "shortDesc": "Devuelve un golpe físico por duplicado."
     },
@@ -12209,6 +12222,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Se acerca con ternura al objetivo, pero le ataca y le roba el objeto que lleve.",
       "shortDesc": "Se acerca con ternura al objetivo, pero le ataca y le roba el objeto que lleve."
     },
@@ -12220,6 +12234,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Tritura con afilados colmillos y puede bajar la Defensa del objetivo.",
       "shortDesc": "Tritura con afilados colmillos y puede bajar la Defensa del objetivo."
     },
@@ -12231,6 +12246,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario cava durante el primer turno y ataca en el segundo.",
       "shortDesc": "El usuario cava durante el primer turno y ataca en el segundo."
     },
@@ -12242,6 +12258,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 20,
+      "priority": 0,
       "desc": "Desactiva el último movimiento del objetivo durante cuatro turnos.",
       "shortDesc": "Desactiva el último movimiento del objetivo durante cuatro turnos."
     },
@@ -12253,6 +12270,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario se sumerge en el primer turno y ataca en el segundo.",
       "shortDesc": "El usuario se sumerge en el primer turno y ataca en el segundo."
     },
@@ -12264,6 +12282,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "Concentra un haz de luz y ataca dos turnos después.",
       "shortDesc": "Concentra un haz de luz y ataca dos turnos después."
     },
@@ -12275,6 +12294,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "El objetivo repite su último movimiento durante tres turnos.",
       "shortDesc": "El objetivo repite su último movimiento durante tres turnos."
     },
@@ -12286,6 +12306,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Emite una energía muy extraña que puede amedrentar al objetivo.",
       "shortDesc": "Emite una energía muy extraña que puede amedrentar al objetivo."
     },
@@ -12297,6 +12318,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 1,
       "desc": "Amedrenta al objetivo con este movimiento de prioridad alta. Solo sirve en el primer turno.",
       "shortDesc": "Amedrenta al objetivo con este movimiento de prioridad alta. Solo sirve en el primer turno."
     },
@@ -12308,8 +12330,9 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
-      "desc": "Ataque rápido y garantizado que no puede fallar.",
-      "shortDesc": "Ataque rápido y garantizado que no puede fallar."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "flail": {
       "id": "flail",
@@ -12319,6 +12342,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataque frenético. Cuantos menos PS tenga el usuario, más daño producirá.",
       "shortDesc": "Ataque frenético. Cuantos menos PS tenga el usuario, más daño producirá."
     },
@@ -12330,8 +12354,9 @@
       "basePower": 0,
       "accuracy": 70,
       "pp": 20,
-      "desc": "Reduce la precisión del objetivo en un nivel.",
-      "shortDesc": "Reduce la precisión del objetivo en un nivel."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "fly": {
       "id": "fly",
@@ -12341,6 +12366,7 @@
       "basePower": 70,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "El usuario vuela en el primer turno y ataca en el segundo.",
       "shortDesc": "El usuario vuela en el primer turno y ataca en el segundo."
     },
@@ -12352,6 +12378,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 3,
       "desc": "Llama la atención para concentrar todos los ataques de todos los del equipo rival hacia sí mismo.",
       "shortDesc": "Llama la atención para concentrar todos los ataques de todos los del equipo rival hacia sí mismo."
     },
@@ -12363,8 +12390,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
-      "desc": "Permite golpear a Pokémon de tipo Fantasma con movimientos de tipo Normal y Lucha.",
-      "shortDesc": "Permite golpear a Pokémon de tipo Fantasma con movimientos de tipo Normal y Lucha."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "furycutter": {
       "id": "furycutter",
@@ -12374,6 +12402,7 @@
       "basePower": 10,
       "accuracy": 95,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataque con garras o guadaña que crece en intensidad si se usa repetidas veces.",
       "shortDesc": "Ataque con garras o guadaña que crece en intensidad si se usa repetidas veces."
     },
@@ -12385,6 +12414,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce.",
       "shortDesc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce."
     },
@@ -12396,6 +12426,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 30,
+      "priority": 0,
       "desc": "Intimida y asusta al objetivo con la mirada para dejarlo paralizado.",
       "shortDesc": "Intimida y asusta al objetivo con la mirada para dejarlo paralizado."
     },
@@ -12407,6 +12438,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Neblina que elimina los cambios de características de todos los Pokémon en combate.",
       "shortDesc": "Neblina que elimina los cambios de características de todos los Pokémon en combate."
     },
@@ -12418,8 +12450,9 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Su tipo y potencia varían según los valores individuales (IVs) del usuario.",
-      "shortDesc": "Su tipo y potencia varían según los valores individuales (IVs) del usuario."
+      "priority": 0,
+      "desc": "",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "highjumpkick": {
       "id": "highjumpkick",
@@ -12429,6 +12462,7 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "El usuario salta muy alto y da un rodillazo. Si falla, se hará daño.",
       "shortDesc": "El usuario salta muy alto y da un rodillazo. Si falla, se hará daño."
     },
@@ -12440,6 +12474,7 @@
       "basePower": 0,
       "accuracy": 60,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataque hipnótico que hace dormir profundamente al objetivo.",
       "shortDesc": "Ataque hipnótico que hace dormir profundamente al objetivo."
     },
@@ -12451,8 +12486,9 @@
       "basePower": 70,
       "accuracy": 95,
       "pp": 25,
-      "desc": "Una patada voladora. Si falla, el usuario recibe daño por retroceso.",
-      "shortDesc": "Una patada voladora. Si falla, el usuario recibe daño por retroceso."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "leafblade": {
       "id": "leafblade",
@@ -12462,6 +12498,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Acuchilla con una hoja fina. Suele dar un golpe crítico.",
       "shortDesc": "Acuchilla con una hoja fina. Suele dar un golpe crítico."
     },
@@ -12473,6 +12510,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Fija el blanco para que el siguiente ataque no falle.",
       "shortDesc": "Fija el blanco para que el siguiente ataque no falle."
     },
@@ -12484,6 +12522,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce.",
       "shortDesc": "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce."
     },
@@ -12495,6 +12534,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario se debilita, pero baja mucho tanto el Ataque como el Ataque Especial del objetivo.",
       "shortDesc": "El usuario se debilita, pero baja mucho tanto el Ataque como el Ataque Especial del objetivo."
     },
@@ -12506,6 +12546,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "El usuario adivina los movimientos del objetivo para hacer que su siguiente ataque no falle.",
       "shortDesc": "El usuario adivina los movimientos del objetivo para hacer que su siguiente ataque no falle."
     },
@@ -12517,6 +12558,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Copia el último movimiento usado por el objetivo, y puede utilizarlo mientras esté en el combate.",
       "shortDesc": "Copia el último movimiento usado por el objetivo, y puede utilizarlo mientras esté en el combate."
     },
@@ -12528,6 +12570,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -5,
       "desc": "Responde a un ataque especial ocasionando el doble del daño recibido.",
       "shortDesc": "Responde a un ataque especial ocasionando el doble del daño recibido."
     },
@@ -12539,8 +12582,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "El usuario imita el último movimiento utilizado por el objetivo.",
-      "shortDesc": "El usuario imita el último movimiento utilizado por el objetivo."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "naturepower": {
       "id": "naturepower",
@@ -12550,6 +12594,7 @@
       "basePower": 0,
       "accuracy": 95,
       "pp": 20,
+      "priority": 0,
       "desc": "Usa el poder de la naturaleza para atacar. Su efecto varía según el entorno de combate.",
       "shortDesc": "Usa el poder de la naturaleza para atacar. Su efecto varía según el entorno de combate."
     },
@@ -12561,8 +12606,9 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Puede hacer retroceder al objetivo (30% de probabilidad).",
-      "shortDesc": "Puede hacer retroceder al objetivo (30% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "nightmare": {
       "id": "nightmare",
@@ -12572,8 +12618,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Causa daño residual cada turno a un oponente dormido.",
-      "shortDesc": "Causa daño residual cada turno a un oponente dormido."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "odorsleuth": {
       "id": "odorsleuth",
@@ -12583,8 +12630,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
-      "desc": "Permite golpear a Fantasmas con Normal y Lucha, y anula aumentos de evasión.",
-      "shortDesc": "Permite golpear a Fantasmas con Normal y Lucha, y anula aumentos de evasión."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "outrage": {
       "id": "outrage",
@@ -12594,6 +12642,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataca de dos a tres turnos y acaba confundiendo al agresor.",
       "shortDesc": "Ataca de dos a tres turnos y acaba confundiendo al agresor."
     },
@@ -12605,6 +12654,7 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataque en toda regla que baja mucho el Ataque Especial de quien lo usa.",
       "shortDesc": "Ataque en toda regla que baja mucho el Ataque Especial de quien lo usa."
     },
@@ -12616,6 +12666,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lanza pétalos de dos a tres turnos y acaba confundiendo al atacante.",
       "shortDesc": "Lanza pétalos de dos a tres turnos y acaba confundiendo al atacante."
     },
@@ -12627,8 +12678,9 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Inflige el doble de daño si el oponente intenta retirarse de la batalla.",
-      "shortDesc": "Inflige el doble de daño si el oponente intenta retirarse de la batalla."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "recover": {
       "id": "recover",
@@ -12638,6 +12690,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Restaura hasta la mitad de los PS máximos.",
       "shortDesc": "Restaura hasta la mitad de los PS máximos."
     },
@@ -12649,6 +12702,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataque desesperado que causa más daño cuantos menos PS tenga el usuario.",
       "shortDesc": "Ataque desesperado que causa más daño cuantos menos PS tenga el usuario."
     },
@@ -12660,6 +12714,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataque con los puños. Puede bajar la Defensa del objetivo.",
       "shortDesc": "Ataque con los puños. Puede bajar la Defensa del objetivo."
     },
@@ -12671,6 +12726,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 1,
+      "priority": 0,
       "desc": "Aprende de forma permanente el último movimiento utilizado por el objetivo. Es de un solo uso.",
       "shortDesc": "Aprende de forma permanente el último movimiento utilizado por el objetivo. Es de un solo uso."
     },
@@ -12682,6 +12738,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Mientras duerme, usa uno de sus movimientos elegido al azar.",
       "shortDesc": "Mientras duerme, usa uno de sus movimientos elegido al azar."
     },
@@ -12693,6 +12750,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Resta de 2 a 5 PP del último movimiento utilizado por el rival.",
       "shortDesc": "Resta de 2 a 5 PP del último movimiento utilizado por el rival."
     },
@@ -12704,6 +12762,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Acumula energía y sube la Defensa y la Defensa Especial. Puede utilizarse hasta tres veces.",
       "shortDesc": "Acumula energía y sube la Defensa y la Defensa Especial. Puede utilizarse hasta tres veces."
     },
@@ -12715,6 +12774,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 1,
+      "priority": 0,
       "desc": "Solo se usa como último recurso al acabarse los PP. Hiere un poco al agresor.",
       "shortDesc": "Solo se usa como último recurso al acabarse los PP. Hiere un poco al agresor."
     },
@@ -12726,6 +12786,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Inunda el terreno de combate con una ola gigante.",
       "shortDesc": "Inunda el terreno de combate con una ola gigante."
     },
@@ -12737,6 +12798,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Enfurece al objetivo para que solo use movimientos de ataque durante tres turnos.",
       "shortDesc": "Enfurece al objetivo para que solo use movimientos de ataque durante tres turnos."
     },
@@ -12748,6 +12810,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Danza histérica que confunde a los Pokémon que están alrededor del usuario.",
       "shortDesc": "Danza histérica que confunde a los Pokémon que están alrededor del usuario."
     },
@@ -12759,6 +12822,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Hace reír al objetivo para bajar su Ataque y Defensa.",
       "shortDesc": "Hace reír al objetivo para bajar su Ataque y Defensa."
     },
@@ -12770,6 +12834,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Ataca de forma alborotada durante tres turnos. Mantiene despiertos a todos.",
       "shortDesc": "Ataca de forma alborotada durante tres turnos. Mantiene despiertos a todos."
     },
@@ -12781,6 +12846,7 @@
       "basePower": 35,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Azota al objetivo con ramas finas.",
       "shortDesc": "Azota al objetivo con ramas finas."
     },
@@ -12792,6 +12858,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Quien lo usa electrifica su cuerpo para luego atacar. Se hiere mucho a sí mismo, pero puede paralizar al objetivo.",
       "shortDesc": "Quien lo usa electrifica su cuerpo para luego atacar. Se hiere mucho a sí mismo, pero puede paralizar al objetivo."
     },
@@ -12803,6 +12870,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Embiste con un gran impulso que puede llegar a amedrentar.",
       "shortDesc": "Embiste con un gran impulso que puede llegar a amedrentar."
     },
@@ -12814,6 +12882,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "El tipo y fuerza del ataque varían según el tiempo que haga.",
       "shortDesc": "El tipo y fuerza del ataque varían según el tiempo que haga."
     },
@@ -12825,6 +12894,7 @@
       "basePower": 100,
       "accuracy": 50,
       "pp": 5,
+      "priority": 0,
       "desc": "Dispara una descarga eléctrica que causa daño y parálisis.",
       "shortDesc": "Dispara una descarga eléctrica que causa daño y parálisis."
     },
@@ -12836,6 +12906,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Cura todos los problemas de estado del equipo con un suave aroma.",
       "shortDesc": "Cura todos los problemas de estado del equipo con un suave aroma."
     },
@@ -12847,6 +12918,7 @@
       "basePower": 15,
       "accuracy": 75,
       "pp": 20,
+      "priority": 0,
       "desc": "Ata y oprime de cuatro a cinco turnos.",
       "shortDesc": "Ata y oprime de cuatro a cinco turnos."
     },
@@ -12858,6 +12930,7 @@
       "basePower": 25,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Hueso en ristre, aporrea al objetivo de dos a cinco veces.",
       "shortDesc": "Hueso en ristre, aporrea al objetivo de dos a cinco veces."
     },
@@ -12869,6 +12942,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Dispara rápido de dos a cinco ráfagas de semillas de manera consecutiva.",
       "shortDesc": "Dispara rápido de dos a cinco ráfagas de semillas de manera consecutiva."
     },
@@ -12880,8 +12954,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Cambia el tipo del Pokémon usuario según el terreno de combate.",
-      "shortDesc": "Cambia el tipo del Pokémon usuario según el terreno de combate."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "clamp": {
       "id": "clamp",
@@ -12891,8 +12966,9 @@
       "basePower": 35,
       "accuracy": 75,
       "pp": 10,
-      "desc": "Atrapa al objetivo en una tenaza causando daño residual durante 2-5 turnos.",
-      "shortDesc": "Atrapa al objetivo en una tenaza causando daño residual durante 2-5 turnos."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "cottonspore": {
       "id": "cottonspore",
@@ -12902,6 +12978,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Adhiere esporas a los rivales para reducir mucho su Velocidad.",
       "shortDesc": "Adhiere esporas a los rivales para reducir mucho su Velocidad."
     },
@@ -12913,6 +12990,7 @@
       "basePower": 90,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Golpea con fuerza con una pinza enorme. Suele asestar un golpe crítico.",
       "shortDesc": "Golpea con fuerza con una pinza enorme. Suele asestar un golpe crítico."
     },
@@ -12924,6 +13002,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Un movimiento que tiene efectos distintos si el usuario es de tipo Fantasma o no.",
       "shortDesc": "Un movimiento que tiene efectos distintos si el usuario es de tipo Fantasma o no."
     },
@@ -12935,6 +13014,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 3,
       "desc": "Frena todos los ataques, pero puede fallar si se usa repetidamente.",
       "shortDesc": "Frena todos los ataques, pero puede fallar si se usa repetidamente."
     },
@@ -12946,6 +13026,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataque arriesgado que también hiere al agresor.",
       "shortDesc": "Ataque arriesgado que también hiere al agresor."
     },
@@ -12957,6 +13038,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Restaura al usuario la mitad del daño causado a un objetivo dormido.",
       "shortDesc": "Restaura al usuario la mitad del daño causado a un objetivo dormido."
     },
@@ -12968,6 +13050,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Reduce los PS del objetivo para que igualen a los del atacante.",
       "shortDesc": "Reduce los PS del objetivo para que igualen a los del atacante."
     },
@@ -12979,6 +13062,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 5,
+      "priority": 1,
       "desc": "Ataque de una velocidad extrema. Este movimiento tiene prioridad alta.",
       "shortDesc": "Ataque de una velocidad extrema. Este movimiento tiene prioridad alta."
     },
@@ -12990,6 +13074,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Un aro de fuego que atrapa al objetivo de cuatro a cinco turnos.",
       "shortDesc": "Un aro de fuego que atrapa al objetivo de cuatro a cinco turnos."
     },
@@ -13001,6 +13086,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 20,
+      "priority": -3,
       "desc": "Se concentra para dar un puñetazo. Falla si se sufre un golpe antes de su uso.",
       "shortDesc": "Se concentra para dar un puñetazo. Falla si se sufre un golpe antes de su uso."
     },
@@ -13012,6 +13098,7 @@
       "basePower": 80,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Concentra energía psíquica para golpear al objetivo dos turnos después.",
       "shortDesc": "Concentra energía psíquica para golpear al objetivo dos turnos después."
     },
@@ -13023,6 +13110,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Hace que su cuerpo crezca a marchas forzadas con lo que aumenta su Ataque y Ataque Especial.",
       "shortDesc": "Hace que su cuerpo crezca a marchas forzadas con lo que aumenta su Ataque y Ataque Especial."
     },
@@ -13034,6 +13122,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Tañido que cura los problemas de estado de todos los Pokémon del equipo.",
       "shortDesc": "Tañido que cura los problemas de estado de todos los Pokémon del equipo."
     },
@@ -13045,6 +13134,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Ataca lanzando de dos a cinco ráfagas consecutivas de carámbanos.",
       "shortDesc": "Ataca lanzando de dos a cinco ráfagas consecutivas de carámbanos."
     },
@@ -13056,6 +13146,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Impide a los contrincantes usar ataques conocidos por el usuario durante el combate.",
       "shortDesc": "Impide a los contrincantes usar ataques conocidos por el usuario durante el combate."
     },
@@ -13067,6 +13158,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Echa raíces para recuperar PS en cada turno, pero impide el relevo.",
       "shortDesc": "Echa raíces para recuperar PS en cada turno, pero impide el relevo."
     },
@@ -13078,6 +13170,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Impide al objetivo usar el objeto que lleva durante el combate. La potencia del movimiento se multiplica si el objetivo lleva un objeto.",
       "shortDesc": "Impide al objetivo usar el objeto que lleva durante el combate. La potencia del movimiento se multiplica si el objetivo lleva un objeto."
     },
@@ -13089,6 +13182,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Planta semillas que absorben PS del objetivo en cada turno y que le sirven para recuperarse.",
       "shortDesc": "Planta semillas que absorben PS del objetivo en cada turno y que le sirven para recuperarse."
     },
@@ -13100,6 +13194,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Pared de luz que reduce durante cinco turnos el daño producido por los ataques especiales.",
       "shortDesc": "Pared de luz que reduce durante cinco turnos el daño producido por los ataques especiales."
     },
@@ -13111,6 +13206,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 4,
       "desc": "Barrera capaz de devolver al agresor movimientos como Drenadoras y otros que alteran el estado o las características.",
       "shortDesc": "Barrera capaz de devolver al agresor movimientos como Drenadoras y otros que alteran el estado o las características."
     },
@@ -13122,6 +13218,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Mueve un dedo y estimula su cerebro para usar al azar casi cualquier movimiento.",
       "shortDesc": "Mueve un dedo y estimula su cerebro para usar al azar casi cualquier movimiento."
     },
@@ -13133,6 +13230,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "El usuario mengua para aumentar mucho la Evasión.",
       "shortDesc": "El usuario mengua para aumentar mucho la Evasión."
     },
@@ -13144,6 +13242,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Rodea de fina niebla al usuario y protege las características de su equipo durante cinco turnos.",
       "shortDesc": "Rodea de fina niebla al usuario y protege las características de su equipo durante cinco turnos."
     },
@@ -13155,6 +13254,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga.",
       "shortDesc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga."
     },
@@ -13166,6 +13266,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga.",
       "shortDesc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga."
     },
@@ -13177,8 +13278,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Reduce la potencia de los ataques eléctricos en el campo de batalla.",
-      "shortDesc": "Reduce la potencia de los ataques eléctricos en el campo de batalla."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "payday": {
       "id": "payday",
@@ -13188,6 +13290,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Arroja monedas al objetivo y las recupera al final del combate.",
       "shortDesc": "Arroja monedas al objetivo y las recupera al final del combate."
     },
@@ -13199,6 +13302,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Si un Pokémon escucha este canto y no es cambiado por otro en tres turnos, acaba debilitándose.",
       "shortDesc": "Si un Pokémon escucha este canto y no es cambiado por otro en tres turnos, acaba debilitándose."
     },
@@ -13210,6 +13314,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 40,
+      "priority": 0,
       "desc": "Lanza una nube de gas tóxico al objetivo. Produce envenenamiento.",
       "shortDesc": "Lanza una nube de gas tóxico al objetivo. Produce envenenamiento."
     },
@@ -13221,6 +13326,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 3,
       "desc": "Frena todos los ataques, pero puede fallar si se usa repetidamente.",
       "shortDesc": "Frena todos los ataques, pero puede fallar si se usa repetidamente."
     },
@@ -13232,6 +13338,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Quien lo usa se sume en un trance y copia cualquier cambio que haya en las características de su objetivo.",
       "shortDesc": "Quien lo usa se sume en un trance y copia cualquier cambio que haya en las características de su objetivo."
     },
@@ -13243,6 +13350,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Ataque giratorio que puede eliminar movimientos como Atadura, Constricción y Drenadoras. También aumenta la Velocidad del usuario.",
       "shortDesc": "Ataque giratorio que puede eliminar movimientos como Atadura, Constricción y Drenadoras. También aumenta la Velocidad del usuario."
     },
@@ -13254,6 +13362,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Recupera un objeto consumible equipado para volver a usarlo.",
       "shortDesc": "Recupera un objeto consumible equipado para volver a usarlo."
     },
@@ -13265,6 +13374,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Pared de luz que reduce durante cinco turnos el daño producido por los ataques físicos.",
       "shortDesc": "Pared de luz que reduce durante cinco turnos el daño producido por los ataques físicos."
     },
@@ -13276,6 +13386,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -6,
       "desc": "Se lleva al objetivo, que es cambiado por otro Pokémon. Si es un Pokémon salvaje, acaba el combate.",
       "shortDesc": "Se lleva al objetivo, que es cambiado por otro Pokémon. Si es un Pokémon salvaje, acaba el combate."
     },
@@ -13287,6 +13398,7 @@
       "basePower": 25,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Lanza pedruscos al objetivo de dos a cinco veces consecutivas.",
       "shortDesc": "Lanza pedruscos al objetivo de dos a cinco veces consecutivas."
     },
@@ -13298,6 +13410,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 25,
+      "priority": 0,
       "desc": "Un escudo que protege de problemas de estado, como el sueño o la parálisis, durante cinco turnos.",
       "shortDesc": "Un escudo que protege de problemas de estado, como el sueño o la parálisis, durante cinco turnos."
     },
@@ -13309,6 +13422,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Enreda al objetivo en un remolino de arena de cuatro a cinco turnos.",
       "shortDesc": "Enreda al objetivo en un remolino de arena de cuatro a cinco turnos."
     },
@@ -13320,6 +13434,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Asusta al objetivo para reducir mucho su Velocidad.",
       "shortDesc": "Asusta al objetivo para reducir mucho su Velocidad."
     },
@@ -13331,8 +13446,9 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Tiene un 30% de probabilidad de causar un efecto secundario según el terreno.",
-      "shortDesc": "Tiene un 30% de probabilidad de causar un efecto secundario según el terreno."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "snatch": {
       "id": "snatch",
@@ -13342,6 +13458,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 4,
       "desc": "Roba el efecto de cualquier movimiento curativo o de mejora de características del rival.",
       "shortDesc": "Roba el efecto de cualquier movimiento curativo o de mejora de características del rival."
     },
@@ -13353,6 +13470,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Fuerte ronquido que solo puede usarse dormido. Puede amedrentar al objetivo.",
       "shortDesc": "Fuerte ronquido que solo puede usarse dormido. Puede amedrentar al objetivo."
     },
@@ -13364,6 +13482,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Esparce púas alrededor del equipo rival que hieren a los Pokémon rivales que entran en combate.",
       "shortDesc": "Esparce púas alrededor del equipo rival que hieren a los Pokémon rivales que entran en combate."
     },
@@ -13375,6 +13494,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Utiliza parte de los PS propios para crear un sustituto que actúa como señuelo.",
       "shortDesc": "Utiliza parte de los PS propios para crear un sustituto que actúa como señuelo."
     },
@@ -13386,6 +13506,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Absorbe la energía acumulada con Reserva para recobrar salud. Cuanta más se haya acumulado, mayor será el número de PS que se recuperen.",
       "shortDesc": "Absorbe la energía acumulada con Reserva para recobrar salud. Cuanta más se haya acumulado, mayor será el número de PS que se recuperen."
     },
@@ -13397,6 +13518,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga.",
       "shortDesc": "Restaura PS del usuario. La cantidad varía según el tiempo que haga."
     },
@@ -13408,6 +13530,7 @@
       "basePower": 35,
       "accuracy": 95,
       "pp": 35,
+      "priority": 0,
       "desc": "Embestida con todo el cuerpo.",
       "shortDesc": "Embestida con todo el cuerpo."
     },
@@ -13419,8 +13542,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Aumenta drásticamente el Ataque Especial del usuario en dos niveles.",
-      "shortDesc": "Aumenta drásticamente el Ataque Especial del usuario en dos niveles."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "thrash": {
       "id": "thrash",
@@ -13430,6 +13554,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataque de dos a tres turnos que acaba confundiendo al agresor.",
       "shortDesc": "Ataque de dos a tres turnos que acaba confundiendo al agresor."
     },
@@ -13441,6 +13566,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Atormenta y enfurece al objetivo, que no puede usar dos veces seguidas el mismo movimiento.",
       "shortDesc": "Atormenta y enfurece al objetivo, que no puede usar dos veces seguidas el mismo movimiento."
     },
@@ -13452,6 +13578,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Envenena gravemente al objetivo y causa un daño mayor en cada turno.",
       "shortDesc": "Envenena gravemente al objetivo y causa un daño mayor en cada turno."
     },
@@ -13463,6 +13590,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario se transforma en una copia del objetivo, con los mismos movimientos.",
       "shortDesc": "El usuario se transforma en una copia del objetivo, con los mismos movimientos."
     },
@@ -13474,8 +13602,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Reduce la potencia de los ataques de fuego en el campo de batalla.",
-      "shortDesc": "Reduce la potencia de los ataques de fuego en el campo de batalla."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "whirlpool": {
       "id": "whirlpool",
@@ -13485,6 +13614,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Una tromba de agua atrapa al objetivo durante cuatro o cinco turnos.",
       "shortDesc": "Una tromba de agua atrapa al objetivo durante cuatro o cinco turnos."
     },
@@ -13496,6 +13626,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -6,
       "desc": "Se lleva al objetivo, que es cambiado por otro Pokémon. Si es un Pokémon salvaje, acaba el combate.",
       "shortDesc": "Se lleva al objetivo, que es cambiado por otro Pokémon. Si es un Pokémon salvaje, acaba el combate."
     },
@@ -13507,6 +13638,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Restaura en el siguiente turno la mitad de los PS máximos del usuario o se los pasa al Pokémon que lo sustituye.",
       "shortDesc": "Restaura en el siguiente turno la mitad de los PS máximos del usuario o se los pasa al Pokémon que lo sustituye."
     },
@@ -13518,6 +13650,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Oprime al objetivo de cuatro a cinco turnos con ramas o con su cuerpo.",
       "shortDesc": "Oprime al objetivo de cuatro a cinco turnos con ramas o con su cuerpo."
     },
@@ -13529,6 +13662,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Gran bostezo que induce al sueño al objetivo en el siguiente turno.",
       "shortDesc": "Gran bostezo que induce al sueño al objetivo en el siguiente turno."
     },
@@ -13540,6 +13674,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Transforma la estructura celular para hacerse líquido y aumenta mucho la Defensa.",
       "shortDesc": "Transforma la estructura celular para hacerse líquido y aumenta mucho la Defensa."
     },
@@ -13551,6 +13686,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 25,
+      "priority": 0,
       "desc": "Viento cortante que azota. Suele ser un golpe crítico.",
       "shortDesc": "Viento cortante que azota. Suele ser un golpe crítico."
     },
@@ -13562,8 +13698,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
-      "desc": "Aumenta drásticamente la Defensa del usuario en dos niveles.",
-      "shortDesc": "Aumenta drásticamente la Defensa del usuario en dos niveles."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "block": {
       "id": "block",
@@ -13573,6 +13710,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Le corta el paso al objetivo para que no pueda escapar.",
       "shortDesc": "Le corta el paso al objetivo para que no pueda escapar."
     },
@@ -13584,6 +13722,7 @@
       "basePower": 85,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Salta sobre el objetivo con todo su peso y puede llegar a paralizarlo.",
       "shortDesc": "Salta sobre el objetivo con todo su peso y puede llegar a paralizarlo."
     },
@@ -13595,6 +13734,7 @@
       "basePower": 85,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "El usuario bota en el primer turno y golpea al objetivo en el segundo y puede llegar a paralizarlo.",
       "shortDesc": "El usuario bota en el primer turno y golpea al objetivo en el segundo y puede llegar a paralizarlo."
     },
@@ -13606,8 +13746,9 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 30,
-      "desc": "Puede reducir la Velocidad del objetivo (10% de probabilidad).",
-      "shortDesc": "Puede reducir la Velocidad del objetivo (10% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "charm": {
       "id": "charm",
@@ -13617,6 +13758,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Engatusa al objetivo y reduce mucho su Ataque.",
       "shortDesc": "Engatusa al objetivo y reduce mucho su Ataque."
     },
@@ -13628,6 +13770,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "Llama intensa que chamusca y puede causar quemaduras.",
       "shortDesc": "Llama intensa que chamusca y puede causar quemaduras."
     },
@@ -13639,6 +13782,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataca con una gran ráfaga de fuego que puede causar quemaduras.",
       "shortDesc": "Ataca con una gran ráfaga de fuego que puede causar quemaduras."
     },
@@ -13650,8 +13794,9 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 15,
-      "desc": "Duerme al objetivo mediante un silbido de hierba.",
-      "shortDesc": "Duerme al objetivo mediante un silbido de hierba."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "growl": {
       "id": "growl",
@@ -13661,6 +13806,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Dulce gruñido que reduce el Ataque del equipo rival.",
       "shortDesc": "Dulce gruñido que reduce el Ataque del equipo rival."
     },
@@ -13672,6 +13818,7 @@
       "basePower": 100,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Provoca un viento abrasador que puede quemar al objetivo.",
       "shortDesc": "Provoca un viento abrasador que puede quemar al objetivo."
     },
@@ -13683,6 +13830,7 @@
       "basePower": 120,
       "accuracy": 80,
       "pp": 5,
+      "priority": 0,
       "desc": "Lanza una gran masa de agua a presión para atacar.",
       "shortDesc": "Lanza una gran masa de agua a presión para atacar."
     },
@@ -13694,6 +13842,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Grito desgarrador que inflige daño al objetivo.",
       "shortDesc": "Grito desgarrador que inflige daño al objetivo."
     },
@@ -13705,6 +13854,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Rayo de hielo que puede llegar a congelar.",
       "shortDesc": "Rayo de hielo que puede llegar a congelar."
     },
@@ -13716,6 +13866,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Restaura al usuario la mitad del daño causado al objetivo.",
       "shortDesc": "Restaura al usuario la mitad del daño causado al objetivo."
     },
@@ -13727,6 +13878,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Una lengua ataca al objetivo. Puede causar parálisis.",
       "shortDesc": "Una lengua ataca al objetivo. Puede causar parálisis."
     },
@@ -13738,6 +13890,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Mal de ojo que impide al objetivo huir del combate.",
       "shortDesc": "Mal de ojo que impide al objetivo huir del combate."
     },
@@ -13749,6 +13902,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Horrible chirrido metálico que baja mucho la Defensa Especial del objetivo.",
       "shortDesc": "Horrible chirrido metálico que baja mucho la Defensa Especial del objetivo."
     },
@@ -13760,6 +13914,7 @@
       "basePower": 100,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Puñetazo que impacta como un meteorito y puede subir el Ataque del agresor.",
       "shortDesc": "Puñetazo que impacta como un meteorito y puede subir el Ataque del agresor."
     },
@@ -13771,6 +13926,7 @@
       "basePower": 95,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Ataque con agua lodosa que puede bajar la Precisión del equipo rival.",
       "shortDesc": "Ataque con agua lodosa que puede bajar la Precisión del equipo rival."
     },
@@ -13782,6 +13938,7 @@
       "basePower": 14,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Lanza finas púas que hieren de dos a cinco veces.",
       "shortDesc": "Lanza finas púas que hieren de dos a cinco veces."
     },
@@ -13793,6 +13950,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Colmillos tóxicos que pueden envenenar gravemente al objetivo.",
       "shortDesc": "Colmillos tóxicos que pueden envenenar gravemente al objetivo."
     },
@@ -13804,6 +13962,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 35,
+      "priority": 0,
       "desc": "Polvo tóxico que envenena al objetivo.",
       "shortDesc": "Polvo tóxico que envenena al objetivo."
     },
@@ -13815,8 +13974,9 @@
       "basePower": 0,
       "accuracy": 80,
       "pp": 15,
-      "desc": "Causa una cantidad de daño aleatoria basada en el nivel del usuario.",
-      "shortDesc": "Causa una cantidad de daño aleatoria basada en el nivel del usuario."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "rocktomb": {
       "id": "rocktomb",
@@ -13826,6 +13986,7 @@
       "basePower": 50,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Tira rocas que detienen al objetivo y bajan su Velocidad.",
       "shortDesc": "Tira rocas que detienen al objetivo y bajan su Velocidad."
     },
@@ -13837,6 +13998,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Alarido agudo que reduce mucho la Defensa del objetivo.",
       "shortDesc": "Alarido agudo que reduce mucho la Defensa del objetivo."
     },
@@ -13848,6 +14010,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 15,
+      "priority": 0,
       "desc": "Cancioncilla que hace dormir profundamente al objetivo.",
       "shortDesc": "Cancioncilla que hace dormir profundamente al objetivo."
     },
@@ -13859,6 +14022,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "El usuario se prepara y sube su Defensa en el primer turno y en el segundo arremete con un cabezazo.",
       "shortDesc": "El usuario se prepara y sube su Defensa en el primer turno y en el segundo arremete con un cabezazo."
     },
@@ -13870,6 +14034,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Esparce polvo que duerme al objetivo.",
       "shortDesc": "Esparce polvo que duerme al objetivo."
     },
@@ -13881,8 +14046,9 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Causa el doble de daño a un objetivo paralizado, pero cura su parálisis.",
-      "shortDesc": "Causa el doble de daño a un objetivo paralizado, pero cura su parálisis."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "smog": {
       "id": "smog",
@@ -13892,6 +14058,7 @@
       "basePower": 20,
       "accuracy": 70,
       "pp": 20,
+      "priority": 0,
       "desc": "Lanza un ataque con gases tóxicos que pueden llegar a envenenar.",
       "shortDesc": "Lanza un ataque con gases tóxicos que pueden llegar a envenenar."
     },
@@ -13903,6 +14070,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Esparce esporas que inducen al sueño.",
       "shortDesc": "Esparce esporas que inducen al sueño."
     },
@@ -13914,6 +14082,7 @@
       "basePower": 0,
       "accuracy": 95,
       "pp": 40,
+      "priority": 0,
       "desc": "Lanza seda a los rivales y reduce mucho su Velocidad.",
       "shortDesc": "Lanza seda a los rivales y reduce mucho su Velocidad."
     },
@@ -13925,6 +14094,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 30,
+      "priority": 0,
       "desc": "Esparce polvo que paraliza al objetivo.",
       "shortDesc": "Esparce polvo que paraliza al objetivo."
     },
@@ -13936,6 +14106,7 @@
       "basePower": 80,
       "accuracy": 80,
       "pp": 25,
+      "priority": 0,
       "desc": "El usuario se lanza al suelo con el oponente en brazos y también se hace un poco de daño.",
       "shortDesc": "El usuario se lanza al suelo con el oponente en brazos y también se hace un poco de daño."
     },
@@ -13947,6 +14118,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 20,
+      "priority": 0,
       "desc": "Raras ondas sónicas que confunden al objetivo.",
       "shortDesc": "Raras ondas sónicas que confunden al objetivo."
     },
@@ -13958,6 +14130,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "Da un beso con tal dulzura que causa confusión.",
       "shortDesc": "Da un beso con tal dulzura que causa confusión."
     },
@@ -13969,6 +14142,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Un dulce aroma engatusa al objetivo, por lo que se reduce mucho su Evasión.",
       "shortDesc": "Un dulce aroma engatusa al objetivo, por lo que se reduce mucho su Evasión."
     },
@@ -13980,6 +14154,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Baile frenético que aumenta mucho el Ataque.",
       "shortDesc": "Baile frenético que aumenta mucho el Ataque."
     },
@@ -13991,6 +14166,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "El agresor ataca y le quita el objeto al objetivo siempre y cuando no lleve ninguno.",
       "shortDesc": "El agresor ataca y le quita el objeto al objetivo siempre y cuando no lleve ninguno."
     },
@@ -14002,6 +14178,7 @@
       "basePower": 120,
       "accuracy": 70,
       "pp": 10,
+      "priority": 0,
       "desc": "Un poderoso rayo que daña al objetivo y puede paralizarlo.",
       "shortDesc": "Un poderoso rayo que daña al objetivo y puede paralizarlo."
     },
@@ -14013,6 +14190,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Potente ataque eléctrico que puede paralizar al objetivo.",
       "shortDesc": "Potente ataque eléctrico que puede paralizar al objetivo."
     },
@@ -14024,6 +14202,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Siniestra llama morada que produce quemaduras.",
       "shortDesc": "Siniestra llama morada que produce quemaduras."
     },
@@ -14035,6 +14214,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Si el usuario se debilita por un ataque rival antes de usar otro movimiento, el Pokémon rival se debilitará también. Puede fallar si se usa repetidamente.",
       "shortDesc": "Si el usuario se debilita por un ataque rival antes de usar otro movimiento, el Pokémon rival se debilitará también. Puede fallar si se usa repetidamente."
     },
@@ -14046,6 +14226,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Debilita al objetivo de un solo golpe. Si lo usa un Pokémon que no sea de tipo Hielo, es difícil que acierte.",
       "shortDesc": "Debilita al objetivo de un solo golpe. Si lo usa un Pokémon que no sea de tipo Hielo, es difícil que acierte."
     },
@@ -14057,6 +14238,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Provoca confusión en el objetivo, pero también sube mucho su Ataque.",
       "shortDesc": "Provoca confusión en el objetivo, pero también sube mucho su Ataque."
     },
@@ -14068,6 +14250,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Una ligera descarga que paraliza al objetivo si lo alcanza.",
       "shortDesc": "Una ligera descarga que paraliza al objetivo si lo alcanza."
     },
@@ -14079,8 +14262,9 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
-      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
-      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "boneclub": {
       "id": "boneclub",
@@ -14090,8 +14274,9 @@
       "basePower": 65,
       "accuracy": 85,
       "pp": 20,
-      "desc": "Puede hacer retroceder al objetivo (10% de probabilidad).",
-      "shortDesc": "Puede hacer retroceder al objetivo (10% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "cometpunch": {
       "id": "cometpunch",
@@ -14101,8 +14286,9 @@
       "basePower": 18,
       "accuracy": 85,
       "pp": 15,
-      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
-      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "constrict": {
       "id": "constrict",
@@ -14112,8 +14298,9 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 35,
-      "desc": "Puede reducir la Velocidad del oponente (10% de probabilidad).",
-      "shortDesc": "Puede reducir la Velocidad del oponente (10% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "dizzypunch": {
       "id": "dizzypunch",
@@ -14123,8 +14310,9 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Puede confundir al objetivo (20% de probabilidad).",
-      "shortDesc": "Puede confundir al objetivo (20% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "doubleslap": {
       "id": "doubleslap",
@@ -14134,8 +14322,9 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 10,
-      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
-      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "dragonrage": {
       "id": "dragonrage",
@@ -14145,8 +14334,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Causa siempre 40 PS de daño al objetivo de forma fija.",
-      "shortDesc": "Causa siempre 40 PS de daño al objetivo de forma fija."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "eggbomb": {
       "id": "eggbomb",
@@ -14156,8 +14346,9 @@
       "basePower": 100,
       "accuracy": 75,
       "pp": 10,
-      "desc": "Lanza un huevo masivo que explota causando daño.",
-      "shortDesc": "Lanza un huevo masivo que explota causando daño."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "frustration": {
       "id": "frustration",
@@ -14167,8 +14358,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Su potencia aumenta cuanto menos feliz sea el Pokémon con su entrenador.",
-      "shortDesc": "Su potencia aumenta cuanto menos feliz sea el Pokémon con su entrenador."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "howl": {
       "id": "howl",
@@ -14178,6 +14370,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Aullido que sube el ánimo y aumenta el Ataque del equipo.",
       "shortDesc": "Aullido que sube el ánimo y aumenta el Ataque del equipo."
     },
@@ -14189,6 +14382,7 @@
       "basePower": 80,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataca con agudos colmillos. Puede amedrentar al objetivo.",
       "shortDesc": "Ataca con agudos colmillos. Puede amedrentar al objetivo."
     },
@@ -14200,8 +14394,9 @@
       "basePower": 30,
       "accuracy": 90,
       "pp": 20,
-      "desc": "Ataca durante 5 turnos consecutivos, duplicando su daño con cada acierto.",
-      "shortDesc": "Ataca durante 5 turnos consecutivos, duplicando su daño con cada acierto."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "karatechop": {
       "id": "karatechop",
@@ -14211,8 +14406,9 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
-      "desc": "Tiene una alta probabilidad de asestar un golpe crítico.",
-      "shortDesc": "Tiene una alta probabilidad de asestar un golpe crítico."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "lowkick": {
       "id": "lowkick",
@@ -14222,6 +14418,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Patada baja que derriba al oponente. Cuanto más pesa el objetivo, más daño le causa.",
       "shortDesc": "Patada baja que derriba al oponente. Cuanto más pesa el objetivo, más daño le causa."
     },
@@ -14233,8 +14430,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
-      "desc": "Causa un terremoto de potencia aleatoria basada en una escala de 4 a 10.",
-      "shortDesc": "Causa un terremoto de potencia aleatoria basada en una escala de 4 a 10."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "meditate": {
       "id": "meditate",
@@ -14244,8 +14442,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
-      "desc": "Aumenta el Ataque del usuario en un nivel.",
-      "shortDesc": "Aumenta el Ataque del usuario en un nivel."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "psychoboost": {
       "id": "psychoboost",
@@ -14255,8 +14454,9 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
-      "desc": "Ataque masivo que reduce el Ataque Especial del usuario en dos niveles.",
-      "shortDesc": "Ataque masivo que reduce el Ataque Especial del usuario en dos niveles."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "rage": {
       "id": "rage",
@@ -14266,8 +14466,9 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Aumenta el Ataque del usuario cada vez que es golpeado por el rival.",
-      "shortDesc": "Aumenta el Ataque del usuario cada vez que es golpeado por el rival."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "razorwind": {
       "id": "razorwind",
@@ -14277,8 +14478,9 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 10,
-      "desc": "El usuario crea un torbellino en el primer turno y ataca en el segundo.",
-      "shortDesc": "El usuario crea un torbellino en el primer turno y ataca en el segundo."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "refresh": {
       "id": "refresh",
@@ -14288,8 +14490,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Cura al usuario de parálisis, envenenamiento o quemaduras.",
-      "shortDesc": "Cura al usuario de parálisis, envenenamiento o quemaduras."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "return": {
       "id": "return",
@@ -14299,8 +14502,9 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Su potencia aumenta cuanto más feliz sea el Pokémon con su entrenador.",
-      "shortDesc": "Su potencia aumenta cuanto más feliz sea el Pokémon con su entrenador."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "rollingkick": {
       "id": "rollingkick",
@@ -14310,8 +14514,9 @@
       "basePower": 60,
       "accuracy": 85,
       "pp": 15,
-      "desc": "Puede hacer retroceder al objetivo (30% de probabilidad).",
-      "shortDesc": "Puede hacer retroceder al objetivo (30% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "sharpen": {
       "id": "sharpen",
@@ -14321,8 +14526,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
-      "desc": "Aumenta el Ataque del usuario en un nivel al afilar sus bordes.",
-      "shortDesc": "Aumenta el Ataque del usuario en un nivel al afilar sus bordes."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "signalbeam": {
       "id": "signalbeam",
@@ -14332,8 +14538,9 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Puede confundir al objetivo (10% de probabilidad).",
-      "shortDesc": "Puede confundir al objetivo (10% de probabilidad)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "silverwind": {
       "id": "silverwind",
@@ -14343,8 +14550,9 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
-      "desc": "Puede aumentar todas las estadísticas del usuario en un nivel (10%).",
-      "shortDesc": "Puede aumentar todas las estadísticas del usuario en un nivel (10%)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "skyuppercut": {
       "id": "skyuppercut",
@@ -14354,8 +14562,9 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 15,
-      "desc": "Un gancho ascendente que puede golpear a objetivos en el aire (Vuelo).",
-      "shortDesc": "Un gancho ascendente que puede golpear a objetivos en el aire (Vuelo)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "sonicboom": {
       "id": "sonicboom",
@@ -14365,8 +14574,9 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 20,
-      "desc": "Causa siempre 20 PS de daño al objetivo de forma fija.",
-      "shortDesc": "Causa siempre 20 PS de daño al objetivo de forma fija."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "spiderweb": {
       "id": "spiderweb",
@@ -14376,8 +14586,9 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
-      "desc": "Evita que el objetivo pueda huir o ser cambiado del combate.",
-      "shortDesc": "Evita que el objetivo pueda huir o ser cambiado del combate."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "spikecannon": {
       "id": "spikecannon",
@@ -14387,8 +14598,9 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
-      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "teleport": {
       "id": "teleport",
@@ -14398,6 +14610,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Permite al usuario cambiarse por otro Pokémon del equipo, si es posible. Si un Pokémon salvaje usa este movimiento, huye del combate.",
       "shortDesc": "Permite al usuario cambiarse por otro Pokémon del equipo, si es posible. Si un Pokémon salvaje usa este movimiento, huye del combate."
     },
@@ -14409,8 +14622,9 @@
       "basePower": 25,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Ataca dos veces e inflige daño con probabilidad de envenenar (20%).",
-      "shortDesc": "Ataca dos veces e inflige daño con probabilidad de envenenar (20%)."
+      "priority": 0,
+      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
+      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
     },
     "bonemerang": {
       "id": "bonemerang",
@@ -14420,6 +14634,7 @@
       "basePower": 50,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Lanza un hueso a modo de bumerán que golpea dos veces.",
       "shortDesc": "Lanza un hueso a modo de bumerán que golpea dos veces."
     },
@@ -14431,6 +14646,7 @@
       "basePower": 50,
       "accuracy": 95,
       "pp": 30,
+      "priority": 0,
       "desc": "Corta al adversario con garras, guadañas, etc.",
       "shortDesc": "Corta al adversario con garras, guadañas, etc."
     },
@@ -14442,6 +14658,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Si el usuario se debilita, el ataque usado por el rival pierde todos sus PP.",
       "shortDesc": "Si el usuario se debilita, el ataque usado por el rival pierde todos sus PP."
     },
@@ -14453,6 +14670,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Tormenta de granizo que dura cinco turnos. Hiere a todos los Pokémon excepto a los de tipo Hielo.",
       "shortDesc": "Tormenta de granizo que dura cinco turnos. Hiere a todos los Pokémon excepto a los de tipo Hielo."
     },
@@ -14464,6 +14682,7 @@
       "basePower": 0,
       "accuracy": 80,
       "pp": 15,
+      "priority": 0,
       "desc": "Dobla una cuchara para distraer al objetivo y bajar su nivel de Precisión.",
       "shortDesc": "Dobla una cuchara para distraer al objetivo y bajar su nivel de Precisión."
     },
@@ -14475,6 +14694,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "Intimida al objetivo con una cara que asusta y le da un beso que lo deja dormido.",
       "shortDesc": "Intimida al objetivo con una cara que asusta y le da un beso que lo deja dormido."
     },
@@ -14486,6 +14706,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Fogonazo de luz que puede bajar la Defensa Especial del objetivo.",
       "shortDesc": "Fogonazo de luz que puede bajar la Defensa Especial del objetivo."
     },
@@ -14497,6 +14718,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Restaura la mitad de los PS máximos del usuario.",
       "shortDesc": "Restaura la mitad de los PS máximos del usuario."
     },
@@ -14508,6 +14730,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Banco de niebla que puede bajar el Ataque Especial del objetivo.",
       "shortDesc": "Banco de niebla que puede bajar el Ataque Especial del objetivo."
     },
@@ -14519,6 +14742,7 @@
       "basePower": 65,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Dispara tinta a la cara. Puede bajar la Precisión.",
       "shortDesc": "Dispara tinta a la cara. Puede bajar la Precisión."
     },
@@ -14530,6 +14754,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Restaura todos los PS y cura todos los problemas de estado del usuario, que se duerme los dos turnos siguientes.",
       "shortDesc": "Restaura todos los PS y cura todos los problemas de estado del usuario, que se duerme los dos turnos siguientes."
     },
@@ -14541,6 +14766,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": -4,
       "desc": "Ataque que produce el doble de daño si el usuario resulta herido en el mismo turno.",
       "shortDesc": "Ataque que produce el doble de daño si el usuario resulta herido en el mismo turno."
     },
@@ -14552,6 +14778,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario se relaja y restaura la mitad de sus PS máximos.",
       "shortDesc": "El usuario se relaja y restaura la mitad de sus PS máximos."
     },
@@ -14563,6 +14790,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Restaura la mitad de los PS máximos del usuario.",
       "shortDesc": "Restaura la mitad de los PS máximos del usuario."
     },
@@ -14574,6 +14802,7 @@
       "basePower": 70,
       "accuracy": true,
       "pp": 10,
+      "priority": -1,
       "desc": "El usuario ataca el último, pero no falla.",
       "shortDesc": "El usuario ataca el último, pero no falla."
     },
@@ -14585,6 +14814,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "El usuario lanza un ataque muy rápido e ineludible.",
       "shortDesc": "El usuario lanza un ataque muy rápido e ineludible."
     },
@@ -14596,6 +14826,7 @@
       "basePower": 100,
       "accuracy": 95,
       "pp": 5,
+      "priority": 0,
       "desc": "Lanza un chorro de aire que suele asestar un golpe crítico.",
       "shortDesc": "Lanza un chorro de aire que suele asestar un golpe crítico."
     },
@@ -14607,6 +14838,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Relaja el cuerpo para ganar mucha Velocidad.",
       "shortDesc": "Relaja el cuerpo para ganar mucha Velocidad."
     },
@@ -14618,6 +14850,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "El usuario olvida sus preocupaciones y aumenta mucho la Defensa Especial.",
       "shortDesc": "El usuario olvida sus preocupaciones y aumenta mucho la Defensa Especial."
     },
@@ -14629,6 +14862,7 @@
       "basePower": 15,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Fuertes empujones que golpean de dos a cinco veces seguidas.",
       "shortDesc": "Fuertes empujones que golpean de dos a cinco veces seguidas."
     },
@@ -14640,6 +14874,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Si el objetivo es del sexo opuesto, se enamorará y bajará la posibilidad de que ataque.",
       "shortDesc": "Si el objetivo es del sexo opuesto, se enamorará y bajará la posibilidad de que ataque."
     },
@@ -14651,6 +14886,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Rayo multicolor que puede reducir el Ataque.",
       "shortDesc": "Rayo multicolor que puede reducir el Ataque."
     },
@@ -14662,6 +14898,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Cambia el puesto con otro miembro del equipo y le pasa los cambios de características.",
       "shortDesc": "Cambia el puesto con otro miembro del equipo y le pasa los cambios de características."
     },
@@ -14673,6 +14910,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Reduce la mitad de los PS máximos para mejorar al máximo el Ataque.",
       "shortDesc": "Reduce la mitad de los PS máximos para mejorar al máximo el Ataque."
     },
@@ -14684,6 +14922,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Un voraz bocado que puede amedrentar al objetivo.",
       "shortDesc": "Un voraz bocado que puede amedrentar al objetivo."
     },
@@ -14695,6 +14934,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Explosión de fuego. El atacante debe descansar el siguiente turno.",
       "shortDesc": "Explosión de fuego. El atacante debe descansar el siguiente turno."
     },
@@ -14706,6 +14946,7 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Patada que suele ser un golpe crítico y puede causar quemaduras.",
       "shortDesc": "Patada que suele ser un golpe crítico y puede causar quemaduras."
     },
@@ -14717,6 +14958,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Diluvio de burbujas que puede bajar la Velocidad.",
       "shortDesc": "Diluvio de burbujas que puede bajar la Velocidad."
     },
@@ -14728,6 +14970,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Robustece el cuerpo para subir el Ataque y la Defensa.",
       "shortDesc": "Robustece el cuerpo para subir el Ataque y la Defensa."
     },
@@ -14739,6 +14982,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Aumenta la concentración y calma el espíritu para subir el Ataque Especial y la Defensa Especial.",
       "shortDesc": "Aumenta la concentración y calma el espíritu para subir el Ataque Especial y la Defensa Especial."
     },
@@ -14750,6 +14994,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Rayo siniestro que confunde al objetivo.",
       "shortDesc": "Rayo siniestro que confunde al objetivo."
     },
@@ -14761,6 +15006,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Débil ataque telequinético que puede causar confusión.",
       "shortDesc": "Débil ataque telequinético que puede causar confusión."
     },
@@ -14772,6 +15018,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Sube la Defensa y la Defensa Especial propias con energía mística.",
       "shortDesc": "Sube la Defensa y la Defensa Especial propias con energía mística."
     },
@@ -14783,6 +15030,7 @@
       "basePower": 100,
       "accuracy": 80,
       "pp": 5,
+      "priority": 0,
       "desc": "Corte doble que suele propinar un golpe crítico.",
       "shortDesc": "Corte doble que suele propinar un golpe crítico."
     },
@@ -14794,6 +15042,7 @@
       "basePower": 75,
       "accuracy": 95,
       "pp": 10,
+      "priority": 0,
       "desc": "Hace trizas al objetivo con garras afiladas y puede bajar su Defensa.",
       "shortDesc": "Hace trizas al objetivo con garras afiladas y puede bajar su Defensa."
     },
@@ -14805,6 +15054,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Se enrosca para ocultar sus puntos débiles y aumentar la Defensa.",
       "shortDesc": "Se enrosca para ocultar sus puntos débiles y aumentar la Defensa."
     },
@@ -14816,6 +15066,7 @@
       "basePower": 30,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Una patada doble. Golpea dos veces.",
       "shortDesc": "Una patada doble. Golpea dos veces."
     },
@@ -14827,6 +15078,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "Crea copias de sí mismo para mejorar la Evasión.",
       "shortDesc": "Crea copias de sí mismo para mejorar la Evasión."
     },
@@ -14838,6 +15090,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Poderosa ráfaga de aliento que golpea al objetivo y puede paralizarlo.",
       "shortDesc": "Poderosa ráfaga de aliento que golpea al objetivo y puede paralizarlo."
     },
@@ -14849,6 +15102,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Araña al objetivo con garras afiladas.",
       "shortDesc": "Araña al objetivo con garras afiladas."
     },
@@ -14860,6 +15114,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Danza mística que sube el Ataque y la Velocidad.",
       "shortDesc": "Danza mística que sube el Ataque y la Velocidad."
     },
@@ -14871,6 +15126,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Picotazo giratorio y perforador muy potente.",
       "shortDesc": "Picotazo giratorio y perforador muy potente."
     },
@@ -14882,6 +15138,7 @@
       "basePower": 100,
       "accuracy": 50,
       "pp": 5,
+      "priority": 0,
       "desc": "Puñetazo con toda la fuerza concentrada. Causa confusión si atina.",
       "shortDesc": "Puñetazo con toda la fuerza concentrada. Causa confusión si atina."
     },
@@ -14893,6 +15150,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Un terremoto que afecta a todos los Pokémon que estén a su alrededor.",
       "shortDesc": "Un terremoto que afecta a todos los Pokémon que estén a su alrededor."
     },
@@ -14904,6 +15162,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Ataca con llamas pequeñas que pueden causar quemaduras.",
       "shortDesc": "Ataca con llamas pequeñas que pueden causar quemaduras."
     },
@@ -14915,6 +15174,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 4,
       "desc": "Resiste cualquier ataque y deja al menos 1 PS. Puede fallar si se usa repetidamente.",
       "shortDesc": "Resiste cualquier ataque y deja al menos 1 PS. Puede fallar si se usa repetidamente."
     },
@@ -14926,6 +15186,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Furia explosiva. Cuanto menor sea el número de PS del usuario, menos daño hará el ataque.",
       "shortDesc": "Furia explosiva. Cuanto menor sea el número de PS del usuario, menos daño hará el ataque."
     },
@@ -14937,6 +15198,7 @@
       "basePower": 250,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "El atacante causa una grandísima explosión y hiere a todos a su alrededor. El usuario se debilita de inmediato.",
       "shortDesc": "El atacante causa una grandísima explosión y hiere a todos a su alrededor. El usuario se debilita de inmediato."
     },
@@ -14948,6 +15210,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Si el usuario está quemado, paralizado o envenenado, ataca con el doble de potencia.",
       "shortDesc": "Si el usuario está quemado, paralizado o envenenado, ataca con el doble de potencia."
     },
@@ -14959,6 +15222,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lágrimas de cocodrilo que bajan mucho la Defensa Especial del objetivo.",
       "shortDesc": "Lágrimas de cocodrilo que bajan mucho la Defensa Especial del objetivo."
     },
@@ -14970,6 +15234,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Ataque moderado que no debilita al objetivo y le deja al menos 1 PS.",
       "shortDesc": "Ataque moderado que no debilita al objetivo y le deja al menos 1 PS."
     },
@@ -14981,6 +15246,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Envuelve al objetivo con un manto de plumas para reducir mucho su Ataque.",
       "shortDesc": "Envuelve al objetivo con un manto de plumas para reducir mucho su Ataque."
     },
@@ -14992,6 +15258,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Puñetazo ardiente que puede causar quemaduras.",
       "shortDesc": "Puñetazo ardiente que puede causar quemaduras."
     },
@@ -15003,6 +15270,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Abre una grieta en el suelo y mete al objetivo en ella. Fulmina en un golpe.",
       "shortDesc": "Abre una grieta en el suelo y mete al objetivo en ella. Fulmina en un golpe."
     },
@@ -15014,6 +15282,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Ataca envuelto en fuego. Puede causar quemaduras.",
       "shortDesc": "Ataca envuelto en fuego. Puede causar quemaduras."
     },
@@ -15025,6 +15294,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Halaga al objetivo y lo confunde, pero también sube su Ataque Especial.",
       "shortDesc": "Halaga al objetivo y lo confunde, pero también sube su Ataque Especial."
     },
@@ -15036,6 +15306,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Concentra energía para aumentar las posibilidades de asestar un golpe crítico.",
       "shortDesc": "Concentra energía para aumentar las posibilidades de asestar un golpe crítico."
     },
@@ -15047,6 +15318,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Golpea con una enorme planta. Quien lo usa no puede moverse en el siguiente turno.",
       "shortDesc": "Golpea con una enorme planta. Quien lo usa no puede moverse en el siguiente turno."
     },
@@ -15058,6 +15330,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Cornea al objetivo de dos a cinco veces.",
       "shortDesc": "Cornea al objetivo de dos a cinco veces."
     },
@@ -15069,6 +15342,7 @@
       "basePower": 18,
       "accuracy": 80,
       "pp": 15,
+      "priority": 0,
       "desc": "Araña rápidamente de dos a cinco veces.",
       "shortDesc": "Araña rápidamente de dos a cinco veces."
     },
@@ -15080,6 +15354,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataque cortante que debilita al oponente de un golpe si acierta.",
       "shortDesc": "Ataque cortante que debilita al oponente de un golpe si acierta."
     },
@@ -15091,6 +15366,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Crea un tornado con las alas y lo lanza contra el objetivo.",
       "shortDesc": "Crea un tornado con las alas y lo lanza contra el objetivo."
     },
@@ -15102,6 +15378,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Tensa la musculatura del usuario para aumentar la Defensa.",
       "shortDesc": "Tensa la musculatura del usuario para aumentar la Defensa."
     },
@@ -15113,6 +15390,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Potente cabezazo que puede amedrentar al objetivo.",
       "shortDesc": "Potente cabezazo que puede amedrentar al objetivo."
     },
@@ -15124,6 +15402,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 5,
       "desc": "El usuario ayuda a un aliado reforzando la potencia de su ataque.",
       "shortDesc": "El usuario ayuda a un aliado reforzando la potencia de su ataque."
     },
@@ -15135,6 +15414,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Ataca al objetivo con una cornada.",
       "shortDesc": "Ataca al objetivo con una cornada."
     },
@@ -15146,6 +15426,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataque con un cuerno giratorio que fulmina de un solo golpe al objetivo si lo alcanza.",
       "shortDesc": "Ataque con un cuerno giratorio que fulmina de un solo golpe al objetivo si lo alcanza."
     },
@@ -15157,6 +15438,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Disparo de agua. El atacante debe descansar el siguiente turno.",
       "shortDesc": "Disparo de agua. El atacante debe descansar el siguiente turno."
     },
@@ -15168,6 +15450,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Es eficaz, pero el atacante deberá descansar en el siguiente turno.",
       "shortDesc": "Es eficaz, pero el atacante deberá descansar en el siguiente turno."
     },
@@ -15179,6 +15462,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Puñetazo helado que puede llegar a congelar.",
       "shortDesc": "Puñetazo helado que puede llegar a congelar."
     },
@@ -15190,6 +15474,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataque con aire helado que baja la Velocidad de los rivales.",
       "shortDesc": "Ataque con aire helado que baja la Velocidad de los rivales."
     },
@@ -15201,6 +15486,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "Fortalece el cuerpo como si fuera de hierro y sube mucho la Defensa.",
       "shortDesc": "Fortalece el cuerpo como si fuera de hierro y sube mucho la Defensa."
     },
@@ -15212,6 +15498,7 @@
       "basePower": 100,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Ataca con una cola férrea y puede bajar la Defensa del objetivo.",
       "shortDesc": "Ataca con una cola férrea y puede bajar la Defensa del objetivo."
     },
@@ -15223,6 +15510,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Intimida a los rivales para bajar su Defensa.",
       "shortDesc": "Intimida a los rivales para bajar su Defensa."
     },
@@ -15234,6 +15522,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 1,
       "desc": "Puñetazo de velocidad fulminante. Este movimiento tiene prioridad alta.",
       "shortDesc": "Puñetazo de velocidad fulminante. Este movimiento tiene prioridad alta."
     },
@@ -15245,6 +15534,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Esparce extrañas hojas que persiguen al objetivo. No se puede esquivar.",
       "shortDesc": "Esparce extrañas hojas que persiguen al objetivo. No se puede esquivar."
     },
@@ -15256,6 +15546,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Violenta embestida con cuernos imponentes.",
       "shortDesc": "Violenta embestida con cuernos imponentes."
     },
@@ -15267,6 +15558,7 @@
       "basePower": 120,
       "accuracy": 75,
       "pp": 5,
+      "priority": 0,
       "desc": "Patada de extrema fuerza.",
       "shortDesc": "Patada de extrema fuerza."
     },
@@ -15278,6 +15570,7 @@
       "basePower": 80,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Un puñetazo de gran potencia.",
       "shortDesc": "Un puñetazo de gran potencia."
     },
@@ -15289,6 +15582,7 @@
       "basePower": 50,
       "accuracy": 95,
       "pp": 35,
+      "priority": 0,
       "desc": "Ataque con garras de acero que puede aumentar el Ataque del usuario.",
       "shortDesc": "Ataque con garras de acero que puede aumentar el Ataque del usuario."
     },
@@ -15300,6 +15594,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "El usuario lanza lodo al objetivo y reduce su Velocidad.",
       "shortDesc": "El usuario lanza lodo al objetivo y reduce su Velocidad."
     },
@@ -15311,6 +15606,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Echa lodo en la cara para bajar la Precisión.",
       "shortDesc": "Echa lodo en la cara para bajar la Precisión."
     },
@@ -15322,6 +15618,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Produce un espejismo ante el objetivo, que pierde tantos PS como nivel tenga el usuario.",
       "shortDesc": "Produce un espejismo ante el objetivo, que pierde tantos PS como nivel tenga el usuario."
     },
@@ -15333,6 +15630,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Suma los PS del usuario a los del objetivo y los reparte a partes iguales.",
       "shortDesc": "Suma los PS del usuario a los del objetivo y los reparte a partes iguales."
     },
@@ -15344,6 +15642,7 @@
       "basePower": 35,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Ensarta al objetivo con un cuerno o pico punzante.",
       "shortDesc": "Ensarta al objetivo con un cuerno o pico punzante."
     },
@@ -15355,6 +15654,7 @@
       "basePower": 15,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Lanza un aguijón tóxico que puede envenenar al objetivo.",
       "shortDesc": "Lanza un aguijón tóxico que puede envenenar al objetivo."
     },
@@ -15366,6 +15666,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Puede envenenar y dar un golpe crítico.",
       "shortDesc": "Puede envenenar y dar un golpe crítico."
     },
@@ -15377,6 +15678,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Golpea con las patas o la cola.",
       "shortDesc": "Golpea con las patas o la cola."
     },
@@ -15388,6 +15690,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Lanza nieve que puede llegar a congelar.",
       "shortDesc": "Lanza nieve que puede llegar a congelar."
     },
@@ -15399,6 +15702,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Quien lo usa ataca al objetivo dándole un regalo con una bomba trampa. Sin embargo, a veces restaura sus PS.",
       "shortDesc": "Quien lo usa ataca al objetivo dándole un regalo con una bomba trampa. Sin embargo, a veces restaura sus PS."
     },
@@ -15410,6 +15714,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Extraño rayo que puede causar confusión.",
       "shortDesc": "Extraño rayo que puede causar confusión."
     },
@@ -15421,6 +15726,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Fuerte ataque telequinético que puede bajar la Defensa Especial del objetivo.",
       "shortDesc": "Fuerte ataque telequinético que puede bajar la Defensa Especial del objetivo."
     },
@@ -15432,6 +15738,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 1,
       "desc": "Ataca al objetivo a gran velocidad. Este movimiento tiene prioridad alta.",
       "shortDesc": "Ataca al objetivo a gran velocidad. Este movimiento tiene prioridad alta."
     },
@@ -15443,6 +15750,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Genera una fuerte lluvia que refuerza los movimientos de tipo Agua durante cinco turnos y debilita los de tipo Fuego.",
       "shortDesc": "Genera una fuerte lluvia que refuerza los movimientos de tipo Agua durante cinco turnos y debilita los de tipo Fuego."
     },
@@ -15454,6 +15762,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 25,
+      "priority": 0,
       "desc": "Corta con hojas afiladas. Un ataque que suele ser crítico.",
       "shortDesc": "Corta con hojas afiladas. Un ataque que suele ser crítico."
     },
@@ -15465,6 +15774,7 @@
       "basePower": 75,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Lanza grandes pedruscos. Puede hacer retroceder a los rivales.",
       "shortDesc": "Lanza grandes pedruscos. Puede hacer retroceder a los rivales."
     },
@@ -15476,6 +15786,7 @@
       "basePower": 50,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Tira una pequeña roca al objetivo.",
       "shortDesc": "Tira una pequeña roca al objetivo."
     },
@@ -15487,6 +15798,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Imita al objetivo por completo y copia su habilidad.",
       "shortDesc": "Imita al objetivo por completo y copia su habilidad."
     },
@@ -15498,6 +15810,7 @@
       "basePower": 30,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "El atacante rueda contra el objetivo durante cinco turnos, cada vez con mayor fuerza.",
       "shortDesc": "El atacante rueda contra el objetivo durante cinco turnos, cada vez con mayor fuerza."
     },
@@ -15509,6 +15822,7 @@
       "basePower": 100,
       "accuracy": 95,
       "pp": 5,
+      "priority": 0,
       "desc": "Fuego místico de gran intensidad que puede causar quemaduras.",
       "shortDesc": "Fuego místico de gran intensidad que puede causar quemaduras."
     },
@@ -15520,6 +15834,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Arroja arena a la cara y baja la Precisión.",
       "shortDesc": "Arroja arena a la cara y baja la Precisión."
     },
@@ -15531,6 +15846,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Tormenta de arena que dura cinco turnos y hiere a todos, excepto a los de tipo Roca, Tierra y Acero, y aumenta la Defensa Especial de los de tipo Roca.",
       "shortDesc": "Tormenta de arena que dura cinco turnos y hiere a todos, excepto a los de tipo Roca, Tierra y Acero, y aumenta la Defensa Especial de los de tipo Roca."
     },
@@ -15542,6 +15858,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Araña con afiladas garras.",
       "shortDesc": "Araña con afiladas garras."
     },
@@ -15553,6 +15870,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Aprovecha la gravedad para derribar al objetivo. Le resta tantos PS como nivel tenga el usuario.",
       "shortDesc": "Aprovecha la gravedad para derribar al objetivo. Le resta tantos PS como nivel tenga el usuario."
     },
@@ -15564,6 +15882,7 @@
       "basePower": 200,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "El atacante explota y hiere a todos a su alrededor. El usuario se debilita de inmediato.",
       "shortDesc": "El atacante explota y hiere a todos a su alrededor. El usuario se debilita de inmediato."
     },
@@ -15575,6 +15894,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Lanza una bola oscura que puede bajar la Defensa Especial del objetivo.",
       "shortDesc": "Lanza una bola oscura que puede bajar la Defensa Especial del objetivo."
     },
@@ -15586,6 +15906,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Puñetazo ineludible procedente de las sombras.",
       "shortDesc": "Puñetazo ineludible procedente de las sombras."
     },
@@ -15597,6 +15918,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataque eléctrico muy rápido e ineludible.",
       "shortDesc": "Ataque eléctrico muy rápido e ineludible."
     },
@@ -15608,6 +15930,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Usa el poder psíquico para intercambiar habilidades con el objetivo.",
       "shortDesc": "Usa el poder psíquico para intercambiar habilidades con el objetivo."
     },
@@ -15619,6 +15942,7 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataca durante dos turnos y suele asestar un golpe crítico. También puede amedrentar al objetivo.",
       "shortDesc": "Ataca durante dos turnos y suele asestar un golpe crítico. También puede amedrentar al objetivo."
     },
@@ -15630,6 +15954,7 @@
       "basePower": 80,
       "accuracy": 75,
       "pp": 20,
+      "priority": 0,
       "desc": "Golpea con la cola o con lianas, por ejemplo, para causar daño al objetivo.",
       "shortDesc": "Golpea con la cola o con lianas, por ejemplo, para causar daño al objetivo."
     },
@@ -15641,6 +15966,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataca con cuchillas o con pinzas. Suele asestar un golpe crítico.",
       "shortDesc": "Ataca con cuchillas o con pinzas. Suele asestar un golpe crítico."
     },
@@ -15652,6 +15978,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Arroja residuos al objetivo. Puede llegar a envenenar.",
       "shortDesc": "Arroja residuos al objetivo. Puede llegar a envenenar."
     },
@@ -15663,6 +15990,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Arroja residuos al objetivo. Puede llegar a envenenar.",
       "shortDesc": "Arroja residuos al objetivo. Puede llegar a envenenar."
     },
@@ -15674,6 +16002,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Baja la Precisión del objetivo con una nube de humo o tinta.",
       "shortDesc": "Baja la Precisión del objetivo con una nube de humo o tinta."
     },
@@ -15685,6 +16014,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "El usuario absorbe luz en el primer turno y en el segundo lanza un potente rayo de energía.",
       "shortDesc": "El usuario absorbe luz en el primer turno y en el segundo lanza un potente rayo de energía."
     },
@@ -15696,6 +16026,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataque eléctrico que puede llegar a paralizar.",
       "shortDesc": "Ataque eléctrico que puede llegar a paralizar."
     },
@@ -15707,6 +16038,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Libera de una vez la energía acumulada con Reserva. La potencia del ataque será proporcional a la cantidad de energía acumulada.",
       "shortDesc": "Libera de una vez la energía acumulada con Reserva. La potencia del ataque será proporcional a la cantidad de energía acumulada."
     },
@@ -15718,6 +16050,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "No tiene ningún efecto. Solo salpica.",
       "shortDesc": "No tiene ningún efecto. Solo salpica."
     },
@@ -15729,6 +16062,7 @@
       "basePower": 70,
       "accuracy": 90,
       "pp": 25,
+      "priority": 0,
       "desc": "Alas macizas que golpean al objetivo y pueden subir la Defensa del usuario.",
       "shortDesc": "Alas macizas que golpean al objetivo y pueden subir la Defensa del usuario."
     },
@@ -15740,6 +16074,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Tremendo pisotón que puede hacer que el objetivo se amedrente.",
       "shortDesc": "Tremendo pisotón que puede hacer que el objetivo se amedrente."
     },
@@ -15751,6 +16086,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Propina un potente puñetazo con todas sus fuerzas.",
       "shortDesc": "Propina un potente puñetazo con todas sus fuerzas."
     },
@@ -15762,6 +16098,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Hace que se intensifique el efecto del sol durante cinco turnos, lo que potencia los movimientos de tipo Fuego y debilita los de tipo Agua.",
       "shortDesc": "Hace que se intensifique el efecto del sol durante cinco turnos, lo que potencia los movimientos de tipo Fuego y debilita los de tipo Agua."
     },
@@ -15773,6 +16110,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Finos colmillos que reducen a la mitad los PS del objetivo.",
       "shortDesc": "Finos colmillos que reducen a la mitad los PS del objetivo."
     },
@@ -15784,6 +16122,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Ataque de gran potencia, pero que reduce el Ataque y la Defensa del agresor.",
       "shortDesc": "Ataque de gran potencia, pero que reduce el Ataque y la Defensa del agresor."
     },
@@ -15795,6 +16134,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Lanza rayos en forma de estrella que no fallan nunca.",
       "shortDesc": "Lanza rayos en forma de estrella que no fallan nunca."
     },
@@ -15806,6 +16146,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Agita la cola para bajar la Defensa del equipo rival.",
       "shortDesc": "Agita la cola para bajar la Defensa del equipo rival."
     },
@@ -15817,6 +16158,7 @@
       "basePower": 90,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Carga desmedida que también hiere al agresor.",
       "shortDesc": "Carga desmedida que también hiere al agresor."
     },
@@ -15828,6 +16170,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Puñetazo eléctrico que puede paralizar al adversario.",
       "shortDesc": "Puñetazo eléctrico que puede paralizar al adversario."
     },
@@ -15839,6 +16182,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Ataque eléctrico que puede paralizar al objetivo.",
       "shortDesc": "Ataque eléctrico que puede paralizar al objetivo."
     },
@@ -15850,6 +16194,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Ataque triple que puede paralizar, quemar o congelar al objetivo.",
       "shortDesc": "Ataque triple que puede paralizar, quemar o congelar al objetivo."
     },
@@ -15861,6 +16206,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Engaña al objetivo desprevenido e intercambia objetos.",
       "shortDesc": "Engaña al objetivo desprevenido e intercambia objetos."
     },
@@ -15872,6 +16218,7 @@
       "basePower": 10,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Patea hasta tres veces seguidas y cada vez más fuerte.",
       "shortDesc": "Patea hasta tres veces seguidas y cada vez más fuerte."
     },
@@ -15883,6 +16230,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Crea un violento tornado para hacer trizas al objetivo. Puede amedrentarlo.",
       "shortDesc": "Crea un violento tornado para hacer trizas al objetivo. Puede amedrentarlo."
     },
@@ -15894,6 +16242,7 @@
       "basePower": 55,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Atrapa y atenaza al objetivo.",
       "shortDesc": "Atrapa y atenaza al objetivo."
     },
@@ -15905,6 +16254,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Ataca disparando agua con gran potencia.",
       "shortDesc": "Ataca disparando agua con gran potencia."
     },
@@ -15916,6 +16266,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Ataca con un potente chorro de agua. Puede confundir al objetivo.",
       "shortDesc": "Ataca con un potente chorro de agua. Puede confundir al objetivo."
     },
@@ -15927,6 +16278,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Chorro de agua. Cuantos menos PS tenga el usuario, menos dañino será.",
       "shortDesc": "Chorro de agua. Cuantos menos PS tenga el usuario, menos dañino será."
     },
@@ -15938,6 +16290,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Golpea al objetivo con unas grandes alas.",
       "shortDesc": "Golpea al objetivo con unas grandes alas."
     },
@@ -15949,6 +16302,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "El usuario se resguarda en su coraza, por lo que le sube la Defensa.",
       "shortDesc": "El usuario se resguarda en su coraza, por lo que le sube la Defensa."
     }
@@ -15957,56 +16311,56 @@
     "cutecharm": {
       "id": "cutecharm",
       "name": "Gran Encanto",
-      "desc": "There is a 1/3 chance a Pokemon making contact with this Pokemon will become infatuated if it is of the opposite gender. This effect does not happen if this Pokemon did not lose HP from the attack.",
-      "shortDesc": "1/3 chance of infatuating Pokemon of the opposite gender if they make contact."
+      "desc": "• Habilidad oficial de Clefairy en Gen 3.",
+      "shortDesc": "• Habilidad oficial de Clefairy en Gen 3."
     },
     "effectspore": {
       "id": "effectspore",
       "name": "Efecto Espora",
-      "desc": "El contacto con el Pokémon puede paralizar, envenenar o dormir al rival (30%).",
-      "shortDesc": "El contacto con el Pokémon puede paralizar, envenenar o dormir al rival (30%)."
+      "desc": "• El contacto físico puede dormir, paralizar o envenenar (30%).",
+      "shortDesc": "• El contacto físico puede dormir, paralizar o envenenar (30%)."
     },
     "flamebody": {
       "id": "flamebody",
       "name": "Cuerpo Llama",
-      "desc": "El contacto con este Pokémon puede quemar al rival (30% de probabilidad).",
-      "shortDesc": "El contacto con este Pokémon puede quemar al rival (30% de probabilidad)."
+      "desc": "• El contacto físico puede quemar al rival (30%).",
+      "shortDesc": "• El contacto físico puede quemar al rival (30%)."
     },
     "flashfire": {
       "id": "flashfire",
       "name": "Absorbe Fuego",
-      "desc": "Los movimientos de tipo Fuego no le hacen daño y potencian sus propios ataques de Fuego.",
-      "shortDesc": "Los movimientos de tipo Fuego no le hacen daño y potencian sus propios ataques de Fuego."
+      "desc": "🚫 Inmune a ataques de Fuego.\n▲ Potencia ataques de Fuego al recibir uno.",
+      "shortDesc": "🚫 Inmune a ataques de Fuego.\n▲ Potencia ataques de Fuego al recibir uno."
     },
     "forecast": {
       "id": "forecast",
       "name": "Predicción",
-      "desc": "If this Pokemon is a Castform, its type changes to the current weather condition's type, except Sandstorm.",
-      "shortDesc": "Castform's type changes to the current weather condition's type, except Sandstorm."
+      "desc": "• Modifica la forma y tipo de Castform según el clima activo en combate.",
+      "shortDesc": "• Modifica la forma y tipo de Castform según el clima activo en combate."
     },
     "hustle": {
       "id": "hustle",
       "name": "Entusiasmo",
-      "desc": "This Pokemon's Attack is multiplied by 1.5 and the accuracy of its physical attacks is multiplied by 0.8.",
-      "shortDesc": "This Pokemon's Attack is 1.5x and accuracy of its physical attacks is 0.8x."
+      "desc": "• Habilidad oficial de Togepi en Gen 3.",
+      "shortDesc": "• Habilidad oficial de Togepi en Gen 3."
     },
     "intimidate": {
       "id": "intimidate",
       "name": "Intimidación",
-      "desc": "Baja el Ataque del rival al entrar en combate.",
-      "shortDesc": "Baja el Ataque del rival al entrar en combate."
+      "desc": "▼ Baja el Ataque del rival al entrar en combate.",
+      "shortDesc": "▼ Baja el Ataque del rival al entrar en combate."
     },
     "lightningrod": {
       "id": "lightningrod",
       "name": "Pararrayos",
-      "desc": "Atrae todos los movimientos de tipo Eléctrico. En vez de daño, sube el At. Especial.",
-      "shortDesc": "Atrae todos los movimientos de tipo Eléctrico. En vez de daño, sube el At. Especial."
+      "desc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Sube el At. Especial al recibir uno.",
+      "shortDesc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Sube el At. Especial al recibir uno."
     },
     "magnetpull": {
       "id": "magnetpull",
       "name": "Imán",
-      "desc": "Impide que los Pokémon de tipo Acero escapen o sea cambiado.",
-      "shortDesc": "Impide que los Pokémon de tipo Acero escapen o sea cambiado."
+      "desc": "🚫 Impide que los Pokémon de tipo Acero escapen o sean cambiados.",
+      "shortDesc": "🚫 Impide que los Pokémon de tipo Acero escapen o sean cambiados."
     },
     "minus": {
       "id": "minus",
@@ -16023,20 +16377,20 @@
     "poisonpoint": {
       "id": "poisonpoint",
       "name": "Punto tóxico",
-      "desc": "Puede envenenar al objetivo al mínimo contacto.",
-      "shortDesc": "Puede envenenar al objetivo al mínimo contacto."
+      "desc": "• El contacto físico puede envenenar al rival (30%).",
+      "shortDesc": "• El contacto físico puede envenenar al rival (30%)."
     },
     "pressure": {
       "id": "pressure",
       "name": "Presión",
-      "desc": "Hace que el rival gaste el doble de PP al usar sus movimientos.",
-      "shortDesc": "Hace que el rival gaste el doble de PP al usar sus movimientos."
+      "desc": "• Fuerza al rival a consumir el doble de PP por ataque.",
+      "shortDesc": "• Fuerza al rival a consumir el doble de PP por ataque."
     },
     "raindish": {
       "id": "raindish",
       "name": "Lluvia Ligera",
-      "desc": "Bajo la lluvia o durante la noche, la Velocidad del Pokémon se duplica.",
-      "shortDesc": "Bajo la lluvia o durante la noche, la Velocidad del Pokémon se duplica."
+      "desc": "▲ Velocidad se duplica (x2.0) bajo Lluvia o de Noche.",
+      "shortDesc": "▲ Velocidad se duplica (x2.0) bajo Lluvia o de Noche."
     },
     "roughskin": {
       "id": "roughskin",
@@ -16053,14 +16407,14 @@
     "static": {
       "id": "static",
       "name": "Electricidad estática",
-      "desc": "Paraliza al mínimo contacto.",
-      "shortDesc": "Paraliza al mínimo contacto."
+      "desc": "• Puede paralizar al rival al contacto físico (30%).",
+      "shortDesc": "• Puede paralizar al rival al contacto físico (30%)."
     },
     "trace": {
       "id": "trace",
       "name": "Rastro",
-      "desc": "Copia la habilidad del oponente al entrar en combate.",
-      "shortDesc": "Copia la habilidad del oponente al entrar en combate."
+      "desc": "• Copia la habilidad del oponente al entrar en combate.",
+      "shortDesc": "• Copia la habilidad del oponente al entrar en combate."
     },
     "truant": {
       "id": "truant",
@@ -16071,8 +16425,8 @@
     "voltabsorb": {
       "id": "voltabsorb",
       "name": "Absorbe Voltio",
-      "desc": "Los movimientos de tipo Eléctrico no le hacen daño y le curan un 25% de HP.",
-      "shortDesc": "Los movimientos de tipo Eléctrico no le hacen daño y le curan un 25% de HP."
+      "desc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Cura 25% de HP al recibir uno.",
+      "shortDesc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Cura 25% de HP al recibir uno."
     },
     "airlock": {
       "id": "airlock",
@@ -16083,14 +16437,14 @@
     "blaze": {
       "id": "blaze",
       "name": "Mar llamas",
-      "desc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Fuego aumentan su poder un 50%.",
-      "shortDesc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Fuego aumentan su poder un 50%."
+      "desc": "▲ Potencia Fuego (+50%) a 1/3 HP o menos.",
+      "shortDesc": "▲ Potencia Fuego (+50%) a 1/3 HP o menos."
     },
     "cloudnine": {
       "id": "cloudnine",
       "name": "Aclimatación",
-      "desc": "Elimina los efectos del clima en combate.",
-      "shortDesc": "Elimina los efectos del clima en combate."
+      "desc": "🚫 Elimina los efectos del clima en combate.",
+      "shortDesc": "🚫 Elimina los efectos del clima en combate."
     },
     "colorchange": {
       "id": "colorchange",
@@ -16101,14 +16455,14 @@
     "compoundeyes": {
       "id": "compoundeyes",
       "name": "Ojo Compuesto",
-      "desc": "Aumenta la precisión de los movimientos en un 30%.",
-      "shortDesc": "Aumenta la precisión de los movimientos en un 30%."
+      "desc": "▲ Aumenta la precisión de los movimientos (+30%).",
+      "shortDesc": "▲ Aumenta la precisión de los movimientos (+30%)."
     },
     "insomnia": {
       "id": "insomnia",
       "name": "Insomnio",
-      "desc": "Impide que el Pokémon se quede dormido.",
-      "shortDesc": "Impide que el Pokémon se quede dormido."
+      "desc": "🚫 Impide que el Pokémon se quede dormido.",
+      "shortDesc": "🚫 Impide que el Pokémon se quede dormido."
     },
     "liquidooze": {
       "id": "liquidooze",
@@ -16119,26 +16473,26 @@
     "naturalcure": {
       "id": "naturalcure",
       "name": "Cura Natural",
-      "desc": "Cura los problemas de estado al ser retirado del combate.",
-      "shortDesc": "Cura los problemas de estado al ser retirado del combate."
+      "desc": "• Cura los problemas de estado al ser retirado.",
+      "shortDesc": "• Cura los problemas de estado al ser retirado."
     },
     "overgrow": {
       "id": "overgrow",
       "name": "Espesura",
-      "desc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Planta aumentan su poder un 50%.",
-      "shortDesc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Planta aumentan su poder un 50%."
+      "desc": "▲ Potencia Planta (+50%) a 1/3 HP o menos.",
+      "shortDesc": "▲ Potencia Planta (+50%) a 1/3 HP o menos."
     },
     "pickup": {
       "id": "pickup",
       "name": "Recogida",
-      "desc": "El Pokémon puede encontrar objetos después de una batalla.",
-      "shortDesc": "El Pokémon puede encontrar objetos después de una batalla."
+      "desc": "• El Pokémon puede encontrar objetos tras ganar batallas.",
+      "shortDesc": "• El Pokémon puede encontrar objetos tras ganar batallas."
     },
     "sandveil": {
       "id": "sandveil",
       "name": "Velo arena",
-      "desc": "Aumenta la Evasión durante las tormentas de arena.",
-      "shortDesc": "Aumenta la Evasión durante las tormentas de arena."
+      "desc": "▲ Aumenta la Evasión durante tormentas de arena.",
+      "shortDesc": "▲ Aumenta la Evasión durante tormentas de arena."
     },
     "serenegrace": {
       "id": "serenegrace",
@@ -16149,8 +16503,8 @@
     "shedskin": {
       "id": "shedskin",
       "name": "Mudar",
-      "desc": "A veces cura los problemas de estado mudando la piel.",
-      "shortDesc": "A veces cura los problemas de estado mudando la piel."
+      "desc": "• Ocasionalmente cura los problemas de estado al mudar la piel.",
+      "shortDesc": "• Ocasionalmente cura los problemas de estado al mudar la piel."
     },
     "speedboost": {
       "id": "speedboost",
@@ -16161,8 +16515,8 @@
     "stench": {
       "id": "stench",
       "name": "Hedor",
-      "desc": "Puede hacer retroceder al rival al atacarlo (10% de probabilidad).",
-      "shortDesc": "Puede hacer retroceder al rival al atacarlo (10% de probabilidad)."
+      "desc": "• Los ataques pueden hacer retroceder al rival (10%).",
+      "shortDesc": "• Los ataques pueden hacer retroceder al rival (10%)."
     },
     "stickyhold": {
       "id": "stickyhold",
@@ -16173,38 +16527,38 @@
     "sturdy": {
       "id": "sturdy",
       "name": "Robustez",
-      "desc": "Permite sobrevivir con 1 HP un golpe que lo noquearía desde HP completo.",
-      "shortDesc": "Permite sobrevivir con 1 HP un golpe que lo noquearía desde HP completo."
+      "desc": "🚫 Evita ser debilitado de un golpe si el HP está al 100%.",
+      "shortDesc": "🚫 Evita ser debilitado de un golpe si el HP está al 100%."
     },
     "swarm": {
       "id": "swarm",
       "name": "Enjambre",
-      "desc": "Cuando el HP baja a 1/3 o menos, los movimientos Bicho aumentan su poder.",
-      "shortDesc": "Cuando el HP baja a 1/3 o menos, los movimientos Bicho aumentan su poder."
+      "desc": "▲ Potencia Bicho (+50%) a 1/3 HP o menos.",
+      "shortDesc": "▲ Potencia Bicho (+50%) a 1/3 HP o menos."
     },
     "synchronize": {
       "id": "synchronize",
       "name": "Sincronía",
-      "desc": "Si el Pokémon es envenenado, paralizado o quemado, el rival sufre lo mismo.",
-      "shortDesc": "Si el Pokémon es envenenado, paralizado o quemado, el rival sufre lo mismo."
+      "desc": "• Copia problemas de estado (veneno/parálisis/quemadura) al rival.",
+      "shortDesc": "• Copia problemas de estado (veneno/parálisis/quemadura) al rival."
     },
     "thickfat": {
       "id": "thickfat",
       "name": "Sebo",
-      "desc": "Reduce a la mitad el daño recibido por movimientos de tipo Fuego y Hielo.",
-      "shortDesc": "Reduce a la mitad el daño recibido por movimientos de tipo Fuego y Hielo."
+      "desc": "▲ Reduce a la mitad (x0.5) el daño de Fuego e Hielo.",
+      "shortDesc": "▲ Reduce a la mitad (x0.5) el daño de Fuego e Hielo."
     },
     "torrent": {
       "id": "torrent",
       "name": "Torrente",
-      "desc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Agua aumentan su poder un 50%.",
-      "shortDesc": "Cuando el HP baja a 1/3 o menos, los movimientos de tipo Agua aumentan su poder un 50%."
+      "desc": "▲ Potencia Agua (+50%) a 1/3 HP o menos.",
+      "shortDesc": "▲ Potencia Agua (+50%) a 1/3 HP o menos."
     },
     "vitalspirit": {
       "id": "vitalspirit",
       "name": "Espíritu Vital",
-      "desc": "Impide que el Pokémon se quede dormido.",
-      "shortDesc": "Impide que el Pokémon se quede dormido."
+      "desc": "🚫 Impide que el Pokémon se quede dormido.",
+      "shortDesc": "🚫 Impide que el Pokémon se quede dormido."
     },
     "wonderguard": {
       "id": "wonderguard",
@@ -16215,62 +16569,62 @@
     "keeneye": {
       "id": "keeneye",
       "name": "Vista lince",
-      "desc": "Evita que baje la Precisión.",
-      "shortDesc": "Evita que baje la Precisión."
+      "desc": "🚫 Evita que baje la Precisión.",
+      "shortDesc": "🚫 Evita que baje la Precisión."
     },
     "oblivious": {
       "id": "oblivious",
       "name": "Despiste",
-      "desc": "Impide que el Pokémon sea atraído, intimidado o confundido.",
-      "shortDesc": "Impide que el Pokémon sea atraído, intimidado o confundido."
+      "desc": "🚫 Impide ser atraído, intimidado o confundido.",
+      "shortDesc": "🚫 Impide ser atraído, intimidado o confundido."
     },
     "soundproof": {
       "id": "soundproof",
       "name": "Insonorizar",
-      "desc": "Protege al Pokémon de los movimientos basados en sonido.",
-      "shortDesc": "Protege al Pokémon de los movimientos basados en sonido."
+      "desc": "🚫 Protege de los movimientos basados en sonido.",
+      "shortDesc": "🚫 Protege de los movimientos basados en sonido."
     },
     "innerfocus": {
       "id": "innerfocus",
       "name": "Foco interno",
-      "desc": "Evita que el Pokémon retroceda.",
-      "shortDesc": "Evita que el Pokémon retroceda."
+      "desc": "🚫 Evita que el Pokémon pueda retroceder.",
+      "shortDesc": "🚫 Evita que el Pokémon pueda retroceder."
     },
     "owntempo": {
       "id": "owntempo",
       "name": "Despiste",
-      "desc": "Impide que el Pokémon sea atraído, intimidado o confundido.",
-      "shortDesc": "Impide que el Pokémon sea atraído, intimidado o confundido."
+      "desc": "🚫 Impide ser atraído, intimidado o confundido.",
+      "shortDesc": "🚫 Impide ser atraído, intimidado o confundido."
     },
     "arenatrap": {
       "id": "arenatrap",
       "name": "Trampa Arena",
-      "desc": "Impide que el rival escape o sea cambiado (salvo tipos Volador).",
-      "shortDesc": "Impide que el rival escape o sea cambiado (salvo tipos Volador)."
+      "desc": "🚫 Impide que el rival escape o sea cambiado (salvo Voladores).",
+      "shortDesc": "🚫 Impide que el rival escape o sea cambiado (salvo Voladores)."
     },
     "battlearmor": {
       "id": "battlearmor",
       "name": "Armadura Batalla",
-      "desc": "Protege al Pokémon de los golpes críticos del rival.",
-      "shortDesc": "Protege al Pokémon de los golpes críticos del rival."
+      "desc": "🚫 Protege al Pokémon de los golpes críticos.",
+      "shortDesc": "🚫 Protege al Pokémon de los golpes críticos."
     },
     "chlorophyll": {
       "id": "chlorophyll",
       "name": "Clorofila",
-      "desc": "Bajo el sol o durante el día, la Velocidad del Pokémon se duplica.",
-      "shortDesc": "Bajo el sol o durante el día, la Velocidad del Pokémon se duplica."
+      "desc": "▲ Velocidad se duplica (x2.0) bajo Sol.",
+      "shortDesc": "▲ Velocidad se duplica (x2.0) bajo Sol."
     },
     "clearbody": {
       "id": "clearbody",
       "name": "Cuerpo Puro",
-      "desc": "Evita que las estadísticas del Pokémon sean bajadas por el rival.",
-      "shortDesc": "Evita que las estadísticas del Pokémon sean bajadas por el rival."
+      "desc": "🚫 Evita que el oponente baje las estadísticas del Pokémon.",
+      "shortDesc": "🚫 Evita que el oponente baje las estadísticas del Pokémon."
     },
     "damp": {
       "id": "damp",
-      "name": "Damp",
-      "desc": "While this Pokemon is active, Explosion and Self-Destruct are prevented from having an effect.",
-      "shortDesc": "Prevents Explosion and Self-Destruct while this Pokemon is active."
+      "name": "damp",
+      "desc": "• Habilidad oficial de Psyduck en Gen 3.",
+      "shortDesc": "• Habilidad oficial de Psyduck en Gen 3."
     },
     "drizzle": {
       "id": "drizzle",
@@ -16287,14 +16641,14 @@
     "earlybird": {
       "id": "earlybird",
       "name": "Madrugar",
-      "desc": "El Pokémon se despierta el doble de rápido de lo normal.",
-      "shortDesc": "El Pokémon se despierta el doble de rápido de lo normal."
+      "desc": "• Se despierta de dormir el doble de rápido.",
+      "shortDesc": "• Se despierta de dormir el doble de rápido."
     },
     "guts": {
       "id": "guts",
       "name": "Agallas",
-      "desc": "Aumenta el Ataque un 50% si sufre un problema de estado.",
-      "shortDesc": "Aumenta el Ataque un 50% si sufre un problema de estado."
+      "desc": "▲ Aumenta el Ataque (+50%) con problema de estado.",
+      "shortDesc": "▲ Aumenta el Ataque (+50%) con problema de estado."
     },
     "hugepower": {
       "id": "hugepower",
@@ -16305,32 +16659,32 @@
     "hypercutter": {
       "id": "hypercutter",
       "name": "Corte Fuerte",
-      "desc": "Impide que el Ataque del Pokémon sea bajado por el rival.",
-      "shortDesc": "Impide que el Ataque del Pokémon sea bajado por el rival."
+      "desc": "🚫 Impide que el oponente baje el Ataque del Pokémon.",
+      "shortDesc": "🚫 Impide que el oponente baje el Ataque del Pokémon."
     },
     "illuminate": {
       "id": "illuminate",
-      "name": "Illuminate",
-      "desc": "No competitive use.",
-      "shortDesc": "No competitive use."
+      "name": "illuminate",
+      "desc": "• Habilidad oficial de Staryu en Gen 3.",
+      "shortDesc": "• Habilidad oficial de Staryu en Gen 3."
     },
     "immunity": {
       "id": "immunity",
       "name": "Inmunidad",
-      "desc": "Protege al Pokémon del envenenamiento.",
-      "shortDesc": "Protege al Pokémon del envenenamiento."
+      "desc": "🚫 Protege al Pokémon del envenenamiento.",
+      "shortDesc": "🚫 Protege al Pokémon del envenenamiento."
     },
     "levitate": {
       "id": "levitate",
       "name": "Levitación",
-      "desc": "Proporciona inmunidad total contra movimientos de tipo Tierra.",
-      "shortDesc": "Proporciona inmunidad total contra movimientos de tipo Tierra."
+      "desc": "🚫 Inmune a ataques de tipo Tierra.",
+      "shortDesc": "🚫 Inmune a ataques de tipo Tierra."
     },
     "limber": {
       "id": "limber",
       "name": "Flexibilidad",
-      "desc": "Protege al Pokémon de la parálisis.",
-      "shortDesc": "Protege al Pokémon de la parálisis."
+      "desc": "🚫 Protege al Pokémon de la parálisis.",
+      "shortDesc": "🚫 Protege al Pokémon de la parálisis."
     },
     "magmaarmor": {
       "id": "magmaarmor",
@@ -16353,14 +16707,14 @@
     "rockhead": {
       "id": "rockhead",
       "name": "Cabeza Roca",
-      "desc": "Protege al Pokémon del daño de retroceso al usar sus movimientos.",
-      "shortDesc": "Protege al Pokémon del daño de retroceso al usar sus movimientos."
+      "desc": "🚫 Protege del daño de retroceso al usar movimientos.",
+      "shortDesc": "🚫 Protege del daño de retroceso al usar movimientos."
     },
     "runaway": {
       "id": "runaway",
       "name": "Fuga",
-      "desc": "Permite huir siempre de Pokémon salvajes.",
-      "shortDesc": "Permite huir siempre de Pokémon salvajes."
+      "desc": "• Permite huir siempre de combates contra Pokémon salvajes.",
+      "shortDesc": "• Permite huir siempre de combates contra Pokémon salvajes."
     },
     "sandstream": {
       "id": "sandstream",
@@ -16371,14 +16725,14 @@
     "shellarmor": {
       "id": "shellarmor",
       "name": "Caparazón",
-      "desc": "Protege al Pokémon de los golpes críticos del rival.",
-      "shortDesc": "Protege al Pokémon de los golpes críticos del rival."
+      "desc": "🚫 Protege al Pokémon de los golpes críticos.",
+      "shortDesc": "🚫 Protege al Pokémon de los golpes críticos."
     },
     "shielddust": {
       "id": "shielddust",
       "name": "Polvo escudo",
-      "desc": "Evita los efectos secundarios de los ataques recibidos.",
-      "shortDesc": "Evita los efectos secundarios de los ataques recibidos."
+      "desc": "🚫 Evita los efectos secundarios de los ataques recibidos.",
+      "shortDesc": "🚫 Evita los efectos secundarios de los ataques recibidos."
     },
     "suctioncups": {
       "id": "suctioncups",
@@ -16389,14 +16743,14 @@
     "swiftswim": {
       "id": "swiftswim",
       "name": "Nado rápido",
-      "desc": "Sube la Velocidad cuando llueve.",
-      "shortDesc": "Sube la Velocidad cuando llueve."
+      "desc": "▲ Velocidad se duplica (x2.0) bajo Lluvia.",
+      "shortDesc": "▲ Velocidad se duplica (x2.0) bajo Lluvia."
     },
     "waterabsorb": {
       "id": "waterabsorb",
       "name": "Absorbe Agua",
-      "desc": "Los movimientos de tipo Agua no le hacen daño y le curan un 25% de HP.",
-      "shortDesc": "Los movimientos de tipo Agua no le hacen daño y le curan un 25% de HP."
+      "desc": "🚫 Inmune a ataques de Agua.\n▲ Cura 25% de HP al recibir uno.",
+      "shortDesc": "🚫 Inmune a ataques de Agua.\n▲ Cura 25% de HP al recibir uno."
     },
     "waterveil": {
       "id": "waterveil",

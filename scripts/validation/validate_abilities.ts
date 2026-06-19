@@ -1,8 +1,8 @@
 /**
- * scripts/validate_abilities.ts
+ * scripts/validation/validate_abilities.ts
  * 
- * ABILITY INTEGRITY VALIDATOR (Node.js 26+)
- * Validates integrity of POKEMON_ABILITIES and ABILITY_DATA against PokeAPI.
+ * ABILITY INTEGRITY VALIDATOR (Node.js 26+ Native)
+ * Validates integrity of POKEMON_ABILITIES and ABILITY_DATA against the local Showdown DB.
  * 
  * Usage: npm run validate:abilities
  */
@@ -12,175 +12,79 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from '../lib/validationBase.ts';
 
-interface PokeApiListResponse {
-  results: Array<{ name: string; url: string }>;
-}
-
-interface NameEntry {
-  name: string;
-  language: { name: string };
-}
-
-interface FlavorTextEntry {
-  flavor_text: string;
-  language: { name: string };
-}
-
-interface PokeApiAbility {
-  name: string;
-  names: NameEntry[];
-  flavor_text_entries: FlavorTextEntry[];
-}
+// Importar base de datos del juego
+import { POKEMON_ABILITIES, ABILITY_DATA } from '../../src/data/battle/abilities.ts';
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/battle/abilities.ts');
-const CACHE_DIR = path.resolve(process.cwd(), 'scripts/.cache');
-const CACHE_FILE = path.join(CACHE_DIR, 'pokeapi_ability_cache.json');
+const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 
-async function getPokeApiAbilities(): Promise<PokeApiAbility[]> {
-  try {
-    const cacheExists = await fs.access(CACHE_FILE).then(() => true).catch(() => false);
-    if (cacheExists) {
-      console.log(styleText('blue', "ℹ️ Cargando habilidades de PokeAPI desde la caché..."));
-      return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8')) as PokeApiAbility[];
-    }
-    await fs.mkdir(CACHE_DIR, { recursive: true });
-  } catch {
-    // Silently fail and fetch if cache error
-  }
-
-  console.log(styleText('cyan', "🌐 Obteniendo habilidades de PokeAPI (esto puede tardar unos segundos)..."));
-  
-  try {
-    const response = await fetch('https://pokeapi.co/api/v2/ability?limit=350');
-    if (!response.ok) throw new Error(`Status: ${response.status}`);
-    const listResp = await response.json() as PokeApiListResponse;
-    
-    const results: PokeApiAbility[] = [];
-    const chunkSize = 20;
-    
-    for (let i = 0; i < listResp.results.length; i += chunkSize) {
-      const chunk = listResp.results.slice(i, i + chunkSize);
-      const promises = chunk.map(async (entry: { url: string }) => {
-         const res = await fetch(entry.url);
-         if (!res.ok) return null;
-         return res.json() as Promise<PokeApiAbility>;
-      });
-      
-      const chunkResults = await Promise.all(promises);
-      results.push(...chunkResults.filter((item): item is PokeApiAbility => !!item));
-      process.stdout.write(`Obtenidas ${Math.min(i + chunkSize, listResp.results.length)} / ${listResp.results.length}\r`);
-    }
-    
-    console.log(styleText('green', "\n✅ Descarga de habilidades completada."));
-    await fs.writeFile(CACHE_FILE, JSON.stringify(results, null, 2));
-    return results;
-  } catch (error: unknown) {
-    console.error(styleText('red', `\n❌ Error al conectar con PokeAPI: ${(error as Error).message}`));
-    console.log(styleText('yellow', "⚠️ Continuando validación solo con datos locales..."));
-    return [];
-  }
+function normalizeName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 async function main() {
   const validator = setupValidation({
     title: 'POKEMON ABILITY VALIDATOR',
-    requiredFiles: [DATA_FILE]
+    requiredFiles: [DATA_FILE, SHOWDOWN_DB_PATH]
   });
 
   await validator.checkFiles();
 
-  const content = await fs.readFile(DATA_FILE, 'utf8');
-
-  // 1. Extract ABILITY_DATA (descriptions)
-  const abilityData: Record<string, string> = {};
-  const dataBlockMatch = content.match(/export const ABILITY_DATA = {([\s\S]+?)\n};/);
-  if (dataBlockMatch) {
-    const block = dataBlockMatch[1]!;
-    const entryRegex = /'([^']+)':\s*{\s*desc:\s*'([^']+)'\s*}/g;
-    let m;
-    while ((m = entryRegex.exec(block)) !== null) {
-      abilityData[m[1]!] = m[2]!;
-    }
+  // 1. Cargar base de datos local de Showdown
+  let showdownDB: any;
+  try {
+    const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
+    showdownDB = JSON.parse(rawData);
+  } catch (error) {
+    console.error(styleText('red', `❌ Error cargando base de datos de Showdown: ${(error as Error).message}`));
+    process.exit(1);
   }
 
-  // 2. Extract POKEMON_ABILITIES (assignments)
+  // Mapear habilidades en español del Showdown para búsquedas rápidas
+  const sdAbilitiesSet = new Set<string>();
+  for (const sdAbi of Object.values(showdownDB.abilities) as any[]) {
+    sdAbilitiesSet.add(normalizeName(sdAbi.name));
+  }
+
+  // 2. Extraer habilidades del juego
   const gameAbilities = new Set<string>();
-  const assignmentBlockMatch = content.match(/export const POKEMON_ABILITIES = {([\s\S]+?)\n};/);
-  if (assignmentBlockMatch) {
-    const block = assignmentBlockMatch[1]!;
-    const listRegex = /\[([^\]]+)\]/g;
-    let m;
-    while ((m = listRegex.exec(block)) !== null) {
-      const names = m[1]!.match(/'([^']+)'/g);
-      if (names) {
-        names.forEach(n => gameAbilities.add(n.replace(/'/g, '')));
-      }
-    }
+  for (const abList of Object.values(POKEMON_ABILITIES)) {
+    abList.forEach(ab => gameAbilities.add(ab));
   }
 
-  console.log(`📦 Habilidades únicas detectadas en el código: ${gameAbilities.size}`);
-  console.log(`📝 Habilidades con descripción en ABILITY_DATA: ${Object.keys(abilityData).length}\n`);
+  console.log(`📦 Habilidades únicas asignadas a Pokémon: ${gameAbilities.size}`);
+  console.log(`📝 Habilidades definidas en ABILITY_DATA: ${Object.keys(ABILITY_DATA).length}\n`);
 
-  const apiAbilities = await getPokeApiAbilities();
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Map Spanish names to API entries
-  const translatedMap: Record<string, PokeApiAbility> = {};
-  apiAbilities.forEach((ab: PokeApiAbility) => {
-    const esNameObj = ab.names.find((n: NameEntry) => n.language.name === 'es');
-    if (esNameObj) {
-      const cleaned = esNameObj.name.trim();
-      translatedMap[cleaned] = ab;
-      translatedMap[cleaned.toLowerCase()] = ab;
-    }
-  });
-
-  const customMapping: Record<string, string> = {
-    'Cura natural': 'natural-cure',
-    'Gran encanto': 'cute-charm'
-  };
-
+  // 3. Validar asignaciones contra la base de datos de Showdown y descripciones
   for (const abName of Array.from(gameAbilities)) {
     const tag = `[${abName}]`;
-    
-    // Check if it has a description
-    if (!abilityData[abName]) {
+
+    // Validar si tiene descripción en el juego
+    if (!(ABILITY_DATA as Record<string, any>)[abName]) {
       errors.push(`${tag} Falta descripción en ABILITY_DATA.`);
     }
 
-    if (apiAbilities.length > 0) {
-      let apiEntry: PokeApiAbility | undefined = translatedMap[abName]!;
-      if (!apiEntry && customMapping[abName]) {
-        apiEntry = apiAbilities.find((a: PokeApiAbility) => a.name === customMapping[abName]);
-      }
-      if (!apiEntry) {
-        apiEntry = apiAbilities.find((a: PokeApiAbility) => a.names.some((n: NameEntry) => n.language.name === 'es' && n.name.toLowerCase() === abName.toLowerCase()));
-      }
-
-      if (!apiEntry) {
-        warnings.push(`${tag} No se encontró coincidencia en PokeAPI. Revisa si el nombre es correcto.`);
-      } else {
-        // Basic check: Does the official text mention something critical we missed?
-        const esFlavor = apiEntry.flavor_text_entries.find((f: FlavorTextEntry) => f.language.name === 'es');
-        if (!esFlavor) {
-          warnings.push(`${tag} No tiene texto oficial en español en PokeAPI.`);
-        }
-      }
+    // Validar si existe en la base de datos local de Showdown ( Gen 3 )
+    const normName = normalizeName(abName);
+    if (!sdAbilitiesSet.has(normName)) {
+      warnings.push(`${tag} No coincide con ninguna habilidad oficial en Showdown (Gen 3).`);
     }
   }
 
-  // Check for orphan descriptions
-  Object.keys(abilityData).forEach(name => {
+  // 4. Validar descripciones huérfanas (definidas pero no usadas)
+  Object.keys(ABILITY_DATA).forEach(name => {
     if (!gameAbilities.has(name)) {
-      warnings.push(`[${name}] Definida en ABILITY_DATA pero no asignada a ningún Pokémon.`);
+      warnings.push(`[${name}] Definida en ABILITY_DATA pero no está asignada a ningún Pokémon.`);
     }
   });
 
   await validator.finish(
     {
       'Habilidades únicas detectadas': gameAbilities.size,
-      'Habilidades en ABILITY_DATA': Object.keys(abilityData).length
+      'Habilidades en ABILITY_DATA': Object.keys(ABILITY_DATA).length
     },
     errors,
     warnings

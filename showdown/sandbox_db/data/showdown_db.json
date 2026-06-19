@@ -12066,6 +12066,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "The user recovers 1/2 the HP lost by the target, rounded down.",
       "shortDesc": "User recovers 50% of the damage dealt."
     },
@@ -12077,6 +12078,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Defense by 1 stage.",
       "shortDesc": "10% chance to lower the foe(s) Defense by 1."
     },
@@ -12088,6 +12090,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 10% chance to raise the user's Attack, Defense, Special Attack, Special Defense, and Speed by 1 stage.",
       "shortDesc": "10% chance to raise all stats by 1 (not acc/eva)."
     },
@@ -12099,6 +12102,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "A random move among those known by the user's party members is selected for use. Does not select Assist, Counter, Covet, Destiny Bond, Detect, Endure, Focus Punch, Follow Me, Helping Hand, Metronome, Mimic, Mirror Coat, Mirror Move, Protect, Sketch, Sleep Talk, Snatch, Struggle, Thief, or Trick.",
       "shortDesc": "Uses a random move known by a team member."
     },
@@ -12110,6 +12114,7 @@
       "basePower": 30,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -12121,6 +12126,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Deals typeless damage. Hits one time for each unfainted Pokemon without a non-volatile status condition in the user's party, or fails if no Pokemon meet the criteria. For each hit, the damage formula uses the participating Pokemon's base Attack as the Attack stat, the target's base Defense as the Defense stat, and ignores stat stages and other effects that modify Attack or Defense; each hit is considered to come from the user.",
       "shortDesc": "All healthy allies aid in damaging the target."
     },
@@ -12132,6 +12138,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "The user spends two turns locked into this move and then, on the second turn after using this move, the user attacks the last Pokemon that hit it, inflicting double the damage in HP it lost during the two turns. If the last Pokemon that hit it is no longer active, the user attacks a random opposing Pokemon instead. If the user is prevented from moving during this move's use, the effect ends. This move does not ignore type immunity.",
       "shortDesc": "Waits 2 turns; deals double the damage taken."
     },
@@ -12143,6 +12150,7 @@
       "basePower": 120,
       "accuracy": 70,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 10% chance to freeze the target.",
       "shortDesc": "10% chance to freeze foe(s)."
     },
@@ -12154,6 +12162,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "If this attack does not miss and whether or not the target is immune, the effects of Reflect and Light Screen end for the opponent's side of the field before damage is calculated.",
       "shortDesc": "Destroys screens, even if the target is immune."
     },
@@ -12165,6 +12174,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "If the user uses an Electric-type attack on the next turn, its power will be doubled.",
       "shortDesc": "The user's Electric attack next turn has 2x power."
     },
@@ -12176,6 +12186,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "The user's type changes to match the original type of one of its known moves besides Curse, at random, but not either of its current types. Fails if the user cannot change its type, or if this move would only be able to select one of the user's current types.",
       "shortDesc": "Changes user's type to match a known move."
     },
@@ -12187,6 +12198,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "The user's type changes to match a type that resists or is immune to the type of the last move used against the user, if it was successful against the user, but not either of its current types. The determined type of the move is used rather than the original type, but considers Struggle as Normal. Fails if the last move used against the user was not successful, or if this move would only be able to select one of the user's current types.",
       "shortDesc": "User's type changes to resist last move against it."
     },
@@ -12198,6 +12210,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -5,
       "desc": "Deals damage to the last opposing Pokemon to hit the user with a physical attack this turn equal to twice the HP lost by the user from that attack. If that opposing Pokemon's position is no longer in use and there is another opposing Pokemon on the field, the damage is done to it instead. This move considers Hidden Power as Normal type, and only the last hit of a multi-hit attack is counted. Fails if the user was not hit by an opposing Pokemon's physical attack this turn, or if the user did not lose HP from the attack.",
       "shortDesc": "If hit by physical attack, returns double damage."
     },
@@ -12209,6 +12222,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail or Enigma Berry. Items lost to this move cannot be regained with Recycle.",
       "shortDesc": "If the user has no item, it steals the target's."
     },
@@ -12220,6 +12234,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 20% chance to lower the target's Special Defense by 1 stage.",
       "shortDesc": "20% chance to lower the target's Sp. Def by 1."
     },
@@ -12231,6 +12246,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Earthquake and Magnitude, which have doubled power when used against it, and is also unaffected by weather.",
       "shortDesc": "Digs underground turn 1, strikes turn 2."
     },
@@ -12242,6 +12258,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 20,
+      "priority": 0,
       "desc": "For 2 to 5 turns, the target's last move used becomes disabled. Fails if one of the target's moves is already disabled, if the target has not made a move, if the target no longer knows the move, or if the move has 0 PP.",
       "shortDesc": "For 2-5 turns, disables the target's last move."
     },
@@ -12253,6 +12270,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Surf and Whirlpool, which have doubled power when used against it, and is also unaffected by weather.",
       "shortDesc": "Dives underwater turn 1, strikes turn 2."
     },
@@ -12264,6 +12282,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals typeless damage that cannot be a critical hit two turns after this move is used. Damage is calculated against the target on use, and at the end of the final turn that damage is dealt to the Pokemon at the position the original target had at the time. Fails if this move or Future Sight is already in effect for the target's position.",
       "shortDesc": "Hits two turns after being used."
     },
@@ -12275,6 +12294,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "For 3 to 6 turns, the target is forced to repeat its last move used. If the affected move runs out of PP, the effect ends. Fails if the target is already under this effect, if it has not made a move, if the move has 0 PP, or if the move is Encore, Mimic, Mirror Move, Sketch, Struggle, or Transform.",
       "shortDesc": "The target repeats its last move for 3-6 turns."
     },
@@ -12286,6 +12306,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Has a 10% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
       "shortDesc": "10% chance to make the target flinch."
     },
@@ -12297,6 +12318,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 1,
       "desc": "Has a 100% chance to make the target flinch. Fails unless it is the user's first turn on the field.",
       "shortDesc": "Hits first. First turn out only. 100% flinch chance."
     },
@@ -12308,6 +12330,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy."
     },
@@ -12319,6 +12342,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "The power of this move is 20 if X is 33 to 48, 40 if X is 17 to 32, 80 if X is 10 to 16, 100 if X is 5 to 9, 150 if X is 2 to 4, and 200 if X is 0 or 1, where X is equal to (user's current HP * 48 / user's maximum HP), rounded down.",
       "shortDesc": "More power the less HP the user has left."
     },
@@ -12330,6 +12354,7 @@
       "basePower": 0,
       "accuracy": 70,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's accuracy by 1 stage.",
       "shortDesc": "Lowers the target's accuracy by 1."
     },
@@ -12341,6 +12366,7 @@
       "basePower": 70,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Gust, Sky Uppercut, Thunder, and Twister, and Gust and Twister have doubled power when used against it.",
       "shortDesc": "Flies up on first turn, then strikes the next turn."
     },
@@ -12352,6 +12378,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 3,
       "desc": "Until the end of the turn, all single-target attacks from the opposing side are redirected to the user. Such attacks are redirected to the user before they can be reflected by Magic Coat, or drawn in by the Lightning Rod Ability. This effect remains active even if the user leaves the field. Fails if it is not a Double Battle.",
       "shortDesc": "The foes' moves target the user on the turn used."
     },
@@ -12363,6 +12390,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "As long as the target remains active, its evasiveness stat stage is ignored during accuracy checks against it, and Normal- and Fighting-type attacks can hit the target if it is a Ghost type.",
       "shortDesc": "Fighting, Normal hit Ghost. Evasiveness ignored."
     },
@@ -12374,6 +12402,7 @@
       "basePower": 10,
       "accuracy": 95,
       "pp": 20,
+      "priority": 0,
       "desc": "Power doubles with each successful hit, up to a maximum of 160 power. The power is reset if this move misses or another move is used.",
       "shortDesc": "Power doubles with each hit, up to 160."
     },
@@ -12385,6 +12414,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "The user recovers 1/2 the HP lost by the target, rounded down.",
       "shortDesc": "User recovers 50% of the damage dealt."
     },
@@ -12396,6 +12426,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 30,
+      "priority": 0,
       "desc": "Paralyzes the target. This move does not ignore type immunity.",
       "shortDesc": "Paralyzes the target."
     },
@@ -12407,6 +12438,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Resets the stat stages of all active Pokemon to 0.",
       "shortDesc": "Eliminates all stat changes."
     },
@@ -12418,6 +12450,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "",
       "shortDesc": ""
     },
@@ -12429,6 +12462,7 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "If this attack is not successful and the target was not immune, the user loses HP equal to half of the damage the target would have taken, rounded down, but no less than 1 HP and no more than half of the target's maximum HP, as crash damage.",
       "shortDesc": "If miss, user takes 1/2 damage it would've dealt."
     },
@@ -12440,6 +12474,7 @@
       "basePower": 0,
       "accuracy": 60,
       "pp": 20,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -12451,6 +12486,7 @@
       "basePower": 70,
       "accuracy": 95,
       "pp": 25,
+      "priority": 0,
       "desc": "If this attack is not successful and the target was not immune, the user loses HP equal to half of the damage the target would have taken, rounded down, but no less than 1 HP and no more than half of the target's maximum HP, as crash damage.",
       "shortDesc": "If miss, user takes 1/2 damage it would've dealt."
     },
@@ -12462,6 +12498,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -12473,6 +12510,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Until the end of the next turn, the target cannot avoid the user's moves, even if the target is in the middle of a two-turn move. When this effect is started against the target, this and Mind Reader's effects end for every other Pokemon against that target. If the target leaves the field using Baton Pass, the replacement remains under this effect. If the user leaves the field using Baton Pass, this effect is restarted against the same target for the replacement. The effect ends if either the user or the target leaves the field.",
       "shortDesc": "User's next move will not miss the target."
     },
@@ -12484,6 +12522,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "The user recovers 1/2 the HP lost by the target, rounded down.",
       "shortDesc": "User recovers 50% of the damage dealt."
     },
@@ -12495,6 +12534,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Lowers the target's Attack and Special Attack by 2 stages. The user faints. This move does not check accuracy, and can hit targets in the middle of a two-turn move. Fails entirely if the target's Attack and Special Attack stat stages are both -6.",
       "shortDesc": "Lowers target's Attack, Sp. Atk by 2. User faints."
     },
@@ -12506,6 +12546,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Until the end of the next turn, the target cannot avoid the user's moves, even if the target is in the middle of a two-turn move. When this effect is started against the target, this and Lock-On's effects end for every other Pokemon against that target. If the target leaves the field using Baton Pass, the replacement remains under this effect. If the user leaves the field using Baton Pass, this effect is restarted against the same target for the replacement. The effect ends if either the user or the target leaves the field.",
       "shortDesc": "User's next move will not miss the target."
     },
@@ -12517,6 +12558,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "While the user remains active, this move is replaced by the last move used by the target. The copied move has 5 PP. Fails if the target has not made a move, if the user has Transformed, if the user already knows the move, or if the move is Metronome, Mimic, Sketch, or Struggle.",
       "shortDesc": "The last move the target used replaces this one."
     },
@@ -12528,6 +12570,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -5,
       "desc": "Deals damage to the last opposing Pokemon to hit the user with a special attack this turn equal to twice the HP lost by the user from that attack. If that opposing Pokemon's position is no longer in use and there is another opposing Pokemon on the field, the damage is done to it instead. This move considers Hidden Power as Normal type, and only the last hit of a multi-hit attack is counted. Fails if the user was not hit by an opposing Pokemon's special attack this turn, or if the user did not lose HP from the attack.",
       "shortDesc": "If hit by special attack, returns double damage."
     },
@@ -12539,6 +12582,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user uses the last move that successfully targeted the user. The copied move is used with no specific target. Fails if no move has targeted the user, if the move missed, failed, or had no effect on the user, or if the move cannot be copied by this move.",
       "shortDesc": "User uses the target's last used move against it."
     },
@@ -12550,6 +12594,7 @@
       "basePower": 0,
       "accuracy": 95,
       "pp": 20,
+      "priority": 0,
       "desc": "This move calls another move for use depending on the battle terrain. Swift in Wi-Fi battles.",
       "shortDesc": "Attack changes based on terrain. (Swift)"
     },
@@ -12561,6 +12606,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -12572,6 +12618,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to lose 1/4 of its maximum HP, rounded down, at the end of each turn as long as it is asleep. This move does not affect the target unless it is asleep. The effect ends when the target wakes up, even if it falls asleep again in the same turn.",
       "shortDesc": "A sleeping target is hurt by 1/4 max HP per turn."
     },
@@ -12583,6 +12630,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "As long as the target remains active, its evasiveness stat stage is ignored during accuracy checks against it, and Normal- and Fighting-type attacks can hit the target if it is a Ghost type.",
       "shortDesc": "Fighting, Normal hit Ghost. Evasiveness ignored."
     },
@@ -12594,6 +12642,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "The user spends two or three turns locked into this move and becomes confused at the end of the last turn of the effect if it is not already. This move targets an opposing Pokemon at random on each turn. If the user is prevented from moving, falls asleep, becomes frozen, or the attack is not successful against the target, the effect ends without causing confusion. If this move is called by Sleep Talk, the move is used for one turn and does not confuse the user.",
       "shortDesc": "Lasts 2-3 turns. Confuses the user afterwards."
     },
@@ -12605,6 +12654,7 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Lowers the user's Special Attack by 2 stages.",
       "shortDesc": "Lowers the user's Sp. Atk by 2."
     },
@@ -12616,6 +12666,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "The user spends two or three turns locked into this move and becomes confused at the end of the last turn of the effect if it is not already. This move targets an opposing Pokemon at random on each turn. If the user is prevented from moving, falls asleep, becomes frozen, or the attack is not successful against the target, the effect ends without causing confusion. If this move is called by Sleep Talk, the move is used for one turn and does not confuse the user.",
       "shortDesc": "Lasts 2-3 turns. Confuses the user afterwards."
     },
@@ -12627,6 +12678,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "If the target is an opposing Pokemon and it switches out this turn, this move hits that Pokemon before it leaves the field. Power doubles and no accuracy check is done if the user hits an opponent switching out, and the user's turn is over; if an opponent faints from this, the replacement Pokemon becomes active immediately.",
       "shortDesc": "Power doubles if the targeted foe is switching out."
     },
@@ -12638,6 +12690,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP, rounded down.",
       "shortDesc": "Heals the user by 50% of its max HP."
     },
@@ -12649,6 +12702,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "The power of this move is 20 if X is 33 to 48, 40 if X is 17 to 32, 80 if X is 10 to 16, 100 if X is 5 to 9, 150 if X is 2 to 4, and 200 if X is 0 or 1, where X is equal to (user's current HP * 48 / user's maximum HP), rounded down.",
       "shortDesc": "More power the less HP the user has left."
     },
@@ -12660,6 +12714,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 50% chance to lower the target's Defense by 1 stage.",
       "shortDesc": "50% chance to lower the target's Defense by 1."
     },
@@ -12671,6 +12726,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 1,
+      "priority": 0,
       "desc": "This move is permanently replaced by the last move used by the target. The copied move has the maximum PP for that move. Fails if the target has not made a move, if the user has Transformed, or if the move is Sketch, Struggle, or any move the user knows.",
       "shortDesc": "Permanently copies the last move target used."
     },
@@ -12682,6 +12738,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "One of the user's known moves, besides this move, is selected for use at random. Fails if the user is not asleep. The selected move does not have PP deducted from it, but if it currently has 0 PP it will fail to be used. This move cannot select Assist, Bide, Focus Punch, Metronome, Mirror Move, Sleep Talk, Uproar, or any two-turn move.",
       "shortDesc": "User must be asleep. Uses another known move."
     },
@@ -12693,6 +12750,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Causes the target's last move used to lose 2 to 5 PP, at random. Fails if the target has not made a move, if the move has 0 or 1 PP, or if it no longer knows the move.",
       "shortDesc": "Lowers the PP of the target's last move by 2-5."
     },
@@ -12704,6 +12762,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user's Stockpile count increases by 1. Fails if the user's Stockpile count is 3. The user's Stockpile count is reset to 0 when it is no longer active.",
       "shortDesc": "Raises user's Stockpile count by 1. Max 3 uses."
     },
@@ -12715,6 +12774,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 1,
+      "priority": 0,
       "desc": "Deals typeless damage to a random opposing Pokemon. If this move was successful, the user takes damage equal to 1/4 the HP lost by the target, rounded down, but not less than 1 HP, and the Rock Head Ability does not prevent this. This move is automatically used if none of the user's known moves can be selected.",
       "shortDesc": "User loses 1/4 the HP lost by the target."
     },
@@ -12726,6 +12786,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Power doubles if the target is using Dive.",
       "shortDesc": "Hits foes. Power doubles against Dive."
     },
@@ -12737,6 +12798,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "For 2 turns, prevents the target from using non-damaging moves.",
       "shortDesc": "For 2 turns, the target can't use status moves."
     },
@@ -12748,6 +12810,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Causes the target to become confused.",
       "shortDesc": "Confuses adjacent Pokemon."
     },
@@ -12759,6 +12822,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's Attack and Defense by 1 stage.",
       "shortDesc": "Lowers the target's Attack and Defense by 1."
     },
@@ -12770,6 +12834,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "The user spends two to five turns locked into this move. This move targets an opposing Pokemon at random on each turn. During effect, no active Pokemon can fall asleep by any means, and Pokemon that are already asleep wake up as their turn starts or at the end of each turn, including the last one. If the user is prevented from moving or the attack is not successful against the target during one of the turns, the effect ends.",
       "shortDesc": "Lasts 2-5 turns. Active Pokemon cannot sleep."
     },
@@ -12781,6 +12846,7 @@
       "basePower": 35,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -12792,6 +12858,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "If the target lost HP, the user takes recoil damage equal to 1/3 the HP lost by the target, rounded down, but not less than 1 HP.",
       "shortDesc": "Has 1/3 recoil."
     },
@@ -12803,6 +12870,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -12814,6 +12882,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Damage doubles if a weather condition is active, and this move's type changes to match. Ice type during Hail, Water type during Rain Dance, Rock type during Sandstorm, and Fire type during Sunny Day.",
       "shortDesc": "Damage doubles and type varies during weather."
     },
@@ -12825,6 +12894,7 @@
       "basePower": 100,
       "accuracy": 50,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 100% chance to paralyze the target.",
       "shortDesc": "100% chance to paralyze the target."
     },
@@ -12836,6 +12906,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Every Pokemon in the user's party is cured of its non-volatile status condition.",
       "shortDesc": "Cures the user's party of all status conditions."
     },
@@ -12847,6 +12918,7 @@
       "basePower": 15,
       "accuracy": 75,
       "pp": 20,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -12858,6 +12930,7 @@
       "basePower": 25,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -12869,6 +12942,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -12880,6 +12954,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user's type changes based on the battle terrain. Normal type on the regular Wi-Fi terrain. Fails if the type is one of the user's current types.",
       "shortDesc": "Changes user's type based on terrain. (Normal)"
     },
@@ -12891,6 +12966,7 @@
       "basePower": 35,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -12902,6 +12978,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Lowers the target's Speed by 2 stages.",
       "shortDesc": "Lowers the target's Speed by 2."
     },
@@ -12913,6 +12990,7 @@
       "basePower": 90,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -12924,6 +13002,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "If the user is not a Ghost type, lowers the user's Speed by 1 stage and raises the user's Attack and Defense by 1 stage. If the user is a Ghost type, the user loses 1/2 of its maximum HP, rounded down and even if it would cause fainting, in exchange for the target losing 1/4 of its maximum HP, rounded down, at the end of each turn while it is active. If the target uses Baton Pass, the replacement will continue to be affected. Fails if there is no target or if the target is already affected or has a substitute.",
       "shortDesc": "Curses if Ghost, else -1 Spe, +1 Atk, +1 Def."
     },
@@ -12935,6 +13014,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 3,
       "desc": "The user is protected from most attacks made by other Pokemon during this turn. This move has an X/65536 chance of being successful, where X starts at 65535 and halves, rounded down, each time this move is successfully used. After the fourth successful use in a row, X drops to 118 and continues with seemingly random values from 0-65535 on subsequent successful uses. X resets to 65535 if this move fails or if the user's last move used is not Detect, Endure, or Protect. Fails if the user moves last this turn.",
       "shortDesc": "Prevents moves from affecting the user this turn."
     },
@@ -12946,6 +13026,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "If the target lost HP, the user takes recoil damage equal to 1/3 the HP lost by the target, rounded down, but not less than 1 HP.",
       "shortDesc": "Has 1/3 recoil."
     },
@@ -12957,6 +13038,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "The target is unaffected by this move unless it is asleep and does not have a substitute. The user recovers 1/2 the HP lost by the target, rounded down, but not less than 1 HP.",
       "shortDesc": "User gains 1/2 HP inflicted. Sleeping target only."
     },
@@ -12968,6 +13050,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals damage to the target equal to (target's current HP - user's current HP). The target is unaffected if its current HP is less than or equal to the user's current HP.",
       "shortDesc": "Lowers the target's HP to the user's HP."
     },
@@ -12979,6 +13062,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 5,
+      "priority": 1,
       "desc": "No additional effect.",
       "shortDesc": "Usually goes first."
     },
@@ -12990,6 +13074,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -13001,6 +13086,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 20,
+      "priority": -3,
       "desc": "The user loses its focus and does nothing if it is hit by a damaging attack this turn before it can execute the move, but it still loses PP.",
       "shortDesc": "Fails if the user takes damage before it hits."
     },
@@ -13012,6 +13098,7 @@
       "basePower": 80,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Deals typeless damage that cannot be a critical hit two turns after this move is used. Damage is calculated against the target on use, and at the end of the final turn that damage is dealt to the Pokemon at the position the original target had at the time. Fails if this move or Doom Desire is already in effect for the target's position.",
       "shortDesc": "Hits two turns after being used."
     },
@@ -13023,6 +13110,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Special Attack by 1 stage.",
       "shortDesc": "Raises the user's Sp. Atk by 1."
     },
@@ -13034,6 +13122,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Every Pokemon in the user's party is cured of its non-volatile status condition. Pokemon with the Soundproof Ability are not cured.",
       "shortDesc": "Cures the user's party of all status conditions."
     },
@@ -13045,6 +13134,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -13056,6 +13146,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user prevents all opposing Pokemon from using any moves that the user also knows as long as the user remains active. Fails if no opposing Pokemon know any of the user's moves.",
       "shortDesc": "No foe can use any move known by the user."
     },
@@ -13067,6 +13158,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user has 1/16 of its maximum HP restored at the end of each turn, but it is prevented from switching out and other Pokemon cannot force the user to switch out. The user can still switch out if it uses Baton Pass, and the replacement will remain trapped and still receive the healing effect.",
       "shortDesc": "User recovers 1/16 max HP per turn. Traps user."
     },
@@ -13078,6 +13170,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "The target's held item is lost for the rest of the battle, unless it has the Sticky Hold Ability. During the effect, the target cannot gain a new item by any means.",
       "shortDesc": "Target's item is lost and it cannot obtain another."
     },
@@ -13089,6 +13182,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "The Pokemon at the user's position steals 1/8 of the target's maximum HP, rounded down, at the end of each turn. If the target uses Baton Pass, the replacement will continue being leeched. If the target switches out or uses Rapid Spin, the effect ends. Grass-type Pokemon are immune to this move on use, but not its effect.",
       "shortDesc": "1/8 of target's HP is restored to user every turn."
     },
@@ -13100,6 +13194,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "For 5 turns, the user and its party members take 1/2 damage from special attacks, or 2/3 damage if there are multiple active Pokemon on the user's side. Critical hits ignore this effect. It is removed from the user's side if the user or an ally is successfully hit by Brick Break. Fails if the effect is already active on the user's side.",
       "shortDesc": "For 5 turns, special damage to allies is halved."
     },
@@ -13111,6 +13206,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 4,
       "desc": "The user is unaffected by certain non-damaging moves directed at it and will instead use such moves against the original user. If the move targets both opposing Pokemon and the Pokemon under this effect is on the left side, it will reflect the move targeting both opposing Pokemon and its ally will not be affected by the original move; otherwise, if the Pokemon under this effect is on the right side, its ally will be affected by the original move and this Pokemon will reflect the move only targeting the original user. The effect ends once a move is reflected or at the end of the turn. Moves reflected in this way can be reflected again by another Pokemon under this effect. If the user has the Soundproof Ability, it nullifies sound-based moves before this effect happens. The Lightning Rod Ability redirects Electric moves before this move takes effect.",
       "shortDesc": "Bounces back certain non-damaging moves."
     },
@@ -13122,6 +13218,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "A random move is selected for use, other than Counter, Covet, Destiny Bond, Detect, Endure, Focus Punch, Follow Me, Helping Hand, Metronome, Mimic, Mirror Coat, Protect, Sketch, Sleep Talk, Snatch, Struggle, Thief, or Trick.",
       "shortDesc": "Picks a random move."
     },
@@ -13133,6 +13230,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's evasiveness by 1 stage. Whether or not the user's evasiveness was changed, Astonish, Extrasensory, Needle Arm, and Stomp will have their damage doubled if used against the user while it is active.",
       "shortDesc": "Raises the user's evasiveness by 1."
     },
@@ -13144,6 +13242,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "For 5 turns, the user and its party members are protected from having their stat stages lowered by other Pokemon. Fails if the effect is already active on the user's side.",
       "shortDesc": "For 5 turns, protects user's party from stat drops."
     },
@@ -13155,6 +13254,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP if no weather conditions are in effect, 2/3 of its maximum HP if the weather is Sunny Day, and 1/4 of its maximum HP if the weather is Hail, Rain Dance, or Sandstorm, all rounded down.",
       "shortDesc": "Heals the user by a weather-dependent amount."
     },
@@ -13166,6 +13266,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP if no weather conditions are in effect, 2/3 of its maximum HP if the weather is Sunny Day, and 1/4 of its maximum HP if the weather is Hail, Rain Dance, or Sandstorm, all rounded down.",
       "shortDesc": "Heals the user by a weather-dependent amount."
     },
@@ -13177,6 +13278,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "While the user is active, all Electric-type attacks used by any active Pokemon have their power halved. Fails if this effect is already active for the user. Baton Pass can be used to transfer this effect to an ally.",
       "shortDesc": "Weakens Electric-type attacks to 1/2 their power."
     },
@@ -13188,6 +13290,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "Scatters coins."
     },
@@ -13199,6 +13302,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Each active Pokemon receives a perish count of 4 if it doesn't already have a perish count. At the end of each turn including the turn used, the perish count of all active Pokemon lowers by 1 and Pokemon faint if the number reaches 0. The perish count is removed from Pokemon that switch out. If a Pokemon uses Baton Pass while it has a perish count, the replacement will gain the perish count and continue to count down.",
       "shortDesc": "All active Pokemon will faint in 3 turns."
     },
@@ -13210,6 +13314,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 40,
+      "priority": 0,
       "desc": "Poisons the target.",
       "shortDesc": "Poisons the foe(s)."
     },
@@ -13221,6 +13326,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 3,
       "desc": "The user is protected from most attacks made by other Pokemon during this turn. This move has an X/65536 chance of being successful, where X starts at 65535 and halves, rounded down, each time this move is successfully used. After the fourth successful use in a row, X drops to 118 and continues with seemingly random values from 0-65535 on subsequent successful uses. X resets to 65535 if this move fails or if the user's last move used is not Detect, Endure, or Protect. Fails if the user moves last this turn.",
       "shortDesc": "Prevents moves from affecting the user this turn."
     },
@@ -13232,6 +13338,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user copies all of the target's current stat stage changes.",
       "shortDesc": "Copies the target's current stat stages."
     },
@@ -13243,6 +13350,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "If this move is successful, the effects of Leech Seed and binding moves end for the user, and Spikes are removed from the user's side of the field.",
       "shortDesc": "Frees user from hazards, binding, Leech Seed."
     },
@@ -13254,6 +13362,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user regains the item last used by a Pokemon in its current position on the field, even if that Pokemon was not the user. Fails if the user is holding an item, if no items have been used at the user's position, or if the item was lost to Covet, Knock Off, or Thief. Items thrown with Fling can be regained.",
       "shortDesc": "Restores the item the user last used."
     },
@@ -13265,6 +13374,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "For 5 turns, the user and its party members take 1/2 damage from physical attacks, or 2/3 damage if there are multiple active Pokemon on the user's side. Critical hits ignore this effect. It is removed from the user's side if the user or an ally is successfully hit by Brick Break. Fails if the effect is already active on the user's side.",
       "shortDesc": "For 5 turns, physical damage to allies is halved."
     },
@@ -13276,6 +13386,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -6,
       "desc": "The target is forced to switch out and be replaced with a random unfainted ally. Fails if the target is the last unfainted Pokemon in its party, if the target used Ingrain previously or has the Suction Cups Ability, or if the user's level is lower than the target's and X * (user's level + target's level) / 256 + 1 is less than or equal to (target's level / 4), rounded down, where X is a random number from 0 to 255.",
       "shortDesc": "Forces the target to switch to a random ally."
     },
@@ -13287,6 +13398,7 @@
       "basePower": 25,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -13298,6 +13410,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 25,
+      "priority": 0,
       "desc": "For 5 turns, the user and its party members cannot have non-volatile status conditions or confusion inflicted on them by other Pokemon. Pokemon on the user's side cannot become affected by Yawn but can fall asleep from its effect. Fails if the effect is already active on the user's side.",
       "shortDesc": "For 5 turns, protects user's party from status."
     },
@@ -13309,6 +13422,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -13320,6 +13434,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Lowers the target's Speed by 2 stages.",
       "shortDesc": "Lowers the target's Speed by 2."
     },
@@ -13331,6 +13446,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 30% chance to cause a secondary effect on the target based on the battle terrain. Causes paralysis on the regular Wi-Fi terrain.",
       "shortDesc": "Effect varies with terrain. (30% paralysis chance)"
     },
@@ -13342,6 +13458,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 4,
       "desc": "If another Pokemon uses certain non-damaging moves this turn, the user steals that move to use itself. If multiple Pokemon use this move this turn, the applicable moves are stolen by each of those Pokemon in turn order, and only the last user in turn order will gain the effects.",
       "shortDesc": "User steals certain support moves to use itself."
     },
@@ -13353,6 +13470,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch. Fails if the user is not asleep.",
       "shortDesc": "User must be asleep. 30% chance to flinch target."
     },
@@ -13364,6 +13482,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Sets up a hazard on the opposing side of the field, damaging each opposing Pokemon that switches in, unless it is a Flying-type Pokemon or has the Levitate Ability. Can be used up to three times before failing. Opponents lose 1/8 of their maximum HP with one layer, 1/6 of their maximum HP with two layers, and 1/4 of their maximum HP with three layers, all rounded down. Can be removed from the opposing side if any opposing Pokemon uses Rapid Spin successfully.",
       "shortDesc": "Hurts grounded foes on switch-in. Max 3 layers."
     },
@@ -13375,6 +13494,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user takes 1/4 of its maximum HP, rounded down, and puts it into a substitute to take its place in battle. The substitute is removed once enough damage is inflicted on it, or if the user switches out or faints. Baton Pass can be used to transfer the substitute to an ally, and the substitute will keep its remaining HP. Until the substitute is broken, it receives damage from all attacks made by other Pokemon and shields the user from status effects and stat stage changes caused by other Pokemon. The user still takes normal damage from weather and status effects while behind its substitute. If the substitute breaks during a multi-hit attack, the user will take damage from any remaining hits. If a substitute is created while the user is trapped by a binding move, the binding effect ends immediately. Fails if the user does not have enough HP remaining to create a substitute without fainting, or if it already has a substitute.",
       "shortDesc": "User takes 1/4 its max HP to put in a substitute."
     },
@@ -13386,6 +13506,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user restores its HP based on its Stockpile count. Restores 1/4 of its maximum HP if it's 1, 1/2 of its maximum HP if it's 2, both rounded half down, and all of its HP if it's 3. Fails if the user's Stockpile count is 0. The user's Stockpile count resets to 0.",
       "shortDesc": "Heals the user based on uses of Stockpile."
     },
@@ -13397,6 +13518,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP if no weather conditions are in effect, 2/3 of its maximum HP if the weather is Sunny Day, and 1/4 of its maximum HP if the weather is Hail, Rain Dance, or Sandstorm, all rounded down.",
       "shortDesc": "Heals the user by a weather-dependent amount."
     },
@@ -13408,6 +13530,7 @@
       "basePower": 35,
       "accuracy": 95,
       "pp": 35,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -13419,6 +13542,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Special Attack by 2 stages.",
       "shortDesc": "Raises the user's Sp. Atk by 2."
     },
@@ -13430,6 +13554,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "The user spends two or three turns locked into this move and becomes confused at the end of the last turn of the effect if it is not already. This move targets an opposing Pokemon at random on each turn. If the user is prevented from moving, falls asleep, becomes frozen, or the attack is not successful against the target, the effect ends without causing confusion. If this move is called by Sleep Talk, the move is used for one turn and does not confuse the user.",
       "shortDesc": "Lasts 2-3 turns. Confuses the user afterwards."
     },
@@ -13441,6 +13566,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Prevents the target from selecting the same move for use two turns in a row. This effect ends when the target is no longer active.",
       "shortDesc": "Target can't select the same move twice in a row."
     },
@@ -13452,6 +13578,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Badly poisons the target.",
       "shortDesc": "Badly poisons the target."
     },
@@ -13463,6 +13590,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user transforms into the target. The target's current stats, stat stages, types, moves, Ability, weight, IVs, species, and sprite are copied. The user's level and HP remain the same and each copied move receives only 5 PP. This move fails if the target has transformed.",
       "shortDesc": "Copies target's stats, moves, types, and Ability."
     },
@@ -13474,6 +13602,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "While the user is active, all Fire-type attacks used by any active Pokemon have their power halved. Fails if this effect is already active for the user. Baton Pass can be used to transfer this effect to an ally.",
       "shortDesc": "Weakens Fire-type attacks to 1/2 their power."
     },
@@ -13485,6 +13614,7 @@
       "basePower": 15,
       "accuracy": 70,
       "pp": 15,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -13496,6 +13626,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": -6,
       "desc": "The target is forced to switch out and be replaced with a random unfainted ally. Fails if the target is the last unfainted Pokemon in its party, if the target used Ingrain previously or has the Suction Cups Ability, or if the user's level is lower than the target's and X * (user's level + target's level) / 256 + 1 is less than or equal to (target's level / 4), rounded down, where X is a random number from 0 to 255.",
       "shortDesc": "Forces the target to switch to a random ally."
     },
@@ -13507,6 +13638,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "At the end of the next turn, the Pokemon at the user's position has 1/2 of its maximum HP restored to it, rounded down. Fails if this move is already in effect for the user's position.",
       "shortDesc": "Next turn, heals 50% of the recipient's max HP."
     },
@@ -13518,6 +13650,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Prevents the target from switching for two to five turns. Causes damage to the target equal to 1/16 of its maximum HP, rounded down, at the end of each turn during effect. The target can still switch out if it uses Baton Pass. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
       "shortDesc": "Traps and damages the target for 2-5 turns."
     },
@@ -13529,6 +13662,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Causes the target to fall asleep at the end of the next turn. Fails when used if the target cannot fall asleep or if it already has a non-volatile status condition. At the end of the next turn, if the target is still active, does not have a non-volatile status condition, and can fall asleep, it falls asleep. If the target becomes affected, this effect cannot be prevented by Safeguard or a substitute, or by falling asleep and waking up during the effect.",
       "shortDesc": "Puts the target to sleep after 1 turn."
     },
@@ -13540,6 +13674,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Defense by 2 stages.",
       "shortDesc": "Raises the user's Defense by 2."
     },
@@ -13551,6 +13686,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio. Hits adjacent foes."
     },
@@ -13562,6 +13698,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's Defense by 2 stages.",
       "shortDesc": "Raises the user's Defense by 2."
     },
@@ -13573,6 +13710,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Prevents the target from switching out. The target can still switch out if it uses Baton Pass. If the target leaves the field using Baton Pass, the replacement will remain trapped. The effect ends if the user leaves the field, unless it uses Baton Pass, in which case the target will remain trapped.",
       "shortDesc": "Prevents the target from switching out."
     },
@@ -13584,6 +13722,7 @@
       "basePower": 85,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target.",
       "shortDesc": "30% chance to paralyze the target."
     },
@@ -13595,6 +13734,7 @@
       "basePower": 85,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target. This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Gust, Sky Uppercut, Thunder, and Twister, and Gust and Twister have doubled power when used against it.",
       "shortDesc": "Bounces turn 1. Hits turn 2. 30% paralyze."
     },
@@ -13606,6 +13746,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "10% chance to lower the foe(s) Speed by 1."
     },
@@ -13617,6 +13758,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's Attack by 2 stages.",
       "shortDesc": "Lowers the target's Attack by 2."
     },
@@ -13628,6 +13770,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the target."
     },
@@ -13639,6 +13782,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the target."
     },
@@ -13650,6 +13794,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -13661,6 +13806,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Lowers the target's Attack by 1 stage.",
       "shortDesc": "Lowers the foe(s) Attack by 1."
     },
@@ -13672,6 +13818,7 @@
       "basePower": 100,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the foe(s)."
     },
@@ -13683,6 +13830,7 @@
       "basePower": 120,
       "accuracy": 80,
       "pp": 5,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -13694,6 +13842,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect. Hits adjacent foes."
     },
@@ -13705,6 +13854,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 10% chance to freeze the target.",
       "shortDesc": "10% chance to freeze the target."
     },
@@ -13716,6 +13866,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "The user recovers 1/2 the HP lost by the target, rounded down.",
       "shortDesc": "User recovers 50% of the damage dealt."
     },
@@ -13727,6 +13878,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target.",
       "shortDesc": "30% chance to paralyze the target."
     },
@@ -13738,6 +13890,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Prevents the target from switching out. The target can still switch out if it uses Baton Pass. If the target leaves the field using Baton Pass, the replacement will remain trapped. The effect ends if the user leaves the field, unless it uses Baton Pass, in which case the target will remain trapped.",
       "shortDesc": "Prevents the target from switching out."
     },
@@ -13749,6 +13902,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Lowers the target's Special Defense by 2 stages.",
       "shortDesc": "Lowers the target's Sp. Def by 2."
     },
@@ -13760,6 +13914,7 @@
       "basePower": 100,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 20% chance to raise the user's Attack by 1 stage.",
       "shortDesc": "20% chance to raise the user's Attack by 1."
     },
@@ -13771,6 +13926,7 @@
       "basePower": 95,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 30% chance to lower the target's accuracy by 1 stage.",
       "shortDesc": "30% chance to lower the foe(s) accuracy by 1."
     },
@@ -13782,6 +13938,7 @@
       "basePower": 14,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -13793,6 +13950,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to badly poison the target.",
       "shortDesc": "30% chance to badly poison the target."
     },
@@ -13804,6 +13962,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 35,
+      "priority": 0,
       "desc": "Poisons the target.",
       "shortDesc": "Poisons the target."
     },
@@ -13815,6 +13974,7 @@
       "basePower": 0,
       "accuracy": 80,
       "pp": 15,
+      "priority": 0,
       "desc": "Deals damage to the target equal to (user's level) * (X * 10 + 50) / 100, where X is a random number from 0 to 10, rounded down, but not less than 1 HP.",
       "shortDesc": "Random damage equal to 0.5x-1.5x user's level."
     },
@@ -13826,6 +13986,7 @@
       "basePower": 50,
       "accuracy": 80,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 100% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "100% chance to lower the target's Speed by 1."
     },
@@ -13837,6 +13998,7 @@
       "basePower": 0,
       "accuracy": 85,
       "pp": 40,
+      "priority": 0,
       "desc": "Lowers the target's Defense by 2 stages.",
       "shortDesc": "Lowers the target's Defense by 2."
     },
@@ -13848,6 +14010,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -13859,6 +14022,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second. Raises the user's Defense by 1 stage on the first turn.",
       "shortDesc": "Raises user's Defense by 1 on turn 1. Hits turn 2."
     },
@@ -13870,6 +14034,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -13881,6 +14046,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Damage doubles if the target is paralyzed. If this move is successful, the target is cured of paralysis.",
       "shortDesc": "Damage doubles if target is paralyzed; cures it."
     },
@@ -13892,6 +14058,7 @@
       "basePower": 20,
       "accuracy": 70,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 40% chance to poison the target.",
       "shortDesc": "40% chance to poison the target."
     },
@@ -13903,6 +14070,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -13914,6 +14082,7 @@
       "basePower": 0,
       "accuracy": 95,
       "pp": 40,
+      "priority": 0,
       "desc": "Lowers the target's Speed by 1 stage.",
       "shortDesc": "Lowers the foe(s) Speed by 1."
     },
@@ -13925,6 +14094,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 30,
+      "priority": 0,
       "desc": "Paralyzes the target. This move does not ignore type immunity.",
       "shortDesc": "Paralyzes the target."
     },
@@ -13936,6 +14106,7 @@
       "basePower": 80,
       "accuracy": 80,
       "pp": 25,
+      "priority": 0,
       "desc": "If the target lost HP, the user takes recoil damage equal to 1/4 the HP lost by the target, rounded down, but not less than 1 HP.",
       "shortDesc": "Has 1/4 recoil."
     },
@@ -13947,6 +14118,7 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 20,
+      "priority": 0,
       "desc": "Causes the target to become confused.",
       "shortDesc": "Causes the target to become confused."
     },
@@ -13958,6 +14130,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "Causes the target to become confused.",
       "shortDesc": "Causes the target to become confused."
     },
@@ -13969,6 +14142,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's evasiveness by 1 stage.",
       "shortDesc": "Lowers the foe(s) evasiveness by 1."
     },
@@ -13980,6 +14154,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's Attack by 2 stages.",
       "shortDesc": "Raises the user's Attack by 2."
     },
@@ -13991,6 +14166,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail or Enigma Berry. Items lost to this move cannot be regained with Recycle.",
       "shortDesc": "If the user has no item, it steals the target's."
     },
@@ -14002,6 +14178,7 @@
       "basePower": 120,
       "accuracy": 70,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target. This move can hit a target using Bounce or Fly. If the weather is Rain Dance, this move does not check accuracy. If the weather is Sunny Day, this move's accuracy is 50%.",
       "shortDesc": "30% chance to paralyze. Can't miss in rain."
     },
@@ -14013,6 +14190,7 @@
       "basePower": 95,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to paralyze the target.",
       "shortDesc": "10% chance to paralyze the target."
     },
@@ -14024,6 +14202,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Burns the target.",
       "shortDesc": "Burns the target."
     },
@@ -14035,6 +14214,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Until the user's next turn, if an opposing Pokemon's attack knocks the user out, that Pokemon faints as well, unless the attack was Doom Desire or Future Sight.",
       "shortDesc": "If an opponent knocks out the user, it also faints."
     },
@@ -14046,6 +14226,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the target's maximum HP. Ignores accuracy and evasiveness modifiers. This attack's accuracy is equal to (user's level - target's level + 30)%, and fails if the target is at a higher level. Pokemon with the Sturdy Ability are immune.",
       "shortDesc": "OHKOs the target. Fails if user is a lower level."
     },
@@ -14057,6 +14238,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Raises the target's Attack by 2 stages and confuses it.",
       "shortDesc": "Raises the target's Attack by 2 and confuses it."
     },
@@ -14068,6 +14250,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Paralyzes the target. This move does not ignore type immunity.",
       "shortDesc": "Paralyzes the target."
     },
@@ -14079,6 +14262,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -14090,6 +14274,7 @@
       "basePower": 65,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 10% chance to make the target flinch.",
       "shortDesc": "10% chance to make the target flinch."
     },
@@ -14101,6 +14286,7 @@
       "basePower": 18,
       "accuracy": 85,
       "pp": 15,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -14112,6 +14298,7 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "10% chance to lower the target's Speed by 1."
     },
@@ -14123,6 +14310,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 20% chance to confuse the target.",
       "shortDesc": "20% chance to confuse the target."
     },
@@ -14134,6 +14322,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -14145,6 +14334,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Deals 40 HP of damage to the target.",
       "shortDesc": "Deals 40 HP of damage to the target."
     },
@@ -14156,6 +14346,7 @@
       "basePower": 100,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -14167,6 +14358,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Power is equal to the greater of ((255 - user's Happiness) * 2/5), rounded down, or 1.",
       "shortDesc": "Max 102 power at minimum Happiness."
     },
@@ -14178,6 +14370,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Attack by 1 stage.",
       "shortDesc": "Raises the user's Attack by 1."
     },
@@ -14189,6 +14382,7 @@
       "basePower": 80,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to make the target flinch.",
       "shortDesc": "10% chance to make the target flinch."
     },
@@ -14200,6 +14394,7 @@
       "basePower": 30,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "If this move is successful, the user is locked into this move and cannot make another move until it misses, 5 turns have passed, or the attack cannot be used. Power doubles with each successful hit of this move and doubles again if Defense Curl was used previously by the user. If this move is called by Sleep Talk, the move is used for one turn.",
       "shortDesc": "Power doubles with each hit. Repeats for 5 turns."
     },
@@ -14211,6 +14406,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -14222,6 +14418,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "This move's power is 20 if the target weighs less than 10 kg, 40 if less than 25 kg, 60 if less than 50 kg, 80 if less than 100 kg, 100 if less than 200 kg, and 120 if greater than or equal to 200 kg.",
       "shortDesc": "More power the heavier the target."
     },
@@ -14233,6 +14430,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "The power of this move varies. 5% chances for 10 and 150 power, 10% chances for 30 and 110 power, 20% chances for 50 and 90 power, and 30% chance for 70 power. Power doubles if the target is using Dig.",
       "shortDesc": "Hits adjacent Pokemon. Power varies; 2x on Dig."
     },
@@ -14244,6 +14442,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Attack by 1 stage.",
       "shortDesc": "Raises the user's Attack by 1."
     },
@@ -14255,6 +14454,7 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Lowers the user's Special Attack by 2 stages.",
       "shortDesc": "Lowers the user's Sp. Atk by 2."
     },
@@ -14266,6 +14466,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Once this move is used and unless the target protected itself, the user's Attack is raised by 1 stage every time it is hit by another Pokemon's attack as long as this move is chosen for use.",
       "shortDesc": "Raises the user's Attack by 1 if hit during use."
     },
@@ -14277,6 +14478,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second.",
       "shortDesc": "Charges, then hits foe(s) turn 2."
     },
@@ -14288,6 +14490,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user cures its burn, poison, or paralysis. Fails if the user is not burned, poisoned, or paralyzed.",
       "shortDesc": "User cures its burn, poison, or paralysis."
     },
@@ -14299,6 +14502,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Power is equal to the greater of (user's Happiness * 2/5), rounded down, or 1.",
       "shortDesc": "Max 102 power at maximum Happiness."
     },
@@ -14310,6 +14514,7 @@
       "basePower": 60,
       "accuracy": 85,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -14321,6 +14526,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's Attack by 1 stage.",
       "shortDesc": "Raises the user's Attack by 1."
     },
@@ -14332,6 +14538,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to confuse the target.",
       "shortDesc": "10% chance to confuse the target."
     },
@@ -14343,6 +14550,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 10% chance to raise the user's Attack, Defense, Special Attack, Special Defense, and Speed by 1 stage.",
       "shortDesc": "10% chance to raise all stats by 1 (not acc/eva)."
     },
@@ -14354,6 +14562,7 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "This move can hit a target using Bounce or Fly.",
       "shortDesc": "Can hit Pokemon using Bounce or Fly."
     },
@@ -14365,6 +14574,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "Deals 20 HP of damage to the target.",
       "shortDesc": "Always does 20 HP of damage."
     },
@@ -14376,6 +14586,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Prevents the target from switching out. The target can still switch out if it uses Baton Pass. If the target leaves the field using Baton Pass, the replacement will remain trapped. The effect ends if the user leaves the field, unless it uses Baton Pass, in which case the target will remain trapped.",
       "shortDesc": "Prevents the target from switching out."
     },
@@ -14387,6 +14598,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -14398,6 +14610,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Fails when used.",
       "shortDesc": "Fails when used."
     },
@@ -14409,6 +14622,7 @@
       "basePower": 25,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Hits twice, with each hit having a 20% chance to poison the target. If the first hit breaks the target's substitute, it will take damage for the second hit.",
       "shortDesc": "Hits 2 times. Each hit has 20% chance to poison."
     },
@@ -14420,6 +14634,7 @@
       "basePower": 50,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Hits twice. If the first hit breaks the target's substitute, it will take damage for the second hit.",
       "shortDesc": "Hits 2 times in one turn."
     },
@@ -14431,6 +14646,7 @@
       "basePower": 50,
       "accuracy": 95,
       "pp": 30,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -14442,6 +14658,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "Until the user's next turn, if an opposing Pokemon's attack knocks the user out, that move loses all its remaining PP.",
       "shortDesc": "If the user faints, the attack used loses all its PP."
     },
@@ -14453,6 +14670,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "For 5 turns, the weather becomes Hail. At the end of each turn except the last, all active Pokemon lose 1/16 of their maximum HP, rounded down, unless they are an Ice type. Fails if the current weather is Hail.",
       "shortDesc": "For 5 turns, hail crashes down."
     },
@@ -14464,6 +14682,7 @@
       "basePower": 0,
       "accuracy": 80,
       "pp": 15,
+      "priority": 0,
       "desc": "Lowers the target's accuracy by 1 stage.",
       "shortDesc": "Lowers the target's accuracy by 1."
     },
@@ -14475,6 +14694,7 @@
       "basePower": 0,
       "accuracy": 75,
       "pp": 10,
+      "priority": 0,
       "desc": "Causes the target to fall asleep.",
       "shortDesc": "Causes the target to fall asleep."
     },
@@ -14486,6 +14706,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 50% chance to lower the target's Special Defense by 1 stage.",
       "shortDesc": "50% chance to lower the target's Sp. Def by 1."
     },
@@ -14497,6 +14718,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP, rounded down.",
       "shortDesc": "Heals the user by 50% of its max HP."
     },
@@ -14508,6 +14730,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 50% chance to lower the target's Special Attack by 1 stage.",
       "shortDesc": "50% chance to lower the target's Sp. Atk by 1."
     },
@@ -14519,6 +14742,7 @@
       "basePower": 65,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 50% chance to lower the target's accuracy by 1 stage.",
       "shortDesc": "50% chance to lower the target's accuracy by 1."
     },
@@ -14530,6 +14754,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user falls asleep for the next two turns and restores all of its HP, curing itself of any non-volatile status condition in the process. Fails if the user has full HP, is already asleep, or if another effect is preventing sleep.",
       "shortDesc": "User sleeps 2 turns and restores HP and status."
     },
@@ -14541,6 +14766,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
+      "priority": -4,
       "desc": "Damage doubles if the user was hit by a Pokemon in the target's current position this turn, and that Pokemon was the last to hit the user.",
       "shortDesc": "Damage doubles if user is hit by the target."
     },
@@ -14552,6 +14778,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP, rounded down.",
       "shortDesc": "Heals the user by 50% of its max HP."
     },
@@ -14563,6 +14790,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user restores 1/2 of its maximum HP, rounded down.",
       "shortDesc": "Heals the user by 50% of its max HP."
     },
@@ -14574,6 +14802,7 @@
       "basePower": 70,
       "accuracy": true,
       "pp": 10,
+      "priority": -1,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy. Goes last."
     },
@@ -14585,6 +14814,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy."
     },
@@ -14596,6 +14826,7 @@
       "basePower": 100,
       "accuracy": 95,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -14607,6 +14838,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's Speed by 2 stages.",
       "shortDesc": "Raises the user's Speed by 2."
     },
@@ -14618,6 +14850,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Special Defense by 2 stages.",
       "shortDesc": "Raises the user's Sp. Def by 2."
     },
@@ -14629,6 +14862,7 @@
       "basePower": 15,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -14640,6 +14874,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Causes the target to become infatuated, making it unable to attack 50% of the time. Fails if both the user and the target are the same gender, if either is genderless, or if the target is already infatuated. The effect ends when either the user or the target is no longer active. Pokemon with the Oblivious Ability are immune.",
       "shortDesc": "A target of the opposite gender gets infatuated."
     },
@@ -14651,6 +14886,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Attack by 1 stage.",
       "shortDesc": "10% chance to lower the target's Attack by 1."
     },
@@ -14662,6 +14898,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "The user is replaced with another Pokemon in its party. The selected Pokemon has the user's stat stage changes transferred to it, as well as the effects of confusion, Curse, Focus Energy, Ingrain, Leech Seed, Lock-On (Mind Reader), Mud Sport, Perish Song, Water Sport, the trapper or trapped effects of Mean Look (Block, Spider Web), and a substitute with its remaining HP.",
       "shortDesc": "User switches, passing stat changes and more."
     },
@@ -14673,6 +14910,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "Raises the user's Attack by 12 stages in exchange for the user losing 1/2 of its maximum HP, rounded down. Fails if the user would faint or if its Attack stat stage is 6.",
       "shortDesc": "User loses 50% max HP. Maximizes Attack."
     },
@@ -14684,6 +14922,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -14695,6 +14934,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "If this move is successful, the user must recharge on the following turn and cannot select a move.",
       "shortDesc": "User cannot move next turn."
     },
@@ -14706,6 +14946,7 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target and a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio. 10% chance to burn."
     },
@@ -14717,6 +14958,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "10% chance to lower the target's Speed by 1."
     },
@@ -14728,6 +14970,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Attack and Defense by 1 stage.",
       "shortDesc": "Raises the user's Attack and Defense by 1."
     },
@@ -14739,6 +14982,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Special Attack and Special Defense by 1 stage.",
       "shortDesc": "Raises the user's Sp. Atk and Sp. Def by 1."
     },
@@ -14750,6 +14994,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Causes the target to become confused.",
       "shortDesc": "Confuses the target."
     },
@@ -14761,6 +15006,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to confuse the target.",
       "shortDesc": "10% chance to confuse the target."
     },
@@ -14772,6 +15018,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Defense and Special Defense by 1 stage.",
       "shortDesc": "Raises the user's Defense and Sp. Def by 1."
     },
@@ -14783,6 +15030,7 @@
       "basePower": 100,
       "accuracy": 80,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -14794,6 +15042,7 @@
       "basePower": 75,
       "accuracy": 95,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 50% chance to lower the target's Defense by 1 stage.",
       "shortDesc": "50% chance to lower the target's Defense by 1."
     },
@@ -14805,6 +15054,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Defense by 1 stage. As long as the user remains active, the power of the user's Ice Ball and Rollout will be doubled (this effect is not stackable).",
       "shortDesc": "Raises the user's Defense by 1."
     },
@@ -14816,6 +15066,7 @@
       "basePower": 30,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Hits twice. If the first hit breaks the target's substitute, it will take damage for the second hit.",
       "shortDesc": "Hits 2 times in one turn."
     },
@@ -14827,6 +15078,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "Raises the user's evasiveness by 1 stage.",
       "shortDesc": "Raises the user's evasiveness by 1."
     },
@@ -14838,6 +15090,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target.",
       "shortDesc": "30% chance to paralyze the target."
     },
@@ -14849,6 +15102,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -14860,6 +15114,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "Raises the user's Attack and Speed by 1 stage.",
       "shortDesc": "Raises the user's Attack and Speed by 1."
     },
@@ -14871,6 +15126,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -14882,6 +15138,7 @@
       "basePower": 100,
       "accuracy": 50,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 100% chance to confuse the target.",
       "shortDesc": "100% chance to confuse the target."
     },
@@ -14893,6 +15150,7 @@
       "basePower": 100,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Power doubles if the target is using Dig.",
       "shortDesc": "Hits adjacent Pokemon. Power doubles on Dig."
     },
@@ -14904,6 +15162,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the target."
     },
@@ -14915,6 +15174,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 4,
       "desc": "The user will survive attacks made by other Pokemon during this turn with at least 1 HP. This move has an X/65536 chance of being successful, where X starts at 65535 and halves, rounded down, each time this move is successfully used. After the fourth successful use in a row, X drops to 118 and continues with seemingly random values from 0-65535 on subsequent successful uses. X resets to 65535 if this move fails or if the user's last move used is not Detect, Endure, or Protect. Fails if the user moves last this turn.",
       "shortDesc": "User survives attacks this turn with at least 1 HP."
     },
@@ -14926,6 +15186,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Power is equal to (user's current HP * 150 / user's maximum HP), rounded down, but not less than 1.",
       "shortDesc": "Less power as user's HP decreases. Hits foe(s)."
     },
@@ -14937,6 +15198,7 @@
       "basePower": 250,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "The user faints after using this move. The target's Defense is halved during damage calculation. This move is prevented from executing if any active Pokemon has the Damp Ability.",
       "shortDesc": "Target's Def halved during damage. User faints."
     },
@@ -14948,6 +15210,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Power doubles if the user is burned, paralyzed, or poisoned.",
       "shortDesc": "Power doubles if user is burn/poison/paralyzed."
     },
@@ -14959,6 +15222,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's Special Defense by 2 stages.",
       "shortDesc": "Lowers the target's Sp. Def by 2."
     },
@@ -14970,6 +15234,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 40,
+      "priority": 0,
       "desc": "Leaves the target with at least 1 HP.",
       "shortDesc": "Always leaves the target with at least 1 HP."
     },
@@ -14981,6 +15246,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Lowers the target's Attack by 2 stages.",
       "shortDesc": "Lowers the target's Attack by 2."
     },
@@ -14992,6 +15258,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the target."
     },
@@ -15003,6 +15270,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the target's maximum HP. Ignores accuracy and evasiveness modifiers. This attack's accuracy is equal to (user's level - target's level + 30)%, and fails if the target is at a higher level. Pokemon with the Sturdy Ability are immune.",
       "shortDesc": "OHKOs the target. Fails if user is a lower level."
     },
@@ -15014,6 +15282,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to burn the target.",
       "shortDesc": "10% chance to burn the target. Thaws user."
     },
@@ -15025,6 +15294,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Raises the target's Special Attack by 1 stage and confuses it.",
       "shortDesc": "Raises the target's Sp. Atk by 1 and confuses it."
     },
@@ -15036,6 +15306,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's chance for a critical hit by 2 stages. Fails if the user already has the effect. Baton Pass can be used to transfer this effect to an ally.",
       "shortDesc": "Raises the user's critical hit ratio by 2."
     },
@@ -15047,6 +15318,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "If this move is successful, the user must recharge on the following turn and cannot select a move.",
       "shortDesc": "User cannot move next turn."
     },
@@ -15058,6 +15330,7 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -15069,6 +15342,7 @@
       "basePower": 18,
       "accuracy": 80,
       "pp": 15,
+      "priority": 0,
       "desc": "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 2-5 times in one turn."
     },
@@ -15080,6 +15354,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the target's maximum HP. Ignores accuracy and evasiveness modifiers. This attack's accuracy is equal to (user's level - target's level + 30)%, and fails if the target is at a higher level. Pokemon with the Sturdy Ability are immune.",
       "shortDesc": "OHKOs the target. Fails if user is a lower level."
     },
@@ -15091,6 +15366,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Power doubles if the target is using Bounce or Fly.",
       "shortDesc": "Power doubles during Bounce and Fly."
     },
@@ -15102,6 +15378,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
+      "priority": 0,
       "desc": "Raises the user's Defense by 1 stage.",
       "shortDesc": "Raises the user's Defense by 1."
     },
@@ -15113,6 +15390,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -15124,6 +15402,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 5,
       "desc": "The power of the target's attack this turn is multiplied by 1.5 (this effect is stackable). Fails if there is no ally adjacent to the user or if the ally already moved this turn, but does not fail if the ally is using a two-turn move.",
       "shortDesc": "One adjacent ally's move power is 1.5x this turn."
     },
@@ -15135,6 +15414,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15146,6 +15426,7 @@
       "basePower": 0,
       "accuracy": 30,
       "pp": 5,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the target's maximum HP. Ignores accuracy and evasiveness modifiers. This attack's accuracy is equal to (user's level - target's level + 30)%, and fails if the target is at a higher level. Pokemon with the Sturdy Ability are immune.",
       "shortDesc": "OHKOs the target. Fails if user is a lower level."
     },
@@ -15157,6 +15438,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "If this move is successful, the user must recharge on the following turn and cannot select a move.",
       "shortDesc": "User cannot move next turn."
     },
@@ -15168,6 +15450,7 @@
       "basePower": 150,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "If this move is successful, the user must recharge on the following turn and cannot select a move.",
       "shortDesc": "User cannot move next turn."
     },
@@ -15179,6 +15462,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to freeze the target.",
       "shortDesc": "10% chance to freeze the target."
     },
@@ -15190,6 +15474,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 100% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "100% chance to lower the foe(s) Speed by 1."
     },
@@ -15201,6 +15486,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
+      "priority": 0,
       "desc": "Raises the user's Defense by 2 stages.",
       "shortDesc": "Raises the user's Defense by 2."
     },
@@ -15212,6 +15498,7 @@
       "basePower": 100,
       "accuracy": 75,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 30% chance to lower the target's Defense by 1 stage.",
       "shortDesc": "30% chance to lower the target's Defense by 1."
     },
@@ -15223,6 +15510,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Lowers the target's Defense by 1 stage.",
       "shortDesc": "Lowers the foe(s) Defense by 1."
     },
@@ -15234,6 +15522,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 1,
       "desc": "No additional effect.",
       "shortDesc": "Usually goes first."
     },
@@ -15245,6 +15534,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy."
     },
@@ -15256,6 +15546,7 @@
       "basePower": 120,
       "accuracy": 85,
       "pp": 10,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15267,6 +15558,7 @@
       "basePower": 120,
       "accuracy": 75,
       "pp": 5,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15278,6 +15570,7 @@
       "basePower": 80,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15289,6 +15582,7 @@
       "basePower": 50,
       "accuracy": 95,
       "pp": 35,
+      "priority": 0,
       "desc": "Has a 10% chance to raise the user's Attack by 1 stage.",
       "shortDesc": "10% chance to raise the user's Attack by 1."
     },
@@ -15300,6 +15594,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 100% chance to lower the target's Speed by 1 stage.",
       "shortDesc": "100% chance to lower the target's Speed by 1."
     },
@@ -15311,6 +15606,7 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 100% chance to lower the target's accuracy by 1 stage.",
       "shortDesc": "100% chance to lower the target's accuracy by 1."
     },
@@ -15322,6 +15618,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the user's level.",
       "shortDesc": "Does damage equal to the user's level."
     },
@@ -15333,6 +15630,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "The user and the target's HP become the average of their current HP, rounded down, but not more than the maximum HP of either one.",
       "shortDesc": "Shares HP of user and target equally."
     },
@@ -15344,6 +15642,7 @@
       "basePower": 35,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15355,6 +15654,7 @@
       "basePower": 15,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "Has a 30% chance to poison the target.",
       "shortDesc": "30% chance to poison the target."
     },
@@ -15366,6 +15666,7 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to poison the target and a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio. 10% chance to poison."
     },
@@ -15377,6 +15678,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15388,6 +15690,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to freeze the target.",
       "shortDesc": "10% chance to freeze the foe(s)."
     },
@@ -15399,6 +15702,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "If this move is successful, it deals damage or heals the target. 40% chance for 40 power, 30% chance for 80 power, 10% chance for 120 power, and 20% chance to heal the target by 1/4 of its maximum HP, rounded down.",
       "shortDesc": "40, 80, 120 power, or heals target 1/4 max HP."
     },
@@ -15410,6 +15714,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 10% chance to confuse the target.",
       "shortDesc": "10% chance to confuse the target."
     },
@@ -15421,6 +15726,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 10% chance to lower the target's Special Defense by 1 stage.",
       "shortDesc": "10% chance to lower the target's Sp. Def by 1."
     },
@@ -15432,6 +15738,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 1,
       "desc": "No additional effect.",
       "shortDesc": "Usually goes first."
     },
@@ -15443,6 +15750,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "For 5 turns, the weather becomes Rain Dance. The damage of Water-type attacks is multiplied by 1.5 and the damage of Fire-type attacks is multiplied by 0.5 during the effect. Fails if the current weather is Rain Dance.",
       "shortDesc": "For 5 turns, heavy rain powers Water moves."
     },
@@ -15454,6 +15762,7 @@
       "basePower": 55,
       "accuracy": 95,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio. Hits adjacent foes."
     },
@@ -15465,6 +15774,7 @@
       "basePower": 75,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch.",
       "shortDesc": "30% chance to make the foe(s) flinch."
     },
@@ -15476,6 +15786,7 @@
       "basePower": 50,
       "accuracy": 90,
       "pp": 15,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15487,6 +15798,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user's Ability changes to match the target's Ability. Fails if the target's Ability is Wonder Guard.",
       "shortDesc": "User replaces its Ability with the target's."
     },
@@ -15498,6 +15810,7 @@
       "basePower": 30,
       "accuracy": 90,
       "pp": 20,
+      "priority": 0,
       "desc": "If this move is successful, the user is locked into this move and cannot make another move until it misses, 5 turns have passed, or the attack cannot be used. Power doubles with each successful hit of this move and doubles again if Defense Curl was used previously by the user. If this move is called by Sleep Talk, the move is used for one turn.",
       "shortDesc": "Power doubles with each hit. Repeats for 5 turns."
     },
@@ -15509,6 +15822,7 @@
       "basePower": 100,
       "accuracy": 95,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 50% chance to burn the target.",
       "shortDesc": "50% chance to burn the target. Thaws user."
     },
@@ -15520,6 +15834,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Lowers the target's accuracy by 1 stage.",
       "shortDesc": "Lowers the target's accuracy by 1."
     },
@@ -15531,6 +15846,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "For 5 turns, the weather becomes Sandstorm. At the end of each turn except the last, all active Pokemon lose 1/16 of their maximum HP, rounded down, unless they are a Ground, Rock, or Steel type, or have the Sand Veil Ability. Fails if the current weather is Sandstorm.",
       "shortDesc": "For 5 turns, a sandstorm rages."
     },
@@ -15542,6 +15858,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15553,6 +15870,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Deals damage to the target equal to the user's level.",
       "shortDesc": "Does damage equal to the user's level."
     },
@@ -15564,6 +15882,7 @@
       "basePower": 200,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "The user faints after using this move. The target's Defense is halved during damage calculation. This move is prevented from executing if any active Pokemon has the Damp Ability.",
       "shortDesc": "Target's Def halved during damage. User faints."
     },
@@ -15575,6 +15894,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 20% chance to lower the target's Special Defense by 1 stage.",
       "shortDesc": "20% chance to lower the target's Sp. Def by 1."
     },
@@ -15586,6 +15906,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy."
     },
@@ -15597,6 +15918,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy."
     },
@@ -15608,6 +15930,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
+      "priority": 0,
       "desc": "The user swaps its Ability with the target's Ability. Fails if either the user or the target's Ability is Wonder Guard.",
       "shortDesc": "The user and the target trade Abilities."
     },
@@ -15619,6 +15942,7 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch and a higher chance for a critical hit. This attack charges on the first turn and executes on the second.",
       "shortDesc": "Charges, then hits turn 2. 30% flinch. High crit."
     },
@@ -15630,6 +15954,7 @@
       "basePower": 80,
       "accuracy": 75,
       "pp": 20,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15641,6 +15966,7 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a higher chance for a critical hit.",
       "shortDesc": "High critical hit ratio."
     },
@@ -15652,6 +15978,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 30% chance to poison the target.",
       "shortDesc": "30% chance to poison the target."
     },
@@ -15663,6 +15990,7 @@
       "basePower": 90,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 30% chance to poison the target.",
       "shortDesc": "30% chance to poison the target."
     },
@@ -15674,6 +16002,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Lowers the target's accuracy by 1 stage.",
       "shortDesc": "Lowers the target's accuracy by 1."
     },
@@ -15685,6 +16014,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "This attack charges on the first turn and executes on the second. Damage is halved if the weather is Hail, Rain Dance, or Sandstorm. If the weather is Sunny Day, the move completes in one turn.",
       "shortDesc": "Charges turn 1. Hits turn 2. No charge in sunlight."
     },
@@ -15696,6 +16026,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 30% chance to paralyze the target.",
       "shortDesc": "30% chance to paralyze the target."
     },
@@ -15707,6 +16038,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Damage is multiplied by the user's Stockpile count. This move does not apply damage variance and cannot be a critical hit. Fails if the user's Stockpile count is 0. Unless this move misses, the user's Stockpile count resets to 0.",
       "shortDesc": "More power with more uses of Stockpile."
     },
@@ -15718,6 +16050,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "No competitive use.",
       "shortDesc": "No competitive use."
     },
@@ -15729,6 +16062,7 @@
       "basePower": 70,
       "accuracy": 90,
       "pp": 25,
+      "priority": 0,
       "desc": "Has a 10% chance to raise the user's Defense by 1 stage.",
       "shortDesc": "10% chance to raise the user's Defense by 1."
     },
@@ -15740,6 +16074,7 @@
       "basePower": 65,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 30% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
       "shortDesc": "30% chance to make the target flinch."
     },
@@ -15751,6 +16086,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15762,6 +16098,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 5,
+      "priority": 0,
       "desc": "For 5 turns, the weather becomes Sunny Day. The damage of Fire-type attacks is multiplied by 1.5 and the damage of Water-type attacks is multiplied by 0.5 during the effect. Fails if the current weather is Sunny Day.",
       "shortDesc": "For 5 turns, intense sunlight powers Fire moves."
     },
@@ -15773,6 +16110,7 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Deals damage to the target equal to half of its current HP, rounded down, but not less than 1 HP.",
       "shortDesc": "Does damage equal to 1/2 target's current HP."
     },
@@ -15784,6 +16122,7 @@
       "basePower": 120,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Lowers the user's Attack and Defense by 1 stage.",
       "shortDesc": "Lowers the user's Attack and Defense by 1."
     },
@@ -15795,6 +16134,7 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
+      "priority": 0,
       "desc": "This move does not check accuracy.",
       "shortDesc": "This move does not check accuracy. Hits foes."
     },
@@ -15806,6 +16146,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Lowers the target's Defense by 1 stage.",
       "shortDesc": "Lowers the foe(s) Defense by 1."
     },
@@ -15817,6 +16158,7 @@
       "basePower": 90,
       "accuracy": 85,
       "pp": 20,
+      "priority": 0,
       "desc": "If the target lost HP, the user takes recoil damage equal to 1/4 the HP lost by the target, rounded down, but not less than 1 HP.",
       "shortDesc": "Has 1/4 recoil."
     },
@@ -15828,6 +16170,7 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
+      "priority": 0,
       "desc": "Has a 10% chance to paralyze the target.",
       "shortDesc": "10% chance to paralyze the target."
     },
@@ -15839,6 +16182,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "Has a 10% chance to paralyze the target.",
       "shortDesc": "10% chance to paralyze the target."
     },
@@ -15850,6 +16194,7 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "Has a 20% chance to either burn, freeze, or paralyze the target.",
       "shortDesc": "20% chance to paralyze or burn or freeze target."
     },
@@ -15861,6 +16206,7 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
+      "priority": 0,
       "desc": "The user swaps its held item with the target's held item. Fails if either the user or the target is holding a Mail, if neither is holding an item, if either is under the effect of Knock Off, or if the target has the Sticky Hold Ability.",
       "shortDesc": "User switches its held item with the target's."
     },
@@ -15872,6 +16218,7 @@
       "basePower": 10,
       "accuracy": 90,
       "pp": 10,
+      "priority": 0,
       "desc": "Hits three times. Power increases to 20 for the second hit and 30 for the third. This move checks accuracy for each hit, and the attack ends if the target avoids a hit. If one of the hits breaks the target's substitute, it will take damage for the remaining hits.",
       "shortDesc": "Hits 3 times. Each hit can miss, but power rises."
     },
@@ -15883,6 +16230,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 20% chance to make the target flinch. Power doubles if the target is using Bounce or Fly.",
       "shortDesc": "20% chance to make the foe(s) flinch."
     },
@@ -15894,6 +16242,7 @@
       "basePower": 55,
       "accuracy": 100,
       "pp": 30,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15905,6 +16254,7 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 25,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15916,6 +16266,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 20,
+      "priority": 0,
       "desc": "Has a 20% chance to confuse the target.",
       "shortDesc": "20% chance to confuse the target."
     },
@@ -15927,6 +16278,7 @@
       "basePower": 150,
       "accuracy": 100,
       "pp": 5,
+      "priority": 0,
       "desc": "Power is equal to (user's current HP * 150 / user's maximum HP), rounded down, but not less than 1.",
       "shortDesc": "Less power as user's HP decreases. Hits foe(s)."
     },
@@ -15938,6 +16290,7 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 35,
+      "priority": 0,
       "desc": "No additional effect.",
       "shortDesc": "No additional effect."
     },
@@ -15949,6 +16302,7 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
+      "priority": 0,
       "desc": "Raises the user's Defense by 1 stage.",
       "shortDesc": "Raises the user's Defense by 1."
     }
