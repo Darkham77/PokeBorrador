@@ -1,1 +1,0 @@
-import{B as e,V as t}from"./game-data-CsXXE_nF.js";export{e as ASSET_TYPES,t as getAssetUrl};

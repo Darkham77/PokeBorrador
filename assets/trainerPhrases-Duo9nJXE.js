@@ -1,0 +1,1 @@
+import{t as e}from"./game-data-BBmGft_w.js";export{e as getRandomQuoteForTrainer};
