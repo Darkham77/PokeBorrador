@@ -192,7 +192,7 @@ async function startClassMission(missionId: string) {
 
           const idx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === p.uid);
           if (idx !== -1) {
-            classStore.startMission(missionId, { targetPokemonIdx: idx });
+            classStore.startMission(missionId, { targetPokemonIdx: idx, targetPokemonUid: p.uid });
           }
         }
       }

@@ -202,7 +202,10 @@ export function calculateDamagePure(
   randomFactor?: number,
   forceCrit?: boolean
 ): PureDamageResult {
-  const { atkStages = 0, defStages = 0, weather = null } = ctx;
+  const { atkStages = 0, defStages = 0, weather: rawWeather = null } = ctx;
+
+  const hasAclimatacion = attacker.ability === 'Aclimatación' || defender.ability === 'Aclimatación';
+  const weather = hasAclimatacion ? null : rawWeather;
 
   const power    = move.power ?? 0;
   const moveType = move.type  ?? 'normal';

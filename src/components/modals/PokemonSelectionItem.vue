@@ -77,11 +77,7 @@ function handleOpenDetail() {
 }
 
 function handleClick() {
-  if (props.item._source === 'market') {
-    handleOpenDetail()
-  } else {
-    emit('select', props.item)
-  }
+  emit('select', props.item)
 }
 </script>
 
@@ -103,27 +99,31 @@ function handleClick() {
         title="DETALLES"
         description="Ver información completa de este Pokémon."
         position="top"
-        class="poke-preview"
+        class="info-tooltip-wrapper"
       >
-        <div 
-          class="sprite-click-target" 
-          style="cursor: pointer;" 
+        <button
+          type="button"
+          class="btn-info-detail-trigger"
           @click.stop="handleOpenDetail"
         >
-          <PVSpriteFX
-            :is-shiny="item.pokemon.isShiny"
-            :is-guardian="item.pokemon.isGuardian"
-            :sparkle-count="5"
-          >
-            <img
-              :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
-              alt=""
-              class="pixelated"
-              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
-            >
-          </PVSpriteFX>
-        </div>
+          ?
+        </button>
       </PVTooltip>
+
+      <div class="poke-preview sprite-click-target">
+        <PVSpriteFX
+          :is-shiny="item.pokemon.isShiny"
+          :is-guardian="item.pokemon.isGuardian"
+          :sparkle-count="5"
+        >
+          <img
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
+            alt=""
+            class="pixelated"
+            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          >
+        </PVSpriteFX>
+      </div>
     </div>
 
     <div class="poke-details">
@@ -224,7 +224,7 @@ function handleClick() {
                 v-if="listCompatibility.eggSpecies"
                 class="egg-hint"
               >
-                🥚 {{ eggSpeciesName }}
+                <span class="emoji-inline">🥚</span> {{ eggSpeciesName }}
               </span>
             </template>
             <template v-else>
@@ -237,7 +237,7 @@ function handleClick() {
             class="vigor-status-mini"
           >
             <span class="label">VIGOR: </span>
-            <span :class="['value', { low: item.pokemon.vigor <= 2 }]">⚡ {{ item.pokemon.vigor }}/{{ item.pokemon.maxVigor !== undefined ? item.pokemon.maxVigor : 10 }}</span>
+            <span :class="['value', { low: item.pokemon.vigor <= 2 }]"><span class="emoji-inline">⚡</span> {{ item.pokemon.vigor }}/{{ item.pokemon.maxVigor !== undefined ? item.pokemon.maxVigor : 10 }}</span>
           </div>
         </div>
 
@@ -423,5 +423,43 @@ function handleClick() {
   color: #a7f3d0;
   @include pixelated;
   width: 100%;
+}
+
+.info-tooltip-wrapper {
+  position: absolute;
+  top: -23px;
+  left: -23px;
+  z-index: 20;
+}
+
+.btn-info-detail-trigger {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0f172a; /* Slate 900 background matching standard panels */
+  border: 2px solid var(--tier-color, #ffd700);
+  color: var(--tier-color, #ffd700);
+  font-family: 'Pokemon FireRed LeafGreen', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding-bottom: 2px;
+  padding-right: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.6);
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+
+  &:hover {
+    transform: Scale(1.05);
+    background: Rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 10px var(--tier-color);
+  }
+
+  &:active {
+    transform: Scale(0.95);
+  }
 }
 </style>

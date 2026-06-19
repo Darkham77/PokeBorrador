@@ -238,33 +238,48 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Inicia una misión idle con validación de tiempo del servidor.
    */
+  /**
+   * Inicia una misión idle con validación de tiempo del servidor.
+   */
   async function startMission(missionId: string, extraData: Record<string, unknown> = {}) {
     const m = CLASS_MISSIONS.find(x => x.id === missionId)
     if (!m) return
 
     // Marcar pokemon como ocupado
-    if (extraData.targetPokemonIdx !== undefined) {
-      const p = gameStore.state.box[extraData.targetPokemonIdx as number]
+    const targetUid = extraData.targetPokemonUid as string | undefined
+    const targetIdx = extraData.targetPokemonIdx as number | undefined
+    
+    let p: Pokemon | null = null
+    if (targetUid) {
+      const all = [...gameStore.state.team, ...gameStore.state.box]
+      p = all.find((bp: Pokemon | null) => bp && bp.uid === targetUid) || null
+    } else if (targetIdx !== undefined) {
+      p = gameStore.state.box[targetIdx] || null
       if (p) {
-        if (p.hp <= 0) {
-          uiStore.notify('No puedes enviar un Pokémon debilitado a una misión.', '⚠️')
+        extraData.targetPokemonUid = p.uid
+      }
+    }
+
+    if (p) {
+      if (p.hp <= 0) {
+        uiStore.notify('No puedes enviar un Pokémon debilitado a una misión.', '⚠️')
+        return
+      }
+      const teamIdx = gameStore.state.team.findIndex((tp: Pokemon | null) => tp && tp.uid === p.uid)
+      if (teamIdx !== -1) {
+        if (gameStore.state.team.length <= 1) {
+          uiStore.notify('No puedes enviar a tu único Pokémon del equipo.', '⚠️')
           return
         }
-        const teamIdx = gameStore.state.team.findIndex((tp: Pokemon | null) => tp && tp.uid === p.uid)
-        if (teamIdx !== -1) {
-          if (gameStore.state.team.length <= 1) {
-            uiStore.notify('No puedes enviar a tu único Pokémon del equipo.', '⚠️')
-            return
-          }
-          const tp = gameStore.state.team.splice(teamIdx, 1)[0]
-          if (tp) {
-            gameStore.state.box.push(tp)
-            gameStore.autoFillPvpTeam()
-            extraData.targetPokemonIdx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === tp.uid)
-          }
+        const tp = gameStore.state.team.splice(teamIdx, 1)[0]
+        if (tp) {
+          gameStore.state.box.push(tp)
+          gameStore.autoFillPvpTeam()
         }
-        p.onMission = true
       }
+      // Re-resolve index in box for compatibility
+      extraData.targetPokemonIdx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === p.uid)
+      p.onMission = true
     }
 
     const now = await db.getServerTime()
@@ -296,6 +311,18 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     const cls = playerClass.value
     let msg = 'Misión completada. '
+
+    // Buscar Pokémon por UID o índice
+    let p: Pokemon | null = null
+    const targetUid = mission.targetPokemonUid as string | undefined
+    const targetIdx = mission.targetPokemonIdx as number | undefined
+
+    const all = [...gameStore.state.team, ...gameStore.state.box]
+    if (targetUid) {
+      p = all.find((x: Pokemon | null) => x && x.uid === targetUid) || null
+    } else if (targetIdx !== undefined) {
+      p = gameStore.state.box[targetIdx] || null
+    }
     
     if (cls === 'rocket') {
       // Recompensa en dinero (el Pokémon ya no está)
@@ -304,63 +331,51 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       msg += `¡Recibiste ₽${reward.toLocaleString()}! 🚀`
       
       // Eliminar el Pokémon de la caja (sacrificio)
-      if (mission.targetPokemonIdx !== undefined) {
-        const p = gameStore.state.box[mission.targetPokemonIdx]
-        if (p) {
-          if (p.heldItem) {
-            const invStore = useInventoryStore()
-            invStore.addItem(p.heldItem, 1)
-          }
-          p.onMission = false
-          gameStore.removePokemon(p.uid)
+      if (p) {
+        if (p.heldItem) {
+          const invStore = useInventoryStore()
+          invStore.addItem(p.heldItem, 1)
         }
+        p.onMission = false
+        gameStore.removePokemon(p.uid)
       }
     } else if (cls === 'cazabichos') {
       // Aquí iría la lógica de generar encuentros salvajes bicho o recompensas de IVs
       msg += '¡Nuevos Pokémon Bicho avistados!'
     } else if (cls === 'entrenador') {
       // Recompensa en EXP para el Pokémon enviado
-      if (mission.targetPokemonIdx !== undefined) {
-        const p = gameStore.state.box[mission.targetPokemonIdx]
-        if (p) {
-          p.onMission = false;
-          if (p.level >= MAX_POKEMON_LEVEL) {
-            p.exp = 0;
-            p.expNeeded = Infinity;
-            msg += `¡${p.name} ya está en su nivel máximo! 🏅`
-          } else {
-            const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
-            const expGain = (25000 + (p.level || 1) * 1000) * blocks;
-            p.exp = (p.exp || 0) + expGain;
-            msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
-            gameStore.checkLevelUp(p)
-          }
+      if (p) {
+        p.onMission = false;
+        if (p.level >= MAX_POKEMON_LEVEL) {
+          p.exp = 0;
+          p.expNeeded = Infinity;
+          msg += `¡${p.name} ya está en su nivel máximo! 🏅`
+        } else {
+          const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
+          const expGain = (25000 + (p.level || 1) * 1000) * blocks;
+          p.exp = (p.exp || 0) + expGain;
+          msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
+          gameStore.checkLevelUp(p)
         }
       }
     } else if (cls === 'criador') {
       // Recompensa en IVs aleatorios a cambio de Vigor
-      if (mission.targetPokemonIdx !== undefined) {
-        const p = gameStore.state.box[mission.targetPokemonIdx]
-        if (p) {
-          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-          const stat = stats[Math.floor(Math.random() * stats.length)];
-          if (stat) {
-            const gain = Math.floor(Math.random() * 3) + 1;
-            if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-            const curVal = p.ivs[stat] || 0;
-            p.ivs[stat] = Math.min(31, curVal + gain);
-            p.vigor = Math.max(0, (p.vigor || 20) - 5);
-            p.onMission = false;
-            msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
-          }
+      if (p) {
+        const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+        const stat = stats[Math.floor(Math.random() * stats.length)];
+        if (stat) {
+          const gain = Math.floor(Math.random() * 3) + 1;
+          if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+          const curVal = p.ivs[stat] || 0;
+          p.ivs[stat] = Math.min(31, curVal + gain);
+          p.vigor = Math.max(0, (p.vigor || 20) - 5);
+          p.onMission = false;
+          msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
         }
       }
     } else {
       // Liberar al Pokémon que estaba en misión
-      if (mission.targetPokemonIdx !== undefined) {
-        const p = gameStore.state.box[mission.targetPokemonIdx]
-        if (p) p.onMission = false
-      }
+      if (p) p.onMission = false
       msg += 'Tus Pokémon han regresado con éxito.'
     }
 

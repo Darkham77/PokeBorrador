@@ -125,7 +125,7 @@ function clearFilters() {
           :class="{ active: sortBy === 'hatched' }"
           @click.stop="setSort('hatched')"
         >
-          🥚 CRÍA {{ sortBy === 'hatched' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+          CRÍA {{ sortBy === 'hatched' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
         </button>
       </PVTooltip>
     </div>

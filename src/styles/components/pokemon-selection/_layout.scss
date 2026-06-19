@@ -22,8 +22,8 @@ body .selection-container {
 
 .ps-sort-btns {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
   width: 100%;
 
   .ps-sort-wrapper {
@@ -35,7 +35,7 @@ body .selection-container {
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 8px;
+    padding: 6px 1px;
     color: var(--gray);
     @include pixelated;
     font-size: 7px;
@@ -69,8 +69,8 @@ body .selection-container {
     background: Rgba(0, 0, 0, 0.2);
     border: 1px solid Rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 5px 8px;
-    min-height: 32px;
+    padding: 4px 8px;
+    min-height: 36px;
   }
 
   .ps-clear-icon-btn {
@@ -110,11 +110,12 @@ body .selection-container {
     display: flex;
     flex: 1;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: flex-end;
-    padding: 0;
-
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 3px;
+    justify-content: flex-start;
+    padding: 3px 0;
+ 
     &::-webkit-scrollbar { display: none; height: 0; }
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -127,8 +128,8 @@ body .selection-container {
       border-radius: 6px;
       display: flex;
       align-items: center;
-      padding: 0 8px;
-      gap: 4px;
+      padding: 0 4px;
+      gap: 2px;
       cursor: pointer;
       will-change: transform, filter, opacity;
       filter: Grayscale(1);
@@ -151,7 +152,6 @@ body .selection-container {
         opacity: 0.9;
         background: Rgba(255, 255, 255, 0.06);
         border-color: Rgba(255, 255, 255, 0.15);
-        transform: Translatey(-0.5px);
         
         .icon {
           transform: Scale(1.1);

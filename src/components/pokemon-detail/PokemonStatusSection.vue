@@ -266,11 +266,13 @@ const abilityStyle = computed(() => ({
 }
 
 .vigor-icon {
-  display: inline-flex;
-  align-self: center;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  position: relative !important;
+  top: -3px !important;
   font-size: 10px;
   line-height: 1;
-  margin-top: -1px; // Visual correction for emoji alignment
 }
 
 .egg-born-badge {

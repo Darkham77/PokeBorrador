@@ -137,6 +137,16 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
   line-height: 1 !important;
 }
 
+// Global Inline Emoji Alignment Fix
+.emoji-inline {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  position: relative !important;
+  top: -1.5px !important; /* Counteracts the baseline drop caused by size-adjust on pixel font */
+  line-height: 1 !important;
+}
+
 
 
 // Global Scrollbar Utility

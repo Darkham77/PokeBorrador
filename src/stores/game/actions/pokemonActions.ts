@@ -6,6 +6,7 @@ import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
 import { getItemByName, getItemById, getMaxBuffDuration } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
+import { healStuckMissions } from '@/logic/player/missionRecovery'
 
 
 export function usePokemonActions(
@@ -145,6 +146,16 @@ export function usePokemonActions(
   }
 
   function sanitizeAll() {
+    // Self-healing stuck Pokémon on mission
+    if (state.classData) {
+      const activeMission = (state.classData as { activeMission?: { targetPokemonUid?: string; targetPokemonIdx?: number; pokeUid?: string } | null }).activeMission
+      const fixedAny = healStuckMissions(state.team, state.box, activeMission)
+      if (fixedAny) {
+        logger.info('SaveMigration', 'Self-healed stuck Pokémon on mission.')
+        scheduleSave()
+      }
+    }
+
     state.team.forEach(p => p && sanitizePokemon(p))
     if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
 

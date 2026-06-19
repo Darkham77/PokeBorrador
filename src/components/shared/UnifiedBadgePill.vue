@@ -50,8 +50,9 @@ const containerStyle = computed(() => {
 
 const itemImageError = ref(false)
 
-const handleBadgeClick = (badge: TagDefinition) => {
+const handleBadgeClick = (e: MouseEvent, badge: TagDefinition) => {
   if (!props.editable || badge.isAutomatic || badge.isLocked) return
+  e.stopPropagation()
   emit('toggle-tag', badge.id)
 }
 
@@ -76,7 +77,7 @@ const handleItemImageError = (e: Event) => {
         :description="badge.desc"
         :title="badge.label"
         :position="vertical ? 'right' : 'top'"
-        @click.stop="handleBadgeClick(badge)"
+        @click="handleBadgeClick($event, badge)"
       >
         <div 
           :class="[
@@ -263,9 +264,9 @@ const handleItemImageError = (e: Event) => {
     }
 
     &.is-inactive {
-      opacity: 0.4;
+      opacity: 0.35;
       will-change: transform, filter, opacity;
-  filter: Grayscale(1) Brightness(0.6);
+      filter: Grayscale(1) Brightness(1.8);
       transform: none;
       background: transparent !important;
       box-shadow: none !important;

@@ -52,8 +52,10 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
 
   // Actualizar forma de Castform al entrar
-  updateCastformForm(playerPoke, weatherType, addLog);
-  updateCastformForm(enemyPoke, weatherType, addLog);
+  const isAclimatacion = playerPoke.ability === 'Aclimatación' || enemyPoke.ability === 'Aclimatación';
+  const effectiveWeather = isAclimatacion ? undefined : weatherType;
+  updateCastformForm(playerPoke, effectiveWeather, addLog);
+  updateCastformForm(enemyPoke, effectiveWeather, addLog);
 
   if (playerPoke.ability === 'Intimidación') {
     enemyStages.atk = Math.max(-6, enemyStages.atk - 1)
@@ -132,6 +134,9 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
 }
 
 async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
+  if (p?.ability === 'Aclimatación' || e?.ability === 'Aclimatación') {
+    return;
+  }
   const mechWeather = getMechanicalWeather(weather?.type);
   const wType = (weather?.visual || weather?.type || '').toLowerCase();
   const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA';
