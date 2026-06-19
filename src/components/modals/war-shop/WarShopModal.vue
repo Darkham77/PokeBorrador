@@ -240,10 +240,10 @@ if (typeof window !== 'undefined') {
             class="shop-empty-state"
           >
             <span class="empty-icon">🔍</span>
-            <p class="empty-text">
+            <div class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>
-            </p>
+            </div>
           </div>
         </div>
       </div>

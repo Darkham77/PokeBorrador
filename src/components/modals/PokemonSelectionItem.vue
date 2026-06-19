@@ -100,9 +100,9 @@ function handleClick() {
         class="info-tooltip-wrapper"
       >
         <button
+          v-gsap-hover="{ scale: 1.05, y: 0 }"
           type="button"
           class="btn-info-detail-trigger"
-          v-gsap-hover="{ scale: 1.05, y: 0 }"
           @click.stop="handleOpenDetail"
         >
           ?

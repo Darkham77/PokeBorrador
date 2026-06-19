@@ -107,8 +107,12 @@ const handleImageError = (e: Event) => {
           v-if="!isUnlocked"
           class="item-lock-badge"
         >
-          <p class="lock-icon">🔒</p>
-          <p class="lock-lvl">NV. {{ item.unlockLv }}</p>
+          <p class="lock-icon">
+            🔒
+          </p>
+          <p class="lock-lvl">
+            NV. {{ item.unlockLv }}
+          </p>
         </div>
       </div>
 

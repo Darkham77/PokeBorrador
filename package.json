@@ -39,7 +39,7 @@
     "audit:fallow:summary": "npx fallow --summary",
     "audit:fallow:report": "npx fallow --format human > scratch/fallow_report.txt",
     "audit:fallow:triplets": "npx fallow dupes --min-occurrences 3 --min-lines 10 --min-tokens 60",
-    "audit:full": "node --permission --experimental-strip-types --allow-fs-read=* --allow-child-process scripts/maintenance/audit_full.ts",
+    "audit:full": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_full.ts",
     "validate:fsm:diagrams": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_fsm_diagrams.ts",
     "validate:fsm:implementation": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_fsm_implementation.ts",
     "validate:fsm:flow": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_fsm_flow_parity.ts",

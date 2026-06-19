@@ -77,8 +77,12 @@ const emit = defineEmits<{
             :disabled="isTraveling || !hasHealthyTeam"
             @click="emit('travel', conn.target)"
           >
-            <div class="dir-icon">⬆️</div>
-            <div class="dir-label">{{ conn.label }}</div>
+            <div class="dir-icon">
+              ⬆️
+            </div>
+            <div class="dir-label">
+              {{ conn.label }}
+            </div>
             <div
               v-if="conn.mo"
               class="dir-mo"
@@ -140,8 +144,12 @@ const emit = defineEmits<{
             :disabled="isTraveling || !hasHealthyTeam"
             @click="emit('travel', conn.target)"
           >
-            <p class="dir-icon">⬇️</p>
-            <p class="dir-label">{{ conn.label }}</p>
+            <p class="dir-icon">
+              ⬇️
+            </p>
+            <p class="dir-label">
+              {{ conn.label }}
+            </p>
             <p
               v-if="conn.mo"
               class="dir-mo"

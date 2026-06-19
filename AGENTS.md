@@ -76,7 +76,6 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Cross-Platform Path Standard**: For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of expressions or replace statements. This ensures that the generated output files (like JSON catalogs) remain identical and valid in browser environments across Windows, Linux, and macOS.
 - **Fallow Configuration Maintenance**: When refactoring files, changing directory structures, or renaming modules, you MUST update `.fallowrc.json` (especially `ignoreExports` paths) to reflect the new paths, preventing stale references and quality audit warnings.
 
-
 ## 8. Git Safety & Rollback Protocol
 
 - **Mandatory Confirmation**: Before executing any git operation that involves a rollback, reset, or destructive change (e.g., `git reset --hard`, `git checkout .`, `git clean`), the agent MUST explicitly ask the user for confirmation.
