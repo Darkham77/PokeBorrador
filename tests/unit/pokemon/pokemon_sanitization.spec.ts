@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { getMaxBuffDuration } from '@/data/inventory/items';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -162,3 +163,36 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
     expect(p.exp).toBe(999);
   });
 });
+
+describe('Player State Buff Timer Sanitization', () => {
+  it('should sanitize active buff timers that exceed the maximum limit of the database item descriptions', () => {
+    // Simulating player state structure
+    const state: Record<string, any> = {
+      repelSecs: 99999,
+      luckyEggSecs: 1500,
+      amuletCoinSecs: 88888,
+      shinyBoostSecs: 0,
+      team: [],
+      box: [],
+      eggs: []
+    };
+
+    const buffFields = Object.keys(state).filter(key => key.endsWith('Secs'));
+    
+    // Simulate sanitizeAll logic
+    buffFields.forEach(field => {
+      if (state[field] !== undefined && typeof state[field] === 'number') {
+        const maxAllowedSecs = getMaxBuffDuration(field);
+        if (state[field] > maxAllowedSecs) {
+          state[field] = maxAllowedSecs;
+        }
+      }
+    });
+
+    expect(state.repelSecs).toBe(1800);
+    expect(state.amuletCoinSecs).toBe(3600);
+    expect(state.luckyEggSecs).toBe(1500);
+    expect(state.shinyBoostSecs).toBe(0);
+  });
+});
+

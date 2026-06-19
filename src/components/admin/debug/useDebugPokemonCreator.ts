@@ -34,6 +34,8 @@ export interface MapOption {
   name: string
 }
 
+import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
+
 export function useDebugPokemonCreator() {
   const config = ref<PokemonConfig>({
     id: 'bulbasaur',
@@ -54,17 +56,11 @@ export function useDebugPokemonCreator() {
 
   const selectedMinigame = ref<'fishing' | 'archaeology'>('fishing')
 
-  const allSpecies = computed<SpeciesOption[]>(() => {
-    const db = pokemonDataProvider.getPokemonDb()
-    return Object.keys(db).map(id => ({ 
-      id, 
-      name: db[id]?.name || id,
-      icon: pokemonDataProvider.getSpriteUrl(id)
-    }))
-  })
+  const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies())
+  const allNatures = getSelectableNatures()
+  const allAbilities = getSelectableAbilities()
 
-  const allNatures = Object.keys(NATURE_DATA).map(n => ({ id: n, name: n }))
-  const allAbilities = Object.keys(ABILITY_DATA).map(a => ({ id: a, name: a }))
+
 
   const allMaps = computed<MapOption[]>(() => {
     const maps = pokemonDataProvider.getMaps() as { id: string, name?: string }[]

@@ -52,6 +52,8 @@ interface SpawnPoolData {
   weather: string | null | undefined
 }
 
+import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+
 const getMapData = (loc: MapLocation): SpawnPoolData => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
@@ -60,31 +62,16 @@ const getMapData = (loc: MapLocation): SpawnPoolData => {
   // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es undefined
   const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
   
-  const { pool, rates } = getEncounterPool(loc, props.cycle || 'day', activeWeather || 'clear', activeEvents)
-
-  const baseWild = loc.wild?.day || []
-  const generic: string[] = []
-  const specific: string[] = []
-  const ratesMap: Record<string, number> = {}
-
-  pool.forEach((id: string, index: number) => {
-    ratesMap[id] = rates[index] || 10
-    if (baseWild.includes(id)) generic.push(id)
-    else specific.push(id)
-  })
-
-  // Add fishing pool to generic if not already there
-  if (loc.fishing) {
-    loc.fishing.pool.forEach((id: string, index: number) => {
-      if (!generic.includes(id) && !specific.includes(id)) {
-        generic.push(id)
-        ratesMap[id] = loc.fishing!.rates[index] || 10
-      }
-    })
-  }
+  const { generic, specific, rates: ratesMap } = getMapSpawnPoolData(
+    loc,
+    props.cycle || 'day',
+    activeWeather || 'clear',
+    activeEvents
+  )
 
   return { generic, specific, rates: ratesMap, weather: activeWeather }
 }
+
 
 const isMapLocked = (loc: MapLocation) => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0

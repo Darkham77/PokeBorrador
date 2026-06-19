@@ -4,7 +4,9 @@ import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
-import { getItemByName, getItemById } from '@/data/inventory/items'
+import { getItemByName, getItemById, getMaxBuffDuration } from '@/data/inventory/items'
+import { logger } from '@/logic/utils/logger'
+
 
 export function usePokemonActions(
   state: GameState, 
@@ -216,7 +218,22 @@ export function usePokemonActions(
         }
       });
     }
+
+    // Saneamiento de timers de buffs activos del jugador (Basado en el valor máximo definido por los objetos en SHOP_ITEMS)
+    const buffFields = Object.keys(state).filter(key => key.endsWith('Secs')) as (keyof GameState)[]
+    buffFields.forEach(field => {
+      const val = state[field]
+      if (val !== undefined && typeof val === 'number') {
+        const maxAllowedSecs = getMaxBuffDuration(field as string)
+        if (val > maxAllowedSecs) {
+          logger.warn('Self-Healing', `Timer corrupto detectado en ${field as string} (${val}s). Ajustando al máximo permitido por el objeto (${maxAllowedSecs}s).`);
+          (state as Record<string, any>)[field as string] = maxAllowedSecs
+          scheduleSave()
+        }
+      }
+    })
   }
+
 
   return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll }
 }

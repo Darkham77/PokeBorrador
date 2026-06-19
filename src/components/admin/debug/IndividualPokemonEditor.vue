@@ -24,17 +24,12 @@ const props = defineProps<{
 
 const activePoke = computed(() => props.pokemon)
 
+import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
+
 // --- DATA LISTS FOR EDITORS ---
-const allSpecies = computed(() => {
-  const db = pokemonDataProvider.getPokemonDb()
-  return Object.keys(db).map(id => ({
-    id,
-    name: db[id]?.name || id,
-    icon: pokemonDataProvider.getSpriteUrl(id)
-  }))
-})
-const allNatures = Object.keys(NATURE_DATA).map(n => ({ id: n, name: n }))
-const allAbilities = Object.keys(ABILITY_DATA).map(a => ({ id: a, name: a }))
+const allSpecies = computed(() => getSelectableSpecies())
+const allNatures = getSelectableNatures()
+const allAbilities = getSelectableAbilities()
 const allItems = computed(() => {
   return [
     { id: '', name: 'Ninguno' },
@@ -43,6 +38,7 @@ const allItems = computed(() => {
       .map(i => ({ id: i.name, name: i.name }))
   ]
 })
+
 
 // --- ACTIVE POKEMON EDIT COMPUTEDS ---
 const activePokeNature = computed({

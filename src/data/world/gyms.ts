@@ -1,4 +1,32 @@
-export const GYMS = [
+export interface GymDifficulty {
+  pokemon: string[];
+  levels: number[];
+}
+
+export interface Gym {
+  id: string;
+  name: string;
+  city: string;
+  leader: string;
+  type: string;
+  typeColor: string;
+  badge: string;
+  badgeName: string;
+  sprite: string;
+  quote: string;
+  victoryQuote: string;
+  rewardTM: string;
+  pokemon: string[];
+  levels: number[];
+  badgesRequired: number;
+  difficulties: {
+    easy: GymDifficulty;
+    normal: GymDifficulty;
+    hard: GymDifficulty;
+  };
+}
+
+export const GYMS: Gym[] = [
   {
     id: 'pewter', name: 'Gimnasio Plateada', city: 'Ciudad Plateada',
     leader: 'Brock', type: 'rock', typeColor: '#c8a060',
@@ -45,7 +73,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'celadon', name: 'Gimnasio Celacanto', city: 'Ciudad Celacanto',
+    id: 'celadon', name: 'Gimnasio Celadón', city: 'Ciudad Celadón',
     leader: 'Erika', type: 'grass', typeColor: '#6BCB77',
     badge: '🌿', badgeName: 'Medalla Arcoíris',
     sprite: 'erika',
@@ -71,12 +99,12 @@ export const GYMS = [
     difficulties: {
       easy: { pokemon: ['koffing', 'muk', 'koffing', 'weezing'], levels: [37, 39, 37, 43] },
       normal: { pokemon: ['golbat', 'venomoth', 'muk', 'weezing'], levels: [54, 56, 58, 62] },
-      hard: { pokemon: ['gengar', 'muk', 'venomoth', 'tentacruel', 'arbok', 'weezing'], levels: [74, 76, 76, 76, 76, 80] }
+      hard: { pokemon: ['crobat', 'venomoth', 'muk', 'nidoking', 'nidoqueen', 'weezing'], levels: [74, 76, 76, 78, 78, 80] }
     }
   },
   {
     id: 'saffron', name: 'Gimnasio Azafrán', city: 'Ciudad Azafrán',
-    leader: 'Sabrina', type: 'psychic', typeColor: '#FF6EFF',
+    leader: 'Sabrina', type: 'psychic', typeColor: '#FF793F',
     badge: '🔮', badgeName: 'Medalla Marsh',
     sprite: 'sabrina',
     quote: '¡Puedo leer tu mente y ver cada uno de tus movimientos!',

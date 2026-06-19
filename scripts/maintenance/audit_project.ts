@@ -692,11 +692,13 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
           const firstPath = first.file || first.path || '';
           const firstLine = first.start_line || first.line || 0;
           const locations = instances.slice(1).map((i) => `${i.file || i.path || ''}:${i.start_line || i.line || 0}`).join(', ');
+          const isTriplicate = instances.length >= 3;
+          const prefix = isTriplicate ? 'Código triplicado crítico' : 'Código duplicado crítico';
           violations.push({
             file: path.resolve(process.cwd(), firstPath),
             line: firstLine,
-            message: `Código duplicado crítico: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${firstPath}:${firstLine}, ${locations}`,
-            context: `duplicación (${g.duplicated_tokens} tokens)`,
+            message: `${prefix}: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${firstPath}:${firstLine}, ${locations}`,
+            context: `${isTriplicate ? 'triplicación' : 'duplicación'} (${g.duplicated_tokens} tokens)`,
             severity: 'error',
             fixable: false
           });
@@ -1027,7 +1029,8 @@ async function main() {
       path: { type: 'string', short: 'p', default: '.' },
       output: { type: 'string', short: 'o' },
       summary: { type: 'boolean', short: 's' },
-      'changed-since': { type: 'string' }
+      'changed-since': { type: 'string' },
+      'only-errors': { type: 'boolean' }
     }
   });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
@@ -1066,10 +1069,24 @@ async function main() {
     all = all.concat(runFallow('security', ['--changed-since', changedSince]));
   } else {
     all = all.concat(runFallow('dupes'));
+    all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60']));
     all = all.concat(runFallow('security'));
     all = all.concat(runFallow('dead-code'));
     all = all.concat(runFallow('health'));
   }
+
+  // Filtrar solo errores si la opción '--only-errors' está activa
+  if (values['only-errors']) {
+    all = all.filter(v => v.severity === 'error');
+  }
+
+  // Priorizar mostrar siempre primero los errores, y luego los warnings
+  all.sort((a, b) => {
+    if (a.severity === 'error' && b.severity !== 'error') return -1;
+    if (a.severity !== 'error' && b.severity === 'error') return 1;
+    return 0;
+  });
+
 
   if (values.summary) {
     console.log(styleText('bold', '\n--- 📊 RESUMEN DE VIOLACIONES ---'));
@@ -1095,6 +1112,7 @@ async function main() {
       else if (v.message.includes('Z-Index')) type = 'Z-Index fuera de estándar';
       else if (v.message.includes('archivo tiene') || v.message.includes('líneas reales')) type = 'Largo de archivo (>300/500 líneas)';
       else if (v.message.includes('Código duplicado')) type = 'Fallow: Código duplicado';
+      else if (v.message.includes('Código triplicado')) type = 'Fallow: Código triplicado';
       else if (v.message.includes('Vulnerabilidad de seguridad')) type = 'Fallow: Vulnerabilidad de seguridad';
       else if (v.message.includes('Sugerencia de calidad')) type = 'Fallow: Calidad / Dead Code';
       else if (v.message.includes('Sugerencia de complejidad')) type = 'Fallow: Complejidad';

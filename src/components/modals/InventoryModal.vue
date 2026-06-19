@@ -12,6 +12,7 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { getItemById } from '@/data/inventory/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
+import { mapInventoryToItems } from '@/stores/inventory/inventoryHelpers'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Sub-components
@@ -78,58 +79,9 @@ watch(activeMainTab, () => {
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed<Item[]>(() => {
   if (props.battleMode) {
-    // Calcular bagItems manualmente para modo batalla para no tener efectos secundarios en computed
     const inventory = gameStore.state.inventory || {}
-    let items: Item[] = Object.entries(inventory)
-      .map(([id, qty]) => {
-        const item = getItemById(id) || (id === 'bicycle' ? { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools' } : null)
-        if (!item) return { name: id, qty, id, cat: 'otros', sprite: id, desc: 'Objeto desconocido' } as Item
-        return { ...item, qty, name: item.name } as Item
-      })
-
     const isBattleActive = useBattleStore().isBattleActive
-    if (isBattleActive) {
-      items = items.filter(item => {
-        const dbItem = getItemById(item.id)
-        return !(dbItem && dbItem.nonCombat)
-      })
-    }
-
-    // Filter by main tab
-    if (battleActiveMainTab.value === 'materiales') {
-      items = items
-        .filter(item => {
-          const dbItem = getItemById(item.id)
-          const tier = dbItem && typeof dbItem.craftingTier === 'number' ? dbItem.craftingTier : 3
-          return tier < 3
-        })
-        .map(item => {
-          const dbItem = getItemById(item.id)
-          const tier = dbItem && typeof dbItem.craftingTier === 'number' ? dbItem.craftingTier : 3
-          let cat = item.cat
-          if (tier === 0) cat = 'raw_material'
-          else if (tier === 1) cat = 'refined_material'
-          else if (tier === 2) cat = 'component'
-          return { ...item, cat }
-        })
-    } else {
-      // Tab is productos
-      items = items
-        .filter(item => {
-          const dbItem = getItemById(item.id)
-          const tier = dbItem && typeof dbItem.craftingTier === 'number' ? dbItem.craftingTier : 3
-          const isProd = dbItem && (dbItem.cat === 'pokeballs' || dbItem.cat === 'potions' || dbItem.cat === 'stones' || dbItem.cat === 'combat_held' || dbItem.cat === 'breeding' || dbItem.cat === 'tools' || dbItem.cat === 'battle_items' || dbItem.cat === 'vitamins')
-          return tier === 3 || isProd
-        })
-        .map(item => {
-          const dbItem = getItemById(item.id)
-          let cat = item.cat || 'otros'
-          if (dbItem?.cat === 'combat_held' || dbItem?.cat === 'breeding_held' || dbItem?.type === 'held') {
-            cat = 'held'
-          }
-          return { ...item, cat }
-        })
-    }
+    let items = mapInventoryToItems(inventory, isBattleActive, battleActiveMainTab.value)
 
     if (battleActiveCategory.value === 'utilizables') {
       const target = uiStore.inventoryTarget

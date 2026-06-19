@@ -15,48 +15,8 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleStages } from '@/types/battle/battle';
+import type { BattleStages, SparkleData, BattleCombatantProps } from '@/types/battle/battle';
 
-export interface SparkleData {
-  id: string | number;
-  tx: number;
-  ty: number;
-  tf: number;
-  scale: number;
-  delay: string;
-}
-
-export interface BattleCombatantProps {
-  side: 'player' | 'enemy';
-  pokemon?: Pokemon | null;
-  position: { x: number; y: number };
-  targetPosition?: { x: number; y: number } | null;
-  baseSize: number;
-  groundY?: string;
-  shadowKey?: string | null;
-  animState?: 'catching' | 'trapped' | 'releasing' | null;
-  ballId?: string;
-  isShaking?: boolean;
-  isBlinking?: boolean;
-  isHealing?: boolean;
-  isSilhouette?: boolean;
-  isAttacking?: boolean;
-  activeMove?: {
-    side: string;
-    cat: 'physical' | 'special' | 'status' | 'selfKO';
-    name: string;
-    selfKO?: boolean;
-  } | null;
-  showGuides?: boolean;
-  isCaptureSuccess?: boolean;
-  sparkles?: SparkleData[];
-  isFainting?: boolean;
-  isEmerging?: boolean;
-  suppressFX?: boolean;
-  hidden?: boolean;
-  hasSeat?: boolean;
-  stages?: Partial<BattleStages>;
-}
 
 interface SmokeParticle {
   id: string | number;

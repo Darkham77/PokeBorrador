@@ -4,9 +4,9 @@ import { vi } from 'vitest'
 export const mockChain = {
   select: vi.fn().mockReturnThis(),
   update: vi.fn().mockReturnThis(),
-  upsert: vi.fn().mockReturnThis(),
+  upsert: vi.fn().mockResolvedValue({ error: null }),
   eq: vi.fn().mockReturnThis(),
-  single: vi.fn().mockResolvedValue({ data: { is_banned: false } }),
+  single: vi.fn().mockResolvedValue({ data: { is_banned: false, db_version: 1 }, error: null }),
   then: vi.fn().mockImplementation((onFulfilled) => Promise.resolve({ data: null, error: null }).then(onFulfilled))
 }
 
@@ -15,14 +15,15 @@ let mockTimeOffset = 0
 
 export const mockSupabase = {
   auth: {
-    getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
+    getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
     signInWithPassword: vi.fn(),
+    signUp: vi.fn(),
     signOut: vi.fn()
   },
   from: vi.fn(() => mockChain),
   channel: vi.fn(() => ({
     on: vi.fn().mockReturnThis(),
-    subscribe: vi.fn()
+    subscribe: vi.fn().mockReturnThis()
   })),
   getTimeOffset: vi.fn(() => mockTimeOffset),
   setTimeOffset: vi.fn((ms) => { mockTimeOffset = ms }),

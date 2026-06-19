@@ -33,6 +33,21 @@ export function useAdventureCamera(options: CameraOptions) {
     scale: cameraScale.value,
   }))
 
+  function clampCoordinates(targetX: number, targetY: number, vpW: number, vpH: number, scale: number) {
+    const scaledW = canvasWidth * scale
+    const scaledH = canvasHeight * scale
+
+    const clampedX = scaledW <= vpW
+      ? (vpW - scaledW) / 2
+      : Math.max(-(scaledW - vpW), Math.min(0, targetX))
+
+    const clampedY = scaledH <= vpH
+      ? (vpH - scaledH) / 2
+      : Math.max(-(scaledH - vpH), Math.min(0, targetY))
+
+    return { clampedX, clampedY }
+  }
+
   /**
    * Center the camera on a specific pixel coordinate in canvas space.
    * Uses GSAP for smooth animation.
@@ -43,30 +58,14 @@ export function useAdventureCamera(options: CameraOptions) {
 
     const vpW = vp.clientWidth
     const vpH = vp.clientHeight
-
     const scale = cameraScale.value
-    const scaledW = canvasWidth * scale
-    const scaledH = canvasHeight * scale
 
     // Target camera position: center the scaled point in the viewport
     const newX = -(targetX * scale - vpW / 2)
     const newY = -(targetY * scale - vpH / 2)
 
     // Clamp to canvas bounds. If canvas is smaller than viewport, center it.
-    let clampedX, clampedY
-    if (scaledW <= vpW) {
-      clampedX = (vpW - scaledW) / 2
-    } else {
-      const minX = -(scaledW - vpW)
-      clampedX = Math.max(minX, Math.min(0, newX))
-    }
-
-    if (scaledH <= vpH) {
-      clampedY = (vpH - scaledH) / 2
-    } else {
-      const minY = -(scaledH - vpH)
-      clampedY = Math.max(minY, Math.min(0, newY))
-    }
+    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale)
 
     if (cameraTween) {
       cameraTween.kill()
@@ -95,28 +94,12 @@ export function useAdventureCamera(options: CameraOptions) {
 
     const vpW = vp.clientWidth
     const vpH = vp.clientHeight
-
     const scale = cameraScale.value
-    const scaledW = canvasWidth * scale
-    const scaledH = canvasHeight * scale
 
     const newX = -(targetX * scale - vpW / 2)
     const newY = -(targetY * scale - vpH / 2)
 
-    let clampedX, clampedY
-    if (scaledW <= vpW) {
-      clampedX = (vpW - scaledW) / 2
-    } else {
-      const minX = -(scaledW - vpW)
-      clampedX = Math.max(minX, Math.min(0, newX))
-    }
-
-    if (scaledH <= vpH) {
-      clampedY = (vpH - scaledH) / 2
-    } else {
-      const minY = -(scaledH - vpH)
-      clampedY = Math.max(minY, Math.min(0, newY))
-    }
+    const { clampedX, clampedY } = clampCoordinates(newX, newY, vpW, vpH, scale)
 
     cameraX.value = clampedX
     cameraY.value = clampedY
@@ -147,23 +130,8 @@ export function useAdventureCamera(options: CameraOptions) {
     const vpW = vp.clientWidth
     const vpH = vp.clientHeight
     const scale = cameraScale.value
-    const scaledW = canvasWidth * scale
-    const scaledH = canvasHeight * scale
     
-    let clampedX, clampedY
-    if (scaledW <= vpW) {
-      clampedX = (vpW - scaledW) / 2
-    } else {
-      const minX = -(scaledW - vpW)
-      clampedX = Math.max(minX, Math.min(0, dragCamStartX + dx))
-    }
-
-    if (scaledH <= vpH) {
-      clampedY = (vpH - scaledH) / 2
-    } else {
-      const minY = -(scaledH - vpH)
-      clampedY = Math.max(minY, Math.min(0, dragCamStartY + dy))
-    }
+    const { clampedX, clampedY } = clampCoordinates(dragCamStartX + dx, dragCamStartY + dy, vpW, vpH, scale)
 
     cameraX.value = clampedX
     cameraY.value = clampedY

@@ -17,7 +17,7 @@ import { logger } from '@/logic/utils/logger'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GYMS } from '@/data/world/gyms.ts'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
 
 // Composables
 import { useBattleShadows } from '@/composables/battle/useBattleShadows'
@@ -83,17 +83,7 @@ onMounted(() => {
 })
 
 const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
-  let dbKey = spriteUrl || ''
-  const base = import.meta.env.BASE_URL || '/'
-  if (base !== '/' && dbKey.startsWith(base)) {
-    dbKey = dbKey.slice(base.length - 1)
-  }
-  try {
-    dbKey = decodeURIComponent(dbKey)
-  } catch (_e) {
-    // Ignore decode error
-  }
-  const cached = POKEMON_FEET_DATABASE[dbKey] || { feetY: 0.9, feetX: 0.5 }
+  const cached = getPokemonFeetCoords(spriteUrl)
   
   const widthPx = 0.7 * entitySize
   const heightPx = entitySize * 0.08

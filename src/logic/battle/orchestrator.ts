@@ -248,6 +248,36 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   })
 }
 
+async function executePokemonCallSequence(
+  ctx: BattleContext,
+  initialPlayer: Pokemon,
+  needsCall: boolean
+) {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  const fsm = ctx.fsm
+
+  if (needsCall && ctx.activeBattle.value) {
+    const oldPoke = ctx.activeBattle.value.player
+    if (oldPoke && oldPoke.uid !== initialPlayer.uid) {
+      ctx.exitingPlayer.value = oldPoke
+    }
+    
+    ctx.activeBattle.value.player = initialPlayer
+    
+    const withdrawPromise = oldPoke && oldPoke.uid !== initialPlayer.uid && ctx.animations?.handleCatchRequest
+      ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPoke })
+      : Promise.resolve()
+      
+    const sendOutPromise = ctx.animations?.handleReleaseRequest
+      ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
+      : Promise.resolve()
+      
+    await Promise.all([withdrawPromise, sendOutPromise])
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+    ctx.exitingPlayer.value = null
+  }
+}
+
 /**
  * Visual initialization and first turn setup.
  */
@@ -359,26 +389,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       : Promise.resolve()
     await enemySendOutPromise
 
-    if (needsCall && ctx.activeBattle.value) {
-      const oldPoke = ctx.activeBattle.value.player
-      if (oldPoke && oldPoke.uid !== initialPlayer.uid) {
-        ctx.exitingPlayer.value = oldPoke
-      }
-      
-      ctx.activeBattle.value.player = initialPlayer
-      
-      const withdrawPromise = oldPoke && oldPoke.uid !== initialPlayer.uid && ctx.animations?.handleCatchRequest
-        ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPoke })
-        : Promise.resolve()
-        
-      const sendOutPromise = ctx.animations?.handleReleaseRequest
-        ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
-        : Promise.resolve()
-        
-      await Promise.all([withdrawPromise, sendOutPromise])
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
-      ctx.exitingPlayer.value = null
-    }
+    await executePokemonCallSequence(ctx, initialPlayer, needsCall)
+
   } else if (wasSearching) {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENCOUNTER)
@@ -430,26 +442,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       ctx.activeBattle.value.enemy = initialEnemy
     }
 
-    if (needsCall && ctx.activeBattle.value) {
-      const oldPoke = ctx.activeBattle.value.player
-      if (oldPoke && oldPoke.uid !== initialPlayer.uid) {
-        ctx.exitingPlayer.value = oldPoke
-      }
-      
-      ctx.activeBattle.value.player = initialPlayer
-      
-      const withdrawPromise = oldPoke && oldPoke.uid !== initialPlayer.uid && ctx.animations?.handleCatchRequest
-        ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPoke })
-        : Promise.resolve()
-        
-      const sendOutPromise = ctx.animations?.handleReleaseRequest
-        ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
-        : Promise.resolve()
-        
-      await Promise.all([withdrawPromise, sendOutPromise])
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
-      ctx.exitingPlayer.value = null
-    }
+    await executePokemonCallSequence(ctx, initialPlayer, needsCall)
+
   }
 
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)

@@ -136,4 +136,16 @@ describe('Breeding Engine', () => {
       expect(res.ivsInherited).toBe(3)
     })
   })
+
+  describe('getEggSpecies (Hatch Species Guarantee)', () => {
+    it('should resolve evolved forms to baby or basic versions for hatching', () => {
+      expect(getEggSpecies('raticate')).toBe('rattata')
+      expect(getEggSpecies('raichu')).toBe('pichu')
+      expect(getEggSpecies('gyarados')).toBe('magikarp')
+      expect(getEggSpecies('dragonite')).toBe('dratini')
+      expect(getEggSpecies('venusaur')).toBe('bulbasaur')
+      expect(getEggSpecies('charizard')).toBe('charmander')
+      expect(getEggSpecies('blastoise')).toBe('squirtle')
+    })
+  })
 })

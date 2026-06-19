@@ -197,3 +197,62 @@ export function getAdjustedProductCategory(item: { name: string; cat?: string; i
 
   return 'otros';
 }
+
+export interface Item {
+  name: string;
+  qty: number;
+  id: string;
+  cat?: string;
+  type?: string;
+  sprite?: string;
+  desc?: string;
+  price?: number;
+  craftingTier?: number;
+  tier?: 'common' | 'rare' | 'epic' | 'legend';
+  nonCombat?: boolean;
+}
+
+export function mapInventoryToItems(
+  inventory: Record<string, number>,
+  isBattleActive: boolean,
+  mainTab: 'productos' | 'materiales'
+): Item[] {
+  let items: Item[] = Object.entries(inventory)
+    .map(([id, qty]) => {
+      const item = getItemById(id) || (id === 'bicycle' ? { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools' } : null)
+      if (!item) return { name: id, qty, id, cat: 'otros', sprite: id, desc: 'Objeto desconocido' } as Item
+      return { ...item, qty, name: item.name } as Item
+    })
+
+  if (isBattleActive) {
+    items = items.filter(item => {
+      const dbItem = getItemById(item.id)
+      return !(dbItem && dbItem.nonCombat)
+    })
+  }
+
+  // Filter by main tab
+  if (mainTab === 'materiales') {
+    items = items
+      .filter(item => getItemTier(item) < 3)
+      .map(item => {
+        const tier = getItemTier(item)
+        let cat = item.cat
+        if (tier === 0) cat = 'raw_material'
+        else if (tier === 1) cat = 'refined_material'
+        else if (tier === 2) cat = 'component'
+        return { ...item, cat }
+      })
+  } else {
+    // Tab is productos
+    items = items
+      .filter(item => getItemTier(item) === 3 || isItemProduct(item))
+      .map(item => ({
+        ...item,
+        cat: getAdjustedProductCategory(item)
+      }))
+  }
+
+  return items
+}
+

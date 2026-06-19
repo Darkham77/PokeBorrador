@@ -32,8 +32,8 @@ interface Props {
   title: string
   probability: number
   baseProbability: number
-  items: Array<SpawnItem | ArchaeologyRewardItem>
-  mode: 'pokemon' | 'item' | 'fishing'
+  items: Array<SpawnItem | ArchaeologyRewardItem | any>
+  mode: 'pokemon' | 'item' | 'fishing' | 'npc'
 
   probClass: string
   weatherEmoji: string
@@ -58,20 +58,22 @@ defineEmits<{
         class="section-prob-badge"
         :class="probClass"
       >
-        (PROBABILIDAD: {{ probability }}%)
+        <template v-if="mode === 'npc'">(PROBABILIDAD: VARIABLE)</template>
+        <template v-else>(PROBABILIDAD: {{ probability }}%)</template>
       </span>
     </h3>
-    <div :class="['spawns-report-scroll', mode === 'fishing' ? 'fishing-table' : mode === 'item' ? 'archaeology-table' : '']">
+    <div :class="['spawns-report-scroll', mode === 'fishing' ? 'fishing-table' : mode === 'item' ? 'archaeology-table' : mode === 'npc' ? 'npc-table' : '']">
+      <!-- Headers -->
       <!-- Headers -->
       <div class="report-table-header">
         <div class="col-pokemon">
-          {{ mode === 'pokemon' ? 'Pokémon' : 'Objeto' }}
+          {{ mode === 'pokemon' ? 'Pokémon' : mode === 'item' ? 'Objeto' : 'Encuentro' }}
         </div>
         <div class="col-types">
-          {{ mode === 'pokemon' ? 'Tipos' : 'Categoría' }}
+          {{ mode === 'pokemon' ? 'Tipos' : mode === 'item' ? 'Categoría' : 'Tipo / Rol' }}
         </div>
         <div
-          v-if="mode === 'pokemon'"
+          v-if="mode === 'pokemon' || mode === 'npc'"
           class="col-type"
         >
           Estado
@@ -80,7 +82,7 @@ defineEmits<{
           {{ mode === 'pokemon' ? 'Clima' : 'Detalles' }}
         </div>
         <div class="col-prob">
-          Prob. Real
+          {{ mode === 'npc' ? 'Prob. Paso' : 'Prob. Real' }}
         </div>
         <div class="col-stats">
           {{ mode === 'pokemon' ? 'Stats' : '-' }}
@@ -89,6 +91,7 @@ defineEmits<{
 
       <!-- Rows -->
       <div class="report-rows">
+        <!-- Pokémon Mode -->
         <template v-if="mode === 'pokemon'">
           <div
             v-for="poke in (items as SpawnItem[])"
@@ -239,6 +242,75 @@ defineEmits<{
                 v-else
                 class="hidden-info-placeholder"
               >???</span>
+            </div>
+          </div>
+        </template>
+
+        <!-- NPC Mode -->
+        <template v-else-if="mode === 'npc'">
+          <div
+            v-for="npc in (items as any[])"
+            :key="npc.type"
+            class="report-row"
+            :class="{ 'gray-text': !npc.active }"
+          >
+            <!-- NPC Info (Icon/Emoji, Name) -->
+            <div class="col-pokemon row-cell flex-align">
+              <div class="mini-sprite-wrapper">
+                <div class="unknown-placeholder">
+                  {{ npc.type === 'rival' ? '👦' : npc.type === 'defender' ? '🛡️' : npc.type === 'guardian' ? '👹' : npc.type === 'trainer' ? '🎒' : '👤' }}
+                </div>
+              </div>
+              <div class="poke-name-wrap">
+                <span class="poke-name">{{ npc.name }}</span>
+              </div>
+            </div>
+
+            <!-- Tipo / Rol -->
+            <div class="col-types row-cell flex-align">
+              <span
+                class="status-tag"
+                :class="npc.type === 'rival' ? 'visitor' : npc.type === 'defender' ? 'exclusive' : npc.type === 'guardian' ? 'exclusive' : 'common'"
+              >
+                {{ npc.type === 'rival' ? 'RIVAL' : npc.type === 'defender' ? 'DEFENSOR' : npc.type === 'guardian' ? 'GUARDIÁN' : npc.type === 'trainer' ? 'ENTRENADOR' : npc.type }}
+              </span>
+            </div>
+
+            <!-- Estado (Activo / Inactivo) -->
+            <div class="col-type row-cell flex-align">
+              <span
+                class="status-tag"
+                :class="npc.active ? 'exclusive' : 'common'"
+              >
+                {{ npc.active ? 'ACTIVO' : 'INACTIVO' }}
+              </span>
+            </div>
+
+            <!-- Detalles -->
+            <div class="col-multiplier row-cell flex-align text-center">
+              <span class="mult-value neutral-text">{{ npc.details || '-' }}</span>
+            </div>
+
+            <!-- Probabilidad de Paso -->
+            <div class="col-prob row-cell flex-align">
+              <div class="prob-bar-wrapper">
+                <div class="prob-numerical">
+                  <span class="active-prob">
+                    {{ npc.chance.toFixed(1) }}%
+                  </span>
+                </div>
+                <div class="prob-visual-progress">
+                  <div
+                    class="fill base-fill"
+                    :style="{ width: `${Math.min(100, npc.chance * 2.5)}%` }"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats placeholder -->
+            <div class="col-stats row-cell flex-align text-center">
+              <span class="neutral-text">-</span>
             </div>
           </div>
         </template>

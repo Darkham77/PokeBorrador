@@ -16,6 +16,8 @@ import { useAdventureMinigames } from './useAdventureMinigames'
 import { useAdventureEvents } from './useAdventureEvents'
 import { useAdventureRouting } from './useAdventureRouting'
 import { useAdventureLayout } from './useAdventureLayout'
+import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+
 
 const POKEMON_CENTER_NODES = new Set([
   'route2',          // Ciudad Verde / Plateada
@@ -180,30 +182,16 @@ export function useAdventureSimulation() {
     if (!loc.wild) return { generic: [] as string[], specific: [] as string[], rates: {} as Record<string, number> }
 
     const activeWeather = getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
-    const { pool, rates } = getEncounterPool(loc, mapStore.currentCycle || 'day', activeWeather || 'clear', [])
+    const { generic, specific, rates } = getMapSpawnPoolData(
+      loc,
+      mapStore.currentCycle || 'day',
+      activeWeather || 'clear',
+      []
+    )
 
-    const baseWild = loc.wild?.day || []
-    const generic: string[] = []
-    const specific: string[] = []
-    const ratesMap: Record<string, number> = {}
-
-    pool.forEach((id: string, index: number) => {
-      ratesMap[id] = rates[index] || 10
-      if (baseWild.includes(id)) generic.push(id)
-      else specific.push(id)
-    })
-
-    if (loc.fishing) {
-      loc.fishing.pool.forEach((id: string, index: number) => {
-        if (!generic.includes(id) && !specific.includes(id)) {
-          generic.push(id)
-          ratesMap[id] = loc.fishing!.rates[index] || 10
-        }
-      })
-    }
-
-    return { generic, specific, rates: ratesMap }
+    return { generic, specific, rates }
   }
+
 
   const currentMapId = computed(() => {
     if (calculatedPath.value.length === 0) return originMap.value

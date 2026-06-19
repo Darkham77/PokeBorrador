@@ -1,23 +1,21 @@
 import { computed } from 'vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getFinalGroundRates } from '@/logic/encounters/encounters'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
-
-interface WildSpawnData {
-  id: string
-  name: string
-  basePercentage: number
-  percentage: number
-  multiplier: number
-  spawnType: string
-}
+import {
+  getPokedexVisibility,
+  getPokemonBasicData,
+  getSpawnStatus,
+  getSharedShinyEventLines,
+  getSpawnCommonTooltipLines,
+  buildRouteSpawnItem,
+  type RouteSpawnMappedItem
+} from '@/logic/utils/routeSpawnHelpers'
 
 export function useRouteSpawnsWild(
   props: { map: MapLocation; weather: string; cycle: string }
@@ -25,13 +23,6 @@ export function useRouteSpawnsWild(
   const gameStore = useGameStore()
   const eventStore = useEventStore()
   const uiStore = useUIStore()
-
-  function translateWeather(w: string): string {
-    const visual = WEATHER_VISUAL_METADATA[w]
-    if (visual) return visual.label
-    const mech = getMechanicalWeather(w)
-    return WEATHER_UI_METADATA[mech]?.label || w
-  }
 
   const wildSpawns = computed(() => {
     const activeEvents = eventStore.activeEvents || []
@@ -90,20 +81,8 @@ export function useRouteSpawnsWild(
 
       const diff = percentage - basePercentage
 
-      let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
-      let isCaught = caughtPokedex.includes(id)
-
-      if (uiStore.debugPokedexMode === 'none') {
-        isSeen = false
-        isCaught = false
-      } else if (uiStore.debugPokedexMode === 'caught') {
-        isSeen = true
-        isCaught = true
-      } else if (uiStore.debugPokedexMode === 'seen') {
-        isSeen = true
-      }
-      const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-      const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
+      const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode || 'none', seenPokedex, caughtPokedex)
+      const pData = getPokemonBasicData(id, isSeen)
       
       const isVisitor = !!(weatherCfg?.visitors && (
         (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[id]) || 
@@ -120,51 +99,23 @@ export function useRouteSpawnsWild(
       const isBlocked = multiplier === 0
       
       const isInCurrentCycle = wildList.includes(id)
+      
+      const { spawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, isInCurrentCycle, isBuffed, isDebuffed)
 
-      let spawnType = 'Común'
-      let statusClass = 'common'
-      if (isVisitor) {
-        spawnType = 'Visitante'
-        statusClass = 'visitor'
-      } else if (isExclusive) {
-        spawnType = 'Exclusivo'
-        statusClass = 'exclusive'
-      } else if (isBlocked) {
-        spawnType = 'Bloqueado'
-        statusClass = 'blocked'
-      } else if (!isInCurrentCycle) {
-        spawnType = 'Fuera de hora'
-        statusClass = 'blocked'
-      } else if (isBuffed) {
-        spawnType = 'Potenciado'
-        statusClass = 'buffed'
-      } else if (isDebuffed) {
-        spawnType = 'Debilitado'
-        statusClass = 'debuffed'
-      }
-
-      return {
+      return buildRouteSpawnItem(
         id,
-        name,
+        pData,
         isSeen,
         isCaught,
-        sprite: getAssetUrl(ASSET_TYPES.POKEMON, id),
+        getAssetUrl(ASSET_TYPES.POKEMON, id),
         percentage,
         baseRate,
         basePercentage,
         diff,
         spawnType,
         statusClass,
-        multiplier,
-        types: data ? [data.type, data.type2].filter(Boolean) as string[] : [],
-        hp: data?.hp || 0,
-        atk: data?.atk || 0,
-        def: data?.def || 0,
-        spa: data?.spa || 0,
-        spd: data?.spd || 0,
-        spe: data?.spe || 0,
-        totalStats: data ? (data.hp + data.atk + data.def + data.spa + data.spd + data.spe) : 0
-      }
+        multiplier
+      )
     }).sort((a, b) => {
       if (a.percentage > 0 && b.percentage === 0) return -1
       if (a.percentage === 0 && b.percentage > 0) return 1
@@ -182,32 +133,10 @@ export function useRouteSpawnsWild(
     })
   })
 
-  function getWildSpawnTooltip(poke: WildSpawnData) {
+  function getWildSpawnTooltip(poke: RouteSpawnMappedItem) {
     const lines: string[] = []
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
-    if (poke.multiplier !== 1) {
-      const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
-      const label = translateWeather(props.weather)
-      lines.push(`• ${change}: x${poke.multiplier} (${label})`)
-    }
-    if (poke.spawnType === 'Visitante') {
-      const label = translateWeather(props.weather)
-      const diffVal = poke.percentage - poke.basePercentage
-      lines.push(`• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
-    } else if (poke.spawnType === 'Exclusivo') {
-      const label = translateWeather(props.weather)
-      const diffVal = poke.percentage - poke.basePercentage
-      lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
-    } else {
-      const diffVal = poke.percentage - poke.basePercentage
-      if (Math.abs(diffVal) > 0.05) {
-        const direction = diffVal > 0 ? 'Aumento' : 'Reducción'
-        const detail = diffVal > 0
-          ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
-          : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
-        lines.push(`• ${direction} neto: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(1)}% (${detail})`)
-      }
-    }
+    lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const speciesEvent = eventStore.activeEvents.find(e => {
       const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
       if (cfg?.species) {
@@ -222,14 +151,7 @@ export function useRouteSpawnsWild(
       }
     }
 
-    const globalShiny = eventStore.globalMultipliers?.shiny || 1
-    if (globalShiny !== 1) {
-      lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
-    }
-    const speciesBonuses = eventStore.getSpeciesBonuses(poke.id)
-    if (speciesBonuses && speciesBonuses.shiny !== 1) {
-      lines.push(`• Evento Shiny Especie: x${speciesBonuses.shiny.toFixed(1)} de probabilidad Shiny`)
-    }
+    lines.push(...getSharedShinyEventLines(poke.id, eventStore))
 
     return {
       title: `DETALLES DE PROBABILIDAD`,

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
-import { ref, computed, watch, nextTick } from 'vue'
-import { gsap } from 'gsap'
-import { useShopStore } from '@/stores/inventory/shop'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
@@ -26,115 +24,27 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const shopStore = useShopStore()
 const gameStore = useGameStore()
 
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
-// Niveles superiores de categorización
-const activeMainTab = ref<'productos' | 'materiales'>('productos')
+import { useShopLogic } from '@/composables/inventory/useShopLogic'
+import { toRef } from 'vue'
 
-const activeTab = ref(props.initialCategory || 'todos')
-const search = ref('')
-const sortKey = ref<'name' | 'price' | 'rarity'>('name')
-const sortOrder = ref<'asc' | 'desc'>('asc')
-
-interface ShopItem {
-  id: string
-  name: string
-  cat: string
-  price: number
-  desc: string
-  sprite: string
-  unlockLv?: number
-  market?: boolean
-  showInNormalShop?: boolean
-}
-
-const filteredItems = computed<ShopItem[]>(() => {
-  const items = (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
-    if (!item.showInNormalShop) return false
-    const resolvedCat = item.cat || 'otros'
-    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
-    if (activeMainTab.value === 'materiales') {
-      if (!isMaterialCat) return false
-    } else {
-      if (isMaterialCat) return false
-    }
-    if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
-    if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
-    return true
-  })
-
-  return [...items].sort((a, b) => {
-    let comp = 0
-    if (sortKey.value === 'price') {
-      comp = (a.price || 0) - (b.price || 0)
-    } else if (sortKey.value === 'rarity') {
-      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
-      const aT = tiers[(a as {tier?: string}).tier || 'common'] ?? 0
-      const bT = tiers[(b as {tier?: string}).tier || 'common'] ?? 0
-      comp = bT - aT
-    } else {
-      comp = a.name.localeCompare(b.name)
-    }
-    return sortOrder.value === 'asc' ? comp : -comp
-  })
-})
-
-const availableCategories = computed<string[]>(() => {
-  const cats = new Set<string>()
-  for (const item of (shopStore.SHOP_ITEMS as ShopItem[])) {
-    if (!item.showInNormalShop) continue
-    cats.add(item.cat || 'otros')
-  }
-  return Array.from(cats)
-})
-
-// Orquestación de animaciones GSAP para la rejilla de objetos
-const animateGrid = () => {
-  nextTick(() => {
-    const cards = document.querySelectorAll('.shop-item-card')
-    if (cards.length > 0) {
-      gsap.killTweensOf(cards)
-      
-      const maxAnimate = Math.min(cards.length, 24)
-      const cardsToAnimate = Array.from(cards).slice(0, maxAnimate)
-      const remainingCards = Array.from(cards).slice(maxAnimate)
-      
-      if (remainingCards.length > 0) {
-        gsap.set(remainingCards, { opacity: 1, y: 0, scale: 1 })
-      }
-      
-      gsap.fromTo(cardsToAnimate, 
-        { opacity: 0, y: 15, scale: 0.95 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.2, 
-          stagger: 0.01, 
-          ease: 'power1.out',
-          clearProps: 'transform,scale'
-        }
-      )
-    }
-  })
-}
-
-// Disparar animación al cambiar de pestaña o buscar
-watch([activeTab, search], () => {
-  animateGrid()
-})
-
-// Disparar al abrir el modal y resetear filtros
-watch(() => props.show, (val) => {
-  if (val) {
-    activeTab.value = props.initialCategory || 'todos'
-    search.value = ''
-    animateGrid()
-  }
+const {
+  activeMainTab,
+  activeTab,
+  search,
+  sortKey,
+  sortOrder,
+  filteredItems,
+  availableCategories
+} = useShopLogic({
+  isBCShop: false,
+  initialCategory: props.initialCategory,
+  show: toRef(props, 'show'),
+  cardSelector: '.shop-item-card'
 })
 
 const close = () => {

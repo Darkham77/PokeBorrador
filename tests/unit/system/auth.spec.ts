@@ -9,29 +9,12 @@ import { supabase } from '@/logic/db/supabase'
 import type { User } from '@supabase/supabase-js'
 
 // Mock de Supabase
-vi.mock('@/logic/db/supabase', () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: vi.fn(),
-      signUp: vi.fn(),
-      signOut: vi.fn(),
-      getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null }))
-    },
-    from: vi.fn(() => ({
-      update: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ error: null })) })),
-      upsert: vi.fn(() => Promise.resolve({ error: null })),
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(() => Promise.resolve({ data: { db_version: 1 }, error: null }))
-        }))
-      }))
-    })),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn().mockReturnThis()
-    }))
+vi.mock('@/logic/db/supabase', async () => {
+  const { mockSupabase } = await import('../../helpers/supabaseMock.ts')
+  return {
+    supabase: mockSupabase
   }
-}))
+})
 
 // Mock de localStorage
 const localStorageMock = (() => {

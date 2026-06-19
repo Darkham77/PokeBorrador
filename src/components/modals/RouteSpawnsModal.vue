@@ -210,6 +210,8 @@ const cycleLabels: Record<string, string> = {
   night: '🌙 Noche'
 }
 
+import type { NpcChanceInfo } from '@/logic/weather/weatherUtils'
+
 const {
   weatherEmoji,
   weatherLabel,
@@ -233,6 +235,8 @@ const {
   getArchaeologySpawnTooltip,
   npcSpawns
 } = useRouteSpawnsCalculation(props)
+
+const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value as unknown as NpcChanceInfo[])
 </script>
 
 <template>
@@ -548,59 +552,22 @@ const {
       />
 
       <!-- NPC / Special Encounters List -->
-      <div
-        v-if="npcSpawns && npcSpawns.length"
-        class="spawns-section npc-section"
-      >
-        <h3 class="section-title-pixel">
-          👥 ENCUENTROS ESPECIALES Y NPCS
-        </h3>
-        <div class="spawns-report-scroll">
-          <div class="report-table-header">
-            <div class="col-pokemon">
-              Encuentro
-            </div>
-            <div class="col-types">
-              Tipo / Rol
-            </div>
-            <div class="col-multiplier">
-              Detalles
-            </div>
-            <div class="col-prob">
-              Prob. Paso
-            </div>
-          </div>
-          <div class="report-rows">
-            <div
-              v-for="npc in npcSpawns"
-              :key="npc.type"
-              class="report-row"
-              :class="{ 'gray-text': !npc.active }"
-            >
-              <div class="col-pokemon font-bold">
-                {{ npc.name }}
-              </div>
-              <div
-                class="col-types font-bold text-gray"
-                style="text-transform: uppercase;"
-              >
-                {{ npc.type }}
-              </div>
-              <div class="col-multiplier">
-                {{ npc.details || 'Estándar' }}
-              </div>
-              <div
-                class="col-prob font-bold"
-                :class="npc.chance > 0 ? 'bonus-text' : 'gray-text'"
-              >
-                {{ npc.chance.toFixed(1) }}%
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <RouteSpawnsTable
+        v-if="typedNpcSpawns && typedNpcSpawns.length"
+        title="👥 ENCUENTROS ESPECIALES Y NPCS"
+        :probability="0"
+        :base-probability="0"
+        :items="(typedNpcSpawns as unknown as SpawnItem[])"
+        mode="npc"
+        prob-class="info"
+        weather-emoji=""
+        weather-label=""
+        :get-tooltip-data="() => ({})"
+      />
+
     </div>
   </BaseModal>
 </template>
 
 <style src="./RouteSpawnsModal.styles.scss" scoped lang="scss"></style>
+<style src="@/styles/components/_route-spawns-tables.scss" scoped lang="scss"></style>

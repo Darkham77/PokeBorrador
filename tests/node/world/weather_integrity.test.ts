@@ -233,3 +233,22 @@ describe('Weather Integrity & Biome Restrictions', () => {
   });
 });
 
+describe('Weather Tables Unique Identity Integrity', () => {
+  test('should ensure that no two maps have identical weather probability configurations across all seasons and cycles', () => {
+    const mapConfigs = new Map<string, string>(); // serialized weather -> mapId
+
+    Object.entries(ROUTE_WEATHER_TABLES).forEach(([mapId, seasonsData]) => {
+      // Serialize weather config to identify identical copies
+      const serialized = JSON.stringify(seasonsData);
+      
+      if (mapConfigs.has(serialized)) {
+        const duplicateMapId = mapConfigs.get(serialized);
+        assert.fail(`Map "${mapId}" has an identical weather table configuration as map "${duplicateMapId}". Weather configs must be distinct to respect atmospheric identity.`);
+      }
+      
+      mapConfigs.set(serialized, mapId);
+    });
+  });
+});
+
+

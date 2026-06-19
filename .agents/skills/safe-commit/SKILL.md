@@ -117,8 +117,12 @@ For each modified file, ask: **"Does this file contain non-trivial logic?"** —
 
 You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
-> [!IMPORTANT] **Trivial Changes Validation Exemption**: A change is **trivial** if it modifies fewer than 5 tokens, does not touch any file under `src/logic/`, `src/stores/`, or `src/types/`, and does not alter any TypeScript type or interface. For trivial changes you MAY skip the full audit pipeline. When in doubt, run the audit — false negatives are more costly than a slow commit.
-> [!IMPORTANT] **Pre-existing Warnings**: If the audit reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
+> [!IMPORTANT] **NO VALIDATION EXEMPTIONS**: Every single step of the validation pipeline is STRICTLY MANDATORY. Under no circumstances (including "trivial" or minor single-token changes) may the agent skip any step, especially the production build (`npm run build`), type check, linting, tests, or audit.
+> [!IMPORTANT] **Zero-Error Mandate for Build & Audit**: The final repository state MUST have exactly ZERO errors for both `npm run build` and the entire audit pipeline (`npm run audit` / `npm run audit:full`). Zero warnings are required for any file or block modified during the current session, but pre-existing warnings in unmodified legacy files may be bypassed if they do not block a successful build.
+> [!IMPORTANT] **Mandatory Legacy & Unmodified Code Error Repair**: If the audit, typescript compiler, linting, or build checks reveal **errors** in files or blocks you did NOT modify (pre-existing or legacy code), you are STRICTLY REQUIRED to autonomously diagnose, fix, and repair them before committing. You are forbidden from leaving legacy errors unaddressed. Pre-existing warnings in unmodified files do not require repair.
+
+
+
 
 **THE MANDATORY AUDIT PIPELINE:**
 

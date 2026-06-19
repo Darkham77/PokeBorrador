@@ -33,8 +33,10 @@ export function useBreedingActions(
 
   async function executeHatch(egg: PokemonEgg) {
     const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
+    const { getEggSpecies } = await import('@/logic/breeding/breedingEngine')
     
-    const speciesId = egg.pokemonId || egg.id
+    const rawSpeciesId = egg.pokemonId || egg.id
+    const speciesId = getEggSpecies(rawSpeciesId)
     const p = makePokemon(speciesId, 1, {
       isShiny: egg.isShiny,
       isGuardian: egg.isGuardian,

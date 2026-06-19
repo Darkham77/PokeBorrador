@@ -2,8 +2,8 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getDayCycle } from '@/logic/utils/timeUtils';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
+import { redistributeWeatherSpawns, applyFishingRodBudget } from '@/logic/utils/routeSpawnHelpers';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
@@ -16,10 +16,10 @@ import {
   generateArchaeologyEncounter,
   calculateEncounterTypeWeights,
   clampLegendaryRates,
-  getFinalGroundRates
+  getFinalGroundRates,
+  applyAtmosphericStatus
 } from './encounterHelpers.ts';
 
-import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 
 export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates };
 
@@ -39,23 +39,7 @@ function generateFishingEncounter(
   while (rates.length < pool.length) rates.push(10);
 
   const fishingType = state.fishingRodType || 'standard';
-  if ((fishingType === 'good' || fishingType === 'super') && pool.length > 0) {
-    let budget = fishingType === 'super' ? 1000 : 500;
-    const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || 10 }))
-      .sort((a, b) => a.rate - b.rate);
-
-    for (let i = 0; i < indexedPool.length; i++) {
-      const item = indexedPool[i]!;
-      if (i === indexedPool.length - 1) {
-        rates[item.index] = (rates[item.index] || 10) + budget;
-        budget = 0;
-      } else {
-        const portion = Math.round(budget / 2);
-        rates[item.index] = (rates[item.index] || 10) + portion;
-        budget -= portion;
-      }
-    }
-  }
+  applyFishingRodBudget(rates, pool, fishingType);
 
   const wConfig = loc.weather?.[weather];
   if (weather && weather !== 'clear' && wConfig) {
@@ -82,29 +66,8 @@ function generateFishingEncounter(
   }
 
   if (weather && weather !== 'clear') {
-    const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
-    const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
     const exclusives = wConfig?.fishingExclusive ? (Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive)) : [];
-
-    nativeIndices.forEach(idx => {
-      const spId = pool[idx];
-      if (spId) {
-        const isExclusive = exclusives.includes(spId);
-        if (!isExclusive) {
-          rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
-        }
-      }
-    });
-
-    if (visitorIndices.length > 0) {
-      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
-      const visitorQuota = totalNativeWeight / 9;
-      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
-      visitorIndices.forEach(idx => {
-        const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
-        rates[idx] = visitorQuota * relativeWeight;
-      });
-    }
+    redistributeWeatherSpawns(rates, pool, weather, exclusives);
   }
 
   clampLegendaryRates(pool, rates);
@@ -120,30 +83,7 @@ function generateFishingEncounter(
   const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0);
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: shinyMult }) as Pokemon;
   if (pokemon) {
-    let weatherCfg = loc.weather?.[weather];
-    if (!weatherCfg && weather && weather !== 'clear') {
-      const family = getWeatherFamily(weather);
-      if (family && loc.weather?.[family]) {
-        weatherCfg = loc.weather[family];
-      }
-    }
-    const isVisitor = !!(weatherCfg?.visitors && (
-      (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
-      (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
-    ));
-    const isExclusive = !!(weatherCfg?.exclusive && (
-      (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[selectedId]) || 
-      (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
-    ));
-    const multiplier = getWeatherMultiplier(selectedId, weather);
-    const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
-    const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
-    
-    if (isVisitor || isExclusive || isBuffed || isDebuffed) {
-      pokemon.isAtmospheric = true;
-      pokemon.weatherOrigin = weather;
-      if (isDebuffed) pokemon.isWeatherStruggling = true;
-    }
+    applyAtmosphericStatus(pokemon, loc, weather, selectedId);
   }
   
   return { 
@@ -188,31 +128,7 @@ function generateGroundEncounter(
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
   if (!pokemon) return null;
 
-  let weatherCfg = loc.weather?.[weather];
-  if (!weatherCfg && weather && weather !== 'clear') {
-    const family = getWeatherFamily(weather);
-    if (family && loc.weather?.[family]) {
-      weatherCfg = loc.weather[family];
-    }
-  }
-  const isVisitor = !!(weatherCfg?.visitors && (
-    (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
-    (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
-  ));
-  const isExclusive = !!(weatherCfg?.exclusive && (
-    (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[selectedId]) || 
-    (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
-  ));
-
-  const multiplier = getWeatherMultiplier(selectedId, weather);
-  const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
-  const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
-  
-  if (isVisitor || isExclusive || isBuffed || isDebuffed) {
-    pokemon.isAtmospheric = true;
-    pokemon.weatherOrigin = weather;
-    if (isDebuffed) pokemon.isWeatherStruggling = true;
-  }
+  applyAtmosphericStatus(pokemon, loc, weather, selectedId);
 
   return { 
     type: 'wild', 

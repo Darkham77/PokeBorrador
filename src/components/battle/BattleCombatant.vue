@@ -6,9 +6,10 @@ import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages } from '@/types/battle/battle'
+import type { BattleStages, SparkleData, BattleCombatantProps } from '@/types/battle/battle'
 import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims'
-import { useBattleCombatantState, type SparkleData } from './useBattleCombatantState'
+import { useBattleCombatantState } from './useBattleCombatantState'
+import { onGroundPopEnter } from '@/logic/combat/shadowHelpers'
 
 // Referencias DOM
 const spriteRef = ref<HTMLElement | null>(null)
@@ -17,34 +18,7 @@ const shadowWrapperRef = ref<HTMLElement | null>(null)
 const pokeballImgRef = ref<HTMLImageElement | null>(null)
 const idleWrapperRef = ref<HTMLElement | null>(null)
 
-interface Props {
-  side: 'player' | 'enemy'
-  pokemon?: Pokemon | null
-  position: { x: number; y: number }
-  targetPosition?: { x: number; y: number } | null
-  baseSize: number
-  groundY?: string
-  shadowKey?: string | null
-  animState?: 'catching' | 'trapped' | 'releasing' | null
-  ballId?: string
-  isShaking?: boolean
-  isBlinking?: boolean
-  isHealing?: boolean
-  isSilhouette?: boolean
-  isAttacking?: boolean
-  activeMove?: { side: string; cat: 'physical' | 'special' | 'status' | 'selfKO'; name: string; selfKO?: boolean } | null
-  showGuides?: boolean
-  isCaptureSuccess?: boolean
-  sparkles?: SparkleData[]
-  isFainting?: boolean
-  isEmerging?: boolean
-  suppressFX?: boolean
-  hidden?: boolean
-  hasSeat?: boolean
-  stages?: Partial<BattleStages>
-}
-
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<BattleCombatantProps>(), {
   pokemon: null,
   groundY: '75%',
   shadowKey: null,
@@ -67,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   stages: () => ({}),
   targetPosition: null
 })
+
 
 const emit = defineEmits<{
   (e: 'load', size: { w: number; h: number }): void
@@ -281,45 +256,6 @@ const handleBallLeave = (el: Element, done: () => void) => {
 }
 
 // Ground Pop Hooks
-const onGroundPopEnter = (el: Element, done: () => void) => {
-  const isSpikes = el.classList.contains('spikes')
-  gsap.fromTo(el,
-    { scale: 0, y: isSpikes ? 10 : 20, rotation: isSpikes ? -10 : 0, opacity: 0 },
-    { 
-      scale: 1, 
-      y: isSpikes ? 0 : 5, 
-      rotation: 0, 
-      opacity: 1, 
-      duration: isSpikes ? 0.4 : 0.6, 
-      ease: 'back.out(1.7)', 
-      onComplete: () => {
-        done()
-        if (isSpikes) {
-           gsap.to(el.querySelectorAll('.spike-item'), {
-             y: -10,
-             scaleY: 1.1,
-             scaleX: 0.9,
-             duration: 0.8,
-             yoyo: true,
-             repeat: -1,
-             ease: 'power1.inOut',
-             stagger: 0.1
-           })
-        } else {
-           gsap.to(el.querySelectorAll('.root-item'), {
-             y: 2,
-             scale: 1.03,
-             filter: 'brightness(1.2)',
-             duration: 1.5,
-             yoyo: true,
-             repeat: -1,
-             ease: 'power1.inOut'
-           })
-        }
-      }
-    }
-  )
-}
 
 const onGroundPopLeave = (el: Element, done: () => void) => {
   gsap.to(el, { scale: 0, opacity: 0, duration: 0.3, onComplete: done })

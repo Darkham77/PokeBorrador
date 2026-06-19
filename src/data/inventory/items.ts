@@ -1383,3 +1383,42 @@ export const getItemName = (id: string): string => {
   const item = getItemById(id);
   return item ? item.name : id;
 };
+
+export const BUFF_FIELD_TO_ITEM_IDS: Record<string, string[]> = {
+  repelSecs: ['repel', 'super_repel', 'max_repel'],
+  luckyEggSecs: ['lucky_egg'],
+  amuletCoinSecs: ['amulet_coin'],
+  fishingRodSecs: ['fishing_rod', 'fishing_rod_good', 'fishing_rod_super'],
+  pickaxeSecs: ['pickaxe', 'pickaxe_silver', 'pickaxe_gold'],
+  brushSecs: ['brush', 'brush_good', 'brush_super'],
+  shinyBoostSecs: ['ticket_shiny'],
+  safariTicketSecs: ['ticket_safari'],
+  ceruleanTicketSecs: ['ticket_cerulean'],
+  articunoTicketSecs: ['ticket_articuno'],
+  mewtwoTicketSecs: ['ticket_mewtwo'],
+  ivScannerSecs: ['iv_scanner'],
+  incenseSecs: [
+    'incense_fire', 'incense_water', 'incense_grass', 
+    'incense_normal', 'incense_ghost', 'incense_psychic'
+  ]
+};
+
+export function getMaxBuffDuration(field: string): number {
+  const itemIds = BUFF_FIELD_TO_ITEM_IDS[field] || [];
+  let maxAllowedSecs = 3600;
+
+  const matchingItems = SHOP_ITEMS.filter(item => item.id && itemIds.includes(item.id));
+  if (matchingItems.length > 0) {
+    const maxItemDuration = Math.max(...matchingItems.map(item => {
+      if (!item.desc) return 1800;
+      const hourMatch = item.desc.match(/(\d+)\s*hora/i);
+      if (hourMatch) return parseInt(hourMatch[1] || '0', 10) * 3600;
+      const minMatch = item.desc.match(/(\d+)\s*min/i);
+      return minMatch ? parseInt(minMatch[1] || '0', 10) * 60 : 1800;
+    }));
+    if (maxItemDuration > 0) {
+      maxAllowedSecs = maxItemDuration;
+    }
+  }
+  return maxAllowedSecs;
+}

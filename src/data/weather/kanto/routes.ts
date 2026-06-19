@@ -1,3 +1,31 @@
+
+const route4Weather = {
+  "spring": {
+    "morning": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+    "day": { "clear": 50, "sandstorm": 20, "wind": 30 },
+    "dusk": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+    "night": { "sandstorm": 40, "dust_storm": 20, "wind": 30, "clear": 10 }
+  },
+  "summer": {
+    "morning": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+    "day": { "sun": 30, "intense_sun": 20, "sandstorm": 40, "dust_storm": 10 },
+    "dusk": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+    "night": { "clear": 60, "sandstorm": 25, "dust_storm": 15 }
+  },
+  "autumn": {
+    "morning": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+    "day": { "wind": 50, "strong_winds": 20, "sandstorm": 20, "clear": 10 },
+    "dusk": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+    "night": { "wind": 60, "strong_winds": 30, "sandstorm": 10 }
+  },
+  "winter": {
+    "morning": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+    "day": { "clear": 40, "cold": 20, "sandstorm": 20, "dust_storm": 20 },
+    "dusk": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+    "night": { "cold": 50, "coldwave": 30, "sandstorm": 20 }
+  }
+};
+
 export const kantoRoutesWeather = {
   "route1": {
     "spring": {
@@ -103,32 +131,7 @@ export const kantoRoutesWeather = {
       "night": { "cold": 50, "coldwave": 40, "clear": 10 }
     }
   },
-  "route4": {
-    "spring": {
-      "morning": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
-      "day": { "clear": 50, "sandstorm": 20, "wind": 30 },
-      "dusk": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
-      "night": { "sandstorm": 40, "dust_storm": 20, "wind": 30, "clear": 10 }
-    },
-    "summer": {
-      "morning": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
-      "day": { "sun": 30, "intense_sun": 20, "sandstorm": 40, "dust_storm": 10 },
-      "dusk": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
-      "night": { "clear": 60, "sandstorm": 25, "dust_storm": 15 }
-    },
-    "autumn": {
-      "morning": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
-      "day": { "wind": 50, "strong_winds": 20, "sandstorm": 20, "clear": 10 },
-      "dusk": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
-      "night": { "wind": 60, "strong_winds": 30, "sandstorm": 10 }
-    },
-    "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "sandstorm": 20, "dust_storm": 20 },
-      "dusk": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
-      "night": { "cold": 50, "coldwave": 30, "sandstorm": 20 }
-    }
-  },
+  "route4": route4Weather,
   "route24": {
     "spring": {
       "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
@@ -261,28 +264,28 @@ export const kantoRoutesWeather = {
   },
   "route9": {
     "spring": {
-      "morning": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
-      "day": { "clear": 50, "sandstorm": 20, "wind": 30 },
-      "dusk": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
-      "night": { "sandstorm": 40, "dust_storm": 20, "wind": 30, "clear": 10 }
+      "morning": { "sandstorm": 31, "dust_storm": 9, "wind": 30, "clear": 30 },
+      "day": { "clear": 51, "sandstorm": 19, "wind": 30 },
+      "dusk": { "sandstorm": 31, "dust_storm": 9, "wind": 30, "clear": 30 },
+      "night": { "sandstorm": 41, "dust_storm": 19, "wind": 30, "clear": 10 }
     },
     "summer": {
-      "morning": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
-      "day": { "sun": 30, "intense_sun": 20, "sandstorm": 40, "dust_storm": 10 },
-      "dusk": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
-      "night": { "clear": 60, "sandstorm": 25, "dust_storm": 15 }
+      "morning": { "sandstorm": 36, "dust_storm": 14, "sun": 25, "clear": 25 },
+      "day": { "sun": 31, "intense_sun": 19, "sandstorm": 40, "dust_storm": 10 },
+      "dusk": { "sandstorm": 36, "dust_storm": 14, "sun": 25, "clear": 25 },
+      "night": { "clear": 61, "sandstorm": 24, "dust_storm": 15 }
     },
     "autumn": {
-      "morning": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
-      "day": { "wind": 50, "strong_winds": 20, "sandstorm": 20, "clear": 10 },
-      "dusk": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
-      "night": { "wind": 60, "strong_winds": 30, "sandstorm": 10 }
+      "morning": { "wind": 41, "strong_winds": 9, "sandstorm": 30, "clear": 20 },
+      "day": { "wind": 51, "strong_winds": 19, "sandstorm": 20, "clear": 10 },
+      "dusk": { "wind": 41, "strong_winds": 9, "sandstorm": 30, "clear": 20 },
+      "night": { "wind": 61, "strong_winds": 29, "sandstorm": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "sandstorm": 20, "dust_storm": 20 },
-      "dusk": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
-      "night": { "cold": 50, "coldwave": 30, "sandstorm": 20 }
+      "morning": { "cold": 31, "coldwave": 19, "sandstorm": 30, "clear": 20 },
+      "day": { "clear": 41, "cold": 19, "sandstorm": 20, "dust_storm": 20 },
+      "dusk": { "cold": 31, "coldwave": 19, "sandstorm": 30, "clear": 20 },
+      "night": { "cold": 51, "coldwave": 29, "sandstorm": 20 }
     }
   },
   "route10": {
@@ -391,22 +394,22 @@ export const kantoRoutesWeather = {
   },
   "route23": {
     "spring": {
-      "morning": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "wind": 20, "mist": 20 },
-      "dusk": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
-      "night": { "cold": 40, "wind": 30, "fog": 30 }
+      "morning": { "cold": 31, "wind": 29, "mist": 20, "clear": 20 },
+      "day": { "clear": 41, "cold": 19, "wind": 20, "mist": 20 },
+      "dusk": { "cold": 31, "wind": 29, "mist": 20, "clear": 20 },
+      "night": { "cold": 41, "wind": 29, "fog": 30 }
     },
     "summer": {
-      "morning": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
-      "day": { "clear": 50, "sun": 20, "wind": 20, "mist": 10 },
-      "dusk": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
-      "night": { "clear": 60, "heatwave": 10, "wind": 15, "fog": 15 }
+      "morning": { "clear": 41, "sun": 19, "wind": 20, "mist": 20 },
+      "day": { "clear": 51, "sun": 19, "wind": 20, "mist": 10 },
+      "dusk": { "clear": 41, "sun": 19, "wind": 20, "mist": 20 },
+      "night": { "clear": 61, "heatwave": 9, "wind": 15, "fog": 15 }
     },
     "autumn": {
-      "morning": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
-      "day": { "wind": 50, "strong_winds": 30, "cold": 10, "clear": 10 },
-      "dusk": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
-      "night": { "wind": 55, "strong_winds": 40, "clear": 5 }
+      "morning": { "wind": 41, "strong_winds": 19, "cold": 20, "clear": 20 },
+      "day": { "wind": 51, "strong_winds": 29, "cold": 10, "clear": 10 },
+      "dusk": { "wind": 41, "strong_winds": 19, "cold": 20, "clear": 20 },
+      "night": { "wind": 56, "strong_winds": 39, "clear": 5 }
     },
     "winter": {
       "morning": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },

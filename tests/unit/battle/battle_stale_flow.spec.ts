@@ -1,34 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import '../../helpers/battleMockSetup'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { processFaint } from '@/logic/battle/resolution'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-
-vi.mock('@/logic/encounters/encounters', () => ({
-  generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey', hp: 50, maxHp: 50 } }))
-}))
-
-vi.mock('@/stores/ui', () => ({
-  useUIStore: vi.fn(() => ({ activeTab: 'battle' }))
-}))
-
-vi.mock('@/stores/map', () => ({
-  useMapStore: vi.fn(() => ({ activeEvents: [], mapWinners: {} }))
-}))
-
-vi.mock('@/stores/events', () => ({
-  useEventStore: vi.fn(() => ({ 
-    globalMultipliers: { shiny: 1 },
-    getSpeciesBonuses: vi.fn()
-  }))
-}))
-
-vi.mock('@/stores/war', () => ({
-  useWarStore: vi.fn(() => ({ 
-    mapDominance: {} 
-  }))
-}))
 
 describe('Battle Stale Flow Safety Tests', () => {
   let mockCtx: BattleContext

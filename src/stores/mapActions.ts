@@ -10,6 +10,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemByName } from '@/data/inventory/items.ts';
 import { logger } from '@/logic/utils/logger';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
+import { calculateArchaeologyWeights } from '@/logic/utils/archaeologyHelpers';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 
@@ -167,41 +168,11 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
   else if (difficulty === 'hard') maxRolls = 3;
   else if (difficulty === 'expert') maxRolls = 4;
 
-  const categoryWeights = {
-    fossil: 45,
-    stone: 25,
-    common: 20,
-    rare: 10
-  };
-
   const pickaxeType = gs.state.pickaxeSecs > 0 ? (gs.state.pickaxeType || 'standard') : null;
   const brushType = gs.state.brushSecs > 0 ? (gs.state.brushType || 'standard') : null;
 
-  if (pickaxeType === 'good' || pickaxeType === 'super') {
-    const budget = pickaxeType === 'good' ? 500 : 1000;
-    const affected = [
-      { key: 'rare', base: 10 },
-      { key: 'common', base: 20 },
-      { key: 'stone', base: 25 }
-    ];
-    let remaining = budget;
-    for (let i = 0; i < affected.length; i++) {
-      const item = affected[i]!;
-      let added = 0;
-      if (i === affected.length - 1) {
-        added = remaining;
-      } else {
-        added = Math.round(remaining * 0.5);
-      }
-      categoryWeights[item.key as 'rare' | 'common' | 'stone'] += added;
-      remaining -= added;
-    }
-  }
+  const categoryWeights = calculateArchaeologyWeights(pickaxeType, brushType);
 
-  if (brushType === 'good' || brushType === 'super') {
-    const budget = brushType === 'good' ? 500 : 1000;
-    categoryWeights.fossil += budget;
-  }
 
   const totalWeight = categoryWeights.fossil + categoryWeights.stone + categoryWeights.common + categoryWeights.rare;
 

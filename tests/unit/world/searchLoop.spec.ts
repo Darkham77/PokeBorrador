@@ -1,32 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import '../../helpers/battleMockSetup'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battle/battleContext'
-
-vi.mock('@/logic/encounters/encounters', () => ({
-  generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey' } }))
-}))
-
-vi.mock('@/stores/ui', () => ({
-  useUIStore: vi.fn(() => ({ activeTab: 'battle' }))
-}))
-
-vi.mock('@/stores/map', () => ({
-  useMapStore: vi.fn(() => ({ activeEvents: [], mapWinners: {} }))
-}))
-
-vi.mock('@/stores/events', () => ({
-  useEventStore: vi.fn(() => ({ 
-    globalMultipliers: { shiny: 1 },
-    getSpeciesBonuses: vi.fn()
-  }))
-}))
-
-vi.mock('@/stores/war', () => ({
-  useWarStore: vi.fn(() => ({ 
-    mapDominance: {} 
-  }))
-}))
 
 describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
   let mockCtx: BattleContext

@@ -123,6 +123,23 @@ export function useBattleCaptureAnimations(
     cleanupTweenRegistryListeners()
   }
 
+  const resolveBallId = (pokemon: Pokemon | null | undefined): string => {
+    if (!pokemon?.tags) return 'pokeball'
+    const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
+    if (!ballTag) {
+      logger.warn('useBattleCaptureAnimations', `Pokemon uid=${pokemon.uid} has no ball: tag in tags. Falling back to pokeball.`)
+      if (pokemon.uid) fixPokemonBallTagInSave(pokemon.uid)
+      return 'pokeball'
+    }
+    const id = ballTag.split(':')[1]
+    if (!id) {
+      logger.warn('useBattleCaptureAnimations', `Invalid ball tag format for pokemon uid=${pokemon.uid}: "${ballTag}". Falling back to pokeball.`)
+      if (pokemon.uid) fixPokemonBallTagInSave(pokemon.uid)
+      return 'pokeball'
+    }
+    return id
+  }
+
   // fallow-ignore-next-line complexity
   const handleReleaseRequest = async (detail: string | { side?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
@@ -131,26 +148,8 @@ export function useBattleCaptureAnimations(
     const slot = seat.entry
     const exitSlot = seat.exit
 
-    if (pokemon?.tags) {
-      const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
-      if (ballTag) {
-        const id = ballTag.split(':')[1]
-        if (id) {
-          slot.ballId = id
-        } else {
-          logger.warn('useBattleCaptureAnimations', `Invalid ball tag format on release for pokemon uid=${pokemon.uid}: "${ballTag}". Falling back to pokeball.`)
-          slot.ballId = 'pokeball'
-          if (pokemon.uid) fixPokemonBallTagInSave(pokemon.uid)
-        }
-      } else {
-        logger.warn('useBattleCaptureAnimations', `Pokemon uid=${pokemon.uid} has no ball: tag in tags on release. Falling back to pokeball.`)
-        slot.ballId = 'pokeball'
-        if (pokemon.uid) fixPokemonBallTagInSave(pokemon.uid)
-      }
-    } else {
-      slot.ballId = 'pokeball'
-      if (pokemon?.uid) fixPokemonBallTagInSave(pokemon.uid)
-    }
+    slot.ballId = resolveBallId(pokemon)
+
 
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
     const targetUid = pokemon?.uid || target?.uid || null
@@ -311,27 +310,8 @@ export function useBattleCaptureAnimations(
       
       const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
       slot.pokemonUid = pokemon?.uid || null
-      if (pokemon?.tags) {
-        const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
-        if (ballTag) {
-          const id = ballTag.split(':')[1]
-          if (id) {
-            slot.ballId = id
-          } else {
-            logger.warn('useBattleCaptureAnimations', `Invalid ball tag format during faint for pokemon uid=${pokemon?.uid}: "${ballTag}". Falling back to pokeball.`)
-            slot.ballId = 'pokeball'
-            if (pokemon?.uid) fixPokemonBallTagInSave(pokemon.uid)
-          }
-        } else {
-          logger.warn('useBattleCaptureAnimations', `Pokemon uid=${pokemon?.uid} has no ball: tag in its tags during faint animation. Falling back to pokeball.`)
-          slot.ballId = 'pokeball'
-          if (pokemon?.uid) fixPokemonBallTagInSave(pokemon.uid)
-        }
-      } else {
-        logger.warn('useBattleCaptureAnimations', `handleFaintAnim called with no pokeball tag on pokemon uid=${pokemon?.uid}. Falling back to pokeball.`)
-        slot.ballId = 'pokeball'
-        if (pokemon?.uid) fixPokemonBallTagInSave(pokemon.uid)
-      }
+      slot.ballId = resolveBallId(pokemon)
+
 
       tl.to({}, {
         duration: 0.5,

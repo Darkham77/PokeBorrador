@@ -1,7 +1,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
 import { ANIMATED_SPRITE_DATABASE } from '@/data/pokemon/animatedSpriteDatabase'
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
 
@@ -121,20 +121,7 @@ export function useBattleShadows() {
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (data) {
       const url = getFinalSpriteUrl(data, !!data.isShiny, false)
-      let dbKey = url || ''
-      const base = import.meta.env.BASE_URL || '/'
-      if (base !== '/' && dbKey.startsWith(base)) {
-        dbKey = dbKey.slice(base.length - 1)
-      }
-      try {
-        dbKey = decodeURIComponent(dbKey)
-      } catch (_e) {
-        // Fallback to original key if malformed
-      }
-      const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
-      if (!cached) {
-        throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
-      }
+      getPokemonFeetCoords(url)
       stableEnemyGroundY.value = '75%'
     }
 
@@ -173,20 +160,7 @@ export function useBattleShadows() {
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (pokemon) {
       const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true)
-      let dbKey = url || ''
-      const base = import.meta.env.BASE_URL || '/'
-      if (base !== '/' && dbKey.startsWith(base)) {
-        dbKey = dbKey.slice(base.length - 1)
-      }
-      try {
-        dbKey = decodeURIComponent(dbKey)
-      } catch (_e) {
-        // Fallback to original key if malformed
-      }
-      const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
-      if (!cached) {
-        throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
-      }
+      getPokemonFeetCoords(url)
       stablePlayerGroundY.value = '75%'
     }
 

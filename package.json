@@ -38,6 +38,7 @@
     "audit:fallow:fix": "npx fallow fix",
     "audit:fallow:summary": "npx fallow --summary",
     "audit:fallow:report": "npx fallow --format human > scratch/fallow_report.txt",
+    "audit:fallow:triplets": "npx fallow dupes --min-occurrences 3 --min-lines 10 --min-tokens 60",
     "audit:full": "npm run test:node && npm run audit && npm run validate:fsm && npm run validate:items && npm run validate:abilities && npm run validate:moves && npm run validate:sql",
     "validate:fsm:diagrams": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_fsm_diagrams.ts",
     "validate:fsm:implementation": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_fsm_implementation.ts",

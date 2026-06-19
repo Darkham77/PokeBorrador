@@ -13,24 +13,11 @@ import {
   resolveNormalizedName,
   findInventoryKey as helperFindInventoryKey,
   isItemUsableOn as helperIsItemUsableOn,
-  getItemTier,
-  isItemProduct,
-  getAdjustedProductCategory
+  mapInventoryToItems,
+  type Item
 } from '@/stores/inventory/inventoryHelpers.ts'
 
-export interface Item {
-  name: string;
-  qty: number;
-  id: string;
-  cat?: string;
-  type?: string;
-  sprite?: string;
-  desc?: string;
-  price?: number;
-  craftingTier?: number;
-  tier?: 'common' | 'rare' | 'epic' | 'legend';
-  nonCombat?: boolean;
-}
+export type { Item }
 
 export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
   if (!item) return false
@@ -81,42 +68,8 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- GETTERS ---
   const bagItems = computed(() => {
     const inventory = gameStore.state.inventory || {}
-    let items: Item[] = Object.entries(inventory)
-      .map(([id, qty]) => {
-        const item = getItemById(id) || (id === 'bicycle' ? { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools' } : null)
-        if (!item) return { name: id, qty, id, cat: 'otros', sprite: id, desc: 'Objeto desconocido' } as Item
-        return { ...item, qty, name: item.name } as Item
-      })
-
     const isBattleActive = useBattleStore().isBattleActive
-    if (isBattleActive) {
-      items = items.filter(item => {
-        const dbItem = getItemById(item.id)
-        return !(dbItem && dbItem.nonCombat)
-      })
-    }
-
-    // Filter by main tab
-    if (activeMainTab.value === 'materiales') {
-      items = items
-        .filter(item => getItemTier(item) < 3)
-        .map(item => {
-          const tier = getItemTier(item)
-          let cat = item.cat
-          if (tier === 0) cat = 'raw_material'
-          else if (tier === 1) cat = 'refined_material'
-          else if (tier === 2) cat = 'component'
-          return { ...item, cat }
-        })
-    } else {
-      // Tab is productos
-      items = items
-        .filter(item => getItemTier(item) === 3 || isItemProduct(item))
-        .map(item => ({
-          ...item,
-          cat: getAdjustedProductCategory(item)
-        }))
-    }
+    let items = mapInventoryToItems(inventory, isBattleActive, activeMainTab.value)
 
     if (activeCategory.value === 'utilizables') {
       const target = uiStore.inventoryTarget

@@ -8,6 +8,8 @@ import { useMapStore } from '@/stores/map'
 import { useShopStore } from '@/stores/inventory/shop'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useBuffsStore } from '@/stores/battle/buffs'
+import { calculateActiveTravelModifiers } from '@/logic/utils/routeSpawnHelpers'
+
 
 export function useAdventureRouting(options: {
   gameStore: ReturnType<typeof useGameStore>
@@ -66,36 +68,9 @@ export function useAdventureRouting(options: {
   }
 
   const activeTravelModifiers = computed(() => {
-    const items = selectedTravelItems.value
-    let encounterRateMod = 0
-    let expMultiplier = 1.0
-    let moneyMultiplier = 1.0
-    let shinyChanceMod = 1.0
-    let typeFocus: string | null = null
-
-    if (items.has('repel')) encounterRateMod = -50
-    else if (items.has('super_repel')) encounterRateMod = -80
-    else if (items.has('max_repel')) encounterRateMod = -100
-
-    if (items.has('lucky_egg')) expMultiplier = 1.5
-    if (items.has('amulet_coin')) moneyMultiplier = 2.0
-    if (items.has('ticket_shiny')) shinyChanceMod = 2.0
-
-    if (items.has('incense_fire')) typeFocus = 'fire'
-    else if (items.has('incense_water')) typeFocus = 'water'
-    else if (items.has('incense_grass')) typeFocus = 'grass'
-    else if (items.has('incense_normal')) typeFocus = 'normal'
-    else if (items.has('incense_ghost')) typeFocus = 'ghost'
-    else if (items.has('incense_psychic')) typeFocus = 'psychic'
-
-    return {
-      encounterRateMod,
-      expMultiplier,
-      moneyMultiplier,
-      shinyChanceMod,
-      typeFocus
-    }
+    return calculateActiveTravelModifiers(selectedTravelItems.value)
   })
+
 
   const availableActiveMoves = computed(() => {
     const team = options.gameStore.state.team || []
