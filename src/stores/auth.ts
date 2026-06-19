@@ -127,6 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
           
           let dbVersion = 1
           let userGender = 'h'
+          let userRole: string | undefined
           let isUserBanned = false
           let banMsg = 'Uso indebido de la plataforma'
 
@@ -150,8 +151,8 @@ export const useAuthStore = defineStore('auth', () => {
           if (sessionValid && !isLocalId) {
             // Fetch profile meta con timeout (10s)
             try {
-              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', rawUser?.id).single()
-              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: 'h' | 'm' } | null; error?: { message?: string; status?: number; code?: string } | null }
+              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender, role').eq('id', rawUser?.id).single()
+              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: 'h' | 'm'; role?: string } | null; error?: { message?: string; status?: number; code?: string } | null }
               const profile = profileRes.data
               const profileError = profileRes.error
               
@@ -163,6 +164,7 @@ export const useAuthStore = defineStore('auth', () => {
               } else if (profile) {
                 dbVersion = profile.db_version || 1
                 userGender = profile.gender || 'h'
+                userRole = profile.role
                 if (profile.is_banned) {
                   isUserBanned = true
                   banMsg = profile.ban_reason || 'Uso indebido de la plataforma'
@@ -190,6 +192,7 @@ export const useAuthStore = defineStore('auth', () => {
           // Build and assign the fully-configured user object AT THE VERY END
           rawUser.db_version = dbVersion
           rawUser.user_metadata.gender = userGender as 'h' | 'm'
+          if (userRole) rawUser.role = userRole
 
           session.value = data.session
           user.value = rawUser
