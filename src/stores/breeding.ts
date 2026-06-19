@@ -19,7 +19,7 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
-import { LEGENDARY_POKEMON } from '@/data/pokemon/pokedex';
+import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
@@ -152,8 +152,17 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     const legendaries = new Set(LEGENDARY_POKEMON);
-    if (pokemon.id && legendaries.has(pokemon.id.toLowerCase())) {
-      uiStore.notify('Los Pokémon legendarios no pueden reproducirse en la Guardería.', '⚠️');
+    const babyPokemon = new Set(BABY_POKEMON);
+    const isFossil = FOSSIL_POKEMON.includes(pokemon.id ? pokemon.id.toLowerCase() : '');
+    const maxVig = pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10;
+    
+    if (maxVig <= 0 || isFossil || (pokemon.id && legendaries.has(pokemon.id.toLowerCase()))) {
+      uiStore.notify('Este Pokémon no tiene vigor y no puede reproducirse en la Guardería.', '⚠️');
+      return false;
+    }
+
+    if (pokemon.id && babyPokemon.has(pokemon.id.toLowerCase())) {
+      uiStore.notify('Los Pokémon bebé no pueden reproducirse en la Guardería.', '⚠️');
       return false;
     }
 

@@ -218,6 +218,13 @@ body .selection-container {
           background: Rgba(255, 45, 85, 0.08);
           .ps-tag-label { color: #FF2D55; }
         }
+        &.ps-tag-hatched {
+          border-color: #FF9500;
+          color: #FF9500;
+          box-shadow: 0 0 6px Rgba(255, 149, 0, 0.25);
+          background: Rgba(255, 149, 0, 0.05);
+          .ps-tag-label { color: #FF9500; }
+        }
       }
     }
   }

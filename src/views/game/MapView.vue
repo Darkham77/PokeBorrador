@@ -227,7 +227,7 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
       :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
       :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"
       :dominance-data="mapStore.mapWinners"
-      :daily-guardian-captures="mapStore.dailyGuardianCaptures"
+      :daily-guardian-captures="gameStore.dailyGuardianCaptures"
       @navigate="navigateToMap"
     />
   </div>

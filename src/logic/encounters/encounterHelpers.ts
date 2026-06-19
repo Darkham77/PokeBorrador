@@ -1,5 +1,7 @@
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { getActivePinia } from 'pinia';
+import { useGameStore } from '@/stores/game';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
@@ -137,6 +139,21 @@ export function checkSpecialEncounters(
     }
   }
 
+  if (!options.forceEncounter && debug?.forceGuardian80) {
+    const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
+    const capturedToday = (dailyCaptures || []).includes(locId);
+    if (!capturedToday && Math.random() < 0.80) {
+      const guardian = getGuardianData(locId, allMapIds);
+      if (guardian) {
+        return { 
+          type: 'guardian', 
+          pokemon: makePokemon(guardian.id, guardian.lv, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
+          pts: guardian.pts
+        };
+      }
+    }
+  }
+
   // 0. Especial: Rival Azul
   if (!options.forceEncounter) {
     let rivalChance = GAME_RATIOS.encounters.rival;
@@ -170,7 +187,8 @@ export function checkSpecialEncounters(
   // 2. Especial: Guardianes (Pokémon Alfa)
   const guardian = getGuardianData(locId, allMapIds);
   if (guardian && !options.forceEncounter) {
-    const capturedToday = (state.dailyGuardianCaptures || []).includes(locId);
+    const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
+    const capturedToday = (dailyCaptures || []).includes(locId);
     if (!capturedToday && Math.random() < GUARDIAN_CHANCE) {
       return { 
         type: 'guardian', 

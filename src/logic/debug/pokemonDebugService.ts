@@ -27,6 +27,7 @@ interface GenerateParams {
   friendship?: number
   heldItem?: string | null
   mapId?: string | null
+  protocol?: string | null
 }
 
 interface EggData {
@@ -66,13 +67,22 @@ export const pokemonDebugService = {
       nickname = null,
       friendship = 70,
       heldItem = null,
-      mapId = null
+      mapId = null,
+      protocol = null
     } = params;
 
     // 1. Create base instance
     const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
     const mappedGender = (gender && genderMap[gender]) ? genderMap[gender] : undefined;
-    const p = makePokemon(id, level, { isShiny, nature: nature || undefined, ability: ability || undefined, gender: mappedGender, heldItem: heldItem || undefined })
+    const isEgg = protocol === 'hatch' || protocol === 'hatch_anim' || protocol === 'egg_anim' || protocol === 'egg_silent';
+    const p = makePokemon(id, level, { 
+      isShiny, 
+      nature: nature || undefined, 
+      ability: ability || undefined, 
+      gender: mappedGender, 
+      heldItem: heldItem || undefined,
+      obtainedMethod: isEgg ? 'egg' : 'wild'
+    })
     if (!p) return {} as Pokemon
 
     if (mapId) {

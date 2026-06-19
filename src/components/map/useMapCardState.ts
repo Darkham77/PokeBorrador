@@ -117,7 +117,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
     const typeInfo = (isSeen && data) ? getFormattedTypes(data) : '???'
-    const captured = props.dominance.guardian.captured || false
+    const captured = props.dominance.guardian.captured || (gameStore.dailyGuardianCaptures || []).includes(props.map.id)
 
     return { 
       ...props.dominance.guardian, 

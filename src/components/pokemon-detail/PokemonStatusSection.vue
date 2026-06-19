@@ -93,13 +93,21 @@ const abilityStyle = computed(() => ({
 
       <PVTooltip
         title="VIGOR"
-        description="Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera."
+        :description="p.obtainedMethod === 'egg' ? 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera de forma natural. Las crías nacidas de huevo comienzan con vigor inicial reducido a la mitad por desgaste genético, pero puede aumentarse usando Caramelos de Vigor.' : 'Determina cuántas veces puede reproducirse este Pokémon en la Guardería. Se consume al criar y NO se recupera.'"
         position="top"
         class="info-card vigor-card"
       >
         <span class="label">Vigor</span>
-        <span class="val vigor-val">⚡{{ p.vigor || 0 }}</span>
+        <span class="val vigor-val"><span class="vigor-icon">⚡</span>{{ p.vigor !== undefined ? p.vigor : 0 }}/{{ p.maxVigor !== undefined ? p.maxVigor : 10 }}</span>
       </PVTooltip>
+    </div>
+
+    <!-- Egg Born Badge -->
+    <div
+      v-if="p.obtainedMethod === 'egg'"
+      class="egg-born-badge pixelated"
+    >
+      🥚 Nacido de Huevo (Cría)
     </div>
 
     <!-- HP & EXP -->
@@ -251,6 +259,37 @@ const abilityStyle = computed(() => ({
 .vigor-val { 
   color: var(--yellow) !important; 
   text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.vigor-icon {
+  display: inline-flex;
+  align-self: center;
+  font-size: 10px;
+  line-height: 1;
+  margin-top: -1px; // Visual correction for emoji alignment
+}
+
+.egg-born-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: Rgba(16, 185, 129, 0.12);
+  border: 1px solid Rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  margin: 0 auto 16px auto;
+  width: fit-content;
+  text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
+  box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
+  font-weight: bold;
+  @include pixelated;
 }
 
 .mt-12 { margin-top: 12px; }

@@ -214,29 +214,44 @@ function handleClick() {
         v-if="isDaycareContext"
         class="daycare-item-meta"
       >
-        <div class="compat-status">
-          <template v-if="listCompatibility">
-            <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.color || '#ff668f' }">
-              AFINIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
-            </span>
-            <span
-              v-if="listCompatibility.eggSpecies"
-              class="egg-hint"
-            >
-              🥚 {{ eggSpeciesName }}
-            </span>
-          </template>
-          <template v-else>
-            <span class="waiting-status">Esperando pareja</span>
-          </template>
+        <div class="daycare-meta-top">
+          <div class="compat-status">
+            <template v-if="listCompatibility">
+              <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.color || '#ff668f' }">
+                AFINIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
+              </span>
+              <span
+                v-if="listCompatibility.eggSpecies"
+                class="egg-hint"
+              >
+                🥚 {{ eggSpeciesName }}
+              </span>
+            </template>
+            <template v-else>
+              <span class="waiting-status">Esperando pareja</span>
+            </template>
+          </div>
+          
+          <div
+            v-if="item.pokemon.vigor !== undefined"
+            class="vigor-status-mini"
+          >
+            <span class="label">VIGOR: </span>
+            <span :class="['value', { low: item.pokemon.vigor <= 2 }]">⚡ {{ item.pokemon.vigor }}/{{ item.pokemon.maxVigor !== undefined ? item.pokemon.maxVigor : 10 }}</span>
+          </div>
         </div>
-        
+
+        <!-- Individual IVs List -->
         <div
-          v-if="item.pokemon.vigor !== undefined"
-          class="vigor-status-mini"
+          v-if="item.pokemon.ivs"
+          class="ivs-list-row pixelated"
         >
-          <span class="label">VIGOR: </span>
-          <span :class="['value', { low: item.pokemon.vigor <= 2 }]">⚡ {{ item.pokemon.vigor }}/10</span>
+          <span>HP: {{ item.pokemon.ivs.hp }}</span>
+          <span>ATK: {{ item.pokemon.ivs.atk }}</span>
+          <span>DEF: {{ item.pokemon.ivs.def }}</span>
+          <span>SPA: {{ item.pokemon.ivs.spa }}</span>
+          <span>SPD: {{ item.pokemon.ivs.spd }}</span>
+          <span>SPE: {{ item.pokemon.ivs.spe }}</span>
         </div>
       </div>
       
@@ -356,11 +371,19 @@ function handleClick() {
 
 .daycare-item-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px dashed Rgba(255, 255, 255, 0.05);
+  width: 100%;
+}
+
+.daycare-meta-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
 }
 
@@ -390,5 +413,15 @@ function handleClick() {
       color: #ef4444;
     }
   }
+}
+
+.ivs-list-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px 4px;
+  font-size: 7px;
+  color: #a7f3d0;
+  @include pixelated;
+  width: 100%;
 }
 </style>

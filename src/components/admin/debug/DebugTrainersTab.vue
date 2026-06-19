@@ -33,8 +33,7 @@ const {
   addPokemonToTeam,
   removePokemonFromTeam,
   startCombat,
-  availableSpriteList,
-  debugStore
+  availableSpriteList
 } = useDebugTrainers()
 
 function handleSpriteError(e: Event, id: string, isShiny = false) {
@@ -69,34 +68,7 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Simulación de Eventos y Probabilidades -->
-    <div class="debug-card">
-      <label>PROBABILIDADES Y SIMULACIÓN DE EVENTO</label>
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span
-            class="field-label"
-            style="margin-bottom: 0;"
-          >Forzar 50% encuentros con entrenadores (Rutas)</span>
-          <input 
-            v-model="debugStore.trainerChance50" 
-            type="checkbox" 
-            style="width: 16px; height: 16px; cursor: pointer;"
-          >
-        </div>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span
-            class="field-label"
-            style="margin-bottom: 0;"
-          >Forzar 100% encuentros con Rival</span>
-          <input 
-            v-model="debugStore.forceRival" 
-            type="checkbox" 
-            style="width: 16px; height: 16px; cursor: pointer;"
-          >
-        </div>
-      </div>
-    </div>
+
 
     <!-- Section 1: Generation Settings -->
     <div class="debug-card">

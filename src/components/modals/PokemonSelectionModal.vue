@@ -13,6 +13,7 @@ import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex'
 
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
@@ -171,12 +172,19 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
   })
 
   if (props.isDaycareContext) {
-    const legendaries = new Set([
-      'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-      'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
-    ]);
+    const legendaries = new Set(LEGENDARY_POKEMON);
+    const babyPokemon = new Set(BABY_POKEMON);
+    const fossils = new Set(FOSSIL_POKEMON);
     result = result.filter(item => {
-      return !item.pokemon.id || !legendaries.has(item.pokemon.id.toLowerCase());
+      const p = item.pokemon;
+      if (!p.id) return true;
+      const idLower = p.id.toLowerCase();
+      const maxVig = p.maxVigor !== undefined ? p.maxVigor : 10;
+      if (maxVig <= 0) return false;
+      if (legendaries.has(idLower)) return false;
+      if (babyPokemon.has(idLower)) return false;
+      if (fossils.has(idLower)) return false;
+      return true;
     });
   }
 

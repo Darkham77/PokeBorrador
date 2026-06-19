@@ -340,12 +340,15 @@ const heldItemSprite = computed(() => {
 
       <div class="vigor-status">
         <div class="label">
-          VIGOR: {{ pokemon.vigor || 0 }}/10
+          VIGOR: {{ pokemon.vigor || 0 }}/{{ pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10 }}
         </div>
         <div class="vigor-bar-bg">
           <div
             class="vigor-fill"
-            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: ((pokemon.vigor || 0) <= 2 ? 'Rgba(239, 68, 68, 1)' : 'Rgba(34, 197, 94, 1)') }"
+            :style="{ 
+              width: (pokemon.maxVigor !== undefined && pokemon.maxVigor === 0) ? '0%' : (((pokemon.vigor || 0) / (pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10)) * 100) + '%', 
+              background: ((pokemon.vigor || 0) <= 2 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)') 
+            }"
           />
         </div>
       </div>

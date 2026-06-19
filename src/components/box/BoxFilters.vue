@@ -109,12 +109,13 @@ const POKEMON_TYPES = [
 
 const AVAILABLE_TAGS = [
   { id: 'fav', label: 'FAV', icon: '⭐' },
-  { id: 'breed', label: 'CRIA', icon: '❤️' },
+  { id: 'breed', label: 'GEN', icon: '🧬' },
   { id: 'comp', label: 'COMP', icon: '🏆' },
   { id: 'trade', label: 'TRADE', icon: '🔄' },
   { id: 'iv31', label: 'IV', icon: '31' },
   { id: 'shy', label: 'SHY', icon: '✨' },
-  { id: 'team', label: 'TEAM', icon: '👥' }
+  { id: 'team', label: 'TEAM', icon: '👥' },
+  { id: 'hatched', label: 'CRÍA', icon: '🥚' }
 ]
 
 const beforeEnter = (el: Element) => {
@@ -280,12 +281,13 @@ const leave = (el: Element, done: () => void) => {
               :key="tag.id"
               :title="tag.label"
               :description="(tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
-                tag.id === 'breed' ? 'Pokémon aptos para reproducirse.' :
+                tag.id === 'breed' ? 'Marcado para breeding o crianza selectiva.' :
                 tag.id === 'comp' ? 'Pokémon entrenados para torneos.' :
                 tag.id === 'trade' ? 'Pokémon listos para intercambio.' :
                 tag.id === 'iv31' ? 'Pokémon con estadísticas perfectas (31 IV).' :
                 tag.id === 'shy' ? 'Pokémon Shiny con colores alternativos.' :
-                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' : '') || ''"
+                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' :
+                tag.id === 'hatched' ? 'Pokémon nacidos de un huevo.' : '') || ''"
               position="bottom"
             >
               <button

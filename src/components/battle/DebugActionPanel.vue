@@ -149,6 +149,7 @@ const debugCapture = async () => {
   battleStore.isProcessing = true
   const e = battleStore.state.enemy
   const itemName = 'Ultra Ball'
+  const ballId = 'ultra_ball'
   
   battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch', itemName)
   
@@ -157,9 +158,9 @@ const debugCapture = async () => {
   // 1. Ball hit
   audio.ballHit()
   if (anims?.handleCatchRequest) {
-    await anims.handleCatchRequest({ side: 'enemy', ballId: itemName })
+    await anims.handleCatchRequest({ side: 'enemy', ballId })
   } else {
-    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId })
     await sleep(1000)
   }
 

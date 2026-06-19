@@ -32,7 +32,7 @@ interface Props {
   title: string
   probability: number
   baseProbability: number
-  items: Array<SpawnItem | ArchaeologyRewardItem | any>
+  items: Array<SpawnItem | ArchaeologyRewardItem | Record<string, unknown>>
   mode: 'pokemon' | 'item' | 'fishing' | 'npc'
 
   probClass: string

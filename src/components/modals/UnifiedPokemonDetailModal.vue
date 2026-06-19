@@ -330,6 +330,7 @@ const handleReorderMoves = (from: number, to: number) => {
               <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight || undefined, 'kg') }}</span>
             </PVTooltip>
           </div>
+
           <div
             v-if="isInstance"
             class="instance-status-section"
@@ -412,4 +413,22 @@ const handleReorderMoves = (from: number, to: number) => {
 <style scoped lang="scss">
 @use "../../styles/components/pokedex-detail" as *;
 @use "../../styles/components/unified-pokemon-detail" as *;
+
+.egg-born-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: Rgba(16, 185, 129, 0.12);
+  border: 1px solid Rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  margin: 0 auto 12px auto;
+  width: fit-content;
+  text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
+  box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
+  font-weight: bold;
+}
 </style>

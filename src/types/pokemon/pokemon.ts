@@ -118,6 +118,7 @@ export interface Pokemon {
   emoji?: string;
   friendship?: number;
   vigor?: number;
+  maxVigor?: number;
   catchRate?: number;
   obtainedAt?: number;
   obtainedMethod?: string;

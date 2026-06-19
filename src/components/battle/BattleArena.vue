@@ -178,8 +178,9 @@ const weatherTooltipDescription = computed(() => {
   // 2. Fishing Spawns
   if (fishingSpawns.value && fishingSpawns.value.length > 0) {
     lines.push(`\n🎣 Pesca:`)
-    fishingSpawns.value.forEach((fs: { name: string; percentage: number }) => {
-      lines.push(`• ${fs.name}: ${fs.percentage.toFixed(1)}%`)
+    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => {
+      const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
+      lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
     })
   }
 

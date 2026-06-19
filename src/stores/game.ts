@@ -204,6 +204,14 @@ export const useGameStore = defineStore('game', () => {
     logger.info('SANDBOX', 'Modo Sandbox desactivado. Partida real restaurada.')
   }
 
+  const dailyGuardianCaptures = computed(() => {
+    const today = Temporal.Now.plainDateISO().toString()
+    const captures = state.guardianCaptures || {}
+    return Object.entries(captures)
+      .filter(([_, date]) => date === today)
+      .map(([mapId]) => mapId)
+  })
+
   // --- WATCHERS ---
   watch(() => state.team.length, (newLen, oldLen) => {
     if (newLen > oldLen && state.pvpTeam.length < 3) autoFillPvpTeam()
@@ -212,6 +220,7 @@ export const useGameStore = defineStore('game', () => {
   return {
     state,
     db,
+    dailyGuardianCaptures,
     updateState,
     resetToInitial,
     registerPokedex,

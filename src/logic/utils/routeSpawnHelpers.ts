@@ -70,7 +70,7 @@ export function calculateActiveTravelModifiers(items: Set<string> | string[]) {
 
 export function getPokedexVisibility(
   id: string,
-  debugPokedexMode: string,
+  debugPokedexMode: 'none' | 'seen' | 'caught' | null,
   seenPokedex: string[],
   caughtPokedex: string[]
 ): VisibilityResult {
@@ -306,6 +306,7 @@ export function buildRouteSpawnItem(
 }
 
 import type { MapLocation } from '@/types/pokemon/encounters'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { getEncounterPool } from '@/logic/encounters/encounterHelpers'
 
 export interface SpawnPoolResult {
@@ -318,7 +319,7 @@ export function getMapSpawnPoolData(
   loc: MapLocation,
   cycle: 'morning' | 'day' | 'dusk' | 'night',
   activeWeather: string,
-  activeEvents: any[] = []
+  activeEvents: GameEvent[] = []
 ): SpawnPoolResult {
   if (!loc.wild) {
     return { generic: [], specific: [], rates: {} }

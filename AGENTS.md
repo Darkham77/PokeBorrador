@@ -188,6 +188,7 @@ When the user requests a durable behavior change, record it here or in the relev
 - [src/views/AGENTS.md](./src/views/AGENTS.md): Top-level page views layout, routing entry points, and view-level orchestration.
 - [supabase/AGENTS.md](./supabase/AGENTS.md): Online cloud persistence, migration versioning, and row-level security.
 - [tests/AGENTS.md](./tests/AGENTS.md): Automated unit, integration, and E2E browser tests suites.
+- [CONTEXT.md](./CONTEXT.md): Glossary and domain models for the repository.
 
 ---
 

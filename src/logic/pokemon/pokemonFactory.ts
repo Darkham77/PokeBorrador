@@ -7,6 +7,7 @@ import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
+import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
 import { logger } from '../utils/logger.ts';
@@ -281,6 +282,24 @@ export function sanitizePokemon(p: Pokemon): void {
       p.exp = maxExpAllowed;
     }
   }
+
+  // 5. Validar Vigor
+  const isLegendary = LEGENDARY_POKEMON.includes(p.id.toLowerCase());
+  const isFossil = FOSSIL_POKEMON.includes(p.id.toLowerCase());
+  if (isLegendary || isFossil) {
+    p.maxVigor = 0;
+    p.vigor = 0;
+  } else {
+    if (p.maxVigor === undefined || p.maxVigor === null || isNaN(p.maxVigor)) {
+      p.maxVigor = Math.floor(Math.random() * 4) + 3;
+    }
+    if (p.vigor === undefined || p.vigor === null || isNaN(p.vigor)) {
+      p.vigor = p.maxVigor;
+    }
+    if (p.vigor > p.maxVigor) {
+      p.vigor = p.maxVigor;
+    }
+  }
 }
 
 export interface PokemonCreationOptions {
@@ -295,6 +314,8 @@ export interface PokemonCreationOptions {
   shinyMultiplier?: number;
   forceGender?: 'M' | 'F' | 'N' | null;
   isGuardian?: boolean;
+  obtainedMethod?: string;
+  isNpcEgg?: boolean;
 }
 
 /**
@@ -368,7 +389,19 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     isShiny = Math.random() < (1 / finalShinyRate);
   }
   
-  const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
+  const isLegendary = LEGENDARY_POKEMON.includes(id.toLowerCase());
+  const isFossil = FOSSIL_POKEMON.includes(id.toLowerCase());
+  let maxVigor = 0;
+  let vigor = 0;
+  if (!isLegendary && !isFossil) {
+    if (options.obtainedMethod === 'egg' && !options.isNpcEgg) {
+      maxVigor = Math.floor(Math.random() * 3) + 1; // 1 a 3
+      vigor = Math.max(1, Math.floor(maxVigor / 2));
+    } else {
+      maxVigor = Math.floor(Math.random() * 4) + 3; // 1d4+2 (3 a 6)
+      vigor = maxVigor;
+    }
+  }
   const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2,9) + Temporal.Now.instant().epochMilliseconds.toString(36);
 
   let heldItem = options.heldItem || null;
@@ -390,11 +423,12 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level) as PokemonMove[],
-    status: null, sleepTurns: 0, friendship: 70, vigor,
+    status: null, sleepTurns: 0, friendship: 70, vigor, maxVigor,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],
     obtainedAt: Temporal.Now.instant().epochMilliseconds,
+    obtainedMethod: options.obtainedMethod || 'wild',
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 

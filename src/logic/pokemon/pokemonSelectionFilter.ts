@@ -77,6 +77,9 @@ export function filterAndSortPokemon(
     } else if (criteria.sortBy === 'TOT') {
       valA = getPokemonTotalPower(pA)
       valB = getPokemonTotalPower(pB)
+    } else if (criteria.sortBy === 'hatched') {
+      valA = pA.obtainedMethod === 'egg' ? 1 : 0
+      valB = pB.obtainedMethod === 'egg' ? 1 : 0
     } else {
       valA = pA.obtainedAt || ((a._source === 'box' ? 1000 : 0) + a.index)
       valB = pB.obtainedAt || ((b._source === 'box' ? 1000 : 0) + b.index)

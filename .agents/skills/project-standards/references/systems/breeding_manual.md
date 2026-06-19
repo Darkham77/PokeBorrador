@@ -54,3 +54,28 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 - **IV Reroll Formula**: The system performs `1 + N/2` independent IV rolls per stat (where `N` is the number of extra fossils, max 6) and keeps the highest value. Decimals (N = 1, 3, 5) guarantee the integer part and grant a 50% chance for an additional roll.
 - **Shiny Chance Boost**: Each extra fossil adds a +25% boost to the base Shiny probability, scaling as `1 + N * 0.25` (up to a 2.5x multiplier with 6 sacrifices).
 - **Daycare Lock**: Fossils cannot be used from the bag; DNA cloning must only be accessed and executed inside the Daycare interface.
+
+## 8. Vigor & Hatching Rules
+
+- **Fossils and Legendaries**: Are born with `maxVigor = 0` and `vigor = 0`. They cannot breed, and vigor candy/restorers have no effect on them.
+- **Hatched Eggs (Crías)**:
+  - **Player Eggs**: Born with a random maximum vigor between 1 and 3.
+  - **NPC Eggs**: Born with a random maximum vigor between 3 and 6 (1d4+2).
+- **Vigor UI & Bars**: All summary views and daycare slot panels must read the dynamic `maxVigor` attribute of the Pokémon instead of hardcoding a limit of 10. The visual progress bar width must scale dynamically based on `(vigor / maxVigor) * 100`.
+- **Breeding Tags**:
+  - The manual breeding selection tag is renamed to **Genética** (`GEN`) with the `🧬` DNA icon.
+  - The automatic egg-born identifier is the **Cría** tag with the `🥚` egg icon.
+
+---
+
+## 9. Hatched Pokémon Properties & Vigor
+
+### 1. Hatch Tagging
+- **Mandatory Hatched Tag**: All Pokémon born from eggs MUST automatically receive the `hatched` tag in their data records upon hatching. This tag represents born/bred ancestry, is read-only, and is displayed as `CRÍA` (🥚) in the user interface.
+
+### 2. Vigor on Hatching
+- **Regular Bred Eggs**: Pokémon hatched from player-bred eggs consume half of their maximum vigor immediately, starting with a vigor value of `5/10`.
+- **NPC Gift Eggs**: Pokémon hatched from NPC event eggs (i.e. eggs marked as `isNpcEgg` or similar event statuses) start with full vigor (`10/10`) to reflect their special or premium origin.
+- **Ancestral/Cloned Pokémon**: Recreated fossil or ancestral Pokémon hatch/revive with both `maxVigor` and `vigor` set to `0`, reflecting their unique status.
+
+

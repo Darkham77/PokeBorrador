@@ -65,6 +65,17 @@ export const useWarStore = defineStore('war', () => {
           .eq('capture_date', today)
         
         dailyGuardianCaptures.value = (guardians as { map_id: string }[] | null)?.map(g => g.map_id) || []
+
+        if (guardians && Array.isArray(guardians)) {
+          if (!gameStore.state.guardianCaptures) {
+            gameStore.state.guardianCaptures = {}
+          }
+          guardians.forEach(g => {
+            if (g.map_id) {
+              gameStore.state.guardianCaptures![g.map_id] = today
+            }
+          })
+        }
       }
 
       // 4. Load Dominance Data
@@ -191,9 +202,21 @@ export const useWarStore = defineStore('war', () => {
    * Records a guardian capture or defeat.
    */
   async function claimGuardian(mapId: string, isDefeat = false) {
-    if (!authStore.user || !faction.value || !gameStore.db) return
-    
     const today = Temporal.Now.plainDateISO().toString()
+    
+    // Save to user account state immediately for local lockout persistence
+    if (!gameStore.state.guardianCaptures) {
+      gameStore.state.guardianCaptures = {}
+    }
+    gameStore.state.guardianCaptures[mapId] = today
+    await gameStore.save()
+
+    if (!dailyGuardianCaptures.value.includes(mapId)) {
+      dailyGuardianCaptures.value.push(mapId)
+    }
+
+    if (!authStore.user || !gameStore.db) return
+    
     const guardian = getGuardianData(mapId, []) // In real use we pass map list
     if (!guardian) return
 
@@ -203,15 +226,14 @@ export const useWarStore = defineStore('war', () => {
       capture_date: today,
       map_id: mapId,
       user_id: authStore.user.id,
-      winner_faction: faction.value,
+      winner_faction: faction.value || null,
       pts_awarded: ptsAwarded
     })
 
     if (!error) {
-      if (!dailyGuardianCaptures.value.includes(mapId)) {
-        dailyGuardianCaptures.value.push(mapId)
+      if (faction.value) {
+        await addPoints(mapId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
       }
-      await addPoints(mapId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
       uiStore.notify(`¡Guardián ${isDefeat ? 'Derrotado' : 'Capturado'}! +${ptsAwarded} PT.`, '🏆')
     }
   }

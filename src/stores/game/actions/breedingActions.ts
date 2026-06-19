@@ -42,13 +42,17 @@ export function useBreedingActions(
       isGuardian: egg.isGuardian,
       nature: egg.nature,
       abilitySlot: egg.abilitySlot,
-      gender: egg.gender
+      gender: egg.gender,
+      obtainedMethod: 'egg',
+      isNpcEgg: egg.isNpc
     })
 
     if (!p) throw new Error(`Failed to create pokemon from egg ${speciesId}`)
 
     if (egg.isAncestral) {
       p.isAncestral = true
+      p.maxVigor = 0
+      p.vigor = 0
     }
 
     if (egg.ivs) {
@@ -63,7 +67,6 @@ export function useBreedingActions(
       })
     }
     
-    p.obtainedMethod = 'egg'
     recalcPokemonStats(p)
     p.hp = p.maxHp
 

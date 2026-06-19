@@ -118,6 +118,8 @@ export function getWeatherModifiersDescription(weather: string): string {
 
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { getActivePinia } from 'pinia';
+import { useGameStore } from '@/stores/game';
 import { GAME_RATIOS } from '@/data/system/constants';
 import type { EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
 
@@ -189,16 +191,20 @@ export function getNpcEncounterChances(
   const guardian = getGuardianData(locId, allMapIds);
   let hasGuardian = false;
   if (guardian) {
-    const capturedToday = (state.dailyGuardianCaptures || []).includes(locId);
+    const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
+    const capturedToday = (dailyCaptures || []).includes(locId);
     if (!capturedToday) {
       hasGuardian = true;
     }
   }
+  const isGuardianForced = hasGuardian && !!debug?.forceGuardian80;
+  const finalGuardianChance = isGuardianForced ? 80.0 : (hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0);
   result.push({
     name: 'Guardián (Alfa)',
-    chance: hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0,
+    chance: finalGuardianChance,
     type: 'guardian',
-    active: hasGuardian
+    active: hasGuardian,
+    details: isGuardianForced ? 'Forzado por Debug' : undefined
   });
 
   // 4. Trainer / Policía
@@ -210,6 +216,8 @@ export function getNpcEncounterChances(
   let baseTrainerChance = 0;
   if (repelActive) {
     baseTrainerChance = GAME_RATIOS.encounters.trainerRepel * 100;
+  } else if (debug?.trainerChance50) {
+    baseTrainerChance = 50.0;
   } else {
     baseTrainerChance = isRocketMaxCrim
       ? (criminality / 10) * trainerBonus
@@ -222,7 +230,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'police',
       active: true,
-      details: repelActive ? 'Repelente' : `Crim: ${criminality}`
+      details: debug?.trainerChance50 ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`)
     });
   } else {
     result.push({
@@ -230,7 +238,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'trainer',
       active: true,
-      details: repelActive ? 'Repelente' : undefined
+      details: debug?.trainerChance50 ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined)
     });
   }
 

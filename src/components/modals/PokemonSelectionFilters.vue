@@ -115,6 +115,19 @@ function clearFilters() {
           TOTAL {{ sortBy === 'TOT' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
         </button>
       </PVTooltip>
+      <PVTooltip
+        title="CRÍA"
+        description="Ordenar por Pokémon nacidos de huevo."
+        position="bottom"
+        class="ps-sort-wrapper"
+      >
+        <button
+          :class="{ active: sortBy === 'hatched' }"
+          @click.stop="setSort('hatched')"
+        >
+          🥚 CRÍA {{ sortBy === 'hatched' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+        </button>
+      </PVTooltip>
     </div>
 
     <div class="ps-tags-section">

@@ -267,3 +267,16 @@ Functions that involve `await` or `setTimeout` (especially in battle or menu tra
 
 - **Mandatory Guard**: Every `await` MUST be followed by a null-check: `if (!activeBattle.value) return;`.
 - **Race Prevention**: Transitions between game phases (Map -> Battle -> Map) nullify critical objects. Any asynchronous logic "floating" from the previous phase MUST exit immediately if it detects its parent object has been destroyed to prevent `Cannot read properties of null` crashes.
+
+---
+
+## 🐉 Daily Guardian Lockout & Test Isolation
+
+### 1. Lockout Persistence
+- **State Registry**: To prevent defeated or captured guardians from reappearing on map interfaces and wild encounter tables, the lockout state MUST be stored within the player save state `gameStore.state.guardianCaptures` as a map of coordinates/IDs to date strings (e.g., `{ 'mapId_x_y': 'YYYY-MM-DD' }`).
+- **Offline Parity**: Storing this inside the client-side game state ensures that lockout calculations are instant, work offline, survive page reloads, and synchronize automatically with the cloud using the standard save upsert pipeline.
+
+### 2. Pinia Test Isolation
+- **Pure Logic Guards**: When accessing global stores or reactive states from pure TypeScript logic files (e.g., combat mechanics, weather calculations, or encounter helpers), ALWAYS verify if Pinia is initialized by checking `getActivePinia()`.
+- **Reference Pattern**: If `getActivePinia()` returns a falsy value (meaning the code is running inside an isolated node unit test rather than a browser/Vue context), bypass store access or return default fallback values. This prevents tests from crashing with `Pinia not initialized` errors.
+

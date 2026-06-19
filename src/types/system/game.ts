@@ -76,6 +76,7 @@ export interface GameState {
   nick_style: string | null;
   avatar_style: string | null;
   stats: Record<string, number | string>;
+  guardianCaptures?: Record<string, string>;
   eloRating: number;
   pvpStats: { wins: number; losses: number; draws: number };
   rankedMaxElo: number;

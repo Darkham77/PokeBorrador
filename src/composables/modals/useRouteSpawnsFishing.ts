@@ -83,7 +83,7 @@ export function useRouteSpawnsFishing(
 
       const diff = percentage - basePercentage
 
-      const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode || 'none', seenPokedex, caughtPokedex)
+      const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode, seenPokedex, caughtPokedex)
       const pData = getPokemonBasicData(id, isSeen)
 
       const isVisitor = !!(weatherCfg?.fishingVisitors && (

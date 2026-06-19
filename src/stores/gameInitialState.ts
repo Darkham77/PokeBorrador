@@ -74,5 +74,6 @@ export const INITIAL_STATE = {
   claimQueue: [],
   pvpTeam: [],
   warTeam: [],
-  warSlots: 6
+  warSlots: 6,
+  guardianCaptures: {}
 }

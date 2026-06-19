@@ -3,6 +3,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { PDEX_ORDER } from '@/data/pokemon/pokedex'
+import { hasPokemonTag } from '@/logic/constants/tags'
 
 export interface FilterState {
   tier: string
@@ -97,8 +98,10 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
 
       // Tags filter
       if (f.tags && f.tags.length > 0) {
-        const pTags = p.tags
-        if (!pTags || !f.tags.every(t => pTags.includes(t))) return false
+        if (!f.tags.every(t => {
+          if (t === 'team') return false // 'team' tag filter is handled outside in box lists if needed, or we check if it is part of active team. But wait! Box filters only filter box pokemons. Let's keep existing tag behavior for normal tags or check hasPokemonTag.
+          return hasPokemonTag(p, t)
+        })) return false
       }
 
       // TOTAL Filter (Species Base Stats + IVs)

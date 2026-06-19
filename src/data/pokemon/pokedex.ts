@@ -372,3 +372,7 @@ export const LEGENDARY_POKEMON = [
   'raikou', 'entei', 'suicune', 'lugia', 'ho-oh', 'ho_oh', 'celebi'
 ];
 
+export const FOSSIL_POKEMON = [
+  'omanyte', 'omastar', 'kabuto', 'kabutops', 'aerodactyl'
+];
+

@@ -29,9 +29,9 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
   breed: { 
     id: 'breed', 
-    label: 'CRIANZA', 
-    shortLabel: 'CRIA',
-    icon: '❤️', 
+    label: 'GENÉTICA', 
+    shortLabel: 'GEN',
+    icon: '🧬', 
     color: '#FF4D4D', 
     desc: 'Marcado para breeding en la guardería o crianza selectiva.' 
   },
@@ -58,6 +58,14 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
     icon: '31', 
     color: '#FFD93D', 
     desc: 'Tiene al menos una estadística con potencial individual máximo (31).' 
+  },
+  hatched: {
+    id: 'hatched',
+    label: 'CRÍA',
+    shortLabel: 'CRÍA',
+    icon: '🥚',
+    color: '#FF9500',
+    desc: 'Pokémon nacido de un huevo.'
   }
 }
 
@@ -109,6 +117,12 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
     badges.push({ ...iv31Badge, isAutomatic: true })
   }
 
+  // 2b. Automatic: Hatched
+  const hatchedBadge = TAG_DEFINITIONS['hatched'];
+  if (pokemon.obtainedMethod === 'egg' && hatchedBadge) {
+    badges.push({ ...hatchedBadge, isAutomatic: true })
+  }
+
   // 3. Automatic: Held Item
   const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
   const itemBadge = POKEMON_BADGES['item'];
@@ -135,9 +149,9 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   const tags = pokemon.tags
   if (tags && Array.isArray(tags)) {
     tags.forEach((tagId: string) => {
-      // Avoid duplicating iv31 if already added automatically
+      // Avoid duplicating iv31 or hatched if already added automatically
       // Also ignore 'box' tag as it's being deprecated/replaced
-      if (tagId === 'iv31' || tagId === 'box') return 
+      if (tagId === 'iv31' || tagId === 'hatched' || tagId === 'box') return 
       
       const def = TAG_DEFINITIONS[tagId]
       if (def) badges.push({ ...def, isAutomatic: false })
@@ -157,8 +171,8 @@ export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDef
 
   // ONLY add manual definitions for the editor
   Object.values(TAG_DEFINITIONS).forEach(def => {
-    // We skip 'iv31' and any other automatic-only tags in the editor
-    if (def.id === 'iv31') return
+    // We skip 'iv31', 'hatched', and any other automatic-only tags in the editor
+    if (def.id === 'iv31' || def.id === 'hatched') return
 
     badges.push({
       ...def,
@@ -183,6 +197,8 @@ export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: string): 
       return tags.includes('comp') || tags.includes('competitive')
     case 'iv31':
       return tags.includes('iv31') || Object.values(pokemon.ivs || {}).some(v => v === 31)
+    case 'hatched':
+      return tags.includes('hatched') || pokemon.obtainedMethod === 'egg'
     case 'fav':
       return tags.includes('fav') || tags.includes('favorite')
     default:
