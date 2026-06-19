@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getEncounterPool } from '@/logic/encounters/encounters'
+import { getFinalGroundRates } from '@/logic/encounters/encounters'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
@@ -64,34 +64,7 @@ export function useRouteSpawnsWild(
     })
     const fullPool = Array.from(allMapSpawns)
 
-    const { pool: activePool, rates: rawRates } = getEncounterPool(props.map, props.cycle, props.weather, activeEvents)
-    const activeRates = [...rawRates]
-    
-    const visitorIndices = activeRates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
-    const nativeIndices = activeRates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
-
-    const exclusives = weatherCfg?.exclusive ? (Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)) : []
-    nativeIndices.forEach(idx => {
-      const spId = activePool[idx]
-      if (spId) {
-        const isExclusive = exclusives.includes(spId)
-        if (!isExclusive) {
-          activeRates[idx] = (activeRates[idx] || 0) * getWeatherMultiplier(spId, props.weather)
-        }
-      }
-    })
-
-    if (visitorIndices.length > 0) {
-      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (activeRates[idx] || 0), 0)
-      const visitorQuota = totalNativeWeight / 9
-      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(activeRates[idx] || 0), 0)
-      
-      visitorIndices.forEach(idx => {
-        const relativeWeight = Math.abs(activeRates[idx] || 0) / (sumRelativeWeights || 1)
-        activeRates[idx] = visitorQuota * relativeWeight
-      })
-    }
-
+    const { pool: activePool, rates: activeRates } = getFinalGroundRates(props.map, props.cycle, props.weather, activeEvents)
     const totalRate = activeRates.reduce((sum, r) => sum + r, 0)
     
     const seenPokedex = gameStore.state.seenPokedex || []

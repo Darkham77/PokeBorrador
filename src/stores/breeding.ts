@@ -19,6 +19,7 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
+import { LEGENDARY_POKEMON } from '@/data/pokemon/pokedex';
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
@@ -150,10 +151,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       return false;
     }
 
-    const legendaries = new Set([
-      'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-      'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
-    ]);
+    const legendaries = new Set(LEGENDARY_POKEMON);
     if (pokemon.id && legendaries.has(pokemon.id.toLowerCase())) {
       uiStore.notify('Los Pokémon legendarios no pueden reproducirse en la Guardería.', '⚠️');
       return false;

@@ -12,7 +12,9 @@
     "src/main.{ts,tsx,js,jsx}"
   ],
   "duplicates": {
-    "minOccurrences": 3
+    "minOccurrences": 2,
+    "minLines": 20,
+    "minTokens": 120
   },
   "ignoreDependencies": [
     "postgres",

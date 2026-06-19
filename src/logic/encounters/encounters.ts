@@ -14,12 +14,14 @@ import {
   checkSpecialEncounters,
   handleRepellentEncounter,
   generateArchaeologyEncounter,
-  calculateEncounterTypeWeights
+  calculateEncounterTypeWeights,
+  clampLegendaryRates,
+  getFinalGroundRates
 } from './encounterHelpers.ts';
 
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 
-export { getEncounterPool, selectFromPool };
+export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates };
 
 /**
  * Handles special fishing encounter tables and weather visitors.
@@ -105,6 +107,7 @@ function generateFishingEncounter(
     }
   }
 
+  clampLegendaryRates(pool, rates);
   const selectedId = selectFromPool(pool, rates);
   const minLv = loc.fishing.lv[0] || 10;
   const maxLv = loc.fishing.lv[1] || 20;
@@ -162,42 +165,7 @@ function generateGroundEncounter(
   activeEvents: GameEvent[],
   locId: string
 ): Encounter | null {
-  let { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
-
-  if (weather && weather !== 'clear') {
-    const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
-    const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
-
-      let wConfig = loc.weather?.[weather];
-      if (!wConfig && weather && weather !== 'clear') {
-        const family = getWeatherFamily(weather);
-        if (family && loc.weather?.[family]) {
-          wConfig = loc.weather[family];
-        }
-      }
-      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
-
-      nativeIndices.forEach(idx => {
-       const spId = pool[idx];
-       if (spId) {
-         const isExclusive = exclusives.includes(spId);
-         if (!isExclusive) {
-           rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
-         }
-       }
-     });
-
-    if (visitorIndices.length > 0) {
-      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
-      const visitorQuota = totalNativeWeight / 9;
-      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
-      
-      visitorIndices.forEach(idx => {
-        const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
-        rates[idx] = visitorQuota * relativeWeight;
-      });
-    }
-  }
+  let { pool, rates } = getFinalGroundRates(loc, cycle, weather, activeEvents);
 
   if (state.incenseSecs && state.incenseSecs > 0 && state.incenseType) {
     const typeIndices = pool.map((id, idx) => {
@@ -211,6 +179,7 @@ function generateGroundEncounter(
     }
   }
 
+  clampLegendaryRates(pool, rates);
   const selectedId = selectFromPool(pool, rates);
   const minLv = loc.lv[0] || 2;
   const maxLv = loc.lv[1] || 5;

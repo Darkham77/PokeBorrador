@@ -222,8 +222,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -390,8 +389,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -412,8 +410,7 @@ export const FIRE_RED_MAPS = [
       },
       "hail": {
         "visitors": {
-          "jynx": 80,
-          "smoochum": 20
+          "jynx": 100
         },
         "exclusive": {
           "castform": 100
@@ -648,8 +645,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         },
         "fishingVisitors": {
@@ -669,8 +665,7 @@ export const FIRE_RED_MAPS = [
       },
       "hail": {
         "visitors": {
-          "jynx": 80,
-          "smoochum": 20
+          "jynx": 100
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -960,8 +955,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50
+          "jynx": 100,
         }
       }
     }
@@ -1103,8 +1097,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -1297,8 +1290,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         },
         "fishingVisitors": {
@@ -1456,8 +1448,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -1603,8 +1594,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -1798,8 +1788,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         },
         "fishingVisitors": {
@@ -1957,8 +1946,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -2068,8 +2056,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50
+          "jynx": 100,
         }
       },
       "coldwave": {
@@ -2207,8 +2194,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -2606,8 +2592,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50
+          "jynx": 100,
         }
       }
     }
@@ -3031,8 +3016,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         },
         "fishingVisitors": {
@@ -3197,8 +3181,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -3438,8 +3421,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         },
         "fishingVisitors": {
@@ -3472,8 +3454,7 @@ export const FIRE_RED_MAPS = [
       },
       "hail": {
         "visitors": {
-          "jynx": 80,
-          "smoochum": 20
+          "jynx": 100
         },
         "fishingVisitors": {
           "shellder": 60,
@@ -3773,8 +3754,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50
+          "jynx": 100,
         }
       },
       "coldwave": {
@@ -3919,8 +3899,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50,
+          "jynx": 100,
           "castform": 30
         }
       },
@@ -3951,8 +3930,7 @@ export const FIRE_RED_MAPS = [
       },
       "hail": {
         "visitors": {
-          "jynx": 80,
-          "smoochum": 20
+          "jynx": 100
         },
         "exclusive": {
           "castform": 100
@@ -4230,8 +4208,7 @@ export const FIRE_RED_MAPS = [
       },
       "cold": {
         "visitors": {
-          "jynx": 50,
-          "smoochum": 50
+          "jynx": 100,
         },
         "fishingVisitors": {
           "shellder": 60,

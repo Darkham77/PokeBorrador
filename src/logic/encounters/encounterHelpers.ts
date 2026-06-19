@@ -6,6 +6,8 @@ import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
+import { LEGENDARY_POKEMON } from '@/data/pokemon/pokedex';
+import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
 
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
@@ -91,6 +93,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
     }
   });
   
+  clampLegendaryRates(pool, rates);
   return { pool, rates };
 }
 
@@ -196,6 +199,7 @@ export function handleRepellentEncounter(
   const weather = options.weather || 'clear';
   const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents);
   const rates = rawRates.map(r => r === -1 ? 5 : r); 
+  clampLegendaryRates(pool, rates); 
 
   const firstPokemon = state.team?.[0];
 
@@ -281,3 +285,96 @@ export function calculateEncounterTypeWeights(
     totalWeight: groundWeight + fishingWeight + archWeight
   };
 }
+
+/**
+ * Caps the weight/rate of legendary species so that their final probability does not exceed 1%.
+ * Balances the other rates proportionally.
+ */
+export function clampLegendaryRates(pool: string[], rates: number[]): void {
+  const legendaries = new Set(LEGENDARY_POKEMON);
+
+  const legendaryIndices: number[] = [];
+  let sumOtherRates = 0;
+
+  for (let i = 0; i < pool.length; i++) {
+    const spId = pool[i];
+    if (spId && legendaries.has(spId)) {
+      legendaryIndices.push(i);
+    } else {
+      sumOtherRates += rates[i] || 0;
+    }
+  }
+
+  if (legendaryIndices.length === 0) return;
+
+  // If there are only legendaries in the pool (e.g. Cerulean Cave inner circle with ticket),
+  // they can have higher rates, but if other species exist, we cap each to 1% final prob.
+  if (sumOtherRates === 0) return;
+
+  // To guarantee final probability <= 1% for each legendary:
+  // rate(L) / (sumOtherRates + sum_legendary_rates) <= 0.01
+  // We can solve for a capped rate for each legendary.
+  // Set cap = sumOtherRates / 99.
+  const cap = sumOtherRates / 99;
+
+  legendaryIndices.forEach(idx => {
+    if ((rates[idx] || 0) > cap) {
+      rates[idx] = cap;
+    }
+  });
+}
+
+/**
+ * Returns the final, fully adjusted pool and rates for ground encounters,
+ * applying weather multipliers, visitor quotas, and legendary probability caps.
+ * This function serves as the single source of truth for both combat and UI.
+ */
+export function getFinalGroundRates(
+  loc: MapLocation,
+  cycle: string,
+  weather: string,
+  activeEvents: GameEvent[]
+): { pool: string[]; rates: number[] } {
+  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
+
+  if (weather && weather !== 'clear') {
+    const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
+    const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
+
+    let wConfig = loc.weather?.[weather];
+    if (!wConfig && weather !== 'clear') {
+      const family = getWeatherFamily(weather);
+      if (family && loc.weather?.[family]) {
+        wConfig = loc.weather[family];
+      }
+    }
+    const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+
+    nativeIndices.forEach(idx => {
+      const spId = pool[idx];
+      if (spId) {
+        const isExclusive = exclusives.includes(spId);
+        if (!isExclusive) {
+          rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
+        }
+      }
+    });
+
+    if (visitorIndices.length > 0) {
+      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
+      const visitorQuota = totalNativeWeight / 9;
+      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
+      
+      visitorIndices.forEach(idx => {
+        const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
+        rates[idx] = visitorQuota * relativeWeight;
+      });
+    }
+  }
+
+  clampLegendaryRates(pool, rates);
+
+  return { pool, rates };
+}
+
+
