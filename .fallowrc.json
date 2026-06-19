@@ -5,7 +5,8 @@
     "scratch/**",
     "scripts/**",
     "supabase/**",
-    ".agents/**"
+    ".agents/**",
+    "src/data/pokemon/pokemonDB.ts"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",

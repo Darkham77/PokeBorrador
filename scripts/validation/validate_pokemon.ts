@@ -108,7 +108,7 @@ async function main() {
     }
 
     // C. Validar habilidad única asignada
-    const coreAbilities = POKEMON_ABILITIES[coreId] || [];
+    const coreAbilities = (POKEMON_ABILITIES as Record<string, string[]>)[coreId] || [];
     const sdAbilities = sdPoke.abilities || [];
 
     if (coreAbilities.length === 0) {

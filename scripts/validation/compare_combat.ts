@@ -102,7 +102,11 @@ const allMoves = gen3Dex.moves.all().filter(m =>
 );
 
 function getRandomElement<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  const element = arr[Math.floor(Math.random() * arr.length)];
+  if (element === undefined) {
+    throw new Error('Empty array or undefined element');
+  }
+  return element;
 }
 
 interface RunOptions {
@@ -148,7 +152,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const battle = new Battle({ formatid: 'gen3customgame' as any });
   
   if (battle.actions) {
-    battle.actions.checkAccuracy = function() {
+    (battle.actions as any).checkAccuracy = function() {
       return true;
     };
   }
@@ -159,10 +163,10 @@ function executeComparison(options: RunOptions): ComparisonResult {
     return originalRandom.call(this, from, to);
   };
 
-  const p1AbilityEn = p1AbilityEs ? ABILITY_MAP_ES_TO_EN[p1AbilityEs] : '';
-  const p2AbilityEn = p2AbilityEs ? ABILITY_MAP_ES_TO_EN[p2AbilityEs] : '';
-  const p1ItemEn = p1Item ? ITEMS_MAP[p1Item] : '';
-  const p2ItemEn = p2Item ? ITEMS_MAP[p2Item] : '';
+  const p1AbilityEn = p1AbilityEs ? (ABILITY_MAP_ES_TO_EN[p1AbilityEs] ?? '') : '';
+  const p2AbilityEn = p2AbilityEs ? (ABILITY_MAP_ES_TO_EN[p2AbilityEs] ?? '') : '';
+  const p1ItemEn = p1Item ? (ITEMS_MAP[p1Item] ?? '') : '';
+  const p2ItemEn = p2Item ? (ITEMS_MAP[p2Item] ?? '') : '';
 
   battle.setPlayer('p1', {
     name: 'Player',
@@ -172,6 +176,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
       level,
       ability: p1AbilityEn,
       item: p1ItemEn,
+      nature: '',
+      gender: '',
       moves: [moveSpec.id],
       evs: { hp: 0, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
@@ -186,6 +192,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
       level,
       ability: p2AbilityEn,
       item: p2ItemEn,
+      nature: '',
+      gender: '',
       moves: ['splash'],
       evs: { hp: 0, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
@@ -234,7 +242,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spa: act1.storedStats.spa,
     spd: act1.storedStats.spd,
     spe: act1.storedStats.spe,
-    type: p1Spec.types[0].toLowerCase(),
+    type: (p1Spec.types[0] ?? 'normal').toLowerCase(),
     type2: p1Spec.types[1]?.toLowerCase(),
     ability: p1AbilityEs,
     heldItem: p1Item
@@ -247,7 +255,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spa: act2.storedStats.spa,
     spd: act2.storedStats.spd,
     spe: act2.storedStats.spe,
-    type: p2Spec.types[0].toLowerCase(),
+    type: (p2Spec.types[0] ?? 'normal').toLowerCase(),
     type2: p2Spec.types[1]?.toLowerCase(),
     ability: p2AbilityEs,
     heldItem: p2Item
@@ -357,7 +365,8 @@ Este reporte evalúa la precisión matemática del motor de Poké Vicio comparad
 
 ## Resultados Generales
 ${PHASES.map((p, i) => {
-  const line = reports[i * 2].split('\n')[1]; // Extrae la línea de acierto
+  const reportBlock = reports[i * 2] ?? '';
+  const line = reportBlock.split('\n')[1] ?? ''; // Extrae la línea de acierto
   return `* **${p.name}**: ${line}`;
 }).join('\n')}
 
