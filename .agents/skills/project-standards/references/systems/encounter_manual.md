@@ -107,3 +107,20 @@ To prevent data drift and manual omissions when registering Castform in spawn ta
    - Always mix Castform without overriding existing weather-exclusives or visitors.
    - Castform must always spawn in its base Normal Form when encountered wild.
 
+---
+
+## 9. Wild Spawn Calculation and Balance Rules
+
+### 9.1 Unified Spawn Probability Calculation
+To prevent desynchronization between combat generation and the UI spawn details modal, all ground encounter rates MUST be resolved using the unified `getFinalGroundRates` function. This function aggregates:
+- Base location rates.
+- Weather-specific multipliers (boost/block).
+- Weather visitor quotas (allocating a proportional 10% of total native weight to weather visitors).
+- Legendary probability capping.
+
+### 9.2 Legendary Spawn Probability Cap (1%)
+Under all circumstances, weather conditions, time cycles, and routes, a single legendary Pokémon's final spawn probability MUST NOT exceed exactly **1%** when other species exist in the active pool.
+- **Dynamic Balancing Formula**: To cap a legendary's probability at 1% without altering the relative ratios of other species, calculate a dynamic weight cap:
+  \[\text{cap} = \frac{\sum \text{Other Rates}}{99}\]
+- If a legendary's rate exceeds this cap, reduce it to the cap value. This guarantees the final legendary probability remains exactly \(\le 1\%\), while the remaining \(\ge 99\%\) is dynamically shared by non-legendary species.
+- Apply this capping to both ground pools (`getFinalGroundRates`) and fishing pools (`generateFishingEncounter`).
