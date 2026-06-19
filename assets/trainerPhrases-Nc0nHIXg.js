@@ -1,0 +1,1 @@
+import{t as e}from"./game-data-CsXXE_nF.js";export{e as getRandomQuoteForTrainer};

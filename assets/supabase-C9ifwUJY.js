@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-CQL4qxSA.js";export{e as default,e as supabase};
