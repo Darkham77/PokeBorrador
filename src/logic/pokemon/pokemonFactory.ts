@@ -128,7 +128,6 @@ export function sanitizePokemon(p: Pokemon): void {
       p.type2 = base.type2;
     }
     p.isFloating = base.isFloating;
-    p.emoji = base.emoji || p.emoji;
   }
 
   // 1. Validar Habilidad usando pkms Dex
@@ -417,7 +416,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   const p: Pokemon = {
     uid: getUidStr(),
-    id, name: base.name, emoji: base.emoji, type: base.type, type2: base.type2,
+    id, name: base.name, type: base.type, type2: base.type2,
     isFloating: base.isFloating,
     catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),

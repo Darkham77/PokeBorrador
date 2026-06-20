@@ -179,7 +179,7 @@ export async function executeMoveAction(
       })
 
       if (result.isNoEffect) {
-        store.addLog('¡No afecta!', side === 'player' ? 'log-enemy' : 'log-player', defender)
+        store.addLog(`¡No afecta a ${defender.name}!`, side === 'player' ? 'log-enemy' : 'log-player', defender)
         break
       } else {
         const damage = Math.floor(result.dmg || 0)
@@ -191,7 +191,7 @@ export async function executeMoveAction(
 
         if (result.isCrit && i === 0) store.addLog('¡Un golpe crítico!', logStyle, attacker)
         if (result.isNotVeryEffective && i === 0) store.addLog('No es muy eficaz...', logStyle, attacker)
-        if (result.isSuperEffective && i === 0) store.addLog('¡Es muy eficaz!', logStyle, attacker)
+        if (result.isSuperEffective && i === 0) store.addLog('¡Es súper eficaz!', logStyle, attacker)
 
         if (executableMove.effect === 'magnitude' && result.power) {
           const magMap: Record<number, number> = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 }

@@ -9,7 +9,7 @@
   "scripts": {
     "preinstall": "node -e \"if(parseInt(process.versions.node.split('.')[0]) < 26) console.warn('\\n\\x1b[33m\\x1b[1m⚠️ ATENCIÓN: Se recomienda Node.js v26 o superior para este proyecto.\\n🔗 Descárgalo aquí: https://nodejs.org/es/download/current\\nTu versión es v' + process.versions.node + '\\x1b[0m\\n')\"",
     "dev": "node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
-    "build": "npm run validate:types && npm run audit && vite build",
+    "build": "npm run db:sync && npm run validate:types && npm run audit && vite build",
     "preview": "vite preview",
     "admin:rename": "node --env-file=.env --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-env scripts/maintenance/admin_rename.ts",
     "validate:types": "vue-tsc --noEmit",
@@ -69,7 +69,8 @@
     "validate:fsm:summary": "npm run validate:fsm:implementation -- --summary",
     "validate:fsm:errors": "npm run validate:fsm:implementation -- --errors-only",
     "validate:fsm:report": "npm run validate:fsm:implementation -- --output=scratch/fsm_report.txt",
-    "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
+    "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts",
+    "db:sync": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/maintenance/sync_db_with_showdown.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

@@ -115,7 +115,6 @@ export interface Pokemon {
   nature: string;
   heldItem?: string | null;
   item?: string | null; // @deprecated use heldItem
-  emoji?: string;
   friendship?: number;
   vigor?: number;
   maxVigor?: number;

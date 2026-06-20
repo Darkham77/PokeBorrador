@@ -18,7 +18,6 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   // Actualizar especie
   pokemon.id = toId;
   pokemon.name = toData.name;
-  if (toData.emoji) pokemon.emoji = toData.emoji;
   pokemon.type = toData.type;
   pokemon.type2 = toData.type2;
   pokemon.isFloating = toData.isFloating;

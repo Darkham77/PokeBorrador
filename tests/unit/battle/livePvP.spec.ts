@@ -6,12 +6,6 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-vi.mock('@/data/battle/moves', () => ({
-  MOVE_DATA: {
-    'Tackle': { power: 40, type: 'normal', cat: 'physical', acc: 100, priority: 0 }
-  }
-}))
-
 describe('LivePvPStore (Combat Engine)', () => {
   const dbMock = {
     from: vi.fn().mockReturnThis(),
@@ -48,7 +42,7 @@ describe('LivePvPStore (Combat Engine)', () => {
     
     game.state = {
       team: [
-        { name: 'Pikachu', hp: 100, maxHp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, level: 50, type: 'electric', moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
+        { id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, level: 50, type: 'electric', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
       ]
     } as unknown as typeof game.state
   })
@@ -72,7 +66,7 @@ describe('LivePvPStore (Combat Engine)', () => {
     // Setup Battle
     pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], true, false)
     pvp.battleState.enemyTeam = [
-      { name: 'Rattata', hp: 80, maxHp: 80, atk: 56, def: 35, spa: 25, spd: 35, spe: 72, level: 50, type: 'normal', moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
+      { id: 'rattata', name: 'Rattata', hp: 80, maxHp: 80, atk: 56, def: 35, spa: 25, spd: 35, spe: 72, level: 50, type: 'normal', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
     ]
     pvp.battleState.enemyHp = [80]
     pvp.battleState.phase = 'choosing'

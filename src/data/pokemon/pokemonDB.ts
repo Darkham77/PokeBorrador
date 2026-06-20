@@ -1,7 +1,6 @@
 export const POKEMON_DB = {
   "bulbasaur": {
     "name": "Bulbasaur",
-    "emoji": "🌿",
     "type": "grass",
     "type2": "poison",
     "hp": 45,
@@ -50,27 +49,27 @@ export const POKEMON_DB = {
       },
       {
         "lv": 20,
-        "id": "take_down",
-        "name": "Derribo",
-        "pp": 20
-      },
-      {
-        "lv": 25,
         "id": "razor_leaf",
         "name": "Hoja Afilada",
         "pp": 25
       },
       {
-        "lv": 32,
+        "lv": 25,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
       },
       {
-        "lv": 39,
+        "lv": 32,
         "id": "growth",
         "name": "Desarrollo",
         "pp": 40
+      },
+      {
+        "lv": 39,
+        "id": "synthesis",
+        "name": "Síntesis",
+        "pp": 5
       },
       {
         "lv": 46,
@@ -82,7 +81,6 @@ export const POKEMON_DB = {
   },
   "ivysaur": {
     "name": "Ivysaur",
-    "emoji": "🌿",
     "type": "grass",
     "type2": "poison",
     "hp": 60,
@@ -95,33 +93,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "leech_seed",
+        "name": "Drenadoras",
+        "pp": 10
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "leech_seed",
-        "name": "Drenadoras",
-        "pp": 10
-      },
-      {
-        "lv": 4,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 7,
-        "id": "leech_seed",
-        "name": "Drenadoras",
-        "pp": 10
       },
       {
         "lv": 10,
@@ -142,31 +128,31 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 22,
-        "id": "take_down",
-        "name": "Derribo",
-        "pp": 20
-      },
-      {
-        "lv": 29,
+        "lv": 20,
         "id": "razor_leaf",
         "name": "Hoja Afilada",
         "pp": 25
       },
       {
-        "lv": 38,
+        "lv": 25,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
       },
       {
-        "lv": 47,
+        "lv": 32,
         "id": "growth",
         "name": "Desarrollo",
         "pp": 40
       },
       {
-        "lv": 56,
+        "lv": 39,
+        "id": "synthesis",
+        "name": "Síntesis",
+        "pp": 5
+      },
+      {
+        "lv": 46,
         "id": "solar_beam",
         "name": "Rayo Solar",
         "pp": 10
@@ -175,7 +161,6 @@ export const POKEMON_DB = {
   },
   "venusaur": {
     "name": "Venusaur",
-    "emoji": "🌿",
     "type": "grass",
     "type2": "poison",
     "hp": 80,
@@ -188,42 +173,24 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "leech_seed",
+        "name": "Drenadoras",
+        "pp": 10
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
       },
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "leech_seed",
-        "name": "Drenadoras",
-        "pp": 10
-      },
-      {
-        "lv": 1,
-        "id": "vine_whip",
-        "name": "Látigo Cepa",
-        "pp": 10
-      },
-      {
-        "lv": 4,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 7,
-        "id": "leech_seed",
-        "name": "Drenadoras",
-        "pp": 10
-      },
-      {
-        "lv": 10,
         "id": "vine_whip",
         "name": "Látigo Cepa",
         "pp": 10
@@ -241,31 +208,31 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 22,
-        "id": "take_down",
-        "name": "Derribo",
-        "pp": 20
-      },
-      {
-        "lv": 29,
+        "lv": 20,
         "id": "razor_leaf",
         "name": "Hoja Afilada",
         "pp": 25
       },
       {
-        "lv": 41,
+        "lv": 25,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
       },
       {
-        "lv": 53,
+        "lv": 32,
         "id": "growth",
         "name": "Desarrollo",
         "pp": 40
       },
       {
-        "lv": 70,
+        "lv": 39,
+        "id": "synthesis",
+        "name": "Síntesis",
+        "pp": 5
+      },
+      {
+        "lv": 46,
         "id": "solar_beam",
         "name": "Rayo Solar",
         "pp": 10
@@ -274,7 +241,6 @@ export const POKEMON_DB = {
   },
   "charmander": {
     "name": "Charmander",
-    "emoji": "🔥",
     "type": "fire",
     "hp": 39,
     "atk": 52,
@@ -286,15 +252,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 7,
@@ -309,52 +275,51 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 19,
+        "lv": 13,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
+        "pp": 20
+      },
+      {
+        "lv": 19,
+        "id": "rage",
+        "name": "Furia",
         "pp": 20
       },
       {
         "lv": 25,
-        "id": "dragon_rage",
-        "name": "Furia Dragón",
-        "pp": 10
-      },
-      {
-        "lv": 31,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
       },
       {
-        "lv": 37,
+        "lv": 31,
         "id": "flamethrower",
         "name": "Lanzallamas",
         "pp": 15
       },
       {
-        "lv": 43,
+        "lv": 37,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
+      },
+      {
+        "lv": 43,
+        "id": "dragon_rage",
+        "name": "Furia Dragón",
+        "pp": 10
       },
       {
         "lv": 49,
         "id": "fire_spin",
         "name": "Giro Fuego",
         "pp": 15
-      },
-      {
-        "lv": 55,
-        "id": "fire_blast",
-        "name": "Llamarada",
-        "pp": 5
       }
     ]
   },
   "charmeleon": {
     "name": "Charmeleon",
-    "emoji": "🔥",
     "type": "fire",
     "hp": 58,
     "atk": 64,
@@ -366,9 +331,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
+        "id": "ember",
+        "name": "Ascuas",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -378,15 +343,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
-      },
-      {
-        "lv": 7,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 13,
@@ -395,52 +354,51 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 20,
+        "lv": 13,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
-        "lv": 27,
-        "id": "dragon_rage",
-        "name": "Furia Dragón",
-        "pp": 10
+        "lv": 19,
+        "id": "rage",
+        "name": "Furia",
+        "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 25,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
       },
       {
-        "lv": 41,
+        "lv": 31,
         "id": "flamethrower",
         "name": "Lanzallamas",
         "pp": 15
       },
       {
-        "lv": 48,
+        "lv": 37,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 55,
+        "lv": 43,
+        "id": "dragon_rage",
+        "name": "Furia Dragón",
+        "pp": 10
+      },
+      {
+        "lv": 49,
         "id": "fire_spin",
         "name": "Giro Fuego",
         "pp": 15
-      },
-      {
-        "lv": 62,
-        "id": "fire_blast",
-        "name": "Llamarada",
-        "pp": 5
       }
     ]
   },
   "charizard": {
     "name": "Charizard",
-    "emoji": "🔥",
     "type": "fire",
     "type2": "flying",
     "hp": 78,
@@ -453,9 +411,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
+        "id": "ember",
+        "name": "Ascuas",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -465,9 +423,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
+        "id": "heat_wave",
+        "name": "Onda Ígnea",
+        "pp": 10
       },
       {
         "lv": 1,
@@ -476,34 +434,34 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 7,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
-      },
-      {
-        "lv": 13,
-        "id": "metal_claw",
-        "name": "Garra Metal",
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
         "pp": 35
       },
       {
-        "lv": 20,
+        "lv": 1,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
-        "lv": 27,
-        "id": "dragon_rage",
-        "name": "Furia Dragón",
-        "pp": 10
+        "lv": 19,
+        "id": "rage",
+        "name": "Furia",
+        "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 25,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
+      },
+      {
+        "lv": 31,
+        "id": "flamethrower",
+        "name": "Lanzallamas",
+        "pp": 15
       },
       {
         "lv": 36,
@@ -512,34 +470,27 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 44,
-        "id": "flamethrower",
-        "name": "Lanzallamas",
-        "pp": 15
-      },
-      {
-        "lv": 54,
+        "lv": 37,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 64,
+        "lv": 43,
+        "id": "dragon_rage",
+        "name": "Furia Dragón",
+        "pp": 10
+      },
+      {
+        "lv": 49,
         "id": "fire_spin",
         "name": "Giro Fuego",
         "pp": 15
-      },
-      {
-        "lv": 74,
-        "id": "fire_blast",
-        "name": "Llamarada",
-        "pp": 5
       }
     ]
   },
   "squirtle": {
     "name": "Squirtle",
-    "emoji": "💧",
     "type": "water",
     "hp": 44,
     "atk": 48,
@@ -605,7 +556,7 @@ export const POKEMON_DB = {
       },
       {
         "lv": 40,
-        "id": "headbutt",
+        "id": "skull_bash",
         "name": "Cabezazo",
         "pp": 15
       },
@@ -619,7 +570,6 @@ export const POKEMON_DB = {
   },
   "wartortle": {
     "name": "Wartortle",
-    "emoji": "💧",
     "type": "water",
     "hp": 59,
     "atk": 63,
@@ -631,6 +581,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "bubble",
+        "name": "Burbuja",
+        "pp": 30
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
@@ -639,24 +595,6 @@ export const POKEMON_DB = {
         "lv": 1,
         "id": "tail_whip",
         "name": "Látigo",
-        "pp": 30
-      },
-      {
-        "lv": 1,
-        "id": "bubble",
-        "name": "Burbuja",
-        "pp": 30
-      },
-      {
-        "lv": 4,
-        "id": "tail_whip",
-        "name": "Látigo",
-        "pp": 30
-      },
-      {
-        "lv": 7,
-        "id": "bubble",
-        "name": "Burbuja",
         "pp": 30
       },
       {
@@ -672,37 +610,37 @@ export const POKEMON_DB = {
         "pp": 25
       },
       {
-        "lv": 19,
+        "lv": 18,
         "id": "bite",
         "name": "Mordisco",
         "pp": 25
       },
       {
-        "lv": 25,
+        "lv": 23,
         "id": "rapid_spin",
         "name": "Giro Rápido",
         "pp": 40
       },
       {
-        "lv": 31,
+        "lv": 28,
         "id": "protect",
         "name": "Protección",
         "pp": 10
       },
       {
-        "lv": 37,
+        "lv": 33,
         "id": "rain_dance",
         "name": "Danza Lluvia",
         "pp": 5
       },
       {
-        "lv": 45,
-        "id": "headbutt",
+        "lv": 40,
+        "id": "skull_bash",
         "name": "Cabezazo",
         "pp": 15
       },
       {
-        "lv": 53,
+        "lv": 47,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -711,7 +649,6 @@ export const POKEMON_DB = {
   },
   "blastoise": {
     "name": "Blastoise",
-    "emoji": "💧",
     "type": "water",
     "hp": 79,
     "atk": 83,
@@ -723,6 +660,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "bubble",
+        "name": "Burbuja",
+        "pp": 30
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
@@ -735,30 +678,6 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "bubble",
-        "name": "Burbuja",
-        "pp": 30
-      },
-      {
-        "lv": 1,
-        "id": "withdraw",
-        "name": "Refugio",
-        "pp": 40
-      },
-      {
-        "lv": 4,
-        "id": "tail_whip",
-        "name": "Látigo",
-        "pp": 30
-      },
-      {
-        "lv": 7,
-        "id": "bubble",
-        "name": "Burbuja",
-        "pp": 30
-      },
-      {
-        "lv": 10,
         "id": "withdraw",
         "name": "Refugio",
         "pp": 40
@@ -770,37 +689,37 @@ export const POKEMON_DB = {
         "pp": 25
       },
       {
-        "lv": 19,
+        "lv": 18,
         "id": "bite",
         "name": "Mordisco",
         "pp": 25
       },
       {
-        "lv": 25,
+        "lv": 23,
         "id": "rapid_spin",
         "name": "Giro Rápido",
         "pp": 40
       },
       {
-        "lv": 31,
+        "lv": 28,
         "id": "protect",
         "name": "Protección",
         "pp": 10
       },
       {
-        "lv": 42,
+        "lv": 33,
         "id": "rain_dance",
         "name": "Danza Lluvia",
         "pp": 5
       },
       {
-        "lv": 55,
-        "id": "headbutt",
+        "lv": 40,
+        "id": "skull_bash",
         "name": "Cabezazo",
         "pp": 15
       },
       {
-        "lv": 68,
+        "lv": 47,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -809,7 +728,6 @@ export const POKEMON_DB = {
   },
   "caterpie": {
     "name": "Caterpie",
-    "emoji": "🐛",
     "type": "bug",
     "hp": 45,
     "atk": 30,
@@ -821,21 +739,20 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "string_shot",
         "name": "Disparo Demora",
         "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       }
     ]
   },
   "metapod": {
     "name": "Metapod",
-    "emoji": "🐛",
     "type": "bug",
     "hp": 50,
     "atk": 20,
@@ -852,16 +769,21 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 7,
-        "id": "harden",
-        "name": "Fortaleza",
-        "pp": 30
+        "lv": 1,
+        "id": "string_shot",
+        "name": "Disparo Demora",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       }
     ]
   },
   "butterfree": {
     "name": "Butterfree",
-    "emoji": "🦋",
     "type": "bug",
     "type2": "flying",
     "hp": 60,
@@ -879,10 +801,22 @@ export const POKEMON_DB = {
         "pp": 25
       },
       {
-        "lv": 10,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
+        "lv": 1,
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "string_shot",
+        "name": "Disparo Demora",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 13,
@@ -910,39 +844,38 @@ export const POKEMON_DB = {
       },
       {
         "lv": 23,
+        "id": "whirlwind",
+        "name": "Remolino",
+        "pp": 20
+      },
+      {
+        "lv": 28,
         "id": "gust",
         "name": "Tornado",
         "pp": 35
       },
       {
-        "lv": 28,
+        "lv": 34,
         "id": "psybeam",
         "name": "Psicorrayo",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 40,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
       },
       {
-        "lv": 40,
-        "id": "solar_beam",
-        "name": "Rayo Solar",
-        "pp": 10
-      },
-      {
         "lv": 47,
-        "id": "giga_drain",
-        "name": "Gigadrenado",
+        "id": "silver_wind",
+        "name": "Viento Plata",
         "pp": 5
       }
     ]
   },
   "weedle": {
     "name": "Weedle",
-    "emoji": "🪲",
     "type": "bug",
     "type2": "poison",
     "hp": 40,
@@ -969,7 +902,6 @@ export const POKEMON_DB = {
   },
   "kakuna": {
     "name": "Kakuna",
-    "emoji": "🪲",
     "type": "bug",
     "type2": "poison",
     "hp": 45,
@@ -987,16 +919,21 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 7,
-        "id": "harden",
-        "name": "Fortaleza",
-        "pp": 30
+        "lv": 1,
+        "id": "poison_sting",
+        "name": "Picotazo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "string_shot",
+        "name": "Disparo Demora",
+        "pp": 40
       }
     ]
   },
   "beedrill": {
     "name": "Beedrill",
-    "emoji": "🐝",
     "type": "bug",
     "type2": "poison",
     "hp": 65,
@@ -1009,39 +946,51 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 10,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 15,
         "id": "fury_attack",
         "name": "Ataque Furia",
         "pp": 20
       },
       {
-        "lv": 20,
+        "lv": 1,
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "poison_sting",
+        "name": "Picotazo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "string_shot",
+        "name": "Disparo Demora",
+        "pp": 40
+      },
+      {
+        "lv": 15,
         "id": "focus_energy",
         "name": "Foco Energía",
         "pp": 30
       },
       {
-        "lv": 25,
+        "lv": 20,
         "id": "twineedle",
         "name": "Doble Ataque",
         "pp": 20
       },
       {
+        "lv": 25,
+        "id": "rage",
+        "name": "Furia",
+        "pp": 20
+      },
+      {
         "lv": 30,
-        "id": "agility",
-        "name": "Agilidad",
-        "pp": 30
+        "id": "pursuit",
+        "name": "Persecución",
+        "pp": 20
       },
       {
         "lv": 35,
@@ -1051,6 +1000,12 @@ export const POKEMON_DB = {
       },
       {
         "lv": 40,
+        "id": "agility",
+        "name": "Agilidad",
+        "pp": 30
+      },
+      {
+        "lv": 45,
         "id": "endeavor",
         "name": "Esfuerzo",
         "pp": 5
@@ -1059,7 +1014,6 @@ export const POKEMON_DB = {
   },
   "pidgey": {
     "name": "Pidgey",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 40,
@@ -1108,12 +1062,18 @@ export const POKEMON_DB = {
       },
       {
         "lv": 31,
+        "id": "feather_dance",
+        "name": "Danza Pluma",
+        "pp": 15
+      },
+      {
+        "lv": 39,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 39,
+        "lv": 47,
         "id": "mirror_move",
         "name": "Espejo",
         "pp": 20
@@ -1122,7 +1082,6 @@ export const POKEMON_DB = {
   },
   "pidgeotto": {
     "name": "Pidgeotto",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 63,
@@ -1135,20 +1094,20 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
+        "id": "gust",
+        "name": "Tornado",
         "pp": 35
       },
       {
-        "lv": 5,
+        "lv": 1,
         "id": "sand_attack",
         "name": "Ataque Arena",
         "pp": 15
       },
       {
-        "lv": 9,
-        "id": "gust",
-        "name": "Tornado",
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
         "pp": 35
       },
       {
@@ -1158,25 +1117,31 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 20,
+        "lv": 19,
         "id": "whirlwind",
         "name": "Remolino",
         "pp": 20
       },
       {
-        "lv": 27,
+        "lv": 25,
         "id": "wing_attack",
         "name": "Ataque Ala",
         "pp": 35
       },
       {
-        "lv": 34,
+        "lv": 31,
+        "id": "feather_dance",
+        "name": "Danza Pluma",
+        "pp": 15
+      },
+      {
+        "lv": 39,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 43,
+        "lv": 47,
         "id": "mirror_move",
         "name": "Espejo",
         "pp": 20
@@ -1185,7 +1150,6 @@ export const POKEMON_DB = {
   },
   "pidgeot": {
     "name": "Pidgeot",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 83,
@@ -1198,48 +1162,54 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 5,
-        "id": "sand_attack",
-        "name": "Ataque Arena",
-        "pp": 15
-      },
-      {
-        "lv": 9,
         "id": "gust",
         "name": "Tornado",
         "pp": 35
       },
       {
-        "lv": 13,
+        "lv": 1,
         "id": "quick_attack",
         "name": "Ataque Rápido",
         "pp": 30
       },
       {
-        "lv": 20,
+        "lv": 1,
+        "id": "sand_attack",
+        "name": "Ataque Arena",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 19,
         "id": "whirlwind",
         "name": "Remolino",
         "pp": 20
       },
       {
-        "lv": 27,
+        "lv": 25,
         "id": "wing_attack",
         "name": "Ataque Ala",
         "pp": 35
       },
       {
-        "lv": 34,
+        "lv": 31,
+        "id": "feather_dance",
+        "name": "Danza Pluma",
+        "pp": 15
+      },
+      {
+        "lv": 39,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 48,
+        "lv": 47,
         "id": "mirror_move",
         "name": "Espejo",
         "pp": 20
@@ -1248,7 +1218,6 @@ export const POKEMON_DB = {
   },
   "rattata": {
     "name": "Rattata",
-    "emoji": "🐭",
     "type": "normal",
     "hp": 30,
     "atk": 56,
@@ -1277,22 +1246,16 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 10,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
-      },
-      {
         "lv": 13,
         "id": "hyper_fang",
-        "name": "Hiper Colmillo",
+        "name": "Hipercolmillo",
         "pp": 15
       },
       {
         "lv": 20,
-        "id": "endeavor",
-        "name": "Esfuerzo",
-        "pp": 5
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 27,
@@ -1305,12 +1268,17 @@ export const POKEMON_DB = {
         "id": "super_fang",
         "name": "Súper Colmillo",
         "pp": 10
+      },
+      {
+        "lv": 41,
+        "id": "endeavor",
+        "name": "Esfuerzo",
+        "pp": 5
       }
     ]
   },
   "raticate": {
     "name": "Raticate",
-    "emoji": "🐭",
     "type": "normal",
     "hp": 55,
     "atk": 81,
@@ -1320,6 +1288,12 @@ export const POKEMON_DB = {
     "catchRate": 127,
     "spe": 97,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
+      },
       {
         "lv": 1,
         "id": "tackle",
@@ -1333,46 +1307,45 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 7,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
-        "pp": 30
+        "lv": 13,
+        "id": "hyper_fang",
+        "name": "Hipercolmillo",
+        "pp": 15
       },
       {
-        "lv": 10,
+        "lv": 20,
+        "id": "scary_face",
+        "name": "Cara Susto",
+        "pp": 10
+      },
+      {
+        "lv": 20,
         "id": "focus_energy",
         "name": "Foco Energía",
         "pp": 30
       },
       {
-        "lv": 13,
-        "id": "hyper_fang",
-        "name": "Hiper Colmillo",
-        "pp": 15
-      },
-      {
-        "lv": 20,
-        "id": "endeavor",
-        "name": "Esfuerzo",
-        "pp": 5
-      },
-      {
-        "lv": 30,
+        "lv": 27,
         "id": "pursuit",
         "name": "Persecución",
         "pp": 20
       },
       {
-        "lv": 40,
+        "lv": 34,
         "id": "super_fang",
         "name": "Súper Colmillo",
         "pp": 10
+      },
+      {
+        "lv": 41,
+        "id": "endeavor",
+        "name": "Esfuerzo",
+        "pp": 5
       }
     ]
   },
   "spearow": {
     "name": "Spearow",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 40,
@@ -1385,42 +1358,54 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "peck",
-        "name": "Picoteo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
       },
       {
-        "lv": 9,
+        "lv": 1,
+        "id": "peck",
+        "name": "Picotazo",
+        "pp": 35
+      },
+      {
+        "lv": 7,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
-        "lv": 15,
-        "id": "rage",
-        "name": "Furia",
+        "lv": 13,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
         "pp": 20
       },
       {
-        "lv": 22,
+        "lv": 19,
+        "id": "pursuit",
+        "name": "Persecución",
+        "pp": 20
+      },
+      {
+        "lv": 25,
+        "id": "aerial_ace",
+        "name": "Golpe Aéreo",
+        "pp": 20
+      },
+      {
+        "lv": 31,
         "id": "mirror_move",
         "name": "Espejo",
         "pp": 20
       },
       {
-        "lv": 29,
+        "lv": 37,
         "id": "drill_peck",
         "name": "Pico Taladro",
         "pp": 20
       },
       {
-        "lv": 36,
+        "lv": 43,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
@@ -1429,7 +1414,6 @@ export const POKEMON_DB = {
   },
   "fearow": {
     "name": "Fearow",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 65,
@@ -1442,9 +1426,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "peck",
-        "name": "Picoteo",
-        "pp": 35
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -1459,25 +1443,31 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 9,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
+        "lv": 1,
+        "id": "peck",
+        "name": "Picotazo",
+        "pp": 35
       },
       {
-        "lv": 15,
-        "id": "rage",
-        "name": "Furia",
+        "lv": 19,
+        "id": "pursuit",
+        "name": "Persecución",
         "pp": 20
       },
       {
         "lv": 25,
+        "id": "aerial_ace",
+        "name": "Golpe Aéreo",
+        "pp": 20
+      },
+      {
+        "lv": 31,
         "id": "mirror_move",
         "name": "Espejo",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 37,
         "id": "drill_peck",
         "name": "Pico Taladro",
         "pp": 20
@@ -1492,7 +1482,6 @@ export const POKEMON_DB = {
   },
   "ekans": {
     "name": "Ekans",
-    "emoji": "🐍",
     "type": "poison",
     "hp": 35,
     "atk": 60,
@@ -1504,15 +1493,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
       },
       {
         "lv": 8,
@@ -1546,15 +1535,32 @@ export const POKEMON_DB = {
       },
       {
         "lv": 37,
-        "id": "sludge_bomb",
-        "name": "Bomba Lodo",
+        "id": "spit_up",
+        "name": "Escupir",
         "pp": 10
+      },
+      {
+        "lv": 37,
+        "id": "stockpile",
+        "name": "Reserva",
+        "pp": 10
+      },
+      {
+        "lv": 37,
+        "id": "swallow",
+        "name": "Tragar",
+        "pp": 10
+      },
+      {
+        "lv": 44,
+        "id": "haze",
+        "name": "Niebla",
+        "pp": 30
       }
     ]
   },
   "arbok": {
     "name": "Arbok",
-    "emoji": "🐍",
     "type": "poison",
     "hp": 60,
     "atk": 85,
@@ -1566,9 +1572,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -1583,16 +1589,10 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 8,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 13,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
       },
       {
         "lv": 20,
@@ -1601,28 +1601,45 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 28,
+        "lv": 25,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 38,
+        "lv": 32,
         "id": "acid",
         "name": "Ácido",
         "pp": 30
       },
       {
-        "lv": 46,
-        "id": "sludge_bomb",
-        "name": "Bomba Lodo",
+        "lv": 37,
+        "id": "spit_up",
+        "name": "Escupir",
         "pp": 10
+      },
+      {
+        "lv": 37,
+        "id": "stockpile",
+        "name": "Reserva",
+        "pp": 10
+      },
+      {
+        "lv": 37,
+        "id": "swallow",
+        "name": "Tragar",
+        "pp": 10
+      },
+      {
+        "lv": 44,
+        "id": "haze",
+        "name": "Niebla",
+        "pp": 30
       }
     ]
   },
   "pikachu": {
     "name": "Pikachu",
-    "emoji": "⚡",
     "type": "electric",
     "hp": 35,
     "atk": 55,
@@ -1634,15 +1651,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "thunder_shock",
         "name": "Impactrueno",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
       },
       {
         "lv": 6,
@@ -1663,6 +1686,12 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
+        "lv": 11,
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
+      },
+      {
         "lv": 15,
         "id": "double_team",
         "name": "Doble Equipo",
@@ -1671,7 +1700,7 @@ export const POKEMON_DB = {
       {
         "lv": 20,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
@@ -1691,12 +1720,17 @@ export const POKEMON_DB = {
         "id": "thunder",
         "name": "Trueno",
         "pp": 10
+      },
+      {
+        "lv": 50,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
+        "pp": 30
       }
     ]
   },
   "raichu": {
     "name": "Raichu",
-    "emoji": "⚡",
     "type": "electric",
     "hp": 60,
     "atk": 90,
@@ -1706,6 +1740,24 @@ export const POKEMON_DB = {
     "catchRate": 75,
     "spe": 100,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "tail_whip",
+        "name": "Látigo",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "thunderbolt",
+        "name": "Rayo",
+        "pp": 15
+      },
       {
         "lv": 1,
         "id": "thunder_shock",
@@ -1720,21 +1772,56 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "tail_whip",
-        "name": "Látigo",
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
+      },
+      {
+        "lv": 8,
+        "id": "thunder_wave",
+        "name": "Onda Trueno",
+        "pp": 20
+      },
+      {
+        "lv": 11,
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
+      },
+      {
+        "lv": 15,
+        "id": "double_team",
+        "name": "Doble Equipo",
+        "pp": 15
+      },
+      {
+        "lv": 20,
+        "id": "slam",
+        "name": "Atizar",
+        "pp": 20
+      },
+      {
+        "lv": 33,
+        "id": "agility",
+        "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 1,
-        "id": "thunderbolt",
-        "name": "Rayo",
-        "pp": 15
+        "lv": 41,
+        "id": "thunder",
+        "name": "Trueno",
+        "pp": 10
+      },
+      {
+        "lv": 50,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
+        "pp": 30
       }
     ]
   },
   "sandshrew": {
     "name": "Sandshrew",
-    "emoji": "🏜️",
     "type": "ground",
     "hp": 50,
     "atk": 75,
@@ -1764,21 +1851,21 @@ export const POKEMON_DB = {
       },
       {
         "lv": 17,
-        "id": "slash",
-        "name": "Cuchillada",
-        "pp": 20
-      },
-      {
-        "lv": 23,
         "id": "poison_sting",
         "name": "Picotazo Veneno",
         "pp": 35
       },
       {
+        "lv": 23,
+        "id": "slash",
+        "name": "Cuchillada",
+        "pp": 20
+      },
+      {
         "lv": 30,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
-        "pp": 30
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
       },
       {
         "lv": 37,
@@ -1791,12 +1878,17 @@ export const POKEMON_DB = {
         "id": "sand_tomb",
         "name": "Bucle Arena",
         "pp": 15
+      },
+      {
+        "lv": 53,
+        "id": "sandstorm",
+        "name": "Tormenta Arena",
+        "pp": 10
       }
     ]
   },
   "sandslash": {
     "name": "Sandslash",
-    "emoji": "🏜️",
     "type": "ground",
     "hp": 75,
     "atk": 100,
@@ -1808,69 +1900,62 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "iron_defense",
-        "name": "Defensa Férrea",
-        "pp": 15
-      },
-      {
-        "lv": 1,
-        "id": "sand_attack",
-        "name": "Ataque Arena",
-        "pp": 15
-      },
-      {
-        "lv": 6,
         "id": "defense_curl",
         "name": "Rizo Defensa",
         "pp": 40
       },
       {
-        "lv": 11,
+        "lv": 1,
         "id": "sand_attack",
         "name": "Ataque Arena",
         "pp": 15
       },
       {
-        "lv": 17,
-        "id": "slash",
-        "name": "Cuchillada",
-        "pp": 20
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
-        "lv": 24,
+        "lv": 17,
         "id": "poison_sting",
         "name": "Picotazo Veneno",
         "pp": 35
       },
       {
-        "lv": 33,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
-        "pp": 30
+        "lv": 23,
+        "id": "slash",
+        "name": "Cuchillada",
+        "pp": 20
       },
       {
-        "lv": 42,
+        "lv": 30,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
+        "lv": 37,
         "id": "fury_swipes",
         "name": "Golpes Furia",
         "pp": 15
       },
       {
-        "lv": 52,
+        "lv": 45,
         "id": "sand_tomb",
         "name": "Bucle Arena",
         "pp": 15
+      },
+      {
+        "lv": 53,
+        "id": "sandstorm",
+        "name": "Tormenta Arena",
+        "pp": 10
       }
     ]
   },
   "nidoran_f": {
     "name": "Nidoran ♀",
-    "emoji": "🐭",
     "type": "poison",
     "hp": 55,
     "atk": 47,
@@ -1924,21 +2009,26 @@ export const POKEMON_DB = {
       },
       {
         "lv": 30,
-        "id": "rage",
-        "name": "Furia",
-        "pp": 20
+        "id": "fury_swipes",
+        "name": "Golpes Furia",
+        "pp": 15
       },
       {
         "lv": 38,
-        "id": "poison_fang",
-        "name": "Colmillo Veneno",
+        "id": "flatter",
+        "name": "Camelo",
+        "pp": 15
+      },
+      {
+        "lv": 47,
+        "id": "crunch",
+        "name": "Triturar",
         "pp": 15
       }
     ]
   },
   "nidorina": {
     "name": "Nidorina",
-    "emoji": "🐭",
     "type": "poison",
     "hp": 70,
     "atk": 62,
@@ -1973,40 +2063,45 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 18,
+        "lv": 17,
         "id": "poison_sting",
         "name": "Picotazo Veneno",
         "pp": 35
       },
       {
-        "lv": 22,
+        "lv": 20,
         "id": "bite",
         "name": "Mordisco",
         "pp": 25
       },
       {
-        "lv": 26,
+        "lv": 23,
         "id": "helping_hand",
         "name": "Refuerzo",
         "pp": 20
       },
       {
-        "lv": 34,
-        "id": "rage",
-        "name": "Furia",
-        "pp": 20
+        "lv": 30,
+        "id": "fury_swipes",
+        "name": "Golpes Furia",
+        "pp": 15
       },
       {
-        "lv": 43,
-        "id": "poison_fang",
-        "name": "Colmillo Veneno",
+        "lv": 38,
+        "id": "flatter",
+        "name": "Camelo",
+        "pp": 15
+      },
+      {
+        "lv": 47,
+        "id": "crunch",
+        "name": "Triturar",
         "pp": 15
       }
     ]
   },
   "nidoqueen": {
     "name": "Nidoqueen",
-    "emoji": "🐭",
     "type": "poison",
     "type2": "ground",
     "hp": 90,
@@ -2019,9 +2114,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
+        "id": "double_kick",
+        "name": "Doble Patada",
+        "pp": 30
       },
       {
         "lv": 1,
@@ -2031,33 +2126,68 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "double_kick",
-        "name": "Doble Patada",
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "tail_whip",
+        "name": "Látigo",
         "pp": 30
       },
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 20,
         "id": "bite",
         "name": "Mordisco",
         "pp": 25
       },
       {
         "lv": 22,
-        "id": "poison_fang",
-        "name": "Colmillo Veneno",
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
+      },
+      {
+        "lv": 23,
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
+      },
+      {
+        "lv": 30,
+        "id": "fury_swipes",
+        "name": "Golpes Furia",
+        "pp": 15
+      },
+      {
+        "lv": 38,
+        "id": "flatter",
+        "name": "Camelo",
         "pp": 15
       },
       {
         "lv": 43,
-        "id": "body_slam",
-        "name": "Golpe Cuerpo",
+        "id": "superpower",
+        "name": "Fuerza Bruta",
+        "pp": 5
+      },
+      {
+        "lv": 47,
+        "id": "crunch",
+        "name": "Triturar",
         "pp": 15
       }
     ]
   },
   "nidoran_m": {
     "name": "Nidoran ♂",
-    "emoji": "🐭",
     "type": "poison",
     "hp": 46,
     "atk": 57,
@@ -2075,15 +2205,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
+        "id": "peck",
+        "name": "Picotazo",
         "pp": 35
       },
       {
         "lv": 8,
-        "id": "horn_attack",
-        "name": "Cornada",
-        "pp": 25
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 12,
@@ -2099,9 +2229,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 20,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "id": "horn_attack",
+        "name": "Cornada",
+        "pp": 25
       },
       {
         "lv": 23,
@@ -2111,12 +2241,18 @@ export const POKEMON_DB = {
       },
       {
         "lv": 30,
-        "id": "rage",
-        "name": "Furia",
+        "id": "fury_attack",
+        "name": "Ataque Furia",
         "pp": 20
       },
       {
         "lv": 38,
+        "id": "flatter",
+        "name": "Camelo",
+        "pp": 15
+      },
+      {
+        "lv": 47,
         "id": "horn_drill",
         "name": "Perforador",
         "pp": 5
@@ -2125,7 +2261,6 @@ export const POKEMON_DB = {
   },
   "nidorino": {
     "name": "Nidorino",
-    "emoji": "🐭",
     "type": "poison",
     "hp": 61,
     "atk": 72,
@@ -2143,15 +2278,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
+        "id": "peck",
+        "name": "Picotazo",
         "pp": 35
       },
       {
         "lv": 8,
-        "id": "horn_attack",
-        "name": "Cornada",
-        "pp": 25
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 12,
@@ -2160,31 +2295,37 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 18,
+        "lv": 17,
         "id": "poison_sting",
         "name": "Picotazo Veneno",
         "pp": 35
       },
       {
-        "lv": 22,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "lv": 20,
+        "id": "horn_attack",
+        "name": "Cornada",
+        "pp": 25
       },
       {
-        "lv": 26,
+        "lv": 23,
         "id": "helping_hand",
         "name": "Refuerzo",
         "pp": 20
       },
       {
-        "lv": 34,
-        "id": "rage",
-        "name": "Furia",
+        "lv": 30,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
         "pp": 20
       },
       {
-        "lv": 43,
+        "lv": 38,
+        "id": "flatter",
+        "name": "Camelo",
+        "pp": 15
+      },
+      {
+        "lv": 47,
         "id": "horn_drill",
         "name": "Perforador",
         "pp": 5
@@ -2193,7 +2334,6 @@ export const POKEMON_DB = {
   },
   "nidoking": {
     "name": "Nidoking",
-    "emoji": "🐭",
     "type": "poison",
     "type2": "ground",
     "hp": 81,
@@ -2206,18 +2346,6 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
-      },
-      {
-        "lv": 1,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "double_kick",
         "name": "Doble Patada",
         "pp": 30
@@ -2229,22 +2357,69 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
+        "lv": 1,
+        "id": "peck",
+        "name": "Picotazo",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "poison_sting",
+        "name": "Picotazo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
+      },
+      {
+        "lv": 20,
+        "id": "horn_attack",
+        "name": "Cornada",
+        "pp": 25
+      },
+      {
         "lv": 22,
-        "id": "slam",
-        "name": "Atizar",
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
+      },
+      {
+        "lv": 23,
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
+      },
+      {
+        "lv": 30,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 38,
+        "id": "flatter",
+        "name": "Camelo",
+        "pp": 15
       },
       {
         "lv": 43,
         "id": "megahorn",
         "name": "Megacuerno",
         "pp": 10
+      },
+      {
+        "lv": 47,
+        "id": "horn_drill",
+        "name": "Perforador",
+        "pp": 5
       }
     ]
   },
   "clefairy": {
     "name": "Clefairy",
-    "emoji": "🧚",
     "type": "normal",
     "hp": 70,
     "atk": 45,
@@ -2256,57 +2431,75 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "pound",
         "name": "Destructor",
         "pp": 35
       },
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
       },
       {
-        "lv": 5,
+        "lv": 4,
+        "id": "encore",
+        "name": "Otra Vez",
+        "pp": 5
+      },
+      {
+        "lv": 8,
         "id": "sing",
         "name": "Canto",
         "pp": 15
       },
       {
-        "lv": 9,
+        "lv": 13,
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
       },
       {
         "lv": 13,
-        "id": "defense_curl",
-        "name": "Rizo Defensa",
-        "pp": 40
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
       },
       {
         "lv": 17,
-        "id": "pursuit",
-        "name": "Seguimiento",
+        "id": "follow_me",
+        "name": "Señuelo",
+        "pp": 20
+      },
+      {
+        "lv": 17,
+        "id": "magical_leaf",
+        "name": "Hoja Mágica",
         "pp": 20
       },
       {
         "lv": 21,
         "id": "minimize",
-        "name": "Minimizar",
+        "name": "Reducción",
         "pp": 20
       },
       {
         "lv": 25,
-        "id": "metronome",
-        "name": "Metrónomo",
-        "pp": 10
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
       },
       {
         "lv": 29,
-        "id": "moonlight",
-        "name": "Luz Lunar",
-        "pp": 5
+        "id": "metronome",
+        "name": "Metrónomo",
+        "pp": 10
       },
       {
         "lv": 33,
@@ -2316,12 +2509,18 @@ export const POKEMON_DB = {
       },
       {
         "lv": 37,
+        "id": "moonlight",
+        "name": "Luz Lunar",
+        "pp": 5
+      },
+      {
+        "lv": 41,
         "id": "light_screen",
         "name": "Pantalla de Luz",
         "pp": 30
       },
       {
-        "lv": 41,
+        "lv": 45,
         "id": "meteor_mash",
         "name": "Puño Meteoro",
         "pp": 10
@@ -2330,7 +2529,6 @@ export const POKEMON_DB = {
   },
   "clefable": {
     "name": "Clefable",
-    "emoji": "🧚",
     "type": "normal",
     "hp": 95,
     "atk": 70,
@@ -2342,9 +2540,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "sing",
-        "name": "Canto",
-        "pp": 15
+        "id": "double_slap",
+        "name": "Doble Bofetón",
+        "pp": 10
       },
       {
         "lv": 1,
@@ -2354,21 +2552,92 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "minimize",
+        "name": "Reducción",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "sing",
+        "name": "Canto",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
+      },
+      {
+        "lv": 4,
+        "id": "encore",
+        "name": "Otra Vez",
+        "pp": 5
+      },
+      {
+        "lv": 13,
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
+      },
+      {
+        "lv": 17,
+        "id": "follow_me",
+        "name": "Señuelo",
+        "pp": 20
+      },
+      {
+        "lv": 17,
+        "id": "magical_leaf",
+        "name": "Hoja Mágica",
+        "pp": 20
+      },
+      {
+        "lv": 25,
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
+      },
+      {
+        "lv": 33,
         "id": "cosmic_power",
         "name": "Masa Cósmica",
         "pp": 20
       },
       {
-        "lv": 1,
+        "lv": 37,
         "id": "moonlight",
         "name": "Luz Lunar",
         "pp": 5
+      },
+      {
+        "lv": 41,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
+        "pp": 30
+      },
+      {
+        "lv": 45,
+        "id": "meteor_mash",
+        "name": "Puño Meteoro",
+        "pp": 10
       }
     ]
   },
   "vulpix": {
     "name": "Vulpix",
-    "emoji": "FOX",
     "type": "fire",
     "hp": 38,
     "atk": 41,
@@ -2404,45 +2673,50 @@ export const POKEMON_DB = {
       },
       {
         "lv": 17,
-        "id": "confuse_ray",
-        "name": "Rayo Confuso",
-        "pp": 10
-      },
-      {
-        "lv": 21,
         "id": "will_o_wisp",
         "name": "Fuego Fatuo",
         "pp": 15
       },
       {
+        "lv": 21,
+        "id": "confuse_ray",
+        "name": "Rayo Confuso",
+        "pp": 10
+      },
+      {
         "lv": 25,
+        "id": "imprison",
+        "name": "Sellar",
+        "pp": 10
+      },
+      {
+        "lv": 29,
         "id": "flamethrower",
         "name": "Lanzallamas",
         "pp": 15
       },
       {
-        "lv": 29,
+        "lv": 33,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
       },
       {
         "lv": 37,
-        "id": "fire_spin",
-        "name": "Giro Fuego",
-        "pp": 15
+        "id": "grudge",
+        "name": "Rabia",
+        "pp": 5
       },
       {
         "lv": 41,
-        "id": "fire_blast",
-        "name": "Llamarada",
-        "pp": 5
+        "id": "fire_spin",
+        "name": "Giro Fuego",
+        "pp": 15
       }
     ]
   },
   "ninetales": {
     "name": "Ninetales",
-    "emoji": "FOX",
     "type": "fire",
     "hp": 73,
     "atk": 76,
@@ -2452,6 +2726,12 @@ export const POKEMON_DB = {
     "catchRate": 75,
     "spe": 100,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "confuse_ray",
+        "name": "Rayo Confuso",
+        "pp": 10
+      },
       {
         "lv": 1,
         "id": "ember",
@@ -2466,21 +2746,56 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "confuse_ray",
-        "name": "Rayo Confuso",
+        "id": "safeguard",
+        "name": "Velo Sagrado",
+        "pp": 25
+      },
+      {
+        "lv": 5,
+        "id": "tail_whip",
+        "name": "Látigo",
+        "pp": 30
+      },
+      {
+        "lv": 9,
+        "id": "roar",
+        "name": "Rugido",
+        "pp": 20
+      },
+      {
+        "lv": 17,
+        "id": "will_o_wisp",
+        "name": "Fuego Fatuo",
+        "pp": 15
+      },
+      {
+        "lv": 25,
+        "id": "imprison",
+        "name": "Sellar",
         "pp": 10
       },
       {
-        "lv": 1,
+        "lv": 29,
         "id": "flamethrower",
         "name": "Lanzallamas",
+        "pp": 15
+      },
+      {
+        "lv": 37,
+        "id": "grudge",
+        "name": "Rabia",
+        "pp": 5
+      },
+      {
+        "lv": 41,
+        "id": "fire_spin",
+        "name": "Giro Fuego",
         "pp": 15
       }
     ]
   },
   "jigglypuff": {
     "name": "Jigglypuff",
-    "emoji": "🎵",
     "type": "normal",
     "hp": 115,
     "atk": 45,
@@ -2497,10 +2812,16 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
+        "lv": 1,
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
+      },
+      {
         "lv": 4,
-        "id": "iron_defense",
-        "name": "Defensa Férrea",
-        "pp": 15
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
       },
       {
         "lv": 9,
@@ -2513,6 +2834,12 @@ export const POKEMON_DB = {
         "id": "disable",
         "name": "Anulación",
         "pp": 20
+      },
+      {
+        "lv": 14,
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
       },
       {
         "lv": 19,
@@ -2533,16 +2860,33 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
+        "lv": 34,
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
+      },
+      {
         "lv": 39,
+        "id": "mimic",
+        "name": "Mimético",
+        "pp": 10
+      },
+      {
+        "lv": 44,
         "id": "hyper_voice",
         "name": "Vozarrón",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
       }
     ]
   },
   "wigglytuff": {
     "name": "Wigglytuff",
-    "emoji": "🎵",
     "type": "normal",
     "hp": 140,
     "atk": 70,
@@ -2554,9 +2898,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "sing",
-        "name": "Canto",
-        "pp": 15
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
       },
       {
         "lv": 1,
@@ -2569,12 +2913,71 @@ export const POKEMON_DB = {
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "sing",
+        "name": "Canto",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "charm",
+        "name": "Encanto",
+        "pp": 20
+      },
+      {
+        "lv": 9,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
+      },
+      {
+        "lv": 14,
+        "id": "sweet_kiss",
+        "name": "Beso Dulce",
+        "pp": 10
+      },
+      {
+        "lv": 19,
+        "id": "rollout",
+        "name": "Rodar",
+        "pp": 20
+      },
+      {
+        "lv": 29,
+        "id": "rest",
+        "name": "Descanso",
+        "pp": 10
+      },
+      {
+        "lv": 34,
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
+      },
+      {
+        "lv": 39,
+        "id": "mimic",
+        "name": "Mimético",
+        "pp": 10
+      },
+      {
+        "lv": 44,
+        "id": "hyper_voice",
+        "name": "Vozarrón",
+        "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
       }
     ]
   },
   "zubat": {
     "name": "Zubat",
-    "emoji": "🦇",
     "type": "poison",
     "type2": "flying",
     "hp": 40,
@@ -2588,7 +2991,13 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "leech_life",
-        "name": "Chupa-vidas",
+        "name": "Chupavidas",
+        "pp": 15
+      },
+      {
+        "lv": 6,
+        "id": "astonish",
+        "name": "Impresionar",
         "pp": 15
       },
       {
@@ -2596,12 +3005,6 @@ export const POKEMON_DB = {
         "id": "supersonic",
         "name": "Supersónico",
         "pp": 20
-      },
-      {
-        "lv": 11,
-        "id": "astonish",
-        "name": "Impresionar",
-        "pp": 15
       },
       {
         "lv": 16,
@@ -2629,6 +3032,18 @@ export const POKEMON_DB = {
       },
       {
         "lv": 36,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
+      },
+      {
+        "lv": 41,
+        "id": "poison_fang",
+        "name": "Colmillo Veneno",
+        "pp": 15
+      },
+      {
+        "lv": 46,
         "id": "haze",
         "name": "Niebla",
         "pp": 30
@@ -2637,7 +3052,6 @@ export const POKEMON_DB = {
   },
   "golbat": {
     "name": "Golbat",
-    "emoji": "🦇",
     "type": "poison",
     "type2": "flying",
     "hp": 75,
@@ -2650,21 +3064,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "leech_life",
-        "name": "Chupa-vidas",
-        "pp": 15
-      },
-      {
-        "lv": 6,
-        "id": "supersonic",
-        "name": "Supersónico",
-        "pp": 20
-      },
-      {
-        "lv": 11,
         "id": "astonish",
         "name": "Impresionar",
         "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "leech_life",
+        "name": "Chupavidas",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "supersonic",
+        "name": "Supersónico",
+        "pp": 20
       },
       {
         "lv": 16,
@@ -2679,19 +3099,31 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 28,
+        "lv": 26,
         "id": "confuse_ray",
         "name": "Rayo Confuso",
         "pp": 10
       },
       {
-        "lv": 35,
+        "lv": 31,
         "id": "air_cutter",
         "name": "Aire Afilado",
         "pp": 25
       },
       {
-        "lv": 42,
+        "lv": 36,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
+      },
+      {
+        "lv": 41,
+        "id": "poison_fang",
+        "name": "Colmillo Veneno",
+        "pp": 15
+      },
+      {
+        "lv": 46,
         "id": "haze",
         "name": "Niebla",
         "pp": 30
@@ -2700,7 +3132,6 @@ export const POKEMON_DB = {
   },
   "oddish": {
     "name": "Oddish",
-    "emoji": "🌱",
     "type": "grass",
     "type2": "poison",
     "hp": 45,
@@ -2743,9 +3174,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 23,
-        "id": "mega_drain",
-        "name": "Megaagotar",
-        "pp": 10
+        "id": "acid",
+        "name": "Ácido",
+        "pp": 30
       },
       {
         "lv": 32,
@@ -2758,18 +3189,11 @@ export const POKEMON_DB = {
         "id": "petal_dance",
         "name": "Danza Pétalo",
         "pp": 20
-      },
-      {
-        "lv": 46,
-        "id": "solar_beam",
-        "name": "Rayo Solar",
-        "pp": 10
       }
     ]
   },
   "gloom": {
     "name": "Gloom",
-    "emoji": "🌱",
     "type": "grass",
     "type2": "poison",
     "hp": 60,
@@ -2788,27 +3212,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "sweet_scent",
-        "name": "Dulce Aroma",
-        "pp": 20
+        "id": "poison_powder",
+        "name": "Polvo Veneno",
+        "pp": 35
       },
       {
         "lv": 1,
-        "id": "poison_powder",
-        "name": "Polvo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 7,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
-      },
-      {
-        "lv": 14,
-        "id": "poison_powder",
-        "name": "Polvo Veneno",
-        "pp": 35
       },
       {
         "lv": 16,
@@ -2823,34 +3235,27 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 24,
-        "id": "mega_drain",
-        "name": "Megaagotar",
-        "pp": 10
+        "lv": 23,
+        "id": "acid",
+        "name": "Ácido",
+        "pp": 30
       },
       {
-        "lv": 35,
+        "lv": 32,
         "id": "moonlight",
         "name": "Luz Lunar",
         "pp": 5
       },
       {
-        "lv": 44,
+        "lv": 39,
         "id": "petal_dance",
         "name": "Danza Pétalo",
         "pp": 20
-      },
-      {
-        "lv": 52,
-        "id": "solar_beam",
-        "name": "Rayo Solar",
-        "pp": 10
       }
     ]
   },
   "vileplume": {
     "name": "Vileplume",
-    "emoji": "🌺",
     "type": "grass",
     "type2": "poison",
     "hp": 75,
@@ -2869,39 +3274,62 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "aromatherapy",
+        "name": "Aromaterapia",
+        "pp": 5
+      },
+      {
+        "lv": 1,
+        "id": "mega_drain",
+        "name": "Megaagotar",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "stun_spore",
+        "name": "Paralizador",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "poison_powder",
+        "name": "Polvo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 1,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
       },
       {
-        "lv": 1,
+        "lv": 18,
         "id": "sleep_powder",
         "name": "Somnífera",
         "pp": 15
       },
       {
-        "lv": 1,
+        "lv": 23,
+        "id": "acid",
+        "name": "Ácido",
+        "pp": 30
+      },
+      {
+        "lv": 32,
+        "id": "moonlight",
+        "name": "Luz Lunar",
+        "pp": 5
+      },
+      {
+        "lv": 39,
         "id": "petal_dance",
         "name": "Danza Pétalo",
         "pp": 20
-      },
-      {
-        "lv": 44,
-        "id": "petal_dance",
-        "name": "Danza Pétalo",
-        "pp": 20
-      },
-      {
-        "lv": 1,
-        "id": "solar_beam",
-        "name": "Rayo Solar",
-        "pp": 10
       }
     ]
   },
   "paras": {
     "name": "Paras",
-    "emoji": "🍄",
     "type": "bug",
     "type2": "grass",
     "hp": 35,
@@ -2932,30 +3360,36 @@ export const POKEMON_DB = {
       },
       {
         "lv": 19,
-        "id": "sleep_powder",
-        "name": "Somnífera",
+        "id": "leech_life",
+        "name": "Chupavidas",
         "pp": 15
       },
       {
         "lv": 25,
+        "id": "spore",
+        "name": "Espora",
+        "pp": 15
+      },
+      {
+        "lv": 31,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 31,
+        "lv": 37,
         "id": "growth",
         "name": "Desarrollo",
         "pp": 40
       },
       {
-        "lv": 37,
+        "lv": 43,
         "id": "giga_drain",
         "name": "Gigadrenado",
         "pp": 5
       },
       {
-        "lv": 43,
+        "lv": 49,
         "id": "aromatherapy",
         "name": "Aromaterapia",
         "pp": 5
@@ -2964,7 +3398,6 @@ export const POKEMON_DB = {
   },
   "parasect": {
     "name": "Parasect",
-    "emoji": "🍄",
     "type": "bug",
     "type2": "grass",
     "hp": 60,
@@ -2977,6 +3410,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "poison_powder",
+        "name": "Polvo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 1,
         "id": "scratch",
         "name": "Arañazo",
         "pp": 35
@@ -2988,37 +3427,25 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
-        "id": "poison_powder",
-        "name": "Polvo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 7,
-        "id": "stun_spore",
-        "name": "Paralizador",
-        "pp": 30
-      },
-      {
-        "lv": 13,
-        "id": "poison_powder",
-        "name": "Polvo Veneno",
-        "pp": 35
-      },
-      {
         "lv": 19,
-        "id": "sleep_powder",
-        "name": "Somnífera",
+        "id": "leech_life",
+        "name": "Chupavidas",
         "pp": 15
       },
       {
-        "lv": 27,
+        "lv": 25,
+        "id": "spore",
+        "name": "Espora",
+        "pp": 15
+      },
+      {
+        "lv": 31,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 35,
+        "lv": 37,
         "id": "growth",
         "name": "Desarrollo",
         "pp": 40
@@ -3030,7 +3457,7 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 51,
+        "lv": 49,
         "id": "aromatherapy",
         "name": "Aromaterapia",
         "pp": 5
@@ -3039,7 +3466,6 @@ export const POKEMON_DB = {
   },
   "venonat": {
     "name": "Venonat",
-    "emoji": "🦋",
     "type": "bug",
     "type2": "poison",
     "hp": 60,
@@ -3052,21 +3478,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "disable",
+        "name": "Anulación",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
       },
       {
-        "lv": 1,
-        "id": "string_shot",
-        "name": "Disparo Demora",
-        "pp": 40
-      },
-      {
         "lv": 9,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
-        "pp": 35
+        "id": "supersonic",
+        "name": "Supersónico",
+        "pp": 20
       },
       {
         "lv": 17,
@@ -3083,7 +3515,7 @@ export const POKEMON_DB = {
       {
         "lv": 25,
         "id": "leech_life",
-        "name": "Chupa-vidas",
+        "name": "Chupavidas",
         "pp": 15
       },
       {
@@ -3094,15 +3526,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 33,
-        "id": "sleep_powder",
-        "name": "Somnífera",
-        "pp": 15
-      },
-      {
-        "lv": 36,
         "id": "psybeam",
         "name": "Psicorrayo",
         "pp": 20
+      },
+      {
+        "lv": 36,
+        "id": "sleep_powder",
+        "name": "Somnífera",
+        "pp": 15
       },
       {
         "lv": 41,
@@ -3114,7 +3546,6 @@ export const POKEMON_DB = {
   },
   "venomoth": {
     "name": "Venomoth",
-    "emoji": "🦋",
     "type": "bug",
     "type2": "poison",
     "hp": 70,
@@ -3127,32 +3558,32 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "disable",
+        "name": "Anulación",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "silver_wind",
+        "name": "Viento Plata",
+        "pp": 5
+      },
+      {
+        "lv": 1,
+        "id": "supersonic",
+        "name": "Supersónico",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
-      },
-      {
-        "lv": 1,
-        "id": "poison_powder",
-        "name": "Polvo Veneno",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "gust",
-        "name": "Tornado",
-        "pp": 35
-      },
-      {
-        "lv": 9,
-        "id": "poison_sting",
-        "name": "Picotazo Veneno",
         "pp": 35
       },
       {
@@ -3170,7 +3601,7 @@ export const POKEMON_DB = {
       {
         "lv": 25,
         "id": "leech_life",
-        "name": "Chupa-vidas",
+        "name": "Chupavidas",
         "pp": 15
       },
       {
@@ -3181,9 +3612,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 31,
-        "id": "wing_attack",
-        "name": "Ataque Ala",
+        "id": "gust",
+        "name": "Tornado",
         "pp": 35
+      },
+      {
+        "lv": 33,
+        "id": "psybeam",
+        "name": "Psicorrayo",
+        "pp": 20
       },
       {
         "lv": 36,
@@ -3192,13 +3629,7 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 42,
-        "id": "psybeam",
-        "name": "Psicorrayo",
-        "pp": 20
-      },
-      {
-        "lv": 52,
+        "lv": 41,
         "id": "psychic",
         "name": "Psíquico",
         "pp": 10
@@ -3207,7 +3638,6 @@ export const POKEMON_DB = {
   },
   "diglett": {
     "name": "Diglett",
-    "emoji": "🕳️",
     "type": "ground",
     "hp": 10,
     "atk": 55,
@@ -3219,15 +3649,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "sand_attack",
         "name": "Ataque Arena",
         "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 5,
@@ -3243,9 +3673,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 17,
-        "id": "agility",
-        "name": "Agilidad",
-        "pp": 30
+        "id": "dig",
+        "name": "Excavar",
+        "pp": 10
       },
       {
         "lv": 21,
@@ -3267,18 +3697,12 @@ export const POKEMON_DB = {
       },
       {
         "lv": 41,
-        "id": "sand_tomb",
-        "name": "Bucle Arena",
-        "pp": 15
-      },
-      {
-        "lv": 49,
         "id": "earthquake",
         "name": "Terremoto",
         "pp": 10
       },
       {
-        "lv": 57,
+        "lv": 49,
         "id": "fissure",
         "name": "Fisura",
         "pp": 5
@@ -3287,7 +3711,6 @@ export const POKEMON_DB = {
   },
   "dugtrio": {
     "name": "Dugtrio",
-    "emoji": "🕳️",
     "type": "ground",
     "hp": 35,
     "atk": 80,
@@ -3299,15 +3722,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tri_attack",
-        "name": "Triataque",
-        "pp": 10
-      },
-      {
-        "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
       },
       {
         "lv": 1,
@@ -3317,15 +3734,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
-        "lv": 5,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
+        "lv": 1,
+        "id": "tri_attack",
+        "name": "Triataque",
+        "pp": 10
       },
       {
         "lv": 9,
@@ -3335,9 +3752,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 17,
-        "id": "agility",
-        "name": "Agilidad",
-        "pp": 30
+        "id": "dig",
+        "name": "Excavar",
+        "pp": 10
       },
       {
         "lv": 21,
@@ -3353,30 +3770,24 @@ export const POKEMON_DB = {
       },
       {
         "lv": 26,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
-        "pp": 10
-      },
-      {
-        "lv": 38,
-        "id": "slash",
-        "name": "Cuchillada",
-        "pp": 20
-      },
-      {
-        "lv": 51,
         "id": "sand_tomb",
         "name": "Bucle Arena",
         "pp": 15
       },
       {
-        "lv": 64,
+        "lv": 33,
+        "id": "slash",
+        "name": "Cuchillada",
+        "pp": 20
+      },
+      {
+        "lv": 41,
         "id": "earthquake",
         "name": "Terremoto",
         "pp": 10
       },
       {
-        "lv": 77,
+        "lv": 49,
         "id": "fissure",
         "name": "Fisura",
         "pp": 5
@@ -3385,7 +3796,6 @@ export const POKEMON_DB = {
   },
   "meowth": {
     "name": "Meowth",
-    "emoji": "🐱",
     "type": "normal",
     "hp": 40,
     "atk": 45,
@@ -3397,15 +3807,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 10,
@@ -3438,22 +3848,27 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 41,
+        "lv": 40,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 45,
+        "lv": 43,
         "id": "fake_out",
         "name": "Sorpresa",
         "pp": 10
+      },
+      {
+        "lv": 45,
+        "id": "swagger",
+        "name": "Contoneo",
+        "pp": 15
       }
     ]
   },
   "persian": {
     "name": "Persian",
-    "emoji": "🐱",
     "type": "normal",
     "hp": 65,
     "atk": 70,
@@ -3465,9 +3880,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -3477,15 +3892,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
-      },
-      {
-        "lv": 10,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 18,
@@ -3500,34 +3909,39 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 31,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 42,
+        "lv": 36,
         "id": "fury_swipes",
         "name": "Golpes Furia",
         "pp": 15
       },
       {
-        "lv": 51,
+        "lv": 40,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 59,
+        "lv": 43,
         "id": "fake_out",
         "name": "Sorpresa",
         "pp": 10
+      },
+      {
+        "lv": 45,
+        "id": "swagger",
+        "name": "Contoneo",
+        "pp": 15
       }
     ]
   },
   "psyduck": {
     "name": "Psyduck",
-    "emoji": "🦆",
     "type": "water",
     "hp": 50,
     "atk": 52,
@@ -3542,6 +3956,12 @@ export const POKEMON_DB = {
         "id": "scratch",
         "name": "Arañazo",
         "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "water_sport",
+        "name": "Hidrochorro",
+        "pp": 15
       },
       {
         "lv": 5,
@@ -3566,6 +3986,12 @@ export const POKEMON_DB = {
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
+      },
+      {
+        "lv": 31,
+        "id": "psych_up",
+        "name": "Más Psique",
+        "pp": 10
       },
       {
         "lv": 40,
@@ -3583,7 +4009,6 @@ export const POKEMON_DB = {
   },
   "golduck": {
     "name": "Golduck",
-    "emoji": "🦆",
     "type": "water",
     "hp": 80,
     "atk": 82,
@@ -3593,6 +4018,12 @@ export const POKEMON_DB = {
     "catchRate": 75,
     "spe": 85,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "disable",
+        "name": "Anulación",
+        "pp": 20
+      },
       {
         "lv": 1,
         "id": "scratch",
@@ -3607,21 +4038,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "disable",
-        "name": "Anulación",
-        "pp": 20
-      },
-      {
-        "lv": 5,
-        "id": "tail_whip",
-        "name": "Látigo",
-        "pp": 30
-      },
-      {
-        "lv": 10,
-        "id": "disable",
-        "name": "Anulación",
-        "pp": 20
+        "id": "water_sport",
+        "name": "Hidrochorro",
+        "pp": 15
       },
       {
         "lv": 16,
@@ -3636,13 +4055,19 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
-        "lv": 44,
+        "lv": 31,
+        "id": "psych_up",
+        "name": "Más Psique",
+        "pp": 10
+      },
+      {
+        "lv": 40,
         "id": "fury_swipes",
         "name": "Golpes Furia",
         "pp": 15
       },
       {
-        "lv": 58,
+        "lv": 50,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -3651,7 +4076,6 @@ export const POKEMON_DB = {
   },
   "mankey": {
     "name": "Mankey",
-    "emoji": "🐒",
     "type": "fighting",
     "hp": 40,
     "atk": 80,
@@ -3663,15 +4087,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 6,
@@ -3682,7 +4106,7 @@ export const POKEMON_DB = {
       {
         "lv": 11,
         "id": "karate_chop",
-        "name": "Golpe Karatazo",
+        "name": "Golpe Kárate",
         "pp": 25
       },
       {
@@ -3700,14 +4124,14 @@ export const POKEMON_DB = {
       {
         "lv": 26,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
         "lv": 31,
-        "id": "bide",
-        "name": "Venganza",
-        "pp": 10
+        "id": "cross_chop",
+        "name": "Tajo Cruzado",
+        "pp": 5
       },
       {
         "lv": 36,
@@ -3717,21 +4141,20 @@ export const POKEMON_DB = {
       },
       {
         "lv": 41,
-        "id": "cross_chop",
-        "name": "Tajo Cruzado",
-        "pp": 5
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
       },
       {
         "lv": 46,
-        "id": "slam",
-        "name": "Atizar",
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       }
     ]
   },
   "primeape": {
     "name": "Primeape",
-    "emoji": "🐒",
     "type": "fighting",
     "hp": 65,
     "atk": 105,
@@ -3743,12 +4166,6 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
@@ -3766,15 +4183,15 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 6,
-        "id": "low_kick",
-        "name": "Patada Baja",
-        "pp": 20
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 11,
         "id": "karate_chop",
-        "name": "Golpe Karatazo",
+        "name": "Golpe Kárate",
         "pp": 25
       },
       {
@@ -3792,44 +4209,37 @@ export const POKEMON_DB = {
       {
         "lv": 26,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
-        "lv": 28,
-        "id": "rage",
-        "name": "Furia",
-        "pp": 20
-      },
-      {
-        "lv": 35,
-        "id": "bide",
-        "name": "Venganza",
-        "pp": 10
-      },
-      {
-        "lv": 44,
-        "id": "swagger",
-        "name": "Contoneo",
-        "pp": 15
-      },
-      {
-        "lv": 53,
+        "lv": 31,
         "id": "cross_chop",
         "name": "Tajo Cruzado",
         "pp": 5
       },
       {
-        "lv": 62,
-        "id": "slam",
-        "name": "Atizar",
+        "lv": 36,
+        "id": "swagger",
+        "name": "Contoneo",
+        "pp": 15
+      },
+      {
+        "lv": 41,
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
+      },
+      {
+        "lv": 46,
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       }
     ]
   },
   "growlithe": {
     "name": "Growlithe",
-    "emoji": "🐕",
     "type": "fire",
     "hp": 55,
     "atk": 70,
@@ -3903,7 +4313,6 @@ export const POKEMON_DB = {
   },
   "arcanine": {
     "name": "Arcanine",
-    "emoji": "🐕",
     "type": "fire",
     "hp": 90,
     "atk": 110,
@@ -3915,9 +4324,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "roar",
-        "name": "Rugido",
-        "pp": 20
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -3927,27 +4336,62 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
+        "id": "odor_sleuth",
+        "name": "Rastreo",
+        "pp": 40
       },
       {
         "lv": 1,
-        "id": "extreme_speed",
-        "name": "Velocidad Extrema",
-        "pp": 5
+        "id": "roar",
+        "name": "Rugido",
+        "pp": 20
+      },
+      {
+        "lv": 13,
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
+      },
+      {
+        "lv": 25,
+        "id": "take_down",
+        "name": "Derribo",
+        "pp": 20
+      },
+      {
+        "lv": 31,
+        "id": "flame_wheel",
+        "name": "Rueda Fuego",
+        "pp": 25
+      },
+      {
+        "lv": 37,
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
+      },
+      {
+        "lv": 43,
+        "id": "agility",
+        "name": "Agilidad",
+        "pp": 30
       },
       {
         "lv": 49,
         "id": "extreme_speed",
         "name": "Velocidad Extrema",
         "pp": 5
+      },
+      {
+        "lv": 49,
+        "id": "flamethrower",
+        "name": "Lanzallamas",
+        "pp": 15
       }
     ]
   },
   "poliwag": {
     "name": "Poliwag",
-    "emoji": "🌀",
     "type": "water",
     "hp": 40,
     "atk": 50,
@@ -3977,8 +4421,8 @@ export const POKEMON_DB = {
       },
       {
         "lv": 19,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
+        "id": "double_slap",
+        "name": "Doble Bofetón",
         "pp": 10
       },
       {
@@ -3986,6 +4430,12 @@ export const POKEMON_DB = {
         "id": "rain_dance",
         "name": "Danza Lluvia",
         "pp": 5
+      },
+      {
+        "lv": 31,
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
       },
       {
         "lv": 37,
@@ -4003,7 +4453,6 @@ export const POKEMON_DB = {
   },
   "poliwhirl": {
     "name": "Poliwhirl",
-    "emoji": "🌀",
     "type": "water",
     "hp": 65,
     "atk": 65,
@@ -4032,37 +4481,31 @@ export const POKEMON_DB = {
         "pp": 25
       },
       {
-        "lv": 7,
-        "id": "hypnosis",
-        "name": "Hipnosis",
-        "pp": 20
-      },
-      {
-        "lv": 13,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
-      },
-      {
         "lv": 19,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
+        "id": "double_slap",
+        "name": "Doble Bofetón",
         "pp": 10
       },
       {
-        "lv": 27,
+        "lv": 25,
         "id": "rain_dance",
         "name": "Danza Lluvia",
         "pp": 5
       },
       {
-        "lv": 43,
+        "lv": 31,
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
+      },
+      {
+        "lv": 37,
         "id": "belly_drum",
         "name": "Tambor",
         "pp": 10
       },
       {
-        "lv": 51,
+        "lv": 43,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -4071,7 +4514,6 @@ export const POKEMON_DB = {
   },
   "poliwrath": {
     "name": "Poliwrath",
-    "emoji": "🌀",
     "type": "water",
     "type2": "fighting",
     "hp": 90,
@@ -4084,9 +4526,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "bubble",
-        "name": "Burbuja",
-        "pp": 30
+        "id": "double_slap",
+        "name": "Doble Bofetón",
+        "pp": 10
       },
       {
         "lv": 1,
@@ -4102,27 +4544,50 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Puñetazo",
-        "pp": 35
-      },
-      {
-        "lv": 35,
-        "id": "submission",
-        "name": "Sumisión",
+        "id": "water_gun",
+        "name": "Pistola Agua",
         "pp": 25
       },
       {
+        "lv": 1,
+        "id": "bubble",
+        "name": "Burbuja",
+        "pp": 30
+      },
+      {
+        "lv": 25,
+        "id": "rain_dance",
+        "name": "Danza Lluvia",
+        "pp": 5
+      },
+      {
+        "lv": 31,
+        "id": "body_slam",
+        "name": "Golpe Cuerpo",
+        "pp": 15
+      },
+      {
+        "lv": 37,
+        "id": "belly_drum",
+        "name": "Tambor",
+        "pp": 10
+      },
+      {
+        "lv": 43,
+        "id": "hydro_pump",
+        "name": "Hidrobomba",
+        "pp": 5
+      },
+      {
         "lv": 51,
-        "id": "focus_punch",
-        "name": "Puño Certero",
-        "pp": 20
+        "id": "mind_reader",
+        "name": "Telépata",
+        "pp": 5
       }
     ]
   },
   "abra": {
     "name": "Abra",
-    "emoji": "🧘",
     "type": "psychic",
     "hp": 25,
     "atk": 20,
@@ -4142,7 +4607,6 @@ export const POKEMON_DB = {
   },
   "kadabra": {
     "name": "Kadabra",
-    "emoji": "🧘",
     "type": "psychic",
     "hp": 40,
     "atk": 35,
@@ -4154,9 +4618,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "teleport",
-        "name": "Teletransporte",
-        "pp": 20
+        "id": "confusion",
+        "name": "Confusión",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -4166,15 +4630,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
-      },
-      {
-        "lv": 16,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
+        "id": "teleport",
+        "name": "Teletransporte",
+        "pp": 20
       },
       {
         "lv": 18,
@@ -4190,27 +4648,27 @@ export const POKEMON_DB = {
       },
       {
         "lv": 23,
-        "id": "kinesis",
-        "name": "Kinético",
-        "pp": 15
-      },
-      {
-        "lv": 25,
         "id": "reflect",
         "name": "Reflejo",
         "pp": 20
       },
       {
-        "lv": 30,
+        "lv": 25,
         "id": "recover",
         "name": "Recuperación",
         "pp": 20
       },
       {
-        "lv": 33,
+        "lv": 30,
         "id": "future_sight",
         "name": "Premonición",
         "pp": 15
+      },
+      {
+        "lv": 33,
+        "id": "role_play",
+        "name": "Imitación",
+        "pp": 10
       },
       {
         "lv": 36,
@@ -4228,7 +4686,6 @@ export const POKEMON_DB = {
   },
   "alakazam": {
     "name": "Alakazam",
-    "emoji": "🧘",
     "type": "psychic",
     "hp": 55,
     "atk": 50,
@@ -4240,9 +4697,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "teleport",
-        "name": "Teletransporte",
-        "pp": 20
+        "id": "confusion",
+        "name": "Confusión",
+        "pp": 25
       },
       {
         "lv": 1,
@@ -4252,15 +4709,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
-      },
-      {
-        "lv": 16,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
+        "id": "teleport",
+        "name": "Teletransporte",
+        "pp": 20
       },
       {
         "lv": 18,
@@ -4276,27 +4727,33 @@ export const POKEMON_DB = {
       },
       {
         "lv": 23,
-        "id": "kinesis",
-        "name": "Kinético",
-        "pp": 15
-      },
-      {
-        "lv": 25,
         "id": "reflect",
         "name": "Reflejo",
         "pp": 20
       },
       {
-        "lv": 30,
+        "lv": 25,
         "id": "recover",
         "name": "Recuperación",
         "pp": 20
       },
       {
-        "lv": 33,
+        "lv": 30,
         "id": "future_sight",
         "name": "Premonición",
         "pp": 15
+      },
+      {
+        "lv": 33,
+        "id": "calm_mind",
+        "name": "Paz Mental",
+        "pp": 20
+      },
+      {
+        "lv": 33,
+        "id": "role_play",
+        "name": "Imitación",
+        "pp": 10
       },
       {
         "lv": 36,
@@ -4314,7 +4771,6 @@ export const POKEMON_DB = {
   },
   "machop": {
     "name": "Machop",
-    "emoji": "💪",
     "type": "fighting",
     "hp": 70,
     "atk": 80,
@@ -4326,15 +4782,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "low_kick",
-        "name": "Patada Baja",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "low_kick",
+        "name": "Patada Baja",
+        "pp": 20
       },
       {
         "lv": 7,
@@ -4345,50 +4801,61 @@ export const POKEMON_DB = {
       {
         "lv": 13,
         "id": "karate_chop",
-        "name": "Golpe Karatazo",
+        "name": "Golpe Kárate",
         "pp": 25
       },
       {
         "lv": 19,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
-        "lv": 31,
-        "id": "bide",
-        "name": "Venganza",
+        "lv": 22,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 25,
+        "id": "revenge",
+        "name": "Desquite",
         "pp": 10
       },
       {
-        "lv": 37,
+        "lv": 31,
         "id": "vital_throw",
         "name": "Tiro Vital",
         "pp": 10
       },
       {
-        "lv": 43,
+        "lv": 37,
         "id": "submission",
         "name": "Sumisión",
         "pp": 25
       },
       {
-        "lv": 49,
+        "lv": 40,
         "id": "cross_chop",
         "name": "Tajo Cruzado",
         "pp": 5
       },
       {
-        "lv": 55,
+        "lv": 43,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "dynamic_punch",
+        "name": "Puño Dinámico",
+        "pp": 5
       }
     ]
   },
   "machoke": {
     "name": "Machoke",
-    "emoji": "💪",
     "type": "fighting",
     "hp": 80,
     "atk": 100,
@@ -4400,9 +4867,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "low_kick",
-        "name": "Patada Baja",
-        "pp": 20
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 1,
@@ -4412,63 +4879,68 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
-      },
-      {
-        "lv": 7,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "id": "low_kick",
+        "name": "Patada Baja",
+        "pp": 20
       },
       {
         "lv": 13,
         "id": "karate_chop",
-        "name": "Golpe Karatazo",
+        "name": "Golpe Kárate",
         "pp": 25
       },
       {
         "lv": 19,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
-        "lv": 31,
-        "id": "bide",
-        "name": "Venganza",
+        "lv": 22,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 25,
+        "id": "revenge",
+        "name": "Desquite",
         "pp": 10
       },
       {
-        "lv": 40,
+        "lv": 31,
         "id": "vital_throw",
         "name": "Tiro Vital",
         "pp": 10
       },
       {
-        "lv": 49,
+        "lv": 37,
         "id": "submission",
         "name": "Sumisión",
         "pp": 25
       },
       {
-        "lv": 58,
+        "lv": 40,
         "id": "cross_chop",
         "name": "Tajo Cruzado",
         "pp": 5
       },
       {
-        "lv": 67,
+        "lv": 43,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "dynamic_punch",
+        "name": "Puño Dinámico",
+        "pp": 5
       }
     ]
   },
   "machamp": {
     "name": "Machamp",
-    "emoji": "💪",
     "type": "fighting",
     "hp": 90,
     "atk": 130,
@@ -4480,9 +4952,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "low_kick",
-        "name": "Patada Baja",
-        "pp": 20
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 1,
@@ -4492,63 +4964,68 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
-      },
-      {
-        "lv": 7,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "id": "low_kick",
+        "name": "Patada Baja",
+        "pp": 20
       },
       {
         "lv": 13,
         "id": "karate_chop",
-        "name": "Golpe Karatazo",
+        "name": "Golpe Kárate",
         "pp": 25
       },
       {
         "lv": 19,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
-        "lv": 31,
-        "id": "bide",
-        "name": "Venganza",
+        "lv": 22,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 25,
+        "id": "revenge",
+        "name": "Desquite",
         "pp": 10
       },
       {
-        "lv": 40,
+        "lv": 31,
         "id": "vital_throw",
         "name": "Tiro Vital",
         "pp": 10
       },
       {
-        "lv": 49,
+        "lv": 37,
         "id": "submission",
         "name": "Sumisión",
         "pp": 25
       },
       {
-        "lv": 58,
+        "lv": 40,
         "id": "cross_chop",
         "name": "Tajo Cruzado",
         "pp": 5
       },
       {
-        "lv": 67,
+        "lv": 43,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "dynamic_punch",
+        "name": "Puño Dinámico",
+        "pp": 5
       }
     ]
   },
   "bellsprout": {
     "name": "Bellsprout",
-    "emoji": "🌱",
     "type": "grass",
     "type2": "poison",
     "hp": 50,
@@ -4574,7 +5051,7 @@ export const POKEMON_DB = {
       {
         "lv": 11,
         "id": "wrap",
-        "name": "Envolver",
+        "name": "Constricción",
         "pp": 20
       },
       {
@@ -4616,14 +5093,13 @@ export const POKEMON_DB = {
       {
         "lv": 45,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       }
     ]
   },
   "weepinbell": {
     "name": "Weepinbell",
-    "emoji": "🌱",
     "type": "grass",
     "type2": "poison",
     "hp": 65,
@@ -4636,32 +5112,20 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growth",
+        "name": "Desarrollo",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "vine_whip",
         "name": "Látigo Cepa",
         "pp": 10
       },
       {
         "lv": 1,
-        "id": "growth",
-        "name": "Desarrollo",
-        "pp": 40
-      },
-      {
-        "lv": 1,
         "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
-      {
-        "lv": 6,
-        "id": "growth",
-        "name": "Desarrollo",
-        "pp": 40
-      },
-      {
-        "lv": 11,
-        "id": "wrap",
-        "name": "Envolver",
+        "name": "Constricción",
         "pp": 20
       },
       {
@@ -4683,34 +5147,33 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 24,
+        "lv": 23,
         "id": "acid",
         "name": "Ácido",
         "pp": 30
       },
       {
-        "lv": 33,
+        "lv": 30,
         "id": "sweet_scent",
         "name": "Dulce Aroma",
         "pp": 20
       },
       {
-        "lv": 42,
+        "lv": 37,
         "id": "razor_leaf",
         "name": "Hoja Afilada",
         "pp": 25
       },
       {
-        "lv": 54,
+        "lv": 45,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       }
     ]
   },
   "victreebel": {
     "name": "Victreebel",
-    "emoji": "🌺",
     "type": "grass",
     "type2": "poison",
     "hp": 80,
@@ -4735,15 +5198,74 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "spit_up",
+        "name": "Escupir",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "stockpile",
+        "name": "Reserva",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "swallow",
+        "name": "Tragar",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "sweet_scent",
+        "name": "Dulce Aroma",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "vine_whip",
         "name": "Látigo Cepa",
         "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "growth",
+        "name": "Desarrollo",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
+      },
+      {
+        "lv": 17,
+        "id": "poison_powder",
+        "name": "Polvo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 19,
+        "id": "stun_spore",
+        "name": "Paralizador",
+        "pp": 30
+      },
+      {
+        "lv": 23,
+        "id": "acid",
+        "name": "Ácido",
+        "pp": 30
+      },
+      {
+        "lv": 45,
+        "id": "slam",
+        "name": "Atizar",
+        "pp": 20
       }
     ]
   },
   "tentacool": {
     "name": "Tentacool",
-    "emoji": "🌊",
     "type": "water",
     "type2": "poison",
     "hp": 40,
@@ -4769,7 +5291,7 @@ export const POKEMON_DB = {
       {
         "lv": 12,
         "id": "constrict",
-        "name": "Constricción",
+        "name": "Restricción",
         "pp": 35
       },
       {
@@ -4786,18 +5308,24 @@ export const POKEMON_DB = {
       },
       {
         "lv": 30,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
+      },
+      {
+        "lv": 36,
         "id": "barrier",
         "name": "Barrera",
         "pp": 30
       },
       {
-        "lv": 36,
+        "lv": 43,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 43,
+        "lv": 49,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -4806,7 +5334,6 @@ export const POKEMON_DB = {
   },
   "tentacruel": {
     "name": "Tentacruel",
-    "emoji": "🌊",
     "type": "water",
     "type2": "poison",
     "hp": 80,
@@ -4819,6 +5346,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "constrict",
+        "name": "Restricción",
+        "pp": 35
+      },
+      {
+        "lv": 1,
         "id": "poison_sting",
         "name": "Picotazo Veneno",
         "pp": 35
@@ -4827,12 +5360,6 @@ export const POKEMON_DB = {
         "lv": 1,
         "id": "supersonic",
         "name": "Supersónico",
-        "pp": 20
-      },
-      {
-        "lv": 10,
-        "id": "wrap",
-        "name": "Envolver",
         "pp": 20
       },
       {
@@ -4848,13 +5375,25 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 35,
+        "lv": 30,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
+      },
+      {
+        "lv": 36,
         "id": "barrier",
         "name": "Barrera",
         "pp": 30
       },
       {
-        "lv": 50,
+        "lv": 43,
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
+      },
+      {
+        "lv": 49,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -4863,7 +5402,6 @@ export const POKEMON_DB = {
   },
   "geodude": {
     "name": "Geodude",
-    "emoji": "🪨",
     "type": "rock",
     "type2": "ground",
     "hp": 40,
@@ -4876,21 +5414,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "defense_curl",
         "name": "Rizo Defensa",
         "pp": 40
       },
       {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
         "lv": 6,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
-        "pp": 10
+        "id": "mud_sport",
+        "name": "Chapoteo Lodo",
+        "pp": 15
       },
       {
         "lv": 11,
@@ -4918,9 +5456,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 31,
-        "id": "lock_on",
-        "name": "Fijar Blanco",
-        "pp": 5
+        "id": "rock_blast",
+        "name": "Pedrada",
+        "pp": 10
       },
       {
         "lv": 36,
@@ -4944,7 +5482,6 @@ export const POKEMON_DB = {
   },
   "graveler": {
     "name": "Graveler",
-    "emoji": "🪨",
     "type": "rock",
     "type2": "ground",
     "hp": 55,
@@ -4957,33 +5494,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "mud_sport",
+        "name": "Chapoteo Lodo",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "rock_throw",
+        "name": "Lanzarrocas",
+        "pp": 15
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "defense_curl",
-        "name": "Rizo Defensa",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "rock_throw",
-        "name": "Lanzarrocas",
-        "pp": 15
-      },
-      {
-        "lv": 6,
-        "id": "defense_curl",
-        "name": "Rizo Defensa",
-        "pp": 40
-      },
-      {
-        "lv": 11,
-        "id": "rock_throw",
-        "name": "Lanzarrocas",
-        "pp": 15
       },
       {
         "lv": 16,
@@ -4998,31 +5529,31 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 29,
+        "lv": 26,
         "id": "rollout",
         "name": "Rodar",
         "pp": 20
       },
       {
-        "lv": 37,
-        "id": "lock_on",
-        "name": "Fijar Blanco",
-        "pp": 5
+        "lv": 31,
+        "id": "rock_blast",
+        "name": "Pedrada",
+        "pp": 10
       },
       {
-        "lv": 45,
+        "lv": 36,
         "id": "earthquake",
         "name": "Terremoto",
         "pp": 10
       },
       {
-        "lv": 53,
+        "lv": 41,
         "id": "explosion",
         "name": "Explosión",
         "pp": 5
       },
       {
-        "lv": 62,
+        "lv": 46,
         "id": "double_edge",
         "name": "Doble Filo",
         "pp": 15
@@ -5031,7 +5562,6 @@ export const POKEMON_DB = {
   },
   "golem": {
     "name": "Golem",
-    "emoji": "🪨",
     "type": "rock",
     "type2": "ground",
     "hp": 80,
@@ -5044,39 +5574,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "mud_sport",
+        "name": "Chapoteo Lodo",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "rock_throw",
+        "name": "Lanzarrocas",
+        "pp": 15
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "defense_curl",
-        "name": "Rizo Defensa",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "rock_throw",
-        "name": "Lanzarrocas",
-        "pp": 15
-      },
-      {
-        "lv": 1,
-        "id": "self_destruct",
-        "name": "Autodestrucción",
-        "pp": 5
-      },
-      {
-        "lv": 6,
-        "id": "defense_curl",
-        "name": "Rizo Defensa",
-        "pp": 40
-      },
-      {
-        "lv": 11,
-        "id": "rock_throw",
-        "name": "Lanzarrocas",
-        "pp": 15
       },
       {
         "lv": 16,
@@ -5091,31 +5609,31 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 29,
+        "lv": 26,
         "id": "rollout",
         "name": "Rodar",
         "pp": 20
       },
       {
-        "lv": 37,
-        "id": "lock_on",
-        "name": "Fijar Blanco",
-        "pp": 5
+        "lv": 31,
+        "id": "rock_blast",
+        "name": "Pedrada",
+        "pp": 10
       },
       {
-        "lv": 45,
+        "lv": 36,
         "id": "earthquake",
         "name": "Terremoto",
         "pp": 10
       },
       {
-        "lv": 53,
+        "lv": 41,
         "id": "explosion",
         "name": "Explosión",
         "pp": 5
       },
       {
-        "lv": 62,
+        "lv": 46,
         "id": "double_edge",
         "name": "Doble Filo",
         "pp": 15
@@ -5124,7 +5642,6 @@ export const POKEMON_DB = {
   },
   "ponyta": {
     "name": "Ponyta",
-    "emoji": "🐎",
     "type": "fire",
     "hp": 50,
     "atk": 85,
@@ -5136,48 +5653,66 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
       },
       {
-        "lv": 1,
+        "lv": 5,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
       },
       {
-        "lv": 7,
+        "lv": 9,
+        "id": "tail_whip",
+        "name": "Látigo",
+        "pp": 30
+      },
+      {
+        "lv": 14,
         "id": "ember",
         "name": "Ascuas",
         "pp": 25
       },
       {
-        "lv": 13,
+        "lv": 19,
         "id": "stomp",
         "name": "Pisotón",
         "pp": 20
       },
       {
-        "lv": 19,
+        "lv": 25,
         "id": "fire_spin",
         "name": "Giro Fuego",
         "pp": 15
       },
       {
-        "lv": 25,
+        "lv": 31,
         "id": "take_down",
         "name": "Derribo",
         "pp": 20
       },
       {
-        "lv": 31,
+        "lv": 38,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 37,
+        "lv": 45,
+        "id": "bounce",
+        "name": "Bote",
+        "pp": 5
+      },
+      {
+        "lv": 53,
         "id": "fire_blast",
         "name": "Llamarada",
         "pp": 5
@@ -5186,7 +5721,6 @@ export const POKEMON_DB = {
   },
   "rapidash": {
     "name": "Rapidash",
-    "emoji": "🐎",
     "type": "fire",
     "hp": 65,
     "atk": 100,
@@ -5198,42 +5732,72 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 7,
         "id": "ember",
         "name": "Ascuas",
         "pp": 25
       },
       {
-        "lv": 13,
+        "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "tail_whip",
+        "name": "Látigo",
+        "pp": 30
+      },
+      {
+        "lv": 19,
         "id": "stomp",
         "name": "Pisotón",
         "pp": 20
       },
       {
-        "lv": 19,
+        "lv": 25,
         "id": "fire_spin",
         "name": "Giro Fuego",
         "pp": 15
       },
       {
-        "lv": 25,
+        "lv": 31,
         "id": "take_down",
         "name": "Derribo",
         "pp": 20
       },
       {
-        "lv": 31,
+        "lv": 38,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
         "lv": 40,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 45,
+        "id": "bounce",
+        "name": "Bote",
+        "pp": 5
+      },
+      {
+        "lv": 53,
         "id": "fire_blast",
         "name": "Llamarada",
         "pp": 5
@@ -5242,7 +5806,6 @@ export const POKEMON_DB = {
   },
   "slowpoke": {
     "name": "Slowpoke",
-    "emoji": "🐌",
     "type": "water",
     "type2": "psychic",
     "hp": 90,
@@ -5266,46 +5829,63 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 9,
+        "lv": 1,
         "id": "yawn",
         "name": "Bostezo",
         "pp": 10
       },
       {
-        "lv": 14,
+        "lv": 6,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 13,
+        "id": "water_gun",
+        "name": "Pistola Agua",
+        "pp": 25
+      },
+      {
+        "lv": 17,
         "id": "confusion",
         "name": "Confusión",
         "pp": 25
       },
       {
-        "lv": 19,
+        "lv": 24,
         "id": "disable",
         "name": "Anulación",
         "pp": 20
       },
       {
-        "lv": 24,
+        "lv": 29,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
-        "lv": 34,
+        "lv": 36,
         "id": "amnesia",
         "name": "Amnesia",
         "pp": 20
       },
       {
-        "lv": 46,
+        "lv": 40,
         "id": "psychic",
         "name": "Psíquico",
+        "pp": 10
+      },
+      {
+        "lv": 47,
+        "id": "psych_up",
+        "name": "Más Psique",
         "pp": 10
       }
     ]
   },
   "slowbro": {
     "name": "Slowbro",
-    "emoji": "🐌",
     "type": "water",
     "type2": "psychic",
     "hp": 95,
@@ -5318,57 +5898,80 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "curse",
+        "name": "Maldición",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
       },
       {
         "lv": 1,
-        "id": "curse",
-        "name": "Maldición",
-        "pp": 10
-      },
-      {
-        "lv": 9,
         "id": "yawn",
         "name": "Bostezo",
         "pp": 10
       },
       {
-        "lv": 14,
+        "lv": 13,
+        "id": "water_gun",
+        "name": "Pistola Agua",
+        "pp": 25
+      },
+      {
+        "lv": 17,
         "id": "confusion",
         "name": "Confusión",
         "pp": 25
       },
       {
-        "lv": 19,
+        "lv": 24,
         "id": "disable",
         "name": "Anulación",
         "pp": 20
       },
       {
-        "lv": 24,
+        "lv": 29,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
-        "lv": 37,
+        "lv": 36,
         "id": "amnesia",
         "name": "Amnesia",
         "pp": 20
       },
       {
-        "lv": 54,
+        "lv": 37,
+        "id": "withdraw",
+        "name": "Refugio",
+        "pp": 40
+      },
+      {
+        "lv": 40,
         "id": "psychic",
         "name": "Psíquico",
+        "pp": 10
+      },
+      {
+        "lv": 47,
+        "id": "psych_up",
+        "name": "Más Psique",
         "pp": 10
       }
     ]
   },
   "magnemite": {
     "name": "Magnemite",
-    "emoji": "🔩",
     "type": "electric",
     "type2": "steel",
     "hp": 25,
@@ -5381,15 +5984,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "metal_sound",
         "name": "Eco Metálico",
         "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 6,
@@ -5405,51 +6008,50 @@ export const POKEMON_DB = {
       },
       {
         "lv": 16,
-        "id": "thunder_wave",
-        "name": "Onda Trueno",
-        "pp": 20
-      },
-      {
-        "lv": 21,
-        "id": "swift",
-        "name": "Rapidez",
-        "pp": 20
-      },
-      {
-        "lv": 26,
         "id": "sonic_boom",
         "name": "Onda Sónica",
         "pp": 20
       },
       {
-        "lv": 32,
-        "id": "zap_cannon",
-        "name": "Zap Cannon",
-        "pp": 5
+        "lv": 21,
+        "id": "thunder_wave",
+        "name": "Onda Trueno",
+        "pp": 20
       },
       {
-        "lv": 38,
+        "lv": 26,
+        "id": "spark",
+        "name": "Chispa",
+        "pp": 20
+      },
+      {
+        "lv": 32,
         "id": "lock_on",
         "name": "Fijar Blanco",
         "pp": 5
       },
       {
+        "lv": 38,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
         "lv": 44,
-        "id": "thunderbolt",
-        "name": "Rayo",
-        "pp": 15
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
       },
       {
         "lv": 50,
-        "id": "thunder",
-        "name": "Trueno",
-        "pp": 10
+        "id": "zap_cannon",
+        "name": "Electrocañón",
+        "pp": 5
       }
     ]
   },
   "magneton": {
     "name": "Magneton",
-    "emoji": "🔩",
     "type": "electric",
     "type2": "steel",
     "hp": 50,
@@ -5460,6 +6062,18 @@ export const POKEMON_DB = {
     "catchRate": 60,
     "spe": 70,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "metal_sound",
+        "name": "Eco Metálico",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "supersonic",
+        "name": "Supersónico",
+        "pp": 20
+      },
       {
         "lv": 1,
         "id": "tackle",
@@ -5473,40 +6087,57 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 11,
-        "id": "supersonic",
-        "name": "Supersónico",
-        "pp": 20
-      },
-      {
-        "lv": 18,
+        "lv": 16,
         "id": "sonic_boom",
         "name": "Onda Sónica",
         "pp": 20
       },
       {
         "lv": 21,
-        "id": "thunderbolt",
-        "name": "Rayo",
-        "pp": 15
+        "id": "thunder_wave",
+        "name": "Onda Trueno",
+        "pp": 20
       },
       {
-        "lv": 25,
+        "lv": 26,
+        "id": "spark",
+        "name": "Chispa",
+        "pp": 20
+      },
+      {
+        "lv": 32,
+        "id": "lock_on",
+        "name": "Fijar Blanco",
+        "pp": 5
+      },
+      {
+        "lv": 38,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
+        "lv": 44,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 35,
+        "lv": 44,
         "id": "tri_attack",
         "name": "Triataque",
         "pp": 10
+      },
+      {
+        "lv": 50,
+        "id": "zap_cannon",
+        "name": "Electrocañón",
+        "pp": 5
       }
     ]
   },
   "farfetchd": {
     "name": "Farfetch'd",
-    "emoji": "🦆",
     "type": "normal",
     "type2": "flying",
     "hp": 52,
@@ -5520,53 +6151,59 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "peck",
-        "name": "Picoteo",
+        "name": "Picotazo",
         "pp": 35
       },
       {
-        "lv": 1,
+        "lv": 6,
         "id": "sand_attack",
         "name": "Ataque Arena",
         "pp": 15
       },
       {
-        "lv": 6,
+        "lv": 11,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
-        "lv": 11,
+        "lv": 16,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 21,
+        "id": "knock_off",
+        "name": "Desarme",
+        "pp": 20
+      },
+      {
+        "lv": 26,
         "id": "fury_cutter",
         "name": "Corte Furia",
         "pp": 20
       },
       {
-        "lv": 16,
-        "id": "fury_swipes",
-        "name": "Golpes Furia",
-        "pp": 15
-      },
-      {
-        "lv": 21,
+        "lv": 31,
         "id": "swords_dance",
         "name": "Danza Espada",
         "pp": 30
       },
       {
-        "lv": 26,
+        "lv": 36,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 31,
+        "lv": 41,
         "id": "slash",
         "name": "Cuchillada",
         "pp": 20
       },
       {
-        "lv": 36,
+        "lv": 46,
         "id": "false_swipe",
         "name": "Falso Tortazo",
         "pp": 40
@@ -5575,7 +6212,6 @@ export const POKEMON_DB = {
   },
   "doduo": {
     "name": "Doduo",
-    "emoji": "🐦",
     "type": "normal",
     "type2": "flying",
     "hp": 35,
@@ -5588,9 +6224,77 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "peck",
-        "name": "Picoteo",
+        "name": "Picotazo",
         "pp": 35
+      },
+      {
+        "lv": 9,
+        "id": "pursuit",
+        "name": "Persecución",
+        "pp": 20
+      },
+      {
+        "lv": 13,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 21,
+        "id": "tri_attack",
+        "name": "Triataque",
+        "pp": 10
+      },
+      {
+        "lv": 25,
+        "id": "rage",
+        "name": "Furia",
+        "pp": 20
+      },
+      {
+        "lv": 33,
+        "id": "uproar",
+        "name": "Alboroto",
+        "pp": 10
+      },
+      {
+        "lv": 37,
+        "id": "drill_peck",
+        "name": "Pico Taladro",
+        "pp": 20
+      },
+      {
+        "lv": 45,
+        "id": "agility",
+        "name": "Agilidad",
+        "pp": 30
+      }
+    ]
+  },
+  "dodrio": {
+    "name": "Dodrio",
+    "type": "normal",
+    "type2": "flying",
+    "hp": 60,
+    "atk": 110,
+    "def": 70,
+    "spa": 60,
+    "spd": 60,
+    "catchRate": 45,
+    "spe": 100,
+    "learnset": [
+      {
+        "lv": 1,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -5599,13 +6303,13 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
-        "lv": 9,
-        "id": "fury_attack",
-        "name": "Ataque Furia",
-        "pp": 20
+        "lv": 1,
+        "id": "peck",
+        "name": "Picotazo",
+        "pp": 35
       },
       {
-        "lv": 13,
+        "lv": 1,
         "id": "pursuit",
         "name": "Persecución",
         "pp": 20
@@ -5624,9 +6328,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 33,
-        "id": "agility",
-        "name": "Agilidad",
-        "pp": 30
+        "id": "uproar",
+        "name": "Alboroto",
+        "pp": 10
       },
       {
         "lv": 37,
@@ -5636,96 +6340,14 @@ export const POKEMON_DB = {
       },
       {
         "lv": 45,
-        "id": "endeavor",
-        "name": "Esfuerzo",
-        "pp": 5
-      }
-    ]
-  },
-  "dodrio": {
-    "name": "Dodrio",
-    "emoji": "🐦",
-    "type": "normal",
-    "type2": "flying",
-    "hp": 60,
-    "atk": 110,
-    "def": 70,
-    "spa": 60,
-    "spd": 60,
-    "catchRate": 45,
-    "spe": 100,
-    "learnset": [
-      {
-        "lv": 1,
-        "id": "peck",
-        "name": "Picoteo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "fury_attack",
-        "name": "Ataque Furia",
-        "pp": 20
-      },
-      {
-        "lv": 1,
-        "id": "pursuit",
-        "name": "Persecución",
-        "pp": 20
-      },
-      {
-        "lv": 9,
-        "id": "fury_attack",
-        "name": "Ataque Furia",
-        "pp": 20
-      },
-      {
-        "lv": 13,
-        "id": "pursuit",
-        "name": "Persecución",
-        "pp": 20
-      },
-      {
-        "lv": 21,
-        "id": "tri_attack",
-        "name": "Triataque",
-        "pp": 10
-      },
-      {
-        "lv": 25,
-        "id": "rage",
-        "name": "Furia",
-        "pp": 20
-      },
-      {
-        "lv": 38,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
-      },
-      {
-        "lv": 47,
-        "id": "drill_peck",
-        "name": "Pico Taladro",
-        "pp": 20
-      },
-      {
-        "lv": 60,
-        "id": "endeavor",
-        "name": "Esfuerzo",
-        "pp": 5
       }
     ]
   },
   "seel": {
     "name": "Seel",
-    "emoji": "🦭",
     "type": "water",
     "hp": 65,
     "atk": 45,
@@ -5738,7 +6360,7 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
@@ -5787,7 +6409,6 @@ export const POKEMON_DB = {
   },
   "dewgong": {
     "name": "Dewgong",
-    "emoji": "🦭",
     "type": "water",
     "type2": "ice",
     "hp": 90,
@@ -5800,9 +6421,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
+        "id": "aurora_beam",
+        "name": "Rayo Aurora",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -5812,33 +6433,21 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "headbutt",
+        "name": "Golpe Cabeza",
+        "pp": 15
+      },
+      {
+        "lv": 1,
         "id": "icy_wind",
         "name": "Viento Hielo",
         "pp": 15
       },
       {
         "lv": 1,
-        "id": "aurora_beam",
-        "name": "Rayo Aurora",
-        "pp": 20
-      },
-      {
-        "lv": 9,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 17,
-        "id": "icy_wind",
-        "name": "Viento Hielo",
+        "id": "signal_beam",
+        "name": "Doble Rayo",
         "pp": 15
-      },
-      {
-        "lv": 21,
-        "id": "aurora_beam",
-        "name": "Rayo Aurora",
-        "pp": 20
       },
       {
         "lv": 29,
@@ -5848,24 +6457,24 @@ export const POKEMON_DB = {
       },
       {
         "lv": 34,
-        "id": "clamp",
-        "name": "Tenaza",
-        "pp": 10
+        "id": "sheer_cold",
+        "name": "Frío Polar",
+        "pp": 5
       },
       {
-        "lv": 42,
+        "lv": 37,
         "id": "take_down",
         "name": "Derribo",
         "pp": 20
       },
       {
-        "lv": 51,
+        "lv": 41,
         "id": "ice_beam",
         "name": "Rayo Hielo",
         "pp": 10
       },
       {
-        "lv": 64,
+        "lv": 49,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
@@ -5874,7 +6483,6 @@ export const POKEMON_DB = {
   },
   "grimer": {
     "name": "Grimer",
-    "emoji": "☣️",
     "type": "poison",
     "hp": 80,
     "atk": 80,
@@ -5886,15 +6494,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "poison_gas",
         "name": "Gas Venenoso",
         "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
       },
       {
         "lv": 4,
@@ -5904,51 +6512,50 @@ export const POKEMON_DB = {
       },
       {
         "lv": 8,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
-        "pp": 10
-      },
-      {
-        "lv": 13,
         "id": "disable",
         "name": "Anulación",
         "pp": 20
       },
       {
-        "lv": 19,
+        "lv": 13,
         "id": "sludge",
         "name": "Residuos",
         "pp": 20
       },
       {
-        "lv": 26,
+        "lv": 19,
         "id": "minimize",
-        "name": "Minimizar",
+        "name": "Reducción",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 26,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 43,
+        "lv": 34,
         "id": "acid_armor",
         "name": "Armadura Ácida",
         "pp": 40
       },
       {
-        "lv": 53,
+        "lv": 43,
         "id": "sludge_bomb",
         "name": "Bomba Lodo",
+        "pp": 10
+      },
+      {
+        "lv": 53,
+        "id": "memento",
+        "name": "Legado",
         "pp": 10
       }
     ]
   },
   "muk": {
     "name": "Muk",
-    "emoji": "☣️",
     "type": "poison",
     "hp": 105,
     "atk": 105,
@@ -5960,9 +6567,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
       },
       {
         "lv": 1,
@@ -5972,63 +6579,56 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "acid_armor",
-        "name": "Armadura Ácida",
-        "pp": 40
-      },
-      {
-        "lv": 4,
-        "id": "harden",
-        "name": "Fortaleza",
-        "pp": 30
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
       },
       {
         "lv": 8,
-        "id": "mud_slap",
-        "name": "Bofetón Lodo",
-        "pp": 10
-      },
-      {
-        "lv": 13,
         "id": "disable",
         "name": "Anulación",
         "pp": 20
       },
       {
-        "lv": 19,
+        "lv": 13,
         "id": "sludge",
         "name": "Residuos",
         "pp": 20
       },
       {
-        "lv": 26,
+        "lv": 19,
         "id": "minimize",
-        "name": "Minimizar",
+        "name": "Reducción",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 26,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 45,
+        "lv": 34,
         "id": "acid_armor",
         "name": "Armadura Ácida",
         "pp": 40
       },
       {
-        "lv": 60,
+        "lv": 43,
         "id": "sludge_bomb",
         "name": "Bomba Lodo",
+        "pp": 10
+      },
+      {
+        "lv": 53,
+        "id": "memento",
+        "name": "Legado",
         "pp": 10
       }
     ]
   },
   "shellder": {
     "name": "Shellder",
-    "emoji": "🐚",
     "type": "water",
     "hp": 30,
     "atk": 65,
@@ -6049,6 +6649,12 @@ export const POKEMON_DB = {
         "id": "withdraw",
         "name": "Refugio",
         "pp": 40
+      },
+      {
+        "lv": 8,
+        "id": "icicle_spear",
+        "name": "Carámbano",
+        "pp": 30
       },
       {
         "lv": 9,
@@ -6090,7 +6696,6 @@ export const POKEMON_DB = {
   },
   "cloyster": {
     "name": "Cloyster",
-    "emoji": "🐚",
     "type": "water",
     "type2": "ice",
     "hp": 50,
@@ -6103,8 +6708,14 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tri_attack",
-        "name": "Triataque",
+        "id": "aurora_beam",
+        "name": "Rayo Aurora",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "protect",
+        "name": "Protección",
         "pp": 10
       },
       {
@@ -6115,33 +6726,56 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "aurora_beam",
-        "name": "Rayo Aurora",
-        "pp": 20
+        "id": "withdraw",
+        "name": "Refugio",
+        "pp": 40
       },
       {
         "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 8,
+        "id": "icicle_spear",
+        "name": "Carámbano",
+        "pp": 30
+      },
+      {
+        "lv": 33,
         "id": "spikes",
         "name": "Púas",
         "pp": 20
       },
       {
-        "lv": 39,
+        "lv": 33,
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
+      },
+      {
+        "lv": 41,
         "id": "spike_cannon",
         "name": "Clavo Cañón",
         "pp": 15
       },
       {
+        "lv": 41,
+        "id": "clamp",
+        "name": "Tenaza",
+        "pp": 10
+      },
+      {
         "lv": 49,
-        "id": "hydro_pump",
-        "name": "Hidrobomba",
-        "pp": 5
+        "id": "ice_beam",
+        "name": "Rayo Hielo",
+        "pp": 10
       }
     ]
   },
   "gastly": {
     "name": "Gastly",
-    "emoji": "👻",
     "type": "ghost",
     "type2": "poison",
     "hp": 30,
@@ -6154,27 +6788,33 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "hypnosis",
+        "name": "Hipnosis",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "lick",
         "name": "Lengüetazo",
         "pp": 30
       },
       {
-        "lv": 1,
+        "lv": 8,
         "id": "spite",
         "name": "Rencor",
         "pp": 10
-      },
-      {
-        "lv": 8,
-        "id": "mean_look",
-        "name": "Mal de Ojo",
-        "pp": 5
       },
       {
         "lv": 13,
         "id": "curse",
         "name": "Maldición",
         "pp": 10
+      },
+      {
+        "lv": 13,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
       },
       {
         "lv": 16,
@@ -6197,14 +6837,25 @@ export const POKEMON_DB = {
       {
         "lv": 33,
         "id": "destiny_bond",
-        "name": "Mismodestino",
+        "name": "Mismo Destino",
         "pp": 5
+      },
+      {
+        "lv": 36,
+        "id": "shadow_ball",
+        "name": "Bola Sombra",
+        "pp": 15
+      },
+      {
+        "lv": 41,
+        "id": "nightmare",
+        "name": "Pesadilla",
+        "pp": 15
       }
     ]
   },
   "haunter": {
     "name": "Haunter",
-    "emoji": "👻",
     "type": "ghost",
     "type2": "poison",
     "hp": 45,
@@ -6217,6 +6868,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "hypnosis",
+        "name": "Hipnosis",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "lick",
         "name": "Lengüetazo",
         "pp": 30
@@ -6228,22 +6885,16 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 1,
-        "id": "mean_look",
-        "name": "Mal de Ojo",
-        "pp": 5
-      },
-      {
-        "lv": 8,
-        "id": "mean_look",
-        "name": "Mal de Ojo",
-        "pp": 5
-      },
-      {
         "lv": 13,
         "id": "curse",
         "name": "Maldición",
         "pp": 10
+      },
+      {
+        "lv": 13,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
       },
       {
         "lv": 16,
@@ -6264,22 +6915,33 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 31,
+        "lv": 28,
         "id": "dream_eater",
         "name": "Comesueños",
         "pp": 15
       },
       {
-        "lv": 39,
+        "lv": 33,
         "id": "destiny_bond",
-        "name": "Mismodestino",
+        "name": "Mismo Destino",
         "pp": 5
+      },
+      {
+        "lv": 36,
+        "id": "shadow_ball",
+        "name": "Bola Sombra",
+        "pp": 15
+      },
+      {
+        "lv": 41,
+        "id": "nightmare",
+        "name": "Pesadilla",
+        "pp": 15
       }
     ]
   },
   "gengar": {
     "name": "Gengar",
-    "emoji": "👻",
     "type": "ghost",
     "type2": "poison",
     "hp": 60,
@@ -6292,6 +6954,12 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "hypnosis",
+        "name": "Hipnosis",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "lick",
         "name": "Lengüetazo",
         "pp": 30
@@ -6303,22 +6971,16 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 1,
-        "id": "mean_look",
-        "name": "Mal de Ojo",
-        "pp": 5
-      },
-      {
-        "lv": 8,
-        "id": "mean_look",
-        "name": "Mal de Ojo",
-        "pp": 5
-      },
-      {
         "lv": 13,
         "id": "curse",
         "name": "Maldición",
         "pp": 10
+      },
+      {
+        "lv": 13,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
       },
       {
         "lv": 16,
@@ -6339,22 +7001,33 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 31,
+        "lv": 28,
         "id": "dream_eater",
         "name": "Comesueños",
         "pp": 15
       },
       {
-        "lv": 39,
+        "lv": 33,
         "id": "destiny_bond",
-        "name": "Mismodestino",
+        "name": "Mismo Destino",
         "pp": 5
+      },
+      {
+        "lv": 36,
+        "id": "shadow_ball",
+        "name": "Bola Sombra",
+        "pp": 15
+      },
+      {
+        "lv": 41,
+        "id": "nightmare",
+        "name": "Pesadilla",
+        "pp": 15
       }
     ]
   },
   "onix": {
     "name": "Onix",
-    "emoji": "🪨",
     "type": "rock",
     "type2": "ground",
     "hp": 35,
@@ -6367,54 +7040,60 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 9,
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 8,
+        "id": "bind",
+        "name": "Atadura",
+        "pp": 20
+      },
+      {
+        "lv": 12,
         "id": "rock_throw",
         "name": "Lanzarrocas",
         "pp": 15
       },
       {
-        "lv": 13,
+        "lv": 19,
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
+      },
+      {
+        "lv": 23,
         "id": "rage",
         "name": "Furia",
         "pp": 20
       },
       {
-        "lv": 21,
-        "id": "rock_tomb",
-        "name": "Tumba Rocas",
-        "pp": 10
+        "lv": 30,
+        "id": "dragon_breath",
+        "name": "Dragoaliento",
+        "pp": 20
       },
       {
-        "lv": 25,
+        "lv": 33,
         "id": "sandstorm",
         "name": "Tormenta Arena",
         "pp": 10
       },
       {
-        "lv": 33,
+        "lv": 37,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
-        "lv": 41,
+        "lv": 45,
         "id": "iron_tail",
         "name": "Cola Férrea",
         "pp": 15
@@ -6424,12 +7103,17 @@ export const POKEMON_DB = {
         "id": "sand_tomb",
         "name": "Bucle Arena",
         "pp": 15
+      },
+      {
+        "lv": 56,
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
       }
     ]
   },
   "drowzee": {
     "name": "Drowzee",
-    "emoji": "🌀",
     "type": "psychic",
     "hp": 60,
     "atk": 48,
@@ -6441,54 +7125,66 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "hypnosis",
         "name": "Hipnosis",
         "pp": 20
       },
       {
-        "lv": 10,
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
+      },
+      {
+        "lv": 7,
         "id": "disable",
         "name": "Anulación",
         "pp": 20
       },
       {
-        "lv": 18,
+        "lv": 11,
         "id": "confusion",
         "name": "Confusión",
         "pp": 25
       },
       {
-        "lv": 25,
+        "lv": 17,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
-        "lv": 31,
+        "lv": 21,
         "id": "poison_gas",
         "name": "Gas Venenoso",
         "pp": 40
       },
       {
-        "lv": 36,
+        "lv": 27,
         "id": "meditate",
         "name": "Meditación",
         "pp": 40
       },
       {
-        "lv": 40,
+        "lv": 31,
         "id": "psychic",
         "name": "Psíquico",
         "pp": 10
       },
       {
-        "lv": 49,
+        "lv": 37,
+        "id": "psych_up",
+        "name": "Más Psique",
+        "pp": 10
+      },
+      {
+        "lv": 41,
+        "id": "swagger",
+        "name": "Contoneo",
+        "pp": 15
+      },
+      {
+        "lv": 45,
         "id": "future_sight",
         "name": "Premonición",
         "pp": 15
@@ -6497,7 +7193,6 @@ export const POKEMON_DB = {
   },
   "hypno": {
     "name": "Hypno",
-    "emoji": "🌀",
     "type": "psychic",
     "hp": 85,
     "atk": 73,
@@ -6509,9 +7204,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
+        "id": "confusion",
+        "name": "Confusión",
+        "pp": 25
+      },
+      {
+        "lv": 1,
+        "id": "disable",
+        "name": "Anulación",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -6521,54 +7222,54 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "disable",
-        "name": "Anulación",
-        "pp": 20
-      },
-      {
-        "lv": 1,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
-      },
-      {
-        "lv": 10,
-        "id": "disable",
-        "name": "Anulación",
-        "pp": 20
-      },
-      {
-        "lv": 18,
-        "id": "confusion",
-        "name": "Confusión",
-        "pp": 25
-      },
-      {
-        "lv": 25,
-        "id": "headbutt",
-        "name": "Cabezazo",
+        "id": "nightmare",
+        "name": "Pesadilla",
         "pp": 15
       },
       {
-        "lv": 33,
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
+      },
+      {
+        "lv": 17,
+        "id": "headbutt",
+        "name": "Golpe Cabeza",
+        "pp": 15
+      },
+      {
+        "lv": 21,
         "id": "poison_gas",
         "name": "Gas Venenoso",
         "pp": 40
       },
       {
-        "lv": 40,
+        "lv": 27,
         "id": "meditate",
         "name": "Meditación",
         "pp": 40
       },
       {
-        "lv": 46,
+        "lv": 31,
         "id": "psychic",
         "name": "Psíquico",
         "pp": 10
       },
       {
-        "lv": 59,
+        "lv": 37,
+        "id": "psych_up",
+        "name": "Más Psique",
+        "pp": 10
+      },
+      {
+        "lv": 41,
+        "id": "swagger",
+        "name": "Contoneo",
+        "pp": 15
+      },
+      {
+        "lv": 45,
         "id": "future_sight",
         "name": "Premonición",
         "pp": 15
@@ -6577,7 +7278,6 @@ export const POKEMON_DB = {
   },
   "krabby": {
     "name": "Krabby",
-    "emoji": "🦀",
     "type": "water",
     "hp": 30,
     "atk": 105,
@@ -6594,28 +7294,22 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
+        "lv": 5,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
-        "lv": 5,
-        "id": "clamp",
-        "name": "Tenaza",
-        "pp": 10
-      },
-      {
         "lv": 12,
-        "id": "harden",
-        "name": "Fortaleza",
+        "id": "vise_grip",
+        "name": "Vise Grip",
         "pp": 30
       },
       {
         "lv": 16,
-        "id": "bubble_beam",
-        "name": "Rayo Burbuja",
-        "pp": 20
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
       },
       {
         "lv": 23,
@@ -6646,12 +7340,17 @@ export const POKEMON_DB = {
         "id": "crabhammer",
         "name": "Martillazo",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "flail",
+        "name": "Azote",
+        "pp": 15
       }
     ]
   },
   "kingler": {
     "name": "Kingler",
-    "emoji": "🦀",
     "type": "water",
     "hp": 55,
     "atk": 130,
@@ -6669,33 +7368,27 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
+      },
+      {
+        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "clamp",
-        "name": "Tenaza",
-        "pp": 10
+        "id": "metal_claw",
+        "name": "Garra Metal",
+        "pp": 35
       },
       {
-        "lv": 5,
-        "id": "clamp",
-        "name": "Tenaza",
-        "pp": 10
-      },
-      {
-        "lv": 12,
-        "id": "harden",
-        "name": "Fortaleza",
+        "lv": 1,
+        "id": "vise_grip",
+        "name": "Vise Grip",
         "pp": 30
-      },
-      {
-        "lv": 16,
-        "id": "bubble_beam",
-        "name": "Rayo Burbuja",
-        "pp": 20
       },
       {
         "lv": 23,
@@ -6726,12 +7419,17 @@ export const POKEMON_DB = {
         "id": "crabhammer",
         "name": "Martillazo",
         "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "flail",
+        "name": "Azote",
+        "pp": 15
       }
     ]
   },
   "voltorb": {
     "name": "Voltorb",
-    "emoji": "⚽",
     "type": "electric",
     "hp": 40,
     "atk": 30,
@@ -6760,49 +7458,49 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
-        "lv": 12,
+        "lv": 15,
         "id": "sonic_boom",
         "name": "Onda Sónica",
         "pp": 20
       },
       {
-        "lv": 15,
+        "lv": 21,
         "id": "spark",
         "name": "Chispa",
         "pp": 20
       },
       {
-        "lv": 21,
+        "lv": 27,
         "id": "self_destruct",
         "name": "Autodestrucción",
         "pp": 5
       },
       {
-        "lv": 26,
+        "lv": 32,
         "id": "rollout",
         "name": "Rodar",
         "pp": 20
       },
       {
-        "lv": 32,
+        "lv": 37,
         "id": "light_screen",
         "name": "Pantalla de Luz",
         "pp": 30
       },
       {
-        "lv": 37,
+        "lv": 42,
         "id": "swift",
         "name": "Rapidez",
         "pp": 20
       },
       {
-        "lv": 43,
+        "lv": 46,
         "id": "explosion",
         "name": "Explosión",
         "pp": 5
       },
       {
-        "lv": 48,
+        "lv": 49,
         "id": "mirror_coat",
         "name": "Manto Espejo",
         "pp": 20
@@ -6811,7 +7509,6 @@ export const POKEMON_DB = {
   },
   "electrode": {
     "name": "Electrode",
-    "emoji": "⚽",
     "type": "electric",
     "hp": 60,
     "atk": 50,
@@ -6829,72 +7526,60 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "sonic_boom",
+        "name": "Onda Sónica",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
       },
       {
-        "lv": 1,
-        "id": "screech",
-        "name": "Chirrido",
-        "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "sonic_boom",
-        "name": "Onda Sónica",
-        "pp": 20
-      },
-      {
-        "lv": 8,
-        "id": "screech",
-        "name": "Chirrido",
-        "pp": 40
-      },
-      {
-        "lv": 12,
-        "id": "sonic_boom",
-        "name": "Onda Sónica",
-        "pp": 20
-      },
-      {
-        "lv": 15,
+        "lv": 21,
         "id": "spark",
         "name": "Chispa",
         "pp": 20
       },
       {
-        "lv": 21,
+        "lv": 27,
         "id": "self_destruct",
         "name": "Autodestrucción",
         "pp": 5
       },
       {
-        "lv": 26,
+        "lv": 32,
         "id": "rollout",
         "name": "Rodar",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 37,
         "id": "light_screen",
         "name": "Pantalla de Luz",
         "pp": 30
       },
       {
-        "lv": 41,
+        "lv": 42,
         "id": "swift",
         "name": "Rapidez",
         "pp": 20
       },
       {
-        "lv": 50,
+        "lv": 46,
         "id": "explosion",
         "name": "Explosión",
         "pp": 5
       },
       {
-        "lv": 58,
+        "lv": 49,
         "id": "mirror_coat",
         "name": "Manto Espejo",
         "pp": 20
@@ -6903,7 +7588,6 @@ export const POKEMON_DB = {
   },
   "exeggcute": {
     "name": "Exeggcute",
-    "emoji": "🥚",
     "type": "grass",
     "type2": "psychic",
     "hp": 60,
@@ -6927,43 +7611,49 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 13,
+        "lv": 1,
+        "id": "uproar",
+        "name": "Alboroto",
+        "pp": 10
+      },
+      {
+        "lv": 7,
         "id": "reflect",
         "name": "Reflejo",
         "pp": 20
       },
       {
-        "lv": 19,
+        "lv": 13,
         "id": "leech_seed",
         "name": "Drenadoras",
         "pp": 10
       },
       {
-        "lv": 25,
+        "lv": 19,
         "id": "confusion",
         "name": "Confusión",
         "pp": 25
       },
       {
-        "lv": 31,
+        "lv": 25,
         "id": "stun_spore",
         "name": "Paralizador",
         "pp": 30
       },
       {
-        "lv": 37,
+        "lv": 31,
         "id": "poison_powder",
         "name": "Polvo Veneno",
         "pp": 35
       },
       {
-        "lv": 43,
+        "lv": 37,
         "id": "sleep_powder",
         "name": "Somnífera",
         "pp": 15
       },
       {
-        "lv": 50,
+        "lv": 43,
         "id": "solar_beam",
         "name": "Rayo Solar",
         "pp": 10
@@ -6972,7 +7662,6 @@ export const POKEMON_DB = {
   },
   "exeggutor": {
     "name": "Exeggutor",
-    "emoji": "🌴",
     "type": "grass",
     "type2": "psychic",
     "hp": 95,
@@ -6985,9 +7674,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "barrier",
-        "name": "Barrera",
-        "pp": 30
+        "id": "barrage",
+        "name": "Bombardeo",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -7002,22 +7691,63 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
+        "lv": 1,
+        "id": "uproar",
+        "name": "Alboroto",
+        "pp": 10
+      },
+      {
+        "lv": 7,
+        "id": "reflect",
+        "name": "Reflejo",
+        "pp": 20
+      },
+      {
+        "lv": 13,
+        "id": "leech_seed",
+        "name": "Drenadoras",
+        "pp": 10
+      },
+      {
         "lv": 19,
         "id": "stomp",
         "name": "Pisotón",
         "pp": 20
       },
       {
+        "lv": 25,
+        "id": "stun_spore",
+        "name": "Paralizador",
+        "pp": 30
+      },
+      {
         "lv": 31,
         "id": "egg_bomb",
-        "name": "Huevo Bomba",
+        "name": "Bomba Huevo",
+        "pp": 10
+      },
+      {
+        "lv": 31,
+        "id": "poison_powder",
+        "name": "Polvo Veneno",
+        "pp": 35
+      },
+      {
+        "lv": 37,
+        "id": "sleep_powder",
+        "name": "Somnífera",
+        "pp": 15
+      },
+      {
+        "lv": 43,
+        "id": "solar_beam",
+        "name": "Rayo Solar",
         "pp": 10
       }
     ]
   },
   "cubone": {
     "name": "Cubone",
-    "emoji": "🦴",
     "type": "ground",
     "hp": 50,
     "atk": 50,
@@ -7034,6 +7764,12 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
+        "lv": 5,
+        "id": "tail_whip",
+        "name": "Látigo",
+        "pp": 30
+      },
+      {
         "lv": 9,
         "id": "bone_club",
         "name": "Hueso Palo",
@@ -7042,7 +7778,7 @@ export const POKEMON_DB = {
       {
         "lv": 13,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
@@ -7077,27 +7813,26 @@ export const POKEMON_DB = {
       },
       {
         "lv": 37,
-        "id": "slam",
-        "name": "Atizar",
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       },
       {
         "lv": 41,
-        "id": "double_edge",
-        "name": "Doble Filo",
-        "pp": 15
+        "id": "bone_rush",
+        "name": "Ataque Óseo",
+        "pp": 10
       },
       {
         "lv": 45,
-        "id": "bone_rush",
-        "name": "Hueso Rus",
-        "pp": 10
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
       }
     ]
   },
   "marowak": {
     "name": "Marowak",
-    "emoji": "🦴",
     "type": "ground",
     "hp": 60,
     "atk": 80,
@@ -7109,39 +7844,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "bone_club",
+        "name": "Hueso Palo",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
       },
       {
         "lv": 1,
-        "id": "bone_club",
-        "name": "Hueso Palo",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
         "lv": 1,
-        "id": "leer",
-        "name": "Malicioso",
+        "id": "tail_whip",
+        "name": "Látigo",
         "pp": 30
-      },
-      {
-        "lv": 9,
-        "id": "bone_club",
-        "name": "Hueso Palo",
-        "pp": 20
-      },
-      {
-        "lv": 13,
-        "id": "headbutt",
-        "name": "Cabezazo",
-        "pp": 15
       },
       {
         "lv": 17,
@@ -7162,40 +7885,39 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 32,
+        "lv": 29,
         "id": "rage",
         "name": "Furia",
         "pp": 20
       },
       {
-        "lv": 39,
+        "lv": 33,
         "id": "false_swipe",
         "name": "Falso Tortazo",
         "pp": 40
       },
       {
-        "lv": 46,
-        "id": "slam",
-        "name": "Atizar",
+        "lv": 37,
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       },
       {
-        "lv": 53,
+        "lv": 41,
+        "id": "bone_rush",
+        "name": "Ataque Óseo",
+        "pp": 10
+      },
+      {
+        "lv": 45,
         "id": "double_edge",
         "name": "Doble Filo",
         "pp": 15
-      },
-      {
-        "lv": 61,
-        "id": "bone_rush",
-        "name": "Hueso Rus",
-        "pp": 10
       }
     ]
   },
   "hitmonlee": {
     "name": "Hitmonlee",
-    "emoji": "🦶",
     "type": "fighting",
     "hp": 50,
     "atk": 120,
@@ -7207,15 +7929,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "reversal",
-        "name": "Inversión",
-        "pp": 15
-      },
-      {
-        "lv": 1,
         "id": "double_kick",
         "name": "Doble Patada",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "revenge",
+        "name": "Desquite",
+        "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 6,
@@ -7236,52 +7964,57 @@ export const POKEMON_DB = {
         "pp": 25
       },
       {
-        "lv": 21,
+        "lv": 20,
         "id": "brick_break",
         "name": "Demolición",
         "pp": 15
       },
       {
-        "lv": 26,
+        "lv": 21,
         "id": "focus_energy",
         "name": "Foco Energía",
         "pp": 30
       },
       {
-        "lv": 31,
+        "lv": 26,
         "id": "high_jump_kick",
-        "name": "Patada Salto Alta",
+        "name": "Pat. Salto Alta",
         "pp": 20
       },
       {
-        "lv": 36,
+        "lv": 31,
         "id": "mind_reader",
         "name": "Telépata",
         "pp": 5
       },
       {
-        "lv": 46,
-        "id": "blaze_kick",
-        "name": "Patada Ígnea",
+        "lv": 36,
+        "id": "foresight",
+        "name": "Profecía",
+        "pp": 40
+      },
+      {
+        "lv": 41,
+        "id": "endure",
+        "name": "Aguante",
         "pp": 10
+      },
+      {
+        "lv": 46,
+        "id": "mega_kick",
+        "name": "Megapatada",
+        "pp": 5
       },
       {
         "lv": 51,
         "id": "reversal",
         "name": "Inversión",
         "pp": 15
-      },
-      {
-        "lv": 56,
-        "id": "mega_kick",
-        "name": "Mega Patada",
-        "pp": 5
       }
     ]
   },
   "hitmonchan": {
     "name": "Hitmonchan",
-    "emoji": "🥊",
     "type": "fighting",
     "hp": 50,
     "atk": 105,
@@ -7293,15 +8026,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "bide",
-        "name": "Venganza",
+        "id": "comet_punch",
+        "name": "Puño Cometa",
+        "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "revenge",
+        "name": "Desquite",
         "pp": 10
       },
       {
         "lv": 1,
-        "id": "comet_punch",
-        "name": "Puño Cometa",
-        "pp": 15
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 7,
@@ -7328,34 +8067,45 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 32,
+        "lv": 26,
         "id": "ice_punch",
         "name": "Puño Hielo",
         "pp": 15
       },
       {
-        "lv": 38,
+        "lv": 26,
         "id": "thunder_punch",
         "name": "Puño Trueno",
         "pp": 15
       },
       {
-        "lv": 44,
+        "lv": 32,
         "id": "sky_uppercut",
         "name": "Gancho Alto",
         "pp": 15
       },
       {
-        "lv": 50,
+        "lv": 38,
         "id": "mega_punch",
-        "name": "Mega Puño",
+        "name": "Megapuño",
+        "pp": 20
+      },
+      {
+        "lv": 44,
+        "id": "detect",
+        "name": "Detección",
+        "pp": 5
+      },
+      {
+        "lv": 50,
+        "id": "counter",
+        "name": "Contraataque",
         "pp": 20
       }
     ]
   },
   "lickitung": {
     "name": "Lickitung",
-    "emoji": "👅",
     "type": "normal",
     "hp": 90,
     "atk": 55,
@@ -7398,7 +8148,7 @@ export const POKEMON_DB = {
       {
         "lv": 29,
         "id": "wrap",
-        "name": "Envolver",
+        "name": "Constricción",
         "pp": 20
       },
       {
@@ -7410,7 +8160,7 @@ export const POKEMON_DB = {
       {
         "lv": 40,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
@@ -7429,7 +8179,6 @@ export const POKEMON_DB = {
   },
   "koffing": {
     "name": "Koffing",
-    "emoji": "💨",
     "type": "poison",
     "hp": 40,
     "atk": 65,
@@ -7439,6 +8188,12 @@ export const POKEMON_DB = {
     "catchRate": 190,
     "spe": 35,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "poison_gas",
+        "name": "Gas Venenoso",
+        "pp": 40
+      },
       {
         "lv": 1,
         "id": "tackle",
@@ -7466,7 +8221,7 @@ export const POKEMON_DB = {
       {
         "lv": 25,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
@@ -7484,7 +8239,7 @@ export const POKEMON_DB = {
       {
         "lv": 45,
         "id": "destiny_bond",
-        "name": "Mismodestino",
+        "name": "Mismo Destino",
         "pp": 5
       },
       {
@@ -7497,7 +8252,6 @@ export const POKEMON_DB = {
   },
   "weezing": {
     "name": "Weezing",
-    "emoji": "💨",
     "type": "poison",
     "hp": 65,
     "atk": 90,
@@ -7509,33 +8263,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "poison_gas",
+        "name": "Gas Venenoso",
+        "pp": 40
+      },
+      {
+        "lv": 1,
+        "id": "self_destruct",
+        "name": "Autodestrucción",
+        "pp": 5
+      },
+      {
+        "lv": 1,
+        "id": "smog",
+        "name": "Polución",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "smog",
-        "name": "Polución",
-        "pp": 20
-      },
-      {
-        "lv": 1,
-        "id": "self_destruct",
-        "name": "Autodestrucción",
-        "pp": 5
-      },
-      {
-        "lv": 9,
-        "id": "smog",
-        "name": "Polución",
-        "pp": 20
-      },
-      {
-        "lv": 17,
-        "id": "self_destruct",
-        "name": "Autodestrucción",
-        "pp": 5
       },
       {
         "lv": 21,
@@ -7546,7 +8294,7 @@ export const POKEMON_DB = {
       {
         "lv": 25,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
@@ -7556,19 +8304,19 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 44,
+        "lv": 41,
         "id": "explosion",
         "name": "Explosión",
         "pp": 5
       },
       {
-        "lv": 51,
+        "lv": 45,
         "id": "destiny_bond",
-        "name": "Mismodestino",
+        "name": "Mismo Destino",
         "pp": 5
       },
       {
-        "lv": 58,
+        "lv": 49,
         "id": "memento",
         "name": "Legado",
         "pp": 10
@@ -7577,7 +8325,6 @@ export const POKEMON_DB = {
   },
   "rhyhorn": {
     "name": "Rhyhorn",
-    "emoji": "🦏",
     "type": "ground",
     "type2": "rock",
     "hp": 80,
@@ -7652,7 +8399,6 @@ export const POKEMON_DB = {
   },
   "rhydon": {
     "name": "Rhydon",
-    "emoji": "🦏",
     "type": "ground",
     "type2": "rock",
     "hp": 105,
@@ -7665,39 +8411,27 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "horn_attack",
         "name": "Cornada",
         "pp": 25
       },
       {
         "lv": 1,
+        "id": "stomp",
+        "name": "Pisotón",
+        "pp": 20
+      },
+      {
+        "lv": 1,
         "id": "tail_whip",
         "name": "Látigo",
         "pp": 30
-      },
-      {
-        "lv": 1,
-        "id": "stomp",
-        "name": "Pisotón",
-        "pp": 20
-      },
-      {
-        "lv": 1,
-        "id": "fury_attack",
-        "name": "Ataque Furia",
-        "pp": 20
-      },
-      {
-        "lv": 10,
-        "id": "stomp",
-        "name": "Pisotón",
-        "pp": 20
-      },
-      {
-        "lv": 15,
-        "id": "fury_attack",
-        "name": "Ataque Furia",
-        "pp": 20
       },
       {
         "lv": 24,
@@ -7718,19 +8452,19 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 46,
+        "lv": 43,
         "id": "take_down",
         "name": "Derribo",
         "pp": 20
       },
       {
-        "lv": 58,
+        "lv": 52,
         "id": "earthquake",
         "name": "Terremoto",
         "pp": 10
       },
       {
-        "lv": 66,
+        "lv": 57,
         "id": "megahorn",
         "name": "Megacuerno",
         "pp": 10
@@ -7739,7 +8473,6 @@ export const POKEMON_DB = {
   },
   "chansey": {
     "name": "Chansey",
-    "emoji": "🥚",
     "type": "normal",
     "hp": 250,
     "atk": 5,
@@ -7751,57 +8484,80 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 1,
         "id": "pound",
         "name": "Destructor",
         "pp": 35
       },
       {
         "lv": 5,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 9,
         "id": "tail_whip",
         "name": "Látigo",
         "pp": 30
       },
       {
+        "lv": 9,
+        "id": "refresh",
+        "name": "Alivio",
+        "pp": 20
+      },
+      {
         "lv": 13,
+        "id": "soft_boiled",
+        "name": "Amortiguador",
+        "pp": 10
+      },
+      {
+        "lv": 17,
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
       },
       {
-        "lv": 17,
+        "lv": 23,
+        "id": "minimize",
+        "name": "Reducción",
+        "pp": 20
+      },
+      {
+        "lv": 29,
         "id": "sing",
         "name": "Canto",
         "pp": 15
       },
       {
-        "lv": 23,
+        "lv": 35,
         "id": "egg_bomb",
         "name": "Bomba Huevo",
         "pp": 10
       },
       {
-        "lv": 29,
-        "id": "harden",
-        "name": "Fortaleza",
+        "lv": 41,
+        "id": "defense_curl",
+        "name": "Rizo Defensa",
+        "pp": 40
+      },
+      {
+        "lv": 49,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
         "pp": 30
       },
       {
-        "lv": 35,
-        "id": "soft_boiled",
-        "name": "Amortiguador",
-        "pp": 10
+        "lv": 57,
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
       }
     ]
   },
   "tangela": {
     "name": "Tangela",
-    "emoji": "🌿",
     "type": "grass",
     "hp": 65,
     "atk": 55,
@@ -7813,15 +8569,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "ingrain",
-        "name": "Arraigo",
-        "pp": 20
+        "id": "constrict",
+        "name": "Restricción",
+        "pp": 35
       },
       {
         "lv": 1,
-        "id": "constrict",
-        "name": "Constricción",
-        "pp": 35
+        "id": "ingrain",
+        "name": "Arraigo",
+        "pp": 20
       },
       {
         "lv": 4,
@@ -7830,55 +8586,55 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 7,
+        "lv": 10,
         "id": "absorb",
         "name": "Absorber",
         "pp": 20
       },
       {
-        "lv": 10,
-        "id": "vine_whip",
-        "name": "Látigo Cepa",
-        "pp": 10
+        "lv": 13,
+        "id": "growth",
+        "name": "Desarrollo",
+        "pp": 40
       },
       {
-        "lv": 13,
+        "lv": 19,
         "id": "poison_powder",
         "name": "Polvo Veneno",
         "pp": 35
       },
       {
-        "lv": 19,
-        "id": "stun_spore",
-        "name": "Paralizador",
-        "pp": 30
+        "lv": 22,
+        "id": "vine_whip",
+        "name": "Látigo Cepa",
+        "pp": 10
       },
       {
-        "lv": 22,
+        "lv": 28,
+        "id": "bind",
+        "name": "Atadura",
+        "pp": 20
+      },
+      {
+        "lv": 31,
         "id": "mega_drain",
         "name": "Megaagotar",
         "pp": 10
       },
       {
-        "lv": 28,
-        "id": "giga_drain",
-        "name": "Gigadrenado",
-        "pp": 5
-      },
-      {
-        "lv": 31,
-        "id": "ancient_power",
-        "name": "Poder Pasado",
-        "pp": 5
-      },
-      {
         "lv": 37,
-        "id": "slam",
-        "name": "Portazo",
-        "pp": 20
+        "id": "stun_spore",
+        "name": "Paralizador",
+        "pp": 30
       },
       {
         "lv": 40,
+        "id": "slam",
+        "name": "Atizar",
+        "pp": 20
+      },
+      {
+        "lv": 46,
         "id": "tickle",
         "name": "Cosquillas",
         "pp": 20
@@ -7887,7 +8643,6 @@ export const POKEMON_DB = {
   },
   "kangaskhan": {
     "name": "Kangaskhan",
-    "emoji": "🦘",
     "type": "normal",
     "hp": 105,
     "atk": 95,
@@ -7930,7 +8685,7 @@ export const POKEMON_DB = {
       {
         "lv": 25,
         "id": "mega_punch",
-        "name": "Mega Puño",
+        "name": "Megapuño",
         "pp": 20
       },
       {
@@ -7961,7 +8716,6 @@ export const POKEMON_DB = {
   },
   "horsea": {
     "name": "Horsea",
-    "emoji": "🐎",
     "type": "water",
     "hp": 30,
     "atk": 40,
@@ -7980,7 +8734,7 @@ export const POKEMON_DB = {
       {
         "lv": 8,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
@@ -8023,7 +8777,6 @@ export const POKEMON_DB = {
   },
   "seadra": {
     "name": "Seadra",
-    "emoji": "🐎",
     "type": "water",
     "hp": 55,
     "atk": 65,
@@ -8041,36 +8794,18 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "smokescreen",
-        "name": "Pantalla Humo",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
-      },
-      {
-        "lv": 8,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
-        "lv": 15,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
-      },
-      {
-        "lv": 22,
+        "lv": 1,
         "id": "water_gun",
         "name": "Pistola Agua",
         "pp": 25
@@ -8088,13 +8823,13 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 45,
+        "lv": 43,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
       },
       {
-        "lv": 54,
+        "lv": 50,
         "id": "dragon_dance",
         "name": "Danza Dragón",
         "pp": 20
@@ -8103,7 +8838,6 @@ export const POKEMON_DB = {
   },
   "goldeen": {
     "name": "Goldeen",
-    "emoji": "🐟",
     "type": "water",
     "hp": 45,
     "atk": 67,
@@ -8116,7 +8850,7 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "peck",
-        "name": "Picoteo",
+        "name": "Picotazo",
         "pp": 35
       },
       {
@@ -8151,24 +8885,30 @@ export const POKEMON_DB = {
       },
       {
         "lv": 29,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 38,
         "id": "waterfall",
         "name": "Cascada",
         "pp": 15
       },
       {
-        "lv": 38,
+        "lv": 43,
         "id": "horn_drill",
         "name": "Perforador",
         "pp": 5
       },
       {
-        "lv": 43,
+        "lv": 52,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 52,
+        "lv": 57,
         "id": "megahorn",
         "name": "Megacuerno",
         "pp": 10
@@ -8177,7 +8917,6 @@ export const POKEMON_DB = {
   },
   "seaking": {
     "name": "Seaking",
-    "emoji": "🐟",
     "type": "water",
     "hp": 80,
     "atk": 92,
@@ -8190,8 +8929,14 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "peck",
-        "name": "Picoteo",
+        "name": "Picotazo",
         "pp": 35
+      },
+      {
+        "lv": 1,
+        "id": "supersonic",
+        "name": "Supersónico",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -8204,18 +8949,6 @@ export const POKEMON_DB = {
         "id": "water_sport",
         "name": "Hidrochorro",
         "pp": 15
-      },
-      {
-        "lv": 1,
-        "id": "supersonic",
-        "name": "Supersónico",
-        "pp": 20
-      },
-      {
-        "lv": 10,
-        "id": "supersonic",
-        "name": "Supersónico",
-        "pp": 20
       },
       {
         "lv": 15,
@@ -8231,24 +8964,30 @@ export const POKEMON_DB = {
       },
       {
         "lv": 29,
+        "id": "fury_attack",
+        "name": "Ataque Furia",
+        "pp": 20
+      },
+      {
+        "lv": 38,
         "id": "waterfall",
         "name": "Cascada",
         "pp": 15
       },
       {
-        "lv": 38,
+        "lv": 43,
         "id": "horn_drill",
         "name": "Perforador",
         "pp": 5
       },
       {
-        "lv": 46,
+        "lv": 52,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 58,
+        "lv": 57,
         "id": "megahorn",
         "name": "Megacuerno",
         "pp": 10
@@ -8257,7 +8996,6 @@ export const POKEMON_DB = {
   },
   "staryu": {
     "name": "Staryu",
-    "emoji": "⭐",
     "type": "water",
     "hp": 30,
     "atk": 45,
@@ -8269,15 +9007,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "harden",
         "name": "Fortaleza",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 6,
@@ -8299,26 +9037,26 @@ export const POKEMON_DB = {
       },
       {
         "lv": 19,
-        "id": "swift",
-        "name": "Rapidez",
-        "pp": 20
-      },
-      {
-        "lv": 24,
-        "id": "bubble_beam",
-        "name": "Rayo Burbuja",
-        "pp": 20
-      },
-      {
-        "lv": 28,
         "id": "camouflage",
         "name": "Camuflaje",
         "pp": 20
       },
       {
+        "lv": 24,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
+        "lv": 28,
+        "id": "bubble_beam",
+        "name": "Rayo Burbuja",
+        "pp": 20
+      },
+      {
         "lv": 33,
         "id": "minimize",
-        "name": "Minimizar",
+        "name": "Reducción",
         "pp": 20
       },
       {
@@ -8343,7 +9081,6 @@ export const POKEMON_DB = {
   },
   "starmie": {
     "name": "Starmie",
-    "emoji": "⭐",
     "type": "water",
     "type2": "psychic",
     "hp": 60,
@@ -8356,15 +9093,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
-      },
-      {
-        "lv": 1,
-        "id": "swift",
-        "name": "Rapidez",
-        "pp": 20
+        "id": "rapid_spin",
+        "name": "Giro Rápido",
+        "pp": 40
       },
       {
         "lv": 1,
@@ -8374,15 +9105,74 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "water_gun",
+        "name": "Pistola Agua",
+        "pp": 25
+      },
+      {
+        "lv": 1,
+        "id": "harden",
+        "name": "Fortaleza",
+        "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 19,
+        "id": "camouflage",
+        "name": "Camuflaje",
+        "pp": 20
+      },
+      {
+        "lv": 28,
+        "id": "bubble_beam",
+        "name": "Rayo Burbuja",
+        "pp": 20
+      },
+      {
+        "lv": 33,
         "id": "confuse_ray",
         "name": "Rayo Confuso",
         "pp": 10
+      },
+      {
+        "lv": 33,
+        "id": "minimize",
+        "name": "Reducción",
+        "pp": 20
+      },
+      {
+        "lv": 37,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
+        "pp": 30
+      },
+      {
+        "lv": 42,
+        "id": "cosmic_power",
+        "name": "Masa Cósmica",
+        "pp": 20
+      },
+      {
+        "lv": 46,
+        "id": "hydro_pump",
+        "name": "Hidrobomba",
+        "pp": 5
       }
     ]
   },
   "mr_mime": {
     "name": "Mr. Mime",
-    "emoji": "🤡",
     "type": "psychic",
     "hp": 40,
     "atk": 45,
@@ -8399,85 +9189,91 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
+        "lv": 5,
         "id": "confusion",
         "name": "Confusión",
         "pp": 25
       },
       {
-        "lv": 5,
+        "lv": 8,
         "id": "substitute",
         "name": "Sustituto",
         "pp": 10
       },
       {
-        "lv": 9,
+        "lv": 12,
         "id": "meditate",
         "name": "Meditación",
         "pp": 40
       },
       {
-        "lv": 13,
+        "lv": 15,
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
       },
       {
-        "lv": 17,
+        "lv": 19,
         "id": "light_screen",
         "name": "Pantalla de Luz",
         "pp": 30
       },
       {
-        "lv": 17,
+        "lv": 19,
         "id": "reflect",
         "name": "Reflejo",
         "pp": 20
       },
       {
-        "lv": 21,
+        "lv": 22,
+        "id": "magical_leaf",
+        "name": "Hoja Mágica",
+        "pp": 20
+      },
+      {
+        "lv": 25,
         "id": "encore",
         "name": "Otra Vez",
         "pp": 5
       },
       {
-        "lv": 25,
+        "lv": 29,
         "id": "psybeam",
         "name": "Psicorrayo",
         "pp": 20
       },
       {
-        "lv": 29,
+        "lv": 33,
         "id": "recycle",
         "name": "Reciclaje",
         "pp": 10
       },
       {
-        "lv": 33,
+        "lv": 36,
         "id": "trick",
         "name": "Truco",
         "pp": 10
       },
       {
-        "lv": 37,
-        "id": "skill_swap",
-        "name": "Intercambio",
+        "lv": 40,
+        "id": "role_play",
+        "name": "Imitación",
         "pp": 10
       },
       {
-        "lv": 41,
+        "lv": 43,
         "id": "psychic",
         "name": "Psíquico",
         "pp": 10
       },
       {
-        "lv": 45,
+        "lv": 47,
         "id": "baton_pass",
         "name": "Relevo",
         "pp": 40
       },
       {
-        "lv": 49,
+        "lv": 50,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
@@ -8486,7 +9282,6 @@ export const POKEMON_DB = {
   },
   "scyther": {
     "name": "Scyther",
-    "emoji": "🦗",
     "type": "bug",
     "type2": "flying",
     "hp": 70,
@@ -8499,14 +9294,14 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
+        "id": "leer",
+        "name": "Malicioso",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "leer",
-        "name": "Malicioso",
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
         "pp": 30
       },
       {
@@ -8567,7 +9362,6 @@ export const POKEMON_DB = {
   },
   "jynx": {
     "name": "Jynx",
-    "emoji": "💃",
     "type": "ice",
     "type2": "psychic",
     "hp": 65,
@@ -8580,21 +9374,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "lick",
         "name": "Lengüetazo",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "sweet_kiss",
-        "name": "Beso Dulce",
+        "id": "lovely_kiss",
+        "name": "Beso Amoroso",
         "pp": 10
+      },
+      {
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
       },
       {
         "lv": 1,
@@ -8609,16 +9403,16 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 13,
-        "id": "powder_snow",
-        "name": "Nieve Polvo",
-        "pp": 25
-      },
-      {
         "lv": 21,
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
+      },
+      {
+        "lv": 21,
+        "id": "confusion",
+        "name": "Confusión",
+        "pp": 25
       },
       {
         "lv": 25,
@@ -8627,16 +9421,34 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 35,
+        "lv": 25,
+        "id": "sing",
+        "name": "Canto",
+        "pp": 15
+      },
+      {
+        "lv": 33,
         "id": "mean_look",
         "name": "Mal de Ojo",
         "pp": 5
       },
       {
-        "lv": 41,
+        "lv": 37,
         "id": "fake_tears",
-        "name": "Llantopanto",
+        "name": "Llanto Falso",
         "pp": 20
+      },
+      {
+        "lv": 45,
+        "id": "psychic",
+        "name": "Psíquico",
+        "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "perish_song",
+        "name": "Canto Mortal",
+        "pp": 5
       },
       {
         "lv": 51,
@@ -8646,15 +9458,14 @@ export const POKEMON_DB = {
       },
       {
         "lv": 57,
-        "id": "perish_song",
-        "name": "Canto Mortal",
+        "id": "blizzard",
+        "name": "Ventisca",
         "pp": 5
       }
     ]
   },
   "electabuzz": {
     "name": "Electabuzz",
-    "emoji": "⚡",
     "type": "electric",
     "hp": 65,
     "atk": 83,
@@ -8666,24 +9477,18 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
-        "pp": 30
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "thunder_punch",
-        "name": "Puño Trueno",
-        "pp": 15
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
       },
       {
-        "lv": 9,
+        "lv": 1,
         "id": "thunder_punch",
         "name": "Puño Trueno",
         "pp": 15
@@ -8701,19 +9506,19 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 36,
+        "lv": 33,
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
       },
       {
-        "lv": 47,
+        "lv": 41,
         "id": "thunderbolt",
         "name": "Rayo",
         "pp": 15
       },
       {
-        "lv": 58,
+        "lv": 49,
         "id": "thunder",
         "name": "Trueno",
         "pp": 10
@@ -8722,7 +9527,6 @@ export const POKEMON_DB = {
   },
   "magmar": {
     "name": "Magmar",
-    "emoji": "🔥",
     "type": "fire",
     "hp": 65,
     "atk": 95,
@@ -8740,60 +9544,48 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
+        "id": "fire_punch",
+        "name": "Puño Fuego",
+        "pp": 15
+      },
+      {
+        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "fire_punch",
-        "name": "Puño Fuego",
-        "pp": 15
-      },
-      {
-        "lv": 7,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
-      },
-      {
-        "lv": 13,
         "id": "smog",
         "name": "Polución",
         "pp": 20
       },
       {
-        "lv": 19,
-        "id": "fire_punch",
-        "name": "Puño Fuego",
-        "pp": 15
-      },
-      {
         "lv": 25,
         "id": "smokescreen",
-        "name": "Pantalla Humo",
+        "name": "Pantalla de Humo",
         "pp": 20
       },
       {
-        "lv": 33,
+        "lv": 31,
         "id": "sunny_day",
         "name": "Día Soleado",
         "pp": 5
       },
       {
-        "lv": 41,
+        "lv": 37,
         "id": "flamethrower",
         "name": "Lanzallamas",
         "pp": 15
       },
       {
-        "lv": 49,
+        "lv": 43,
         "id": "confuse_ray",
         "name": "Rayo Confuso",
         "pp": 10
       },
       {
-        "lv": 57,
+        "lv": 49,
         "id": "fire_blast",
         "name": "Llamarada",
         "pp": 5
@@ -8802,7 +9594,6 @@ export const POKEMON_DB = {
   },
   "pinsir": {
     "name": "Pinsir",
-    "emoji": "🪲",
     "type": "bug",
     "hp": 65,
     "atk": 125,
@@ -8814,14 +9605,14 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "clamp",
-        "name": "Tenaza",
-        "pp": 10
+        "id": "focus_energy",
+        "name": "Foco Energía",
+        "pp": 30
       },
       {
         "lv": 1,
-        "id": "focus_energy",
-        "name": "Foco Energía",
+        "id": "vise_grip",
+        "name": "Vise Grip",
         "pp": 30
       },
       {
@@ -8833,7 +9624,7 @@ export const POKEMON_DB = {
       {
         "lv": 13,
         "id": "seismic_toss",
-        "name": "Mov. Sísmico",
+        "name": "Sísmico",
         "pp": 20
       },
       {
@@ -8844,8 +9635,8 @@ export const POKEMON_DB = {
       },
       {
         "lv": 25,
-        "id": "bide",
-        "name": "Venganza",
+        "id": "revenge",
+        "name": "Desquite",
         "pp": 10
       },
       {
@@ -8876,7 +9667,6 @@ export const POKEMON_DB = {
   },
   "tauros": {
     "name": "Tauros",
-    "emoji": "🐂",
     "type": "normal",
     "hp": 75,
     "atk": 100,
@@ -8893,45 +9683,51 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 4,
+        "lv": 1,
         "id": "tail_whip",
         "name": "Látigo",
         "pp": 30
       },
       {
-        "lv": 8,
+        "lv": 4,
         "id": "rage",
         "name": "Furia",
         "pp": 20
       },
       {
-        "lv": 13,
+        "lv": 8,
         "id": "horn_attack",
         "name": "Cornada",
         "pp": 25
       },
       {
-        "lv": 19,
+        "lv": 13,
         "id": "scary_face",
         "name": "Cara Susto",
         "pp": 10
       },
       {
-        "lv": 26,
+        "lv": 19,
         "id": "pursuit",
         "name": "Persecución",
         "pp": 20
       },
       {
-        "lv": 34,
+        "lv": 26,
         "id": "swagger",
         "name": "Contoneo",
         "pp": 15
       },
       {
+        "lv": 34,
+        "id": "rest",
+        "name": "Descanso",
+        "pp": 10
+      },
+      {
         "lv": 43,
-        "id": "slam",
-        "name": "Atizar",
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       },
       {
@@ -8944,7 +9740,6 @@ export const POKEMON_DB = {
   },
   "magikarp": {
     "name": "Magikarp",
-    "emoji": "🐟",
     "type": "water",
     "hp": 20,
     "atk": 10,
@@ -8976,7 +9771,6 @@ export const POKEMON_DB = {
   },
   "gyarados": {
     "name": "Gyarados",
-    "emoji": "🐉",
     "type": "water",
     "type2": "flying",
     "hp": 95,
@@ -8989,15 +9783,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "slam",
-        "name": "Atizar",
+        "id": "thrash",
+        "name": "Golpe",
         "pp": 20
       },
       {
         "lv": 1,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
+        "id": "splash",
+        "name": "Salpicadura",
+        "pp": 40
+      },
+      {
+        "lv": 15,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 20,
@@ -9016,6 +9816,12 @@ export const POKEMON_DB = {
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
+      },
+      {
+        "lv": 30,
+        "id": "flail",
+        "name": "Azote",
+        "pp": 15
       },
       {
         "lv": 35,
@@ -9051,7 +9857,6 @@ export const POKEMON_DB = {
   },
   "lapras": {
     "name": "Lapras",
-    "emoji": "🌊",
     "type": "water",
     "type2": "ice",
     "hp": 130,
@@ -9064,12 +9869,6 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
-      },
-      {
-        "lv": 1,
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
@@ -9079,6 +9878,12 @@ export const POKEMON_DB = {
         "id": "sing",
         "name": "Canto",
         "pp": 15
+      },
+      {
+        "lv": 1,
+        "id": "water_gun",
+        "name": "Pistola Agua",
+        "pp": 25
       },
       {
         "lv": 7,
@@ -9138,7 +9943,6 @@ export const POKEMON_DB = {
   },
   "ditto": {
     "name": "Ditto",
-    "emoji": "blob",
     "type": "normal",
     "hp": 48,
     "atk": 48,
@@ -9158,7 +9962,6 @@ export const POKEMON_DB = {
   },
   "vaporeon": {
     "name": "Vaporeon",
-    "emoji": "🧜",
     "type": "water",
     "hp": 130,
     "atk": 65,
@@ -9170,9 +9973,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -9187,12 +9990,6 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
-        "id": "helping_hand",
-        "name": "Refuerzo",
-        "pp": 20
-      },
-      {
         "lv": 8,
         "id": "sand_attack",
         "name": "Ataque Arena",
@@ -9203,6 +10000,12 @@ export const POKEMON_DB = {
         "id": "water_gun",
         "name": "Pistola Agua",
         "pp": 25
+      },
+      {
+        "lv": 16,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
       },
       {
         "lv": 23,
@@ -9223,10 +10026,22 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
+        "lv": 36,
+        "id": "baton_pass",
+        "name": "Relevo",
+        "pp": 40
+      },
+      {
         "lv": 42,
-        "id": "mist",
-        "name": "Neblina",
+        "id": "haze",
+        "name": "Niebla",
         "pp": 30
+      },
+      {
+        "lv": 42,
+        "id": "take_down",
+        "name": "Derribo",
+        "pp": 20
       },
       {
         "lv": 47,
@@ -9244,7 +10059,6 @@ export const POKEMON_DB = {
   },
   "jolteon": {
     "name": "Jolteon",
-    "emoji": "⚡",
     "type": "electric",
     "hp": 65,
     "atk": 65,
@@ -9256,9 +10070,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "thunder_shock",
-        "name": "Impactrueno",
-        "pp": 30
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -9273,12 +10087,6 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
-        "id": "helping_hand",
-        "name": "Refuerzo",
-        "pp": 20
-      },
-      {
         "lv": 8,
         "id": "sand_attack",
         "name": "Ataque Arena",
@@ -9289,6 +10097,12 @@ export const POKEMON_DB = {
         "id": "thunder_shock",
         "name": "Impactrueno",
         "pp": 30
+      },
+      {
+        "lv": 16,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
       },
       {
         "lv": 23,
@@ -9303,15 +10117,33 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
+        "lv": 30,
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
+      },
+      {
         "lv": 36,
         "id": "pin_missile",
         "name": "Pin Misil",
         "pp": 20
       },
       {
+        "lv": 36,
+        "id": "baton_pass",
+        "name": "Relevo",
+        "pp": 40
+      },
+      {
         "lv": 42,
         "id": "thunder_wave",
         "name": "Onda Trueno",
+        "pp": 20
+      },
+      {
+        "lv": 42,
+        "id": "take_down",
+        "name": "Derribo",
         "pp": 20
       },
       {
@@ -9330,7 +10162,6 @@ export const POKEMON_DB = {
   },
   "flareon": {
     "name": "Flareon",
-    "emoji": "🔥",
     "type": "fire",
     "hp": 65,
     "atk": 130,
@@ -9342,9 +10173,9 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -9359,12 +10190,6 @@ export const POKEMON_DB = {
         "pp": 30
       },
       {
-        "lv": 1,
-        "id": "helping_hand",
-        "name": "Refuerzo",
-        "pp": 20
-      },
-      {
         "lv": 8,
         "id": "sand_attack",
         "name": "Ataque Arena",
@@ -9375,6 +10200,12 @@ export const POKEMON_DB = {
         "id": "ember",
         "name": "Ascuas",
         "pp": 25
+      },
+      {
+        "lv": 16,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
       },
       {
         "lv": 23,
@@ -9395,28 +10226,39 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
+        "lv": 36,
+        "id": "baton_pass",
+        "name": "Relevo",
+        "pp": 40
+      },
+      {
         "lv": 42,
         "id": "smog",
         "name": "Polución",
         "pp": 20
       },
       {
+        "lv": 42,
+        "id": "take_down",
+        "name": "Derribo",
+        "pp": 20
+      },
+      {
         "lv": 47,
-        "id": "scary_face",
-        "name": "Cara Susto",
-        "pp": 10
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
       },
       {
         "lv": 52,
-        "id": "fire_blast",
-        "name": "Llamarada",
-        "pp": 5
+        "id": "flamethrower",
+        "name": "Lanzallamas",
+        "pp": 15
       }
     ]
   },
   "porygon": {
     "name": "Porygon",
-    "emoji": "🦆",
     "type": "normal",
     "hp": 65,
     "atk": 60,
@@ -9428,21 +10270,21 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "tackle",
-        "name": "Placaje",
-        "pp": 35
+        "id": "conversion",
+        "name": "Conversión",
+        "pp": 30
       },
       {
         "lv": 1,
         "id": "conversion_2",
-        "name": "Conversión 2",
+        "name": "Conversión2",
         "pp": 30
       },
       {
         "lv": 1,
-        "id": "conversion",
-        "name": "Conversión",
-        "pp": 30
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
       },
       {
         "lv": 9,
@@ -9463,16 +10305,22 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 32,
-        "id": "tri_attack",
-        "name": "Triataque",
-        "pp": 10
+        "lv": 24,
+        "id": "sharpen",
+        "name": "Afilar",
+        "pp": 30
       },
       {
-        "lv": 36,
+        "lv": 32,
         "id": "lock_on",
         "name": "Fijar Blanco",
         "pp": 5
+      },
+      {
+        "lv": 36,
+        "id": "tri_attack",
+        "name": "Triataque",
+        "pp": 10
       },
       {
         "lv": 44,
@@ -9483,14 +10331,13 @@ export const POKEMON_DB = {
       {
         "lv": 48,
         "id": "zap_cannon",
-        "name": "Zap Cannon",
+        "name": "Electrocañón",
         "pp": 5
       }
     ]
   },
   "omanyte": {
     "name": "Omanyte",
-    "emoji": "🐚",
     "type": "rock",
     "type2": "water",
     "hp": 35,
@@ -9503,21 +10350,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "water_gun",
-        "name": "Pistola Agua",
-        "pp": 25
+        "id": "constrict",
+        "name": "Restricción",
+        "pp": 35
       },
       {
         "lv": 1,
         "id": "withdraw",
         "name": "Refugio",
         "pp": 40
-      },
-      {
-        "lv": 1,
-        "id": "constrict",
-        "name": "Constricción",
-        "pp": 35
       },
       {
         "lv": 13,
@@ -9527,9 +10368,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 19,
-        "id": "aurora_beam",
-        "name": "Rayo Aurora",
-        "pp": 20
+        "id": "water_gun",
+        "name": "Pistola Agua",
+        "pp": 25
       },
       {
         "lv": 25,
@@ -9539,15 +10380,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 31,
-        "id": "protect",
-        "name": "Protección",
-        "pp": 10
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
       },
       {
         "lv": 37,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "id": "protect",
+        "name": "Protección",
+        "pp": 10
       },
       {
         "lv": 43,
@@ -9571,7 +10412,6 @@ export const POKEMON_DB = {
   },
   "omastar": {
     "name": "Omastar",
-    "emoji": "🐚",
     "type": "rock",
     "type2": "water",
     "hp": 70,
@@ -9582,6 +10422,18 @@ export const POKEMON_DB = {
     "catchRate": 45,
     "spe": 55,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
+      },
+      {
+        "lv": 1,
+        "id": "constrict",
+        "name": "Restricción",
+        "pp": 35
+      },
       {
         "lv": 1,
         "id": "water_gun",
@@ -9595,30 +10447,6 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
-        "lv": 1,
-        "id": "constrict",
-        "name": "Constricción",
-        "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
-      },
-      {
-        "lv": 13,
-        "id": "bite",
-        "name": "Mordisco",
-        "pp": 25
-      },
-      {
-        "lv": 19,
-        "id": "aurora_beam",
-        "name": "Rayo Aurora",
-        "pp": 20
-      },
-      {
         "lv": 25,
         "id": "mud_shot",
         "name": "Disparo Lodo",
@@ -9626,15 +10454,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 31,
-        "id": "protect",
-        "name": "Protección",
-        "pp": 10
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
       },
       {
         "lv": 37,
-        "id": "focus_energy",
-        "name": "Foco Energía",
-        "pp": 30
+        "id": "protect",
+        "name": "Protección",
+        "pp": 10
       },
       {
         "lv": 40,
@@ -9643,19 +10471,19 @@ export const POKEMON_DB = {
         "pp": 15
       },
       {
-        "lv": 46,
+        "lv": 43,
         "id": "tickle",
         "name": "Cosquillas",
         "pp": 20
       },
       {
-        "lv": 55,
+        "lv": 49,
         "id": "ancient_power",
         "name": "Poder Pasado",
         "pp": 5
       },
       {
-        "lv": 65,
+        "lv": 55,
         "id": "hydro_pump",
         "name": "Hidrobomba",
         "pp": 5
@@ -9664,7 +10492,6 @@ export const POKEMON_DB = {
   },
   "kabuto": {
     "name": "Kabuto",
-    "emoji": "🦀",
     "type": "rock",
     "type2": "water",
     "hp": 30,
@@ -9677,15 +10504,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "harden",
         "name": "Fortaleza",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 13,
@@ -9719,9 +10546,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 43,
-        "id": "iron_defense",
-        "name": "Defensa Férrea",
-        "pp": 15
+        "id": "metal_sound",
+        "name": "Eco Metálico",
+        "pp": 40
       },
       {
         "lv": 49,
@@ -9739,7 +10566,6 @@ export const POKEMON_DB = {
   },
   "kabutops": {
     "name": "Kabutops",
-    "emoji": "🦀",
     "type": "rock",
     "type2": "water",
     "hp": 60,
@@ -9752,9 +10578,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "scratch",
-        "name": "Arañazo",
-        "pp": 35
+        "id": "absorb",
+        "name": "Absorber",
+        "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "fury_cutter",
+        "name": "Corte Furia",
+        "pp": 20
       },
       {
         "lv": 1,
@@ -9764,27 +10596,15 @@ export const POKEMON_DB = {
       },
       {
         "lv": 1,
-        "id": "absorb",
-        "name": "Absorber",
-        "pp": 20
+        "id": "leer",
+        "name": "Malicioso",
+        "pp": 30
       },
       {
         "lv": 1,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
-      },
-      {
-        "lv": 13,
-        "id": "absorb",
-        "name": "Absorber",
-        "pp": 20
-      },
-      {
-        "lv": 19,
-        "id": "leer",
-        "name": "Malicioso",
-        "pp": 30
+        "id": "scratch",
+        "name": "Arañazo",
+        "pp": 35
       },
       {
         "lv": 25,
@@ -9811,19 +10631,19 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 46,
-        "id": "iron_defense",
-        "name": "Defensa Férrea",
-        "pp": 15
+        "lv": 43,
+        "id": "metal_sound",
+        "name": "Eco Metálico",
+        "pp": 40
       },
       {
-        "lv": 55,
+        "lv": 49,
         "id": "mega_drain",
         "name": "Megaagotar",
         "pp": 10
       },
       {
-        "lv": 65,
+        "lv": 55,
         "id": "ancient_power",
         "name": "Poder Pasado",
         "pp": 5
@@ -9832,7 +10652,6 @@ export const POKEMON_DB = {
   },
   "aerodactyl": {
     "name": "Aerodactyl",
-    "emoji": "🦕",
     "type": "rock",
     "type2": "flying",
     "hp": 80,
@@ -9881,18 +10700,12 @@ export const POKEMON_DB = {
       },
       {
         "lv": 43,
-        "id": "roar",
-        "name": "Rugido",
-        "pp": 20
-      },
-      {
-        "lv": 50,
         "id": "take_down",
         "name": "Derribo",
         "pp": 20
       },
       {
-        "lv": 57,
+        "lv": 50,
         "id": "hyper_beam",
         "name": "Hiperrayo",
         "pp": 5
@@ -9901,7 +10714,6 @@ export const POKEMON_DB = {
   },
   "snorlax": {
     "name": "Snorlax",
-    "emoji": "💤",
     "type": "normal",
     "hp": 160,
     "atk": 110,
@@ -9938,7 +10750,7 @@ export const POKEMON_DB = {
       {
         "lv": 17,
         "id": "headbutt",
-        "name": "Cabezazo",
+        "name": "Golpe Cabeza",
         "pp": 15
       },
       {
@@ -9954,7 +10766,7 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 29,
+        "lv": 28,
         "id": "snore",
         "name": "Ronquido",
         "pp": 15
@@ -9967,39 +10779,38 @@ export const POKEMON_DB = {
       },
       {
         "lv": 37,
-        "id": "sleep_talk",
-        "name": "Sonámbulo",
-        "pp": 10
-      },
-      {
-        "lv": 41,
         "id": "block",
         "name": "Bloqueo",
         "pp": 5
       },
       {
-        "lv": 45,
-        "id": "thrash",
-        "name": "Golpe",
-        "pp": 20
+        "lv": 37,
+        "id": "sleep_talk",
+        "name": "Sonámbulo",
+        "pp": 10
       },
       {
-        "lv": 49,
+        "lv": 42,
+        "id": "covet",
+        "name": "Antojo",
+        "pp": 40
+      },
+      {
+        "lv": 46,
         "id": "rollout",
-        "name": "Desenrrollar",
+        "name": "Rodar",
         "pp": 20
       },
       {
-        "lv": 53,
-        "id": "double_edge",
-        "name": "Doble Filo",
-        "pp": 15
+        "lv": 51,
+        "id": "hyper_beam",
+        "name": "Hiperrayo",
+        "pp": 5
       }
     ]
   },
   "articuno": {
     "name": "Articuno",
-    "emoji": "❄️",
     "type": "ice",
     "type2": "flying",
     "hp": 90,
@@ -10068,7 +10879,6 @@ export const POKEMON_DB = {
   },
   "zapdos": {
     "name": "Zapdos",
-    "emoji": "⚡",
     "type": "electric",
     "type2": "flying",
     "hp": 90,
@@ -10082,7 +10892,7 @@ export const POKEMON_DB = {
       {
         "lv": 1,
         "id": "peck",
-        "name": "Picoteo",
+        "name": "Picotazo",
         "pp": 35
       },
       {
@@ -10137,7 +10947,6 @@ export const POKEMON_DB = {
   },
   "moltres": {
     "name": "Moltres",
-    "emoji": "🔥",
     "type": "fire",
     "type2": "flying",
     "hp": 90,
@@ -10150,15 +10959,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "wing_attack",
-        "name": "Ataque Ala",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "ember",
         "name": "Ascuas",
         "pp": 25
+      },
+      {
+        "lv": 1,
+        "id": "wing_attack",
+        "name": "Ataque Ala",
+        "pp": 35
       },
       {
         "lv": 13,
@@ -10206,7 +11015,6 @@ export const POKEMON_DB = {
   },
   "dratini": {
     "name": "Dratini",
-    "emoji": "🐉",
     "type": "dragon",
     "hp": 41,
     "atk": 64,
@@ -10218,15 +11026,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
+        "pp": 20
       },
       {
         "lv": 8,
@@ -10249,7 +11057,7 @@ export const POKEMON_DB = {
       {
         "lv": 29,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
@@ -10280,7 +11088,6 @@ export const POKEMON_DB = {
   },
   "dragonair": {
     "name": "Dragonair",
-    "emoji": "🐉",
     "type": "dragon",
     "hp": 61,
     "atk": 84,
@@ -10290,12 +11097,6 @@ export const POKEMON_DB = {
     "catchRate": 45,
     "spe": 70,
     "learnset": [
-      {
-        "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
       {
         "lv": 1,
         "id": "leer",
@@ -10315,15 +11116,9 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 8,
-        "id": "thunder_wave",
-        "name": "Onda Trueno",
-        "pp": 20
-      },
-      {
-        "lv": 15,
-        "id": "twister",
-        "name": "Ciclón",
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
         "pp": 20
       },
       {
@@ -10335,29 +11130,29 @@ export const POKEMON_DB = {
       {
         "lv": 29,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
-        "lv": 38,
+        "lv": 36,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 47,
+        "lv": 43,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
       },
       {
-        "lv": 56,
+        "lv": 50,
         "id": "outrage",
         "name": "Enfado",
         "pp": 15
       },
       {
-        "lv": 65,
+        "lv": 57,
         "id": "hyper_beam",
         "name": "Hiperrayo",
         "pp": 5
@@ -10366,7 +11161,6 @@ export const POKEMON_DB = {
   },
   "dragonite": {
     "name": "Dragonite",
-    "emoji": "🐉",
     "type": "dragon",
     "type2": "flying",
     "hp": 91,
@@ -10379,12 +11173,6 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "wrap",
-        "name": "Envolver",
-        "pp": 20
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
@@ -10402,15 +11190,9 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 8,
-        "id": "thunder_wave",
-        "name": "Onda Trueno",
-        "pp": 20
-      },
-      {
-        "lv": 15,
-        "id": "twister",
-        "name": "Ciclón",
+        "lv": 1,
+        "id": "wrap",
+        "name": "Constricción",
         "pp": 20
       },
       {
@@ -10422,20 +11204,26 @@ export const POKEMON_DB = {
       {
         "lv": 29,
         "id": "slam",
-        "name": "Portazo",
+        "name": "Atizar",
         "pp": 20
       },
       {
-        "lv": 38,
+        "lv": 36,
         "id": "agility",
         "name": "Agilidad",
         "pp": 30
       },
       {
-        "lv": 47,
+        "lv": 43,
         "id": "safeguard",
         "name": "Velo Sagrado",
         "pp": 25
+      },
+      {
+        "lv": 50,
+        "id": "outrage",
+        "name": "Enfado",
+        "pp": 15
       },
       {
         "lv": 55,
@@ -10444,13 +11232,7 @@ export const POKEMON_DB = {
         "pp": 35
       },
       {
-        "lv": 61,
-        "id": "outrage",
-        "name": "Enfado",
-        "pp": 15
-      },
-      {
-        "lv": 75,
+        "lv": 57,
         "id": "hyper_beam",
         "name": "Hiperrayo",
         "pp": 5
@@ -10459,7 +11241,6 @@ export const POKEMON_DB = {
   },
   "mewtwo": {
     "name": "Mewtwo",
-    "emoji": "🧬",
     "type": "psychic",
     "hp": 106,
     "atk": 110,
@@ -10482,28 +11263,34 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 1,
+        "lv": 11,
         "id": "barrier",
         "name": "Barrera",
         "pp": 30
       },
       {
-        "lv": 11,
+        "lv": 22,
+        "id": "mist",
+        "name": "Neblina",
+        "pp": 30
+      },
+      {
+        "lv": 22,
         "id": "swift",
         "name": "Rapidez",
         "pp": 20
       },
       {
-        "lv": 22,
-        "id": "psybeam",
-        "name": "Psicorrayo",
-        "pp": 20
+        "lv": 33,
+        "id": "psych_up",
+        "name": "Más Psique",
+        "pp": 10
       },
       {
-        "lv": 33,
-        "id": "amnesia",
-        "name": "Amnesia",
-        "pp": 20
+        "lv": 44,
+        "id": "future_sight",
+        "name": "Premonición",
+        "pp": 15
       },
       {
         "lv": 44,
@@ -10525,18 +11312,6 @@ export const POKEMON_DB = {
       },
       {
         "lv": 77,
-        "id": "psych_up",
-        "name": "Más Psique",
-        "pp": 10
-      },
-      {
-        "lv": 88,
-        "id": "recover",
-        "name": "Recuperación",
-        "pp": 20
-      },
-      {
-        "lv": 99,
         "id": "amnesia",
         "name": "Amnesia",
         "pp": 20
@@ -10545,7 +11320,6 @@ export const POKEMON_DB = {
   },
   "mew": {
     "name": "Mew",
-    "emoji": "✨",
     "type": "psychic",
     "hp": 100,
     "atk": 100,
@@ -10569,9 +11343,9 @@ export const POKEMON_DB = {
       },
       {
         "lv": 20,
-        "id": "mega_drain",
-        "name": "Megaagotar",
-        "pp": 10
+        "id": "mega_punch",
+        "name": "Megapuño",
+        "pp": 20
       },
       {
         "lv": 30,
@@ -10595,7 +11369,6 @@ export const POKEMON_DB = {
   },
   "pichu": {
     "name": "Pichu",
-    "emoji": "🐭",
     "type": "electric",
     "hp": 20,
     "atk": 40,
@@ -10607,15 +11380,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "thunder_shock",
-        "name": "Impactrueno",
-        "pp": 30
-      },
-      {
-        "lv": 1,
         "id": "charm",
         "name": "Encanto",
         "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "thunder_shock",
+        "name": "Impactrueno",
+        "pp": 30
       },
       {
         "lv": 6,
@@ -10639,7 +11412,6 @@ export const POKEMON_DB = {
   },
   "magby": {
     "name": "Magby",
-    "emoji": "🔥",
     "type": "fire",
     "hp": 45,
     "atk": 75,
@@ -10672,12 +11444,41 @@ export const POKEMON_DB = {
         "id": "fire_punch",
         "name": "Puño Fuego",
         "pp": 15
+      },
+      {
+        "lv": 25,
+        "id": "smokescreen",
+        "name": "Pantalla de Humo",
+        "pp": 20
+      },
+      {
+        "lv": 31,
+        "id": "sunny_day",
+        "name": "Día Soleado",
+        "pp": 5
+      },
+      {
+        "lv": 37,
+        "id": "flamethrower",
+        "name": "Lanzallamas",
+        "pp": 15
+      },
+      {
+        "lv": 43,
+        "id": "confuse_ray",
+        "name": "Rayo Confuso",
+        "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "fire_blast",
+        "name": "Llamarada",
+        "pp": 5
       }
     ]
   },
   "elekid": {
     "name": "Elekid",
-    "emoji": "🔌",
     "type": "electric",
     "hp": 45,
     "atk": 63,
@@ -10689,33 +11490,56 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "quick_attack",
-        "name": "Ataque Rápido",
-        "pp": 30
-      },
-      {
-        "lv": 1,
         "id": "leer",
         "name": "Malicioso",
         "pp": 30
       },
       {
-        "lv": 9,
-        "id": "thunder_shock",
-        "name": "Impactrueno",
+        "lv": 1,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
         "pp": 30
       },
       {
-        "lv": 17,
+        "lv": 9,
         "id": "thunder_punch",
         "name": "Puño Trueno",
         "pp": 15
+      },
+      {
+        "lv": 17,
+        "id": "light_screen",
+        "name": "Pantalla de Luz",
+        "pp": 30
+      },
+      {
+        "lv": 25,
+        "id": "swift",
+        "name": "Rapidez",
+        "pp": 20
+      },
+      {
+        "lv": 33,
+        "id": "screech",
+        "name": "Chirrido",
+        "pp": 40
+      },
+      {
+        "lv": 41,
+        "id": "thunderbolt",
+        "name": "Rayo",
+        "pp": 15
+      },
+      {
+        "lv": 49,
+        "id": "thunder",
+        "name": "Trueno",
+        "pp": 10
       }
     ]
   },
   "cleffa": {
     "name": "Cleffa",
-    "emoji": "⭐",
     "type": "normal",
     "hp": 50,
     "atk": 25,
@@ -10727,15 +11551,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "charm",
         "name": "Encanto",
         "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
       },
       {
         "lv": 4,
@@ -10754,12 +11578,17 @@ export const POKEMON_DB = {
         "id": "sweet_kiss",
         "name": "Beso Dulce",
         "pp": 10
+      },
+      {
+        "lv": 17,
+        "id": "magical_leaf",
+        "name": "Hoja Mágica",
+        "pp": 20
       }
     ]
   },
   "igglybuff": {
     "name": "Igglybuff",
-    "emoji": "🎈",
     "type": "normal",
     "hp": 90,
     "atk": 30,
@@ -10771,15 +11600,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "sing",
-        "name": "Canto",
-        "pp": 15
-      },
-      {
-        "lv": 1,
         "id": "charm",
         "name": "Encanto",
         "pp": 20
+      },
+      {
+        "lv": 1,
+        "id": "sing",
+        "name": "Canto",
+        "pp": 15
       },
       {
         "lv": 4,
@@ -10803,7 +11632,6 @@ export const POKEMON_DB = {
   },
   "togepi": {
     "name": "Togepi",
-    "emoji": "🥚",
     "type": "normal",
     "hp": 35,
     "atk": 20,
@@ -10815,33 +11643,80 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "growl",
-        "name": "Gruñido",
-        "pp": 40
-      },
-      {
-        "lv": 1,
         "id": "charm",
         "name": "Encanto",
         "pp": 20
       },
       {
-        "lv": 7,
+        "lv": 1,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 4,
         "id": "metronome",
         "name": "Metrónomo",
         "pp": 10
       },
       {
-        "lv": 18,
+        "lv": 9,
         "id": "sweet_kiss",
         "name": "Beso Dulce",
         "pp": 10
+      },
+      {
+        "lv": 13,
+        "id": "yawn",
+        "name": "Bostezo",
+        "pp": 10
+      },
+      {
+        "lv": 17,
+        "id": "encore",
+        "name": "Otra Vez",
+        "pp": 5
+      },
+      {
+        "lv": 21,
+        "id": "ancient_power",
+        "name": "Poder Pasado",
+        "pp": 5
+      },
+      {
+        "lv": 25,
+        "id": "follow_me",
+        "name": "Señuelo",
+        "pp": 20
+      },
+      {
+        "lv": 29,
+        "id": "wish",
+        "name": "Deseo",
+        "pp": 10
+      },
+      {
+        "lv": 33,
+        "id": "safeguard",
+        "name": "Velo Sagrado",
+        "pp": 25
+      },
+      {
+        "lv": 37,
+        "id": "double_edge",
+        "name": "Doble Filo",
+        "pp": 15
+      },
+      {
+        "lv": 41,
+        "id": "baton_pass",
+        "name": "Relevo",
+        "pp": 40
       }
     ]
   },
   "tyrogue": {
     "name": "Tyrogue",
-    "emoji": "🥋",
     "type": "fighting",
     "hp": 35,
     "atk": 35,
@@ -10856,24 +11731,11 @@ export const POKEMON_DB = {
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
-      },
-      {
-        "lv": 1,
-        "id": "helping_hand",
-        "name": "Refuerzo",
-        "pp": 20
-      },
-      {
-        "lv": 7,
-        "id": "fake_out",
-        "name": "Sorpresa",
-        "pp": 10
       }
     ]
   },
   "smoochum": {
     "name": "Smoochum",
-    "emoji": "😚",
     "type": "ice",
     "hp": 45,
     "atk": 30,
@@ -10885,15 +11747,15 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "pound",
-        "name": "Destructor",
-        "pp": 35
-      },
-      {
-        "lv": 1,
         "id": "lick",
         "name": "Lengüetazo",
         "pp": 30
+      },
+      {
+        "lv": 1,
+        "id": "pound",
+        "name": "Destructor",
+        "pp": 35
       },
       {
         "lv": 9,
@@ -10906,13 +11768,54 @@ export const POKEMON_DB = {
         "id": "powder_snow",
         "name": "Nieve Polvo",
         "pp": 25
+      },
+      {
+        "lv": 21,
+        "id": "confusion",
+        "name": "Confusión",
+        "pp": 25
+      },
+      {
+        "lv": 25,
+        "id": "sing",
+        "name": "Canto",
+        "pp": 15
+      },
+      {
+        "lv": 33,
+        "id": "mean_look",
+        "name": "Mal de Ojo",
+        "pp": 5
+      },
+      {
+        "lv": 37,
+        "id": "fake_tears",
+        "name": "Llanto Falso",
+        "pp": 20
+      },
+      {
+        "lv": 45,
+        "id": "psychic",
+        "name": "Psíquico",
+        "pp": 10
+      },
+      {
+        "lv": 49,
+        "id": "perish_song",
+        "name": "Canto Mortal",
+        "pp": 5
+      },
+      {
+        "lv": 57,
+        "id": "blizzard",
+        "name": "Ventisca",
+        "pp": 5
       }
     ],
     "type2": "psychic"
   },
   "eevee": {
     "name": "Eevee",
-    "emoji": "🦊",
     "type": "normal",
     "hp": 55,
     "atk": 55,
@@ -10922,6 +11825,12 @@ export const POKEMON_DB = {
     "catchRate": 45,
     "spe": 55,
     "learnset": [
+      {
+        "lv": 1,
+        "id": "helping_hand",
+        "name": "Refuerzo",
+        "pp": 20
+      },
       {
         "lv": 1,
         "id": "tackle",
@@ -10945,12 +11854,35 @@ export const POKEMON_DB = {
         "id": "growl",
         "name": "Gruñido",
         "pp": 40
+      },
+      {
+        "lv": 23,
+        "id": "quick_attack",
+        "name": "Ataque Rápido",
+        "pp": 30
+      },
+      {
+        "lv": 30,
+        "id": "bite",
+        "name": "Mordisco",
+        "pp": 25
+      },
+      {
+        "lv": 36,
+        "id": "baton_pass",
+        "name": "Relevo",
+        "pp": 40
+      },
+      {
+        "lv": 42,
+        "id": "take_down",
+        "name": "Derribo",
+        "pp": 20
       }
     ]
   },
   "castform": {
     "name": "Castform",
-    "emoji": "🌦️",
     "type": "normal",
     "hp": 70,
     "atk": 70,
@@ -10968,42 +11900,42 @@ export const POKEMON_DB = {
       },
       {
         "lv": 10,
+        "id": "ember",
+        "name": "Ascuas",
+        "pp": 25
+      },
+      {
+        "lv": 10,
+        "id": "powder_snow",
+        "name": "Nieve Polvo",
+        "pp": 25
+      },
+      {
+        "lv": 10,
         "id": "water_gun",
         "name": "Pistola Agua",
         "pp": 25
       },
       {
         "lv": 20,
-        "id": "ember",
-        "name": "Ascuas",
-        "pp": 25
-      },
-      {
-        "lv": 30,
-        "id": "powder_snow",
-        "name": "Nieve Polvo",
-        "pp": 25
-      },
-      {
-        "lv": 40,
-        "id": "sunny_day",
-        "name": "Día Soleado",
-        "pp": 5
-      },
-      {
-        "lv": 40,
-        "id": "rain_dance",
-        "name": "Danza Lluvia",
-        "pp": 5
-      },
-      {
-        "lv": 40,
         "id": "hail",
         "name": "Granizo",
         "pp": 10
       },
       {
-        "lv": 50,
+        "lv": 20,
+        "id": "rain_dance",
+        "name": "Danza Lluvia",
+        "pp": 5
+      },
+      {
+        "lv": 20,
+        "id": "sunny_day",
+        "name": "Día Soleado",
+        "pp": 5
+      },
+      {
+        "lv": 30,
         "id": "weather_ball",
         "name": "Meteorobola",
         "pp": 10

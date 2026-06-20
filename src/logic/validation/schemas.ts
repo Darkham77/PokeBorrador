@@ -245,7 +245,6 @@ const pokemonSchema = object({
   nature: fallback(string(), 'hardy'),
   heldItem: fallback(nullable(string()), null),
   item: fallback(nullable(string()), null),
-  emoji: optional(string()),
   friendship: fallback(number(), 70),
   vigor: optional(number()),
   maxVigor: optional(number()),

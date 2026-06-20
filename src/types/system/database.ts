@@ -8,7 +8,6 @@ export interface LearnsetMove {
 
 export interface PokemonBaseData {
   name: string;
-  emoji?: string;
   type: string;
   type2?: string;
   hp: number;

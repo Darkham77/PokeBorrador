@@ -157,6 +157,9 @@ describe('Shop & Healing Logic', () => {
       const items = shopStore.getBlackMarketItems()
       const item = items[0]!
       
+      // Ensure we start with 0 of this item in the inventory
+      gameStore.state.inventory[item.id] = 0
+      
       // Formula: (bcPrice * 50) * (1 - 0.20)
       const expectedPrice = Math.floor(((item.bcPrice || 0) * 50) * (1 - 0.20))
       const expectedMoney = 1000000 - expectedPrice

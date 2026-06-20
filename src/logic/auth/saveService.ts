@@ -119,7 +119,6 @@ interface EnemyPokemonSerialized {
   uid: string
   id: string
   name: string
-  emoji: string
   type: string
   level: number
   hp: number
@@ -168,7 +167,7 @@ export function serializeState(state: GameState): SaveData {
         locationId: battle.locationId || null,
         enemyTeam: battle.enemyTeam
           ? (battle.enemyTeam as Pokemon[]).map(p => ({
-              uid: p.uid, id: p.id, name: p.name, emoji: p.emoji, type: p.type,
+              uid: p.uid, id: p.id, name: p.name, type: p.type,
               level: p.level, hp: p.hp, maxHp: p.maxHp, atk: p.atk, def: p.def,
               spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
               status: p.status || null, isShiny: p.isShiny || false,

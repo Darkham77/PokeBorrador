@@ -3,6 +3,7 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weathe
 import { getDayCycle } from '@/logic/utils/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle/battle'
+import { getCombinedEffectiveness } from '@/logic/pokemon/typeEngine'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 export function useMoveSlotData(
@@ -222,10 +223,21 @@ export function useMoveSlotData(
     return null
   })
 
+  const effectivenessMultiplier = computed(() => {
+    const md = moveData.value
+    if (!md) return 1
+    const defender = battleStore.state?.enemy
+    if (!defender) return 1
+    const attacker = playerInfoRef()
+    return getCombinedEffectiveness(md.type, defender, attacker)
+  })
+
   return {
     moveData,
     finalPower,
     finalAccuracy,
-    moveModifier
+    moveModifier,
+    effectivenessMultiplier
   }
 }
+

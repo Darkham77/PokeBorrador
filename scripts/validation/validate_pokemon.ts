@@ -45,6 +45,20 @@ function normalizeId(id: string): string {
   return id.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+async function canLearnMove(speciesId: string, moveId: string, gen: number): Promise<boolean> {
+  let currentId: string | undefined = speciesId;
+  while (currentId) {
+    const sdLearnset = await Dex.forGen(gen).learnsets.get(currentId);
+    const sources = sdLearnset?.learnset?.[moveId];
+    if (sources && sources.some(src => src.startsWith(String(gen)))) {
+      return true;
+    }
+    const speciesInfo = Dex.forGen(gen).species.get(currentId);
+    currentId = speciesInfo.prevo ? toID(speciesInfo.prevo) : undefined;
+  }
+  return false;
+}
+
 async function main() {
   const validator = setupValidation({
     title: 'POKEMON INTEGRITY VALIDATOR',
@@ -59,7 +73,7 @@ async function main() {
     abilities: string[];
     types: string[];
   }
-  let showdownDB: { pokemon: Record<string, ShowdownPokeEntry> };
+  let showdownDB: { pokemon: Record<string, ShowdownPokeEntry>; abilities?: Record<string, { name?: string }> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
     showdownDB = JSON.parse(rawData);
@@ -114,7 +128,7 @@ async function main() {
     }
 
     // C. Validar habilidad única asignada (obtenida de Dex)
-    const speciesInfo = Dex.species.get(coreId);
+    const speciesInfo = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
     const sdAbilities = sdPoke.abilities || [];
     const coreAbilities = speciesInfo.exists ? Object.values(speciesInfo.abilities) : [];
 
@@ -123,21 +137,37 @@ async function main() {
     } else {
       const officialAbility = sdAbilities[0];
       const coreActive = coreAbilities[0];
-      if (officialAbility && toID(coreActive) !== toID(officialAbility)) {
-        errors.push(`${tag} Discrepancia en habilidad activa: Juego '${coreActive}' vs Showdown oficial '${officialAbility}'.`);
+      if (officialAbility && coreActive) {
+        const cleanActiveId = toID(coreActive);
+        const translated = (showdownDB.abilities as Record<string, { name?: string }>)[cleanActiveId] || {};
+        const espName = translated.name || coreActive;
+        if (toID(espName) !== toID(officialAbility)) {
+          errors.push(`${tag} Discrepancia en habilidad activa: Juego '${coreActive}' ('${espName}') vs Showdown oficial '${officialAbility}'.`);
+        }
       }
     }
 
     // D. Validar movimientos del learnset
     if (corePoke.learnset && Array.isArray(corePoke.learnset)) {
-       for (const moveEntry of corePoke.learnset) {
-         if (moveEntry.id !== 'Unknown' && !Dex.forGen(ACTIVE_GENERATION).moves.get(toID(moveEntry.id)).exists) {
-           errors.push(`${tag} El movimiento '${moveEntry.id}' en su learnset no existe en el Dex de Gen 3.`);
-         }
-       }
-     } else {
-       errors.push(`${tag} Falta o es inválida la propiedad 'learnset'.`);
-     }
+      for (const moveEntry of corePoke.learnset) {
+        if (moveEntry.id === 'Unknown') continue;
+
+        const moveId = toID(moveEntry.id);
+        const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
+
+        if (!moveData.exists) {
+          errors.push(`${tag} El movimiento '${moveEntry.id}' no existe en el Dex de Gen ${ACTIVE_GENERATION}.`);
+          continue;
+        }
+
+        const isLearnable = await canLearnMove(normalizeId(coreId), moveId, ACTIVE_GENERATION);
+        if (!isLearnable) {
+          errors.push(`${tag} El movimiento '${moveEntry.id}' (${moveId}) no es aprendible/elegible en la Generación ${ACTIVE_GENERATION}.`);
+        }
+      }
+    } else {
+      errors.push(`${tag} Falta o es inválida la propiedad 'learnset'.`);
+    }
   }
 
   // 3. Finalizar reporte

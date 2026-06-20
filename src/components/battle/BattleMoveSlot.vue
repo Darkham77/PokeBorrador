@@ -27,14 +27,17 @@ const props = withDefaults(defineProps<Props>(), {
   dragOverIndex: null
 })
 
+import { useBattleStore } from '@/stores/battle/battle'
+
 const emit = defineEmits<{
   (e: 'use-move', index: number): void
 }>()
 
+const battleStore = useBattleStore()
 const rootEl = ref<HTMLElement | null>(null)
 let glowTween: gsap.core.Tween | null = null
 
-const { moveData, finalPower, finalAccuracy, moveModifier } = useMoveSlotData(
+const { moveData, finalPower, finalAccuracy, moveModifier, effectivenessMultiplier } = useMoveSlotData(
   () => props.move,
   () => props.playerInfo
 )
@@ -73,6 +76,30 @@ const isDisabled = computed(() => {
   return false
 })
 
+const weatherAuraClass = computed(() => {
+  if (!props.move || !moveModifier.value) return null
+  const weather = battleStore.state?.weather
+  if (!weather || weather.turns === 0) return null
+  const wType = (weather.visual || weather.type || '').toLowerCase()
+  
+  if (wType.includes('rain') || wType.includes('storm') || wType.includes('lluvia')) {
+    return 'weather-rain'
+  }
+  if (wType.includes('sun') || wType.includes('heatwave') || wType.includes('sol')) {
+    return 'weather-sun'
+  }
+  if (wType.includes('thunder') || wType.includes('tormenta')) {
+    return 'weather-thunderstorm'
+  }
+  if (wType.includes('hail') || wType.includes('snow') || wType.includes('granizo') || wType.includes('nieve')) {
+    return 'weather-hail-snow'
+  }
+  if (wType.includes('fog') || wType.includes('mist') || wType.includes('niebla') || wType.includes('neblina')) {
+    return 'weather-fog'
+  }
+  return null
+})
+
 const updateGlow = () => {
   if (glowTween) {
     glowTween.kill()
@@ -83,31 +110,57 @@ const updateGlow = () => {
   if (!el) return
 
   if (!props.move) {
-    // Reset shadow when slot is empty
-    gsap.set(el, { clearProps: 'boxShadow' })
+    gsap.set(el, { clearProps: 'boxShadow,borderColor' })
     return
   }
 
-  const mod = moveModifier.value
-  if (mod === 'boosted') {
-    glowTween = gsap.to(el, {
-      boxShadow: '0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5)',
-      duration: 1,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    })
-  } else if (mod === 'penalized') {
-    glowTween = gsap.to(el, {
-      boxShadow: '0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5)',
-      duration: 1,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    })
+  const eff = effectivenessMultiplier.value
+  const isStatus = moveData.value?.cat === 'status'
+
+  // Determine glow state:
+  // - Gold border pulse for super effective (eff > 1) on damage moves
+  // - Red border pulse for immune (eff === 0) or resisted (eff < 1)
+  // - Neutral (eff === 1) resets
+  let glowType: 'gold' | 'red' | null = null
+  if (isStatus) {
+    if (eff === 0) glowType = 'red' // Inmune al tipo del movimiento de estado
   } else {
-    // Reset shadow
-    gsap.set(el, { clearProps: 'boxShadow' })
+    if (eff > 1) glowType = 'gold'
+    else if (eff < 1) glowType = 'red'
+  }
+
+  if (glowType === 'gold') {
+    glowTween = gsap.fromTo(el,
+      { 
+        boxShadow: '0 0 4px rgba(255, 215, 0, 0.4)',
+        borderColor: 'rgba(255, 215, 0, 0.6)'
+      },
+      {
+        boxShadow: '0 0 16px rgba(255, 215, 0, 0.95)',
+        borderColor: 'rgba(255, 215, 0, 1)',
+        duration: 0.8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      }
+    )
+  } else if (glowType === 'red') {
+    glowTween = gsap.fromTo(el,
+      { 
+        boxShadow: '0 0 4px rgba(239, 68, 68, 0.4)',
+        borderColor: 'rgba(239, 68, 68, 0.6)'
+      },
+      {
+        boxShadow: '0 0 16px rgba(239, 68, 68, 0.95)',
+        borderColor: 'rgba(239, 68, 68, 1)',
+        duration: 0.8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      }
+    )
+  } else {
+    gsap.set(el, { clearProps: 'boxShadow,borderColor' })
   }
 }
 
@@ -138,7 +191,7 @@ const onHover = (isEntering: boolean) => {
   }
 }
 
-watch([() => props.move, moveModifier], () => {
+watch([() => props.move, moveModifier, effectivenessMultiplier], () => {
   updateGlow()
 })
 
@@ -157,13 +210,12 @@ onUnmounted(() => {
     class="move-slot-wrapper"
     :class="[
       index % 2 === 0 ? 'is-left' : 'is-right',
+      weatherAuraClass,
       { 
         'is-dragging': draggedIndex === index,
         'is-drag-over': dragOverIndex === index,
         'is-draggable': canReorder && move,
         'is-empty': !move,
-        'is-boosted': move && moveModifier === 'boosted',
-        'is-penalized': move && moveModifier === 'penalized',
         'is-disabled': move && isDisabled
       }
     ]"
@@ -173,14 +225,18 @@ onUnmounted(() => {
       background: move 
         ? `#12141c Linear-Gradient(${index % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexColorRgb}, 0.15) 0%, Transparent 100%)`
         : `#0a0c10`,
-      borderColor: move && moveModifier === 'boosted' ? '$coin-gold' : 
-        move && moveModifier === 'penalized' ? '#ff4444' :
-        move ? `Rgba(${hexColorRgb}, 0.6)` : 
-        'Rgba(255, 255, 255, 0.1)'
+      borderColor: move ? `Rgba(${hexColorRgb}, 0.6)` : 'Rgba(255, 255, 255, 0.1)'
     }"
     @mouseenter="onHover(true)"
     @mouseleave="onHover(false)"
   >
+    <!-- Weather Aura layer to prevent GSAP boxShadow overrides -->
+    <div
+      v-if="move && weatherAuraClass"
+      class="weather-aura-overlay"
+      :class="weatherAuraClass"
+    />
+
     <!-- Info Zone with Tooltip -->
     <template v-if="move">
       <PVTooltip

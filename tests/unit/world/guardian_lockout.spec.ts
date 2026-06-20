@@ -2,7 +2,7 @@
  * tests/unit/world/guardian_lockout.spec.ts
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '@/stores/game'
 import { useWarStore } from '@/stores/war'
@@ -50,6 +50,11 @@ describe('Guardian Lockout System Integrity', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    vi.spyOn(Math, 'random').mockReturnValue(0.9)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('should initialize empty guardianCaptures', () => {
