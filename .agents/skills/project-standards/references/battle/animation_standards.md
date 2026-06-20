@@ -511,3 +511,10 @@ The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST
 - **Correct Behavior (Text Elements)**: The directive detects elements containing text (`el.innerText`) and animates the CSS `color` property between the element's original computed color and a dimmed grey (`#888888`). This creates a visible "dimming" pulse without ever hiding the text.
 - **Correct Behavior (Non-Text Elements)**: For elements without text (icons, sprites), opacity is clamped to a minimum of `0.75` to prevent full transparency.
 - **Implementation Reference**: `src/directives/gsapLoop.ts` — `applyAnimation` switch-case `'blink'`.
+
+## 42. Layered Animation Conflict Resolution (GSAP vs CSS)
+
+When using GSAP to animate CSS properties like `box-shadow` on a container element (such as for combat status or type effectiveness highlights), any static CSS `box-shadow` rules (such as weather auras or status effects) on the same element will be completely overwritten by GSAP's inline style changes.
+
+- **Rule**: To avoid visual animation clashes, keep GSAP-animated styles and static layout modifiers on separate layers. Implement static overlays (e.g., `<div class="weather-aura-overlay">` inside the main wrapper) to apply static styles (like inset shadows) independently of the parent's animated borders.
+

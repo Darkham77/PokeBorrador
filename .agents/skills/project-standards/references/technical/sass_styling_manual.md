@@ -458,3 +458,11 @@ For battle sprites, standard 2px/3px outlines may be too thin. Specialized statu
   </feMerge>
 </filter>
 ```
+
+### 12. Nested Component Hover Overrides
+
+When customizing common/shared UI components (like buttons or cards) nested inside specialized layout wrappers, the inner component may inherit global hover transitions, backgrounds, and transforms that clash with the parent's layout.
+
+- **Rule**: Always reset the nested component's hover styles using highly specific SASS rules (e.g., `background: none !important; transform: none !important; border-radius: 0 !important;`) to disable inheritance.
+- **Visual Goal**: Prevents unwanted rounded corners or overlapping shadows from leaking near inner dividers or custom controls when hovering over parent elements.
+
