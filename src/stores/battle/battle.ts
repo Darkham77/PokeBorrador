@@ -358,6 +358,22 @@ export const useBattleStore = defineStore('battle', () => {
         }
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
         await runEnemyAction(getContext())
+        
+        if (activeBattle.value?.over) {
+          if (activeBattle.value.fled) {
+            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+            const ctx = getContext()
+            if (ctx.animations?.awaitTween) {
+              await ctx.animations.awaitTween('escape-enemy')
+            } else {
+              await sleep(800)
+            }
+            await endBattle(false, true)
+          }
+          isProcessing.value = false
+          return
+        }
+
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
         if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {

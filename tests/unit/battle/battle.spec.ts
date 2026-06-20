@@ -42,7 +42,7 @@ describe('Battle Engine', () => {
 
   describe('Abilities', () => {
     it('Intrépido should hit Ghost types with Normal moves', () => {
-      const attacker = { id: 'miltank', type: 'normal', atk: 100, level: 50, ability: 'Intrépido' } as unknown as Pokemon;
+      const attacker = { id: 'miltank', type: 'normal', atk: 100, level: 50, ability: 'scrappy' } as unknown as Pokemon;
       const defender = { id: 'gastly', type: 'ghost', def: 50, level: 50 } as unknown as Pokemon;
       const move = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' } as const;
       
@@ -53,7 +53,7 @@ describe('Battle Engine', () => {
 
     it('Sebo should reduce Fire/Ice damage by 50%', () => {
       const attacker = { id: 'charmander', type: 'fire', spa: 100, level: 50 } as unknown as Pokemon;
-      const defender = { id: 'snarlax', type: 'normal', spd: 100, level: 50, ability: 'Sebo' } as unknown as Pokemon;
+      const defender = { id: 'snarlax', type: 'normal', spd: 100, level: 50, ability: 'thickfat' } as unknown as Pokemon;
       const move = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' } as const;
       
       const noSeboResult = calculateDamage(attacker, { ...defender, ability: null } as unknown as Pokemon, move);

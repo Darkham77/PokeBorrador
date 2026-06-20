@@ -291,6 +291,8 @@ export function useBattleCaptureAnimations(
                        !!battleStore.state?.isTrainer || 
                        !!battleStore.state?.isGym
     
+    const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
+
     faintedPokemonSnapshot.value = side === 'enemy' 
       ? (toValue(enemyRef) ? { ...toValue(enemyRef), side: 'enemy' } : { side: 'enemy' })
       : (battleStore.player ? { ...battleStore.player, side: 'player' } : { side: 'player' })
@@ -298,7 +300,9 @@ export function useBattleCaptureAnimations(
     isFaintInProgress.value = true
     const tl = createTimeline()
     tl.add(() => {
-      gameBus.emit('PLAY_SOUND', 'faint')
+      if (pokemon) {
+        gameBus.emit('PLAY_CRY', { name: pokemon.id || pokemon.name, isFaint: true })
+      }
     })
     
     if (hasTrainer) {
@@ -308,7 +312,6 @@ export function useBattleCaptureAnimations(
         gameBus.emit('PLAY_SOUND', 'ballHit')
       })
       
-      const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
       slot.pokemonUid = pokemon?.uid || null
       slot.ballId = resolveBallId(pokemon)
 

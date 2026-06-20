@@ -1,6 +1,6 @@
 import { computed, toValue } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
-import type { Move } from '@/types/pokemon/pokemon';
+import type { Move, Pokemon } from '@/types/pokemon/pokemon';
 import { useBattleStore } from '@/stores/battle/battle';
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import { getDayCycle } from '@/logic/utils/timeUtils';
@@ -17,7 +17,10 @@ import {
   parseStatusEffectInfo
 } from '@/logic/battle/moveTooltipMath';
 
-export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
+export function useMoveTooltip(
+  moveInput: MaybeRefOrGetter<Move>,
+  playerInfoInput?: MaybeRefOrGetter<Pokemon | null | undefined>
+) {
   const battleStore = useBattleStore();
 
   const modifierInfo = computed(() => {
@@ -26,7 +29,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     const isGym = !!battleStore.state?.isGym;
     const weather = isGym ? undefined : battleStore.state?.weather?.type;
     const cycle = getDayCycle();
-    const attacker = battleStore.state?.player;
+    const attacker = playerInfoInput ? (toValue(playerInfoInput) || battleStore.state?.player) : battleStore.state?.player;
 
     let info = calculateMoveModifierInfo(move, weather, cycle);
 
@@ -60,7 +63,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     if (!battleStore.isBattleActive) return null;
 
     const move = toValue(moveInput);
-    const attacker = battleStore.state?.player;
+    const attacker = playerInfoInput ? (toValue(playerInfoInput) || battleStore.state?.player) : battleStore.state?.player;
     const defender = battleStore.state?.enemy;
     const isGym = !!battleStore.state?.isGym;
     const weather = isGym ? null : battleStore.state?.weather;
@@ -117,7 +120,6 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
       defender as unknown as PurePokemon | null,
       weather ? { type: weather.type, turns: weather.turns } : null,
       cycle,
-      isStatus,
       basePower,
       playerStages,
       enemyStages
@@ -140,7 +142,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     if (!battleStore.isBattleActive) return null;
 
     const move = toValue(moveInput);
-    const attacker = battleStore.state?.player;
+    const attacker = playerInfoInput ? (toValue(playerInfoInput) || battleStore.state?.player) : battleStore.state?.player;
     const defender = battleStore.state?.enemy;
     if (!attacker) return null;
 

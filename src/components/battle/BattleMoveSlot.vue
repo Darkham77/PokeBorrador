@@ -252,6 +252,7 @@ onUnmounted(() => {
           <MoveTooltip 
             v-if="moveData"
             :move="moveData as any" 
+            :player-info="props.playerInfo"
           />
         </template>
         

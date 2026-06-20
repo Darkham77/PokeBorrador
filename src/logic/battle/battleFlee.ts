@@ -81,6 +81,22 @@ export async function executeFlee(ctx: BattleContext) {
         // durante el ataque, suprimiendo el HUD y las animaciones de daño.
         await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
         await runEnemyAction(ctx)
+        
+        if (ctx.activeBattle.value?.over) {
+          if (ctx.activeBattle.value.fled) {
+            await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+            if (ctx.animations?.awaitTween) {
+              await ctx.animations.awaitTween('escape-enemy')
+            } else {
+              const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
+              await gsapSleep(800)
+            }
+            await ctx.endBattle(false, true)
+          }
+          ctx.isProcessing.value = false
+          return
+        }
+
         await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.EVAL_HP)
         
         // Chequear si el jugador fue noqueado por el contraataque

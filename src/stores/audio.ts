@@ -33,12 +33,62 @@ export const useAudioStore = defineStore('audio', () => {
     }
   };
 
+  const cryCache = new Map<string, AudioBuffer>();
+
+  const playCry = async (pokemonName: string, isFaint = false) => {
+    if (!isInitialized.value) init();
+    await resume();
+
+    const ctx = context.value;
+    const dest = masterGain.value;
+    if (!ctx || !dest) return;
+
+    const cleanName = pokemonName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let buffer = cryCache.get(cleanName);
+
+    if (!buffer) {
+      try {
+        const response = await fetch(`/cries/${cleanName}.mp3`);
+        if (!response.ok) {
+          throw new Error(`Cry file not found: /cries/${cleanName}.mp3`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = await ctx.decodeAudioData(arrayBuffer);
+        cryCache.set(cleanName, buffer);
+      } catch (err) {
+        logger.error('Audio', `Failed to load cry for ${pokemonName}: ${String(err)}`);
+        return;
+      }
+    }
+
+    try {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      if (isFaint) {
+        source.playbackRate.setValueAtTime(0.6, ctx.currentTime);
+      } else {
+        source.playbackRate.setValueAtTime(1.0, ctx.currentTime);
+      }
+      source.connect(dest);
+      source.start(ctx.currentTime);
+    } catch (err) {
+      logger.error('Audio', `Failed to play cry for ${pokemonName}: ${String(err)}`);
+    }
+  };
+
   const initListeners = () => {
     gameBus.on('PLAY_SOUND', (e: Event) => {
       const type = (e as CustomEvent).detail as string;
       if (type) play(type);
-    })
+    });
+    gameBus.on('PLAY_CRY', (e: Event) => {
+      const detail = (e as CustomEvent).detail as { name: string; isFaint?: boolean } | undefined;
+      if (detail && detail.name) {
+        playCry(detail.name, detail.isFaint || false);
+      }
+    });
   }
+
 
   /**
    * Resumes the context.
@@ -89,6 +139,7 @@ export const useAudioStore = defineStore('audio', () => {
     init,
     resume,
     play,
+    playCry,
     // Shortcuts
     shiny: () => play('shiny'),
     rival: () => play('rival'),

@@ -15,6 +15,12 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { NATURE_DATA } from '@/data/battle/natures'
 
+const getNatureData = (nat: string | undefined) => {
+  if (!nat) return NATURE_DATA['serious']
+  const key = nat.toLowerCase()
+  return NATURE_DATA[key as keyof typeof NATURE_DATA] || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === key)
+}
+
 interface Props {
   pokemon?: Pokemon | null
   isPlayer?: boolean
@@ -112,12 +118,6 @@ const getBreakdown = (key: string) => {
   return getStatBreakdown(p.value, key as 'atk' | 'def' | 'spa' | 'spd' | 'spe', stages, weather || null)
 }
 
-const formatMult = (m: number) => {
-  if (m === 1) return ''
-  const formatted = Number(m.toFixed(2))
-  return ` x${formatted}`
-}
-
 const showTeamBalls = computed(() => {
   // En la presentación del entrenador (FIRST_INTRO) se muestra la fila de Pokéballs disponibles.
   return battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP
@@ -178,54 +178,6 @@ const teamBallsStatus = computed(() => {
           class="caught-icon"
           @error="e => (e.target as HTMLImageElement).style.display = 'none'"
         >
-
-        <!-- Admin Info Icon -->
-        <PVTooltip
-          v-if="isAdmin"
-          position="bottom"
-          title="😈 ADMIN: UNIT STATS"
-          class="admin-info-trigger"
-        >
-          <span class="admin-icon-btn">❓</span>
-          
-          <template #content>
-            <div class="admin-stat-debug">
-              <div 
-                v-for="stat in adminStatConfig" 
-                :key="stat.key"
-                class="debug-stat-row"
-                :class="{
-                  'is-up': getStatModifier(stat.key) > 0,
-                  'is-down': getStatModifier(stat.key) < 0
-                }"
-              >
-                <div class="stat-main-line">
-                  <span class="d-icon">{{ stat.icon }}</span>
-                  <span class="d-label">{{ stat.label }}</span>
-                  <span class="d-val">{{ Math.round(getBreakdown(stat.key).final) }}</span>
-                  <span
-                    v-if="getStatModifier(stat.key) !== 0"
-                    class="d-mod"
-                  >
-                    {{ getStatModifier(stat.key) > 0 ? '↑' : '↓' }}{{ Math.abs(getStatModifier(stat.key)) }}
-                  </span>
-                </div>
-                <div class="stat-breakdown-line">
-                  <span class="b-base">{{ getBreakdown(stat.key).base }}</span>
-                  <span class="b-ops">
-                    {{ formatMult(getBreakdown(stat.key).weatherMult) }}
-                    {{ formatMult(getBreakdown(stat.key).stageMult) }}
-                    {{ formatMult(getBreakdown(stat.key).abilityMult) }}
-                    {{ formatMult(getBreakdown(stat.key).statusMult) }}
-                  </span>
-                </div>
-              </div>
-              <div class="admin-notice">
-                ⚠️ Solo visible para ADMIN
-              </div>
-            </div>
-          </template>
-        </PVTooltip>
       </div>
         
       <div class="level-row">
@@ -235,12 +187,34 @@ const teamBallsStatus = computed(() => {
         <PVTooltip
           v-if="!isPlayer && !isScrambled && gameStore.state.playerClass === 'criador'"
           position="bottom"
-          :title="p.nature || 'serious'"
-          :description="(NATURE_DATA[String(p.nature || 'serious').toLowerCase() as keyof typeof NATURE_DATA] || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === String(p.nature || 'serious').toLowerCase()))?.desc || 'Sin efecto en estadísticas.'"
+          :title="getNatureData(p.nature)?.name.toUpperCase() || 'SERIA'"
         >
           <div class="m-badge-nature">
             {{ p.nature || 'Serio' }}
           </div>
+          <template #content>
+            <div class="nature-pro-tooltip">
+              <div
+                v-if="getNatureData(p.nature)?.up || getNatureData(p.nature)?.down"
+                class="modifiers-row"
+                style="display: flex; gap: 8px; margin: 4px 0;"
+              >
+                <span
+                  v-if="getNatureData(p.nature)?.up"
+                  class="stat-mod mod-up"
+                  style="color: #32d74b; font-weight: bold; font-size: 7.5px;"
+                >▲ {{ getNatureData(p.nature)?.up?.toUpperCase() }} (+10%)</span>
+                <span
+                  v-if="getNatureData(p.nature)?.down"
+                  class="stat-mod mod-down"
+                  style="color: #ff453a; font-weight: bold; font-size: 7.5px;"
+                >▼ {{ getNatureData(p.nature)?.down?.toUpperCase() }} (-10%)</span>
+              </div>
+              <p style="margin: 4px 0 0 0; font-size: 8px; color: #aeaebe; line-height: 1.4;">
+                {{ getNatureData(p.nature)?.desc || 'Sin efecto en estadísticas.' }}
+              </p>
+            </div>
+          </template>
         </PVTooltip>
         <PokemonTypePills 
           v-if="!isScrambled"
@@ -283,7 +257,6 @@ const teamBallsStatus = computed(() => {
           v-for="status in unifiedStatuses"
           :key="status.id"
           :title="status.title"
-          :description="status.description"
           position="bottom"
         >
           <div
@@ -302,6 +275,46 @@ const teamBallsStatus = computed(() => {
               {{ status.count }}t
             </span>
           </div>
+
+          <template #content>
+            <div class="status-pro-tooltip">
+              <p class="status-desc-text">
+                {{ status.description }}
+              </p>
+              
+              <div class="tooltip-divider" />
+              
+              <div class="stats-comparison-grid">
+                <div class="grid-header-row">
+                  <span class="grid-header">STAT</span>
+                  <span class="grid-header">BASE</span>
+                  <span class="grid-header">MULT</span>
+                  <span class="grid-header">REAL</span>
+                </div>
+                
+                <div 
+                  v-for="statKey in ['atk', 'def', 'spa', 'spd', 'spe']" 
+                  :key="statKey"
+                  class="grid-stat-row"
+                  :class="{
+                    'is-up': getStatModifier(statKey) > 0 || getBreakdown(statKey).weatherMult > 1 || getBreakdown(statKey).abilityMult > 1,
+                    'is-down': getStatModifier(statKey) < 0 || getBreakdown(statKey).statusMult < 1 || getBreakdown(statKey).weatherMult < 1
+                  }"
+                >
+                  <span class="stat-name-col">
+                    {{ adminStatConfig.find(s => s.key === statKey)?.label }}
+                  </span>
+                  <span class="stat-val-col">{{ getBreakdown(statKey).base }}</span>
+                  <span class="stat-mult-col">
+                    x{{ (getBreakdown(statKey).stageMult * getBreakdown(statKey).weatherMult * getBreakdown(statKey).abilityMult * getBreakdown(statKey).statusMult).toFixed(2) }}
+                  </span>
+                  <span class="stat-final-col highlight-val">
+                    {{ Math.round(getBreakdown(statKey).final) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
         </PVTooltip>
       </div>
 
@@ -683,6 +696,89 @@ const teamBallsStatus = computed(() => {
     font-weight: bold;
     box-shadow: 0 0 6px var(--tier-bg);
     display: inline-block;
+  }
+}
+
+.status-pro-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+  max-width: 240px;
+  padding: 2px 0;
+  
+  .status-desc-text {
+    margin: 0;
+    font-size: 8px;
+    color: #aeaebe;
+    line-height: 1.4;
+  }
+
+  .tooltip-divider {
+    height: 1px;
+    background: Rgba(255, 255, 255, 0.1);
+    margin: 2px 0;
+  }
+
+  .stats-comparison-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    @include pixelated;
+    font-size: 8px;
+
+    .grid-header-row {
+      display: grid;
+      grid-template-columns: 35px 30px 40px 1fr;
+      text-align: right;
+      color: Rgba(255, 255, 255, 0.4);
+      font-weight: bold;
+      padding-bottom: 2px;
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+
+      .grid-header:first-child {
+        text-align: left;
+      }
+    }
+
+    .grid-stat-row {
+      display: grid;
+      grid-template-columns: 35px 30px 40px 1fr;
+      text-align: right;
+      align-items: center;
+      padding: 1px 0;
+
+      .stat-name-col {
+        text-align: left;
+        color: Rgba(255, 255, 255, 0.6);
+      }
+
+      .stat-val-col {
+        color: Rgba(255, 255, 255, 0.8);
+      }
+
+      .stat-mult-col {
+        color: #aeaebe;
+        font-weight: bold;
+      }
+
+      .stat-final-col {
+        color: #ffffff;
+        font-weight: bold;
+      }
+
+      &.is-up {
+        .stat-name-col, .stat-mult-col, .stat-final-col {
+          color: #32d74b;
+        }
+      }
+
+      &.is-down {
+        .stat-name-col, .stat-mult-col, .stat-final-col {
+          color: #ff453a;
+        }
+      }
+    }
   }
 }
 </style>

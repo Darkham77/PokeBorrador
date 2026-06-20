@@ -170,7 +170,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
 
   let statusMult = 1;
   if (statKey === 'spe' && pokemon.status === 'paralysis') {
-    statusMult = 0.5;
+    statusMult = 0.25;
   }
   if (statKey === 'atk' && pokemon.status === 'burn' && ab !== 'Agallas') {
     statusMult = 0.5;

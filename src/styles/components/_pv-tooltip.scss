@@ -72,6 +72,20 @@
     line-height: 1.6;
     white-space: pre-wrap;
 
+    .tooltip-divider-line {
+      display: block;
+      width: 100%;
+      margin: 4px 0;
+      box-sizing: border-box;
+
+      .tooltip-divider {
+        border: none;
+        height: 1px;
+        background: Rgba(255, 255, 255, 0.15);
+        margin: 0;
+      }
+    }
+
     .tooltip-line {
       display: flex;
       align-items: flex-start;

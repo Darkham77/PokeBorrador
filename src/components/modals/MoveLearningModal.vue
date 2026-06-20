@@ -68,7 +68,7 @@ const handleForget = () => {
           <BattleMoveSlot
             :move="newMove"
             :index="4"
-            :is-processing="true"
+            :is-processing="false"
           />
         </div>
       </div>

@@ -4,6 +4,14 @@ import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { BattleCombatantProps } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+
+const VOICE_MOVE_IDS = new Set([
+  'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',
+  'screech', 'supersonic', 'grasswhistle', 'chatter', 'snarl', 'round',
+  'disarmingvoice', 'boomburst', 'confide'
+])
+
 
 
 
@@ -153,6 +161,9 @@ export function useBattleCombatantAnims(
           if (shadowWrapperRef.value) {
             gsap.set(shadowWrapperRef.value, { clearProps: "display" })
           }
+          if (props.pokemon) {
+            gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name })
+          }
         }
       })
 
@@ -190,7 +201,14 @@ export function useBattleCombatantAnims(
     if (val && spriteRef.value) {
       const tl = gsap.timeline()
       
+      tl.add(() => {
+        if (props.pokemon) {
+          gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name, isFaint: true })
+        }
+      })
+      
       gsap.set(spriteRef.value, { transition: "none" })
+
       
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: "none" })
@@ -236,6 +254,14 @@ export function useBattleCombatantAnims(
       const cat = move.cat
       const tl = gsap.timeline()
       
+      const moveIdLookup = move.name ? pokemonDataProvider.resolveMoveId(move.name) : ''
+      const cleanMoveId = moveIdLookup.toLowerCase().replace(/[^a-z0-9]/g, '')
+      if (VOICE_MOVE_IDS.has(cleanMoveId) && props.pokemon) {
+        tl.add(() => {
+          gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name })
+        })
+      }
+      
       let nx = isPlayerSide ? 1 : -1
       let ny = isPlayerSide ? -0.5 : 0.5
       
@@ -275,8 +301,11 @@ export function useBattleCombatantAnims(
         tl.add(shakeTimeline)
         
         tl.add(() => {
-          gameBus.emit('PLAY_SOUND', 'faint')
+          if (props.pokemon) {
+            gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name, isFaint: true })
+          }
         })
+
 
         tl.to(spriteRef.value, {
           scale: 1.6,

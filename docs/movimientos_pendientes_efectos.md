@@ -1,5 +1,46 @@
 # Reporte de Efectos de Movimientos Pendientes de Implementar en ActionRegistry
 
+## 🧠 Análisis y Clasificación de Mecánicas Pendientes
+
+Tras evaluar el estado actual del motor de batalla modular y las alertas en consola (como el caso de `yawn` / *Bostezo*), se identifican cinco grandes familias de mecánicas que faltan integrar o expandir en el `ActionRegistry`:
+
+### 1. Estados Volátiles con Delay / Contadores (Ej: `yawn` / *Bostezo*)
+
+* **Problema**: Movimientos que no aplican un efecto inmediato, sino que programan un suceso para turnos posteriores.
+* **Propuesta**:
+  * Añadir un campo de estado temporal (ej. `yawnTurns: number`) en el modelo del Pokémon.
+  * En `battleFlow.ts` o `battleStatus.ts`, decrementar este contador al final del turno. Al llegar a `0`, aplicar de forma determinista el estado principal `sleep` (siempre que el objetivo no tenga ya otro problema de estado primario).
+
+### 2. Atrapamiento Parcial y Drenaje Continuo (Ej: `wrap`, `clamp`, `partiallytrapped`)
+
+* **Problema**: Movimientos de daño recurrente por turnos que impiden la retirada.
+* **Propuesta**:
+  * Registrar un estado volátil `trappedTurns` (ej. entre 2 y 5 turnos).
+  * Bloquear el botón de cambio (`[🔁 Switch]`) en la interfaz mientras este contador esté activo.
+  * Restar una fracción fija de HP (ej. 1/16 o 1/8) al final del turno en `battleStatus.ts`.
+
+### 3. Estados de Bloqueo de Acción / Turno Completo (Ej: `mustrecharge` / *Hiperrayo*, `lockedmove` / *Golpe*)
+
+* **Problema**: Obligan al Pokémon a recargar en el siguiente turno o a repetir el mismo movimiento de forma ininterrumpida.
+* **Propuesta**:
+  * Implementar flags como `mustRecharge` en el estado de combate del Pokémon.
+  * En la fase de selección de movimientos, si `mustRecharge` está activo, forzar una acción vacía de "recarga" y limpiar el flag al finalizar el turno.
+
+### 4. Limitadores de Opciones de Combate (Ej: `disable`, `encore`, `torment`)
+
+* **Problema**: Deshabilitan movimientos específicos o fuerzan a usar únicamente el último seleccionado.
+* **Propuesta**:
+  * Mantener un registro del último movimiento usado (`lastMoveId`) e inhabilitar los slots correspondientes en la interfaz de usuario de combate (añadiendo propiedades como `disabled` en el renderizado de la botonera).
+
+### 5. Condiciones de Entrada y Campo (Ej: `spikes` / *Púas*, `toxicspikes`, `stealthrock`)
+
+* **Problema**: Efectos que no se aplican al Pokémon activo, sino al lado del campo de batalla enemigo.
+* **Propuesta**:
+  * Integrar variables de campo en `BattleContext` (ej. `playerSideConditions: { spikes: number }`).
+  * En la lógica de relevo / cambio de Pokémon, verificar estas condiciones y aplicar daño proporcional o estados alterados al Pokémon entrante antes de que pueda actuar.
+
+---
+
 Este documento lista todos los movimientos de Showdown que poseen efectos especiales (estados alterados, modificaciones de estadísticas, climas, curación, etc.) pero que no se encuentran mapeados en `MOVE_TO_EFFECT_ALIASES` o implementados como efecto local unívoco.
 
 **Total de movimientos con efectos pendientes:** 381

@@ -11,15 +11,15 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from '../lib/validationBase.ts';
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
+import { ABILITY_TRANSLATIONS_ES } from '../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
-const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 
 async function main() {
   const validator = setupValidation({
     title: 'POKEMON ABILITY VALIDATOR',
-    requiredFiles: [DATA_FILE, SHOWDOWN_DB_PATH]
+    requiredFiles: [DATA_FILE]
   });
 
   await validator.checkFiles();
@@ -46,6 +46,12 @@ async function main() {
 
     if (!ability || !ability.exists) {
       errors.push(`${tag} No es una habilidad oficial válida en el Dex.`);
+      continue;
+    }
+
+    // Verificar si tiene traducción en el archivo local exportado
+    if (!ABILITY_TRANSLATIONS_ES[abId]) {
+      warnings.push(`${tag} No tiene traducción al español registrada en abilities.ts.`);
     }
   }
 

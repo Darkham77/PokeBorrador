@@ -19,8 +19,9 @@ enableCompileCache();
 // Importar bases de datos locales
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 
+import { MOVE_TRANSLATIONS_ES } from '../../src/data/battle/moves.ts';
+
 const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemon/pokemonUtils.ts');
-const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 
 async function main() {
   const { values } = parseArgs({
@@ -31,16 +32,6 @@ async function main() {
   });
 
   console.log(styleText('bold', '\n--- 🛡️  POKEMON MOVE VALIDATOR (OFFLINE - GEN 3) ---'));
-
-  // Cargar base de datos de traducciones
-  let showdownDB: { moves: Record<string, unknown> };
-  try {
-    const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-    showdownDB = JSON.parse(rawData);
-  } catch (error) {
-    console.error(styleText('red', `❌ Error cargando base de datos de Showdown: ${(error as Error).message}`));
-    process.exit(1);
-  }
 
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -72,9 +63,9 @@ async function main() {
     }
 
     // Verificar traducción al español
-    const translated = (showdownDB.moves as Record<string, unknown>)[moveId];
+    const translated = MOVE_TRANSLATIONS_ES[moveId];
     if (!translated) {
-      warnings.push(`${tag} No tiene traducción oficial al español en showdown_db_es.json.`);
+      warnings.push(`${tag} No tiene traducción oficial al español en moves.ts.`);
     }
   });
 

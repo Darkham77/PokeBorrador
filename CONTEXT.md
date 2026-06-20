@@ -11,3 +11,7 @@ A powerful alpha Pokémon that protects a specific route. Defeating or capturing
 ### Guardian Lockout (Bloqueo de Guardián)
 
 A daily restriction applied to a player's account. A player is allowed to defeat or capture at most one Guardian per route per calendar day. Once locked out, the Guardian will no longer appear on the route map card or trigger combat encounters for the rest of the day.
+
+### Battle Cry (Grito de Batalla)
+
+A distinct audio clip associated with each Pokémon species. It is played when the Pokémon enters the battlefield, faints in combat (slowed and pitch-lowered), or executes voice-based status moves.

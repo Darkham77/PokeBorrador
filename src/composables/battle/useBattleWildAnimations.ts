@@ -1,4 +1,4 @@
-import { ref, toValue, type MaybeRefOrGetter } from 'vue'
+import { ref, toValue, type MaybeRefOrGetter, watch } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
@@ -16,6 +16,16 @@ export function useBattleWildAnimations(
   const isWildSilhouetteHalfway = ref(false)
   const isInitialLoad = ref(true)
   const silhouetteOpacity = ref(0)
+
+  // Watch silhouette mode: trigger battle cry immediately when leaving silhouette/shadow state
+  watch(isWildSilhouette, (newVal, oldVal) => {
+    if (oldVal === true && newVal === false) {
+      const enemy = toValue(enemyRef)
+      if (enemy) {
+        gameBus.emit('PLAY_CRY', { name: enemy.id || enemy.name })
+      }
+    }
+  })
 
   const revealWildPokemon = async (isInstant = false) => {
     if (isInstant) {

@@ -32,76 +32,165 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
   return bestMove || null
 }
 
-export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defStages: BattleStages) => {
-  // md = move data (placeholder or from global data)
-  let score = move.power || 40
-  if (move.cat === 'status') score = 30
+import { calculateDamageRangePure, type PureMove, type PurePokemon } from '../battleMath.ts'
+import { getDayCycle } from '@/logic/utils/timeUtils'
+import { useBattleStore } from '@/stores/battle/battle'
 
-  const totalEff = getCombinedEffectiveness(move.type || 'normal', defender, attacker)
-  
-  if (totalEff === 0 && move.cat !== 'status') return 0
-  score *= totalEff
+export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defStages: BattleStages) => {
+  const effectStr = typeof move.effect === 'string' ? move.effect : ''
+
+  // 1. Caso base para movimientos de estado
+  if (move.cat === 'status') {
+    let score = 30
+
+    // Si duerme o paraliza y el oponente no tiene estado alterado, es muy prioritario
+    if ((effectStr === 'sleep' || effectStr === 'paralyze') && !defender.status) {
+      score = 60
+    }
+
+    // No repetir estados alterados
+    const statusEffects = ['sleep', 'paralyze', 'poison', 'toxic', 'burn', 'freeze']
+    if (statusEffects.includes(effectStr) && defender.status) {
+      return 0
+    }
+
+    // Evitar seguir bajando estadísticas si ya están al mínimo (-2 o peor)
+    if (effectStr === 'lower_atk' && (defStages.atk || 0) <= -2) score = 5
+    if (effectStr === 'lower_def' && (defStages.def || 0) <= -2) score = 5
+    if (effectStr === 'lower_spa' && (defStages.spa || 0) <= -2) score = 5
+    if (effectStr === 'lower_spd' && (defStages.spd || 0) <= -2) score = 5
+    if (effectStr === 'lower_spe' && (defStages.spe || 0) <= -2) score = 5
+
+    // Movimientos que mejoran estadísticas propias
+    if (effectStr.startsWith('stat_up_self')) {
+      // Priorizar buffearse en los primeros turnos si el atacante tiene alta salud (>75%)
+      const hpPct = attacker.hp / attacker.maxHp
+      if (hpPct > 0.75) {
+        score = 45
+      } else {
+        score = 20 // Menos prioridad si ya estamos en apuros
+      }
+    }
+
+    // Movimientos curativos (heal_50, etc.)
+    if (effectStr === 'heal_50') {
+      const hpPct = attacker.hp / attacker.maxHp
+      if (hpPct < 0.4) {
+        score = 75 // ¡Curación crítica de alta prioridad!
+      } else if (hpPct > 0.8) {
+        score = 5 // Inútil curarse si estamos casi llenos
+      } else {
+        score = 30
+      }
+    }
+
+    // Añadir aleatoriedad
+    return score * (0.8 + Math.random() * 0.4)
+  }
+
+  // 2. Movimientos ofensivos (daño directo)
+  let score = move.power || 40
+
+  // Clima y ciclo de día
+  let weather = null
+  try {
+    const battleStore = useBattleStore()
+    weather = battleStore.state?.weather || null
+  } catch {
+    // Si Pinia aún no está inicializado (ej. en tests)
+  }
+  const cycle = getDayCycle()
+
+  const pureMove: PureMove = {
+    id: move.id,
+    name: move.name,
+    type: move.type || 'normal',
+    power: move.power || 0,
+    cat: move.cat as PureMove['cat'],
+    effect: effectStr
+  }
+
+  const pureCtx = {
+    atkStages: 0, // En IA simple asumimos stages neutros para la estimación rápida
+    defStages: defStages.def || 0,
+    weather: weather ? { type: weather.type, turns: weather.turns } : null
+  }
+
+  // Invocar al estimador de daño puro
+  const result = calculateDamageRangePure(
+    attacker as unknown as PurePokemon,
+    defender as unknown as PurePokemon,
+    pureMove,
+    pureCtx,
+    cycle
+  )
+
+  const eff = result.effectiveness?.value ?? 1
+  if (eff === 0) return 0 // Inmunidad total
+
+  if (result.damageRange) {
+    const minDmg = result.damageRange.normalMin
+    const maxDmg = result.damageRange.normalMax
+    const avgDmg = (minDmg + maxDmg) / 2
+    const targetHp = defender.hp || 1
+
+    // A) ¿OHKO Garantizado? Prioridad Finisher Máxima
+    if (minDmg >= targetHp) {
+      score = 150 // Supera a cualquier movimiento de estado
+    }
+    // B) ¿OHKO Posible? Ponderación por probabilidad
+    else if (maxDmg >= targetHp) {
+      const diff = maxDmg - minDmg
+      const prob = diff > 0 ? (maxDmg - targetHp) / diff : 0.5
+      // Multiplicador por probabilidad (OHKO posible da un gran bono ponderado)
+      score = 80 + (70 * prob) 
+    }
+    // C) Sin KO inmediato: Puntuación proporcional al % de HP restante que reducimos
+    else {
+      const dmgPct = avgDmg / targetHp // Qué porcentaje de su vida actual le quitamos
+      score = (move.power || 40) * eff * (1 + dmgPct)
+    }
+  } else {
+    // Fallback simple si no hay rango (ej. sin power)
+    score *= eff
+  }
 
   // STAB
   if (move.type === attacker.type || move.type === attacker.type2) {
     score *= 1.5
   }
 
-  // Status moves refinement
-  if (move.cat === 'status') {
-    // Don't repeat status
-    const statusEffects = ['sleep', 'paralyze', 'poison', 'toxic', 'burn', 'freeze']
-    const moveEffect = typeof move.effect === 'string' ? move.effect : ''
-    if (statusEffects.includes(moveEffect) && defender.status) score = 0
-    
-    // Stage modifiers penalization if already lowered
-    const effect = move.effect || ''
-    if (effect === 'lower_atk' && (defStages.atk || 0) <= -2) score = 5
-    if (effect === 'lower_def' && (defStages.def || 0) <= -2) score = 5
-    if (effect === 'lower_spa' && (defStages.spa || 0) <= -2) score = 5
-    if (effect === 'lower_spd' && (defStages.spd || 0) <= -2) score = 5
-    if (effect === 'lower_spe' && (defStages.spe || 0) <= -2) score = 5
-    
-    // High priority for non-statused sleep/paralyze
-    if ((effect === 'sleep' || effect === 'paralyze') && !defender.status) score = 60
-  }
-
-  // Self-destruct logic (smart usage)
+  // Autodestrucción inteligente
   if (move.selfKO) {
     const hpPct = attacker.hp / attacker.maxHp
-    const canKO = (score >= defender.hp)
+    const canKO = result.damageRange ? (result.damageRange.normalMax >= defender.hp) : false
     if (hpPct > 0.25 && !canKO) score *= 0.01 
     else if (canKO) score *= 1.5
     else score *= 0.8
   }
 
-  // Priority moves logic
+  // Preservación y escala de prioridades (ej. Ataque Rápido / Velocidad Extrema)
   if (move.priority && move.priority !== 0) {
     const pVal = move.priority
     if (pVal > 0) {
       const defHpPct = defender.hp / defender.maxHp
-      // If defender is at low HP, positive priority is highly valued to finish them off
       if (defHpPct < 0.3) {
-        // Extra value if defender is faster, making priority crucial to strike first
         const isSlower = (attacker.spe || 0) < (defender.spe || 0)
         score *= isSlower ? 2.0 : 1.5
       } else {
-        // General small bonus for positive priority
         score *= 1.1
       }
     } else if (pVal < 0) {
       const attHpPct = attacker.hp / attacker.maxHp
-      // If attacker is at low HP, negative priority is dangerous as they might faint before moving
       if (attHpPct < 0.25) {
         score *= 0.1
       } else {
-        // General small penalty for negative priority
         score *= 0.8
       }
     }
   }
 
-  // Add randomness to be less predictable (80% - 120%)
+  // Añadir aleatoriedad para evitar predictibilidad
   return score * (0.8 + Math.random() * 0.4)
 }
 

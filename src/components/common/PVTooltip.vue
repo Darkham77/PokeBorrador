@@ -190,6 +190,17 @@ const descriptionLines = computed(() => {
   if (!props.description) return []
   return props.description.split('\n').map(line => {
     const trimmed = line.trim()
+    if (trimmed.startsWith('---')) {
+      return {
+        hasBullet: false,
+        text: '',
+        bullet: '',
+        isBoost: false,
+        isDebuff: false,
+        isNeutral: false,
+        isDivider: true
+      }
+    }
     const match = trimmed.match(/^([▲▼⚡🚫•])\s*(.*)$/u)
     if (match) {
       return {
@@ -198,7 +209,8 @@ const descriptionLines = computed(() => {
         text: match[2],
         isBoost: match[1] === '▲',
         isDebuff: match[1] === '▼',
-        isNeutral: match[1] === '•' || match[1] === '⚡' || match[1] === '🚫'
+        isNeutral: match[1] === '•' || match[1] === '⚡' || match[1] === '🚫',
+        isDivider: false
       }
     }
     return {
@@ -207,7 +219,8 @@ const descriptionLines = computed(() => {
       bullet: '',
       isBoost: false,
       isDebuff: false,
-      isNeutral: false
+      isNeutral: false,
+      isDivider: false
     }
   })
 })
@@ -354,19 +367,27 @@ onUnmounted(() => {
                 <div
                   v-for="(line, idx) in descriptionLines"
                   :key="idx"
-                  class="tooltip-line"
-                  :class="{ 
-                    'has-bullet': line.hasBullet,
-                    'is-boost': line.isBoost,
-                    'is-debuff': line.isDebuff,
-                    'is-neutral': line.isNeutral
-                  }"
+                  :class="[
+                    line.isDivider ? 'tooltip-divider-line' : 'tooltip-line',
+                    { 
+                      'has-bullet': line.hasBullet,
+                      'is-boost': line.isBoost,
+                      'is-debuff': line.isDebuff,
+                      'is-neutral': line.isNeutral
+                    }
+                  ]"
                 >
-                  <span
-                    v-if="line.hasBullet"
-                    class="bullet-icon"
-                  >{{ line.bullet }}</span>
-                  <span class="line-text">{{ line.text }}</span>
+                  <hr
+                    v-if="line.isDivider"
+                    class="tooltip-divider"
+                  >
+                  <template v-else>
+                    <span
+                      v-if="line.hasBullet"
+                      class="bullet-icon"
+                    >{{ line.bullet }}</span>
+                    <span class="line-text">{{ line.text }}</span>
+                  </template>
                 </div>
               </span>
               <slot name="content" />

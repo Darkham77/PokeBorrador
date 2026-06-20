@@ -86,6 +86,20 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   if (typeof isForced !== 'undefined' && !isForced) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
     await runEnemyAction(ctx)
+    
+    if (activeBattle.value?.over) {
+      if (activeBattle.value.fled) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+        if (animations?.awaitTween) {
+          await animations.awaitTween('escape-enemy')
+        } else {
+          await sleep(800)
+        }
+        await ctx.endBattle(false, true)
+      }
+      return
+    }
+
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
     if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {

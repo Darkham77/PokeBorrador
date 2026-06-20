@@ -1,6 +1,6 @@
 
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
-import { calculateDamagePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
+import { type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Move } from '@/types/pokemon/pokemon';
 
@@ -287,6 +287,8 @@ export function calculateCritChance(
   };
 }
 
+import { calculateDamageRangePure } from '@/logic/battle/battleMath';
+
 /**
  * Calculates effectiveness and estimated damage range.
  */
@@ -297,78 +299,28 @@ export function calculateMoveEffectivenessAndDamage(
   defender: PurePokemon | null,
   weather: { type: string; turns: number } | null,
   cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
-  isStatus: boolean,
   basePower: number,
   playerStages: { atk?: number } | null,
   enemyStages: { def?: number } | null
 ) {
-  let effectiveness = null;
-  let damageRange = null;
+  if (!defender) return { effectiveness: null, damageRange: null };
 
-  if (defender) {
-    const pureMove: PureMove = {
-      id: move.id,
-      name: move.name,
-      type: move.type || md.type || 'normal',
-      power: basePower,
-      cat: (move.cat || md.cat || 'physical') as PureMove['cat'],
-      effect: typeof move.effect === 'string' ? move.effect : undefined
-    };
+  const pureMove: PureMove = {
+    id: move.id,
+    name: move.name,
+    type: move.type || md.type || 'normal',
+    power: basePower,
+    cat: (move.cat || md.cat || 'physical') as PureMove['cat'],
+    effect: typeof move.effect === 'string' ? move.effect : undefined
+  };
 
-    const pureCtx = {
-      atkStages: playerStages?.atk || 0,
-      defStages: enemyStages?.def || 0,
-      weather: weather ? { type: weather.type, turns: weather.turns } : null
-    };
+  const pureCtx = {
+    atkStages: playerStages?.atk || 0,
+    defStages: enemyStages?.def || 0,
+    weather: weather ? { type: weather.type, turns: weather.turns } : null
+  };
 
-    const sim = calculateDamagePure(attacker, defender, pureMove, pureCtx, cycle, 1.0, false);
-    const eff = sim.eff;
-    let effLabel = 'Neutro';
-    let effClass = 'neutral';
-    if (eff > 1) {
-      effLabel = 'Súper eficaz';
-      effClass = 'boosted';
-    } else if (eff < 1 && eff > 0) {
-      effLabel = 'Poco eficaz';
-      effClass = 'penalized';
-    } else if (eff === 0) {
-      effLabel = 'Inmune';
-      effClass = 'penalized';
-    }
-
-    effectiveness = {
-      value: eff,
-      label: effLabel,
-      class: effClass
-    };
-
-    if (!isStatus && basePower > 0) {
-      const normalMin = calculateDamagePure(attacker, defender, pureMove, pureCtx, cycle, 0.85, false).dmg;
-      const normalMax = calculateDamagePure(attacker, defender, pureMove, pureCtx, cycle, 1.0, false).dmg;
-
-      const critMin = calculateDamagePure(attacker, defender, pureMove, pureCtx, cycle, 0.85, true).dmg;
-      const critMax = calculateDamagePure(attacker, defender, pureMove, pureCtx, cycle, 1.0, true).dmg;
-
-      const rivalMaxHp = defender.maxHp || 100;
-      const normalPctMin = Math.round((normalMin / rivalMaxHp) * 100);
-      const normalPctMax = Math.round((normalMax / rivalMaxHp) * 100);
-      const critPctMin = Math.round((critMin / rivalMaxHp) * 100);
-      const critPctMax = Math.round((critMax / rivalMaxHp) * 100);
-
-      damageRange = {
-        normalMin,
-        normalMax,
-        normalPctMin,
-        normalPctMax,
-        critMin,
-        critMax,
-        critPctMin,
-        critPctMax
-      };
-    }
-  }
-
-  return { effectiveness, damageRange };
+  return calculateDamageRangePure(attacker, defender, pureMove, pureCtx, cycle);
 }
 
 /**

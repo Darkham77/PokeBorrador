@@ -9,7 +9,7 @@ import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import showdownEsDb from '../../../showdown/sandbox_db/data/showdown_db_es.json' with { type: 'json' };
+import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/data/pokemon/spriteMapping';
 import type { 
@@ -109,11 +109,10 @@ export const pokemonDataProvider = {
         const ability = Dex.abilities.get(cleanId);
         if (!ability || !ability.exists) return null;
 
-        // Buscar traducción en el JSON de Showdown o en el fallback de translations estáticas
-        const translated = ((showdownEsDb.abilities as Record<string, { name?: string; desc?: string; shortDesc?: string }>)[cleanId] || {}) as { name?: string; desc?: string; shortDesc?: string };
-        const fallback = (ABILITY_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
-        const espName = fallback.name || translated.name || ability.name;
-        const espDesc = fallback.desc || translated.desc || translated.shortDesc || ability.desc || 'Sin descripción disponible.';
+        // Buscar traducción en las traducciones estáticas
+        const translated = (ABILITY_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+        const espName = translated.name || ability.name;
+        const espDesc = translated.desc || ability.desc || 'Sin descripción disponible.';
 
         return {
             id: ability.id,
@@ -143,8 +142,8 @@ export const pokemonDataProvider = {
         const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
         if (!move || !move.exists) return null;
 
-        // Traducir nombre y descripción usando showdown_db_es.json.moves[cleanId]
-        const translated = (showdownEsDb.moves as Record<string, { name?: string; desc?: string }>)[cleanId] || {};
+        // Traducir nombre y descripción usando MOVE_TRANSLATIONS_ES[cleanId]
+        const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
         const espName = translated.name || move.name;
 
         const SPECIAL_EFFECTS: Record<string, string> = {
@@ -613,8 +612,8 @@ export const pokemonDataProvider = {
             return LEGACY_MOVE_MAPPING[lowerName];
         }
 
-        // Buscar el movimiento que contenga este nombre en español en la DB de Showdown
-        for (const [id, move] of Object.entries(showdownEsDb.moves) as [string, { name: string }][]) {
+        // Buscar el movimiento que contenga este nombre en español en las traducciones
+        for (const [id, move] of Object.entries(MOVE_TRANSLATIONS_ES)) {
             if (move.name && move.name.toLowerCase() === lowerName) {
                 return id;
             }

@@ -49,7 +49,7 @@ function getTypeEff(moveType: string | undefined, defType: string | undefined, s
 }
 
 function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, weather: string | null = null): number {
-  const scrapy = attacker?.ability === 'Intrépido';
+  const scrapy = attacker?.ability === 'scrappy';
   let eff = getTypeEff(moveType, defender.type, scrapy);
   if (defender.type2) eff *= getTypeEff(moveType, defender.type2, scrapy);
 
@@ -325,4 +325,99 @@ export function calculateDamagePure(
     isNoEffect:          eff === 0,
     triggeredAbility
   };
+}
+
+export interface PureDamageRange {
+  normalMin: number
+  normalMax: number
+  normalPctMin: number
+  normalPctMax: number
+  critMin: number
+  critMax: number
+  critPctMin: number
+  critPctMax: number
+  koChanceText: string
+}
+
+export function calculateDamageRangePure(
+  attacker: PurePokemon,
+  defender: PurePokemon,
+  move: PureMove,
+  ctx: PureDamageOptions,
+  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day'
+): { effectiveness: { value: number; label: string; class: string } | null; damageRange: PureDamageRange | null } {
+  const sim = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false);
+  const eff = sim.eff;
+  let effLabel = 'Neutro';
+  let effClass = 'neutral';
+  if (eff > 1) {
+    effLabel = 'Súper eficaz';
+    effClass = 'boosted';
+  } else if (eff < 1 && eff > 0) {
+    effLabel = 'Poco eficaz';
+    effClass = 'penalized';
+  } else if (eff === 0) {
+    effLabel = 'Inmune';
+    effClass = 'penalized';
+  }
+
+  const effectiveness = {
+    value: eff,
+    label: effLabel,
+    class: effClass
+  };
+
+  let damageRange: PureDamageRange | null = null;
+  const isStatus = move.cat === 'status';
+
+  if (!isStatus && (move.power ?? 0) > 0) {
+    const normalMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 0.85, false).dmg;
+    const normalMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false).dmg;
+
+    const critMin = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 0.85, true).dmg;
+    const critMax = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, true).dmg;
+
+    const rivalMaxHp = defender.maxHp || 100;
+    const normalPctMin = Math.round((normalMin / rivalMaxHp) * 100);
+    const normalPctMax = Math.round((normalMax / rivalMaxHp) * 100);
+    const critPctMin = Math.round((critMin / rivalMaxHp) * 100);
+    const critPctMax = Math.round((critMax / rivalMaxHp) * 100);
+
+    const targetHp = (defender.hp !== undefined ? defender.hp : defender.maxHp) ?? 100;
+    let koChanceText = '4+ HKO probable';
+    
+    if (normalMin >= targetHp) {
+      koChanceText = 'OHKO garantizado';
+    } else if (normalMax >= targetHp) {
+      const diff = normalMax - normalMin;
+      if (diff > 0) {
+        const pct = Math.round(((normalMax - targetHp) / diff) * 100);
+        koChanceText = `OHKO posible (${pct}%)`;
+      } else {
+        koChanceText = 'OHKO posible';
+      }
+    } else if (normalMin * 2 >= targetHp) {
+      koChanceText = '2HKO garantizado';
+    } else if (normalMax * 2 >= targetHp) {
+      koChanceText = '2HKO posible';
+    } else if (normalMin * 3 >= targetHp) {
+      koChanceText = '3HKO garantizado';
+    } else if (normalMax * 3 >= targetHp) {
+      koChanceText = '3HKO posible';
+    }
+
+    damageRange = {
+      normalMin,
+      normalMax,
+      normalPctMin,
+      normalPctMax,
+      critMin,
+      critMax,
+      critPctMin,
+      critPctMax,
+      koChanceText
+    };
+  }
+
+  return { effectiveness, damageRange };
 }

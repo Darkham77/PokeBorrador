@@ -221,7 +221,7 @@ async function main() {
   if (doShowdown) {
     console.log(styleText('yellow', '\n📦 Fetching Showdown sprites + cries (all gens)...'));
     const { Dex } = await import('@pkmn/sim');
-    const { downloadAllSprites } = await import('../../showdown/sandbox_db/cloner/fetch_sprites.ts');
+    const { downloadAllSprites } = await import('./fetch_sprites.ts');
 
     // isNonstandard: null=estándar, 'Past'=Dexit (reales), 'CAP'/'LGPE'/'Unobtainable'=excluir
     const fullDex = Dex.forGen(9);

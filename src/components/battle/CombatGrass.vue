@@ -207,9 +207,10 @@ onUnmounted(() => {
   filter: var(--atmosphere-filter, Brightness(1) contrast(1));
 
   &.layer-back { z-index: calc(var(--z-map-spawns) - 5); }
-  // ENCOUNTER_ANIM BUSHES_BACK: cuando forceBehind, la capa front se mueve detrás del sprite
-  &.layer-front { z-index: calc(var(--z-map-spawns) + 5); }
-  &.layer-front.is-behind { z-index: calc(var(--z-map-spawns) - 4); }
+  // layer-front por defecto delante del sprite (calc(var(--z-map-spawns) + 3))
+  &.layer-front { z-index: calc(var(--z-map-spawns) + 3); }
+  // is-behind mueve los arbustos detrás del sprite del enemigo (que tiene calc(var(--z-map-spawns) + 2))
+  &.layer-front.is-behind { z-index: calc(var(--z-map-spawns) + 1); }
 }
 
 .bush-ground-anchor {

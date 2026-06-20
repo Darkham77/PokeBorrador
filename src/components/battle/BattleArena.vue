@@ -8,7 +8,7 @@ import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
 import { useGameStore } from '@/stores/game'
 import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getEncounterPool } from '@/logic/encounters/encounters'
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
@@ -90,8 +90,11 @@ const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps as unknown as {
 const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps as unknown as { map: MapLocation; weather: string; cycle: string })
 
 const weatherTooltipDescription = computed(() => {
+  const weatherKey = (computedWeather.value as string || 'clear').toLowerCase()
+  const registryEntry = WEATHER_REGISTRY[weatherKey]
+  const weatherDescText = registryEntry?.description ? `\n---\nEFECTOS EN COMBATE:\n${registryEntry.description}` : ''
   const baseModifiers = getWeatherModifiersDescription(computedWeather.value)
-  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${baseModifiers ? `\n${baseModifiers}` : ''}`
+  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}${baseModifiers ? `\n---\nMODIFICADORES DE TIPO:${baseModifiers}` : ''}`
   if (!debugStore.isAdminOrOffline) return baseDesc
 
   const locId = battle.value?.locationId || 'route1'
@@ -147,7 +150,8 @@ const weatherTooltipDescription = computed(() => {
 
     const totalRate = ratesCopy.reduce((sum, r) => sum + r, 0)
     if (totalRate > 0) {
-      lines.push(`\n\nChances actuales (Hierba/Tierra):`)
+      lines.push('---')
+      lines.push('Chances actuales (Hierba/Tierra):')
       let wConfig = loc.weather?.[weather]
       if (!wConfig && weather) {
         const family = getWeatherFamily(weather)
@@ -177,7 +181,8 @@ const weatherTooltipDescription = computed(() => {
 
   // 2. Fishing Spawns
   if (fishingSpawns.value && fishingSpawns.value.length > 0) {
-    lines.push(`\n🎣 Pesca:`)
+    lines.push('---')
+    lines.push('🎣 Pesca:')
     fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => {
       const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
       lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
@@ -186,7 +191,8 @@ const weatherTooltipDescription = computed(() => {
 
   // 3. Archaeology Rewards
   if (archaeologyRewards.value && archaeologyRewards.value.length > 0) {
-    lines.push(`\n⛏️ Arqueología:`)
+    lines.push('---')
+    lines.push('⛏️ Arqueología:')
     archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => {
       lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
     })
@@ -196,14 +202,15 @@ const weatherTooltipDescription = computed(() => {
   const mapIds = mapsList.value.map(m => m.id)
   const npcChances = getNpcEncounterChances(locId, gameStore.state, {}, mapIds)
   if (npcChances && npcChances.length > 0) {
-    lines.push(`\n👥 Encuentros Especiales:`)
+    lines.push('---')
+    lines.push('👥 Encuentros Especiales:')
     npcChances.forEach(npc => {
       const details = npc.details ? ` (${npc.details})` : ''
       lines.push(`• ${npc.name}: ${npc.chance.toFixed(1)}%${details}`)
     })
   }
 
-  return baseDesc + lines.join('\n')
+  return baseDesc + '\n' + lines.join('\n')
 })
 
 import type { ComponentPublicInstance } from 'vue'

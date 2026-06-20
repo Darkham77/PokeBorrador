@@ -381,7 +381,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     await ctx.waitForLogs()
     
     const playerFled = active.playerFled || false
-    if (isSingle || playerFled) {
+    const wasSearching = active.wasSearching || false
+    if (isSingle || playerFled || !wasSearching) {
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EXECUTE_CLEANUP)
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.CLEAR_UI)

@@ -3,10 +3,11 @@
 
 import { useMoveTooltip } from '@/composables/battle/useMoveTooltip'
 import { useBattleStore } from '@/stores/battle/battle'
-import type { Move } from '@/types/pokemon/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
   move: Move
+  playerInfo?: Pokemon | null
 }
 
 const props = defineProps<Props>()
@@ -14,24 +15,26 @@ const props = defineProps<Props>()
 const battleStore = useBattleStore()
 
 const {
-  modifierInfo,
   activeDetails,
   parsedStatusEffect,
   moveDescriptionText
-} = useMoveTooltip(() => props.move)
+} = useMoveTooltip(() => props.move, () => props.playerInfo)
+
+const getKoColorClass = (text?: string) => {
+  if (!text) return 'ko-neutral';
+  if (text.includes('OHKO') && text.includes('garantizado')) return 'ko-ohko';
+  if (text.includes('OHKO')) return 'ko-ohko-possible';
+  if (text.includes('2HKO')) return 'ko-2hko';
+  if (text.includes('3HKO')) return 'ko-3hko';
+  return 'ko-neutral';
+};
 </script>
+
 
 <template>
   <div class="move-tooltip-rich">
     <div class="move-desc">
       {{ moveDescriptionText }}
-    </div>
-    <div
-      v-if="modifierInfo"
-      class="move-modifier"
-      :class="modifierInfo.type"
-    >
-      {{ modifierInfo.text }}
     </div>
 
     <!-- Advanced Combat Calculations Dashboard -->
@@ -287,6 +290,29 @@ const {
         </div>
       </div>
 
+      <!-- Live Equation Breakdown -->
+      <div 
+        v-if="!activeDetails.isStatus && activeDetails.power.base > 0"
+        class="formula-breakdown-box"
+      >
+        <div class="calc-section-title">
+          FÓRMULA DE POTENCIA
+        </div>
+        <div class="formula-text">
+          BP ({{ activeDetails.power.base }})
+          <template
+            v-for="item in activeDetails.power.list"
+            :key="item.label"
+          >
+            x <span :class="{ 'boosted': item.mult > 1, 'penalized': item.mult < 1 }">{{ item.label.split(' ')[0] }} (x{{ item.mult.toFixed(2).replace('.00', '') }})</span>
+          </template>
+          <span v-if="activeDetails.effectiveness">
+            x <span :class="{ 'boosted': activeDetails.effectiveness.value > 1, 'penalized': activeDetails.effectiveness.value < 1 }">Ef. (x{{ activeDetails.effectiveness.value }})</span>
+          </span>
+          = <strong class="total-result">{{ Math.floor((activeDetails.power.final === '-' ? 0 : Number(activeDetails.power.final)) * (activeDetails.effectiveness?.value ?? 1)) }}</strong>
+        </div>
+      </div>
+
       <!-- Estimated Damage Section -->
       <div
         v-if="activeDetails.damageRange"
@@ -312,6 +338,25 @@ const {
           <div class="dmg-value-group crit">
             <span class="hp-range">{{ activeDetails.damageRange.critMin }} - {{ activeDetails.damageRange.critMax }} HP</span>
             <span class="pct-range">({{ activeDetails.damageRange.critPctMin }}% - {{ activeDetails.damageRange.critPctMax }}% de vida)</span>
+          </div>
+
+          <!-- KO Probability Row -->
+          <div
+            v-if="activeDetails.damageRange.koChanceText"
+            class="dmg-label"
+          >
+            PROB. KO:
+          </div>
+          <div
+            v-if="activeDetails.damageRange.koChanceText"
+            class="dmg-value-group"
+          >
+            <span
+              class="ko-chance-badge"
+              :class="getKoColorClass(activeDetails.damageRange.koChanceText)"
+            >
+              {{ activeDetails.damageRange.koChanceText }}
+            </span>
           </div>
         </div>
       </div>
@@ -428,6 +473,73 @@ const {
 
   .boosted { color: #10B981; font-weight: bold; }
   .penalized { color: #EF4444; font-weight: bold; }
+}
+
+.formula-breakdown-box {
+  background: Rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 5px 6px;
+  border: 1px dashed Rgba(255, 255, 255, 0.08);
+
+  .formula-text {
+    font-size: 7.5px;
+    color: #aeaebe;
+    
+    .boosted {
+      color: #10B981;
+      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+      font-weight: bold;
+    }
+    
+    .penalized {
+      color: #EF4444;
+      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+      font-weight: bold;
+    }
+    
+    .total-result {
+      color: var(--yellow);
+      font-size: 9px;
+      text-shadow: 0 0 3px Rgba(255, 214, 10, 0.3);
+    }
+  }
+}
+
+.ko-chance-badge {
+  font-size: 7px;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  
+  &.ko-ohko {
+    color: #ff453a;
+    background: Rgba(255, 69, 58, 0.15);
+    border: 1px solid Rgba(255, 69, 58, 0.25);
+    text-shadow: 0 0 3px Rgba(255, 69, 58, 0.3);
+  }
+  
+  &.ko-ohko-possible {
+    color: #ff9f0a;
+    background: Rgba(255, 159, 10, 0.15);
+    border: 1px solid Rgba(255, 159, 10, 0.25);
+  }
+
+  &.ko-2hko {
+    color: #ffd60a;
+    background: Rgba(255, 214, 10, 0.15);
+    border: 1px solid Rgba(255, 214, 10, 0.25);
+  }
+
+  &.ko-3hko {
+    color: #30d158;
+    background: Rgba(48, 209, 88, 0.1);
+    border: 1px solid Rgba(48, 209, 88, 0.25);
+  }
+
+  &.ko-neutral {
+    color: #aeaebe;
+  }
 }
 
 .damage-section {

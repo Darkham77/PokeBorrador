@@ -73,10 +73,6 @@ const isLoginPage = computed(() => {
   return window.location?.pathname === '/login' || route.path === '/login'
 })
 
-const isSandboxPage = computed(() => {
-  if (typeof window === 'undefined') return false
-  return window.location?.pathname === '/showdown-sandbox' || route.path === '/showdown-sandbox'
-})
 
 const isAdventureTestPage = computed(() => {
   if (typeof window === 'undefined') return false
@@ -103,7 +99,7 @@ const loadingInfo = computed(() => {
   
   // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
   // No soltamos la pantalla negra hasta que TODO el motor esté listo
-  if (authStore.user && !isLoginPage.value && !isSandboxPage.value && !isAdventureTestPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
+  if (authStore.user && !isLoginPage.value && !isAdventureTestPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
     const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
     
     return { 
@@ -135,7 +131,7 @@ const isReadyToSeeGame = computed(() => {
 
 const showLoadingOverlay = computed(() => {
   if (dbIncompatible.value) return false
-  if (isSandboxPage.value || isAdventureTestPage.value) return false
+  if (isAdventureTestPage.value) return false
   // Show global blocking overlay for updates only if the user is currently logged in/playing.
   // If they are logged out (on the login page), we don't cover the screen with the global loading overlay,
   // allowing the login view to render and present the update option inline.
@@ -154,7 +150,7 @@ const showLoadingOverlay = computed(() => {
 
 const initGameSession = async () => {
   if (isSessionInitializing.value) return
-  if (authStore.user && !isLoginPage.value && !isSandboxPage.value && !isAdventureTestPage.value && !gameStore.isReady) {
+  if (authStore.user && !isLoginPage.value && !isAdventureTestPage.value && !gameStore.isReady) {
     isSessionInitializing.value = true
     try {
       const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
@@ -229,7 +225,7 @@ onMounted(async () => {
   })()
 
   // 2. Recuperar sesión (Autologin)
-  if (isLoginPage.value || isSandboxPage.value || isAdventureTestPage.value) {
+  if (isLoginPage.value || isAdventureTestPage.value) {
     loadingStore.clearAll() // Limpiar TODO si es login o sandbox
     loadingStore.markAppMounted() // Abrir puerta inmediatamente
   }
@@ -258,7 +254,7 @@ onMounted(async () => {
 
 // Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario
 watch(
-  () => [authStore.user, isLoginPage.value, isSandboxPage.value, isAdventureTestPage.value],
+  () => [authStore.user, isLoginPage.value, isAdventureTestPage.value],
   async () => {
     await initGameSession()
   }
@@ -354,7 +350,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   <div id="vue-app">
     <!-- RESTORE LEGACY BACKGROUND (Only visible when game is fully ready and NOT loading) -->
     <div 
-      v-show="isReadyToSeeGame || isLoginPage || isSandboxPage || isAdventureTestPage"
+      v-show="isReadyToSeeGame || isLoginPage || isAdventureTestPage"
       class="global-background-stars" 
     />
 
@@ -391,8 +387,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       </Transition>
     </Teleport>
 
-    <!-- Vistas de Ruta (Login y Sandbox tienen prioridad absoluta) -->
-    <template v-if="isLoginPage || isSandboxPage || isAdventureTestPage">
+    <template v-if="isLoginPage || isAdventureTestPage">
       <router-view />
     </template>
     
