@@ -5,7 +5,7 @@
  */
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
@@ -28,10 +28,14 @@ const getNatureInfo = (nature: string) => {
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
-  const data = ABILITY_DATA as Record<string, string | { desc: string }>
-  const entry = data[ability] || Object.entries(data).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
-  if (!entry) return 'Habilidad especial de este Pokémon.'
-  return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.desc : 'Habilidad especial de este Pokémon.'
+}
+
+const getAbilityName = (ability: string) => {
+  if (!ability) return 'Común'
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.name : ability
 }
 </script>
 
@@ -51,10 +55,10 @@ const getAbilityDesc = (ability: string) => {
       <span class="label">Habilidad:</span>
       <PVTooltip
         title="HABILIDAD"
-        :description="getAbilityDesc(pokemon.ability || 'Común')"
+        :description="getAbilityDesc(pokemon.ability || '')"
         position="top"
       >
-        <span class="val interactive-val m-interactive-label">{{ pokemon.ability || 'Común' }}</span>
+        <span class="val interactive-val m-interactive-label">{{ getAbilityName(pokemon.ability || '') }}</span>
       </PVTooltip>
     </div>
     <div class="stat-row ivs-row">

@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/pokemon/evolutionData'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
@@ -75,7 +75,7 @@ const forgottenMoves = computed(() => {
 })
 
 const getMoveFullData = (mv: LearnsetEntry): Move => {
-  const base = mv.id ? MOVE_DATA[mv.id] : null
+  const base = mv.id ? pokemonDataProvider.getMoveData(mv.id) : null
   return {
     name: mv.name,
     pp: base?.pp ?? mv.pp,

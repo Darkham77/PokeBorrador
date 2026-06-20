@@ -7,7 +7,7 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getItemById, getItemByName } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -39,6 +39,15 @@ const team = computed(() => (gameStore.state.team || []))
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
 const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : null)
 const isRocketMode = computed(() => gameStore.state.playerClass === 'rocket')
+
+const abilityData = computed(() => {
+  if (!pokemon.value || !pokemon.value.ability) return { name: '', desc: '' }
+  const data = pokemonDataProvider.getAbilityData(pokemon.value.ability)
+  return {
+    name: data ? data.name : pokemon.value.ability,
+    desc: data ? data.desc : ''
+  }
+})
 
 const handleMoveToTeam = () => {
   const res = boxStore.moveBoxToTeam(props.boxIndex)
@@ -230,11 +239,11 @@ const handleSellRocket = () => {
             >|</span>
             <PVTooltip
               v-if="pokemon?.ability"
-              :title="pokemon?.ability"
-              :description="(ABILITY_DATA as Record<string, any>)[pokemon?.ability]?.desc"
+              :title="abilityData.name"
+              :description="abilityData.desc"
               position="top"
             >
-              <span class="interactive-text">{{ pokemon?.ability }}</span>
+              <span class="interactive-text">{{ abilityData.name }}</span>
             </PVTooltip>
           </div>
 

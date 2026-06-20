@@ -3,7 +3,7 @@ import type { useBattleStore } from '@/stores/battle/battle'
 import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP, STATUS_NAME_MAP } from '@/logic/battle/battleUiUtils'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
-import { ABILITY_DATA } from '@/data/battle/abilities'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getStatMultiplier } from '@/logic/battle/battleEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { VOLATILE_STATUS_LIST, CYCLE_WEATHER_DEFAULTS } from '@/data/battle/volatileStatusMap'
@@ -138,7 +138,7 @@ export function useCombatantStatus(
       const cycle = getDayCycle()
       
       let isAbBoosted = false
-      const abEntry = (ABILITY_DATA as Record<string, { desc: string }>)[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
+      const abEntry = pokemonDataProvider.getAbilityData(ab)
       const abDescription = abEntry?.desc || 'Sin descripción disponible.'
 
       const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
@@ -184,7 +184,7 @@ export function useCombatantStatus(
         formattedDesc = formatAbilityDescription(abDescription)
       }
 
-      const abText = `HABILIDAD - ${ab.toUpperCase()}:\n${formattedDesc}`
+      const abText = `HABILIDAD - ${String(abEntry?.name || ab).toUpperCase()}:\n${formattedDesc}`
 
       list.push({ 
         icon: '🧠', 

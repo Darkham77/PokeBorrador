@@ -235,8 +235,8 @@ const teamBallsStatus = computed(() => {
         <PVTooltip
           v-if="!isPlayer && !isScrambled && gameStore.state.playerClass === 'criador'"
           position="bottom"
-          :title="p.nature || 'Serio'"
-          :description="NATURE_DATA[(p.nature || 'Serio') as keyof typeof NATURE_DATA]?.desc || 'Sin efecto en estadísticas.'"
+          :title="p.nature || 'serious'"
+          :description="(NATURE_DATA[String(p.nature || 'serious').toLowerCase() as keyof typeof NATURE_DATA] || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === String(p.nature || 'serious').toLowerCase()))?.desc || 'Sin efecto en estadísticas.'"
         >
           <div class="m-badge-nature">
             {{ p.nature || 'Serio' }}

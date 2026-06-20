@@ -122,12 +122,12 @@ const nodePrefix: AuditRule = {
 };
 
 const esmExtensions: AuditRule = {
-  // Match relative imports WITHOUT an extension (not .ts, .js, or .vue at the end)
-  regex: /import .* from ['"](\.\.[^'"]*(?<!\.[jt]s)(?<!\.vue))['"]|import .* from ['"](\.[^/][^'"]*(?<!\.[jt]s)(?<!\.vue))['"]/g,
+  // Match relative imports WITHOUT an extension (not .ts, .js, .json, or .vue at the end)
+  regex: /import .* from ['"](\.\.[^'"]*(?<!\.[jt]s)(?<!\.vue)(?<!\.json))['"]|import .* from ['"](\.[^/][^'"]*(?<!\.[jt]s)(?<!\.vue)(?<!\.json))['"]/g,
   message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js 26+ nativo las extensiones son obligatorias.`,
   severity: 'error',
-  // Fix: only add .ts when the path doesn't already end with .vue, .js, or .ts
-  fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(['"])/g, '$1$2.ts$3'),
+  // Fix: only add .ts when the path doesn't already end with .vue, .js, .ts, or .json
+  fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(?<!\.json)(['"])/g, '$1$2.ts$3'),
   // Only applies to pure .ts files in src/logic, scripts — NOT .vue files (handled by Vite resolver)
   check: (filePath: string) => !filePath.endsWith('.vue')
 };
@@ -1030,10 +1030,12 @@ async function main() {
       output: { type: 'string', short: 'o' },
       summary: { type: 'boolean', short: 's' },
       'changed-since': { type: 'string' },
-      'only-errors': { type: 'boolean' }
+      'errors-only': { type: 'boolean' }
     }
   });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
+  console.log(styleText('cyan', '💡 Info: Se puede usar "--errors-only" en todos los scripts de validación y auditoría para filtrar advertencias.'));
+  console.log(styleText('cyan', '💡 Recomendación: Se aconseja utilizar "--summary" para obtener un resumen estructurado.'));
   
   // Consistency Check
   const syncErrors = await checkZIndexConsistency(!!values.fix);
@@ -1088,8 +1090,8 @@ async function main() {
     all = all.concat(runFallow('health'));
   }
 
-  // Filtrar solo errores si la opción '--only-errors' está activa
-  if (values['only-errors']) {
+  // Filtrar solo errores si la opción '--errors-only' está activa
+  if (values['errors-only']) {
     all = all.filter(v => v.severity === 'error');
   }
 

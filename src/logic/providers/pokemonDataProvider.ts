@@ -1,18 +1,19 @@
 // [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/battle/abilities';
-import { MOVE_DATA } from '@/data/battle/moves';
+import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities';
 import { GYMS } from '@/data/world/gyms';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex';
+import { Dex, toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import showdownEsDb from '../../../showdown/sandbox_db/data/showdown_db_es.json' with { type: 'json' };
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/data/pokemon/spriteMapping';
 import type { 
     PokemonBaseData, 
-    AbilityBaseData, 
     MoveBaseData, 
     SpeciesMetadata, 
     PokemonAesthetics,
@@ -30,8 +31,6 @@ import type {
 
 // Estado reactivo para la base de datos (optimizado con shallowRef)
 const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>);
-const _abilityData = shallowRef(ABILITY_DATA as Record<string, AbilityBaseData>);
-const _moveData = shallowRef(MOVE_DATA as Record<string, MoveBaseData>);
 const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>);
 const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>);
 
@@ -105,31 +104,190 @@ export const pokemonDataProvider = {
      * Obtiene datos de una habilidad.
      */
     getAbilityData(name: string) {
-        const data = _abilityData.value[name];
-        return data ? deepClone(data) : null;
+        if (!name) return null;
+        const cleanId = toID(name);
+        const ability = Dex.abilities.get(cleanId);
+        if (!ability || !ability.exists) return null;
+
+        // Buscar traducción en el JSON de Showdown o en el fallback de translations estáticas
+        const translated = ((showdownEsDb.abilities as Record<string, { name?: string; desc?: string; shortDesc?: string }>)[cleanId] || {}) as { name?: string; desc?: string; shortDesc?: string };
+        const fallback = (ABILITY_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+        const espName = fallback.name || translated.name || ability.name;
+        const espDesc = fallback.desc || translated.desc || translated.shortDesc || ability.desc || 'Sin descripción disponible.';
+
+        return {
+            id: ability.id,
+            name: espName,
+            desc: espDesc
+        };
     },
 
     /**
      * Obtiene la lista de habilidades posibles para una especie.
      */
     getSpeciesAbilities(speciesId: string): string[] {
-        const list = (POKEMON_ABILITIES as Record<string, string[]>)[speciesId];
-        return list ? [...list] : ['Espesura'];
+        if (!speciesId) return [];
+        const species = Dex.forGen(ACTIVE_GENERATION).species.get(speciesId);
+        if (!species || !species.exists) return [];
+        
+        // Retornar lista de habilidades válidas en Gen 3 de pkms
+        return Object.values(species.abilities).map(a => toID(a));
     },
 
     /**
-     * Obtiene datos de un movimiento por ID o nombre localizado.
+     * Obtiene datos de un movimiento por ID. Solo acepta IDs oficiales en inglés de Showdown.
      */
-    getMoveData(nameOrId: string) {
-        if (!nameOrId) return null;
-        const normalized = nameOrId.trim();
-        let data = _moveData.value[normalized];
-        if (!data) {
-            // Intentar resolver por nombre localizado en español
-            const id = this.resolveMoveId(normalized);
-            data = _moveData.value[id];
+    getMoveData(id: string): MoveBaseData | null {
+        if (!id) return null;
+        const cleanId = toID(id);
+        const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
+        if (!move || !move.exists) return null;
+
+        // Traducir nombre y descripción usando showdown_db_es.json.moves[cleanId]
+        const translated = (showdownEsDb.moves as Record<string, { name?: string; desc?: string }>)[cleanId] || {};
+        const espName = translated.name || move.name;
+
+        const SPECIAL_EFFECTS: Record<string, string> = {
+            metronome: 'metronome',
+            mirrormove: 'mirror_move',
+            sandstorm: 'sandstorm',
+            raindance: 'rain_dance',
+            sunnyday: 'sunny_day',
+            hail: 'hail',
+            spikes: 'spikes',
+            destinybond: 'destiny_bond',
+            grudge: 'grudge',
+            yawn: 'yawn',
+            rest: 'rest',
+            recover: 'heal_50',
+            slackoff: 'heal_50',
+            softboiled: 'heal_50',
+            synthesis: 'heal_50',
+            milkdrink: 'heal_50',
+            healbell: 'heal_bell',
+            furycutter: 'fury_cutter',
+            rapidspin: 'rapid_spin',
+            brickbreak: 'brick_break',
+            focuspunch: 'focus_punch',
+            spitup: 'spit_up',
+            stockpile: 'stockpile',
+            dreameater: 'dream_eater',
+            teleport: 'teleport',
+            covet: 'covet',
+            rage: 'rage',
+            futuresight: 'future_sight',
+            psychup: 'psych_up',
+            charge: 'charge',
+            curse: 'curse',
+            flail: 'hp_scale',
+            reversal: 'hp_scale',
+            waterspout: 'hp_scale_high',
+            snore: 'flinch_30',
+            hyperbeam: 'recharge',
+        };
+
+        let localEffect: string | undefined = SPECIAL_EFFECTS[cleanId];
+
+        if (!localEffect && move.secondaries && move.secondaries.length > 0) {
+            const sec = move.secondaries[0];
+            if (sec) {
+                const chance = sec.chance !== undefined ? `_${sec.chance}` : '';
+                if (sec.status) {
+                    const map: Record<string, string> = { par: 'paralyze', brn: 'burn', frz: 'freeze', psn: 'poison', tox: 'poison', slp: 'sleep' };
+                    if (map[sec.status]) localEffect = `${map[sec.status]}${chance}`;
+                } else if (sec.volatileStatus === 'flinch') {
+                    localEffect = `flinch${chance}`;
+                } else if (sec.volatileStatus === 'confusion') {
+                    localEffect = `confuse${chance}`;
+                } else if (sec.boosts) {
+                    const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
+                    const entries = Object.entries(sec.boosts);
+                    if (entries.length > 0) {
+                        const [stat, val] = entries[0] as [string, number];
+                        const localStat = statMap[stat];
+                        if (localStat) {
+                            const dir = val > 0 ? 'up' : 'down';
+                            const who = sec.self ? 'self' : 'enemy';
+                            const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
+                            localEffect = `stat_${dir}_${who}_${localStat}${stage}${chance}`;
+                        }
+                    }
+                }
+            }
         }
-        return data ? deepClone(data) : null;
+
+        if (!localEffect && move.status) {
+            const map: Record<string, string> = { par: 'paralyze', brn: 'burn', frz: 'freeze', psn: 'poison', tox: 'poison', slp: 'sleep' };
+            if (map[move.status]) localEffect = map[move.status];
+        }
+
+        if (!localEffect && move.volatileStatus === 'confusion') {
+            localEffect = 'confuse';
+        }
+
+        if (!localEffect && move.self && move.self.boosts) {
+            const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
+            const entries = Object.entries(move.self.boosts);
+            if (entries.length > 0) {
+                const [stat, val] = entries[0] as [string, number];
+                const localStat = statMap[stat];
+                if (localStat) {
+                    const dir = val > 0 ? 'up' : 'down';
+                    const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
+                    const chance = move.self.chance !== undefined ? `_${move.self.chance}` : '';
+                    localEffect = `stat_${dir}_self_${localStat}${stage}${chance}`;
+                }
+            }
+        }
+
+        if (!localEffect && move.boosts) {
+            const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
+            const entries = Object.entries(move.boosts);
+            if (entries.length > 0) {
+                const [stat, val] = entries[0] as [string, number];
+                const localStat = statMap[stat];
+                if (localStat) {
+                    const dir = val > 0 ? 'up' : 'down';
+                    const who = move.target === 'self' ? 'self' : 'enemy';
+                    const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
+                    localEffect = `stat_${dir}_${who}_${localStat}${stage}`;
+                }
+            }
+        }
+
+        const moveData: MoveBaseData = {
+            id: move.id,
+            name: espName,
+            power: move.basePower,
+            acc: move.accuracy === true ? 1000 : move.accuracy,
+            type: move.type.toLowerCase(),
+            cat: move.category.toLowerCase() as 'physical' | 'special' | 'status',
+            pp: move.pp,
+            priority: move.priority || 0,
+            effect: localEffect
+        };
+
+        if (move.selfdestruct === 'always') moveData.selfKO = true;
+        if (move.recoil) {
+            moveData.recoil = move.recoil[0] === 1 && move.recoil[1] === 4 ? 4 : 3;
+        }
+        if (move.drain) moveData.drain = true;
+        if (move.multihit) {
+            moveData.hits = Array.isArray(move.multihit) ? `${move.multihit[0]}-${move.multihit[1]}` : move.multihit;
+        }
+        if (move.ohko) moveData.ohko = true;
+        if (move.damage === 'level') {
+            moveData.levelDmg = true;
+        } else if (typeof move.damage === 'number') {
+            moveData.fixedDmg = move.damage;
+        }
+        if (cleanId === 'super_fang') moveData.halfHP = true;
+        if (cleanId === 'endeavor') moveData.endeavor = true;
+        if (cleanId === 'counter') moveData.counter = true;
+        if (cleanId === 'dragon_rage') moveData.fixedDmg = 40;
+        if (move.flags && move.flags.sound) moveData.sound = true;
+
+        return moveData;
     },
 
     /**
@@ -143,8 +301,7 @@ export const pokemonDataProvider = {
             'placaje': 'tackle',
             'ataque': 'tackle',
             'bofetón lodo': 'mud_slap',
-            'puño lodo': 'mud_punch',
-            'portazo': 'slam',
+'portazo': 'slam',
             'atizar': 'slam',
             'destructor': 'pound',
             'puñetazo': 'pound',
@@ -158,12 +315,10 @@ export const pokemonDataProvider = {
             'desenrrollar': 'rollout',
             'cola': 'tail_whip',
             'látigo': 'tail_whip',
-            'psicocontrol': 'psicocontrol',
-            'más psique': 'psych_up',
+'más psique': 'psych_up',
             'zap cannon': 'zap_cannon',
             'electrocañón': 'zap_cannon',
-            'electrorrayo': 'electrorrayo',
-            'chispa': 'spark',
+'chispa': 'spark',
             'envolver': 'wrap',
             'constricción': 'constrict',
             'bola lodo': 'sludge_bomb',
@@ -191,8 +346,7 @@ export const pokemonDataProvider = {
             'patada ígnea': 'blaze_kick',
             'patada salto alta': 'high_jump_kick',
             'patada salto': 'jump_kick',
-            'pájaro osado': 'brave_bird',
-            'engullir': 'swallow',
+'engullir': 'swallow',
             'puño cometa': 'comet_punch',
             'bomba huevo': 'egg_bomb',
             'huevo bomba': 'egg_bomb',
@@ -233,8 +387,7 @@ export const pokemonDataProvider = {
             'premonición': 'future_sight',
             'kinético': 'kinesis',
             'truco': 'trick',
-            'previsión': 'prevision',
-            'tiro vital': 'vital_throw',
+'tiro vital': 'vital_throw',
             'velocidad extrema': 'extreme_speed',
             'fisura': 'fissure',
             'metrónomo': 'metronome',
@@ -365,8 +518,7 @@ export const pokemonDataProvider = {
             'beso dulce': 'sweet_kiss',
             'pulpocañón': 'octazooka',
             'púas': 'spikes',
-            'profecía': 'prevision',
-            'ataque óseo': 'bone_rush',
+'ataque óseo': 'bone_rush',
             'encanto': 'charm',
             'batido': 'milk_drink',
             'campana cura': 'heal_bell',
@@ -461,8 +613,8 @@ export const pokemonDataProvider = {
             return LEGACY_MOVE_MAPPING[lowerName];
         }
 
-        // Buscar el movimiento que contenga este nombre en español
-        for (const [id, move] of Object.entries(_moveData.value)) {
+        // Buscar el movimiento que contenga este nombre en español en la DB de Showdown
+        for (const [id, move] of Object.entries(showdownEsDb.moves) as [string, { name: string }][]) {
             if (move.name && move.name.toLowerCase() === lowerName) {
                 return id;
             }
@@ -488,8 +640,32 @@ export const pokemonDataProvider = {
      * Obtiene los modificadores de una naturaleza.
      */
     getNatureData(name: string): NatureBaseData | null {
-        const data = (NATURE_DATA as Record<string, NatureBaseData>)[name];
-        return data ? deepClone(data) : null;
+        if (!name) return null;
+        const cleanId = toID(name);
+        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId];
+        if (!staticData) return null;
+
+        const sdNature = Dex.natures.get(cleanId);
+        
+        // Mapear los nombres de stats de pkms a los locales si existen
+        const statMap: Record<string, string> = {
+            hp: 'HP',
+            atk: 'Ataque',
+            def: 'Defensa',
+            spa: 'At. Esp',
+            spd: 'Def. Esp',
+            spe: 'Velocidad'
+        };
+
+        const upStat = sdNature.plus ? statMap[sdNature.plus] || sdNature.plus : null;
+        const downStat = sdNature.minus ? statMap[sdNature.minus] || sdNature.minus : null;
+
+        return {
+            name: staticData.name,
+            up: upStat,
+            down: downStat,
+            desc: staticData.desc
+        } as NatureBaseData;
     },
 
     /**

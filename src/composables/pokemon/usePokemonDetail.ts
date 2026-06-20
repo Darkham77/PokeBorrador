@@ -5,7 +5,6 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
-import { MOVE_DATA } from '@/data/battle/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -148,8 +147,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
   const moveDetails = computed(() => {
     if (!species.value || !species.value.learnset) return []
     return species.value.learnset.map(m => {
-      const resolvedId = pokemonDataProvider.resolveMoveId(m.name)
-      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[resolvedId]
+      const resolvedId = m.id || pokemonDataProvider.resolveMoveId(m.name)
+      const data = pokemonDataProvider.getMoveData(resolvedId)
       const basePP = data?.pp || 35
       return {
         level: m.lv,
@@ -168,8 +167,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!isInstance.value || !targetPokemon.value?.moves) return []
     return targetPokemon.value.moves.map((m: Pokemon['moves'][number]) => {
       if (!m) return null
-      const resolvedId = pokemonDataProvider.resolveMoveId(m.name)
-      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[resolvedId]
+      const resolvedId = m.id || pokemonDataProvider.resolveMoveId(m.name)
+      const data = pokemonDataProvider.getMoveData(resolvedId)
       return { ...m, ...(data || {}) }
     }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
   })

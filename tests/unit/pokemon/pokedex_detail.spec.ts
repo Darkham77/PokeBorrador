@@ -79,8 +79,8 @@ describe('Pokedex Detail UI Components', () => {
       hp: 10,
       maxHp: 20,
       level: 5,
-      nature: 'Serio',
-      ability: 'Presión',
+      nature: 'serious',
+      ability: 'pressure',
       vigor: 5,
       exp: 10,
       expNeeded: 100

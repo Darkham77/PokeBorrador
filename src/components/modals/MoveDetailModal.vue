@@ -2,10 +2,9 @@
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
-import type { MoveBaseData } from '@/types/system/database'
 
 interface Props {
   show?: boolean
@@ -23,8 +22,7 @@ const emit = defineEmits<{
 
 const md = computed(() => {
   if (!props.moveName) return null
-  const data = MOVE_DATA as Record<string, MoveBaseData>
-  return data[props.moveName] || null
+  return pokemonDataProvider.getMoveData(props.moveName)
 })
 
 const typeColor = computed(() => {

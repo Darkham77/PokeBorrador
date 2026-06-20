@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle/battle'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
@@ -14,13 +14,13 @@ export function useMoveSlotData(
   const moveData = computed(() => {
     const move = moveRef()
     if (!move) return null
-    const md = (MOVE_DATA as Record<string, { type?: string; power?: number; acc?: number; cat?: string }>)[move.name] || {}
+    const md = (move.id ? pokemonDataProvider.getMoveData(move.id) || {} : {}) as { type?: string; power?: number; acc?: number; cat?: string };
     return {
       ...move,
       type: move.type || md.type || 'normal',
       power: move.power !== undefined ? move.power : md.power,
       acc: move.acc !== undefined ? move.acc : md.acc,
-      cat: move.cat || md.cat || 'physical'
+      cat: (move.cat || md.cat || 'physical') as 'physical' | 'special' | 'status'
     }
   })
 

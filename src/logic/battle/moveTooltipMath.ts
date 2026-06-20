@@ -1,4 +1,4 @@
-import { MOVE_DATA } from '@/data/battle/moves';
+
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import { calculateDamagePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -382,7 +382,7 @@ export function parseStatusEffectInfo(
   enemyStages: Record<string, number | undefined> | null | undefined
 ) {
   const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
-  const md = (MOVE_DATA as Record<string, { effect?: string; cat?: string }>)[moveIdLookup] || {};
+  const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { effect?: string };
   const effectStr = (move.effect || md.effect) as string | undefined;
 
   if (!effectStr || typeof effectStr !== 'string') return null;

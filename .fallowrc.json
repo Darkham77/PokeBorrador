@@ -244,6 +244,30 @@
     {
       "file": "src/stores/inventory/inventoryHelpers.ts",
       "exports": ["getItemTier", "isItemProduct", "getAdjustedProductCategory"]
+    },
+    {
+      "file": "src/logic/battle/orchestrator.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/types/system/stores.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/types/inventory/items.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/logic/battle/actions/statusActions.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/types/battle/battle.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/stores/map.ts",
+      "exports": ["*"]
     }
   ]
 }

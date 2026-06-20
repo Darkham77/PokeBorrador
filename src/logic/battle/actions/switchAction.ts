@@ -98,6 +98,10 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       await handleFaint('enemy')
       return
     }
+  } else {
+    // Si es un cambio forzado (por debilitación), debemos asegurar que la FSM
+    // vuelva al estado de combate activo antes de transicionar a WAIT_INPUT
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE)
   }
   
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)

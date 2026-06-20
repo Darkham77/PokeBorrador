@@ -2533,12 +2533,6 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 34,
-        "id": "heavy_slam",
-        "name": "Cuerpo Pesado",
-        "pp": 15
-      },
-      {
         "lv": 39,
         "id": "hyper_voice",
         "name": "Vozarrón",
@@ -2575,12 +2569,6 @@ export const POKEMON_DB = {
         "id": "double_slap",
         "name": "Doble Bofetón",
         "pp": 10
-      },
-      {
-        "lv": 1,
-        "id": "heavy_slam",
-        "name": "Cuerpo Pesado",
-        "pp": 15
       }
     ]
   },
@@ -3580,12 +3568,6 @@ export const POKEMON_DB = {
         "pp": 40
       },
       {
-        "lv": 31,
-        "id": "psicocontrol",
-        "name": "Psicocontrol",
-        "pp": 10
-      },
-      {
         "lv": 40,
         "id": "fury_swipes",
         "name": "Golpes Furia",
@@ -3652,12 +3634,6 @@ export const POKEMON_DB = {
         "id": "screech",
         "name": "Chirrido",
         "pp": 40
-      },
-      {
-        "lv": 31,
-        "id": "psicocontrol",
-        "name": "Psicocontrol",
-        "pp": 10
       },
       {
         "lv": 44,
@@ -4012,12 +3988,6 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 31,
-        "id": "heavy_slam",
-        "name": "Cuerpo Pesado",
-        "pp": 15
-      },
-      {
         "lv": 37,
         "id": "belly_drum",
         "name": "Tambor",
@@ -4084,12 +4054,6 @@ export const POKEMON_DB = {
         "id": "rain_dance",
         "name": "Danza Lluvia",
         "pp": 5
-      },
-      {
-        "lv": 35,
-        "id": "heavy_slam",
-        "name": "Cuerpo Pesado",
-        "pp": 15
       },
       {
         "lv": 43,
@@ -4391,12 +4355,6 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 25,
-        "id": "prevision",
-        "name": "Previsión",
-        "pp": 40
-      },
-      {
         "lv": 31,
         "id": "bide",
         "name": "Venganza",
@@ -4477,12 +4435,6 @@ export const POKEMON_DB = {
         "pp": 20
       },
       {
-        "lv": 25,
-        "id": "prevision",
-        "name": "Previsión",
-        "pp": 40
-      },
-      {
         "lv": 31,
         "id": "bide",
         "name": "Venganza",
@@ -4561,12 +4513,6 @@ export const POKEMON_DB = {
         "id": "seismic_toss",
         "name": "Mov. Sísmico",
         "pp": 20
-      },
-      {
-        "lv": 25,
-        "id": "prevision",
-        "name": "Previsión",
-        "pp": 40
       },
       {
         "lv": 31,
@@ -6542,12 +6488,6 @@ export const POKEMON_DB = {
         "pp": 10
       },
       {
-        "lv": 45,
-        "id": "psicocontrol",
-        "name": "Psicocontrol",
-        "pp": 10
-      },
-      {
         "lv": 49,
         "id": "future_sight",
         "name": "Premonición",
@@ -6625,12 +6565,6 @@ export const POKEMON_DB = {
         "lv": 46,
         "id": "psychic",
         "name": "Psíquico",
-        "pp": 10
-      },
-      {
-        "lv": 53,
-        "id": "psicocontrol",
-        "name": "Psicocontrol",
         "pp": 10
       },
       {
@@ -7326,12 +7260,6 @@ export const POKEMON_DB = {
         "pp": 5
       },
       {
-        "lv": 41,
-        "id": "prevision",
-        "name": "Previsión",
-        "pp": 40
-      },
-      {
         "lv": 46,
         "id": "blaze_kick",
         "name": "Patada Ígnea",
@@ -7513,12 +7441,6 @@ export const POKEMON_DB = {
     "learnset": [
       {
         "lv": 1,
-        "id": "toxic_spikes",
-        "name": "Pozo Venenoso",
-        "pp": 40
-      },
-      {
-        "lv": 1,
         "id": "tackle",
         "name": "Placaje",
         "pp": 35
@@ -7585,12 +7507,6 @@ export const POKEMON_DB = {
     "catchRate": 60,
     "spe": 60,
     "learnset": [
-      {
-        "lv": 1,
-        "id": "toxic_spikes",
-        "name": "Pozo Venenoso",
-        "pp": 40
-      },
       {
         "lv": 1,
         "id": "tackle",
@@ -9545,12 +9461,6 @@ export const POKEMON_DB = {
         "id": "recover",
         "name": "Recuperación",
         "pp": 20
-      },
-      {
-        "lv": 24,
-        "id": "electrorrayo",
-        "name": "Electrorrayo",
-        "pp": 15
       },
       {
         "lv": 32,

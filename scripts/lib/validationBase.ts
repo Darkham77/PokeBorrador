@@ -21,7 +21,8 @@ export function setupValidation(config: ValidationConfig) {
   const { values } = parseArgs({
     options: {
       output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
+      summary: { type: 'boolean', short: 's' },
+      'errors-only': { type: 'boolean' }
     }
   });
 
@@ -40,11 +41,12 @@ export function setupValidation(config: ValidationConfig) {
       }
     },
     finish: async (scannedMetrics: Record<string, number>, errors: string[], warnings: string[]) => {
+      const finalWarnings = values['errors-only'] ? [] : warnings;
       const summaryData = {
         title: config.title,
         scannedMetrics,
         errors,
-        warnings
+        warnings: finalWarnings
       };
 
       printConsoleSummary(summaryData, !values.summary);

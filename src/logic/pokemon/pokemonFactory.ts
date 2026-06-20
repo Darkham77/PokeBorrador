@@ -11,8 +11,8 @@ import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
 import { logger } from '../utils/logger.ts';
-import { ABILITY_DATA } from '@/data/battle/abilities';
 import { getItemById, getItemByName } from '@/data/inventory/items';
+import { Dex, toID } from '@pkmn/sim';
 
 
 /**
@@ -131,36 +131,22 @@ export function sanitizePokemon(p: Pokemon): void {
     p.emoji = base.emoji || p.emoji;
   }
 
-  // 1. Validar Habilidad
+  // 1. Validar Habilidad usando pkms Dex
+  const speciesData = Dex.species.get(p.id);
+  const validAbilities: string[] = speciesData.exists 
+    ? Object.values(speciesData.abilities).map(a => toID(a)) 
+    : ['overgrow'];
+  
   if (p.ability) {
-    const normalizeText = (text: string) => {
-      return text.toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[\s_-]+/g, '')
-        .trim();
-    };
-
-    const normAbility = normalizeText(p.ability);
-    const match = Object.keys(ABILITY_DATA).find(k => normalizeText(k) === normAbility);
-    if (match) {
-      p.ability = match;
+    const normAbility = toID(p.ability);
+    if (validAbilities.includes(normAbility)) {
+      p.ability = normAbility;
+    } else {
+      logger.warn('Self-Healing', `Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}, reasignando.`);
+      p.ability = validAbilities[0];
     }
-  }
-
-  const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
-  const normalizedValid = validAbilities.map(a => a.toLowerCase().trim());
-  if (p.ability) {
-    const currentLower = p.ability.toLowerCase().trim();
-    const index = normalizedValid.indexOf(currentLower);
-    if (index !== -1) {
-      p.ability = validAbilities[index];
-    }
-  }
-
-  if (!p.ability || !validAbilities.includes(p.ability)) {
-    logger.warn('Self-Healing', `Reparando habilidad inválida (${p.ability}) para ${p.id}`);
-    p.ability = validAbilities[0] || 'Presión';
+  } else {
+    p.ability = validAbilities[0];
   }
 
   // 1b. Validar Objeto Equipado (heldItem)
@@ -263,6 +249,20 @@ export function sanitizePokemon(p: Pokemon): void {
   if (p.hp === undefined || isNaN(p.hp)) p.hp = p.maxHp;
   if (p.hp > p.maxHp) p.hp = p.maxHp;
 
+  // Validar y sanear naturaleza usando pkms
+  if (p.nature) {
+    const normNature = toID(p.nature);
+    const natureData = Dex.natures.get(normNature);
+    if (natureData && natureData.exists) {
+      p.nature = normNature;
+    } else {
+      logger.warn('Self-Healing', `Naturaleza inválida (${p.nature}) para ${p.id}, reajustando a serious.`);
+      p.nature = 'serious';
+    }
+  } else {
+    p.nature = 'serious';
+  }
+
   // 4. Validar Nivel y Experiencia límite (Auto-healing de corrupción)
   if (p.level > MAX_POKEMON_LEVEL) {
     logger.warn('Self-Healing', `Pokémon ${p.id} con nivel superior al máximo (${p.level}), ajustando a ${MAX_POKEMON_LEVEL}`);
@@ -360,9 +360,9 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     spe: _randIv(_ivFloor, false, !!isGuardianPotential) 
   };
   
-  const nature = options.nature || NATURES[Math.floor(Math.random() * NATURES.length)] || 'Fuerte';
+  const nature = options.nature ? toID(options.nature) : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
   const abilityList = pokemonDataProvider.getSpeciesAbilities(id);
-  const ability = options.ability || abilityList[Math.floor(Math.random() * abilityList.length)] || 'Presión';
+  const ability = options.ability ? toID(options.ability) : abilityList[Math.floor(Math.random() * abilityList.length)] || 'pressure';
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
   // Shiny Calculation

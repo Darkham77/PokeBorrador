@@ -168,9 +168,7 @@ Default section order:
 
 ## User Preferences
 
-- **Spanish ID Prohibition**: It is strictly forbidden to create unique logical identifiers (`id`) for items, Pokémon, or other elements in Spanish. All IDs in databases and internal logic must be exclusively in English. Spanish is reserved only for descriptive and display fields like the visible name in the UI or filters.
-
-When the user requests a durable behavior change, record it here or in the relevant child AGENTS.md
+- **Spanish ID Prohibition (Strict English Mandate)**: It is strictly forbidden to create or use logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, or other elements in Spanish. All IDs in databases, saves, and internal logic (including engine code and configurations) MUST be exclusively in English (using official Showdown format). Writing intermediate translation tables, patches, or adapters to preserve or support Spanish IDs in the backend/engine is strictly prohibited. If a developer or agent encounters any legacy Spanish IDs or translation patches already in the codebase, they MUST fix them immediately and migrate them to English Showdown IDs. Spanish is reserved exclusively for display and user-facing fields (such as descriptions or names shown in the UI).
 
 ## Child DOX Index
 

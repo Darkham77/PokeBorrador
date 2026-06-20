@@ -14,8 +14,8 @@ import { setupValidation } from '../lib/validationBase.ts';
 
 // Importar bases de datos locales
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
-import { POKEMON_ABILITIES } from '../../src/data/battle/abilities.ts';
-import { MOVE_DATA } from '../../src/data/battle/moves.ts';
+import { Dex, toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
 const DB_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
@@ -54,7 +54,11 @@ async function main() {
   await validator.checkFiles();
 
   // 1. Cargar base de datos local de Showdown
-  let showdownDB: any;
+  interface ShowdownPokeEntry {
+    baseStats: Record<string, number>;
+    abilities: string[];
+  }
+  let showdownDB: { pokemon: Record<string, ShowdownPokeEntry> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
     showdownDB = JSON.parse(rawData);
@@ -64,7 +68,7 @@ async function main() {
   }
 
   // Mapeos normalizados de Showdown para búsquedas rápidas
-  const sdPokemonMap = new Map<string, any>();
+  const sdPokemonMap = new Map<string, ShowdownPokeEntry>();
   for (const [key, val] of Object.entries(showdownDB.pokemon)) {
     sdPokemonMap.set(normalizeId(key), val);
   }
@@ -75,7 +79,7 @@ async function main() {
   const statsKeys: Array<'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
   // 2. Validar cada Pokémon
-  for (const [coreId, corePoke] of Object.entries(POKEMON_DB) as [string, any][]) {
+  for (const [coreId, corePoke] of Object.entries(POKEMON_DB)) {
     const tag = `[${corePoke.name} (${coreId})]`;
     const sdPoke = sdPokemonMap.get(normalizeId(coreId));
 
@@ -107,33 +111,31 @@ async function main() {
       errors.push(`${tag} Discrepancia en tipos: Juego [${coreTypesStr}] vs Showdown [${sdTypesStr}].`);
     }
 
-    // C. Validar habilidad única asignada
-    const coreAbilities = (POKEMON_ABILITIES as Record<string, string[]>)[coreId] || [];
+    // C. Validar habilidad única asignada (obtenida de Dex)
+    const speciesInfo = Dex.species.get(coreId);
     const sdAbilities = sdPoke.abilities || [];
+    const coreAbilities = speciesInfo.exists ? Object.values(speciesInfo.abilities) : [];
 
     if (coreAbilities.length === 0) {
-      errors.push(`${tag} No tiene ninguna habilidad asignada en POKEMON_ABILITIES.`);
+      errors.push(`${tag} No tiene ninguna habilidad asignada en el Dex de pkms.`);
     } else {
-      if (coreAbilities.length > 1) {
-        errors.push(`${tag} Tiene más de 1 habilidad asignada (${coreAbilities.join(', ')}). Sólo debe haber 1 habilidad activa.`);
-      }
-      
       const officialAbility = sdAbilities[0];
-      if (officialAbility && coreAbilities[0] !== officialAbility) {
-        errors.push(`${tag} Discrepancia en habilidad activa: Juego '${coreAbilities[0]}' vs Showdown oficial '${officialAbility}'.`);
+      const coreActive = coreAbilities[0];
+      if (officialAbility && toID(coreActive) !== toID(officialAbility)) {
+        errors.push(`${tag} Discrepancia en habilidad activa: Juego '${coreActive}' vs Showdown oficial '${officialAbility}'.`);
       }
     }
 
     // D. Validar movimientos del learnset
     if (corePoke.learnset && Array.isArray(corePoke.learnset)) {
-      for (const moveEntry of corePoke.learnset) {
-        if (moveEntry.id !== 'Unknown' && !MOVE_DATA[moveEntry.id]) {
-          errors.push(`${tag} El movimiento '${moveEntry.id}' en su learnset no existe en MOVE_DATA.`);
-        }
-      }
-    } else {
-      errors.push(`${tag} Falta o es inválida la propiedad 'learnset'.`);
-    }
+       for (const moveEntry of corePoke.learnset) {
+         if (moveEntry.id !== 'Unknown' && !Dex.forGen(ACTIVE_GENERATION).moves.get(toID(moveEntry.id)).exists) {
+           errors.push(`${tag} El movimiento '${moveEntry.id}' en su learnset no existe en el Dex de Gen 3.`);
+         }
+       }
+     } else {
+       errors.push(`${tag} Falta o es inválida la propiedad 'learnset'.`);
+     }
   }
 
   // 3. Finalizar reporte

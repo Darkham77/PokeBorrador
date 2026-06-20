@@ -22,8 +22,8 @@ describe('PokemonStatusSection - Tooltips', () => {
   })
 
   const mockPokemon = {
-    nature: 'Osado',
-    ability: 'Punto tóxico',
+    nature: 'bold',
+    ability: 'poisonpoint',
     hp: 100,
     maxHp: 100,
     level: 50,
@@ -58,7 +58,7 @@ describe('PokemonStatusSection - Tooltips', () => {
 
   it('should handle case-insensitive nature lookups', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'osado' } as unknown as Pokemon }
+      props: { pokemon: { ...mockPokemon, nature: 'BOLD' } as unknown as Pokemon }
     })
 
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })

@@ -1,6 +1,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { NATURES } from '@/data/battle/natures';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 describe('Pokemon Database Integrity', () => {
   const species = Object.entries(POKEMON_DB);
@@ -48,5 +50,51 @@ describe('Pokemon Database Integrity', () => {
       expect(id, `Pokemon ID "${id}" must be lowercase`).toBe(id.toLowerCase());
       expect(id.includes(' '), `Pokemon ID "${id}" should not contain spaces`).toBe(false);
     });
+  });
+
+  it('all system natures must have valid Spanish translation data', () => {
+    NATURES.forEach((natureId: string) => {
+      const data = pokemonDataProvider.getNatureData(natureId);
+      expect(data, `Nature "${natureId}" must resolve data`).not.toBeNull();
+      if (!data) return;
+      expect(data.name, `Nature "${natureId}" must have a Spanish translated name`).toBeDefined();
+      expect(data.name, `Nature "${natureId}" Spanish name must not be English ID`).not.toBe(natureId);
+      expect(data.desc, `Nature "${natureId}" must have a Spanish description`).toBeDefined();
+    });
+  });
+
+  it('all abilities of all species in database must have valid Spanish translation data', () => {
+    const errors: string[] = [];
+    
+    Object.keys(POKEMON_DB).forEach(pokeId => {
+      const abilities = pokemonDataProvider.getSpeciesAbilities(pokeId);
+      if (abilities.length === 0) {
+        errors.push(`Pokemon "${pokeId}" does not have any abilities.`);
+      }
+      
+      abilities.forEach(abilityId => {
+        const data = pokemonDataProvider.getAbilityData(abilityId);
+        if (!data) {
+          errors.push(`Ability "${abilityId}" on species "${pokeId}" returned null data.`);
+          return;
+        }
+        if (!data.name) {
+          errors.push(`Ability "${abilityId}" on species "${pokeId}" is missing name.`);
+        } else if (data.name === abilityId) {
+          errors.push(`Ability "${abilityId}" on species "${pokeId}" has untranslated name: "${data.name}".`);
+        }
+        
+        if (!data.desc) {
+          errors.push(`Ability "${abilityId}" on species "${pokeId}" is missing description.`);
+        } else {
+          const lowerDesc = data.desc.toLowerCase();
+          if (lowerDesc.includes('this pokemon') || lowerDesc.includes('prevents other')) {
+            errors.push(`Ability "${abilityId}" on species "${pokeId}" has untranslated English description: "${data.desc}".`);
+          }
+        }
+      });
+    });
+
+    expect(errors, `Habilidades con traducciones faltantes:\n${errors.join('\n')}`).toEqual([]);
   });
 });

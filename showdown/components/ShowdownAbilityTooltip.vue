@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ABILITY_DATA } from '../../src/data/battle/abilities';
+import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider';
 import gsap from 'gsap';
 
 interface Props {
@@ -13,7 +13,7 @@ const props = defineProps<Props>();
 
 const abilityDesc = computed(() => {
   if (!props.abilityName) return '';
-  const data = (ABILITY_DATA as Record<string, { desc: string }>)[props.abilityName];
+  const data = pokemonDataProvider.getAbilityData(props.abilityName);
   return data ? data.desc : 'Descripción no encontrada en la base de datos de habilidades.';
 });
 

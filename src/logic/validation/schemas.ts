@@ -138,7 +138,7 @@ export function validateTradeOffer(data: unknown) {
 // ==========================================
 
 // Pokemon IVs validation schema
-export const pokemonIVsSchema = object({
+const pokemonIVsSchema = object({
   hp: fallback(number(), 0),
   atk: fallback(number(), 0),
   def: fallback(number(), 0),
@@ -148,7 +148,7 @@ export const pokemonIVsSchema = object({
 });
 
 // Move Effect validation schema
-export const moveEffectSchema = object({
+const moveEffectSchema = object({
   type: string(),
   status: optional(nullable(union([literal('paralysis'), literal('burn'), literal('poison'), literal('sleep'), literal('freeze')]))),
   stat: optional(string()),
@@ -160,7 +160,7 @@ export const moveEffectSchema = object({
 });
 
 // Move validation schema
-export const moveSchema = object({
+const moveSchema = object({
   id: optional(string()),
   name: string(),
   type: optional(string()),
@@ -190,7 +190,7 @@ export const moveSchema = object({
 });
 
 // Pokemon validation schema
-export const pokemonSchema = object({
+const pokemonSchema = object({
   uid: fallback(string(), ''),
   id: string(),
   name: fallback(string(), ''),
@@ -284,7 +284,7 @@ export const pokemonSchema = object({
 });
 
 // PokemonEgg validation schema
-export const pokemonEggSchema = object({
+const pokemonEggSchema = object({
   uid: string(),
   id: string(),
   pokemonId: optional(string()),
@@ -311,7 +311,7 @@ export const pokemonEggSchema = object({
 });
 
 // ActiveBattle enemy team member schema
-export const enemyPokemonSerializedSchema = object({
+const enemyPokemonSerializedSchema = object({
   uid: string(),
   id: string(),
   name: string(),
@@ -341,7 +341,7 @@ export const enemyPokemonSerializedSchema = object({
 });
 
 // ActiveBattle validation schema
-export const activeBattleSchema = object({
+const activeBattleSchema = object({
   isGym: boolean(),
   gymId: nullable(string()),
   isTrainer: boolean(),
@@ -353,7 +353,7 @@ export const activeBattleSchema = object({
 });
 
 // Full SaveData validation schema
-export const saveDataSchema = object({
+const saveDataSchema = object({
   trainer: string(),
   gender: fallback(union([literal('h'), literal('m')]), 'h'),
   badges: fallback(number(), 0),

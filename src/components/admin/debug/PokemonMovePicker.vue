@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { Dex } from '@pkmn/sim'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
 
 interface Props {
   modelValue: (string | null)[]
@@ -17,7 +18,7 @@ const emit = defineEmits<{
 const moveSearch = ref('')
 const activeMoveSlot = ref<number | null>(null)
 
-const allMovesList = Object.keys(MOVE_DATA)
+const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => m.id)
 const filteredMoves = computed(() => {
   const s = moveSearch.value.toLowerCase()
   if (!s) return props.speciesMoves as string[]

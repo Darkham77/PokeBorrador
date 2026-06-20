@@ -1,8 +1,9 @@
 import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
+import { Dex } from '@pkmn/sim'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
 
 
 export function getSelectableSpecies() {
@@ -19,7 +20,10 @@ export function getSelectableNatures() {
 }
 
 export function getSelectableAbilities() {
-  return Object.keys(ABILITY_DATA).map(a => ({ id: a, name: a }))
+  // Obtener todas las habilidades válidas de Gen 3
+  return Dex.forGen(ACTIVE_GENERATION).abilities.all()
+    .filter(a => a.exists)
+    .map(a => ({ id: a.id, name: a.name }))
 }
 
 export interface VisibilityResult {

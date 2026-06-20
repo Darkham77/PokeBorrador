@@ -125,6 +125,8 @@ Consult these manuals for detailed implementation specifications:
 - **Trainer Archetype Single Source of Truth**: All archetype definitions (name, sprite, pool, key) MUST live exclusively in `src/data/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
 - **Gender is a Save Property**: The player's gender belongs to the save/account — set once at signup, never asked at login. See [src/stores/AGENTS.md](../../../src/stores/AGENTS.md).
 - **Move Description Fallback Chain**: Spanish translations for moves MUST implement: ① `pokemonDataProvider` official translation → ② `move_descriptions.json` → ③ Showdown `shortDesc`. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
+- **Strict English ID Mandate**: You MUST NEVER create or use logical identifiers (`id`) in Spanish for items, Pokémon, abilities, natures, moves, or stats. All logic and database values must use official English Showdown IDs (processed with `toID`). Writing translation layers, patches, or intermediate tables to support Spanish IDs internally in the engine is strictly forbidden. Any found Spanish logical IDs or translation layers MUST be refactored to English immediately.
+
 
 ### 4. SASS and Build Integrity
 

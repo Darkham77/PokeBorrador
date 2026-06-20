@@ -13,9 +13,9 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     }),
     getNatureData: vi.fn(() => ({ up: null, down: null })),
     getSpeciesAbilities: vi.fn((id) => {
-      if (id === 'charizard') return ['Mar Llamas', 'Poder Solar'];
-      if (id === 'zubat') return ['Foco Interno'];
-      return ['Presión'];
+      if (id === 'charizard') return ['blaze', 'solarpower'];
+      if (id === 'zubat') return ['innerfocus'];
+      return ['pressure'];
     }),
     resolveMoveId: vi.fn((name) => {
       if (!name) return '';
@@ -64,7 +64,7 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
     sanitizePokemon(p);
 
     // Should fall back to the first valid ability for Charizard
-    expect(p.ability).toBe('Mar Llamas');
+    expect(p.ability).toBe('blaze');
   });
 
   it('should provide "Placaje" (tackle) if a pokemon has no moves', () => {

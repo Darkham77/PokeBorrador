@@ -7,13 +7,9 @@ enableCompileCache();
 
 // Importar bases de datos originales del juego
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
-import { POKEMON_ABILITIES, ABILITY_DATA } from '../../src/data/battle/abilities.ts';
-import { MOVE_DATA } from '../../src/data/battle/moves.ts';
 
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 const POKEMON_DB_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
-const MOVES_FILE = path.resolve(process.cwd(), 'src/data/battle/moves.ts');
-const ABILITIES_FILE = path.resolve(process.cwd(), 'src/data/battle/abilities.ts');
 
 const REVERSE_TYPE_MAP: Record<string, string> = {
   'Planta': 'grass',
@@ -44,7 +40,13 @@ async function main() {
   console.log(styleText('bold', '\n--- 🔄 INICIANDO ACCIÓN DE SINCRONIZACIÓN ---'));
 
   // 1. Cargar base de datos de Showdown
-  let showdownDB: any;
+  interface ShowdownPokeData {
+    baseStats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
+    abilities: string[];
+  }
+
+  // 1. Cargar base de datos de Showdown
+  let showdownDB: { pokemon: Record<string, ShowdownPokeData>; moves: Record<string, unknown> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
     showdownDB = JSON.parse(rawData);
@@ -54,21 +56,21 @@ async function main() {
   }
 
   // Mapeos normalizados de Showdown
-  const sdPokemonMap = new Map<string, any>();
+  const sdPokemonMap = new Map<string, ShowdownPokeData>();
   for (const [key, val] of Object.entries(showdownDB.pokemon)) {
     sdPokemonMap.set(normalizeId(key), val);
   }
 
-  const sdMovesMap = new Map<string, any>();
+  const sdMovesMap = new Map<string, unknown>();
   for (const [key, val] of Object.entries(showdownDB.moves)) {
     sdMovesMap.set(normalizeId(key), val);
   }
 
   // 2. Modificar Pokémon DB en memoria
-  const updatedPokemonDb = JSON.parse(JSON.stringify(POKEMON_DB));
+  const updatedPokemonDb = JSON.parse(JSON.stringify(POKEMON_DB)) as typeof POKEMON_DB;
   let pokeUpdatedCount = 0;
 
-  for (const [coreId, corePoke] of Object.entries(updatedPokemonDb) as [string, any][]) {
+  for (const [coreId, corePoke] of Object.entries(updatedPokemonDb)) {
     const normId = normalizeId(coreId);
     const sdPoke = sdPokemonMap.get(normId);
 
@@ -112,78 +114,10 @@ async function main() {
     }
   }
 
-  // 3. Modificar Moves DB en memoria
-  const updatedMoveData = JSON.parse(JSON.stringify(MOVE_DATA));
-  let moveUpdatedCount = 0;
-
-  for (const [moveId, coreMove] of Object.entries(updatedMoveData) as [string, any][]) {
-    const sdMove = sdMovesMap.get(normalizeId(moveId));
-    if (sdMove) {
-      coreMove.power = sdMove.basePower;
-      coreMove.acc = sdMove.accuracy === true ? 1000 : sdMove.accuracy;
-      coreMove.pp = sdMove.pp;
-      
-      if (sdMove.priority !== undefined && sdMove.priority !== 0) {
-        coreMove.priority = sdMove.priority;
-      } else {
-        delete coreMove.priority;
-      }
-      
-      const catLower = sdMove.category?.toLowerCase();
-      if (catLower) {
-        coreMove.cat = catLower;
-      }
-
-      if (sdMove.type) {
-        const typeEng = REVERSE_TYPE_MAP[sdMove.type];
-        if (typeEng) {
-          coreMove.type = typeEng;
-        }
-      }
-      moveUpdatedCount++;
-    }
-  }
-
-  // 4. Modificar Habilidades (Abilities DB) en memoria
-  const updatedPokemonAbilities = JSON.parse(JSON.stringify(POKEMON_ABILITIES)) as Record<string, string[]>;
-  const mutableAbilityData = JSON.parse(JSON.stringify(ABILITY_DATA)) as Record<string, { desc: string }>;
-  let abilitiesUpdatedCount = 0;
-
-  for (const coreId of Object.keys(POKEMON_DB)) {
-    const normId = normalizeId(coreId);
-    const sdPoke = sdPokemonMap.get(normId);
-
-    if (sdPoke && sdPoke.abilities && sdPoke.abilities.length > 0) {
-      // Usar solo la primera habilidad oficial de Showdown Gen 3
-      const officialAbilityName = sdPoke.abilities[0];
-      
-      // Asegurar que exista en ABILITY_DATA
-      if (!mutableAbilityData[officialAbilityName]) {
-        console.log(styleText('yellow', `⚠️ Habilidad oficial '${officialAbilityName}' no existe en ABILITY_DATA. Añadiendo descripción por defecto.`));
-        mutableAbilityData[officialAbilityName] = { desc: `• Habilidad oficial de ${sdPoke.name} en Gen 3.` };
-      }
-
-      updatedPokemonAbilities[coreId] = [officialAbilityName];
-      abilitiesUpdatedCount++;
-    }
-  }
-
-  // 5. Serializar y escribir archivos de vuelta
-  
   // Escribir pokemonDB.ts
   const serializedPokemonDB = `export const POKEMON_DB = ${JSON.stringify(updatedPokemonDb, null, 2)};\n`;
   await fs.writeFile(POKEMON_DB_FILE, serializedPokemonDB, 'utf8');
   console.log(styleText('green', `✅ Guardado pokemonDB.ts (${pokeUpdatedCount} Pokémon sincronizados).`));
-
-  // Escribir moves.ts
-  const serializedMoves = `import type { MoveBaseData } from '@/types/system/database';\n\nexport const MOVE_DATA: Record<string, MoveBaseData> = ${JSON.stringify(updatedMoveData, null, 2)};\n`;
-  await fs.writeFile(MOVES_FILE, serializedMoves, 'utf8');
-  console.log(styleText('green', `✅ Guardado moves.ts (${moveUpdatedCount} movimientos sincronizados).`));
-
-  // Escribir abilities.ts
-  const serializedAbilities = `export const ABILITY_DATA = ${JSON.stringify(mutableAbilityData, null, 2)};\n\nexport const POKEMON_ABILITIES = ${JSON.stringify(updatedPokemonAbilities, null, 2)};\n`;
-  await fs.writeFile(ABILITIES_FILE, serializedAbilities, 'utf8');
-  console.log(styleText('green', `✅ Guardado abilities.ts (${abilitiesUpdatedCount} Pokémon sincronizados a 1 sola habilidad).`));
 
   console.log(styleText('bold', styleText('green', '\n🎉 ¡Sincronización de base de datos finalizada con éxito!')));
 }

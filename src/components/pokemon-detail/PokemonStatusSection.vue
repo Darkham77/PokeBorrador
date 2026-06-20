@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/battle/natures'
-import { ABILITY_DATA } from '@/data/battle/abilities'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -24,18 +24,25 @@ const getHpClass = (pct: number) => {
 }
 
 const getNatureInfo = (nature: string) => {
-  if (!nature) return { up: null, down: null, desc: 'Sin datos de naturaleza.' }
-  const data = NATURE_DATA as Record<string, { up: string | null; down: string | null; desc: string }>
-  const entry = data[nature] || Object.entries(data).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
-  return entry || { up: null, down: null, desc: 'Naturaleza desconocida.' }
+  if (!nature) return { name: 'Seria', up: null, down: null, desc: 'Sin datos de naturaleza.' }
+  const data = NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>
+  const cleanId = nature.toLowerCase().trim()
+  
+  // Buscar exclusivamente por ID en inglés (clave del objeto)
+  const entry = data[cleanId]
+  return entry || { name: nature, up: null, down: null, desc: 'Naturaleza desconocida.' }
 }
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
-  const data = ABILITY_DATA as Record<string, string | { desc: string }>
-  const entry = data[ability] || Object.entries(data).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
-  if (!entry) return 'Habilidad especial de este Pokémon.'
-  return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.desc : 'Habilidad especial de este Pokémon.'
+}
+
+const getAbilityName = (ability: string) => {
+  if (!ability) return '—'
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.name : ability
 }
 
 const natureStyle = computed(() => {
@@ -72,7 +79,7 @@ const abilityStyle = computed(() => ({
           <span
             class="val interactive-val m-interactive-label"
             :style="natureStyle"
-          >{{ p.nature || 'Serio' }}</span>
+          >{{ getNatureInfo(p.nature).name || p.nature || 'Seria' }}</span>
         </div>
       </PVTooltip>
 
@@ -87,7 +94,7 @@ const abilityStyle = computed(() => ({
           <span
             class="val interactive-val m-interactive-label"
             :style="abilityStyle"
-          >{{ p.ability || '—' }}</span>
+          >{{ getAbilityName(p.ability || '') }}</span>
         </div>
       </PVTooltip>
 

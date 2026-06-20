@@ -1,4 +1,5 @@
 import { Dex } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../../src/data/system/constants.ts';
 
 export interface ExtractedPokemon {
   num: number;
@@ -62,7 +63,7 @@ export function extractGen3Logic(): ShowdownLocalDB {
 
   // Usar el Dex con contexto de Gen 3 para evitar que Pokémon de Gen 1-3
   // sean filtrados como 'Past' por el Dex global (que apunta a Gen 9).
-  const gen3Dex = Dex.forGen(3);
+  const gen3Dex = Dex.forGen(ACTIVE_GENERATION);
 
   // 1. Extraer Habilidades (Gen <= 3)
   const allAbilities = gen3Dex.abilities.all();

@@ -7,8 +7,9 @@ enableCompileCache();
 
 // Importar dinámicamente las bases de datos de Poké Vicio
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
-import { POKEMON_ABILITIES } from '../../src/data/battle/abilities.ts';
-import { MOVE_DATA } from '../../src/data/battle/moves.ts';
+import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider.ts';
+import { Dex, toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 const REPORT_OUTPUT_PATH = path.resolve(process.cwd(), 'scratch/db_comparison_detailed_report.md');
@@ -43,7 +44,17 @@ async function main() {
   console.log(styleText('bold', '\n--- 📊 INICIANDO COMPARADOR DE BASES DE DATOS ---'));
 
   // 1. Cargar la base de datos de Showdown traducida
-  let showdownDB: any;
+  interface ShowdownPokeSpec {
+    baseStats: Record<string, number>;
+    types?: string[];
+    abilities?: string[];
+  }
+  interface ShowdownMoveSpec {
+    basePower?: number;
+    accuracy?: number | boolean;
+    pp?: number;
+  }
+  let showdownDB: { pokemon: Record<string, ShowdownPokeSpec>; moves: Record<string, ShowdownMoveSpec> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
     showdownDB = JSON.parse(rawData);
@@ -72,7 +83,7 @@ async function main() {
   pokemonDiffsTable.push('| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |');
   pokemonDiffsTable.push('| :--- | :--- | :--- | :--- | :--- |');
 
-  const normalizedShowdownPoke = new Map<string, any>();
+  const normalizedShowdownPoke = new Map<string, ShowdownPokeSpec>();
   for (const key of Object.keys(showdownDB.pokemon)) {
     normalizedShowdownPoke.set(normalizeId(key), showdownDB.pokemon[key]);
   }
@@ -94,7 +105,7 @@ async function main() {
     // Comparar Estadísticas Base
     const statsKeys: Array<'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     for (const stat of statsKeys) {
-      const coreVal = (corePoke as any)[stat];
+      const coreVal = corePoke[stat as keyof typeof corePoke];
       const sdVal = sdPoke.baseStats[stat];
       if (coreVal !== sdVal) {
         statsDiscrepancies++;
@@ -105,7 +116,8 @@ async function main() {
     // Comparar Tipos
     const coreTypes: string[] = [];
     if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
-    if ((corePoke as any).type2) coreTypes.push(TYPE_MAP[(corePoke as any).type2] || (corePoke as any).type2);
+    const type2 = (corePoke as unknown as { type2?: string }).type2;
+    if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
 
     const sdTypes = sdPoke.types || [];
     const coreTypesStr = coreTypes.slice().sort().join(', ');
@@ -117,10 +129,10 @@ async function main() {
     }
 
     // Comparar Habilidades
-    const coreAbilities = (POKEMON_ABILITIES as Record<string, string[]>)[coreId] || [];
+    const coreAbilities = pokemonDataProvider.getSpeciesAbilities(coreId);
     const sdAbilities = sdPoke.abilities || [];
-    const coreAbiStr = coreAbilities.slice().sort().join(', ');
-    const sdAbiStr = sdAbilities.slice().sort().join(', ');
+    const coreAbiStr = coreAbilities.slice().sort().map(a => toID(a)).join(', ');
+    const sdAbiStr = sdAbilities.slice().sort().map((a: string) => toID(a)).join(', ');
 
     if (coreAbiStr !== sdAbiStr) {
       abilityDiscrepancies++;
@@ -134,12 +146,18 @@ async function main() {
   moveDiffsTable.push('| Movimiento | Propiedad | Valor Juego | Valor Showdown |');
   moveDiffsTable.push('| :--- | :--- | :--- | :--- |');
 
-  const normalizedShowdownMoves = new Map<string, any>();
+  const normalizedShowdownMoves = new Map<string, ShowdownMoveSpec>();
   for (const key of Object.keys(showdownDB.moves)) {
     normalizedShowdownMoves.set(normalizeId(key), showdownDB.moves[key]);
   }
 
-  for (const [moveId, coreMove] of Object.entries(MOVE_DATA)) {
+  const allGen3Moves = Dex.forGen(ACTIVE_GENERATION).moves.all().filter(m => m.exists);
+
+  for (const move of allGen3Moves) {
+    const moveId = move.id;
+    const coreMove = pokemonDataProvider.getMoveData(moveId);
+    if (!coreMove) continue; // solo comparamos los que provee getMoveData
+
     const normMoveId = normalizeId(moveId);
     const sdMove = normalizedShowdownMoves.get(normMoveId);
 
@@ -159,7 +177,6 @@ async function main() {
 
     // Comparar Accuracy
     const coreAcc = coreMove.acc;
-    // Showdown accuracy can be true (always hits, mapped to 1000 or similar in game)
     const sdAcc = sdMove.accuracy === true ? 1000 : sdMove.accuracy;
     if (coreAcc !== sdAcc) {
       moveStatsDiscrepancies++;
@@ -191,7 +208,7 @@ async function main() {
   reportLines.push(`- **Discrepancias de Estadísticas Base encontradas**: ${statsDiscrepancies}`);
   reportLines.push(`- **Discrepancias de Tipo encontradas**: ${typeDiscrepancies}`);
   reportLines.push(`- **Discrepancias de Habilidades encontradas**: ${abilityDiscrepancies}`);
-  reportLines.push(`- **Movimientos en el Juego**: ${Object.keys(MOVE_DATA).length}`);
+  reportLines.push(`- **Movimientos en el Juego**: ${allGen3Moves.length}`);
   reportLines.push(`- **Movimientos del Juego ausentes en Showdown**: ${missingMovesInShowdown}`);
   reportLines.push(`- **Movimientos con discrepancias de stats (Potencia/Precisión/PP/Prioridad)**: ${moveStatsDiscrepancies}`);
   reportLines.push('\n---\n');

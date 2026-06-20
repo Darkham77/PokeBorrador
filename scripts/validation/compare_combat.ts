@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/damageMath.ts';
 import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
 
@@ -90,7 +91,7 @@ const ITEMS_MAP: Record<string, string> = {
   'scope_lens': 'scopelens'
 };
 
-const gen3Dex = Dex.forGen(3);
+const gen3Dex = Dex.forGen(ACTIVE_GENERATION);
 const allPokemon = gen3Dex.species.all().filter(p => !p.isNonstandard && p.num > 0);
 const allMoves = gen3Dex.moves.all().filter(m => 
   !m.isNonstandard && 
@@ -149,10 +150,10 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const defStages = options.enableStages ? Math.floor(Math.random() * 13) - 6 : 0;
 
   // Simulación en Showdown
-  const battle = new Battle({ formatid: 'gen3customgame' as any });
+  const battle = new Battle({ formatid: 'gen3customgame' as unknown as string });
   
   if (battle.actions) {
-    (battle.actions as any).checkAccuracy = function() {
+    (battle.actions as unknown as { checkAccuracy: () => boolean }).checkAccuracy = function() {
       return true;
     };
   }
@@ -209,7 +210,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   // Establecer clima en Showdown
   const sdWeather = WEATHER_MAP[weatherType];
   if (sdWeather && sdWeather !== 'clear') {
-    battle.field.setWeather(sdWeather as any, act1);
+    battle.field.setWeather(sdWeather as never, act1);
   }
 
   // Aplicar stages en Showdown (basado en tipos de Gen 3)
@@ -323,7 +324,7 @@ console.log('Iniciando comparación por fases...');
 
 PHASES.forEach(phase => {
   let passedCount = 0;
-  const fails: any[] = [];
+  const fails: ReturnType<typeof executeComparison>[] = [];
 
   for (let i = 0; i < iterations; i++) {
     const res = executeComparison(phase.options);

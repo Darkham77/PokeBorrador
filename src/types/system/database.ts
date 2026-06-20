@@ -73,6 +73,7 @@ export interface PokemonAesthetics {
 }
 
 export interface NatureBaseData {
+  name: string;
   up: string | null;
   down: string | null;
   desc: string;

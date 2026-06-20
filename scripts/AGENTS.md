@@ -17,6 +17,7 @@ DevOps / Tooling Engineers.
 - Mandate built-in modules prefix (e.g., `node:fs`).
 - Exclude the raw assets folders from file watchers in `vite.config.ts` to prevent locking crashes under Windows.
 - Save validation/audit outputs and temporary reports strictly inside the root `scratch/` folder.
+- All validation and audit scripts support standard flags: `--errors-only` to filter out warnings and focus on errors, and `--summary` (or `-s`) to present structured counts instead of detailed lists.
 
 ## Verification
 

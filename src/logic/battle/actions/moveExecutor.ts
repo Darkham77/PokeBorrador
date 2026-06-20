@@ -6,7 +6,8 @@ import { gameBus } from '@/logic/events/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { Dex } from '@pkmn/sim'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Move } from '@/types/pokemon/pokemon'
 import { logger } from '@/logic/utils/logger'
@@ -76,11 +77,16 @@ export async function executeMoveAction(
     }
 
     if (move.effect === 'metronome') {
-      const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo')
-      const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate'
-      const rawMoveData = (MOVE_DATA as Record<string, Partial<Move>>)[randomName] || {}
-      executableMove = { ...rawMoveData, name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move
-      store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', attacker)
+      const allMoves = Dex.forGen(ACTIVE_GENERATION).moves.all().filter(m => m.id !== 'metronome' && m.id !== 'struggle');
+      const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+      if (randomMove) {
+        const rawMoveData = pokemonDataProvider.getMoveData(randomMove.id) || {};
+        executableMove = { ...rawMoveData, pp: 5, maxPP: 5 } as Move;
+        store.addLog(`¡El Metrónomo escogió ${executableMove.name}!`, 'log-info', attacker);
+      } else {
+        store.addLog("¡Pero falló!", 'log-info', attacker);
+        return;
+      }
     } else if (move.effect === 'mirror_move') {
       if (defender.lastMove) {
         executableMove = { ...defender.lastMove }

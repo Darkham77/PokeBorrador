@@ -3,7 +3,7 @@ import { sleep } from '@/logic/utils/timeUtils'
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
 import { applyMoveEffect } from '@/logic/battle/battleMoves'
-import { MOVE_DATA } from '@/data/battle/moves'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
 import type { MoveBaseData } from '@/types/system/database'
@@ -95,8 +95,10 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const cIdx = clientPick.moveIndex ?? 0
     const hMove = hostPoke.moves[hIdx]
     const cMove = clientPoke.moves[cIdx]
-    const hPrio = (MOVE_DATA as Record<string, MoveBaseData>)[hMove?.name || '']?.priority || 0
-    const cPrio = (MOVE_DATA as Record<string, MoveBaseData>)[cMove?.name || '']?.priority || 0
+    const hMoveId = hMove?.id || (hMove?.name ? pokemonDataProvider.resolveMoveId(hMove.name) : '');
+    const cMoveId = cMove?.id || (cMove?.name ? pokemonDataProvider.resolveMoveId(cMove.name) : '');
+    const hPrio = pokemonDataProvider.getMoveData(hMoveId)?.priority || 0
+    const cPrio = pokemonDataProvider.getMoveData(cMoveId)?.priority || 0
 
     if (hPrio !== cPrio) {
       firstIsHost = hPrio > cPrio
@@ -123,7 +125,10 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const moveIdx = pick.moveIndex ?? 0
     const move = attacker.moves[moveIdx]
     const moveName = move?.name || '???'
-    const md = ((MOVE_DATA as unknown) as Record<string, MoveBaseData>)[moveName] || { 
+    const moveId = move?.id || (move?.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+    const md = (moveId ? pokemonDataProvider.getMoveData(moveId) : null) || { 
+      id: '',
+      name: moveName,
       power: 40, 
       type: 'normal', 
       cat: 'physical' as const, 

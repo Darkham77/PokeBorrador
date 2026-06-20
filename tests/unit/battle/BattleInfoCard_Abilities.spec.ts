@@ -63,7 +63,7 @@ describe('BattleInfoCard - Ability Tooltips', () => {
     hp: 159,
     maxHp: 159,
     gender: 'F',
-    ability: 'Punto tóxico', // Mixed case as in ABILITY_DATA
+    ability: 'poisonpoint', // Official Showdown English ID
     type: 'poison'
   }
 
@@ -99,7 +99,7 @@ describe('BattleInfoCard - Ability Tooltips', () => {
   it('should handle case-insensitive ability names', async () => {
     const wrapper = mount(BattleInfoCard, {
       props: {
-        pokemon: { ...mockPokemon, ability: 'punto tóxico' } as unknown as Pokemon, // Lowercase
+        pokemon: { ...mockPokemon, ability: 'POISONPOINT' } as unknown as Pokemon, // Uppercase
         isPlayer: false
       }
     })

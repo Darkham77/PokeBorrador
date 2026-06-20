@@ -5,7 +5,6 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
-import { MOVE_DATA } from '@/data/battle/moves';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { PurePokemon } from '@/logic/battle/battleMath';
 
@@ -33,7 +32,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
 
     if (attacker && attacker.heldItem === 'choice_band') {
       const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
-      const md = (MOVE_DATA as Record<string, { cat?: string }>)[moveIdLookup] || {};
+      const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };
       const category = move.cat || md.cat || 'physical';
       const isPhysical = category === 'physical';
 
@@ -71,7 +70,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     if (!attacker) return null;
 
     const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
-    const md = (MOVE_DATA as Record<string, { power?: number; acc?: number; cat?: string; type?: string }>)[moveIdLookup] || {};
+    const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number; effect?: string };
     const basePower = move.power !== undefined ? move.power : md.power || 0;
     const isStatus = move.cat === 'status' || md.cat === 'status';
     const moveType = (move.type || md.type || 'normal').toLowerCase();
@@ -157,7 +156,7 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
   const moveDescriptionText = computed(() => {
     const move = toValue(moveInput);
     const moveId = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
-    const moveDataObj = MOVE_DATA[moveId];
+    const moveDataObj = moveId ? pokemonDataProvider.getMoveData(moveId) : null;
     return getMoveDescription(move.name, moveDataObj);
   });
 

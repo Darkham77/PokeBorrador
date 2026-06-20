@@ -1,3 +1,5 @@
+export const ACTIVE_GENERATION = 3;
+
 export const MAX_POKEMON_LEVEL = 100;
 
 export const GAME_RATIOS = {
