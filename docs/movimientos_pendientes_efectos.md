@@ -5,7 +5,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 **Total de movimientos con efectos pendientes:** 381
 
 | ID | Movimiento | Tipo | Categoría | Efectos Identificados en Showdown |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `acidspray` | **Acid Spray** | Poison | Special | Secundario (100%): {"spd":-2} |
 | `airslash` | **Air Slash** | Flying | Special | Secundario (30%): undefined |
 | `alluringvoice` | **Alluring Voice** | Fairy | Special | Secundario (100%): undefined |

@@ -75,6 +75,32 @@ export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defS
     else score *= 0.8
   }
 
+  // Priority moves logic
+  if (move.priority && move.priority !== 0) {
+    const pVal = move.priority
+    if (pVal > 0) {
+      const defHpPct = defender.hp / defender.maxHp
+      // If defender is at low HP, positive priority is highly valued to finish them off
+      if (defHpPct < 0.3) {
+        // Extra value if defender is faster, making priority crucial to strike first
+        const isSlower = (attacker.spe || 0) < (defender.spe || 0)
+        score *= isSlower ? 2.0 : 1.5
+      } else {
+        // General small bonus for positive priority
+        score *= 1.1
+      }
+    } else if (pVal < 0) {
+      const attHpPct = attacker.hp / attacker.maxHp
+      // If attacker is at low HP, negative priority is dangerous as they might faint before moving
+      if (attHpPct < 0.25) {
+        score *= 0.1
+      } else {
+        // General small penalty for negative priority
+        score *= 0.8
+      }
+    }
+  }
+
   // Add randomness to be less predictable (80% - 120%)
   return score * (0.8 + Math.random() * 0.4)
 }
