@@ -67,20 +67,20 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
   describe('getAbilityMultiplier', () => {
     it('Torrente should boost Water at low HP', () => {
-      const attacker: PurePokemon = { level: 50, hp: 10, maxHp: 90, spa: 100, type: 'water', ability: 'Torrente' };
+      const attacker: PurePokemon = { level: 50, hp: 10, maxHp: 90, spa: 100, type: 'water', ability: 'torrent' };
       const move: PureMove = { type: 'water', power: 90, cat: 'special' };
       const { mult } = getAbilityMultiplier(attacker, move);
       assert.strictEqual(mult, 1.5);
     });
 
     it('Experto should boost moves with power ≤ 60', () => {
-      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'Experto' };
+      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'technician' };
       const { mult } = getAbilityMultiplier(attacker, { type: 'normal', power: 40, cat: 'physical' });
       assert.strictEqual(mult, 1.5);
     });
 
     it('Experto should NOT boost moves with power > 60', () => {
-      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'Experto' };
+      const attacker: PurePokemon = { level: 50, hp: 50, maxHp: 100, atk: 100, type: 'normal', ability: 'technician' };
       const { mult } = getAbilityMultiplier(attacker, { type: 'normal', power: 90, cat: 'physical' });
       assert.strictEqual(mult, 1);
     });
@@ -110,7 +110,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
     });
 
     it('Clorofila should double speed in Sun (day cycle)', () => {
-      const p: PurePokemon = { spe: 50, type: 'grass', level: 50, ability: 'Clorofila' };
+      const p: PurePokemon = { spe: 50, type: 'grass', level: 50, ability: 'chlorophyll' };
       // Pass weather=null and explicitly set dayCycle='day' to simulate sun-equivalent bonus
       const noAbility = getEffectiveStat({ ...p, ability: null }, 'spe', {}, null, 'day');
       const withAbility = getEffectiveStat(p, 'spe', {}, null, 'day');
@@ -145,7 +145,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
   describe('calculateDamagePure – Abilities', () => {
     it('Intrépido should allow Normal to hit Ghost (eff = 1)', () => {
-      const attacker: PurePokemon = { level: 50, atk: 100, type: 'normal', ability: 'Intrépido' };
+      const attacker: PurePokemon = { level: 50, atk: 100, type: 'normal', ability: 'scrappy' };
       const defender: PurePokemon = { level: 50, def: 50,  type: 'ghost' };
       const move: PureMove        = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' };
 
@@ -156,7 +156,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
     it('Sebo should reduce Fire damage by 50%', () => {
       const attacker: PurePokemon = { level: 50, spa: 100, type: 'fire' };
-      const defender: PurePokemon = { level: 50, spd: 100, type: 'normal', ability: 'Sebo' };
+      const defender: PurePokemon = { level: 50, spd: 100, type: 'normal', ability: 'thickfat' };
       const move: PureMove        = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
 
       const noSebo = calculateDamagePure(attacker, { ...defender, ability: null }, move);

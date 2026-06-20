@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
-import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/damageMath.ts';
+import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
 import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
 
 // Diccionario para traducir habilidades de nuestro motor (Español) a Showdown (Inglés)

@@ -152,20 +152,20 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   const isRain = !isGym && (mechWeather === 'rain' || (mechWeather === 'clear' && (activeCycle === 'night' || activeCycle === 'dusk')));
 
   if (statKey === 'atk') {
-    if (ab === 'Potencia' || ab === 'Energía pura') abilityMult = 2;
-    else if (ab === 'Agallas' && pokemon.status) abilityMult = 1.5;
+    if (ab === 'hugepower' || ab === 'purepower' || ab === 'Potencia' || ab === 'Energía pura') abilityMult = 2;
+    else if ((ab === 'guts' || ab === 'Agallas') && pokemon.status) abilityMult = 1.5;
   }
   if (statKey === 'def') {
-    if (ab === 'Escama especial' && pokemon.status) abilityMult = 1.5;
+    if ((ab === 'marvelscale' || ab === 'Escama especial') && pokemon.status) abilityMult = 1.5;
   }
   if (statKey === 'spa') {
-    if (ab === 'Poder solar' && isSun) abilityMult = 1.5;
+    if ((ab === 'solarpower' || ab === 'Poder solar') && isSun) abilityMult = 1.5;
   }
   if (statKey === 'spe') {
-    if (ab === 'Clorofila' && isSun) abilityMult = 2;
-    else if (ab === 'Nado rápido' && isRain) abilityMult = 2;
-    else if (ab === 'Ímpetu arena' && mechWeather === 'sandstorm') abilityMult = 2;
-    else if (ab === 'Quitanieves' && (mechWeather === 'snow' || mechWeather === 'hail')) abilityMult = 2;
+    if ((ab === 'chlorophyll' || ab === 'Clorofila') && isSun) abilityMult = 2;
+    else if ((ab === 'swiftswim' || ab === 'Nado rápido') && isRain) abilityMult = 2;
+    else if ((ab === 'sandrush' || ab === 'Ímpetu arena') && mechWeather === 'sandstorm') abilityMult = 2;
+    else if ((ab === 'slushrush' || ab === 'Quitanieves') && (mechWeather === 'snow' || mechWeather === 'hail')) abilityMult = 2;
   }
 
   let statusMult = 1;

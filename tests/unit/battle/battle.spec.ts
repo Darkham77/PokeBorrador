@@ -85,7 +85,7 @@ describe('Battle Engine', () => {
 
   describe('Speed Calculation', () => {
     it('Clorofila should double speed in Day/Morning', () => {
-      const p = { spe: 50, ability: 'Clorofila' } as unknown as Pokemon;
+      const p = { spe: 50, ability: 'chlorophyll' } as unknown as Pokemon;
       expect(getEffectiveSpeed(p, { spe: 0 }, { weather: null })).toBe(100);
     });
 

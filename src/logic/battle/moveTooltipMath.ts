@@ -160,7 +160,7 @@ export function calculateMovePower(
     }
 
     // Defender Ability
-    if (defender && defender.ability === 'Sebo' && (moveType === 'fire' || moveType === 'ice')) {
+    if (defender && (defender.ability === 'thickfat' || defender.ability === 'Sebo') && (moveType === 'fire' || moveType === 'ice')) {
       powerList.push({ label: 'Habilidad Rival (Sebo)', mult: 0.5 });
       currentPower *= 0.5;
     }

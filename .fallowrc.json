@@ -97,7 +97,7 @@
       "exports": ["getStatusIcon"]
     },
     {
-      "file": "src/logic/battle/damageMath.ts",
+      "file": "src/logic/battle/battleMath.ts",
       "exports": ["CURRENT_GENERATION", "STAGE_MULTIPLIERS_ACC"]
     },
     {

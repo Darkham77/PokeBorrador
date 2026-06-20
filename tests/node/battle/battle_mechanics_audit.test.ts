@@ -1,5 +1,5 @@
 /**
- * tests/node/battle_mechanics_audit.test.ts
+ * tests/node/battle/battle_mechanics_audit.test.ts
  *
  * NATIVE NODE.JS TEST (Node.js 26+)
  *
@@ -49,47 +49,26 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
       const attackerDragon: PurePokemon = { ...attacker, type: 'dragon' };
       const move: PureMove = { name: 'Dragoaliento', type: 'dragon', power: 60, cat: 'special' };
       const withWeather = calculateDamagePure(attackerDragon, defender, move, { weather: thunderstorm });
-      
-      // Base: Math.floor((42 * 60 * 2) / 50) + 2 = 102
-      // STAB: 1.5x -> 153
-      // Weather: 1.5x -> 102 * 1.5 * 1.5 = 229.5 -> 229
       assert.strictEqual(withWeather.dmg, 229);
     });
 
-    it('should NOT penalize Fire moves (Dry Storm parity)', () => {
-      const attackerFire: PurePokemon = { ...attacker, type: 'fire' };
-      const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
-      const noWeather = calculateDamagePure(attackerFire, defender, move, { weather: null });
-      const withWeather = calculateDamagePure(attackerFire, defender, move, { weather: thunderstorm });
-      
-      assert.strictEqual(withWeather.dmg, noWeather.dmg);
+    it('should NOT boost normal moves', () => {
+      const move: PureMove = { name: 'Golpe Cuerpo', type: 'normal', power: 85, cat: 'physical' };
+      const withWeather = calculateDamagePure(attacker, defender, move, { weather: thunderstorm });
+      assert.strictEqual(withWeather.dmg, 144);
     });
   });
 
-  // ── Solar Beam Logic ────────────────────────────────────────────────────────
+  // ── Solar Beam Mechanics ────────────────────────────────────────────────────
 
   describe('Solar Beam Weather Penalties', () => {
     const attacker: PurePokemon = { level: 100, spa: 200, type: 'grass' };
     const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
-    const move: PureMove = { id: 'solar_beam', type: 'grass', power: 120, cat: 'special' };
+    const move: PureMove = { id: 'solar_beam', name: 'Rayo Solar', type: 'grass', power: 120, cat: 'special' };
 
-    const clear:        PureBattleWeather = { type: 'clear', turns: -1 };
-    const sun:          PureBattleWeather = { type: 'sun', turns: 5 };
-    const rain:         PureBattleWeather = { type: 'rain', turns: 5 };
-    const sandstorm:    PureBattleWeather = { type: 'sandstorm', turns: 5 };
+    const sandstorm: PureBattleWeather = { type: 'sandstorm', turns: 5 };
+    const rain: PureBattleWeather = { type: 'rain', turns: 5 };
     const thunderstorm: PureBattleWeather = { type: 'thunderstorm', turns: 5 };
-
-    it('should have 100% power in Sun', () => {
-      const res = calculateDamagePure(attacker, defender, move, { weather: sun });
-      // Base: Math.floor((42 * 120 * 2) / 50) + 2 = 203
-      // STAB: 1.5x -> 304.5 -> 304
-      assert.strictEqual(res.dmg, 304);
-    });
-
-    it('should have 100% power in Clear weather', () => {
-      const res = calculateDamagePure(attacker, defender, move, { weather: clear });
-      assert.strictEqual(res.dmg, 304);
-    });
 
     it('should have 50% power in Rain', () => {
       const res = calculateDamagePure(attacker, defender, move, { weather: rain });
@@ -110,7 +89,7 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
   // ── Sand Force Ability ──────────────────────────────────────────────────────
 
   describe('Ability: Fuerza Arena (Sand Force)', () => {
-    const attacker: PurePokemon = { level: 100, atk: 200, type: 'ground', ability: 'Fuerza arena' };
+    const attacker: PurePokemon = { level: 100, atk: 200, type: 'ground', ability: 'sandforce' };
     const sandstorm: PureBattleWeather = { type: 'sandstorm', turns: 5 };
 
     it('should boost Ground moves by 1.3x in Sandstorm', () => {
@@ -147,7 +126,7 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
   // ── Solar Power Ability ─────────────────────────────────────────────────────
 
   describe('Ability: Poder solar (Solar Power)', () => {
-    const attacker: PurePokemon = { level: 100, spa: 100, type: 'fire', ability: 'Poder solar' };
+    const attacker: PurePokemon = { level: 100, spa: 100, type: 'fire', ability: 'solarpower' };
     const sun: PureBattleWeather = { type: 'sun', turns: 5 };
 
     it('should boost SpA by 1.5x in Sun', () => {

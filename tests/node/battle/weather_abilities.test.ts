@@ -60,61 +60,61 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
-  describe('Ability: Mar llamas (Blaze)', () => {
+  describe('Ability: blaze (Blaze)', () => {
     const move: PureMove = { type: 'fire', power: 90, cat: 'special' };
 
     it('should boost Fire moves by 1.5x at <= 1/3 HP', () => {
-      const lowHpAttacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'Mar llamas' };
+      const lowHpAttacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
       const { mult } = getAbilityMultiplier(lowHpAttacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
 
     it('should NOT boost Fire moves at > 1/3 HP', () => {
-      const highHpAttacker: PurePokemon = { level: 100, hp: 80, maxHp: 100, spa: 200, type: 'fire', ability: 'Mar llamas' };
+      const highHpAttacker: PurePokemon = { level: 100, hp: 80, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
       const { mult } = getAbilityMultiplier(highHpAttacker, move, null);
       assert.strictEqual(mult, 1.0);
     });
 
-    it('Fire moves still deal 0 damage under Heavy Rain even if Mar llamas is active', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'Mar llamas' };
+    it('Fire moves still deal 0 damage under Heavy Rain even if blaze is active', () => {
+      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'fire', ability: 'blaze' };
       const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heavyRain });
       assert.strictEqual(dmg.dmg, 0);
     });
   });
 
-  describe('Ability: Torrente (Torrent)', () => {
+  describe('Ability: torrent (Torrent)', () => {
     const move: PureMove = { type: 'water', power: 90, cat: 'special' };
 
     it('should boost Water moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'water', ability: 'Torrente' };
+      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'water', ability: 'torrent' };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
   });
 
-  describe('Ability: Espesura (Overgrow)', () => {
+  describe('Ability: overgrow (Overgrow)', () => {
     const move: PureMove = { type: 'grass', power: 90, cat: 'special' };
 
     it('should boost Grass moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'grass', ability: 'Espesura' };
+      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, spa: 200, type: 'grass', ability: 'overgrow' };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
   });
 
-  describe('Ability: Enjambre (Swarm)', () => {
+  describe('Ability: swarm (Swarm)', () => {
     const move: PureMove = { type: 'bug', power: 90, cat: 'physical' };
 
     it('should boost Bug moves by 1.5x at <= 1/3 HP', () => {
-      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, atk: 200, type: 'bug', ability: 'Enjambre' };
+      const attacker: PurePokemon = { level: 100, hp: 30, maxHp: 100, atk: 200, type: 'bug', ability: 'swarm' };
       const { mult } = getAbilityMultiplier(attacker, move, null);
       assert.strictEqual(mult, 1.5);
     });
   });
 
-  describe('Ability: Nado rápido (Swift Swim)', () => {
-    const p: PurePokemon = { level: 100, spe: 100, type: 'water', ability: 'Nado rápido' };
+  describe('Ability: swiftswim (Swift Swim)', () => {
+    const p: PurePokemon = { level: 100, spe: 100, type: 'water', ability: 'swiftswim' };
 
     it('should double speed in Rain', () => {
       const speed = getEffectiveStat(p, 'spe', {}, rain);
@@ -137,8 +137,8 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
-  describe('Ability: Clorofila (Chlorophyll)', () => {
-    const p: PurePokemon = { level: 100, spe: 100, type: 'grass', ability: 'Clorofila' };
+  describe('Ability: chlorophyll (Chlorophyll)', () => {
+    const p: PurePokemon = { level: 100, spe: 100, type: 'grass', ability: 'chlorophyll' };
 
     it('should double speed in Sun', () => {
       const speed = getEffectiveStat(p, 'spe', {}, sun);
@@ -151,8 +151,8 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
-  describe('Ability: Quitanieves (Slush Rush)', () => {
-    const p: PurePokemon = { level: 100, spe: 100, type: 'ice', ability: 'Quitanieves' };
+  describe('Ability: slushrush (Slush Rush)', () => {
+    const p: PurePokemon = { level: 100, spe: 100, type: 'ice', ability: 'slushrush' };
 
     it('should double speed in Snow/Hail', () => {
       const speedSnow = getEffectiveStat(p, 'spe', {}, snow);
@@ -162,10 +162,10 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
-  describe('Ability: Sebo (Thick Fat)', () => {
+  describe('Ability: thickfat (Thick Fat)', () => {
     const attackerFire: PurePokemon = { level: 100, spa: 200, type: 'fire' };
     const attackerIce:  PurePokemon = { level: 100, spa: 200, type: 'ice' };
-    const defender:      PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'Sebo' };
+    const defender:      PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'thickfat' };
 
     it('should reduce Fire-type move damage by 50%', () => {
       const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
@@ -182,23 +182,23 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
-  describe('Ability: Aclimatación (Cloud Nine)', () => {
-    it('should negate Fire move damage reduction to 0 under Heavy Rain if attacker or defender has Aclimatación', () => {
-      const attacker: PurePokemon = { level: 100, spa: 200, type: 'fire', ability: 'Aclimatación' };
+  describe('Ability: cloudnine (Cloud Nine)', () => {
+    it('should negate Fire move damage reduction to 0 under Heavy Rain if attacker or defender has cloudnine', () => {
+      const attacker: PurePokemon = { level: 100, spa: 200, type: 'fire', ability: 'cloudnine' };
       const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
       const move: PureMove = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
 
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heavyRain });
-      assert.ok(dmg.dmg > 0, 'Fire moves should deal damage under heavy rain when Aclimatacion is active');
+      assert.ok(dmg.dmg > 0, 'Fire moves should deal damage under heavy rain when cloudnine is active');
     });
 
-    it('should negate Water move damage reduction to 0 under Heatwave if defender has Aclimatación', () => {
+    it('should negate Water move damage reduction to 0 under Heatwave if defender has cloudnine', () => {
       const attacker: PurePokemon = { level: 100, spa: 200, type: 'water' };
-      const defender: PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'Aclimatación' };
+      const defender: PurePokemon = { level: 100, spd: 100, type: 'normal', ability: 'cloudnine' };
       const move: PureMove = { name: 'Surf', type: 'water', power: 95, cat: 'special' };
 
       const dmg = calculateDamagePure(attacker, defender, move, { weather: heatwave });
-      assert.ok(dmg.dmg > 0, 'Water moves should deal damage under heatwave when defender has Aclimatacion');
+      assert.ok(dmg.dmg > 0, 'Water moves should deal damage under heatwave when defender has cloudnine');
     });
   });
 

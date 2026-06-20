@@ -8,8 +8,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: Pokemon | null = null): number {
   if (!moveType || !defType) return 1;
   
-  // Scrappy (Intrépido) logic: Normal/Fighting can hit Ghost
-  if (attacker?.ability === 'Intrépido' && defType.toLowerCase() === 'ghost' && (moveType.toLowerCase() === 'normal' || moveType.toLowerCase() === 'fighting')) {
+  // Scrappy logic: Normal/Fighting can hit Ghost
+  if (attacker?.ability === 'scrappy' && defType.toLowerCase() === 'ghost' && (moveType.toLowerCase() === 'normal' || moveType.toLowerCase() === 'fighting')) {
     return 1;
   }
 
