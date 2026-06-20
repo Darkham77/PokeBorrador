@@ -174,7 +174,6 @@ Default section order:
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
 - [scripts/AGENTS.md](./scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.
-- [showdown/AGENTS.md](./showdown/AGENTS.md): Showdown sandbox offline combat simulation and testing logic.
 - [src/components/AGENTS.md](./src/components/AGENTS.md): Reusable visual UI components, styling compliance, and Retro-Modern aesthetics.
 - [src/composables/AGENTS.md](./src/composables/AGENTS.md): Reusable composition state logic and lifecycle helpers.
 - [src/data/AGENTS.md](./src/data/AGENTS.md): Static game databases, data configurations, and asset catalogs.

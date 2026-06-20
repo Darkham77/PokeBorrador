@@ -22,6 +22,13 @@ The bridge between the UI and the math core (`battleFormulas.ts`) MUST pass all 
 
 ## ⚔️ Combat Formulas
 
+### Centralized Math Core (`battleMath.ts`)
+
+All mathematical formulas related to combat, including stats calculation, damage range estimation, type effectiveness, catch rates, and wild flee chances, MUST be centralized in `src/logic/battle/battleMath.ts`.
+- **Pure Functions**: These functions must be pure, synchronous, and have no dependencies on Vue reactivity, Pinia stores, or Supabase.
+- **Dex Integration**: Type effectiveness and base Gen 3 stats/learnsets are resolved directly using `@pkmn/sim` Dex (`Dex.forGen(3)`) in memory to ensure consistency with canonical battle mechanics and prevent manual mapping drift.
+- **Spanish ID Prohibition**: All ability, move, nature, and item logical identifiers passed to the math core MUST conform strictly to English Showdown IDs (e.g., `blaze`, `torrent`, `overgrow`, `intimidate`). Spanish is reserved exclusively for the localized presentation layer.
+
 ### 1. Common Base Damage Formula
 
 Inspired by Gen 4 with modifications for web game balance. Regardless of generation, the foundational formula used is:
