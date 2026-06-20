@@ -150,7 +150,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const defStages = options.enableStages ? Math.floor(Math.random() * 13) - 6 : 0;
 
   // Simulación en Showdown
-  const battle = new Battle({ formatid: 'gen3customgame' as unknown as string });
+  const battle = new Battle({ formatid: 'gen3customgame' as never });
   
   if (battle.actions) {
     (battle.actions as unknown as { checkAccuracy: () => boolean }).checkAccuracy = function() {

@@ -53,6 +53,7 @@ async function main() {
     basePower?: number;
     accuracy?: number | boolean;
     pp?: number;
+    priority?: number;
   }
   let showdownDB: { pokemon: Record<string, ShowdownPokeSpec>; moves: Record<string, ShowdownMoveSpec> };
   try {
@@ -85,7 +86,7 @@ async function main() {
 
   const normalizedShowdownPoke = new Map<string, ShowdownPokeSpec>();
   for (const key of Object.keys(showdownDB.pokemon)) {
-    normalizedShowdownPoke.set(normalizeId(key), showdownDB.pokemon[key]);
+    normalizedShowdownPoke.set(normalizeId(key), showdownDB.pokemon[key] as ShowdownPokeSpec);
   }
 
   // Comparar Pokémon uno por uno
@@ -148,7 +149,7 @@ async function main() {
 
   const normalizedShowdownMoves = new Map<string, ShowdownMoveSpec>();
   for (const key of Object.keys(showdownDB.moves)) {
-    normalizedShowdownMoves.set(normalizeId(key), showdownDB.moves[key]);
+    normalizedShowdownMoves.set(normalizeId(key), showdownDB.moves[key] as ShowdownMoveSpec);
   }
 
   const allGen3Moves = Dex.forGen(ACTIVE_GENERATION).moves.all().filter(m => m.exists);

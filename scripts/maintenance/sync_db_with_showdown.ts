@@ -43,10 +43,23 @@ async function main() {
   interface ShowdownPokeData {
     baseStats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
     abilities: string[];
+    types?: string[];
+  }
+
+  interface MutablePokemon {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    type: string;
+    type2?: string;
+    learnset?: Array<{ id: string; pp?: number }>;
   }
 
   // 1. Cargar base de datos de Showdown
-  let showdownDB: { pokemon: Record<string, ShowdownPokeData>; moves: Record<string, unknown> };
+  let showdownDB: { pokemon: Record<string, ShowdownPokeData>; moves: Record<string, { pp?: number }> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
     showdownDB = JSON.parse(rawData);
@@ -61,7 +74,7 @@ async function main() {
     sdPokemonMap.set(normalizeId(key), val);
   }
 
-  const sdMovesMap = new Map<string, unknown>();
+  const sdMovesMap = new Map<string, { pp?: number }>();
   for (const [key, val] of Object.entries(showdownDB.moves)) {
     sdMovesMap.set(normalizeId(key), val);
   }
@@ -75,35 +88,36 @@ async function main() {
     const sdPoke = sdPokemonMap.get(normId);
 
     if (sdPoke) {
+      const tempPoke = corePoke as unknown as MutablePokemon;
       // Sincronizar estadísticas
-      corePoke.hp = sdPoke.baseStats.hp;
-      corePoke.atk = sdPoke.baseStats.atk;
-      corePoke.def = sdPoke.baseStats.def;
-      corePoke.spa = sdPoke.baseStats.spa;
-      corePoke.spd = sdPoke.baseStats.spd;
-      corePoke.spe = sdPoke.baseStats.spe;
+      tempPoke.hp = sdPoke.baseStats.hp;
+      tempPoke.atk = sdPoke.baseStats.atk;
+      tempPoke.def = sdPoke.baseStats.def;
+      tempPoke.spa = sdPoke.baseStats.spa;
+      tempPoke.spd = sdPoke.baseStats.spd;
+      tempPoke.spe = sdPoke.baseStats.spe;
 
       // Sincronizar tipos
       if (sdPoke.types && sdPoke.types[0]) {
         const typeEng = REVERSE_TYPE_MAP[sdPoke.types[0]];
         if (typeEng) {
-          corePoke.type = typeEng;
+          tempPoke.type = typeEng;
         }
       }
       if (sdPoke.types && sdPoke.types[1]) {
         const type2Eng = REVERSE_TYPE_MAP[sdPoke.types[1]];
         if (type2Eng) {
-          corePoke.type2 = type2Eng;
+          tempPoke.type2 = type2Eng;
         } else {
-          delete corePoke.type2;
+          delete tempPoke.type2;
         }
       } else {
-        delete corePoke.type2;
+        delete tempPoke.type2;
       }
 
       // Sincronizar PP de learnset
-      if (corePoke.learnset && Array.isArray(corePoke.learnset)) {
-        for (const learnMove of corePoke.learnset) {
+      if (tempPoke.learnset && Array.isArray(tempPoke.learnset)) {
+        for (const learnMove of tempPoke.learnset) {
           const sdMove = sdMovesMap.get(normalizeId(learnMove.id));
           if (sdMove) {
             learnMove.pp = sdMove.pp;

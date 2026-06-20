@@ -85,14 +85,18 @@ async function main() {
   };
 
   // 3. Load Backup file
+  interface SavePoke {
+    id: string;
+    level?: number;
+    moves?: Array<{ name: string }>;
+    ability?: string;
+    nature?: string;
+    nickname?: string;
+    name?: string;
+  }
   interface SaveData {
-    team?: Array<{
-      id: string;
-      level?: number;
-      moves?: string[];
-      ability?: string;
-      nickname?: string;
-    }>;
+    team?: SavePoke[];
+    box?: SavePoke[];
   }
   interface SaveEntry {
     user_id: string;
