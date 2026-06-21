@@ -1257,3 +1257,72 @@ The Choice Band has two independent mechanics that players and developers must n
 - **Root Pattern**: `clearVolatileStatus()` clears fields like `choiceMove`, `confused`, `seeded`, `substitute`, etc. defined in `battleStatus.ts`. It MUST be applied to the **entire player team** on every `initBattleSequence` call, not only the leading Pokémon. Benched Pokémon that participated in a previous battle retain their volatile state until explicitly cleared.
 - **Implementation**: In `orchestrator.ts`, use `ctx.gs.state.team.forEach(p => { if (p) ctx.clearVolatileStatus(p) })` instead of only clearing `initialPlayer`.
 - **Why it matters**: A Pokémon with a stale `choiceMove` will enter the next battle with all its non-choice moves already disabled — a silent bug that is extremely hard to detect via the UI alone.
+
+## 📝 Lessons Learned: Volatile Counters, Side Conditions & Switches
+
+### Volatile Counters Pattern (`Record<string, number>`)
+
+When adding new volatile states (lockedmove, yawn, stockpile, partiallytrapped), use a single generic dictionary instead of adding individual fields to the `Pokemon` interface:
+
+```ts
+// ✅ Correct — extend without touching the interface
+pokemon.volatileCounters['lockedmove'] = 3;
+pokemon.volatileCounters['yawn'] = 2;
+
+// ❌ Wrong — interface sprawl
+pokemon.thrashTurns = 3; // New field for every mechanic
+pokemon.yawnTurns = 2;
+```
+
+- Declare `volatileCounters?: Record<string, number>` once in the `Pokemon` interface.
+- `clearVolatileStatus()` MUST reset `poke.volatileCounters = {}` so no counter survives a switch.
+- `tickVolatileCounters()` in `battleStatus.ts` handles decrement and expiry logic for all counters in a single loop per turn.
+
+### Side Conditions Are Not Stages
+
+Field conditions (Wish, Spikes, Stealth Rock, Toxic Spikes, Reflect, Light Screen) that belong to a **side** (not a specific Pokémon) MUST live in `BattleState.playerSideConditions` / `enemySideConditions`, NOT embedded into the stages object.
+
+```ts
+// ✅ Correct
+activeBattle.playerSideConditions['wish'] = { turns: 2 }
+activeBattle.enemySideConditions['spikes'] = { turns: 0, count: 1 }
+
+// ❌ Wrong — stages are for stat multipliers only
+playerStages.wish = 2
+```
+
+- Type: `Record<string, { turns: number; [key: string]: unknown }>`.
+- Initialize both to `{}` in `startBattleSequence` and `initBattleSequence` to prevent state leakage between battles.
+
+### Centralize Entry Hazard Logic in `applyEntryHazards()`
+
+Entry hazard damage (Spikes, Stealth Rock, Toxic Spikes) was previously duplicated in both `switchAction.ts` (player switch) and `switchActions.ts` (enemy switch). The correct pattern is a single pure function in `battleFlow.ts`:
+
+```ts
+// battleFlow.ts
+export function applyEntryHazards(pokemon: Pokemon, stages: StageState, addLog: LogFn): void { ... }
+
+// switchAction.ts & switchActions.ts both call:
+applyEntryHazards(newPoke, relevantStages, addLog)
+```
+
+Never duplicate hazard resolution logic in switch handlers. Any new hazard type (e.g., Stealth Rock damage) MUST be added only to `applyEntryHazards`.
+
+### Enemy Switch Must Preserve Field Conditions
+
+When resetting enemy stat stages on switch, use a **spread + selective reset** instead of a full object replacement. A full replacement wipes side conditions stored alongside stat stages:
+
+```ts
+// ✅ Correct — spread first, then reset only stat modifiers
+store.enemyStages.value = {
+  ...s,  // preserve spikes, stealthRock, reflect, lightScreen, etc.
+  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+};
+
+// ❌ Wrong — destroys all field conditions on every switch
+store.enemyStages.value = {
+  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
+  reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+};
+```
+

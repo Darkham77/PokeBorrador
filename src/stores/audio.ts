@@ -140,6 +140,5 @@ export const useAudioStore = defineStore('audio', () => {
     init,
     resume,
     play,
-    playCry
   };
 });

@@ -5,7 +5,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { PDEX_ORDER } from '@/data/pokemon/pokedex'
 import { hasPokemonTag } from '@/logic/constants/tags'
 
-export interface FilterState {
+interface FilterState {
   tier: string
   type: string
   levelMin: number

@@ -176,7 +176,7 @@ async function main() {
             effectBase = effect.replace(/_\d+$/, '');
           }
           if (!registeredEffects.has(effect) && !registeredEffects.has(effectBase)) {
-            warnings.push(`[${moveId}] Usa el efecto '${effect}' pero no tiene descripción en pokemonUtils.ts.`);
+            errors.push(`[${moveId}] Usa el efecto '${effect}' pero no tiene descripción en pokemonUtils.ts.`);
           }
         }
       });

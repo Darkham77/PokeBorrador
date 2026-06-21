@@ -229,7 +229,6 @@ export interface PlayerClassStore {
 
 export interface AudioStore {
   play: (type: string) => Promise<void>;
-  playCry: (pokemonName: string, isFaint?: boolean) => Promise<void>;
 }
 
 export interface AuthStore {
