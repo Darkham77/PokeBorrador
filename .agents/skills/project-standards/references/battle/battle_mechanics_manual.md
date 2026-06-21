@@ -43,6 +43,13 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 | **New Battle**        | `VACATE_ALL_SEATS`                 | Populate Team Slots    |
 | **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Team data |
 
+### 4. Showdown Worker Synchronization Protocol
+
+When executing team swaps in battles coordinated by the Showdown worker, the following distinction MUST be strictly maintained:
+
+*   **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`).
+*   **Forced Switch (Faint Replacement)**: When the active combatant faints and the player is forced to send out a replacement, the worker is expecting ONLY the replacement choice. Send the selection command to the worker (`switch <index + 1>`) without enclosing any `p2Choice`. Failing to omit the opponent's choice on forced switches will cause the Showdown simulator to freeze waiting for non-existent actions.
+
 ---
 
 ## 🌪️ Weather Influence
