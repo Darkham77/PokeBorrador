@@ -94,7 +94,7 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
           badges: 0,
           gymProgress: {},
           money: 100,
-          team: [{ uid: 'p1', level: 10, exp: 0, expNeeded: 100, name: 'Pikachu' }],
+          team: [{ id: 'pikachu', uid: 'p1', level: 10, exp: 0, expNeeded: 100, name: 'Pikachu', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }],
           inventory: {}
         },
         save: vi.fn().mockResolvedValue(true),

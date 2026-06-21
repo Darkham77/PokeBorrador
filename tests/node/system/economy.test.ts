@@ -25,7 +25,7 @@ test('Economy Formulas: pokemonNeedsHealing', () => {
   const statusPkmn: Partial<Pokemon> = {
     hp: 100,
     maxHp: 100,
-    status: 'poison',
+    status: 'psn',
     moves: []
   };
 

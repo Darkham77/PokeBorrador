@@ -3,6 +3,9 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
+import { Dex, toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
 
 export { getPokemonTier };
 
@@ -120,11 +123,15 @@ export function getTypeEffectivenessMsg(eff: number): string | null {
 /**
  * Get display description for a move based on its effect
  */
-export function getMoveDescription(id: string, md?: MoveBaseData | null): string {
+export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null): string {
+  let md = mdProvided;
   if (!md) {
     if (!id) throw new Error('[getMoveDescription] El ID de movimiento no es válido.');
-    md = pokemonDataProvider.getMoveData(id);
-    if (!md) throw new Error(`[getMoveDescription] No se encontró información para el movimiento: ${id}`);
+    try {
+      md = pokemonDataProvider.getMoveData(id);
+    } catch {
+      // ignore and keep md as null/undefined
+    }
   }
   if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
   
@@ -259,6 +266,22 @@ export function getMoveDescription(id: string, md?: MoveBaseData | null): string
   
   const desc = effects[md.effect || ''];
   if (desc) return desc;
+
+  const cleanId = toID(md.id || (mdProvided ? '' : id));
+  if (cleanId) {
+    try {
+      const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+      if (translated.desc) return translated.desc;
+
+      const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
+      if (move && move.exists) {
+        return move.desc || move.shortDesc || "Causa daño al oponente sin efectos secundarios adicionales.";
+      }
+    } catch {
+      // Graceful fallback
+    }
+  }
+
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
   return "Causa daño al oponente sin efectos secundarios adicionales.";
 }

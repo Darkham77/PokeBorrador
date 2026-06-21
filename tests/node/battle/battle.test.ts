@@ -100,12 +100,12 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
     });
 
     it('Paralysis should reduce speed by 50%', () => {
-      const p: PurePokemon = { spe: 100, type: 'normal', level: 50, status: 'paralysis' };
+      const p: PurePokemon = { spe: 100, type: 'normal', level: 50, status: 'par' };
       assert.strictEqual(getEffectiveStat(p, 'spe', {}, null), 50);
     });
 
     it('Burn should halve attack', () => {
-      const p: PurePokemon = { atk: 100, type: 'normal', level: 50, status: 'burn' };
+      const p: PurePokemon = { atk: 100, type: 'normal', level: 50, status: 'brn' };
       assert.strictEqual(getEffectiveStat(p, 'atk', {}, null), 50);
     });
 
@@ -189,8 +189,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   // ── Constants ────────────────────────────────────────────────────────────────
 
   describe('Constants', () => {
-    it('ACTIVE_RULE_SET should be Gen 2 (value 2)', () => {
-      assert.strictEqual(ACTIVE_RULE_SET, 2);
+    it('ACTIVE_RULE_SET should be Gen 3 (value 3)', () => {
+      assert.strictEqual(ACTIVE_RULE_SET, 3);
     });
   });
 });

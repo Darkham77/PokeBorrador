@@ -70,7 +70,12 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
  * Determina el multiplicador de spawn de una especie basado en el clima actual.
  */
 export function getWeatherMultiplier(id: string, weather: string): number {
-  const pData = pokemonDataProvider.getPokemonData(id);
+  let pData = null;
+  try {
+    pData = pokemonDataProvider.getPokemonData(id);
+  } catch (_err) {
+    return 1.0;
+  }
   if (!pData || !weather || weather === 'clear') return 1.0;
   
   const types: string[] = []

@@ -4,7 +4,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -100,7 +100,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         try {
           itemObj = getItemById(tm)
         } catch {
-          // fallback
+          itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tm.toLowerCase()) || null
         }
         const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
         ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
@@ -125,7 +125,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
           try {
             itemObj = getItemById(tmReward)
           } catch {
-            // fallback
+            itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tmReward.toLowerCase()) || null
           }
           const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
           ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1

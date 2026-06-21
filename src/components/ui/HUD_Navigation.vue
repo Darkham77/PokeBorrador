@@ -55,7 +55,9 @@ const ballsList = computed(() => {
       let found = null
       try {
         found = getItemById(name)
-      } catch {}
+      } catch {
+        // ignore
+      }
       if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
         return { name: found?.name || name, qty: count }
       }
@@ -74,7 +76,9 @@ const materialItems = computed(() => {
     let found = null
     try {
       found = getItemById(key)
-    } catch {}
+    } catch {
+      // ignore
+    }
     if (found) {
       let tier: number | null = null
       if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {

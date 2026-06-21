@@ -185,14 +185,14 @@ describe('Agua Fresca, Soda, Limonada', () => {
 
 describe('Antídoto', () => {
   it('cura el envenenamiento', () => {
-    setup({ hp: 50, maxHp: 100, status: 'poison' }, { antidote: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'psn' }, { antidote: 1 })
     const res = useInventoryStore().useItem('antidote', 'team', 0)
     expect(res.success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
 
   it('falla si el estado no es veneno', () => {
-    setup({ hp: 50, maxHp: 100, status: 'burn' }, { antidote: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'brn' }, { antidote: 1 })
     const res = useInventoryStore().useItem('antidote', 'team', 0)
     expect(res.success).toBe(false)
     expect(useGameStore().state.inventory['antidote']).toBe(1)
@@ -205,7 +205,7 @@ describe('Antídoto', () => {
   })
 
   it('falla si está debilitado', () => {
-    setup({ hp: 0, maxHp: 100, status: 'poison' }, { antidote: 1 })
+    setup({ hp: 0, maxHp: 100, status: 'psn' }, { antidote: 1 })
     const res = useInventoryStore().useItem('antidote', 'team', 0)
     expect(res.success).toBe(false)
   })
@@ -213,20 +213,20 @@ describe('Antídoto', () => {
 
 describe('Quemaduras Curas', () => {
   it('cura quemadura', () => {
-    setup({ hp: 50, maxHp: 100, status: 'burn' }, { burn_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'brn' }, { burn_heal: 1 })
     expect(useInventoryStore().useItem('burn_heal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
 
   it('falla con otro estado', () => {
-    setup({ hp: 50, maxHp: 100, status: 'freeze' }, { burn_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'frz' }, { burn_heal: 1 })
     expect(useInventoryStore().useItem('burn_heal', 'team', 0).success).toBe(false)
   })
 })
 
 describe('Paralizador Curas', () => {
   it('cura parálisis', () => {
-    setup({ hp: 50, maxHp: 100, status: 'paralysis' }, { paralyze_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'par' }, { paralyze_heal: 1 })
     expect(useInventoryStore().useItem('paralyze_heal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
@@ -234,7 +234,7 @@ describe('Paralizador Curas', () => {
 
 describe('Despertar', () => {
   it('despierta al Pokémon dormido', () => {
-    setup({ hp: 50, maxHp: 100, status: 'sleep', sleepTurns: 3 }, { awakening: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'slp', sleepTurns: 3 }, { awakening: 1 })
     const res = useInventoryStore().useItem('awakening', 'team', 0)
     expect(res.success).toBe(true)
     const p = useGameStore().state.team[0]!
@@ -250,7 +250,7 @@ describe('Despertar', () => {
 
 describe('Hielo Curas', () => {
   it('descongela al Pokémon', () => {
-    setup({ hp: 50, maxHp: 100, status: 'freeze' }, { ice_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'frz' }, { ice_heal: 1 })
     expect(useInventoryStore().useItem('ice_heal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
@@ -258,7 +258,7 @@ describe('Hielo Curas', () => {
 
 describe('Cura Total (full_heal)', () => {
   it('cura cualquier estado de alteración', () => {
-    for (const status of ['poison', 'burn', 'paralysis', 'sleep', 'freeze'] as const) {
+    for (const status of ['psn', 'brn', 'par', 'slp', 'frz'] as const) {
       setActivePinia(createPinia())
       setup({ hp: 50, maxHp: 100, status }, { full_heal: 1 })
       const res = useInventoryStore().useItem('full_heal', 'team', 0)
@@ -273,12 +273,12 @@ describe('Cura Total (full_heal)', () => {
   })
 
   it('tiene éxito si tiene estado aunque HP esté al máximo', () => {
-    setup({ hp: 100, maxHp: 100, status: 'poison' }, { full_heal: 1 })
+    setup({ hp: 100, maxHp: 100, status: 'psn' }, { full_heal: 1 })
     expect(useInventoryStore().useItem('full_heal', 'team', 0).success).toBe(true)
   })
 
   it('falla si está debilitado', () => {
-    setup({ hp: 0, maxHp: 100, status: 'poison' }, { full_heal: 1 })
+    setup({ hp: 0, maxHp: 100, status: 'psn' }, { full_heal: 1 })
     expect(useInventoryStore().useItem('full_heal', 'team', 0).success).toBe(false)
   })
 })
@@ -287,7 +287,7 @@ describe('Cura Total (full_heal)', () => {
 
 describe('Restauración Total (full_restore)', () => {
   it('restaura HP y cura estado a la vez', () => {
-    setup({ hp: 30, maxHp: 100, status: 'burn' }, { full_restore: 1 })
+    setup({ hp: 30, maxHp: 100, status: 'brn' }, { full_restore: 1 })
     const res = useInventoryStore().useItem('full_restore', 'team', 0)
     expect(res.success).toBe(true)
     const p = useGameStore().state.team[0]!
@@ -302,7 +302,7 @@ describe('Restauración Total (full_restore)', () => {
   })
 
   it('tiene éxito si solo hay estado (HP lleno)', () => {
-    setup({ hp: 100, maxHp: 100, status: 'paralysis' }, { full_restore: 1 })
+    setup({ hp: 100, maxHp: 100, status: 'par' }, { full_restore: 1 })
     expect(useInventoryStore().useItem('full_restore', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
@@ -455,12 +455,12 @@ describe('isValidTarget — coherencia cross-ítem', () => {
   }
 
   it('full_restore: true cuando hay status aunque HP sea máximo', () => {
-    expect(isValidTarget('full_restore', makeMon({ hp: 100, maxHp: 100, status: 'burn' }))).toBe(true)
+    expect(isValidTarget('full_restore', makeMon({ hp: 100, maxHp: 100, status: 'brn' }))).toBe(true)
   })
 
   it('antidote: true solo para Pokémon envenenados', () => {
-    expect(isValidTarget('antidote', makeMon({ hp: 50, status: 'poison' }))).toBe(true)
-    expect(isValidTarget('antidote', makeMon({ hp: 50, status: 'burn'   }))).toBe(false)
+    expect(isValidTarget('antidote', makeMon({ hp: 50, status: 'psn' }))).toBe(true)
+    expect(isValidTarget('antidote', makeMon({ hp: 50, status: 'brn'   }))).toBe(false)
     expect(isValidTarget('antidote', makeMon({ hp: 50, status: null     }))).toBe(false)
   })
 

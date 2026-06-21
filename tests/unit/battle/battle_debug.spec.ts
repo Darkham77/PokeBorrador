@@ -48,7 +48,7 @@ describe('Battle Debug Commands', () => {
     const battleStore = useBattleStore()
 
     // 1. Configurar un Pokémon dañado en el equipo
-    const p1 = { uid: 'p1', name: 'Pikachu', hp: 10, maxHp: 100, status: 'paralysis' } as unknown as Pokemon
+    const p1 = { uid: 'p1', name: 'Pikachu', hp: 10, maxHp: 100, status: 'par' } as unknown as Pokemon
     gs.state.team = [p1]
 
     // 2. Configurar la batalla activa

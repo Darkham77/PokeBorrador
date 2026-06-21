@@ -28,7 +28,7 @@ vi.mock('@/logic/battle/actions/actionRegistry', () => ({
 }))
 
 function createMockStore() {
-  const p = { id: '25', uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, atk: 100, spa: 100, moves: [{ name: 'Tackle', power: 40, pp: 10 }] }
+  const p = { id: '25', uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100, level: 50, atk: 100, spa: 100, moves: [{ id: 'tackle', name: 'Tackle', power: 40, pp: 10 }] }
   const e = { id: '16', name: 'Pidgey', hp: 100, maxHp: 100, level: 5, def: 50, spd: 50 }
   
   const store = {

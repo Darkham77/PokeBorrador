@@ -378,11 +378,12 @@ export function useBattleCombatantAnims(
 
     if (newS && newS !== oldS) {
       const statusColors: Record<string, string> = {
-        burn: '#ff4500',
-        poison: '#9400d3',
-        paralysis: '#ffd700',
-        freeze: '#00ffff',
-        sleep: '#ffffff'
+        brn: '#ff4500',
+        psn: '#9400d3',
+        par: '#ffd700',
+        frz: '#00ffff',
+        slp: '#ffffff',
+        tox: '#9400d3'
       }
       const color = statusColors[newS] || '#ffffff'
       

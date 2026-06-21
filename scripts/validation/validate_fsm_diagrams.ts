@@ -106,7 +106,10 @@ async function main() {
     'PARALLEL_PREP',
     'PARALLEL_ENTRY',
     'VACATE_ALL_SEATS',
-    'WAIT_TIMER'
+    'WAIT_TIMER',
+    'ESCAPE_PROCESS',
+    'BUILD_QUEUE',
+    'POP_ACTION'
   ]);
 
   const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));

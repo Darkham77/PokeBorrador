@@ -37,7 +37,7 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
 
   'rest': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = src.maxHp;
-    src.status = 'sleep';
+    src.status = 'slp';
     src.sleepTurns = 2;
     addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info', src);
   },

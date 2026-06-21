@@ -8,11 +8,12 @@ import type {
   PureDamageResult,
   PureCatchOptions
 } from './battleMathTypes.ts';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 
 export * from './battleMathTypes.ts';
 
-export const CURRENT_GENERATION = 2;
-export const ACTIVE_RULE_SET = 2;
+export const CURRENT_GENERATION = ACTIVE_GENERATION;
+export const ACTIVE_RULE_SET = ACTIVE_GENERATION;
 
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
   '-6': 0.25, '-5': 0.28, '-4': 0.33, '-3': 0.40, '-2': 0.50, '-1': 0.66,
@@ -26,22 +27,22 @@ export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
 
-const WEATHER_MAP: Record<string, string> = {
-  sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
-  rain: 'rain', storm: 'rain', heavy_rain: 'rain',
-  sandstorm: 'sandstorm', dust_storm: 'sandstorm',
-  snow: 'snow', hail: 'hail', blizzard: 'hail',
-  fog: 'fog', mist: 'fog',
-  wind: 'wind', strong_winds: 'wind',
-  clear: 'clear', thunderstorm: 'clear'
-};
 
-const dexGen = Dex.forGen(3);
+const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
 function getMechWeather(type: string | null | undefined): string {
-  if (!type || type === 'clear' || type === 'null') return WEATHER_KEYS.CLEAR;
-  return WEATHER_MAP[type.toLowerCase()] ?? 'unknown';
+  if (!type) return 'clear';
+  const lower = type.toLowerCase();
+  if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun';
+  if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain';
+  if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
+  if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'snow';
+  if (['fog', 'mist'].includes(lower)) return 'fog';
+  if (['thunderstorm'].includes(lower)) return 'thunderstorm';
+  if (['strong_winds', 'deltastream'].includes(lower)) return 'clear';
+  return 'clear';
 }
+
 
 function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
   if (!moveType || !defType) return 1;
@@ -65,18 +66,10 @@ function getTypeEff(moveType: string | undefined, defType: string | undefined, s
   return 1; // Neutral
 }
 
-function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, weather: string | null = null): number {
+function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, _weather: string | null = null): number {
   const scrapy = attacker?.ability === 'scrappy';
   let eff = getTypeEff(moveType, defender.type, scrapy);
   if (defender.type2) eff *= getTypeEff(moveType, defender.type2, scrapy);
-
-  const mechWeather = getMechWeather(weather);
-  if (mechWeather === 'wind' && (defender.type === 'flying' || defender.type2 === 'flying')) {
-    const isSuperEffectiveAgainstFlying = (t: string) => ['electric', 'ice', 'rock'].includes(t.toLowerCase());
-    if (isSuperEffectiveAgainstFlying(moveType) && eff > 1) {
-      eff = 1;
-    }
-  }
 
   return eff;
 }
@@ -128,7 +121,7 @@ export function getEffectiveStatPure(
   statKey: keyof PurePokemon,
   stages: PureBattleStages,
   weather: PureBattleWeather | null,
-  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
+  _dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
   isGym: boolean = false
 ): number {
   const mechWeather = isGym ? 'clear' : getMechWeather(weather?.type);
@@ -154,20 +147,17 @@ export function getEffectiveStatPure(
   const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
   let val = Math.floor(baseVal * stageMult);
 
-  if (!isGym && statKey === "spe" && weather?.type === "coldwave" && pokemon.type !== "ice" && pokemon.type2 !== "ice") {
-    val = Math.floor(val * 0.5);
-  }
-
   const ab = pokemon.ability;
-  const isSun  = !isGym && (mechWeather === WEATHER_KEYS.SUN  || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'day' || dayCycle === 'morning')));
-  const isRain  = !isGym && (mechWeather === WEATHER_KEYS.RAIN || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'night' || dayCycle === 'dusk')));
+  const isSun  = !isGym && (mechWeather === WEATHER_KEYS.SUN || (mechWeather === WEATHER_KEYS.CLEAR && (_dayCycle === 'day' || _dayCycle === 'morning')));
+  const isRain  = !isGym && mechWeather === WEATHER_KEYS.RAIN;
+
 
   if (statKey === 'atk') {
     let abilMult = 1;
     if (ab === 'hugepower' || ab === 'purepower') abilMult *= 2;
     if (ab === 'guts' && pokemon.status) abilMult *= 1.5;
     val = Math.floor(val * abilMult);
-    if (pokemon.status === 'burn' && ab !== 'guts') val = Math.floor(val * 0.5);
+    if ((pokemon.status === 'burn' || pokemon.status === 'brn') && ab !== 'guts') val = Math.floor(val * 0.5);
   }
   if (statKey === 'def') {
     if (ab === 'marvelscale' && pokemon.status) val = Math.floor(val * 1.5);
@@ -182,7 +172,7 @@ export function getEffectiveStatPure(
     if (ab === 'sandrush' && mechWeather === WEATHER_KEYS.SANDSTORM) abilMult *= 2;
     if (ab === 'slushrush'  && (mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL)) abilMult *= 2;
     val = Math.floor(val * abilMult);
-    if (pokemon.status === 'paralysis') val = Math.floor(val * 0.5);
+    if (pokemon.status === 'par') val = Math.floor(val * 0.5);
   }
 
   return Math.max(1, val);
@@ -223,7 +213,7 @@ export function calculateDamagePure(
   const aStages: PureBattleStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
   const dStages: PureBattleStages = { [isPhysical ? 'def' : 'spd']: defStages };
 
-  let critRate = ACTIVE_RULE_SET === 2 ? 0.0625 : (attacker.heldItem === 'scope_lens' ? 0.12 : 0.06);
+  let critRate = (ACTIVE_RULE_SET as number) === 2 ? 0.0625 : (attacker.heldItem === 'scope_lens' ? 0.12 : 0.06);
   if (attacker.focusEnergy) critRate = 0.25;
   let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
   if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
@@ -235,7 +225,7 @@ export function calculateDamagePure(
     if ((dStages[dKey as keyof PureBattleStages] ?? 0) > 0) dStages[dKey as keyof PureBattleStages] = 0;
   }
 
-  const critMult = isCrit ? (ACTIVE_RULE_SET === 2 ? 2.0 : 1.5) : 1;
+  const critMult = isCrit ? ((ACTIVE_RULE_SET as number) === 2 ? 2.0 : 1.5) : 1;
 
   const isGym = ctx.isGym || false;
   const A = getEffectiveStatPure(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
@@ -273,42 +263,81 @@ export function calculateDamagePure(
 
   let weatherMult = 1;
   if (!isGym && weather && weather.turns !== 0) {
-    const wType = (weather.visual || weather.type).toLowerCase();
     if (mechWeather === WEATHER_KEYS.SUN) {
       if (moveType === 'fire')  weatherMult = 1.5;
-      if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5;
+      if (moveType === 'water') {
+        // Ola de calor (heatwave) y Sol Abrasador (intense_sun) evaporan el agua (0x)
+        if (weather.type === 'intense_sun' || weather.type === 'heatwave') {
+          weatherMult = 0;
+        } else {
+          weatherMult = 0.5;
+        }
+      }
     } else if (mechWeather === WEATHER_KEYS.RAIN) {
       if (moveType === 'water') weatherMult = 1.5;
-      if (moveType === 'fire')  weatherMult = (wType === 'storm' || wType === 'heavy_rain') ? 0 : 0.5;
-    } else if (wType === 'thunderstorm') {
-      if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5;
+      if (moveType === 'fire')  {
+        // Tormenta extrema (storm) y Lluvia Torrencial (heavy_rain) extinguen el fuego (0x)
+        if (weather.type === 'heavy_rain' || weather.type === 'storm') {
+          weatherMult = 0;
+        } else {
+          weatherMult = 0.5;
+        }
+      }
+    } else if (weather.type === 'thunderstorm') {
+      if (moveType === 'electric' || moveType === 'dragon') {
+        weatherMult = 1.5;
+      } else if (moveType === 'fire') {
+        // En tormentas eléctricas secas la visibilidad y carga reduce la efectividad del fuego a la mitad
+        weatherMult = 0.5;
+      }
     }
   }
 
-  if (move.id === 'solar_beam' && weather && weather.turns !== 0) {
+  // Delta Stream (strong_winds) remueve debilidades del tipo volador
+  let finalEff = eff;
+  const isStrongWinds = !isGym && weather && weather.turns !== 0 && getMechWeather(weather.type) === 'clear' && weather.type === 'strong_winds';
+  if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
+    // Si el movimiento es super efectivo contra el defensor y este es Volador, removemos la debilidad
+    if (finalEff > 1) {
+      // Delta Stream convierte las debilidades del tipo Volador en daño neutro (x1)
+      // Para simplificar, si el daño es super efectivo y es del tipo Electric/Ice/Rock (debilidades de volador), lo neutralizamos.
+      if (['electric', 'ice', 'rock'].includes(moveType)) {
+        finalEff /= 2;
+      }
+    }
+  }
+
+  // Ciclos implícitos (cuando el clima está despejado o no hay clima)
+  if (!isGym && (!weather || weather.type === 'clear' || weather.type === 'none')) {
+    if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') {
+      weatherMult = 1.2;
+    } else if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') {
+      weatherMult = 1.2;
+    }
+  }
+
+  const isSolarBeam = move.id === 'solar_beam' || move.id === 'solarbeam' || move.id === 'rayo_solar' ||
+                      move.name?.toLowerCase() === 'rayo solar' || move.name?.toLowerCase() === 'solarbeam' || move.name?.toLowerCase() === 'solar beam';
+  if (isSolarBeam && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_KEYS.SUN;
-    const isClear = mechWeather === WEATHER_KEYS.CLEAR && weather.type !== 'thunderstorm';
+    const isClear = mechWeather === WEATHER_KEYS.CLEAR;
     if (!isGym && !isSun && !isClear) {
       weatherMult *= 0.5;
     }
   }
 
-  if (!isGym && weatherMult === 1 && (mechWeather === WEATHER_KEYS.CLEAR || !weather)) {
-    if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire')  weatherMult = 1.2;
-    if ((dayCycle === 'night' || dayCycle === 'dusk')  && moveType === 'water') weatherMult = 1.2;
-  }
 
   const random = randomFactor ?? (0.85 + Math.random() * 0.15);
 
-  const finalDmg = (eff > 0 && weatherMult > 0)
-    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult * itemMult))
+  const finalDmg = (finalEff > 0 && weatherMult > 0)
+    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * finalEff * random * critMult * weatherMult * itemMult))
     : 0;
 
   return {
-    dmg: finalDmg, eff, stab, power, isCrit,
-    isSuperEffective:    eff > 1,
-    isNotVeryEffective:  eff < 1 && eff > 0,
-    isNoEffect:          eff === 0,
+    dmg: finalDmg, eff: finalEff, stab, power, isCrit,
+    isSuperEffective:    finalEff > 1,
+    isNotVeryEffective:  finalEff < 1 && finalEff > 0,
+    isNoEffect:          finalEff === 0,
     triggeredAbility
   };
 }

@@ -61,12 +61,12 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
 
   // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
   const configs: Record<string, Partial<EffectSettings>> = {
-    burn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
-    freeze: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
-    sleep: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    paralysis: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
-    poison: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    toxic: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0 },
+    brn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
+    frz: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
+    slp: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    par: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
+    psn: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    tox: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0 },
     confusion: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     confused: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     attracted: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 4.0, randomizeVars: { min: 1.0, max: 2.0 } },
@@ -113,7 +113,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
   
   // 4. Área de dispersión
-  const factor = (typeKey === 'paralysis') ? 1.3 : (isHeadEffect ? 0.4 : 1.0)
+  const factor = (typeKey === 'par') ? 1.3 : (isHeadEffect ? 0.4 : 1.0)
   const maxRadius = isField ? (typeKey === 'mist' ? 25 : 45) : ar * factor
   
   const area: ParticleArea = (isFeetEffect) 
@@ -125,7 +125,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   if (isHeadEffect) offset = { x: 0, y: -ar * 0.75 }
   else if (isFeetEffect) offset = { x: 0, y: ar * 0.35 }
 
-  const isPrimary = ['burn', 'freeze', 'sleep', 'paralysis', 'poison', 'toxic'].includes(typeKey)
+  const isPrimary = ['brn', 'frz', 'slp', 'par', 'psn', 'tox'].includes(typeKey)
   const isTactical = ['protected', 'enduring', 'focus', 'lockon'].includes(typeKey)
   
   const targetOpacity = base.targetOpacity ?? (isField ? 0.6 : (isTactical ? 1.0 : 1.0))

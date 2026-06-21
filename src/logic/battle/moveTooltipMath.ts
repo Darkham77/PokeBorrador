@@ -19,10 +19,8 @@ export function calculateMoveModifierInfo(
   const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
   const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
   const isDayTime = cycle === 'day' || cycle === 'morning';
-  const isNightTime = cycle === 'night' || cycle === 'dusk';
 
   const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime);
-  const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime);
 
   const moveId = m.id || '';
 
@@ -59,14 +57,12 @@ export function calculateMoveModifierInfo(
 
   // Elemental Multipliers
   if (m.type === 'fire') {
-    const isExtreme = weather?.toLowerCase() === 'storm' || weather?.toLowerCase() === 'thunderstorm' || weather?.toLowerCase() === 'heavy_rain';
-    if (isRaining) return { type: 'penalized', text: `Penalizado por ${isExtreme ? 'Tormenta' : 'Lluvia'} (${isExtreme ? 'x0' : '0.5x'})` };
-    if (isSunActive) return { type: 'boosted', text: `Potenciado por ${isSunny ? 'Sol' : 'Horario'} (1.5x/1.2x)` };
+    if (isRaining) return { type: 'penalized', text: 'Penalizado por Lluvia (0.5x)' };
+    if (isSunny) return { type: 'boosted', text: 'Potenciado por Sol (1.5x)' };
   }
   if (m.type === 'water') {
-    const isExtreme = weather?.toLowerCase() === 'heatwave' || weather?.toLowerCase() === 'intense_sun';
-    if (isSunny) return { type: 'penalized', text: `Penalizado por ${isExtreme ? 'Calor Extremo' : 'Sol'} (${isExtreme ? 'x0' : '0.5x'})` };
-    if (isRainActive) return { type: 'boosted', text: `Potenciado por ${isRaining ? 'Lluvia' : 'Horario'} (1.5x/1.2x)` };
+    if (isSunny) return { type: 'penalized', text: 'Penalizado por Sol (0.5x)' };
+    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia (1.5x)' };
   }
   return null;
 }
@@ -80,7 +76,7 @@ export function calculateMovePower(
   defender: PurePokemon | null,
   weather: { type: string; turns: number } | null,
   mechWeather: string,
-  cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
+  _cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
   basePower: number,
   moveType: string
 ): { base: number; final: number; list: { label: string; mult: number }[]; class: string } {
@@ -97,17 +93,13 @@ export function calculateMovePower(
 
     // Weather
     if (weather && weather.turns !== 0) {
-      const wType = weather.type.toLowerCase();
       let weatherMult = 1;
       if (mechWeather === WEATHER_MECHANICAL.SUN) {
         if (moveType === 'fire') weatherMult = 1.5;
-        if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5;
+        if (moveType === 'water') weatherMult = 0.5;
       } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
         if (moveType === 'water') weatherMult = 1.5;
-        if (moveType === 'fire') weatherMult = (wType === 'storm' || wType === 'heavy_rain') ? 0 : 0.5;
-        if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5;
-      } else if (wType === 'thunderstorm') {
-        if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5;
+        if (moveType === 'fire') weatherMult = 0.5;
       }
 
       if (weatherMult !== 1) {
@@ -119,37 +111,27 @@ export function calculateMovePower(
     // Solar Beam
     if (move.id === 'solar_beam' && weather && weather.turns !== 0) {
       const isSun = mechWeather === WEATHER_MECHANICAL.SUN;
-      const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm';
+      const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR;
       if (!isSun && !isClear) {
         powerList.push({ label: 'Rayo Solar Clima', mult: 0.5 });
         currentPower *= 0.5;
       }
     }
 
-    // Day cycle
-    if (weather && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
-      let cycleMult = 1;
-      if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') cycleMult = 1.2;
-      if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') cycleMult = 1.2;
-      if (cycleMult !== 1) {
-        powerList.push({ label: `Horario (${cycle})`, mult: cycleMult });
-        currentPower *= cycleMult;
-      }
-    }
 
     // Attacker Ability
     let abilMult = 1;
     const isLowHp = (attacker.hp ?? 0) <= ((attacker.maxHp ?? 1) / 3);
     if (isLowHp) {
-      if (attacker.ability === 'Mar llamas' && moveType === 'fire') abilMult = 1.5;
-      if (attacker.ability === 'Torrente' && moveType === 'water') abilMult = 1.5;
-      if (attacker.ability === 'Espesura' && moveType === 'grass') abilMult = 1.5;
-      if (attacker.ability === 'Enjambre' && moveType === 'bug') abilMult = 1.5;
+      if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = 1.5;
+      if (attacker.ability === 'torrent' && moveType === 'water') abilMult = 1.5;
+      if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = 1.5;
+      if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = 1.5;
     }
-    if (attacker.ability === 'Experto' && basePower <= 60) {
+    if (attacker.ability === 'technician' && basePower <= 60) {
       abilMult *= 1.5;
     }
-    if (weather && weather.turns !== 0 && attacker.ability === 'Fuerza arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
+    if (weather && weather.turns !== 0 && attacker.ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
       if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
         abilMult *= 1.3;
       }
@@ -160,7 +142,7 @@ export function calculateMovePower(
     }
 
     // Defender Ability
-    if (defender && (defender.ability === 'thickfat' || defender.ability === 'Sebo') && (moveType === 'fire' || moveType === 'ice')) {
+    if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
       powerList.push({ label: 'Habilidad Rival (Sebo)', mult: 0.5 });
       currentPower *= 0.5;
     }

@@ -2,8 +2,35 @@ import type { BattleContext } from '@/types/battle/battleContext';
 // fallow-ignore-file security-sink typescript-any
 import { logger } from '@/logic/utils/logger';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { getLocalizedWeatherName } from '@/logic/weather/weatherGenerationProvider';
 
-
+/**
+ * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
+ */
+export function filterShowdownLogs(logs: string[]): string[] {
+  const filtered: string[] = [];
+  for (let i = 0; i < logs.length; i++) {
+    const line = logs[i] || '';
+    if (line.startsWith('|split|')) {
+      const parts = line.split('|');
+      const side = parts[2]; // 'p1' o 'p2'
+      
+      const secretLine = logs[i + 1] || '';
+      const publicLine = logs[i + 2] || '';
+      
+      if (side === 'p1') {
+        if (secretLine) filtered.push(secretLine);
+      } else {
+        if (publicLine) filtered.push(publicLine);
+      }
+      i += 2;
+    } else {
+      filtered.push(line);
+    }
+  }
+  return filtered;
+}
 
 /**
  * Traduce y procesa una sola línea del log estructurado de Showdown,
@@ -118,16 +145,8 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
         // Formato: |-status|p1a: Bulbasaur|par
         const target = getPoke(parts[2] || '');
         const statusType = parts[3] || '';
-        if (target) {
-          const statusMap: Record<string, 'paralysis' | 'burn' | 'poison' | 'sleep' | 'freeze'> = {
-            par: 'paralysis',
-            brn: 'burn',
-            psn: 'poison',
-            tox: 'poison',
-            slp: 'sleep',
-            frz: 'freeze'
-          };
-          target.status = statusMap[statusType] || null;
+        if (target && statusType) {
+          target.status = statusType as import('@/types/pokemon/pokemon').PokemonStatus;
           store.addLog(`¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`, 'log-info', target);
         }
         break;
@@ -143,8 +162,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
         break;
       }
 
-      case '-boost': {
-        // Formato: |-boost|p1a: Bulbasaur|atk|1
+      case '-boost':
+      case '-setboost': {
+        // Formato: |-boost|p1a: Bulbasaur|atk|1 o |-setboost|p1a: Poliwag|atk|6|[from] move: Belly Drum
         const target = getPoke(parts[2] || '');
         const stat = parts[3] || '';
         const amount = parseInt(parts[4] || '1');
@@ -154,8 +174,17 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
           const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
           if (stages && stat in stages) {
             const key = stat as keyof typeof stages;
-            stages[key] = Math.min(6, (stages[key] || 0) + amount);
-            store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} aumentó!`, 'log-info', target);
+            if (type === '-setboost') {
+              stages[key] = amount;
+            } else {
+              stages[key] = Math.min(6, (stages[key] || 0) + amount);
+            }
+            
+            if (amount === 6) {
+              store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} se maximizó!`, 'log-info', target);
+            } else {
+              store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} aumentó!`, 'log-info', target);
+            }
           }
         }
         break;
@@ -182,6 +211,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
       case '-weather': {
         // Formato: |-weather|Sandstorm|[from] ...
         const weatherType = parts[2] || 'clear';
+        const isUpkeep = line.includes('[upkeep]');
+        const isFromDebug = line.includes('[from] debug');
+
         if (store.activeBattle.value) {
           const weatherMap: Record<string, string> = {
             'Sandstorm': 'sandstorm',
@@ -190,12 +222,27 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
             'Hail': 'hail',
             'none': 'clear'
           };
+          const nextWeatherType = weatherMap[weatherType] || 'clear';
+          const currentWeatherType = store.activeBattle.value.weather?.type || 'clear';
+
           store.activeBattle.value.weather = {
-            type: weatherMap[weatherType] || 'clear',
+            type: nextWeatherType,
             visual: weatherType.toLowerCase(),
             turns: -1
           };
-          store.addLog(`¡El clima cambió a ${weatherType}!`, 'log-info');
+
+          if (nextWeatherType !== currentWeatherType && !isUpkeep && !isFromDebug) {
+            const weatherEmojis: Record<string, string> = {
+              'Sandstorm': '🌀',
+              'RainDance': '🌧️',
+              'SunnyDay': '☀️',
+              'Hail': '❄️',
+              'none': '🌤️'
+            };
+            const emoji = weatherEmojis[weatherType] || '🌤️';
+            const localizedName = getLocalizedWeatherName(weatherType, ACTIVE_GENERATION);
+            store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
+          }
         }
         break;
       }

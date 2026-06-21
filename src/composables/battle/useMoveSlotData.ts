@@ -49,13 +49,13 @@ export function useMoveSlotData(
     // 2. Weather
     let weatherMult = 1
     if (weather && weather.turns !== 0) {
-      const wType = (weather.visual || weather.type).toLowerCase()
+      const wType = (weather.type || weather.visual || 'clear').toLowerCase()
       if (mechWeather === WEATHER_MECHANICAL.SUN) {
         if (moveType === 'fire') weatherMult = 1.5
         if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5
       } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
         if (moveType === 'water') weatherMult = 1.5
-        if (moveType === 'fire') weatherMult = (wType === 'storm' || wType === 'heavy_rain') ? 0 : 0.5
+        if (moveType === 'fire') weatherMult = (wType === 'storm' || wType === 'heavy_rain' || wType === 'raindance') ? 0.5 : 0.5
       } else if (wType === 'thunderstorm') {
         if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5
       }
@@ -82,15 +82,15 @@ export function useMoveSlotData(
     let abilMult = 1
     const isLowHp = attacker.hp <= (attacker.maxHp / 3)
     if (isLowHp) {
-      if ((attacker.ability === 'blaze' || attacker.ability === 'Mar llamas') && moveType === 'fire') abilMult = 1.5
-      if ((attacker.ability === 'torrent' || attacker.ability === 'Torrente') && moveType === 'water') abilMult = 1.5
-      if ((attacker.ability === 'overgrow' || attacker.ability === 'Espesura') && moveType === 'grass') abilMult = 1.5
-      if ((attacker.ability === 'swarm' || attacker.ability === 'Enjambre') && moveType === 'bug') abilMult = 1.5
+      if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = 1.5
+      if (attacker.ability === 'torrent' && moveType === 'water') abilMult = 1.5
+      if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = 1.5
+      if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = 1.5
     }
-    if ((attacker.ability === 'technician' || attacker.ability === 'Experto') && md.power <= 60) {
+    if (attacker.ability === 'technician' && md.power <= 60) {
       abilMult *= 1.5
     }
-    if (weather && weather.turns !== 0 && (attacker.ability === 'sandforce' || attacker.ability === 'Fuerza arena') && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
+    if (weather && weather.turns !== 0 && attacker.ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
       if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
         abilMult *= 1.3
       }
@@ -98,7 +98,7 @@ export function useMoveSlotData(
     power *= abilMult
 
     // 4. Defender Ability
-    if (defender && (defender.ability === 'thickfat' || defender.ability === 'Sebo') && (moveType === 'fire' || moveType === 'ice')) {
+    if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
       power *= 0.5
     }
 
@@ -133,7 +133,7 @@ export function useMoveSlotData(
     const attacker = playerInfoRef()
     const defender = battleStore.state?.enemy
     const isGym = !!battleStore.state?.isGym
-    const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine' || attacker?.ability === 'Aclimatación' || defender?.ability === 'Aclimatación'
+    const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
     const weather = isGym || isAclimatacion ? null : battleStore.state?.weather?.type
     const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather)
     const cycle = getDayCycle()
@@ -166,7 +166,7 @@ export function useMoveSlotData(
     const attacker = playerInfoRef()
     const defender = battleStore.state?.enemy
     const isGym = !!battleStore.state?.isGym
-    const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine' || attacker?.ability === 'Aclimatación' || defender?.ability === 'Aclimatación'
+    const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
     const weather = isGym || isAclimatacion ? null : battleStore.state?.weather
     const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
     const cycle = getDayCycle()
@@ -180,26 +180,26 @@ export function useMoveSlotData(
     const isSunActive = !isGym && !isAclimatacion && (isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime))
     const isRainActive = !isGym && !isAclimatacion && (isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime))
 
-    const moveName = (md.name || '').toLowerCase()
+    const moveId = md.id || ''
 
     // 1. Accuracy Boosted
-    if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
+    if (moveId === 'thunder' || moveId === 'hurricane') {
       if (isSunny) return 'penalized'
       if (isRaining) return 'boosted'
     }
 
-    if (moveName === 'ventisca' || moveName === 'blizzard') {
+    if (moveId === 'blizzard') {
       if (isSnowing) return 'boosted'
     }
 
     // 2. Solar Moves
-    if (moveName === 'rayo solar' || moveName === 'solar beam' || moveName === 'cuchilla solar' || moveName === 'solar blade') {
+    if (moveId === 'solar_beam' || moveId === 'solar_blade') {
       if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return 'penalized'
       if (isSunActive) return 'boosted'
     }
 
     // 3. Weather Ball
-    if (moveName === 'meteorobola' || moveName === 'weather ball') {
+    if (moveId === 'weather_ball') {
       if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted'
     }
 

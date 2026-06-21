@@ -18,7 +18,12 @@ interface Props {
   cycle?: 'morning' | 'day' | 'dusk' | 'night'
   weather?: string
   playerClass?: string
-  classData?: { extortedRouteId?: string | null; officialRouteId?: string | null }
+  classData?: { 
+    extortedRouteId?: string | null; 
+    extortedRouteTimestamp?: string | null;
+    officialRouteId?: string | null;
+    officialRouteTimestamp?: string | null;
+  }
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
   dominanceData?: Record<string, import('@/types/system/stores').DominanceInfo>
@@ -109,7 +114,19 @@ const getDominanceForMap = (mapId: string) => {
       :forced-weather="getMapData(loc).weather"
       :badge-count="badgeCount"
       :dominance="getDominanceForMap(loc.id)"
-      :is-rocket-extorted="(playerClass === 'rocket' && classData?.extortedRouteId === loc.id) || (playerClass === 'entrenador' && classData?.officialRouteId === loc.id)"
+      :is-rocket-extorted="(() => {
+        if (!classData) return false;
+        const now = Date.now();
+        if (playerClass === 'rocket' && classData.extortedRouteId === loc.id) {
+          const timestamp = Number(classData.extortedRouteTimestamp || 0);
+          return (now - timestamp) <= 24 * 3600 * 1000;
+        }
+        if (playerClass === 'entrenador' && classData.officialRouteId === loc.id) {
+          const timestamp = Number(classData.officialRouteTimestamp || 0);
+          return (now - timestamp) <= 30 * 60 * 1000;
+        }
+        return false;
+      })()"
       :spawn-pool="getMapData(loc)"
       @navigate="emit('navigate', $event)"
     />

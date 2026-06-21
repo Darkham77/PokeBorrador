@@ -26,7 +26,8 @@ import { handleItemUsage } from '@/logic/battle/battleItems.ts'
 import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
-import { getMechanicalWeather } from '@/logic/weather/weatherRegistry.ts'
+import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts'
+import { ACTIVE_GENERATION } from '@/data/system/constants.ts'
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -118,8 +119,8 @@ export const useBattleStore = defineStore('battle', () => {
   
   watch(() => mapStore.currentWeather, (newWeather) => {
     if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
-      // Sincronizar tanto el tipo mecánico como el visual con el clima actual del mapa
-      activeBattle.value.weather.type = getMechanicalWeather(newWeather || 'clear')
+      // Sincronizar el tipo con el clima oficial según la generación, y el visual con el del mapa
+      activeBattle.value.weather.type = mapVisualToOfficialWeather(newWeather || 'clear', ACTIVE_GENERATION)
       activeBattle.value.weather.visual = newWeather || 'clear'
     }
   })

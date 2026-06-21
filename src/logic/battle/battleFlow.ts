@@ -81,7 +81,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
     pokemon.flinched = false
     return false
   }
-  if (pokemon.status === 'sleep') {
+  if (pokemon.status === 'slp') {
     if ((pokemon.sleepTurns || 0) > 0) {
       pokemon.sleepTurns = (pokemon.sleepTurns || 0) - 1
       addLog(`¡${pokemon.name} está profundamente dormido!`, 'log-info', pokemon)
@@ -91,7 +91,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
       addLog(`¡${pokemon.name} se despertó!`, 'log-info', pokemon)
     }
   }
-  if (pokemon.status === 'freeze') {
+  if (pokemon.status === 'frz') {
     if (Math.random() < 0.8) {
       addLog(`¡${pokemon.name} está congelado!`, 'log-info', pokemon)
       return false
@@ -100,7 +100,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
       addLog(`¡${pokemon.name} se descongeló!`, 'log-info', pokemon)
     }
   }
-  if (pokemon.status === 'paralysis') {
+  if (pokemon.status === 'par') {
     if (Math.random() < 0.25) {
       addLog(`¡${pokemon.name} está paralizado! ¡No puede moverse!`, 'log-info', pokemon)
       return false
@@ -298,10 +298,10 @@ export function applyEntryHazards(pokemon: Pokemon, stages: BattleStages, addLog
       addLog(`¡${pokemon.name} absorbió las púas tóxicas!`, 'log-info', pokemon);
     } else if (isGrounded && !pokemon.status && !isPoisonType && !isSteelType && pokemon.ability !== 'Inmunidad') {
       if (stages.toxicSpikes === 1) {
-        pokemon.status = 'poison';
+        pokemon.status = 'psn';
         addLog(`¡${pokemon.name} fue envenenado por las púas tóxicas!`, 'log-info', pokemon);
       } else if (stages.toxicSpikes >= 2) {
-        pokemon.status = 'poison';
+        pokemon.status = 'tox';
         pokemon.badPoison = 1;
         addLog(`¡${pokemon.name} fue gravemente envenenado por las púas tóxicas!`, 'log-info', pokemon);
       }

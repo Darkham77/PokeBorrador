@@ -8,6 +8,33 @@ import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Mock dependencies
+class DummyWorker {
+  postMessage(data: unknown) {
+    const msg = data as { type?: string };
+    if (msg?.type === 'INIT_BATTLE') {
+      setTimeout(() => {
+        if (this.onmessage) {
+          this.onmessage({ data: { type: 'INIT_SUCCESS' } } as MessageEvent)
+        }
+      }, 0)
+    } else if (msg?.type === 'EXECUTE_TURN') {
+      setTimeout(() => {
+        if (this.onmessage) {
+          this.onmessage({
+            data: {
+              type: 'TURN_SUCCESS',
+              payload: { logs: [], isOver: false, winner: null }
+            }
+          } as MessageEvent)
+        }
+      }, 0)
+    }
+  }
+  terminate() {}
+  onmessage: ((ev: MessageEvent) => void) | null = null
+}
+vi.stubGlobal('Worker', DummyWorker)
+
 vi.mock('@/logic/services/assetService', () => ({
   getAssetUrl: vi.fn(),
   ASSET_TYPES: { ITEM: 'item' }

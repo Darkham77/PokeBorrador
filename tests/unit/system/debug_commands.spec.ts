@@ -110,8 +110,9 @@ describe('Debug System (Commands & Tools)', () => {
 
     it('handles item addition', () => {
       const game = useGameStore()
-      callDebug('addItem', 'Poke Ball', 50)
-      expect(game.state.inventory['Poke Ball']).toBe(50)
+      game.state.inventory = {}
+      callDebug('addItem', 'pokeball', 50)
+      expect(game.state.inventory['pokeball']).toBe(50)
     })
 
     it('handles faction simulation', () => {

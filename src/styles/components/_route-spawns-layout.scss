@@ -112,13 +112,13 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 11px;
+      font-size: 9px;
       color: Rgba(255, 255, 255, 0.85);
 
       .desc-line-label {
         font-family: var(--font-pixel);
         font-size: 7px;
-        min-width: 150px;
+        min-width: 90px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
@@ -189,7 +189,7 @@
       .group-label {
         font-family: var(--font-pixel);
         font-size: 7px;
-        min-width: 150px;
+        min-width: 90px;
         flex-shrink: 0;
       }
 

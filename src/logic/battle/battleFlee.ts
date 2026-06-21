@@ -74,13 +74,40 @@ export async function executeFlee(ctx: BattleContext) {
         if (ctx.activeBattle.value) ctx.activeBattle.value.escapeAttempts++
         ctx.addLog('¡No pudiste escapar!', 'log-info', 'player')
         
-        const { runEnemyAction } = await import('./battleTurn.ts')
-        
-        // FSM: Transicionar correctamente como si fuera un turno normal.
-        // Sin APPLY_MOVE, el watcher de useBattleAnimations limpia los asientos
-        // durante el ataque, suprimiendo el HUD y las animaciones de daño.
-        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
-        await runEnemyAction(ctx)
+        const { decideEnemyMove } = await import('./ai/battleAI.ts')
+        const isWild = !ctx.activeBattle.value?.isTrainer && !ctx.activeBattle.value?.isGym
+        let enemyMove = decideEnemyMove(e, p, ctx.playerStages.value, isWild)
+        if (e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
+          enemyMove = e.lastMove
+        }
+
+        const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+        const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
+
+        if (showdownWorker && enemyMove) {
+          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.BUILD_QUEUE)
+          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POP_ACTION)
+
+          const result = await executeTurnInWorker('move struggle', `move ${enemyMove.id}`)
+
+          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
+
+          // Playback only enemy actions, filter out player struggle to simulate player doing nothing/fleeing
+          const cleanLogs = filterShowdownLogs(result.logs);
+          const filteredLogs = cleanLogs.filter(line => {
+            if (line.startsWith('|move|p1a:')) return false;
+            if (line.startsWith('|-damage|p1a:') && line.includes('[from] recoil')) return false;
+            return true;
+          });
+
+          for (const logLine of filteredLogs) {
+            await parseShowdownLogLine(ctx, logLine);
+          }
+
+          if (result.isOver && ctx.activeBattle.value) {
+            ctx.activeBattle.value.over = true;
+          }
+        }
         
         if (ctx.activeBattle.value?.over) {
           if (ctx.activeBattle.value.fled) {
@@ -106,6 +133,7 @@ export async function executeFlee(ctx: BattleContext) {
           ctx.isProcessing.value = false
           return
         }
+
         
         // Volver al estado de espera para restaurar HUD y badge activo del Pokémon
         if (ctx.activeBattle.value && !ctx.activeBattle.value.over &&

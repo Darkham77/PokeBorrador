@@ -137,18 +137,18 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
       effect: 'none' 
     } as MoveBaseData
 
-    if (attacker.status === 'sleep') {
+    if (attacker.status === 'slp') {
       const sleepTurns = (attacker as unknown as { sleepTurns?: number }).sleepTurns ?? 0
       if (sleepTurns > 0) {
         (attacker as unknown as { sleepTurns: number }).sleepTurns = sleepTurns - 1
-        return { type: 'move', moveName, actorIsHost, statusBlocked: 'sleep', effectLog }
+        return { type: 'move', moveName, actorIsHost, statusBlocked: 'slp', effectLog }
       }
       attacker.status = null
       effectLog.push(`¡${attacker.name} se despertó!`)
     }
 
-    if (attacker.status === 'paralysis' && Math.random() < 0.25) {
-      return { type: 'move', moveName, actorIsHost, statusBlocked: 'paralysis', effectLog }
+    if (attacker.status === 'par' && Math.random() < 0.25) {
+      return { type: 'move', moveName, actorIsHost, statusBlocked: 'par', effectLog }
     }
 
     if (md.acc && Math.random() * 100 > md.acc * getAccuracyMultiplier(atkS.acc || 0)) {

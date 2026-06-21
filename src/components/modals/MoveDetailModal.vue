@@ -28,7 +28,9 @@ const md = computed(() => {
     try {
       mId = pokemonDataProvider.getMoveIdBySpanishName(props.moveName)
       mData = pokemonDataProvider.getMoveData(mId)
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
   if (!mData) throw new Error(`[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveName}`)
   return mData

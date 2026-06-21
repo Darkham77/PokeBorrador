@@ -61,23 +61,23 @@ describe('canHeal', () => {
 
 describe('canClearStatus', () => {
   it('returns true for matching status', () => {
-    assert.ok(canClearStatus(makeMon({ status: 'poison' }), 'poison'));
+    assert.ok(canClearStatus(makeMon({ status: 'psn' }), 'psn'));
   });
 
   it('returns false for non-matching status', () => {
-    assert.ok(!canClearStatus(makeMon({ status: 'burn' }), 'poison'));
+    assert.ok(!canClearStatus(makeMon({ status: 'brn' }), 'psn'));
   });
 
   it('returns false when no status', () => {
-    assert.ok(!canClearStatus(makeMon({ status: null }), 'poison'));
+    assert.ok(!canClearStatus(makeMon({ status: null }), 'psn'));
   });
 
   it('returns true for "any" when any status is present', () => {
-    assert.ok(canClearStatus(makeMon({ status: 'paralysis' }), 'any'));
+    assert.ok(canClearStatus(makeMon({ status: 'par' }), 'any'));
   });
 
   it('returns false when fainted (hp=0)', () => {
-    assert.ok(!canClearStatus(makeMon({ hp: 0, status: 'poison' }), 'poison'));
+    assert.ok(!canClearStatus(makeMon({ hp: 0, status: 'psn' }), 'psn'));
   });
 });
 
@@ -148,12 +148,12 @@ describe('clearStatusPure', () => {
   });
 
   it('fails when fainted', () => {
-    assert.ok(!clearStatusPure('poison', 0, 'poison').success);
+    assert.ok(!clearStatusPure('psn', 0, 'psn').success);
   });
 
   it('"any" target clears any status', () => {
-    assert.ok(clearStatusPure('burn', 30, 'any').success);
-    assert.ok(clearStatusPure('freeze', 30, 'any').success);
+    assert.ok(clearStatusPure('brn', 30, 'any').success);
+    assert.ok(clearStatusPure('frz', 30, 'any').success);
   });
 });
 
@@ -167,7 +167,7 @@ describe('curaTotalPure', () => {
   });
 
   it('heals a poisoned pokemon', () => {
-    const r = curaTotalPure(makeMon({ hp: 30, maxHp: 60, status: 'poison' }));
+    const r = curaTotalPure(makeMon({ hp: 30, maxHp: 60, status: 'psn' }));
     assert.ok(r.success);
   });
 

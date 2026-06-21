@@ -150,7 +150,7 @@ const pokemonIVsSchema = object({
 // Move Effect validation schema
 const moveEffectSchema = object({
   type: string(),
-  status: optional(nullable(union([literal('paralysis'), literal('burn'), literal('poison'), literal('sleep'), literal('freeze')]))),
+  status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')]))),
   stat: optional(string()),
   stages: optional(number()),
   chance: optional(number()),
@@ -211,7 +211,7 @@ const pokemonSchema = object({
   isGuardian: fallback(boolean(), false),
   isFloating: fallback(boolean(), false),
   gender: fallback(nullable(union([literal('M'), literal('F'), literal('N')])), null),
-  status: fallback(nullable(union([literal('paralysis'), literal('burn'), literal('poison'), literal('sleep'), literal('freeze')])), null),
+  status: fallback(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')])), null),
   sleepTurns: optional(number()),
   confused: optional(number()),
   attracted: optional(boolean()),
@@ -429,10 +429,11 @@ const saveDataSchema = object({
     extortedRouteTimestamp: fallback(nullable(string()), null),
     lastEggScanDate: fallback(nullable(string()), null),
     officialRouteId: fallback(nullable(string()), null),
+    officialRouteTimestamp: fallback(nullable(string()), null),
     kitCaptures: fallback(number(), 0)
   }), {
     captureStreak: 0, longestStreak: 0, reputation: 0, blackMarketSales: 0, criminality: 0,
-    extortedRouteId: null, extortedRouteTimestamp: null, lastEggScanDate: null, officialRouteId: null, kitCaptures: 0
+    extortedRouteId: null, extortedRouteTimestamp: null, lastEggScanDate: null, officialRouteId: null, officialRouteTimestamp: null, kitCaptures: 0
   }),
   faction: fallback(nullable(string()), null),
   warCoins: fallback(number(), 0),

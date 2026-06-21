@@ -107,7 +107,7 @@ const fieldEffects = computed(() => [
 
 const activeStatusEffects = computed(() => {
   if (!props.status || isSimplified.value) return []
-  const map: Record<string, string> = { burn: '🔥', poison: '☠️', sleep: '💤', paralysis: '⚡', freeze: '❄️' }
+  const map: Record<string, string> = { brn: '🔥', psn: '☠️', slp: '💤', par: '⚡', frz: '❄️', tox: '☠️' }
   return [{ type: props.status, emoji: map[props.status] || '' }]
 })
 
@@ -131,7 +131,7 @@ const refreshPersistentFX = (retryCount = 0) => {
   gsap.set(target, { filter: '', x: 0, y: 0, rotation: 0 })
   gsap.set(spriteLayerRef.value, { filter: '' })
 
-  const isImmobilized = props.status === 'freeze' || props.isTrapped || props.animState === 'catching'
+  const isImmobilized = props.status === 'frz' || props.isTrapped || props.animState === 'catching'
 
   if (props.isCursed) {
     activeTweens.push(gsap.to(target, {
@@ -148,22 +148,22 @@ const refreshPersistentFX = (retryCount = 0) => {
   if (props.isEnduring || props.isSeeded) {
     activeTweens.push(gsap.to(target, { y: -3, duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
-  if (props.status === 'burn') {
+  if (props.status === 'brn') {
     activeTweens.push(gsap.fromTo(target, 
       { filter: 'Drop-Shadow(0 0 25px #ff4500) Brightness(1) Saturate(1.2)' },
       { filter: 'Drop-Shadow(0 0 40px #ff8c00) Brightness(1.4) Saturate(2.2)', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     ))
   }
-  if (props.status === 'poison') {
+  if (props.status === 'psn' || props.status === 'tox') {
     activeTweens.push(gsap.fromTo(target, 
       { filter: 'Drop-Shadow(0 0 2px #9400d3) Brightness(1) Saturate(1)' },
       { filter: 'Drop-Shadow(0 0 12px #9400d3) Brightness(0.8) Saturate(1.4) hue-rotate(10deg)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     ))
   }
-  if ((props.status === 'paralysis' || props.status === 'paralyze') && !isImmobilized) {
+  if ((props.status === 'par') && !isImmobilized) {
     activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -3 }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: 3, duration: 0.04, yoyo: true, repeat: -1, ease: 'none' }))
   }
-  if (props.status === 'freeze') {
+  if (props.status === 'frz') {
     activeTweens.push(gsap.set(target, { 
       filter: 'Brightness(1.6) contrast(0.7) Saturate(0.3) url(#pixel-outline-ice) Drop-Shadow(0 0 20px #00ffff)' 
     }))

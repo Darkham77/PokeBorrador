@@ -38,8 +38,8 @@ export const VOLATILE_STATUS_LIST: VolatileStatusDefinition[] = [
 ];
 
 export const CYCLE_WEATHER_DEFAULTS = {
-  morning: { icon: '🌅', label: 'MAÑANA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
-  day: { icon: '☀️', label: 'DÍA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
-  dusk: { icon: '🌆', label: 'OCASO', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' },
-  night: { icon: '🌙', label: 'NOCHE', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' }
+  morning: { icon: '🌅', label: 'MAÑANA', desc: 'Ciclo horario: Mañana. No afecta al combate.' },
+  day: { icon: '☀️', label: 'DÍA', desc: 'Ciclo horario: Día. No afecta al combate.' },
+  dusk: { icon: '🌆', label: 'OCASO', desc: 'Ciclo horario: Ocaso. No afecta al combate.' },
+  night: { icon: '🌙', label: 'NOCHE', desc: 'Ciclo horario: Noche. No afecta al combate.' }
 };

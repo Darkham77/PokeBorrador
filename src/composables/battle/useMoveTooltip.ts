@@ -6,8 +6,7 @@ import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { PurePokemon } from '@/logic/battle/battleMath';
-
+import { getEffectiveStatPure, type PurePokemon } from '@/logic/battle/battleMath';
 import {
   calculateMoveModifierInfo,
   calculateMovePower,
@@ -111,8 +110,17 @@ export function useMoveTooltip(
     );
 
     // 4. Effectiveness and Damage range
-    const playerStages = battleStore.playerStages ? { atk: battleStore.playerStages.atk } : null;
-    const enemyStages = battleStore.enemyStages ? { def: battleStore.enemyStages.def } : null;
+    const category = move.cat || md.cat || 'physical';
+    const isPhysical = category === 'physical';
+    const isSpecial = category === 'special';
+
+    const playerStages = battleStore.playerStages ? { 
+      atk: isPhysical ? battleStore.playerStages.atk : battleStore.playerStages.spa 
+    } : null;
+    const enemyStages = battleStore.enemyStages ? { 
+      def: isPhysical ? battleStore.enemyStages.def : battleStore.enemyStages.spd 
+    } : null;
+
     const { effectiveness, damageRange } = calculateMoveEffectivenessAndDamage(
       move,
       md,
@@ -125,6 +133,53 @@ export function useMoveTooltip(
       enemyStages
     );
 
+    // Calculate actual attacker and defender stats with stages applied
+    let attackerStat = null;
+    if (isPhysical || isSpecial) {
+      const statKey = isPhysical ? 'atk' : 'spa';
+      const stage = isPhysical ? (battleStore.playerStages.atk || 0) : (battleStore.playerStages.spa || 0);
+      const rawVal = attacker[statKey] || 0;
+      const finalVal = defender ? getEffectiveStatPure(
+        attacker as unknown as PurePokemon,
+        statKey,
+        { [statKey]: stage },
+        weather ? { type: weather.type, turns: weather.turns } : null,
+        cycle,
+        isGym
+      ) : rawVal;
+      
+      attackerStat = {
+        name: isPhysical ? 'ATAQUE' : 'AT. ESP',
+        base: rawVal,
+        final: finalVal,
+        stage,
+        class: stage > 0 ? 'boosted' : (stage < 0 ? 'penalized' : '')
+      };
+    }
+
+    let defenderStat = null;
+    if (defender && (isPhysical || isSpecial)) {
+      const statKey = isPhysical ? 'def' : 'spd';
+      const stage = isPhysical ? (battleStore.enemyStages.def || 0) : (battleStore.enemyStages.spd || 0);
+      const rawVal = defender[statKey] || 0;
+      const finalVal = getEffectiveStatPure(
+        defender as unknown as PurePokemon,
+        statKey,
+        { [statKey]: stage },
+        weather ? { type: weather.type, turns: weather.turns } : null,
+        cycle,
+        isGym
+      );
+
+      defenderStat = {
+        name: isPhysical ? 'DEFENSA RIVAL' : 'DEF. ESP RIVAL',
+        base: rawVal,
+        final: finalVal,
+        stage,
+        class: stage > 0 ? 'penalized' : (stage < 0 ? 'boosted' : '')
+      };
+    }
+
     return {
       isStatus,
       power: {
@@ -134,7 +189,9 @@ export function useMoveTooltip(
       accuracy,
       effectiveness,
       critChance,
-      damageRange
+      damageRange,
+      attackerStat,
+      defenderStat
     };
   });
 

@@ -171,7 +171,17 @@ export function sanitizePokemon(p: Pokemon): void {
     // Si el ID es inválido, intentar recuperar o asignar 'tackle'
     if (!m.id || m.id === 'null' || m.id === 'undefined' || m.id === '???') {
       logger.warn('Self-Healing', `Movimiento ${idx} corrupto detectado en ${p.id}`);
-      m.id = 'tackle';
+      let resolvedId = 'tackle';
+      if (m.name) {
+        try {
+          if (typeof pokemonDataProvider.getMoveIdBySpanishName === 'function') {
+            resolvedId = pokemonDataProvider.getMoveIdBySpanishName(m.name);
+          }
+        } catch {
+          // fallback to tackle
+        }
+      }
+      m.id = resolvedId;
     }
 
     const moveData = pokemonDataProvider.getMoveData(m.id);

@@ -6,6 +6,7 @@ import { useMapStore } from '@/stores/map'
 import { useBreedingStore } from '@/stores/breeding'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
 
 export function registerPokeTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -183,16 +184,48 @@ export function registerPokeTools(debug: DebugSystem) {
     label: 'PROBAR EVOLUCIÓN (CLI)',
     command: 'testEvolution',
     category: 'pokes',
-    action: (slotIndex = 0, targetSpeciesId = 'vaporeon', itemName = 'Piedra Agua') => {
+    action: (slotIndex = 0, targetSpeciesId?: string, itemName?: string) => {
       const pokemon = game.state.team[slotIndex]
       if (!pokemon) {
         ui.notify('No hay un Pokémon en la ranura especificada', '❌')
         return
       }
-      ui.notify(`Iniciando evolución de ${pokemon.name} a ${targetSpeciesId}...`, '✨')
-      ui.startEvolution(pokemon, targetSpeciesId, itemName)
+
+      let target = targetSpeciesId
+      let item = itemName || ''
+
+      if (!target) {
+        // 1. Buscar en tabla de nivel
+        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id]
+        if (levelEvo) {
+          target = levelEvo.to
+        } else {
+          // 2. Buscar en tabla de piedras (eevee tiene caso especial)
+          const pokemonIdKey = pokemon.id === 'eevee' ? 'eevee_water' : pokemon.id
+          const stoneEvo = (STONE_EVOLUTIONS as Record<string, { stone: string, to: string }>)[pokemonIdKey]
+          if (stoneEvo) {
+            target = stoneEvo.to
+            item = stoneEvo.stone
+          } else {
+            // 3. Buscar en tabla de intercambio
+            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id]
+            if (tradeEvo) {
+              target = tradeEvo
+            }
+          }
+        }
+      }
+
+      // Fallback si no tiene evolución alguna
+      if (!target) {
+        target = 'vaporeon'
+        item = 'Piedra Agua'
+      }
+
+      ui.notify(`Iniciando evolución de ${pokemon.name} a ${target}...`, '✨')
+      ui.startEvolution(pokemon, target, item)
     },
-    description: 'Dispara la escena de evolución animada para el Pokémon en la ranura indicada (índice 0-5).'
+    description: 'Dispara la escena de evolución animada para el Pokémon en la ranura indicada (índice 0-5), autodetectando la evolución natural por defecto.'
   })
 
   debug.register({

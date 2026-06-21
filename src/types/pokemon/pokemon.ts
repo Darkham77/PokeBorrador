@@ -1,4 +1,4 @@
-export type PokemonStatus = 'paralysis' | 'burn' | 'poison' | 'sleep' | 'freeze' | null;
+export type PokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' | null;
 
 export interface BreedingCompatibility {
   level: number;

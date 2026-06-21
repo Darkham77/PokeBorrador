@@ -228,13 +228,16 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
         return resolveAsset(`/assets/sprites/${idStr}${extension}`);
       }
       
-      // Match by ID against SHOP_ITEMS
-      const shopItem = getItemById(idStr);
+      let shopItem = null;
+      try {
+        shopItem = getItemById(idStr);
+      } catch (_err) {
+        // Fallback for custom or untyped items
+      }
       if (shopItem) {
         return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
       }
       
-      // No fallback! Return standard tier3 location
       return resolveAsset(`/assets/sprites/crafting/tier3/${idStr}${extension}`);
     }
 

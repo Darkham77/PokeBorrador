@@ -59,11 +59,11 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'max_potion': pokeEffect((p) => healHp(p, p.maxHp)),
   'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / 2))),
   'revive_max': pokeEffect((p) => revive(p, p.maxHp)),
-  'antidote': pokeEffect((p) => clearStatus(p, 'poison')),
-  'burn_heal': pokeEffect((p) => clearStatus(p, 'burn')),
-  'paralyze_heal': pokeEffect((p) => clearStatus(p, 'paralysis')),
-  'awakening': pokeEffect((p) => clearStatus(p, 'sleep')),
-  'ice_heal': pokeEffect((p) => clearStatus(p, 'freeze')),
+  'antidote': pokeEffect((p) => clearStatus(p, 'psn')),
+  'burn_heal': pokeEffect((p) => clearStatus(p, 'brn')),
+  'paralyze_heal': pokeEffect((p) => clearStatus(p, 'par')),
+  'awakening': pokeEffect((p) => clearStatus(p, 'slp')),
+  'ice_heal': pokeEffect((p) => clearStatus(p, 'frz')),
   'full_heal': pokeEffect((p) => curaTotal(p)),
   'soda_pop': pokeEffect((p) => healHp(p, 60)),
   'fresh_water': pokeEffect((p) => healHp(p, 30)),
@@ -212,11 +212,29 @@ function revive(p: Pokemon, amount: number): ItemEffectResult {
 
 function clearStatus(p: Pokemon, type: string): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-  if (p.status !== type && type !== 'any') return { success: false, message: 'No tiene ese estado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
+
+  const normTarget = type.toLowerCase();
+  const normStatus = p.status.toLowerCase();
+
+  const isMatch = normTarget === 'any' || 
+                  normStatus === normTarget ||
+                  (normTarget === 'psn' && normStatus === 'poison') ||
+                  (normTarget === 'poison' && normStatus === 'psn') ||
+                  (normTarget === 'par' && normStatus === 'paralyze') ||
+                  (normTarget === 'paralyze' && normStatus === 'par') ||
+                  (normTarget === 'brn' && normStatus === 'burn') ||
+                  (normTarget === 'burn' && normStatus === 'brn') ||
+                  (normTarget === 'slp' && normStatus === 'sleep') ||
+                  (normTarget === 'sleep' && normStatus === 'slp') ||
+                  (normTarget === 'frz' && normStatus === 'freeze') ||
+                  (normTarget === 'freeze' && normStatus === 'frz');
+
+  if (!isMatch) return { success: false, message: 'No tiene ese estado.' };
+
   const old = p.status;
   p.status = null;
-  if (old === 'sleep') p.sleepTurns = 0;
+  if ((old as string) === 'slp' || (old as string) === 'sleep') p.sleepTurns = 0;
   return { success: true, message: `se curó del estado ${old}` };
 }
 

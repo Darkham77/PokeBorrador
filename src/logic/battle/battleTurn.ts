@@ -1,5 +1,4 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
-import { getEffectiveSpeed } from './battleEngine.ts'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { logger } from '../utils/logger.ts'
@@ -45,54 +44,33 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     return
   }
 
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
-
-  // Determine Turn Order (Consider Priority)
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   let eMove = decideEnemyMove(e, p, store.enemyStages.value, isWild)
   if (e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
     eMove = e.lastMove
   }
-  
-  const pPrio = move.priority || 0
-  const ePrio = eMove?.priority || 0
 
-  const pSpe = getEffectiveSpeed(p, store.playerStages.value, { weather: store.activeBattle.value?.weather })
-  const eSpe = getEffectiveSpeed(e, store.enemyStages.value, { weather: store.activeBattle.value?.weather })
-  
-  let playerFirst = true
-  if (pPrio > ePrio) playerFirst = true
-  else if (ePrio > pPrio) playerFirst = false
-  else playerFirst = pSpe >= eSpe
+  // Importar dinámicamente dependencias asíncronas para evitar dependencias circulares
+  const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+  const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
 
-  const queue: { source: 'player' | 'enemy'; action: () => Promise<void> }[] = []
-  if (playerFirst) {
-    queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
-    if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })
-  } else {
-    if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })
-    queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
-  }
-
-  console.log('[executeTurn] Queue initialized:', queue.map(q => q.source))
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
-  
-  while (queue.length > 0) {
-    console.log('[executeTurn] Loop iteration start, queue length:', queue.length)
+  if (showdownWorker) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
-    const currentAction = queue.shift()
-    if (!currentAction) {
-      console.log('[executeTurn] No current action, breaking')
-      break
-    }
 
-    console.log('[executeTurn] Running action:', currentAction.source)
+    const p1Choice = `move ${move.id}`;
+    const p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
+
+    logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice}`);
+
+    const result = await executeTurnInWorker(p1Choice, p2Choice)
+
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-    try {
-      await currentAction.action()
-      console.log('[executeTurn] Action completed successfully:', currentAction.source)
-    } catch (e) {
-      console.error('[executeTurn] Error running action:', currentAction.source, e)
+
+    // Reproducir todos los logs del simulador asíncronamente
+    const filteredLogs = filterShowdownLogs(result.logs);
+    for (const logLine of filteredLogs) {
+      await parseShowdownLogLine(store, logLine);
     }
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
@@ -114,23 +92,13 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
       }
-      break;
     }
 
-    if (store.activeBattle.value?.over) {
-      console.log('[executeTurn] Battle is over, breaking')
-      break;
-    }
-
-    if (queue.length > 0) {
-      console.log('[executeTurn] Queue has more items, transitioning to EVAL_CONTINUE')
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
-      await sleep(400)
-    } else {
-      console.log('[executeTurn] Queue is empty, finishing loop')
+    if (result.isOver && store.activeBattle.value) {
+      store.activeBattle.value.over = true;
     }
   }
-  
+
   if (store.activeBattle.value?.over) {
     if (store.activeBattle.value.fled) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
@@ -146,6 +114,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   
   if (store.persistBattle) store.persistBattle()
 }
+
 
 export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   const p = store.activeBattle.value?.player

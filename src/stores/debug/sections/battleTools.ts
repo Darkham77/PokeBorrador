@@ -173,7 +173,7 @@ export function registerBattleTools(debug: DebugSystem) {
           } else {
             // Toggle logic
             poke.status = poke.status === (status as Pokemon['status']) ? null : (status as Pokemon['status'])
-            if (poke.status === 'sleep') poke.sleepTurns = 3
+            if (poke.status === 'slp') poke.sleepTurns = 3
           }
 
           // Force Reactivity

@@ -75,7 +75,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL',
     icon: '☀️',
     visual: 'sun',
-    description: 'Día Soleado:\n▲ Potencia Fuego (x1.5)\n▼ Potencia Agua y Hielo (x0.4)\n⚡ Rayo Solar sin carga',
+    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
     modifiers: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] }
   },
   'heatwave': {
@@ -84,7 +84,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA CALOR',
     icon: '🔥',
     visual: 'heatwave',
-    description: 'Ola de calor extremo:\n▲ Potencia Fuego (x1.5)\n▼ Potencia Agua (x0.4)\n🚫 Inmune a Hielo y Planta (x0)',
+    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
     modifiers: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] }
   },
   'intense_sun': {
@@ -93,7 +93,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL INTENSO',
     icon: '🔆',
     visual: 'intense_sun',
-    description: 'Sol abrasador:\n▲ Potencia Fuego y Planta (x1.5)\n🚫 Inmune a Agua y Hielo (x0)',
+    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
     modifiers: { boost: ['grass', 'fire'], block: ['water', 'ice'] }
   },
 
@@ -104,7 +104,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA',
     icon: '🌧️',
     visual: 'rain',
-    description: 'Lluvia constante:\n▲ Potencia Agua y Bicho (x1.5)\n▼ Potencia Fuego y Roca (x0.4)\n⚡ Trueno 100% precisión',
+    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
     modifiers: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] }
   },
   'storm': {
@@ -113,7 +113,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'TORMENTA',
     icon: '⛈️',
     visual: 'storm',
-    description: 'Tormenta eléctrica:\n▲ Potencia Agua, Eléctrico y Dragón (x1.5)\n🚫 Inmune a Fuego, Volador y Bicho (x0)',
+    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
     modifiers: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] }
   },
   'thunderstorm': {
@@ -122,7 +122,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ELÉCTRICA',
     icon: '🌩️',
     visual: 'thunderstorm',
-    description: 'Tormenta con rayos:\n▲ Potencia Eléctrico y Dragón (x1.5)\n▼ Potencia Roca y Tierra (x0.4)',
+    description: 'Sin efectos en combate.',
     modifiers: { boost: ['electric', 'dragon'], debuff: ['rock', 'ground'] }
   },
   'heavy_rain': {
@@ -131,7 +131,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA FUERTE',
     icon: '☔',
     visual: 'heavy_rain',
-    description: 'Lluvia torrencial:\n▲ Potencia Agua (x1.5)\n🚫 Inmune a Fuego (x0)',
+    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
     modifiers: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] }
   },
 
@@ -142,7 +142,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ARENA',
     icon: '🏜️',
     visual: 'sandstorm',
-    description: 'Tormenta de arena:\n▲ Def. Especial tipo Roca (+50%)\n▼ Daña por turno a no Tierra/Roca/Acero',
+    description: 'Debilita no Tierra/Roca/Acero (1/16 HP por turno)',
     modifiers: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] }
   },
   'dust_storm': {
@@ -151,7 +151,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. POLVO',
     icon: '🌪️',
     visual: 'dust_storm',
-    description: 'Tormenta de polvo:\n▼ Potencia Bicho y Fuego (x0.4)\n🚫 Inmune a Volador (x0)\n▼ Daña por turno',
+    description: 'Debilita no Tierra/Roca/Acero (1/16 HP por turno)',
     modifiers: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
   },
 
@@ -162,7 +162,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEVE',
     icon: '❄️',
     visual: 'snow',
-    description: 'Nevada:\n▲ Defensa tipo Hielo (+50%)\n⚡ Ventisca 100% precisión',
+    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
     modifiers: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] }
   },
   'cold': {
@@ -171,7 +171,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'FRÍO',
     icon: '❄️',
     visual: 'cold',
-    description: 'Ambiente gélido:\n▲ Potencia Hielo (x1.5)\n▼ Potencia Bicho y Planta (x0.4)',
+    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
     modifiers: { boost: ['ice'], debuff: ['grass', 'bug'] }
   },
   'hail': {
@@ -180,7 +180,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'GRANIZO',
     icon: '🌨️',
     visual: 'hail',
-    description: 'Granizada:\n▼ Potencia Fuego, Bicho, Volador y Planta (x0.4)\n▼ Daña por turno a no Hielo',
+    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
     modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },
   'blizzard': {
@@ -189,7 +189,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VENTISCA',
     icon: '🌬️',
     visual: 'blizzard',
-    description: 'Tempestad gélida:\n▲ Potencia Hielo (x1.5)\n🚫 Inmune a Fuego, Planta, Bicho y Volador (x0)\n▼ Daña por turno',
+    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
     modifiers: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] }
   },
   'coldwave': {
@@ -198,7 +198,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA FRÍO',
     icon: '🥶',
     visual: 'coldwave',
-    description: 'Frío extremo:\n▼ Velocidad general (-50%)\n🚫 Inmune a Bicho y Planta (x0)\n▼ Daña por turno',
+    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
     modifiers: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] }
   },
 
@@ -209,7 +209,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEBLA',
     icon: '🌫️',
     visual: 'fog',
-    description: 'Niebla densa:\n▲ Potencia Fantasma y Siniestro (x1.5)\n▼ Precisión de ataques (al 60%)',
+    description: 'Reduce la precisión en Gen 4+ (x0.6).',
     modifiers: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] }
   },
   'mist': {
@@ -218,7 +218,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'BRUMA',
     icon: '💨',
     visual: 'mist',
-    description: 'Bruma mágica (Niebla):\n▲ Potencia Hada y Agua (x1.5)\n▼ Potencia Fuego (x0.4)\n▼ Precisión de ataques (al 60%)',
+    description: 'Reduce la precisión en Gen 4+ (x0.6).',
     modifiers: { boost: ['fairy', 'water'], debuff: ['fire'] }
   },
 
@@ -229,7 +229,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VIENTO',
     icon: '🍃',
     visual: 'wind',
-    description: 'Viento constante:\n▲ Potencia Volador, Bicho y Psíquico (x1.5)\n▼ Potencia Tierra (x0.4)',
+    description: 'Sin efectos en combate.',
     modifiers: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] }
   },
   'strong_winds': {
@@ -238,17 +238,24 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'V. FUERTES',
     icon: '🌀',
     visual: 'strong_winds',
-    description: 'Corrientes Delta:\n▲ Elimina debilidades de Volador\n🚫 Inmune a Bicho y Tierra (x0)',
+    description: 'Sin efectos en combate.',
     modifiers: { boost: ['flying', 'dragon', 'psychic'], block: ['bug', 'ground'] }
   }
 };
 
-/**
- * Converts any environmental weather token to its combat-mechanical equivalent.
- */
 export function getMechanicalWeather(type: string | null | undefined): WeatherMechanical {
-  if (!type) return WEATHER_MECHANICAL.CLEAR;
-  const lower = type.toLowerCase();
+  if (!type || type === 'none') return WEATHER_MECHANICAL.CLEAR;
+  let lower = type.toLowerCase();
+  // Normalizar nombres de climas Showdown
+  if (lower === 'raindance') lower = 'rain';
+  if (lower === 'sunnyday') lower = 'sun';
+  if (lower === 'snow') lower = 'snow';
+  if (lower === 'hail') lower = 'hail';
+  if (lower === 'sandstorm') lower = 'sandstorm';
+  if (lower === 'desolateland') lower = 'intense_sun';
+  if (lower === 'primordialsea') lower = 'heavy_rain';
+  if (lower === 'deltastream') lower = 'strong_winds';
+
   const entry = WEATHER_REGISTRY[lower];
 
   if (!entry) {

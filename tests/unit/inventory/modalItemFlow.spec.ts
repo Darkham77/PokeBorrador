@@ -35,6 +35,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
     getMoveData:         () => ({ pp: BASE_PP, type: 'normal', power: null, accuracy: null }),
     getNatureData:       () => null,
+    getAbilityData:      (name: string) => ({ name, desc: 'Efecto de la habilidad' }),
     getSpeciesAbilities: () => ['Presión', 'Estática'],
     getPokemonData:      () => ({
       baseStats: { hp: 90, atk: 90, def: 85, spa: 125, spd: 90, spe: 100 },
@@ -85,10 +86,10 @@ function makePokemon(): Pokemon {
     hp: 60, maxHp: 100,
     status: null, sleepTurns: 0,
     moves: [
-      { name: 'Carga',        pp: 16, maxPP: 20 },
-      { name: 'Pico Taladro', pp: 13, maxPP: 20 },
-      { name: 'Detección',    pp: 5,  maxPP: 5  },
-      { name: 'Agilidad',     pp: 29, maxPP: 30 },
+      { id: 'charge', name: 'Carga',        pp: 16, maxPP: 20 },
+      { id: 'drillrun', name: 'Pico Taladro', pp: 13, maxPP: 20 },
+      { id: 'detect', name: 'Detección',    pp: 5,  maxPP: 5  },
+      { id: 'agility', name: 'Agilidad',     pp: 29, maxPP: 30 },
     ],
     atk: 90, def: 85, spa: 125, spd: 90, spe: 100,
     type: 'electric', nature: 'Fuerte', ability: 'Presión',
@@ -288,12 +289,14 @@ describe('NaturePatchModal — integración', () => {
     const allBtns = wrapper.findAll('.nature-btn')
     const targetBtn = allBtns.find(b => !b.text().includes('Fuerte'))
     expect(targetBtn).toBeDefined()
-    const chosenNature = targetBtn!.find('.n-name').text()
+    const chosenNatureName = targetBtn!.find('.n-name').text()
 
     await targetBtn!.trigger('click')
     await flushPromises()
 
-    expect(gameStore.state.team[0]!.nature).toBe(chosenNature)
+    const { NATURE_DATA } = await import('@/data/battle/natures')
+    const chosenNatureKey = Object.keys(NATURE_DATA).find(k => (NATURE_DATA as unknown as Record<string, { name: string }>)[k]?.name === chosenNatureName) || chosenNatureName
+    expect(gameStore.state.team[0]!.nature).toBe(chosenNatureKey)
     expect((gameStore.state.inventory as Record<string, number>)['nature_patch']).toBeUndefined()
     expect(uiStore.isNaturePatchOpen).toBe(false)
   })

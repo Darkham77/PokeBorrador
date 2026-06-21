@@ -11941,5 +11941,36 @@ export const POKEMON_DB = {
         "pp": 10
       }
     ]
+  },
+  "sunflora": {
+    "name": "Sunflora",
+    "type": "grass",
+    "hp": 75,
+    "atk": 75,
+    "def": 55,
+    "spa": 105,
+    "spd": 85,
+    "spe": 30,
+    "catchRate": 120,
+    "learnset": [
+      {
+        "lv": 1,
+        "id": "tackle",
+        "name": "Placaje",
+        "pp": 35
+      },
+      {
+        "lv": 4,
+        "id": "growl",
+        "name": "Gruñido",
+        "pp": 40
+      },
+      {
+        "lv": 10,
+        "id": "absorb",
+        "name": "Absorber",
+        "pp": 25
+      }
+    ]
   }
 };

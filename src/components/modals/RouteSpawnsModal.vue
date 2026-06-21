@@ -302,7 +302,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value as unknow
                       size="ssm"
                       class="inline-type-tag"
                     />
-                    <span v-else-if="!line.label">{{ segment.text }}</span>
+                    <span v-else>{{ segment.text }}</span>
                   </template>
                 </div>
               </div>

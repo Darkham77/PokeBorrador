@@ -1,5 +1,6 @@
 // fallow-ignore-file security-sink typescript-any
 import { Battle, ID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 
 let currentBattle: Battle | null = null;
 
@@ -21,13 +22,17 @@ self.onmessage = (event: MessageEvent) => {
         ];
 
         currentBattle = new Battle({ 
-          formatid: 'gen3customgame' as ID,
+          formatid: `gen${ACTIVE_GENERATION}customgame` as ID,
           seed: seedArr.join(',') as unknown as `${number},${string}`
         });
 
         // Configurar los dos jugadores
         currentBattle.setPlayer('p1', { name: p1.name, team: p1.team });
         currentBattle.setPlayer('p2', { name: p2.name, team: p2.team });
+
+        if (payload.weather && payload.weather !== 'none') {
+          currentBattle.field.setWeather(payload.weather, 'debug' as const);
+        }
 
         // Enviar logs iniciales de inicio de combate
         const initLogs = getNewLogs();

@@ -2,11 +2,13 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import type { useBattleStore } from '@/stores/battle/battle'
 import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP, STATUS_NAME_MAP } from '@/logic/battle/battleUiUtils'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
-import { getDayCycle } from '@/logic/utils/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getStatMultiplier } from '@/logic/battle/battleEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { VOLATILE_STATUS_LIST, CYCLE_WEATHER_DEFAULTS } from '@/data/battle/volatileStatusMap'
+import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap'
+import { toID } from '@pkmn/sim'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
 
 function formatAbilityDescription(desc: string): string {
   const lines: string[] = []
@@ -133,55 +135,31 @@ export function useCombatantStatus(
     // 0. Habilidad Base (MANDATORIA)
     if (target.ability) {
       const ab = target.ability
+      const abId = toID(ab)
       const weather = battleStore.state?.weather?.type
       const mechWeather = getMechanicalWeather(weather)
-      const cycle = getDayCycle()
       
       let isAbBoosted = false
-      const abEntry = pokemonDataProvider.getAbilityData(ab)
+      let abEntry = null
+      try {
+        abEntry = pokemonDataProvider.getAbilityData(ab)
+      } catch (_err) {
+        // Fallback gracefully for unknown or custom abilities
+      }
       const abDescription = abEntry?.desc || 'Sin descripción disponible.'
 
-      const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
-      const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
+      const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN
+      const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN
 
       let statusMsg = ''
-      if (ab === 'Clorofila' && isSunActive) { isAbBoosted = true; statusMsg = ' (Activa por Sol/Día)' }
-      if (ab === 'Nado rápido' && isRainActive) { isAbBoosted = true; statusMsg = ' (Activa por Lluvia/Noche)' }
-      if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; statusMsg = ' (Activa por Arena)' }
-      if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; statusMsg = ' (Activa por Nieve)' }
+      if (abId === 'chlorophyll' && isSunActive) { isAbBoosted = true; statusMsg = ' (Activa por Sol)' }
+      if (abId === 'swiftswim' && isRainActive) { isAbBoosted = true; statusMsg = ' (Activa por Lluvia)' }
+      if (abId === 'sandrush' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; statusMsg = ' (Activa por Arena)' }
+      if (abId === 'slushrush' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; statusMsg = ' (Activa por Nieve)' }
 
-      let formattedDesc = abDescription
-      const lowerAb = ab.toLowerCase()
-      if (lowerAb === 'espesura') {
-        formattedDesc = '▲ Potencia Planta (+50%) a 1/3 HP o menos'
-      } else if (lowerAb === 'mar llamas') {
-        formattedDesc = '▲ Potencia Fuego (+50%) a 1/3 HP o menos'
-      } else if (lowerAb === 'torrente') {
-        formattedDesc = '▲ Potencia Agua (+50%) a 1/3 HP o menos'
-      } else if (lowerAb === 'enjambre') {
-        formattedDesc = '▲ Potencia Bicho (+50%) a 1/3 HP o menos'
-      } else if (lowerAb === 'clorofila') {
-        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Sol${statusMsg}`
-      } else if (lowerAb === 'nado rápido') {
-        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Lluvia${statusMsg}`
-      } else if (lowerAb === 'lluvia ligera') {
-        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Lluvia/Noche${statusMsg}`
-      } else if (lowerAb === 'ráfaga') {
-        formattedDesc = '▲ Velocidad triplica (x3.0) a 1/3 HP o menos'
-      } else if (lowerAb === 'poder solar') {
-        formattedDesc = '▲ At. Especial sube (+50%) bajo Sol\n▼ Pierde HP por turno bajo Sol'
-      } else if (lowerAb === 'gloria' || lowerAb === 'agallas') {
-        formattedDesc = '▲ Ataque sube (+50%) con problema de estado'
-      } else if (lowerAb === 'levitación') {
-        formattedDesc = '🚫 Inmune a ataques tipo Tierra'
-      } else if (lowerAb === 'absorbe fuego') {
-        formattedDesc = '🚫 Inmune a ataques tipo Fuego\n▲ Potencia ataques de Fuego al recibir uno'
-      } else if (lowerAb === 'absorbe agua') {
-        formattedDesc = '🚫 Inmune a ataques tipo Agua\n▲ Recupera 25% HP al recibir uno'
-      } else if (lowerAb === 'absorbe voltio') {
-        formattedDesc = '🚫 Inmune a ataques tipo Eléctrico\n▲ Recupera 25% HP al recibir uno'
-      } else {
-        formattedDesc = formatAbilityDescription(abDescription)
+      let formattedDesc = formatAbilityDescription(abDescription)
+      if (statusMsg) {
+        formattedDesc += `\n${statusMsg}`
       }
 
       const abText = `HABILIDAD - ${String(abEntry?.name || ab).toUpperCase()}:\n${formattedDesc}`
@@ -225,17 +203,15 @@ export function useCombatantStatus(
       if (stages.spikes > 0) list.push({ icon: '📍', text: `PÚAS: Daña a los Pokémon que entran al campo (${stages.spikes} capas).` })
     }
 
-    // 3. Clima y Ciclo
+    // 3. Clima
     const weather = battleStore.state?.weather
     const types: string[] = []
     if (target.type) types.push(target.type.toLowerCase())
     if (target.type2) types.push(target.type2.toLowerCase())
-    const moveTypes = (target.moves || []).map((m) => (m?.type || '').toLowerCase())
     const moveNames = (target.moves || []).map((m) => (m?.name || '').toLowerCase())
-    const cycle = getDayCycle()
 
     let weatherAffects = false
-    if (weather && weather.type !== 'clear') {
+    if (weather && weather.type !== 'clear' && weather.type !== 'none') {
       const mechWeather = getMechanicalWeather(weather.type)
       const visualWeather = weather.type
       
@@ -258,33 +234,19 @@ export function useCombatantStatus(
       }
     }
 
-    let cycleAffects = false
-    if (cycle === 'morning' || cycle === 'day') {
-      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n) => sunMoves.includes(n))) {
-        cycleAffects = true
-      }
-    } else if (cycle === 'dusk' || cycle === 'night') {
-      if (types.includes('water') || moveTypes.includes('water')) {
-        cycleAffects = true
-      }
-    }
-
     if (battleStore.state?.isGym) {
       return list
     }
 
-    if (weather && weather.type !== 'clear' && weatherAffects) {
-      const visualType = weather.visual || weather.type
-      const mechType = getMechanicalWeather(weather.type)
-      const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType as WeatherMechanical]
-      if (config) {
-        list.push({ icon: config.icon, text: `${config.label}: ${config.description}` })
-      }
-    } else if (cycleAffects) {
-      const cycleData = (CYCLE_WEATHER_DEFAULTS as Record<string, { icon: string; label: string; desc: string }>)[cycle]
-      if (cycleData) {
-        list.push({ icon: cycleData.icon, text: `HORARIO (${cycleData.label}): ${cycleData.desc}` })
+    if (weather && weather.type !== 'clear' && weather.type !== 'none' && weatherAffects) {
+      const desc = getWeatherCombatDescription(weather.type, ACTIVE_GENERATION)
+      if (desc && desc !== 'Sin efectos en combate.') {
+        const visualType = weather.visual || weather.type
+        const mechType = getMechanicalWeather(weather.type)
+        const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType as WeatherMechanical]
+        if (config) {
+          list.push({ icon: config.icon, text: `${config.label}: ${desc}` })
+        }
       }
     }
 

@@ -36,7 +36,7 @@ export function applyMoveEffect(effect: string | null | undefined, src: Pokemon,
       else if (tgt.type === 'poison' || tgt.type === 'steel' || tgt.type2 === 'poison' || tgt.type2 === 'steel') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'poison'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info', tgt);
+        tgt.status = 'psn'; addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info', tgt);
       }
       break;
     case 'paralyze':
@@ -44,7 +44,7 @@ export function applyMoveEffect(effect: string | null | undefined, src: Pokemon,
       else if (tgt.type === 'electric' || tgt.type2 === 'electric') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'paralysis'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
+        tgt.status = 'par'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
       }
       break;
     case 'burn':
@@ -52,13 +52,13 @@ export function applyMoveEffect(effect: string | null | undefined, src: Pokemon,
       else if (tgt.type === 'fire' || tgt.type2 === 'fire') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'burn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info', tgt);
+        tgt.status = 'brn'; addLogFn(`¡${tgt.name} fue quemado!`, 'log-info', tgt);
       }
       break;
     case 'sleep':
       if (tgt.status) { addLogFn('¡Pero falló!', 'log-info', src); }
       else {
-        tgt.status = 'sleep';
+        tgt.status = 'slp';
         tgt.sleepTurns = 1 + Math.floor(Math.random() * 3);
         addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info', tgt);
       }

@@ -11,6 +11,9 @@
  */
 
 import type { MoveBaseData } from '../../types/system/database.ts';
+import { Dex, toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { MOVE_TRANSLATIONS_ES } from '../../data/battle/moves.ts';
 
 // ── Type Effectiveness ────────────────────────────────────────────────────────
 
@@ -159,6 +162,23 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
 
   const desc = MOVE_EFFECT_DESCRIPTIONS[md.effect ?? ''];
   if (desc) return desc;
+
+  try {
+    if (!md.id) {
+      throw new Error("ID de movimiento no proporcionado en getMoveDescriptionPure");
+    }
+    const cleanId = toID(md.id);
+    const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+    if (translated.desc) return translated.desc;
+
+    const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
+    if (move && move.exists) {
+      return move.desc || move.shortDesc || 'Causa daño al oponente sin efectos secundarios adicionales.';
+    }
+  } catch {
+    // Graceful fallback
+  }
+
   if (md.cat === 'status') return 'Un movimiento que causa un efecto de estado o alteración.';
   return 'Causa daño al oponente sin efectos secundarios adicionales.';
 }

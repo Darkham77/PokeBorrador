@@ -5,7 +5,11 @@ import { useEvolutionStore } from '@/stores/evolution';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { gsap } from 'gsap';
+import { gameBus } from '@/logic/events/gameBus';
 
+defineOptions({
+  inheritAttrs: false
+});
 
 defineEmits<{
   (e: 'close'): void;
@@ -133,9 +137,10 @@ const startSequence = () => {
     step.value = 'transformed';
     currentShowingSprite.value = 'to';
     
-    // Disparar sonido de éxito de evolución
-    const win = window as unknown as { playSound?: (s: string) => void };
-    win.playSound?.('evolution_complete');
+    // Reproducir grito del Pokémon evolucionado
+    if (evolutionStore.targetId) {
+      gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
+    }
   }, '+=0.15');
 
   // 4. Glow Burst, Scale & Aura Activation

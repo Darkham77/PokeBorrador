@@ -146,7 +146,7 @@ const animateSpritesheet = () => {
   if (!imgEl) return
 
   // Si está congelado o dormido, forzar primer frame del idle y detener animación
-  if (props.pokemon?.status === 'freeze' || props.pokemon?.status === 'sleep') {
+  if (props.pokemon?.status === 'frz' || props.pokemon?.status === 'slp') {
     currentMode.value = 'idle'
     const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
     if (imgEl) {

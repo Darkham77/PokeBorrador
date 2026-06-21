@@ -7,8 +7,10 @@ import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
 import { useGameStore } from '@/stores/game'
-import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
+import { getRouteWeather, getWeatherMultiplier, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getEncounterPool } from '@/logic/encounters/encounters'
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
@@ -91,10 +93,9 @@ const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps as unk
 
 const weatherTooltipDescription = computed(() => {
   const weatherKey = (computedWeather.value as string || 'clear').toLowerCase()
-  const registryEntry = WEATHER_REGISTRY[weatherKey]
-  const weatherDescText = registryEntry?.description ? `\n---\nEFECTOS EN COMBATE:\n${registryEntry.description}` : ''
-  const baseModifiers = getWeatherModifiersDescription(computedWeather.value)
-  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}${baseModifiers ? `\n---\nMODIFICADORES DE TIPO:${baseModifiers}` : ''}`
+  const desc = getWeatherCombatDescription(weatherKey, ACTIVE_GENERATION)
+  const weatherDescText = desc && desc !== 'Sin efectos en combate.' ? `\n---\nEFECTOS EN COMBATE:\n${desc}` : ''
+  const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}`
   if (!debugStore.isAdminOrOffline) return baseDesc
 
   const locId = battle.value?.locationId || 'route1'

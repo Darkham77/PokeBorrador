@@ -15,7 +15,10 @@ import {
   type PureMove,
   type PureBattleWeather
 } from '../../../src/logic/battle/battleMath.ts';
-
+import { calculateMoveAccuracy } from '../../../src/logic/battle/moveTooltipMath.ts';
+import { mapVisualToOfficialWeather } from '../../../src/logic/weather/weatherGenerationProvider.ts';
+import { getMechanicalWeather } from '../../../src/logic/weather/weatherRegistry.ts';
+import type { Move } from '../../../src/types/pokemon/pokemon.ts';
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
 const CHARIZARD: PurePokemon = {
@@ -157,10 +160,43 @@ describe('Battle Math Core (Weather & Cycles)', () => {
     });
 
     it('Fog should reduce accuracy to 0.6x', () => {
-      // Note: Accuracy is tested in checkHit, but damage formulas also check it for tooltips
-      // Here we just verify the mechanical weather mapping indirectly or check if we have a test for checkHit
-      // Since battleMath.ts doesn't export checkHit for pure usage easily, we trust the mapping for now
-      // OR we can add a test if we export it.
+      // In Gen 3, visual 'fog' maps to 'none' official weather. No reduction.
+      const officialWeatherGen3 = mapVisualToOfficialWeather('fog', 3);
+      expect(officialWeatherGen3).toBe('none');
+      const mechWeatherGen3 = getMechanicalWeather(officialWeatherGen3);
+      expect(mechWeatherGen3).toBe('clear');
+      
+      const accGen3 = calculateMoveAccuracy(
+        { id: 'tackle' } as unknown as Move,
+        { type: officialWeatherGen3, turns: 5 },
+        mechWeatherGen3,
+        'day',
+        100,
+        0,
+        0
+      );
+      expect(accGen3.final).toBe(100);
+      expect(accGen3.list.length).toBe(0);
+
+      // In Gen 4+, visual 'fog' maps to 'fog' official weather. Reduces accuracy to 0.6x (60%).
+      const officialWeatherGen4 = mapVisualToOfficialWeather('fog', 4);
+      expect(officialWeatherGen4).toBe('fog');
+      const mechWeatherGen4 = getMechanicalWeather(officialWeatherGen4);
+      expect(mechWeatherGen4).toBe('fog');
+
+      const accGen4 = calculateMoveAccuracy(
+        { id: 'tackle' } as unknown as Move,
+        { type: officialWeatherGen4, turns: 5 },
+        mechWeatherGen4,
+        'day',
+        100,
+        0,
+        0
+      );
+      expect(accGen4.final).toBe(60);
+      expect(accGen4.list.length).toBeGreaterThan(0);
+      expect(accGen4.list[0]!.label).toContain('Niebla/Bruma');
+      expect(accGen4.list[0]!.mult).toBe(0.6);
     });
 
     it('Mist should be mapped to FOG mechanical group', () => {

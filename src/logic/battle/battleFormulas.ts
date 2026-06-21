@@ -4,6 +4,8 @@
  * 
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
+import { toID } from '@pkmn/sim';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
@@ -148,28 +150,30 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   const isSun = !isGym && (mechWeather === 'sun' || (mechWeather === 'clear' && (activeCycle === 'day' || activeCycle === 'morning')));
   const isRain = !isGym && (mechWeather === 'rain' || (mechWeather === 'clear' && (activeCycle === 'night' || activeCycle === 'dusk')));
 
+  const abId = ab ? toID(ab) : '';
   if (statKey === 'atk') {
-    if (ab === 'hugepower' || ab === 'purepower' || ab === 'Potencia' || ab === 'Energía pura') abilityMult = 2;
-    else if ((ab === 'guts' || ab === 'Agallas') && pokemon.status) abilityMult = 1.5;
+    if (abId === 'hugepower' || abId === 'purepower') abilityMult = 2;
+    else if (abId === 'guts' && pokemon.status) abilityMult = 1.5;
   }
   if (statKey === 'def') {
-    if ((ab === 'marvelscale' || ab === 'Escama especial') && pokemon.status) abilityMult = 1.5;
+    if (abId === 'marvelscale' && pokemon.status) abilityMult = 1.5;
   }
   if (statKey === 'spa') {
-    if ((ab === 'solarpower' || ab === 'Poder solar') && isSun) abilityMult = 1.5;
+    if (abId === 'solarpower' && isSun) abilityMult = 1.5;
   }
   if (statKey === 'spe') {
-    if ((ab === 'chlorophyll' || ab === 'Clorofila') && isSun) abilityMult = 2;
-    else if ((ab === 'swiftswim' || ab === 'Nado rápido') && isRain) abilityMult = 2;
-    else if ((ab === 'sandrush' || ab === 'Ímpetu arena') && mechWeather === 'sandstorm') abilityMult = 2;
-    else if ((ab === 'slushrush' || ab === 'Quitanieves') && (mechWeather === 'snow' || mechWeather === 'hail')) abilityMult = 2;
+    if (abId === 'chlorophyll' && isSun) abilityMult = 2;
+    else if (abId === 'swiftswim' && isRain) abilityMult = 2;
+    else if (abId === 'sandrush' && mechWeather === 'sandstorm') abilityMult = 2;
+    else if (abId === 'slushrush' && (mechWeather === 'snow' || mechWeather === 'hail')) abilityMult = 2;
   }
 
   let statusMult = 1;
-  if (statKey === 'spe' && pokemon.status === 'paralysis') {
-    statusMult = 0.25;
+  if (statKey === 'spe' && pokemon.status === 'par') {
+    // Parálisis en Gen 3 a 6 reduce a 1/4 (0.25). En Gen 7+ a 1/2 (0.5).
+    statusMult = ACTIVE_GENERATION <= 6 ? 0.25 : 0.5;
   }
-  if (statKey === 'atk' && pokemon.status === 'burn' && ab !== 'Agallas') {
+  if (statKey === 'atk' && pokemon.status === 'brn' && abId !== 'guts') {
     statusMult = 0.5;
   }
 

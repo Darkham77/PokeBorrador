@@ -20,7 +20,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'burn';
+    tgt.status = 'brn';
     addLogFn(`¡${tgt.name} fue quemado!`, 'log-info', tgt);
   },
   
@@ -30,7 +30,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'paralysis';
+    tgt.status = 'par';
     addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
   },
   
@@ -44,7 +44,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'poison';
+    tgt.status = 'psn';
     addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info', tgt);
   },
   
@@ -58,7 +58,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'poison';
+    tgt.status = 'tox';
     tgt.badPoison = 1;
     addLogFn(`¡${tgt.name} fue gravemente envenenado!`, 'log-info', tgt);
   },
@@ -69,7 +69,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} tiene ${tgt.ability} y no puede dormir!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'sleep';
+    tgt.status = 'slp';
     tgt.sleepTurns = 1 + Math.floor(Math.random() * 3);
     addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info', tgt);
   },
@@ -80,7 +80,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'freeze';
+    tgt.status = 'frz';
     addLogFn(`¡${tgt.name} fue congelado!`, 'log-info', tgt);
   },
   

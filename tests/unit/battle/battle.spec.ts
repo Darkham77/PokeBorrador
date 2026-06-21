@@ -90,7 +90,7 @@ describe('Battle Engine', () => {
     });
 
     it('Paralysis should reduce speed by 50%', () => {
-      const p = { spe: 100, status: 'paralysis' } as unknown as Pokemon;
+      const p = { spe: 100, status: 'par' } as unknown as Pokemon;
       expect(getEffectiveSpeed(p, { spe: 0 }, { weather: null })).toBe(50);
     });
   });

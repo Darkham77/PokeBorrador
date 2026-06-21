@@ -129,6 +129,60 @@ const getKoColorClass = (text?: string) => {
             {{ activeDetails.critChance.value }}%
           </span>
         </div>
+
+        <!-- Attacker Stat Box -->
+        <div
+          v-if="activeDetails.attackerStat"
+          class="stat-box"
+        >
+          <span class="stat-lbl">{{ activeDetails.attackerStat.name }}</span>
+          <span
+            class="stat-val"
+            :class="activeDetails.attackerStat.class"
+          >
+            <template v-if="activeDetails.attackerStat.base === activeDetails.attackerStat.final">
+              {{ activeDetails.attackerStat.base }}
+            </template>
+            <template v-else>
+              {{ activeDetails.attackerStat.base }} ➔ {{ activeDetails.attackerStat.final }}
+              <span
+                v-if="activeDetails.attackerStat.stage > 0"
+                class="arrow up"
+              >▲</span>
+              <span
+                v-if="activeDetails.attackerStat.stage < 0"
+                class="arrow down"
+              >▼</span>
+            </template>
+          </span>
+        </div>
+
+        <!-- Defender Stat Box -->
+        <div
+          v-if="activeDetails.defenderStat"
+          class="stat-box"
+        >
+          <span class="stat-lbl">{{ activeDetails.defenderStat.name }}</span>
+          <span
+            class="stat-val"
+            :class="activeDetails.defenderStat.class"
+          >
+            <template v-if="activeDetails.defenderStat.base === activeDetails.defenderStat.final">
+              {{ activeDetails.defenderStat.base }}
+            </template>
+            <template v-else>
+              {{ activeDetails.defenderStat.base }} ➔ {{ activeDetails.defenderStat.final }}
+              <span
+                v-if="activeDetails.defenderStat.stage < 0"
+                class="arrow up"
+              >▲</span>
+              <span
+                v-if="activeDetails.defenderStat.stage > 0"
+                class="arrow down"
+              >▼</span>
+            </template>
+          </span>
+        </div>
       </div>
 
       <!-- Status Effect Details -->

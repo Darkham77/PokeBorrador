@@ -9,7 +9,7 @@ import {
 } from '../../../src/logic/battle/battleUiUtils.ts';
 
 describe('Battle Status UI Mapping Integrity', () => {
-  const expectedStatuses = ['burn', 'poison', 'sleep', 'paralysis', 'freeze'];
+  const expectedStatuses = ['brn', 'psn', 'slp', 'par', 'frz', 'tox'];
 
   it('contains mapping for every expected status in STATUS_EMOJI_MAP', () => {
     expectedStatuses.forEach(status => {

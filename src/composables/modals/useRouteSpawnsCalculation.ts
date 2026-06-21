@@ -1,6 +1,8 @@
 // fallow-ignore-file security-sink
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
+import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { GAME_RATIOS } from '@/data/system/constants'
 import { useGameStore } from '@/stores/game'
@@ -48,7 +50,12 @@ export function useRouteSpawnsCalculation(
   })
 
   const weatherDetails = computed(() => {
-    return WEATHER_REGISTRY[props.weather] || null
+    const raw = WEATHER_REGISTRY[props.weather] || null
+    if (!raw) return null
+    return {
+      ...raw,
+      description: getWeatherCombatDescription(props.weather, ACTIVE_GENERATION)
+    }
   })
 
   const SPANISH_TYPE_MAP: Record<string, string> = {
@@ -76,39 +83,45 @@ export function useRouteSpawnsCalculation(
     const desc = weatherDetails.value?.description || ''
     if (!desc) return []
 
-    const sentences = desc.split(/\.\s+/).map(s => s.trim()).filter(Boolean)
+    const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
     const typeWords = Object.keys(SPANISH_TYPE_MAP)
     const regex = new RegExp(`\\b(${typeWords.join('|')})\\b`, 'gi')
-
     return sentences.map(sentence => {
-      const cleanSentence = sentence.endsWith('.') ? sentence : `${sentence}.`
-      const lowerSentence = cleanSentence.toLowerCase()
+      // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
+      const cleanSentence = sentence.endsWith('.') ? sentence : sentence
+      const currentSentence = cleanSentence.replace(/^[▲▼•]\s*/u, '').trim()
+      const lowerSentence = currentSentence.toLowerCase()
 
       let typeClass = ''
       let icon = ''
       let label = ''
-      let restOfSentence = cleanSentence
+      let restOfSentence = currentSentence
 
       if (lowerSentence.startsWith('potencia')) {
         typeClass = 'boost'
         icon = '▲ '
         label = 'POTENCIA:'
-        restOfSentence = cleanSentence.substring(8).trim()
+        restOfSentence = currentSentence.substring(8).trim()
       } else if (lowerSentence.startsWith('debilita')) {
         typeClass = 'debuff'
         icon = '▼ '
         label = 'DEBILITA:'
-        restOfSentence = cleanSentence.substring(8).trim()
+        restOfSentence = currentSentence.substring(8).trim()
       } else if (lowerSentence.startsWith('penaliza')) {
         typeClass = 'debuff'
         icon = '▼ '
         label = 'PENALIZA:'
-        restOfSentence = cleanSentence.substring(8).trim()
+        restOfSentence = currentSentence.substring(8).trim()
       } else if (lowerSentence.startsWith('bloquea')) {
         typeClass = 'block'
         icon = 'block'
         label = 'BLOQUEA:'
-        restOfSentence = cleanSentence.substring(7).trim()
+        restOfSentence = currentSentence.substring(7).trim()
+      } else if (lowerSentence.startsWith('efecto:')) {
+        typeClass = 'effect'
+        icon = '⚡ '
+        label = 'EFECTO:'
+        restOfSentence = currentSentence.substring(7).trim()
       }
 
       const parts = restOfSentence.split(regex)

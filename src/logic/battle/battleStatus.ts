@@ -9,11 +9,12 @@ import type { BattleContext } from '@/types/battle/battleContext'
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
   const icons: Record<string, string> = {
-    burn: '🔥',
-    poison: '☠️',
-    paralyze: '⚡',
-    sleep: '💤',
-    freeze: '🧊'
+    brn: '🔥',
+    psn: '☠️',
+    par: '⚡',
+    slp: '💤',
+    frz: '🧊',
+    tox: '☠️'
   };
   return icons[status] || '';
 }
@@ -50,7 +51,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
               if (pokemon.ability === 'Insomnio' || pokemon.ability === 'Espíritu Vital') {
                 addLogFn(`¡La habilidad de ${pokemon.name} evitó quedarse dormido!`, 'log-info', pokemon);
               } else {
-                pokemon.status = 'sleep';
+                pokemon.status = 'slp';
                 pokemon.sleepTurns = 1 + Math.floor(Math.random() * 3);
                 addLogFn(`¡${pokemon.name} se quedó dormido por el Bostezo!`, 'log-info', pokemon);
                 if (ctx.animations?.handleBlinkRequest) {
@@ -141,7 +142,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
   const logCls = role === 'player' ? 'log-enemy' : role === 'enemy' ? 'log-player' : 'log-info';
   
   switch (pokemon.status) {
-    case 'burn': {
+    case 'brn': {
       const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
       pokemon.hp = Math.max(0, pokemon.hp - dmg);
       addLogFn(`¡${pokemon.name} sufre quemaduras! (-${dmg} HP)`, logCls, pokemon);
@@ -150,9 +151,10 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
       }
       return true;
     }
-    case 'poison': {
+    case 'psn':
+    case 'tox': {
       let dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
-      if (pokemon.badPoison) {
+      if (pokemon.status === 'tox' && pokemon.badPoison) {
         dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / 16));
         pokemon.badPoison++;
       }

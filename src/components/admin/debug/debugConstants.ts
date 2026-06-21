@@ -32,11 +32,11 @@ export const DEBUG_SOUNDS: DebugItem[] = [
 ]
 
 export const DEBUG_STATUS_CONDITIONS: DebugItem[] = [
-  { id: 'burn', label: 'QUEMADO', icon: '🔥' },
-  { id: 'poison', label: 'ENVENENADO', icon: '☠️' },
-  { id: 'paralysis', label: 'PARALIZADO', icon: '⚡' },
-  { id: 'sleep', label: 'DORMIDO', icon: '💤' },
-  { id: 'freeze', label: 'CONGELADO', icon: '🧊' },
+  { id: 'brn', label: 'QUEMADO', icon: '🔥' },
+  { id: 'psn', label: 'ENVENENADO', icon: '☠️' },
+  { id: 'par', label: 'PARALIZADO', icon: '⚡' },
+  { id: 'slp', label: 'DORMIDO', icon: '💤' },
+  { id: 'frz', label: 'CONGELADO', icon: '🧊' },
   { id: 'null', label: 'LIMPIAR', icon: '✨' }
 ]
 

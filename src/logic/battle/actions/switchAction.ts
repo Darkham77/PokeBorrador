@@ -18,6 +18,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   const oldPoke = activeBattle.value.player
   
   if (oldPoke && oldPoke.uid === newPoke.uid) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
 
@@ -78,37 +79,112 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   persistBattle()
   
   if (typeof isForced !== 'undefined' && !isForced) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-    await runEnemyAction(ctx)
-    
-    if (activeBattle.value?.over) {
-      if (activeBattle.value.fled) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-        if (animations?.awaitTween) {
-          await animations.awaitTween('escape-enemy')
-        } else {
-          await sleep(800)
-        }
-        await ctx.endBattle(false, true)
+    const { showdownWorker, executeTurnInWorker } = await import('../orchestrator.ts')
+    if (showdownWorker) {
+      const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
+      const { decideEnemyMove } = await import('../ai/battleAI.ts')
+
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
+
+      const active = activeBattle.value
+      if (!active || !active.enemy || !active.player) return
+
+      const p1Choice = `switch ${teamIndex + 1}`
+      const isWild = !active.isTrainer && !active.isGym
+      let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild)
+      if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
+        eMove = active.enemy.lastMove
       }
-      return
-    }
+      const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
 
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+      const result = await executeTurnInWorker(p1Choice, p2Choice)
 
-    if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-      await handleFaint('player')
-      return
-    }
-    if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-      await handleFaint('enemy')
-      return
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+
+      const filteredLogs = filterShowdownLogs(result.logs)
+      for (const logLine of filteredLogs) {
+        // Ignorar la línea de switch del propio jugador ya que ejecutamos la animación visualmente arriba
+        if (logLine.startsWith('|switch|p1a:')) {
+          continue
+        }
+        await parseShowdownLogLine(ctx, logLine)
+      }
+
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+      if (activeBattle.value?.over) {
+        if (activeBattle.value.fled) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+          if (animations?.awaitTween) {
+            await animations.awaitTween('escape-enemy')
+          } else {
+            await sleep(800)
+          }
+          await ctx.endBattle(false, true)
+        }
+        return
+      }
+
+      const playerFainted = activeBattle.value?.player && activeBattle.value.player.hp <= 0
+      const enemyFainted = activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0
+
+      if (playerFainted || enemyFainted) {
+        if (playerFainted && enemyFainted) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+          await handleFaint('player')
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+          await handleFaint('enemy')
+        } else if (playerFainted) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+          await handleFaint('player')
+          return
+        } else {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+          await handleFaint('enemy')
+          return
+        }
+      }
+
+      if (result.isOver && activeBattle.value) {
+        activeBattle.value.over = true
+      }
+    } else {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+      await runEnemyAction(ctx)
+      
+      if (activeBattle.value?.over) {
+        if (activeBattle.value.fled) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+          if (animations?.awaitTween) {
+            await animations.awaitTween('escape-enemy')
+          } else {
+            await sleep(800)
+          }
+          await ctx.endBattle(false, true)
+        }
+        return
+      }
+
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+      if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+        await handleFaint('player')
+        return
+      }
+      if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+        await handleFaint('enemy')
+        return
+      }
     }
   } else {
-    // Si es un cambio forzado (por debilitación), debemos asegurar que la FSM
-    // vuelva al estado de combate activo antes de transicionar a WAIT_INPUT
+    // Si es un cambio forzado (por debilitación)
+    const { showdownWorker, executeTurnInWorker } = await import('../orchestrator.ts')
+    if (showdownWorker) {
+      await executeTurnInWorker(`switch ${teamIndex + 1}`)
+    }
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE)
   }
   

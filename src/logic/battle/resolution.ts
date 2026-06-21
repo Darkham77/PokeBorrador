@@ -193,6 +193,14 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   active.over = true
   ctx.faintedSides.value.clear()
 
+  // Terminar el Web Worker de Showdown
+  import('./orchestrator.ts').then(({ showdownWorker }) => {
+    if (showdownWorker) {
+      showdownWorker.terminate();
+    }
+  });
+
+
   // Limpiar todos los estados volátiles del equipo al terminar la batalla
   if (ctx.gs.state.team) {
     ctx.gs.state.team.forEach((p: Pokemon | null) => {

@@ -105,7 +105,7 @@ describe('Shop & Healing Logic', () => {
         id: 'pikachu',
         hp: 10,
         maxHp: 50,
-        status: 'paralysis',
+        status: 'par',
         moves: [{ id: 'thunderbolt', name: 'Thunderbolt', pp: 0, maxPP: 15 }]
       }] as unknown as Pokemon[]
       

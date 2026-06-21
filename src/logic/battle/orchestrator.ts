@@ -3,7 +3,6 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { nextTick } from 'vue'
 
 import { handleEntryAbilities } from './battleFlow.ts'
-import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
@@ -11,6 +10,33 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
 import type { UIStore, MapStore } from '@/types/system/stores'
+import { mapToShowdownSet } from './showdownAdapter.ts'
+import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
+
+export let showdownWorker: Worker | null = null;
+
+export async function executeTurnInWorker(p1Choice: string, p2Choice?: string): Promise<{ logs: string[]; isOver: boolean; winner: string | null }> {
+  if (!showdownWorker) {
+    throw new Error('showdownWorker is null')
+  }
+  showdownWorker.postMessage({
+    type: 'EXECUTE_TURN',
+    payload: { p1Choice, p2Choice }
+  })
+  return new Promise((resolve, reject) => {
+    if (!showdownWorker) return reject(new Error('showdownWorker is null'))
+    showdownWorker.onmessage = (event) => {
+      const { type, payload } = event.data
+      if (type === 'TURN_SUCCESS') {
+        resolve(payload)
+      } else if (type === 'ERROR') {
+        reject(new Error(payload.message))
+      }
+    }
+  })
+}
+
 
 export interface BattleOptions {
   isGym?: boolean;
@@ -106,7 +132,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     wasSearching,
     cannotEscape: cannotEscape || (battleOptions.cannotEscape as boolean) || false,
     weather: { 
-      type: isGym ? 'clear' : getMechanicalWeather(mapStore.currentWeather), 
+      type: isGym ? 'none' : mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION), 
       visual: isGym ? 'clear' : mapStore.currentWeather, 
       turns: -1 
     },
@@ -322,6 +348,38 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
   ctx.faintedSides.value.clear()
   ctx.clearLogs()
+
+  // Inicialización del Web Worker de Showdown
+  if (typeof window !== 'undefined') {
+    if (showdownWorker) {
+      showdownWorker.terminate();
+    }
+    showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
+    
+    const p1Team = (ctx.gs.state.team || []).map(p => mapToShowdownSet(p));
+    const p2Team = (battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : [])).map(p => mapToShowdownSet(p));
+    const initialWeatherOfficial = mapVisualToOfficialWeather(battleState?.weather?.type, ACTIVE_GENERATION);
+    
+    logger.info('ShowdownWorker', `Inicializando batalla en el worker con clima: ${initialWeatherOfficial}`);
+    
+    showdownWorker.postMessage({
+      type: 'INIT_BATTLE',
+      payload: {
+        p1: { name: 'Player', team: p1Team },
+        p2: { name: battleState?.trainerName || 'Enemigo', team: p2Team },
+        weather: initialWeatherOfficial
+      }
+    });
+
+    showdownWorker.onmessage = (e) => {
+      const { type: responseType, payload: responsePayload } = e.data;
+      if (responseType === 'INIT_SUCCESS') {
+        logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
+      } else if (responseType === 'ERROR') {
+        logger.error('ShowdownWorker', `Error del simulador: ${responsePayload.message}`);
+      }
+    };
+  }
 
   // Clear volatile status on all player team members and the initial enemy
   ctx.gs.state.team.forEach((p: Pokemon) => {

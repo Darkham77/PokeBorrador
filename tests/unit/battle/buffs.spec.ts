@@ -9,6 +9,11 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import { useGameStore } from '@/stores/game';
 
+vi.mock('@/logic/services/assetService', () => ({
+  getAssetUrl: vi.fn((_, id) => `mock-url-${id}`),
+  ASSET_TYPES: { ITEM: 'item' }
+}))
+
 describe('Buffs Store', () => {
   let buffsStore: ReturnType<typeof useBuffsStore>;
   let gameStore: ReturnType<typeof useGameStore>;

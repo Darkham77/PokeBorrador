@@ -518,38 +518,37 @@ Manages action priorities and safely resolves double KOs without race conditions
 ```mermaid
 stateDiagram-v2
     state TURN_ENGINE {
-        [*] --> BUILD_QUEUE: "Sort Actions (Speed/Priority)"
-        BUILD_QUEUE --> POP_ACTION: "Get next action"
+        [*] --> COLLECT_CHOICES: "Recolectar decisiones (Jugador + IA)"
+        COLLECT_CHOICES --> SEND_TO_WORKER: "Enviar elecciones al Web Worker"
+        
+        state SEND_TO_WORKER {
+            [*] --> EXECUTE_TURN_SIMULATOR: "@pkmn/sim calcula el turno completo"
+            EXECUTE_TURN_SIMULATOR --> RETURN_LOGS: "Retornar cola de logs estructurados"
+            RETURN_LOGS --> [*]
+        }
 
-        POP_ACTION --> REORDER_TEAM: "Manual Switch"
-        POP_ACTION --> CATCH_PROCESS: "Pokeball"
-        POP_ACTION --> FLEE_ATTEMPT: "Manual Flee"
-        POP_ACTION --> APPLY_MOVE: "Attack/Item"
+        SEND_TO_WORKER --> PLAYBACK_LOGS: "Recibir logs en hilo principal"
 
-        REORDER_TEAM --> EVAL_HP
-        CATCH_PROCESS --> EVAL_HP: "Catch Failed"
-        FLEE_ATTEMPT --> EVAL_HP: "↺ Flee Failed"
-        APPLY_MOVE --> EVAL_HP
+        state PLAYBACK_LOGS {
+            [*] --> POP_LOG_LINE: "Leer siguiente línea (|move|, |-damage|, etc.)"
+            POP_LOG_LINE --> PARSE_LINE: "showdownBridge.ts: parseShowdownLogLine()"
+            PARSE_LINE --> PLAY_ANIMATION: "Aventajar barra HP / GSAP Anim"
+            PLAY_ANIMATION --> POP_LOG_LINE: "↺ Quedan líneas en el log"
+            POP_LOG_LINE --> [*]: "Log del turno finalizado"
+        }
 
-        CATCH_PROCESS --> [*]: "Target Caught (Exit Engine)"
-        FLEE_ATTEMPT --> [*]: "Flee Success (Exit Engine)"
+        PLAYBACK_LOGS --> EVAL_HP: "Actualizar Vue Reactive Store HP/Status"
 
         state EVAL_HP <<choice>>
-        EVAL_HP --> PLAYER_FAINT_SEQ: "Player fainted"
-        EVAL_HP --> ENEMY_REPLACEMENT_SEQ: "Enemy fainted"
+        EVAL_HP --> PLAYER_FAINT_SEQ : "Player fainted"
+        EVAL_HP --> ENEMY_REPLACEMENT_SEQ : "Enemy fainted"
+        EVAL_HP --> EVAL_CONTINUE : "Both alive"
 
-        ENEMY_REPLACEMENT_SEQ --> EVAL_CONTINUE: "↺ Loop"
-        PLAYER_FAINT_SEQ --> EVAL_CONTINUE : "↺ Loop"
-        ENEMY_REPLACEMENT_SEQ --> [*]: "No remaining (Exit Engine)"
-
-        EVAL_HP --> EVAL_CONTINUE: "Both alive"
+        PLAYER_FAINT_SEQ --> EVAL_CONTINUE
+        ENEMY_REPLACEMENT_SEQ --> EVAL_CONTINUE
 
         state EVAL_CONTINUE <<choice>>
-        EVAL_CONTINUE --> POP_ACTION: "↺ More actions queued"
-        EVAL_CONTINUE --> [*]: "Queue empty"
-
-        note right of APPLY_MOVE: await
-        note right of EVAL_HP: await
+        EVAL_CONTINUE --> [*] : "Turn logs fully played"
     }
 ```
 
@@ -598,10 +597,18 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    state ESCAPE_PROCESS {
-        [*] --> PLAY_ESCAPE_ANIM : Teleport / Run Away (1.0s)
-        PLAY_ESCAPE_ANIM --> VACATE_SEAT : "Free Seat"
-        VACATE_SEAT --> [*]
+    state FLEE_ATTEMPT {
+        [*] --> CALC_ESCAPE_CHANCE : "calculateEscapeChance()"
+        
+        state ESCAPE_FAILED {
+            CALC_ESCAPE_CHANCE --> DELEGATE_WORKER : "Flee Failed (escapeAttempts++)"
+            DELEGATE_WORKER --> FILTER_RECOIL_LOGS : "Send: p1Choice='move struggle' / p2Choice='move <enemy_move>'"
+            FILTER_RECOIL_LOGS --> PLAY_ENEMY_COUNTERATTACK : "Filter out p1a: struggle & recoil logs"
+        }
+        
+        PLAY_ENEMY_COUNTERATTACK --> EVAL_HP : "Execute visual damages & updates"
+        CALC_ESCAPE_CHANCE --> PLAY_ESCAPE_ANIM : "Flee Success"
+        PLAY_ESCAPE_ANIM --> [*] : "Exit Engine"
     }
 ```
 
