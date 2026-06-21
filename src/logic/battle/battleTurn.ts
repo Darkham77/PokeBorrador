@@ -27,8 +27,11 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const fsm = store.fsm
   const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
-  // Thrash check
-  if (p.thrashTurns && p.thrashTurns > 0) {
+  // Thrash / lockedmove check
+  if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove) {
+    const forcedIdx = p.moves.findIndex((m) => m?.id === p.lastMove?.id);
+    if (forcedIdx !== -1) moveIndex = forcedIdx;
+  } else if (p.thrashTurns && p.thrashTurns > 0) {
     const forcedIdx = p.moves.findIndex((m) => m?.effect === 'thrash');
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   } else if (p.encoreTurns && p.encoreTurns > 0 && p.encoreMove) {
@@ -46,7 +49,10 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
   // Determine Turn Order (Consider Priority)
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
-  const eMove = decideEnemyMove(e, p, store.enemyStages.value, isWild)
+  let eMove = decideEnemyMove(e, p, store.enemyStages.value, isWild)
+  if (e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
+    eMove = e.lastMove
+  }
   
   const pPrio = move.priority || 0
   const ePrio = eMove?.priority || 0
@@ -176,7 +182,10 @@ export async function runEnemyAction(store: BattleContext) {
     return
   }
 
-  const enemyMove = decideEnemyMove(e, p, store.playerStages.value, isWild)
+  let enemyMove = decideEnemyMove(e, p, store.playerStages.value, isWild)
+  if (e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
+    enemyMove = e.lastMove
+  }
   if (!enemyMove) {
     store.addLog(`¡${e.name} no tiene más PP y usa Forcejeo!`, 'log-enemy', e)
     return

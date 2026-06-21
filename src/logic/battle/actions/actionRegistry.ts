@@ -24,7 +24,7 @@ type BattleAction = (
   battleCtx: BattleContext
 ) => Promise<void> | void;
 
-const ALL_ACTIONS: Record<string, BattleAction> = {
+export const ALL_ACTIONS: Record<string, BattleAction> = {
   ...STAT_ACTIONS,
   ...STATUS_ACTIONS,
   ...HEALING_ACTIONS,

@@ -49,6 +49,8 @@ export interface BattleState {
   rarity?: number;
   futureSightTurns?: number;
   futureSightTarget?: Pokemon | null;
+  playerSideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
+  enemySideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;

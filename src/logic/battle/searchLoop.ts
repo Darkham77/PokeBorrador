@@ -193,7 +193,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
 
     if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
-      ctx.audio.siren()
+      ctx.audio.play('siren')
     }
 
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)

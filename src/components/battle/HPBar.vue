@@ -49,7 +49,7 @@ watch(() => props.level, (newLevel, oldLevel) => {
       ease: 'power2.in',
       onComplete: () => {
         displayExpPct.value = 0
-        audioStore.levelUp()
+        audioStore.play('levelUp')
       }
     })
     .to(displayExpPct, {

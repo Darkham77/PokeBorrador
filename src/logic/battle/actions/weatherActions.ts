@@ -7,11 +7,17 @@ export const WEATHER_ACTIONS: Record<string, MoveAction> = {
       addLogFn("¡El sol empezó a brillar con fuerza!", 'log-info', src);
     }
   },
+  'sunny_day': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    WEATHER_ACTIONS['sun']?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+  },
   'rain': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (battleCtx?.activeBattle.value) {
       battleCtx.activeBattle.value.weather = { type: 'rain', visual: 'rain', turns: 5 };
       addLogFn("¡Empezó a llover!", 'log-info', src);
     }
+  },
+  'rain_dance': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    WEATHER_ACTIONS['rain']?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   },
   'sandstorm': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (battleCtx?.activeBattle.value) {

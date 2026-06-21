@@ -156,7 +156,7 @@ const debugCapture = async () => {
   const anims = battleStore.animations
 
   // 1. Ball hit
-  audio.ballHit()
+  audio.play('ballHit')
   if (anims?.handleCatchRequest) {
     await anims.handleCatchRequest({ side: 'enemy', ballId })
   } else {
@@ -166,7 +166,7 @@ const debugCapture = async () => {
 
   // 2. Shakes
   for (let i = 0; i < 3; i++) {
-    audio.wobble()
+    audio.play('wobble')
     if (anims?.handleShakeRequest) {
       await anims.handleShakeRequest({ side: 'enemy' })
     } else {
@@ -176,7 +176,7 @@ const debugCapture = async () => {
   }
 
   // 3. Success
-  audio.caught()
+  audio.play('caught')
   battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
   
   battleStore.state.isCapture = true

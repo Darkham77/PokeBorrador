@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 interface Props {
   modelValue: (string | null)[]
@@ -18,12 +19,30 @@ const emit = defineEmits<{
 const moveSearch = ref('')
 const activeMoveSlot = ref<number | null>(null)
 
-const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => m.id)
-const filteredMoves = computed(() => {
-  const s = moveSearch.value.toLowerCase()
-  if (!s) return props.speciesMoves as string[]
-  return allMovesList.filter(m => m.toLowerCase().includes(s)).slice(0, 30)
+// Pre-map all moves with their Spanish translation for fast search
+const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => {
+  const id = m.id
+  const moveData = pokemonDataProvider.getMoveData(id)
+  return {
+    id,
+    nameEs: moveData?.name || m.name
+  }
 })
+
+const filteredMoves = computed(() => {
+  const s = moveSearch.value.toLowerCase().trim()
+  if (!s) return props.speciesMoves as string[]
+  
+  return allMovesList
+    .filter(m => m.id.toLowerCase().includes(s) || m.nameEs.toLowerCase().includes(s))
+    .map(m => m.id)
+    .slice(0, 30)
+})
+
+function getMoveDisplayName(id: string | null | undefined): string {
+  if (!id) return ''
+  return (pokemonDataProvider.getMoveData(id)?.name || id).toUpperCase()
+}
 
 function addMove(m: string, slotIndex: number) {
   const newMoves = [...props.modelValue]
@@ -81,7 +100,7 @@ function removeMove(slotIndex: number) {
           class="move-pill"
           @click.stop="activeMoveSlot = i"
         >
-          <span class="mv-name">{{ modelValue[i-1]?.toUpperCase() }}</span>
+          <span class="mv-name">{{ getMoveDisplayName(modelValue[i-1]) }}</span>
           <button
             class="remove-move"
             @click.stop="removeMove(i-1)"
@@ -123,7 +142,7 @@ function removeMove(slotIndex: number) {
               class="move-item"
               @click.stop="addMove(m, i-1)"
             >
-              {{ m.toUpperCase() }}
+              {{ getMoveDisplayName(m) }}
             </div>
           </div>
           <button

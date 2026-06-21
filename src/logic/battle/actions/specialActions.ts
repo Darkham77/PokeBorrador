@@ -464,7 +464,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} robó ${displayName} de ${tgt.name}!`, 'log-info', src);
 
       // Play steal sound
-      import('@/stores/audio').then(m => m.useAudioStore().steal()).catch(() => {});
+      import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(() => {});
 
       const b = battleCtx?.activeBattle.value;
       if (b && battleCtx.gs) {
@@ -495,7 +495,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         battleCtx.gs.state.money = (battleCtx.gs.state.money || 0) + amount;
         addLogFn(`¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`, 'log-success', src);
         
-        import('@/stores/audio').then(m => m.useAudioStore().steal()).catch(() => {});
+        import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(() => {});
         battleCtx.uiStore.notify(`¡Robaste/Obtuviste ₽${amount}!`, '💰');
       }
     }
@@ -519,5 +519,63 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   'self_destruct': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = 0;
     addLogFn(`¡${src.name} se autodestruyó!`, 'log-info', src);
+  },
+  'locked_move': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    if (!src.volatileCounters) {
+      src.volatileCounters = {};
+    }
+    if (!src.volatileCounters['lockedmove']) {
+      src.volatileCounters['lockedmove'] = 2 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
+    }
+  },
+  'partially_trapped': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+    if (!tgt.volatileCounters) {
+      tgt.volatileCounters = {};
+    }
+    if (!tgt.volatileCounters['partiallytrapped']) {
+      tgt.volatileCounters['partiallytrapped'] = 4 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
+    } else {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    }
+  },
+  'stockpile': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    if (!src.volatileCounters) src.volatileCounters = {};
+    const count = src.volatileCounters['stockpile'] || 0;
+    if (count < 3) {
+      src.volatileCounters['stockpile'] = count + 1;
+      addLogFn(`¡${src.name} acumuló energía (Reserva: ${count + 1})!`, 'log-info', src);
+    } else {
+      addLogFn(`¡${src.name} no puede acumular más!`, 'log-info', src);
+    }
+  },
+  'spit_up': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    if (!src.volatileCounters) src.volatileCounters = {};
+    const count = src.volatileCounters['stockpile'] || 0;
+    if (count > 0) {
+      addLogFn(`¡${src.name} liberó la energía acumulada!`, 'log-info', src);
+      src.volatileCounters['stockpile'] = 0;
+    } else {
+      addLogFn("¡Pero falló porque no tenía energía acumulada!", 'log-info', src);
+    }
+  },
+  'future_sight': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡${src.name} previó un ataque para el futuro!`, 'log-info', src);
+  },
+  'grudge': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡${src.name} quiere vengarse del enemigo!`, 'log-info', src);
+  },
+  'charge': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡${src.name} comenzó a cargarse de electricidad!`, 'log-info', src);
+  },
+  'brick_break': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡${src.name} destruyó las pantallas reflectoras!`, 'log-info', src);
+  },
+  'covet': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
+    SPECIAL_ACTIONS['steal_item']?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+  },
+  'hp_scale': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡La potencia del ataque depende de los PS de ${src.name}!`, 'log-info', src);
   }
 };

@@ -52,12 +52,12 @@ const toggleFilters = () => {
 }
 
 const setSortMode = (val: string) => {
-  if (props.sortMode === val) emit('update:sortMode', 'none')
-  else emit('update:sortMode', val)
-}
-
-const toggleSortDirection = () => {
-  emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
+  if (props.sortMode === val) {
+    emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
+  } else {
+    emit('update:sortMode', val)
+    emit('update:sortDirection', 'desc')
+  }
 }
 
 const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
@@ -203,7 +203,7 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-sort-btn', { active: sortMode === 'recent' }]"
                 @click.stop="setSortMode('recent')"
               >
-                REC
+                REC {{ sortMode === 'recent' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
             <PVTooltip
@@ -215,7 +215,7 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-sort-btn', { active: sortMode === 'level' }]"
                 @click.stop="setSortMode('level')"
               >
-                LVL
+                LVL {{ sortMode === 'level' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
             <PVTooltip
@@ -227,7 +227,7 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-sort-btn', { active: sortMode === 'tier' }]"
                 @click.stop="setSortMode('tier')"
               >
-                IVs
+                IVs {{ sortMode === 'tier' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
             <PVTooltip
@@ -239,7 +239,7 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-sort-btn', { active: sortMode === 'bst' }]"
                 @click.stop="setSortMode('bst')"
               >
-                TOTAL
+                TOTAL {{ sortMode === 'bst' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
             <PVTooltip
@@ -251,23 +251,10 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]"
                 @click.stop="setSortMode('pokedex')"
               >
-                PDEX
+                PDEX {{ sortMode === 'pokedex' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
           </div>
-          
-          <PVTooltip
-            :title="sortDirection === 'desc' ? 'ORDEN DESCENDENTE' : 'ORDEN ASCENDENTE'"
-            description="Haz clic para invertir el sentido del orden."
-            position="bottom"
-          >
-            <button 
-              class="direction-toggle-btn" 
-              @click.stop="toggleSortDirection"
-            >
-              {{ sortDirection === 'desc' ? '▼' : '▲' }}
-            </button>
-          </PVTooltip>
         </div>
       </div>
 

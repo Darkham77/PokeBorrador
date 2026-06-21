@@ -82,6 +82,7 @@ export interface Pokemon {
   isFloating?: boolean;
   gender?: 'M' | 'F' | 'N' | null;
   status?: PokemonStatus;
+  volatileCounters?: Record<string, number>;
   sleepTurns?: number;
   confused?: number;
   attracted?: boolean;

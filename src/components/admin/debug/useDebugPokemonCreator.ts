@@ -88,7 +88,7 @@ export function useDebugPokemonCreator() {
   const speciesMoves = computed<string[]>(() => {
     const data = pokemonDataProvider.getPokemonData(config.value.id)
     if (!data || !data.learnset) return []
-    return [...new Set(data.learnset.map(m => m.name))]
+    return [...new Set(data.learnset.map(m => m.id))]
   })
 
   const baseStats = computed(() => {
@@ -124,7 +124,7 @@ export function useDebugPokemonCreator() {
     const learnedMoves = data.learnset
       .filter(m => m.lv <= config.value.level)
       .sort((a, b) => b.lv - a.lv)
-      .map(m => m.name)
+      .map(m => m.id)
     
     const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
     const finalMoves: (string | null)[] = [...uniqueMoves]
@@ -137,7 +137,7 @@ export function useDebugPokemonCreator() {
     const data = pokemonDataProvider.getPokemonData(config.value.id)
     if (!data?.learnset || data.learnset.length === 0) return
 
-    const allLearnsetMoves = [...new Set(data.learnset.map(m => m.name))]
+    const allLearnsetMoves = [...new Set(data.learnset.map(m => m.id))]
     const shuffled = allLearnsetMoves.sort(() => 0.5 - Math.random())
     const selected = shuffled.slice(0, 4)
     const finalMoves: (string | null)[] = [...selected]

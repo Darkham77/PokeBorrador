@@ -43,7 +43,7 @@ Tras evaluar el estado actual del motor de batalla modular y las alertas en cons
 
 Este documento lista todos los movimientos de Showdown que poseen efectos especiales (estados alterados, modificaciones de estadísticas, climas, curación, etc.) pero que no se encuentran mapeados en `MOVE_TO_EFFECT_ALIASES` o implementados como efecto local unívoco.
 
-**Total de movimientos con efectos pendientes:** 381
+**Total de movimientos con efectos pendientes:** 359
 
 | ID | Movimiento | Tipo | Categoría | Efectos Identificados en Showdown |
 | --- | --- | --- | --- | --- |
@@ -69,7 +69,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `barbbarrage` | **Barb Barrage** | Poison | Physical | Secundario (50%): "psn" |
 | `batonpass` | **Baton Pass** | Normal | Status | Efecto Propio: {} |
 | `bide` | **Bide** | Normal | Physical | Estado Volátil: bide |
-| `bind` | **Bind** | Normal | Physical | Estado Volátil: partiallytrapped |
+| `bind` | ~~**Bind**~~ | ~~Normal~~ | ~~Physical~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `bittermalice` | **Bitter Malice** | Ghost | Special | Secundario (100%): {"atk":-1} |
 | `blastburn` | **Blast Burn** | Fire | Special | Efecto Propio: {"volatileStatus":"mustrecharge"} |
 | `blazekick` | **Blaze Kick** | Fire | Physical | Secundario (10%): "brn" |
@@ -94,7 +94,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `chatter` | **Chatter** | Flying | Special | Secundario (100%): undefined |
 | `chillingwater` | **Chilling Water** | Water | Special | Secundario (100%): {"atk":-1} |
 | `chillyreception` | **Chilly Reception** | Ice | Status | Clima: snowscape |
-| `clamp` | **Clamp** | Water | Physical | Estado Volátil: partiallytrapped |
+| `clamp` | ~~**Clamp**~~ | ~~Water~~ | ~~Physical~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `clangoroussoul` | **Clangorous Soul** | Dragon | Status | Ajustes Stats: {"atk":1,"def":1,"spa":1,"spd":1,"spe":1} |
 | `clangoroussoulblaze` | **Clangorous Soulblaze** | Dragon | Special | Secundario (undefined%): undefined |
 | `coaching` | **Coaching** | Fighting | Status | Ajustes Stats: {"atk":1,"def":1} |
@@ -113,7 +113,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `detect` | **Detect** | Fighting | Status | Estado Volátil: protect |
 | `diamondstorm` | **Diamond Storm** | Rock | Physical | Efecto Propio: {"chance":50,"boosts":{"def":2}}, Secundario (undefined%): undefined |
 | `direclaw` | **Dire Claw** | Poison | Physical | Secundario (50%): undefined |
-| `disable` | **Disable** | Normal | Status | Estado Volátil: disable |
+| `disable` | ~~**Disable**~~ | ~~Normal~~ | ~~Status~~ | ~~Estado Volátil: disable~~ |
 | `dizzypunch` | **Dizzy Punch** | Normal | Physical | Secundario (20%): undefined |
 | `doubleironbash` | **Double Iron Bash** | Steel | Physical | Secundario (30%): undefined |
 | `doubleshock` | **Double Shock** | Electric | Physical | Efecto Propio: {} |
@@ -129,7 +129,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `electrify` | **Electrify** | Electric | Status | Estado Volátil: electrify |
 | `electroweb` | **Electroweb** | Electric | Special | Secundario (100%): {"spe":-1} |
 | `embargo` | **Embargo** | Dark | Status | Estado Volátil: embargo |
-| `encore` | **Encore** | Normal | Status | Estado Volátil: encore |
+| `encore` | ~~**Encore**~~ | ~~Normal~~ | ~~Status~~ | ~~Estado Volátil: encore~~ |
 | `endure` | **Endure** | Normal | Status | Estado Volátil: endure |
 | `energyball` | **Energy Ball** | Grass | Special | Secundario (10%): {"spd":-1} |
 | `esperwing` | **Esper Wing** | Psychic | Special | Secundario (100%): undefined |
@@ -144,7 +144,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `filletaway` | **Fillet Away** | Normal | Status | Ajustes Stats: {"atk":2,"spa":2,"spe":2} |
 | `firelash` | **Fire Lash** | Fire | Physical | Secundario (100%): {"def":-1} |
 | `firepunch` | **Fire Punch** | Fire | Physical | Secundario (10%): "brn" |
-| `firespin` | **Fire Spin** | Fire | Special | Estado Volátil: partiallytrapped |
+| `firespin` | ~~**Fire Spin**~~ | ~~Fire~~ | ~~Special~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `flamecharge` | **Flame Charge** | Fire | Physical | Secundario (100%): undefined |
 | `flamewheel` | **Flame Wheel** | Fire | Physical | Secundario (10%): "brn" |
 | `flareblitz` | **Flare Blitz** | Fire | Physical | Secundario (10%): "brn" |
@@ -219,7 +219,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `imprison` | **Imprison** | Psychic | Status | Estado Volátil: imprison |
 | `infernalparade` | **Infernal Parade** | Ghost | Special | Secundario (30%): "brn" |
 | `inferno` | **Inferno** | Fire | Special | Secundario (100%): "brn" |
-| `infestation` | **Infestation** | Bug | Special | Estado Volátil: partiallytrapped |
+| `infestation` | ~~**Infestation**~~ | ~~Bug~~ | ~~Special~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `ingrain` | **Ingrain** | Grass | Status | Estado Volátil: ingrain |
 | `irondefense` | **Iron Defense** | Steel | Status | Ajustes Stats: {"def":2} |
 | `ironhead` | **Iron Head** | Steel | Physical | Secundario (30%): undefined |
@@ -238,7 +238,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `lusterpurge` | **Luster Purge** | Psychic | Special | Secundario (50%): {"spd":-1} |
 | `magicaltorque` | **Magical Torque** | Fairy | Physical | Secundario (30%): undefined |
 | `magiccoat` | **Magic Coat** | Psychic | Status | Estado Volátil: magiccoat |
-| `magmastorm` | **Magma Storm** | Fire | Special | Estado Volátil: partiallytrapped |
+| `magmastorm` | ~~**Magma Storm**~~ | ~~Fire~~ | ~~Special~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `magnetrise` | **Magnet Rise** | Electric | Status | Estado Volátil: magnetrise |
 | `makeitrain` | **Make It Rain** | Steel | Special | Efecto Propio: {"boosts":{"spa":-1}} |
 | `malignantchain` | **Malignant Chain** | Poison | Special | Secundario (50%): "tox" |
@@ -294,8 +294,8 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `octolock` | **Octolock** | Fighting | Status | Estado Volátil: octolock |
 | `odorsleuth` | **Odor Sleuth** | Normal | Status | Estado Volátil: foresight |
 | `ominouswind` | **Ominous Wind** | Ghost | Special | Secundario (10%): undefined |
-| `outrage` | **Outrage** | Dragon | Physical | Efecto Propio: {"volatileStatus":"lockedmove"} |
-| `petaldance` | **Petal Dance** | Grass | Special | Efecto Propio: {"volatileStatus":"lockedmove"} |
+| `outrage` | ~~**Outrage**~~ | ~~Dragon~~ | ~~Physical~~ | ~~Efecto Propio: {"volatileStatus":"lockedmove"}~~ |
+| `petaldance` | ~~**Petal Dance**~~ | ~~Grass~~ | ~~Special~~ | ~~Efecto Propio: {"volatileStatus":"lockedmove"}~~ |
 | `playnice` | **Play Nice** | Normal | Status | Ajustes Stats: {"atk":-1} |
 | `playrough` | **Play Rough** | Fairy | Physical | Secundario (10%): {"atk":-1} |
 | `poisonfang` | **Poison Fang** | Poison | Physical | Secundario (50%): "tox" |
@@ -319,7 +319,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `quiverdance` | **Quiver Dance** | Bug | Status | Ajustes Stats: {"spa":1,"spd":1,"spe":1} |
 | `rage` | **Rage** | Normal | Physical | Efecto Propio: {"volatileStatus":"rage"} |
 | `ragepowder` | **Rage Powder** | Bug | Status | Estado Volátil: ragepowder |
-| `ragingfury` | **Raging Fury** | Fire | Physical | Efecto Propio: {"volatileStatus":"lockedmove"} |
+| `ragingfury` | ~~**Raging Fury**~~ | ~~Fire~~ | ~~Physical~~ | ~~Efecto Propio: {"volatileStatus":"lockedmove"}~~ |
 | `rapidspin` | **Rapid Spin** | Normal | Physical | Secundario (100%): undefined |
 | `razorshell` | **Razor Shell** | Water | Physical | Secundario (50%): {"def":-1} |
 | `reflect` | **Reflect** | Psychic | Status | Condición de Campo: reflect |
@@ -335,7 +335,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `safeguard` | **Safeguard** | Normal | Status | Condición de Campo: safeguard |
 | `saltcure` | **Salt Cure** | Rock | Physical | Secundario (100%): undefined |
 | `sandsearstorm` | **Sandsear Storm** | Ground | Special | Secundario (20%): "brn" |
-| `sandtomb` | **Sand Tomb** | Ground | Physical | Estado Volátil: partiallytrapped |
+| `sandtomb` | ~~**Sand Tomb**~~ | ~~Ground~~ | ~~Physical~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `scald` | **Scald** | Water | Special | Secundario (30%): "brn" |
 | `scorchingsands` | **Scorching Sands** | Ground | Special | Secundario (30%): "brn" |
 | `searingshot` | **Searing Shot** | Fire | Special | Secundario (30%): "brn" |
@@ -355,14 +355,14 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `skyattack` | **Sky Attack** | Flying | Physical | Secundario (30%): undefined |
 | `sludgewave` | **Sludge Wave** | Poison | Special | Secundario (10%): "psn" |
 | `smackdown` | **Smack Down** | Rock | Physical | Estado Volátil: smackdown |
-| `snaptrap` | **Snap Trap** | Grass | Physical | Estado Volátil: partiallytrapped |
+| `snaptrap` | ~~**Snap Trap**~~ | ~~Grass~~ | ~~Physical~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `snarl` | **Snarl** | Dark | Special | Secundario (100%): {"spa":-1} |
 | `snore` | **Snore** | Normal | Special | Secundario (30%): undefined |
 | `snowscape` | **Snowscape** | Ice | Status | Clima: snowscape |
 | `sparklingaria` | **Sparkling Aria** | Water | Special | Secundario (100%): undefined |
 | `sparklyswirl` | **Sparkly Swirl** | Fairy | Special | Efecto Propio: {} |
 | `spicyextract` | **Spicy Extract** | Grass | Status | Ajustes Stats: {"atk":2,"def":-2} |
-| `spikes` | **Spikes** | Ground | Status | Condición de Campo: spikes |
+| `spikes` | ~~**Spikes**~~ | ~~Ground~~ | ~~Status~~ | ~~Condición de Campo: spikes~~ |
 | `spikyshield` | **Spiky Shield** | Grass | Status | Estado Volátil: spikyshield |
 | `spinout` | **Spin Out** | Steel | Physical | Efecto Propio: {"boosts":{"spe":-2}} |
 | `spiritbreak` | **Spirit Break** | Fairy | Physical | Secundario (100%): {"spa":-1} |
@@ -370,7 +370,7 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `splishysplash` | **Splishy Splash** | Water | Special | Secundario (30%): "par" |
 | `spotlight` | **Spotlight** | Normal | Status | Estado Volátil: spotlight |
 | `springtidestorm` | **Springtide Storm** | Fairy | Special | Secundario (30%): {"atk":-1} |
-| `stealthrock` | **Stealth Rock** | Rock | Status | Condición de Campo: stealthrock |
+| `stealthrock` | ~~**Stealth Rock**~~ | ~~Rock~~ | ~~Status~~ | ~~Condición de Campo: stealthrock~~ |
 | `steameruption` | **Steam Eruption** | Water | Special | Secundario (30%): "brn" |
 | `steamroller` | **Steamroller** | Bug | Physical | Secundario (30%): undefined |
 | `steelwing` | **Steel Wing** | Steel | Physical | Secundario (10%): undefined |
@@ -392,15 +392,15 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `teeterdance` | **Teeter Dance** | Normal | Status | Estado Volátil: confusion |
 | `telekinesis` | **Telekinesis** | Psychic | Status | Estado Volátil: telekinesis |
 | `thousandarrows` | **Thousand Arrows** | Ground | Physical | Estado Volátil: smackdown |
-| `thrash` | **Thrash** | Normal | Physical | Efecto Propio: {"volatileStatus":"lockedmove"} |
+| `thrash` | ~~**Thrash**~~ | ~~Normal~~ | ~~Physical~~ | ~~Efecto Propio: {"volatileStatus":"lockedmove"}~~ |
 | `throatchop` | **Throat Chop** | Dark | Physical | Secundario (100%): undefined |
-| `thundercage` | **Thunder Cage** | Electric | Special | Estado Volátil: partiallytrapped |
+| `thundercage` | ~~**Thunder Cage**~~ | ~~Electric~~ | ~~Special~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `thunderouskick` | **Thunderous Kick** | Fighting | Physical | Secundario (100%): {"def":-1} |
 | `thunderpunch` | **Thunder Punch** | Electric | Physical | Secundario (10%): "par" |
 | `tickle` | **Tickle** | Normal | Status | Ajustes Stats: {"atk":-1,"def":-1} |
 | `torchsong` | **Torch Song** | Fire | Special | Secundario (100%): undefined |
 | `torment` | **Torment** | Dark | Status | Estado Volátil: torment |
-| `toxicspikes` | **Toxic Spikes** | Poison | Status | Condición de Campo: toxicspikes |
+| `toxicspikes` | ~~**Toxic Spikes**~~ | ~~Poison~~ | ~~Status~~ | ~~Condición de Campo: toxicspikes~~ |
 | `toxicthread` | **Toxic Thread** | Poison | Status | Condición de Estado: psn, Ajustes Stats: {"spe":-1} |
 | `trailblaze` | **Trailblaze** | Grass | Physical | Secundario (100%): undefined |
 | `triattack` | **Tri Attack** | Normal | Special | Secundario (20%): undefined |
@@ -408,19 +408,19 @@ Este documento lista todos los movimientos de Showdown que poseen efectos especi
 | `twineedle` | **Twineedle** | Bug | Physical | Secundario (20%): "psn" |
 | `twister` | **Twister** | Dragon | Special | Secundario (20%): undefined |
 | `upperhand` | **Upper Hand** | Fighting | Physical | Secundario (100%): undefined |
-| `uproar` | **Uproar** | Normal | Special | Efecto Propio: {"volatileStatus":"uproar"} |
+| `uproar` | ~~**Uproar**~~ | ~~Normal~~ | ~~Special~~ | ~~Efecto Propio: {"volatileStatus":"uproar"}~~ |
 | `vcreate` | **V-create** | Fire | Physical | Efecto Propio: {"boosts":{"spe":-1,"def":-1,"spd":-1}} |
 | `victorydance` | **Victory Dance** | Fighting | Status | Ajustes Stats: {"atk":1,"def":1,"spe":1} |
 | `volttackle` | **Volt Tackle** | Electric | Physical | Secundario (10%): "par" |
 | `waterfall` | **Waterfall** | Water | Physical | Secundario (20%): undefined |
-| `whirlpool` | **Whirlpool** | Water | Special | Estado Volátil: partiallytrapped |
+| `whirlpool` | ~~**Whirlpool**~~ | ~~Water~~ | ~~Special~~ | ~~Estado Volátil: partiallytrapped~~ |
 | `wickedtorque` | **Wicked Torque** | Dark | Physical | Secundario (10%): "slp" |
 | `wideguard` | **Wide Guard** | Rock | Status | Condición de Campo: wideguard |
 | `wildboltstorm` | **Wildbolt Storm** | Electric | Special | Secundario (20%): "par" |
-| `wish` | **Wish** | Normal | Status | Next turn, 50% of the user's max HP is restored. |
+| `wish` | ~~**Wish**~~ | ~~Normal~~ | ~~Status~~ | ~~Next turn, 50% of the user's max HP is restored.~~ |
 | `workup` | **Work Up** | Normal | Status | Ajustes Stats: {"atk":1,"spa":1} |
-| `wrap` | **Wrap** | Normal | Physical | Estado Volátil: partiallytrapped |
-| `yawn` | **Yawn** | Normal | Status | Estado Volátil: yawn |
+| `wrap` | ~~**Wrap**~~ | ~~Normal~~ | ~~Physical~~ | ~~Estado Volátil: partiallytrapped~~ |
+| `yawn` | ~~**Yawn**~~ | ~~Normal~~ | ~~Status~~ | ~~Estado Volátil: yawn~~ |
 | `zapcannon` | **Zap Cannon** | Electric | Special | Secundario (100%): "par" |
 | `zenheadbutt` | **Zen Headbutt** | Psychic | Physical | Secundario (20%): undefined |
 | `zingzap` | **Zing Zap** | Electric | Physical | Secundario (30%): undefined |

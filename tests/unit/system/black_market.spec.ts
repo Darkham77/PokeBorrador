@@ -82,14 +82,13 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
 
   describe('Single Sale parity (Team/Manual)', () => {
     it('should match price when selling from team', () => {
-      const box = useBoxStore()
       const gs = useGameStore()
       
-      box.teamRocketSelected = [0] // Bulbasaur Lv 50, IV 0
+      const selected = [0] // Bulbasaur Lv 50, IV 0
       // Price: floor((50 * 50 + 0) * 0.8) = 2500 * 0.8 = 2000
       
       let totalGain = 0
-      box.teamRocketSelected.forEach((i: number) => {
+      selected.forEach((i: number) => {
         totalGain += calculateRocketSellPrice(gs.state.team[i] as Pokemon)
       })
       expect(totalGain).toBe(2000)

@@ -244,7 +244,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
                 
                 // Disparar sonido retro de robo
                 const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
-                audioStore.steal();
+                audioStore.play('steal');
               }
             }
           }
@@ -316,7 +316,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     active.rewardsProcessed = true
     const isWild = !active.isTrainer && !active.isGym && !active.isPvP
     if (!isWild) {
-      ctx.audio.victoryTrainer()
+      ctx.audio.play('victoryTrainer')
     }
     await calculateBattleRewards(ctx)
     
@@ -366,7 +366,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     await sleep(200)
     await ctx.gs.save(false)
     
-    ctx.audio.defeat()
+    ctx.audio.play('defeat')
     
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)

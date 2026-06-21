@@ -295,7 +295,7 @@ export const useSocialStore = defineStore('social', () => {
     } else {
       sentRequestTimestamps.value.push(now)
       uiStore.notify('Solicitud enviada correctamente', '👥')
-      audioStore.sentMsg() // Sonido al enviar solicitud
+      audioStore.play('sentMsg') // Sonido al enviar solicitud
       const res = searchResults.value.find((p: SearchResult) => p.id === targetId)
       if (res) { 
         res.status = 'pending';

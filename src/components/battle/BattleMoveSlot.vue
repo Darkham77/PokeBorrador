@@ -65,11 +65,29 @@ const isDisabled = computed(() => {
   if (props.isProcessing) return true
   if (!props.move || props.move.pp <= 0) return true
   
-  // Choice Item Logic
   const p = props.playerInfo
-  if (p && p.heldItem === 'choice_band') {
-    const pk = p as Pokemon & { choiceMove?: string }
-    if (pk.choiceMove && pk.choiceMove !== props.move.name) {
+  if (p) {
+    // Choice Item Logic
+    if (p.heldItem === 'choice_band') {
+      const pk = p as Pokemon & { choiceMove?: string }
+      if (pk.choiceMove && pk.choiceMove !== props.move.name) {
+        return true
+      }
+    }
+    // Taunt
+    if (p.tauntTurns && p.tauntTurns > 0 && props.move.cat === 'status') {
+      return true
+    }
+    // Disabled Move
+    if (p.disabledMove && props.move.id === p.disabledMove.id) {
+      return true
+    }
+    // Encore
+    if (p.encoreMove && props.move.id !== p.encoreMove.id) {
+      return true
+    }
+    // Locked Move (Outrage, Thrash, Petal Dance, Raging Fury)
+    if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
       return true
     }
   }

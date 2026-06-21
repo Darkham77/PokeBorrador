@@ -67,9 +67,7 @@ const buy = async () => {
   // Chiptune/audio notification
   try {
     const audioStore = await import('@/stores/audio').then(m => m.useAudioStore())
-    if (audioStore.victoryTrainer) {
-      audioStore.victoryTrainer()
-    }
+    audioStore.play('victoryTrainer')
   } catch (e) {
     console.error('Audio trigger error:', e)
   }

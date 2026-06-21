@@ -56,7 +56,7 @@ export const useTradeStore = defineStore('trade', () => {
         filter: `receiver_id=eq.${authStore.user.id}`
       }, () => {
         uiStore.notify('¡Has recibido una nueva oferta de intercambio!', '🔄')
-        audioStore.notif()
+        audioStore.play('shiny') // Sonido de notificación
         refreshPendingTrades()
       })
       .subscribe()
@@ -160,7 +160,7 @@ export const useTradeStore = defineStore('trade', () => {
 
     if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
-      audioStore.sentMsg() 
+      audioStore.play('sentMsg') 
       await gameStore.loadGame() // <-- OBLIGATORIO: Actualizar cliente post-escrow
       refreshPendingTrades()
       return true

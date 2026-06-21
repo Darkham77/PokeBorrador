@@ -32,7 +32,7 @@ const battleStore = useBattleStore()
     <div class="action-row-complex">
       <button
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped)"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> <span class="text">CAMBIAR</span>

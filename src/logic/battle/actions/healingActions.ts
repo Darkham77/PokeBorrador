@@ -53,5 +53,19 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     } else {
       addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);
     }
+  },
+
+  'wish': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+    if (!battleCtx || !battleCtx.activeBattle.value) return;
+    const isPlayer = (src.uid === battleCtx.activeBattle.value.player?.uid);
+    const sideConds = isPlayer ? battleCtx.activeBattle.value.playerSideConditions : battleCtx.activeBattle.value.enemySideConditions;
+    if (sideConds) {
+      if (sideConds['wish']) {
+        addLogFn('¡Pero falló!', 'log-info', src);
+        return;
+      }
+      sideConds['wish'] = { turns: 2 };
+      addLogFn(`¡${src.name} pidió un Deseo!`, 'log-info', src);
+    }
   }
 };

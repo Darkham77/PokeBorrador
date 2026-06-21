@@ -143,5 +143,21 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
     });
     
     addLogFn(`¡Un aroma curativo rodeó al equipo de ${src.name}!`, 'log-info', src);
+  },
+
+  'yawn': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+    if (tgt.status) {
+      addLogFn("¡Pero falló!", 'log-info', tgt);
+      return;
+    }
+    if (tgt.volatileCounters?.['yawn'] !== undefined) {
+      addLogFn(`¡${tgt.name} ya tiene sueño!`, 'log-info', tgt);
+      return;
+    }
+    if (!tgt.volatileCounters) {
+      tgt.volatileCounters = {};
+    }
+    tgt.volatileCounters['yawn'] = 2;
+    addLogFn(`¡${tgt.name} empezó a bostezar!`, 'log-info', tgt);
   }
 };

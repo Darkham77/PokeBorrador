@@ -120,7 +120,7 @@ export const useChatStore = defineStore('chat', () => {
         
         // Sonido si el mensaje no es mío
         if (row.user_id !== authStore.user?.id) {
-          audioStore.receivedMsg();
+          audioStore.play('receivedMsg');
         }
       })
       .subscribe()
@@ -157,7 +157,7 @@ export const useChatStore = defineStore('chat', () => {
     if (globalMessages.value.length > 50) globalMessages.value.shift()
     fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
 
-    audioStore.sentMsg() // Sound on immediate send
+    audioStore.play('sentMsg') // Sound on immediate send
 
     const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
     if (error) {

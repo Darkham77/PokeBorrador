@@ -140,29 +140,6 @@ export const useAudioStore = defineStore('audio', () => {
     init,
     resume,
     play,
-    playCry,
-    // Shortcuts
-    shiny: () => play('shiny'),
-    rival: () => play('rival'),
-    levelUp: () => play('levelUp'),
-    evolution: () => play('evolution'),
-    caught: () => play('caught'),
-    flee: () => play('flee'),
-    item: () => play('item'),
-    sentMsg: () => play('sentMsg'),
-    receivedMsg: () => play('receivedMsg'),
-    money: () => play('money'),
-    heal: () => play('heal'),
-    faint: () => play('faint'),
-    wobble: () => play('wobble'),
-    ballHit: () => play('ballHit'),
-    statusDamage: () => play('statusDamage'),
-    victoryTrainer: () => play('victoryTrainer'),
-    defeat: () => play('defeat'),
-    steal: () => play('steal'),
-    siren: () => play('siren'),
-    notif: () => play('item'),
-    menuOpen: () => play('item'),
-    menuClose: () => play('item')
+    playCry
   };
 });

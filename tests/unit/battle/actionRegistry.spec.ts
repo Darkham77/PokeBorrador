@@ -48,4 +48,46 @@ describe('ActionRegistry & Move Effect Mapping Coverage', () => {
     expect(scratch).not.toBeNull();
     expect(scratch?.effect).toBeUndefined();
   });
+
+  it('debería tener un manejador de acción registrado para cada movimiento con efecto especial en los learnsets', async () => {
+    const { ALL_ACTIONS } = await import('@/logic/battle/actions/actionRegistry');
+    const { POKEMON_DB } = await import('@/data/pokemon/pokemonDB');
+    const { toID } = await import('@pkmn/sim');
+
+    const learnsetMoves = new Set<string>();
+    for (const poke of Object.values(POKEMON_DB)) {
+      if (poke.learnset && Array.isArray(poke.learnset)) {
+        poke.learnset.forEach((m: { id: string }) => {
+          if (m.id && m.id !== 'Unknown') {
+            learnsetMoves.add(toID(m.id));
+          }
+        });
+      }
+    }
+
+    const missingHandlers: string[] = [];
+
+    learnsetMoves.forEach(moveId => {
+      const moveData = pokemonDataProvider.getMoveData(moveId);
+      if (!moveData) return;
+
+      const effect = moveData.effect;
+      if (!effect) return;
+
+      // Desglosar la base del efecto (ej: burn_10 -> burn, stat_up_self_atk_2_10 -> stat_up_self_atk_2)
+      let effectBase = effect;
+      if (/_(\d+)$/.test(effect) && !effect.startsWith('heal_') && !effect.includes('self_atk_2')) {
+        effectBase = effect.replace(/_\d+$/, '');
+      }
+
+      // Buscar si el efecto o el efecto base está en el registro de acciones central
+      const hasHandler = !!(ALL_ACTIONS[effect] || ALL_ACTIONS[effectBase]);
+
+      if (!hasHandler) {
+        missingHandlers.push(`Movimiento: ${moveData.name} (${moveId}) -> Efecto esperado: '${effect}'`);
+      }
+    });
+
+    expect(missingHandlers).toEqual([]);
+  });
 });

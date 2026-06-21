@@ -1,7 +1,6 @@
 import { sleep } from '@/logic/utils/timeUtils'
-import { gameBus } from '@/logic/events/gameBus'
 import { clearVolatileStatus } from '../battleStatus.ts'
-import { handleEntryAbilities } from '../battleFlow.ts'
+import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 
@@ -71,12 +70,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
   await sleep(400)
 
-  if (playerStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
-    const dmg = Math.floor(newPoke.maxHp * (playerStages.value.spikes / 8))
-    newPoke.hp = Math.max(0, newPoke.hp - dmg)
-    addLog(`¡${newPoke.name} recibió daño por las púas!`, 'log-info', newPoke)
-    gameBus.emit('PLAY_SOUND', 'statusDamage')
-  }
+  applyEntryHazards(newPoke, playerStages.value, addLog)
   
   if (activeBattle.value && activeBattle.value.enemy) {
     handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog, activeBattle.value.weather?.type)

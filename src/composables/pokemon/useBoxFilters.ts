@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -29,9 +29,21 @@ export interface FilterState {
 }
 
 export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
-  const sortMode = ref('none')
-  const sortDirection = ref('desc')
+  const savedSortMode = typeof localStorage !== 'undefined' ? localStorage.getItem('box_sort_mode') : null
+  const savedSortDirection = typeof localStorage !== 'undefined' ? localStorage.getItem('box_sort_direction') : null
+
+  const sortMode = ref(savedSortMode || 'recent')
+  const sortDirection = ref(savedSortDirection || 'desc')
   const isFiltersOpen = ref(false)
+
+  if (typeof localStorage !== 'undefined') {
+    watch(sortMode, (newVal) => {
+      localStorage.setItem('box_sort_mode', newVal)
+    })
+    watch(sortDirection, (newVal) => {
+      localStorage.setItem('box_sort_direction', newVal)
+    })
+  }
   
   const filters = ref<FilterState>({
     tier: 'all',

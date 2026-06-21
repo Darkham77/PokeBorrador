@@ -1,16 +1,13 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
-import { useUIStore } from '@/stores/ui.ts'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
-import { useBoxFilters } from '@/composables/pokemon/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
-  const uiStore = useUIStore()
 
   // --- BOX STATE ---
   const currentBoxIndex = ref(0)
@@ -18,27 +15,6 @@ export const useBoxStore = defineStore('box', () => {
   const boxReleaseSelected = ref<number[]>([]) // Indices
   const boxRocketMode = ref(false)
   const boxRocketSelected = ref<number[]>([]) // Indices
-
-  // --- TEAM STATE ---
-  const teamReleaseMode = ref(false)
-  const teamReleaseSelected = ref<number[]>([]) // Indices
-  const teamRocketMode = ref(false)
-  const teamRocketSelected = ref<number[]>([]) // Indices
-
-  // --- FILTERS & SORTING COMPOSABLE ---
-  const boxDataRef = computed(() => gameStore.state.box || [])
-  const {
-    filters,
-    sortMode: boxSortMode,
-    processedBoxList: filteredBox,
-    hasActiveFilters,
-    toggleFilters,
-    resetFilters,
-    setBoxSort
-  } = useBoxFilters(boxDataRef)
-
-  // --- COMPUTED ---
-  const boxRocketSellValue = computed(() => getRocketSellValue())
 
   // --- ACTIONS ---
   function switchBox(index: number) {
@@ -184,69 +160,6 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.scheduleSave()
   }
 
-  // --- TEAM ACTIONS ---
-  function toggleTeamReleaseMode() {
-    teamReleaseMode.value = !teamReleaseMode.value
-    teamReleaseSelected.value = []
-    if (teamReleaseMode.value) {
-      teamRocketMode.value = false
-      teamRocketSelected.value = []
-    }
-  }
-
-  function toggleTeamReleaseSelect(index: number) {
-    const idx = teamReleaseSelected.value.indexOf(index)
-    if (idx > -1) {
-      teamReleaseSelected.value.splice(idx, 1)
-    } else {
-      teamReleaseSelected.value.push(index)
-    }
-  }
-
-  function confirmTeamRelease() {
-    if (teamReleaseSelected.value.length === 0) return
-
-    const team = gameStore.state.team || []
-    if (team.length - teamReleaseSelected.value.length < 1) {
-      uiStore.notify('No puedes soltar a todos tus Pokémon.', '⚠️')
-      return
-    }
-
-    uiStore.openConfirm({
-      title: 'Soltar Pokémon',
-      message: `¿Estás seguro de que quieres soltar ${teamReleaseSelected.value.length} Pokémon?`,
-      onConfirm: () => {
-        const indices = [...teamReleaseSelected.value].sort((a, b) => b - a)
-        const names: string[] = []
-        
-        indices.forEach(i => {
-          const p = team[i]
-          if (p) {
-            names.push(p.name)
-            returnHeldItem(p)
-            team.splice(i, 1)
-          }
-        })
-
-        uiStore.notify(`¡${names.join(', ')} fueron soltados!`, '🌿')
-        teamReleaseMode.value = false
-        teamReleaseSelected.value = []
-        gameStore.autoFillPvpTeam()
-        gameStore.scheduleSave()
-      }
-    })
-  }
-
-  function toggleTeamRocketMode() {
-    if (gameStore.state.playerClass !== 'rocket') return
-    teamRocketMode.value = !teamRocketMode.value
-    teamRocketSelected.value = []
-    if (teamRocketMode.value) {
-      teamReleaseMode.value = false
-      teamReleaseSelected.value = []
-    }
-  }
-
   // Helpers
   function returnHeldItem(pokemon: Pokemon) {
     if (!pokemon || !pokemon.heldItem) return
@@ -306,75 +219,15 @@ export const useBoxStore = defineStore('box', () => {
     return { success: true, boxNum: gameStore.state.boxCount }
   }
 
-  function toggleTeamRocketSelect(index: number) {
-    const idx = teamRocketSelected.value.indexOf(index)
-    if (idx > -1) {
-      teamRocketSelected.value.splice(idx, 1)
-    } else {
-      teamRocketSelected.value.push(index)
-    }
-  }
 
-  function confirmTeamRocketSell() {
-    const count = teamRocketSelected.value.length
-    if (count === 0) return
-
-    const team = gameStore.state.team || []
-    let totalGain = 0
-    teamRocketSelected.value.forEach(i => {
-      const p = team[i]
-      if (p) totalGain += calculatePrice(p)
-    })
-
-    uiStore.openConfirm({
-      title: 'Vender Pokémon (Team Rocket)',
-      message: `¿Vender ${count} Pokémon por ₽${totalGain.toLocaleString()}?`,
-      onConfirm: () => {
-        const indices = [...teamRocketSelected.value].sort((a, b) => b - a)
-        const names: string[] = []
-        
-        indices.forEach(i => {
-          const p = team[i]
-          if (p) {
-            names.push(p.name)
-            returnHeldItem(p)
-            team.splice(i, 1)
-          }
-        })
-
-        gameStore.state.money += totalGain
-        if (gameStore.state.classData) {
-          gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
-        }
-        
-        uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
-        teamRocketMode.value = false
-        teamRocketSelected.value = []
-        gameStore.autoFillPvpTeam()
-        gameStore.scheduleSave()
-      }
-    })
-  }
 
   return {
     currentBoxIndex,
-    boxSortMode,
     boxReleaseMode,
     boxReleaseSelected,
     boxRocketMode,
     boxRocketSelected,
-    boxRocketSellValue,
-    filters,
-    filteredBox,
-    hasActiveFilters,
-    teamReleaseMode,
-    teamReleaseSelected,
-    teamRocketMode,
-    teamRocketSelected,
-    toggleFilters,
-    resetFilters,
     switchBox,
-    setBoxSort,
     toggleBoxReleaseMode,
     toggleBoxReleaseSelect,
     doBoxRelease,
@@ -384,12 +237,6 @@ export const useBoxStore = defineStore('box', () => {
     getRocketSellValue,
     doBoxRocketSell,
     movePokemonToBox,
-    toggleTeamReleaseMode,
-    toggleTeamReleaseSelect,
-    confirmTeamRelease,
-    toggleTeamRocketMode,
-    toggleTeamRocketSelect,
-    confirmTeamRocketSell,
     moveBoxToTeam,
     swapBoxWithTeam,
     togglePokeTag,

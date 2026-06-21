@@ -64,6 +64,18 @@ export const FIELD_ACTIONS: Record<string, MoveAction> = {
     tgtStages.spikes = Math.min(3, (tgtStages.spikes || 0) + 1);
     addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info', src);
   },
+  'toxic_spikes': (src, _tgt, _srcStages, tgtStages, addLogFn, _battleCtx) => {
+    tgtStages.toxicSpikes = Math.min(2, (tgtStages.toxicSpikes || 0) + 1);
+    addLogFn(`¡${src.name} lanzó púas tóxicas alrededor de su rival!`, 'log-info', src);
+  },
+  'stealth_rock': (src, _tgt, _srcStages, tgtStages, addLogFn, _battleCtx) => {
+    if (tgtStages.stealthRock) {
+      addLogFn("¡Pero falló!", 'log-info', src);
+    } else {
+      tgtStages.stealthRock = 1;
+      addLogFn(`¡Piedras flotantes rodean al equipo rival!`, 'log-info', src);
+    }
+  },
   'mist': (src, _tgt, srcStages, _tgtStages, addLogFn, _battleCtx) => {
     srcStages.mist = 5;
     addLogFn(`¡Una neblina protectora rodea a ${src.name}!`, 'log-info', src);

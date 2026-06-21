@@ -289,5 +289,9 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
       srcStages[s] = Math.min(6, (srcStages[s] || 0) + 1);
     });
     addLogFn(`¡Todas las estadísticas de ${src.name} subieron!`, 'log-info', src);
+  },
+  'stat_down_self_atk': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.atk = Math.max(-6, (srcStages.atk || 0) - 1);
+    addLogFn(`¡El Ataque de ${src.name} bajó!`, 'log-info', src);
   }
 };

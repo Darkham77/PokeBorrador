@@ -112,7 +112,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     },
     playerTeamIndex: ctx.gs.state.team.indexOf(playerPoke),
     participants: [playerPoke.uid], learnQueue: [], ...battleOptions,
-    escapeAttempts: 0
+    escapeAttempts: 0,
+    playerSideConditions: {},
+    enemySideConditions: {}
   }
 
   if (battleOptions.isDebug) {
@@ -212,7 +214,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
     
     if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
-      ctx.audio.siren()
+      ctx.audio.play('siren')
     }
 
     if (!autoBattle) {
@@ -311,6 +313,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value.isArchaeology = false
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value._rewardCombatants = []
+    ctx.activeBattle.value.playerSideConditions = {}
+    ctx.activeBattle.value.enemySideConditions = {}
   }
 
   // Reset stage variables, fainted sides and logs to prevent state leakages
@@ -364,7 +368,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
       if (battleState?.trainerArchetype === 'policeman') {
-        ctx.audio.siren()
+        ctx.audio.play('siren')
       }
 
       if (ctx.animations?.triggerTrainerDialogs) {
@@ -492,7 +496,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         ctx.uiStore.notify(`¡Robaste un ${itemName}! (+10 criminalidad)`, '🏴‍☠️');
         
         // Sonido retro de robo
-        ctx.audio.steal();
+        ctx.audio.play('steal');
       }
     }
   }
@@ -577,7 +581,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
             ctx.uiStore.notify(`¡Te robaron ${qty}x ${displayName}!`, '🎒');
           }
           
-          ctx.audio.steal();
+          ctx.audio.play('steal');
         }
       }
     }

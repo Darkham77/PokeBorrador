@@ -15,3 +15,11 @@ A daily restriction applied to a player's account. A player is allowed to defeat
 ### Battle Cry (Grito de Batalla)
 
 A distinct audio clip associated with each Pokémon species. It is played when the Pokémon enters the battlefield, faints in combat (slowed and pitch-lowered), or executes voice-based status moves.
+
+### Volatile Counter (Contador Volátil)
+
+A temporary turn-based counter attached to a Pokémon that ticks down at the end of each round and triggers an effect (such as sleep or self-inflicted damage) when it reaches zero. It is completely cleared when the Pokémon is withdrawn from the active combat seat.
+
+### Side Condition (Condición de Bando)
+
+A status or delayed effect tied directly to a bando (player/enemy side of the field) rather than a specific Pokémon. It persists across switches and affects whichever Pokémon occupies the active seat when it triggers (such as Wish).

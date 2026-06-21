@@ -4,6 +4,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
+import { getCombinedEffectiveness } from '../pokemon/typeEngine.ts'
+import { gameBus } from '../events/gameBus.ts'
 
 export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn) {
   if (!pokemon) return;
@@ -270,5 +272,50 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   ctx.persistBattle()
   if (active && !active.over) {
     active.turnCount++
+  }
+}
+
+export function applyEntryHazards(pokemon: Pokemon, stages: BattleStages, addLog: LogFn) {
+  if (!pokemon || pokemon.hp <= 0) return;
+
+  const isGrounded = pokemon.type !== 'flying' && pokemon.type2 !== 'flying' && pokemon.ability !== 'Levitación';
+
+  // 1. Spikes
+  if (stages.spikes && stages.spikes > 0 && isGrounded) {
+    const dmg = Math.floor(pokemon.maxHp * (stages.spikes / 8));
+    pokemon.hp = Math.max(0, pokemon.hp - dmg);
+    addLog(`¡${pokemon.name} recibió daño por las púas!`, 'log-info', pokemon);
+    gameBus.emit('PLAY_SOUND', 'statusDamage');
+  }
+
+  // 2. Toxic Spikes
+  if (stages.toxicSpikes && stages.toxicSpikes > 0) {
+    const isPoisonType = pokemon.type === 'poison' || pokemon.type2 === 'poison';
+    const isSteelType = pokemon.type === 'steel' || pokemon.type2 === 'steel';
+    
+    if (isPoisonType && isGrounded) {
+      stages.toxicSpikes = 0;
+      addLog(`¡${pokemon.name} absorbió las púas tóxicas!`, 'log-info', pokemon);
+    } else if (isGrounded && !pokemon.status && !isPoisonType && !isSteelType && pokemon.ability !== 'Inmunidad') {
+      if (stages.toxicSpikes === 1) {
+        pokemon.status = 'poison';
+        addLog(`¡${pokemon.name} fue envenenado por las púas tóxicas!`, 'log-info', pokemon);
+      } else if (stages.toxicSpikes >= 2) {
+        pokemon.status = 'poison';
+        pokemon.badPoison = 1;
+        addLog(`¡${pokemon.name} fue gravemente envenenado por las púas tóxicas!`, 'log-info', pokemon);
+      }
+    }
+  }
+
+  // 3. Stealth Rock
+  if (stages.stealthRock && stages.stealthRock > 0) {
+    const effectiveness = getCombinedEffectiveness('rock', pokemon);
+    const dmg = Math.floor(pokemon.maxHp * 0.125 * effectiveness);
+    if (dmg > 0) {
+      pokemon.hp = Math.max(0, pokemon.hp - dmg);
+      addLog(`¡Las rocas afiladas se clavaron en ${pokemon.name}!`, 'log-info', pokemon);
+      gameBus.emit('PLAY_SOUND', 'statusDamage');
+    }
   }
 }

@@ -149,7 +149,8 @@ describe('Player Class Logic (V3)', () => {
       BATTLE_SUBSTATES,
       audio: {
         defeat: vi.fn(),
-        victoryTrainer: vi.fn()
+        victoryTrainer: vi.fn(),
+        play: vi.fn()
       },
       activeBattle: {
         value: {

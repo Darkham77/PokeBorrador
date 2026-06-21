@@ -62,7 +62,7 @@ const activePokeNickname = computed({
 const activeSpeciesMoves = computed<string[]>(() => {
   const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
   if (!data || !data.learnset) return []
-  return [...new Set(data.learnset.map(m => m.name))]
+  return [...new Set(data.learnset.map(m => m.id))]
 })
 
 const activeBaseStats = computed(() => {
@@ -163,7 +163,7 @@ function selectEditPokeSpecies(p: { id: string }) {
     const learnedMoves = data.learnset
       .filter(m => m.lv <= activePoke.value.level)
       .sort((a, b) => b.lv - a.lv)
-      .map(m => m.name)
+      .map(m => m.id)
     const unique = [...new Set(learnedMoves)].slice(0, 4)
     activePokeMoves.value = unique
   }
@@ -179,7 +179,7 @@ function autoFillActiveMoves() {
   const learnedMoves = data.learnset
     .filter(m => m.lv <= activePoke.value.level)
     .sort((a, b) => b.lv - a.lv)
-    .map(m => m.name)
+    .map(m => m.id)
   const unique = [...new Set(learnedMoves)].slice(0, 4)
   activePokeMoves.value = unique
 }
@@ -187,7 +187,7 @@ function autoFillActiveMoves() {
 function randomFillActiveMoves() {
   const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
   if (!data?.learnset || data.learnset.length === 0) return
-  const allMoves = [...new Set(data.learnset.map(m => m.name))]
+  const allMoves = [...new Set(data.learnset.map(m => m.id))]
   const shuffled = allMoves.sort(() => 0.5 - Math.random())
   activePokeMoves.value = shuffled.slice(0, 4)
 }

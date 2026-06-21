@@ -136,7 +136,7 @@ export const useGTSStore = defineStore('gts', () => {
       }, (payload) => {
         if (payload.new?.status === 'sold' && payload.old?.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
-          audio.money()
+          audio.play('money')
           
           if (!game.state.stats) {
             game.state.stats = {}

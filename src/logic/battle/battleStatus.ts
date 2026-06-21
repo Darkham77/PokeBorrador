@@ -27,6 +27,82 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
   const addLogFn = ctx.addLog;
   const side = role === 'player' ? 'player' : 'enemy';
 
+  // 0. Procesar Contadores Volátiles (ej: yawn)
+  if (pokemon.volatileCounters) {
+    for (const [key, val] of Object.entries(pokemon.volatileCounters)) {
+      if (val > 0) {
+        const newVal = val - 1;
+        pokemon.volatileCounters[key] = newVal;
+        
+        if (key === 'partiallytrapped' && newVal > 0) {
+          const dmg = Math.max(1, Math.floor(pokemon.maxHp / 16));
+          pokemon.hp = Math.max(0, pokemon.hp - dmg);
+          addLogFn(`¡${pokemon.name} sufre por el atrapamiento! (-${dmg} HP)`, 'log-info', pokemon);
+          if (ctx.animations?.handleBlinkRequest) {
+            await ctx.animations.handleBlinkRequest({ side });
+          }
+        }
+
+        if (newVal === 0) {
+          if (key === 'yawn') {
+            delete pokemon.volatileCounters[key];
+            if (!pokemon.status) {
+              if (pokemon.ability === 'Insomnio' || pokemon.ability === 'Espíritu Vital') {
+                addLogFn(`¡La habilidad de ${pokemon.name} evitó quedarse dormido!`, 'log-info', pokemon);
+              } else {
+                pokemon.status = 'sleep';
+                pokemon.sleepTurns = 1 + Math.floor(Math.random() * 3);
+                addLogFn(`¡${pokemon.name} se quedó dormido por el Bostezo!`, 'log-info', pokemon);
+                if (ctx.animations?.handleBlinkRequest) {
+                  await ctx.animations.handleBlinkRequest({ side });
+                }
+              }
+            }
+          } else if (key === 'lockedmove') {
+            delete pokemon.volatileCounters[key];
+            if (!pokemon.confused) {
+              if (pokemon.ability === 'Ritmo Propio') {
+                addLogFn(`¡El Ritmo Propio de ${pokemon.name} evitó la confusión!`, 'log-info', pokemon);
+              } else {
+                pokemon.confused = 2 + Math.floor(Math.random() * 3);
+                addLogFn(`¡${pokemon.name} se calmó, pero terminó confundido!`, 'log-info', pokemon);
+              }
+            }
+          } else if (key === 'partiallytrapped') {
+            delete pokemon.volatileCounters[key];
+            addLogFn(`¡${pokemon.name} se liberó del atrapamiento!`, 'log-info', pokemon);
+          }
+        }
+      }
+    }
+  }
+
+  // 0.5 Procesar Condiciones de Bando (ej: wish)
+  const activeB = ctx.activeBattle.value;
+  if (activeB) {
+    const sideConds = role === 'player' ? activeB.playerSideConditions : activeB.enemySideConditions;
+    if (sideConds) {
+      for (const [key, cond] of Object.entries(sideConds)) {
+        if (cond && typeof cond.turns === 'number') {
+          cond.turns--;
+          if (cond.turns <= 0) {
+            if (key === 'wish') {
+              delete sideConds[key];
+              if (pokemon.hp > 0) {
+                const healAmt = Math.floor(pokemon.maxHp / 2);
+                pokemon.hp = Math.min(pokemon.maxHp, pokemon.hp + healAmt);
+                addLogFn(`¡Se cumplió el Deseo! ${pokemon.name} recuperó salud.`, 'log-info', pokemon);
+                if (ctx.animations?.handleHealRequest) {
+                  await ctx.animations.handleHealRequest({ side });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // 1. Efectos de control temporal
   if ((pokemon.disabledTurns ?? 0) > 0) {
     pokemon.disabledTurns = (pokemon.disabledTurns ?? 0) - 1;
@@ -176,6 +252,7 @@ export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: Ba
  */
 export function clearVolatileStatus(poke: Pokemon) {
   if (!poke) return;
+  poke.volatileCounters = {}
   poke.confused = 0
   poke.flinched = false
   poke.substitute = 0

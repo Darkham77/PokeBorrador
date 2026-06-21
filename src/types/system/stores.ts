@@ -229,25 +229,7 @@ export interface PlayerClassStore {
 
 export interface AudioStore {
   play: (type: string) => Promise<void>;
-  shiny: () => void;
-  levelUp: () => void;
-  money: () => void;
-  faint: () => void;
-  heal: () => void;
-  victoryTrainer: () => void;
-  defeat: () => void;
-  notif: () => void;
-  sentMsg: () => void;
-  receivedMsg: () => void;
-  flee: () => void;
-  ballHit: () => void;
-  wobble: () => void;
-  caught: () => void;
-  evolution: () => void;
-  menuOpen: () => void;
-  menuClose: () => void;
-  steal: () => void;
-  siren: () => void;
+  playCry: (pokemonName: string, isFaint?: boolean) => Promise<void>;
 }
 
 export interface AuthStore {
