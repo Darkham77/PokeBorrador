@@ -357,13 +357,20 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   const sanitizeMoves = (p: Pokemon) => {
     if (p && Array.isArray(p.moves)) {
       p.moves.forEach((m) => {
-        if (m && m.name) {
-          const resolvedId = pokemonDataProvider.resolveMoveId(m.name);
-          if (resolvedId) {
-            m.id = resolvedId;
-            const dbMove = pokemonDataProvider.getMoveData(resolvedId);
-            if (dbMove) {
-              m.name = dbMove.name;
+        if (m) {
+          if (!m.id) {
+            m.id = 'tackle';
+          }
+          try {
+            const dbMove = pokemonDataProvider.getMoveData(m.id);
+            m.name = dbMove.name;
+          } catch {
+            m.id = 'tackle';
+            try {
+              const fallback = pokemonDataProvider.getMoveData('tackle');
+              m.name = fallback.name;
+            } catch {
+              m.name = 'Tackle';
             }
           }
         }

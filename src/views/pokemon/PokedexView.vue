@@ -18,7 +18,7 @@ const gs = computed(() => gameStore.state)
 const currentGen = ref(1)
 
 const currentOrder = computed(() => currentGen.value === 1 ? PDEX_ORDER : GEN2_PDEX_ORDER)
-const { searchQuery, sortBy, pokemonList: rawPokemonList } = usePokedex(gs, currentOrder, currentGen)
+const { searchQuery, sortBy, sortOrder, pokemonList: rawPokemonList } = usePokedex(gs, currentOrder, currentGen)
 
 const pokemonList = computed(() => {
   return rawPokemonList.value.map(p => ({
@@ -50,6 +50,7 @@ const openDetail = (p: PokedexItem) => {
     <PokedexControls 
       v-model:current-gen="currentGen"
       v-model:sort-by="sortBy"
+      v-model:sort-order="sortOrder"
       v-model:search-query="searchQuery"
     />
 

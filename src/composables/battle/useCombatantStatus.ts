@@ -79,7 +79,7 @@ function formatAbilityDescription(desc: string): string {
   return lines.join('\n')
 }
 
-export interface UnifiedStatus {
+interface UnifiedStatus {
   id: string
   emoji: string
   title: string

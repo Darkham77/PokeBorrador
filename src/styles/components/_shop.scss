@@ -74,7 +74,7 @@
       width: 100%;
       background: Rgba(0, 0, 0, 0.3);
       border: 1px solid Rgba(255, 255, 255, 0.08);
-      padding: 8px 12px 8px 34px;
+      padding: 8px 32px 8px 34px;
       border-radius: 10px;
       color: white;
       outline: none;
@@ -89,6 +89,27 @@
       &::placeholder {
         color: Rgba(255, 255, 255, 0.3);
       }
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: Translatey(-50%);
+      background: none;
+      border: none;
+      color: Rgba(255, 255, 255, 0.5);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0;
+      z-index: var(--z-low);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+
+      &:hover { color: white; }
     }
   }
 }

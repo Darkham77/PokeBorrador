@@ -34,7 +34,7 @@ export function useMoveTooltip(
     let info = calculateMoveModifierInfo(move, weather, cycle);
 
     if (attacker && attacker.heldItem === 'choice_band') {
-      const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+      const moveIdLookup = move.id || '';
       const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };
       const category = move.cat || md.cat || 'physical';
       const isPhysical = category === 'physical';
@@ -72,7 +72,7 @@ export function useMoveTooltip(
 
     if (!attacker) return null;
 
-    const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+    const moveIdLookup = move.id || '';
     const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number; effect?: string };
     const basePower = move.power !== undefined ? move.power : md.power || 0;
     const isStatus = move.cat === 'status' || md.cat === 'status';
@@ -157,7 +157,7 @@ export function useMoveTooltip(
 
   const moveDescriptionText = computed(() => {
     const move = toValue(moveInput);
-    const moveId = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+    const moveId = move.id || '';
     const moveDataObj = moveId ? pokemonDataProvider.getMoveData(moveId) : null;
     return getMoveDescription(move.name, moveDataObj);
   });

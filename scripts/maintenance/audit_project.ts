@@ -304,9 +304,22 @@ const zIndexAudit: AuditRule = {
   },
   fixable: true
 };
+const forbiddenFallbacks: AuditRule = {
+  regex: /\b(getItemByName|resolveMoveId)\b|\.id\s*(?:\|\||\?\?)\s*\w*\.?name/g,
+  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe.`,
+  severity: 'error',
+  check: (filePath: string) => {
+    const lowerPath = filePath.toLowerCase();
+    const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('spec');
+    if (isTestOrMock) return false;
+    const isLogicOrStore = lowerPath.includes('src/logic') || lowerPath.includes('src/stores') || lowerPath.includes('src\\logic') || lowerPath.includes('src\\stores');
+    return isLogicOrStore;
+  },
+  fixable: false
+};
 
 const config = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -332,7 +345,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const allRules: AuditRule[] = [legacyDates, config.hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot];
+      const allRules: AuditRule[] = [legacyDates, config.hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot, forbiddenFallbacks];
       let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
@@ -643,6 +656,7 @@ interface FallowAuditData {
 
 function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   const violations: Violation[] = [];
+  let parsedSuccessfully = false;
   try {
     const args = ['--format', 'json', ...extraArgs];
     const cmd = `node ./node_modules/fallow/bin/fallow ${command} ${args.join(' ')}`;
@@ -651,6 +665,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
     if (jsonStart !== -1) {
       const data = JSON.parse(stdout.substring(jsonStart)) as FallowAuditData;
       violations.push(...mapFallowJson(command, data));
+      parsedSuccessfully = true;
     }
   } catch (e: unknown) {
     const err = e as { stdout?: Buffer; message?: string; stderr?: Buffer };
@@ -661,12 +676,13 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
         try {
           const data = JSON.parse(stdoutStr.substring(jsonStart)) as FallowAuditData;
           violations.push(...mapFallowJson(command, data));
+          parsedSuccessfully = true;
         } catch {
           // Ignorar errores de parseo de JSON en salida de error
         }
       }
     }
-    if (violations.length === 0) {
+    if (!parsedSuccessfully) {
       violations.push({
         file: 'fallow',
         line: 0,

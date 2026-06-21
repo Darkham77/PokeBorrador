@@ -249,3 +249,21 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 export function useAssets() {
   return { getAssetUrl, ASSET_TYPES };
 }
+
+/**
+ * Gets the PokeAPI sprite URL for a given species ID.
+ */
+export function getSpriteUrl(id: string, isShiny = false) {
+  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) {
+    return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
+  }
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
+}
+
+/**
+ * Gets the PokeAPI back sprite URL for a given species ID.
+ */
+export function getBackSpriteUrl(id: string, isShiny = false) {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
+}
+

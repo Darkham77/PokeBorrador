@@ -6,10 +6,6 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { gsap } from 'gsap';
 
-defineProps<{
-  id?: string;
-  show?: boolean;
-}>();
 
 defineEmits<{
   (e: 'close'): void;

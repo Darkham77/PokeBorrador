@@ -14,14 +14,16 @@ interface Props {
   onCancel?: () => void
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   show: false,
   title: '¿ESTÁS SEGURO?',
   message: '',
   confirmText: 'ACEPTAR',
   cancelText: 'CANCELAR',
   type: 'primary',
-  variant: 'modern'
+  variant: 'modern',
+  onConfirm: undefined,
+  onCancel: undefined
 })
 
 const emit = defineEmits<{

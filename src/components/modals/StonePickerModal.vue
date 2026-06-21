@@ -9,7 +9,7 @@ import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
-import { getItemByName } from '@/data/inventory/items';
+import { SHOP_ITEMS } from '@/data/inventory/items';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
@@ -83,7 +83,7 @@ watch(options, () => {
 });
 
 const getStoneInfo = (name: string) => {
-  return getItemByName(name) || { icon: '💎', sprite: '', id: name };
+  return SHOP_ITEMS.find(i => i.id === name || i.name === name) || { icon: '💎', sprite: '', id: name };
 };
 
 const getPokemonName = (id: string) => {

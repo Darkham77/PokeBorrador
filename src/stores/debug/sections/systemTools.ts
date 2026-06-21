@@ -1,9 +1,18 @@
+import type { DebugSystem } from '@/stores/debug'
+
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
+import { useErrorStore } from '@/stores/errorStore'
 
 import { logger } from '@/logic/utils/logger'
 import { gsap } from 'gsap'
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+export function registerSystemTools(debug: DebugSystem) {
+  const game = useGameStore()
+  const ui = useUIStore()
+  const modalStore = useModalStore()
+  const errorStore = useErrorStore()
 
-export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, errorStore, eventStoreModule }: DebugContext) {
   // MODALS
   debug.register({
     id: 'modal-test-stack',
@@ -69,10 +78,12 @@ export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, 
       const { error } = await game.db.from('events_config').upsert(eventData)
       if (error) throw error
       ui.notify('Evento guardado (CLI)', '✅')
-      const mod = eventStoreModule as { useEventStore?: () => { fetchEvents: () => Promise<void> } } | undefined;
-      if (mod?.useEventStore) {
-        const eventStore = mod.useEventStore()
+      try {
+        const { useEventStore } = await import('@/stores/events')
+        const eventStore = useEventStore()
         await eventStore.fetchEvents()
+      } catch (e) {
+        logger.warn('DEBUG', `Failed to reload events: ${(e as Error).message}`)
       }
     },
     description: 'Guarda o actualiza la configuración de un evento.'

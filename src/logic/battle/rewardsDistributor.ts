@@ -4,7 +4,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemByName, getItemById } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -96,7 +96,12 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
       if (active.rewardTM) { 
         const tm = active.rewardTM
-        const itemObj = getItemByName(tm) || getItemById(tm)
+        let itemObj = null
+        try {
+          itemObj = getItemById(tm)
+        } catch {
+          // fallback
+        }
         const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
         ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
         ctx.addLog(`¡Recibiste la ${itemObj?.name || tm}!`, 'log-info', tmId) 
@@ -116,7 +121,12 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         else if (key === 'hard') tmChance = 0.05
         
         if (tmChance > 0 && Math.random() < tmChance) {
-          const itemObj = getItemByName(tmReward) || getItemById(tmReward)
+          let itemObj = null
+          try {
+            itemObj = getItemById(tmReward)
+          } catch {
+            // fallback
+          }
           const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
           ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
           ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)

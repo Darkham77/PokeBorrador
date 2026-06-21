@@ -234,7 +234,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
             const stolen = pool[Math.floor(Math.random() * pool.length)];
             if (stolen) {
               const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-              const clone = makePokemon(stolen.id || stolen.name, stolen.level || 5);
+              const clone = makePokemon(stolen.id, stolen.level || 5);
               if (clone) {
                 clone.caught = true;
                 ctx.gs.state.box.push(clone);
@@ -329,13 +329,18 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
         uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰');
       }
       if (stolen.items) {
-        const { getItemByName, getItemById } = await import('@/data/inventory/items');
+        const { getItemById } = await import('@/data/inventory/items');
         for (const [itemId, qty] of Object.entries(stolen.items)) {
           if (qty && (qty as number) > 0) {
             if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
             ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + (qty as number);
             
-            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            let itemDef = null;
+            try {
+              itemDef = getItemById(itemId);
+            } catch {
+              // usar ID
+            }
             const displayName = itemDef?.name || itemId;
             ctx.addLog(`¡Recuperaste tu objeto robado: ${displayName}!`, 'log-success', 'player');
             uiStore.notify(`¡Recuperaste ${qty}x ${displayName}!`, '🎒');

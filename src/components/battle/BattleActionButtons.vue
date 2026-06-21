@@ -13,7 +13,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'switch'): void
   (e: 'bag'): void
-  (e: 'run'): void
   (e: 'catch'): void
   (e: 'select-ball', ballId: string): void
 }>()

@@ -3,12 +3,6 @@ import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
-import { useUIStore } from './ui.ts'
-import { useMapStore } from './map.ts'
-import { usePvPStore } from './pvp.ts'
-import { useBreedingStore } from './breeding.ts'
-import { useModalStore } from './modals.ts'
-import { useErrorStore } from './errorStore.ts'
 
 // Section Registrations
 import { registerStatsTools } from './debug/sections/statsTools.ts'
@@ -34,19 +28,6 @@ export interface DebugSystem {
   unregister?: (id: string) => void
 }
 
-export interface DebugContext {
-  game: ReturnType<typeof useGameStore>
-  ui: ReturnType<typeof useUIStore>
-  pvp: ReturnType<typeof usePvPStore>
-  auth: ReturnType<typeof useAuthStore>
-  map: ReturnType<typeof useMapStore>
-  mapStore: ReturnType<typeof useMapStore>
-  breedingStore: ReturnType<typeof useBreedingStore>
-  modalStore: ReturnType<typeof useModalStore>
-  errorStore: ReturnType<typeof useErrorStore>
-  eventStoreModule?: unknown
-}
-
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,12 +38,6 @@ declare global {
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()
   const game = useGameStore()
-  const ui = useUIStore()
-  const map = useMapStore()
-  const pvp = usePvPStore()
-  const modalStore = useModalStore()
-  const errorStore = useErrorStore()
-  const breedingStore = useBreedingStore()
 
   const tools = ref<DebugTool[]>([])
 
@@ -148,30 +123,16 @@ export const useDebugStore = defineStore('debug', () => {
   async function init() {
     logger.debug('DEBUG', 'Initializing debug tools (Modular)...');
     
-    // Pass all necessary stores to the specialized registration functions
-    const context: DebugContext = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
-
     // Synchronous registrations (fastest availability)
-    registerStatsTools({ register }, context)
-    registerMapTools({ register }, context)
-    registerPokeTools({ register }, context)
-    registerTimeTools({ register }, context)
-    registerItemTools({ register }, context)
-    registerBattleTools({ register }, context)
-    
-    // SystemTools registration (now synchronous registration, async module resolution)
-    registerSystemTools({ register }, { ...context })
+    registerStatsTools({ register })
+    registerMapTools({ register })
+    registerPokeTools({ register })
+    registerTimeTools({ register })
+    registerItemTools({ register })
+    registerBattleTools({ register })
+    registerSystemTools({ register })
 
     updateGlobalProxy()
-    
-    // Delayed dependency resolution for Admin tools
-    try {
-      const eventStoreModule = await import('./events')
-      registerSystemTools({ register }, { ...context, eventStoreModule })
-      updateGlobalProxy()
-    } catch (e) {
-      logger.warn('DEBUG', `Failed to load optional eventStoreModule for SystemTools: ${(e as Error).message}`)
-    }
   }
 
   watch([trainerChance50, debugMultipliers, forceRival, forceGuardian80], () => {

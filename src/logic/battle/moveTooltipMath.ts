@@ -24,7 +24,7 @@ export function calculateMoveModifierInfo(
   const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime);
   const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && isNightTime);
 
-  const moveId = m.id || (m.name ? pokemonDataProvider.resolveMoveId(m.name) : '');
+  const moveId = m.id || '';
 
   if (moveId === 'thunder' || moveId === 'hurricane') {
     const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
@@ -333,7 +333,7 @@ export function parseStatusEffectInfo(
   playerStages: Record<string, number | undefined> | null | undefined,
   enemyStages: Record<string, number | undefined> | null | undefined
 ) {
-  const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+  const moveIdLookup = move.id || '';
   const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { effect?: string };
   const effectStr = (move.effect || md.effect) as string | undefined;
 

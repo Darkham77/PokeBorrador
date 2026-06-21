@@ -80,22 +80,24 @@ const activeBaseStats = computed(() => {
 
 const activePokeMoves = computed({
   get: () => {
-    const moves = activePoke.value.moves.map(m => m?.name || null)
+    const moves = activePoke.value.moves.map(m => m?.id || null)
     while (moves.length < 4) moves.push(null)
     return moves
   },
   set: (val: (string | null)[]) => {
-    const formatted = val.map(mName => {
-      if (!mName) return null
-      const mData = pokemonDataProvider.getMoveData(mName)
+    const formatted = val.map(mId => {
+      if (!mId) return null
+      const mData = pokemonDataProvider.getMoveData(mId)
+      if (!mData) throw new Error(`[IndividualPokemonEditor] No se encontró información para el movimiento: ${mId}`)
       return {
-        name: mName,
-        pp: mData?.pp || 35,
-        maxPP: mData?.pp || 35,
-        type: mData?.type || 'normal',
-        power: mData?.power || 0,
-        acc: mData?.acc || 100,
-        cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
+        id: mId,
+        name: mData.name,
+        pp: mData.pp,
+        maxPP: mData.pp,
+        type: mData.type || 'normal',
+        power: mData.power || 0,
+        acc: mData.acc || 100,
+        cat: (mData.cat || 'physical') as 'physical' | 'special' | 'status'
       }
     }).filter(Boolean) as Pokemon['moves']
     activePoke.value.moves = formatted

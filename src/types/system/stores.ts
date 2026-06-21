@@ -141,7 +141,6 @@ export interface UIStore {
   isBattleSwitchForced: boolean;
   isDebugPerformanceMode: boolean;
   isAnyBlockingModalOpen: boolean;
-  isAnyModalOpen: boolean;
   isAnyFullscreenModalOpen: boolean;
   openHudGroup: string | null;
   autoBattle: boolean;

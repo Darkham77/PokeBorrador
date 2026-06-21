@@ -24,7 +24,7 @@ export interface ChatMessage {
   gender?: string;
 }
 
-export interface PrivateChat {
+interface PrivateChat {
   username: string;
   messages: ChatMessage[];
   unreadCount: number;

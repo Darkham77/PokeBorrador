@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { 
   calculateDamagePure, 
-  getEffectiveStat,
+  getEffectiveStatPure,
   type PurePokemon,
   type PureMove,
   type PureBattleWeather
@@ -126,14 +126,14 @@ describe('Battle Math Core (Weather & Cycles)', () => {
     const snow: PureBattleWeather = { type: 'snow', turns: 5 };
 
     it('Rock types get 1.5x SpD in Sandstorm', () => {
-      const spdNormal = getEffectiveStat(TYRANITAR, 'spd', {}, null);
-      const spdSand = getEffectiveStat(TYRANITAR, 'spd', {}, sand);
+      const spdNormal = getEffectiveStatPure(TYRANITAR, 'spd', {}, null);
+      const spdSand = getEffectiveStatPure(TYRANITAR, 'spd', {}, sand);
       expect(spdSand).toBe(Math.floor(spdNormal * 1.5));
     });
 
     it('Ice types get 1.5x Def in Snow', () => {
-      const defNormal = getEffectiveStat(CLOYSTER, 'def', {}, null);
-      const defSnow = getEffectiveStat(CLOYSTER, 'def', {}, snow);
+      const defNormal = getEffectiveStatPure(CLOYSTER, 'def', {}, null);
+      const defSnow = getEffectiveStatPure(CLOYSTER, 'def', {}, snow);
       expect(defSnow).toBe(Math.floor(defNormal * 1.5));
     });
   });
@@ -182,14 +182,14 @@ describe('Battle Math Core (Weather & Cycles)', () => {
     const hail: PureBattleWeather = { type: 'hail', turns: 5 };
 
     it('Ice types get 1.5x Def in Blizzard (Extreme Hail)', () => {
-      const defNormal = getEffectiveStat(CLOYSTER, 'def', {}, null);
-      const defBlizz = getEffectiveStat(CLOYSTER, 'def', {}, blizzard);
+      const defNormal = getEffectiveStatPure(CLOYSTER, 'def', {}, null);
+      const defBlizz = getEffectiveStatPure(CLOYSTER, 'def', {}, blizzard);
       expect(defBlizz).toBe(Math.floor(defNormal * 1.5));
     });
 
     it('Hail should also grant the Def boost to Ice types', () => {
-      const defNormal = getEffectiveStat(CLOYSTER, 'def', {}, null);
-      const defHail = getEffectiveStat(CLOYSTER, 'def', {}, hail);
+      const defNormal = getEffectiveStatPure(CLOYSTER, 'def', {}, null);
+      const defHail = getEffectiveStatPure(CLOYSTER, 'def', {}, hail);
       expect(defHail).toBe(Math.floor(defNormal * 1.5));
     });
   });

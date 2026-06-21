@@ -7,7 +7,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 1. **Object Names**: Always use full official names. Example: **"PP Up"** (NOT "pp-up", "PP_Up", or abbreviations like "PPUP").
 2. **Deduplication**: Never add an element (move, ability, item) that already exists. Use the validators before proceeding.
 3. **PP Synchronization**: When initializing a move for a Pokémon, `maxPP` must be equal to its initial base `pp`.
-4. **Image Format**: All external images from PokeAPI **MUST** be **PNG**.
+4. **Image Format**: All external images **MUST** be **PNG**.
 5. **Tier Calculation**: Classification (S+, S, A, etc.) is **DYNAMIC**. Do not add it to the DB; it is calculated in the UI using `src/logic/constants/tiers.ts`.
 6. **SASS Style**: If you create styles for new content, `@use` directives must be the **first lines** of the file. Note that standard CSS filter/transform capitalization is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`), so writing standard lowercase filters is fully supported.
 7. **CLI-First Verification**: Upon finishing the implementation, you **MUST** use `window.__VITE_DEBUG__` commands to verify the content.
@@ -27,17 +27,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 
 ## 🐲 Adding a New Pokémon
 
-### Step 0: Get data from PokeAPI
-
-Run the fetch script:
-
-```bash
-node --experimental-strip-types .agents/skills/project-standards/scripts/content/fetch_pokemon.ts <name>
-```
-
-This generates a `_output/<pokemon>_code.txt` file with blocks ready to copy.
-
-### Step 1: POKEMON_DB (`src/data/pokemonDB.ts`)
+### Step 1: POKEMON_DB (`src/data/pokemon/pokemonDB.ts`)
 
 Ensure that the learnset includes only moves that exist in `MOVE_DATA`.
 

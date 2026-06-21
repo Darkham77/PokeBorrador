@@ -29,6 +29,7 @@ const {
   activePosition,
   arrowOffset,
   isRightSide,
+  maxHeight,
   updatePosition
 } = useTooltipPosition(trigger, tooltip, props.position)
 
@@ -355,7 +356,10 @@ onUnmounted(() => {
               '--arrow-y': arrowOffset.y + 'px'
             }"
           >
-            <div class="tooltip-content">
+            <div 
+              class="tooltip-content"
+              :style="maxHeight ? { maxHeight: maxHeight + 'px', overflow: 'hidden' } : {}"
+            >
               <span
                 v-if="title"
                 class="pv-tooltip-title"

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
-import { getItemById, getItemByName } from '@/data/inventory/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import PokemonSelectionFilters from '../modals/PokemonSelectionFilters.vue'
 import SortControls from '@/components/common/SortControls.vue'
@@ -63,7 +63,7 @@ const inventory = computed<InventoryItem[]>(() => {
   return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
     .map(([name, qty]) => {
-      const dbItem = getItemByName(name) || getItemById(name)
+      const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
       return {
         id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
         name: dbItem?.name ?? name,
@@ -152,7 +152,7 @@ async function handlePublish() {
 function updateSuggestedPrice() {
   if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
     const nameStr = selection.value.id
-    const shopItem = getItemByName(nameStr) || getItemById(nameStr)
+    const shopItem = SHOP_ITEMS.find(i => i.id === nameStr || i.name === nameStr)
     if (shopItem && shopItem.price > 0) {
       price.value = Math.floor(shopItem.price * 0.5) * itemQty.value
     } else {
@@ -232,7 +232,7 @@ const net = computed(() => price.value - fee.value)
               class="ps-clear-search"
               @click.stop="itemSearchQuery = ''"
             >
-              ✕
+              ×
             </button>
           </div>
           <SortControls

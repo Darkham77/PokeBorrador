@@ -14,8 +14,8 @@ import assert from 'node:assert/strict';
 
 import {
   calculateDamagePure,
-  getEffectiveStat,
-  getAbilityMultiplier,
+  getEffectiveStatPure as getEffectiveStat,
+  getAbilityMultiplierPure as getAbilityMultiplier,
   getMoveCategory,
   STAGE_MULTIPLIERS_STAT,
   ACTIVE_RULE_SET,

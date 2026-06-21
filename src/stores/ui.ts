@@ -11,13 +11,13 @@ import { MODAL_METADATA } from '@/logic/modals/registry'
 
 export type { UINotification };
 
-export interface EvolutionData {
+interface EvolutionData {
   pokemon: Pokemon;
   targetId: string;
   itemName: string;
 }
 
-export interface PokemonSelectionConfig {
+interface PokemonSelectionConfig {
   title?: string;
   subtitle?: string;
   multi?: boolean;
@@ -305,10 +305,7 @@ export const useUIStore = defineStore('ui', () => {
     return obscuringModals.some(m => !m.opening && !m.closing)
   })
   
-  const isAnyModalOpen = computed(() => {
-    const modalStore = useModalStore()
-    return modalStore.stack.length > 0 || isChatOpen.value || isHistoryOpen.value
-  })
+
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
   const createModalRef = (name: string) => computed({
@@ -322,32 +319,16 @@ export const useUIStore = defineStore('ui', () => {
   const isProfileOpen = createModalRef('Profile')
   const isSettingsOpen = createModalRef('Settings')
   const isLibraryOpen = createModalRef('Library')
-  const isTradeOpen = createModalRef('SocialCenter')
-  const isSocialOpen = createModalRef('SocialCenter')
-  const isShopOpen = createModalRef('Shop')
-  const isInventoryOpen = createModalRef('Inventory')
-  const isPokedexOpen = createModalRef('Pokedex')
-  const isPokemonCenterOpen = createModalRef('HealOverlay')
   const isWarShopOpen = createModalRef('WarShop')
-  const isPassiveTeamEditorOpen = createModalRef('PassiveTeamEditor')
-  const isPokemonSelectionOpen = createModalRef('PokemonSelection')
-  const isClassSelectionOpen = createModalRef('ClassSelection')
-  const isClassMissionsOpen = createModalRef('ClassMissions')
-  const isRepShopOpen = createModalRef('Shop')
-  const isPokemonDetailOpen = createModalRef('PokemonDetail')
   const isEvolutionOpen = createModalRef('Evolution')
   const isMoveLearningOpen = createModalRef('MoveLearning')
   const isMoveRelearnerOpen = createModalRef('MoveRelearner')
   const isNaturePatchOpen = createModalRef('NaturePatch')
   const isPPUpOpen = createModalRef('PPUp')
   const isAbilityPillOpen = createModalRef('AbilityPill')
-  const isHatchModalOpen = createModalRef('HatchModal')
   const isCosmeticsModalOpen = createModalRef('Cosmetics')
-  const isFactionChoiceOpen = createModalRef('FactionChoice')
-  const isTeamManagementOpen = createModalRef('TeamManagement')
 
   return {
-    isAnyModalOpen,
     isAnyBlockingModalOpen,
     windowWidth,
     isSmallScreen,
@@ -371,26 +352,14 @@ export const useUIStore = defineStore('ui', () => {
     isLibraryOpen,
     isChatOpen,
     libraryTab,
-    isTradeOpen,
-    isSocialOpen,
-    isHatchModalOpen,
     hatchedPokemon,
-    isClassSelectionOpen,
-    isFactionChoiceOpen,
-    isClassMissionsOpen,
-    isRepShopOpen,
-    isPokemonDetailOpen,
 
     selectedPokemon,
     selectedMove,
     activeTab,
     isBoxMenuOpen,
     selectedBoxIndex,
-    isPokemonCenterOpen,
-    isShopOpen,
     isWarShopOpen,
-    isPassiveTeamEditorOpen,
-    isPokemonSelectionOpen,
     pokemonSelectionConfig,
     appZoom,
     setZoom: (val: number) => {
@@ -430,8 +399,6 @@ export const useUIStore = defineStore('ui', () => {
     
     pvpAutoFillDisabled,
     warAutoFillDisabled,
-
-    isTeamManagementOpen,
     
     // Relearner
     isMoveRelearnerOpen,
@@ -457,11 +424,9 @@ export const useUIStore = defineStore('ui', () => {
     isAbilityPillOpen,
     activePokemonForAbility,
 
-    isInventoryOpen,
     toggleInventory,
     inventoryTarget,
     isCosmeticsModalOpen,
-    isPokedexOpen,
     isPvPBattleOpen: ref(false),
     isRankedMenuOpen: ref(false),
     currentPvPInvite: ref(null),

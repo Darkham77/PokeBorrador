@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import SortControls from '@/components/common/SortControls.vue'
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 
 
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -120,64 +120,55 @@ const close = () => {
         </div>
 
         <!-- Object Search Bar -->
-        <div class="shop-search-wrapper">
-          <div class="search-input-container">
-            <span class="search-icon">🔍</span>
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Buscar artículo exclusivo..." 
-              class="shop-search-bar"
+        <ShopSearchControls
+          v-model:search="search"
+          v-model:sort-key="sortKey"
+          v-model:sort-order="sortOrder"
+          placeholder="Buscar artículo exclusivo..."
+          accent-color="#c084fc"
+        >
+          <template #price-icon>
+            <!-- Coin stack SVG — same technique as the star, no FA dependency -->
+            <svg
+              viewBox="0 0 24 24"
+              class="coin-stack-icon"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
             >
-          </div>
-          <SortControls
-            v-model="sortKey"
-            v-model:sort-order="sortOrder"
-            accent-color="#c084fc"
-          >
-            <template #price-icon>
-              <!-- Coin stack SVG — same technique as the star, no FA dependency -->
-              <svg
-                viewBox="0 0 24 24"
-                class="coin-stack-icon"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <!-- Bottom coin -->
-                <ellipse
-                  cx="12"
-                  cy="17"
-                  rx="8"
-                  ry="3"
-                  opacity="0.7"
-                />
-                <!-- Middle coin -->
-                <ellipse
-                  cx="12"
-                  cy="13"
-                  rx="8"
-                  ry="3"
-                  opacity="0.85"
-                />
-                <!-- Top coin -->
-                <ellipse
-                  cx="12"
-                  cy="9"
-                  rx="8"
-                  ry="3"
-                />
-                <!-- Vertical sides connecting coins -->
-                <rect
-                  x="4"
-                  y="9"
-                  width="16"
-                  height="4"
-                  opacity="0"
-                />
-              </svg>
-            </template>
-          </SortControls>
-        </div>
+              <!-- Bottom coin -->
+              <ellipse
+                cx="12"
+                cy="17"
+                rx="8"
+                ry="3"
+                opacity="0.7"
+              />
+              <!-- Middle coin -->
+              <ellipse
+                cx="12"
+                cy="13"
+                rx="8"
+                ry="3"
+                opacity="0.85"
+              />
+              <!-- Top coin -->
+              <ellipse
+                cx="12"
+                cy="9"
+                rx="8"
+                ry="3"
+              />
+              <!-- Vertical sides connecting coins -->
+              <rect
+                x="4"
+                y="9"
+                width="16"
+                height="4"
+                opacity="0"
+              />
+            </svg>
+          </template>
+        </ShopSearchControls>
 
         <!-- Items Grid -->
         <div class="bc-shop-grid-wrapper custom-scrollbar">

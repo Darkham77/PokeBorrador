@@ -76,29 +76,32 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
 
   const last4 = uniqueMoves.slice(-4);
   return last4.map(m => {
-    const moveData = pokemonDataProvider.getMoveData(m.name)
+    if (!m.id) throw new Error(`[getMovesAtLevel] El movimiento en el learnset no tiene un ID válido.`);
+    const moveData = pokemonDataProvider.getMoveData(m.id)
+    if (!moveData) throw new Error(`[getMovesAtLevel] No se encontró información para el movimiento: ${m.id}`);
     return { 
-      name: m.name || '???', 
-      pp: m.pp || moveData?.pp || 35, 
-      maxPP: m.pp || moveData?.pp || 35,
-      type: moveData?.type || 'normal',
-      power: moveData?.power || 0,
-      acc: moveData?.acc || 100,
-      cat: moveData?.cat || 'physical',
-      priority: moveData?.priority,
-      effect: moveData?.effect,
-      recoil: moveData?.recoil,
-      selfKO: moveData?.selfKO,
-      drain: moveData?.drain,
-      hits: moveData?.hits,
-      fixedDmg: moveData?.fixedDmg,
-      ohko: moveData?.ohko,
-      halfHP: moveData?.halfHP,
-      endeavor: moveData?.endeavor,
-      levelDmg: moveData?.levelDmg,
-      counter: moveData?.counter,
-      turns: moveData?.turns,
-      sound: moveData?.sound
+      id: m.id,
+      name: moveData.name || '???', 
+      pp: m.pp || moveData.pp, 
+      maxPP: m.pp || moveData.pp,
+      type: moveData.type || 'normal',
+      power: moveData.power || 0,
+      acc: moveData.acc || 100,
+      cat: moveData.cat as 'physical' | 'special' | 'status',
+      priority: moveData.priority,
+      effect: moveData.effect,
+      recoil: moveData.recoil,
+      selfKO: moveData.selfKO,
+      drain: moveData.drain,
+      hits: moveData.hits,
+      fixedDmg: moveData.fixedDmg,
+      ohko: moveData.ohko,
+      halfHP: moveData.halfHP,
+      endeavor: moveData.endeavor,
+      levelDmg: moveData.levelDmg,
+      counter: moveData.counter,
+      turns: moveData.turns,
+      sound: moveData.sound
     };
   });
 }
@@ -117,8 +120,12 @@ export function getTypeEffectivenessMsg(eff: number): string | null {
 /**
  * Get display description for a move based on its effect
  */
-export function getMoveDescription(name: string, md?: MoveBaseData | null): string {
-  if (!md) md = pokemonDataProvider.getMoveData(name);
+export function getMoveDescription(id: string, md?: MoveBaseData | null): string {
+  if (!md) {
+    if (!id) throw new Error('[getMoveDescription] El ID de movimiento no es válido.');
+    md = pokemonDataProvider.getMoveData(id);
+    if (!md) throw new Error(`[getMoveDescription] No se encontró información para el movimiento: ${id}`);
+  }
   if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
   
   if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
@@ -240,6 +247,14 @@ export function getMoveDescription(name: string, md?: MoveBaseData | null): stri
     'skill_swap': "Reemplaza entre ambos monstruos sus capacidades y habilidades.",
     'snatch': "Aprovecha robando los efectos positivos emitidos por el oponente.",
     'stat_down_self_spa_2': "Reduce contundentemente su Ataque Especial luego del uso desmedido.",
+    'stockpile': "Acumula energía hasta 3 veces para aumentar las defensas.",
+    'stat_down_self_atk': "Reduce el Ataque del usuario tras atacar.",
+    'grudge': "Si el usuario cae abatido, elimina los PP del movimiento que lo debilitó.",
+    'yawn': "Provoca somnolencia en el objetivo, que se dormirá el siguiente turno.",
+    'spikes': "Esparce púas en el campo rival que dañan a los enemigos al entrar.",
+    'hp_scale': "Causa más daño cuanto menor sean los PS restantes del usuario.",
+    'charge': "Carga electricidad para potenciar el próximo ataque de tipo Eléctrico.",
+    'covet': "Roba el objeto equipado por el oponente.",
   };
   
   const desc = effects[md.effect || ''];

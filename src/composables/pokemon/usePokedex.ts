@@ -9,6 +9,7 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<string[]>, _cur
   const uiStore = useUIStore()
   const searchQuery = ref('')
   const sortBy = ref('number') // 'number' | 'name'
+  const sortOrder = ref<'asc' | 'desc'>('asc')
 
   const pokemonList = computed<PokedexItem[]>(() => {
     let caught = gs.value.pokedex || []
@@ -57,21 +58,25 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<string[]>, _cur
 
     // 3. Sort
     return filtered.sort((a, b) => {
+      let comp = 0
       if (sortBy.value === 'name') {
         // Unseen pokes at bottom when sorting by name? or by ID?
         // Usually, original Dexter keeps them in place. 
         // But if user asks to sort by name, they expect alphabetical.
-        if (a.name === 'Desconocido' && b.name !== 'Desconocido') return 1
-        if (a.name !== 'Desconocido' && b.name === 'Desconocido') return -1
-        return a.name.localeCompare(b.name)
+        if (a.name === 'Desconocido' && b.name !== 'Desconocido') comp = 1
+        else if (a.name !== 'Desconocido' && b.name === 'Desconocido') comp = -1
+        else comp = a.name.localeCompare(b.name)
+      } else {
+        comp = a.rawDexNum - b.rawDexNum
       }
-      return a.rawDexNum - b.rawDexNum
+      return sortOrder.value === 'asc' ? comp : -comp
     })
   })
 
   return {
     searchQuery,
     sortBy,
+    sortOrder,
     pokemonList
   }
 }

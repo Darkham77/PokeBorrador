@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import SortControls from '@/components/common/SortControls.vue'
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
 
 interface Props {
@@ -234,33 +234,24 @@ const close = () => {
       <!-- Contenido Principal -->
       <div class="shop-main">
         <!-- Buscador de Objetos -->
-        <div class="shop-search-wrapper">
-          <div class="search-input-container">
-            <span class="search-icon">🔍</span>
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Buscar objeto por reputación..." 
-              class="shop-search-bar"
+        <ShopSearchControls
+          v-model:search="search"
+          v-model:sort-key="sortKey"
+          v-model:sort-order="sortOrder"
+          placeholder="Buscar objeto por reputación..."
+          accent-color="#3b82f6"
+        >
+          <template #price-icon>
+            <!-- Center star vertically using SVG -->
+            <svg
+              viewBox="0 0 24 24"
+              style="width: 10px; height: 10px; display: block;"
+              fill="currentColor"
             >
-          </div>
-          <SortControls
-            v-model="sortKey"
-            v-model:sort-order="sortOrder"
-            accent-color="#3b82f6"
-          >
-            <template #price-icon>
-              <!-- Center star vertically using SVG -->
-              <svg
-                viewBox="0 0 24 24"
-                style="width: 10px; height: 10px; display: block;"
-                fill="currentColor"
-              >
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-              </svg>
-            </template>
-          </SortControls>
-        </div>
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+          </template>
+        </ShopSearchControls>
 
         <!-- Rejilla de Objetos -->
         <div class="rep-shop-grid-wrapper custom-scrollbar">

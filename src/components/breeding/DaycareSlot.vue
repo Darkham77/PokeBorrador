@@ -8,7 +8,7 @@ import { NATURE_DATA } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
-import { getItemByName } from '@/data/inventory/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 
 interface Props {
   slotId: string
@@ -239,8 +239,9 @@ const getNatureDescription = (natureName: string) => {
 }
 
 const heldItemSprite = computed(() => {
-  if (!props.pokemon?.heldItem) return ''
-  const item = getItemByName(props.pokemon.heldItem)
+  const held = props.pokemon?.heldItem
+  if (!held) return ''
+  const item = SHOP_ITEMS.find(i => i.id === held || i.name === held)
   if (!item?.sprite) return ''
   return getAssetUrl(ASSET_TYPES.ITEM, item.sprite)
 })

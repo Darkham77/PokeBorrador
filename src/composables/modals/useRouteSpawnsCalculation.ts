@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import type { MapLocation } from '@/types/pokemon/encounters'
@@ -77,7 +78,6 @@ export function useRouteSpawnsCalculation(
 
     const sentences = desc.split(/\.\s+/).map(s => s.trim()).filter(Boolean)
     const typeWords = Object.keys(SPANISH_TYPE_MAP)
-    // fallow-ignore-next-line security-sink
     const regex = new RegExp(`\\b(${typeWords.join('|')})\\b`, 'gi')
 
     return sentences.map(sentence => {

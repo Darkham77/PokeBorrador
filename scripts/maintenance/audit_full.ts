@@ -56,12 +56,12 @@ const TASKS: AuditTask[] = [
   { 
     name: 'Abilities Validation', 
     command: 'node', 
-    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', '--allow-net=pokeapi.co', 'scripts/validation/validate_abilities.ts'] 
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/validation/validate_abilities.ts'] 
   },
   { 
     name: 'Moves Database Validation', 
     command: 'node', 
-    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', '--allow-net=pokeapi.co', 'scripts/validation/validate_moves.ts'] 
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/validation/validate_moves.ts'] 
   },
   { 
     name: 'SQL Migrations Integrity', 

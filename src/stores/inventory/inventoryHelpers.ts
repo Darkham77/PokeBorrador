@@ -1,100 +1,24 @@
 import { useGameStore } from '@/stores/game.ts';
-import { getItemByName, getItemById } from '@/data/inventory/items';
+import { getItemById } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
-export function resolveNormalizedName(name: string): string {
-  const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: string): string | null {
+  try {
+    const item = getItemById(id);
+    const inv = gameStore.state.inventory || {};
+    if (inv[item.id] !== undefined) return item.id;
+  } catch {}
   
-  const aliases: Record<string, string> = {
-    'potion': 'Poción',
-    'pocion': 'Poción',
-    'pocian': 'Poción',
-    'pociaon': 'Poción',
-    'pokeball': 'Pokéball',
-    'pokaball': 'Pokéball',
-    'carbon': 'Carbón vegetal',
-    'superpotion': 'Súper Poción',
-    'superpocion': 'Súper Poción',
-    'hyperpotion': 'Hiper Poción',
-    'hiperpocion': 'Hiper Poción',
-    'maxpotion': 'Poción Máxima',
-    'pocionmaxima': 'Poción Máxima',
-    'firestone': 'Piedra Fuego',
-    'waterstone': 'Piedra Agua',
-    'thunderstone': 'Piedra Trueno',
-    'leafstone': 'Piedra Hoja',
-    'moonstone': 'Piedra Lunar',
-    'sunstone': 'Piedra Solar',
-    'vigorcandy': 'Caramelo de vigor',
-    'repel': 'Repelente',
-    'iman': 'Imán',
-    'elixir': 'Elixir',
-    'subidapp': 'Subida de PP',
-    'mttoxico': 'MT06 Tóxico',
-    'ocasoball': 'Ocaso Ball',
-    'turnoball': 'Turno Ball',
-    'ultraball': 'Ultra Ball',
-    'masterball': 'Master Ball',
-    'superball': 'Súper Ball',
-    'brazalrecio': 'Brazal Recio',
-    'brazalrecia': 'Brazal Recio',
-    'cintorecio': 'Cinto Recio',
-    'cintorecia': 'Cinto Recio',
-    'pesarecia': 'Pesa Recia',
-    'bandarecia': 'Banda Recia',
-    'lenterecia': 'Lente Recia',
-    'franjarecia': 'Franja Recia',
-    'bayadeoro': 'Baya de Oro',
-    'bayaoro': 'Baya de Oro',
-    'piedraeterna': 'Piedra Eterna',
-    'lazodestino': 'Lazo Destino',
-    'caramelovigor': 'Caramelo de vigor',
-    'fishingrod': 'Caña de pescar',
-    'fishingrodgood': 'Caña Buena',
-    'fishingrodsuper': 'Supercaña',
-    'pickaxe': 'Pico de excavación',
-    'pickaxesilver': 'Pico Bueno',
-    'pickaxegold': 'Superpico',
-    'brush': 'Pincel de excavación',
-    'brushgood': 'Pincel Bueno',
-    'brushsuper': 'Superpincel',
-    'naturepatch': 'Parche de naturaleza',
-    'ppup': 'Subida de PP',
-    'tm06': 'MT06 Tóxico'
-  };
-
-  return aliases[norm] || name;
-}
-
-export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, name: string): string | null {
-  const item = getItemById(name) || getItemByName(name) || getItemById(resolveNormalizedName(name)) || getItemByName(resolveNormalizedName(name));
-  if (item) return item.id;
-
   const inv = gameStore.state.inventory || {};
-  if (inv[name] !== undefined) return name;
+  if (inv[id] !== undefined) return id;
 
-  const targetOfficial = resolveNormalizedName(name);
-  const targetOfficialNorm = targetOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-
-  for (const key of Object.keys(inv)) {
-    const keyItem = getItemById(key);
-    const keyOfficial = keyItem ? keyItem.name : key;
-    const keyOfficialNorm = keyOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-    if (keyOfficialNorm === targetOfficialNorm) {
-      return key;
-    }
-  }
   return null;
 }
 
-export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
+export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
   if (!pokemon) return false;
-  
-  // Resolve Spanish names to their English ID if necessary
-  const dbItem = getItemByName(itemName) || getItemById(itemName);
-  const itemId = dbItem ? dbItem.id : itemName.toLowerCase();
   
   if (isGlobalItem(itemId)) return false;
 
@@ -103,14 +27,14 @@ export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
   if (pokemon.inDaycare) {
     if (!item) return false;
     const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy';
-    const isBreedingHeld = item.cat === 'breeding';
+    const isBreedingHeld = item.cat === 'breeding' || item.cat === 'breeding_held';
     return !!(isVigorRestorer || isBreedingHeld);
   }
 
   if (item && (
     item.cat === 'held' || 
     item.type === 'held' || 
-    (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
+    ((item.cat === 'breeding' || item.cat === 'breeding_held') && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
   )) return true;
 
   const p = JSON.parse(JSON.stringify(pokemon));
@@ -171,9 +95,7 @@ export function isItemProduct(item: { name: string; cat?: string; type?: string;
     return true;
   }
 
-  const officialName = resolveNormalizedName(item.name);
-  if (ITEM_EFFECTS[officialName]) return true;
-  if (item.name.toLowerCase().match(/m[tt]\d+/)) return true;
+  if (id && ITEM_EFFECTS[id]) return true;
   if (id?.toLowerCase().startsWith('tm')) return true;
 
   return false;
@@ -219,9 +141,11 @@ export function mapInventoryToItems(
 ): Item[] {
   let items: Item[] = Object.entries(inventory)
     .map(([id, qty]) => {
-      const item = getItemById(id) || (id === 'bicycle' ? { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools' } : null)
-      if (!item) return { name: id, qty, id, cat: 'otros', sprite: id, desc: 'Objeto desconocido' } as Item
-      return { ...item, qty, name: item.name } as Item
+      if (id === 'bicycle') {
+        return { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools', qty } as Item;
+      }
+      const item = getItemById(id);
+      return { ...item, qty, name: item.name } as Item;
     })
 
   if (isBattleActive) {

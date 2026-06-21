@@ -13,7 +13,7 @@ import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 
 import { AVATAR_STYLES } from '@/data/player/cosmeticsData'
 
-export interface ActiveMission {
+interface ActiveMission {
   id: string
   startedAt: number
   endsAt: number

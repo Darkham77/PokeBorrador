@@ -90,31 +90,25 @@
     &:focus {
       outline: none;
       background: Rgba(255, 255, 255, 0.05);
-      border-color: var(--purple);
-      box-shadow: 0 0 15px Rgba(199, 125, 255, 0.1);
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px Rgba(234, 179, 8, 0.1);
     }
   }
 
   .box-search-clear {
     position: absolute;
     right: 12px;
-    width: 24px;
-    height: 24px;
-    @include flex-center;
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    color: var(--gray);
-    font-size: 10px;
+    background: none;
+    border: none;
+    color: Rgba(255, 255, 255, 0.5);
+    font-size: 16px;
     cursor: pointer;
-    @include pixelated;
+    line-height: 1;
+    padding: 0;
     z-index: var(--z-low);
 
     &:hover {
-      background: Rgba(255, 255, 255, 0.1);
       color: var(--white);
-      border-color: var(--purple);
-      box-shadow: 0 0 10px Rgba(199, 125, 255, 0.2);
     }
   }
 }

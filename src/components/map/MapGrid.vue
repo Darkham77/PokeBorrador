@@ -51,7 +51,7 @@ interface SpawnPoolData {
   weather: string | null | undefined
 }
 
-import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 
 const getMapData = (loc: MapLocation): SpawnPoolData => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }

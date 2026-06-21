@@ -12,7 +12,7 @@ Any change in `src/data/moves.ts` or in battle logic must be validated:
 
 ### 2. Abilities (`ABILITY_DATA`)
 
-- **General Validation**: `npm run validate:abilities` (verifies descriptions, PokeAPI parity, and implementation in `battleAbilities.ts`).
+- **General Validation**: `npm run validate:abilities` (verifies descriptions, Showdown Dex parity, and implementation in `battleAbilities.ts`).
 
 ### 3. Items Integrity
 
@@ -68,9 +68,8 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 15. **Unicode Regex for Emojis**: ESLint in strict mode flags character classes containing multiple combined characters (like emojis with modifiers). ALWAYS use alternation groups `(A|B|C)` instead of character classes `[ABC]` for these symbols to avoid `no-misleading-character-class` errors.
 16. **Economy Testing Parity**: When modifying `economyFormulas.ts`, all associated tests (e.g., `shop.spec.ts`, `economyFormulas.test.ts`) MUST be updated to reflect the new formulas (e.g., tier-based costs) to prevent false regression signals.
 17. **Import Hygiene Post-Refactor**: After refactoring component logic to use global SASS mixins or variables (e.g., centralizing type colors), it is MANDATORY to remove the corresponding legacy imports (e.g., `PDEX_TYPE_COLORS`) and associated helper functions (e.g., `getTypeColor`) in all affected components.
-18. **Validation Script Permission Parity**: All `validate:*` scripts in `package.json` that access external APIs (e.g., PokeAPI) and write local cache files MUST have consistent permission flags (`--allow-fs-write=.` + `--allow-net=<domain>`). When adding or modifying a validation script, audit all sibling validators to ensure permission parity and prevent silent failures in offline or restricted environments.
-19. **PokeAPI Cache Under Version Control**: The `scripts/.cache/` directory containing PokeAPI response caches (moves, abilities) MUST remain under version control. This ensures that `npm run audit:full` and all `validate:*` scripts can execute successfully without an active internet connection, which is critical for CI environments and offline development.
-20. **Mandato del Directorio Scratch**: Cualquier reporte temporal, registro (log), resumen o reporte de auditoría/validación (independientemente de su extensión de archivo: `.txt`, `.log`, `.json`, etc.) que sea generado para su posterior estudio, análisis o revisión, debe ser guardado única y exclusivamente dentro de la carpeta `scratch/` en la raíz del proyecto. Queda terminantemente prohibido dejar o escribir estos reportes temporales en la raíz del proyecto, en carpetas de código fuente o en cualquier otra ubicación arbitraria para mantener la limpieza del repositorio.
+18. **Validation Script Permission Parity**: All `validate:*` scripts in `package.json` must be offline-first, validating integrity against `@pkmn/sim` (Showdown) and local databases without requiring network permissions (`--allow-net`).
+19. **Scratch Folder Mandate**: Any temporary reports, logs, audit outputs, or validation reports MUST be saved exclusively in the `scratch/` directory at the project root to maintain repository cleanliness.
 21. **Mermaid Diagram Layout Standards**: To prevent Mermaid from rendering broken, extremely long vertical lines (due to layout engine routing bugs), do NOT draw transition arrows between a nested sub-state inside container A and a nested sub-state inside container B (or sibling top-level container). Keep all related sequential transitions completely contained within the same parent state block, or flatten the diagram blocks entirely. Additionally, avoid redundant sub-nesting of identical state names across multiple sub-state boxes to prevent arrow crossovers (spaghetti layout).
 22. **Surgical Fallow Exclusions Policy**: To preserve the capabilities of the Fallow static analysis engine, it is strictly forbidden to use wildcard `*` exclusions (e.g., `"exports": ["*"]`) in `.fallowrc.json`. To prevent automatic fixes (`npx fallow fix`) from stripping legitimate exports required for dynamic resolution or public APIs, such exports must be added surgically, variable by variable, to the `"ignoreExports"` array in `.fallowrc.json`.
 23. **Fallow Security Bypass for Safe Local Fetching**: When local static assets (such as audio files in `src/stores/audio.ts`) are fetched dynamically, Fallow's security engine may trigger a false-positive CWE-918 (Server-Side Request Forgery) medium vulnerability. If the fetch target is strictly internal and input is cleaned, this can be bypassed by placing the `// fallow-ignore-file security-sink` comment at the very top of the affected file.
@@ -88,10 +87,10 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run validate:items`: Integrity audit for item and object databases.
 - `npm run validate:items:summary`: Runs item database validation in summary mode.
 - `npm run validate:items:report`: Runs item database validation and saves detailed output to `items_report.txt`.
-- `npm run validate:abilities`: Semi-integrity validation for abilities database against PokeAPI.
+- `npm run validate:abilities`: Semi-integrity validation for abilities database against Showdown Dex.
 - `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
 - `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `abilities_report.txt`.
-- `npm run validate:moves`: Semi-integrity validation for moves database against PokeAPI.
+- `npm run validate:moves`: Semi-integrity validation for moves database against Showdown Dex.
 - `npm run validate:moves:summary`: Runs move database validation in summary mode.
 - `npm run validate:moves:report`: Runs move database validation and saves detailed output to `moves_report.txt`.
 - `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.

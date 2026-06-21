@@ -27,21 +27,19 @@ graph TD
     CreateTests --> Verification
 
     subgraph "The Zero-Warning Audit"
-        Verification[3. Active Verification Cycle] --> FullAudit[3.1 Full Project Audit]
-        FullAudit --> AutoFix[3.2 Automatic Repair Pass]
-        AutoFix --> ManualDiscovery[3.3 Autonomous Repair Discovery]
-        ManualDiscovery --> ManualFix[3.4 Autonomous Repair Phase]
+        Verification[3. Active Verification Cycle] --> DiffAudit[3.1 Warnings & Errors Diff Audit]
+        DiffAudit --> AutoFix[3.2 Automatic Repair Pass]
+        AutoFix --> Discovery[3.3 Autonomous Repair Discovery]
+        Discovery --> ManualFix[3.4 Manual Repair Phase]
         ManualFix --> FinalAudit[3.5 Final Validation Pass]
 
-        FinalAudit --> Lint[Linting]
-        Lint --> Types[Type-Safety]
+        FinalAudit --> Types[Type-Safety]
         Types --> Build[Production Build]
         Build --> UnitTests[Unit Tests]
-        UnitTests --> HealthScore[Health Score Comparison]
-        HealthScore --> Global[Global Compliance]
+        UnitTests --> HealthScore[Health Score Check]
     end
 
-    Global --> ValidationGate{Validation Successful?}
+    HealthScore --> ValidationGate{Validation Successful?}
 
     ValidationGate -->|No| Verification
 
@@ -115,52 +113,33 @@ For each modified file, ask: **"Does this file contain non-trivial logic?"** —
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
 
-You MUST run these commands and fix EVERY issue until a clean pass is achieved.
+You MUST run the warnings-diff gatekeeper tool and fix EVERY issue until a clean pass is achieved.
 
 > [!IMPORTANT] **NO VALIDATION EXEMPTIONS**: Every single step of the validation pipeline is STRICTLY MANDATORY. Under no circumstances (including "trivial" or minor single-token changes) may the agent skip any step, especially the production build (`npm run build`), type check, linting, tests, or audit.
-> [!IMPORTANT] **Zero-Error Mandate for Build & Audit**: The final repository state MUST have exactly ZERO errors for both `npm run build` and the entire audit pipeline (`npm run audit` / `npm run audit:full`). Zero warnings are required for any file or block modified during the current session, but pre-existing warnings in unmodified legacy files may be bypassed if they do not block a successful build.
-> [!IMPORTANT] **Mandatory Legacy & Unmodified Code Error Repair**: If the audit, typescript compiler, linting, or build checks reveal **errors** in files or blocks you did NOT modify (pre-existing or legacy code), you are STRICTLY REQUIRED to autonomously diagnose, fix, and repair them before committing. You are forbidden from leaving legacy errors unaddressed. Pre-existing warnings in unmodified files do not require repair.
-
-
-
+> [!IMPORTANT] **Zero-Error Mandate for the Entire Project**: The final repository state MUST have exactly ZERO errors (including typescript, compilation, linting, build, SASS, GPU, items, database, etc.) across the entire project. The agent is STRICTLY REQUIRED to autonomously diagnose, fix, and repair ALL project-wide errors before committing.
+> [!IMPORTANT] **Zero-Warning Mandate for Files Modified Since last Push (`origin/main`)**: Every single file containing local changes compared to GitHub's `origin/main` MUST have all its warnings resolved. You may ONLY ignore a warning in a modified file if that exact warning already existed in the version of the file on `origin/main`.
 
 **THE MANDATORY AUDIT PIPELINE:**
 
-1. **Full Audit Pass**: `npm run audit:full`
-   - This command captures EVERYTHING (SASS, GPU, FSM, SQL, Items, Moves, Abilities).
-   - **CRITICAL**: You MUST NOT skip this. It is the only way to ensure total system integrity.
-   - For the complete command reference (summary/report variants), see [validation_manual.md](../project-standards/references/qa/validation_manual.md).
-   - **Context Protection**: If the audit output threatens to saturate the context window, use report variants:
-     - High-level summaries: `npm run audit:summary`, `npm run validate:items:summary`, `npm run validate:abilities:summary`, `npm run validate:moves:summary`, `npm run validate:sandbox:summary`, `npm run validate:fsm:summary`.
-     - Redirect to files: `npm run audit:report` → `scratch/audit_report.txt`, `npm run validate:items:report` → `scratch/items_report.txt`, `npm run validate:abilities:report` → `scratch/abilities_report.txt`, `npm run validate:moves:report` → `scratch/moves_report.txt`, `npm run validate:sandbox:report` → `scratch/sandbox_report.txt`, `npm run validate:fsm:report` → `scratch/fsm_report.txt`. All report files MUST go under `scratch/`. Use `view_file` to review them.
+1. **Warnings & Errors Diff Audit**: `npm run audit:warnings-diff`
+   - **CRITICAL**: This is the primary gatekeeper. It checks for all project errors and new warnings in modified files compared to `origin/main`.
+   - **MUST RETURN ZERO ISSUES**: You are strictly forbidden from committing if `npm run audit:warnings-diff` reports any errors or new warnings.
 
 2. **Automatic Repair**: `npm run audit:fix`
    - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
 
-   > [!IMPORTANT]
-   >
-   > The terms "Discovery" and "Repair" refer to actions performed by the AI agent. User intervention is NOT expected for: lint fixes, type fixes, audit repairs, missing tests, build failures, security warnings, or Fallow recommendations.
-   >
-   > The user should only be consulted when business, gameplay, product, or architectural decisions require human judgment.
-
 3. **Autonomous Repair Discovery (THE REPORT)**:
-   - Review the output of `audit:full` (or the generated report files) again.
-   - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
-   - **Targeted Fallow Audit**: Always compare against `origin/main` to capture all local unpushed changes:
-     - `git fetch origin main`
-     - `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt`
-     - Use `view_file` to analyze the report. Ensure no new dead code, unused exports, duplication, or excessive complexity is introduced.
-   - **MANDATORY**: List all issues, audit warnings, lint errors, and Fallow recommendations in your response as a "Technical Debt Report" before proceeding to repair them.
+   - Use `view_file` on `scratch/warnings_diff_report.txt` or `scratch/warnings_diff_report.json` to analyze the warnings/errors.
+   - Run `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt` and use `view_file` to analyze the report. Ensure no new dead code, unused exports, duplication, or excessive complexity is introduced.
+   - **MANDATORY**: List all issues, new warnings, project errors, and Fallow recommendations in your response as a "Technical Debt Report" before proceeding to repair them.
 
 4. **Manual Repair Phase**:
    - Fix each identified issue autonomously in the code.
-   - If a `z-index` is hardcoded, find the correct variable in `visuals.ts`.
-   - If a `filter` is missing `will-change`, add it.
+   - All project-wide errors and all new warnings in modified files MUST be fixed.
 
 ### Escalation Policy
 
 The AI MUST continue autonomously unless one of the following conditions occurs:
-
 - Multiple valid architectural solutions exist.
 - Business requirements are unclear.
 - Gameplay behaviour is ambiguous.
@@ -170,12 +149,10 @@ Only under these conditions may the AI request user intervention.
 
 5. **Final Validation Pass**:
    - `npm run validate:types`
-   - `npm run lint`
-   - `npx fallow dupes --fail-on-issues`
-   - `npx fallow security --fail-on-issues`
    - `npm run test`
+   - `npm run build` (enforces audit:full internally and compiles the application)
+   - Re-run `npm run audit:warnings-diff` to verify that everything is 100% clean (0 errors, 0 new warnings).
    - **Health Regression Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. If regressed, identify the complexity hotspots introduced by your changes, refactor them, and re-run until the score is equal to or greater than the baseline.
-   - `npm run build`
 
 ### 4. Database Triple Parity Sync
 

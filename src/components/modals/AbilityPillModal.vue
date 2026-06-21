@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
+import gsap from 'gsap'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -38,8 +39,45 @@ const handleApplyAbility = (ability: string) => {
   gameStore.save()
 }
 
+const getAbilityDesc = (ability: string) => {
+  if (!ability) return 'Habilidad especial de este Pokémon.'
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.desc : 'Habilidad especial de este Pokémon.'
+}
+
+const getAbilityName = (ability: string) => {
+  if (!ability) return '—'
+  const data = pokemonDataProvider.getAbilityData(ability)
+  return data ? data.name : ability
+}
+
+const onBtnEnter = (event: MouseEvent) => {
+  const el = event.currentTarget as HTMLElement
+  gsap.to(el, {
+    x: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
+  const el = event.currentTarget as HTMLElement
+  gsap.to(el, {
+    x: 0,
+    backgroundColor: isActive ? 'rgba(255, 214, 10, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+    borderColor: isActive ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.08)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
 const close = () => {
   uiStore.isAbilityPillOpen = false
+  uiStore.activePokemonForAbility = null
 }
 </script>
 
@@ -47,8 +85,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PÍLDORA DE HABILIDAD"
-    title-color="Rgba(244, 114, 174, 1)"
-    header-background="Rgba(26, 28, 46, 1)"
+    title-color="rgba(244, 114, 174, 1)"
+    header-background="rgba(26, 28, 46, 1)"
     max-width="400px"
     variant="retro"
     @close="close"
@@ -64,13 +102,18 @@ const close = () => {
           :key="a" 
           class="ability-btn"
           :class="{ active: abilityPokemon?.ability === a }"
+          @mouseenter="onBtnEnter"
+          @mouseleave="onBtnLeave($event, abilityPokemon?.ability === a)"
           @click.stop="handleApplyAbility(a)"
         >
-          <span class="a-name">{{ a }}</span>
-          <span
-            v-if="abilityPokemon?.ability === a"
-            class="a-current"
-          >(Actual)</span>
+          <div class="a-header">
+            <span class="a-name">{{ getAbilityName(a) }}</span>
+            <span
+              v-if="abilityPokemon?.ability === a"
+              class="a-current"
+            >(Actual)</span>
+          </div>
+          <span class="a-desc">{{ getAbilityDesc(a) }}</span>
         </button>
         
         <div
@@ -89,7 +132,7 @@ const close = () => {
 @use "@/styles/core/tools" as *;
 
 .ability-modal-inner {
-  padding: 8px 0;
+  padding: 8px 12px;
 }
 
 .target-info {
@@ -103,29 +146,33 @@ const close = () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 4px;
 }
 
 .ability-btn {
   background: Rgba(255,255,255,0.03);
   border: 1px solid Rgba(255,255,255,0.08);
   border-radius: 16px;
-  padding: 18px 20px;
+  padding: 14px 18px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   cursor: pointer;
-  
+  will-change: transform;
   color: var(--white);
-
-  &:hover { 
-    background: Rgba(255,255,255,0.08); 
-    transform: Translatex(4px);
-    border-color: Rgba(255, 255, 255, 0.2);
-  }
+  gap: 4px;
   
   &.active { 
     border-color: var(--yellow);
     background: Rgba(255, 214, 10, 0.05);
+  }
+
+  .a-header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
   }
 
   .a-name { font-weight: 800; font-size: 15px; }
@@ -133,6 +180,11 @@ const close = () => {
     font-size: 8px; 
     color: var(--yellow); 
     @include pixelated;
+  }
+  .a-desc {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.4;
   }
 }
 

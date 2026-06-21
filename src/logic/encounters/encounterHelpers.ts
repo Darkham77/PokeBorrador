@@ -400,4 +400,49 @@ export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weath
   }
 }
 
+export interface SpawnPoolResult {
+  generic: string[]
+  specific: string[]
+  rates: Record<string, number>
+}
+
+export function getMapSpawnPoolData(
+  loc: MapLocation,
+  cycle: 'morning' | 'day' | 'dusk' | 'night',
+  activeWeather: string,
+  activeEvents: GameEvent[] = []
+): SpawnPoolResult {
+  if (!loc.wild) {
+    return { generic: [], specific: [], rates: {} }
+  }
+
+  const { pool, rates } = getEncounterPool(loc, cycle, activeWeather, activeEvents)
+
+  const baseWild = loc.wild[cycle] || loc.wild.day || []
+  const generic: string[] = []
+  const specific: string[] = []
+  const ratesMap: Record<string, number> = {}
+
+  pool.forEach((id: string, index: number) => {
+    ratesMap[id] = rates[index] || 10
+    if (baseWild.includes(id)) {
+      generic.push(id)
+    } else {
+      specific.push(id)
+    }
+  })
+
+  if (loc.fishing) {
+    loc.fishing.pool.forEach((id: string, index: number) => {
+      if (!generic.includes(id) && !specific.includes(id)) {
+        generic.push(id)
+        ratesMap[id] = loc.fishing!.rates[index] || 10
+      }
+    })
+  }
+
+  return { generic, specific, rates: ratesMap }
+}
+
+
 

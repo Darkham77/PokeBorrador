@@ -118,7 +118,6 @@ export const useSocialStore = defineStore('social', () => {
     get: () => playerSearchStore.searchLoading,
     set: (val: boolean) => { playerSearchStore.searchLoading = val }
   })
-  const loading = ref(false)
   const sentRequestTimestamps = ref<number[]>([])
   
   const notifications = reactive({
@@ -149,9 +148,8 @@ export const useSocialStore = defineStore('social', () => {
       return
     }
 
-    loading.value = true
     const db = gameStore.db
-    if (!db) { loading.value = false; return }
+    if (!db) { return }
     
     try {
       // 1. Obtener amistades confirmadas
@@ -264,8 +262,6 @@ export const useSocialStore = defineStore('social', () => {
       await refreshNotificationCount()
     } catch (err) {
       logger.error('Social', `Error loading data: ${(err as Error).message}`)
-    } finally {
-      loading.value = false
     }
   }
 
@@ -422,7 +418,6 @@ export const useSocialStore = defineStore('social', () => {
     pendingRequests,
     searchResults,
     searchLoading,
-    loading,
     notifications,
     leaderboard,
     leaderboardLoading,

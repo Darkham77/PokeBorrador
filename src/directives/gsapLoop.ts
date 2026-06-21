@@ -52,7 +52,7 @@ function cleanupAnimation(el: HTMLElement) {
   gsap.set(el, { clearProps: 'transform,rotation,opacity,backgroundColor,boxShadow,y' });
 }
 
-export interface GsapLoopOptions {
+interface GsapLoopOptions {
   effect: string
   duration?: number
   ease?: string

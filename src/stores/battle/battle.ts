@@ -329,7 +329,7 @@ export const useBattleStore = defineStore('battle', () => {
           
           if (isBug && Math.random() < 0.20) {
             const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-            const clone = makePokemon(cap.id || cap.name, cap.level || 5);
+            const clone = makePokemon(cap.id, cap.level || 5);
             if (clone) {
               clone.caught = true;
               clone.nickname = cap.nickname;

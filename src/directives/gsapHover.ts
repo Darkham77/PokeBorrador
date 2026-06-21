@@ -4,7 +4,7 @@ import gsap from 'gsap';
 // Map to track active tweens/timelines for cleanup
 const activeTweens = new Map<HTMLElement, gsap.core.Tween>();
 
-export interface GsapHoverOptions {
+interface GsapHoverOptions {
   scale?: number;
   x?: number;
   y?: number;

@@ -15,7 +15,7 @@ import { useAdventureMinigames } from './useAdventureMinigames'
 import { useAdventureEvents } from './useAdventureEvents'
 import { useAdventureRouting } from './useAdventureRouting'
 import { useAdventureLayout } from './useAdventureLayout'
-import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 
 
 const POKEMON_CENTER_NODES = new Set([

@@ -1,8 +1,14 @@
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { DebugSystem } from '@/stores/debug'
+
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/player/trainer'
 
 
-export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContext) {
+export function registerStatsTools(debug: DebugSystem) {
+  const game = useGameStore()
+  const ui = useUIStore()
+
   debug.register({
     id: 'stats-set-money',
     label: 'SET MONEY',
@@ -173,10 +179,9 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
         
         const tm = gym.rewardTM
         if (tm) {
-          import('@/data/inventory/items').then(({ getItemByName, getItemById }) => {
-            const itemObj = getItemByName(tm) || getItemById(tm)
-            const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
-            game.state.inventory[tmId] = (game.state.inventory[tmId] || 0) + 1
+          import('@/data/inventory/items').then(({ getItemById }) => {
+            const itemObj = getItemById(tm)
+            game.state.inventory[itemObj.id] = (game.state.inventory[itemObj.id] || 0) + 1
           })
         }
       }

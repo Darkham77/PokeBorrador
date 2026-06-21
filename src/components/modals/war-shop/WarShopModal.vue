@@ -7,7 +7,7 @@ import { SHOP_ITEMS } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import SortControls from '@/components/common/SortControls.vue'
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
 import type { ShopItem } from '@/types/inventory/items'
@@ -191,29 +191,20 @@ if (typeof window !== 'undefined') {
       <!-- Contenido Principal -->
       <div class="shop-main">
         <!-- Buscador de Objetos -->
-        <div class="shop-search-wrapper">
-          <div class="search-input-container">
-            <span class="search-icon">🔍</span>
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Buscar artículo de guerra..." 
-              class="shop-search-bar"
-            >
-          </div>
-          <SortControls
-            v-model="sortKey"
-            v-model:sort-order="sortOrder"
-            accent-color="#ef4444"
-          >
-            <template #price-icon>
-              <i
-                class="fa-solid fa-bolt-lightning sort-label"
-                style="font-size: 8px; line-height: 1; color: #ef4444;"
-              />
-            </template>
-          </SortControls>
-        </div>
+        <ShopSearchControls
+          v-model:search="search"
+          v-model:sort-key="sortKey"
+          v-model:sort-order="sortOrder"
+          placeholder="Buscar artículo de guerra..."
+          accent-color="#ef4444"
+        >
+          <template #price-icon>
+            <i
+              class="fa-solid fa-bolt-lightning sort-label"
+              style="font-size: 8px; line-height: 1; color: #ef4444;"
+            />
+          </template>
+        </ShopSearchControls>
 
         <!-- Rejilla de Objetos -->
         <div class="shop-grid-wrapper custom-scrollbar">

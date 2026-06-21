@@ -59,7 +59,7 @@ function clearFilters() {
         class="ps-clear-search"
         @click.stop="searchQuery = ''"
       >
-        ✕
+        ×
       </button>
     </div>
     <div class="ps-sort-btns">

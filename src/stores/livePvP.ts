@@ -11,7 +11,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 
-export interface BattleInvite {
+interface BattleInvite {
   id: string;
   challenger_id: string;
   opponent_id: string;
@@ -19,7 +19,7 @@ export interface BattleInvite {
   created_at: string;
 }
 
-export interface RankedQueueEntry {
+interface RankedQueueEntry {
   user_id: string;
   elo: number;
   looking_since: string;

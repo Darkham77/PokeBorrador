@@ -14,11 +14,11 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
 
-export interface ExtendedPokemon extends Pokemon {
+interface ExtendedPokemon extends Pokemon {
   _revealed?: boolean
 }
 
-export interface ExtendedBattleOptions {
+interface ExtendedBattleOptions {
   isTrainer?: boolean
   trainerName?: string
   isGym?: boolean

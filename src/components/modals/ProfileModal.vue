@@ -35,9 +35,6 @@ withDefaults(defineProps<Props>(), {
 defineOptions({ inheritAttrs: false })
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'confirm'): void
-  (e: 'cancel'): void
-  (e: 'submit'): void
 }>()
 
 const uiStore = useUIStore()

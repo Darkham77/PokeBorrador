@@ -206,7 +206,7 @@ const props = defineProps({
   disableAutoGrow: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+const emit = defineEmits(['close'])
 
 const handleClose = () => {
   if (props.preventClose) return

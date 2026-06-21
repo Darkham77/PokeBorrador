@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game.ts'
 import { useChatStore } from '@/stores/social/chat.ts'
 import { logger } from '@/logic/utils/logger'
 
-export interface ProfileCacheItem {
+interface ProfileCacheItem {
   username?: string;
   player_class?: string;
   trainer_level?: number;

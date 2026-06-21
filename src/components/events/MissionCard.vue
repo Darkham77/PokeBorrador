@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
-import { getItemById, getItemByName } from '@/data/inventory/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps<{
@@ -19,13 +19,13 @@ const props = defineProps<{
   rewardId?: string
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'action'): void
 }>()
 
 const rewardTooltipTitle = computed(() => {
   if (props.rewardId) {
-    const item = getItemById(props.rewardId) || getItemByName(props.rewardId)
+    const item = SHOP_ITEMS.find(i => i.id === props.rewardId || i.name === props.rewardId)
     if (item) return item.name
   }
   return props.rewardLabel
@@ -33,7 +33,7 @@ const rewardTooltipTitle = computed(() => {
 
 const rewardTooltipDescription = computed(() => {
   if (props.rewardId) {
-    const item = getItemById(props.rewardId) || getItemByName(props.rewardId)
+    const item = SHOP_ITEMS.find(i => i.id === props.rewardId || i.name === props.rewardId)
     if (item) return item.desc
   }
   

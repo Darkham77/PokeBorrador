@@ -517,12 +517,16 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         const maxLimit = calculateMaxNpcRobberyLimit(avgLevel);
         const playerInventory = ctx.gs.state.inventory || {};
         
-        const { getItemByName, getItemById } = await import('@/data/inventory/items');
+        const { getItemById } = await import('@/data/inventory/items');
         
         const availableItems = Object.keys(playerInventory).filter(k => {
           if ((playerInventory[k] || 0) <= 0) return false;
-          const itemDef = getItemByName(k) || getItemById(k);
-          return itemDef && (itemDef.cat === 'potions' || itemDef.cat === 'pokeballs');
+          try {
+            const itemDef = getItemById(k);
+            return itemDef && (itemDef.cat === 'potions' || itemDef.cat === 'pokeballs');
+          } catch {
+            return false;
+          }
         });
         
         const itemsLimit = maxLimit * 0.5;
@@ -534,7 +538,12 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
           for (const itemId of shuffledItems) {
             if (stolenTotalCost >= itemsLimit) break;
             
-            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            let itemDef = null;
+            try {
+              itemDef = getItemById(itemId);
+            } catch {
+              continue;
+            }
             const itemPrice = itemDef?.price || 100;
             const availableQty = playerInventory[itemId] || 0;
             
@@ -576,7 +585,12 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
           }
           
           for (const [itemId, qty] of Object.entries(stolenItems)) {
-            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            let itemDef = null;
+            try {
+              itemDef = getItemById(itemId);
+            } catch {
+              // usar el ID directamente
+            }
             const displayName = itemDef?.name || itemId;
             ctx.uiStore.notify(`¡Te robaron ${qty}x ${displayName}!`, '🎒');
           }

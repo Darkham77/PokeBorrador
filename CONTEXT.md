@@ -23,3 +23,11 @@ A temporary turn-based counter attached to a Pokémon that ticks down at the end
 ### Side Condition (Condición de Bando)
 
 A status or delayed effect tied directly to a bando (player/enemy side of the field) rather than a specific Pokémon. It persists across switches and affects whichever Pokémon occupies the active seat when it triggers (such as Wish).
+
+### Entity Lookup (Búsqueda de Entidad)
+
+The process of retrieving a game entity (Pokémon, Move, Ability, Item, or Nature) from the database. It must be performed exclusively using the canonical English identifier (ID) to ensure data integrity and avoid silent fallbacks.
+
+### Identity Resolution (Resolución de Identidad)
+
+The mechanism by which the application verifies that an entity ID exists in the database. If the ID is invalid or cannot be resolved, the engine must immediately halt and throw an explicit error to prevent corrupt state propagation.

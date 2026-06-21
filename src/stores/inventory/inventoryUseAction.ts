@@ -86,16 +86,19 @@ export function executeUseItem(
       gameStore.checkLevelUp(pokemon);
     } else if (result.resultType === 'learn_move') {
       const moveName = result.moveName || '';
-      const moveData = pokemonDataProvider.getMoveData(moveName);
+      const moveId = pokemonDataProvider.getMoveIdBySpanishName(moveName);
+      const moveData = pokemonDataProvider.getMoveData(moveId);
+      if (!moveData) throw new Error(`[executeUseItem] No se encontró información en la base de datos para el movimiento: ${moveId}`);
       const moveObj = { 
-        name: moveName, 
-        pp: moveData?.pp || 35, 
-        maxPP: moveData?.pp || 35 
+        id: moveId,
+        name: moveData.name, 
+        pp: moveData.pp, 
+        maxPP: moveData.pp 
       };
 
       if (pokemon.moves.length < 4) {
         pokemon.moves.push(moveObj as Move);
-        uiStore.notify(`¡${pokemon.name} aprendió ${moveName}!`, '📖');
+        uiStore.notify(`¡${pokemon.name} aprendió ${moveData.name}!`, '📖');
       } else {
         shouldConsumeImmediately = false;
         uiStore.addToLearnQueue({ 

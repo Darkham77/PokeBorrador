@@ -9,7 +9,6 @@ import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps({
-  isGuardian: { type: Boolean, required: true },
   hasReflect: { type: Boolean, required: true },
   hasLightScreen: { type: Boolean, required: true },
   hasSafeguard: { type: Boolean, required: true },

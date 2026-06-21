@@ -90,7 +90,7 @@ export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'specia
   return move.cat ?? 'physical';
 }
 
-export function getAbilityMultiplier(attacker: PurePokemon, move: PureMove, weather?: PureBattleWeather | null): { mult: number; triggeredAbility: string | null } {
+export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, weather?: PureBattleWeather | null): { mult: number; triggeredAbility: string | null } {
   let mult = 1;
   let triggeredAbility: string | null = null;
   const ab = attacker.ability;
@@ -123,7 +123,7 @@ export function getAbilityMultiplier(attacker: PurePokemon, move: PureMove, weat
   return { mult, triggeredAbility };
 }
 
-export function getEffectiveStat(
+export function getEffectiveStatPure(
   pokemon: PurePokemon,
   statKey: keyof PurePokemon,
   stages: PureBattleStages,
@@ -238,12 +238,12 @@ export function calculateDamagePure(
   const critMult = isCrit ? (ACTIVE_RULE_SET === 2 ? 2.0 : 1.5) : 1;
 
   const isGym = ctx.isGym || false;
-  const A = getEffectiveStat(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
-  const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
+  const A = getEffectiveStatPure(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
+  const D = getEffectiveStatPure(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
 
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
-  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, { ...move, type: moveType, power, cat: moveCat }, weather);
+  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplierPure(attacker, { ...move, type: moveType, power, cat: moveCat }, weather);
 
   if (defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
     finalAbilityMult *= 0.5;
@@ -410,7 +410,7 @@ export function calculateDamageRangePure(
 
 // ── Catch Rate logic from catchMath ──────────────────────────────────────────
 
-export function calculateCatchRate(pokemon: PurePokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: PureCatchOptions = {}) {
+export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: PureCatchOptions = {}) {
   const ballName = String(rawBallType || '').toLowerCase();
   
   const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }> = {
@@ -474,9 +474,9 @@ export function calculateCatchRate(pokemon: PurePokemon, rawBallType = 'poke-bal
   return { caught: shakes === 4, shakes: Math.min(3, shakes) };
 }
 
-export function calculateEscapeChance(playerPoke: PurePokemon, wildPoke: PurePokemon, attempts: number, weather: PureBattleWeather | null) {
-  const pSpe = getEffectiveStat(playerPoke, 'spe', {}, weather);
-  const eSpe = getEffectiveStat(wildPoke, 'spe', {}, weather);
+export function calculateEscapeChancePure(playerPoke: PurePokemon, wildPoke: PurePokemon, attempts: number, weather: PureBattleWeather | null) {
+  const pSpe = getEffectiveStatPure(playerPoke, 'spe', {}, weather);
+  const eSpe = getEffectiveStatPure(wildPoke, 'spe', {}, weather);
   const safeESpe = Math.max(1, eSpe);
   const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts;
   return Math.floor(Math.random() * 256) < f;

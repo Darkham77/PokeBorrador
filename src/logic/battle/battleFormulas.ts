@@ -6,10 +6,10 @@
  */
 
 import { 
-  getEffectiveStat as pureGetEffectiveStat,
+  getEffectiveStatPure as pureGetEffectiveStat,
   calculateDamagePure,
-  calculateCatchRate as pureCalculateCatchRate,
-  calculateEscapeChance as pureCalculateEscapeChance,
+  calculateCatchRatePure as pureCalculateCatchRate,
+  calculateEscapeChancePure as pureCalculateEscapeChance,
   type PurePokemon,
   type PureMove,
   type PureBattleWeather,
@@ -18,11 +18,8 @@ import {
 import { getDayCycle } from '../utils/timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle/battle';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-
-import { useBattleStore } from '@/stores/battle/battle';
-
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import { useBattleStore } from '@/stores/battle/battle';
 
 export interface DamageOptions {
   atkStages?: number;
@@ -53,7 +50,7 @@ function toPurePoke(p: Pokemon): PurePokemon {
 }
 
 function toPureMove(m: Partial<Move>): PureMove {
-  const resolvedId = m.id || (m.name ? pokemonDataProvider.resolveMoveId(m.name) : '');
+  const resolvedId = m.id || '';
   return {
     id: resolvedId,
     type: m.type || 'normal',
@@ -78,7 +75,7 @@ export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stage
       activeWeather = null;
       isGym = true;
     }
-  } catch (e) {
+  } catch {
     // Pinia not initialized or similar
   }
 
@@ -101,7 +98,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
       activeWeather = null;
       isGym = true;
     }
-  } catch (e) {
+  } catch {
     // Pinia not initialized
   }
 
@@ -195,7 +192,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
       activeWeather = null;
       isGym = true;
     }
-  } catch (e) {
+  } catch {
     // Pinia not initialized
   }
 
@@ -226,7 +223,7 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
     if (battleStore.state?.isGym) {
       activeWeather = null;
     }
-  } catch (e) {
+  } catch {
     // Pinia not initialized
   }
 
@@ -250,7 +247,7 @@ export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, at
     if (battleStore.state?.isGym) {
       activeWeather = null;
     }
-  } catch (e) {
+  } catch {
     // Pinia not initialized
   }
 

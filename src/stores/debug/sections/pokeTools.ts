@@ -1,8 +1,18 @@
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { DebugSystem } from '@/stores/debug'
+
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { useMapStore } from '@/stores/map'
+import { useBreedingStore } from '@/stores/breeding'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 
-export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, breedingStore }: DebugContext) {
+export function registerPokeTools(debug: DebugSystem) {
+  const game = useGameStore()
+  const ui = useUIStore()
+  const mapStore = useMapStore()
+  const breedingStore = useBreedingStore()
+
   debug.register({
     id: 'poke-set-pokedex-mode',
     label: 'MODO POKEDEX',

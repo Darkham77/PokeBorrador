@@ -1,6 +1,11 @@
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { DebugSystem } from '@/stores/debug'
 
-export function registerTimeTools(debug: DebugSystem, { game, ui }: DebugContext) {
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+export function registerTimeTools(debug: DebugSystem) {
+  const game = useGameStore()
+  const ui = useUIStore()
+
   debug.register({
     id: 'core-set-mock-time',
     label: 'SET MOCK TIME',

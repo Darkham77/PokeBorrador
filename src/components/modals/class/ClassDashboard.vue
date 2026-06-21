@@ -108,7 +108,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
 <template>
   <div class="dashboard-layout">
     <!-- Left: Identity -->
-    <aside class="dashboard-sidebar">
+    <aside class="dashboard-sidebar custom-scrollbar-vicio">
       <div class="avatar-box">
         <div class="avatar-glow" />
         <div class="trainers-wrap">

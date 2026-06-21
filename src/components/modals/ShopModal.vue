@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import SortControls from '@/components/common/SortControls.vue'
+import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -118,21 +118,11 @@ const close = () => {
         </div>
 
         <!-- Buscador de Objetos -->
-        <div class="shop-search-wrapper">
-          <div class="search-input-container">
-            <span class="search-icon">🔍</span>
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Buscar objeto por nombre..." 
-              class="shop-search-bar"
-            >
-          </div>
-          <SortControls
-            v-model="sortKey"
-            v-model:sort-order="sortOrder"
-          />
-        </div>
+        <ShopSearchControls
+          v-model:search="search"
+          v-model:sort-key="sortKey"
+          v-model:sort-order="sortOrder"
+        />
 
         <!-- Rejilla de Objetos -->
         <div class="shop-grid-wrapper custom-scrollbar">

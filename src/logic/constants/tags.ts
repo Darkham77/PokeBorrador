@@ -1,5 +1,5 @@
 
-import { getItemByName, getItemById } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 /**
@@ -127,12 +127,18 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
   const itemBadge = POKEMON_BADGES['item'];
   if (heldItemRaw && itemBadge) {
-    // Normalizar para búsqueda: "Rare Candy" -> "rare_candy" o "Caramelo Raro" -> "Caramelo Raro"
+    // Normalizar para búsqueda: "Rare Candy" -> "rare_candy"
     const normalizedId = String(heldItemRaw).toLowerCase().replace(/ /g, '_')
-    const itemData = getItemById(heldItemRaw) || 
-                    getItemById(normalizedId) || 
-                    getItemByName(heldItemRaw) ||
-                    getItemByName(heldItemRaw.charAt(0).toUpperCase() + heldItemRaw.slice(1).toLowerCase())
+    let itemData = null
+    try {
+      itemData = getItemById(heldItemRaw)
+    } catch {
+      try {
+        itemData = getItemById(normalizedId)
+      } catch {
+        // Objeto no encontrado
+      }
+    }
 
     badges.push({ 
       ...itemBadge, 

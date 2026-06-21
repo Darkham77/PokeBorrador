@@ -5,7 +5,10 @@
     "scripts/**",
     "supabase/**",
     ".agents/**",
-    "src/data/pokemon/pokemonDB.ts"
+    "src/data/pokemon/pokemonDB.ts",
+    "src/logic/battle/showdown.worker.ts",
+    "src/logic/render/MapRenderer.ts",
+    "src/logic/render/render.worker.ts"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",

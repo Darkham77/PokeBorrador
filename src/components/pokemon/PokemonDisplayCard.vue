@@ -32,7 +32,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  click: []
   openDetail: [index: number]
   openItem: [index: number]
   unequipItem: [index: number]

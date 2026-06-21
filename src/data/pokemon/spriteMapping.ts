@@ -1,7 +1,6 @@
 /**
  * Mapping of Pokemon internal IDs to PokeAPI sprite IDs.
  */
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export const POKEMON_SPRITE_IDS = {
   bulbasaur: 1, ivysaur: 2, venusaur: 3,
@@ -128,21 +127,3 @@ export const POKEMON_SPRITE_IDS = {
   'castform-rainy': '351_2',
   'castform-snowy': '351_3'
 };
-
-
-/**
- * Gets the PokeAPI sprite URL for a given species ID.
- */
-export function getSpriteUrl(id: string, isShiny = false) {
-  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) {
-    return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
-  }
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
-}
-
-/**
- * Gets the PokeAPI back sprite URL for a given species ID.
- */
-export function getBackSpriteUrl(id: string, isShiny = false) {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
-}

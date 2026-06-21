@@ -347,5 +347,189 @@ export const ABILITY_TRANSLATIONS_ES: Record<string, { name: string; desc: strin
   "wonderguard": {
     "name": "Superguarda",
     "desc": "This Pokemon is only damaged by supereffective moves and indirect damage."
+  },
+  "sheerforce": {
+    "name": "Potencia Bruta",
+    "desc": "▲ Potencia movimientos con efectos secundarios pero los elimina."
+  },
+  "magicguard": {
+    "name": "Muro Mágico",
+    "desc": "🚫 Solo recibe daño de ataques directos del rival."
+  },
+  "friendguard": {
+    "name": "Compadrazgo",
+    "desc": "🛡️ Reduce el daño recibido por los aliados en combate doble."
+  },
+  "unaware": {
+    "name": "Ignorante",
+    "desc": "• Ignora los cambios de estadísticas del rival al atacar o defender."
+  },
+  "competitive": {
+    "name": "Tenacidad",
+    "desc": "▲ Aumenta mucho el Ataque Especial si le bajan alguna estadística."
+  },
+  "frisk": {
+    "name": "Cacheo",
+    "desc": "• Revela el objeto equipado por el oponente al entrar al combate."
+  },
+  "dryskin": {
+    "name": "Piel Seca",
+    "desc": "▲ Recupera PS con la lluvia o ataques de Agua; ▼ Daño bajo Sol y Fuego."
+  },
+  "wonderskin": {
+    "name": "Piel Milagro",
+    "desc": "▲ Aumenta la probabilidad de esquivar movimientos de estado."
+  },
+  "sandforce": {
+    "name": "Fuerza Arena",
+    "desc": "▲ Potencia movimientos de Tierra, Roca y Acero bajo Tormenta de Arena."
+  },
+  "technician": {
+    "name": "Experto",
+    "desc": "▲ Potencia movimientos con poder base igual o menor a 60."
+  },
+  "angerpoint": {
+    "name": "Irascible",
+    "desc": "▲ Maximiza el Ataque si recibe un golpe crítico."
+  },
+  "defiant": {
+    "name": "Competitivo",
+    "desc": "▲ Aumenta mucho el Ataque si le bajan alguna estadística."
+  },
+  "justified": {
+    "name": "Justiciero",
+    "desc": "▲ Aumenta el Ataque si recibe un movimiento de tipo Siniestro."
+  },
+  "noguard": {
+    "name": "Indefenso",
+    "desc": "🎯 Asegura que todos los ataques lanzados o recibidos acierten."
+  },
+  "steadfast": {
+    "name": "Impasible",
+    "desc": "▲ Aumenta la Velocidad cada vez que retrocede."
+  },
+  "gluttony": {
+    "name": "Gula",
+    "desc": "• Consume las bayas equipadas antes de lo habitual (a 50% HP o menos)."
+  },
+  "regenerator": {
+    "name": "Regeneración",
+    "desc": "▲ Restaura un tercio de sus PS máximos al ser cambiado."
+  },
+  "analytic": {
+    "name": "Analítico",
+    "desc": "▲ Potencia los ataques si el Pokémon se mueve en último lugar."
+  },
+  "hydration": {
+    "name": "Hidratación",
+    "desc": "• Cura los problemas de estado si está lloviendo al final del turno."
+  },
+  "icebody": {
+    "name": "Gélido",
+    "desc": "▲ Recupera PS gradualmente bajo el clima de Granizo o Nieve."
+  },
+  "poisontouch": {
+    "name": "Toque Tóxico",
+    "desc": "• Puede envenenar al rival al hacer contacto físico."
+  },
+  "skilllink": {
+    "name": "Encadenado",
+    "desc": "🎯 Asegura el máximo número de golpes en movimientos de impacto múltiple."
+  },
+  "overcoat": {
+    "name": "Funda",
+    "desc": "🚫 Inmune al daño por clima y a movimientos de esporas o polvos."
+  },
+  "cursedbody": {
+    "name": "Cuerpo Maldito",
+    "desc": "• Puede anular el movimiento del rival tras recibir daño de este."
+  },
+  "weakarmor": {
+    "name": "Armadura Frágil",
+    "desc": "▼ Baja la Defensa y ▲ sube mucho la Velocidad al recibir daño físico."
+  },
+  "forewarn": {
+    "name": "Alerta",
+    "desc": "• Revela el movimiento más potente que posee el rival al entrar al combate."
+  },
+  "aftermath": {
+    "name": "Resquicio",
+    "desc": "💥 Daña al oponente si es debilitado por un ataque de contacto físico."
+  },
+  "harvest": {
+    "name": "Cosecha",
+    "desc": "• Puede restaurar una baya consumida al final de cada turno."
+  },
+  "reckless": {
+    "name": "Audaz",
+    "desc": "▲ Potencia los movimientos que causan daño de retroceso al usuario."
+  },
+  "unburden": {
+    "name": "Liviano",
+    "desc": "▲ Duplica la Velocidad al perder o consumir el objeto equipado."
+  },
+  "ironfist": {
+    "name": "Puño Férreo",
+    "desc": "▲ Potencia los movimientos basados en puñetazos (+20%)."
+  },
+  "neutralizinggas": {
+    "name": "Gas Reactivo",
+    "desc": "🚫 Anula las habilidades de todos los demás Pokémon en combate."
+  },
+  "healer": {
+    "name": "Alma Cura",
+    "desc": "• Puede curar los problemas de estado de los aliados adyacentes."
+  },
+  "leafguard": {
+    "name": "Defensa Hoja",
+    "desc": "🚫 Previene problemas de estado bajo clima de Sol."
+  },
+  "scrappy": {
+    "name": "Intrépido",
+    "desc": "👻 Permite golpear a fantasmas con ataques de tipo Normal y Lucha."
+  },
+  "filter": {
+    "name": "Filtro",
+    "desc": "🛡️ Reduce el daño recibido por ataques supereficaces en un 25%."
+  },
+  "moldbreaker": {
+    "name": "Rompemoldes",
+    "desc": "⚡ Ejecuta movimientos ignorando las habilidades defensivas del oponente."
+  },
+  "moxie": {
+    "name": "Autoestima",
+    "desc": "▲ Aumenta el Ataque del usuario al debilitar a un oponente."
+  },
+  "rattled": {
+    "name": "Cobardía",
+    "desc": "▲ Sube la Velocidad al recibir golpes Siniestros, Fantasmas, Bichos o Intimidación."
+  },
+  "imposter": {
+    "name": "Impostor",
+    "desc": "👥 Se transforma automáticamente en el oponente al entrar al combate."
+  },
+  "quickfeet": {
+    "name": "Pies Rápidos",
+    "desc": "▲ Aumenta la Velocidad en un 50% si sufre un problema de estado."
+  },
+  "download": {
+    "name": "Descarga",
+    "desc": "▲ Sube Ataque o At. Esp. según la menor defensa del oponente."
+  },
+  "snowcloak": {
+    "name": "Manto Níveo",
+    "desc": "▲ Aumenta la evasión bajo clima de Granizo o Nieve."
+  },
+  "multiscale": {
+    "name": "Compensación",
+    "desc": "🛡️ Reduce a la mitad el daño recibido cuando sus PS están al máximo."
+  },
+  "superluck": {
+    "name": "Afortunado",
+    "desc": "▲ Aumenta la probabilidad de asestar golpes críticos."
+  },
+  "anticipation": {
+    "name": "Anticipación",
+    "desc": "• Detecta si el rival tiene algún ataque letal o supereficaz al entrar."
   }
 };

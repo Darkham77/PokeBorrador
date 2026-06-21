@@ -9,6 +9,7 @@ export function useTooltipPosition(
   const activePosition = ref(position)
   const arrowOffset = ref({ x: 0, y: 0 })
   const isRightSide = ref(false)
+  const maxHeight = ref<number | null>(null)
 
   const updatePosition = () => {
     if (!trigger.value || !tooltip.value) return
@@ -29,13 +30,29 @@ export function useTooltipPosition(
 
     // --- 1. FLIPPING LOGIC (Vertical & Horizontal) ---
     if (pos === 'top' && rect.top - tipRect.height - gap < padding) {
-      pos = 'bottom'
+      const spaceTop = rect.top - padding
+      const spaceBottom = viewportHeight - rect.bottom - padding
+      if (spaceBottom > spaceTop) {
+        pos = 'bottom'
+      }
     } else if (pos === 'bottom' && rect.bottom + tipRect.height + gap > viewportHeight - padding) {
-      pos = 'top'
+      const spaceTop = rect.top - padding
+      const spaceBottom = viewportHeight - rect.bottom - padding
+      if (spaceTop > spaceBottom) {
+        pos = 'top'
+      }
     } else if (pos === 'left' && rect.left - tipRect.width - gap < padding) {
-      pos = 'right'
+      const spaceLeft = rect.left - padding
+      const spaceRight = viewportWidth - rect.right - padding
+      if (spaceRight > spaceLeft) {
+        pos = 'right'
+      }
     } else if (pos === 'right' && rect.right + tipRect.width + gap > viewportWidth - padding) {
-      pos = 'left'
+      const spaceLeft = rect.left - padding
+      const spaceRight = viewportWidth - rect.right - padding
+      if (spaceLeft > spaceRight) {
+        pos = 'left'
+      }
     }
     activePosition.value = pos
 
@@ -79,6 +96,14 @@ export function useTooltipPosition(
       }
       arrowOffset.value = { x: 0, y: anchorY - top }
     }
+
+    if (pos === 'top') {
+      maxHeight.value = Math.max(120, Math.round(rect.top - padding - gap))
+    } else if (pos === 'bottom') {
+      maxHeight.value = Math.max(120, Math.round(viewportHeight - rect.bottom - padding - gap))
+    } else {
+      maxHeight.value = null
+    }
     
     coords.value = { 
       top: Math.round(top), 
@@ -92,6 +117,7 @@ export function useTooltipPosition(
     activePosition,
     arrowOffset,
     isRightSide,
+    maxHeight,
     updatePosition
   }
 }

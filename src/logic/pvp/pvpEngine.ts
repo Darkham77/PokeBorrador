@@ -95,8 +95,8 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const cIdx = clientPick.moveIndex ?? 0
     const hMove = hostPoke.moves[hIdx]
     const cMove = clientPoke.moves[cIdx]
-    const hMoveId = hMove?.id || (hMove?.name ? pokemonDataProvider.resolveMoveId(hMove.name) : '');
-    const cMoveId = cMove?.id || (cMove?.name ? pokemonDataProvider.resolveMoveId(cMove.name) : '');
+    const hMoveId = hMove?.id || '';
+    const cMoveId = cMove?.id || '';
     const hPrio = pokemonDataProvider.getMoveData(hMoveId)?.priority || 0
     const cPrio = pokemonDataProvider.getMoveData(cMoveId)?.priority || 0
 
@@ -125,7 +125,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const moveIdx = pick.moveIndex ?? 0
     const move = attacker.moves[moveIdx]
     const moveName = move?.name || '???'
-    const moveId = move?.id || (move?.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+    const moveId = move?.id || '';
     const md = (moveId ? pokemonDataProvider.getMoveData(moveId) : null) || { 
       id: '',
       name: moveName,

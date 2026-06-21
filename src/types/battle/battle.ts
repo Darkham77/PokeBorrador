@@ -130,6 +130,7 @@ export interface BattleCombatantProps {
   isSilhouette?: boolean;
   isAttacking?: boolean;
   activeMove?: {
+    id?: string;
     side: string;
     cat: 'physical' | 'special' | 'status' | 'selfKO';
     name: string;

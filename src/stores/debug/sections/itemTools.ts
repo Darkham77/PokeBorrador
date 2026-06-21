@@ -1,21 +1,27 @@
+import type { DebugSystem } from '@/stores/debug'
 
-import { getItemByName, getItemById, SHOP_ITEMS } from '@/data/inventory/items'
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { useBreedingStore } from '@/stores/breeding'
 
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
 
-export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore }: DebugContext) {
+export function registerItemTools(debug: DebugSystem) {
+  const game = useGameStore()
+  const ui = useUIStore()
+  const breedingStore = useBreedingStore()
+
   debug.register({
     id: 'item-add',
     label: 'AÑADIR ITEM',
     command: 'addItem',
     category: 'items',
-    action: (name: string, qty = 10) => {
-      const item = getItemByName(name) || getItemById(name)
-      const key = item ? item.id : name
+    action: (id: string, qty = 10) => {
+      const item = getItemById(id)
       const inventory = { ...game.state.inventory }
-      inventory[key] = ((inventory[key] as number) || 0) + qty
+      inventory[item.id] = ((inventory[item.id] as number) || 0) + qty
       game.state.inventory = inventory
-      ui.notify(`Debug: +${qty} ${item ? item.name : name}`, '🎒')
+      ui.notify(`Debug: +${qty} ${item.name}`, '🎒')
       game.saveGame(false)
     },
     description: 'Añade una cantidad de un item a la mochila.'

@@ -5,7 +5,7 @@ import type { GameState, NotificationItem } from '@/types/system/game'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 
-export interface ProfileData {
+interface ProfileData {
   username: string;
   email: string;
   isAdmin: boolean;

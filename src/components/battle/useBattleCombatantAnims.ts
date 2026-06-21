@@ -4,7 +4,6 @@ import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { BattleCombatantProps } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const VOICE_MOVE_IDS = new Set([
   'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',
@@ -254,7 +253,7 @@ export function useBattleCombatantAnims(
       const cat = move.cat
       const tl = gsap.timeline()
       
-      const moveIdLookup = move.name ? pokemonDataProvider.resolveMoveId(move.name) : ''
+      const moveIdLookup = move.id || ''
       const cleanMoveId = moveIdLookup.toLowerCase().replace(/[^a-z0-9]/g, '')
       if (VOICE_MOVE_IDS.has(cleanMoveId) && props.pokemon) {
         tl.add(() => {

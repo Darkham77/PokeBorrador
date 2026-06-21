@@ -51,7 +51,7 @@ async function main() {
 
     // Verificar si tiene traducción en el archivo local exportado
     if (!ABILITY_TRANSLATIONS_ES[abId]) {
-      warnings.push(`${tag} No tiene traducción al español registrada en abilities.ts.`);
+      errors.push(`${tag} No tiene traducción al español registrada en abilities.ts.`);
     }
   }
 

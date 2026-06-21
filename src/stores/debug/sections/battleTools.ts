@@ -5,9 +5,9 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { DebugSystem } from '@/stores/debug'
 
-export function registerBattleTools(debug: DebugSystem, _context: DebugContext) {
+export function registerBattleTools(debug: DebugSystem) {
   const audio = useAudioStore()
 
   debug.register({

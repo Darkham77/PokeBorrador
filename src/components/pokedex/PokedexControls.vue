@@ -2,16 +2,27 @@
 interface Props {
   currentGen: number
   sortBy: string
+  sortOrder: 'asc' | 'desc'
   searchQuery: string
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:currentGen', gen: number): void
   (e: 'update:sortBy', sortBy: string): void
+  (e: 'update:sortOrder', sortOrder: 'asc' | 'desc'): void
   (e: 'update:searchQuery', query: string): void
 }>()
+
+const handleSortClick = (key: string) => {
+  if (props.sortBy === key) {
+    emit('update:sortOrder', props.sortOrder === 'asc' ? 'desc' : 'asc')
+  } else {
+    emit('update:sortBy', key)
+    emit('update:sortOrder', 'asc')
+  }
+}
 </script>
 
 <template>
@@ -34,16 +45,28 @@ defineEmits<{
         <button 
           class="pdex-sort-btn" 
           :class="{ active: sortBy === 'number' }"
-          @click.stop="$emit('update:sortBy', 'number')"
+          @click.stop="handleSortClick('number')"
         >
-          #
+          Nº
+          <span
+            v-if="sortBy === 'number'"
+            class="sort-arrow"
+          >
+            {{ sortOrder === 'asc' ? '↑' : '↓' }}
+          </span>
         </button>
         <button 
           class="pdex-sort-btn" 
           :class="{ active: sortBy === 'name' }"
-          @click.stop="$emit('update:sortBy', 'name')"
+          @click.stop="handleSortClick('name')"
         >
           A-Z
+          <span
+            v-if="sortBy === 'name'"
+            class="sort-arrow"
+          >
+            {{ sortOrder === 'asc' ? '↑' : '↓' }}
+          </span>
         </button>
       </div>
 
@@ -56,6 +79,13 @@ defineEmits<{
           class="pdex-search-input"
           @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
         >
+        <button 
+          v-if="searchQuery"
+          class="clear-btn"
+          @click.stop="$emit('update:searchQuery', '')"
+        >
+          ×
+        </button>
       </div>
     </div>
   </div>
@@ -144,8 +174,10 @@ defineEmits<{
   }
 
   .pdex-sort-btn {
-    width: 28px;
+    min-width: 28px;
     height: 28px;
+    padding: 0 6px;
+    gap: 3px;
     @include flex-center;
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.05);
@@ -208,6 +240,20 @@ defineEmits<{
       background: Rgba(255, 255, 255, 0.05);
       border-color: var(--yellow);
     }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: Rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+
+    &:hover { color: white; }
   }
 }
 </style>

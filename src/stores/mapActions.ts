@@ -7,7 +7,7 @@ import { useInventoryStore } from '@/stores/inventory/inventory.ts';
 import { generateEncounter } from '@/logic/encounters/encounters';
 import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getItemByName } from '@/data/inventory/items.ts';
+import { getItemById } from '@/data/inventory/items.ts';
 import { logger } from '@/logic/utils/logger';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
 import { calculateArchaeologyWeights } from '@/logic/utils/archaeologyHelpers';
@@ -194,70 +194,63 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
       selectedCategory = 'rare';
     }
 
-    let rewardName = '';
-    let rewardIcon = '💎';
+    let rewardId = '';
+    let rewardIcon = '';
 
     if (selectedCategory === 'fossil') {
       const pool = loc?.archaeology?.pool || ['kabuto', 'omanyte'];
       const selectedPoke = pool[Math.floor(Math.random() * pool.length)];
       if (selectedPoke === 'kabuto') {
-        rewardName = 'Fósil Domo';
+        rewardId = 'dome_fossil';
         rewardIcon = '🛡';
       } else if (selectedPoke === 'omanyte') {
-        rewardName = 'Fósil Hélix';
+        rewardId = 'helix_fossil';
         rewardIcon = '🐚';
       } else {
-        rewardName = 'Ámbar Viejo';
+        rewardId = 'old_amber';
         rewardIcon = '💎';
       }
     } else if (selectedCategory === 'stone') {
-      const stones = [
-        { name: 'Piedra Fuego', icon: '🔥' },
-        { name: 'Piedra Agua', icon: '💧' },
-        { name: 'Piedra Trueno', icon: '⚡' },
-        { name: 'Piedra Hoja', icon: '🌿' },
-        { name: 'Piedra Lunar', icon: '🌙' },
-        { name: 'Piedra Solar', icon: '☀️' }
-      ];
-      const stone = stones[Math.floor(Math.random() * stones.length)]!;
-      rewardName = stone.name;
-      rewardIcon = stone.icon;
+      const stones = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone', 'sun_stone'];
+      rewardId = stones[Math.floor(Math.random() * stones.length)]!;
+      rewardIcon = '💎';
     } else if (selectedCategory === 'common') {
       const commons = [
-        { name: 'Perla', icon: '⚪' },
-        { name: 'Polvo Estelar', icon: '✨' },
-        { name: 'Mineral de Carbón', icon: '🪨' },
-        { name: 'Mineral de Cobre', icon: '🟫' },
-        { name: 'Mineral de Hierro', icon: '🧱' }
+        { id: 'pearl', icon: '⚪' },
+        { id: 'stardust', icon: '✨' },
+        { id: 'coal_ore', icon: '🪨' },
+        { id: 'copper_ore', icon: '🟫' },
+        { id: 'iron_ore', icon: '🧱' }
       ];
       const item = commons[Math.floor(Math.random() * commons.length)]!;
-      rewardName = item.name;
+      rewardId = item.id;
       rewardIcon = item.icon;
     } else {
       const rares = [
-        { name: 'Pepita', icon: '🟡' },
-        { name: 'Perla Grande', icon: '🔘' },
-        { name: 'Trozo Estrella', icon: '⭐' },
-        { name: 'Mineral de Plata', icon: '⬜' },
-        { name: 'Mineral de Oro', icon: '🟨' },
-        { name: 'Mineral de Wolframio', icon: '🌑' },
-        { name: 'Mineral de Uranio', icon: '🟢' },
-        { name: 'Mineral de Rubí', icon: '🔺' },
-        { name: 'Mineral de Zafiro', icon: '🔹' },
-        { name: 'Mineral de Esmeralda', icon: '💚' },
-        { name: 'Mineral de Topacio', icon: '🟡' },
-        { name: 'Mineral de Diamante', icon: '💎' }
+        { id: 'nugget', icon: '🟡' },
+        { id: 'big_pearl', icon: '🔘' },
+        { id: 'star_piece', icon: '⭐' },
+        { id: 'silver_ore', icon: '⬜' },
+        { id: 'gold_ore', icon: '🟨' },
+        { id: 'tungsten_ore', icon: '🌑' },
+        { id: 'uranium_ore', icon: '🟢' },
+        { id: 'rubi_ore', icon: '🔺' },
+        { id: 'zaphire_ore', icon: '🔹' },
+        { id: 'emmerald_ore', icon: '💚' },
+        { id: 'topaz_ore', icon: '🟡' },
+        { id: 'diamond_ore', icon: '💎' }
       ];
       const item = rares[Math.floor(Math.random() * rares.length)]!;
-      rewardName = item.name;
+      rewardId = item.id;
       rewardIcon = item.icon;
     }
 
-    const itemData = getItemByName(rewardName);
+    const itemData = getItemById(rewardId);
     const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon;
 
-    inventoryStore.addItem(rewardName, 1);
-    uiStore.notify(`¡Desenterraste un ${rewardName}!`, itemSprite);
-    battleStore.addLog(`¡Desenterraste un <strong style="color:var(--yellow);">${rewardName}</strong>!`, 'log-info', rewardName);
+    inventoryStore.addItem(rewardId, 1);
+    const displayName = itemData ? itemData.name : rewardId;
+    uiStore.notify(`¡Desenterraste un ${displayName}!`, itemSprite);
+    battleStore.addLog(`¡Desenterraste un <strong style="color:var(--yellow);">${displayName}</strong>!`, 'log-info', displayName);
   }
 }

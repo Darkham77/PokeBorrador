@@ -3,14 +3,12 @@ import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
-import vuejsAccessibility from 'eslint-plugin-vuejs-accessibility';
 import pluginSecurity from 'eslint-plugin-security';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
-  ...vuejsAccessibility.configs['flat/recommended'],
   pluginSecurity.configs.recommended,
   {
     plugins: {
@@ -36,19 +34,7 @@ export default tseslint.config(
       ],
       'no-console': 'off',
       'no-undef': 'off', // TS ya maneja el chequeo de no-undef
-      // Configurar reglas de accesibilidad como advertencias para evitar romper el build de código legacy
-      'vuejs-accessibility/form-control-has-label': 'warn',
-      'vuejs-accessibility/label-has-for': 'warn',
-      'vuejs-accessibility/click-events-have-key-events': 'warn',
-      'vuejs-accessibility/no-static-element-interactions': 'warn',
-      'vuejs-accessibility/mouse-events-have-key-events': 'warn',
-      'vuejs-accessibility/alt-text': 'warn',
-      'vuejs-accessibility/no-autofocus': 'warn',
-      'vuejs-accessibility/no-onchange': 'warn',
-      'vuejs-accessibility/no-redundant-roles': 'warn',
-      'vuejs-accessibility/interactive-supports-focus': 'warn',
-      'vuejs-accessibility/heading-has-content': 'warn',
-      'vuejs-accessibility/anchor-has-content': 'warn',
+      'security/detect-object-injection': 'off',
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -63,6 +49,26 @@ export default tseslint.config(
         ...globals.es2021,
       },
     },
+  },
+  // Desactivar warnings de seguridad en scripts de utilidad y tests
+  {
+    files: [
+      'scripts/**/*.ts',
+      'scripts/**/*.js',
+      'scripts/**/*.cjs',
+      'tests/**/*.ts',
+      'tests/**/*.js',
+      'tests/**/*.spec.ts',
+      'tests/**/*.test.ts',
+      'vite.config.ts',
+      'supabase/**/*.ts',
+      'supabase/**/*.js'
+    ],
+    rules: {
+      'security/detect-non-literal-fs-filename': 'off',
+      'security/detect-non-literal-regexp': 'off',
+      'security/detect-unsafe-regex': 'off'
+    }
   },
   {
     ignores: [

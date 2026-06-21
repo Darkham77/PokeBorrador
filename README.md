@@ -186,7 +186,7 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
 | `npm run validate:items:summary` | **Resumen de Objetos**: Valida los objetos omitiendo listados detallados en consola. |
 | `npm run validate:items:report` | **Reporte de Objetos**: Genera un archivo detallado `scratch/items_report.txt` con la validación de objetos. |
-| `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
+| `npm run validate:moves` | **Move Integrity**: Valida integridad de movimientos y learnsets contra el Dex de Showdown. |
 | `npm run validate:moves:summary` | **Resumen de Movimientos**: Valida movimientos omitiendo listados detallados en consola. |
 | `npm run validate:moves:report` | **Reporte de Movimientos**: Genera un archivo detallado `scratch/moves_report.txt` con la validación de movimientos. |
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |

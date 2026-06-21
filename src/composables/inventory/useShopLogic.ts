@@ -2,7 +2,7 @@ import { ref, computed, watch, nextTick, Ref } from 'vue'
 import { gsap } from 'gsap'
 import { useShopStore } from '@/stores/inventory/shop'
 
-export interface ShopItem {
+interface ShopItem {
   id: string
   name: string
   cat: string

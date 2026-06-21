@@ -1377,11 +1377,16 @@ export const SHOP_ITEMS = [
   }
 ];
 
-export const getItemByName = (name: string) => SHOP_ITEMS.find(i => i.name === name);
-export const getItemById = (id: string) => SHOP_ITEMS.find(i => i.id === id);
+export const getItemById = (id: string) => {
+  const item = SHOP_ITEMS.find(i => i.id === id);
+  if (!item) {
+    throw new Error(`Objeto no encontrado por ID: ${id}`);
+  }
+  return item;
+};
 export const getItemName = (id: string): string => {
   const item = getItemById(id);
-  return item ? item.name : id;
+  return item.name;
 };
 
 export const BUFF_FIELD_TO_ITEM_IDS: Record<string, string[]> = {

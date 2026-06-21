@@ -9,12 +9,10 @@ import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useEventStore } from '@/stores/events'
 import { useGymsStore } from '@/stores/gyms'
-import { getItemById, getItemByName } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import EggSprite from '@/components/common/EggSprite.vue'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-
-import { resolveNormalizedName } from '@/stores/inventory/inventoryHelpers'
 
 interface Props {
   position?: string
@@ -54,7 +52,10 @@ const ballsList = computed(() => {
     .map(([name, qty]) => {
       const count = qty as number
       if (count <= 0) return null
-      const found = getItemByName(name) || getItemById(name)
+      let found = null
+      try {
+        found = getItemById(name)
+      } catch {}
       if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
         return { name: found?.name || name, qty: count }
       }
@@ -70,8 +71,10 @@ const materialItems = computed(() => {
   for (const [key, qty] of Object.entries(inventory)) {
     const count = qty as number
     if (count <= 0) continue
-    const officialName = resolveNormalizedName(key)
-    const found = getItemByName(officialName) || getItemById(officialName)
+    let found = null
+    try {
+      found = getItemById(key)
+    } catch {}
     if (found) {
       let tier: number | null = null
       if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {

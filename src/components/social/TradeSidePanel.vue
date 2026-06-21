@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import { getItemByName, getItemById } from '@/data/inventory/items'
+import { SHOP_ITEMS } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -43,7 +43,7 @@ const mappedItems = computed(() => {
   return Object.entries(props.inventory || {})
     .filter(([_, qty]) => qty > 0)
     .map(([name, qty]) => {
-      const dbItem = getItemByName(name) || getItemById(name)
+      const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
       return {
         id: dbItem?.id || name,
         name: dbItem?.name || name,

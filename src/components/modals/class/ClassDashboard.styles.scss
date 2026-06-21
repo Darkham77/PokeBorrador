@@ -37,6 +37,8 @@
   text-align: center;
   position: relative;
   z-index: var(--z-base);
+  overflow-y: auto;
+  overflow-x: hidden;
 
     .avatar-box {
       position: relative;

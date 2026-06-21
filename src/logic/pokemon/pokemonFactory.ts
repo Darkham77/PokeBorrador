@@ -11,7 +11,7 @@ import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
 import { logger } from '../utils/logger.ts';
-import { getItemById, getItemByName } from '@/data/inventory/items';
+import { getItemById } from '@/data/inventory/items';
 import { Dex, toID } from '@pkmn/sim';
 
 
@@ -150,10 +150,10 @@ export function sanitizePokemon(p: Pokemon): void {
 
   // 1b. Validar Objeto Equipado (heldItem)
   if (p.heldItem) {
-    const itemData = getItemById(p.heldItem) || getItemByName(p.heldItem);
-    if (itemData) {
+    try {
+      const itemData = getItemById(p.heldItem);
       p.heldItem = itemData.id;
-    } else {
+    } catch {
       logger.warn('Self-Healing', `Removiendo objeto equipado inválido (${p.heldItem}) para ${p.id}`);
       p.heldItem = null;
     }
@@ -167,11 +167,6 @@ export function sanitizePokemon(p: Pokemon): void {
 
   p.moves.forEach((m, idx) => {
     if (!m) return;
-    
-    // Resolve ID if missing
-    if (!m.id && m.name) {
-      m.id = pokemonDataProvider.resolveMoveId(m.name);
-    }
 
     // Si el ID es inválido, intentar recuperar o asignar 'tackle'
     if (!m.id || m.id === 'null' || m.id === 'undefined' || m.id === '???') {
@@ -460,10 +455,17 @@ export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
   const pendingMoves: PokemonMove[] = [];
   if (base && base.learnset) {
     (base.learnset).filter(m => m.lv === p.level).forEach(m => {
-      // Check if already knows the move
-      if (!p.moves.find(em => em && em.name === m.name)) {
-        const moveData = pokemonDataProvider.getMoveData(m.name);
-        const moveObj: PokemonMove = { name: m.name, pp: m.pp || moveData?.pp || 35, maxPP: m.pp || moveData?.pp || 35 };
+      if (!m.id) throw new Error(`[levelUpPokemon] El movimiento en el learnset no tiene un ID válido.`);
+      // Check if already knows the move by ID
+      if (!p.moves.find(em => em && em.id === m.id)) {
+        const moveData = pokemonDataProvider.getMoveData(m.id);
+        if (!moveData) throw new Error(`[levelUpPokemon] No se encontró información para el movimiento: ${m.id}`);
+        const moveObj: PokemonMove = { 
+          id: m.id, 
+          name: moveData.name, 
+          pp: m.pp || moveData.pp, 
+          maxPP: m.pp || moveData.pp 
+        };
         if (p.moves.length < 4) {
           p.moves.push(moveObj);
         } else {

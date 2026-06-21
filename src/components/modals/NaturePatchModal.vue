@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
-import { NATURES } from '@/data/battle/natures'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { NATURES, NATURE_DATA } from '@/data/battle/natures'
 import BaseModal from '@/components/common/BaseModal.vue'
+import gsap from 'gsap'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -27,7 +27,8 @@ const handleApplyNature = (nature: string) => {
   import('@/logic/pokemon/pokemonFactory').then(({ recalcPokemonStats }) => {
     if (naturePokemon.value) {
       recalcPokemonStats(naturePokemon.value)
-      uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${nature}!`, '✨')
+      const translatedNature = NATURE_DATA[nature]?.name || nature
+      uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`, '✨')
     }
     // Consume only after confirming
     inventoryStore.removeItem('nature_patch', 1)
@@ -37,14 +38,36 @@ const handleApplyNature = (nature: string) => {
   })
 }
 
-const getNatureInfo = (nature: string) => {
-  const data = pokemonDataProvider.getNatureData(nature)
-  if (!data || !data.up) return 'Sin cambios'
-  return `+${data.up} / -${data.down}`
+
+const onBtnEnter = (event: MouseEvent) => {
+  const el = event.currentTarget as HTMLElement
+  gsap.to(el, {
+    y: -4,
+    scale: 1.02,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
+  const el = event.currentTarget as HTMLElement
+  gsap.to(el, {
+    y: 0,
+    scale: 1,
+    backgroundColor: isActive ? 'rgba(255, 214, 10, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+    borderColor: isActive ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.08)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
 }
 
 const close = () => {
   uiStore.isNaturePatchOpen = false
+  uiStore.activePokemonForNature = null
 }
 </script>
 
@@ -52,8 +75,8 @@ const close = () => {
   <BaseModal
     :show="true"
     title="PARCHE DE NATURALEZA"
-    title-color="Rgba(74, 222, 128, 1)"
-    header-background="Rgba(26, 26, 46, 1)"
+    title-color="rgba(74, 222, 128, 1)"
+    header-background="rgba(26, 26, 46, 1)"
     variant="retro"
     padding="raw"
     accent-color="var(--green)"
@@ -70,10 +93,26 @@ const close = () => {
           :key="n" 
           class="nature-btn"
           :class="{ active: naturePokemon?.nature === n }"
+          @mouseenter="onBtnEnter"
+          @mouseleave="onBtnLeave($event, naturePokemon?.nature === n)"
           @click.stop="handleApplyNature(n)"
         >
-          <span class="n-name">{{ n }}</span>
-          <span class="n-info">{{ getNatureInfo(n) }}</span>
+          <span class="n-name">{{ NATURE_DATA[n]?.name || n }}</span>
+          <div class="n-effects">
+            <template v-if="NATURE_DATA[n]?.up">
+              <span class="stat-mod mod-up">
+                <span class="indicator-icon">▲</span>
+                <span>+10% {{ NATURE_DATA[n]?.up }}</span>
+              </span>
+              <span class="stat-mod mod-down">
+                <span class="indicator-icon">▼</span>
+                <span>-10% {{ NATURE_DATA[n]?.down }}</span>
+              </span>
+            </template>
+            <template v-else>
+              <span class="stat-mod mod-neutral">Sin cambios</span>
+            </template>
+          </div>
         </button>
       </div>
     </div>
@@ -97,11 +136,11 @@ const close = () => {
 .nature-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
   max-height: 400px;
   overflow-y: auto;
   min-height: 0;
-  padding-right: 8px;
+  padding: 8px 12px;
 
   .nature-btn {
     background: Rgba(255,255,255,0.03);
@@ -110,13 +149,7 @@ const close = () => {
     padding: 14px;
     text-align: left;
     cursor: pointer;
-    
-
-    &:hover { 
-      background: Rgba(255,255,255,0.06); 
-      transform: Translatey(-2px);
-      border-color: Rgba(255, 255, 255, 0.2);
-    }
+    will-change: transform;
     
     &.active { 
       border-color: var(--yellow); 
@@ -125,8 +158,40 @@ const close = () => {
     }
 
     .n-name { display: block; font-weight: 800; color: var(--white); font-size: 14px; }
-    .n-info { display: block; font-size: 10px; color: var(--gray); margin-top: 4px; }
+    
+    .n-effects {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 6px;
+    }
+
+    .stat-mod {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      
+      .indicator-icon {
+        font-size: 9px;
+        line-height: 1;
+        display: inline-block;
+      }
+      
+      &.mod-up {
+        color: #32d74b;
+      }
+      
+      &.mod-down {
+        color: #ff453a;
+      }
+
+      &.mod-neutral {
+        color: var(--gray);
+        font-weight: normal;
+      }
+    }
   }
 }
-
 </style>

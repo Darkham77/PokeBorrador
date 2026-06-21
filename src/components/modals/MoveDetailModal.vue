@@ -22,7 +22,16 @@ const emit = defineEmits<{
 
 const md = computed(() => {
   if (!props.moveName) return null
-  return pokemonDataProvider.getMoveData(props.moveName)
+  let mId = props.moveName
+  let mData = pokemonDataProvider.getMoveData(mId)
+  if (!mData) {
+    try {
+      mId = pokemonDataProvider.getMoveIdBySpanishName(props.moveName)
+      mData = pokemonDataProvider.getMoveData(mId)
+    } catch {}
+  }
+  if (!mData) throw new Error(`[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveName}`)
+  return mData
 })
 
 const typeColor = computed(() => {

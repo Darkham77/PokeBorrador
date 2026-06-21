@@ -11,8 +11,8 @@ import assert from 'node:assert/strict';
 
 import {
   calculateDamagePure,
-  getAbilityMultiplier,
-  getEffectiveStat,
+  getAbilityMultiplierPure as getAbilityMultiplier,
+  getEffectiveStatPure as getEffectiveStat,
   type PurePokemon,
   type PureMove,
   type PureBattleWeather,

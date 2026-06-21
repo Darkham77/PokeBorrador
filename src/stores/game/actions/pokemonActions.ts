@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
-import { getItemByName, getItemById, getMaxBuffDuration } from '@/data/inventory/items'
+import { getItemById, getMaxBuffDuration, SHOP_ITEMS } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
 import { healStuckMissions } from '@/logic/player/missionRecovery'
 
@@ -165,8 +165,12 @@ export function usePokemonActions(
       for (const [key, qty] of Object.entries(state.inventory)) {
         let officialId = key;
         
-        // Find in SHOP_ITEMS by name or id
-        const item = getItemByName(key) || getItemById(key);
+        let item = null;
+        try {
+          item = getItemById(key);
+        } catch {
+          item = SHOP_ITEMS.find(i => i.name === key);
+        }
         
         if (item) {
           officialId = item.id;

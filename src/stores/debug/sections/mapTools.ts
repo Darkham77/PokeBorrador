@@ -1,6 +1,11 @@
-import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { DebugSystem } from '@/stores/debug'
 
-export function registerMapTools(debug: DebugSystem, { map, ui }: DebugContext) {
+import { useMapStore } from '@/stores/map'
+import { useUIStore } from '@/stores/ui'
+export function registerMapTools(debug: DebugSystem) {
+  const map = useMapStore()
+  const ui = useUIStore()
+
   debug.register({
     id: 'map-toggle-grid',
     label: 'MOSTRAR BORDES',

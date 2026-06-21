@@ -6,7 +6,7 @@ import { useChatStore } from '@/stores/social/chat'
 import { useSocialStore, type Friend } from '@/stores/social/social'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 
-export interface ProfileRow {
+interface ProfileRow {
   id: string
   username?: string | null
   email?: string | null
@@ -36,7 +36,7 @@ export interface ProfileRow {
   capture_successes?: number | null
 }
 
-export interface SaveStateData {
+interface SaveStateData {
   trainer?: string
   playtime?: number
   classLevel?: number

@@ -25,8 +25,10 @@ const ppPokemon = computed(() => {
 /** Returns whether a move is already at its maximum possible maxPP. */
 const isMaxed = (move: Move | null): boolean => {
   if (!move) return true
-  const moveData = pokemonDataProvider.getMoveData(move.name)
-  const basePP = moveData?.pp || 35
+  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`)
+  const moveData = pokemonDataProvider.getMoveData(move.id)
+  if (!moveData) throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`)
+  const basePP = moveData.pp
   return move.maxPP >= Math.floor(basePP * 1.6)
 }
 
@@ -38,8 +40,11 @@ const handleApplyPPUp = (moveIndex: number) => {
   const move = pokemon.moves[moveIndex]
   if (!move) return
 
-  const moveData = pokemonDataProvider.getMoveData(move.name) || { pp: 35 }
-  const basePP = moveData.pp || 35
+  if (!move.id) throw new Error(`[PPUpModal] El movimiento no tiene un ID válido.`)
+  const moveData = pokemonDataProvider.getMoveData(move.id)
+  if (!moveData) throw new Error(`[PPUpModal] No se encontró información para el movimiento: ${move.id}`)
+  
+  const basePP = moveData.pp
   const maxPossible = Math.floor(basePP * 1.6)
 
   if (move.maxPP >= maxPossible) {
@@ -107,7 +112,7 @@ const close = () => {
           <span
             v-if="isMaxed(m)"
             class="maxed-label"
-          >PP MAX</span>
+          >PP MÁXIMO</span>
         </div>
       </div>
     </div>
@@ -150,7 +155,7 @@ const close = () => {
   width: 100%;
 
   &.maxed {
-    opacity: 0.4;
+    opacity: 0.5;
     pointer-events: none;
   }
 }
@@ -159,10 +164,18 @@ const close = () => {
   @include pixelated;
   position: absolute;
   top: 50%;
-  right: 12px;
-  transform: Translatey(-50%);
-  font-size: 8px;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: bold;
   color: var(--yellow);
   pointer-events: none;
+  background: Rgba(0, 0, 0, 0.85);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid Rgba(255, 214, 10, 0.4);
+  box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--z-map-floor) + 1);
+  letter-spacing: 0.5px;
 }
 </style>

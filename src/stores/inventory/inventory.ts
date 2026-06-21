@@ -3,14 +3,13 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
-import { getItemById, getItemByName } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ItemEffectResult } from '@/types/inventory/items'
 import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts'
 import {
-  resolveNormalizedName,
   findInventoryKey as helperFindInventoryKey,
   isItemUsableOn as helperIsItemUsableOn,
   mapInventoryToItems,
@@ -174,7 +173,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   function getBagSellTotalGain() {
     let total = 0
     Object.entries(bagSellSelected.value).forEach(([name, q]) => {
-      const itemInfo = getItemByName(name)
+      const itemInfo = getItemById(name)
       if (itemInfo) total += Math.floor((itemInfo.price || 0) * 0.5) * q
     })
     return total
@@ -230,12 +229,10 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  function sellItem(itemName: string, qty: number = 1) {
-    const officialName = resolveNormalizedName(itemName)
-    const itemInfo = getItemByName(officialName) || getItemById(officialName)
-    if (!itemInfo) return
+  function sellItem(itemId: string, qty: number = 1) {
+    const itemInfo = getItemById(itemId)
     
-    const actualKey = findInventoryKey(itemName) || itemName
+    const actualKey = findInventoryKey(itemId) || itemId
     const inventoryQty = gameStore.state.inventory[actualKey] || 0
     const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
     
@@ -257,9 +254,8 @@ export const useInventoryStore = defineStore('inventory', () => {
       const actualQty = Math.min(qty, inventory[actualKey])
       
       if (mode === 'sell') {
-        const officialName = resolveNormalizedName(name)
-        const itemInfo = getItemByName(officialName)
-        if (itemInfo) totalGain += Math.floor((itemInfo.price || 0) * 0.5) * actualQty
+        const itemInfo = getItemById(name)
+        totalGain += Math.floor((itemInfo.price || 0) * 0.5) * actualQty
       }
 
       inventory[actualKey] -= actualQty

@@ -4,7 +4,7 @@ import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonIVs } from '@/types/pokemon/pokemon'
 
-export interface PokemonConfig {
+interface PokemonConfig {
   id: string
   level: number
   isShiny: boolean
@@ -21,13 +21,13 @@ export interface PokemonConfig {
   protocol: string
 }
 
-export interface SpeciesOption {
+interface SpeciesOption {
   id: string
   name: string
   icon?: string
 }
 
-export interface MapOption {
+interface MapOption {
   id: string
   name: string
 }

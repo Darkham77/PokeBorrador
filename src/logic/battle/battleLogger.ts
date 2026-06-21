@@ -5,7 +5,7 @@
  */
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemByName, getItemById } from '@/data/inventory/items';
+import { getItemById } from '@/data/inventory/items';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { logger } from '../utils/logger.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -70,7 +70,12 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
         icon = source;
         iconType = 'emoji';
       } else {
-        const item = getItemById(source) || getItemByName(source);
+        let item = null;
+        try {
+          item = getItemById(source);
+        } catch {
+          // No es un ID de item válido, usar el string source como spriteId directamente
+        }
         const spriteId = item ? item.sprite : source;
         icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
         iconType = 'item';

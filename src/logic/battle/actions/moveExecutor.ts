@@ -150,8 +150,10 @@ export async function executeMoveAction(
     if (attacker.lockOn) attacker.lockOn = false
 
     if (executableMove && (executableMove.effect === undefined || executableMove.effect === null)) {
-      const freshMoveData = pokemonDataProvider.getMoveData(executableMove.name)
-      if (freshMoveData && freshMoveData.effect) {
+      if (!executableMove.id) throw new Error('[moveExecutor] El movimiento ejecutable no tiene un ID válido.');
+      const freshMoveData = pokemonDataProvider.getMoveData(executableMove.id)
+      if (!freshMoveData) throw new Error(`[moveExecutor] No se encontró información para el movimiento: ${executableMove.id}`);
+      if (freshMoveData.effect) {
         executableMove.effect = freshMoveData.effect
       }
     }

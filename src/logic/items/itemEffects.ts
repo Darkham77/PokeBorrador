@@ -6,7 +6,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { getItemByName, getItemById } from '../../data/inventory/items.ts';
+import { getItemById } from '../../data/inventory/items.ts';
 
 
 interface TMData {
@@ -20,18 +20,24 @@ interface TMData {
  * Returns { success: boolean, message: string, resultType?: string }
  */
 
-export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
+export const isValidTarget = (itemId: string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
-  // Resolve Spanish names to their English ID if necessary
-  const dbItem = getItemByName(itemName) || getItemById(itemName);
-  const resolvedId = dbItem ? dbItem.id : itemName;
+  const resolvedId = itemId;
 
   // Ensure the item ID exists in SHOP_ITEMS (or is a valid TM)
   const isTM = resolvedId.toLowerCase().startsWith('tm') || resolvedId.toLowerCase().startsWith('mt');
-  const itemExists = isTM || !!getItemById(resolvedId);
+  let itemExists = isTM;
+  if (!isTM) {
+    try {
+      getItemById(resolvedId);
+      itemExists = true;
+    } catch {
+      itemExists = false;
+    }
+  }
   if (!itemExists) {
-    throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemName}`);
+    throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemId}`);
   }
 
   const effect = (itemEffects as Record<string, (p: Pokemon | GameState) => ItemEffectResult>)[resolvedId] || ((p: Pokemon) => getDynamicItemEffect(resolvedId, p));

@@ -61,9 +61,18 @@ export function useBreedingActions(
     
     if (egg.movesAtBirth && egg.movesAtBirth.length > 0) {
       p.moves = egg.movesAtBirth.map(mName => {
-        const mData = pokemonDataProvider.getMoveData(mName)
-        const mId = mData?.id || pokemonDataProvider.resolveMoveId(mName) || mName
-        return { id: mId, name: mData?.name || mName, pp: mData?.pp || 35, maxPP: mData?.pp || 35 }
+        let mId = mName
+        let mData = pokemonDataProvider.getMoveData(mName)
+        if (!mData) {
+          mId = pokemonDataProvider.getMoveIdBySpanishName(mName)
+          mData = pokemonDataProvider.getMoveData(mId)
+        }
+        return { 
+          id: mId, 
+          name: mData.name, 
+          pp: mData.pp, 
+          maxPP: mData.pp 
+        }
       })
     }
     

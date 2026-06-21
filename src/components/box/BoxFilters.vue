@@ -172,7 +172,7 @@ const leave = (el: Element, done: () => void) => {
             class="box-search-clear"
             @click.stop="updateFilter('search', '')"
           >
-            ✕
+            ×
           </button>
         </div>
         

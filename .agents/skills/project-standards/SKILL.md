@@ -8,7 +8,7 @@ description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-
 This skill governs the DNA of the project. Technical implementation details are delegated to specialized manuals to ensure a lightweight and effective rule base.
 
 - **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the push manually when ready.
-- **Zero Audit Failures**: The project is now fully migrated. Under NO circumstances are audit failures (SASS, Aesthetics, Length, FSM, Types, Lint) allowed in any commit. Every single commit must be 100% clean and compliant with the validation pipeline.
+- **Zero Audit Failures & Warnings-Diff Mandate**: The project is now fully migrated. Under NO circumstances are audit failures allowed in any commit. You MUST run `npm run audit:warnings-diff` before committing, and it MUST return exactly 0 issues (0 errors across the entire project, and 0 new warnings in modified/added/untracked files compared to `origin/main`). Every single commit must be 100% clean and compliant with this warnings-diff validation gate.
 
 ## 🧭 Navigation Hub
 
@@ -165,7 +165,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Mandatory Audit Pipeline**: Running `npm run audit:full` is MANDATORY before any commit or delivery. This pipeline orchestrates:
   - **Intelligent Audit (`audit:fix`)**: Automates SASS capitalization, GPU promotion, and Node 26+ syntax migration.
   - **SQL Parity (`validate:sql`)**: Validates migrations using native SQLite engines.
-  - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against PokeAPI/Official Data to prevent data drift.
+  - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against Showdown Official Data (@pkmn/sim) to prevent data drift.
   - **FSM Mastery (`validate:fsm`)**: Ensura 1:1 parity between battle logic and FSM documentation (diagrams, implementation, flow).
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Fallow False-Positive Security Bypass**: Local HTTP fetch requests (e.g., querying local `version.json` in `App.vue`) that trigger Fallow's security engine (CWE-918 / tainted-sink) must be resolved by placing the `// fallow-ignore-file security-sink` comment at the top of the Vue `<script>` setup block.
