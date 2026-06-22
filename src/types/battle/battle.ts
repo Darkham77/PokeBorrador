@@ -46,6 +46,7 @@ export interface BattleState {
   isCapture?: boolean;
   isRival?: boolean;
   escapeAttempts: number;
+  initialMapWeather?: string | null;
   rarity?: number;
   futureSightTurns?: number;
   futureSightTarget?: Pokemon | null;

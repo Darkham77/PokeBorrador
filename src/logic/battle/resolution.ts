@@ -200,13 +200,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     }
   });
 
-  try {
-    import('@/stores/map').then(({ useMapStore }) => {
-      useMapStore().setGlobalWeather(null);
-    });
-  } catch (e) {
-    // Ignore
-  }
+
 
 
   // Limpiar todos los estados volátiles del equipo al terminar la batalla

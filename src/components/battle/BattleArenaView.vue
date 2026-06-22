@@ -229,7 +229,7 @@ const {
 const computedWeather = computed(() => {
   if (battle.value?.isGym) return 'clear'
   // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1
-  if (battle.value?.weather && battle.value.weather.turns !== -1) {
+  if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
     return battle.value.weather.visual || battle.value.weather.type
   }
   // De lo contrario, cae en el clima global o del mapa

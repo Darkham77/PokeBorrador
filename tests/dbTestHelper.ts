@@ -23,7 +23,7 @@ export async function createTestDBRouter() {
 
   // Mock initSqlJs which is expected on window by sqliteEngine
   if (typeof window !== 'undefined') {
-    window.initSqlJs = vi.fn().mockResolvedValue({
+    (window as unknown as { initSqlJs: unknown }).initSqlJs = vi.fn().mockResolvedValue({
       Database: class {
         tables: string[] = [];
         run(sql: string, params?: unknown[]) {

@@ -10,7 +10,6 @@ import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
 import { sanitizePokemon } from '@/logic/pokemon/pokemonFactory';
 
