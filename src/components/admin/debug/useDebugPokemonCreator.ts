@@ -54,7 +54,7 @@ export function useDebugPokemonCreator() {
 
   const selectedMinigame = ref<'fishing' | 'archaeology'>('fishing')
 
-  const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies())
+  const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies(true))
   const allNatures = getSelectableNatures()
   const allAbilities = getSelectableAbilities()
 

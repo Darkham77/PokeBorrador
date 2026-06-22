@@ -6,10 +6,10 @@ import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants'
 
 
-export function getSelectableSpecies() {
+export function getSelectableSpecies(bypassWhitelist = false) {
   const db = pokemonDataProvider.getPokemonDb()
   return Object.keys(db)
-    .filter(id => ENABLED_POKEMON_IDS.has(id))
+    .filter(id => bypassWhitelist || ENABLED_POKEMON_IDS.has(id))
     .map(id => ({
       id,
       name: db[id]?.name || id,

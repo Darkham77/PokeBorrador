@@ -5,11 +5,10 @@ import { useModalStore } from '@/stores/modals.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
-import { useNotificationStore, type UINotification } from '@/stores/notifications.ts'
+import { useNotificationStore } from '@/stores/notifications.ts'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
 
-export type { UINotification };
 
 interface EvolutionData {
   pokemon: Pokemon;
@@ -17,17 +16,7 @@ interface EvolutionData {
   itemName: string;
 }
 
-interface PokemonSelectionConfig {
-  title?: string;
-  subtitle?: string;
-  multi?: boolean;
-  maxSelect?: number;
-  minSelect?: number;
-  allowedIds?: string[] | null;
-  excludeUids?: string[];
-  callbackConfirm?: (selected: Pokemon[]) => void;
-  [key: string]: unknown;
-}
+
 
 export interface LearnItem {
   pokemon: Pokemon;
@@ -39,15 +28,7 @@ export interface LearnItem {
 export const useUIStore = defineStore('ui', () => {
   const libraryTab = ref('gimnasios')
   const activeTab = ref('map')
-  const hatchedPokemon = ref<Pokemon | null>(null)
-  const _selectedBoxIndex = ref(-1)
-  const isBoxMenuOpen = ref(false)
-  const selectedBoxIndex = computed({
-    get: () => _selectedBoxIndex.value,
-    set: (val) => { _selectedBoxIndex.value = val }
-  })
   const notificationStore = useNotificationStore()
-  const pokemonSelectionConfig = ref<PokemonSelectionConfig>({})
   
   // Notifications
   const notifications = computed(() => notificationStore.notifications)
@@ -352,15 +333,10 @@ export const useUIStore = defineStore('ui', () => {
     isLibraryOpen,
     isChatOpen,
     libraryTab,
-    hatchedPokemon,
 
     selectedPokemon,
-    selectedMove,
     activeTab,
-    isBoxMenuOpen,
-    selectedBoxIndex,
     isWarShopOpen,
-    pokemonSelectionConfig,
     appZoom,
     setZoom: (val: number) => {
       appZoom.value = val

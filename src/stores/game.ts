@@ -36,14 +36,6 @@ export const useGameStore = defineStore('game', () => {
     logger.debug('STORE', 'Game state updated.')
   }
 
-  function resetToInitial() {
-    Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key]
-    })
-    Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
-    isDataLoaded.value = false
-  }
-
   // --- ACTIONS INITIALIZATION ---
   
   // 1. Save Actions (Basics needed for others)
@@ -62,10 +54,10 @@ export const useGameStore = defineStore('game', () => {
   const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
 
   // 4. Trainer Actions
-  const { getTrainerRank, addTrainerExp, checkLevelUp, getMaxObeyLevel } = useTrainerActions(state, scheduleSave)
+  const { addTrainerExp, checkLevelUp } = useTrainerActions(state, scheduleSave)
 
   // 5. Breeding Actions
-  const { hatchEggs, executeHatch } = useBreedingActions(state, scheduleSave, addPokemon)
+  const { executeHatch } = useBreedingActions(state, scheduleSave, addPokemon)
 
   // Wrapper for LoadGame to manage local state
   async function loadGame(): Promise<void> {
@@ -222,10 +214,8 @@ export const useGameStore = defineStore('game', () => {
     db,
     dailyGuardianCaptures,
     updateState,
-    resetToInitial,
     registerPokedex,
     scheduleSave,
-    hatchEggs,
     claimAsset,
     fetchClaimQueue,
     loadGame,
@@ -237,8 +227,6 @@ export const useGameStore = defineStore('game', () => {
     chooseStarter,
     addTrainerExp,
     checkLevelUp,
-    getTrainerRank,
-    getMaxObeyLevel,
     reorderTeam,
     reorderPvpTeam,
     reorderWarTeam,
@@ -248,13 +236,11 @@ export const useGameStore = defineStore('game', () => {
     removePokemon,
     autoFillPvpTeam,
     swapPvpSlot,
-    autoFillWarTeam,
     swapWarSlot,
     togglePokeTag,
     executeHatch,
     reclaimControl,
     saveGame: save, // Alias
-    isSandboxActive,
     enterSandboxMode,
     exitSandboxMode,
     checkRouteExpirations

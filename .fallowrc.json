@@ -8,7 +8,9 @@
     "src/data/pokemon/pokemonDB.ts",
     "src/logic/battle/showdown.worker.ts",
     "src/logic/render/MapRenderer.ts",
-    "src/logic/render/render.worker.ts"
+    "src/logic/render/render.worker.ts",
+    "test aventura/**",
+    "public/test-aventura-animations.css"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
@@ -270,6 +272,30 @@
     {
       "file": "src/stores/map.ts",
       "exports": ["*"]
+    },
+    {
+      "file": "src/logic/utils/animationRegistry.ts",
+      "exports": ["AnimTimingKey", "AnimEaseKey"]
+    },
+    {
+      "file": "src/data/player/trainerTypes.ts",
+      "exports": ["TrainerTypeDefinition"]
+    },
+    {
+      "file": "src/logic/constants/pokedexConstants.ts",
+      "exports": ["GameTM"]
+    },
+    {
+      "file": "src/logic/constants/visuals.ts",
+      "exports": ["ZLayer"]
+    },
+    {
+      "file": "src/stores/notifications.ts",
+      "exports": ["UINotification"]
+    },
+    {
+      "file": "src/types/system/database.ts",
+      "exports": ["AbilityBaseData"]
     }
   ]
 }

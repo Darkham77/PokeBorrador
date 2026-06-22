@@ -444,28 +444,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function clearSessionLocal() {
-    logger.info('AuthStore', 'Limpiando estado local sin recarga...')
-    safeStorage.removeItem('pokevicio_local_user')
-    safeStorage.removeItem('pokevicio_session_mode')
-    user.value = null
-    session.value = null
-    sessionConflict.value = false
-    sessionMode.value = 'online'
-    
-    // CRITICAL: Clear any pending loading states (like engine_boot)
-    useLoadingStore().clearAll()
-  }
-
-  function setConnectionLost(val: boolean) {
-    if (sessionMode.value === 'online') {
-      connectionLost.value = val
-    }
-  }
 
   return {
     user,
-    session,
     loading,
     sessionId,
     sessionConflict,
@@ -473,14 +454,10 @@ export const useAuthStore = defineStore('auth', () => {
     isOnline,
     connectionLost,
     isBanned,
-    banReason,
     checkSession,
     login,
     signup,
     logout,
-    localLogin,
-    clearSessionLocal,
-    startSessionMonitoring,
-    setConnectionLost
+    localLogin
   }
 })

@@ -22,7 +22,7 @@ import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
 import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -45,7 +45,6 @@ export const useBreedingStore = defineStore('breeding', () => {
     get: () => daycareMissionsStore.missionRefreshes,
     set: (val) => { daycareMissionsStore.missionRefreshes = val }
   });
-  const loading = ref(false);
 
   // --- HELPERS & PERSISTENCE ---
 
@@ -95,54 +94,49 @@ export const useBreedingStore = defineStore('breeding', () => {
   // --- ACTIONS ---
 
   async function loadDaycare() {
-    loading.value = true;
-    try {
-      slots.value = [
-        { pokemon: null, slotIndex: 0, deposited_at: null },
-        { pokemon: null, slotIndex: 1, deposited_at: null }
-      ];
+    slots.value = [
+      { pokemon: null, slotIndex: 0, deposited_at: null },
+      { pokemon: null, slotIndex: 1, deposited_at: null }
+    ];
 
-      // Restore eggs from LocalStorage
-      const userId = authStore.user?.id || 'default';
-      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
-      warehouseEggs.value = stored ? JSON.parse(stored) : [];
+    // Restore eggs from LocalStorage
+    const userId = authStore.user?.id || 'default';
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
+    warehouseEggs.value = stored ? JSON.parse(stored) : [];
 
-      const team = gameStore.state.team || [];
-      const box = gameStore.state.box || [];
-      const all = [...team, ...box];
-      const deposited = all.filter(p => p && p.inDaycare);
-      
-      let needsSave = false;
-      deposited.forEach(p => {
-        let idx = typeof p.daycareSlot === 'number' ? p.daycareSlot : -1;
-        if (idx === -1) {
-          idx = slots.value.findIndex(s => s.pokemon === null);
-          if (idx === -1) idx = 0;
-          p.daycareSlot = idx;
-          needsSave = true;
-        }
-        // If daycareDepositedAt is missing (save predates this feature),
-        // assign it now and mark for save so it persists on future loads
-        if (!p.daycareDepositedAt) {
-          p.daycareDepositedAt = Temporal.Now.instant().toString();
-          needsSave = true;
-        }
-        slots.value[idx] = {
-          pokemon: p,
-          slotIndex: idx,
-          deposited_at: p.daycareDepositedAt
-        };
-      });
-
-      if (needsSave) {
-        gameStore.scheduleSave();
+    const team = gameStore.state.team || [];
+    const box = gameStore.state.box || [];
+    const all = [...team, ...box];
+    const deposited = all.filter(p => p && p.inDaycare);
+    
+    let needsSave = false;
+    deposited.forEach(p => {
+      let idx = typeof p.daycareSlot === 'number' ? p.daycareSlot : -1;
+      if (idx === -1) {
+        idx = slots.value.findIndex(s => s.pokemon === null);
+        if (idx === -1) idx = 0;
+        p.daycareSlot = idx;
+        needsSave = true;
       }
+      // If daycareDepositedAt is missing (save predates this feature),
+      // assign it now and mark for save so it persists on future loads
+      if (!p.daycareDepositedAt) {
+        p.daycareDepositedAt = Temporal.Now.instant().toString();
+        needsSave = true;
+      }
+      slots.value[idx] = {
+        pokemon: p,
+        slotIndex: idx,
+        deposited_at: p.daycareDepositedAt
+      };
+    });
 
-      // Capa 1: Check retroactively if a new egg should be generated
-      await checkAndGenerateEgg();
-    } finally {
-      loading.value = false;
+    if (needsSave) {
+      gameStore.scheduleSave();
     }
+
+    // Capa 1: Check retroactively if a new egg should be generated
+    await checkAndGenerateEgg();
   }
 
   async function deposit(pokemon: Pokemon, slotIndex: number) {
@@ -410,14 +404,6 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.scheduleSave();
   }
 
-  function updateEggIvs(eggId: string, ivs: Partial<PokemonIVs>) {
-    const egg = warehouseEggs.value.find(e => e.id === eggId);
-    if (egg) {
-      egg.ivs = { ...egg.ivs, ...ivs } as PokemonIVs;
-      saveWarehouseEggs();
-      gameStore.scheduleSave();
-    }
-  }
 
   function deleteEgg(eggId: string) {
     const idx = warehouseEggs.value.findIndex(e => e.id === eggId);
@@ -462,7 +448,6 @@ export const useBreedingStore = defineStore('breeding', () => {
     dailyMissions,
     fulfillableMissionsCount,
     missionRefreshes,
-    loading,
     isBreeding,
     compatibility,
     nextEggTime,
@@ -477,12 +462,10 @@ export const useBreedingStore = defineStore('breeding', () => {
     reduceHatchTimers,
     scanEgg,
     checkAndGenerateEgg,
-    updateEggIvs,
     deleteEgg,
     cloneFossil,
     initBackgroundPoller,
     cleanupBackgroundPoller,
-    saveWarehouseEggs,
-    eggs: computed(() => warehouseEggs.value)
+    saveWarehouseEggs
   };
 });

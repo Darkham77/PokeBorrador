@@ -15,6 +15,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 import { TRAINER_TYPES } from '../../src/data/player/trainerTypes.ts';
+import { Dex, toID } from '@pkmn/sim';
 
 // Speed up execution
 enableCompileCache();
@@ -578,10 +579,12 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
     p: Record<string, [number, number]>;
     n: Record<string, [number, number]>;
     t: Record<string, [number, number]>;
+    c: Record<string, string>;
   } = {
     p: {},
     n: {},
-    t: {}
+    t: {},
+    c: {}
   };
 
   // Copiar pies de variaciones de sus correspondientes idles en pokemonFeetDatabase
@@ -610,15 +613,86 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
     }
   }
 
+  // Pre-procesar cries (gritos de Pokémon) con fallbacks
+  console.log(styleText('yellow', `   🔊 Pre-procesando base de datos de gritos (cries)...`));
+  const CRIES_DIR = path.resolve(process.cwd(), 'public', 'cries');
+  try {
+    const cryFiles = await fs.readdir(CRIES_DIR);
+    const existingCries = new Set(
+      cryFiles
+        .filter(f => f.endsWith('.mp3') || f.endsWith('.ogg'))
+        .map(f => path.parse(f).name.toLowerCase())
+    );
+
+    const missingOfficialCries: string[] = [];
+
+    // Obtener todas las especies de Showdown
+    const allSpecies = Dex.species.all();
+    for (const spec of allSpecies) {
+      const specId = toID(spec.name);
+
+      // 1. Si existe su propio grito, usarlo
+      if (existingCries.has(specId)) {
+        packed.c[specId] = specId;
+        continue;
+      }
+
+      // 2. Si no, intentar con baseSpecies (formas, megas, primales)
+      const baseId = spec.baseSpecies ? toID(spec.baseSpecies) : '';
+      if (baseId && existingCries.has(baseId)) {
+        packed.c[specId] = baseId;
+        continue;
+      }
+
+      // 3. Si no, recorrer la cadena de pre-evoluciones (prevo)
+      let current = spec;
+      let resolved = false;
+      while (current.prevo) {
+        const prevSpecies = Dex.species.get(current.prevo);
+        if (prevSpecies && prevSpecies.exists) {
+          const prevId = toID(prevSpecies.name);
+          if (existingCries.has(prevId)) {
+            packed.c[specId] = prevId;
+            resolved = true;
+            break;
+          }
+          current = prevSpecies;
+        } else {
+          break;
+        }
+      }
+
+      // 4. Si no se encontró ningún grito real, usar su propio ID
+      if (!resolved) {
+        packed.c[specId] = specId;
+        // Solo lanzar error si es un Pokémon oficial / estándar
+        if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
+          missingOfficialCries.push(`${spec.name} (${specId})`);
+        }
+      }
+    }
+
+    if (missingOfficialCries.length > 0) {
+      console.error(styleText('red', `\n❌ ERROR: No se encontró ningún grito ni fallback válido para los siguientes ${missingOfficialCries.length} Pokémon oficiales:`));
+      console.error(styleText('red', `   ${missingOfficialCries.join(', ')}`));
+      console.error(styleText('red', `   Por favor descarga o añade los gritos correspondientes en public/cries/`));
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error(styleText('red', `\n❌ ERROR: No se pudo procesar la base de datos de gritos: ${(err as Error).message}`));
+    process.exit(1);
+  }
+
   const jsonPath = path.join(databaseDir, 'pokemonFeetDatabase.json');
-  await fs.writeFile(jsonPath, JSON.stringify(packed), 'utf-8');
+  await fs.writeFile(jsonPath, JSON.stringify(packed, null, 2), 'utf-8');
 
   const databaseContent = `/**
  * src/data/pokemonFeetDatabase.ts
  * 
  * ARCHIVO INMUTABLE Y AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
  * 
- * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite.
+ * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite,
+ * así como el catálogo de mapeos de gritos (cries) de Pokémon.
  */
 import packedData from './pokemonFeetDatabase.json' with { type: 'json' };
 
@@ -627,7 +701,12 @@ export interface FeetPoints {
   readonly feetX: number;
 }
 
-const PACKED_DATA = packedData as unknown as Record<string, Record<string, readonly [number, number]>>;
+const PACKED_DATA = packedData as unknown as {
+  p: Record<string, [number, number]>;
+  n: Record<string, [number, number]>;
+  t: Record<string, [number, number]>;
+  c: Record<string, string>;
+};
 
 export const POKEMON_FEET_DATABASE: Record<string, FeetPoints> = {};
 
@@ -643,10 +722,12 @@ for (const [key, prefix] of [
     }
   }
 }
+
+export const POKEMON_CRIES_DATABASE = (PACKED_DATA.c || {}) as Readonly<Record<string, string>>;
 `;
 
   await fs.writeFile(databasePath, databaseContent, 'utf-8');
-  console.log(styleText('green', `   [OK] Base de datos de anclaje generada con éxito (${Object.keys(pokemonFeetDatabase).length} sprites precalculados).`));
+  console.log(styleText('green', `   [OK] Base de datos de anclaje y gritos integrada generada con éxito.`));
 
   // Autogenerar catálogo de sprites de NPC/Entrenadores por arquetipo en src/data/npcSpriteCatalog.ts
   console.log(styleText('yellow', `\n   📦 Generando catálogo de sprites de NPCs en src/data/npcSpriteCatalog.ts...`));
@@ -738,7 +819,7 @@ for (const [key, prefix] of [
  * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
  */
 
-export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
+export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as const;
 `;
 
   await fs.writeFile(npcCatalogPath, npcCatalogContent, 'utf-8');
@@ -839,7 +920,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     )
   };
-  await fs.writeFile(animatedDbJsonPath, JSON.stringify(animatedJsonData), 'utf-8');
+  await fs.writeFile(animatedDbJsonPath, JSON.stringify(animatedJsonData, null, 2), 'utf-8');
 
   const animatedDbContent = [
     '/**',

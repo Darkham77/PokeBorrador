@@ -1,5 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext';
-// fallow-ignore-file security-sink typescript-any
+// fallow-ignore-file security-sink
 import { logger } from '@/logic/utils/logger';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { ACTIVE_GENERATION } from '@/data/system/constants';

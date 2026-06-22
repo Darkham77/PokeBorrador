@@ -5,7 +5,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, WEEKLY_WIN_BONUS_COINS } from '@/logic/war/warEngine'
+import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
 import type { DominanceInfo } from '@/types/system/stores'
@@ -280,45 +280,6 @@ export const useWarStore = defineStore('war', () => {
     return getGuardianData(mapId, allMapIds)
   }
 
-  /**
-   * Settles the weekly results and distributes coins.
-   * This is typically called during the dominance phase transition.
-   */
-  async function resolveWeeklySeason() {
-    if (isDisputeActive.value || !gameStore.db) return
-    if (gameStore.state.lastResolvedWeek === currentWeekId.value) return
-
-    // Calculate contribution coins based on milestones
-    let totalCoins = 0
-    const milestones = [...WEEKLY_REWARD_MILESTONES].reverse()
-    const match = milestones.find(m => weeklyPoints.value >= m.pt)
-    if (match) totalCoins = match.coins
-
-    // Winner bonus
-    const { data: winners } = await gameStore.db.from('war_dominance')
-      .select('winner_faction')
-      .eq('week_id', currentWeekId.value)
-    
-    let unionWins = 0, poderWins = 0
-    ;(winners as { winner_faction: string }[] | null)?.forEach(w => {
-      if (w.winner_faction === 'union') unionWins++
-      else poderWins++
-    })
-
-    const isWinner = (faction.value === 'union' && unionWins >= poderWins) ||
-                     (faction.value === 'poder' && poderWins > unionWins)
-    
-    if (isWinner) totalCoins += WEEKLY_WIN_BONUS_COINS
-
-    if (totalCoins > 0) {
-      warCoins.value += totalCoins
-      gameStore.state.warCoins = (gameStore.state.warCoins || 0) + totalCoins
-      uiStore.notify(`Fin de guerra. ¡Recibiste ${totalCoins} Monedas de Guerra!`, '⚡')
-    }
-
-    gameStore.state.lastResolvedWeek = currentWeekId.value
-  }
-
   return {
     faction,
     warCoins,
@@ -327,13 +288,10 @@ export const useWarStore = defineStore('war', () => {
     isDisputeActive,
     currentWeekId,
     dailyGuardianCaptures,
-    isLoading,
     loadWarData,
     addPoints,
-    fetchMapDominance,
     checkGuardian,
     chooseFaction,
-    claimGuardian,
-    resolveWeeklySeason
+    claimGuardian
   }
 })

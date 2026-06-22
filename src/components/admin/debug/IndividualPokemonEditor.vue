@@ -25,7 +25,7 @@ const activePoke = computed(() => props.pokemon)
 import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
 
 // --- DATA LISTS FOR EDITORS ---
-const allSpecies = computed(() => getSelectableSpecies())
+const allSpecies = computed(() => getSelectableSpecies(true))
 const allNatures = getSelectableNatures()
 const allAbilities = getSelectableAbilities()
 const allItems = computed(() => {

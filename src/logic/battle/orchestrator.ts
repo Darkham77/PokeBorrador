@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { nextTick } from 'vue'
 

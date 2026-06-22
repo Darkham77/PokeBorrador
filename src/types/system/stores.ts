@@ -64,7 +64,6 @@ export interface GameStore {
   isSaveLocked: boolean;
   addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
   removePokemon: (uid: string) => void;
-  hatchEggs: () => void;
   scheduleSave: () => void;
   save: (showNotif?: boolean) => Promise<void>;
   loadGame: () => Promise<void>;
@@ -72,7 +71,6 @@ export interface GameStore {
   addTrainerExp: (amount: number) => void;
   checkLevelUp: (pokemon: Pokemon) => void;
   updateState: (newData: Partial<GameState>) => void;
-  resetToInitial: () => void;
   chooseStarter: (pokeId: string) => void;
   togglePokeTag: (context: 'team' | 'box' | 'market', index: number, tagId: string) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
@@ -157,8 +155,6 @@ export interface UIStore {
 
 export interface MapStore {
   currentMap: string;
-  currentMapData: WorldMap | undefined;
-  region: string;
   currentWeather: string;
   globalWeather: string | null;
   mapWinners: Record<string, DominanceInfo>;
@@ -190,8 +186,6 @@ export interface EventStore {
   checkPendingAwards: () => Promise<void>;
   submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
-  getEventMultiplier: (pokemon: Pokemon, eventId: string) => number;
-  getCaptureEvent: (speciesId: string) => Event | null | undefined;
 }
 
 // DominanceInfo merged at the top
@@ -212,11 +206,9 @@ export interface WarStore {
   warCoins: number;
   weeklyPoints: number;
   mapDominance: Record<string, DominanceInfo>;
-  isLoading: boolean;
   dailyGuardianCaptures: string[];
   addPoints: (mapId: string, eventType: string, success: boolean, customPoints?: number) => Promise<number>;
   claimGuardian: (mapId: string, isDefeat?: boolean) => Promise<void>;
-  resolveWeeklySeason: () => Promise<void>;
 }
 
 export interface PlayerClassStore {

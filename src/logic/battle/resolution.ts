@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'

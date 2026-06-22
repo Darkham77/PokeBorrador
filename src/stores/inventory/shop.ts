@@ -1,13 +1,12 @@
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useWarStore } from '@/stores/war.ts'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { getItemById, SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/inventory/items'
+import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
-import { TRAINER_RANKS } from '@/data/player/trainer'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 
 import { clearVolatileStatus } from '@/logic/battle/battleStatus'
@@ -18,15 +17,7 @@ export const useShopStore = defineStore('shop', () => {
   const warStore = useWarStore()
   
   
-  const marketCategory = ref('todos')
-  const searchQuery = ref('')
   const quantities = ref<Record<string, number>>({})
-
-  const getTrainerRank = computed(() => {
-    const lv = gameStore.state.trainerLevel || 1
-    const idx = Math.min(lv - 1, TRAINER_RANKS.length - 1)
-    return TRAINER_RANKS[idx]
-  })
 
   function getQuantity(itemId: string) {
     return quantities.value[itemId] || 1
@@ -259,12 +250,7 @@ export const useShopStore = defineStore('shop', () => {
   }
 
   return {
-    marketCategory,
-    searchQuery,
-    ITEM_CATEGORIES,
-    CATEGORY_LABELS,
     SHOP_ITEMS,
-    getTrainerRank,
     getQuantity,
     setQuantity,
     buyItem,

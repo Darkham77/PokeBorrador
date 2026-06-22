@@ -133,12 +133,6 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     activeInvite.value = null
   }
 
-  async function declineInvite(inviteId: string) { 
-    if (!gameStore.db) return
-    await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inviteId); 
-    activeInvite.value = null 
-  }
-
   function _commitPick(pick: PvPAction) { if (battleState.phase !== 'choosing') return; battleState.myPick = pick; battleState.phase = 'waiting'; if (battleState.isHost) { if (battleState.enemyPick) resolveTurn() } else { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick }) } }
 
   function _forfeit() { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); endBattle(false, 'Te has rendido.') }
@@ -206,5 +200,5 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   onUnmounted(() => { if (invitePoller) invitePoller.kill(); if (matchmakingPoller) matchmakingPoller.kill(); if (battleState.ch) battleState.ch.unsubscribe() })
 
-  return { activeInvite, isSearching, battleState, initInvitePoller, sendInvite, acceptInvite, declineInvite, startBattle, startSearch, cancelSearch, _commitPick, _forfeit, handleOpponentPick, _checkPostTurn }
+  return { isSearching, battleState, initInvitePoller, sendInvite, startBattle, startSearch, cancelSearch, _commitPick, _forfeit, handleOpponentPick, _checkPostTurn }
 })

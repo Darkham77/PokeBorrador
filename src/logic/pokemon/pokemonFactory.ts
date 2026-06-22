@@ -320,6 +320,7 @@ export interface PokemonCreationOptions {
   isGuardian?: boolean;
   obtainedMethod?: string;
   isNpcEgg?: boolean;
+  bypassWhitelist?: boolean;
 }
 
 /**
@@ -330,10 +331,11 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   let id = String(idVal).toLowerCase().trim();
   
   if (level > MAX_POKEMON_LEVEL) level = MAX_POKEMON_LEVEL;
-  let base = pokemonDataProvider.getPokemonData(id);
+  const bypass = options.bypassWhitelist || false;
+  let base = pokemonDataProvider.getPokemonData(id, bypass);
   if (!base) {
     logger.error('Factory', `Missing Pokémon in DB: ${id}`);
-    base = pokemonDataProvider.getPokemonData('pidgey');
+    base = pokemonDataProvider.getPokemonData('pidgey', bypass);
     id = 'pidgey';
   }
 

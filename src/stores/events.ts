@@ -11,7 +11,7 @@ import { useErrorStore } from '@/stores/errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PendingAward, CompetitionResult } from '@/types/system/stores'
+import type { PendingAward } from '@/types/system/stores'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -21,7 +21,6 @@ export const useEventStore = defineStore('events', () => {
 
   const allEvents = ref<GameEvent[]>([])
   const activeEvents = ref<GameEvent[]>([])
-  const finishedEvents = ref<CompetitionResult[]>([])
   const pendingAwards = ref<PendingAward[]>([])
   const isLoading = ref(false)
 
@@ -57,15 +56,6 @@ export const useEventStore = defineStore('events', () => {
       const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
       activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
 
-      // 3. Load finished competition results (Last 24h)
-      const twentyFourHoursAgo = Temporal.Now.instant().subtract({ hours: 24 }).toString()
-      const { data: results } = await db.from('competition_results')
-        .select('*')
-        .gt('ended_at', twentyFourHoursAgo)
-        .order('ended_at', { ascending: false })
-
-      finishedEvents.value = (results || []) as CompetitionResult[]
-
       // 4. Check for unclaimed prizes
       await checkPendingAwards()
     } catch (e) {
@@ -77,12 +67,6 @@ export const useEventStore = defineStore('events', () => {
 
   function isEventActive(ev: string) {
     return activeEvents.value.some(e => e.id === ev)
-  }
-
-  function getEventMultiplier(_pokemon: Pokemon, eventId: string) {
-    if (!isEventActive(eventId)) return 1
-    const ev = activeEvents.value.find(e => e.id === eventId)
-    return (ev as unknown as { multiplier: number }).multiplier || 1
   }
 
   async function submitCompetitionEntry(pokemon: Pokemon, eventId: string) {
@@ -181,10 +165,6 @@ export const useEventStore = defineStore('events', () => {
     return getSpeciesBoosts(activeEvents.value, speciesId)
   }
 
-  function getCaptureEvent(speciesId: string) {
-    return activeEvents.value.find(e => (e as unknown as { type: string }).type === 'capture' && (e as unknown as { targetId: string }).targetId === speciesId)
-  }
-
   // Listen for time-sync updates from DBRouter (Debug mode)
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
@@ -196,7 +176,6 @@ export const useEventStore = defineStore('events', () => {
   return {
     allEvents,
     activeEvents,
-    finishedEvents,
     pendingAwards,
     isLoading,
     globalMultipliers,
@@ -204,8 +183,6 @@ export const useEventStore = defineStore('events', () => {
     submitCompetitionEntry,
     checkPendingAwards,
     claimAward,
-    getSpeciesBonuses,
-    getCaptureEvent,
-    getEventMultiplier
+    getSpeciesBonuses
   }
 })

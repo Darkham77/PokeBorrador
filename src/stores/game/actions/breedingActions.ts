@@ -1,7 +1,6 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
-import { useEventStore } from '@/stores/events'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
 
@@ -10,27 +9,6 @@ export function useBreedingActions(
   scheduleSave: () => Promise<void>, 
   addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => { success: boolean, target: 'team' | 'box' | null }
 ) {
-  function hatchEggs() {
-    if (!state.eggs || state.eggs.length === 0) return false
-    let anyReady = false
-    const eventStore = useEventStore()
-    const evHatchMult = (eventStore.globalMultipliers?.hatch || 1) - 1
-    const hatchMult = 1 + evHatchMult
-    
-    state.eggs.forEach((egg: PokemonEgg) => {
-      if (!egg.ready && typeof egg.steps === 'number' && egg.steps > 0) {
-        egg.steps -= hatchMult
-        if (egg.steps <= 0) {
-          egg.steps = 0
-          egg.ready = true
-          anyReady = true
-          useUIStore().notify('¡Un Huevo Pokémon está listo para eclosionar!', '🥚')
-        }
-      }
-    })
-    return anyReady
-  }
-
   async function executeHatch(egg: PokemonEgg) {
     const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
     const { getEggSpecies } = await import('@/logic/breeding/breedingEngine')
@@ -105,5 +83,5 @@ export function useBreedingActions(
     return p
   }
 
-  return { hatchEggs, executeHatch }
+  return { executeHatch }
 }

@@ -22,8 +22,6 @@ export const useMapStore = defineStore('map', () => {
     get: () => gs.state.map?.currentMap || 'route1',
     set: (val: string) => { if (gs.state.map) gs.state.map.currentMap = val }
   })
-  const region = computed(() => gs.state.map?.region || 'kanto')
-  const currentMapData = computed(() => maps.value.find((m: (typeof FIRE_RED_MAPS)[number]) => m.id === currentMap.value))
 
   const globalWeather = ref<string | null>(null) // Si está forzado anula el determinístico
   const forcedCycle = ref<DayPhase | null>(null)
@@ -67,7 +65,6 @@ export const useMapStore = defineStore('map', () => {
   const activeEvents = ref<Event[]>([])
   const lastNavigateTime = ref(0)
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
-  const dailyGuardianCaptures = ref<string[]>([])
   const mapWinners = ref<Record<string, import('@/types/system/stores').DominanceInfo>>({}) // locId -> winner
   const pendingAwards = ref<PendingAward[]>([])
   
@@ -118,8 +115,6 @@ export const useMapStore = defineStore('map', () => {
 
   return {
     currentMap,
-    currentMapData,
-    region,
     currentEpochHour,
     currentCycle,
     currentSeason,
@@ -130,7 +125,6 @@ export const useMapStore = defineStore('map', () => {
     maps,
     activeEvents,
     pendingAwards,
-    dailyGuardianCaptures,
     mapWinners,
     setGlobalWeather,
     setGlobalCycle,

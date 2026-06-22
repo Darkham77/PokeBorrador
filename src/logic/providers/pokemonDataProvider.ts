@@ -52,7 +52,7 @@ export const pokemonDataProvider = {
      * Obtiene los datos básicos de una especie.
      * @param {string} id - ID de la especie (ej: 'bulbasaur')
      */
-    getPokemonData(id: string): PokemonData {
+    getPokemonData(id: string, bypassWhitelist = false): PokemonData {
         if (!id) throw new Error("ID de especie no proporcionado");
         let normalizedId = String(id).toLowerCase();
 
@@ -66,7 +66,8 @@ export const pokemonDataProvider = {
             throw new Error(`Especie de Pokémon no encontrada: ${id}`);
         }
 
-        if (!ENABLED_POKEMON_IDS.has(normalizedId)) {
+        const isDebug = bypassWhitelist || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
+        if (!ENABLED_POKEMON_IDS.has(normalizedId) && !isDebug) {
             throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
         }
         

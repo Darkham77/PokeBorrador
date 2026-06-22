@@ -24,8 +24,7 @@ import {
   fallback,
   nullable,
   literal,
-  unknown,
-  type InferOutput 
+  unknown
 } from 'valibot';
 
 // User Profile validation schema
@@ -63,9 +62,7 @@ export const trainerNameSchema = pipe(
 );
 
 // Inferred TypeScript Types
-export type UserProfileInput = InferOutput<typeof userProfileSchema>;
-export type NetworkActionInput = InferOutput<typeof networkActionSchema>;
-export type TrainerNameInput = InferOutput<typeof trainerNameSchema>;
+
 
 /**
  * Validates data against the User Profile Schema.
@@ -99,7 +96,6 @@ export const chatMessageSchema = object({
   created_at: nullish(string())
 });
 
-export type ChatMessageInput = InferOutput<typeof chatMessageSchema>;
 
 /**
  * Validates chat message.
@@ -124,7 +120,6 @@ export const tradeOfferSchema = object({
   created_at: string()
 });
 
-export type TradeOfferInput = InferOutput<typeof tradeOfferSchema>;
 
 /**
  * Validates trade offer.
@@ -448,7 +443,6 @@ const saveDataSchema = object({
   _last_updated: optional(number())
 });
 
-export type SaveDataInput = InferOutput<typeof saveDataSchema>;
 
 /**
  * Validates full save state data against saveDataSchema.

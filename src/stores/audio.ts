@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
+import { POKEMON_CRIES_DATABASE } from '@/data/pokemon/pokemonFeetDatabase';
 
 /**
  * AudioStore
@@ -36,6 +37,19 @@ export const useAudioStore = defineStore('audio', () => {
 
   const cryCache = new Map<string, AudioBuffer>();
 
+  const fetchCryBuffer = async (name: string, ctx: AudioContext): Promise<AudioBuffer> => {
+    const response = await fetch(`/cries/${name}.mp3`);
+    if (!response.ok) {
+      throw new Error(`Cry file not found: /cries/${name}.mp3`);
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      throw new Error(`Cry file not found (HTML redirect fallback): /cries/${name}.mp3`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return await ctx.decodeAudioData(arrayBuffer);
+  };
+
   const playCry = async (pokemonName: string, isFaint = false) => {
     if (!isInitialized.value) init();
     await resume();
@@ -45,19 +59,23 @@ export const useAudioStore = defineStore('audio', () => {
     if (!ctx || !dest) return;
 
     const cleanName = pokemonName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    let buffer = cryCache.get(cleanName);
+    const cryToFetch = POKEMON_CRIES_DATABASE[cleanName] || cleanName;
+
+    if (cryToFetch !== cleanName) {
+      logger.warn('Audio', `Cry for ${pokemonName} not found in database. Using pre-computed fallback: ${cryToFetch}`);
+    }
+
+    let buffer = cryCache.get(cryToFetch);
 
     if (!buffer) {
       try {
-        const response = await fetch(`/cries/${cleanName}.mp3`);
-        if (!response.ok) {
-          throw new Error(`Cry file not found: /cries/${cleanName}.mp3`);
+        buffer = await fetchCryBuffer(cryToFetch, ctx);
+        cryCache.set(cryToFetch, buffer);
+        if (cryToFetch !== cleanName) {
+          cryCache.set(cleanName, buffer);
         }
-        const arrayBuffer = await response.arrayBuffer();
-        buffer = await ctx.decodeAudioData(arrayBuffer);
-        cryCache.set(cleanName, buffer);
       } catch (err) {
-        logger.error('Audio', `Failed to load cry for ${pokemonName}: ${String(err)}`);
+        logger.error('Audio', `Failed to load cry for ${pokemonName} (resolved to ${cryToFetch}): ${String(err)}`);
         return;
       }
     }

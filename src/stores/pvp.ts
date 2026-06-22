@@ -5,7 +5,6 @@ import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { logger } from '@/logic/utils/logger'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
@@ -40,16 +39,6 @@ interface SeasonRules {
   [key: string]: unknown
 }
 
-interface LeaderboardEntry {
-  id: string
-  username: string | null
-  elo_rating: number
-  trainer_level: number
-  player_class: string
-  nick_style: string | null
-  avatar_style: string | null
-}
-
 /**
  * usePvPStore - Gestor de Arena Clasificatoria y Defensa Pasiva.
  * Centraliza el ELO, las temporadas y el registro de equipos competitivos.
@@ -65,10 +54,6 @@ export const usePvPStore = defineStore('pvp', () => {
   const rewardsClaimed = ref<string[]>([])
   const passiveTeamActive = ref(false)
   const currentSeasonRules = ref<SeasonRules | null>(null)
-  const leaderboard = ref<LeaderboardEntry[]>([])
-  const lastSyncAt = ref<number | null>(null)
-  const isLoading = ref(false)
-  const error = ref('')
 
   // Sync ELO with game state
   watch(() => gameStore.state.eloRating, (newElo) => {
@@ -129,34 +114,6 @@ export const usePvPStore = defineStore('pvp', () => {
         name: data.season_name,
         ...configObj
       }
-    }
-  }
-
-  async function fetchLeaderboard(force = false) {
-    if (!force && lastSyncAt.value && (Temporal.Now.instant().epochMilliseconds - lastSyncAt.value < 1800000)) {
-      return // 30 min cache
-    }
-
-    isLoading.value = true
-    error.value = ''
-
-    try {
-      if (!gameStore.db) return
-      const { data, error: err } = await (gameStore.db
-        .from('profiles')
-        .select('id, username, elo_rating, trainer_level, player_class, nick_style, avatar_style')
-        .not('username', 'is', null)
-        .order('elo_rating', { ascending: false })
-        .limit(100) as unknown as Promise<{ data: LeaderboardEntry[] | null, error: { message: string } | null }>)
-
-      if (err) throw err
-      leaderboard.value = (data || []) as LeaderboardEntry[]
-      lastSyncAt.value = Temporal.Now.instant().epochMilliseconds
-    } catch (e) {
-      error.value = 'No se pudo cargar el ranking global.'
-      logger.error('PvP', `Leaderboard error: ${(e as Error).message}`)
-    } finally {
-      isLoading.value = false
     }
   }
 
@@ -284,10 +241,6 @@ export const usePvPStore = defineStore('pvp', () => {
     togglePassiveTeam,
     claimReward,
     updateElo,
-    fetchLeaderboard,
-    leaderboard,
-    isLoading,
-    error,
     rules: currentSeasonRules,
     currentTier: getEloTier
   }
