@@ -61,9 +61,8 @@ export interface MoveBaseData {
 
 export interface SpeciesMetadata {
   category: string;
-  height: number;
-  weight: number;
   description: string;
+  catchRate: number;
 }
 
 export interface PokemonAesthetics {

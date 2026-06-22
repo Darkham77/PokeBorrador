@@ -31,17 +31,19 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
   // ── getMoveCategory ──────────────────────────────────────────────────────────
 
-  describe('getMoveCategory (Gen 2 ruleset)', () => {
+  describe('getMoveCategory', () => {
     it('should return physical for Normal type', () => {
       assert.strictEqual(getMoveCategory({ type: 'normal', cat: 'physical' }), 'physical');
     });
 
-    it('should return special for Electric type', () => {
-      assert.strictEqual(getMoveCategory({ type: 'electric', cat: 'physical' }), 'special');
-    });
-
-    it('should return special for Fire type', () => {
-      assert.strictEqual(getMoveCategory({ type: 'fire', cat: 'physical' }), 'special');
+    it('should return category based on ACTIVE_RULE_SET for Electric/Fire type', () => {
+      if (ACTIVE_RULE_SET > 3) {
+        assert.strictEqual(getMoveCategory({ type: 'electric', cat: 'physical' }), 'physical');
+        assert.strictEqual(getMoveCategory({ type: 'fire', cat: 'physical' }), 'physical');
+      } else {
+        assert.strictEqual(getMoveCategory({ type: 'electric', cat: 'physical' }), 'special');
+        assert.strictEqual(getMoveCategory({ type: 'fire', cat: 'physical' }), 'special');
+      }
     });
 
     it('should always return status for status moves regardless of type', () => {
@@ -189,8 +191,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   // ── Constants ────────────────────────────────────────────────────────────────
 
   describe('Constants', () => {
-    it('ACTIVE_RULE_SET should be Gen 3 (value 3)', () => {
-      assert.strictEqual(ACTIVE_RULE_SET, 3);
+    it('ACTIVE_RULE_SET should match the configured generation', () => {
+      assert.strictEqual(ACTIVE_RULE_SET, 9);
     });
   });
 });

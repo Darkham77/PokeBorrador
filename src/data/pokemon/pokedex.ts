@@ -10,8 +10,8 @@ export const PDEX_ORDER = [
   'ekans','arbok',
   'pikachu', 'raichu',
   'sandshrew','sandslash',
-  'nidoran_f','nidorina','nidoqueen',
-  'nidoran_m','nidorino','nidoking',
+  'nidoranf','nidorina','nidoqueen',
+  'nidoranm','nidorino','nidoking',
   'clefairy','clefable',
   'vulpix','ninetales',
   'jigglypuff','wigglytuff',
@@ -55,7 +55,7 @@ export const PDEX_ORDER = [
   'horsea','seadra',
   'goldeen','seaking',
   'staryu','starmie',
-  'mr_mime',
+  'mrmime',
   'scyther',
   'jynx',
   'electabuzz',
@@ -88,7 +88,7 @@ export const GEN2_PDEX_ORDER = [
   'swinub', 'piloswine', 'corsola', 'remoraid', 'octillery', 'delibird', 'mantine', 'skarmory',
   'houndour', 'houndoom', 'kingdra', 'phanpy', 'donphan', 'porygon2', 'stantler', 'smeargle',
   'tyrogue', 'hitmontop', 'smoochum', 'elekid', 'magby', 'miltank', 'blissey', 'raikou', 'entei',
-  'suicune', 'larvitar', 'pupitar', 'tyranitar', 'lugia', 'ho-oh', 'celebi'
+  'suicune', 'larvitar', 'pupitar', 'tyranitar', 'lugia', 'hooh', 'celebi'
 ];
 
 export const PDEX_TYPE_COLORS = {
@@ -133,7 +133,7 @@ export const POKEMON_AESTHETICS = {
   porygon: { floating: false },
   porygon2: { floating: false },
   lugia: { floating: true },
-  'ho-oh': { floating: true },
+  'hooh': { floating: true },
   articuno: { floating: true },
   zapdos: { floating: true },
   moltres: { floating: true },
@@ -156,7 +156,7 @@ export const POKEMON_AESTHETICS = {
 
 
 
-export { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+export { POKEMON_SPRITE_IDS } from './spriteMapping.ts';
 
 
 export const GAME_TMS = [
@@ -239,10 +239,10 @@ export const TM_COMPAT = {
   raichu: ['TM01','TM06','TM10','TM15','TM16','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM31','TM32','TM34','TM42','TM43','TM44','TM45'],
   sandshrew: ['TM01','TM06','TM10','TM11','TM17','TM21','TM23','TM26','TM27','TM28','TM31','TM32','TM37','TM39','TM40','TM42','TM43','TM44','TM45','TM46'],
   sandslash: ['TM01','TM06','TM10','TM11','TM15','TM17','TM21','TM23','TM26','TM27','TM28','TM31','TM32','TM37','TM39','TM40','TM42','TM43','TM44','TM45','TM46'],
-  nidoran_f: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM40','TM42','TM43','TM44','TM45','TM46'],
+  nidoranf: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM40','TM42','TM43','TM44','TM45','TM46'],
   nidorina: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM40','TM42','TM43','TM44','TM45','TM46'],
   nidoqueen: ['TM01','TM03','TM05','TM06','TM10','TM11','TM12','TM13','TM14','TM15','TM17','TM18','TM21','TM23','TM24','TM25','TM26','TM27','TM28','TM30','TM31','TM32','TM34','TM35','TM36','TM37','TM38','TM39','TM40','TM41','TM42','TM43','TM44','TM45','TM46'],
-  nidoran_m: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM42','TM43','TM44','TM45','TM46'],
+  nidoranm: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM42','TM43','TM44','TM45','TM46'],
   nidorino: ['TM03','TM06','TM10','TM11','TM13','TM14','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM28','TM32','TM34','TM36','TM42','TM43','TM44','TM45','TM46'],
   nidoking: ['TM01','TM03','TM05','TM06','TM10','TM11','TM12','TM13','TM14','TM15','TM17','TM18','TM21','TM23','TM24','TM25','TM26','TM27','TM28','TM30','TM31','TM32','TM34','TM35','TM36','TM37','TM38','TM39','TM41','TM42','TM43','TM44','TM45','TM46'],
   clefairy: ['TM01','TM03','TM04','TM06','TM10','TM11','TM13','TM14','TM16','TM17','TM18','TM20','TM21','TM22','TM23','TM24','TM25','TM27','TM28','TM29','TM30','TM31','TM32','TM33','TM34','TM35','TM38','TM42','TM43','TM44','TM45','TM49'],
@@ -332,7 +332,7 @@ export const TM_COMPAT = {
   seaking: ['TM03','TM06','TM07','TM10','TM13','TM14','TM15','TM17','TM18','TM21','TM27','TM32','TM42','TM43','TM44','TM45'],
   staryu: ['TM03','TM06','TM07','TM10','TM13','TM14','TM16','TM17','TM18','TM21','TM24','TM25','TM27','TM29','TM32','TM33','TM42','TM43','TM44'],
   starmie: ['TM03','TM06','TM07','TM10','TM13','TM14','TM15','TM16','TM17','TM18','TM21','TM24','TM25','TM27','TM29','TM32','TM33','TM42','TM43','TM44','TM48'],
-  mr_mime: ['TM01','TM04','TM06','TM10','TM11','TM12','TM15','TM16','TM17','TM18','TM20','TM21','TM22','TM24','TM25','TM27','TM29','TM30','TM31','TM32','TM33','TM34','TM41','TM42','TM43','TM44','TM45','TM46','TM48','TM49'],
+  mrmime: ['TM01','TM04','TM06','TM10','TM11','TM12','TM15','TM16','TM17','TM18','TM20','TM21','TM22','TM24','TM25','TM27','TM29','TM30','TM31','TM32','TM33','TM34','TM41','TM42','TM43','TM44','TM45','TM46','TM48','TM49'],
   scyther: ['TM06','TM10','TM11','TM15','TM17','TM18','TM21','TM27','TM32','TM40','TM42','TM43','TM44','TM45','TM46','TM47'],
   jynx: ['TM01','TM03','TM04','TM06','TM07','TM10','TM12','TM13','TM14','TM15','TM16','TM17','TM18','TM21','TM27','TM29','TM30','TM31','TM32','TM33','TM41','TM42','TM43','TM44','TM45','TM46','TM48'],
   electabuzz: ['TM01','TM06','TM10','TM15','TM16','TM17','TM18','TM21','TM23','TM24','TM25','TM27','TM29','TM31','TM32','TM34','TM42','TM43','TM44','TM45','TM46'],
@@ -369,7 +369,7 @@ export const BABY_POKEMON = [
 
 export const LEGENDARY_POKEMON = [
   'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-  'raikou', 'entei', 'suicune', 'lugia', 'ho-oh', 'ho_oh', 'celebi'
+  'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
 ];
 
 export const FOSSIL_POKEMON = [

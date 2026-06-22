@@ -1,0 +1,1262 @@
+{
+  "bulbasaur": {
+    "category": "Pokémon Semilla",
+    "description": "Una rara semilla le fue plantada en el lomo al nacer. La planta brota y crece con este Pokémon.",
+    "catchRate": 45
+  },
+  "ivysaur": {
+    "category": "Pokémon Semilla",
+    "description": "Este Pokémon tiene un bulbo en el lomo. Dicen que, al absorber nutrientes, el bulbo se transforma en una flor grande.",
+    "catchRate": 45
+  },
+  "venusaur": {
+    "category": "Pokémon Semilla",
+    "description": "Llena su cuerpo de energía con los rayos solares que captan los anchos pétalos de su flor.",
+    "catchRate": 45
+  },
+  "charmander": {
+    "category": "Pokémon Lagartija",
+    "description": "La llama de su cola indica la fuerza vital de Charmander. Será brillante si está sano.",
+    "catchRate": 45
+  },
+  "charmeleon": {
+    "category": "Pokémon Llama",
+    "description": "Suele usar la cola para derribar a su rival. Cuando lo tira, se vale de sus afiladas garras para acabar con él.",
+    "catchRate": 45
+  },
+  "charizard": {
+    "category": "Pokémon Llama",
+    "description": "Cuando lanza una descarga de fuego supercaliente, la roja llama de su cola brilla más intensamente.",
+    "catchRate": 45
+  },
+  "squirtle": {
+    "category": "Pokémon Tortuguita",
+    "description": "Se protege con su caparazón y luego contraataca lanzando agua a presión cuando tiene oportunidad.",
+    "catchRate": 45
+  },
+  "wartortle": {
+    "category": "Pokémon Tortuga",
+    "description": "Si es golpeado, esconderá su cabeza. Aun así, su cola puede seguir golpeando.",
+    "catchRate": 45
+  },
+  "blastoise": {
+    "category": "Pokémon Armazón",
+    "description": "Para acabar con su enemigo, lo aplasta con el peso de su cuerpo. En momentos de apuro, se esconde en el caparazón.",
+    "catchRate": 45
+  },
+  "caterpie": {
+    "category": "Pokémon Gusano",
+    "description": "Para protegerse despide un hedor horrible de sus antenas, con el que repele a sus enemigos.",
+    "catchRate": 255
+  },
+  "metapod": {
+    "category": "Pokémon Capullo",
+    "description": "Su frágil cuerpo está recubierto de una coraza dura como el acero. Permanece quieto en su desarrollo.",
+    "catchRate": 120
+  },
+  "butterfree": {
+    "category": "Pokémon Mariposa",
+    "description": "Adora el néctar de las flores. Puede localizar hasta las más pequeñas cantidades de polen.",
+    "catchRate": 45
+  },
+  "weedle": {
+    "category": "Pokémon Oruga",
+    "description": "Suele habitar bosques y praderas. Tiene un afilado y venenoso aguijón de unos 5 cm encima de la cabeza.",
+    "catchRate": 255
+  },
+  "kakuna": {
+    "category": "Pokémon Capullo",
+    "description": "Casi incapaz de moverse, este Pokémon solo puede endurecer su caparazón para protegerse.",
+    "catchRate": 120
+  },
+  "beedrill": {
+    "category": "Pokémon Abeja Veneno",
+    "description": "Tiene 3 aguijones venenosos en sus patas y cola. Suelen pinchar a sus enemigos repetidas veces.",
+    "catchRate": 45
+  },
+  "pidgey": {
+    "category": "Pokémon Pajarito",
+    "description": "Muy común en bosques y selvas. Aletea al nivel del suelo para levantar la gravilla.",
+    "catchRate": 255
+  },
+  "pidgeotto": {
+    "category": "Pokémon Pájaro",
+    "description": "Tiene unas garras desarrolladas. Puede atrapar un Exeggcute y transportarlo desde una distancia de casi 100 km.",
+    "catchRate": 120
+  },
+  "pidgeot": {
+    "category": "Pokémon Pájaro",
+    "description": "Cuando caza, vuela muy deprisa a ras del agua y sorprende a inocentes presas como Magikarp.",
+    "catchRate": 45
+  },
+  "rattata": {
+    "category": "Pokémon Ratón",
+    "description": "Vive allí donde haya comida disponible. Busca todo el día, sin descanso, algo comestible.",
+    "catchRate": 255
+  },
+  "raticate": {
+    "category": "Pokémon Ratón",
+    "description": "Lima sus colmillos royendo objetos duros. Con ellos puede destruir incluso paredes de hormigón.",
+    "catchRate": 127
+  },
+  "spearow": {
+    "category": "Pokémon Pajarito",
+    "description": "Muy protector de su territorio, mueve sus cortas alas sin descanso para lanzarse a toda velocidad.",
+    "catchRate": 255
+  },
+  "fearow": {
+    "category": "Pokémon Pico",
+    "description": "Con sus enormes y magníficas alas, puede seguir volando sin tener que aterrizar para descansar.",
+    "catchRate": 90
+  },
+  "ekans": {
+    "category": "Pokémon Serpiente",
+    "description": "Cuanto más viejo, más crece este Pokémon. Por la noche, descansa en las ramas de los árboles.",
+    "catchRate": 255
+  },
+  "arbok": {
+    "category": "Pokémon Cobra",
+    "description": "El dibujo que tiene en la panza aterroriza. Los rivales más débiles salen huyendo al verlo.",
+    "catchRate": 90
+  },
+  "pikachu": {
+    "category": "Pokémon Ratón",
+    "description": "Levanta su cola para vigilar los alrededores. A veces, puede ser alcanzado por un rayo en esa pose.",
+    "catchRate": 190
+  },
+  "raichu": {
+    "category": "Pokémon Ratón",
+    "description": "Cuando se carga de electricidad, sus músculos se tensan y se vuelve más agresivo de lo normal.",
+    "catchRate": 75
+  },
+  "sandshrew": {
+    "category": "Pokémon Ratón",
+    "description": "Este Pokémon permanece bajo tierra. Si se siente amenazado, se enrosca para defenderse.",
+    "catchRate": 190
+  },
+  "sandslash": {
+    "category": "Pokémon Ratón",
+    "description": "Si cava a gran velocidad, puede que se le caigan las garras y púas. Vuelven a crecerle en un día.",
+    "catchRate": 90
+  },
+  "nidoranf": {
+    "category": "Pokémon Pin Veneno",
+    "description": "Aunque pequeñas, sus venenosas púas son muy peligrosas. Tienen un cuerno más pequeño que los machos.",
+    "catchRate": 235
+  },
+  "nidorina": {
+    "category": "Pokémon Pin Veneno",
+    "description": "Tiene un carácter afable. Emite ondas ultrasónicas para confundir al enemigo.",
+    "catchRate": 120
+  },
+  "nidoqueen": {
+    "category": "Pokémon Taladro",
+    "description": "Usa su cuerpo duro y escamoso para sellar la entrada a su madriguera y protegerse de los depredadores.",
+    "catchRate": 45
+  },
+  "nidoranm": {
+    "category": "Pokémon Pin Veneno",
+    "description": "Saca las orejas por encima de la hierba para explorar el territorio. Le protege su cuerno venenoso.",
+    "catchRate": 235
+  },
+  "nidorino": {
+    "category": "Pokémon Pin Veneno",
+    "description": "Levanta sus grandes orejas para vigilar. Si detecta algo, atacará de inmediato.",
+    "catchRate": 120
+  },
+  "nidoking": {
+    "category": "Pokémon Taladro",
+    "description": "Es fácil reconocerlo por tener una dura piel y un gran cuerno lleno de peligrosísimo veneno.",
+    "catchRate": 45
+  },
+  "clefairy": {
+    "category": "Pokémon Hada",
+    "description": "Se dice que la felicidad llegará a quien vea a un grupo de Clefairy bailando a la luz de la luna llena.",
+    "catchRate": 150
+  },
+  "clefable": {
+    "category": "Pokémon Hada",
+    "description": "Su oído es tan agudo que puede oír una aguja caer a 1 km. Vive en montañas solitarias.",
+    "catchRate": 25
+  },
+  "vulpix": {
+    "category": "Pokémon Zorro",
+    "description": "Cuando nace solo tiene una cola, pero a medida que crece, esta se va dividiendo desde la punta.",
+    "catchRate": 190
+  },
+  "ninetales": {
+    "category": "Pokémon Zorro",
+    "description": "Tiene nueve colas y un pelaje de color dorado. Dicen que este Pokémon llega a vivir 1000 años.",
+    "catchRate": 75
+  },
+  "jigglypuff": {
+    "category": "Pokémon Globo",
+    "description": "Cautiva con la mirada a su enemigo y hace que se quede profundamente dormido mientras entona una dulce melodía.",
+    "catchRate": 170
+  },
+  "wigglytuff": {
+    "category": "Pokémon Globo",
+    "description": "Su piel es tan suave que si dos de ellos se acurrucan juntos, no querrán separarse nunca.",
+    "catchRate": 50
+  },
+  "zubat": {
+    "category": "Pokémon Murciélago",
+    "description": "Aunque carezca de ojos, puede detectar obstáculos con las ondas ultrasónicas que emite su boca.",
+    "catchRate": 255
+  },
+  "golbat": {
+    "category": "Pokémon Murciélago",
+    "description": "Cuando ataque, seguirá chupando energía de su víctima, aunque pese tanto que ya no pueda volar.",
+    "catchRate": 90
+  },
+  "oddish": {
+    "category": "Pokémon Hierbajo",
+    "description": "Durante el día, se agazapa en el frío subsuelo huyendo del sol. La luz de la luna le hace crecer mucho.",
+    "catchRate": 255
+  },
+  "gloom": {
+    "category": "Pokémon Hierbajo",
+    "description": "¡Huele bastante mal! De todas formas, una de cada mil personas aprecian su fétido olor.",
+    "catchRate": 120
+  },
+  "vileplume": {
+    "category": "Pokémon Flor",
+    "description": "Cuanto mayores son sus pétalos, más tóxico es su polen. Le pesa la cabeza y le cuesta mantenerla erguida.",
+    "catchRate": 45
+  },
+  "paras": {
+    "category": "Pokémon Hongo",
+    "description": "Lleva en el lomo dos setas parásitas llamadas tochukaso, que crecen con él.",
+    "catchRate": 190
+  },
+  "parasect": {
+    "category": "Pokémon Hongo",
+    "description": "Parasect está dominado por una seta parásita mayor que él. Dispersa esporas venenosas.",
+    "catchRate": 75
+  },
+  "venonat": {
+    "category": "Pokémon Insecto",
+    "description": "Sus grandes ojos son en realidad grupos de ojos diminutos. Por la noche se siente atraído por la luz.",
+    "catchRate": 190
+  },
+  "venomoth": {
+    "category": "Pokémon Polilla Ven.",
+    "description": "Lanza unas escamas que paralizan a cualquiera. Quien las toque, no podrá ni ponerse de pie.",
+    "catchRate": 75
+  },
+  "diglett": {
+    "category": "Pokémon Topo",
+    "description": "Vive un metro por debajo del suelo, donde se alimenta de raíces. También aparece en la superficie.",
+    "catchRate": 255
+  },
+  "dugtrio": {
+    "category": "Pokémon Topo",
+    "description": "En combate, cava la tierra, se esconde y sale de repente para golpear a su rival. Nunca se sabe por dónde puede aparecer.",
+    "catchRate": 50
+  },
+  "meowth": {
+    "category": "Pokémon Gato Araña",
+    "description": "Es de naturaleza nocturna. Le atraen los objetos brillantes.",
+    "catchRate": 255
+  },
+  "persian": {
+    "category": "Pokémon Gato Fino",
+    "description": "Aunque es muy admirado por el pelo, es difícil de entrenar como mascota, porque es un poco travieso.",
+    "catchRate": 90
+  },
+  "psyduck": {
+    "category": "Pokémon Pato",
+    "description": "Padece continuamente dolores de cabeza. Cuando son muy fuertes, empieza a usar misteriosos poderes.",
+    "catchRate": 190
+  },
+  "golduck": {
+    "category": "Pokémon Pato",
+    "description": "Aparece en ríos al anochecer. Puede usar poderes telequinéticos si su frente brilla misteriosamente.",
+    "catchRate": 75
+  },
+  "mankey": {
+    "category": "Pokémon Mono Cerdo",
+    "description": "Es peligroso acercarse si se enfada sin razón aparente, ya que no distingue entre amigos y enemigos.",
+    "catchRate": 190
+  },
+  "primeape": {
+    "category": "Pokémon Mono Cerdo",
+    "description": "Solo se calma cuando nadie está cerca. Llegar a ver ese momento es realmente difícil.",
+    "catchRate": 75
+  },
+  "growlithe": {
+    "category": "Pokémon Perrito",
+    "description": "Es muy agradable y leal. Para ahuyentar al enemigo, se pone a ladrar y a dar bocados.",
+    "catchRate": 190
+  },
+  "arcanine": {
+    "category": "Pokémon Leyenda",
+    "description": "Un Pokémon muy admirado desde la antigüedad por su belleza. Corre ágilmente como si tuviera alas.",
+    "catchRate": 75
+  },
+  "poliwag": {
+    "category": "Pokémon Renacuajo",
+    "description": "Tiene una piel extraordinaria, fina y húmeda, que deja entrever las vísceras que tiene dispuestas en espiral.",
+    "catchRate": 255
+  },
+  "poliwhirl": {
+    "category": "Pokémon Renacuajo",
+    "description": "Capaz de vivir dentro o fuera del agua. Fuera del agua suda para mantener baboso su cuerpo.",
+    "catchRate": 120
+  },
+  "poliwrath": {
+    "category": "Pokémon Renacuajo",
+    "description": "Tiene músculos muy desarrollados. Es capaz de nadar en el océano sin descanso.",
+    "catchRate": 45
+  },
+  "abra": {
+    "category": "Pokémon Psi",
+    "description": "Duerme 18 horas al día y mientras lo hace es capaz de usar una serie de poderes extrasensoriales.",
+    "catchRate": 200
+  },
+  "kadabra": {
+    "category": "Pokémon Psi",
+    "description": "Cuando utiliza su poder psíquico, emite poderosas ondas alfa que pueden destruir dispositivos.",
+    "catchRate": 100
+  },
+  "alakazam": {
+    "category": "Pokémon Psi",
+    "description": "Sus neuronas se multiplican continuamente durante su vida. Por eso, siempre lo recuerda todo.",
+    "catchRate": 50
+  },
+  "machop": {
+    "category": "Pokémon Superpoder",
+    "description": "Levanta un Graveler para mantener sus músculos en forma. Domina todas las artes marciales.",
+    "catchRate": 180
+  },
+  "machoke": {
+    "category": "Pokémon Superpoder",
+    "description": "Su musculoso cuerpo es tan fuerte que usa un cinto antifuerza para controlar sus movimientos.",
+    "catchRate": 90
+  },
+  "machamp": {
+    "category": "Pokémon Superpoder",
+    "description": "Tiene cuatro brazos tan bien desarrollados que puede dar una serie de 1000 puñetazos en cuestión de dos segundos.",
+    "catchRate": 45
+  },
+  "bellsprout": {
+    "category": "Pokémon Flor",
+    "description": "Aunque su cuerpo es extremadamente delgado, es muy rápido a la hora de capturar sus presas.",
+    "catchRate": 255
+  },
+  "weepinbell": {
+    "category": "Pokémon Matamoscas",
+    "description": "Las hojas que tiene actúan como cuchillas en combate. Otra de sus armas es el corrosivo fluido que expulsa.",
+    "catchRate": 120
+  },
+  "victreebel": {
+    "category": "Pokémon Matamoscas",
+    "description": "Dicen que vive en grandes colonias en el interior de las junglas, aunque nadie ha podido verificarlo.",
+    "catchRate": 45
+  },
+  "tentacool": {
+    "category": "Pokémon Medusa",
+    "description": "Su cuerpo se compone casi en exclusiva de agua. Lanza extraños rayos con sus ojos cristalinos.",
+    "catchRate": 190
+  },
+  "tentacruel": {
+    "category": "Pokémon Medusa",
+    "description": "Cuando caza, extiende los cortos tentáculos que tiene para atrapar e inmovilizar a su presa.",
+    "catchRate": 60
+  },
+  "geodude": {
+    "category": "Pokémon Roca",
+    "description": "Aparecen en llanos y montañas. Como parecen rocas, la gente se tropieza con ellos o los pisa.",
+    "catchRate": 255
+  },
+  "graveler": {
+    "category": "Pokémon Roca",
+    "description": "De naturaleza descuidada y libre, no le importa dañarse cuando baja rodando montañas.",
+    "catchRate": 120
+  },
+  "golem": {
+    "category": "Pokémon Megatón",
+    "description": "Se lanza montaña abajo y deja un surco desde la cima hasta el pie. Es mejor mantenerse alejado.",
+    "catchRate": 45
+  },
+  "ponyta": {
+    "category": "Pokémon Caballo Fuego",
+    "description": "Cuando nace, apenas puede tenerse en pie. Pero va fortaleciendo las patas en cuanto empieza a galopar.",
+    "catchRate": 190
+  },
+  "rapidash": {
+    "category": "Pokémon Caballo Fuego",
+    "description": "Galopa a casi 240 km por hora. Su crin ardiente parece una flecha cuando corre.",
+    "catchRate": 60
+  },
+  "slowpoke": {
+    "category": "Pokémon Atontado",
+    "description": "Descansa ocioso junto al agua. Si algo muerde su cola, no lo notará en todo el día.",
+    "catchRate": 190
+  },
+  "slowbro": {
+    "category": "Pokémon Ermitaño",
+    "description": "Tiene una cola tan apetecible, que el Shellder que va enganchado a ella no se soltará por nada del mundo.",
+    "catchRate": 75
+  },
+  "magnemite": {
+    "category": "Pokémon Imán",
+    "description": "Las unidades a los lados de su cuerpo generan energía antigravitatoria para mantenerlo en el aire.",
+    "catchRate": 190
+  },
+  "magneton": {
+    "category": "Pokémon Imán",
+    "description": "Lo constituye un grupo de Magnemite. Descarga potentes ondas magnéticas de alto voltaje.",
+    "catchRate": 60
+  },
+  "farfetchd": {
+    "category": "Pokémon Pato Salvaje",
+    "description": "El puerro que lleva es su mejor arma. Suele usarlo como espada para cortar cosas.",
+    "catchRate": 45
+  },
+  "doduo": {
+    "category": "Pokémon Ave Gemela",
+    "description": "Este Pokémon de dos cabezas es el resultado de una mutación. Cuando corre, puede alcanzar casi 100 km por hora.",
+    "catchRate": 190
+  },
+  "dodrio": {
+    "category": "Pokémon Ave Triple",
+    "description": "Más vale no perder de vista ninguna de las tres cabezas. De lo contrario, el número de picotazos será enorme.",
+    "catchRate": 45
+  },
+  "seel": {
+    "category": "Pokémon León Marino",
+    "description": "Este Pokémon vive en icebergs. Nada en el mar y usa el cuerno de su cabeza para romper el hielo.",
+    "catchRate": 190
+  },
+  "dewgong": {
+    "category": "Pokémon León Marino",
+    "description": "Está recubierto de un luminoso pelaje blanco. Este Pokémon aumenta su actividad cuando bajan las temperaturas.",
+    "catchRate": 75
+  },
+  "grimer": {
+    "category": "Pokémon Lodo",
+    "description": "Nace de lodo alterado al filtrarse en el agua los rayos X reflejados por la Luna. Se alimenta de sustancias desagradables.",
+    "catchRate": 190
+  },
+  "muk": {
+    "category": "Pokémon Lodo",
+    "description": "Les encanta reunirse en zonas apestosas donde se acumula el lodo, haciendo su olor más insoportable.",
+    "catchRate": 75
+  },
+  "shellder": {
+    "category": "Pokémon Bivalvo",
+    "description": "La concha lo protege de cualquier tipo de ataque. Solo es vulnerable cuando se abre.",
+    "catchRate": 190
+  },
+  "cloyster": {
+    "category": "Pokémon Bivalvo",
+    "description": "A los Cloyster que viven en las fuertes corrientes marinas les crecen largas y afiladas púas en la concha.",
+    "catchRate": 60
+  },
+  "gastly": {
+    "category": "Pokémon Gas",
+    "description": "Su etéreo cuerpo está hecho de gas. Puede envolver a un oponente de cualquier tamaño hasta ahogarlo.",
+    "catchRate": 190
+  },
+  "haunter": {
+    "category": "Pokémon Gas",
+    "description": "Cuando tienes la sensación de que te están observando, seguro que es porque Haunter está cerca.",
+    "catchRate": 90
+  },
+  "gengar": {
+    "category": "Pokémon Sombra",
+    "description": "Se esconde entre las sombras. Se dice que donde Gengar acecha, la temperatura baja 5 °C.",
+    "catchRate": 45
+  },
+  "onix": {
+    "category": "Pokémon Serpiente Roca",
+    "description": "Cava a gran velocidad en busca de comida. Los túneles que deja son usados por los Diglett.",
+    "catchRate": 45
+  },
+  "drowzee": {
+    "category": "Pokémon Hipnosis",
+    "description": "Adormece a sus enemigos y se come sus sueños. A veces se pone enfermo si come pesadillas.",
+    "catchRate": 190
+  },
+  "hypno": {
+    "category": "Pokémon Hipnosis",
+    "description": "Lleva un péndulo en la mano. Una vez, hizo desaparecer a un niño al que había hipnotizado.",
+    "catchRate": 75
+  },
+  "krabby": {
+    "category": "Pokémon Cangrejo",
+    "description": "Ante el peligro, se camufla con las burbujas que desprende su boca, para parecer más grande.",
+    "catchRate": 225
+  },
+  "kingler": {
+    "category": "Pokémon Tenaza",
+    "description": "La pinza tan grande que tiene posee una fuerza de 10 000 caballos de potencia. Pero, por su gran tamaño, cuesta moverla.",
+    "catchRate": 60
+  },
+  "voltorb": {
+    "category": "Pokémon Bola",
+    "description": "Fue descubierto cuando se crearon las Poké Balls. Se dice que tiene algo que ver con ellas.",
+    "catchRate": 190
+  },
+  "electrode": {
+    "category": "Pokémon Bola",
+    "description": "Explotan a la mínima. Por eso se les tiene mucho miedo. Estos Pokémon reciben el mote de Bomba Ball.",
+    "catchRate": 60
+  },
+  "exeggcute": {
+    "category": "Pokémon Huevo",
+    "description": "Estos seis huevos se comunican por telepatía. Si se separan, se pueden reunir rápidamente.",
+    "catchRate": 190
+  },
+  "exeggutor": {
+    "category": "Pokémon Coco",
+    "description": "Sus tres cabezas piensan de forma independiente. Sin embargo, son amigas y no suelen discutir nunca.",
+    "catchRate": 45
+  },
+  "cubone": {
+    "category": "Pokémon Solitario",
+    "description": "Lleva puesto el cráneo de su madre. Cuando se siente solo se pone a gritar muy fuerte.",
+    "catchRate": 190
+  },
+  "marowak": {
+    "category": "Pokémon Apilahueso",
+    "description": "Es pequeño y siempre ha sido muy débil. Cuando empezó a usar huesos, se volvió más violento.",
+    "catchRate": 75
+  },
+  "hitmonlee": {
+    "category": "Pokémon Patada",
+    "description": "Encoge y estira las patas a su antojo. Cuando las estira, es capaz de propinar una buena patada al enemigo.",
+    "catchRate": 45
+  },
+  "hitmonchan": {
+    "category": "Pokémon Puñetazo",
+    "description": "Los potentes golpes de sus brazos pueden pulverizar el hormigón. Descansa tras luchar tres minutos.",
+    "catchRate": 45
+  },
+  "lickitung": {
+    "category": "Pokémon Lametazo",
+    "description": "Su larga lengua, recubierta de saliva pegajosa, se pega a todo, por lo que es muy útil.",
+    "catchRate": 45
+  },
+  "koffing": {
+    "category": "Pokémon Gas Venenoso",
+    "description": "Tiene forma de globo y es muy ligero. Está compuesto por gases tóxicos y apesta.",
+    "catchRate": 190
+  },
+  "weezing": {
+    "category": "Pokémon Gas Venenoso",
+    "description": "Si uno de los gemelos Koffing se infla, el otro se desinfla. Mezclan constantemente sus venenosos gases.",
+    "catchRate": 60
+  },
+  "rhyhorn": {
+    "category": "Pokémon Clavos",
+    "description": "Es muy fuerte, pero no especialmente listo. Es capaz de derribar rascacielos usando Placaje varias veces.",
+    "catchRate": 120
+  },
+  "rhydon": {
+    "category": "Pokémon Taladro",
+    "description": "La piel le sirve de escudo protector. Puede vivir en lava líquida a 2000 °C de temperatura.",
+    "catchRate": 60
+  },
+  "chansey": {
+    "category": "Pokémon Huevo",
+    "description": "Se dice que reparte felicidad. Se caracteriza por su compasión y reparte sus huevos entre la gente herida.",
+    "catchRate": 30
+  },
+  "tangela": {
+    "category": "Pokémon Enredadera",
+    "description": "Se camufla con la multitud de lianas que envuelven su cuerpo y que no dejan de crecer a lo largo de toda su vida.",
+    "catchRate": 45
+  },
+  "kangaskhan": {
+    "category": "Pokémon Maternal",
+    "description": "Lleva a su cría en la bolsa de su panza. Solo deja que su cría salga a jugar cuando no siente peligro.",
+    "catchRate": 45
+  },
+  "horsea": {
+    "category": "Pokémon Dragón",
+    "description": "Es famoso por derribar a bichos voladores lanzando tinta desde la superficie del agua.",
+    "catchRate": 225
+  },
+  "seadra": {
+    "category": "Pokémon Dragón",
+    "description": "Las afiladas púas que le recubren el cuerpo se le erizan y pueden causar el debilitamiento con solo tocarlo.",
+    "catchRate": 60
+  },
+  "goldeen": {
+    "category": "Pokémon Pez Color",
+    "description": "Nada a una velocidad de cinco nudos. Si siente peligro, golpea con su afilado cuerno.",
+    "catchRate": 225
+  },
+  "seaking": {
+    "category": "Pokémon Pez Color",
+    "description": "En otoño, cuando se reproducen, se les puede ver nadando con energía por ríos y arroyos.",
+    "catchRate": 60
+  },
+  "staryu": {
+    "category": "Pokémon Estrella",
+    "description": "Aunque sus brazos se rompan podrán regenerarse, siempre y cuando su núcleo siga intacto.",
+    "catchRate": 225
+  },
+  "starmie": {
+    "category": "Pokémon Misterioso",
+    "description": "Su núcleo central brilla con los colores del arcoíris. Para algunos tiene el valor de una gema.",
+    "catchRate": 60
+  },
+  "mrmime": {
+    "category": "Pokémon Barrera",
+    "description": "Para repeler ataques, solidifica el aire y crea muros invisibles con emanaciones de sus dedos.",
+    "catchRate": 45
+  },
+  "scyther": {
+    "category": "Pokémon Mantis",
+    "description": "Destroza a su presa con las guadañas que tiene. No es común que use las alas para volar.",
+    "catchRate": 45
+  },
+  "jynx": {
+    "category": "Pokémon Forma Humana",
+    "description": "Camina moviendo las caderas de forma llamativa. Puede hacer que la gente baile a su ritmo.",
+    "catchRate": 45
+  },
+  "electabuzz": {
+    "category": "Pokémon Eléctrico",
+    "description": "Por la superficie de su piel corre la electricidad. En la oscuridad, su cuerpo se torna blanquecino.",
+    "catchRate": 45
+  },
+  "magmar": {
+    "category": "Pokémon Escupefuego",
+    "description": "A este Pokémon se lo encontraron cerca de un volcán. Esta criatura ígnea tiene una temperatura corporal de unos 1200 °C.",
+    "catchRate": 45
+  },
+  "pinsir": {
+    "category": "Pokémon Escarabajo",
+    "description": "Atrapa presas con sus pinzas hasta que las parte en dos. Lanza lejos lo que no puede quebrar.",
+    "catchRate": 45
+  },
+  "tauros": {
+    "category": "Pokémon Toro Bravo",
+    "description": "Después de animarse a luchar fustigándose con sus tres colas, carga a toda velocidad.",
+    "catchRate": 45
+  },
+  "magikarp": {
+    "category": "Pokémon Pez",
+    "description": "No es precisamente rápido ni fuerte. Es el Pokémon más debilucho y simplón de todos los que hay.",
+    "catchRate": 255
+  },
+  "gyarados": {
+    "category": "Pokémon Atrocidad",
+    "description": "En la literatura antigua se dice que un Gyarados rebosante de violencia arrasó un poblado.",
+    "catchRate": 45
+  },
+  "lapras": {
+    "category": "Pokémon Transporte",
+    "description": "Son buenos de corazón. Muchos fueron capturados por ser tan pacíficos. Ahora hay muchos menos.",
+    "catchRate": 45
+  },
+  "ditto": {
+    "category": "Pokémon Transformación",
+    "description": "Puede alterar por completo su estructura celular para emular cualquier objeto que vea.",
+    "catchRate": 35
+  },
+  "eevee": {
+    "category": "Pokémon Evolución",
+    "description": "Un extraño Pokémon que se adapta a los entornos más hostiles gracias a sus diferentes evoluciones.",
+    "catchRate": 45
+  },
+  "vaporeon": {
+    "category": "Pokémon Burbuja",
+    "description": "Prefiere las bellas costas. Con células parecidas al agua, podría fundirse en la misma.",
+    "catchRate": 45
+  },
+  "jolteon": {
+    "category": "Pokémon Relámpago",
+    "description": "Todos los pelos de su cuerpo se ponen de punta si empieza a cargarse de electricidad.",
+    "catchRate": 45
+  },
+  "flareon": {
+    "category": "Pokémon Llama",
+    "description": "Almacena llamas en su cuerpo, que alcanza una temperatura de 900 °C antes de un combate.",
+    "catchRate": 45
+  },
+  "porygon": {
+    "category": "Pokémon Virtual",
+    "description": "Pokémon creado por el hombre tras muchas investigaciones. Sus habilidades son básicas.",
+    "catchRate": 45
+  },
+  "omanyte": {
+    "category": "Pokémon Espiral",
+    "description": "Pokémon prehistórico que vivió en el océano primordial. Para nadar se valía de sus 10 tentáculos.",
+    "catchRate": 45
+  },
+  "omastar": {
+    "category": "Pokémon Espiral",
+    "description": "Tiene los tentáculos tan desarrollados que le sirven de manos y pies. Con ellos atrapa a su presa y le da un bocado.",
+    "catchRate": 45
+  },
+  "kabuto": {
+    "category": "Pokémon Armazón",
+    "description": "Se cree que habitó las playas hace 300 millones de años. Se protege con una dura concha.",
+    "catchRate": 45
+  },
+  "kabutops": {
+    "category": "Pokémon Armazón",
+    "description": "Repliega sus extremidades en el agua para hacerse más compacto, y mueve su concha para nadar rápido.",
+    "catchRate": 45
+  },
+  "aerodactyl": {
+    "category": "Pokémon Fósil",
+    "description": "Se regeneró a partir de material genético de un dinosaurio encontrado en ámbar. Cuando vuela emite escandalosos alaridos.",
+    "catchRate": 45
+  },
+  "snorlax": {
+    "category": "Pokémon Dormir",
+    "description": "No se encuentra satisfecho hasta que no se come 400 kg de comida cada día. Cuando acaba de comer, se queda dormido.",
+    "catchRate": 25
+  },
+  "articuno": {
+    "category": "Pokémon Congelar",
+    "description": "Legendario Pokémon pájaro capaz de generar ventiscas congelando la humedad del aire.",
+    "catchRate": 3
+  },
+  "zapdos": {
+    "category": "Pokémon Eléctrico",
+    "description": "Es un legendario pájaro Pokémon. Dicen que aparece entre las nubes lanzando enormes rayos brillantes.",
+    "catchRate": 3
+  },
+  "moltres": {
+    "category": "Pokémon Llama",
+    "description": "Es más conocido como el legendario pájaro de fuego. Con cada aleteo crea brillantes llamas.",
+    "catchRate": 3
+  },
+  "dratini": {
+    "category": "Pokémon Dragón",
+    "description": "Se le llama el Pokémon Espejismo porque son muy pocos los que lo han visto. Se encontró su muda.",
+    "catchRate": 45
+  },
+  "dragonair": {
+    "category": "Pokémon Dragón",
+    "description": "Sus cristalinos orbes parecen darle al Pokémon el poder de controlar el clima libremente.",
+    "catchRate": 45
+  },
+  "dragonite": {
+    "category": "Pokémon Dragón",
+    "description": "A pesar del tamaño que tiene y de lo pesado que es, puede volar. Es capaz de dar la vuelta al mundo en solo 16 horas.",
+    "catchRate": 45
+  },
+  "mewtwo": {
+    "category": "Pokémon Genético",
+    "description": "Fue creado por un científico tras años de horribles experimentos de ingeniería genética.",
+    "catchRate": 3
+  },
+  "mew": {
+    "category": "Pokémon Nueva Especie",
+    "description": "Varios científicos lo consideran el antecesor de los Pokémon porque usa todo tipo de movimientos.",
+    "catchRate": 45
+  },
+  "chikorita": {
+    "category": "Pokémon Hoja",
+    "description": "Un dulce aroma se desprende de la hoja de su cabeza. Es dócil y le encanta absorber los rayos de sol.",
+    "catchRate": 45
+  },
+  "bayleef": {
+    "category": "Pokémon Hoja",
+    "description": "Emana un aroma picante de su cuello. El aroma actúa como estimulante para recuperar salud.",
+    "catchRate": 45
+  },
+  "meganium": {
+    "category": "Pokémon Hierba",
+    "description": "El olor que desprenden sus pétalos contiene una sustancia que calma el instinto agresivo.",
+    "catchRate": 45
+  },
+  "cyndaquil": {
+    "category": "Pokémon Ratón Fuego",
+    "description": "Es un Pokémon muy tímido. Si se asusta, las llamas de su lomo arden con más fuerza.",
+    "catchRate": 45
+  },
+  "quilava": {
+    "category": "Pokémon Volcán",
+    "description": "Antes de empezar a luchar, se gira ante su rival para alardear del alcance y la fuerza de sus llamas.",
+    "catchRate": 45
+  },
+  "typhlosion": {
+    "category": "Pokémon Volcán",
+    "description": "Si su furia crece, se calienta tanto que cualquier cosa que toque se prenderá al instante.",
+    "catchRate": 45
+  },
+  "totodile": {
+    "category": "Pokémon Fauces",
+    "description": "Es pequeño pero violento. No dudará en morder cualquier cosa que se mueva cerca.",
+    "catchRate": 45
+  },
+  "croconaw": {
+    "category": "Pokémon Fauces",
+    "description": "Si pierde un colmillo, le crecerá otro en su lugar. Siempre tiene 48 colmillos en su boca.",
+    "catchRate": 45
+  },
+  "feraligatr": {
+    "category": "Pokémon Fauces",
+    "description": "Se suele mover lento, pero alcanza velocidades de vértigo al atacar y morder a sus enemigos.",
+    "catchRate": 45
+  },
+  "sentret": {
+    "category": "Pokémon Explorador",
+    "description": "Cuando hace de centinela, avisa del peligro a los demás, chillando y dando golpes al suelo con la cola.",
+    "catchRate": 45
+  },
+  "furret": {
+    "category": "Pokémon Alargado",
+    "description": "Acurruca a sus crías para que duerman. Acorrala a los enemigos con su enorme velocidad.",
+    "catchRate": 45
+  },
+  "hoothoot": {
+    "category": "Pokémon Búho",
+    "description": "Su percepción del tiempo es exacta. Ocurra lo que ocurra, lleva el ritmo moviendo la cabeza.",
+    "catchRate": 45
+  },
+  "noctowl": {
+    "category": "Pokémon Búho",
+    "description": "Sus ojos están especialmente adaptados. Concentran la luz para poder ver en la oscuridad.",
+    "catchRate": 45
+  },
+  "ledyba": {
+    "category": "Pokémon 5 Estrellas",
+    "description": "Cuando llega el frío, se reúnen muchos Ledyba de todas partes para darse calor.",
+    "catchRate": 45
+  },
+  "ledian": {
+    "category": "Pokémon 5 Estrellas",
+    "description": "Cuando parpadean las estrellas en el cielo nocturno, se mece desprendiendo un polvo brillante.",
+    "catchRate": 45
+  },
+  "spinarak": {
+    "category": "Pokémon Escupesoga",
+    "description": "Teje su telaraña con hilo fino pero resistente. Espera pacientemente a que caiga su presa.",
+    "catchRate": 45
+  },
+  "ariados": {
+    "category": "Pokémon Pata Larga",
+    "description": "Teje su telaraña desde atrás y desde su boca. Es muy difícil saber dónde está cada cual.",
+    "catchRate": 45
+  },
+  "crobat": {
+    "category": "Pokémon Murciélago",
+    "description": "Es tan silencioso cuando vuela en la oscuridad con sus cuatro alas, que cuesta percibirlo cuando se acerca.",
+    "catchRate": 45
+  },
+  "chinchou": {
+    "category": "Pokémon Rape",
+    "description": "En el oscuro fondo del océano, su único modo de comunicarse es emitiendo luces parpadeantes.",
+    "catchRate": 45
+  },
+  "lanturn": {
+    "category": "Pokémon Luz",
+    "description": "La luz de Lanturn se puede ver desde lo más profundo. Se le llama la Estrella de Alta Mar.",
+    "catchRate": 45
+  },
+  "pichu": {
+    "category": "Pokémon Ratoncito",
+    "description": "Cuando juegan, se tocan las colas y emiten chispas. Al parecer, es una prueba de valor.",
+    "catchRate": 190
+  },
+  "cleffa": {
+    "category": "Pokémon Estrella",
+    "description": "Por su inusual forma estrellada, la gente cree que procede de un meteorito que cayó a la tierra.",
+    "catchRate": 190
+  },
+  "igglybuff": {
+    "category": "Pokémon Globo",
+    "description": "Para caminar, en lugar de usar los pies que tiene, opta por dar botes con su cuerpo redondo y blandito.",
+    "catchRate": 170
+  },
+  "togepi": {
+    "category": "Pokémon Bolaclavos",
+    "description": "El cascarón parece estar lleno de alegría. Dicen que trae buena suerte si es tratado con cariño.",
+    "catchRate": 190
+  },
+  "togetic": {
+    "category": "Pokémon Felicidad",
+    "description": "Si no está con gente amable, se entristece. Puede flotar en el aire sin mover las alas.",
+    "catchRate": 45
+  },
+  "natu": {
+    "category": "Pokémon Pajarito",
+    "description": "Va dando saltitos porque sus alas no han crecido lo suficiente. Siempre está pendiente de algo.",
+    "catchRate": 45
+  },
+  "xatu": {
+    "category": "Pokémon Místico",
+    "description": "Cuando se pone a meditar al amanecer, pierde la noción del tiempo. Puede pasarse así todo el día.",
+    "catchRate": 45
+  },
+  "mareep": {
+    "category": "Pokémon Lana",
+    "description": "Su pelaje lanudo dobla su volumen al acumular electricidad estática. Tocarlo puede dar calambre.",
+    "catchRate": 45
+  },
+  "flaaffy": {
+    "category": "Pokémon Lana",
+    "description": "Su esponjosa lana almacena electricidad. Su piel gomosa evita que sea electrocutado.",
+    "catchRate": 45
+  },
+  "ampharos": {
+    "category": "Pokémon Luz",
+    "description": "La punta de su cola reluce brillantemente y puede ser vista desde lejos. Es usado como faro.",
+    "catchRate": 45
+  },
+  "bellossom": {
+    "category": "Pokémon Flor",
+    "description": "Los Bellossom suelen reunirse para bailar. Dicen que sus danzas son un ritual para invocar al sol.",
+    "catchRate": 45
+  },
+  "marill": {
+    "category": "Pokémon Ratón Agua",
+    "description": "Tiene una piel que repele el agua. De hecho, puede pasarse horas jugando en el agua sin mojarse.",
+    "catchRate": 45
+  },
+  "azumarill": {
+    "category": "Pokémon Conejo Agua",
+    "description": "Sus largas orejas son sensores que pueden percibir movimientos de seres vivos en el lecho del río.",
+    "catchRate": 45
+  },
+  "sudowoodo": {
+    "category": "Pokémon Imitación",
+    "description": "Aunque pretende ser un árbol, en su composición se parece más a una roca que a una planta.",
+    "catchRate": 45
+  },
+  "politoed": {
+    "category": "Pokémon Rana",
+    "description": "Cuando tres o más de estos se juntan, emiten un sonido muy fuerte parecido a un bramido.",
+    "catchRate": 45
+  },
+  "hoppip": {
+    "category": "Pokémon Algadón",
+    "description": "Su cuerpo es tan ligero, que debe agarrarse bien al suelo con las patas para no irse con el viento.",
+    "catchRate": 45
+  },
+  "skiploom": {
+    "category": "Pokémon Algadón",
+    "description": "La flor de su cabeza se abre y cierra según suba o baje la temperatura.",
+    "catchRate": 45
+  },
+  "jumpluff": {
+    "category": "Pokémon Algadón",
+    "description": "Los vientos estacionales lo llevan por todo el mundo, donde va soltando sus esporas.",
+    "catchRate": 45
+  },
+  "aipom": {
+    "category": "Pokémon Cola Larga",
+    "description": "Vive en lo alto de los árboles. Cuando salta de rama en rama, usa su cola para equilibrarse.",
+    "catchRate": 45
+  },
+  "sunkern": {
+    "category": "Pokémon Semilla",
+    "description": "Puede caer del cielo de repente. Si le ataca un Spearow, moverá violentamente sus hojas.",
+    "catchRate": 45
+  },
+  "sunflora": {
+    "category": "Pokémon Sol",
+    "description": "A medida que se acerca el verano, va adquiriendo un color más vivo e intenso en los pétalos de la cara.",
+    "catchRate": 120
+  },
+  "yanma": {
+    "category": "Pokémon Ala Clara",
+    "description": "Su campo visual es de 360° sin girar la cabeza. Detecta hasta las presas que están a su espalda.",
+    "catchRate": 45
+  },
+  "wooper": {
+    "category": "Pokémon Pez Agua",
+    "description": "Este Pokémon vive en aguas frías. Sale del agua para buscar comida cuando refresca el ambiente.",
+    "catchRate": 45
+  },
+  "quagsire": {
+    "category": "Pokémon Pez Agua",
+    "description": "Es un Pokémon bastante perezoso. Para pescar permanece en el fondo del río con la boca abierta.",
+    "catchRate": 45
+  },
+  "espeon": {
+    "category": "Pokémon Sol",
+    "description": "Al predecir el siguiente movimiento de su rival, chasquea el extremo de la cola bífida que tiene.",
+    "catchRate": 45
+  },
+  "umbreon": {
+    "category": "Pokémon Luz Lunar",
+    "description": "Creado cuando la luz lunar alteró la estructura genética de Eevee. Busca presas en la oscuridad.",
+    "catchRate": 45
+  },
+  "murkrow": {
+    "category": "Pokémon Oscuridad",
+    "description": "Esconde objetos brillantes en un lugar secreto. Meowth y Murkrow suelen saquear su escondite.",
+    "catchRate": 45
+  },
+  "slowking": {
+    "category": "Pokémon Regio",
+    "description": "Su intelecto e intuición son increíbles. No pierde la compostura en ninguna situación.",
+    "catchRate": 45
+  },
+  "misdreavus": {
+    "category": "Pokémon Chirrido",
+    "description": "Se deleita con el miedo, que absorbe con sus esferas rojas. Por el día, duerme en la oscuridad.",
+    "catchRate": 45
+  },
+  "unown": {
+    "category": "Pokémon Símbolo",
+    "description": "Su cuerpo fino y plano aparece siempre en los muros. Su forma parece tener algún significado.",
+    "catchRate": 45
+  },
+  "wobbuffet": {
+    "category": "Pokémon Paciente",
+    "description": "Odia la luz y las sacudidas. Si le atacan, infla su cuerpo para aumentar su contraataque.",
+    "catchRate": 45
+  },
+  "girafarig": {
+    "category": "Pokémon Gran Cuello",
+    "description": "Cuando duerme, la cabeza de su cola se queda vigilando, ya que ella no necesita dormir.",
+    "catchRate": 45
+  },
+  "pineco": {
+    "category": "Pokémon Larva",
+    "description": "Le gusta engrosar su coraza añadiendo cortezas de árbol. El aumento de peso no le molesta.",
+    "catchRate": 45
+  },
+  "forretress": {
+    "category": "Pokémon Larva",
+    "description": "Se protege con su concha de acero de tal manera que solo se pueden ver sus ojos.",
+    "catchRate": 45
+  },
+  "dunsparce": {
+    "category": "Pokémon Serpiente Tierra",
+    "description": "Este Pokémon escapa hacia atrás perforando el suelo con su cola, si es descubierto.",
+    "catchRate": 45
+  },
+  "gligar": {
+    "category": "Pokémon Escorpiala",
+    "description": "A veces se sujeta a los precipicios. Cuando divisa una presa, despliega sus alas y planea para atacar.",
+    "catchRate": 45
+  },
+  "steelix": {
+    "category": "Pokémon Serpiente Férrea",
+    "description": "Su cuerpo es más duro que cualquier metal debido a la gran presión y calor de su hábitat.",
+    "catchRate": 45
+  },
+  "snubbull": {
+    "category": "Pokémon Hada",
+    "description": "Muy travieso por naturaleza, a muchas mujeres les gusta jugar con él porque es muy cariñoso.",
+    "catchRate": 45
+  },
+  "granbull": {
+    "category": "Pokémon Hada",
+    "description": "A pesar de su aspecto, es muy tímido. Sin embargo, cuando se enfada, ataca con sus colmillos.",
+    "catchRate": 45
+  },
+  "qwilfish": {
+    "category": "Pokémon Globo",
+    "description": "Para arrojar sus venenosas púas, infla su cuerpo bebiendo hasta diez litros de agua de una sola vez.",
+    "catchRate": 45
+  },
+  "scizor": {
+    "category": "Pokémon Tenaza",
+    "description": "Las pinzas que posee tienen acero. Con ellas, no hay nada que se le resista. Rompen todo lo que pillan.",
+    "catchRate": 45
+  },
+  "shuckle": {
+    "category": "Pokémon Moho",
+    "description": "Las bayas que almacena en su caparazón con forma de tarro se convierten al final en un espeso zumo.",
+    "catchRate": 45
+  },
+  "heracross": {
+    "category": "Pokémon Cuerno",
+    "description": "Este fuerte Pokémon clava su preciado cuerno en la tripa del enemigo, lo eleva y luego lo arroja.",
+    "catchRate": 45
+  },
+  "sneasel": {
+    "category": "Pokémon Garra Filo",
+    "description": "Se alimenta de huevos robados en nidos. Clava sus afiladas garras en los puntos débiles de sus rivales.",
+    "catchRate": 45
+  },
+  "teddiursa": {
+    "category": "Pokémon Osito",
+    "description": "Si encuentra miel, brillará la marca de su frente. Se lame las garras cuando están llenas de miel.",
+    "catchRate": 45
+  },
+  "ursaring": {
+    "category": "Pokémon Hibernante",
+    "description": "Capaz de percibir cualquier tipo de aroma, encuentra sin problemas todo alimento enterrado bajo tierra.",
+    "catchRate": 45
+  },
+  "slugma": {
+    "category": "Pokémon Lava",
+    "description": "Asiduo a las zonas volcánicas, se desliza lentamente en busca de lugares calientes.",
+    "catchRate": 45
+  },
+  "magcargo": {
+    "category": "Pokémon Lava",
+    "description": "En ocasiones, su resbaladiza concha lanza intensas llamaradas que recorren todo su cuerpo.",
+    "catchRate": 45
+  },
+  "swinub": {
+    "category": "Pokémon Cerdo",
+    "description": "Frota su hocico contra el suelo para desenterrar comida. A veces descubre aguas termales.",
+    "catchRate": 45
+  },
+  "piloswine": {
+    "category": "Pokémon Puerco",
+    "description": "Aunque tiene las patas cortas, las fuertes pezuñas le permiten agarrarse bien al suelo, a pesar del hielo.",
+    "catchRate": 45
+  },
+  "corsola": {
+    "category": "Pokémon Coral",
+    "description": "Crece y muda continuamente. La parte superior de su cabeza es muy apreciada por su belleza.",
+    "catchRate": 45
+  },
+  "remoraid": {
+    "category": "Pokémon Reactor",
+    "description": "Tiene muy buena puntería. Dispara agua a sus presas, hasta si se están moviendo, a más de 100 metros.",
+    "catchRate": 45
+  },
+  "octillery": {
+    "category": "Pokémon Reactor",
+    "description": "Tiene querencia por los agujeros. Ataca escupiendo tinta metido en las grietas de rocas o en recipientes.",
+    "catchRate": 45
+  },
+  "delibird": {
+    "category": "Pokémon Reparto",
+    "description": "Transporta alimentos en su cola enrollada. Le gusta compartir su comida con los montañistas perdidos.",
+    "catchRate": 45
+  },
+  "mantine": {
+    "category": "Pokémon Milano",
+    "description": "Acumula velocidad nadando y puede saltar fuera del agua, alcanzando 100 metros de altura, para descender luego planeando.",
+    "catchRate": 45
+  },
+  "skarmory": {
+    "category": "Pokémon Coraza Ave",
+    "description": "Después de anidar en zarzas, las alas de sus polluelos crecen fortalecidas por los rasguños.",
+    "catchRate": 45
+  },
+  "houndour": {
+    "category": "Pokémon Siniestro",
+    "description": "Al amanecer, resuena por la zona su inquietante aullido para anunciar que es su territorio.",
+    "catchRate": 45
+  },
+  "houndoom": {
+    "category": "Pokémon Siniestro",
+    "description": "Hace mucho, la gente creía que sus horripilantes aullidos eran de la muerte personificada.",
+    "catchRate": 45
+  },
+  "kingdra": {
+    "category": "Pokémon Dragón",
+    "description": "Dicen que suele esconderse en cuevas submarinas. Puede crear torbellinos al bostezar.",
+    "catchRate": 45
+  },
+  "phanpy": {
+    "category": "Pokémon Narizotas",
+    "description": "Como muestra de afecto, golpea con su trompa. Aunque es tan fuerte que te mandará lejos.",
+    "catchRate": 45
+  },
+  "donphan": {
+    "category": "Pokémon Coraza",
+    "description": "Tiene afilados y duros colmillos, y una gruesa piel. Su Placaje es tan fuerte que puede derribar una casa.",
+    "catchRate": 45
+  },
+  "porygon2": {
+    "category": "Pokémon Virtual",
+    "description": "La investigación mejoró sus habilidades. A veces, puede actuar de forma no programada.",
+    "catchRate": 45
+  },
+  "stantler": {
+    "category": "Pokémon Gran Cuerno",
+    "description": "Mirar a su cornamenta provoca una extraña sensación de pérdida de equilibrio.",
+    "catchRate": 45
+  },
+  "smeargle": {
+    "category": "Pokémon Pintor",
+    "description": "Marca su territorio usando su cola a modo de pincel. Ha hecho más de 5000 marcas diferentes.",
+    "catchRate": 45
+  },
+  "tyrogue": {
+    "category": "Pokémon Peleón",
+    "description": "Ataca siempre con mucha energía. Para fortalecerse a sí mismo, sigue luchando aunque pierda.",
+    "catchRate": 75
+  },
+  "hitmontop": {
+    "category": "Pokémon Boca Abajo",
+    "description": "Gira a gran velocidad al luchar. La fuerza centrífuga multiplica su poder de destrucción por diez.",
+    "catchRate": 45
+  },
+  "smoochum": {
+    "category": "Pokémon Beso",
+    "description": "Sus labios son la parte más sensible de su cuerpo. Siempre los usa para examinar las cosas.",
+    "catchRate": 45
+  },
+  "elekid": {
+    "category": "Pokémon Eléctrico",
+    "description": "Genera electricidad girando los brazos. No obstante, es incapaz de almacenar la energía creada.",
+    "catchRate": 45
+  },
+  "magby": {
+    "category": "Pokémon Ascuas",
+    "description": "Es pequeño, pero su cuerpo puede llegar a alcanzar 600 °C. Cuando inspira y espira, expulsa llamas por la nariz y por la boca.",
+    "catchRate": 45
+  },
+  "miltank": {
+    "category": "Pokémon Lechera",
+    "description": "Si tiene crías, la leche que produce contiene muchos más nutrientes de lo normal.",
+    "catchRate": 45
+  },
+  "blissey": {
+    "category": "Pokémon Felicidad",
+    "description": "Los huevos que pone están llenos de felicidad. Solo con probar un poquito de uno, cualquiera sonríe.",
+    "catchRate": 45
+  },
+  "raikou": {
+    "category": "Pokémon Trueno",
+    "description": "Las nubes de lluvia que lleva le permiten lanzar rayos a voluntad. Dicen que apareció con un rayo.",
+    "catchRate": 45
+  },
+  "entei": {
+    "category": "Pokémon Volcán",
+    "description": "Un Pokémon que corre por la tierra. Dicen que siempre nace uno cuando aparece un nuevo volcán.",
+    "catchRate": 45
+  },
+  "suicune": {
+    "category": "Pokémon Aurora",
+    "description": "Recorre el mundo para purificar agua contaminada. Corre veloz con el viento del norte.",
+    "catchRate": 45
+  },
+  "larvitar": {
+    "category": "Pokémon Piel Roca",
+    "description": "Se alimenta de tierra. Después de comer una gran montaña, se duerme y empieza a crecer.",
+    "catchRate": 45
+  },
+  "pupitar": {
+    "category": "Pokémon Caparazón",
+    "description": "Su cuerpo es duro como la roca. Se autopropulsa como un cohete soltando los gases de su interior.",
+    "catchRate": 45
+  },
+  "tyranitar": {
+    "category": "Pokémon Coraza",
+    "description": "En una de sus poderosas garras tiene el poder de hacer temblar la tierra y las montañas.",
+    "catchRate": 45
+  },
+  "lugia": {
+    "category": "Pokémon Buceo",
+    "description": "Duerme en una dorsal marina. Si bate sus alas, puede causar tormentas de 40 días.",
+    "catchRate": 45
+  },
+  "hooh": {
+    "category": "Pokémon Arcoíris",
+    "description": "Cuenta la leyenda que brilla en siete colores. Dicen que deja un arcoíris tras de sí al volar.",
+    "catchRate": 45
+  },
+  "celebi": {
+    "category": "Pokémon Viajetiempo",
+    "description": "Este Pokémon vaga por el tiempo. La hierba y los árboles crecen por los campos por donde pasa.",
+    "catchRate": 45
+  },
+  "castform": {
+    "category": "Pokémon Clima",
+    "description": "Su tipo y aspecto físico varían según el clima del momento. Los cambios climáticos alteran sus moléculas.",
+    "catchRate": 45
+  }
+}

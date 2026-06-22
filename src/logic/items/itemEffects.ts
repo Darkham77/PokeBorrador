@@ -80,6 +80,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'dusk_stone': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
   'ice_stone': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
   'shiny_stone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
+  'oval_stone': pokeEffect((p) => handleStone(p, 'Piedra Oval')),
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, 10)),

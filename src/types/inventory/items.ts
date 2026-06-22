@@ -28,6 +28,8 @@ export interface Item {
   heldEffect?: string;
   isGlobal?: boolean;
   globalItem?: boolean;
+  nonCombat?: boolean;
+  craftingTier?: number;
 }
 
 export type ShopItem = Item; // Alias for now as they share same structure in data/items.ts

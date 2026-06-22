@@ -145,7 +145,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
       id: 'item',
       label: itemData ? itemData.name.toUpperCase() : String(heldItemRaw).toUpperCase(),
       shortLabel: itemBadge.shortLabel,
-      desc: itemData ? itemData.desc : itemBadge.desc,
+      desc: (itemData && itemData.desc) ? itemData.desc : (itemBadge.desc ?? ''),
       isAutomatic: true,
       itemId: itemData ? itemData.id : normalizedId
     })

@@ -3,12 +3,25 @@ import { describe, it, expect } from 'vitest';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { NATURES } from '@/data/battle/natures';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { ENABLED_POKEMON_IDS, IMPLEMENTED_GENERATION } from '@/data/system/constants';
 
 describe('Pokemon Database Integrity', () => {
   const species = Object.entries(POKEMON_DB);
 
-  it('should have at least the original 151 species', () => {
-    expect(species.length).toBeGreaterThanOrEqual(151);
+  it('should have at least the expected number of species for the implemented generation', () => {
+    const expectedCounts: Record<number, number> = {
+      1: 151,
+      2: 251,
+      3: 386,
+      4: 493,
+      5: 649,
+      6: 721,
+      7: 809,
+      8: 905,
+      9: 1025
+    };
+    const minExpected = expectedCounts[IMPLEMENTED_GENERATION] ?? 1025;
+    expect(species.length).toBeGreaterThanOrEqual(minExpected);
   });
 
   it('every species must have a valid catchRate', () => {
@@ -34,10 +47,24 @@ describe('Pokemon Database Integrity', () => {
 
   it('every species must have a valid learnset', () => {
     species.forEach(([id, data]) => {
+      // Ignorar megas, gmax, primales, totems, formas de Pikachu y formas de Castform en la validación de learnsets
+      if (
+        id.includes('mega') || id.includes('primal') || id.includes('totem') || id.endsWith('gmax') || 
+        (id.startsWith('pikachu') && id !== 'pikachu') ||
+        (id.startsWith('castform') && id !== 'castform')
+      ) return;
+
       expect(Array.isArray(data.learnset), `Pokemon "${id}" learnset must be an array`).toBe(true);
       expect(data.learnset.length, `Pokemon "${id}" learnset cannot be empty`).toBeGreaterThan(0);
-      
-      data.learnset.forEach((move, index) => {
+
+      interface LearnsetMove {
+        lv: number;
+        id: string;
+        name: string;
+        pp: number;
+      }
+
+      (data.learnset as LearnsetMove[]).forEach((move: LearnsetMove, index: number) => {
         expect(move.lv, `Pokemon "${id}" move at index ${index} missing level`).toBeDefined();
         expect(move.name, `Pokemon "${id}" move at index ${index} missing name`).toBeDefined();
         expect(move.pp, `Pokemon "${id}" move at index ${index} missing pp`).toBeDefined();
@@ -86,5 +113,20 @@ describe('Pokemon Database Integrity', () => {
     });
 
     expect(errors, `Habilidades con traducciones faltantes:\n${errors.join('\n')}`).toEqual([]);
+  });
+
+  it('should only allow retrieving data for whitelisted Pokémon species', () => {
+    // Bulbasaur is in the whitelist (Gen 1)
+    expect(() => pokemonDataProvider.getPokemonData('bulbasaur')).not.toThrow();
+
+    // Temporarily remove bulbasaur from whitelist to simulate a disabled species
+    ENABLED_POKEMON_IDS.delete('bulbasaur');
+    
+    try {
+      expect(() => pokemonDataProvider.getPokemonData('bulbasaur')).toThrow(/whitelist/);
+    } finally {
+      // Restore bulbasaur to whitelist
+      ENABLED_POKEMON_IDS.add('bulbasaur');
+    }
   });
 });

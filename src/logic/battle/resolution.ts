@@ -193,12 +193,20 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   active.over = true
   ctx.faintedSides.value.clear()
 
-  // Terminar el Web Worker de Showdown
+  // Terminar el Web Worker de Showdown y limpiar clima global en el mapa
   import('./orchestrator.ts').then(({ showdownWorker }) => {
     if (showdownWorker) {
       showdownWorker.terminate();
     }
   });
+
+  try {
+    import('@/stores/map').then(({ useMapStore }) => {
+      useMapStore().setGlobalWeather(null);
+    });
+  } catch (e) {
+    // Ignore
+  }
 
 
   // Limpiar todos los estados volátiles del equipo al terminar la batalla

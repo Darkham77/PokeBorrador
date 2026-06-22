@@ -270,7 +270,10 @@ export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _mo
 
 export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
   if (move.cat === 'status') return 'status';
-  const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-  if (move.type && specialTypes.includes(move.type)) return 'special';
-  return 'physical';
+  if (ACTIVE_GENERATION <= 3) {
+    const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+    if (move.type && specialTypes.includes(move.type)) return 'special';
+    return 'physical';
+  }
+  return move.cat ?? 'physical';
 }

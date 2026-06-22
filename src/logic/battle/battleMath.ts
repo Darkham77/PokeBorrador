@@ -76,9 +76,12 @@ function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PureP
 
 export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'special' {
   if (move.cat === 'status') return 'status';
-  if (move.type) {
-    const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-    if (specialTypes.includes(move.type.toLowerCase())) return 'special';
+  if (ACTIVE_GENERATION <= 3) {
+    if (move.type) {
+      const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+      if (specialTypes.includes(move.type.toLowerCase())) return 'special';
+    }
+    return 'physical';
   }
   return move.cat ?? 'physical';
 }

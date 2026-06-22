@@ -3,6 +3,7 @@ export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
 import { MAPS_WITH_CYCLES } from '@/data/world/map-assets';
 import { getItemById } from '@/data/inventory/items';
+import { Dex } from '@pkmn/sim';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
@@ -80,8 +81,13 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
   switch (type) {
     case ASSET_TYPES.POKEMON: {
       const stringId = String(id).toLowerCase();
-      const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] || id;
       if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`);
+
+      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId];
+      if (num === undefined) {
+        const species = Dex.species.get(stringId);
+        num = (species && species.exists) ? species.num : id;
+      }
       
       if (options.isAnimated || options.animated) {
         const sideDir = isBack ? 'Back' : 'Front';

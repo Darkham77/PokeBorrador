@@ -8,6 +8,7 @@ import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
+import { ENABLED_POKEMON_IDS } from '@/data/system/constants';
 
 interface DebugPokemon extends Pokemon {
   mapId?: string | null
@@ -70,6 +71,11 @@ export const pokemonDebugService = {
       mapId = null,
       protocol = null
     } = params;
+
+    const normalizedId = String(id).toLowerCase().trim();
+    if (!ENABLED_POKEMON_IDS.has(normalizedId)) {
+      throw new Error(`El Pokémon con ID "${id}" no está en la whitelist de especies habilitadas.`);
+    }
 
     // 1. Create base instance
     const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };

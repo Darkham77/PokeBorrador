@@ -371,12 +371,17 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       }
     });
 
-    showdownWorker.onmessage = (e) => {
+    showdownWorker.onmessage = async (e) => {
       const { type: responseType, payload: responsePayload } = e.data;
       if (responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
       } else if (responseType === 'ERROR') {
-        logger.error('ShowdownWorker', `Error del simulador: ${responsePayload.message}`);
+        logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${responsePayload.message}`);
+        const { useErrorStore } = await import('@/stores/errorStore');
+        useErrorStore().setError(new Error(responsePayload.message), { 
+          type: 'Simulator Initialization Error', 
+          source: 'ShowdownWorker INIT_BATTLE' 
+        });
       }
     };
   }

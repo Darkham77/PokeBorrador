@@ -1,4 +1,23 @@
-export const ACTIVE_GENERATION = 3;
+import { PDEX_ORDER } from '../pokemon/pokedex.ts';
+
+export const ACTIVE_GENERATION = 9;
+export const IMPLEMENTED_GENERATION = 9;
+
+export const ENABLED_POKEMON_IDS = new Set<string>([
+  ...PDEX_ORDER,
+  'pichu',
+  'cleffa',
+  'igglybuff',
+  'togepi',
+  'tyrogue',
+  'smoochum',
+  'elekid',
+  'magby',
+  'castform',
+  'castform-sunny',
+  'castform-rainy',
+  'castform-snowy'
+]);
 
 export const MAX_POKEMON_LEVEL = 100;
 

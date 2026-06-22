@@ -246,7 +246,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
     }
 
     const itemData = getItemById(rewardId);
-    const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon;
+    const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon;
 
     inventoryStore.addItem(rewardId, 1);
     const displayName = itemData ? itemData.name : rewardId;

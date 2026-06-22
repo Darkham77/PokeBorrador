@@ -12,7 +12,7 @@ import path from 'node:path';
 import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
 enableCompileCache();
 
@@ -36,9 +36,10 @@ async function main() {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Extraer todos los movimientos de los learnsets
+  // Extraer todos los movimientos de los learnsets de especies habilitadas
   const learnsetMoves = new Set<string>();
-  for (const poke of Object.values(POKEMON_DB)) {
+  for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
+    if (!ENABLED_POKEMON_IDS.has(pokeId)) continue;
     if (poke.learnset && Array.isArray(poke.learnset)) {
       poke.learnset.forEach((m: { id: string }) => {
         if (m.id && m.id !== 'Unknown') {

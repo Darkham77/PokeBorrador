@@ -3,16 +3,18 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
-import { ACTIVE_GENERATION } from '@/data/system/constants'
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants'
 
 
 export function getSelectableSpecies() {
   const db = pokemonDataProvider.getPokemonDb()
-  return Object.keys(db).map(id => ({
-    id,
-    name: db[id]?.name || id,
-    icon: pokemonDataProvider.getSpriteUrl(id)
-  }))
+  return Object.keys(db)
+    .filter(id => ENABLED_POKEMON_IDS.has(id))
+    .map(id => ({
+      id,
+      name: db[id]?.name || id,
+      icon: pokemonDataProvider.getSpriteUrl(id)
+    }))
 }
 
 export function getSelectableNatures() {

@@ -231,6 +231,14 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
             turns: -1
           };
 
+          try {
+            import('@/stores/map').then(({ useMapStore }) => {
+              useMapStore().setGlobalWeather(nextWeatherType === 'clear' ? null : nextWeatherType);
+            });
+          } catch (e) {
+            logger.warn('ShowdownBridge', 'Could not sync weather to map store:', e);
+          }
+
           if (nextWeatherType !== currentWeatherType && !isUpkeep && !isFromDebug) {
             const weatherEmojis: Record<string, string> = {
               'Sandstorm': '🌀',

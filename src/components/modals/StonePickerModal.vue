@@ -116,7 +116,7 @@ const getPokemonName = (id: string) => {
           <div class="stone-sprite-box">
             <img 
               v-if="getStoneInfo(opt.stone).sprite && !stoneHasError(opt.stone)"
-              :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite)" 
+              :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite!)" 
               class="stone-sprite" 
               @error="handleImageError(opt.stone)"
             >

@@ -354,41 +354,15 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     uids.add(p.uid);
   };
 
-  const sanitizeMoves = (p: Pokemon) => {
-    if (p && Array.isArray(p.moves)) {
-      p.moves.forEach((m) => {
-        if (m) {
-          if (!m.id) {
-            m.id = 'tackle';
-          }
-          try {
-            const dbMove = pokemonDataProvider.getMoveData(m.id);
-            m.name = dbMove.name;
-          } catch {
-            m.id = 'tackle';
-            try {
-              const fallback = pokemonDataProvider.getMoveData('tackle');
-              m.name = fallback.name;
-            } catch {
-              m.name = 'Tackle';
-            }
-          }
-        }
-      });
-    }
-  };
-
   if (sanitizedData.team) {
     sanitizedData.team.forEach((p) => {
       checkPoke(p, 'equipo');
-      sanitizeMoves(p);
       sanitizePokemon(p);
     });
   }
   if (sanitizedData.box) {
     sanitizedData.box.forEach((p) => {
       checkPoke(p, 'caja');
-      sanitizeMoves(p);
       sanitizePokemon(p);
     });
   }

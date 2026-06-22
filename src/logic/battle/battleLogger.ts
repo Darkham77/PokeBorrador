@@ -76,7 +76,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
         } catch {
           // No es un ID de item válido, usar el string source como spriteId directamente
         }
-        const spriteId = item ? item.sprite : source;
+        const spriteId = (item && item.sprite) ? item.sprite : source;
         icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
         iconType = 'item';
       }

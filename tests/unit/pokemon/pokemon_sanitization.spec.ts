@@ -24,6 +24,13 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
       if (lower === 'arañazo') return 'scratch';
       return name;
     }),
+    getMoveIdBySpanishName: vi.fn((name) => {
+      if (!name) return '';
+      const lower = name.toLowerCase().trim();
+      if (lower === 'placaje' || lower === 'ataque') return 'tackle';
+      if (lower === 'arañazo') return 'scratch';
+      return name;
+    }),
     getMoveData: vi.fn((id) => {
       if (id === 'tackle') return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
       if (id === 'scratch') return { id: 'scratch', name: 'Arañazo', power: 40, type: 'normal', cat: 'physical', pp: 35 };

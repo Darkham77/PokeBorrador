@@ -122,6 +122,10 @@ async function main() {
                      ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
 
     const pathsToCheck: string[] = [];
+    if (item.sprite) {
+      pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.webp`));
+      pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.png`));
+    }
     if (isPokeAPI) {
       pathsToCheck.push(path.join(publicDir, 'assets/sprites/items', `${mappedId}.webp`));
     } else {

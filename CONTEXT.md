@@ -31,3 +31,7 @@ The process of retrieving a game entity (Pokémon, Move, Ability, Item, or Natur
 ### Identity Resolution (Resolución de Identidad)
 
 The mechanism by which the application verifies that an entity ID exists in the database. If the ID is invalid or cannot be resolved, the engine must immediately halt and throw an explicit error to prevent corrupt state propagation.
+
+### Species Whitelist (Lista de Especies Habilitadas)
+
+A global subset of Pokémon species identifiers (IDs) that are permitted across all game systems (such as combat, daycare/breeding, eggs, and enemy trainer teams). If any system requests a species whose ID is not present in this list, the data provider must prevent its generation by throwing an explicit identity resolution error.

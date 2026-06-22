@@ -22,7 +22,7 @@ self.onmessage = (event: MessageEvent) => {
         ];
 
         currentBattle = new Battle({ 
-          formatid: `gen${ACTIVE_GENERATION}customgame` as ID,
+          formatid: `gen${ACTIVE_GENERATION}customgame@@@!Team Preview` as ID,
           seed: seedArr.join(',') as unknown as `${number},${string}`
         });
 
@@ -48,8 +48,12 @@ self.onmessage = (event: MessageEvent) => {
         const { p1Choice, p2Choice } = payload;
 
         // Registrar las elecciones de ambos jugadores
-        if (p1Choice) currentBattle.choose('p1', p1Choice);
-        if (p2Choice) currentBattle.choose('p2', p2Choice);
+        if (p1Choice) {
+          currentBattle.choose('p1', p1Choice);
+        }
+        if (p2Choice) {
+          currentBattle.choose('p2', p2Choice);
+        }
 
         const turnLogs = getNewLogs();
         const isOver = currentBattle.ended;
@@ -72,6 +76,7 @@ self.onmessage = (event: MessageEvent) => {
   } catch (error) {
     const errorMsg = (error as Error).message;
     const errorStack = (error as Error).stack || '';
+    console.error('[Showdown Worker] CRITICAL ERROR IN WORKER:', error);
     self.postMessage({ 
       type: 'ERROR', 
       payload: { 

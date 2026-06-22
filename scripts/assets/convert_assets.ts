@@ -610,6 +610,9 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
     }
   }
 
+  const jsonPath = path.join(databaseDir, 'pokemonFeetDatabase.json');
+  await fs.writeFile(jsonPath, JSON.stringify(packed), 'utf-8');
+
   const databaseContent = `/**
  * src/data/pokemonFeetDatabase.ts
  * 
@@ -617,13 +620,14 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
  * 
  * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite.
  */
+import packedData from './pokemonFeetDatabase.json' with { type: 'json' };
 
 export interface FeetPoints {
   readonly feetY: number;
   readonly feetX: number;
 }
 
-const PACKED_DATA: Record<string, Record<string, readonly [number, number]>> = ${JSON.stringify(packed)};
+const PACKED_DATA = packedData as unknown as Record<string, Record<string, readonly [number, number]>>;
 
 export const POKEMON_FEET_DATABASE: Record<string, FeetPoints> = {};
 
@@ -649,7 +653,7 @@ for (const [key, prefix] of [
   const npcCatalogPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'npcSpriteCatalog.ts');
   
   const ARCHETYPE_KEYWORDS_LOCAL = {
-    trainers: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
+    rival: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
     caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos', 'aaron', 'katy', 'bugsy', 'burgh'],
     ornitologo: ['birdkeeper', 'ornitologo', 'pajaro', 'falkner', 'kahili', 'skyla', 'skytrainer', 'winona', 'pilot'],
     cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor', 'blaine', 'briar', 'clemont', 'colress', 'elm', 'juniper', 'kukui', 'laventon', 'magnolia', 'miriam', 'molayne', 'nurse', 'oak', 'raifort', 'rowan', 'sada', 'salvatore', 'samsonoak', 'sonia', 'sophocles', 'sycamore', 'thorton', 'turo'],
@@ -692,8 +696,10 @@ for (const [key, prefix] of [
           for (const keyword of keywords) {
             if (normalized.includes(keyword)) {
               if (keyword === 'bea' && normalized.includes('beauty')) continue;
-              catalogLists[archetype]!.push(baseName);
-              classified = true;
+              if (catalogLists[archetype]) {
+                catalogLists[archetype].push(baseName);
+                classified = true;
+              }
               break;
             }
           }
@@ -701,16 +707,16 @@ for (const [key, prefix] of [
         }
 
         if (!classified) {
-          if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n))) {
-            catalogLists.medium!.push(baseName);
-          } else if (['adaman', 'irida', 'arezu', 'mai'].some(n => normalized.includes(n))) {
-            catalogLists.default!.push(baseName);
-          } else if (['lance', 'drake', 'dragontamer'].some(n => normalized.includes(n))) {
-            catalogLists.domador!.push(baseName);
-          } else if (['koga', 'janine', 'ninja'].some(n => normalized.includes(n))) {
-            catalogLists.luchador!.push(baseName);
-          } else {
-            catalogLists.default!.push(baseName);
+          if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n)) && catalogLists.medium) {
+            catalogLists.medium.push(baseName);
+          } else if (['adaman', 'irida', 'arezu', 'mai'].some(n => normalized.includes(n)) && catalogLists.default) {
+            catalogLists.default.push(baseName);
+          } else if (['lance', 'drake', 'dragontamer'].some(n => normalized.includes(n)) && catalogLists.domador) {
+            catalogLists.domador.push(baseName);
+          } else if (['koga', 'janine', 'ninja'].some(n => normalized.includes(n)) && catalogLists.luchador) {
+            catalogLists.luchador.push(baseName);
+          } else if (catalogLists.default) {
+            catalogLists.default.push(baseName);
           }
         }
       }
@@ -821,21 +827,19 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
 
   const animatedSpriteCount = Object.keys(animatedDbData).length;
   const animatedDbPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'animatedSpriteDatabase.ts');
-
-  const animatedRawSerialized = JSON.stringify(
-    Object.fromEntries(
+  const animatedDbJsonPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'animatedSpriteDatabase.json');
+  const animatedJsonData = {
+    RAW: Object.fromEntries(
       Object.entries(animatedDbData)
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
         .map(([k, v]) => [k, [v.frames, v.size, v.feetY, v.feetX, v.bodyH, v.bodyW, v.bodyRadius]])
-    )
-  );
-
-  const animatedVariationFramesSerialized = JSON.stringify(
-    Object.fromEntries(
+    ),
+    VARIATIONS: Object.fromEntries(
       Object.entries(animatedVariationFrames)
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     )
-  );
+  };
+  await fs.writeFile(animatedDbJsonPath, JSON.stringify(animatedJsonData), 'utf-8');
 
   const animatedDbContent = [
     '/**',
@@ -854,6 +858,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
     ' * MAX_ANIMATED_SPRITE_SIZE_BACK: tamaño (px) del frame más grande de Back.',
     ' * Úsalo para calcular tamaños relativos en el mundo virtual de combate.',
     ' */',
+    "import dbJson from './animatedSpriteDatabase.json' with { type: 'json' };",
     '',
     'export interface AnimatedSpriteData {',
     '  readonly frames: number;',
@@ -870,8 +875,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
     `export const MAX_ANIMATED_SPRITE_SIZE_BACK = ${maxAnimatedSizeBack} as const;`,
     `export const MAX_ANIMATED_SPRITE_SIZE = MAX_ANIMATED_SPRITE_SIZE_FRONT;`,
     '',
-    '// Compact storage: [frames, size, feetY, feetX, bodyH, bodyW, bodyRadius]',
-    `const RAW: Record<string, readonly [number, number, number, number, number, number, number]> = ${animatedRawSerialized};`,
+    'const RAW = dbJson.RAW as unknown as Record<string, readonly [number, number, number, number, number, number, number]>;',
     '',
     'export const ANIMATED_SPRITE_DATABASE: Record<string, AnimatedSpriteData> = Object.fromEntries(',
     '  Object.entries(RAW).map(([id, [frames, size, feetY, feetX, bodyH, bodyW, bodyRadius]]) => [',
@@ -881,7 +885,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
     ');',
     '',
     `/** Variation frame counts to keep variation sprites out of coordinate databases */`,
-    `export const ANIMATED_VARIATION_FRAMES: Record<string, number> = ${animatedVariationFramesSerialized};`,
+    `export const ANIMATED_VARIATION_FRAMES = dbJson.VARIATIONS as Record<string, number>;`,
     '',
   ].join('\n');
 

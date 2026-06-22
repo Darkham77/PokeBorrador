@@ -20,7 +20,12 @@ export function getSpeciesHistory(id: string): string[] {
     }
     // 2. Stone Evolutions
     for (const [from, data] of Object.entries(STONE_EVOLUTIONS as Record<string, { to: string }>)) {
-      if (data.to === speciesId) return from;
+      if (data.to === speciesId) {
+        // Limpiar sufijos como _alola o _hisui para obtener el ID base de origen si no es Eevee
+        if (from.startsWith('eevee_')) return 'eevee';
+        const baseId = from.split('_')[0];
+        return baseId || from;
+      }
     }
     // 3. Trade Evolutions
     for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {

@@ -43,7 +43,9 @@ const battleItems = computed<BattleItem[]>(() => {
       items.push({ 
         ...itemData, 
         qty: count,
-        tier: itemData.tier as 'common' | 'rare' | 'epic' | 'legend'
+        desc: itemData.desc ?? '',
+        sprite: itemData.sprite ?? '',
+        tier: (itemData.tier || 'common') as 'common' | 'rare' | 'epic' | 'legend'
       })
     }
   })

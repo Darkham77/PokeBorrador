@@ -13,6 +13,7 @@ import { setupValidation } from '../lib/validationBase.ts';
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
+import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 
@@ -27,9 +28,10 @@ async function main() {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Extraer habilidades del POKEMON_DB (deberían coincidir con habilidades oficiales en Dex de pkms)
+  // Extraer habilidades del POKEMON_DB de especies habilitadas
   const gameAbilities = new Set<string>();
   for (const pokeId of Object.keys(POKEMON_DB)) {
+    if (!ENABLED_POKEMON_IDS.has(pokeId)) continue;
     const species = Dex.species.get(pokeId);
     if (species && species.exists) {
       Object.values(species.abilities).forEach(abiName => {

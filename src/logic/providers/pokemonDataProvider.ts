@@ -8,7 +8,7 @@ import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/services/assetService';
@@ -65,10 +65,15 @@ export const pokemonDataProvider = {
         if (!dbData) {
             throw new Error(`Especie de Pokémon no encontrada: ${id}`);
         }
+
+        if (!ENABLED_POKEMON_IDS.has(normalizedId)) {
+            throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
+        }
         
         // Merge metadata if available
         const metadata = _speciesMetadata.value[normalizedId];
         const aesthetics = _pokemonAesthetics.value[normalizedId];
+        const species = Dex.forGen(ACTIVE_GENERATION).species.get(normalizedId);
 
         const data = deepClone(dbData);
 
@@ -77,8 +82,8 @@ export const pokemonDataProvider = {
             ...data,
             id: normalizedId,
             category: metadata?.category || 'Pokémon Desconocido',
-            height: metadata?.height || null,
-            weight: metadata?.weight || null,
+            height: species?.exists ? species.heightm : null,
+            weight: species?.exists ? species.weightkg : null,
             description: metadata?.description || 'No hay datos disponibles en la Pokédex.',
             isFloating: aesthetics?.floating,
             type2: data.type2 || undefined

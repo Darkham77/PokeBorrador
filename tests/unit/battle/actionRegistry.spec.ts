@@ -54,8 +54,11 @@ describe('ActionRegistry & Move Effect Mapping Coverage', () => {
     const { POKEMON_DB } = await import('@/data/pokemon/pokemonDB');
     const { toID } = await import('@pkmn/sim');
 
+    const { ENABLED_POKEMON_IDS } = await import('@/data/system/constants');
+
     const learnsetMoves = new Set<string>();
-    for (const poke of Object.values(POKEMON_DB)) {
+    for (const [speciesId, poke] of Object.entries(POKEMON_DB)) {
+      if (!ENABLED_POKEMON_IDS.has(speciesId)) continue;
       if (poke.learnset && Array.isArray(poke.learnset)) {
         poke.learnset.forEach((m: { id: string }) => {
           if (m.id && m.id !== 'Unknown') {

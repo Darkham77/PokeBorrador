@@ -577,5 +577,20 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   },
   'hp_scale': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     addLogFn(`¡La potencia del ataque depende de los PS de ${src.name}!`, 'log-info', src);
+  },
+  'stat_down_self_def': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    // Manejador genérico para Close Combat, Shell Smash, etc. que bajan defensas
+    addLogFn(`¡Las defensas de ${src.name} bajaron!`, 'log-info', src);
+  },
+  'stat_up_enemy_atk': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
+    // Aullido (howl) / etc.
+    addLogFn(`¡El ataque de ${tgt.name} subió!`, 'log-info', tgt);
+  },
+  'stat_down_self_spe': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    // Hammer Arm / etc.
+    addLogFn(`¡La velocidad de ${src.name} bajó!`, 'log-info', src);
+  },
+  'focus_punch': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
+    addLogFn(`¡${src.name} se está concentrando!`, 'log-info', src);
   }
 };
