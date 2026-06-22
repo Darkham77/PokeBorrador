@@ -1,0 +1,1336 @@
+<script setup lang="ts">
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
+import { getGraphEdges } from './kantoGraph'
+import MapCard from '@/components/map/MapCard.vue'
+
+// Import Poké Vicio Stores and Data
+import { useMapStore } from '@/stores/map'
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+import type { MapLocation } from '@/types/pokemon/encounters'
+
+import { useModalStore } from '@/stores/modals'
+
+const mapStore = useMapStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const modalStore = useModalStore()
+
+// Disable low power mode in the test view to ensure backgrounds are pre-rendered and kept warm
+uiStore.lowPowerMode = 'disabled'
+
+// Disable modal openings in this test view to prevent cards from hiding their contents 
+modalStore.open = () => {}
+
+// If gameStore has enterSandboxMode, run it to ensure clean data state
+if (typeof gameStore.enterSandboxMode === 'function') {
+  gameStore.enterSandboxMode()
+}
+
+// Ported constants
+const SPACING_MULTIPLIER = 2.5
+const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
+
+const URL_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/4/41/latest/20200501140954/Rojo_RFVF_bici.png"
+const FALLBACK_BICI = "https://play.pokemonshowdown.com/sprites/trainers/red.png" 
+const URL_VUELO = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/83.png"
+
+const HTML_BICI = `<img src="${URL_BICI}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${FALLBACK_BICI}';" class="pixel-art" alt="Bici">`
+const HTML_WALK = `<img src="${FALLBACK_BICI}" class="pixel-art scale-[1.2]" alt="Caminando">`
+const HTML_VUELO = `<img src="${URL_VUELO}" class="pixel-art scale-[1.7]" alt="Volando">`
+
+const baseWalkSpeed = 350 
+const baseBikeSpeed = 700
+const flySpeed = 1800 
+
+const ZOOM_SCALE = 2.4
+const MAP_SCALE = 0.8
+
+// Reactive State
+const playerInventory = ref<Record<string, boolean>>(
+  JSON.parse(localStorage.getItem('pokeVicioInventory') || '{"Corte":false,"Surf":false,"Flauta":false,"Medallas":false,"Vuelo":false,"Bicicleta":true}')
+)
+const discoveredNodes = ref<string[]>(
+  JSON.parse(localStorage.getItem('pokeVicioDiscovered') || '["pallet","route1","viridian"]')
+)
+const playerEnergy = ref<number>(
+  isNaN(parseInt(localStorage.getItem('pokeVicioEnergy') || '')) ? 100 : parseInt(localStorage.getItem('pokeVicioEnergy')!)
+)
+const activeCompanion = ref<string>(localStorage.getItem('pokeVicioCompanion') || 'none')
+const currentSwarmRoute = ref<string | null>(null)
+const infiniteEnergy = ref<boolean>(JSON.parse(localStorage.getItem('pokeVicioDebugEnergy') || 'false'))
+
+const currentNode = ref<string>('pallet')
+const isMoving = ref(false)
+const isZoomedIn = ref(true)
+const isPlanning = ref(false)
+
+const currentScale = ref(ZOOM_SCALE)
+const cardScale = computed(() => {
+  const calculated = 0.85 / currentScale.value
+  return Math.min(Math.max(calculated, 0.4), 0.85)
+})
+const currentPanX = ref(0)
+const currentPanY = ref(0)
+
+const currentPlanPaths = ref<any[]>([])
+const selectedPlanIndex = ref(0)
+const planningTarget = ref<string | null>(null)
+
+// DOM refs
+const worldContainer = ref<HTMLElement | null>(null)
+const viewport = ref<HTMLElement | null>(null)
+const playerToken = ref<HTMLElement | null>(null)
+const companionSprite = ref<HTMLImageElement | null>(null)
+const playerSprite = ref<HTMLElement | null>(null)
+const glowMarkerRef = ref<HTMLElement | null>(null)
+const previewLinesSvg = ref<SVGElement | null>(null)
+
+// Kanto nodes with coordinates scaled
+const rawNodes: Record<string, any> = {
+  'indigo': { name: 'Meseta Añil', type: 'league', x: 300, y: 150, hasCenter: true, farm: {t:100, w:0, m:0, f:0} },
+  'victoryroad': { name: 'Calle Victoria', type: 'poi', x: 300, y: 280, hasCenter: false, requiresMO: 'Medallas', blockMsg: '¡Alto ahí! Necesitas las 8 Medallas de Gimnasio para pasar.', farm: {t:80, w:60, m:40, f:0} },
+  'route23': { name: 'Ruta 23', type: 'route', x: 300, y: 400, hasCenter: false, farm: {t:40, w:50, m:0, f:30} },
+  'route24': { name: 'Ruta 24', type: 'route', x: 750, y: 550, hasCenter: false, farm: {t:70, w:30, m:0, f:20} },
+  'route25': { name: 'Ruta 25', type: 'route', x: 900, y: 550, hasCenter: false, farm: {t:60, w:40, m:0, f:0} },
+  'billshouse': { name: 'Casa de Bill', type: 'poi', x: 1050, y: 550, hasCenter: false, farm: {t:0, w:0, m:0, f:0} },
+  'pewter': { name: 'Cd. Plateada', type: 'city', x: 500, y: 650, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'route3': { name: 'Ruta 3', type: 'route', x: 650, y: 650, hasCenter: false, hasEvent: true, farm: {t:80, w:20, m:10, f:0} },
+  'mtmoon': { name: 'Mt. Moon', type: 'poi', x: 800, y: 650, hasCenter: true, farm: {t:30, w:70, m:90, f:0} }, 
+  'route4': { name: 'Ruta 4', type: 'route', x: 800, y: 780, hasCenter: false, farm: {t:20, w:40, m:0, f:0} },
+  'cerulean': { name: 'Cd. Celeste', type: 'city', x: 800, y: 900, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'route9': { name: 'Ruta 9', type: 'route', x: 950, y: 900, hasCenter: false, requiresMO: 'Corte', blockMsg: 'Este árbol parece que se puede cortar.', farm: {t:50, w:40, m:0, f:0} },
+  'route10': { name: 'Ruta 10', type: 'route', x: 1100, y: 900, hasCenter: true, farm: {t:40, w:50, m:0, f:40} },
+  'powerplant': { name: 'Central Energía', type: 'poi', x: 1250, y: 900, hasCenter: false, farm: {t:0, w:90, m:0, f:0} },
+  'rocktunnel': { name: 'Túnel Roca', type: 'poi', x: 1100, y: 1050, hasCenter: false, farm: {t:50, w:60, m:70, f:0} },
+  'route2_n': { name: 'Ruta 2 (N)', type: 'route', x: 500, y: 800, hasCenter: false, farm: {t:10, w:40, m:0, f:0} },
+  'viridianforest': { name: 'Bosque Verde', type: 'poi', x: 500, y: 950, hasCenter: false, hasEvent: true, farm: {t:30, w:80, m:0, f:0} }, 
+  'route2_s': { name: 'Ruta 2 (S)', type: 'route', x: 500, y: 1100, hasCenter: false, farm: {t:10, w:30, m:0, f:0} },
+  'route5': { name: 'Ruta 5', type: 'route', x: 800, y: 1050, hasCenter: false, farm: {t:0, w:50, m:0, f:0} },
+  'celadon': { name: 'Cd. Azulona', type: 'city', x: 550, y: 1200, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'route7': { name: 'Ruta 7', type: 'route', x: 680, y: 1200, hasCenter: false, farm: {t:0, w:40, m:0, f:0} },
+  'saffron': { name: 'Cd. Azafrán', type: 'city', x: 800, y: 1200, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'route8': { name: 'Ruta 8', type: 'route', x: 950, y: 1200, hasCenter: false, farm: {t:60, w:30, m:0, f:0} },
+  'lavender': { name: 'Pueblo Lavanda', type: 'city', x: 1100, y: 1200, hasCenter: true, weather: 'fog', farm: {t:0, w:0, m:0, f:0} },
+  'pokemontower': { name: 'Torre Pokémon', type: 'poi', x: 1250, y: 1200, hasCenter: false, weather: 'fog', farm: {t:40, w:80, m:0, f:0} },
+  'viridian': { name: 'Ciudad Verde', type: 'city', x: 500, y: 1350, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'route22': { name: 'Ruta 22', type: 'route', x: 350, y: 1350, hasCenter: false, farm: {t:30, w:30, m:0, f:10} },
+  'route6': { name: 'Ruta 6', type: 'route', x: 800, y: 1350, hasCenter: false, farm: {t:40, w:30, m:0, f:20} },
+  'vermilion': { name: 'Cd. Carmín', type: 'city', x: 800, y: 1500, hasCenter: true, farm: {t:0, w:0, m:0, f:40} },
+  'diglettcave': { name: 'Cueva Diglett', type: 'poi', x: 650, y: 1500, hasCenter: false, farm: {t:0, w:90, m:60, f:0} },
+  'route11': { name: 'Ruta 11', type: 'route', x: 950, y: 1500, hasCenter: false, farm: {t:70, w:30, m:0, f:0} },
+  'route12': { name: 'Ruta 12', type: 'route', x: 1100, y: 1350, hasCenter: false, requiresMO: 'Flauta', blockMsg: 'Un Pokémon dormido bloquea el camino.', farm: {t:60, w:20, m:0, f:80} },
+  'route13': { name: 'Ruta 13', type: 'route', x: 1100, y: 1500, hasCenter: false, farm: {t:50, w:30, m:0, f:60} },
+  'route14': { name: 'Ruta 14', type: 'route', x: 1100, y: 1650, hasCenter: false, farm: {t:60, w:30, m:0, f:0} },
+  'route15': { name: 'Ruta 15', type: 'route', x: 950, y: 1750, hasCenter: false, farm: {t:70, w:20, m:0, f:0} },
+  'route1': { name: 'Ruta 1', type: 'route', x: 500, y: 1500, hasCenter: false, farm: {t:0, w:40, m:0, f:0} },
+  'pallet': { name: 'Pueblo Paleta', type: 'city', x: 500, y: 1650, hasCenter: true, farm: {t:0, w:0, m:0, f:10} },
+  'route16': { name: 'Ruta 16', type: 'route', x: 350, y: 1200, hasCenter: false, requiresMO: 'Flauta', blockMsg: 'Un Pokémon dormido bloquea el camino.', farm: {t:30, w:40, m:0, f:0} },
+  'route17': { name: 'Camino Bicis', type: 'route', x: 250, y: 1450, hasCenter: false, farm: {t:90, w:0, m:0, f:0} },
+  'route18': { name: 'Ruta 18', type: 'route', x: 250, y: 1750, hasCenter: false, farm: {t:30, w:30, m:0, f:0} },
+  'fuchsia': { name: 'Cd. Fucsia', type: 'city', x: 800, y: 1750, hasCenter: true, farm: {t:0, w:0, m:0, f:30} },
+  'safarizone': { name: 'Zona Safari', type: 'poi', x: 800, y: 1630, hasCenter: false, farm: {t:0, w:100, m:0, f:60} },
+  'route21': { name: 'Ruta 21', type: 'route_water', x: 500, y: 1900, hasCenter: false, requiresMO: 'Surf', blockMsg: 'El agua es profunda. Necesitas MO Surf.', farm: {t:40, w:60, m:0, f:80} },
+  'route19': { name: 'Ruta 19', type: 'route_water', x: 800, y: 1950, hasCenter: false, requiresMO: 'Surf', blockMsg: 'El agua es profunda. Necesitas MO Surf.', farm: {t:40, w:60, m:0, f:80} },
+  'seafoam': { name: 'Islas Espuma', type: 'poi', x: 650, y: 2050, hasCenter: false, requiresMO: 'Surf', blockMsg: 'El agua es profunda. Necesitas MO Surf.', farm: {t:20, w:80, m:30, f:50} },
+  'route20': { name: 'Ruta 20', type: 'route_water', x: 500, y: 2050, hasCenter: false, requiresMO: 'Surf', blockMsg: 'El agua es profunda. Necesitas MO Surf.', farm: {t:40, w:60, m:0, f:80} },
+  'cinnabar': { name: 'Isla Canela', type: 'city', x: 350, y: 2050, hasCenter: true, farm: {t:0, w:0, m:0, f:0} },
+  'mansion': { name: 'Mansión Pkmn', type: 'poi', x: 200, y: 2050, hasCenter: false, farm: {t:30, w:70, m:0, f:0} },
+}
+
+const mapNodes = computed(() => {
+  const result: Record<string, any> = {}
+  for (const [key, node] of Object.entries(rawNodes)) {
+    result[key] = { ...node, x: node.x * SPACING_MULTIPLIER, y: node.y * SPACING_MULTIPLIER }
+  }
+  return result
+})
+
+const connections = [
+  ['indigo', 'victoryroad'], ['victoryroad', 'route23'], ['route23', 'route22'], ['route22', 'viridian'],
+  ['pallet', 'route1'], ['route1', 'viridian'], ['viridian', 'route2_s'],
+  ['route2_s', 'viridianforest'], ['viridianforest', 'route2_n'], ['route2_n', 'pewter'],
+  ['pewter', 'route3'], ['route3', 'mtmoon'], ['mtmoon', 'route4'], ['route4', 'cerulean'],
+  ['cerulean', 'route24'], ['route24', 'route25'], ['route25', 'billshouse'],
+  ['cerulean', 'route9'], ['route9', 'route10'], ['route10', 'rocktunnel'], ['rocktunnel', 'lavender'],
+  ['route10', 'powerplant'],
+  ['cerulean', 'route5'], ['route5', 'saffron'],
+  ['saffron', 'route6'], ['route6', 'vermilion'],
+  ['saffron', 'route7'], ['route7', 'celadon'],
+  ['saffron', 'route8'], ['route8', 'lavender'],
+  ['route2_s', 'diglettcave'], ['diglettcave', 'vermilion'], ['vermilion', 'route11'], ['route11', 'route12'], 
+  ['lavender', 'pokemontower'],
+  ['lavender', 'route12'], ['route12', 'route13'], ['route13', 'route14'], ['route14', 'route15'], ['route15', 'fuchsia'],
+  ['celadon', 'route16'], ['route16', 'route17'], ['route17', 'route18'], ['route18', 'fuchsia'],
+  ['fuchsia', 'safarizone'],
+  ['fuchsia', 'route19'], ['route19', 'seafoam'], ['seafoam', 'route20'], ['route20', 'cinnabar'],
+  ['cinnabar', 'mansion'],
+  ['cinnabar', 'route21'], ['route21', 'pallet']
+]
+
+// Mapping between local node IDs and official database Map Location IDs
+const officialMapIdMap: Record<string, string> = {
+  'indigo': 'route23', // Victory Road / Indigo Plateau
+  'victoryroad': 'victory_road',
+  'route23': 'route23',
+  'route24': 'route24',
+  'route25': 'route25',
+  'billshouse': 'route25',
+  'pewter': 'pewter',
+  'route3': 'route3',
+  'mtmoon': 'mt_moon',
+  'route4': 'route4',
+  'cerulean': 'cerulean',
+  'route9': 'route9',
+  'route10': 'route10',
+  'powerplant': 'power_plant',
+  'rocktunnel': 'rock_tunnel',
+  'route2_n': 'route2',
+  'viridianforest': 'forest',
+  'route2_s': 'route2',
+  'route5': 'route5',
+  'celadon': 'celadon',
+  'route7': 'route7',
+  'saffron': 'saffron',
+  'route8': 'route8',
+  'lavender': 'lavender',
+  'pokemontower': 'pokemon_tower',
+  'viridian': 'viridian',
+  'route22': 'route22',
+  'route6': 'route6',
+  'vermilion': 'vermilion',
+  'diglettcave': 'diglett_cave',
+  'route11': 'route11',
+  'route12': 'route12',
+  'route13': 'route13',
+  'route14': 'route14',
+  'route15': 'route15',
+  'route1': 'route1',
+  'pallet': 'pallet',
+  'route16': 'route16',
+  'route17': 'route17',
+  'route18': 'route18',
+  'fuchsia': 'fuchsia',
+  'safarizone': 'safari_zone',
+  'route21': 'route21',
+  'route19': 'route19',
+  'seafoam': 'seafoam_islands',
+  'route20': 'route20',
+  'cinnabar': 'cinnabar',
+  'mansion': 'mansion'
+}
+
+// Official Map Location objects indexed by local node ID
+const mapLocationsById = computed(() => {
+  const map: Record<string, MapLocation> = {}
+  for (const [localId, officialId] of Object.entries(officialMapIdMap)) {
+    const loc = FIRE_RED_MAPS.find(m => m.id === officialId)
+    if (loc) {
+      map[localId] = loc as MapLocation
+    }
+  }
+  return map
+})
+
+const currentCycle = computed(() => mapStore.currentCycle || 'day')
+
+// Atmosphere/Weather helper
+function getWeatherForMap(nodeId: string): string {
+  const officialId = officialMapIdMap[nodeId] || nodeId
+  return mapStore.globalWeather || getRouteWeather(officialId, mapStore.currentSeason.id, mapStore.currentEpochHour, currentCycle.value)
+}
+
+// Spawn pool helper
+function getSpawnPoolForMap(nodeId: string) {
+  const loc = mapLocationsById.value[nodeId]
+  if (!loc || !loc.wild) return { generic: [] as string[], specific: [] as string[], rates: {} as Record<string, number> }
+
+  const activeWeather = getWeatherForMap(nodeId)
+  const { generic, specific, rates } = getMapSpawnPoolData(
+    loc,
+    currentCycle.value,
+    activeWeather || 'clear',
+    []
+  )
+  return { generic, specific, rates }
+}
+
+// Day/Night overlay color
+const dayNightOverlayColor = ref('transparent')
+function updateDayNightCycle() {
+  const hour = new Date().getHours()
+  if (hour >= 20 || hour < 6) dayNightOverlayColor.value = 'rgba(0, 0, 30, 0.45)'
+  else if (hour >= 18 && hour < 20) dayNightOverlayColor.value = 'rgba(255, 100, 0, 0.15)' 
+  else dayNightOverlayColor.value = 'transparent'
+}
+
+// Status message state
+const statusText = ref('Estacionado')
+const statusDotClass = ref('bg-green-400')
+
+function setStatus(text: string, isMovingState = false) {
+  statusText.value = text
+  statusDotClass.value = isMovingState ? 'bg-yellow-400' : 'bg-green-400'
+}
+
+// Alert Modals
+const alertOpen = ref(false)
+const alertMsg = ref('')
+
+function showActionAlert(msg: string) {
+  alertMsg.value = msg
+  alertOpen.value = true
+}
+
+function closeAlert() {
+  alertOpen.value = false
+}
+
+// Inventory / Companions
+const activeCompanionBtn = (comp: string) => {
+  return activeCompanion.value === comp ? 'ring-4 ring-blue-500 scale-110' : (comp === 'none' ? 'opacity-50' : '')
+}
+
+function setCompanion(comp: string) {
+  activeCompanion.value = comp
+  localStorage.setItem('pokeVicioCompanion', comp)
+  updatePlayerVisuals()
+}
+
+function updateInventory(item: string, value: boolean) {
+  playerInventory.value[item] = value
+  localStorage.setItem('pokeVicioInventory', JSON.stringify(playerInventory.value))
+  if (item === 'Bicicleta' && !isMoving.value) updatePlayerVisuals()
+  if (isPlanning.value) cancelPlanning()
+}
+
+// Player visuals
+const playerSpriteHtml = ref(HTML_WALK)
+function updatePlayerVisuals() {
+  if (playerInventory.value['Bicicleta']) {
+    playerSpriteHtml.value = HTML_BICI
+  } else {
+    playerSpriteHtml.value = HTML_WALK
+  }
+}
+
+// Modals toggles
+const showInventoryModal = ref(false)
+const showRadarModal = ref(false)
+const showDebugModal = ref(false)
+
+function toggleInventoryModal() {
+  showInventoryModal.value = !showInventoryModal.value
+}
+
+function toggleRadarModal() {
+  showRadarModal.value = !showRadarModal.value
+}
+
+function toggleDebugModal() {
+  showDebugModal.value = !showDebugModal.value
+}
+
+// Camera control
+function updateCameraTransform(smooth = false) {
+  if (!worldContainer.value) return
+  worldContainer.value.style.transition = smooth ? 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+  worldContainer.value.style.transform = `translate3d(${currentPanX.value}px, ${currentPanY.value}px, 0) scale(${currentScale.value})`
+}
+
+function clampCamera() {
+  if (!viewport.value) return
+  const vpWidth = viewport.value.clientWidth
+  const vpHeight = viewport.value.clientHeight
+  const scaledWidth = 3600 * currentScale.value
+  const scaledHeight = 5600 * currentScale.value
+  let minX, maxX, minY, maxY
+
+  if (scaledWidth <= vpWidth) {
+    minX = maxX = (vpWidth - scaledWidth) / 2
+  } else {
+    minX = vpWidth - scaledWidth
+    maxX = 0
+  }
+
+  if (scaledHeight <= vpHeight) {
+    minY = maxY = (vpHeight - scaledHeight) / 2
+  } else {
+    minY = vpHeight - scaledHeight
+    maxY = 0
+  }
+
+  currentPanX.value = Math.max(minX, Math.min(maxX, currentPanX.value))
+  currentPanY.value = Math.max(minY, Math.min(maxY, currentPanY.value))
+}
+
+function centerCameraOn(x: number, y: number, smooth = true, customScale: number | null = null) {
+  if (!viewport.value) return
+  if (customScale !== null) currentScale.value = customScale
+  currentPanX.value = (viewport.value.clientWidth / 2) - (x * currentScale.value)
+  currentPanY.value = (viewport.value.clientHeight / 2) - (y * currentScale.value)
+  clampCamera()
+  updateCameraTransform(smooth)
+}
+
+function returnToCurrentLocation() {
+  if (!isMoving.value && !isPlanning.value && !isZoomedIn.value) {
+    enterParkedMode()
+  }
+  if (isPlanning.value) {
+    cancelPlanning()
+  }
+}
+
+// Parked mode setup
+function enterParkedMode() {
+  isZoomedIn.value = true
+  isPlanning.value = false
+  setStatus("Estacionado", false)
+  
+  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, ZOOM_SCALE)
+}
+
+function exitParkedMode() {
+  isZoomedIn.value = false
+  setStatus("Modo Libre", true)
+  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, MAP_SCALE)
+}
+
+// Drag logic
+let isDragging = false
+let isPointerDown = false
+let initialClickX = 0
+let initialClickY = 0
+let dragStartX = 0
+let dragStartY = 0
+
+function startDrag(clientX: number, clientY: number) {
+  if ((isZoomedIn.value && !isPlanning.value) || isMoving.value) return
+  isPointerDown = true
+  isDragging = false
+  initialClickX = clientX
+  initialClickY = clientY
+  dragStartX = clientX - currentPanX.value
+  dragStartY = clientY - currentPanY.value
+}
+
+function doDrag(clientX: number, clientY: number) {
+  if (!isPointerDown) return
+  if (!isDragging && (Math.abs(clientX - initialClickX) > 8 || Math.abs(clientY - initialClickY) > 8)) {
+    isDragging = true
+  }
+  if (isDragging) {
+    currentPanX.value = clientX - dragStartX
+    currentPanY.value = clientY - dragStartY
+    clampCamera()
+    updateCameraTransform(false)
+  }
+}
+
+function endDrag() {
+  isPointerDown = false
+  setTimeout(() => { isDragging = false }, 50)
+}
+
+// Routing & pathfinding (Dijkstra)
+function getAdjacentNodes(nodeId: string): string[] {
+  const adj: string[] = []
+  connections.forEach(([a, b]) => {
+    if (a === nodeId) adj.push(b)
+    if (b === nodeId) adj.push(a)
+  })
+  return adj
+}
+
+function dijkstra(startId: string, targetId: string, blockedEdge: string[] | null = null) {
+  const dist: Record<string, number> = {}
+  const prev: Record<string, string | null> = {}
+  const pq = new Set(Object.keys(mapNodes.value))
+  
+  Object.keys(mapNodes.value).forEach(id => {
+    dist[id] = Infinity
+    prev[id] = null
+  })
+  dist[startId] = 0
+
+  while (pq.size > 0) {
+    let u: string | null = null
+    let minDist = Infinity
+    for (const id of pq) {
+      if (dist[id] < minDist) {
+        minDist = dist[id]
+        u = id
+      }
+    }
+    if (u === null || u === targetId) break
+    pq.delete(u)
+
+    const neighbors = getAdjacentNodes(u)
+    for (const v of neighbors) {
+      const nodeData = mapNodes.value[v]
+      const reqMO = nodeData.requiresMO
+      if (reqMO && !playerInventory.value[reqMO]) continue
+      if (blockedEdge && ((u === blockedEdge[0] && v === blockedEdge[1]) || (u === blockedEdge[1] && v === blockedEdge[0]))) continue
+      if (!discoveredNodes.value.includes(v) && v !== targetId) continue
+
+      const dx = mapNodes.value[u].x - mapNodes.value[v].x
+      const dy = mapNodes.value[u].y - mapNodes.value[v].y
+      const weight = Math.sqrt(dx * dx + dy * dy)
+      const alt = dist[u] + weight
+      if (alt < dist[v]) {
+        dist[v] = alt
+        prev[v] = u
+      }
+    }
+  }
+  
+  if (prev[targetId] === null && startId !== targetId) return null
+  
+  const path: string[] = []
+  let curr: string | null = targetId
+  while (curr !== null) {
+    path.unshift(curr)
+    curr = prev[curr]
+  }
+  return { nodes: path, cost: dist[targetId] }
+}
+
+function getAlternativePaths(startId: string, targetId: string) {
+  const paths: any[] = []
+  const p1 = dijkstra(startId, targetId)
+  if (!p1) return []
+  paths.push(p1)
+
+  for (let i = 0; i < p1.nodes.length - 1; i++) {
+    const pAlt = dijkstra(startId, targetId, [p1.nodes[i], p1.nodes[i + 1]])
+    if (pAlt) {
+      const isNew = !paths.some(p => p.nodes.join(',') === pAlt.nodes.join(','))
+      if (isNew) paths.push(pAlt)
+    }
+  }
+  paths.sort((a, b) => a.cost - b.cost)
+  return paths.slice(0, 3)
+}
+
+// Travel confirms
+function travelToAdjacent(targetId: string) {
+  if (isMoving.value) return
+  const targetNode = mapNodes.value[targetId]
+
+  if (targetNode.requiresMO && !playerInventory.value[targetNode.requiresMO]) { 
+    showActionAlert(targetNode.blockMsg)
+    return
+  }
+
+  currentEnergyCost.value = 5
+  if (!infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value) {
+    showActionAlert("⚡ Sin Energía<br><br>No puedes viajar. Cúrate en un Centro Pokémon.")
+    return
+  }
+
+  currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: currentEnergyCost.value, isFly: false }]
+  selectedPlanIndex.value = 0
+  planningTarget.value = targetId
+  
+  confirmTravel()
+}
+
+// GPS / Planning
+const currentEnergyCost = ref(0)
+
+function planTravel(targetId: string) {
+  if (targetId === currentNode.value) {
+    if (!isZoomedIn.value) enterParkedMode()
+    return
+  }
+  
+  const targetNode = mapNodes.value[targetId]
+
+  if (!discoveredNodes.value.includes(targetId)) {
+    const isAdjacent = getAdjacentNodes(currentNode.value).includes(targetId)
+    if (!isAdjacent) {
+      showActionAlert("🗺️ <b>ZONA DESCONOCIDA</b><br><br>No puedes usar el GPS hacia zonas inexploradas. Descúbrela viajando a pie desde una ruta conectada.")
+      return
+    }
+  }
+
+  if (targetNode.requiresMO && !playerInventory.value[targetNode.requiresMO]) {
+    showActionAlert(targetNode.blockMsg)
+    return
+  }
+
+  let canFly = playerInventory.value['Vuelo'] && (targetNode.type === 'city' || targetNode.type === 'league')
+  if (canFly && !discoveredNodes.value.includes(targetId)) canFly = false
+
+  if (canFly) {
+    currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: 0, isFly: true }]
+  } else {
+    currentPlanPaths.value = getAlternativePaths(currentNode.value, targetId)
+    if (currentPlanPaths.value.length === 0) {
+      showActionAlert("Camino bloqueado. Necesitas una MO.")
+      return
+    }
+  }
+
+  isPlanning.value = true
+  isZoomedIn.value = false
+  selectedPlanIndex.value = 0
+  planningTarget.value = targetId
+  
+  setStatus(`Planificando...`, true)
+  updatePlanUI()
+}
+
+function calculateRouteStats(nodesInPath: string[]) {
+  const sums = { t: 0, w: 0, m: 0, f: 0 }
+  for (let i = 1; i < nodesInPath.length; i++) {
+    const node = mapNodes.value[nodesInPath[i]]
+    if (!node) continue
+    const f = node.farm || { t: 0, w: 0, m: 0, f: 0 }
+    sums.t = Math.max(sums.t, f.t)
+    sums.w = Math.max(sums.w, f.w)
+    sums.m = Math.max(sums.m, f.m)
+    sums.f = Math.max(sums.f, f.f)
+    if (nodesInPath[i] === currentSwarmRoute.value) sums.w = Math.min(100, sums.w + 50)
+  }
+  if (activeCompanion.value === 'pikachu') sums.t = Math.min(100, Math.floor(sums.t * 1.5))
+  if (activeCompanion.value === 'meowth') sums.m = Math.min(100, Math.floor(sums.m * 1.5))
+  if (activeCompanion.value === 'squirtle') sums.f = Math.min(100, Math.floor(sums.f * 1.5))
+  return sums
+}
+
+const isConfirmTravelDisabled = computed(() => {
+  return !infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value
+})
+
+function updatePlanUI() {
+  const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
+  if (!currentPath) return
+
+  currentEnergyCost.value = currentPath.isFly ? 15 : (currentPath.nodes.length - 1) * 5
+  drawPreviewPath(currentPath.nodes, currentPath.isFly)
+  zoomToFitPath(currentPath.nodes)
+}
+
+function zoomToFitPath(nodesIds: string[]) {
+  if (!viewport.value) return
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  nodesIds.forEach(id => {
+    const n = mapNodes.value[id]
+    if (n.x < minX) minX = n.x; if (n.x > maxX) maxX = n.x
+    if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
+  })
+
+  const paddingX = viewport.value.clientWidth * 0.4
+  const paddingY = viewport.value.clientHeight * 0.7
+  const pWidth = (maxX - minX) + paddingX
+  const pHeight = (maxY - minY) + paddingY
+
+  const scaleX = viewport.value.clientWidth / pWidth
+  const scaleY = viewport.value.clientHeight / pHeight
+  let newScale = Math.min(scaleX, scaleY, MAP_SCALE)
+  newScale = Math.max(newScale, 0.22)
+
+  const midX = (minX + maxX) / 2
+  const midY = (minY + maxY) / 2
+  const offsetY = (viewport.value.clientHeight / newScale) * 0.22
+  centerCameraOn(midX, midY + offsetY, true, newScale)
+}
+
+function nextAlternative() {
+  selectedPlanIndex.value = (selectedPlanIndex.value + 1) % currentPlanPaths.value.length
+  updatePlanUI()
+}
+
+function drawPreviewPath(nodeIds: string[], isFly: boolean) {
+  if (!previewLinesSvg.value) return
+  previewLinesSvg.value.innerHTML = ''
+  for (let i = 0; i < nodeIds.length - 1; i++) {
+    const nA = mapNodes.value[nodeIds[i]]
+    const nB = mapNodes.value[nodeIds[i + 1]]
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    line.setAttribute('x1', String(nA.x))
+    line.setAttribute('y1', String(nA.y))
+    line.setAttribute('x2', String(nB.x))
+    line.setAttribute('y2', String(nB.y))
+    line.setAttribute('class', isFly ? 'preview-line-fly' : 'preview-line')
+    previewLinesSvg.value.appendChild(line)
+  }
+}
+
+function cancelPlanning() {
+  isPlanning.value = false
+  if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = ''
+  enterParkedMode()
+}
+
+// Move execution
+const travelProgressText = ref('0%')
+const isTravelingProgressActive = ref(false)
+
+async function confirmTravel() {
+  if (!infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value) return
+  
+  if (!infiniteEnergy.value) {
+    playerEnergy.value -= currentEnergyCost.value
+    localStorage.setItem('pokeVicioEnergy', String(playerEnergy.value))
+  }
+
+  const pathData = currentPlanPaths.value[selectedPlanIndex.value]
+  const targetNode = mapNodes.value[planningTarget.value!]
+  
+  isPlanning.value = false
+  isMoving.value = true
+  isTravelingProgressActive.value = true
+  if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = ''
+
+  if (pathData.isFly) {
+    setStatus(`Volando...`, true)
+    playerSpriteHtml.value = HTML_VUELO
+  } else {
+    setStatus(playerInventory.value['Bicicleta'] ? `Viajando Rápido...` : `Caminando...`, true)
+    updatePlayerVisuals()
+  }
+
+  for (let i = 0; i < pathData.nodes.length - 1; i++) {
+    currentNode.value = pathData.nodes[i + 1]
+    
+    if (!discoveredNodes.value.includes(currentNode.value)) {
+      discoveredNodes.value.push(currentNode.value)
+      localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+    }
+
+    const progressPct = Math.round(((i + 1) / (pathData.nodes.length - 1)) * 100)
+    travelProgressText.value = `${progressPct}%`
+
+    await animatePlayerAndCamera(pathData.nodes[i], pathData.nodes[i + 1], pathData.isFly)
+  }
+
+  isMoving.value = false
+  isTravelingProgressActive.value = false
+
+  if (pathData.isFly) updatePlayerVisuals()
+  
+  localStorage.setItem('pokeVicioLocation', currentNode.value)
+  if (mapNodes.value[currentNode.value].hasEvent) {
+    setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[currentNode.value].name}.`), 800)
+  }
+  enterParkedMode()
+}
+
+function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolean) {
+  return new Promise<void>(resolve => {
+    const start = mapNodes.value[startId]
+    const end = mapNodes.value[endId]
+    
+    if (playerSprite.value) {
+      if (end.x - start.x < 0) { 
+        playerSprite.value.style.transform = 'scaleX(-1)'
+      } else { 
+        playerSprite.value.style.transform = 'scaleX(1)'
+      }
+    }
+
+    const distance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))
+    let speed = baseWalkSpeed
+    if (isFlying) speed = flySpeed
+    else if (playerInventory.value['Bicicleta']) speed = baseBikeSpeed
+
+    const duration = (distance / speed) * 1000
+
+    if (playerToken.value) {
+      playerToken.value.style.transitionDuration = `${duration}ms`
+      playerToken.value.style.left = `${end.x}px` 
+      playerToken.value.style.top = `${end.y}px`
+    }
+
+    let startTime: number | null = null
+    function track(time: number) {
+      if (!isMoving.value) return
+      if (!startTime) startTime = time
+      let progress = (time - startTime) / duration
+      if (progress > 1) progress = 1
+      
+      const currentX = start.x + (end.x - start.x) * progress
+      const currentY = start.y + (end.y - start.y) * progress
+      
+      centerCameraOn(currentX, currentY, false, MAP_SCALE)
+      
+      if (progress < 1) requestAnimationFrame(track)
+      else resolve()
+    }
+    requestAnimationFrame(track)
+  })
+}
+
+// Swarms
+function triggerSwarm() {
+  const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id].type.includes('route'))
+  currentSwarmRoute.value = routes[Math.floor(Math.random() * routes.length)]
+}
+
+// Explore & Heal
+function exploreZone() {
+  showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
+}
+
+function healPokemon() {
+  playerEnergy.value = 100
+  localStorage.setItem('pokeVicioEnergy', String(playerEnergy.value))
+  showActionAlert("Turururu-ru~<br><br>Tus Pokémon están listos para seguir luchando. <b class='text-yellow-600'>¡Energía restaurada al 100%!</b>")
+}
+
+// Debug features
+function debugUnlockAll() {
+  discoveredNodes.value = Object.keys(mapNodes.value)
+  localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+  showActionAlert("⚙️ Cheat: Todo el mapa ha sido descubierto.")
+}
+
+function debugGiveAllMOs() {
+  ['Corte', 'Surf', 'Flauta', 'Medallas', 'Vuelo', 'Bicicleta'].forEach(mo => playerInventory.value[mo] = true)
+  localStorage.setItem('pokeVicioInventory', JSON.stringify(playerInventory.value))
+  updatePlayerVisuals()
+  showActionAlert("⚙️ Cheat: Tienes todos los Objetos y MOs.")
+}
+
+function debugTriggerSwarm() {
+  triggerSwarm()
+  showActionAlert("⚙️ Enjambre forzado en: " + mapNodes.value[currentSwarmRoute.value!].name)
+}
+
+function debugHardReset() {
+  if (confirm("⚠️ ¿Estás seguro de que quieres BORRAR TODOS LOS DATOS Y REINICIAR? Esto no se puede deshacer.")) {
+    localStorage.clear()
+    location.reload()
+  }
+}
+
+// Map companion sprite url
+const companionSpriteUrl = computed(() => {
+  if (activeCompanion.value === 'none') return ''
+  let pokeId = 25
+  if (activeCompanion.value === 'meowth') pokeId = 52
+  if (activeCompanion.value === 'squirtle') pokeId = 7
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokeId}.png`
+})
+
+const adjacentButtons = computed(() => {
+  if (!isZoomedIn.value || isMoving.value || isPlanning.value) return []
+  const current = mapNodes.value[currentNode.value]
+  if (!current) return []
+  
+  const adjIds = getAdjacentNodes(currentNode.value)
+  return adjIds.map(id => {
+    const adj = mapNodes.value[id]
+    const dx = adj.x - current.x
+    const dy = adj.y - current.y
+    
+    let direction = 'N'
+    if (Math.abs(dx) > Math.abs(dy)) {
+      direction = dx > 0 ? 'E' : 'W'
+    } else {
+      direction = dy > 0 ? 'S' : 'N'
+    }
+    
+    return {
+      id,
+      name: adj.name,
+      direction,
+      discovered: discoveredNodes.value.includes(id)
+    }
+  })
+})
+
+onMounted(() => {
+  triggerSwarm()
+  updatePlayerVisuals()
+  updateDayNightCycle()
+  setInterval(updateDayNightCycle, 60000)
+
+  // Initial draw connections
+  nextTick(() => {
+    enterParkedMode()
+  })
+})
+</script>
+
+<template>
+  <div class="flex flex-col font-sans h-[100dvh] w-screen overflow-hidden text-white">
+    <!-- Header -->
+    <header class="h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-4 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[5px] border-red-800 relative hardware-accel">
+      <div class="flex items-center gap-3">
+        <div>
+          <h1 class="font-black text-xl tracking-widest text-yellow-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center gap-2">
+            KANTO
+            <span class="flex items-center mt-1">
+              <span class="w-2 h-2 rounded-full mr-1 animate-pulse" :class="statusDotClass"></span>
+              <span class="text-red-100 text-[9px] font-bold uppercase tracking-wide">{{ statusText }}</span>
+            </span>
+          </h1>
+          <div class="flex items-center mt-0.5 bg-gray-900 rounded-full w-24 h-3 border border-gray-700 overflow-hidden relative" title="Energía de Viaje">
+            <div class="h-full transition-all duration-300" :class="[infiniteEnergy ? 'bg-blue-400 w-full' : (playerEnergy > 50 ? 'bg-yellow-400' : (playerEnergy > 20 ? 'bg-orange-400' : 'bg-red-500'))]" :style="{ width: infiniteEnergy ? '100%' : `${playerEnergy}%` }"></div>
+            <span class="absolute w-full text-center text-[8px] font-black tracking-widest leading-[12px]" style="text-shadow: 0 1px 1px #000;">
+              {{ infiniteEnergy ? 'INFINITA' : 'ENERGÍA' }}
+            </span>
+          </div>
+        </div>
+        <button @click="toggleInventoryModal" class="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 p-2 rounded-xl border-2 border-blue-800 shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-1 flex items-center transition-all ml-2">
+          <span class="text-lg">🎒</span> <span class="hidden md:inline ml-1 text-xs font-black">Equipo</span>
+        </button>
+      </div>
+      <div @click="returnToCurrentLocation" class="bg-gray-900 px-3 py-1.5 rounded-xl border-2 border-gray-600 shadow-inner text-right cursor-pointer hover:bg-gray-800 active:scale-95 transition-all">
+        <span class="block text-[9px] text-gray-400 font-black uppercase tracking-wider">Ubicación 📍</span>
+        <span class="text-white font-bold text-sm">{{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
+      </div>
+    </header>
+
+    <div v-if="currentSwarmRoute" class="absolute top-[80px] left-4 bg-red-600 text-white text-xs font-black px-3 py-1.5 rounded-full border-2 border-red-800 shadow-lg z-40 animate-pulse">
+      🔴 Enjambre en: {{ mapNodes[currentSwarmRoute]?.name }}
+    </div>
+
+    <!-- Map Viewport -->
+    <main ref="viewport" id="map-viewport" 
+          @mousedown="startDrag($event.clientX, $event.clientY)"
+          @mousemove="doDrag($event.clientX, $event.clientY)"
+          @mouseup="endDrag"
+          @touchstart="startDrag($event.touches[0].clientX, $event.touches[0].clientY)"
+          @touchmove="doDrag($event.touches[0].clientX, $event.touches[0].clientY)"
+          @touchend="endDrag">
+      <div ref="worldContainer" id="world-container">
+        <!-- Climate overlays -->
+        <div id="day-night-overlay" :style="{ backgroundColor: dayNightOverlayColor }"></div>
+        <div ref="weatherOverlay" id="weather-overlay"></div>
+        
+        <!-- Svg Connections -->
+        <svg id="route-lines" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0 hardware-accel" style="stroke-linejoin: round;">
+          <template v-for="([idA, idB], idx) in connections" :key="idx">
+            <line v-if="mapNodes[idA] && mapNodes[idB]" :x1="mapNodes[idA].x" :y1="mapNodes[idA].y" :x2="mapNodes[idB].x" :y2="mapNodes[idB].y" stroke="#4B5563" stroke-width="20" stroke-linecap="round" />
+            <line v-if="mapNodes[idA] && mapNodes[idB]" :x1="mapNodes[idA].x" :y1="mapNodes[idA].y" :x2="mapNodes[idB].x" :y2="mapNodes[idB].y" :stroke="['route19','route20','route21','seafoam'].includes(idA) ? '#3B82F6' : '#E5E7EB'" :stroke-dasharray="['route19','route20','route21','seafoam'].includes(idA) ? '18, 12' : ''" stroke-width="14" stroke-linecap="round" />
+          </template>
+        </svg>
+        <svg ref="previewLinesSvg" id="preview-lines" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[8] hardware-accel" style="stroke-linejoin: round;"></svg>
+
+        <!-- Nodes Container -->
+        <div id="nodes-container" class="absolute top-0 left-0 w-full h-full z-10 hardware-accel">
+          <template v-for="(node, id) in mapNodes" :key="id">
+            <!-- Discovered Node wrapper with MapCard (CLEAN, NO GLOBES) -->
+            <div v-if="discoveredNodes.includes(id as string) && mapLocationsById[id]"
+                 :id="`node-${id}`"
+                 class="absolute origin-center translate-x-[-50%] translate-y-[-50%] z-10"
+                 :style="{ left: `${node.x}px`, top: `${node.y}px` }"
+                 @click.stop="() => {
+                   if (!isMoving) {
+                     if (getAdjacentNodes(currentNode).includes(id as string)) {
+                       travelToAdjacent(id as string)
+                     } else {
+                       planTravel(id as string)
+                     }
+                   }
+                 }">
+              <div :style="{ transform: `scale(${cardScale})` }" class="origin-center shadow-2xl rounded-2xl transition-transform hover:brightness-110">
+                <MapCard 
+                  :map="mapLocationsById[id]"
+                  :is-locked="node.requiresMO && !playerInventory[node.requiresMO]"
+                  :cycle="currentCycle"
+                  :weather="getWeatherForMap(id as string)"
+                  :badge-count="8"
+                  :spawn-pool="getSpawnPoolForMap(id as string)"
+                  @navigate="() => {}"
+                  style="width: 250px; pointer-events: none;"
+                />
+              </div>
+            </div>
+
+            <!-- Standard Pill Node (Not discovered or no card) -->
+            <div v-else
+                 :id="`node-${id}`" 
+                 class="node absolute flex items-center justify-center font-bold"
+                 :class="[
+                   node.type === 'city' ? 'node-city' : '',
+                   node.type === 'route' ? 'node-route' : '',
+                   node.type === 'route_water' ? 'node-route-water' : '',
+                   node.type === 'league' ? 'node-league' : '',
+                   node.type === 'poi' ? 'node-poi' : '',
+                   discoveredNodes.includes(id as string) ? '' : 'node-undiscovered',
+                   currentNode === id ? 'active-node' : '',
+                   (node.requiresMO && !playerInventory[node.requiresMO]) ? 'node-locked' : '',
+                   id === currentSwarmRoute ? 'node-swarm' : '',
+                   node.hasEvent ? 'node-event' : ''
+                 ]"
+                 :style="{ left: `${node.x}px`, top: `${node.y}px` }"
+                 @click.stop="() => {
+                   if (!isMoving) {
+                     if (getAdjacentNodes(currentNode).includes(id as string)) {
+                       travelToAdjacent(id as string)
+                     } else {
+                       planTravel(id as string)
+                     }
+                   }
+                 }">
+              <span>{{ discoveredNodes.includes(id as string) ? node.name : '???' }}</span>
+            </div>
+          </template>
+        </div>
+        
+        <!-- Player Token -->
+        <div ref="playerToken" id="player-token">
+          <div v-if="activeCompanion !== 'none'" id="companion-token">
+            <img :src="companionSpriteUrl" class="pixel-art" :class="{ 'anim-bounce-companion': isMoving }">
+          </div>
+          <div ref="playerSprite" id="player-sprite" :class="{ 'anim-bounce': isMoving }" v-html="playerSpriteHtml"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- UI Overlay for Parked Mode -->
+    <div id="fixed-ui-overlay" :class="{ 'active': isZoomedIn && !isMoving && !isPlanning }">
+      <button id="btn-free-map" class="floating-btn" @click="exitParkedMode" title="Mapa Completo">🗺️</button>
+      <button id="btn-radar" class="floating-btn" @click="toggleRadarModal" title="Radar Rápido">🧭</button>
+      <button id="btn-debug" class="floating-btn bg-purple-700" @click="toggleDebugModal" title="Menú de Testers (Debug)">🐛</button>
+
+      <!-- Botones de Navegación Adyacentes (Rodeando la tarjeta central) -->
+      <div class="fixed-navigation-arrows pointer-events-none">
+        <!-- North Group -->
+        <div class="absolute top-[calc(50%-175px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
+          <button v-for="btn in adjacentButtons.filter(b => b.direction === 'N')" :key="btn.id" @click="travelToAdjacent(btn.id)" class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white">
+            <span>⬆️</span> {{ btn.discovered ? btn.name : '???' }}
+          </button>
+        </div>
+        
+        <!-- South Group -->
+        <div class="absolute top-[calc(50%+175px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
+          <button v-for="btn in adjacentButtons.filter(b => b.direction === 'S')" :key="btn.id" @click="travelToAdjacent(btn.id)" class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white">
+            <span>⬇️</span> {{ btn.discovered ? btn.name : '???' }}
+          </button>
+        </div>
+
+        <!-- West Group -->
+        <div class="absolute left-[calc(50%-220px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+          <button v-for="btn in adjacentButtons.filter(b => b.direction === 'W')" :key="btn.id" @click="travelToAdjacent(btn.id)" class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white">
+            <span>⬅️</span> {{ btn.discovered ? btn.name : '???' }}
+          </button>
+        </div>
+
+        <!-- East Group -->
+        <div class="absolute left-[calc(50%+220px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+          <button v-for="btn in adjacentButtons.filter(b => b.direction === 'E')" :key="btn.id" @click="travelToAdjacent(btn.id)" class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white">
+            {{ btn.discovered ? btn.name : '???' }} <span>➡️</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="bottom-action-panel">
+        <button @click="exploreZone" class="bg-gradient-to-b from-red-400 to-red-600 text-white font-black py-3 px-8 rounded-full border-2 border-red-800 shadow-[0_6px_0_#7f1d1d] active:shadow-[0_0px_0_#7f1d1d] active:translate-y-1.5 flex items-center gap-2 text-lg transition-all">
+          🔍 Explorar
+        </button>
+        <button v-if="mapNodes[currentNode]?.hasCenter" id="btn-heal" @click="healPokemon" class="bg-gradient-to-b from-pink-400 to-pink-500 text-white font-black py-3 px-8 rounded-full border-2 border-pink-700 shadow-[0_6px_0_#831843] active:shadow-[0_0px_0_#831843] active:translate-y-1.5 flex items-center gap-2 text-lg transition-all">
+          ❤️ Curar
+        </button>
+      </div>
+    </div>
+
+    <!-- Planning UI Panel -->
+    <div id="planning-ui-panel" class="fixed bottom-0 left-0 w-full p-3 pb-6 z-[150] flex justify-center pointer-events-none transition-transform duration-300" :class="[isPlanning ? '' : 'translate-y-full pointer-events-none']">
+      <div class="glass-panel border border-gray-600 rounded-3xl p-4 shadow-2xl flex flex-col gap-3 w-full max-w-sm pointer-events-auto">
+        <div class="flex items-center justify-between border-b border-gray-600 pb-2">
+          <h3 class="text-white font-black text-lg uppercase flex items-center gap-2 truncate">
+            <span class="text-yellow-400 shrink-0">📍</span>
+            <span class="truncate">{{ planningTarget ? (discoveredNodes.includes(planningTarget) ? mapNodes[planningTarget]?.name : "Zona Desconocida") : "Destino" }}</span>
+          </h3>
+          <span class="bg-gray-800 text-gray-300 text-xs font-bold px-3 py-1 rounded-full border border-gray-600 shrink-0">
+            {{ currentPlanPaths[selectedPlanIndex] ? (currentPlanPaths[selectedPlanIndex].isFly ? '🦅 Vuelo Directo' : `Opción ${selectedPlanIndex + 1}/${currentPlanPaths.length}`) : 'Calculando...' }}
+          </span>
+        </div>
+        
+        <div class="bg-gray-900/80 rounded-xl p-3 border border-gray-700 relative">
+          <p class="text-[10px] text-gray-400 uppercase font-black tracking-wider mb-2 text-center">Previsión del Recorrido</p>
+          <div class="absolute top-2 right-3 text-xs font-black text-yellow-400 bg-gray-800 px-2 py-0.5 rounded">⚡ {{ currentEnergyCost }}</div>
+          
+          <!-- Route stats computed from actual path -->
+          <div v-if="currentPlanPaths[selectedPlanIndex]" class="grid grid-cols-4 gap-2 text-center mt-3">
+            <div class="flex flex-col items-center">
+              <span class="text-xl">⚔️</span>
+              <span class="text-xs font-bold mt-1" :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t >= 70 ? 'text-yellow-400 text-sm' : 'text-white']">
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t }}%
+              </span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-xl">🌿</span>
+              <span class="text-xs font-bold mt-1" :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w >= 70 ? 'text-yellow-400 text-sm' : 'text-white']">
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w }}%
+              </span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-xl">⛏️</span>
+              <span class="text-xs font-bold mt-1" :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m >= 70 ? 'text-yellow-400 text-sm' : 'text-white']">
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m }}%
+              </span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-xl">🎣</span>
+              <span class="text-xs font-bold mt-1" :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f >= 70 ? 'text-yellow-400 text-sm' : 'text-white']">
+                {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f }}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-center mt-1">
+          <button @click="cancelPlanning" class="bg-gradient-to-b from-gray-500 to-gray-600 text-white px-3 py-2.5 rounded-xl font-bold border-2 border-gray-700 shadow-[0_4px_0_#374151] active:shadow-[0_0px_0_#374151] active:translate-y-1 flex-1 transition-all text-sm">Cancelar</button>
+          <button v-if="currentPlanPaths.length > 1" @click="nextAlternative" class="bg-gradient-to-b from-blue-500 to-blue-600 text-white px-3 py-2.5 rounded-xl font-bold border-2 border-blue-800 shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-1 flex-1 transition-all text-sm">🔄 Alternativa</button>
+          <button :disabled="isConfirmTravelDisabled" @click="confirmTravel" class="bg-gradient-to-b from-green-400 to-green-600 text-white px-5 py-2.5 rounded-xl font-black border-2 border-green-800 shadow-[0_4px_0_#14532d] active:shadow-[0_0px_0_#14532d] active:translate-y-1 flex-[1.5] transition-all text-lg disabled:opacity-50 disabled:grayscale">
+            {{ isConfirmTravelDisabled ? 'Sin Energía' : '¡VIAJAR!' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active traveling floating progress -->
+    <div v-if="isTravelingProgressActive" class="adv-floating-progress fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900/90 border border-gray-700 px-6 py-3 rounded-full flex items-center gap-4 z-[200]">
+      <div class="adv-progress-bar w-40 h-3 bg-gray-800 rounded-full overflow-hidden">
+        <div class="adv-progress-fill h-full bg-green-500 transition-all duration-300" :style="{ width: travelProgressText }"></div>
+      </div>
+      <span class="adv-progress-text font-black text-yellow-400 text-sm">{{ travelProgressText }}</span>
+    </div>
+
+    <!-- Custom Alert dialog -->
+    <div class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200" :class="[alertOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']">
+      <div class="poke-dialog w-11/12 max-w-sm p-6 flex flex-col transition-transform duration-200" :class="[alertOpen ? 'scale-100' : 'scale-95']">
+        <p class="text-gray-800 font-bold text-lg mb-6 leading-relaxed" v-html="alertMsg"></p>
+        <button @click="closeAlert" class="self-end bg-gray-800 text-white px-6 py-2 rounded font-bold hover:bg-black active:scale-95 transition-transform">▼ Siguiente</button>
+      </div>
+    </div>
+
+    <!-- Radar Modal -->
+    <div class="fixed inset-0 z-[250] bg-black/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300" :class="[showRadarModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']">
+      <div class="bg-white rounded-3xl w-10/12 max-w-sm overflow-hidden shadow-2xl border-4 border-yellow-500 transition-transform duration-300" :class="[showRadarModal ? 'scale-100' : 'scale-90']">
+        <div class="bg-gradient-to-b from-yellow-400 to-yellow-500 text-yellow-900 p-4 text-center font-black text-xl shadow-inner border-b-2 border-yellow-600">
+          🧭 RADAR RÁPIDO
+        </div>
+        <div class="p-4 max-h-[50vh] overflow-y-auto space-y-2">
+          <button v-for="id in discoveredNodes.filter(n => mapNodes[n] && ['city', 'league'].includes(mapNodes[n].type))" :key="id"
+                  class="w-full text-left bg-gray-100 p-3 rounded-xl font-bold text-gray-800 border-2 border-gray-200 hover:bg-yellow-50 hover:border-yellow-400 active:scale-95 transition-all"
+                  @click="() => {
+                    toggleRadarModal()
+                    if (isZoomedIn) exitParkedMode()
+                    centerCameraOn(mapNodes[id].x, mapNodes[id].y, true, MAP_SCALE)
+                  }">
+            📍 {{ mapNodes[id]?.name }}
+          </button>
+        </div>
+        <div class="p-4 bg-gray-100 border-t-2 border-gray-200">
+          <button @click="toggleRadarModal" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Modal -->
+    <div class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300" :class="[showInventoryModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']">
+      <div class="bg-white rounded-3xl w-11/12 max-w-md overflow-hidden shadow-2xl border-4 border-blue-900 transition-transform duration-300" :class="[showInventoryModal ? 'scale-100' : 'scale-90']">
+        <div class="bg-gradient-to-b from-blue-500 to-blue-700 text-white p-4 text-center font-black text-xl shadow-inner">
+          EQUIPO Y OBJETOS
+        </div>
+        <div class="p-5 max-h-[70vh] overflow-y-auto">
+          <p class="text-xs text-gray-500 text-center font-bold uppercase mb-2">Pokémon Acompañante</p>
+          <div class="flex gap-2 justify-center mb-6">
+            <button @click="setCompanion('none')" :class="activeCompanionBtn('none')" class="p-2 border-2 border-gray-300 rounded-xl bg-gray-100 hover:bg-gray-200">🚫</button>
+            <button @click="setCompanion('pikachu')" :class="activeCompanionBtn('pikachu')" class="p-2 border-2 border-yellow-400 rounded-xl bg-yellow-50 hover:bg-yellow-100" title="+50% Entrenadores"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" class="w-8 h-8 pixel-art"></button>
+            <button @click="setCompanion('meowth')" :class="activeCompanionBtn('meowth')" class="p-2 border-2 border-gray-400 rounded-xl bg-gray-50 hover:bg-gray-100" title="+50% Minería"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png" class="w-8 h-8 pixel-art"></button>
+            <button @click="setCompanion('squirtle')" :class="activeCompanionBtn('squirtle')" class="p-2 border-2 border-blue-400 rounded-xl bg-blue-50 hover:bg-blue-100" title="+50% Pesca"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" class="w-8 h-8 pixel-art"></button>
+          </div>
+
+          <p class="text-xs text-gray-500 text-center font-bold uppercase mb-4">Modificadores de Viaje</p>
+          <div class="grid grid-cols-2 gap-3 px-1 pb-2">
+            <label class="flex flex-col items-center justify-center bg-gray-100 p-3 rounded-2xl border-2 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors col-span-2">
+              <div class="flex items-center gap-3 w-full justify-center mb-1">
+                <span class="text-3xl">🚲</span>
+                <span class="font-black text-gray-800 text-md uppercase">Bicicleta</span>
+                <input type="checkbox" :checked="playerInventory['Bicicleta']" class="w-6 h-6 accent-blue-600" @change="updateInventory('Bicicleta', ($event.target as HTMLInputElement).checked)">
+              </div>
+              <p class="text-[10px] text-gray-500 font-bold">Aumenta la velocidad de viaje x2</p>
+            </label>
+
+            <label v-for="mo in ['Vuelo', 'Corte', 'Surf', 'Flauta']" :key="mo" class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 cursor-pointer hover:bg-opacity-80 transition-colors"
+                   :class="[
+                     mo === 'Vuelo' ? 'bg-sky-50 border-sky-200 text-sky-900' : 
+                     mo === 'Corte' ? 'bg-green-50 border-green-200 text-green-900' :
+                     mo === 'Surf' ? 'bg-blue-50 border-blue-200 text-blue-900' :
+                     'bg-purple-50 border-purple-200 text-purple-900'
+                   ]">
+              <span class="text-3xl mb-1">{{ mo === 'Vuelo' ? '🦅' : mo === 'Corte' ? '✂️' : mo === 'Surf' ? '🌊' : '🎵' }}</span>
+              <span class="font-bold text-sm mb-2">{{ mo }}</span>
+              <input type="checkbox" :checked="playerInventory[mo]" class="w-5 h-5 accent-blue-600" @change="updateInventory(mo, ($event.target as HTMLInputElement).checked)">
+            </label>
+
+            <label class="flex flex-col items-center justify-center bg-yellow-50 p-3 rounded-2xl border-2 border-yellow-300 cursor-pointer hover:bg-yellow-100 transition-colors col-span-2">
+              <div class="flex items-center gap-3 w-full justify-center mb-1">
+                <span class="text-3xl">🏅</span>
+                <span class="font-black text-yellow-900 text-md uppercase">Liga Pokémon</span>
+                <input type="checkbox" :checked="playerInventory['Medallas']" class="w-6 h-6 accent-yellow-600" @change="updateInventory('Medallas', ($event.target as HTMLInputElement).checked)">
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="p-4 bg-gray-100 border-t-2 border-gray-200">
+          <button @click="toggleInventoryModal" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform">Cerrar Equipo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug Modal -->
+    <div class="fixed inset-0 z-[350] bg-black/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300" :class="[showDebugModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']">
+      <div class="bg-gray-900 rounded-3xl w-11/12 max-w-sm overflow-hidden shadow-2xl border-4 border-purple-500 transition-transform duration-300" :class="[showDebugModal ? 'scale-100' : 'scale-90']">
+        <div class="bg-gradient-to-b from-purple-500 to-purple-700 text-white p-4 text-center font-black text-xl shadow-inner border-b-2 border-purple-800">
+          🐛 MENÚ DE DESARROLLO
+        </div>
+        <div class="p-5 space-y-3 text-white">
+          <p class="text-xs text-gray-400 text-center font-bold uppercase mb-4">Herramientas de Testeo</p>
+          
+          <label class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">⚡</span>
+              <span class="font-bold text-md">Energía Infinita</span>
+            </div>
+            <input type="checkbox" :checked="infiniteEnergy" class="w-6 h-6 accent-purple-500" @change="() => {
+              infiniteEnergy = !infiniteEnergy
+              localStorage.setItem('pokeVicioDebugEnergy', String(infiniteEnergy))
+              if (isPlanning) updatePlanUI()
+            }">
+          </label>
+
+          <button @click="debugUnlockAll" class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors">
+            <span class="text-2xl">🗺️</span> Descubrir todo Kanto
+          </button>
+          <button @click="debugGiveAllMOs" class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors">
+            <span class="text-2xl">🎒</span> Obtener todas las MOs
+          </button>
+          <button @click="debugTriggerSwarm" class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors">
+            <span class="text-2xl">🔴</span> Forzar Enjambre
+          </button>
+          <button @click="debugHardReset" class="w-full bg-red-900/50 hover:bg-red-800/80 text-red-300 p-3 rounded-xl border border-red-800 font-black flex items-center gap-3 transition-colors mt-4">
+            <span class="text-2xl">🗑️</span> BORRAR PARTIDA
+          </button>
+        </div>
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+          <button @click="toggleDebugModal" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform">Cerrar Debug</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+/* --- RESET Y OPTIMIZACIÓN BASE --- */
+body { overscroll-behavior: none; background-color: #0f172a; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+#map-viewport {
+    width: 100vw; height: calc(100vh - 64px); overflow: hidden; position: relative; touch-action: none; background-color: #0f172a;
+}
+
+#world-container {
+    width: 3600px; height: 5600px; transform-origin: 0 0; 
+    background-color: #84cc5c;
+    background-image: radial-gradient(#73b84c 12%, transparent 13%), radial-gradient(#73b84c 12%, transparent 13%);
+    background-size: 80px 80px; background-position: 0 0, 40px 40px; position: absolute; top: 0; left: 0;
+    -webkit-backface-visibility: hidden; backface-visibility: hidden; -webkit-perspective: 1000; perspective: 1000; transform-style: preserve-3d;
+}
+
+.hardware-accel { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+
+/* --- CLIMA --- */
+#day-night-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; transition: background-color 2s ease; 
+}
+
+#weather-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 22; opacity: 0; transition: opacity 1.5s ease;
+    background-image: radial-gradient(circle at 20% 30%, Rgba(139, 92, 246, 0.45) 0%, transparent 45%), radial-gradient(circle at 80% 70%, Rgba(109, 40, 217, 0.45) 0%, transparent 45%), radial-gradient(circle at 50% 50%, Rgba(76, 29, 149, 0.35) 0%, transparent 65%);
+    background-size: 800px 800px, 600px 600px, 1000px 1000px; background-color: Rgba(20, 10, 40, 0.3); will-change: opacity, background-position;
+}
+#weather-overlay.fog-active { opacity: 1; animation: fogMove 25s linear infinite; }
+@keyframes fogMove { 0% { background-position: 0px 0px, 0px 0px, 0px 0px; } 100% { background-position: 800px 800px, -600px -600px, 1000px 0px; } }
+
+/* --- NODOS --- */
+.node {
+    transform: translate3d(-50%, -50%, 0); white-space: nowrap; 
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    box-shadow: 0 6px 12px Rgba(0,0,0,0.3); pointer-events: auto; cursor: pointer; border-radius: 12px;
+}
+.node:active { transform: translate3d(-50%, -50%, 0) Scale(0.95); }
+
+.node-city { background: linear-gradient(145deg, #3B82F6, #2563EB); border: 3px solid #1E3A8A; color: white; z-index: 15; padding: 8px 16px; font-weight: 800; text-shadow: 0 1px 2px Rgba(0,0,0,0.4); }
+.node-route { background: linear-gradient(145deg, #F9FAFB, #E5E7EB); border: 3px solid #9CA3AF; color: #1F2937; z-index: 10; font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; }
+.node-route-water { background: linear-gradient(145deg, #60A5FA, #3B82F6); border: 3px solid #1E40AF; color: white; z-index: 10; font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; text-shadow: 0 1px 1px Rgba(0,0,0,0.3); }
+.node-poi { background: linear-gradient(145deg, #8B5CF6, #7C3AED); border: 3px solid #4C1D95; color: white; z-index: 12; padding: 6px 14px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; text-shadow: 0 1px 2px Rgba(0,0,0,0.4); }
+.node-league { background: linear-gradient(145deg, #FCD34D, #F59E0B); border: 4px solid #B45309; color: #78350F; text-transform: uppercase; z-index: 20; padding: 10px 20px; font-size: 1.1rem; border-radius: 14px; }
+
+.node.active-node { box-shadow: 0 0 0 5px Rgba(255, 255, 255, 0.9), 0 0 30px Rgba(255, 255, 255, 0.8) !important; z-index: 25; animation: pulseActive 2s infinite; }
+@keyframes pulseActive { 0%, 100% { box-shadow: 0 0 0 5px Rgba(255, 255, 255, 0.9), 0 0 30px Rgba(255, 255, 255, 0.8); } 50% { box-shadow: 0 0 0 3px Rgba(255, 255, 255, 0.9), 0 0 15px Rgba(255, 255, 255, 0.5); } }
+
+/* Bloqueos */
+.node-locked { filter: Grayscale(100%) Brightness(60%) sepia(20%); opacity: 0.9; z-index: 18; }
+.node-locked::after { content: attr(data-lock-icon); position: absolute; top: -38px; left: 50%; transform: Translatex(-50%); font-size: 2.5rem; filter: Grayscale(0%) Drop-Shadow(0 6px 8px Rgba(0,0,0,0.8)); z-index: 30; animation: floatIcon 2.5s ease-in-out infinite; }
+@keyframes floatIcon { 0%, 100% { transform: translate3d(-50%, 0px, 0); } 50% { transform: translate3d(-50%, -10px, 0); } }
+
+/* NIEBLA DE GUERRA (Nodos no descubiertos) */
+.node-undiscovered {
+    background: #1f2937 !important; border-color: #111827 !important; color: transparent !important; text-shadow: 0 0 0 #9ca3af !important;
+    filter: Grayscale(100%) Brightness(50%); z-index: 5 !important;
+}
+.node-undiscovered::after, .node-undiscovered::before { display: none !important; }
+
+/* ENJAMBRES (Live Ops) */
+.node-swarm { animation: swarmPulse 1.5s infinite !important; border-color: #ef4444 !important; z-index: 14; }
+@keyframes swarmPulse { 0%, 100% { box-shadow: 0 0 10px #ef4444; } 50% { box-shadow: 0 0 25px #f87171; } }
+
+.node-event::before { content: '❗'; position: absolute; top: -32px; left: 50%; transform: Translatex(-50%); font-size: 1.8rem; color: #FBBF24; filter: Drop-Shadow(0 4px 4px Rgba(0,0,0,0.7)); z-index: 35; animation: bounceEvent 0.8s infinite; }
+@keyframes bounceEvent { 0%, 100% { transform: translate3d(-50%, 0px, 0) Scale(1); } 50% { transform: translate3d(-50%, -12px, 0) Scale(1.15); } }
+
+/* --- GPS --- */
+.preview-line { stroke: #FCD34D; stroke-width: 18; stroke-linecap: round; stroke-dasharray: 24, 16; animation: gpsMove 0.7s linear infinite; filter: Drop-Shadow(0 0 12px Rgba(245,158,11,0.8)); }
+.preview-line-fly { stroke: #60A5FA; stroke-width: 16; stroke-linecap: round; stroke-dasharray: 18, 22; animation: gpsMove 0.4s linear infinite; filter: Drop-Shadow(0 0 12px Rgba(59,130,246,0.8)); }
+@keyframes gpsMove { to { stroke-dashoffset: -40; } }
+
+/* --- SPRITES JUGADOR Y COMPAÑERO --- */
+#player-token {
+    position: absolute; transform-origin: bottom center; transform: Translate(-50%, -80%); 
+    z-index: 30; width: 56px; height: 56px; pointer-events: none;
+    transition-property: left, top; transition-timing-function: linear; will-change: left, top;
+}
+#player-sprite { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; transition: transform 0.2s; font-size: 40px;}
+
+#companion-token {
+    position: absolute; right: -35px; bottom: 5px; width: 40px; height: 40px; transition: transform 0.2s;
+}
+
+.pixel-art { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; filter: Drop-Shadow(0px 6px 4px Rgba(0,0,0,0.6)); }
+.anim-bounce { animation: bouncePlayer 0.3s infinite alternate; }
+.anim-bounce-companion { animation: bouncePlayer 0.3s infinite alternate 0.15s; }
+@keyframes bouncePlayer { 0% { transform: Translatey(0px); } 100% { transform: Translatey(-8px); } }
+
+/* --- UI ESTACIONADA --- */
+#fixed-ui-overlay { position: fixed; top: 64px; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 100; opacity: 0; transition: opacity 0.3s ease; }
+#fixed-ui-overlay.active { opacity: 1; pointer-events: none; }
+#fixed-ui-overlay > * { pointer-events: auto; }
+
+.floating-btn {
+    background: linear-gradient(145deg, #4B5563, #374151); color: white; border: 3px solid white; border-radius: 50%;
+    width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 12px Rgba(0,0,0,0.5); font-size: 1.4rem; transition: transform 0.1s;
+}
+.floating-btn:active { transform: Scale(0.9); }
+#btn-free-map { position: absolute; top: 20px; right: 20px; }
+#btn-radar { position: absolute; top: 85px; right: 20px; }
+#btn-debug { position: absolute; top: 150px; right: 20px; }
+
+#bottom-action-panel { position: absolute; bottom: 25px; left: 50%; transform: Translatex(-50%); display: flex; gap: 12px; width: 100%; justify-content: center; padding: 0 10px;}
+
+/* --- GLASSMORPHISM & ALERTS --- */
+.glass-panel { background: Rgba(31, 41, 55, 0.95); backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); }
+.poke-dialog { background-color: white; border: 6px solid #1F2937; border-radius: 16px; box-shadow: 0 10px 25px Rgba(0,0,0,0.5); outline: 2px solid #E5E7EB; outline-offset: -6px; }
+</style>
