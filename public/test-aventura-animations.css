@@ -28,3 +28,125 @@
   0% { transform: translateY(0px); }
   100% { transform: translateY(-8px); }
 }
+
+/* --- RESET Y OPTIMIZACIÓN BASE --- */
+body { overscroll-behavior: none; background-color: #0f172a; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+#map-viewport {
+    width: 100vw; height: calc(100vh - 64px); overflow: hidden; position: relative; touch-action: none; background-color: #0f172a;
+}
+
+#world-container {
+    width: 3600px; height: 5600px; transform-origin: 0 0; 
+    background-color: #84cc5c;
+    background-image: radial-gradient(#73b84c 12%, transparent 13%), radial-gradient(#73b84c 12%, transparent 13%);
+    background-size: 80px 80px; background-position: 0 0, 40px 40px; position: absolute; top: 0; left: 0;
+    -webkit-backface-visibility: hidden; backface-visibility: hidden; -webkit-perspective: 1000; perspective: 1000; transform-style: preserve-3d;
+}
+
+.hardware-accel { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+
+/* --- CLIMA --- */
+#day-night-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: var(--z-map-grass-back);
+    transition-property: background-color;
+    transition-duration: 2s;
+    transition-timing-function: ease;
+}
+
+#weather-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-map-ui) + 2); opacity: 0;
+    transition-property: opacity;
+    transition-duration: 1.5s;
+    transition-timing-function: ease;
+    background-image: radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.45) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(109, 40, 217, 0.45) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(76, 29, 149, 0.35) 0%, transparent 65%);
+    background-size: 800px 800px, 600px 600px, 1000px 1000px; background-color: rgba(20, 10, 40, 0.3); will-change: opacity, background-position;
+}
+#weather-overlay.fog-active { opacity: 1; animation: fogMove 25s linear infinite; }
+
+/* --- NODOS --- */
+.node {
+    transform: translate3d(-50%, -50%, 0); white-space: nowrap; 
+    transition-property: transform, box-shadow;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3); pointer-events: auto; cursor: pointer; border-radius: 12px;
+}
+.node:active { transform: translate3d(-50%, -50%, 0) scale(0.95); }
+
+.node-city { background: linear-gradient(145deg, #3B82F6, #2563EB); border: 3px solid #1E3A8A; color: white; z-index: var(--z-map-grass-front); padding: 8px 16px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+.node-route { background: linear-gradient(145deg, #F9FAFB, #E5E7EB); border: 3px solid #9CA3AF; color: #1F2937; z-index: var(--z-map-spawns); font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; }
+.node-route-water { background: linear-gradient(145deg, #60A5FA, #3B82F6); border: 3px solid #1E40AF; color: white; z-index: var(--z-map-spawns); font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; text-shadow: 0 1px 1px rgba(0,0,0,0.3); }
+.node-poi { background: linear-gradient(145deg, #8B5CF6, #7C3AED); border: 3px solid #4C1D95; color: white; z-index: calc(var(--z-map-spawns) + 2); padding: 6px 14px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+.node-league { background: linear-gradient(145deg, #FCD34D, #F59E0B); border: 4px solid #B45309; color: #78350F; text-transform: uppercase; z-index: var(--z-map-ui); padding: 10px 20px; font-size: 1.1rem; border-radius: 14px; }
+
+.node.active-node { box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.8) !important; z-index: calc(var(--z-map-ui) + 5); animation: pulseActive 2s infinite; }
+
+/* Bloqueos */
+.node-locked { filter: grayscale(100%) brightness(60%) sepia(20%); will-change: filter; opacity: 0.9; z-index: calc(var(--z-map-ui) - 2); }
+.node-locked::after { content: attr(data-lock-icon); position: absolute; top: -38px; left: 50%; transform: translateX(-50%); font-size: 2.5rem; filter: grayscale(0%) drop-shadow(0 6px 8px rgba(0,0,0,0.8)); will-change: filter; z-index: calc(var(--z-map-ui) + 10); animation: floatIcon 2.5s ease-in-out infinite; }
+
+/* NIEBLA DE GUERRA (Nodos no descubiertos) */
+.node-undiscovered {
+    background: #1f2937 !important; border-color: #111827 !important; color: transparent !important; text-shadow: 0 0 0 #9ca3af !important;
+    filter: grayscale(100%) brightness(50%); will-change: filter; z-index: var(--z-map-grass-back) !important;
+}
+.node-undiscovered::after, .node-undiscovered::before { display: none !important; }
+
+/* ENJAMBRES (Live Ops) */
+.node-swarm { animation: swarmPulse 1.5s infinite !important; border-color: #ef4444 !important; z-index: calc(var(--z-map-ground-fx) - 1); }
+
+.node-event::before { content: '❗'; position: absolute; top: -32px; left: 50%; transform: translateX(-50%); font-size: 1.8rem; color: #FBBF24; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.7)); will-change: filter; z-index: calc(var(--z-map-ui) + 5); animation: bounceEvent 0.8s infinite; }
+
+/* --- GPS --- */
+.preview-line { stroke: #FCD34D; stroke-width: 18; stroke-linecap: round; stroke-dasharray: 24, 16; animation: gpsMove 0.7s linear infinite; filter: drop-shadow(0 0 12px rgba(245,158,11,0.8)); will-change: filter; }
+.preview-line-fly { stroke: #60A5FA; stroke-width: 16; stroke-linecap: round; stroke-dasharray: 18, 22; animation: gpsMove 0.4s linear infinite; filter: drop-shadow(0 0 12px rgba(59,130,246,0.8)); will-change: filter; }
+
+/* --- SPRITES JUGADOR Y COMPAÑERO --- */
+#player-token {
+    position: absolute; transform-origin: bottom center; transform: translate(-50%, -80%); 
+    z-index: calc(var(--z-map-ui) + 10); width: 56px; height: 56px; pointer-events: none;
+    transition-property: left, top; transition-duration: 0.2s; transition-timing-function: linear; will-change: left, top;
+}
+#player-sprite {
+    width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 40px;
+    transition-property: transform;
+    transition-duration: 0.2s;
+}
+
+#companion-token {
+    position: absolute; right: -35px; bottom: 5px; width: 40px; height: 40px;
+    transition-property: transform;
+    transition-duration: 0.2s;
+}
+
+.pixel-art { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; filter: drop-shadow(0px 6px 4px rgba(0,0,0,0.6)); will-change: filter; }
+.anim-bounce { animation: bouncePlayer 0.3s infinite alternate; }
+.anim-bounce-companion { animation: bouncePlayer 0.3s infinite alternate 0.15s; }
+
+/* --- UI ESTACIONADA --- */
+#fixed-ui-overlay {
+    position: fixed; top: 64px; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: var(--z-modal-step); opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+#fixed-ui-overlay.active { opacity: 1; pointer-events: none; }
+#fixed-ui-overlay > * { pointer-events: auto; }
+
+.floating-btn {
+    background: linear-gradient(145deg, #4B5563, #374151); color: white; border: 3px solid white; border-radius: 50%;
+    width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 12px rgba(0,0,0,0.5); font-size: 1.4rem;
+    transition-property: transform;
+    transition-duration: 0.1s;
+}
+.floating-btn:active { transform: scale(0.9); }
+#btn-free-map { position: absolute; top: 20px; right: 20px; }
+#btn-radar { position: absolute; top: 85px; right: 20px; }
+#btn-debug { position: absolute; top: 150px; right: 20px; }
+
+#bottom-action-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; width: 100%; justify-content: center; padding: 0 10px;}
+
+/* --- GLASSMORPHISM & ALERTS --- */
+.glass-panel { background: rgba(31, 41, 55, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.poke-dialog { background-color: white; border: 6px solid #1F2937; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); outline: 2px solid #E5E7EB; outline-offset: -6px; }

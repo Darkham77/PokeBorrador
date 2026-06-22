@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import MapCard from '@/components/map/MapCard.vue'
+import AdventureInventoryModal from './AdventureInventoryModal.vue'
+import AdventureDebugModal from './AdventureDebugModal.vue'
 
 // Import Kanto Map Data
 import { rawNodes, connections, officialMapIdMap, type MapNode, type DijkstraPath } from './mapData'
+import { getAdjacentNodes, dijkstra, getAlternativePaths } from './adventurePathfinding'
 
 // Import Poké Vicio Stores and Data
 import { useMapStore } from '@/stores/map'
@@ -165,10 +168,7 @@ function closeAlert() {
   alertOpen.value = false
 }
 
-// Inventory / Companions
-const activeCompanionBtn = (comp: string) => {
-  return activeCompanion.value === comp ? 'ring-4 ring-blue-500 scale-110' : (comp === 'none' ? 'opacity-50' : '')
-}
+
 
 function setCompanion(comp: string) {
   activeCompanion.value = comp
@@ -312,85 +312,7 @@ function endDrag() {
   setTimeout(() => { isDragging = false }, 50)
 }
 
-// Routing & pathfinding (Dijkstra)
-function getAdjacentNodes(nodeId: string): string[] {
-  const adj: string[] = []
-  connections.forEach(([a, b]) => {
-    if (a === nodeId) adj.push(b)
-    if (b === nodeId) adj.push(a)
-  })
-  return adj
-}
 
-function dijkstra(startId: string, targetId: string, blockedEdge: string[] | null = null) {
-  const dist: Record<string, number> = {}
-  const prev: Record<string, string | null> = {}
-  const pq = new Set(Object.keys(mapNodes.value))
-  
-  Object.keys(mapNodes.value).forEach(id => {
-    dist[id] = Infinity
-    prev[id] = null
-  })
-  dist[startId] = 0
-
-  while (pq.size > 0) {
-    let u: string | null = null
-    let minDist = Infinity
-    for (const id of pq) {
-      if (dist[id] < minDist) {
-        minDist = dist[id]
-        u = id
-      }
-    }
-    if (u === null || u === targetId) break
-    pq.delete(u)
-
-    const neighbors = getAdjacentNodes(u)
-    for (const v of neighbors) {
-      const nodeData = mapNodes.value[v]
-      const reqMO = nodeData.requiresMO
-      if (reqMO && !playerInventory.value[reqMO]) continue
-      if (blockedEdge && ((u === blockedEdge[0] && v === blockedEdge[1]) || (u === blockedEdge[1] && v === blockedEdge[0]))) continue
-      if (!discoveredNodes.value.includes(v) && v !== targetId) continue
-
-      const dx = mapNodes.value[u].x - mapNodes.value[v].x
-      const dy = mapNodes.value[u].y - mapNodes.value[v].y
-      const weight = Math.sqrt(dx * dx + dy * dy)
-      const alt = dist[u] + weight
-      if (alt < dist[v]) {
-        dist[v] = alt
-        prev[v] = u
-      }
-    }
-  }
-  
-  if (prev[targetId] === null && startId !== targetId) return null
-  
-  const path: string[] = []
-  let curr: string | null = targetId
-  while (curr !== null) {
-    path.unshift(curr)
-    curr = prev[curr]
-  }
-  return { nodes: path, cost: dist[targetId] }
-}
-
-function getAlternativePaths(startId: string, targetId: string) {
-  const paths: DijkstraPath[] = []
-  const p1 = dijkstra(startId, targetId)
-  if (!p1) return []
-  paths.push(p1)
-
-  for (let i = 0; i < p1.nodes.length - 1; i++) {
-    const pAlt = dijkstra(startId, targetId, [p1.nodes[i], p1.nodes[i + 1]])
-    if (pAlt) {
-      const isNew = !paths.some(p => p.nodes.join(',') === pAlt.nodes.join(','))
-      if (isNew) paths.push(pAlt)
-    }
-  }
-  paths.sort((a, b) => a.cost - b.cost)
-  return paths.slice(0, 3)
-}
 
 // Travel confirms
 function travelToAdjacent(targetId: string) {
@@ -427,7 +349,7 @@ function planTravel(targetId: string) {
   const targetNode = mapNodes.value[targetId]
 
   if (!discoveredNodes.value.includes(targetId)) {
-    const isAdjacent = getAdjacentNodes(currentNode.value).includes(targetId)
+    const isAdjacent = getAdjacentNodes(currentNode.value, connections).includes(targetId)
     if (!isAdjacent) {
       showActionAlert("🗺️ <b>ZONA DESCONOCIDA</b><br><br>No puedes usar el GPS hacia zonas inexploradas. Descúbrela viajando a pie desde una ruta conectada.")
       return
@@ -445,7 +367,7 @@ function planTravel(targetId: string) {
   if (canFly) {
     currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: 0, isFly: true }]
   } else {
-    currentPlanPaths.value = getAlternativePaths(currentNode.value, targetId)
+    currentPlanPaths.value = getAlternativePaths(currentNode.value, targetId, mapNodes.value, playerInventory.value, discoveredNodes.value, connections)
     if (currentPlanPaths.value.length === 0) {
       showActionAlert("Camino bloqueado. Necesitas una MO.")
       return
@@ -698,7 +620,7 @@ const adjacentButtons = computed(() => {
   const current = mapNodes.value[currentNode.value]
   if (!current) return []
   
-  const adjIds = getAdjacentNodes(currentNode.value)
+  const adjIds = getAdjacentNodes(currentNode.value, connections)
   return adjIds.map(id => {
     const adj = mapNodes.value[id]
     const dx = adj.x - current.x
@@ -1221,320 +1143,30 @@ onMounted(() => {
     </div>
 
     <!-- Inventory Modal -->
-    <div
-      class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300"
-      :class="[showInventoryModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
-    >
-      <div
-        class="bg-white rounded-3xl w-11/12 max-w-md overflow-hidden shadow-2xl border-4 border-blue-900 transition-transform duration-300"
-        :class="[showInventoryModal ? 'scale-100' : 'scale-90']"
-      >
-        <div class="bg-gradient-to-b from-blue-500 to-blue-700 text-white p-4 text-center font-black text-xl shadow-inner">
-          EQUIPO Y OBJETOS
-        </div>
-        <div class="p-5 max-h-[70vh] overflow-y-auto">
-          <p class="text-xs text-gray-500 text-center font-bold uppercase mb-2">
-            Pokémon Acompañante
-          </p>
-          <div class="flex gap-2 justify-center mb-6">
-            <button
-              :class="activeCompanionBtn('none')"
-              class="p-2 border-2 border-gray-300 rounded-xl bg-gray-100 hover:bg-gray-200"
-              @click="setCompanion('none')"
-            >
-              🚫
-            </button>
-            <button
-              :class="activeCompanionBtn('pikachu')"
-              class="p-2 border-2 border-yellow-400 rounded-xl bg-yellow-50 hover:bg-yellow-100"
-              title="+50% Entrenadores"
-              @click="setCompanion('pikachu')"
-            >
-              <img
-                src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-                class="w-8 h-8 pixel-art"
-              >
-            </button>
-            <button
-              :class="activeCompanionBtn('meowth')"
-              class="p-2 border-2 border-gray-400 rounded-xl bg-gray-50 hover:bg-gray-100"
-              title="+50% Minería"
-              @click="setCompanion('meowth')"
-            >
-              <img
-                src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"
-                class="w-8 h-8 pixel-art"
-              >
-            </button>
-            <button
-              :class="activeCompanionBtn('squirtle')"
-              class="p-2 border-2 border-blue-400 rounded-xl bg-blue-50 hover:bg-blue-100"
-              title="+50% Pesca"
-              @click="setCompanion('squirtle')"
-            >
-              <img
-                src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
-                class="w-8 h-8 pixel-art"
-              >
-            </button>
-          </div>
-
-          <p class="text-xs text-gray-500 text-center font-bold uppercase mb-4">
-            Modificadores de Viaje
-          </p>
-          <div class="grid grid-cols-2 gap-3 px-1 pb-2">
-            <label class="flex flex-col items-center justify-center bg-gray-100 p-3 rounded-2xl border-2 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors col-span-2">
-              <div class="flex items-center gap-3 w-full justify-center mb-1">
-                <span class="text-3xl">🚲</span>
-                <span class="font-black text-gray-800 text-md uppercase">Bicicleta</span>
-                <input
-                  type="checkbox"
-                  :checked="playerInventory['Bicicleta']"
-                  class="w-6 h-6 accent-blue-600"
-                  @change="updateInventory('Bicicleta', ($event.target as HTMLInputElement).checked)"
-                >
-              </div>
-              <p class="text-[10px] text-gray-500 font-bold">Aumenta la velocidad de viaje x2</p>
-            </label>
-
-            <label
-              v-for="mo in ['Vuelo', 'Corte', 'Surf', 'Flauta']"
-              :key="mo"
-              class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 cursor-pointer hover:bg-opacity-80 transition-colors"
-              :class="[
-                mo === 'Vuelo' ? 'bg-sky-50 border-sky-200 text-sky-900' : 
-                mo === 'Corte' ? 'bg-green-50 border-green-200 text-green-900' :
-                mo === 'Surf' ? 'bg-blue-50 border-blue-200 text-blue-900' :
-                'bg-purple-50 border-purple-200 text-purple-900'
-              ]"
-            >
-              <span class="text-3xl mb-1">{{ mo === 'Vuelo' ? '🦅' : mo === 'Corte' ? '✂️' : mo === 'Surf' ? '🌊' : '🎵' }}</span>
-              <span class="font-bold text-sm mb-2">{{ mo }}</span>
-              <input
-                type="checkbox"
-                :checked="playerInventory[mo]"
-                class="w-5 h-5 accent-blue-600"
-                @change="updateInventory(mo, ($event.target as HTMLInputElement).checked)"
-              >
-            </label>
-
-            <label class="flex flex-col items-center justify-center bg-yellow-50 p-3 rounded-2xl border-2 border-yellow-300 cursor-pointer hover:bg-yellow-100 transition-colors col-span-2">
-              <div class="flex items-center gap-3 w-full justify-center mb-1">
-                <span class="text-3xl">🏅</span>
-                <span class="font-black text-yellow-900 text-md uppercase">Liga Pokémon</span>
-                <input
-                  type="checkbox"
-                  :checked="playerInventory['Medallas']"
-                  class="w-6 h-6 accent-yellow-600"
-                  @change="updateInventory('Medallas', ($event.target as HTMLInputElement).checked)"
-                >
-              </div>
-            </label>
-          </div>
-        </div>
-        <div class="p-4 bg-gray-100 border-t-2 border-gray-200">
-          <button
-            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform"
-            @click="toggleInventoryModal"
-          >
-            Cerrar Equipo
-          </button>
-        </div>
-      </div>
-    </div>
+    <AdventureInventoryModal
+      :show="showInventoryModal"
+      :active-companion="activeCompanion"
+      :player-inventory="playerInventory"
+      @update-companion="setCompanion"
+      @update-inventory="updateInventory"
+      @close="toggleInventoryModal"
+    />
 
     <!-- Debug Modal -->
-    <div
-      class="fixed inset-0 z-[350] bg-black/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300"
-      :class="[showDebugModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
-    >
-      <div
-        class="bg-gray-900 rounded-3xl w-11/12 max-w-sm overflow-hidden shadow-2xl border-4 border-purple-500 transition-transform duration-300"
-        :class="[showDebugModal ? 'scale-100' : 'scale-90']"
-      >
-        <div class="bg-gradient-to-b from-purple-500 to-purple-700 text-white p-4 text-center font-black text-xl shadow-inner border-b-2 border-purple-800">
-          🐛 MENÚ DE DESARROLLO
-        </div>
-        <div class="p-5 space-y-3 text-white">
-          <p class="text-xs text-gray-400 text-center font-bold uppercase mb-4">
-            Herramientas de Testeo
-          </p>
-          
-          <label class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors">
-            <div class="flex items-center gap-3">
-              <span class="text-2xl">⚡</span>
-              <span class="font-bold text-md">Energía Infinita</span>
-            </div>
-            <input
-              type="checkbox"
-              :checked="infiniteEnergy"
-              class="w-6 h-6 accent-purple-500"
-              @change="() => {
-                infiniteEnergy = !infiniteEnergy
-                localStorage.setItem('pokeVicioDebugEnergy', String(infiniteEnergy))
-                if (isPlanning) updatePlanUI()
-              }"
-            >
-          </label>
-
-          <button
-            class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors"
-            @click="debugUnlockAll"
-          >
-            <span class="text-2xl">🗺️</span> Descubrir todo Kanto
-          </button>
-          <button
-            class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors"
-            @click="debugGiveAllMOs"
-          >
-            <span class="text-2xl">🎒</span> Obtener todas las MOs
-          </button>
-          <button
-            class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors"
-            @click="debugTriggerSwarm"
-          >
-            <span class="text-2xl">🔴</span> Forzar Enjambre
-          </button>
-          <button
-            class="w-full bg-red-900/50 hover:bg-red-800/80 text-red-300 p-3 rounded-xl border border-red-800 font-black flex items-center gap-3 transition-colors mt-4"
-            @click="debugHardReset"
-          >
-            <span class="text-2xl">🗑️</span> BORRAR PARTIDA
-          </button>
-        </div>
-        <div class="p-4 bg-gray-800 border-t border-gray-700">
-          <button
-            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform"
-            @click="toggleDebugModal"
-          >
-            Cerrar Debug
-          </button>
-        </div>
-      </div>
-    </div>
+    <AdventureDebugModal
+      :show="showDebugModal"
+      :infinite-energy="infiniteEnergy"
+      @update-infinite-energy="(val) => {
+        infiniteEnergy = val
+        localStorage.setItem('pokeVicioDebugEnergy', String(infiniteEnergy))
+        if (isPlanning) updatePlanUI()
+      }"
+      @unlock-all="debugUnlockAll"
+      @give-all-m-os="debugGiveAllMOs"
+      @trigger-swarm="debugTriggerSwarm"
+      @hard-reset="debugHardReset"
+      @close="toggleDebugModal"
+    />
   </div>
 </template>
 
-<style>
-/* --- RESET Y OPTIMIZACIÓN BASE --- */
-body { overscroll-behavior: none; background-color: #0f172a; user-select: none; -webkit-tap-highlight-color: transparent; }
-
-#map-viewport {
-    width: dvw; height: calc(dvh - 64px); overflow: hidden; position: relative; touch-action: none; background-color: #0f172a;
-}
-
-#world-container {
-    width: 3600px; height: 5600px; transform-origin: 0 0; 
-    background-color: #84cc5c;
-    background-image: radial-gradient(#73b84c 12%, transparent 13%), radial-gradient(#73b84c 12%, transparent 13%);
-    background-size: 80px 80px; background-position: 0 0, 40px 40px; position: absolute; top: 0; left: 0;
-    -webkit-backface-visibility: hidden; backface-visibility: hidden; -webkit-perspective: 1000; perspective: 1000; transform-style: preserve-3d;
-}
-
-.hardware-accel { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-
-/* --- CLIMA --- */
-#day-night-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: var(--z-map-grass-back);
-    transition-property: background-color;
-    transition-duration: 2s;
-    transition-timing-function: ease;
-}
-
-#weather-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: calc(var(--z-map-ui) + 2); opacity: 0;
-    transition-property: opacity;
-    transition-duration: 1.5s;
-    transition-timing-function: ease;
-    background-image: radial-gradient(circle at 20% 30%, Rgba(139, 92, 246, 0.45) 0%, transparent 45%), radial-gradient(circle at 80% 70%, Rgba(109, 40, 217, 0.45) 0%, transparent 45%), radial-gradient(circle at 50% 50%, Rgba(76, 29, 149, 0.35) 0%, transparent 65%);
-    background-size: 800px 800px, 600px 600px, 1000px 1000px; background-color: Rgba(20, 10, 40, 0.3); will-change: opacity, background-position;
-}
-#weather-overlay.fog-active { opacity: 1; animation: fogMove 25s linear infinite; }
-
-/* --- NODOS --- */
-.node {
-    transform: translate3d(-50%, -50%, 0); white-space: nowrap; 
-    transition-property: transform, box-shadow;
-    transition-duration: 0.2s;
-    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease;
-    box-shadow: 0 6px 12px Rgba(0,0,0,0.3); pointer-events: auto; cursor: pointer; border-radius: 12px;
-}
-.node:active { transform: translate3d(-50%, -50%, 0) Scale(0.95); }
-
-.node-city { background: linear-gradient(145deg, #3B82F6, #2563EB); border: 3px solid #1E3A8A; color: white; z-index: var(--z-map-grass-front); padding: 8px 16px; font-weight: 800; text-shadow: 0 1px 2px Rgba(0,0,0,0.4); }
-.node-route { background: linear-gradient(145deg, #F9FAFB, #E5E7EB); border: 3px solid #9CA3AF; color: #1F2937; z-index: var(--z-map-spawns); font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; }
-.node-route-water { background: linear-gradient(145deg, #60A5FA, #3B82F6); border: 3px solid #1E40AF; color: white; z-index: var(--z-map-spawns); font-size: 0.8rem; padding: 4px 12px; border-radius: 9999px; font-weight: 700; text-shadow: 0 1px 1px Rgba(0,0,0,0.3); }
-.node-poi { background: linear-gradient(145deg, #8B5CF6, #7C3AED); border: 3px solid #4C1D95; color: white; z-index: calc(var(--z-map-spawns) + 2); padding: 6px 14px; font-size: 0.85rem; border-radius: 9999px; font-weight: 800; text-shadow: 0 1px 2px Rgba(0,0,0,0.4); }
-.node-league { background: linear-gradient(145deg, #FCD34D, #F59E0B); border: 4px solid #B45309; color: #78350F; text-transform: uppercase; z-index: var(--z-map-ui); padding: 10px 20px; font-size: 1.1rem; border-radius: 14px; }
-
-.node.active-node { box-shadow: 0 0 0 5px Rgba(255, 255, 255, 0.9), 0 0 30px Rgba(255, 255, 255, 0.8) !important; z-index: calc(var(--z-map-ui) + 5); animation: pulseActive 2s infinite; }
-
-/* Bloqueos */
-.node-locked { filter: Grayscale(100%) Brightness(60%) sepia(20%); will-change: filter; opacity: 0.9; z-index: calc(var(--z-map-ui) - 2); }
-.node-locked::after { content: attr(data-lock-icon); position: absolute; top: -38px; left: 50%; transform: Translatex(-50%); font-size: 2.5rem; filter: Grayscale(0%) Drop-Shadow(0 6px 8px Rgba(0,0,0,0.8)); will-change: filter; z-index: calc(var(--z-map-ui) + 10); animation: floatIcon 2.5s ease-in-out infinite; }
-
-/* NIEBLA DE GUERRA (Nodos no descubiertos) */
-.node-undiscovered {
-    background: #1f2937 !important; border-color: #111827 !important; color: transparent !important; text-shadow: 0 0 0 #9ca3af !important;
-    filter: Grayscale(100%) Brightness(50%); will-change: filter; z-index: var(--z-map-grass-back) !important;
-}
-.node-undiscovered::after, .node-undiscovered::before { display: none !important; }
-
-/* ENJAMBRES (Live Ops) */
-.node-swarm { animation: swarmPulse 1.5s infinite !important; border-color: #ef4444 !important; z-index: calc(var(--z-map-ground-fx) - 1); }
-
-.node-event::before { content: '❗'; position: absolute; top: -32px; left: 50%; transform: Translatex(-50%); font-size: 1.8rem; color: #FBBF24; filter: Drop-Shadow(0 4px 4px Rgba(0,0,0,0.7)); will-change: filter; z-index: calc(var(--z-map-ui) + 5); animation: bounceEvent 0.8s infinite; }
-
-/* --- GPS --- */
-.preview-line { stroke: #FCD34D; stroke-width: 18; stroke-linecap: round; stroke-dasharray: 24, 16; animation: gpsMove 0.7s linear infinite; filter: Drop-Shadow(0 0 12px Rgba(245,158,11,0.8)); will-change: filter; }
-.preview-line-fly { stroke: #60A5FA; stroke-width: 16; stroke-linecap: round; stroke-dasharray: 18, 22; animation: gpsMove 0.4s linear infinite; filter: Drop-Shadow(0 0 12px Rgba(59,130,246,0.8)); will-change: filter; }
-
-/* --- SPRITES JUGADOR Y COMPAÑERO --- */
-#player-token {
-    position: absolute; transform-origin: bottom center; transform: Translate(-50%, -80%); 
-    z-index: calc(var(--z-map-ui) + 10); width: 56px; height: 56px; pointer-events: none;
-    transition-property: left, top; transition-duration: 0.2s; transition-timing-function: linear; will-change: left, top;
-}
-#player-sprite {
-    width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 40px;
-    transition-property: transform;
-    transition-duration: 0.2s;
-}
-
-#companion-token {
-    position: absolute; right: -35px; bottom: 5px; width: 40px; height: 40px;
-    transition-property: transform;
-    transition-duration: 0.2s;
-}
-
-.pixel-art { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; filter: Drop-Shadow(0px 6px 4px Rgba(0,0,0,0.6)); will-change: filter; }
-.anim-bounce { animation: bouncePlayer 0.3s infinite alternate; }
-.anim-bounce-companion { animation: bouncePlayer 0.3s infinite alternate 0.15s; }
-
-/* --- UI ESTACIONADA --- */
-#fixed-ui-overlay {
-    position: fixed; top: 64px; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: var(--z-modal-step); opacity: 0;
-    transition-property: opacity;
-    transition-duration: 0.3s;
-    transition-timing-function: ease;
-}
-#fixed-ui-overlay.active { opacity: 1; pointer-events: none; }
-#fixed-ui-overlay > * { pointer-events: auto; }
-
-.floating-btn {
-    background: linear-gradient(145deg, #4B5563, #374151); color: white; border: 3px solid white; border-radius: 50%;
-    width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 12px Rgba(0,0,0,0.5); font-size: 1.4rem;
-    transition-property: transform;
-    transition-duration: 0.1s;
-}
-.floating-btn:active { transform: Scale(0.9); }
-#btn-free-map { position: absolute; top: 20px; right: 20px; }
-#btn-radar { position: absolute; top: 85px; right: 20px; }
-#btn-debug { position: absolute; top: 150px; right: 20px; }
-
-#bottom-action-panel { position: absolute; bottom: 25px; left: 50%; transform: Translatex(-50%); display: flex; gap: 12px; width: 100%; justify-content: center; padding: 0 10px;}
-
-/* --- GLASSMORPHISM & ALERTS --- */
-.glass-panel { background: Rgba(31, 41, 55, 0.95); backdrop-filter: Blur(12px); -webkit-backdrop-filter: Blur(12px); }
-.poke-dialog { background-color: white; border: 6px solid #1F2937; border-radius: 16px; box-shadow: 0 10px 25px Rgba(0,0,0,0.5); outline: 2px solid #E5E7EB; outline-offset: -6px; }
-</style>
