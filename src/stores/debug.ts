@@ -75,6 +75,7 @@ export const useDebugStore = defineStore('debug', () => {
   const trainerChance50 = ref(false)
   const forceRival = ref(false)
   const forceGuardian80 = ref(false)
+  const forceShiny100 = ref(false)
   const debugMultipliers = ref({
     shiny: 1,
     trainer: 1,
@@ -108,6 +109,7 @@ export const useDebugStore = defineStore('debug', () => {
     debugObj.trainerChance50 = trainerChance50.value
     debugObj.forceRival = forceRival.value
     debugObj.forceGuardian80 = forceGuardian80.value
+    debugObj.forceShiny100 = forceShiny100.value
     debugObj.multipliers = debugMultipliers.value
 
     tools.value.forEach(tool => {
@@ -135,7 +137,7 @@ export const useDebugStore = defineStore('debug', () => {
     updateGlobalProxy()
   }
 
-  watch([trainerChance50, debugMultipliers, forceRival, forceGuardian80], () => {
+  watch([trainerChance50, debugMultipliers, forceRival, forceGuardian80, forceShiny100], () => {
     updateGlobalProxy()
   }, { deep: true })
 
@@ -154,6 +156,7 @@ export const useDebugStore = defineStore('debug', () => {
     trainerChance50,
     forceRival,
     forceGuardian80,
+    forceShiny100,
     debugMultipliers
   }
 })

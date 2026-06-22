@@ -85,6 +85,17 @@ const togglePerf = () => getDebug().togglePerf()
             style="width: 16px; height: 16px; cursor: pointer;"
           >
         </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span
+            class="field-label"
+            style="margin-bottom: 0; font-size: 9px; color: #fff;"
+          >Forzar 100% encuentros Shiny</span>
+          <input 
+            v-model="debugStore.forceShiny100" 
+            type="checkbox" 
+            style="width: 16px; height: 16px; cursor: pointer;"
+          >
+        </div>
       </div>
     </div>
   </div>

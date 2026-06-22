@@ -373,24 +373,31 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const eventStore = useEventStore();
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
-    const baseShinyRate = GAME_RATIOS.shinyRate;
-    let totalBonusMult = 0;
+    const isDebugShiny = typeof window !== 'undefined' && 
+      (window as unknown as { __VITE_DEBUG__?: { forceShiny100?: boolean } }).__VITE_DEBUG__?.forceShiny100;
     
-    // Event Bonus
-    const speciesBonuses = eventStore.getSpeciesBonuses(id);
-    if (speciesBonuses && speciesBonuses.shiny) {
-      totalBonusMult += (speciesBonuses.shiny - 1);
-    }
-    
-    // Local Options Bonus
-    if (options.shinyMultiplier) {
-      totalBonusMult += (options.shinyMultiplier - 1);
-    }
+    if (isDebugShiny) {
+      isShiny = true;
+    } else {
+      const baseShinyRate = GAME_RATIOS.shinyRate;
+      let totalBonusMult = 0;
+      
+      // Event Bonus
+      const speciesBonuses = eventStore.getSpeciesBonuses(id);
+      if (speciesBonuses && speciesBonuses.shiny) {
+        totalBonusMult += (speciesBonuses.shiny - 1);
+      }
+      
+      // Local Options Bonus
+      if (options.shinyMultiplier) {
+        totalBonusMult += (options.shinyMultiplier - 1);
+      }
 
-    const finalMult = Math.max(1, 1 + totalBonusMult);
-    const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore.globalMultipliers?.shiny || 1))));
-    
-    isShiny = Math.random() < (1 / finalShinyRate);
+      const finalMult = Math.max(1, 1 + totalBonusMult);
+      const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore.globalMultipliers?.shiny || 1))));
+      
+      isShiny = Math.random() < (1 / finalShinyRate);
+    }
   }
   
   const isLegendary = LEGENDARY_POKEMON.includes(id.toLowerCase());

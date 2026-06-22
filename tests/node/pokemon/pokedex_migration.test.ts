@@ -8,7 +8,7 @@ import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 describe('Pokedex Migration Logic Test', () => {
   it('correctly syncs Pokedex from box and team for Angianemar and updates save ID', () => {
     // 1. Load the backup JSON file
-    const backupPath = path.resolve('database/backups/nas_franco/nas_franco_backup_2026-05-31T01-57-05-676918945Z.json');
+    const backupPath = path.resolve('tests/node/fixtures/server_franco_backup_fixture.json');
     assert.ok(fs.existsSync(backupPath), 'Backup file must exist');
 
     const backupContent = fs.readFileSync(backupPath, 'utf8');
@@ -22,6 +22,11 @@ describe('Pokedex Migration Logic Test', () => {
 
     assert.ok(userSave, 'Angianemar save must exist in backup');
     const saveData = userSave.save_data as GameState;
+    
+    // Force pre-migration state by removing squirtle to ensure determinism
+    saveData.pokedex = (saveData.pokedex || []).filter((id: string) => id !== 'squirtle');
+    saveData.seenPokedex = (saveData.seenPokedex || []).filter((id: string) => id !== 'squirtle');
+    
     const initialLastSaveId = userSave.last_save_id;
 
     // 3. Pre-migration assertions

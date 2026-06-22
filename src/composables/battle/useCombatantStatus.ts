@@ -9,6 +9,9 @@ import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap'
 import { toID } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
+import { useGameStore } from '@/stores/game'
+import { useProfileStore } from '@/stores/player/profile'
+import { supabase } from '@/logic/db/supabase'
 
 function formatAbilityDescription(desc: string): string {
   const lines: string[] = []
@@ -90,6 +93,14 @@ interface UnifiedStatus {
   class: string
   isBoosted?: boolean
   stageValue?: number
+  isAdminOnly?: boolean
+}
+
+interface VolatileStatusItem {
+  icon: string
+  text?: string
+  isBoosted?: boolean
+  isAdminOnly?: boolean
 }
 
 export function useCombatantStatus(
@@ -99,6 +110,17 @@ export function useCombatantStatus(
 ) {
   const p = computed(() => toValue(pokemonRef))
   const isPlayerVal = computed(() => toValue(isPlayer))
+  const gameStore = useGameStore()
+  const profileStore = useProfileStore()
+
+  const isIvScannerActive = computed(() => {
+    return (gameStore.state.ivScannerSecs || 0) > 0
+  })
+
+  const isAdmin = computed(() => {
+    const win = window as unknown as { __ADMIN_DEBUG__: boolean }
+    return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
+  })
 
   const activeStages = computed(() => {
     const s = isPlayerVal.value ? battleStore.playerStages : battleStore.enemyStages
@@ -134,41 +156,46 @@ export function useCombatantStatus(
     
     // 0. Habilidad Base (MANDATORIA)
     if (target.ability) {
-      const ab = target.ability
-      const abId = toID(ab)
-      const weather = battleStore.state?.weather?.type
-      const mechWeather = getMechanicalWeather(weather)
+      const showAbility = isPlayerVal.value || isIvScannerActive.value || isAdmin.value
       
-      let isAbBoosted = false
-      let abEntry = null
-      try {
-        abEntry = pokemonDataProvider.getAbilityData(ab)
-      } catch (_err) {
-        // Fallback gracefully for unknown or custom abilities
+      if (showAbility) {
+        const ab = target.ability
+        const abId = toID(ab)
+        const weather = battleStore.state?.weather?.type
+        const mechWeather = getMechanicalWeather(weather)
+        
+        let isAbBoosted = false
+        let abEntry = null
+        try {
+          abEntry = pokemonDataProvider.getAbilityData(ab)
+        } catch (_err) {
+          // Fallback gracefully for unknown or custom abilities
+        }
+        const abDescription = abEntry?.desc || 'Sin descripción disponible.'
+
+        const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN
+        const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN
+
+        let statusMsg = ''
+        if (abId === 'chlorophyll' && isSunActive) { isAbBoosted = true; statusMsg = ' (Activa por Sol)' }
+        if (abId === 'swiftswim' && isRainActive) { isAbBoosted = true; statusMsg = ' (Activa por Lluvia)' }
+        if (abId === 'sandrush' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; statusMsg = ' (Activa por Arena)' }
+        if (abId === 'slushrush' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; statusMsg = ' (Activa por Nieve)' }
+
+        let formattedDesc = formatAbilityDescription(abDescription)
+        if (statusMsg) {
+          formattedDesc += `\n${statusMsg}`
+        }
+
+        const abText = `HABILIDAD - ${String(abEntry?.name || ab).toUpperCase()}:\n${formattedDesc}`
+
+        list.push({ 
+          icon: '🧠', 
+          text: abText,
+          isBoosted: isAbBoosted,
+          isAdminOnly: !isPlayerVal.value && !isIvScannerActive.value && isAdmin.value
+        })
       }
-      const abDescription = abEntry?.desc || 'Sin descripción disponible.'
-
-      const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN
-      const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN
-
-      let statusMsg = ''
-      if (abId === 'chlorophyll' && isSunActive) { isAbBoosted = true; statusMsg = ' (Activa por Sol)' }
-      if (abId === 'swiftswim' && isRainActive) { isAbBoosted = true; statusMsg = ' (Activa por Lluvia)' }
-      if (abId === 'sandrush' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; statusMsg = ' (Activa por Arena)' }
-      if (abId === 'slushrush' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; statusMsg = ' (Activa por Nieve)' }
-
-      let formattedDesc = formatAbilityDescription(abDescription)
-      if (statusMsg) {
-        formattedDesc += `\n${statusMsg}`
-      }
-
-      const abText = `HABILIDAD - ${String(abEntry?.name || ab).toUpperCase()}:\n${formattedDesc}`
-
-      list.push({ 
-        icon: '🧠', 
-        text: abText,
-        isBoosted: isAbBoosted
-      })
     }
 
     // 1. Estados Propios del Pokémon
@@ -293,7 +320,8 @@ export function useCombatantStatus(
         title: title || '',
         description: description || text || '',
         class: 'volatile',
-        isBoosted: vs.isBoosted
+        isBoosted: vs.isBoosted,
+        isAdminOnly: (vs as VolatileStatusItem).isAdminOnly
       })
     })
 

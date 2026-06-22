@@ -209,8 +209,8 @@ describe('Save Migration and Combat Simulation', () => {
     expect(Dex.moves.get(p2Set.moves[0]).id).toBe('bubblebeam');
 
     // Levantar un combate simulado de prueba con el motor nativo de Showdown (que es lo que corre en el worker)
-    const { Battle } = await import('@pkmn/sim');
-    const battle = new Battle({ formatid: 'gen3customgame' as any });
+    const { Battle, toID } = await import('@pkmn/sim');
+    const battle = new Battle({ formatid: toID('gen3customgame') });
     
     battle.setPlayer('p1', { name: 'Player', team: [p1Set] });
     battle.setPlayer('p2', { name: 'Opponent', team: [p2Set] });

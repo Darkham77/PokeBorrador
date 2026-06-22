@@ -58,6 +58,10 @@ const isAdmin = computed(() => {
   return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
 })
 
+const showStatsTable = computed(() => {
+  return props.isPlayer || isIvScannerActive.value || isAdmin.value
+})
+
 const cardRef = ref<HTMLElement | null>(null)
 
 // --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
@@ -278,41 +282,49 @@ const teamBallsStatus = computed(() => {
 
           <template #content>
             <div class="status-pro-tooltip">
+              <div 
+                v-if="status.isAdminOnly"
+                class="admin-only-disclaimer"
+              >
+                ⚠️ esto es visible solo para administradores
+              </div>
               <p class="status-desc-text">
                 {{ status.description }}
               </p>
               
-              <div class="tooltip-divider" />
-              
-              <div class="stats-comparison-grid">
-                <div class="grid-header-row">
-                  <span class="grid-header">STAT</span>
-                  <span class="grid-header">BASE</span>
-                  <span class="grid-header">MULT</span>
-                  <span class="grid-header">REAL</span>
-                </div>
+              <template v-if="showStatsTable">
+                <div class="tooltip-divider" />
                 
-                <div 
-                  v-for="statKey in ['atk', 'def', 'spa', 'spd', 'spe']" 
-                  :key="statKey"
-                  class="grid-stat-row"
-                  :class="{
-                    'is-up': getStatModifier(statKey) > 0 || getBreakdown(statKey).weatherMult > 1 || getBreakdown(statKey).abilityMult > 1,
-                    'is-down': getStatModifier(statKey) < 0 || getBreakdown(statKey).statusMult < 1 || getBreakdown(statKey).weatherMult < 1
-                  }"
-                >
-                  <span class="stat-name-col">
-                    {{ adminStatConfig.find(s => s.key === statKey)?.label }}
-                  </span>
-                  <span class="stat-val-col">{{ getBreakdown(statKey).base }}</span>
-                  <span class="stat-mult-col">
-                    x{{ (getBreakdown(statKey).stageMult * getBreakdown(statKey).weatherMult * getBreakdown(statKey).abilityMult * getBreakdown(statKey).statusMult).toFixed(2) }}
-                  </span>
-                  <span class="stat-final-col highlight-val">
-                    {{ Math.round(getBreakdown(statKey).final) }}
-                  </span>
+                <div class="stats-comparison-grid">
+                  <div class="grid-header-row">
+                    <span class="grid-header">STAT</span>
+                    <span class="grid-header">BASE</span>
+                    <span class="grid-header">MULT</span>
+                    <span class="grid-header">REAL</span>
+                  </div>
+                  
+                  <div 
+                    v-for="statKey in ['atk', 'def', 'spa', 'spd', 'spe']" 
+                    :key="statKey"
+                    class="grid-stat-row"
+                    :class="{
+                      'is-up': getStatModifier(statKey) > 0 || getBreakdown(statKey).weatherMult > 1 || getBreakdown(statKey).abilityMult > 1,
+                      'is-down': getStatModifier(statKey) < 0 || getBreakdown(statKey).statusMult < 1 || getBreakdown(statKey).weatherMult < 1
+                    }"
+                  >
+                    <span class="stat-name-col">
+                      {{ adminStatConfig.find(s => s.key === statKey)?.label }}
+                    </span>
+                    <span class="stat-val-col">{{ getBreakdown(statKey).base }}</span>
+                    <span class="stat-mult-col">
+                      x{{ (getBreakdown(statKey).stageMult * getBreakdown(statKey).weatherMult * getBreakdown(statKey).abilityMult * getBreakdown(statKey).statusMult).toFixed(2) }}
+                    </span>
+                    <span class="stat-final-col highlight-val">
+                      {{ Math.round(getBreakdown(statKey).final) }}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </template>
             </div>
           </template>
         </PVTooltip>
@@ -779,6 +791,20 @@ const teamBallsStatus = computed(() => {
         }
       }
     }
+  }
+
+  .admin-only-disclaimer {
+    @include pixelated;
+    font-size: 7px;
+    color: #ffd60a;
+    background: Rgba(255, 214, 10, 0.15);
+    border: 1px dashed Rgba(255, 214, 10, 0.4);
+    padding: 4px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 }
 </style>

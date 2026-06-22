@@ -13,6 +13,7 @@ import { TRAINER_TYPES } from '@/data/player/trainerTypes'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
+import { ENABLED_POKEMON_IDS } from '@/data/system/constants'
 
 interface ExtendedPokemon extends Pokemon {
   _revealed?: boolean
@@ -148,7 +149,7 @@ export function useDebugTrainers() {
     if (selectedPreset.value === 'random') {
       trainerArchetype.value = undefined
       randomizeTrainer()
-      const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
+      const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb()).filter(id => ENABLED_POKEMON_IDS.has(id))
       for (let i = 0; i < size; i++) {
         const randomSpecies = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value

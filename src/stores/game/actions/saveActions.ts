@@ -117,6 +117,10 @@ export function useSaveActions(
           }
         }
       }
+      
+      // Abort loading and prevent overwriting the save with a blank state
+      loadingStore.finish('game_data');
+      return { success: false, error: true };
     }
     
     if (data && authStore.user) {
@@ -155,6 +159,13 @@ export function useSaveActions(
   }
 
   async function save(showNotif = true) {
+    // Security Guard: Prevent writing a blank/corrupted save state
+    const pokemonCount = (state.team?.length || 0) + (state.box?.length || 0);
+    if (pokemonCount === 0 || !state.starterChosen) {
+      logger.warn('SAVE', `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`);
+      return { success: false, error: 'Cannot save with 0 Pokémon or unchosen starter' };
+    }
+
     if (isSandboxActive.value) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))

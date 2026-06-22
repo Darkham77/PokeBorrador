@@ -78,8 +78,7 @@ describe('Real Backup DB Migration Verification', () => {
   }
 
   const backups = [
-    'database/backups/nas_franco/nas_franco_backup_2026-05-31T01-57-05-676918945Z.json',
-    'database/backups/official-prod/official-prod_backup_2026-05-20T10-31-22-170657959Z.json'
+    'tests/node/fixtures/server_franco_backup_fixture.json'
   ];
 
   backups.forEach(backupRelPath => {
