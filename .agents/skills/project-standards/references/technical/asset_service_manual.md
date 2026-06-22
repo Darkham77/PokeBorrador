@@ -161,3 +161,32 @@ To ensure game assets are correctly precached and the service worker remains sta
 
 - **Glob Patterns**: Ensure that `globPatterns` includes all critical game extensions: `['**/*.{js,css,html,ico,png,svg,webp,woff2}']`.
 - **Static Injections**: Use `includeAssets` for critical WASM or background files that aren't automatically discovered by the crawler.
+
+---
+
+## 🔊 Audio & Cries Fallback System
+
+To optimize performance and avoid run-time latency or 404 errors when resolving cries for variant Pokémon (e.g. Mega evolutions, specific forms), the asset pipeline pre-computes sound resources at compile time:
+
+### 1. Compile-Time Pre-computation
+- All official Pokémon entries are mapped to their specific audio files under `public/cries/`.
+- If a specific variant cry is missing (e.g., `rayquazamega.mp3`), the compiler (`convert_assets.ts`) crawls the species hierarchy (`baseSpecies` and `prevo` chain) to precompute the correct fallback sound name.
+- Fallback mappings are written directly into the `c` attribute of `pokemonFeetDatabase.json` and exposed in `src/data/pokemon/pokemonFeetDatabase.ts` as `POKEMON_CRIES_DATABASE` for O(1) runtime lookups.
+
+### 2. Compile-Time Safe Gate
+- The asset pipeline acts as a strict validation gate.
+- If any official Pokémon (where `num > 0` and is not a CAP/Custom fanmade) fails to resolve to any valid audio or fallback cry file, the compiler MUST log a list of affected species and abort compilation with an error code (`process.exit(1)`).
+
+---
+
+## 📄 JSON Assets Readability Guidelines
+
+To maintain developer ergonomics while ensuring optimal production performance:
+
+### 1. Human-Readable in Development (DEV)
+- All generated or maintained JSON files and catalogs (e.g., `pokemonFeetDatabase.json`, `animatedSpriteDatabase.json`, `npcSpriteCatalog.ts`) MUST be written using pretty-printed formatting (`JSON.stringify(..., null, 2)`) during local development and assets conversion.
+- No JSON file committed in development should be in "machine" minified format.
+
+### 2. Maximum Optimization in Production (Build)
+- Production minification and space optimizations are handled automatically during the bundle compilation phase (`npm run build`). No manual minification should be done to files in the repository.
+
