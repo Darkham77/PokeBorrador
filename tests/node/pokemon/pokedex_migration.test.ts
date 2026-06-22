@@ -5,6 +5,39 @@ import path from 'node:path';
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
+interface SaveWrapper {
+  user_id?: string
+  save_data?: GameState
+  last_save_id?: string
+}
+
+function findAngianemarSave(saves: SaveWrapper[]): SaveWrapper | undefined {
+  return saves.find((s) => s.user_id === '259ef49f-54b2-40c6-a797-5951dc966cb4');
+}
+
+function filterSquirtle(list: string[] | undefined): string[] {
+  return (list || []).filter((id) => id !== 'squirtle');
+}
+
+function hasSquirtle(box: Pokemon[] | undefined): boolean {
+  return (box || []).some((p) => p.id === 'squirtle');
+}
+
+function getPokemonIds(team: Pokemon[] | undefined, box: Pokemon[] | undefined): string[] {
+  const ids: string[] = [];
+  if (team) {
+    for (const p of team) {
+      if (p?.id) ids.push(p.id);
+    }
+  }
+  if (box) {
+    for (const p of box) {
+      if (p?.id) ids.push(p.id);
+    }
+  }
+  return ids;
+}
+
 describe('Pokedex Migration Logic Test', () => {
   it('correctly syncs Pokedex from box and team for Angianemar and updates save ID', () => {
     // 1. Load the backup JSON file
@@ -16,54 +49,29 @@ describe('Pokedex Migration Logic Test', () => {
     assert.ok(backupData.data, 'Backup must contain data');
 
     // 2. Find Angianemar's save game
-    const saves = backupData.data.game_saves || [];
-    const targetUserId = '259ef49f-54b2-40c6-a797-5951dc966cb4'; // Angianemar's UUID
-    const userSave = saves.find((s: { user_id: string }) => s.user_id === targetUserId);
+    const userSave = findAngianemarSave(backupData.data.game_saves || []);
 
     assert.ok(userSave, 'Angianemar save must exist in backup');
     const saveData = userSave.save_data as GameState;
     
     // Force pre-migration state by removing squirtle to ensure determinism
-    saveData.pokedex = (saveData.pokedex || []).filter((id: string) => id !== 'squirtle');
-    saveData.seenPokedex = (saveData.seenPokedex || []).filter((id: string) => id !== 'squirtle');
+    saveData.pokedex = filterSquirtle(saveData.pokedex);
+    saveData.seenPokedex = filterSquirtle(saveData.seenPokedex);
     
     const initialLastSaveId = userSave.last_save_id;
 
     // 3. Pre-migration assertions
-    // Verify squirtle is in the box
-    const hasSquirtleInBox = (saveData.box || []).some((p: Pokemon) => p.id === 'squirtle');
-    assert.strictEqual(hasSquirtleInBox, true, 'Angianemar must have squirtle in their box initially');
-
-    // Verify squirtle is NOT in their pokedex
-    const hasSquirtleInPokedex = (saveData.pokedex || []).includes('squirtle');
-    assert.strictEqual(hasSquirtleInPokedex, false, 'Angianemar must NOT have squirtle in their pokedex initially');
+    assert.strictEqual(hasSquirtle(saveData.box), true, 'Angianemar must have squirtle in their box initially');
+    assert.strictEqual(saveData.pokedex.includes('squirtle'), false, 'Angianemar must NOT have squirtle in their pokedex initially');
 
     // 4. Run JS equivalent of the SQL migration logic
-    const pokedexSet = new Set<string>(saveData.pokedex || []);
-    const seenPokedexSet = new Set<string>(saveData.seenPokedex || []);
+    const pokemonIds = getPokemonIds(saveData.team, saveData.box);
 
-    // Add team ids
-    (saveData.team || []).forEach((p: Pokemon) => {
-      if (p?.id) {
-        pokedexSet.add(p.id);
-        seenPokedexSet.add(p.id);
-      }
-    });
-
-    // Add box ids
-    (saveData.box || []).forEach((p: Pokemon) => {
-      if (p?.id) {
-        pokedexSet.add(p.id);
-        seenPokedexSet.add(p.id);
-      }
-    });
-
-    saveData.pokedex = Array.from(pokedexSet);
-    saveData.seenPokedex = Array.from(seenPokedexSet);
+    saveData.pokedex = Array.from(new Set<string>([...(saveData.pokedex || []), ...pokemonIds]));
+    saveData.seenPokedex = Array.from(new Set<string>([...(saveData.seenPokedex || []), ...pokemonIds]));
 
     // Simulate rotation of last_save_id
-    const newLastSaveId = 'mocked-random-uuid-generation-1234';
-    userSave.last_save_id = newLastSaveId;
+    userSave.last_save_id = 'mocked-random-uuid-generation-1234';
 
     // 5. Post-migration assertions
     assert.strictEqual(saveData.pokedex.includes('squirtle'), true, 'Squirtle must be in pokedex after migration');

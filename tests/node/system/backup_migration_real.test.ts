@@ -16,6 +16,85 @@ interface RawPokemon {
 
 import { LEGENDARIES, legacyItemMap, legacyAbilityMap, legacyMoveMap } from '../../helpers/legacyDataMocks.ts';
 
+interface MigrationCounters {
+  legendaries: number
+  items: number
+  abilities: number
+  moves: number
+}
+
+function checkLegendaryVigor(p: RawPokemon, legendaries: Set<string>): boolean {
+  return !!(p.id && legendaries.has(p.id.toLowerCase()) && (p.vigor ?? 0) > 0);
+}
+
+function checkMovesLegacy(
+  moves: Array<{ id?: string } | null> | undefined,
+  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
+): number {
+  if (!moves || !Array.isArray(moves)) return 0;
+  let count = 0;
+  moves.forEach((m) => {
+    if (m && getLegacyMoveTranslation(m.id)) {
+      count++;
+    }
+  });
+  return count;
+}
+
+function runPreCheck(
+  p: RawPokemon | null | undefined, 
+  counters: MigrationCounters, 
+  legendaries: Set<string>,
+  getLegacyItemTranslation: (item: string | undefined) => string | undefined,
+  getLegacyAbilityTranslation: (ability: string | undefined) => string | undefined,
+  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
+): void {
+  if (!p) return;
+  if (checkLegendaryVigor(p, legendaries)) {
+    counters.legendaries++;
+  }
+  if (p.heldItem && getLegacyItemTranslation(p.heldItem)) {
+    counters.items++;
+  }
+  if (getLegacyAbilityTranslation(p.ability)) {
+    counters.abilities++;
+  }
+  counters.moves += checkMovesLegacy(p.moves, getLegacyMoveTranslation);
+}
+
+function runPostCheck(
+  p: RawPokemon | null | undefined, 
+  legendaries: Set<string>,
+  getLegacyItemTranslation: (item: string | undefined) => string | undefined,
+  getLegacyAbilityTranslation: (ability: string | undefined) => string | undefined,
+  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
+): void {
+  if (!p) return;
+  if (p.id && legendaries.has(p.id.toLowerCase())) {
+    assert.strictEqual(p.vigor, 0, `Legendary ${p.name} (${p.id}) must have 0 vigor after migration`);
+  }
+  if (p.heldItem) {
+    const mappedItem = getLegacyItemTranslation(p.heldItem);
+    if (mappedItem) {
+      assert.strictEqual(p.heldItem, mappedItem, `Held item ${p.heldItem} was not migrated to ${mappedItem}`);
+    }
+  }
+  const mappedAbility = getLegacyAbilityTranslation(p.ability);
+  if (mappedAbility) {
+    assert.strictEqual(p.ability, mappedAbility, `Ability ${p.ability} was not migrated to ${mappedAbility}`);
+  }
+  if (p.moves && Array.isArray(p.moves)) {
+    p.moves.forEach((m) => {
+      if (m) {
+        const mappedMove = getLegacyMoveTranslation(m.id);
+        if (mappedMove) {
+          assert.strictEqual(m.id, mappedMove, `Move ${m.id} was not migrated to ${mappedMove}`);
+        }
+      }
+    });
+  }
+}
+
 describe('Real Backup DB Migration Verification', () => {
   const legendaries = LEGENDARIES;
 
@@ -95,10 +174,12 @@ describe('Real Backup DB Migration Verification', () => {
       const gameSaves = backupData.data.game_saves || [];
       assert.ok(gameSaves.length > 0, 'Backup must contain game_saves');
 
-      let legendariesFoundAndFixedCount = 0;
-      let legacyHeldItemsFixedCount = 0;
-      let legacyAbilitiesFixedCount = 0;
-      let legacyMovesFixedCount = 0;
+      const counters: MigrationCounters = {
+        legendaries: 0,
+        items: 0,
+        abilities: 0,
+        moves: 0
+      };
 
       gameSaves.forEach((saveWrapper: { save_data: string | GameState }) => {
         let saveData: GameState;
@@ -112,74 +193,23 @@ describe('Real Backup DB Migration Verification', () => {
         const box = (saveData.box || []) as unknown as RawPokemon[]
 
         // Track properties before migration to ensure they change
-        const preCheck = (p: RawPokemon | null | undefined): void => {
-          if (!p) return;
-          if (p.id && legendaries.has(p.id.toLowerCase()) && (p.vigor ?? 0) > 0) {
-            legendariesFoundAndFixedCount++;
-          }
-          if (p.heldItem && getLegacyItemTranslation(p.heldItem)) {
-            legacyHeldItemsFixedCount++;
-          }
-          if (getLegacyAbilityTranslation(p.ability)) {
-            legacyAbilitiesFixedCount++;
-          }
-          if (p.moves && Array.isArray(p.moves)) {
-            p.moves.forEach((m: { id?: string } | null) => {
-              if (m && getLegacyMoveTranslation(m.id)) {
-                legacyMovesFixedCount++;
-              }
-            });
-          }
-        };
-
-        team.forEach(preCheck);
-        box.forEach(preCheck);
+        team.forEach(p => runPreCheck(p, counters, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
+        box.forEach(p => runPreCheck(p, counters, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
 
         // Run migration
         team.forEach(migratePoke);
         box.forEach(migratePoke);
 
         // Assertions post-migration
-        const postCheck = (p: RawPokemon | null | undefined): void => {
-          if (!p) return;
-          // Legendaries must have 0 vigor
-          if (p.id && legendaries.has(p.id.toLowerCase())) {
-            assert.strictEqual(p.vigor, 0, `Legendary ${p.name} (${p.id}) must have 0 vigor after migration`);
-          }
-          // Held items must not be legacy
-          if (p.heldItem) {
-            const mappedItem = getLegacyItemTranslation(p.heldItem);
-            if (mappedItem) {
-              assert.strictEqual(p.heldItem, mappedItem, `Held item ${p.heldItem} was not migrated to ${mappedItem}`);
-            }
-          }
-          // Abilities must not be legacy
-          const mappedAbility = getLegacyAbilityTranslation(p.ability);
-          if (mappedAbility) {
-            assert.strictEqual(p.ability, mappedAbility, `Ability ${p.ability} was not migrated to ${mappedAbility}`);
-          }
-          // Moves must not be legacy
-          if (p.moves && Array.isArray(p.moves)) {
-            p.moves.forEach((m: { id?: string } | null) => {
-              if (m) {
-                const mappedMove = getLegacyMoveTranslation(m.id);
-                if (mappedMove) {
-                  assert.strictEqual(m.id, mappedMove, `Move ${m.id} was not migrated to ${mappedMove}`);
-                }
-              }
-            });
-          }
-        };
-
-        team.forEach(postCheck);
-        box.forEach(postCheck);
+        team.forEach(p => runPostCheck(p, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
+        box.forEach(p => runPostCheck(p, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
       });
 
       console.log(`\n[Test: ${filename}] Migrated successfully:`);
-      console.log(` - Legendaries fixed to 0 vigor: ${legendariesFoundAndFixedCount}`);
-      console.log(` - Legacy held items mapped: ${legacyHeldItemsFixedCount}`);
-      console.log(` - Legacy abilities translated: ${legacyAbilitiesFixedCount}`);
-      console.log(` - Legacy moves converted: ${legacyMovesFixedCount}\n`);
+      console.log(` - Legendaries fixed to 0 vigor: ${counters.legendaries}`);
+      console.log(` - Legacy held items mapped: ${counters.items}`);
+      console.log(` - Legacy abilities translated: ${counters.abilities}`);
+      console.log(` - Legacy moves converted: ${counters.moves}\n`);
     });
   });
 });
