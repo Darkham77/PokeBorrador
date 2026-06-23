@@ -50,6 +50,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via the `DBRouter`.
 - **Zero-Pokemon Save Prohibition (Save Shield)**: To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`. A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
+- **No Runtime Sanitization Patches**: It is strictly forbidden to implement runtime data patches, sanitizers, or adapters in application code (e.g. inside save loading or initialization hooks) to dynamically fix legacy identifiers. All data structure updates and identifier migrations MUST be executed exclusively via proper SQL database migration scripts (PostgreSQL and SQLite companion scripts) to preserve database cleanliness and prevent application bloat.
 
 ## 4. Code Modularity (500/1000 Rule)
 

@@ -79,6 +79,8 @@ export interface BattleState {
     money: number;
     items: Record<string, number>;
   };
+  showdownPlayerTeamOrder?: string[];
+  showdownEnemyTeamOrder?: string[];
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

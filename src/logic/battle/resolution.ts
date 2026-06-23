@@ -6,6 +6,8 @@ import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
 import { clearVolatileStatus } from './battleStatus'
+import { findBestSwitchIndex } from './ai/battleAI.ts'
+import { getShowdownSlot, swapShowdownOrder } from './showdownAdapter.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 /**
@@ -131,7 +133,18 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
 
     // CHECK_REMAINING
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
-    const nextEnemy = isTr && active.enemyTeam ? active.enemyTeam.find((p: Pokemon) => p.hp > 0) : null
+    
+    let nextEnemy: Pokemon | null = null
+    if (isTr && active.enemyTeam && active.player) {
+      const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid)
+      if (bestIdx !== -1) {
+        nextEnemy = active.enemyTeam[bestIdx] || null
+      } else {
+        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+      }
+    } else if (active.enemyTeam) {
+      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+    }
 
     if (nextEnemy) {
       // STABILIZE_STAGE
@@ -156,6 +169,14 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       ctx.faintedSides.value.delete('enemy')
       ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
       
+      const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+      if (showdownWorker && active.enemyTeam) {
+        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
+        const slot = getShowdownSlot(currentOrder, nextEnemy.uid)
+        await executeTurnInWorker('', `switch ${slot}`)
+        active.showdownEnemyTeamOrder = swapShowdownOrder(currentOrder, nextEnemy.uid)
+      }
+
       if (ctx.animations?.handleReleaseRequest) {
         await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
       } else {

@@ -101,7 +101,7 @@ export async function executeFlee(ctx: BattleContext) {
           });
 
           for (const logLine of filteredLogs) {
-            await parseShowdownLogLine(ctx, logLine);
+            await parseShowdownLogLine(ctx, logLine, filteredLogs);
           }
 
           if (result.isOver && ctx.activeBattle.value) {

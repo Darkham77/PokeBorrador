@@ -31,6 +31,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
   // 0. Procesar Contadores Volátiles (ej: yawn)
   if (pokemon.volatileCounters) {
     for (const [key, val] of Object.entries(pokemon.volatileCounters)) {
+      if (key === 'twoturnmove' || key === 'lockedmove') continue;
       if (val > 0) {
         const newVal = val - 1;
         pokemon.volatileCounters[key] = newVal;
@@ -255,6 +256,7 @@ export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: Ba
 export function clearVolatileStatus(poke: Pokemon) {
   if (!poke) return;
   poke.volatileCounters = {}
+  poke.lastMove = null
   poke.confused = 0
   poke.flinched = false
   poke.substitute = 0
@@ -287,6 +289,33 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.snatching = false
   poke.tormentActive = false
   poke.bound = 0
+  poke.identified = false
+  poke.furyCutterCount = 0
+
+  // Restore Ditto original stats/moves if it was transformed
+  if (poke.originalDitto) {
+    const orig = poke.originalDitto
+    poke.id = orig.id || poke.id
+    poke.name = orig.name || poke.name
+    poke.type = orig.type || poke.type
+    poke.type2 = orig.type2
+    if (orig.atk !== undefined) poke.atk = orig.atk
+    if (orig.def !== undefined) poke.def = orig.def
+    if (orig.spa !== undefined) poke.spa = orig.spa
+    if (orig.spd !== undefined) poke.spd = orig.spd
+    if (orig.spe !== undefined) poke.spe = orig.spe
+    if (orig.moves) poke.moves = orig.moves
+    if (orig.ivs) poke.ivs = orig.ivs
+    if (orig.isShiny !== undefined) poke.isShiny = orig.isShiny
+    if (orig.level !== undefined) poke.level = orig.level
+    if (orig.nature !== undefined) poke.nature = orig.nature
+    if (orig.ability !== undefined) poke.ability = orig.ability
+    if (orig.maxHp !== undefined) {
+      poke.maxHp = orig.maxHp
+      poke.hp = Math.min(poke.hp, orig.maxHp)
+    }
+    poke.originalDitto = undefined
+  }
 
   // Castform: form is battle-volatile — always revert to Normal on exit
   if (poke.id === 'castform' && poke.form && poke.form !== 'normal') {

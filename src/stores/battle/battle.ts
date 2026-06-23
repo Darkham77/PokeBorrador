@@ -301,6 +301,18 @@ export const useBattleStore = defineStore('battle', () => {
 
   const useItemInBattle = async (itemId: string, targetIndex: number | null = null) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
+    
+    const activePoke = activeBattle.value.player
+    if (activePoke) {
+      const volatile = activePoke.volatileCounters
+      if (volatile) {
+        if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) ||
+            (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
+          return
+        }
+      }
+    }
+
     isProcessing.value = true
     
     try {

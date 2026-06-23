@@ -641,6 +641,9 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
       const baseId = spec.baseSpecies ? toID(spec.baseSpecies) : '';
       if (baseId && existingCries.has(baseId)) {
         packed.c[specId] = baseId;
+        if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
+          console.log(styleText('yellow', `      [WARN] Grito para ${spec.name} (${specId}) no encontrado. Usando fallback de especie base: ${baseId}`));
+        }
         continue;
       }
 
@@ -654,6 +657,9 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
           if (existingCries.has(prevId)) {
             packed.c[specId] = prevId;
             resolved = true;
+            if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
+              console.log(styleText('yellow', `      [WARN] Grito para ${spec.name} (${specId}) no encontrado. Usando fallback de pre-evolución: ${prevId}`));
+            }
             break;
           }
           current = prevSpecies;

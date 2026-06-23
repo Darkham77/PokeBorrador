@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mapVisualToOfficialWeather, getLocalizedWeatherName } from '@/logic/weather/weatherGenerationProvider';
+import { mapVisualToOfficialWeather, getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
 
 describe('Weather Generation Provider', () => {
   describe('mapVisualToOfficialWeather', () => {
@@ -63,6 +63,25 @@ describe('Weather Generation Provider', () => {
       expect(getLocalizedWeatherName('deltastream', 6)).toBe('Turbulencias');
       expect(getLocalizedWeatherName('none', 3)).toBe('Despejado');
       expect(getLocalizedWeatherName(null, 3)).toBe('Despejado');
+    });
+  });
+
+  describe('mapOfficialToVisualWeather', () => {
+    it('should translate Showdown weather IDs back to visual environmental weather types', () => {
+      expect(mapOfficialToVisualWeather('raindance', 3)).toBe('rain');
+      expect(mapOfficialToVisualWeather('SunnyDay', 3)).toBe('sun');
+      expect(mapOfficialToVisualWeather('sandstorm', 3)).toBe('sandstorm');
+      expect(mapOfficialToVisualWeather('hail', 3)).toBe('hail');
+      expect(mapOfficialToVisualWeather('hail', 9)).toBe('snow');
+      expect(mapOfficialToVisualWeather('snow', 9)).toBe('snow');
+      expect(mapOfficialToVisualWeather('desolateland', 6)).toBe('intense_sun');
+      expect(mapOfficialToVisualWeather('primordialsea', 6)).toBe('heavy_rain');
+      expect(mapOfficialToVisualWeather('deltastream', 6)).toBe('strong_winds');
+      expect(mapOfficialToVisualWeather('fog', 6)).toBe('fog');
+      expect(mapOfficialToVisualWeather('rain', 3)).toBe('rain');
+      expect(mapOfficialToVisualWeather('sun', 3)).toBe('sun');
+      expect(mapOfficialToVisualWeather('none', 3)).toBe('clear');
+      expect(mapOfficialToVisualWeather(null, 3)).toBe('clear');
     });
   });
 });

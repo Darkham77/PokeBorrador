@@ -49,10 +49,12 @@ self.onmessage = (event: MessageEvent) => {
 
         // Registrar las elecciones de ambos jugadores
         if (p1Choice) {
-          currentBattle.choose('p1', p1Choice);
+          const res1 = currentBattle.choose('p1', p1Choice);
+          console.log(`[Showdown Worker] p1 choose(${p1Choice}) res:`, res1);
         }
         if (p2Choice) {
-          currentBattle.choose('p2', p2Choice);
+          const res2 = currentBattle.choose('p2', p2Choice);
+          console.log(`[Showdown Worker] p2 choose(${p2Choice}) res:`, res2);
         }
 
         const turnLogs = getNewLogs();

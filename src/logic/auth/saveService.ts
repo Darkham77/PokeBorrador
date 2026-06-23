@@ -289,6 +289,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   
   const issues: string[] = [];
 
+
   // Calculate box hash to check if it's dirty
   const currentBoxHash = (data.box || []).map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
   const isBoxDirty = !lastBoxHash || currentBoxHash !== lastBoxHash || lastValidatedBox.length !== (data.box || []).length;

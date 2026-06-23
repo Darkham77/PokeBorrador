@@ -139,7 +139,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     participants: [playerPoke.uid], learnQueue: [], ...battleOptions,
     escapeAttempts: 0,
     playerSideConditions: {},
-    enemySideConditions: {}
+    enemySideConditions: {},
+    showdownPlayerTeamOrder: ctx.gs.state.team.filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid),
+    showdownEnemyTeamOrder: (enemyTeam || (finalEnemyPoke ? [finalEnemyPoke] : [])).filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
   }
 
   if (battleOptions.isDebug) {
@@ -340,6 +342,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value._rewardCombatants = []
     ctx.activeBattle.value.playerSideConditions = {}
     ctx.activeBattle.value.enemySideConditions = {}
+    ctx.activeBattle.value.showdownPlayerTeamOrder = ctx.gs.state.team.filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
+    ctx.activeBattle.value.showdownEnemyTeamOrder = (ctx.activeBattle.value.enemyTeam || (initialEnemy ? [initialEnemy] : [])).filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
   }
 
   // Reset stage variables, fainted sides and logs to prevent state leakages

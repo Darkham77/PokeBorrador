@@ -90,6 +90,14 @@ const isDisabled = computed(() => {
     if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
       return true
     }
+    // Diagnostic log
+    console.log(`[DEBUG_MOVE] ${p.name} - Move: ${props.move.id}. Volatiles:`, JSON.stringify(p.volatileCounters), "LastMove:", JSON.stringify(p.lastMove));
+    
+    // Two-Turn charging Move (Fly, Dig, Dive, etc.)
+    if (p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
+      console.log(`[DEBUG_MOVE] Disabling ${props.move.id} because of twoturnmove for ${p.name}. LastMove:`, p.lastMove);
+      return true
+    }
   }
   return false
 })

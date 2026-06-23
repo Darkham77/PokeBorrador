@@ -17,7 +17,18 @@ const emit = defineEmits<{
   (e: 'select-ball', ballId: string): void
 }>()
 
+import { computed } from 'vue'
+
 const battleStore = useBattleStore()
+
+const isLocked = computed(() => {
+  const p = battleStore.player
+  if (!p) return false
+  const volatile = p.volatileCounters
+  if (!volatile) return false
+  return !!((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
+            (volatile['lockedmove'] && volatile['lockedmove'] > 0))
+})
 
 // Eliminamos onHoverBtn manual para usar los estados nativos del mixin btn-vicio
 
@@ -31,7 +42,7 @@ const battleStore = useBattleStore()
     <div class="action-row-complex">
       <button
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped)"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> <span class="text">CAMBIAR</span>
@@ -39,13 +50,14 @@ const battleStore = useBattleStore()
 
       <BattleBallPicker 
         :is-finishing="props.isFinishing"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
         @select-ball="(id: string) => emit('select-ball', id)"
         @catch="emit('catch')"
       />
 
       <button
         class="action-btn bag-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
         @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> <span class="text">MOCHILA</span>

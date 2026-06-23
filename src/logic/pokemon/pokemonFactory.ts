@@ -117,6 +117,7 @@ export function recalcPokemonStats(p: Pokemon): void {
  */
 export function sanitizePokemon(p: Pokemon): void {
   if (!p) return;
+  if (!p.volatileCounters) p.volatileCounters = {};
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
   const base = pokemonDataProvider.getPokemonData(p.id);

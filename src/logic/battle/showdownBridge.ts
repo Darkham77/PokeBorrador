@@ -3,7 +3,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import { logger } from '@/logic/utils/logger';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getLocalizedWeatherName } from '@/logic/weather/weatherGenerationProvider';
+import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
 
 /**
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
@@ -36,7 +36,7 @@ export function filterShowdownLogs(logs: string[]): string[] {
  * Traduce y procesa una sola línea del log estructurado de Showdown,
  * actualizando el estado reactivo del combate y disparando logs/UI.
  */
-export async function parseShowdownLogLine(store: BattleContext, line: string) {
+export async function parseShowdownLogLine(store: BattleContext, line: string, turnLogs?: string[]) {
   if (!line || !line.startsWith('|')) return;
 
   const parts = line.split('|').map(p => p.trim());
@@ -72,6 +72,27 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
           const style = attacker === p ? 'log-player' : 'log-enemy';
           store.addLog(`¡${attacker.name} usó ${translatedName}!`, style, attacker);
 
+          attacker.lastMove = {
+            id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+            name: translatedName,
+            pp: 0,
+            maxPP: 0
+          } as unknown as import('@/types/pokemon/pokemon').Move;
+
+          const hasPrepareThisTurn = turnLogs?.some(l => {
+            const lp = l.split('|').map(x => x.trim());
+            return lp[1] === '-prepare' && getSide(lp[2] || '') === side;
+          });
+
+          if (attacker.volatileCounters && !hasPrepareThisTurn) {
+            delete attacker.volatileCounters['twoturnmove'];
+          }
+
+          const isLockedMove = moveData?.effect === 'locked_move';
+          if (isLockedMove && attacker.volatileCounters) {
+            attacker.volatileCounters['lockedmove'] = 1;
+          }
+
           store.attackerSide.value = side;
           store.activeMove.value = {
             id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
@@ -85,6 +106,27 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
 
           store.attackerSide.value = null;
           store.activeMove.value = null;
+        }
+        break;
+      }
+
+      case '-prepare': {
+        // Formato: |-prepare|p1a: Bulbasaur|Fly|p2a: Pikachu
+        const attacker = getPoke(parts[2] || '');
+        const moveId = parts[3] || 'Movimiento';
+        const moveData = pokemonDataProvider.getMoveData(moveId);
+        const translatedName = moveData?.name || moveId;
+        if (attacker) {
+          if (!attacker.volatileCounters) {
+            attacker.volatileCounters = {};
+          }
+          attacker.volatileCounters['twoturnmove'] = 1;
+          attacker.lastMove = {
+            id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+            name: translatedName,
+            pp: 0,
+            maxPP: 0
+          } as unknown as import('@/types/pokemon/pokemon').Move;
         }
         break;
       }
@@ -227,7 +269,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
 
           store.activeBattle.value.weather = {
             type: nextWeatherType,
-            visual: weatherType.toLowerCase(),
+            visual: mapOfficialToVisualWeather(weatherType, ACTIVE_GENERATION),
             turns: -1
           };
 
@@ -244,6 +286,61 @@ export async function parseShowdownLogLine(store: BattleContext, line: string) {
             const emoji = weatherEmojis[weatherType] || '🌤️';
             const localizedName = getLocalizedWeatherName(weatherType, ACTIVE_GENERATION);
             store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
+          }
+        }
+        break;
+      }
+
+      case '-start': {
+        const target = getPoke(parts[2] || '');
+        const effect = parts[3] || '';
+        if (target && effect) {
+          const cleanEffect = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (!target.volatileCounters) target.volatileCounters = {};
+          
+          if (cleanEffect === 'confusion') {
+            target.volatileCounters['confusion'] = 1;
+            delete target.volatileCounters['lockedmove'];
+          } else {
+            let isLockedEffect = cleanEffect === 'lockedmove';
+            if (!isLockedEffect) {
+              try {
+                const moveData = pokemonDataProvider.getMoveData(effect);
+                isLockedEffect = moveData?.effect === 'locked_move';
+              } catch (_e) {
+                // Ignore missing moves
+              }
+            }
+            if (isLockedEffect) {
+              target.volatileCounters['lockedmove'] = 1;
+            }
+          }
+        }
+        break;
+      }
+
+      case '-end': {
+        const target = getPoke(parts[2] || '');
+        const effect = parts[3] || '';
+        if (target && effect) {
+          const cleanEffect = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (target.volatileCounters) {
+            if (cleanEffect === 'confusion') {
+              delete target.volatileCounters['confusion'];
+            } else {
+              let isLockedEffect = cleanEffect === 'lockedmove';
+              if (!isLockedEffect) {
+                try {
+                  const moveData = pokemonDataProvider.getMoveData(effect);
+                  isLockedEffect = moveData?.effect === 'locked_move';
+                } catch (_e) {
+                  // Ignore missing moves
+                }
+              }
+              if (isLockedEffect) {
+                delete target.volatileCounters['lockedmove'];
+              }
+            }
           }
         }
         break;

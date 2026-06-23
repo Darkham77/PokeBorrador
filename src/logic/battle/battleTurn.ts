@@ -58,6 +58,10 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
 
+    if (move.pp > 0) {
+      move.pp--
+    }
+
     const p1Choice = `move ${move.id}`;
     const p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
 
@@ -70,7 +74,16 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     // Reproducir todos los logs del simulador asíncronamente
     const filteredLogs = filterShowdownLogs(result.logs);
     for (const logLine of filteredLogs) {
-      await parseShowdownLogLine(store, logLine);
+      await parseShowdownLogLine(store, logLine, filteredLogs);
+    }
+
+    if (store.activeBattle.value) {
+      if (store.activeBattle.value.player) {
+        store.activeBattle.value.player = { ...store.activeBattle.value.player };
+      }
+      if (store.activeBattle.value.enemy) {
+        store.activeBattle.value.enemy = { ...store.activeBattle.value.enemy };
+      }
     }
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)

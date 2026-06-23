@@ -124,3 +124,24 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
   return 'Sin efectos en combate.';
 }
 
+/**
+ * Maps an official Showdown weather ID back to a Poké Vicio visual/environmental weather ID.
+ */
+export function mapOfficialToVisualWeather(officialWeather: string | null | undefined, gen: number): string {
+  if (!officialWeather) return 'clear';
+  const lower = officialWeather.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  if (lower === 'raindance' || lower === 'rain') return 'rain';
+  if (lower === 'sunnyday' || lower === 'sun') return 'sun';
+  if (lower === 'sandstorm') return 'sandstorm';
+  if (lower === 'hail') return gen >= 9 ? 'snow' : 'hail';
+  if (lower === 'snow') return 'snow';
+  if (lower === 'desolateland' || lower === 'intensesun') return 'intense_sun';
+  if (lower === 'primordialsea' || lower === 'heavyrain') return 'heavy_rain';
+  if (lower === 'deltastream' || lower === 'strongwinds') return 'strong_winds';
+  if (lower === 'fog') return 'fog';
+
+  return 'clear';
+}
+
+

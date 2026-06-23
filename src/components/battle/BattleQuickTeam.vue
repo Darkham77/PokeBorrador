@@ -2,19 +2,42 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
+import { useUIStore } from '@/stores/ui'
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
+const uiStore = useUIStore()
 
 const team = computed<Pokemon[]>(() => gameStore.state.team || [])
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 
+const canSwitch = computed(() => {
+  const isForced = uiStore.isBattleSwitchForced
+  if (isForced) return true
+  
+  const p = battleStore.state?.player
+  if (!p) return false
+  
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
+  if (p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
+  
+  const volatile = p.volatileCounters
+  if (volatile) {
+    if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
+        (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
+      return false
+    }
+  }
+  
+  return true
+})
+
 const handleSwitch = (index: number) => {
   const pokemon = team.value[index]
   if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) return
-  if (battleStore.isProcessing || battleStore.isIntroAnimating) return
+  if (!canSwitch.value) return
   
   battleStore.executeSwitch(index)
 }
@@ -36,7 +59,8 @@ const handleSwitch = (index: number) => {
         class="quick-card-override"
         :class="{ 
           'is-active': pokemon.uid === activePokemonUid,
-          'is-fainted': pokemon.hp <= 0
+          'is-fainted': pokemon.hp <= 0,
+          'is-disabled': !canSwitch && pokemon.uid !== activePokemonUid
         }"
         @click.stop="handleSwitch(index)"
       />
@@ -110,6 +134,12 @@ const handleSwitch = (index: number) => {
     opacity: 0.5;
     will-change: transform, filter, opacity;
     filter: Grayscale(1);
+    pointer-events: none;
+  }
+
+  &.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
     pointer-events: none;
   }
 }

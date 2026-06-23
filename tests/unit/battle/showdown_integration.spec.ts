@@ -106,5 +106,62 @@ describe('Showdown Integration & Adapters', () => {
       await parseShowdownLogLine(mockContext, '|-unboost|p1a: Bulbasaur|atk|1');
       expect(playerStages.value.atk).toBe(1);
     });
+
+    it('debería registrar lastMove y manejar twoturnmove en -prepare y move', async () => {
+      const playerPoke = { uid: 'p1', name: 'Bulbasaur', volatileCounters: {} } as Pokemon;
+      const enemyPoke = { uid: 'e1', name: 'Pikachu' } as Pokemon;
+
+      const mockContext = {
+        activeBattle: ref({
+          player: playerPoke,
+          enemy: enemyPoke,
+          weather: { type: 'clear', visual: 'clear', turns: -1 }
+        }),
+        attackerSide: ref(null),
+        activeMove: ref(null),
+        playerStages: ref({} as unknown as BattleStages),
+        enemyStages: ref({} as unknown as BattleStages),
+        addLog: () => {}
+      } as unknown as BattleContext;
+
+      // 1. Simular -prepare para el ataque Vuelo (Fly)
+      await parseShowdownLogLine(mockContext, '|-prepare|p1a: Bulbasaur|Fly');
+      expect(playerPoke.volatileCounters?.['twoturnmove']).toBe(1);
+      expect(playerPoke.lastMove?.id).toBe('fly');
+
+      // 2. Simular ejecución del ataque en el siguiente turno
+      await parseShowdownLogLine(mockContext, '|move|p1a: Bulbasaur|Fly|p2a: Pikachu');
+      expect(playerPoke.volatileCounters?.['twoturnmove']).toBeUndefined();
+      expect(playerPoke.lastMove?.id).toBe('fly');
+    });
+
+    it('debería mantener twoturnmove si move y -prepare están en el mismo turno', async () => {
+      const playerPoke = { uid: 'p1', name: 'Bulbasaur', volatileCounters: {} } as Pokemon;
+      const enemyPoke = { uid: 'e1', name: 'Pikachu' } as Pokemon;
+
+      const mockContext = {
+        activeBattle: ref({
+          player: playerPoke,
+          enemy: enemyPoke,
+          weather: { type: 'clear', visual: 'clear', turns: -1 }
+        }),
+        attackerSide: ref(null),
+        activeMove: ref(null),
+        playerStages: ref({} as unknown as BattleStages),
+        enemyStages: ref({} as unknown as BattleStages),
+        addLog: () => {}
+      } as unknown as BattleContext;
+
+      const turnLogs = [
+        '|move|p1a: Bulbasaur|Fly||[still]',
+        '|-prepare|p1a: Bulbasaur|Fly'
+      ];
+
+      for (const line of turnLogs) {
+        await parseShowdownLogLine(mockContext, line, turnLogs);
+      }
+
+      expect(playerPoke.volatileCounters?.['twoturnmove']).toBe(1);
+    });
   });
 });

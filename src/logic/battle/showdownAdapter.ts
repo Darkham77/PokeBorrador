@@ -64,9 +64,38 @@ function normalizeKey(str: string): string {
 /**
  * Retorna el slot de Showdown (1-indexed, de 1 a 6) para un Pokémon del equipo
  */
-export function getShowdownSlot(team: GamePokemon[], activePoke: GamePokemon, targetPoke: GamePokemon): number {
-  if (targetPoke.uid === activePoke.uid) return 1;
-  const others = team.filter(p => !!p && p.uid !== activePoke.uid);
-  const idx = others.findIndex(p => p.uid === targetPoke.uid);
-  return idx !== -1 ? idx + 2 : 1;
+export function getShowdownSlot(
+  teamOrOrder: (string | GamePokemon)[],
+  activePokeOrTargetUid: string | GamePokemon,
+  targetPoke?: GamePokemon
+): number {
+  if (typeof teamOrOrder[0] === 'string') {
+    const currentOrder = teamOrOrder as string[];
+    const targetUid = activePokeOrTargetUid as string;
+    const idx = currentOrder.indexOf(targetUid);
+    return idx !== -1 ? idx + 1 : 1;
+  } else {
+    const team = teamOrOrder as GamePokemon[];
+    const activePoke = activePokeOrTargetUid as GamePokemon;
+    const target = targetPoke!;
+    if (target.uid === activePoke.uid) return 1;
+    const others = team.filter(p => !!p && p.uid !== activePoke.uid);
+    const idx = others.findIndex(p => p.uid === target.uid);
+    return idx !== -1 ? idx + 2 : 1;
+  }
 }
+
+export function swapShowdownOrder(currentOrder: string[], targetUid: string): string[] {
+  const nextOrder = [...currentOrder];
+  const idx = nextOrder.indexOf(targetUid);
+  if (idx > 0) {
+    const active = nextOrder[0];
+    const target = nextOrder[idx];
+    if (active !== undefined && target !== undefined) {
+      nextOrder[0] = target;
+      nextOrder[idx] = active;
+    }
+  }
+  return nextOrder;
+}
+

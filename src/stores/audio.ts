@@ -61,10 +61,6 @@ export const useAudioStore = defineStore('audio', () => {
     const cleanName = pokemonName.toLowerCase().replace(/[^a-z0-9]/g, '');
     const cryToFetch = POKEMON_CRIES_DATABASE[cleanName] || cleanName;
 
-    if (cryToFetch !== cleanName) {
-      logger.warn('Audio', `Cry for ${pokemonName} not found in database. Using pre-computed fallback: ${cryToFetch}`);
-    }
-
     let buffer = cryCache.get(cryToFetch);
 
     if (!buffer) {

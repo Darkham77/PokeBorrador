@@ -58,8 +58,26 @@ const battleItems = computed<BattleItem[]>(() => {
   })
 })
 
+const canUseItems = computed(() => {
+  const p = battleStore.state?.player
+  if (!p) return false
+  
+  if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
+  
+  const volatile = p.volatileCounters
+  if (volatile) {
+    if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
+        (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
+      return false
+    }
+  }
+  
+  return true
+})
+
 const handleUseItem = (item: BattleItem) => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return
+  if (!canUseItems.value) return
 
   const dbItem = SHOP_ITEMS.find(i => i.id === item.id)
   if (!dbItem) return
@@ -103,10 +121,10 @@ const handleUseItem = (item: BattleItem) => {
   })
 }
 
-const getTierColor = (tier?: string) => {
-  const t = tier || 'common'
-  if (t === 'rare') return '#3b82f6'
-  if (t === 'epic') return '#a855f7'
+const getTierColor = (t?: string) => {
+  if (t === 'common') return '#94a3b8'
+  if (t === 'rare') return 'var(--blue)'
+  if (t === 'epic') return 'var(--purple)'
   if (t === 'legend') return 'var(--yellow)'
   return '#94a3b8'
 }
@@ -120,7 +138,7 @@ const getTierColor = (tier?: string) => {
       <div
         v-for="item in battleItems"
         :key="item.id"
-        :class="['quick-item-card', 'tier-' + (item.tier || 'common')]"
+        :class="['quick-item-card', 'tier-' + (item.tier || 'common'), { 'is-disabled': !canUseItems }]"
         :style="{ '--tier-color': getTierColor(item.tier) }"
         @click.stop="handleUseItem(item)"
       >
@@ -211,6 +229,12 @@ const getTierColor = (tier?: string) => {
     background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), transparent);
     pointer-events: none;
     border-radius: inherit; // Mantener la forma
+  }
+
+  &.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   @include item-tier-card;
