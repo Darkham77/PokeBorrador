@@ -8,15 +8,16 @@ To guarantee the operation of critical systems (PWA, Service Workers, Animations
 
 | Library | Version | Role |
 | :--- | :--- | :--- |
-| **Vite** | `^7.x` | Build Tool & Dev Server |
+| **Vite** | `^8.x` | Build Tool & Dev Server |
 | **Vue** | `^3.5.x` | Framework Core |
 | **Pinia** | `^2.x` | State Management |
 | **Vue Router** | `^4.x` | Routing |
-| **Vitest** | `^3.x` | Testing Framework |
+| **Vitest** | `^4.x` | Testing Framework |
+| **TypeScript** | `^6.x` | Type Checker |
 
-### Why we don't use "Latest" (Vite 8+, Pinia 3+)
+### Upgrade Policy
 
-Even if newer versions exist, the plugin ecosystem (specifically `vite-plugin-pwa`) usually takes time to reach support parity. Using "bleeding edge" versions breaks the **Zero-Warning** policy and the integrity of the Service Worker on mobile devices.
+Before upgrading any Core Stack library, verify that `vite-plugin-pwa` supports the new Vite major (`npm info vite-plugin-pwa peerDependencies`). A migration is only successful if `npm run build` produces a functional `sw.js` and `npm run audit:full` passes with 0 errors.
 
 ---
 

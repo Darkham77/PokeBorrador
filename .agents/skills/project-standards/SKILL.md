@@ -87,7 +87,7 @@ Consult these manuals for detailed implementation specifications:
 - **Interface Zoom & Tooltip Adaptability**: For rules about CSS `zoom` on canvas viewports and teleported tooltip scaling under transforms, see [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md).
 - **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation` or GSAP timelines) so the state machine can synchronize state changes with visual completion.
 - **GSAP for Progress Indicators**: Do not use manual CSS `transition:` definitions to animate progress bars. Instead, use a reactive ref observed via a Vue watch handler paired with GSAP (`gsap.to`) to animate progress values smoothly and deterministically.
-- **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` (or the corresponding debug bridge) to allow headless verification.
+- **CLI-Ready Visuals**: Every battle animation MUST be triggerable via the debug bridge (e.g., `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) to allow headless verification. The `animations` object is exposed by `battleDebug.ts` and available when `sessionMode === 'offline'`.
 - **Weather Seed Synchronization**: The visual weather animation seed (0 to 1) MUST be synchronized between MapCard and BattleArenaView using the global `getWeatherAnimSeed` function. Pass it as `:anim-seed` to `<AtmosphereLayer>` (never `:seed`).
 - **Strict GSAP Hover Animations**: All hover transitions on interactive cards or rows (lift, scale, background) MUST be handled via `@mouseenter`/`@mouseleave` using `gsap.to()`. Manual CSS `transition:` declarations on interactive elements are forbidden.
 
@@ -133,7 +133,7 @@ Consult these manuals for detailed implementation specifications:
 - **Tier Identity Single Source of Truth**: All Pokémon grade logic, tier calculations, and color mappings MUST be centralized in the `tierEngine.ts` logic. Redundant constant files for tiers are strictly forbidden to prevent visual desynchronization.
 - **Strict DB-to-UI Comparison**: When writing UI conditionals depending on database models (such as war factions), always compare against the official database string values in Spanish (e.g., `'poder'` instead of English `'power'`).
 - **Asset ID Immutability** & **No Silent Fallbacks**: Asset/item IDs MUST flow through the system without transformation. Never normalize (`.toLowerCase()`, `.replace(/_/g, '')`) IDs at runtime — the asset service resolves by exact ID. If an ID is missing or invalid, throw an explicit `Error`; hardcoded fallbacks (e.g., `ballId = 'pokeball'`) are STRICTLY FORBIDDEN. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
-- **Trainer Archetype Single Source of Truth**: All archetype definitions (name, sprite, pool, key) MUST live exclusively in `src/data/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
+- **Trainer Archetype Single Source of Truth**: All archetype definitions (name, sprite, pool, key) MUST live exclusively in `src/data/player/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
 - **Gender is a Save Property**: The player's gender belongs to the save/account — set once at signup, never asked at login. See [src/stores/AGENTS.md](../../../src/stores/AGENTS.md).
 - **Move Description Fallback Chain**: Spanish translations for moves MUST implement: ① `pokemonDataProvider` official translation → ② `move_descriptions.json` → ③ Showdown `shortDesc`. See [src/logic/AGENTS.md](../../../src/logic/AGENTS.md).
 - **Strict English ID Mandate**: You MUST NEVER create or use logical identifiers (`id`) in Spanish for items, Pokémon, abilities, natures, moves, or stats. All logic and database values must use official English Showdown IDs (processed with `toID`). Writing translation layers, patches, or intermediate tables to support Spanish IDs internally in the engine is strictly forbidden. Any found Spanish logical IDs or translation layers MUST be refactored to English immediately.
@@ -151,7 +151,7 @@ Consult these manuals for detailed implementation specifications:
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
   - **Node.js 26+ Native Standards**:
     - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use `Temporal` for all precise timing and durations. Refer to [dependency_management_manual.md](./references/technical/dependency_management_manual.md) for detailed guidelines on the Native-First polyfill structure, comparisons, coercions, and formatting.
-    - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or native patterns) for efficient cache lookups.
+    - **Map Upsert**: Prefer `Map.prototype.getOrInsertComputed` for new cache lookup code (type declared in `env.d.ts`). Existing code uses the classic `map.get(k) ?? (map.set(k, v), v)` pattern — both are acceptable.
     - **Native Test Runner**: Use `node:test` for all pure logic unit tests (`npm run test:node`). This avoids the overhead of JSDOM/Vitest for non-UI logic.
     - **Dynamic Store Loading**: When writing logic code that is tested via the native test runner (`node:test`), avoid static imports of Vue/Pinia store modules. The native loader cannot resolve browser-specific ESM aliases (`@/`) or register Pinia contexts at import-time. Use dynamic imports protected by a `typeof window !== 'undefined'` check to bypass loading during tests.
     - **Structural Mocking**: When type-safety is required for dynamic/conditionally loaded store instances, do not use `any` (violates Zero-Any policy). Define a minimal local interface containing only the required methods to maintain type checking.
@@ -172,11 +172,12 @@ Consult these manuals for detailed implementation specifications:
 
 The project uses a sophisticated audit and validation engine to ensure stability and modern standards.
 
-- **Mandatory Audit Pipeline**: Running `npm run audit:full` is MANDATORY before any commit or delivery. This pipeline orchestrates:
-  - **Intelligent Audit (`audit:fix`)**: Automates SASS capitalization, GPU promotion, and Node 26+ syntax migration.
-  - **SQL Parity (`validate:sql`)**: Validates migrations using native SQLite engines.
-  - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against Showdown Official Data (@pkmn/sim) to prevent data drift.
-  - **FSM Mastery (`validate:fsm`)**: Ensura 1:1 parity between battle logic and FSM documentation (diagrams, implementation, flow).
+- **Mandatory Audit Pipeline**: Running `npm run audit:full` is MANDATORY before any commit or delivery. This pipeline runs sequentially:
+  1. **Node.js Tests** (`test:node`): Native test runner on `tests/node/**`.
+  2. **Intelligent Project Audit** (`audit`): SASS capitalization, GPU promotion, and Node 26+ syntax checks. (Note: `audit:fix` is a separate auto-fix command, not part of `audit:full`.)
+  3. **FSM Mastery** (`validate:fsm:diagrams`, `validate:fsm:implementation`, `validate:fsm:flow`): 1:1 parity between battle logic and FSM documentation.
+  4. **Data Integrity** (`validate:items`, `validate:abilities`, `validate:moves`): Synchronizes against Showdown Official Data (`@pkmn/sim`) to prevent data drift.
+  5. **SQL Parity** (`validate:sql`): Validates dual-file migrations (`.sql` + `.sqlite.sql`) using native SQLite engines.
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Fallow False-Positive Security Bypass**: Local HTTP fetch requests (e.g., querying local `version.json` in `App.vue`) that trigger Fallow's security engine (CWE-918 / tainted-sink) must be resolved by placing the `// fallow-ignore-file security-sink` comment at the top of the Vue `<script>` setup block.
   - **Fallow Dupes Parsing Integrity**: Any automated audit parser script mapping Fallow's duplicate findings must support its updated JSON structure (`file` and `start_line` properties instead of `path` and `line`) to prevent runtime path resolution errors.
@@ -220,7 +221,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 See [AGENTS.md §6](../../../AGENTS.md) and [browser_testing_manual.md](./references/qa/browser_testing_manual.md) for simulation protocols.
 
 - **Windows CLI Compatibility**: When chaining commands in PowerShell, avoid `&&`; use `;` or run commands sequentially.
-- **Standardized Logging (HybridLogger)**: Use `HybridLogger` with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`). Direct `console.log` is FORBIDDEN in production-bound logic.
+- **Standardized Logging (`logger`)**: Use `logger` (imported from `@/logic/utils/logger`) with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`). Direct `console.log` is FORBIDDEN in production-bound logic.
 
 ---
 
