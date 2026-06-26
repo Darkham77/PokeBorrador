@@ -35,6 +35,12 @@ Consult these manuals for detailed implementation specifications:
 | **Save & Persistence**   | [save_system_manual.md](./references/technical/save_system_manual.md)                     |
 | **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
 | **Animations & FX**      | [animation_standards.md](./references/battle/animation_standards.md)                      |
+| **Showdown Bridge Guide** | [BRIDGE-GUIDE.md](./references/battle/showdown/BRIDGE-GUIDE.md)                           |
+| **Showdown Protocol**     | [SIM-PROTOCOL.md](./references/battle/showdown/SIM-PROTOCOL.md)                           |
+| **Showdown Simulator**    | [SIMULATOR.md](./references/battle/showdown/SIMULATOR.md)                                 |
+| **Showdown Teams**        | [TEAMS.md](./references/battle/showdown/TEAMS.md)                                         |
+| **Showdown Coverage**     | [PROTOCOL-AUDIT.md](./references/battle/showdown/PROTOCOL-AUDIT.md)                       |
+| **Showdown Non-Standard** | [NONSTANDARD.md](./references/battle/showdown/NONSTANDARD.md)                             |
 | **GPU & Performance**    | [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md)           |
 | **Low Power Mode**       | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md)               |
 | **SASS & Styling**       | [sass_styling_manual.md](./references/technical/sass_styling_manual.md)                   |
