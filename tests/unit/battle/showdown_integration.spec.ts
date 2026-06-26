@@ -164,4 +164,39 @@ describe('Showdown Integration & Adapters', () => {
       expect(playerPoke.volatileCounters?.['twoturnmove']).toBe(1);
     });
   });
+
+  describe('Reordenamiento y Sincronización de HP', () => {
+    it('debería reordenar el equipo poniendo al Pokémon inicial activo primero', () => {
+      const initialPlayer = { uid: 'vaporeon-uid' } as Pokemon;
+      const team = [
+        { uid: 'poliwhirl-uid', name: 'Poliwhirl' } as Pokemon,
+        { uid: 'vaporeon-uid', name: 'Vaporeon' } as Pokemon,
+        { uid: 'chispa-uid', name: 'Chispa' } as Pokemon
+      ];
+      
+      const playerTeamList = [...team];
+      const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
+      if (initialPlayerIdx > 0) {
+        const [p] = playerTeamList.splice(initialPlayerIdx, 1);
+        if (p) playerTeamList.unshift(p);
+      }
+
+      const [slot0, slot1, slot2] = playerTeamList;
+      expect(slot0?.uid).toBe('vaporeon-uid');
+      expect(slot1?.uid).toBe('poliwhirl-uid');
+      expect(slot2?.uid).toBe('chispa-uid');
+    });
+
+    it('debería mapear correctamente los HP en el orden de showdownPlayerTeamOrder', () => {
+      const showdownPlayerTeamOrder = ['vaporeon-uid', 'poliwhirl-uid', 'chispa-uid'];
+      const team = [
+        { uid: 'poliwhirl-uid', hp: 30 } as Pokemon,
+        { uid: 'vaporeon-uid', hp: 120 } as Pokemon,
+        { uid: 'chispa-uid', hp: 0 } as Pokemon
+      ];
+
+      const p1Hps = showdownPlayerTeamOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+      expect(p1Hps).toEqual([120, 30, 0]);
+    });
+  });
 });

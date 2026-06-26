@@ -73,7 +73,8 @@ export async function executeFlee(ctx: BattleContext) {
       } else {
         if (ctx.activeBattle.value) ctx.activeBattle.value.escapeAttempts++
         ctx.addLog('¡No pudiste escapar!', 'log-info', 'player')
-        
+        gameBus.emit('PLAY_CRY', { name: e.id })
+
         const { decideEnemyMove } = await import('./ai/battleAI.ts')
         const isWild = !ctx.activeBattle.value?.isTrainer && !ctx.activeBattle.value?.isGym
         let enemyMove = decideEnemyMove(e, p, ctx.playerStages.value, isWild)
@@ -102,6 +103,7 @@ export async function executeFlee(ctx: BattleContext) {
 
           for (const logLine of filteredLogs) {
             await parseShowdownLogLine(ctx, logLine, filteredLogs);
+            if (logLine.startsWith('|faint|')) break;
           }
 
           if (result.isOver && ctx.activeBattle.value) {

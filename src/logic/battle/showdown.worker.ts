@@ -1,6 +1,12 @@
-// fallow-ignore-file security-sink typescript-any
+// fallow-ignore-file security-sink
 import { Battle, ID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+
+/** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */
+interface PkmnSimSide {
+  active?: Array<{ moveSlots?: Array<{ pp: number } | null> } | null>;
+  pokemon?: Array<{ hp: number; fainted: boolean; status: string } | null>;
+}
 
 let currentBattle: Battle | null = null;
 
@@ -30,6 +36,10 @@ self.onmessage = (event: MessageEvent) => {
         currentBattle.setPlayer('p1', { name: p1.name, team: p1.team });
         currentBattle.setPlayer('p2', { name: p2.name, team: p2.team });
 
+        // Sincronizar HP iniciales
+        syncSideHps(currentBattle.p1, payload.p1Hps);
+        syncSideHps(currentBattle.p2, payload.p2Hps);
+
         if (payload.weather && payload.weather !== 'none') {
           currentBattle.field.setWeather(payload.weather, 'debug' as const);
         }
@@ -45,16 +55,36 @@ self.onmessage = (event: MessageEvent) => {
           throw new Error('No hay ninguna batalla activa inicializada en el worker.');
         }
 
-        const { p1Choice, p2Choice } = payload;
+        const { p1Choice, p2Choice, p1Hps, p2Hps } = payload;
 
-        // Registrar las elecciones de ambos jugadores
+        // Sincronizar HP antes del turno
+        syncSideHps(currentBattle.p1, p1Hps);
+        syncSideHps(currentBattle.p2, p2Hps);
+
+        // Registrar las elecciones de ambos jugadores.
+        // Caso especial: 'struggle' = drenar PP del activo en el sim y enviar 'move 1'
+        // para que @pkmn/sim lo procese como Struggle correctamente.
+        // NOTA: en @pkmn/sim, .moves es string[], .moveSlots contiene los objetos {id, pp, maxpp}.
+        const resolveChoice = (side: PkmnSimSide, choice: string): string => {
+          if (choice === 'struggle' && side?.active?.[0]) {
+            const activeMon = side.active[0]
+            if (activeMon?.moveSlots) {
+              activeMon.moveSlots.forEach((m: { pp: number } | null) => { if (m) m.pp = 0 })
+            }
+            return 'move 1'
+          }
+          return choice
+        };
+
         if (p1Choice) {
-          const res1 = currentBattle.choose('p1', p1Choice);
-          console.log(`[Showdown Worker] p1 choose(${p1Choice}) res:`, res1);
+          const resolved1 = resolveChoice(currentBattle.p1, p1Choice);
+          const res1 = currentBattle.choose('p1', resolved1);
+          console.log(`[Showdown Worker] p1 choose(${resolved1}) res:`, res1);
         }
         if (p2Choice) {
-          const res2 = currentBattle.choose('p2', p2Choice);
-          console.log(`[Showdown Worker] p2 choose(${p2Choice}) res:`, res2);
+          const resolved2 = resolveChoice(currentBattle.p2, p2Choice);
+          const res2 = currentBattle.choose('p2', resolved2);
+          console.log(`[Showdown Worker] p2 choose(${resolved2}) res:`, res2);
         }
 
         const turnLogs = getNewLogs();
@@ -97,4 +127,23 @@ function getNewLogs(): string[] {
   const newLogs = allLogs.slice(lastLogIndex);
   lastLogIndex = allLogs.length;
   return newLogs;
+}
+
+function syncSideHps(side: PkmnSimSide, hps: number[] | undefined) {
+  const mons = side.pokemon;
+  if (mons && hps) {
+    hps.forEach((hp: number, index: number) => {
+      const pokemon = mons[index];
+      if (pokemon) {
+        pokemon.hp = hp;
+        if (hp <= 0) {
+          pokemon.fainted = true;
+          pokemon.status = 'fnt';
+        } else {
+          pokemon.fainted = false;
+          if (pokemon.status === 'fnt') pokemon.status = '';
+        }
+      }
+    });
+  }
 }

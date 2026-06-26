@@ -12,6 +12,7 @@ import { usePlayerSearchStore } from '@/stores/player/playerSearch.ts'
 import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { GameState } from '@/types/system/game'
+import type { ProfileRow, GameSaveRow } from '@/types/system/database'
 
 
 export interface Friend {
@@ -81,24 +82,6 @@ interface FriendshipRow {
   status: string
 }
 
-interface ProfileRow {
-  id: string
-  username: string
-  elo_rating?: number
-  trainer_level?: number
-  badges?: number
-  player_class?: string
-  faction?: string
-  nick_style?: string
-  avatar_style?: string
-  gender?: string
-}
-
-interface GameSaveRow {
-  user_id: string
-  save_data: Record<string, unknown>
-  updated_at: string
-}
 
 export const useSocialStore = defineStore('social', () => {
   const authStore = useAuthStore()

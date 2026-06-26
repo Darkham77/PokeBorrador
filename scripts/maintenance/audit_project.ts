@@ -913,7 +913,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
     try {
       const content = await fs.readFile(agentsPath, 'utf-8');
       doxFilesMap.set(dir, content);
-    } catch (err) {
+    } catch (_e) {
       violations.push({
         file: agentsPath,
         line: 1,
@@ -930,7 +930,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   try {
     rootContent = await fs.readFile(rootAgentsPath, 'utf-8');
     doxFilesMap.set(rootDir, rootContent);
-  } catch (err) {
+  } catch (_e) {
     violations.push({
       file: rootAgentsPath,
       line: 1,
@@ -1021,7 +1021,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
 
         try {
           await fs.stat(absoluteTarget);
-        } catch (err) {
+        } catch (_e) {
           violations.push({
             file: agentsPath,
             line: i + 1,
@@ -1091,6 +1091,40 @@ async function main() {
   let all: Violation[] = [...syncViolations, ...doxErrors];
   for (const f of files) {
     all = all.concat(await auditFile(f, !!values.fix));
+  }
+
+  // SASS Module Migration (solo en --fix)
+  // sass-migrator procesa solo .scss puros con rutas relativas; los .vue con @import alias
+  // (@/) deben migrarse manualmente a @use ya que el migrador no resuelve bundler aliases.
+  if (values.fix) {
+    console.log(styleText('cyan', '\n\u2728 Ejecutando sass-migrator (built-in-only)...'));
+    const legacyScssFiles = files.filter(f => {
+      if (!f.endsWith('.scss') && !f.endsWith('.css')) return false;
+      try { return readFileSync(f, 'utf-8').includes('@import'); } catch { return false; }
+    });
+    const legacyVueFiles = files.filter(f => {
+      if (!f.endsWith('.vue')) return false;
+      try { return readFileSync(f, 'utf-8').includes('@import'); } catch { return false; }
+    });
+    if (legacyScssFiles.length > 0) {
+      for (const f of legacyScssFiles) {
+        try {
+          execSync(`sass-migrator module --built-in-only ${JSON.stringify(f)}`, { encoding: 'utf-8', stdio: 'pipe' });
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.log(styleText('yellow', `  \u26a0\ufe0f  [${path.relative(process.cwd(), f)}]: ${msg.split('\n')[0] ?? msg}`));
+        }
+      }
+      console.log(styleText('green', `  \u2705 sass-migrator aplicado sobre ${legacyScssFiles.length} archivo(s) .scss con @import.`));
+    } else {
+      console.log(styleText('green', '  \u2705 Sin @import legados en archivos .scss. \u00a1Migrado!'));
+    }
+    if (legacyVueFiles.length > 0) {
+      console.log(styleText('yellow', `  \u26a0\ufe0f  ${legacyVueFiles.length} Vue SFC(s) con @import legacy (requieren @use manual, alias @/ no resuelto por migrador):` ));
+      for (const f of legacyVueFiles) {
+        console.log(styleText('yellow', `     - ${path.relative(process.cwd(), f)}`));
+      }
+    }
   }
 
   // Integración de Fallow

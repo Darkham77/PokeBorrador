@@ -93,5 +93,5 @@ const { handleStatEnter, handleStatLeave } = useStatHover()
 </template>
 
 <style scoped lang="scss">
-@import "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared.scss";
 </style>

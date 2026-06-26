@@ -104,3 +104,24 @@ export interface ProxyQueryChainItem {
   type: string;
   args: unknown[];
 }
+
+/** Shared Supabase row shape used across leaderboard, playerSearch and social stores. */
+export interface ProfileRow {
+  id: string
+  username: string
+  elo_rating?: number
+  trainer_level?: number
+  badges?: number
+  player_class?: string
+  faction?: string
+  nick_style?: string
+  avatar_style?: string
+  gender?: string
+}
+
+/** Shared Supabase row shape for game_saves table. */
+export interface GameSaveRow {
+  user_id: string
+  save_data: Record<string, unknown>
+  updated_at: string
+}

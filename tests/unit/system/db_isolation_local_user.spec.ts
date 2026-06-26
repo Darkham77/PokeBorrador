@@ -2,6 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { setupLocalStorageMock } from './localStorageMock'
+
 import { loadBestSave } from '@/logic/auth/loadService'
 import { saveGame } from '@/logic/auth/saveService'
 import type { DBRouter } from '@/logic/db/dbRouter'
@@ -13,17 +15,7 @@ vi.mock('@/logic/utils/opfsStorage', () => ({
   writeOpfsFile: vi.fn(() => Promise.resolve())
 }))
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value.toString() }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} })
-  }
-})()
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+setupLocalStorageMock()
 
 describe('Database Isolation for Local User', () => {
   beforeEach(() => {

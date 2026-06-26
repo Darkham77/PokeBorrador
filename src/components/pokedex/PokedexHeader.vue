@@ -45,12 +45,12 @@ defineProps<Props>()
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/_premium-header-shared.scss";
 
 .pokedex-header-premium {
   @include premium-header;
 }
 
-@import "@/styles/components/_premium-header-shared.scss";
 
 .integrated-badge {
   .stat-group {

@@ -85,5 +85,5 @@ const getAbilityName = (ability: string) => {
 </template>
 
 <style scoped lang="scss">
-@import "@/styles/components/_hatch-animation-modal.scss";
+@use "@/styles/components/_hatch-animation-modal.scss";
 </style>

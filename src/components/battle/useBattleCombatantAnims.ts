@@ -172,6 +172,25 @@ export function useBattleCombatantAnims(
   }
 
   watch(() => props.animState, (val) => {
+    // For 'releasing': set invisible immediately (same tick) to prevent the
+    // 1-frame flash that occurs when the sprite renders before nextTick fires.
+    if (val === 'releasing' && spriteRef.value) {
+      const origin = getSpriteFeetOrigin()
+      const cachedRaw = rawCoordsCache.get(cacheKey.value)
+      const coords = cachedRaw || getBallTargetCoords()
+      gsap.killTweensOf(spriteRef.value)
+      gsap.set(spriteRef.value, {
+        transformOrigin: origin,
+        x: coords.x,
+        y: coords.y,
+        scale: 0,
+        opacity: 0,
+        filter: 'url(#pixel-energy-optimized)'
+      })
+      if (shadowWrapperRef.value) {
+        gsap.set(shadowWrapperRef.value, { display: 'none' })
+      }
+    }
     nextTick(() => triggerBallAnimation(val || null))
   }, { immediate: true })
 

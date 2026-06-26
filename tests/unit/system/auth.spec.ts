@@ -1,10 +1,10 @@
-
 /**
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.ts'
+import { setupLocalStorageMock } from './localStorageMock'
 import { supabase } from '@/logic/db/supabase'
 import type { User } from '@supabase/supabase-js'
 
@@ -16,17 +16,7 @@ vi.mock('@/logic/db/supabase', async () => {
   }
 })
 
-// Mock de localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => { store[key] = value.toString() }),
-    removeItem: vi.fn((key: string) => { delete store[key] }),
-    clear: vi.fn(() => { store = {} })
-  }
-})()
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+setupLocalStorageMock()
 
 describe('Auth Store', () => {
   beforeEach(() => {

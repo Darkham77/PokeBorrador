@@ -200,7 +200,7 @@ watch(trainerExpPct, (newPct) => {
 </template>
 
 <style scoped lang="scss">
-@import "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared.scss";
 
 .xp-card {
   .xp-details {

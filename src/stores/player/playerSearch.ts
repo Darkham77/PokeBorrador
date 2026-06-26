@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import type { SearchResult } from '@/stores/social/social.ts'
 import { GameState } from '@/types/system/game'
+import type { ProfileRow, GameSaveRow } from '@/types/system/database'
 
 interface FriendshipRow {
   id: string
@@ -12,24 +13,6 @@ interface FriendshipRow {
   status: string
 }
 
-interface ProfileRow {
-  id: string
-  username: string
-  elo_rating?: number
-  trainer_level?: number
-  badges?: number
-  player_class?: string
-  faction?: string
-  nick_style?: string
-  avatar_style?: string
-  gender?: string
-}
-
-interface GameSaveRow {
-  user_id: string
-  save_data: Record<string, unknown>
-  updated_at: string
-}
 
 export const usePlayerSearchStore = defineStore('playerSearch', () => {
   const authStore = useAuthStore()

@@ -295,6 +295,48 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
+  const executeStruggle = async () => {
+    if (isProcessing.value || !isBattleActive.value) return
+    isProcessing.value = true
+    try {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
+      await executeTurn(getContext(), -1)
+
+      if (!activeBattle.value) return
+
+      // Recoil de Struggle: 1/4 del HP máximo del jugador (mecánica oficial Gen 9).
+      // Se aplica manualmente porque Showdown lo calcula sobre su propio maxHp interno,
+      // que puede diferir del nuestro si el sync de HP no está alineado.
+      const player = activeBattle.value.player
+      if (player && !activeBattle.value.over) {
+        const recoil = Math.max(1, Math.floor(player.maxHp / 4))
+        player.hp = Math.max(0, player.hp - recoil)
+        addLog(`¡${player.name} sufrió daño de rebote!`, 'log-player', player)
+        if (player.hp <= 0) {
+          activeBattle.value.over = true
+          await handleFaint('player')
+          return
+        }
+      }
+
+      if (!activeBattle.value.over) await applyEndTurnEffects()
+      activeMove.value = null
+
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+      }
+    } catch (error) {
+      logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
+    } finally {
+      isProcessing.value = false
+    }
+  }
+
   const applyEndTurnEffects = async () => await executeEndTurnEffects(getContext())
 
   const handleFaint = async (side: 'player' | 'enemy') => await processFaint(getContext(), side)
@@ -496,6 +538,7 @@ export const useBattleStore = defineStore('battle', () => {
     addLog,
     clearLogs,
     executeMove,
+    executeStruggle,
     persistBattle,
     flee: async () => {
       try {

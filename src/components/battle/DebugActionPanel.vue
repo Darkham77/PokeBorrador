@@ -143,6 +143,13 @@ const addExpForNextLevel = async () => {
   await battleStore.awardDebugExp()
 }
 
+const drainPP = () => {
+  const p = battleStore.player
+  if (!p) return
+  p.moves.forEach(m => { if (m) m.pp = 1 })
+  battleStore.addLog('DEBUG: PP de todos los movimientos seteados a 1.', 'log-info', p)
+}
+
 const debugCapture = async () => {
   if (!battleStore.state?.enemy || battleStore.isProcessing) return
   
@@ -382,6 +389,17 @@ const toggleStatus = (side: string, type: string) => {
         @click.stop="addExpForNextLevel"
       >
         ⚡ EXP AL SIGUIENTE NIVEL
+      </button>
+    </div>
+    <div
+      class="debug-row"
+      style="margin-top: 2px;"
+    >
+      <button
+        class="debug-btn pp-drain-btn"
+        @click.stop="drainPP"
+      >
+        🧪 PP → 1 (SOFTLOCK TEST)
       </button>
     </div>
 
@@ -686,5 +704,13 @@ const toggleStatus = (side: string, type: string) => {
     background: #14141e;
     color: #fff;
   }
+}
+
+.pp-drain-btn {
+  width: 100%;
+  background: Rgba(180, 80, 0, 0.85) !important;
+  border-color: #ff8c00 !important;
+  color: #ffe0a0 !important;
+  &:hover { background: #ff8c00 !important; color: #000 !important; }
 }
 </style>

@@ -46,42 +46,22 @@ async function main() {
 
   await validator.checkFiles();
 
-  const shopContent   = await fs.readFile(SHOP_FILE, 'utf8');
   const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
 
-  // ─── 1. Extract SHOP_ITEMS entries (line-based parser) ───────────────────────
-  const shopLines = shopContent.split('\n');
-  const shopItems: ShopItem[] = [];
-  const shopStart = shopLines.findIndex(l => l.includes('export const SHOP_ITEMS'));
-  const shopEnd   = shopLines.length;
 
-  let current: ShopItem | null = null;
-
-  for (let i = shopStart; i < shopEnd; i++) {
-    const line = shopLines[i]!;
-    const idMatch = line.match(/\bid:\s*'([^']+)'/);
-    if (idMatch) {
-      if (current && current.name && current.cat) shopItems.push(current);
-      current = { id: idMatch[1]!, _line: i + 1 };
-    }
-
-    if (!current) continue;
-
-    const tryMatch = (rx: RegExp) => { const m = line.match(rx); return m ? m[1] : null; };
-
-    if (!current.name)   current.name   = tryMatch(/\bname:\s*'([^']+)'/);
-    if (!current.cat)    current.cat    = tryMatch(/\bcat:\s*'([^']+)'/);
-    if (!current.sprite) current.sprite = tryMatch(/\bsprite:\s*'([^']+)'/);
-    if (!current.icon)   current.icon   = tryMatch(/\bicon:\s*'([^']+)'/);
-    if (!current.desc)   current.desc   = tryMatch(/\bdesc:\s*'([^']+)'/);
-    if (!current.type)   current.type   = tryMatch(/\btype:\s*'([^']+)'/);
-
-    const priceM  = line.match(/\bprice:\s*(\d+)/);
-    const marketM = line.match(/\bmarket:\s*(true|false)/);
-    if (priceM  && current.price  == null) current.price  = parseInt(priceM[1]!);
-    if (marketM && current.market == null) current.market = marketM[1] === 'true';
+  // ─── 1. Load SHOP_ITEMS directly from the JSON source ────────────────────────
+  // items.ts re-exports from items.json — parsing the .ts as text yields 0 entries.
+  const JSON_FILE = path.resolve(process.cwd(), 'src/data/inventory/items.json');
+  if (!existsSync(JSON_FILE)) {
+    console.error(styleText('red', `\n❌ Error: items.json not found at ${JSON_FILE}\n`));
+    process.exit(1);
   }
-  if (current && current.name && current.cat) shopItems.push(current);
+  const jsonRaw = await fs.readFile(JSON_FILE, 'utf8');
+  const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
+  const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
+  const shopItems: ShopItem[] = rawShopItems
+    .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
+    .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
   // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
   const healingItems = new Set<string>();

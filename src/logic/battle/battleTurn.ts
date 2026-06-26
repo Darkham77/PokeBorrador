@@ -1,6 +1,7 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 import { updateCastformForm } from './battleFlow.ts'
@@ -38,10 +39,15 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   }
 
-  const move = p.moves[moveIndex]
-  if (!move || move.pp <= 0) {
-    store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
-    return
+  const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || !!(p.thrashTurns && p.thrashTurns > 0);
+  const isStruggle = moveIndex === -1;
+  const move = isStruggle ? null : p.moves[moveIndex];
+
+  if (!isStruggle && !isLocked) {
+    if (!move || move.pp <= 0) {
+      store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
+      return
+    }
   }
 
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
@@ -58,23 +64,39 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
 
-    if (move.pp > 0) {
+    if (move && move.pp > 0 && !isLocked) {
       move.pp--
     }
 
-    const p1Choice = `move ${move.id}`;
+    const p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`;
     const p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
+
+    const active = store.activeBattle.value;
+    let p1Hps: number[] | undefined = undefined;
+    let p2Hps: number[] | undefined = undefined;
+    if (active) {
+      const playerOrder = active.showdownPlayerTeamOrder || [];
+      const team = store.gs.state.team || [];
+      p1Hps = playerOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+
+      const enemyOrder = active.showdownEnemyTeamOrder || [];
+      const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+      p2Hps = enemyOrder.map(uid => enemyTeam.find(p => p?.uid === uid)?.hp ?? 0);
+    }
 
     logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice}`);
 
-    const result = await executeTurnInWorker(p1Choice, p2Choice)
+    const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps)
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
 
-    // Reproducir todos los logs del simulador asíncronamente
+    // Reproducir todos los logs del simulador asíncronamente.
+    // IMPORTANTE: interrumpir en |faint| para que el atacante más lento no ejecute
+    // su movimiento después de haber sido derrotado por el más rápido.
     const filteredLogs = filterShowdownLogs(result.logs);
     for (const logLine of filteredLogs) {
       await parseShowdownLogLine(store, logLine, filteredLogs);
+      if (logLine.startsWith('|faint|')) break;
     }
 
     if (store.activeBattle.value) {

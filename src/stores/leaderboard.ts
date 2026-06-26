@@ -4,25 +4,8 @@ import { useGameStore } from '@/stores/game.ts'
 import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { LeaderboardEntry } from '@/stores/social/social.ts'
+import type { ProfileRow, GameSaveRow } from '@/types/system/database'
 
-interface ProfileRow {
-  id: string
-  username: string
-  elo_rating?: number
-  trainer_level?: number
-  badges?: number
-  player_class?: string
-  faction?: string
-  nick_style?: string
-  avatar_style?: string
-  gender?: string
-}
-
-interface GameSaveRow {
-  user_id: string
-  save_data: Record<string, unknown>
-  updated_at: string
-}
 
 
 export const useLeaderboardStore = defineStore('leaderboard', () => {

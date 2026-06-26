@@ -113,23 +113,31 @@ export const useGameStore = defineStore('game', () => {
 
     let changed = false
 
-    // 1. Rocket extorted route expiration (24 hours)
-    if (state.classData.extortedRouteId && state.classData.extortedRouteTimestamp) {
-      const timestamp = Number(state.classData.extortedRouteTimestamp || 0)
+    // 1. Rocket: limpiar extortedRouteId cuando pasan las 24h activas.
+    //    El timestamp se limpia cuando pasan las 24h COMPLETAS (permite re-extorsionar).
+    if (state.classData.extortedRouteTimestamp) {
+      const timestamp = Number(state.classData.extortedRouteTimestamp)
       if ((now - timestamp) > 24 * 3600 * 1000) {
-        logger.info('CLASS', `Extortion of route ${state.classData.extortedRouteId} expired. Clearing.`)
+        logger.info('CLASS', `Extortion cooldown fully expired. Clearing.`)
         state.classData.extortedRouteId = null
         state.classData.extortedRouteTimestamp = null
         changed = true
       }
     }
 
-    // 2. Trainer official route active expiration (30 minutes)
-    if (state.classData.officialRouteId && state.classData.officialRouteTimestamp) {
-      const timestamp = Number(state.classData.officialRouteTimestamp || 0)
-      if ((now - timestamp) > 30 * 60 * 1000) {
-        logger.info('CLASS', `Patrol on official route ${state.classData.officialRouteId} finished. Clearing active status.`)
+    // 2. Trainer: limpiar officialRouteId cuando pasan los 30min activos.
+    //    El timestamp persiste otras 23.5h para el cooldown de 24h.
+    //    Cuando pasan las 24h COMPLETAS desde el timestamp, también limpiamos el timestamp.
+    if (state.classData.officialRouteTimestamp) {
+      const timestamp = Number(state.classData.officialRouteTimestamp)
+      if (state.classData.officialRouteId && (now - timestamp) > 30 * 60 * 1000) {
+        logger.info('CLASS', `Official route patrol finished. Clearing active ID.`)
         state.classData.officialRouteId = null
+        changed = true
+      }
+      if ((now - timestamp) > 24 * 3600 * 1000) {
+        // Cooldown completo de 24h: liberar el timestamp para permitir nuevo establecimiento
+        state.classData.officialRouteTimestamp = null
         changed = true
       }
     }

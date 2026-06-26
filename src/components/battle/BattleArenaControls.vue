@@ -11,6 +11,7 @@ import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
+import StruggleOverlay from './StruggleOverlay.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Debug tools are now handled by BattleArena sidebar
@@ -125,6 +126,29 @@ watch(() => [
   }
 }, { immediate: true })
 
+// Auto-ejecución de turno forzado (Thrash/Enfado y similares).
+// Cuando el Pokémon tiene thrashTurns > 0 y el combate espera input,
+// el turno se ejecuta solo porque el jugador no necesita elegir.
+watch(() => [
+  battleStore.currentSubState,
+  battleStore.isProcessing,
+  player.value?.thrashTurns
+] as const, ([subState, isProcessing, thrashTurns]) => {
+  if (
+    String(subState) === 'WAIT_INPUT' &&
+    !isProcessing &&
+    (thrashTurns ?? 0) > 0
+  ) {
+    const p = player.value
+    if (!p) return
+    const forcedIdx = p.moves.findIndex(m => m?.effect === 'thrash')
+    if (forcedIdx !== -1) {
+      battleStore.executeMove(forcedIdx)
+    }
+  }
+})
+
+
 // Dynamic button text/emoji for fishing & archaeology encounters
 const encounterBtnEmoji = computed(() => {
   if (battleStore.state?.isFishing) return '🎣'
@@ -174,13 +198,18 @@ const onEnter = (el: Element, done: () => void) => {
 
         <div class="controls-content">
           <!-- Tools moved to sidebar -->
-          <BattleMovesGrid 
-            class="is-compact"
-            :moves="player?.moves || []" 
-            :is-processing="isControlsDisabled"
-            :player-info="player"
-            @use-move="(idx: number) => battleStore.executeMove(idx)"
-          />
+          <!-- Wrapper relativo para poder superponer la tarjeta de Forcejeo -->
+          <div class="moves-wrapper">
+            <BattleMovesGrid
+              class="is-compact"
+              :moves="player?.moves || []"
+              :is-processing="isControlsDisabled"
+              :player-info="player"
+              @use-move="(idx: number) => battleStore.executeMove(idx)"
+            />
+            <!-- Forcejeo: se superpone al grid cuando todos los PP = 0 -->
+            <StruggleOverlay />
+          </div>
 
           <BattleActionButtons 
             :is-finishing="isControlsDisabled"
@@ -406,6 +435,12 @@ const onEnter = (el: Element, done: () => void) => {
   align-items: center;
   width: 100%;
   padding: 20px;
+}
+
+// Wrapper del grid de movimientos: mantiene el layout intacto
+.moves-wrapper {
+  position: relative;
+  width: 100%;
 }
 
 </style>

@@ -114,7 +114,15 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       }
       const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
 
-      const result = await executeTurnInWorker(p1Choice, p2Choice)
+      const nextOrder = active.showdownPlayerTeamOrder || [];
+      const team = gs.state.team || [];
+      const p1Hps = nextOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+
+      const enemyOrder = active.showdownEnemyTeamOrder || [];
+      const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+      const p2Hps = enemyOrder.map(uid => enemyTeam.find(p => p?.uid === uid)?.hp ?? 0);
+
+      const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps)
 
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
 
@@ -125,6 +133,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
           continue
         }
         await parseShowdownLogLine(ctx, logLine, filteredLogs)
+        if (logLine.startsWith('|faint|')) break
       }
 
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)

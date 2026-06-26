@@ -55,7 +55,11 @@ export async function executeMoveAction(
 
   try {
     if (side === 'player') {
-      move.pp--
+      const isLockedMove = !!(attacker.volatileCounters?.['lockedmove'] && attacker.volatileCounters['lockedmove'] > 0)
+      const isThrashLocked = !!(attacker.thrashTurns && attacker.thrashTurns > 0)
+      if (!isLockedMove && !isThrashLocked && move.pp > 0) {
+        move.pp--
+      }
     }
     store.addLog(`¡${attacker.name} usó ${move.name}!`, logStyle, attacker)
 

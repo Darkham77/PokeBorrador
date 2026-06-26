@@ -15,13 +15,18 @@ import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 
 export let showdownWorker: Worker | null = null;
 
-export async function executeTurnInWorker(p1Choice: string, p2Choice?: string): Promise<{ logs: string[]; isOver: boolean; winner: string | null }> {
+export async function executeTurnInWorker(
+  p1Choice: string, 
+  p2Choice?: string,
+  p1Hps?: number[],
+  p2Hps?: number[]
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice }
+    payload: { p1Choice, p2Choice, p1Hps, p2Hps }
   })
   return new Promise((resolve, reject) => {
     if (!showdownWorker) return reject(new Error('showdownWorker is null'))
@@ -340,9 +345,18 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value.isArchaeology = false
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value._rewardCombatants = []
+    // Reordenar el equipo del jugador para que el Pokémon inicial (initialPlayer) esté en la primera posición.
+    // Esto asegura que Showdown envíe a pista al Pokémon correcto desde el inicio del combate.
+    const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
+    const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
+    if (initialPlayerIdx > 0) {
+      const [p] = playerTeamList.splice(initialPlayerIdx, 1);
+      if (p) playerTeamList.unshift(p);
+    }
+
     ctx.activeBattle.value.playerSideConditions = {}
     ctx.activeBattle.value.enemySideConditions = {}
-    ctx.activeBattle.value.showdownPlayerTeamOrder = ctx.gs.state.team.filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
+    ctx.activeBattle.value.showdownPlayerTeamOrder = playerTeamList.map((p: Pokemon) => p.uid)
     ctx.activeBattle.value.showdownEnemyTeamOrder = (ctx.activeBattle.value.enemyTeam || (initialEnemy ? [initialEnemy] : [])).filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
   }
 
@@ -359,8 +373,18 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     }
     showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
     
-    const p1Team = (ctx.gs.state.team || []).map(p => mapToShowdownSet(p));
-    const p2Team = (battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : [])).map(p => mapToShowdownSet(p));
+    // Generar el equipo ordenado del jugador para Showdown
+    const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
+    const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
+    if (initialPlayerIdx > 0) {
+      const [p] = playerTeamList.splice(initialPlayerIdx, 1);
+      if (p) playerTeamList.unshift(p);
+    }
+    const p1Team = playerTeamList.map(p => mapToShowdownSet(p));
+    const p1Hps = playerTeamList.map(p => p.hp);
+    const enemyTeamList = (battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+    const p2Team = enemyTeamList.map(p => mapToShowdownSet(p));
+    const p2Hps = enemyTeamList.map(p => p.hp);
     const initialWeatherOfficial = mapVisualToOfficialWeather(battleState?.weather?.type, ACTIVE_GENERATION);
     
     logger.info('ShowdownWorker', `Inicializando batalla en el worker con clima: ${initialWeatherOfficial}`);
@@ -370,6 +394,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       payload: {
         p1: { name: 'Player', team: p1Team },
         p2: { name: battleState?.trainerName || 'Enemigo', team: p2Team },
+        p1Hps,
+        p2Hps,
         weather: initialWeatherOfficial
       }
     });

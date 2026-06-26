@@ -175,7 +175,7 @@ const selectAvatar = (style: AvatarStyle) => {
 </template>
 
 <style scoped lang="scss">
-@import "@/styles/components/_cosmetics-shared.scss";
+@use "@/styles/components/_cosmetics-shared.scss";
 
 .avatar-preview-box {
   padding: 10px;

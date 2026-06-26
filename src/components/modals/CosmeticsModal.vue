@@ -162,14 +162,14 @@ const selectNick = (style: NickStyle) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/components/_cosmetics-shared.scss";
+
 .cosmetics-modal-internal {
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
-
-@import "@/styles/components/_cosmetics-shared.scss";
 
 .style-card {
   .preview-area {

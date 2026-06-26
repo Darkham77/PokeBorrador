@@ -63,9 +63,19 @@ const hexColorRgb = computed(() => {
 
 const isDisabled = computed(() => {
   if (props.isProcessing) return true
-  if (!props.move || props.move.pp <= 0) return true
-  
+  if (!props.move) return true
+
   const p = props.playerInfo
+
+  // A Pokémon locked into a multi-turn move (Thrash, Outrage, Petal Dance...)
+  // must be able to click even at 0 PP — the engine handles it without deducting PP.
+  const isLockedMove = !!(p?.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0)
+  const isThrashLocked = !!(p?.thrashTurns && p.thrashTurns > 0)
+  const isLocked = isLockedMove || isThrashLocked
+
+  // Block 0-PP moves only when NOT locked (normal situation).
+  if (!isLocked && props.move.pp <= 0) return true
+
   if (p) {
     // Choice Item Logic
     if (p.heldItem === 'choice_band') {
@@ -86,16 +96,12 @@ const isDisabled = computed(() => {
     if (p.encoreMove && props.move.id !== p.encoreMove.id) {
       return true
     }
-    // Locked Move (Outrage, Thrash, Petal Dance, Raging Fury)
-    if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
+    // Locked Move: only the forced move is clickable
+    if (isLockedMove && p.lastMove && props.move.id !== p.lastMove.id) {
       return true
     }
-    // Diagnostic log
-    console.log(`[DEBUG_MOVE] ${p.name} - Move: ${props.move.id}. Volatiles:`, JSON.stringify(p.volatileCounters), "LastMove:", JSON.stringify(p.lastMove));
-    
     // Two-Turn charging Move (Fly, Dig, Dive, etc.)
     if (p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
-      console.log(`[DEBUG_MOVE] Disabling ${props.move.id} because of twoturnmove for ${p.name}. LastMove:`, p.lastMove);
       return true
     }
   }
