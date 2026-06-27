@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-DOpqCqrR.js";export{e as default};

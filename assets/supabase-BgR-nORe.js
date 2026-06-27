@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-DnoJQsVU.js";export{e as default,e as supabase};
