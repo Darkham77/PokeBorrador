@@ -18,6 +18,7 @@ QA / Automation Engineers.
 - Playwright is preferred for E2E browser testing.
 - When dynamic store mocks are needed, declare local mock interfaces instead of using `as any`.
 - Update test cases immediately when source function signatures change.
+- **Bare Node.js vs Vitest Boundaries**: Bare Node.js tests (`tests/node/`) must ONLY import pure math/logic files with no external `@/` path alias dependencies. Any tests involving components, stores, database routing, or modules containing `@/` imports must be written in Vitest under `tests/unit/` or `tests/integration/`.
 
 ## Verification
 

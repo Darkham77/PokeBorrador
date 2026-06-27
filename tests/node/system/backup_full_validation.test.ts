@@ -133,7 +133,7 @@ describe('Backup Full validation and Dex compatibility test', () => {
         if (poke.heldItem) {
           const itemObj = Dex.items.get(poke.heldItem);
           const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
-          const isCustomItem = itemsDict.SHOP_ITEMS.some((item: any) => item.id === poke.heldItem);
+          const isCustomItem = itemsDict.SHOP_ITEMS.some((item: { id: string }) => item.id === poke.heldItem);
           if (!itemObj.exists && !isCustomItem) {
             errors.push(`${tag} - Invalid held item: '${poke.heldItem}'`);
           }

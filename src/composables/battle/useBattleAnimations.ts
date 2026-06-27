@@ -51,7 +51,7 @@ export function useBattleAnimations(
   } = captureAnims
 
   // 2. Trainer Domain delegation
-  const trainerAnims = useBattleTrainerAnimations(seats)
+  const trainerAnims = useBattleTrainerAnimations(seats, battleStore)
   const {
     trainerAnimState,
     isTrainerVisible,

@@ -1,8 +1,12 @@
 import { ref, type Ref } from 'vue'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
+import type { useBattleStore } from '@/stores/battle/battle'
 import type { SeatState } from '@/composables/battle/useBattleSeats'
 
-export function useBattleTrainerAnimations(seats: Ref<Record<string, SeatState>>) {
+export function useBattleTrainerAnimations(
+  seats: Ref<Record<string, SeatState>>,
+  battleStore: ReturnType<typeof useBattleStore>
+) {
   // Trainer visual states
   const trainerAnimState = ref<string | null>(null) // 'entering' | 'retreating' | 'idle'
   const isTrainerVisible = ref(false)
@@ -11,8 +15,10 @@ export function useBattleTrainerAnimations(seats: Ref<Record<string, SeatState>>
     trainerAnimState.value = 'entering'
     isTrainerVisible.value = true
     const tl = createTimeline()
-    // Allow ~1s for the trainer sprite slide-in to settle visually
-    tl.to({}, { duration: 1.0 })
+    // Allow ~1s for the trainer sprite slide-in to settle visually, or 2.5s for rival presentation
+    const isRival = battleStore.state?.isRival || false
+    const duration = isRival ? 2.5 : 1.0
+    tl.to({}, { duration })
     return awaitAnimation(tl)
   }
 

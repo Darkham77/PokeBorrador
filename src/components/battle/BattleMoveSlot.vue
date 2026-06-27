@@ -234,6 +234,16 @@ onMounted(() => {
 onUnmounted(() => {
   if (glowTween) glowTween.kill()
 })
+
+const formatMoveName = (name: string) => {
+  return name.toUpperCase()
+    .replace(/Ñ/g, 'ñ')
+    .replace(/Á/g, 'á')
+    .replace(/É/g, 'é')
+    .replace(/Í/g, 'í')
+    .replace(/Ó/g, 'ó')
+    .replace(/Ú/g, 'ú')
+}
 </script>
 
 <template>
@@ -313,7 +323,7 @@ onUnmounted(() => {
     >
       <template v-if="move">
         <div class="move-top">
-          <span class="mv-name pixelated">{{ move.name ? move.name.toUpperCase() : '???' }}</span>
+          <span class="mv-name pixelated">{{ move.name ? formatMoveName(move.name) : '???' }}</span>
           <PokemonTypeTag
             :type="moveData!.type || 'normal'"
             size="ssm"

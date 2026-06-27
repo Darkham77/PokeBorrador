@@ -18,7 +18,7 @@ export function getSelectableSpecies(bypassWhitelist = false) {
 }
 
 export function getSelectableNatures() {
-  return Object.keys(NATURE_DATA).map(n => ({ id: n, name: n }))
+  return Object.keys(NATURE_DATA).map(n => ({ id: n, name: NATURE_DATA[n]?.name || n }))
 }
 
 export function getSelectableAbilities() {
