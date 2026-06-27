@@ -463,8 +463,9 @@ watch(trainerAnimState, async (newState) => {
   gsap.killTweensOf(el)
   if (newState === 'entering') {
     if (battle.value?.isRival) {
-      // ⚔️ Epic rival presentation!
-      audioStore.play('rival')
+      if (audioStore && typeof audioStore.play === 'function') {
+        audioStore.play('rival')
+      }
       showRivalAlert.value = true
 
       const tlAlert = gsap.timeline({
