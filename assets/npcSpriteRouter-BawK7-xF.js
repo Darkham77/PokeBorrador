@@ -1,0 +1,1 @@
+import{n as e,t}from"./npcSpriteRouter-Bxc9j4gr.js";export{t as classifyNpcArchetype,e as getSpritesForArchetype};
