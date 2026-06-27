@@ -1,0 +1,1 @@
+import{a as e}from"./breedingEngine-DDhaANLg.js";export{e as getEggSpecies};

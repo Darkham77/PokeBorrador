@@ -1,1 +1,0 @@
-import{t as e}from"./game-data-Vph-BvLi.js";export{e as getRandomQuoteForTrainer};
