@@ -30,6 +30,7 @@ DECLARE
   v_nature TEXT;
   v_move_name TEXT;
   v_move_id TEXT;
+  v_norm TEXT;
   
   -- Helper norm function
   v_species_map JSONB;
