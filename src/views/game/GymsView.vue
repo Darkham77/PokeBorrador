@@ -50,14 +50,20 @@ const handleBadgeLeave = (e: MouseEvent) => {
   <div class="pv-gyms-view">
     <div class="pv-region-selector">
       <button class="region-tab active">
-        <span class="region-indicator"></span>
+        <span class="region-indicator" />
         KANTO
       </button>
-      <button class="region-tab locked" disabled>
+      <button
+        class="region-tab locked"
+        disabled
+      >
         <span class="lock-icon">🔒</span>
         JOHTO (PRÓXIMAMENTE)
       </button>
-      <button class="region-tab locked" disabled>
+      <button
+        class="region-tab locked"
+        disabled
+      >
         <span class="lock-icon">🔒</span>
         HOENN (PRÓXIMAMENTE)
       </button>

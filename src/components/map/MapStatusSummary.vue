@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useEventStore } from '@/stores/events'
 import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 
 interface Props {
@@ -28,6 +29,8 @@ const emit = defineEmits<{
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const eventStore = useEventStore()
+
 const cooldownSecondsLeft = ref(0)
 let cooldownTween: gsap.core.Tween | null = null
 
@@ -80,6 +83,56 @@ const bannerUrl = computed(() => {
 const bannerStyle = computed(() => ({
   backgroundImage: `url('${bannerUrl.value}')`
 }))
+
+// Event mapping and automatic resolution with fallback
+const activeEvent = computed(() => eventStore.activeEvents[0])
+const eventImageSrc = ref('')
+const eventAspect = ref(1.7916)
+
+watch(() => activeEvent.value?.id, (eventId) => {
+  const baseName = eventId ? (eventId === 'doble_exp' ? 'doble_exp' : eventId === 'dia_pesca' ? 'dia_pesca' : eventId === 'hora_magikarp' ? 'hora_magikarp' : eventId) : 'war';
+  
+  const reelUrl = getAssetUrl(ASSET_TYPES.BANNER, `${baseName}_reel`);
+  const fullUrl = getAssetUrl(ASSET_TYPES.BANNER, `${baseName}_full`);
+
+  const img = new Image();
+  img.onload = () => {
+    eventImageSrc.value = reelUrl;
+    eventAspect.value = img.naturalWidth / img.naturalHeight;
+  };
+  img.onerror = () => {
+    const imgFull = new Image();
+    imgFull.onload = () => {
+      eventImageSrc.value = fullUrl;
+      eventAspect.value = imgFull.naturalWidth / imgFull.naturalHeight;
+    };
+    imgFull.onerror = () => {
+      const warUrl = getAssetUrl(ASSET_TYPES.BANNER, 'war_full');
+      const imgWar = new Image();
+      imgWar.onload = () => {
+        eventImageSrc.value = warUrl;
+        eventAspect.value = imgWar.naturalWidth / imgWar.naturalHeight;
+      };
+      imgWar.src = warUrl;
+    };
+    imgFull.src = fullUrl;
+  };
+  img.src = reelUrl;
+}, { immediate: true })
+
+const eventTooltipTitle = computed(() => {
+  if (activeEvent.value) {
+    return `📅 EVENTO: ${activeEvent.value.name}`
+  }
+  return 'Guerra de Facciones (Por defecto)'
+})
+
+const eventTooltipDesc = computed(() => {
+  if (activeEvent.value) {
+    return activeEvent.value.description
+  }
+  return 'No hay eventos especiales activos en este momento.'
+})
 </script>
 
 <template>
@@ -139,39 +192,32 @@ const bannerStyle = computed(() => ({
     </div>
 
     <!-- Grilla de Status Banners (Der: 50%) -->
-    <div class="pc-right">
+    <div 
+      class="pc-right" 
+      :style="{ '--event-aspect': eventAspect }"
+    >
       <div class="pc-banner-grid">
         <!-- 1. Evento -->
-        <div
-          class="pc-banner event-banner"
-          :class="{ active: rivalEventActive }"
-          :style="{ '--card-seed': 0.2 }"
-          @click.stop="rivalEventActive && emit('openEvent')"
+        <PVTooltip
+          :title="eventTooltipTitle"
+          :description="eventTooltipDesc"
+          position="bottom"
+          tag="div"
+          class="event-tooltip-container"
         >
-          <div class="pc-banner-icon">
-            {{ rivalEventIcon }}
-          </div>
-          <div class="pc-banner-content-wrapper">
-            <div class="pc-banner-title">
-              EVENTO
-            </div>
-            <div class="pc-banner-inner-flex">
-              <div class="pc-banner-text">
-                <span
-                  v-if="rivalEventActive && rivalEventText.includes(':')"
-                  class="text-highlight"
-                >
-                  {{ rivalEventText.split(':')[0] }}
-                </span>
-                {{ rivalEventActive ? (rivalEventText.includes(':') ? rivalEventText.split(':')[1] : rivalEventText) : 'No hay eventos activos' }}
-              </div>
-            </div>
-          </div>
-        </div>
+          <div
+            class="event-banner"
+            :class="{ active: !!activeEvent }"
+            :style="{ 
+              'backgroundImage': `url('${eventImageSrc}')` 
+            }"
+            @click.stop="activeEvent && emit('openEvent')"
+          />
+        </PVTooltip>
       </div>
     </div>
   </div>
 </template>
 
-<!-- HMR Touch comment to force reload styles v2 -->
+<!-- HMR Touch comment to force reload styles v11 -->
 <style scoped lang="scss" src="@/styles/components/_map-status-summary.scss"></style>

@@ -60,6 +60,7 @@ describe('Gym Engine', () => {
       (['easy', 'normal', 'hard'] as const).forEach(difficulty => {
         it(`should successfully choose first move for first active Pokemon in Gym: ${gym.name} (${difficulty})`, () => {
           const diffData = gym.difficulties[difficulty] || gym.difficulties.easy;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx] || 1, { bypassWhitelist: true })).filter(Boolean) as any[];
           
           expect(enemyTeam.length).toBeGreaterThan(0);

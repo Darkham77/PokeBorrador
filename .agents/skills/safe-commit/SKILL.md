@@ -197,7 +197,12 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 ### 8. Lessons Extraction (LOCAL) 🛑
 
-Trigger the official **`/learn` / `/extract-lessons`** workflow by creating the mandatory `learning_proposal.md` artifact (with `request_feedback = true` in metadata) outlining the classification, rationale, and precise text additions/diffs. This is a **local documentation task** and MUST NOT involve a browser subagent.
+Trigger the official **/learn** workflow directly. When generating the mandatory `learning_proposal.md` artifact (with `request_feedback = true` in metadata) outlining the classification, rationale, and precise text additions/diffs:
+1. **Target File Language**: You MUST write the proposed updates or additions using the native/dominant language of each target file or skill being updated.
+2. **User Explanations**: All descriptions, justifications, and explanations in the artifact and communication directed to the user MUST be written in Spanish.
+3. **Precise Location Targeting**: Do NOT place lessons arbitrarily. Carefully analyze the project's DOX structure (the multiple `AGENTS.md` files in subdirectories), reference manuals under `@/project-standards`, and specific local skills. You MUST target the most specific and logical file or section that owns the topic of the lesson, rather than dumping everything in root files.
+
+This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 > [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — HARD STOP**: Once the `learning_proposal.md` artifact is created, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or making further file edits) until the user provides explicit approval of the proposed lessons. This stop is about validating *what knowledge to persist*, not about the code itself.
 
