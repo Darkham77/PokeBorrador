@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-670NAiCQ.js";export{e as default};
