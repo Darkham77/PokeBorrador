@@ -197,25 +197,16 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 ### 8. Lessons Extraction (LOCAL) 🛑
 
-Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/GSAP optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
+Trigger the official **`/learn` / `/extract-lessons`** workflow by creating the mandatory `learning_proposal.md` artifact (with `request_feedback = true` in metadata) outlining the classification, rationale, and precise text additions/diffs. This is a **local documentation task** and MUST NOT involve a browser subagent.
 
-> [!CAUTION] **🛑 LESSON APPROVAL — HARD STOP**: After **@/extract-lessons** presents the lesson mapping table, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval of the proposed lessons. This stop is about validating *what knowledge to persist*, not about the code itself.
+> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — HARD STOP**: Once the `learning_proposal.md` artifact is created, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or making further file edits) until the user provides explicit approval of the proposed lessons. This stop is about validating *what knowledge to persist*, not about the code itself.
 
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 8.2 without explicit user confirmation of the extracted lessons plan.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
-
-### 8.2. Skill Implementation Verification ✅
-
-After the lessons are distributed and the skill files are updated by `@/extract-lessons`, you MUST perform a second verification.
-
-1. **Self-Review**: Read the modified `SKILL.md` files to ensure the content matches the approved plan.
-2. **User Approval Mandatory**: Ask the user explicitly: "Are the changes applied to the skills correct?".
-
-> [!CAUTION] **✅ SKILL APPROVED — HARD STOP**: You are FORBIDDEN from proceeding to Step 9 until the user provides an explicit "Yes". This stop is about validating the *persisted skill content*, which is separate from the lesson plan approval above.
 
 ### 9. Final Optimization Commit
 
-After the user approves the final skill implementation in Step 8.2, perform a second and final commit.
+After the user approves the learning proposal in Step 8, perform a second and final commit.
 
 1. `git status` to verify staged changes (only audit-related diffs should remain).
 2. `git add .`
