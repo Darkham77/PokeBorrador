@@ -172,28 +172,67 @@ export function usePWA() {
       }
 
       // --- STEP 2: Activate the waiting SW via SKIP_WAITING so it takes control ---
-      // This is the critical fix: updateServiceWorker() posts { type: 'SKIP_WAITING' }
-      // to the SW in waiting state. Without this, the OLD SW keeps intercepting
-      // navigations and serving the old cached JS, causing the infinite update loop.
-      if (!isOutdatedClient.value) {
-        // SW update path: a new SW is waiting, activate it.
-        // The 'controllerchange' event fires when the new SW takes control.
-        // We do the cache-busting reload ONLY after the new SW is in control,
-        // so that it serves the fresh JS bundle, not the old cached one.
-        await new Promise<void>((resolve) => {
-          const onControllerChange = () => {
-            navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
-            resolve()
-          }
-          navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
-          updateServiceWorker() // triggers skipWaiting on the waiting SW
-        })
-      } else {
-        // version.json path: no waiting SW, do full manual cleanup.
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations()
-          for (const registration of registrations) {
-            await registration.unregister()
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration()
+        if (registration) {
+          if (registration.waiting) {
+            logger.info('PWA', 'Encontrado Service Worker esperando. Activando...')
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+            await new Promise<void>((resolve) => {
+              const onControllerChange = () => {
+                navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+                resolve()
+              }
+              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+            })
+          } else if (registration.installing) {
+            logger.info('PWA', 'Service Worker se está instalando. Esperando instalación...')
+            await new Promise<void>((resolve) => {
+              const worker = registration.installing
+              if (worker) {
+                worker.addEventListener('statechange', () => {
+                  if (worker.state === 'installed') {
+                    logger.info('PWA', 'Service Worker instalado. Enviando SKIP_WAITING...')
+                    worker.postMessage({ type: 'SKIP_WAITING' })
+                    resolve()
+                  }
+                })
+              } else {
+                resolve()
+              }
+            })
+            await new Promise<void>((resolve) => {
+              const onControllerChange = () => {
+                navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+                resolve()
+              }
+              navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+            })
+          } else {
+            logger.info('PWA', 'No hay Service Worker en espera ni instalándose. Buscando actualización...')
+            try {
+              await registration.update()
+              // Esperar un momento a ver si se detecta/instala
+              await new Promise((r) => setTimeout(r, 1000))
+              const waitingWorker = registration.waiting as unknown as ServiceWorker
+              if (waitingWorker) {
+                logger.info('PWA', 'Nuevo Service Worker encontrado y listo tras update. Activando...')
+                waitingWorker.postMessage({ type: 'SKIP_WAITING' })
+                await new Promise<void>((resolve) => {
+                  const onControllerChange = () => {
+                    navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+                    resolve()
+                  }
+                  navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+                })
+              } else {
+                logger.info('PWA', 'No se detectó nuevo SW tras update. Desregistrando SW actual para forzar recarga limpia...')
+                await registration.unregister()
+              }
+            } catch (updateErr) {
+              logger.error('PWA', `Error al intentar forzar update: ${(updateErr as Error).message}`)
+              await registration.unregister()
+            }
           }
         }
       }
