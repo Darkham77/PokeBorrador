@@ -5,6 +5,7 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { Battle } from '@pkmn/sim';
 import { PDEX_ORDER } from '@/data/pokemon/pokedex';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Gym Engine', () => {
   const mockGym = { id: 'pewter', leader: 'Brock', rewardTM: 'MT39 Tumba Rocas' };
@@ -60,8 +61,7 @@ describe('Gym Engine', () => {
       (['easy', 'normal', 'hard'] as const).forEach(difficulty => {
         it(`should successfully choose first move for first active Pokemon in Gym: ${gym.name} (${difficulty})`, () => {
           const diffData = gym.difficulties[difficulty] || gym.difficulties.easy;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx] || 1, { bypassWhitelist: true })).filter(Boolean) as any[];
+          const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx] || 1, { bypassWhitelist: true })).filter((p): p is Pokemon => p !== null);
           
           expect(enemyTeam.length).toBeGreaterThan(0);
           
@@ -81,14 +81,18 @@ describe('Gym Engine', () => {
           battle.setPlayer('p2', { name: 'GymLeader', team: p2Team });
 
           // Showdown starts with index 0 (first member of team) as the active pokemon
-          const expectedActiveName = enemyTeam[0].name;
+          const firstEnemy = enemyTeam[0];
+          if (!firstEnemy) throw new Error('Expected at least one enemy');
+          const expectedActiveName = firstEnemy.name;
           const actualActiveName = battle.p2.active[0]?.name;
           expect(actualActiveName).toBe(expectedActiveName);
 
           // Get first move of the starting active pokemon
-          const activePokeMoves = enemyTeam[0].moves;
+          const activePokeMoves = firstEnemy.moves;
           expect(activePokeMoves.length).toBeGreaterThan(0);
-          const firstMoveId = activePokePokeIdToID(activePokeMoves[0].id);
+          const firstMove = activePokeMoves[0];
+          if (!firstMove || !firstMove.id) throw new Error('Expected first move to have an id');
+          const firstMoveId = activePokePokeIdToID(firstMove.id);
 
           battle.choose('p1', 'move 1');
           const res = battle.choose('p2', `move ${firstMoveId}`);

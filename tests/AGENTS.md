@@ -19,6 +19,7 @@ QA / Automation Engineers.
 - When dynamic store mocks are needed, declare local mock interfaces instead of using `as any`.
 - Update test cases immediately when source function signatures change.
 - **Bare Node.js vs Vitest Boundaries**: Bare Node.js tests (`tests/node/`) must ONLY import pure math/logic files with no external `@/` path alias dependencies. Any tests involving components, stores, database routing, or modules containing `@/` imports must be written in Vitest under `tests/unit/` or `tests/integration/`.
+- **Array Indexing and Type Narrowing in Tests**: To satisfy strict type checking under `noUncheckedIndexedAccess` without using `any` or bypassing rules, avoid referencing array elements directly (e.g. `arr[0]`). Extract them to local variables and perform explicit existence assertions or throw errors if undefined to narrow their types.
 
 ## Verification
 

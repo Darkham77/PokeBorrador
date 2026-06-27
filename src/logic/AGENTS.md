@@ -26,6 +26,7 @@ Logic Developers / Game Designers.
 - **Move Description Fallback Chain**: Spanish move translations MUST follow: ① `pokemonDataProvider` → ② `move_descriptions.json` → ③ Showdown `shortDesc`. No English leaks.
 - **Struggle Choice Resolution**: In `@pkmn/sim` battles, when all move PP is depleted, pass `'default'` as the choice to execute native Struggle.
 - **Double KO Sequence Order**: In Double KO scenarios, always trigger and await the enemy's faint animation before the player's faint sequence to prevent premature FSM exits and UI animation cutoffs.
+- **Showdown Team Preview Format Constraint**: When configuring native `@pkmn/sim` battles, the `!Team Preview` rule filter must only be appended for Gen 5+ formats. Appending it for Gen 1-4 throws a fatal simulator rule error because Team Preview does not exist in those generations.
 
 ## Verification
 

@@ -7,6 +7,9 @@ import { ACTIVE_GENERATION } from '@/data/system/constants';
  * Retorna el ID de formato oficial de Pokémon Showdown.
  */
 export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
+  if (gen < 5) {
+    return `gen${gen}customgame` as ID;
+  }
   return `gen${gen}customgame@@@!Team Preview` as ID;
 }
 
