@@ -17,7 +17,7 @@ describe('Breeding Engine', () => {
   describe('getBreedingBaseId', () => {
     it('should remove gender suffixes', () => {
       expect(getBreedingBaseId('pikachu_m')).toBe('pikachu')
-      expect(getBreedingBaseId('nidoran_f')).toBe('nidoran_f')
+      expect(getBreedingBaseId('nidoranf')).toBe('nidoranf')
       expect(getBreedingBaseId('bulbasaur')).toBe('bulbasaur')
     })
   })

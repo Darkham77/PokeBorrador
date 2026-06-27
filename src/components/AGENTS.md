@@ -18,6 +18,7 @@ Frontend UI Developers / UI Designers.
 - Prevent font layout clipping on pixelated fonts (`Pokemon FireRed LeafGreen`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.
 - Implement micro-animations and state hover transitions exclusively using GSAP timelines/tweens in `@mouseenter` and `@mouseleave` handlers. CSS `transition` and `@keyframes` are forbidden for dynamic state transitions.
 - Teleported tooltips must scale the inner wrapper, not the parent, to avoid breaking absolute calculations.
+- **Overlay Stacking Context**: Absolute overlays designed to cover interactive grids (e.g. moves panel) must specify a Z-index of `calc(var(--z-base) + 10)` or higher to cover grid items rendering at `var(--z-base)`.
 
 ## Verification
 

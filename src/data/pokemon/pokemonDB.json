@@ -7637,7 +7637,7 @@
     ]
   },
   "nidoranf": {
-    "name": "Nidoran",
+    "name": "Nidoran-F",
     "type": "poison",
     "hp": 55,
     "atk": 47,
@@ -7965,7 +7965,7 @@
     ]
   },
   "nidoranm": {
-    "name": "Nidoran",
+    "name": "Nidoran-M",
     "type": "poison",
     "hp": 46,
     "atk": 57,
