@@ -13,6 +13,7 @@ QA / Automation Engineers.
 
 ## Work Guidance
 
+- Whenever a bug is presented with a reproducing example, you MUST FIRST create a unit test (or other appropriate test) that successfully reproduces the bug (verifying it fails) before writing the fix to ensure it is never reintroduced.
 - Use `node:test` for logic unit tests (saves Vitest overhead).
 - Playwright is preferred for E2E browser testing.
 - When dynamic store mocks are needed, declare local mock interfaces instead of using `as any`.

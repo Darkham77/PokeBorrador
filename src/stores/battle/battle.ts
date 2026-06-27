@@ -305,21 +305,6 @@ export const useBattleStore = defineStore('battle', () => {
 
       if (!activeBattle.value) return
 
-      // Recoil de Struggle: 1/4 del HP máximo del jugador (mecánica oficial Gen 9).
-      // Se aplica manualmente porque Showdown lo calcula sobre su propio maxHp interno,
-      // que puede diferir del nuestro si el sync de HP no está alineado.
-      const player = activeBattle.value.player
-      if (player && !activeBattle.value.over) {
-        const recoil = Math.max(1, Math.floor(player.maxHp / 4))
-        player.hp = Math.max(0, player.hp - recoil)
-        addLog(`¡${player.name} sufrió daño de rebote!`, 'log-player', player)
-        if (player.hp <= 0) {
-          activeBattle.value.over = true
-          await handleFaint('player')
-          return
-        }
-      }
-
       if (!activeBattle.value.over) await applyEndTurnEffects()
       activeMove.value = null
 

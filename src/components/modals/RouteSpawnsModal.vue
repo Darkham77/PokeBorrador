@@ -34,7 +34,7 @@ const playerClass = computed(() => gameStore.state.playerClass)
 
 const isOfficialRouteActive = computed(() => {
   if (playerClass.value !== 'entrenador') return false
-  if (!props.map.id.startsWith('route')) return false
+  if (!isMapExtortable(props.map)) return false
   const classData = gameStore.state.classData || {}
   if (classData.officialRouteId !== props.map.id) return false
   const now = Temporal.Now.instant().epochMilliseconds
@@ -44,7 +44,7 @@ const isOfficialRouteActive = computed(() => {
 
 const isExtortedRouteActive = computed(() => {
   if (playerClass.value !== 'rocket') return false
-  if (!props.map.id.startsWith('route')) return false
+  if (!isMapExtortable(props.map)) return false
   const classData = gameStore.state.classData || {}
   if (classData.extortedRouteId !== props.map.id) return false
   const now = Temporal.Now.instant().epochMilliseconds

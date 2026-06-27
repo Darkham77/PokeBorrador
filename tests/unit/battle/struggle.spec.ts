@@ -16,6 +16,8 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { Battle, ID } from '@pkmn/sim'
+import type { PokemonSet } from '@pkmn/sim'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared mocks
@@ -190,7 +192,7 @@ describe('BattleMoveSlot — Struggle card', () => {
 // 3. Worker resolveChoice: drena PP y convierte 'struggle' en 'move 1'
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Worker resolveChoice (Struggle → move 1)', () => {
+describe('Worker resolveChoice (Struggle → default)', () => {
   // Replica exacta de resolveChoice en showdown.worker.ts
   // En @pkmn/sim: .moves = string[], .moveSlots = {id, pp, maxpp}[]
   function resolveChoice(side: { active?: { moveSlots?: { pp: number }[] }[] } | null, choice: string): string {
@@ -199,15 +201,15 @@ describe('Worker resolveChoice (Struggle → move 1)', () => {
       if (activeMon.moveSlots) {
         activeMon.moveSlots.forEach((m) => { if (m) m.pp = 0 })
       }
-      return 'move 1'
+      return 'default'
     }
     return choice
   }
 
-  it('converts "struggle" choice to "move 1"', () => {
+  it('converts "struggle" choice to "default"', () => {
     const side = { active: [{ moveSlots: [{ pp: 5 }, { pp: 10 }] }] }
     const result = resolveChoice(side, 'struggle')
-    expect(result).toBe('move 1')
+    expect(result).toBe('default')
   })
 
   it('drains all PP on moveSlots when struggle is resolved', () => {
@@ -235,8 +237,8 @@ describe('Worker resolveChoice (Struggle → move 1)', () => {
 
   it('handles active pokemon with no moveSlots gracefully (does not crash)', () => {
     const side = { active: [{}] }
-    // Should not throw — just returns 'move 1' without draining
-    expect(resolveChoice(side, 'struggle')).toBe('move 1')
+    // Should not throw — just returns 'default' without draining
+    expect(resolveChoice(side, 'struggle')).toBe('default')
   })
 })
 
@@ -305,3 +307,38 @@ describe('Struggle recoil — 4 uses KO the user', () => {
     expect(user.hp).toBe(0)
   })
 })
+
+describe('Showdown Simulator Struggle Choices Integration', () => {
+  it('should execute Struggle and apply recoil in Gen 9 simulator when using correct choice string', () => {
+    const battle = new Battle({ formatid: 'gen9customgame@@@!Team Preview' as ID })
+    battle.setPlayer('p1', { name: 'Player', team: [{ species: 'Vaporeon', level: 100, moves: ['surf', 'icebeam'] } as unknown as PokemonSet] })
+    battle.setPlayer('p2', { name: 'Enemy', team: [{ species: 'Bulbasaur', level: 100, moves: ['tackle'] } as unknown as PokemonSet] })
+
+    // Drain PP
+    const active = battle.p1.active[0]
+    if (active && active.moveSlots) {
+      active.moveSlots.forEach((slot) => {
+        if (slot) {
+          slot.pp = 0
+        }
+      })
+    }
+
+    // Try default choice
+    const res = battle.choose('p1', 'default')
+    expect(res).toBe(true)
+
+    const res2 = battle.choose('p2', 'move 1')
+    expect(res2).toBe(true)
+
+    // Check logs to make sure Struggle was executed
+    const logs = battle.log
+    console.log('SIMULATOR LOGS GENERATED:', JSON.stringify(logs, null, 2))
+    const struggleLog = logs.some((line: string) => line.includes('|move|p1a: Vaporeon|Struggle|'))
+    const recoilLog = logs.some((line: string) => line.toLowerCase().includes('[from] recoil'))
+
+    expect(struggleLog).toBe(true)
+    expect(recoilLog).toBe(true)
+  })
+})
+

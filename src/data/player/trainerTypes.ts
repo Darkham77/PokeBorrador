@@ -24,7 +24,7 @@ export const TRAINER_TYPES = {
   'rocket': { name: 'Recluta Rocket', sprite: 'rocketgrunt', archetype: 'rocket' as NpcArchetype, pool: ['koffing', 'ekans', 'zubat', 'rattata', 'meowth', 'drowzee', 'machop', 'grimer'] },
   'criador': { name: 'Criador Pokémon', sprite: 'pokemonbreeder', archetype: 'criador' as NpcArchetype, pool: ['eevee', 'pidgey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle'] },
   'aristocrata': { name: 'Aristócrata', sprite: 'gentleman', archetype: 'aristocrata' as NpcArchetype, pool: ['meowth', 'growlithe', 'eevee', 'clefairy', 'jigglypuff', 'vulpix'] },
-  'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger', archetype: 'ranger' as NpcArchetype, pool: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'] },
+  'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger', archetype: 'ranger' as NpcArchetype, pool: ['nidoranf', 'nidoranm', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'] },
   'pokefan': { name: 'Pokéfan', sprite: 'pokefan', archetype: 'pokefan' as NpcArchetype, pool: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'] },
   'policeman': { name: 'Oficial de Policía', sprite: 'policeman', archetype: 'policeman' as NpcArchetype, pool: ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot'] },
   'artista': { name: 'Artista', sprite: 'artist', archetype: 'artista' as NpcArchetype, pool: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'] },

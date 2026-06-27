@@ -373,7 +373,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
             :has-mist="(stages.mist || 0) > 0"
             :vibrant="true"
             :sparkle-count="8"
-            :radius="fxRadius * 1.5"
+            :radius="fxRadius * 1.25"
             :sprite-scale="fxScale"
             :style="{
               width: (displaySize * 2) + 'px',

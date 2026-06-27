@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue' // HMR Trigger
+import { computed, onMounted, onUnmounted } from 'vue' // HMR Trigger
+import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useMapStore, type PendingAward } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
@@ -26,8 +27,21 @@ const eventStore = useEventStore()
 const modalStore = useModalStore()
 const breedingStore = useBreedingStore()
 
-onMounted(() => {
+let expirationTicker: gsap.core.Tween | null = null
+
+const tickExpirations = () => {
   gameStore.checkRouteExpirations()
+  expirationTicker = gsap.delayedCall(10, tickExpirations)
+}
+
+onMounted(() => {
+  tickExpirations()
+})
+
+onUnmounted(() => {
+  if (expirationTicker) {
+    expirationTicker.kill()
+  }
 })
 
 const navigateToMap = async (loc: MapLocation | string | number) => {
@@ -41,7 +55,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
     const extTimestamp = Number(classData.extortedRouteTimestamp || 0)
-    const isExpired = !classData.extortedRouteId || (now - extTimestamp > 24 * 3600 * 1000)
+    const isExpired = !extTimestamp || (now - extTimestamp > 24 * 3600 * 1000)
 
     if (isExpired) {
       modalStore.open('Confirm', {
@@ -80,7 +94,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     const classData = gameStore.state.classData || {}
     const now = Temporal.Now.instant().epochMilliseconds
     const offTimestamp = Number(classData.officialRouteTimestamp || 0)
-    const isExpired = !classData.officialRouteId || (now - offTimestamp > 24 * 3600 * 1000)
+    const isExpired = !offTimestamp || (now - offTimestamp > 24 * 3600 * 1000)
 
     if (isExpired) {
       modalStore.open('Confirm', {

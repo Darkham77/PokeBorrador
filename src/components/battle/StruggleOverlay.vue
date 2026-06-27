@@ -63,7 +63,7 @@ const struggleMoveData = computed<Move>(() => {
   justify-content: center;
   background: Rgba(10, 10, 20, 0.82);
   backdrop-filter: Blur(2px);
-  z-index: var(--z-map-grass-back);
+  z-index: calc(var(--z-base) + 10);
   pointer-events: all;
 
   :deep(.move-slot-wrapper) {

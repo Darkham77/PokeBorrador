@@ -376,7 +376,13 @@ onUnmounted(() => {
           </div>
           <div class="mv-pp-wrap">
             <span class="mv-pp-label pixelated">PP</span>
-            <span class="mv-pp-val pixelated">{{ move.pp }}/{{ move.maxPP }}</span>
+            <span class="mv-pp-val pixelated">
+              <span
+                v-if="move.id === 'struggle'"
+                class="infinity-emoji"
+              >♾️</span>
+              <template v-else>{{ move.pp }}/{{ move.maxPP }}</template>
+            </span>
           </div>
         </div>
       </template>

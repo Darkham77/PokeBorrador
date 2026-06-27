@@ -71,7 +71,7 @@ self.onmessage = (event: MessageEvent) => {
             if (activeMon?.moveSlots) {
               activeMon.moveSlots.forEach((m: { pp: number } | null) => { if (m) m.pp = 0 })
             }
-            return 'move 1'
+            return 'default'
           }
           return choice
         };
@@ -80,11 +80,17 @@ self.onmessage = (event: MessageEvent) => {
           const resolved1 = resolveChoice(currentBattle.p1, p1Choice);
           const res1 = currentBattle.choose('p1', resolved1);
           console.log(`[Showdown Worker] p1 choose(${resolved1}) res:`, res1);
+          if (!res1) {
+            throw new Error(`Elección inválida para p1: "${p1Choice}" (resuelto a "${resolved1}")`);
+          }
         }
         if (p2Choice) {
           const resolved2 = resolveChoice(currentBattle.p2, p2Choice);
           const res2 = currentBattle.choose('p2', resolved2);
           console.log(`[Showdown Worker] p2 choose(${resolved2}) res:`, res2);
+          if (!res2) {
+            throw new Error(`Elección inválida para p2: "${p2Choice}" (resuelto a "${resolved2}")`);
+          }
         }
 
         const turnLogs = getNewLogs();

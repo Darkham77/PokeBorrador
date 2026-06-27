@@ -105,12 +105,12 @@ export const FIRE_RED_MAPS = [
       "dusk": [
         "rattata",
         "zubat",
-        "nidoran_f"
+        "nidoranf"
       ],
       "night": [
         "rattata",
         "zubat",
-        "nidoran_m"
+        "nidoranm"
       ]
     },
     "rates": {
@@ -251,8 +251,8 @@ export const FIRE_RED_MAPS = [
         "weedle",
         "kakuna",
         "pikachu",
-        "nidoran_f",
-        "nidoran_m"
+        "nidoranf",
+        "nidoranm"
       ],
       "day": [
         "caterpie",
@@ -260,8 +260,8 @@ export const FIRE_RED_MAPS = [
         "weedle",
         "kakuna",
         "pikachu",
-        "nidoran_f",
-        "nidoran_m"
+        "nidoranf",
+        "nidoranm"
       ],
       "dusk": [
         "weedle",
@@ -440,15 +440,15 @@ export const FIRE_RED_MAPS = [
         "rattata",
         "spearow",
         "mankey",
-        "nidoran_m",
-        "nidoran_f"
+        "nidoranm",
+        "nidoranf"
       ],
       "day": [
         "rattata",
         "spearow",
         "mankey",
-        "nidoran_m",
-        "nidoran_f"
+        "nidoranm",
+        "nidoranf"
       ],
       "dusk": [
         "rattata",
@@ -689,16 +689,16 @@ export const FIRE_RED_MAPS = [
         "pidgey",
         "spearow",
         "jigglypuff",
-        "nidoran_m",
-        "nidoran_f",
+        "nidoranm",
+        "nidoranf",
         "mankey"
       ],
       "day": [
         "pidgey",
         "spearow",
         "jigglypuff",
-        "nidoran_m",
-        "nidoran_f",
+        "nidoranm",
+        "nidoranf",
         "mankey"
       ],
       "dusk": [
@@ -2081,16 +2081,16 @@ export const FIRE_RED_MAPS = [
         "rattata",
         "ekans",
         "sandshrew",
-        "nidoran_m",
-        "nidoran_f"
+        "nidoranm",
+        "nidoranf"
       ],
       "day": [
         "spearow",
         "rattata",
         "ekans",
         "sandshrew",
-        "nidoran_m",
-        "nidoran_f"
+        "nidoranm",
+        "nidoranf"
       ],
       "dusk": [
         "zubat",
@@ -3206,8 +3206,8 @@ export const FIRE_RED_MAPS = [
     "isSwamp": true,
     "wild": {
       "morning": [
-        "nidoran_f",
-        "nidoran_m",
+        "nidoranf",
+        "nidoranm",
         "parasect",
         "venomoth",
         "scyther",
@@ -3222,8 +3222,8 @@ export const FIRE_RED_MAPS = [
         "poliwag"
       ],
       "day": [
-        "nidoran_f",
-        "nidoran_m",
+        "nidoranf",
+        "nidoranm",
         "parasect",
         "venomoth",
         "scyther",

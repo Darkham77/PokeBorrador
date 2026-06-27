@@ -3,7 +3,7 @@
  * tests/unit/map_card.spec.js
  */
 import { describe, it, expect } from 'vitest'
-import { normalizeFaction, checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
+import { normalizeFaction, checkPlayerWinner, calculateSpawnGrid, isMapExtortable } from '@/logic/map/mapCardHelper'
 
 describe('MapCard Helper Logic', () => {
   describe('normalizeFaction', () => {
@@ -55,6 +55,32 @@ describe('MapCard Helper Logic', () => {
     it('should handle zero spawns', () => {
       const grid = calculateSpawnGrid(0)
       expect(grid.totalSlots).toBe(0)
+    })
+  })
+
+  describe('isMapExtortable', () => {
+    it('should return true for a valid wild encounter map like route or forest', () => {
+      const mockMap = {
+        id: 'route1',
+        name: 'Bosque Viridian',
+        wild: { morning: ['pikachu'] }
+      }
+      expect(isMapExtortable(mockMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(true)
+    })
+
+    it('should return false for cities, gyms, and leagues', () => {
+      const cityMap = { id: 'pallet', wild: { morning: ['pikachu'] } }
+      const gymMap = { id: 'pewter_gym', wild: { morning: ['pikachu'] } }
+      const leagueMap = { id: 'indigo_plateau_league', wild: { morning: ['pikachu'] } }
+      
+      expect(isMapExtortable(cityMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false)
+      expect(isMapExtortable(gymMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false)
+      expect(isMapExtortable(leagueMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false)
+    })
+
+    it('should return false if map has no wild spawns', () => {
+      const noWildMap = { id: 'route1', wild: {} }
+      expect(isMapExtortable(noWildMap as unknown as Parameters<typeof isMapExtortable>[0])).toBe(false)
     })
   })
 })

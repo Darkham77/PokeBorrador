@@ -13,4 +13,6 @@ Add the following routing instruction to `/learn`'s workflow:
 > 1. Is the lesson specific to this project (its mechanics, conventions, architecture, or domain)? → Store in **`@/project-standards`** or its reference manuals.
 > 2. Is the lesson a generic pattern reusable in any project? → Store in the **appropriate existing local skill**, or create a new local skill if none covers it.
 >
+> **Language rule**: Always verify the primary language of the target file/skill before writing. Any additions or modifications MUST be written in the file's dominant language. Never expand or write instructions in a language different from the one that dominates the document.
+>
 > Global skills are **forbidden** unless the user explicitly grants permission before any write. **Never** write anything before the user approves the `learning_proposal.md` artifact.

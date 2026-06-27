@@ -17,6 +17,24 @@ vi.mock('@/logic/services/assetService', () => ({
   }
 }))
 
+// Mock de executeTurn para probar la lógica de Struggle
+vi.mock('@/logic/battle/battleTurn', () => ({
+  executeTurn: vi.fn(async (store: unknown) => {
+    const s = store as { 
+      activeBattle?: { value?: { player?: { hp: number; maxHp: number } } }; 
+      persistBattle?: () => void;
+    }
+    if (s.activeBattle?.value?.player) {
+      const p = s.activeBattle.value.player
+      const recoil = Math.max(1, Math.floor(p.maxHp / 4))
+      p.hp = Math.max(0, p.hp - recoil)
+      s.activeBattle.value.player = { ...p }
+      if (s.persistBattle) s.persistBattle()
+    }
+    return Promise.resolve()
+  })
+}))
+
 describe('Battle Store - Log Side Detection', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -73,3 +91,39 @@ describe('Battle Store - Log Side Detection', () => {
     expect(battle.battleLogs[0]!.side).toBe('enemy') // Default side if not player
   })
 })
+
+describe('Battle Store - Struggle Recoil Integration', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it('should decrease player HP and sync it to the game store team on executeStruggle', async () => {
+    const gs = useGameStore()
+    const battle = useBattleStore()
+
+    const playerPoke = { 
+      uid: 'p123', 
+      name: 'Vaporeon', 
+      hp: 400, 
+      maxHp: 400, 
+      moves: [] 
+    } as unknown as Pokemon
+
+    gs.state.team = [playerPoke]
+
+    battle.state = {
+      player: playerPoke,
+      enemy: { uid: 'e456', name: 'Bulbasaur', hp: 100, maxHp: 100 } as unknown as Pokemon,
+      over: false,
+      playerTeamIndex: 0
+    } as unknown as import('@/types/battle/battle').BattleState
+
+    await battle.executeStruggle()
+
+    // Recoil is 1/4 of max HP -> 400 / 4 = 100 HP recoil
+    // 400 - 100 = 300 HP
+    expect(battle.player?.hp).toBe(300)
+    expect(gs.state.team[0]?.hp).toBe(300)
+  })
+})
+

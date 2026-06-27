@@ -13,7 +13,7 @@ import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon
  */
 export function getBreedingBaseId(id: string): string {
   if (!id) return id
-  if (id === 'nidoran_f' || id === 'nidoran_m') return id
+  if (id === 'nidoranf' || id === 'nidoranm') return id
   return id.endsWith('_m') || id.endsWith('_f') ? id.slice(0, -2) : id
 }
 

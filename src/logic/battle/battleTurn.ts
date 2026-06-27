@@ -87,6 +87,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice}`);
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps)
+    logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
 
@@ -96,7 +97,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const filteredLogs = filterShowdownLogs(result.logs);
     for (const logLine of filteredLogs) {
       await parseShowdownLogLine(store, logLine, filteredLogs);
-      if (logLine.startsWith('|faint|')) break;
     }
 
     if (store.activeBattle.value) {
@@ -115,11 +115,13 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     if (playerFainted || enemyFainted) {
       if (playerFainted && enemyFainted) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await store.handleFaint('player')
-        
+        // En un Doble KO por daño de retroceso (recoil de Struggle), el enemigo siempre se debilita primero
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
+        if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
+        
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+        await store.handleFaint('player')
       } else if (playerFainted) {
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await store.handleFaint('player')
@@ -127,6 +129,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
       }
+      if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
     }
 
     if (result.isOver && store.activeBattle.value) {

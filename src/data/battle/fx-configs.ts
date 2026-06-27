@@ -35,12 +35,12 @@ export interface EffectSettings {
 
 export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number } = {}): EffectSettings => {
   const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
-  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded'].includes(typeKey)
-  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused'].includes(typeKey)
+  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'].includes(typeKey)
+  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused', 'slp'].includes(typeKey)
 
   // 1. Helper para rango dinámico basado en radio
   const getDynamicRange = (base: [number, number]) => {
-    const baseRadius = options.isBattle ? ar / 1.5 : ar
+    const baseRadius = options.isBattle ? ar / 1.25 : ar
     const ratio = baseRadius / 40
     let scaleFactor = Math.max(0.15, Math.min(2.5, Math.pow(ratio, 2)))
 
@@ -64,7 +64,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     brn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
     frz: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
     slp: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    par: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
+    par: { mult: 1.0, activeRange: getDynamicRange([3, 5]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
     psn: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
     tox: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0 },
     confusion: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
@@ -113,7 +113,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
   
   // 4. Área de dispersión
-  const factor = (typeKey === 'par') ? 1.3 : (isHeadEffect ? 0.4 : 1.0)
+  const factor = isHeadEffect ? 0.4 : 1.0
   const maxRadius = isField ? (typeKey === 'mist' ? 25 : 45) : ar * factor
   
   const area: ParticleArea = (isFeetEffect) 

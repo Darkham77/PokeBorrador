@@ -513,6 +513,7 @@ function syncTeamHP(ctx: BattleContext) {
       if (teamPoke) {
         teamPoke.hp = active.player.hp;
         teamPoke.status = active.player.status;
+        teamPoke.moves = active.player.moves;
       }
     }
   } else if (active._lastActivePlayer) {
@@ -524,6 +525,7 @@ function syncTeamHP(ctx: BattleContext) {
       if (teamPoke) {
         teamPoke.hp = last.hp;
         teamPoke.status = last.status;
+        teamPoke.moves = last.moves;
       }
     }
   }
@@ -554,6 +556,7 @@ export function syncAndPersist(ctx: BattleContext) {
     ctx.gs.state.activeBattle = null
     return
   }
+  syncTeamHP(ctx)
   ctx.gs.state.activeBattle = {
     ...active,
     playerStages: ctx.playerStages.value,

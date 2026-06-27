@@ -167,7 +167,7 @@ const teamBallsStatus = computed(() => {
         <span 
           class="poke-name"
         >
-          {{ isScrambled ? '???' : p.name }}
+          {{ isScrambled ? '???' : (p.name === 'Nidoran-M' || p.name === 'Nidoran-F' ? 'Nidoran' : p.name) }}
         </span>
         <div
           v-if="p.gender && !isScrambled && !p.name.includes(getGenderText(p.gender))"
