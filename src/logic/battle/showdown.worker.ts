@@ -1,6 +1,5 @@
 // fallow-ignore-file security-sink
-import { Battle, ID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { Battle } from '@pkmn/sim';
 import { getShowdownFormatId } from './showdownAdapter.ts';
 
 /** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */

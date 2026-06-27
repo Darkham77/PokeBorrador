@@ -3,8 +3,7 @@ import { processGymVictory } from '@/logic/gym/gymEngine';
 import { GYMS } from '@/data/world/gyms';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
-import { Battle, type ID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { Battle } from '@pkmn/sim';
 import { PDEX_ORDER } from '@/data/pokemon/pokedex';
 
 describe('Gym Engine', () => {

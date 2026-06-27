@@ -6,9 +6,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
-import { Battle, type ID } from '@pkmn/sim';
+import { Battle } from '@pkmn/sim';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 describe('Showdown Integration & Adapters', () => {
   setActivePinia(createPinia());

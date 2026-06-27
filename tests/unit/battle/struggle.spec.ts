@@ -16,7 +16,7 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { Battle, ID } from '@pkmn/sim'
+import { Battle } from '@pkmn/sim'
 import type { PokemonSet } from '@pkmn/sim'
 import { getShowdownFormatId } from '@/logic/battle/showdownAdapter'
 
