@@ -48,6 +48,21 @@ const handleBadgeLeave = (e: MouseEvent) => {
 
 <template>
   <div class="pv-gyms-view">
+    <div class="pv-region-selector">
+      <button class="region-tab active">
+        <span class="region-indicator"></span>
+        KANTO
+      </button>
+      <button class="region-tab locked" disabled>
+        <span class="lock-icon">🔒</span>
+        JOHTO (PRÓXIMAMENTE)
+      </button>
+      <button class="region-tab locked" disabled>
+        <span class="lock-icon">🔒</span>
+        HOENN (PRÓXIMAMENTE)
+      </button>
+    </div>
+
     <div class="pv-gyms-header">
       <div class="header-left">
         <h1 class="view-title">
@@ -105,6 +120,60 @@ const handleBadgeLeave = (e: MouseEvent) => {
 .pv-gyms-view {
   padding: 0 0 40px;
   background: var(--bg-dark);
+}
+
+.pv-region-selector {
+  display: flex;
+  gap: 12px;
+  padding: 20px 30px;
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  margin-bottom: 20px;
+
+  .region-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-family: 'Pokemon FireRed LeafGreen', monospace;
+    font-size: 14px;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: Rgba(255, 255, 255, 0.08);
+      border-color: Rgba(255, 255, 255, 0.2);
+      color: var(--text-light);
+    }
+
+    &.active {
+      background: linear-gradient(135deg, Rgba(230, 57, 70, 0.2) 0%, Rgba(241, 250, 238, 0.03) 100%);
+      border: 1px solid Rgba(230, 57, 70, 0.5);
+      color: var(--text-light);
+      box-shadow: 0 0 12px Rgba(230, 57, 70, 0.2);
+
+      .region-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #e63946;
+        box-shadow: 0 0 8px #e63946;
+      }
+    }
+
+    &.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-style: dashed;
+      background: transparent;
+
+      .lock-icon {
+        font-size: 12px;
+      }
+    }
+  }
 }
 
 .pv-gyms-header {

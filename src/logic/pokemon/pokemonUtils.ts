@@ -50,13 +50,13 @@ import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
  */
-export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
+export function getMovesAtLevel(id: string, level: number, bypassWhitelist = false): PokemonMove[] {
   const history = getSpeciesHistory(id);
   const allPotentialMoves: LearnsetMove[] = [];
   const seenNames = new Set<string>();
 
   history.forEach(spId => {
-    const db = pokemonDataProvider.getPokemonData(spId);
+    const db = pokemonDataProvider.getPokemonData(spId, bypassWhitelist);
     if (db && db.learnset) {
       (db.learnset as LearnsetMove[]).forEach(m => {
         if (m.lv <= level) {
@@ -65,6 +65,7 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
       });
     }
   });
+
 
   allPotentialMoves.sort((a, b) => a.lv - b.lv);
 

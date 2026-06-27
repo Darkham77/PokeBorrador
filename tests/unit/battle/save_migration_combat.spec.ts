@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { Dex } from '@pkmn/sim';
-import { mapToShowdownSet } from '@/logic/battle/showdownAdapter';
+import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Save Migration and Combat Simulation', () => {
@@ -210,7 +210,7 @@ describe('Save Migration and Combat Simulation', () => {
 
     // Levantar un combate simulado de prueba con el motor nativo de Showdown (que es lo que corre en el worker)
     const { Battle, toID } = await import('@pkmn/sim');
-    const battle = new Battle({ formatid: toID('gen3customgame') });
+    const battle = new Battle({ formatid: getShowdownFormatId(3) });
     
     battle.setPlayer('p1', { name: 'Player', team: [p1Set] });
     battle.setPlayer('p2', { name: 'Opponent', team: [p2Set] });

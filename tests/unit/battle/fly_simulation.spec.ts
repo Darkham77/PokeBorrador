@@ -1,9 +1,10 @@
 import { describe, it } from 'vitest';
 import { Battle } from '@pkmn/sim';
+import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Fly Simulator logs diagnostic', () => {
   it('should print simulator logs when using Fly', () => {
-    const battle = new Battle({ formatid: 'gen3customgame' as import('@pkmn/sim').ID });
+    const battle = new Battle({ formatid: getShowdownFormatId(3) });
     battle.setPlayer('p1', {
       name: 'Player',
       team: [

@@ -1478,7 +1478,7 @@ export const FIRE_RED_MAPS = [
         "bellsprout",
         "abra",
         "tangela",
-        "mr_mime"
+        "mrmime"
       ],
       "day": [
         "pidgey",
@@ -1487,7 +1487,7 @@ export const FIRE_RED_MAPS = [
         "bellsprout",
         "abra",
         "tangela",
-        "mr_mime"
+        "mrmime"
       ],
       "dusk": [
         "meowth",
@@ -1497,7 +1497,7 @@ export const FIRE_RED_MAPS = [
       "night": [
         "meowth",
         "abra",
-        "mr_mime"
+        "mrmime"
       ]
     },
     "rates": {
@@ -1884,7 +1884,7 @@ export const FIRE_RED_MAPS = [
       },
       "fog": {
         "visitors": {
-          "mr_mime": 100
+          "mrmime": 100
         }
       },
       "thunderstorm": {
@@ -2614,7 +2614,7 @@ export const FIRE_RED_MAPS = [
         "vulpix",
         "abra",
         "tangela",
-        "mr_mime",
+        "mrmime",
         "lickitung"
       ],
       "day": [
@@ -2626,7 +2626,7 @@ export const FIRE_RED_MAPS = [
         "vulpix",
         "abra",
         "tangela",
-        "mr_mime",
+        "mrmime",
         "lickitung"
       ],
       "dusk": [

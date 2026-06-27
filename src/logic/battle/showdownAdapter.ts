@@ -1,6 +1,15 @@
-import type { PokemonSet } from '@pkmn/sim';
+import type { PokemonSet, ID } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '@/types/pokemon/pokemon';
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+
+/**
+ * Retorna el ID de formato oficial de Pokémon Showdown.
+ */
+export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
+  return `gen${gen}customgame@@@!Team Preview` as ID;
+}
+
 
 /**
  * Mapea un Pokémon de Poké Vicio al formato oficial de Pokémon Showdown (PokemonSet).

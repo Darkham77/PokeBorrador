@@ -1,3148 +1,2968 @@
 -- SQLite Companion Migration: 20260627023400_fix_corrupted_n_move_ids
 -- Description: Converts all Spanish and legacy elements to english Showdown IDs inside the sqlite local save_data.
 
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"absorber"', '"absorb"'), '"acido"', '"acid"'), '"ácido"', '"acid"'), '"cido"', '"acid"'), '"armaduraacida"', '"acidarmor"'), '"armaduraácida"', '"acidarmor"'), '"armaduracida"', '"acidarmor"'), '"golpeaereo"', '"aerialace"'), '"golpeaéreo"', '"aerialace"'), '"golpeareo"', '"aerialace"'), '"aerochorro"', '"aeroblast"'), '"agilidad"', '"agility"'), '"aireafilado"', '"aircutter"'), '"poderpasado"', '"ancientpower"'), '"empujon"', '"armthrust"'), '"empujón"', '"armthrust"'), '"empujn"', '"armthrust"'), '"aromaterapia"', '"aromatherapy"'), '"ayuda"', '"assist"'), '"impresionar"', '"astonish"'), '"atraccion"', '"attract"'), '"atracción"', '"attract"'), '"atraccin"', '"attract"'), '"rayoaurora"', '"aurorabeam"'), '"bombardeo"', '"barrage"'), '"barrera"', '"barrier"'), '"relevo"', '"batonpass"'), '"paliza"', '"beatup"'), '"tambor"', '"bellydrum"'), '"venganza"', '"bide"'), '"atadura"', '"bind"'), '"mordisco"', '"bite"'), '"anilloigneo"', '"blastburn"'), '"anilloígneo"', '"blastburn"'), '"anillogneo"', '"blastburn"'), '"patadaignea"', '"blazekick"'), '"patadaígnea"', '"blazekick"'), '"patadagnea"', '"blazekick"'), '"ventisca"', '"blizzard"'), '"bloqueo"', '"block"'), '"golpecuerpo"', '"bodyslam"'), '"huesopalo"', '"boneclub"'), '"huesomerang"', '"bonemerang"'), '"ataqueoseo"', '"bonerush"'), '"ataqueóseo"', '"bonerush"'), '"ataqueseo"', '"bonerush"'), '"bote"', '"bounce"'), '"demolicion"', '"brickbreak"'), '"demolición"', '"brickbreak"'), '"demolicin"', '"brickbreak"')
-WHERE save_data LIKE '%"absorber"%'
-   OR save_data LIKE '%"acido"%'
-   OR save_data LIKE '%"ácido"%'
-   OR save_data LIKE '%"cido"%'
-   OR save_data LIKE '%"armaduraacida"%'
-   OR save_data LIKE '%"armaduraácida"%'
-   OR save_data LIKE '%"armaduracida"%'
-   OR save_data LIKE '%"golpeaereo"%'
-   OR save_data LIKE '%"golpeaéreo"%'
-   OR save_data LIKE '%"golpeareo"%'
-   OR save_data LIKE '%"aerochorro"%'
-   OR save_data LIKE '%"agilidad"%'
-   OR save_data LIKE '%"aireafilado"%'
-   OR save_data LIKE '%"poderpasado"%'
-   OR save_data LIKE '%"empujon"%'
-   OR save_data LIKE '%"empujón"%'
-   OR save_data LIKE '%"empujn"%'
-   OR save_data LIKE '%"aromaterapia"%'
-   OR save_data LIKE '%"ayuda"%'
-   OR save_data LIKE '%"impresionar"%'
-   OR save_data LIKE '%"atraccion"%'
-   OR save_data LIKE '%"atracción"%'
-   OR save_data LIKE '%"atraccin"%'
-   OR save_data LIKE '%"rayoaurora"%'
-   OR save_data LIKE '%"bombardeo"%'
-   OR save_data LIKE '%"barrera"%'
-   OR save_data LIKE '%"relevo"%'
-   OR save_data LIKE '%"paliza"%'
-   OR save_data LIKE '%"tambor"%'
-   OR save_data LIKE '%"venganza"%'
-   OR save_data LIKE '%"atadura"%'
-   OR save_data LIKE '%"mordisco"%'
-   OR save_data LIKE '%"anilloigneo"%'
-   OR save_data LIKE '%"anilloígneo"%'
-   OR save_data LIKE '%"anillogneo"%'
-   OR save_data LIKE '%"patadaignea"%'
-   OR save_data LIKE '%"patadaígnea"%'
-   OR save_data LIKE '%"patadagnea"%'
-   OR save_data LIKE '%"ventisca"%'
-   OR save_data LIKE '%"bloqueo"%'
-   OR save_data LIKE '%"golpecuerpo"%'
-   OR save_data LIKE '%"huesopalo"%'
-   OR save_data LIKE '%"huesomerang"%'
-   OR save_data LIKE '%"ataqueoseo"%'
-   OR save_data LIKE '%"ataqueóseo"%'
-   OR save_data LIKE '%"ataqueseo"%'
-   OR save_data LIKE '%"bote"%'
-   OR save_data LIKE '%"demolicion"%'
-   OR save_data LIKE '%"demolición"%'
-   OR save_data LIKE '%"demolicin"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"burbuja"', '"bubble"'), '"rayoburbuja"', '"bubblebeam"'), '"corpulencia"', '"bulkup"'), '"semilladora"', '"bulletseed"'), '"pazmental"', '"calmmind"'), '"camuflaje"', '"camouflage"'), '"carga"', '"charge"'), '"encanto"', '"charm"'), '"tenaza"', '"clamp"'), '"punocometa"', '"cometpunch"'), '"puñocometa"', '"cometpunch"'), '"puocometa"', '"cometpunch"'), '"rayoconfuso"', '"confuseray"'), '"confusión"', '"confusion"'), '"confusin"', '"confusion"'), '"restriccion"', '"constrict"'), '"restricción"', '"constrict"'), '"restriccin"', '"constrict"'), '"conversión"', '"conversion"'), '"conversin"', '"conversion"'), '"conversión2"', '"conversion2"'), '"conversin2"', '"conversion2"'), '"masacosmica"', '"cosmicpower"'), '"masacósmica"', '"cosmicpower"'), '"masacsmica"', '"cosmicpower"'), '"esporagodon"', '"cottonspore"'), '"esporagodón"', '"cottonspore"'), '"esporagodn"', '"cottonspore"'), '"contraataque"', '"counter"'), '"antojo"', '"covet"'), '"martillazo"', '"crabhammer"'), '"tajocruzado"', '"crosschop"'), '"triturar"', '"crunch"'), '"garrabrutal"', '"crushclaw"'), '"maldicion"', '"curse"'), '"maldición"', '"curse"'), '"maldicin"', '"curse"'), '"corte"', '"cut"'), '"rizodefensa"', '"defensecurl"'), '"mismodestino"', '"destinybond"'), '"deteccion"', '"detect"'), '"detección"', '"detect"'), '"deteccin"', '"detect"'), '"excavar"', '"dig"'), '"anulacion"', '"disable"'), '"anulación"', '"disable"'), '"anulacin"', '"disable"'), '"buceo"', '"dive"'), '"punomareo"', '"dizzypunch"'), '"puñomareo"', '"dizzypunch"')
-WHERE save_data LIKE '%"burbuja"%'
-   OR save_data LIKE '%"rayoburbuja"%'
-   OR save_data LIKE '%"corpulencia"%'
-   OR save_data LIKE '%"semilladora"%'
-   OR save_data LIKE '%"pazmental"%'
-   OR save_data LIKE '%"camuflaje"%'
-   OR save_data LIKE '%"carga"%'
-   OR save_data LIKE '%"encanto"%'
-   OR save_data LIKE '%"tenaza"%'
-   OR save_data LIKE '%"punocometa"%'
-   OR save_data LIKE '%"puñocometa"%'
-   OR save_data LIKE '%"puocometa"%'
-   OR save_data LIKE '%"rayoconfuso"%'
-   OR save_data LIKE '%"confusión"%'
-   OR save_data LIKE '%"confusin"%'
-   OR save_data LIKE '%"restriccion"%'
-   OR save_data LIKE '%"restricción"%'
-   OR save_data LIKE '%"restriccin"%'
-   OR save_data LIKE '%"conversión"%'
-   OR save_data LIKE '%"conversin"%'
-   OR save_data LIKE '%"conversión2"%'
-   OR save_data LIKE '%"conversin2"%'
-   OR save_data LIKE '%"masacosmica"%'
-   OR save_data LIKE '%"masacósmica"%'
-   OR save_data LIKE '%"masacsmica"%'
-   OR save_data LIKE '%"esporagodon"%'
-   OR save_data LIKE '%"esporagodón"%'
-   OR save_data LIKE '%"esporagodn"%'
-   OR save_data LIKE '%"contraataque"%'
-   OR save_data LIKE '%"antojo"%'
-   OR save_data LIKE '%"martillazo"%'
-   OR save_data LIKE '%"tajocruzado"%'
-   OR save_data LIKE '%"triturar"%'
-   OR save_data LIKE '%"garrabrutal"%'
-   OR save_data LIKE '%"maldicion"%'
-   OR save_data LIKE '%"maldición"%'
-   OR save_data LIKE '%"maldicin"%'
-   OR save_data LIKE '%"corte"%'
-   OR save_data LIKE '%"rizodefensa"%'
-   OR save_data LIKE '%"mismodestino"%'
-   OR save_data LIKE '%"deteccion"%'
-   OR save_data LIKE '%"detección"%'
-   OR save_data LIKE '%"deteccin"%'
-   OR save_data LIKE '%"excavar"%'
-   OR save_data LIKE '%"anulacion"%'
-   OR save_data LIKE '%"anulación"%'
-   OR save_data LIKE '%"anulacin"%'
-   OR save_data LIKE '%"buceo"%'
-   OR save_data LIKE '%"punomareo"%'
-   OR save_data LIKE '%"puñomareo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"puomareo"', '"dizzypunch"'), '"deseooculto"', '"doomdesire"'), '"doblefilo"', '"doubleedge"'), '"doblepatada"', '"doublekick"'), '"doblebofeton"', '"doubleslap"'), '"doblebofetón"', '"doubleslap"'), '"doblebofetn"', '"doubleslap"'), '"dobleequipo"', '"doubleteam"'), '"dragoaliento"', '"dragonbreath"'), '"garradragon"', '"dragonclaw"'), '"garradragón"', '"dragonclaw"'), '"garradragn"', '"dragonclaw"'), '"danzadragon"', '"dragondance"'), '"danzadragón"', '"dragondance"'), '"danzadragn"', '"dragondance"'), '"furiadragon"', '"dragonrage"'), '"furiadragón"', '"dragonrage"'), '"furiadragn"', '"dragonrage"'), '"comesuenos"', '"dreameater"'), '"comesueños"', '"dreameater"'), '"comesueos"', '"dreameater"'), '"picotaladro"', '"drillpeck"'), '"punodinamico"', '"dynamicpunch"'), '"puñodinámico"', '"dynamicpunch"'), '"puodinmico"', '"dynamicpunch"'), '"terremoto"', '"earthquake"'), '"bombahuevo"', '"eggbomb"'), '"ascuas"', '"ember"'), '"otravez"', '"encore"'), '"esfuerzo"', '"endeavor"'), '"aguante"', '"endure"'), '"estallido"', '"eruption"'), '"explosión"', '"explosion"'), '"explosin"', '"explosion"'), '"paranormal"', '"extrasensory"'), '"velocidadextrema"', '"extremespeed"'), '"imagen"', '"facade"'), '"sorpresa"', '"fakeout"'), '"llantofalso"', '"faketears"'), '"falsotortazo"', '"falseswipe"'), '"danzapluma"', '"featherdance"'), '"finta"', '"feintattack"'), '"llamarada"', '"fireblast"'), '"punofuego"', '"firepunch"'), '"puñofuego"', '"firepunch"'), '"puofuego"', '"firepunch"'), '"girofuego"', '"firespin"'), '"fisura"', '"fissure"'), '"azote"', '"flail"'), '"lanzallamas"', '"flamethrower"')
-WHERE save_data LIKE '%"puomareo"%'
-   OR save_data LIKE '%"deseooculto"%'
-   OR save_data LIKE '%"doblefilo"%'
-   OR save_data LIKE '%"doblepatada"%'
-   OR save_data LIKE '%"doblebofeton"%'
-   OR save_data LIKE '%"doblebofetón"%'
-   OR save_data LIKE '%"doblebofetn"%'
-   OR save_data LIKE '%"dobleequipo"%'
-   OR save_data LIKE '%"dragoaliento"%'
-   OR save_data LIKE '%"garradragon"%'
-   OR save_data LIKE '%"garradragón"%'
-   OR save_data LIKE '%"garradragn"%'
-   OR save_data LIKE '%"danzadragon"%'
-   OR save_data LIKE '%"danzadragón"%'
-   OR save_data LIKE '%"danzadragn"%'
-   OR save_data LIKE '%"furiadragon"%'
-   OR save_data LIKE '%"furiadragón"%'
-   OR save_data LIKE '%"furiadragn"%'
-   OR save_data LIKE '%"comesuenos"%'
-   OR save_data LIKE '%"comesueños"%'
-   OR save_data LIKE '%"comesueos"%'
-   OR save_data LIKE '%"picotaladro"%'
-   OR save_data LIKE '%"punodinamico"%'
-   OR save_data LIKE '%"puñodinámico"%'
-   OR save_data LIKE '%"puodinmico"%'
-   OR save_data LIKE '%"terremoto"%'
-   OR save_data LIKE '%"bombahuevo"%'
-   OR save_data LIKE '%"ascuas"%'
-   OR save_data LIKE '%"otravez"%'
-   OR save_data LIKE '%"esfuerzo"%'
-   OR save_data LIKE '%"aguante"%'
-   OR save_data LIKE '%"estallido"%'
-   OR save_data LIKE '%"explosión"%'
-   OR save_data LIKE '%"explosin"%'
-   OR save_data LIKE '%"paranormal"%'
-   OR save_data LIKE '%"velocidadextrema"%'
-   OR save_data LIKE '%"imagen"%'
-   OR save_data LIKE '%"sorpresa"%'
-   OR save_data LIKE '%"llantofalso"%'
-   OR save_data LIKE '%"falsotortazo"%'
-   OR save_data LIKE '%"danzapluma"%'
-   OR save_data LIKE '%"finta"%'
-   OR save_data LIKE '%"llamarada"%'
-   OR save_data LIKE '%"punofuego"%'
-   OR save_data LIKE '%"puñofuego"%'
-   OR save_data LIKE '%"puofuego"%'
-   OR save_data LIKE '%"girofuego"%'
-   OR save_data LIKE '%"fisura"%'
-   OR save_data LIKE '%"azote"%'
-   OR save_data LIKE '%"lanzallamas"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"ruedafuego"', '"flamewheel"'), '"destello"', '"flash"'), '"camelo"', '"flatter"'), '"vuelo"', '"fly"'), '"focoenergia"', '"focusenergy"'), '"focoenergía"', '"focusenergy"'), '"focoenerga"', '"focusenergy"'), '"punocertero"', '"focuspunch"'), '"puñocertero"', '"focuspunch"'), '"puocertero"', '"focuspunch"'), '"senuelo"', '"followme"'), '"señuelo"', '"followme"'), '"seuelo"', '"followme"'), '"profecia"', '"foresight"'), '"profecía"', '"foresight"'), '"profeca"', '"foresight"'), '"plantaferoz"', '"frenzyplant"'), '"frustracion"', '"frustration"'), '"frustración"', '"frustration"'), '"frustracin"', '"frustration"'), '"ataquefuria"', '"furyattack"'), '"cortefuria"', '"furycutter"'), '"golpesfuria"', '"furyswipes"'), '"premonicion"', '"futuresight"'), '"premonición"', '"futuresight"'), '"premonicin"', '"futuresight"'), '"gigadrenado"', '"gigadrain"'), '"deslumbrar"', '"glare"'), '"silbato"', '"grasswhistle"'), '"grunido"', '"growl"'), '"gruñido"', '"growl"'), '"gruido"', '"growl"'), '"desarrollo"', '"growth"'), '"rabia"', '"grudge"'), '"guillotina"', '"guillotine"'), '"tornado"', '"gust"'), '"granizo"', '"hail"'), '"fortaleza"', '"harden"'), '"niebla"', '"haze"'), '"golpecabeza"', '"headbutt"'), '"campanacura"', '"healbell"'), '"ondaignea"', '"heatwave"'), '"ondaígnea"', '"heatwave"'), '"ondagnea"', '"heatwave"'), '"refuerzo"', '"helpinghand"'), '"poderoculto"', '"hiddenpower"'), '"patsaltoalta"', '"highjumpkick"'), '"pat.saltoalta"', '"highjumpkick"'), '"cornada"', '"hornattack"'), '"perforador"', '"horndrill"')
-WHERE save_data LIKE '%"ruedafuego"%'
-   OR save_data LIKE '%"destello"%'
-   OR save_data LIKE '%"camelo"%'
-   OR save_data LIKE '%"vuelo"%'
-   OR save_data LIKE '%"focoenergia"%'
-   OR save_data LIKE '%"focoenergía"%'
-   OR save_data LIKE '%"focoenerga"%'
-   OR save_data LIKE '%"punocertero"%'
-   OR save_data LIKE '%"puñocertero"%'
-   OR save_data LIKE '%"puocertero"%'
-   OR save_data LIKE '%"senuelo"%'
-   OR save_data LIKE '%"señuelo"%'
-   OR save_data LIKE '%"seuelo"%'
-   OR save_data LIKE '%"profecia"%'
-   OR save_data LIKE '%"profecía"%'
-   OR save_data LIKE '%"profeca"%'
-   OR save_data LIKE '%"plantaferoz"%'
-   OR save_data LIKE '%"frustracion"%'
-   OR save_data LIKE '%"frustración"%'
-   OR save_data LIKE '%"frustracin"%'
-   OR save_data LIKE '%"ataquefuria"%'
-   OR save_data LIKE '%"cortefuria"%'
-   OR save_data LIKE '%"golpesfuria"%'
-   OR save_data LIKE '%"premonicion"%'
-   OR save_data LIKE '%"premonición"%'
-   OR save_data LIKE '%"premonicin"%'
-   OR save_data LIKE '%"gigadrenado"%'
-   OR save_data LIKE '%"deslumbrar"%'
-   OR save_data LIKE '%"silbato"%'
-   OR save_data LIKE '%"grunido"%'
-   OR save_data LIKE '%"gruñido"%'
-   OR save_data LIKE '%"gruido"%'
-   OR save_data LIKE '%"desarrollo"%'
-   OR save_data LIKE '%"rabia"%'
-   OR save_data LIKE '%"guillotina"%'
-   OR save_data LIKE '%"tornado"%'
-   OR save_data LIKE '%"granizo"%'
-   OR save_data LIKE '%"fortaleza"%'
-   OR save_data LIKE '%"niebla"%'
-   OR save_data LIKE '%"golpecabeza"%'
-   OR save_data LIKE '%"campanacura"%'
-   OR save_data LIKE '%"ondaignea"%'
-   OR save_data LIKE '%"ondaígnea"%'
-   OR save_data LIKE '%"ondagnea"%'
-   OR save_data LIKE '%"refuerzo"%'
-   OR save_data LIKE '%"poderoculto"%'
-   OR save_data LIKE '%"patsaltoalta"%'
-   OR save_data LIKE '%"pat.saltoalta"%'
-   OR save_data LIKE '%"cornada"%'
-   OR save_data LIKE '%"perforador"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"aullido"', '"howl"'), '"hidrocanon"', '"hydrocannon"'), '"hidrocañón"', '"hydrocannon"'), '"hidrocan"', '"hydrocannon"'), '"hidrobomba"', '"hydropump"'), '"hiperrayo"', '"hyperbeam"'), '"hipercolmillo"', '"hyperfang"'), '"vozarron"', '"hypervoice"'), '"vozarrón"', '"hypervoice"'), '"vozarrn"', '"hypervoice"'), '"hipnosis"', '"hypnosis"'), '"bolahielo"', '"iceball"'), '"rayohielo"', '"icebeam"'), '"punohielo"', '"icepunch"'), '"puñohielo"', '"icepunch"'), '"puohielo"', '"icepunch"'), '"carambano"', '"iciclespear"'), '"carámbano"', '"iciclespear"'), '"carmbano"', '"iciclespear"'), '"vientohielo"', '"icywind"'), '"sellar"', '"imprison"'), '"arraigo"', '"ingrain"'), '"defensaferrea"', '"irondefense"'), '"defensaférrea"', '"irondefense"'), '"defensafrrea"', '"irondefense"'), '"colaferrea"', '"irontail"'), '"colaférrea"', '"irontail"'), '"colafrrea"', '"irontail"'), '"patadasalto"', '"jumpkick"'), '"golpekarate"', '"karatechop"'), '"golpekárate"', '"karatechop"'), '"golpekrate"', '"karatechop"'), '"kinetico"', '"kinesis"'), '"kinético"', '"kinesis"'), '"kintico"', '"kinesis"'), '"desarme"', '"knockoff"'), '"hojaaguda"', '"leafblade"'), '"chupavidas"', '"leechlife"'), '"drenadoras"', '"leechseed"'), '"malicioso"', '"leer"'), '"lenguetazo"', '"lick"'), '"lengüetazo"', '"lick"'), '"lengetazo"', '"lick"'), '"pantalladeluz"', '"lightscreen"'), '"fijarblanco"', '"lockon"'), '"besoamoroso"', '"lovelykiss"'), '"patadabaja"', '"lowkick"'), '"resplandor"', '"lusterpurge"'), '"ultrapuno"', '"machpunch"'), '"ultrapuño"', '"machpunch"')
-WHERE save_data LIKE '%"aullido"%'
-   OR save_data LIKE '%"hidrocanon"%'
-   OR save_data LIKE '%"hidrocañón"%'
-   OR save_data LIKE '%"hidrocan"%'
-   OR save_data LIKE '%"hidrobomba"%'
-   OR save_data LIKE '%"hiperrayo"%'
-   OR save_data LIKE '%"hipercolmillo"%'
-   OR save_data LIKE '%"vozarron"%'
-   OR save_data LIKE '%"vozarrón"%'
-   OR save_data LIKE '%"vozarrn"%'
-   OR save_data LIKE '%"hipnosis"%'
-   OR save_data LIKE '%"bolahielo"%'
-   OR save_data LIKE '%"rayohielo"%'
-   OR save_data LIKE '%"punohielo"%'
-   OR save_data LIKE '%"puñohielo"%'
-   OR save_data LIKE '%"puohielo"%'
-   OR save_data LIKE '%"carambano"%'
-   OR save_data LIKE '%"carámbano"%'
-   OR save_data LIKE '%"carmbano"%'
-   OR save_data LIKE '%"vientohielo"%'
-   OR save_data LIKE '%"sellar"%'
-   OR save_data LIKE '%"arraigo"%'
-   OR save_data LIKE '%"defensaferrea"%'
-   OR save_data LIKE '%"defensaférrea"%'
-   OR save_data LIKE '%"defensafrrea"%'
-   OR save_data LIKE '%"colaferrea"%'
-   OR save_data LIKE '%"colaférrea"%'
-   OR save_data LIKE '%"colafrrea"%'
-   OR save_data LIKE '%"patadasalto"%'
-   OR save_data LIKE '%"golpekarate"%'
-   OR save_data LIKE '%"golpekárate"%'
-   OR save_data LIKE '%"golpekrate"%'
-   OR save_data LIKE '%"kinetico"%'
-   OR save_data LIKE '%"kinético"%'
-   OR save_data LIKE '%"kintico"%'
-   OR save_data LIKE '%"desarme"%'
-   OR save_data LIKE '%"hojaaguda"%'
-   OR save_data LIKE '%"chupavidas"%'
-   OR save_data LIKE '%"drenadoras"%'
-   OR save_data LIKE '%"malicioso"%'
-   OR save_data LIKE '%"lenguetazo"%'
-   OR save_data LIKE '%"lengüetazo"%'
-   OR save_data LIKE '%"lengetazo"%'
-   OR save_data LIKE '%"pantalladeluz"%'
-   OR save_data LIKE '%"fijarblanco"%'
-   OR save_data LIKE '%"besoamoroso"%'
-   OR save_data LIKE '%"patadabaja"%'
-   OR save_data LIKE '%"resplandor"%'
-   OR save_data LIKE '%"ultrapuno"%'
-   OR save_data LIKE '%"ultrapuño"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"ultrapuo"', '"machpunch"'), '"hojamagica"', '"magicalleaf"'), '"hojamágica"', '"magicalleaf"'), '"hojamgica"', '"magicalleaf"'), '"capamagica"', '"magiccoat"'), '"capamágica"', '"magiccoat"'), '"capamgica"', '"magiccoat"'), '"magnitud"', '"magnitude"'), '"maldeojo"', '"meanlook"'), '"meditacion"', '"meditate"'), '"meditación"', '"meditate"'), '"meditacin"', '"meditate"'), '"megaagotar"', '"megadrain"'), '"megacuerno"', '"megahorn"'), '"megapatada"', '"megakick"'), '"megapuno"', '"megapunch"'), '"megapuño"', '"megapunch"'), '"megapuo"', '"megapunch"'), '"legado"', '"memento"'), '"garrametal"', '"metalclaw"'), '"ecometalico"', '"metalsound"'), '"ecometálico"', '"metalsound"'), '"ecometlico"', '"metalsound"'), '"punometeoro"', '"meteormash"'), '"puñometeoro"', '"meteormash"'), '"puometeoro"', '"meteormash"'), '"metronomo"', '"metronome"'), '"metrónomo"', '"metronome"'), '"metrnomo"', '"metronome"'), '"batido"', '"milkdrink"'), '"mimetico"', '"mimic"'), '"mimético"', '"mimic"'), '"mimtico"', '"mimic"'), '"telepata"', '"mindreader"'), '"telépata"', '"mindreader"'), '"telpata"', '"mindreader"'), '"reduccion"', '"minimize"'), '"reducción"', '"minimize"'), '"reduccin"', '"minimize"'), '"mantoespejo"', '"mirrorcoat"'), '"espejo"', '"mirrormove"'), '"neblina"', '"mist"'), '"bolaneblina"', '"mistball"'), '"luzlunar"', '"moonlight"'), '"solmatinal"', '"morningsun"'), '"agualodosa"', '"muddywater"'), '"disparolodo"', '"mudshot"'), '"bofetonlodo"', '"mudslap"'), '"bofetónlodo"', '"mudslap"'), '"bofetnlodo"', '"mudslap"')
-WHERE save_data LIKE '%"ultrapuo"%'
-   OR save_data LIKE '%"hojamagica"%'
-   OR save_data LIKE '%"hojamágica"%'
-   OR save_data LIKE '%"hojamgica"%'
-   OR save_data LIKE '%"capamagica"%'
-   OR save_data LIKE '%"capamágica"%'
-   OR save_data LIKE '%"capamgica"%'
-   OR save_data LIKE '%"magnitud"%'
-   OR save_data LIKE '%"maldeojo"%'
-   OR save_data LIKE '%"meditacion"%'
-   OR save_data LIKE '%"meditación"%'
-   OR save_data LIKE '%"meditacin"%'
-   OR save_data LIKE '%"megaagotar"%'
-   OR save_data LIKE '%"megacuerno"%'
-   OR save_data LIKE '%"megapatada"%'
-   OR save_data LIKE '%"megapuno"%'
-   OR save_data LIKE '%"megapuño"%'
-   OR save_data LIKE '%"megapuo"%'
-   OR save_data LIKE '%"legado"%'
-   OR save_data LIKE '%"garrametal"%'
-   OR save_data LIKE '%"ecometalico"%'
-   OR save_data LIKE '%"ecometálico"%'
-   OR save_data LIKE '%"ecometlico"%'
-   OR save_data LIKE '%"punometeoro"%'
-   OR save_data LIKE '%"puñometeoro"%'
-   OR save_data LIKE '%"puometeoro"%'
-   OR save_data LIKE '%"metronomo"%'
-   OR save_data LIKE '%"metrónomo"%'
-   OR save_data LIKE '%"metrnomo"%'
-   OR save_data LIKE '%"batido"%'
-   OR save_data LIKE '%"mimetico"%'
-   OR save_data LIKE '%"mimético"%'
-   OR save_data LIKE '%"mimtico"%'
-   OR save_data LIKE '%"telepata"%'
-   OR save_data LIKE '%"telépata"%'
-   OR save_data LIKE '%"telpata"%'
-   OR save_data LIKE '%"reduccion"%'
-   OR save_data LIKE '%"reducción"%'
-   OR save_data LIKE '%"reduccin"%'
-   OR save_data LIKE '%"mantoespejo"%'
-   OR save_data LIKE '%"espejo"%'
-   OR save_data LIKE '%"neblina"%'
-   OR save_data LIKE '%"bolaneblina"%'
-   OR save_data LIKE '%"luzlunar"%'
-   OR save_data LIKE '%"solmatinal"%'
-   OR save_data LIKE '%"agualodosa"%'
-   OR save_data LIKE '%"disparolodo"%'
-   OR save_data LIKE '%"bofetonlodo"%'
-   OR save_data LIKE '%"bofetónlodo"%'
-   OR save_data LIKE '%"bofetnlodo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"chapoteolodo"', '"mudsport"'), '"adaptacion"', '"naturepower"'), '"adaptación"', '"naturepower"'), '"adaptacin"', '"naturepower"'), '"brazopincho"', '"needlearm"'), '"pesadilla"', '"nightmare"'), '"tinieblas"', '"nightshade"'), '"pulpocanon"', '"octazooka"'), '"pulpocañón"', '"octazooka"'), '"pulpocan"', '"octazooka"'), '"rastreo"', '"odorsleuth"'), '"enfado"', '"outrage"'), '"sofoco"', '"overheat"'), '"dividedolor"', '"painsplit"'), '"diadepago"', '"payday"'), '"díadepago"', '"payday"'), '"dadepago"', '"payday"'), '"picotazo"', '"peck"'), '"cantomortal"', '"perishsong"'), '"danzapetalo"', '"petaldance"'), '"danzapétalo"', '"petaldance"'), '"danzaptalo"', '"petaldance"'), '"pinmisil"', '"pinmissile"'), '"colmilloveneno"', '"poisonfang"'), '"gasvenenoso"', '"poisongas"'), '"polvoveneno"', '"poisonpowder"'), '"picotazoveneno"', '"poisonsting"'), '"colaveneno"', '"poisontail"'), '"destructor"', '"pound"'), '"nievepolvo"', '"powdersnow"'), '"presente"', '"present"'), '"proteccion"', '"protect"'), '"protección"', '"protect"'), '"proteccin"', '"protect"'), '"psicorrayo"', '"psybeam"'), '"psiquico"', '"psychic"'), '"psíquico"', '"psychic"'), '"psquico"', '"psychic"'), '"psicoataque"', '"psychoboost"'), '"maspsique"', '"psychup"'), '"máspsique"', '"psychup"'), '"mspsique"', '"psychup"'), '"psicoonda"', '"psywave"'), '"persecucion"', '"pursuit"'), '"persecución"', '"pursuit"'), '"persecucin"', '"pursuit"'), '"ataquerapido"', '"quickattack"'), '"ataquerápido"', '"quickattack"'), '"ataquerpido"', '"quickattack"'), '"furia"', '"rage"')
-WHERE save_data LIKE '%"chapoteolodo"%'
-   OR save_data LIKE '%"adaptacion"%'
-   OR save_data LIKE '%"adaptación"%'
-   OR save_data LIKE '%"adaptacin"%'
-   OR save_data LIKE '%"brazopincho"%'
-   OR save_data LIKE '%"pesadilla"%'
-   OR save_data LIKE '%"tinieblas"%'
-   OR save_data LIKE '%"pulpocanon"%'
-   OR save_data LIKE '%"pulpocañón"%'
-   OR save_data LIKE '%"pulpocan"%'
-   OR save_data LIKE '%"rastreo"%'
-   OR save_data LIKE '%"enfado"%'
-   OR save_data LIKE '%"sofoco"%'
-   OR save_data LIKE '%"dividedolor"%'
-   OR save_data LIKE '%"diadepago"%'
-   OR save_data LIKE '%"díadepago"%'
-   OR save_data LIKE '%"dadepago"%'
-   OR save_data LIKE '%"picotazo"%'
-   OR save_data LIKE '%"cantomortal"%'
-   OR save_data LIKE '%"danzapetalo"%'
-   OR save_data LIKE '%"danzapétalo"%'
-   OR save_data LIKE '%"danzaptalo"%'
-   OR save_data LIKE '%"pinmisil"%'
-   OR save_data LIKE '%"colmilloveneno"%'
-   OR save_data LIKE '%"gasvenenoso"%'
-   OR save_data LIKE '%"polvoveneno"%'
-   OR save_data LIKE '%"picotazoveneno"%'
-   OR save_data LIKE '%"colaveneno"%'
-   OR save_data LIKE '%"destructor"%'
-   OR save_data LIKE '%"nievepolvo"%'
-   OR save_data LIKE '%"presente"%'
-   OR save_data LIKE '%"proteccion"%'
-   OR save_data LIKE '%"protección"%'
-   OR save_data LIKE '%"proteccin"%'
-   OR save_data LIKE '%"psicorrayo"%'
-   OR save_data LIKE '%"psiquico"%'
-   OR save_data LIKE '%"psíquico"%'
-   OR save_data LIKE '%"psquico"%'
-   OR save_data LIKE '%"psicoataque"%'
-   OR save_data LIKE '%"maspsique"%'
-   OR save_data LIKE '%"máspsique"%'
-   OR save_data LIKE '%"mspsique"%'
-   OR save_data LIKE '%"psicoonda"%'
-   OR save_data LIKE '%"persecucion"%'
-   OR save_data LIKE '%"persecución"%'
-   OR save_data LIKE '%"persecucin"%'
-   OR save_data LIKE '%"ataquerapido"%'
-   OR save_data LIKE '%"ataquerápido"%'
-   OR save_data LIKE '%"ataquerpido"%'
-   OR save_data LIKE '%"furia"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"danzalluvia"', '"raindance"'), '"girorapido"', '"rapidspin"'), '"girorápido"', '"rapidspin"'), '"girorpido"', '"rapidspin"'), '"hojaafilada"', '"razorleaf"'), '"vientocortante"', '"razorwind"'), '"recuperacion"', '"recover"'), '"recuperación"', '"recover"'), '"recuperacin"', '"recover"'), '"reciclaje"', '"recycle"'), '"reflejo"', '"reflect"'), '"alivio"', '"refresh"'), '"descanso"', '"rest"'), '"retribucion"', '"return"'), '"retribución"', '"return"'), '"retribucin"', '"return"'), '"desquite"', '"revenge"'), '"inversion"', '"reversal"'), '"inversión"', '"reversal"'), '"inversin"', '"reversal"'), '"rugido"', '"roar"'), '"pedrada"', '"rockblast"'), '"avalancha"', '"rockslide"'), '"golperoca"', '"rocksmash"'), '"lanzarrocas"', '"rockthrow"'), '"tumbarocas"', '"rocktomb"'), '"imitacion"', '"roleplay"'), '"imitación"', '"roleplay"'), '"imitacin"', '"roleplay"'), '"patadagiro"', '"rollingkick"'), '"rodar"', '"rollout"'), '"fuegosagrado"', '"sacredfire"'), '"velosagrado"', '"safeguard"'), '"ataquearena"', '"sandattack"'), '"tormentaarena"', '"sandstorm"'), '"buclearena"', '"sandtomb"'), '"carasusto"', '"scaryface"'), '"aranazo"', '"scratch"'), '"arañazo"', '"scratch"'), '"araazo"', '"scratch"'), '"chirrido"', '"screech"'), '"danosecreto"', '"secretpower"'), '"dañosecreto"', '"secretpower"'), '"daosecreto"', '"secretpower"'), '"sismico"', '"seismictoss"'), '"sísmico"', '"seismictoss"'), '"ssmico"', '"seismictoss"'), '"autodestruccion"', '"selfdestruct"'), '"autodestrucción"', '"selfdestruct"'), '"autodestruccin"', '"selfdestruct"')
-WHERE save_data LIKE '%"danzalluvia"%'
-   OR save_data LIKE '%"girorapido"%'
-   OR save_data LIKE '%"girorápido"%'
-   OR save_data LIKE '%"girorpido"%'
-   OR save_data LIKE '%"hojaafilada"%'
-   OR save_data LIKE '%"vientocortante"%'
-   OR save_data LIKE '%"recuperacion"%'
-   OR save_data LIKE '%"recuperación"%'
-   OR save_data LIKE '%"recuperacin"%'
-   OR save_data LIKE '%"reciclaje"%'
-   OR save_data LIKE '%"reflejo"%'
-   OR save_data LIKE '%"alivio"%'
-   OR save_data LIKE '%"descanso"%'
-   OR save_data LIKE '%"retribucion"%'
-   OR save_data LIKE '%"retribución"%'
-   OR save_data LIKE '%"retribucin"%'
-   OR save_data LIKE '%"desquite"%'
-   OR save_data LIKE '%"inversion"%'
-   OR save_data LIKE '%"inversión"%'
-   OR save_data LIKE '%"inversin"%'
-   OR save_data LIKE '%"rugido"%'
-   OR save_data LIKE '%"pedrada"%'
-   OR save_data LIKE '%"avalancha"%'
-   OR save_data LIKE '%"golperoca"%'
-   OR save_data LIKE '%"lanzarrocas"%'
-   OR save_data LIKE '%"tumbarocas"%'
-   OR save_data LIKE '%"imitacion"%'
-   OR save_data LIKE '%"imitación"%'
-   OR save_data LIKE '%"imitacin"%'
-   OR save_data LIKE '%"patadagiro"%'
-   OR save_data LIKE '%"rodar"%'
-   OR save_data LIKE '%"fuegosagrado"%'
-   OR save_data LIKE '%"velosagrado"%'
-   OR save_data LIKE '%"ataquearena"%'
-   OR save_data LIKE '%"tormentaarena"%'
-   OR save_data LIKE '%"buclearena"%'
-   OR save_data LIKE '%"carasusto"%'
-   OR save_data LIKE '%"aranazo"%'
-   OR save_data LIKE '%"arañazo"%'
-   OR save_data LIKE '%"araazo"%'
-   OR save_data LIKE '%"chirrido"%'
-   OR save_data LIKE '%"danosecreto"%'
-   OR save_data LIKE '%"dañosecreto"%'
-   OR save_data LIKE '%"daosecreto"%'
-   OR save_data LIKE '%"sismico"%'
-   OR save_data LIKE '%"sísmico"%'
-   OR save_data LIKE '%"ssmico"%'
-   OR save_data LIKE '%"autodestruccion"%'
-   OR save_data LIKE '%"autodestrucción"%'
-   OR save_data LIKE '%"autodestruccin"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"bolasombra"', '"shadowball"'), '"punosombra"', '"shadowpunch"'), '"puñosombra"', '"shadowpunch"'), '"puosombra"', '"shadowpunch"'), '"afilar"', '"sharpen"'), '"friopolar"', '"sheercold"'), '"fríopolar"', '"sheercold"'), '"fropolar"', '"sheercold"'), '"ondavoltio"', '"shockwave"'), '"doblerayo"', '"signalbeam"'), '"vientoplata"', '"silverwind"'), '"canto"', '"sing"'), '"esquema"', '"sketch"'), '"intercambio"', '"skillswap"'), '"cabezazo"', '"skullbash"'), '"ataqueaereo"', '"skyattack"'), '"ataqueaéreo"', '"skyattack"'), '"ataqueareo"', '"skyattack"'), '"ganchoalto"', '"skyuppercut"'), '"relajo"', '"slackoff"'), '"atizar"', '"slam"'), '"cuchillada"', '"slash"'), '"somnifera"', '"sleeppowder"'), '"somnífera"', '"sleeppowder"'), '"somnfera"', '"sleeppowder"'), '"sonambulo"', '"sleeptalk"'), '"sonámbulo"', '"sleeptalk"'), '"sonmbulo"', '"sleeptalk"'), '"residuos"', '"sludge"'), '"bombalodo"', '"sludgebomb"'), '"estimulo"', '"smellingsalts"'), '"estímulo"', '"smellingsalts"'), '"estmulo"', '"smellingsalts"'), '"polucion"', '"smog"'), '"polución"', '"smog"'), '"polucin"', '"smog"'), '"pantalladehumo"', '"smokescreen"'), '"robo"', '"snatch"'), '"ronquido"', '"snore"'), '"amortiguador"', '"softboiled"'), '"rayosolar"', '"solarbeam"'), '"ondasonica"', '"sonicboom"'), '"ondasónica"', '"sonicboom"'), '"ondasnica"', '"sonicboom"'), '"chispa"', '"spark"'), '"telarana"', '"spiderweb"'), '"telaraña"', '"spiderweb"'), '"telaraa"', '"spiderweb"'), '"clavocanon"', '"spikecannon"'), '"clavocañón"', '"spikecannon"')
-WHERE save_data LIKE '%"bolasombra"%'
-   OR save_data LIKE '%"punosombra"%'
-   OR save_data LIKE '%"puñosombra"%'
-   OR save_data LIKE '%"puosombra"%'
-   OR save_data LIKE '%"afilar"%'
-   OR save_data LIKE '%"friopolar"%'
-   OR save_data LIKE '%"fríopolar"%'
-   OR save_data LIKE '%"fropolar"%'
-   OR save_data LIKE '%"ondavoltio"%'
-   OR save_data LIKE '%"doblerayo"%'
-   OR save_data LIKE '%"vientoplata"%'
-   OR save_data LIKE '%"canto"%'
-   OR save_data LIKE '%"esquema"%'
-   OR save_data LIKE '%"intercambio"%'
-   OR save_data LIKE '%"cabezazo"%'
-   OR save_data LIKE '%"ataqueaereo"%'
-   OR save_data LIKE '%"ataqueaéreo"%'
-   OR save_data LIKE '%"ataqueareo"%'
-   OR save_data LIKE '%"ganchoalto"%'
-   OR save_data LIKE '%"relajo"%'
-   OR save_data LIKE '%"atizar"%'
-   OR save_data LIKE '%"cuchillada"%'
-   OR save_data LIKE '%"somnifera"%'
-   OR save_data LIKE '%"somnífera"%'
-   OR save_data LIKE '%"somnfera"%'
-   OR save_data LIKE '%"sonambulo"%'
-   OR save_data LIKE '%"sonámbulo"%'
-   OR save_data LIKE '%"sonmbulo"%'
-   OR save_data LIKE '%"residuos"%'
-   OR save_data LIKE '%"bombalodo"%'
-   OR save_data LIKE '%"estimulo"%'
-   OR save_data LIKE '%"estímulo"%'
-   OR save_data LIKE '%"estmulo"%'
-   OR save_data LIKE '%"polucion"%'
-   OR save_data LIKE '%"polución"%'
-   OR save_data LIKE '%"polucin"%'
-   OR save_data LIKE '%"pantalladehumo"%'
-   OR save_data LIKE '%"robo"%'
-   OR save_data LIKE '%"ronquido"%'
-   OR save_data LIKE '%"amortiguador"%'
-   OR save_data LIKE '%"rayosolar"%'
-   OR save_data LIKE '%"ondasonica"%'
-   OR save_data LIKE '%"ondasónica"%'
-   OR save_data LIKE '%"ondasnica"%'
-   OR save_data LIKE '%"chispa"%'
-   OR save_data LIKE '%"telarana"%'
-   OR save_data LIKE '%"telaraña"%'
-   OR save_data LIKE '%"telaraa"%'
-   OR save_data LIKE '%"clavocanon"%'
-   OR save_data LIKE '%"clavocañón"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"clavocan"', '"spikecannon"'), '"puas"', '"spikes"'), '"púas"', '"spikes"'), '"pas"', '"spikes"'), '"rencor"', '"spite"'), '"escupir"', '"spitup"'), '"salpicadura"', '"splash"'), '"espora"', '"spore"'), '"aladeacero"', '"steelwing"'), '"reserva"', '"stockpile"'), '"pisoton"', '"stomp"'), '"pisotón"', '"stomp"'), '"pisotn"', '"stomp"'), '"fuerza"', '"strength"'), '"disparodemora"', '"stringshot"'), '"forcejeo"', '"struggle"'), '"paralizador"', '"stunspore"'), '"sumision"', '"submission"'), '"sumisión"', '"submission"'), '"sumisin"', '"submission"'), '"sustituto"', '"substitute"'), '"diasoleado"', '"sunnyday"'), '"díasoleado"', '"sunnyday"'), '"dasoleado"', '"sunnyday"'), '"supercolmillo"', '"superfang"'), '"súpercolmillo"', '"superfang"'), '"spercolmillo"', '"superfang"'), '"fuerzabruta"', '"superpower"'), '"supersonico"', '"supersonic"'), '"supersónico"', '"supersonic"'), '"supersnico"', '"supersonic"'), '"contoneo"', '"swagger"'), '"tragar"', '"swallow"'), '"besodulce"', '"sweetkiss"'), '"dulcearoma"', '"sweetscent"'), '"rapidez"', '"swift"'), '"danzaespada"', '"swordsdance"'), '"sintesis"', '"synthesis"'), '"síntesis"', '"synthesis"'), '"sntesis"', '"synthesis"'), '"placaje"', '"tackle"'), '"rafaga"', '"tailglow"'), '"ráfaga"', '"tailglow"'), '"rfaga"', '"tailglow"'), '"latigo"', '"tailwhip"'), '"látigo"', '"tailwhip"'), '"ltigo"', '"tailwhip"'), '"derribo"', '"takedown"'), '"mofa"', '"taunt"'), '"danzacaos"', '"teeterdance"')
-WHERE save_data LIKE '%"clavocan"%'
-   OR save_data LIKE '%"puas"%'
-   OR save_data LIKE '%"púas"%'
-   OR save_data LIKE '%"pas"%'
-   OR save_data LIKE '%"rencor"%'
-   OR save_data LIKE '%"escupir"%'
-   OR save_data LIKE '%"salpicadura"%'
-   OR save_data LIKE '%"espora"%'
-   OR save_data LIKE '%"aladeacero"%'
-   OR save_data LIKE '%"reserva"%'
-   OR save_data LIKE '%"pisoton"%'
-   OR save_data LIKE '%"pisotón"%'
-   OR save_data LIKE '%"pisotn"%'
-   OR save_data LIKE '%"fuerza"%'
-   OR save_data LIKE '%"disparodemora"%'
-   OR save_data LIKE '%"forcejeo"%'
-   OR save_data LIKE '%"paralizador"%'
-   OR save_data LIKE '%"sumision"%'
-   OR save_data LIKE '%"sumisión"%'
-   OR save_data LIKE '%"sumisin"%'
-   OR save_data LIKE '%"sustituto"%'
-   OR save_data LIKE '%"diasoleado"%'
-   OR save_data LIKE '%"díasoleado"%'
-   OR save_data LIKE '%"dasoleado"%'
-   OR save_data LIKE '%"supercolmillo"%'
-   OR save_data LIKE '%"súpercolmillo"%'
-   OR save_data LIKE '%"spercolmillo"%'
-   OR save_data LIKE '%"fuerzabruta"%'
-   OR save_data LIKE '%"supersonico"%'
-   OR save_data LIKE '%"supersónico"%'
-   OR save_data LIKE '%"supersnico"%'
-   OR save_data LIKE '%"contoneo"%'
-   OR save_data LIKE '%"tragar"%'
-   OR save_data LIKE '%"besodulce"%'
-   OR save_data LIKE '%"dulcearoma"%'
-   OR save_data LIKE '%"rapidez"%'
-   OR save_data LIKE '%"danzaespada"%'
-   OR save_data LIKE '%"sintesis"%'
-   OR save_data LIKE '%"síntesis"%'
-   OR save_data LIKE '%"sntesis"%'
-   OR save_data LIKE '%"placaje"%'
-   OR save_data LIKE '%"rafaga"%'
-   OR save_data LIKE '%"ráfaga"%'
-   OR save_data LIKE '%"rfaga"%'
-   OR save_data LIKE '%"latigo"%'
-   OR save_data LIKE '%"látigo"%'
-   OR save_data LIKE '%"ltigo"%'
-   OR save_data LIKE '%"derribo"%'
-   OR save_data LIKE '%"mofa"%'
-   OR save_data LIKE '%"danzacaos"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"teletransporte"', '"teleport"'), '"ladron"', '"thief"'), '"ladrón"', '"thief"'), '"ladrn"', '"thief"'), '"golpe"', '"thrash"'), '"trueno"', '"thunder"'), '"rayo"', '"thunderbolt"'), '"punotrueno"', '"thunderpunch"'), '"puñotrueno"', '"thunderpunch"'), '"puotrueno"', '"thunderpunch"'), '"impactrueno"', '"thundershock"'), '"ondatrueno"', '"thunderwave"'), '"cosquillas"', '"tickle"'), '"tormento"', '"torment"'), '"toxico"', '"toxic"'), '"tóxico"', '"toxic"'), '"txico"', '"toxic"'), '"transformacion"', '"transform"'), '"transformación"', '"transform"'), '"transformacin"', '"transform"'), '"triataque"', '"triattack"'), '"truco"', '"trick"'), '"triplepatada"', '"triplekick"'), '"dobleataque"', '"twineedle"'), '"ciclon"', '"twister"'), '"ciclón"', '"twister"'), '"cicln"', '"twister"'), '"alboroto"', '"uproar"'), '"latigocepa"', '"vinewhip"'), '"látigocepa"', '"vinewhip"'), '"ltigocepa"', '"vinewhip"'), '"tirovital"', '"vitalthrow"'), '"placajeelec"', '"volttackle"'), '"placajeeléc"', '"volttackle"'), '"placajeelc"', '"volttackle"'), '"cascada"', '"waterfall"'), '"pistolaagua"', '"watergun"'), '"hidropulso"', '"waterpulse"'), '"hidrochorro"', '"watersport"'), '"salpicar"', '"waterspout"'), '"meteorobola"', '"weatherball"'), '"torbellino"', '"whirlpool"'), '"remolino"', '"whirlwind"'), '"fuegofatuo"', '"willowisp"'), '"ataqueala"', '"wingattack"'), '"deseo"', '"wish"'), '"refugio"', '"withdraw"'), '"constriccion"', '"wrap"'), '"constricción"', '"wrap"'), '"constriccin"', '"wrap"')
-WHERE save_data LIKE '%"teletransporte"%'
-   OR save_data LIKE '%"ladron"%'
-   OR save_data LIKE '%"ladrón"%'
-   OR save_data LIKE '%"ladrn"%'
-   OR save_data LIKE '%"golpe"%'
-   OR save_data LIKE '%"trueno"%'
-   OR save_data LIKE '%"rayo"%'
-   OR save_data LIKE '%"punotrueno"%'
-   OR save_data LIKE '%"puñotrueno"%'
-   OR save_data LIKE '%"puotrueno"%'
-   OR save_data LIKE '%"impactrueno"%'
-   OR save_data LIKE '%"ondatrueno"%'
-   OR save_data LIKE '%"cosquillas"%'
-   OR save_data LIKE '%"tormento"%'
-   OR save_data LIKE '%"toxico"%'
-   OR save_data LIKE '%"tóxico"%'
-   OR save_data LIKE '%"txico"%'
-   OR save_data LIKE '%"transformacion"%'
-   OR save_data LIKE '%"transformación"%'
-   OR save_data LIKE '%"transformacin"%'
-   OR save_data LIKE '%"triataque"%'
-   OR save_data LIKE '%"truco"%'
-   OR save_data LIKE '%"triplepatada"%'
-   OR save_data LIKE '%"dobleataque"%'
-   OR save_data LIKE '%"ciclon"%'
-   OR save_data LIKE '%"ciclón"%'
-   OR save_data LIKE '%"cicln"%'
-   OR save_data LIKE '%"alboroto"%'
-   OR save_data LIKE '%"latigocepa"%'
-   OR save_data LIKE '%"látigocepa"%'
-   OR save_data LIKE '%"ltigocepa"%'
-   OR save_data LIKE '%"tirovital"%'
-   OR save_data LIKE '%"placajeelec"%'
-   OR save_data LIKE '%"placajeeléc"%'
-   OR save_data LIKE '%"placajeelc"%'
-   OR save_data LIKE '%"cascada"%'
-   OR save_data LIKE '%"pistolaagua"%'
-   OR save_data LIKE '%"hidropulso"%'
-   OR save_data LIKE '%"hidrochorro"%'
-   OR save_data LIKE '%"salpicar"%'
-   OR save_data LIKE '%"meteorobola"%'
-   OR save_data LIKE '%"torbellino"%'
-   OR save_data LIKE '%"remolino"%'
-   OR save_data LIKE '%"fuegofatuo"%'
-   OR save_data LIKE '%"ataqueala"%'
-   OR save_data LIKE '%"deseo"%'
-   OR save_data LIKE '%"refugio"%'
-   OR save_data LIKE '%"constriccion"%'
-   OR save_data LIKE '%"constricción"%'
-   OR save_data LIKE '%"constriccin"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"bostezo"', '"yawn"'), '"electrocanon"', '"zapcannon"'), '"electrocañón"', '"zapcannon"'), '"electrocan"', '"zapcannon"'), '"gigarrayofulminante"', '"10000000voltthunderbolt"'), '"rocaveloz"', '"accelerock"'), '"diluviocorrosivo"', '"aciddownpour"'), '"bombaacida"', '"acidspray"'), '"bombaácida"', '"acidspray"'), '"bombacida"', '"acidspray"'), '"acrobata"', '"acrobatics"'), '"acróbata"', '"acrobatics"'), '"acrbata"', '"acrobatics"'), '"acupresion"', '"acupressure"'), '"acupresión"', '"acupressure"'), '"acupresin"', '"acupressure"'), '"cedepaso"', '"afteryou"'), '"tajoaereo"', '"airslash"'), '"tajoaéreo"', '"airslash"'), '"tajoareo"', '"airslash"'), '"rafagademoledora"', '"alloutpummeling"'), '"ráfagademoledora"', '"alloutpummeling"'), '"rfagademoledora"', '"alloutpummeling"'), '"cantoencantador"', '"alluringvoice"'), '"cambiodebanda"', '"allyswitch"'), '"anclaje"', '"anchorshot"'), '"acidomalico"', '"appleacid"'), '"ácidomálico"', '"appleacid"'), '"cidomlico"', '"appleacid"'), '"acuajet"', '"aquajet"'), '"acuaaro"', '"aquaring"'), '"acuacola"', '"aquatail"'), '"nieblaaromatica"', '"aromaticmist"'), '"nieblaaromática"', '"aromaticmist"'), '"nieblaaromtica"', '"aromaticmist"'), '"buenabaza"', '"assurance"'), '"orbesespectro"', '"astralbarrage"'), '"alataque"', '"attackorder"'), '"esferaaural"', '"aurasphere"'), '"ruedaaural"', '"aurawheel"'), '"veloaurora"', '"auroraveil"'), '"aligerar"', '"autotomize"'), '"alud"', '"avalanche"'), '"ojitostiernos"', '"babydolleyes"'), '"umbreozona"', '"baddybad"'), '"bunker"', '"banefulbunker"'), '"búnker"', '"banefulbunker"'), '"bnker"', '"banefulbunker"'), '"picocanon"', '"beakblast"'), '"picocañón"', '"beakblast"')
-WHERE save_data LIKE '%"bostezo"%'
-   OR save_data LIKE '%"electrocanon"%'
-   OR save_data LIKE '%"electrocañón"%'
-   OR save_data LIKE '%"electrocan"%'
-   OR save_data LIKE '%"gigarrayofulminante"%'
-   OR save_data LIKE '%"rocaveloz"%'
-   OR save_data LIKE '%"diluviocorrosivo"%'
-   OR save_data LIKE '%"bombaacida"%'
-   OR save_data LIKE '%"bombaácida"%'
-   OR save_data LIKE '%"bombacida"%'
-   OR save_data LIKE '%"acrobata"%'
-   OR save_data LIKE '%"acróbata"%'
-   OR save_data LIKE '%"acrbata"%'
-   OR save_data LIKE '%"acupresion"%'
-   OR save_data LIKE '%"acupresión"%'
-   OR save_data LIKE '%"acupresin"%'
-   OR save_data LIKE '%"cedepaso"%'
-   OR save_data LIKE '%"tajoaereo"%'
-   OR save_data LIKE '%"tajoaéreo"%'
-   OR save_data LIKE '%"tajoareo"%'
-   OR save_data LIKE '%"rafagademoledora"%'
-   OR save_data LIKE '%"ráfagademoledora"%'
-   OR save_data LIKE '%"rfagademoledora"%'
-   OR save_data LIKE '%"cantoencantador"%'
-   OR save_data LIKE '%"cambiodebanda"%'
-   OR save_data LIKE '%"anclaje"%'
-   OR save_data LIKE '%"acidomalico"%'
-   OR save_data LIKE '%"ácidomálico"%'
-   OR save_data LIKE '%"cidomlico"%'
-   OR save_data LIKE '%"acuajet"%'
-   OR save_data LIKE '%"acuaaro"%'
-   OR save_data LIKE '%"acuacola"%'
-   OR save_data LIKE '%"nieblaaromatica"%'
-   OR save_data LIKE '%"nieblaaromática"%'
-   OR save_data LIKE '%"nieblaaromtica"%'
-   OR save_data LIKE '%"buenabaza"%'
-   OR save_data LIKE '%"orbesespectro"%'
-   OR save_data LIKE '%"alataque"%'
-   OR save_data LIKE '%"esferaaural"%'
-   OR save_data LIKE '%"ruedaaural"%'
-   OR save_data LIKE '%"veloaurora"%'
-   OR save_data LIKE '%"aligerar"%'
-   OR save_data LIKE '%"alud"%'
-   OR save_data LIKE '%"ojitostiernos"%'
-   OR save_data LIKE '%"umbreozona"%'
-   OR save_data LIKE '%"bunker"%'
-   OR save_data LIKE '%"búnker"%'
-   OR save_data LIKE '%"bnker"%'
-   OR save_data LIKE '%"picocanon"%'
-   OR save_data LIKE '%"picocañón"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"picocan"', '"beakblast"'), '"embatesupremo"', '"behemothbash"'), '"tajosupremo"', '"behemothblade"'), '"eructo"', '"belch"'), '"ofrenda"', '"bestow"'), '"agujeronegroaniquilador"', '"blackholeeclipse"'), '"megatonfloral"', '"bloomdoom"'), '"megatónfloral"', '"bloomdoom"'), '"megatnfloral"', '"bloomdoom"'), '"llamaazul"', '"blueflare"'), '"planchacorporal"', '"bodypress"'), '"electropico"', '"boltbeak"'), '"ataquefulgor"', '"boltstrike"'), '"estruendo"', '"boomburst"'), '"vapodrenaje"', '"bouncybubble"'), '"punzadarama"', '"branchpoke"'), '"pajaroosado"', '"bravebird"'), '"pájaroosado"', '"bravebird"'), '"pjaroosado"', '"bravebird"'), '"vastoimpacto"', '"breakingswipe"'), '"carreraarrolladora"', '"breakneckblitz"'), '"salmuera"', '"brine"'), '"girovil"', '"brutalswing"'), '"picadura"', '"bugbite"'), '"zumbido"', '"bugbuzz"'), '"terratemblor"', '"bulldoze"'), '"punobala"', '"bulletpunch"'), '"puñobala"', '"bulletpunch"'), '"puobala"', '"bulletpunch"'), '"llamaprotectora"', '"burningbulwark"'), '"envidiaardiente"', '"burningjealousy"'), '"llamafinal"', '"burnup"'), '"joltioparalisis"', '"buzzybuzz"'), '"joltioparálisis"', '"buzzybuzz"'), '"joltioparlisis"', '"buzzybuzz"'), '"seduccion"', '"captivate"'), '"seducción"', '"captivate"'), '"seduccin"', '"captivate"'), '"pikavoltioletal"', '"catastropika"'), '"celebracion"', '"celebrate"'), '"celebración"', '"celebrate"'), '"celebracin"', '"celebrate"'), '"rayocarga"', '"chargebeam"'), '"chachara"', '"chatter"'), '"cháchara"', '"chatter"'), '"chchara"', '"chatter"'), '"guardiabaja"', '"chipaway"'), '"llavegiro"', '"circlethrow"'), '"fragorescamas"', '"clangingscales"'), '"estruendoescama"', '"clangoroussoul"')
-WHERE save_data LIKE '%"picocan"%'
-   OR save_data LIKE '%"embatesupremo"%'
-   OR save_data LIKE '%"tajosupremo"%'
-   OR save_data LIKE '%"eructo"%'
-   OR save_data LIKE '%"ofrenda"%'
-   OR save_data LIKE '%"agujeronegroaniquilador"%'
-   OR save_data LIKE '%"megatonfloral"%'
-   OR save_data LIKE '%"megatónfloral"%'
-   OR save_data LIKE '%"megatnfloral"%'
-   OR save_data LIKE '%"llamaazul"%'
-   OR save_data LIKE '%"planchacorporal"%'
-   OR save_data LIKE '%"electropico"%'
-   OR save_data LIKE '%"ataquefulgor"%'
-   OR save_data LIKE '%"estruendo"%'
-   OR save_data LIKE '%"vapodrenaje"%'
-   OR save_data LIKE '%"punzadarama"%'
-   OR save_data LIKE '%"pajaroosado"%'
-   OR save_data LIKE '%"pájaroosado"%'
-   OR save_data LIKE '%"pjaroosado"%'
-   OR save_data LIKE '%"vastoimpacto"%'
-   OR save_data LIKE '%"carreraarrolladora"%'
-   OR save_data LIKE '%"salmuera"%'
-   OR save_data LIKE '%"girovil"%'
-   OR save_data LIKE '%"picadura"%'
-   OR save_data LIKE '%"zumbido"%'
-   OR save_data LIKE '%"terratemblor"%'
-   OR save_data LIKE '%"punobala"%'
-   OR save_data LIKE '%"puñobala"%'
-   OR save_data LIKE '%"puobala"%'
-   OR save_data LIKE '%"llamaprotectora"%'
-   OR save_data LIKE '%"envidiaardiente"%'
-   OR save_data LIKE '%"llamafinal"%'
-   OR save_data LIKE '%"joltioparalisis"%'
-   OR save_data LIKE '%"joltioparálisis"%'
-   OR save_data LIKE '%"joltioparlisis"%'
-   OR save_data LIKE '%"seduccion"%'
-   OR save_data LIKE '%"seducción"%'
-   OR save_data LIKE '%"seduccin"%'
-   OR save_data LIKE '%"pikavoltioletal"%'
-   OR save_data LIKE '%"celebracion"%'
-   OR save_data LIKE '%"celebración"%'
-   OR save_data LIKE '%"celebracin"%'
-   OR save_data LIKE '%"rayocarga"%'
-   OR save_data LIKE '%"chachara"%'
-   OR save_data LIKE '%"cháchara"%'
-   OR save_data LIKE '%"chchara"%'
-   OR save_data LIKE '%"guardiabaja"%'
-   OR save_data LIKE '%"llavegiro"%'
-   OR save_data LIKE '%"fragorescamas"%'
-   OR save_data LIKE '%"estruendoescama"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"estruendoimplacable"', '"clangoroussoulblaze"'), '"nieblaclara"', '"clearsmog"'), '"abocajarro"', '"closecombat"'), '"motivacion"', '"coaching"'), '"motivación"', '"coaching"'), '"motivacin"', '"coaching"'), '"enrosque"', '"coil"'), '"confidencia"', '"confide"'), '"aplastamientogigalitico"', '"continentalcrush"'), '"aplastamientogigalítico"', '"continentalcrush"'), '"aplastamientogigaltico"', '"continentalcrush"'), '"copion"', '"copycat"'), '"copión"', '"copycat"'), '"copin"', '"copycat"'), '"nucleocastigo"', '"coreenforcer"'), '"núcleocastigo"', '"coreenforcer"'), '"ncleocastigo"', '"coreenforcer"'), '"helicetrepanadora"', '"corkscrewcrash"'), '"hélicetrepanadora"', '"corkscrewcrash"'), '"hlicetrepanadora"', '"corkscrewcrash"'), '"gascorrosivo"', '"corrosivegas"'), '"rizoalgodon"', '"cottonguard"'), '"rizoalgodón"', '"cottonguard"'), '"rizoalgodn"', '"cottonguard"'), '"cambiodecancha"', '"courtchange"'), '"trucodefensa"', '"craftyshield"'), '"venenox"', '"crosspoison"'), '"agarron"', '"crushgrip"'), '"agarrón"', '"crushgrip"'), '"agarrn"', '"crushgrip"'), '"lariatoscuro"', '"darkestlariat"'), '"pulsoumbrio"', '"darkpulse"'), '"pulsoumbrío"', '"darkpulse"'), '"pulsoumbro"', '"darkpulse"'), '"brechanegra"', '"darkvoid"'), '"brillomagico"', '"dazzlinggleam"'), '"brillomágico"', '"dazzlinggleam"'), '"brillomgico"', '"dazzlinggleam"'), '"decoracion"', '"decorate"'), '"decoración"', '"decorate"'), '"decoracin"', '"decorate"'), '"adefender"', '"defendorder"'), '"despejar"', '"defog"'), '"dracoalientodevastador"', '"devastatingdrake"'), '"tormdiamantes"', '"diamondstorm"'), '"torm.diamantes"', '"diamondstorm"'), '"vozcautivadora"', '"disarmingvoice"'), '"chispazo"', '"discharge"'), '"doblegolpe"', '"doublehit"'), '"ferropunodoble"', '"doubleironbash"')
-WHERE save_data LIKE '%"estruendoimplacable"%'
-   OR save_data LIKE '%"nieblaclara"%'
-   OR save_data LIKE '%"abocajarro"%'
-   OR save_data LIKE '%"motivacion"%'
-   OR save_data LIKE '%"motivación"%'
-   OR save_data LIKE '%"motivacin"%'
-   OR save_data LIKE '%"enrosque"%'
-   OR save_data LIKE '%"confidencia"%'
-   OR save_data LIKE '%"aplastamientogigalitico"%'
-   OR save_data LIKE '%"aplastamientogigalítico"%'
-   OR save_data LIKE '%"aplastamientogigaltico"%'
-   OR save_data LIKE '%"copion"%'
-   OR save_data LIKE '%"copión"%'
-   OR save_data LIKE '%"copin"%'
-   OR save_data LIKE '%"nucleocastigo"%'
-   OR save_data LIKE '%"núcleocastigo"%'
-   OR save_data LIKE '%"ncleocastigo"%'
-   OR save_data LIKE '%"helicetrepanadora"%'
-   OR save_data LIKE '%"hélicetrepanadora"%'
-   OR save_data LIKE '%"hlicetrepanadora"%'
-   OR save_data LIKE '%"gascorrosivo"%'
-   OR save_data LIKE '%"rizoalgodon"%'
-   OR save_data LIKE '%"rizoalgodón"%'
-   OR save_data LIKE '%"rizoalgodn"%'
-   OR save_data LIKE '%"cambiodecancha"%'
-   OR save_data LIKE '%"trucodefensa"%'
-   OR save_data LIKE '%"venenox"%'
-   OR save_data LIKE '%"agarron"%'
-   OR save_data LIKE '%"agarrón"%'
-   OR save_data LIKE '%"agarrn"%'
-   OR save_data LIKE '%"lariatoscuro"%'
-   OR save_data LIKE '%"pulsoumbrio"%'
-   OR save_data LIKE '%"pulsoumbrío"%'
-   OR save_data LIKE '%"pulsoumbro"%'
-   OR save_data LIKE '%"brechanegra"%'
-   OR save_data LIKE '%"brillomagico"%'
-   OR save_data LIKE '%"brillomágico"%'
-   OR save_data LIKE '%"brillomgico"%'
-   OR save_data LIKE '%"decoracion"%'
-   OR save_data LIKE '%"decoración"%'
-   OR save_data LIKE '%"decoracin"%'
-   OR save_data LIKE '%"adefender"%'
-   OR save_data LIKE '%"despejar"%'
-   OR save_data LIKE '%"dracoalientodevastador"%'
-   OR save_data LIKE '%"tormdiamantes"%'
-   OR save_data LIKE '%"torm.diamantes"%'
-   OR save_data LIKE '%"vozcautivadora"%'
-   OR save_data LIKE '%"chispazo"%'
-   OR save_data LIKE '%"doblegolpe"%'
-   OR save_data LIKE '%"ferropunodoble"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"ferropuñodoble"', '"doubleironbash"'), '"ferropuodoble"', '"doubleironbash"'), '"cometadraco"', '"dracometeor"'), '"ascensodraco"', '"dragonascent"'), '"bramidodragon"', '"dragoncheer"'), '"bramidodragón"', '"dragoncheer"'), '"bramidodragn"', '"dragoncheer"'), '"dracoflechas"', '"dragondarts"'), '"dracoenergia"', '"dragonenergy"'), '"dracoenergía"', '"dragonenergy"'), '"dracoenerga"', '"dragonenergy"'), '"martillodragon"', '"dragonhammer"'), '"martillodragón"', '"dragonhammer"'), '"martillodragn"', '"dragonhammer"'), '"pulsodragon"', '"dragonpulse"'), '"pulsodragón"', '"dragonpulse"'), '"pulsodragn"', '"dragonpulse"'), '"cargadragon"', '"dragonrush"'), '"cargadragón"', '"dragonrush"'), '"cargadragn"', '"dragonrush"'), '"coladragon"', '"dragontail"'), '"coladragón"', '"dragontail"'), '"coladragn"', '"dragontail"'), '"besodrenaje"', '"drainingkiss"'), '"punodrenaje"', '"drainpunch"'), '"puñodrenaje"', '"drainpunch"'), '"puodrenaje"', '"drainpunch"'), '"taladradora"', '"drillrun"'), '"bateriaasalto"', '"drumbeating"'), '"bateríaasalto"', '"drumbeating"'), '"bateraasalto"', '"drumbeating"'), '"golpebis"', '"dualchop"'), '"alabis"', '"dualwingbeat"'), '"canondinamax"', '"dynamaxcannon"'), '"cañóndinamax"', '"dynamaxcannon"'), '"candinamax"', '"dynamaxcannon"'), '"tierraviva"', '"earthpower"'), '"ecovoz"', '"echoedvoice"'), '"ondaanomala"', '"eerieimpulse"'), '"ondaanómala"', '"eerieimpulse"'), '"ondaanmala"', '"eerieimpulse"'), '"conjurofunesto"', '"eeriespell"'), '"campoelectrico"', '"electricterrain"'), '"campoeléctrico"', '"electricterrain"'), '"campoelctrico"', '"electricterrain"'), '"electrificacion"', '"electrify"'), '"electrificación"', '"electrify"'), '"electrificacin"', '"electrify"'), '"bolavoltio"', '"electroball"'), '"electrorrayo"', '"electroshot"')
-WHERE save_data LIKE '%"ferropuñodoble"%'
-   OR save_data LIKE '%"ferropuodoble"%'
-   OR save_data LIKE '%"cometadraco"%'
-   OR save_data LIKE '%"ascensodraco"%'
-   OR save_data LIKE '%"bramidodragon"%'
-   OR save_data LIKE '%"bramidodragón"%'
-   OR save_data LIKE '%"bramidodragn"%'
-   OR save_data LIKE '%"dracoflechas"%'
-   OR save_data LIKE '%"dracoenergia"%'
-   OR save_data LIKE '%"dracoenergía"%'
-   OR save_data LIKE '%"dracoenerga"%'
-   OR save_data LIKE '%"martillodragon"%'
-   OR save_data LIKE '%"martillodragón"%'
-   OR save_data LIKE '%"martillodragn"%'
-   OR save_data LIKE '%"pulsodragon"%'
-   OR save_data LIKE '%"pulsodragón"%'
-   OR save_data LIKE '%"pulsodragn"%'
-   OR save_data LIKE '%"cargadragon"%'
-   OR save_data LIKE '%"cargadragón"%'
-   OR save_data LIKE '%"cargadragn"%'
-   OR save_data LIKE '%"coladragon"%'
-   OR save_data LIKE '%"coladragón"%'
-   OR save_data LIKE '%"coladragn"%'
-   OR save_data LIKE '%"besodrenaje"%'
-   OR save_data LIKE '%"punodrenaje"%'
-   OR save_data LIKE '%"puñodrenaje"%'
-   OR save_data LIKE '%"puodrenaje"%'
-   OR save_data LIKE '%"taladradora"%'
-   OR save_data LIKE '%"bateriaasalto"%'
-   OR save_data LIKE '%"bateríaasalto"%'
-   OR save_data LIKE '%"bateraasalto"%'
-   OR save_data LIKE '%"golpebis"%'
-   OR save_data LIKE '%"alabis"%'
-   OR save_data LIKE '%"canondinamax"%'
-   OR save_data LIKE '%"cañóndinamax"%'
-   OR save_data LIKE '%"candinamax"%'
-   OR save_data LIKE '%"tierraviva"%'
-   OR save_data LIKE '%"ecovoz"%'
-   OR save_data LIKE '%"ondaanomala"%'
-   OR save_data LIKE '%"ondaanómala"%'
-   OR save_data LIKE '%"ondaanmala"%'
-   OR save_data LIKE '%"conjurofunesto"%'
-   OR save_data LIKE '%"campoelectrico"%'
-   OR save_data LIKE '%"campoeléctrico"%'
-   OR save_data LIKE '%"campoelctrico"%'
-   OR save_data LIKE '%"electrificacion"%'
-   OR save_data LIKE '%"electrificación"%'
-   OR save_data LIKE '%"electrificacin"%'
-   OR save_data LIKE '%"bolavoltio"%'
-   OR save_data LIKE '%"electrorrayo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"electrotela"', '"electroweb"'), '"energibola"', '"energyball"'), '"danzaamiga"', '"entrainment"'), '"rayoinfinito"', '"eternabeam"'), '"vastafuerza"', '"expandingforce"'), '"novenapotencia"', '"extremeevoboost"'), '"cerrojofeerico"', '"fairylock"'), '"cerrojofeérico"', '"fairylock"'), '"cerrojoferico"', '"fairylock"'), '"vientofeerico"', '"fairywind"'), '"vientofeérico"', '"fairywind"'), '"vientoferico"', '"fairywind"'), '"irreverencia"', '"falsesurrender"'), '"amago"', '"feint"'), '"aguijonletal"', '"fellstinger"'), '"aguijónletal"', '"fellstinger"'), '"aguijnletal"', '"fellstinger"'), '"laserveleidoso"', '"ficklebeam"'), '"láserveleidoso"', '"ficklebeam"'), '"lserveleidoso"', '"ficklebeam"'), '"danzallama"', '"fierydance"'), '"furiacandente"', '"fierywrath"'), '"sacrificio"', '"finalgambit"'), '"colmilloigneo"', '"firefang"'), '"colmilloígneo"', '"firefang"'), '"colmillogneo"', '"firefang"'), '"latigoigneo"', '"firelash"'), '"látigoígneo"', '"firelash"'), '"ltigogneo"', '"firelash"'), '"votofuego"', '"firepledge"'), '"escaramuza"', '"firstimpression"'), '"branquibocado"', '"fishiousrend"'), '"pirotecnia"', '"flameburst"'), '"nitrocarga"', '"flamecharge"'), '"enviteigneo"', '"flareblitz"'), '"enviteígneo"', '"flareblitz"'), '"envitegneo"', '"flareblitz"'), '"focoresplandor"', '"flashcannon"'), '"canonfloral"', '"fleurcannon"'), '"cañónfloral"', '"fleurcannon"'), '"canfloral"', '"fleurcannon"'), '"lanzamiento"', '"fling"'), '"viraje"', '"flipturn"'), '"pikapicado"', '"floatyfall"'), '"curafloral"', '"floralhealing"'), '"defensafloral"', '"flowershield"'), '"planchavoladora"', '"flyingpress"'), '"ondacertera"', '"focusblast"'), '"palmeo"', '"forcepalm"'), '"condenasilvana"', '"forestscurse"')
-WHERE save_data LIKE '%"electrotela"%'
-   OR save_data LIKE '%"energibola"%'
-   OR save_data LIKE '%"danzaamiga"%'
-   OR save_data LIKE '%"rayoinfinito"%'
-   OR save_data LIKE '%"vastafuerza"%'
-   OR save_data LIKE '%"novenapotencia"%'
-   OR save_data LIKE '%"cerrojofeerico"%'
-   OR save_data LIKE '%"cerrojofeérico"%'
-   OR save_data LIKE '%"cerrojoferico"%'
-   OR save_data LIKE '%"vientofeerico"%'
-   OR save_data LIKE '%"vientofeérico"%'
-   OR save_data LIKE '%"vientoferico"%'
-   OR save_data LIKE '%"irreverencia"%'
-   OR save_data LIKE '%"amago"%'
-   OR save_data LIKE '%"aguijonletal"%'
-   OR save_data LIKE '%"aguijónletal"%'
-   OR save_data LIKE '%"aguijnletal"%'
-   OR save_data LIKE '%"laserveleidoso"%'
-   OR save_data LIKE '%"láserveleidoso"%'
-   OR save_data LIKE '%"lserveleidoso"%'
-   OR save_data LIKE '%"danzallama"%'
-   OR save_data LIKE '%"furiacandente"%'
-   OR save_data LIKE '%"sacrificio"%'
-   OR save_data LIKE '%"colmilloigneo"%'
-   OR save_data LIKE '%"colmilloígneo"%'
-   OR save_data LIKE '%"colmillogneo"%'
-   OR save_data LIKE '%"latigoigneo"%'
-   OR save_data LIKE '%"látigoígneo"%'
-   OR save_data LIKE '%"ltigogneo"%'
-   OR save_data LIKE '%"votofuego"%'
-   OR save_data LIKE '%"escaramuza"%'
-   OR save_data LIKE '%"branquibocado"%'
-   OR save_data LIKE '%"pirotecnia"%'
-   OR save_data LIKE '%"nitrocarga"%'
-   OR save_data LIKE '%"enviteigneo"%'
-   OR save_data LIKE '%"enviteígneo"%'
-   OR save_data LIKE '%"envitegneo"%'
-   OR save_data LIKE '%"focoresplandor"%'
-   OR save_data LIKE '%"canonfloral"%'
-   OR save_data LIKE '%"cañónfloral"%'
-   OR save_data LIKE '%"canfloral"%'
-   OR save_data LIKE '%"lanzamiento"%'
-   OR save_data LIKE '%"viraje"%'
-   OR save_data LIKE '%"pikapicado"%'
-   OR save_data LIKE '%"curafloral"%'
-   OR save_data LIKE '%"defensafloral"%'
-   OR save_data LIKE '%"planchavoladora"%'
-   OR save_data LIKE '%"ondacertera"%'
-   OR save_data LIKE '%"palmeo"%'
-   OR save_data LIKE '%"condenasilvana"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"juegosucio"', '"foulplay"'), '"liofilizacion"', '"freezedry"'), '"liofilización"', '"freezedry"'), '"liofilizacin"', '"freezedry"'), '"rayogelido"', '"freezeshock"'), '"rayogélido"', '"freezeshock"'), '"rayoglido"', '"freezeshock"'), '"miradaheladora"', '"freezingglare"'), '"glaceoprisma"', '"freezyfrost"'), '"vahogelido"', '"frostbreath"'), '"vahogélido"', '"frostbreath"'), '"vahoglido"', '"frostbreath"'), '"rayofusion"', '"fusionbolt"'), '"rayofusión"', '"fusionbolt"'), '"rayofusin"', '"fusionbolt"'), '"llamafusion"', '"fusionflare"'), '"llamafusión"', '"fusionflare"'), '"llamafusin"', '"fusionflare"'), '"bilis"', '"gastroacid"'), '"ruedadoble"', '"geargrind"'), '"pinonauxiliar"', '"gearup"'), '"piñónauxiliar"', '"gearup"'), '"pinauxiliar"', '"gearup"'), '"supernovaoriginal"', '"genesissupernova"'), '"geocontrol"', '"geomancy"'), '"gigaimpacto"', '"gigaimpact"'), '"gigavoltiodestructor"', '"gigavolthavoc"'), '"lanzaglacial"', '"glaciallance"'), '"mundogelido"', '"glaciate"'), '"mundogélido"', '"glaciate"'), '"mundoglido"', '"glaciate"'), '"espeaura"', '"glitzyglow"'), '"hierbalazo"', '"grassknot"'), '"votoplanta"', '"grasspledge"'), '"fitoimpulso"', '"grassyglide"'), '"campodehierba"', '"grassyterrain"'), '"fuerzag"', '"gravapple"'), '"gravedad"', '"gravity"'), '"coleradelguardian"', '"guardianofalola"'), '"cóleradelguardián"', '"guardianofalola"'), '"cleradelguardin"', '"guardianofalola"'), '"isoguardia"', '"guardsplit"'), '"cambiadefensa"', '"guardswap"'), '"lanzamugre"', '"gunkshot"'), '"girobola"', '"gyroball"'), '"machada"', '"hammerarm"'), '"pagaextra"', '"happyhour"'), '"prensametalica"', '"hardpress"'), '"prensametálica"', '"hardpress"'), '"prensametlica"', '"hardpress"')
-WHERE save_data LIKE '%"juegosucio"%'
-   OR save_data LIKE '%"liofilizacion"%'
-   OR save_data LIKE '%"liofilización"%'
-   OR save_data LIKE '%"liofilizacin"%'
-   OR save_data LIKE '%"rayogelido"%'
-   OR save_data LIKE '%"rayogélido"%'
-   OR save_data LIKE '%"rayoglido"%'
-   OR save_data LIKE '%"miradaheladora"%'
-   OR save_data LIKE '%"glaceoprisma"%'
-   OR save_data LIKE '%"vahogelido"%'
-   OR save_data LIKE '%"vahogélido"%'
-   OR save_data LIKE '%"vahoglido"%'
-   OR save_data LIKE '%"rayofusion"%'
-   OR save_data LIKE '%"rayofusión"%'
-   OR save_data LIKE '%"rayofusin"%'
-   OR save_data LIKE '%"llamafusion"%'
-   OR save_data LIKE '%"llamafusión"%'
-   OR save_data LIKE '%"llamafusin"%'
-   OR save_data LIKE '%"bilis"%'
-   OR save_data LIKE '%"ruedadoble"%'
-   OR save_data LIKE '%"pinonauxiliar"%'
-   OR save_data LIKE '%"piñónauxiliar"%'
-   OR save_data LIKE '%"pinauxiliar"%'
-   OR save_data LIKE '%"supernovaoriginal"%'
-   OR save_data LIKE '%"geocontrol"%'
-   OR save_data LIKE '%"gigaimpacto"%'
-   OR save_data LIKE '%"gigavoltiodestructor"%'
-   OR save_data LIKE '%"lanzaglacial"%'
-   OR save_data LIKE '%"mundogelido"%'
-   OR save_data LIKE '%"mundogélido"%'
-   OR save_data LIKE '%"mundoglido"%'
-   OR save_data LIKE '%"espeaura"%'
-   OR save_data LIKE '%"hierbalazo"%'
-   OR save_data LIKE '%"votoplanta"%'
-   OR save_data LIKE '%"fitoimpulso"%'
-   OR save_data LIKE '%"campodehierba"%'
-   OR save_data LIKE '%"fuerzag"%'
-   OR save_data LIKE '%"gravedad"%'
-   OR save_data LIKE '%"coleradelguardian"%'
-   OR save_data LIKE '%"cóleradelguardián"%'
-   OR save_data LIKE '%"cleradelguardin"%'
-   OR save_data LIKE '%"isoguardia"%'
-   OR save_data LIKE '%"cambiadefensa"%'
-   OR save_data LIKE '%"lanzamugre"%'
-   OR save_data LIKE '%"girobola"%'
-   OR save_data LIKE '%"machada"%'
-   OR save_data LIKE '%"pagaextra"%'
-   OR save_data LIKE '%"prensametalica"%'
-   OR save_data LIKE '%"prensametálica"%'
-   OR save_data LIKE '%"prensametlica"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"ariete"', '"headcharge"'), '"testarazo"', '"headsmash"'), '"anticura"', '"healblock"'), '"deseocura"', '"healingwish"'), '"auxilio"', '"healorder"'), '"pulsocura"', '"healpulse"'), '"arrumaco"', '"heartstamp"'), '"cambiaalmas"', '"heartswap"'), '"golpecalor"', '"heatcrash"'), '"cuerpopesado"', '"heavyslam"'), '"infortunio"', '"hex"'), '"fuerzaequina"', '"highhorsepower"'), '"clemencia"', '"holdback"'), '"manosjuntas"', '"holdhands"'), '"afilagarras"', '"honeclaws"'), '"astadrenaje"', '"hornleech"'), '"vendaval"', '"hurricane"'), '"hidrovapor"', '"hydrosteam"'), '"hidrovorticeabisal"', '"hydrovortex"'), '"hidrovórticeabisal"', '"hydrovortex"'), '"hidrovrticeabisal"', '"hydrovortex"'), '"cercodimension"', '"hyperspacefury"'), '"cercodimensión"', '"hyperspacefury"'), '"cercodimensin"', '"hyperspacefury"'), '"pasodimensional"', '"hyperspacehole"'), '"llamagelida"', '"iceburn"'), '"llamagélida"', '"iceburn"'), '"llamaglida"', '"iceburn"'), '"colmillohielo"', '"icefang"'), '"martillohielo"', '"icehammer"'), '"cantohelado"', '"iceshard"'), '"chuzos"', '"iciclecrash"'), '"calcinacion"', '"incinerate"'), '"calcinación"', '"incinerate"'), '"calcinacin"', '"incinerate"'), '"infierno"', '"inferno"'), '"hecatombepirica"', '"infernooverdrive"'), '"hecatombepírica"', '"infernooverdrive"'), '"hecatombeprica"', '"infernooverdrive"'), '"acoso"', '"infestation"'), '"mandato"', '"instruct"'), '"cortinaplasma"', '"iondeluge"'), '"cabezadehierro"', '"ironhead"'), '"presamaxilar"', '"jawlock"'), '"sentencia"', '"judgment"'), '"curaselvatica"', '"junglehealing"'), '"curaselvática"', '"junglehealing"'), '"curaselvtica"', '"junglehealing"'), '"escudoreal"', '"kingsshield"'), '"fuerzatelurica"', '"landswrath"')
-WHERE save_data LIKE '%"ariete"%'
-   OR save_data LIKE '%"testarazo"%'
-   OR save_data LIKE '%"anticura"%'
-   OR save_data LIKE '%"deseocura"%'
-   OR save_data LIKE '%"auxilio"%'
-   OR save_data LIKE '%"pulsocura"%'
-   OR save_data LIKE '%"arrumaco"%'
-   OR save_data LIKE '%"cambiaalmas"%'
-   OR save_data LIKE '%"golpecalor"%'
-   OR save_data LIKE '%"cuerpopesado"%'
-   OR save_data LIKE '%"infortunio"%'
-   OR save_data LIKE '%"fuerzaequina"%'
-   OR save_data LIKE '%"clemencia"%'
-   OR save_data LIKE '%"manosjuntas"%'
-   OR save_data LIKE '%"afilagarras"%'
-   OR save_data LIKE '%"astadrenaje"%'
-   OR save_data LIKE '%"vendaval"%'
-   OR save_data LIKE '%"hidrovapor"%'
-   OR save_data LIKE '%"hidrovorticeabisal"%'
-   OR save_data LIKE '%"hidrovórticeabisal"%'
-   OR save_data LIKE '%"hidrovrticeabisal"%'
-   OR save_data LIKE '%"cercodimension"%'
-   OR save_data LIKE '%"cercodimensión"%'
-   OR save_data LIKE '%"cercodimensin"%'
-   OR save_data LIKE '%"pasodimensional"%'
-   OR save_data LIKE '%"llamagelida"%'
-   OR save_data LIKE '%"llamagélida"%'
-   OR save_data LIKE '%"llamaglida"%'
-   OR save_data LIKE '%"colmillohielo"%'
-   OR save_data LIKE '%"martillohielo"%'
-   OR save_data LIKE '%"cantohelado"%'
-   OR save_data LIKE '%"chuzos"%'
-   OR save_data LIKE '%"calcinacion"%'
-   OR save_data LIKE '%"calcinación"%'
-   OR save_data LIKE '%"calcinacin"%'
-   OR save_data LIKE '%"infierno"%'
-   OR save_data LIKE '%"hecatombepirica"%'
-   OR save_data LIKE '%"hecatombepírica"%'
-   OR save_data LIKE '%"hecatombeprica"%'
-   OR save_data LIKE '%"acoso"%'
-   OR save_data LIKE '%"mandato"%'
-   OR save_data LIKE '%"cortinaplasma"%'
-   OR save_data LIKE '%"cabezadehierro"%'
-   OR save_data LIKE '%"presamaxilar"%'
-   OR save_data LIKE '%"sentencia"%'
-   OR save_data LIKE '%"curaselvatica"%'
-   OR save_data LIKE '%"curaselvática"%'
-   OR save_data LIKE '%"curaselvtica"%'
-   OR save_data LIKE '%"escudoreal"%'
-   OR save_data LIKE '%"fuerzatelurica"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"fuerzatelúrica"', '"landswrath"'), '"fuerzatelrica"', '"landswrath"'), '"aguzar"', '"laserfocus"'), '"desahogo"', '"lashout"'), '"ultimabaza"', '"lastresort"'), '"últimabaza"', '"lastresort"'), '"ltimabaza"', '"lastresort"'), '"humareda"', '"lavaplume"'), '"follaje"', '"leafage"'), '"lluevehojas"', '"leafstorm"'), '"ciclondehojas"', '"leaftornado"'), '"ciclóndehojas"', '"leaftornado"'), '"ciclndehojas"', '"leaftornado"'), '"somantaamistosa"', '"letssnuggleforever"'), '"gotavital"', '"lifedew"'), '"luzaniquiladora"', '"lightofruin"'), '"fotodestruccionapocaliptica"', '"lightthatburnsthesky"'), '"fotodestrucciónapocalíptica"', '"lightthatburnsthesky"'), '"fotodestruccinapocalptica"', '"lightthatburnsthesky"'), '"hidroariete"', '"liquidation"'), '"puntapie"', '"lowsweep"'), '"puntapié"', '"lowsweep"'), '"puntapi"', '"lowsweep"'), '"conjuro"', '"luckychant"'), '"danzalunar"', '"lunardance"'), '"plancha"', '"lunge"'), '"polvomagico"', '"magicpowder"'), '"polvomágico"', '"magicpowder"'), '"polvomgico"', '"magicpowder"'), '"zonamagica"', '"magicroom"'), '"zonamágica"', '"magicroom"'), '"zonamgica"', '"magicroom"'), '"lluviaignea"', '"magmastorm"'), '"lluviaígnea"', '"magmastorm"'), '"lluviagnea"', '"magmastorm"'), '"bombaiman"', '"magnetbomb"'), '"bombaimán"', '"magnetbomb"'), '"bombaimn"', '"magnetbomb"'), '"auramagnetica"', '"magneticflux"'), '"auramagnética"', '"magneticflux"'), '"auramagntica"', '"magneticflux"'), '"leviton"', '"magnetrise"'), '"levitón"', '"magnetrise"'), '"levitn"', '"magnetrise"'), '"hiperplanchaoscura"', '"maliciousmoonsault"'), '"cadenavirulenta"', '"malignantchain"'), '"escudotatami"', '"matblock"'), '"maxiciclon"', '"maxairstream"'), '"maxiciclón"', '"maxairstream"'), '"maxicicln"', '"maxairstream"')
-WHERE save_data LIKE '%"fuerzatelúrica"%'
-   OR save_data LIKE '%"fuerzatelrica"%'
-   OR save_data LIKE '%"aguzar"%'
-   OR save_data LIKE '%"desahogo"%'
-   OR save_data LIKE '%"ultimabaza"%'
-   OR save_data LIKE '%"últimabaza"%'
-   OR save_data LIKE '%"ltimabaza"%'
-   OR save_data LIKE '%"humareda"%'
-   OR save_data LIKE '%"follaje"%'
-   OR save_data LIKE '%"lluevehojas"%'
-   OR save_data LIKE '%"ciclondehojas"%'
-   OR save_data LIKE '%"ciclóndehojas"%'
-   OR save_data LIKE '%"ciclndehojas"%'
-   OR save_data LIKE '%"somantaamistosa"%'
-   OR save_data LIKE '%"gotavital"%'
-   OR save_data LIKE '%"luzaniquiladora"%'
-   OR save_data LIKE '%"fotodestruccionapocaliptica"%'
-   OR save_data LIKE '%"fotodestrucciónapocalíptica"%'
-   OR save_data LIKE '%"fotodestruccinapocalptica"%'
-   OR save_data LIKE '%"hidroariete"%'
-   OR save_data LIKE '%"puntapie"%'
-   OR save_data LIKE '%"puntapié"%'
-   OR save_data LIKE '%"puntapi"%'
-   OR save_data LIKE '%"conjuro"%'
-   OR save_data LIKE '%"danzalunar"%'
-   OR save_data LIKE '%"plancha"%'
-   OR save_data LIKE '%"polvomagico"%'
-   OR save_data LIKE '%"polvomágico"%'
-   OR save_data LIKE '%"polvomgico"%'
-   OR save_data LIKE '%"zonamagica"%'
-   OR save_data LIKE '%"zonamágica"%'
-   OR save_data LIKE '%"zonamgica"%'
-   OR save_data LIKE '%"lluviaignea"%'
-   OR save_data LIKE '%"lluviaígnea"%'
-   OR save_data LIKE '%"lluviagnea"%'
-   OR save_data LIKE '%"bombaiman"%'
-   OR save_data LIKE '%"bombaimán"%'
-   OR save_data LIKE '%"bombaimn"%'
-   OR save_data LIKE '%"auramagnetica"%'
-   OR save_data LIKE '%"auramagnética"%'
-   OR save_data LIKE '%"auramagntica"%'
-   OR save_data LIKE '%"leviton"%'
-   OR save_data LIKE '%"levitón"%'
-   OR save_data LIKE '%"levitn"%'
-   OR save_data LIKE '%"hiperplanchaoscura"%'
-   OR save_data LIKE '%"cadenavirulenta"%'
-   OR save_data LIKE '%"escudotatami"%'
-   OR save_data LIKE '%"maxiciclon"%'
-   OR save_data LIKE '%"maxiciclón"%'
-   OR save_data LIKE '%"maxicicln"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"maxisombra"', '"maxdarkness"'), '"maxignicion"', '"maxflare"'), '"maxignición"', '"maxflare"'), '"maxignicin"', '"maxflare"'), '"maxinsecto"', '"maxflutterby"'), '"maxichorro"', '"maxgeyser"'), '"maxibarrera"', '"maxguard"'), '"maxihelada"', '"maxhailstorm"'), '"maxipuno"', '"maxknuckle"'), '"maxipuño"', '"maxknuckle"'), '"maxipuo"', '"maxknuckle"'), '"maxitormenta"', '"maxlightning"'), '"maxionda"', '"maxmindstorm"'), '"maxiacido"', '"maxooze"'), '"maxiácido"', '"maxooze"'), '"maxicido"', '"maxooze"'), '"maxiflora"', '"maxovergrowth"'), '"maxiespectro"', '"maxphantasm"'), '"maxitemblor"', '"maxquake"'), '"maxilito"', '"maxrockfall"'), '"maxiestela"', '"maxstarfall"'), '"maximetal"', '"maxsteelspike"'), '"maxiataque"', '"maxstrike"'), '"maxidraco"', '"maxwyrmwind"'), '"yoprimero"', '"mefirst"'), '"deflagracionlunar"', '"menacingmoonrazemaelstrom"'), '"deflagraciónlunar"', '"menacingmoonrazemaelstrom"'), '"deflagracinlunar"', '"menacingmoonrazemaelstrom"'), '"represionmetal"', '"metalburst"'), '"represiónmetal"', '"metalburst"'), '"represinmetal"', '"metalburst"'), '"asaltoestelar"', '"meteorassault"'), '"rayometeorico"', '"meteorbeam"'), '"rayometeórico"', '"meteorbeam"'), '"rayometerico"', '"meteorbeam"'), '"filopotente"', '"mightycleave"'), '"cabezasorpresa"', '"mindblown"'), '"granojo"', '"miracleeye"'), '"disparoespejo"', '"mirrorshot"'), '"brumaexplosiva"', '"mistyexplosion"'), '"campodeniebla"', '"mistyterrain"'), '"fuerzalunar"', '"moonblast"'), '"rayoumbrio"', '"moongeistbeam"'), '"rayoumbrío"', '"moongeistbeam"'), '"rayoumbro"', '"moongeistbeam"'), '"bombafango"', '"mudbomb"'), '"multiataque"', '"multiattack"'), '"llamaembrujada"', '"mysticalfire"'), '"maquinacion"', '"nastyplot"'), '"maquinación"', '"nastyplot"')
-WHERE save_data LIKE '%"maxisombra"%'
-   OR save_data LIKE '%"maxignicion"%'
-   OR save_data LIKE '%"maxignición"%'
-   OR save_data LIKE '%"maxignicin"%'
-   OR save_data LIKE '%"maxinsecto"%'
-   OR save_data LIKE '%"maxichorro"%'
-   OR save_data LIKE '%"maxibarrera"%'
-   OR save_data LIKE '%"maxihelada"%'
-   OR save_data LIKE '%"maxipuno"%'
-   OR save_data LIKE '%"maxipuño"%'
-   OR save_data LIKE '%"maxipuo"%'
-   OR save_data LIKE '%"maxitormenta"%'
-   OR save_data LIKE '%"maxionda"%'
-   OR save_data LIKE '%"maxiacido"%'
-   OR save_data LIKE '%"maxiácido"%'
-   OR save_data LIKE '%"maxicido"%'
-   OR save_data LIKE '%"maxiflora"%'
-   OR save_data LIKE '%"maxiespectro"%'
-   OR save_data LIKE '%"maxitemblor"%'
-   OR save_data LIKE '%"maxilito"%'
-   OR save_data LIKE '%"maxiestela"%'
-   OR save_data LIKE '%"maximetal"%'
-   OR save_data LIKE '%"maxiataque"%'
-   OR save_data LIKE '%"maxidraco"%'
-   OR save_data LIKE '%"yoprimero"%'
-   OR save_data LIKE '%"deflagracionlunar"%'
-   OR save_data LIKE '%"deflagraciónlunar"%'
-   OR save_data LIKE '%"deflagracinlunar"%'
-   OR save_data LIKE '%"represionmetal"%'
-   OR save_data LIKE '%"represiónmetal"%'
-   OR save_data LIKE '%"represinmetal"%'
-   OR save_data LIKE '%"asaltoestelar"%'
-   OR save_data LIKE '%"rayometeorico"%'
-   OR save_data LIKE '%"rayometeórico"%'
-   OR save_data LIKE '%"rayometerico"%'
-   OR save_data LIKE '%"filopotente"%'
-   OR save_data LIKE '%"cabezasorpresa"%'
-   OR save_data LIKE '%"granojo"%'
-   OR save_data LIKE '%"disparoespejo"%'
-   OR save_data LIKE '%"brumaexplosiva"%'
-   OR save_data LIKE '%"campodeniebla"%'
-   OR save_data LIKE '%"fuerzalunar"%'
-   OR save_data LIKE '%"rayoumbrio"%'
-   OR save_data LIKE '%"rayoumbrío"%'
-   OR save_data LIKE '%"rayoumbro"%'
-   OR save_data LIKE '%"bombafango"%'
-   OR save_data LIKE '%"multiataque"%'
-   OR save_data LIKE '%"llamaembrujada"%'
-   OR save_data LIKE '%"maquinacion"%'
-   OR save_data LIKE '%"maquinación"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"maquinacin"', '"nastyplot"'), '"donnatural"', '"naturalgift"'), '"furianatural"', '"naturesmadness"'), '"presaespectral"', '"neverendingnightmare"'), '"pulsonoche"', '"nightdaze"'), '"tajoumbrio"', '"nightslash"'), '"tajoumbrío"', '"nightslash"'), '"tajoumbro"', '"nightslash"'), '"rugidodeguerra"', '"nobleroar"'), '"bastionfinal"', '"noretreat"'), '"bastiónfinal"', '"noretreat"'), '"bastinfinal"', '"noretreat"'), '"mofleteestatico"', '"nuzzle"'), '"mofleteestático"', '"nuzzle"'), '"mofleteesttico"', '"nuzzle"'), '"alamortifera"', '"oblivionwing"'), '"alamortífera"', '"oblivionwing"'), '"alamortfera"', '"oblivionwing"'), '"obstruccion"', '"obstruct"'), '"obstrucción"', '"obstruct"'), '"obstruccin"', '"obstruct"'), '"sinfoniadeladivamarina"', '"oceanicoperetta"'), '"sinfoníadeladivamarina"', '"oceanicoperetta"'), '"sinfonadeladivamarina"', '"oceanicoperetta"'), '"octopresa"', '"octolock"'), '"vientoaciago"', '"ominouswind"'), '"pulsoprimigenio"', '"originpulse"'), '"amplificador"', '"overdrive"'), '"cargaparabola"', '"paraboliccharge"'), '"cargaparábola"', '"paraboliccharge"'), '"cargaparbola"', '"paraboliccharge"'), '"ultimapalabra"', '"partingshot"'), '"últimapalabra"', '"partingshot"'), '"ltimapalabra"', '"partingshot"'), '"vendetta"', '"payback"'), '"tormentafloral"', '"petalblizzard"'), '"golpefantasma"', '"phantomforce"'), '"geiserfotonico"', '"photongeyser"'), '"géiserfotónico"', '"photongeyser"'), '"giserfotnico"', '"photongeyser"'), '"pikatormenta"', '"pikapapow"'), '"punosplasma"', '"plasmafists"'), '"puñosplasma"', '"plasmafists"'), '"puosplasma"', '"plasmafists"'), '"camaraderia"', '"playnice"'), '"camaradería"', '"playnice"'), '"camaradera"', '"playnice"'), '"carantona"', '"playrough"'), '"carantoña"', '"playrough"'), '"carantoa"', '"playrough"')
-WHERE save_data LIKE '%"maquinacin"%'
-   OR save_data LIKE '%"donnatural"%'
-   OR save_data LIKE '%"furianatural"%'
-   OR save_data LIKE '%"presaespectral"%'
-   OR save_data LIKE '%"pulsonoche"%'
-   OR save_data LIKE '%"tajoumbrio"%'
-   OR save_data LIKE '%"tajoumbrío"%'
-   OR save_data LIKE '%"tajoumbro"%'
-   OR save_data LIKE '%"rugidodeguerra"%'
-   OR save_data LIKE '%"bastionfinal"%'
-   OR save_data LIKE '%"bastiónfinal"%'
-   OR save_data LIKE '%"bastinfinal"%'
-   OR save_data LIKE '%"mofleteestatico"%'
-   OR save_data LIKE '%"mofleteestático"%'
-   OR save_data LIKE '%"mofleteesttico"%'
-   OR save_data LIKE '%"alamortifera"%'
-   OR save_data LIKE '%"alamortífera"%'
-   OR save_data LIKE '%"alamortfera"%'
-   OR save_data LIKE '%"obstruccion"%'
-   OR save_data LIKE '%"obstrucción"%'
-   OR save_data LIKE '%"obstruccin"%'
-   OR save_data LIKE '%"sinfoniadeladivamarina"%'
-   OR save_data LIKE '%"sinfoníadeladivamarina"%'
-   OR save_data LIKE '%"sinfonadeladivamarina"%'
-   OR save_data LIKE '%"octopresa"%'
-   OR save_data LIKE '%"vientoaciago"%'
-   OR save_data LIKE '%"pulsoprimigenio"%'
-   OR save_data LIKE '%"amplificador"%'
-   OR save_data LIKE '%"cargaparabola"%'
-   OR save_data LIKE '%"cargaparábola"%'
-   OR save_data LIKE '%"cargaparbola"%'
-   OR save_data LIKE '%"ultimapalabra"%'
-   OR save_data LIKE '%"últimapalabra"%'
-   OR save_data LIKE '%"ltimapalabra"%'
-   OR save_data LIKE '%"vendetta"%'
-   OR save_data LIKE '%"tormentafloral"%'
-   OR save_data LIKE '%"golpefantasma"%'
-   OR save_data LIKE '%"geiserfotonico"%'
-   OR save_data LIKE '%"géiserfotónico"%'
-   OR save_data LIKE '%"giserfotnico"%'
-   OR save_data LIKE '%"pikatormenta"%'
-   OR save_data LIKE '%"punosplasma"%'
-   OR save_data LIKE '%"puñosplasma"%'
-   OR save_data LIKE '%"puosplasma"%'
-   OR save_data LIKE '%"camaraderia"%'
-   OR save_data LIKE '%"camaradería"%'
-   OR save_data LIKE '%"camaradera"%'
-   OR save_data LIKE '%"carantona"%'
-   OR save_data LIKE '%"carantoña"%'
-   OR save_data LIKE '%"carantoa"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"picoteo"', '"pluck"'), '"puyanociva"', '"poisonjab"'), '"boladepolen"', '"pollenpuff"'), '"polvoexplosivo"', '"powder"'), '"joyadeluz"', '"powergem"'), '"isofuerza"', '"powersplit"'), '"cambiafuerza"', '"powerswap"'), '"trucofuerza"', '"powertrick"'), '"chuleria"', '"powertrip"'), '"chulería"', '"powertrip"'), '"chulera"', '"powertrip"'), '"punoincremento"', '"poweruppunch"'), '"puñoincremento"', '"poweruppunch"'), '"puoincremento"', '"poweruppunch"'), '"latigazo"', '"powerwhip"'), '"filodelabismo"', '"precipiceblades"'), '"laserprisma"', '"prismaticlaser"'), '"láserprisma"', '"prismaticlaser"'), '"lserprisma"', '"prismaticlaser"'), '"psicohojas"', '"psyblade"'), '"psicocolmillo"', '"psychicfangs"'), '"psicorruido"', '"psychicnoise"'), '"campopsiquico"', '"psychicterrain"'), '"campopsíquico"', '"psychicterrain"'), '"campopsquico"', '"psychicterrain"'), '"psicocorte"', '"psychocut"'), '"psicocambio"', '"psychoshift"'), '"psicocarga"', '"psyshock"'), '"ondamental"', '"psystrike"'), '"arrojointempestivo"', '"pulverizingpancake"'), '"castigo"', '"punishment"'), '"purificacion"', '"purify"'), '"purificación"', '"purify"'), '"purificacin"', '"purify"'), '"balonigneo"', '"pyroball"'), '"balónígneo"', '"pyroball"'), '"balngneo"', '"pyroball"'), '"ultimolugar"', '"quash"'), '"últimolugar"', '"quash"'), '"ltimolugar"', '"quash"'), '"anticipo"', '"quickguard"'), '"danzaaleteo"', '"quiverdance"'), '"polvoira"', '"ragepowder"'), '"conchafilo"', '"razorshell"'), '"clonatipo"', '"reflecttype"'), '"cantoarcaico"', '"relicsong"'), '"represalia"', '"retaliate"'), '"danzadespertar"', '"revelationdance"'), '"altovoltaje"', '"risingvoltage"'), '"distorsion"', '"roaroftime"')
-WHERE save_data LIKE '%"picoteo"%'
-   OR save_data LIKE '%"puyanociva"%'
-   OR save_data LIKE '%"boladepolen"%'
-   OR save_data LIKE '%"polvoexplosivo"%'
-   OR save_data LIKE '%"joyadeluz"%'
-   OR save_data LIKE '%"isofuerza"%'
-   OR save_data LIKE '%"cambiafuerza"%'
-   OR save_data LIKE '%"trucofuerza"%'
-   OR save_data LIKE '%"chuleria"%'
-   OR save_data LIKE '%"chulería"%'
-   OR save_data LIKE '%"chulera"%'
-   OR save_data LIKE '%"punoincremento"%'
-   OR save_data LIKE '%"puñoincremento"%'
-   OR save_data LIKE '%"puoincremento"%'
-   OR save_data LIKE '%"latigazo"%'
-   OR save_data LIKE '%"filodelabismo"%'
-   OR save_data LIKE '%"laserprisma"%'
-   OR save_data LIKE '%"láserprisma"%'
-   OR save_data LIKE '%"lserprisma"%'
-   OR save_data LIKE '%"psicohojas"%'
-   OR save_data LIKE '%"psicocolmillo"%'
-   OR save_data LIKE '%"psicorruido"%'
-   OR save_data LIKE '%"campopsiquico"%'
-   OR save_data LIKE '%"campopsíquico"%'
-   OR save_data LIKE '%"campopsquico"%'
-   OR save_data LIKE '%"psicocorte"%'
-   OR save_data LIKE '%"psicocambio"%'
-   OR save_data LIKE '%"psicocarga"%'
-   OR save_data LIKE '%"ondamental"%'
-   OR save_data LIKE '%"arrojointempestivo"%'
-   OR save_data LIKE '%"castigo"%'
-   OR save_data LIKE '%"purificacion"%'
-   OR save_data LIKE '%"purificación"%'
-   OR save_data LIKE '%"purificacin"%'
-   OR save_data LIKE '%"balonigneo"%'
-   OR save_data LIKE '%"balónígneo"%'
-   OR save_data LIKE '%"balngneo"%'
-   OR save_data LIKE '%"ultimolugar"%'
-   OR save_data LIKE '%"últimolugar"%'
-   OR save_data LIKE '%"ltimolugar"%'
-   OR save_data LIKE '%"anticipo"%'
-   OR save_data LIKE '%"danzaaleteo"%'
-   OR save_data LIKE '%"polvoira"%'
-   OR save_data LIKE '%"conchafilo"%'
-   OR save_data LIKE '%"clonatipo"%'
-   OR save_data LIKE '%"cantoarcaico"%'
-   OR save_data LIKE '%"represalia"%'
-   OR save_data LIKE '%"danzadespertar"%'
-   OR save_data LIKE '%"altovoltaje"%'
-   OR save_data LIKE '%"distorsion"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"distorsión"', '"roaroftime"'), '"distorsin"', '"roaroftime"'), '"treparrocas"', '"rockclimb"'), '"pulimento"', '"rockpolish"'), '"romperrocas"', '"rockwrecker"'), '"respiro"', '"roost"'), '"fertilizante"', '"rototiller"'), '"canon"', '"round"'), '"espadasanta"', '"sacredsword"'), '"leafitobombas"', '"sappyseed"'), '"guadanasedosa"', '"savagespinout"'), '"guadañasedosa"', '"savagespinout"'), '"guadaasedosa"', '"savagespinout"'), '"escaldar"', '"scald"'), '"rafagaescamas"', '"scaleshot"'), '"ráfagaescamas"', '"scaleshot"'), '"rfagaescamas"', '"scaleshot"'), '"arenasardientes"', '"scorchingsands"'), '"bombaignea"', '"searingshot"'), '"bombaígnea"', '"searingshot"'), '"bombagnea"', '"searingshot"'), '"embestidasolar"', '"searingsunrazesmash"'), '"sablemistico"', '"secretsword"'), '"sablemístico"', '"secretsword"'), '"sablemstico"', '"secretsword"'), '"bombagermen"', '"seedbomb"'), '"fogonazo"', '"seedflare"'), '"huesosombrio"', '"shadowbone"'), '"huesosombrío"', '"shadowbone"'), '"huesosombro"', '"shadowbone"'), '"garraumbria"', '"shadowclaw"'), '"garraumbría"', '"shadowclaw"'), '"garraumbra"', '"shadowclaw"'), '"golpeumbrio"', '"shadowforce"'), '"golpeumbrío"', '"shadowforce"'), '"golpeumbro"', '"shadowforce"'), '"sombravil"', '"shadowsneak"'), '"disruptorpsiquico"', '"shatteredpsyche"'), '"disruptorpsíquico"', '"shatteredpsyche"'), '"disruptorpsquico"', '"shatteredpsyche"'), '"moluscanon"', '"shellsidearm"'), '"moluscañón"', '"shellsidearm"'), '"moluscan"', '"shellsidearm"'), '"rompecoraza"', '"shellsmash"'), '"corazatrampa"', '"shelltrap"'), '"cambiodemarcha"', '"shiftgear"'), '"recogearena"', '"shoreup"'), '"ondasimple"', '"simplebeam"'), '"aluviondeflechassombrias"', '"sinisterarrowraid"'), '"aluvióndeflechassombrías"', '"sinisterarrowraid"')
-WHERE save_data LIKE '%"distorsión"%'
-   OR save_data LIKE '%"distorsin"%'
-   OR save_data LIKE '%"treparrocas"%'
-   OR save_data LIKE '%"pulimento"%'
-   OR save_data LIKE '%"romperrocas"%'
-   OR save_data LIKE '%"respiro"%'
-   OR save_data LIKE '%"fertilizante"%'
-   OR save_data LIKE '%"canon"%'
-   OR save_data LIKE '%"espadasanta"%'
-   OR save_data LIKE '%"leafitobombas"%'
-   OR save_data LIKE '%"guadanasedosa"%'
-   OR save_data LIKE '%"guadañasedosa"%'
-   OR save_data LIKE '%"guadaasedosa"%'
-   OR save_data LIKE '%"escaldar"%'
-   OR save_data LIKE '%"rafagaescamas"%'
-   OR save_data LIKE '%"ráfagaescamas"%'
-   OR save_data LIKE '%"rfagaescamas"%'
-   OR save_data LIKE '%"arenasardientes"%'
-   OR save_data LIKE '%"bombaignea"%'
-   OR save_data LIKE '%"bombaígnea"%'
-   OR save_data LIKE '%"bombagnea"%'
-   OR save_data LIKE '%"embestidasolar"%'
-   OR save_data LIKE '%"sablemistico"%'
-   OR save_data LIKE '%"sablemístico"%'
-   OR save_data LIKE '%"sablemstico"%'
-   OR save_data LIKE '%"bombagermen"%'
-   OR save_data LIKE '%"fogonazo"%'
-   OR save_data LIKE '%"huesosombrio"%'
-   OR save_data LIKE '%"huesosombrío"%'
-   OR save_data LIKE '%"huesosombro"%'
-   OR save_data LIKE '%"garraumbria"%'
-   OR save_data LIKE '%"garraumbría"%'
-   OR save_data LIKE '%"garraumbra"%'
-   OR save_data LIKE '%"golpeumbrio"%'
-   OR save_data LIKE '%"golpeumbrío"%'
-   OR save_data LIKE '%"golpeumbro"%'
-   OR save_data LIKE '%"sombravil"%'
-   OR save_data LIKE '%"disruptorpsiquico"%'
-   OR save_data LIKE '%"disruptorpsíquico"%'
-   OR save_data LIKE '%"disruptorpsquico"%'
-   OR save_data LIKE '%"moluscanon"%'
-   OR save_data LIKE '%"moluscañón"%'
-   OR save_data LIKE '%"moluscan"%'
-   OR save_data LIKE '%"rompecoraza"%'
-   OR save_data LIKE '%"corazatrampa"%'
-   OR save_data LIKE '%"cambiodemarcha"%'
-   OR save_data LIKE '%"recogearena"%'
-   OR save_data LIKE '%"ondasimple"%'
-   OR save_data LIKE '%"aluviondeflechassombrias"%'
-   OR save_data LIKE '%"aluvióndeflechassombrías"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"aluvindeflechassombras"', '"sinisterarrowraid"'), '"flarembestida"', '"sizzlyslide"'), '"golperastrero"', '"skittersmack"'), '"caidalibre"', '"skydrop"'), '"caídalibre"', '"skydrop"'), '"cadalibre"', '"skydrop"'), '"ondatoxica"', '"sludgewave"'), '"ondatóxica"', '"sludgewave"'), '"ondatxica"', '"sludgewave"'), '"antiaereo"', '"smackdown"'), '"antiaéreo"', '"smackdown"'), '"antiareo"', '"smackdown"'), '"cuernocertero"', '"smartstrike"'), '"cepo"', '"snaptrap"'), '"alarido"', '"snarl"'), '"disparocertero"', '"snipeshot"'), '"anegar"', '"soak"'), '"cuchillasolar"', '"solarblade"'), '"constelacionrobaalmas"', '"soulstealing7starstrike"'), '"constelaciónrobaalmas"', '"soulstealing7starstrike"'), '"constelacinrobaalmas"', '"soulstealing7starstrike"'), '"cortevacio"', '"spacialrend"'), '"cortevacío"', '"spacialrend"'), '"cortevaco"', '"spacialrend"'), '"ariaburbuja"', '"sparklingaria"'), '"sylveotornado"', '"sparklyswirl"'), '"robasombra"', '"spectralthief"'), '"cambiavelocidad"', '"speedswap"'), '"barreraespinosa"', '"spikyshield"'), '"choqueanimico"', '"spiritbreak"'), '"choqueanímico"', '"spiritbreak"'), '"choqueanmico"', '"spiritbreak"'), '"puntadasombria"', '"spiritshackle"'), '"puntadasombría"', '"spiritshackle"'), '"puntadasombra"', '"spiritshackle"'), '"tempestadrocosa"', '"splinteredstormshards"'), '"salpikasurf"', '"splishysplash"'), '"foco"', '"spotlight"'), '"tramparocas"', '"stealthrock"'), '"chorrodevapor"', '"steameruption"'), '"rodillodepuas"', '"steamroller"'), '"rodillodepúas"', '"steamroller"'), '"rodillodepas"', '"steamroller"'), '"metalaser"', '"steelbeam"'), '"metaláser"', '"steelbeam"'), '"metalser"', '"steelbeam"'), '"allanadorferreo"', '"steelroller"'), '"allanadorférreo"', '"steelroller"'), '"allanadorfrreo"', '"steelroller"'), '"redviscosa"', '"stickyweb"')
-WHERE save_data LIKE '%"aluvindeflechassombras"%'
-   OR save_data LIKE '%"flarembestida"%'
-   OR save_data LIKE '%"golperastrero"%'
-   OR save_data LIKE '%"caidalibre"%'
-   OR save_data LIKE '%"caídalibre"%'
-   OR save_data LIKE '%"cadalibre"%'
-   OR save_data LIKE '%"ondatoxica"%'
-   OR save_data LIKE '%"ondatóxica"%'
-   OR save_data LIKE '%"ondatxica"%'
-   OR save_data LIKE '%"antiaereo"%'
-   OR save_data LIKE '%"antiaéreo"%'
-   OR save_data LIKE '%"antiareo"%'
-   OR save_data LIKE '%"cuernocertero"%'
-   OR save_data LIKE '%"cepo"%'
-   OR save_data LIKE '%"alarido"%'
-   OR save_data LIKE '%"disparocertero"%'
-   OR save_data LIKE '%"anegar"%'
-   OR save_data LIKE '%"cuchillasolar"%'
-   OR save_data LIKE '%"constelacionrobaalmas"%'
-   OR save_data LIKE '%"constelaciónrobaalmas"%'
-   OR save_data LIKE '%"constelacinrobaalmas"%'
-   OR save_data LIKE '%"cortevacio"%'
-   OR save_data LIKE '%"cortevacío"%'
-   OR save_data LIKE '%"cortevaco"%'
-   OR save_data LIKE '%"ariaburbuja"%'
-   OR save_data LIKE '%"sylveotornado"%'
-   OR save_data LIKE '%"robasombra"%'
-   OR save_data LIKE '%"cambiavelocidad"%'
-   OR save_data LIKE '%"barreraespinosa"%'
-   OR save_data LIKE '%"choqueanimico"%'
-   OR save_data LIKE '%"choqueanímico"%'
-   OR save_data LIKE '%"choqueanmico"%'
-   OR save_data LIKE '%"puntadasombria"%'
-   OR save_data LIKE '%"puntadasombría"%'
-   OR save_data LIKE '%"puntadasombra"%'
-   OR save_data LIKE '%"tempestadrocosa"%'
-   OR save_data LIKE '%"salpikasurf"%'
-   OR save_data LIKE '%"foco"%'
-   OR save_data LIKE '%"tramparocas"%'
-   OR save_data LIKE '%"chorrodevapor"%'
-   OR save_data LIKE '%"rodillodepuas"%'
-   OR save_data LIKE '%"rodillodepúas"%'
-   OR save_data LIKE '%"rodillodepas"%'
-   OR save_data LIKE '%"metalaser"%'
-   OR save_data LIKE '%"metaláser"%'
-   OR save_data LIKE '%"metalser"%'
-   OR save_data LIKE '%"allanadorferreo"%'
-   OR save_data LIKE '%"allanadorférreo"%'
-   OR save_data LIKE '%"allanadorfrreo"%'
-   OR save_data LIKE '%"redviscosa"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"surfeogalvanico"', '"stokedsparksurfer"'), '"surfeogalvánico"', '"stokedsparksurfer"'), '"surfeogalvnico"', '"stokedsparksurfer"'), '"pataleta"', '"stompingtantrum"'), '"rocaafilada"', '"stoneedge"'), '"poderreserva"', '"storedpower"'), '"llavecorse"', '"stormthrow"'), '"llavecorsé"', '"stormthrow"'), '"llavecors"', '"stormthrow"'), '"cautivapor"', '"strangesteam"'), '"absorbefuerza"', '"strengthsap"'), '"estoicismo"', '"strugglebug"'), '"atiborramiento"', '"stuffcheeks"'), '"crioalientodespiadado"', '"subzeroslammer"'), '"golpebajo"', '"suckerpunch"'), '"meteoimpacto"', '"sunsteelstrike"'), '"planchavoltaica"', '"supercellslam"'), '"picadosupersonico"', '"supersonicskystrike"'), '"picadosupersónico"', '"supersonicskystrike"'), '"picadosupersnico"', '"supersonicskystrike"'), '"azotetorrencial"', '"surgingstrikes"'), '"trapicheo"', '"switcheroo"'), '"sincrorruido"', '"synchronoise"'), '"tajotaquion"', '"tachyoncutter"'), '"tajotaquión"', '"tachyoncutter"'), '"tajotaquin"', '"tachyoncutter"'), '"plumerazo"', '"tailslap"'), '"vientoafin"', '"tailwind"'), '"vientoafín"', '"tailwind"'), '"vientoafn"', '"tailwind"'), '"alquitranazo"', '"tarshot"'), '"ojosllorosos"', '"tearfullook"'), '"horadelte"', '"teatime"'), '"horadelté"', '"teatime"'), '"horadelt"', '"teatime"'), '"tecnoshock"', '"technoblast"'), '"barrenatelurica"', '"tectonicrage"'), '"barrenatelúrica"', '"tectonicrage"'), '"barrenatelrica"', '"tectonicrage"'), '"telequinesis"', '"telekinesis"'), '"coleraardiente"', '"temperflare"'), '"cóleraardiente"', '"temperflare"'), '"cleraardiente"', '"temperflare"'), '"teracluster"', '"terastarstorm"'), '"teraclúster"', '"terastarstorm"'), '"teraclster"', '"terastarstorm"'), '"pulsodecampo"', '"terrainpulse"'), '"milflechas"', '"thousandarrows"'), '"miltemblores"', '"thousandwaves"'), '"golpemordaza"', '"throatchop"')
-WHERE save_data LIKE '%"surfeogalvanico"%'
-   OR save_data LIKE '%"surfeogalvánico"%'
-   OR save_data LIKE '%"surfeogalvnico"%'
-   OR save_data LIKE '%"pataleta"%'
-   OR save_data LIKE '%"rocaafilada"%'
-   OR save_data LIKE '%"poderreserva"%'
-   OR save_data LIKE '%"llavecorse"%'
-   OR save_data LIKE '%"llavecorsé"%'
-   OR save_data LIKE '%"llavecors"%'
-   OR save_data LIKE '%"cautivapor"%'
-   OR save_data LIKE '%"absorbefuerza"%'
-   OR save_data LIKE '%"estoicismo"%'
-   OR save_data LIKE '%"atiborramiento"%'
-   OR save_data LIKE '%"crioalientodespiadado"%'
-   OR save_data LIKE '%"golpebajo"%'
-   OR save_data LIKE '%"meteoimpacto"%'
-   OR save_data LIKE '%"planchavoltaica"%'
-   OR save_data LIKE '%"picadosupersonico"%'
-   OR save_data LIKE '%"picadosupersónico"%'
-   OR save_data LIKE '%"picadosupersnico"%'
-   OR save_data LIKE '%"azotetorrencial"%'
-   OR save_data LIKE '%"trapicheo"%'
-   OR save_data LIKE '%"sincrorruido"%'
-   OR save_data LIKE '%"tajotaquion"%'
-   OR save_data LIKE '%"tajotaquión"%'
-   OR save_data LIKE '%"tajotaquin"%'
-   OR save_data LIKE '%"plumerazo"%'
-   OR save_data LIKE '%"vientoafin"%'
-   OR save_data LIKE '%"vientoafín"%'
-   OR save_data LIKE '%"vientoafn"%'
-   OR save_data LIKE '%"alquitranazo"%'
-   OR save_data LIKE '%"ojosllorosos"%'
-   OR save_data LIKE '%"horadelte"%'
-   OR save_data LIKE '%"horadelté"%'
-   OR save_data LIKE '%"horadelt"%'
-   OR save_data LIKE '%"tecnoshock"%'
-   OR save_data LIKE '%"barrenatelurica"%'
-   OR save_data LIKE '%"barrenatelúrica"%'
-   OR save_data LIKE '%"barrenatelrica"%'
-   OR save_data LIKE '%"telequinesis"%'
-   OR save_data LIKE '%"coleraardiente"%'
-   OR save_data LIKE '%"cóleraardiente"%'
-   OR save_data LIKE '%"cleraardiente"%'
-   OR save_data LIKE '%"teracluster"%'
-   OR save_data LIKE '%"teraclúster"%'
-   OR save_data LIKE '%"teraclster"%'
-   OR save_data LIKE '%"pulsodecampo"%'
-   OR save_data LIKE '%"milflechas"%'
-   OR save_data LIKE '%"miltemblores"%'
-   OR save_data LIKE '%"golpemordaza"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"electrojaula"', '"thundercage"'), '"relampagosubito"', '"thunderclap"'), '"relámpagosúbito"', '"thunderclap"'), '"relmpagosbito"', '"thunderclap"'), '"colmillorayo"', '"thunderfang"'), '"patadarelampago"', '"thunderouskick"'), '"patadarelámpago"', '"thunderouskick"'), '"patadarelmpago"', '"thunderouskick"'), '"reversion"', '"topsyturvy"'), '"reversión"', '"topsyturvy"'), '"reversin"', '"topsyturvy"'), '"puastoxicas"', '"toxicspikes"'), '"púastóxicas"', '"toxicspikes"'), '"pastxicas"', '"toxicspikes"'), '"hilovenenoso"', '"toxicthread"'), '"halloween"', '"trickortreat"'), '"espacioraro"', '"trickroom"'), '"patadatropical"', '"tropkick"'), '"asoculto"', '"trumpcard"'), '"arrumacosideral"', '"twinkletackle"'), '"palmarauda"', '"upperhand"'), '"idayvuelta"', '"uturn"'), '"ondavacio"', '"vacuumwave"'), '"ondavacío"', '"vacuumwave"'), '"ondavaco"', '"vacuumwave"'), '"vdefuego"', '"vcreate"'), '"eevimpacto"', '"veeveevolley"'), '"trampavenenosa"', '"venomdrench"'), '"cargatoxica"', '"venoshock"'), '"cargatóxica"', '"venoshock"'), '"cargatxica"', '"venoshock"'), '"voltiocambio"', '"voltswitch"'), '"espabila"', '"wakeupslap"'), '"votoagua"', '"waterpledge"'), '"shurikendeagua"', '"watershuriken"'), '"golpeoscuro"', '"wickedblow"'), '"vastaguardia"', '"wideguard"'), '"voltiocruel"', '"wildcharge"'), '"zonaextrana"', '"wonderroom"'), '"zonaextraña"', '"wonderroom"'), '"zonaextraa"', '"wonderroom"'), '"mazazo"', '"woodhammer"'), '"avivar"', '"workup"'), '"abatidoras"', '"worryseed"'), '"estrujon"', '"wringout"'), '"estrujón"', '"wringout"'), '"estrujn"', '"wringout"'), '"tijerax"', '"xscissor"'), '"cabezazozen"', '"zenheadbutt"'), '"electropunzada"', '"zingzap"')
-WHERE save_data LIKE '%"electrojaula"%'
-   OR save_data LIKE '%"relampagosubito"%'
-   OR save_data LIKE '%"relámpagosúbito"%'
-   OR save_data LIKE '%"relmpagosbito"%'
-   OR save_data LIKE '%"colmillorayo"%'
-   OR save_data LIKE '%"patadarelampago"%'
-   OR save_data LIKE '%"patadarelámpago"%'
-   OR save_data LIKE '%"patadarelmpago"%'
-   OR save_data LIKE '%"reversion"%'
-   OR save_data LIKE '%"reversión"%'
-   OR save_data LIKE '%"reversin"%'
-   OR save_data LIKE '%"puastoxicas"%'
-   OR save_data LIKE '%"púastóxicas"%'
-   OR save_data LIKE '%"pastxicas"%'
-   OR save_data LIKE '%"hilovenenoso"%'
-   OR save_data LIKE '%"halloween"%'
-   OR save_data LIKE '%"espacioraro"%'
-   OR save_data LIKE '%"patadatropical"%'
-   OR save_data LIKE '%"asoculto"%'
-   OR save_data LIKE '%"arrumacosideral"%'
-   OR save_data LIKE '%"palmarauda"%'
-   OR save_data LIKE '%"idayvuelta"%'
-   OR save_data LIKE '%"ondavacio"%'
-   OR save_data LIKE '%"ondavacío"%'
-   OR save_data LIKE '%"ondavaco"%'
-   OR save_data LIKE '%"vdefuego"%'
-   OR save_data LIKE '%"eevimpacto"%'
-   OR save_data LIKE '%"trampavenenosa"%'
-   OR save_data LIKE '%"cargatoxica"%'
-   OR save_data LIKE '%"cargatóxica"%'
-   OR save_data LIKE '%"cargatxica"%'
-   OR save_data LIKE '%"voltiocambio"%'
-   OR save_data LIKE '%"espabila"%'
-   OR save_data LIKE '%"votoagua"%'
-   OR save_data LIKE '%"shurikendeagua"%'
-   OR save_data LIKE '%"golpeoscuro"%'
-   OR save_data LIKE '%"vastaguardia"%'
-   OR save_data LIKE '%"voltiocruel"%'
-   OR save_data LIKE '%"zonaextrana"%'
-   OR save_data LIKE '%"zonaextraña"%'
-   OR save_data LIKE '%"zonaextraa"%'
-   OR save_data LIKE '%"mazazo"%'
-   OR save_data LIKE '%"avivar"%'
-   OR save_data LIKE '%"abatidoras"%'
-   OR save_data LIKE '%"estrujon"%'
-   OR save_data LIKE '%"estrujón"%'
-   OR save_data LIKE '%"estrujn"%'
-   OR save_data LIKE '%"tijerax"%'
-   OR save_data LIKE '%"cabezazozen"%'
-   OR save_data LIKE '%"electropunzada"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"pikaturbo"', '"zippyzap"'), '"prevision"', '"foresight"'), '"psicocontrol"', '"psychup"'), '"mud_punch"', '"mudslap"'), '"punolodo"', '"mudslap"'), '"puñolodo"', '"mudslap"'), '"envolver"', '"wrap"'), '"arena"', '"sandattack"'), '"portazo"', '"slam"'), '"golpekaratazo"', '"karatechop"'), '"movsismico"', '"seismictoss"'), '"mov.sismico"', '"seismictoss"'), '"mov.sísmico"', '"seismictoss"'), '"acidificacion"', '"acidarmor"'), '"huesorus"', '"bonerush"'), '"huesumerang"', '"bonemerang"'), '"seguimiento"', '"pursuit"'), '"cola"', '"tailwhip"'), '"repeticin"', '"wrap"'), '"ataqueaero"', '"skyattack"'), '"clavocann"', '"spikecannon"'), '"metrnom"', '"metronome"'), '"punetazo"', '"pound"'), '"puñetazo"', '"pound"'), '"clavocaon"', '"spikecannon"'), '"adaptable"', '"adaptability"'), '"bucleaire"', '"cloudnine"'), '"trampaarena"', '"arenatrap"'), '"armadurabatalla"', '"battlearmor"'), '"sacapecho"', '"bigpecks"'), '"marllamas"', '"blaze"'), '"clorofila"', '"chlorophyll"'), '"cuerpopuro"', '"clearbody"'), '"cambiocolor"', '"colorchange"'), '"ojocompuesto"', '"compoundeyes"'), '"granencanto"', '"cutecharm"'), '"humedad"', '"damp"'), '"llovizna"', '"drizzle"'), '"sequia"', '"drought"'), '"sequía"', '"drought"'), '"sequa"', '"drought"'), '"madrugar"', '"earlybird"'), '"efectoespora"', '"effectspore"'), '"cuerpollama"', '"flamebody"'), '"absorbefuego"', '"flashfire"'), '"prediccion"', '"forecast"'), '"predicción"', '"forecast"'), '"prediccin"', '"forecast"'), '"agallas"', '"guts"'), '"potencia"', '"hugepower"')
-WHERE save_data LIKE '%"pikaturbo"%'
-   OR save_data LIKE '%"prevision"%'
-   OR save_data LIKE '%"psicocontrol"%'
-   OR save_data LIKE '%"mud_punch"%'
-   OR save_data LIKE '%"punolodo"%'
-   OR save_data LIKE '%"puñolodo"%'
-   OR save_data LIKE '%"envolver"%'
-   OR save_data LIKE '%"arena"%'
-   OR save_data LIKE '%"portazo"%'
-   OR save_data LIKE '%"golpekaratazo"%'
-   OR save_data LIKE '%"movsismico"%'
-   OR save_data LIKE '%"mov.sismico"%'
-   OR save_data LIKE '%"mov.sísmico"%'
-   OR save_data LIKE '%"acidificacion"%'
-   OR save_data LIKE '%"huesorus"%'
-   OR save_data LIKE '%"huesumerang"%'
-   OR save_data LIKE '%"seguimiento"%'
-   OR save_data LIKE '%"cola"%'
-   OR save_data LIKE '%"repeticin"%'
-   OR save_data LIKE '%"ataqueaero"%'
-   OR save_data LIKE '%"clavocann"%'
-   OR save_data LIKE '%"metrnom"%'
-   OR save_data LIKE '%"punetazo"%'
-   OR save_data LIKE '%"puñetazo"%'
-   OR save_data LIKE '%"clavocaon"%'
-   OR save_data LIKE '%"adaptable"%'
-   OR save_data LIKE '%"bucleaire"%'
-   OR save_data LIKE '%"trampaarena"%'
-   OR save_data LIKE '%"armadurabatalla"%'
-   OR save_data LIKE '%"sacapecho"%'
-   OR save_data LIKE '%"marllamas"%'
-   OR save_data LIKE '%"clorofila"%'
-   OR save_data LIKE '%"cuerpopuro"%'
-   OR save_data LIKE '%"cambiocolor"%'
-   OR save_data LIKE '%"ojocompuesto"%'
-   OR save_data LIKE '%"granencanto"%'
-   OR save_data LIKE '%"humedad"%'
-   OR save_data LIKE '%"llovizna"%'
-   OR save_data LIKE '%"sequia"%'
-   OR save_data LIKE '%"sequía"%'
-   OR save_data LIKE '%"sequa"%'
-   OR save_data LIKE '%"madrugar"%'
-   OR save_data LIKE '%"efectoespora"%'
-   OR save_data LIKE '%"cuerpollama"%'
-   OR save_data LIKE '%"absorbefuego"%'
-   OR save_data LIKE '%"prediccion"%'
-   OR save_data LIKE '%"predicción"%'
-   OR save_data LIKE '%"prediccin"%'
-   OR save_data LIKE '%"agallas"%'
-   OR save_data LIKE '%"potencia"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"entusiasmo"', '"hustle"'), '"cortefuerte"', '"hypercutter"'), '"iluminacion"', '"illuminate"'), '"iluminación"', '"illuminate"'), '"iluminacin"', '"illuminate"'), '"inmunidad"', '"immunity"'), '"infiltrador"', '"infiltrator"'), '"focointerno"', '"innerfocus"'), '"insomnio"', '"insomnia"'), '"intimidacion"', '"intimidate"'), '"intimidación"', '"intimidate"'), '"intimidacin"', '"intimidate"'), '"vistalince"', '"keeneye"'), '"levitacion"', '"levitate"'), '"levitación"', '"levitate"'), '"levitacin"', '"levitate"'), '"pararrayos"', '"lightningrod"'), '"flexibilidad"', '"limber"'), '"viscosidad"', '"liquidooze"'), '"iman"', '"magnetpull"'), '"imán"', '"magnetpull"'), '"imn"', '"magnetpull"'), '"escamaespecial"', '"marvelscale"'), '"menos"', '"minus"'), '"curanatural"', '"naturalcure"'), '"despiste"', '"owntempo"'), '"espesura"', '"overgrow"'), '"recogida"', '"pickup"'), '"mas"', '"plus"'), '"más"', '"plus"'), '"ms"', '"plus"'), '"puntotoxico"', '"poisonpoint"'), '"puntotóxico"', '"poisonpoint"'), '"puntotxico"', '"poisonpoint"'), '"presion"', '"pressure"'), '"presión"', '"pressure"'), '"presin"', '"pressure"'), '"energiapura"', '"purepower"'), '"energíapura"', '"purepower"'), '"energapura"', '"purepower"'), '"curalluvia"', '"raindish"'), '"rivalidad"', '"rivalry"'), '"cabezaroca"', '"rockhead"'), '"pieltosca"', '"roughskin"'), '"fuga"', '"runaway"'), '"impetuarena"', '"sandrush"'), '"ímpetuarena"', '"sandrush"'), '"mpetuarena"', '"sandrush"'), '"chorroarena"', '"sandstream"'), '"veloarena"', '"sandveil"')
-WHERE save_data LIKE '%"entusiasmo"%'
-   OR save_data LIKE '%"cortefuerte"%'
-   OR save_data LIKE '%"iluminacion"%'
-   OR save_data LIKE '%"iluminación"%'
-   OR save_data LIKE '%"iluminacin"%'
-   OR save_data LIKE '%"inmunidad"%'
-   OR save_data LIKE '%"infiltrador"%'
-   OR save_data LIKE '%"focointerno"%'
-   OR save_data LIKE '%"insomnio"%'
-   OR save_data LIKE '%"intimidacion"%'
-   OR save_data LIKE '%"intimidación"%'
-   OR save_data LIKE '%"intimidacin"%'
-   OR save_data LIKE '%"vistalince"%'
-   OR save_data LIKE '%"levitacion"%'
-   OR save_data LIKE '%"levitación"%'
-   OR save_data LIKE '%"levitacin"%'
-   OR save_data LIKE '%"pararrayos"%'
-   OR save_data LIKE '%"flexibilidad"%'
-   OR save_data LIKE '%"viscosidad"%'
-   OR save_data LIKE '%"iman"%'
-   OR save_data LIKE '%"imán"%'
-   OR save_data LIKE '%"imn"%'
-   OR save_data LIKE '%"escamaespecial"%'
-   OR save_data LIKE '%"menos"%'
-   OR save_data LIKE '%"curanatural"%'
-   OR save_data LIKE '%"despiste"%'
-   OR save_data LIKE '%"espesura"%'
-   OR save_data LIKE '%"recogida"%'
-   OR save_data LIKE '%"mas"%'
-   OR save_data LIKE '%"más"%'
-   OR save_data LIKE '%"ms"%'
-   OR save_data LIKE '%"puntotoxico"%'
-   OR save_data LIKE '%"puntotóxico"%'
-   OR save_data LIKE '%"puntotxico"%'
-   OR save_data LIKE '%"presion"%'
-   OR save_data LIKE '%"presión"%'
-   OR save_data LIKE '%"presin"%'
-   OR save_data LIKE '%"energiapura"%'
-   OR save_data LIKE '%"energíapura"%'
-   OR save_data LIKE '%"energapura"%'
-   OR save_data LIKE '%"curalluvia"%'
-   OR save_data LIKE '%"rivalidad"%'
-   OR save_data LIKE '%"cabezaroca"%'
-   OR save_data LIKE '%"pieltosca"%'
-   OR save_data LIKE '%"fuga"%'
-   OR save_data LIKE '%"impetuarena"%'
-   OR save_data LIKE '%"ímpetuarena"%'
-   OR save_data LIKE '%"mpetuarena"%'
-   OR save_data LIKE '%"chorroarena"%'
-   OR save_data LIKE '%"veloarena"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"dicha"', '"serenegrace"'), '"sombratrampa"', '"shadowtag"'), '"mudar"', '"shedskin"'), '"caparazon"', '"shellarmor"'), '"caparazón"', '"shellarmor"'), '"caparazn"', '"shellarmor"'), '"polvoescudo"', '"shielddust"'), '"francotirador"', '"sniper"'), '"podersolar"', '"solarpower"'), '"insonorizar"', '"soundproof"'), '"impulso"', '"speedboost"'), '"electricidadestatica"', '"static"'), '"electricidadestática"', '"static"'), '"electricidadesttica"', '"static"'), '"hedor"', '"stench"'), '"viscoso"', '"stickyhold"'), '"robustez"', '"sturdy"'), '"ventosas"', '"suctioncups"'), '"enjambre"', '"swarm"'), '"nadorapido"', '"swiftswim"'), '"nadorápido"', '"swiftswim"'), '"nadorpido"', '"swiftswim"'), '"sincronia"', '"synchronize"'), '"sincronía"', '"synchronize"'), '"sincrona"', '"synchronize"'), '"tumbos"', '"tangledfeet"'), '"sebo"', '"thickfat"'), '"cromolente"', '"tintedlens"'), '"torrente"', '"torrent"'), '"rastro"', '"trace"'), '"ausente"', '"truant"'), '"tension"', '"unnerve"'), '"tensión"', '"unnerve"'), '"tensin"', '"unnerve"'), '"espirituvital"', '"vitalspirit"'), '"espírituvital"', '"vitalspirit"'), '"esprituvital"', '"vitalspirit"'), '"absorbeelectricidad"', '"voltabsorb"'), '"absorbeagua"', '"waterabsorb"'), '"veloagua"', '"waterveil"'), '"humoblanco"', '"whitesmoke"'), '"superguarda"', '"wonderguard"'), '"potenciabruta"', '"sheerforce"'), '"muromagico"', '"magicguard"'), '"muromágico"', '"magicguard"'), '"muromgico"', '"magicguard"'), '"compadrazgo"', '"friendguard"'), '"ignorante"', '"unaware"'), '"tenacidad"', '"competitive"'), '"cacheo"', '"frisk"')
-WHERE save_data LIKE '%"dicha"%'
-   OR save_data LIKE '%"sombratrampa"%'
-   OR save_data LIKE '%"mudar"%'
-   OR save_data LIKE '%"caparazon"%'
-   OR save_data LIKE '%"caparazón"%'
-   OR save_data LIKE '%"caparazn"%'
-   OR save_data LIKE '%"polvoescudo"%'
-   OR save_data LIKE '%"francotirador"%'
-   OR save_data LIKE '%"podersolar"%'
-   OR save_data LIKE '%"insonorizar"%'
-   OR save_data LIKE '%"impulso"%'
-   OR save_data LIKE '%"electricidadestatica"%'
-   OR save_data LIKE '%"electricidadestática"%'
-   OR save_data LIKE '%"electricidadesttica"%'
-   OR save_data LIKE '%"hedor"%'
-   OR save_data LIKE '%"viscoso"%'
-   OR save_data LIKE '%"robustez"%'
-   OR save_data LIKE '%"ventosas"%'
-   OR save_data LIKE '%"enjambre"%'
-   OR save_data LIKE '%"nadorapido"%'
-   OR save_data LIKE '%"nadorápido"%'
-   OR save_data LIKE '%"nadorpido"%'
-   OR save_data LIKE '%"sincronia"%'
-   OR save_data LIKE '%"sincronía"%'
-   OR save_data LIKE '%"sincrona"%'
-   OR save_data LIKE '%"tumbos"%'
-   OR save_data LIKE '%"sebo"%'
-   OR save_data LIKE '%"cromolente"%'
-   OR save_data LIKE '%"torrente"%'
-   OR save_data LIKE '%"rastro"%'
-   OR save_data LIKE '%"ausente"%'
-   OR save_data LIKE '%"tension"%'
-   OR save_data LIKE '%"tensión"%'
-   OR save_data LIKE '%"tensin"%'
-   OR save_data LIKE '%"espirituvital"%'
-   OR save_data LIKE '%"espírituvital"%'
-   OR save_data LIKE '%"esprituvital"%'
-   OR save_data LIKE '%"absorbeelectricidad"%'
-   OR save_data LIKE '%"absorbeagua"%'
-   OR save_data LIKE '%"veloagua"%'
-   OR save_data LIKE '%"humoblanco"%'
-   OR save_data LIKE '%"superguarda"%'
-   OR save_data LIKE '%"potenciabruta"%'
-   OR save_data LIKE '%"muromagico"%'
-   OR save_data LIKE '%"muromágico"%'
-   OR save_data LIKE '%"muromgico"%'
-   OR save_data LIKE '%"compadrazgo"%'
-   OR save_data LIKE '%"ignorante"%'
-   OR save_data LIKE '%"tenacidad"%'
-   OR save_data LIKE '%"cacheo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"pielseca"', '"dryskin"'), '"pielmilagro"', '"wonderskin"'), '"fuerzaarena"', '"sandforce"'), '"experto"', '"technician"'), '"irascible"', '"angerpoint"'), '"competitivo"', '"defiant"'), '"justiciero"', '"justified"'), '"indefenso"', '"noguard"'), '"impasible"', '"steadfast"'), '"gula"', '"gluttony"'), '"regeneracion"', '"regenerator"'), '"regeneración"', '"regenerator"'), '"regeneracin"', '"regenerator"'), '"analitico"', '"analytic"'), '"analítico"', '"analytic"'), '"analtico"', '"analytic"'), '"hidratacion"', '"hydration"'), '"hidratación"', '"hydration"'), '"hidratacin"', '"hydration"'), '"gelido"', '"icebody"'), '"gélido"', '"icebody"'), '"glido"', '"icebody"'), '"toquetoxico"', '"poisontouch"'), '"toquetóxico"', '"poisontouch"'), '"toquetxico"', '"poisontouch"'), '"encadenado"', '"skilllink"'), '"funda"', '"overcoat"'), '"cuerpomaldito"', '"cursedbody"'), '"armadurafragil"', '"weakarmor"'), '"armadurafrágil"', '"weakarmor"'), '"armadurafrgil"', '"weakarmor"'), '"alerta"', '"forewarn"'), '"resquicio"', '"aftermath"'), '"cosecha"', '"harvest"'), '"audaz"', '"reckless"'), '"liviano"', '"unburden"'), '"punoferreo"', '"ironfist"'), '"puñoférreo"', '"ironfist"'), '"puofrreo"', '"ironfist"'), '"gasreactivo"', '"neutralizinggas"'), '"almacura"', '"healer"'), '"defensahoja"', '"leafguard"'), '"intrepido"', '"scrappy"'), '"intrépido"', '"scrappy"'), '"intrpido"', '"scrappy"'), '"filtro"', '"filter"'), '"rompemoldes"', '"moldbreaker"'), '"autoestima"', '"moxie"'), '"cobardia"', '"rattled"'), '"cobardía"', '"rattled"')
-WHERE save_data LIKE '%"pielseca"%'
-   OR save_data LIKE '%"pielmilagro"%'
-   OR save_data LIKE '%"fuerzaarena"%'
-   OR save_data LIKE '%"experto"%'
-   OR save_data LIKE '%"irascible"%'
-   OR save_data LIKE '%"competitivo"%'
-   OR save_data LIKE '%"justiciero"%'
-   OR save_data LIKE '%"indefenso"%'
-   OR save_data LIKE '%"impasible"%'
-   OR save_data LIKE '%"gula"%'
-   OR save_data LIKE '%"regeneracion"%'
-   OR save_data LIKE '%"regeneración"%'
-   OR save_data LIKE '%"regeneracin"%'
-   OR save_data LIKE '%"analitico"%'
-   OR save_data LIKE '%"analítico"%'
-   OR save_data LIKE '%"analtico"%'
-   OR save_data LIKE '%"hidratacion"%'
-   OR save_data LIKE '%"hidratación"%'
-   OR save_data LIKE '%"hidratacin"%'
-   OR save_data LIKE '%"gelido"%'
-   OR save_data LIKE '%"gélido"%'
-   OR save_data LIKE '%"glido"%'
-   OR save_data LIKE '%"toquetoxico"%'
-   OR save_data LIKE '%"toquetóxico"%'
-   OR save_data LIKE '%"toquetxico"%'
-   OR save_data LIKE '%"encadenado"%'
-   OR save_data LIKE '%"funda"%'
-   OR save_data LIKE '%"cuerpomaldito"%'
-   OR save_data LIKE '%"armadurafragil"%'
-   OR save_data LIKE '%"armadurafrágil"%'
-   OR save_data LIKE '%"armadurafrgil"%'
-   OR save_data LIKE '%"alerta"%'
-   OR save_data LIKE '%"resquicio"%'
-   OR save_data LIKE '%"cosecha"%'
-   OR save_data LIKE '%"audaz"%'
-   OR save_data LIKE '%"liviano"%'
-   OR save_data LIKE '%"punoferreo"%'
-   OR save_data LIKE '%"puñoférreo"%'
-   OR save_data LIKE '%"puofrreo"%'
-   OR save_data LIKE '%"gasreactivo"%'
-   OR save_data LIKE '%"almacura"%'
-   OR save_data LIKE '%"defensahoja"%'
-   OR save_data LIKE '%"intrepido"%'
-   OR save_data LIKE '%"intrépido"%'
-   OR save_data LIKE '%"intrpido"%'
-   OR save_data LIKE '%"filtro"%'
-   OR save_data LIKE '%"rompemoldes"%'
-   OR save_data LIKE '%"autoestima"%'
-   OR save_data LIKE '%"cobardia"%'
-   OR save_data LIKE '%"cobardía"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"cobarda"', '"rattled"'), '"impostor"', '"imposter"'), '"piesrapidos"', '"quickfeet"'), '"piesrápidos"', '"quickfeet"'), '"piesrpidos"', '"quickfeet"'), '"descarga"', '"download"'), '"mantoniveo"', '"snowcloak"'), '"mantoníveo"', '"snowcloak"'), '"mantonveo"', '"snowcloak"'), '"compensacion"', '"multiscale"'), '"compensación"', '"multiscale"'), '"compensacin"', '"multiscale"'), '"afortunado"', '"superluck"'), '"anticipacion"', '"anticipation"'), '"anticipación"', '"anticipation"'), '"anticipacin"', '"anticipation"'), '"pielceleste"', '"aerilate"'), '"corazaira"', '"angershell"'), '"colaarmadura"', '"armortail"'), '"veloaroma"', '"aromaveil"'), '"asone(glastrier)"', '"asoneglastrier"'), '"asone(spectrier)"', '"asonespectrier"'), '"rompeaura"', '"aurabreak"'), '"malsueno"', '"baddreams"'), '"malsueño"', '"baddreams"'), '"malsueo"', '"baddreams"'), '"recogebolas"', '"ballfetch"'), '"bateria"', '"battery"'), '"batería"', '"battery"'), '"batera"', '"battery"'), '"fuerteafecto"', '"battlebond"'), '"abaloriodebacle"', '"beadsofruin"'), '"ultraimpulso"', '"beastboost"'), '"colera"', '"berserk"'), '"cólera"', '"berserk"'), '"clera"', '"berserk"'), '"antibalas"', '"bulletproof"'), '"carrillo"', '"cheekpouch"'), '"relinchoblanco"', '"chillingneigh"'), '"letargoperenne"', '"comatose"'), '"comandar"', '"commander"'), '"respondon"', '"contrary"'), '"respondón"', '"contrary"'), '"respondn"', '"contrary"'), '"corrosión"', '"corrosion"'), '"corrosin"', '"corrosion"'), '"unisono"', '"costar"'), '"unísono"', '"costar"'), '"unsono"', '"costar"'), '"pelusa"', '"cottondown"')
-WHERE save_data LIKE '%"cobarda"%'
-   OR save_data LIKE '%"impostor"%'
-   OR save_data LIKE '%"piesrapidos"%'
-   OR save_data LIKE '%"piesrápidos"%'
-   OR save_data LIKE '%"piesrpidos"%'
-   OR save_data LIKE '%"descarga"%'
-   OR save_data LIKE '%"mantoniveo"%'
-   OR save_data LIKE '%"mantoníveo"%'
-   OR save_data LIKE '%"mantonveo"%'
-   OR save_data LIKE '%"compensacion"%'
-   OR save_data LIKE '%"compensación"%'
-   OR save_data LIKE '%"compensacin"%'
-   OR save_data LIKE '%"afortunado"%'
-   OR save_data LIKE '%"anticipacion"%'
-   OR save_data LIKE '%"anticipación"%'
-   OR save_data LIKE '%"anticipacin"%'
-   OR save_data LIKE '%"pielceleste"%'
-   OR save_data LIKE '%"corazaira"%'
-   OR save_data LIKE '%"colaarmadura"%'
-   OR save_data LIKE '%"veloaroma"%'
-   OR save_data LIKE '%"asone(glastrier)"%'
-   OR save_data LIKE '%"asone(spectrier)"%'
-   OR save_data LIKE '%"rompeaura"%'
-   OR save_data LIKE '%"malsueno"%'
-   OR save_data LIKE '%"malsueño"%'
-   OR save_data LIKE '%"malsueo"%'
-   OR save_data LIKE '%"recogebolas"%'
-   OR save_data LIKE '%"bateria"%'
-   OR save_data LIKE '%"batería"%'
-   OR save_data LIKE '%"batera"%'
-   OR save_data LIKE '%"fuerteafecto"%'
-   OR save_data LIKE '%"abaloriodebacle"%'
-   OR save_data LIKE '%"ultraimpulso"%'
-   OR save_data LIKE '%"colera"%'
-   OR save_data LIKE '%"cólera"%'
-   OR save_data LIKE '%"clera"%'
-   OR save_data LIKE '%"antibalas"%'
-   OR save_data LIKE '%"carrillo"%'
-   OR save_data LIKE '%"relinchoblanco"%'
-   OR save_data LIKE '%"letargoperenne"%'
-   OR save_data LIKE '%"comandar"%'
-   OR save_data LIKE '%"respondon"%'
-   OR save_data LIKE '%"respondón"%'
-   OR save_data LIKE '%"respondn"%'
-   OR save_data LIKE '%"corrosión"%'
-   OR save_data LIKE '%"corrosin"%'
-   OR save_data LIKE '%"unisono"%'
-   OR save_data LIKE '%"unísono"%'
-   OR save_data LIKE '%"unsono"%'
-   OR save_data LIKE '%"pelusa"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"rumia"', '"cudchew"'), '"medicinaextrana"', '"curiousmedicine"'), '"medicinaextraña"', '"curiousmedicine"'), '"medicinaextraa"', '"curiousmedicine"'), '"parejadebaile"', '"dancer"'), '"auraoscura"', '"darkaura"'), '"escudorecio"', '"dauntlessshield"'), '"cuerpovivido"', '"dazzling"'), '"cuerpovívido"', '"dazzling"'), '"cuerpovvido"', '"dazzling"'), '"flaqueza"', '"defeatist"'), '"rafagadelta"', '"deltastream"'), '"ráfagadelta"', '"deltastream"'), '"rfagadelta"', '"deltastream"'), '"tierradelocaso"', '"desolateland"'), '"disfraz"', '"disguise"'), '"pieldragontina"', '"dragonize"'), '"mandibuladragon"', '"dragonsmaw"'), '"mandíbuladragón"', '"dragonsmaw"'), '"mandbuladragn"', '"dragonsmaw"'), '"geofagia"', '"eartheater"'), '"electrogenesis"', '"electricsurge"'), '"electrogénesis"', '"electricsurge"'), '"electrognesis"', '"electricsurge"'), '"dinamo"', '"electromorphosis"'), '"embodyaspect(cornerstone)"', '"embodyaspectcornerstone"'), '"embodyaspect(hearthflame)"', '"embodyaspecthearthflame"'), '"embodyaspect(teal)"', '"embodyaspectteal"'), '"embodyaspect(wellspring)"', '"embodyaspectwellspring"'), '"retirada"', '"emergencyexit"'), '"aurafeerica"', '"fairyaura"'), '"aurafeérica"', '"fairyaura"'), '"auraferica"', '"fairyaura"'), '"impetuardiente"', '"flareboost"'), '"ímpetuardiente"', '"flareboost"'), '"mpetuardiente"', '"flareboost"'), '"donfloral"', '"flowergift"'), '"veloflor"', '"flowerveil"'), '"peluche"', '"fluffy"'), '"guardiametalica"', '"fullmetalbody"'), '"guardiametálica"', '"fullmetalbody"'), '"guardiametlica"', '"fullmetalbody"'), '"pelajerecio"', '"furcoat"'), '"alasvendaval"', '"galewings"'), '"pielelectrica"', '"galvanize"'), '"pieleléctrica"', '"galvanize"'), '"pielelctrica"', '"galvanize"'), '"cuerpoaureo"', '"goodasgold"'), '"cuerpoáureo"', '"goodasgold"'), '"cuerpoureo"', '"goodasgold"')
-WHERE save_data LIKE '%"rumia"%'
-   OR save_data LIKE '%"medicinaextrana"%'
-   OR save_data LIKE '%"medicinaextraña"%'
-   OR save_data LIKE '%"medicinaextraa"%'
-   OR save_data LIKE '%"parejadebaile"%'
-   OR save_data LIKE '%"auraoscura"%'
-   OR save_data LIKE '%"escudorecio"%'
-   OR save_data LIKE '%"cuerpovivido"%'
-   OR save_data LIKE '%"cuerpovívido"%'
-   OR save_data LIKE '%"cuerpovvido"%'
-   OR save_data LIKE '%"flaqueza"%'
-   OR save_data LIKE '%"rafagadelta"%'
-   OR save_data LIKE '%"ráfagadelta"%'
-   OR save_data LIKE '%"rfagadelta"%'
-   OR save_data LIKE '%"tierradelocaso"%'
-   OR save_data LIKE '%"disfraz"%'
-   OR save_data LIKE '%"pieldragontina"%'
-   OR save_data LIKE '%"mandibuladragon"%'
-   OR save_data LIKE '%"mandíbuladragón"%'
-   OR save_data LIKE '%"mandbuladragn"%'
-   OR save_data LIKE '%"geofagia"%'
-   OR save_data LIKE '%"electrogenesis"%'
-   OR save_data LIKE '%"electrogénesis"%'
-   OR save_data LIKE '%"electrognesis"%'
-   OR save_data LIKE '%"dinamo"%'
-   OR save_data LIKE '%"embodyaspect(cornerstone)"%'
-   OR save_data LIKE '%"embodyaspect(hearthflame)"%'
-   OR save_data LIKE '%"embodyaspect(teal)"%'
-   OR save_data LIKE '%"embodyaspect(wellspring)"%'
-   OR save_data LIKE '%"retirada"%'
-   OR save_data LIKE '%"aurafeerica"%'
-   OR save_data LIKE '%"aurafeérica"%'
-   OR save_data LIKE '%"auraferica"%'
-   OR save_data LIKE '%"impetuardiente"%'
-   OR save_data LIKE '%"ímpetuardiente"%'
-   OR save_data LIKE '%"mpetuardiente"%'
-   OR save_data LIKE '%"donfloral"%'
-   OR save_data LIKE '%"veloflor"%'
-   OR save_data LIKE '%"peluche"%'
-   OR save_data LIKE '%"guardiametalica"%'
-   OR save_data LIKE '%"guardiametálica"%'
-   OR save_data LIKE '%"guardiametlica"%'
-   OR save_data LIKE '%"pelajerecio"%'
-   OR save_data LIKE '%"alasvendaval"%'
-   OR save_data LIKE '%"pielelectrica"%'
-   OR save_data LIKE '%"pieleléctrica"%'
-   OR save_data LIKE '%"pielelctrica"%'
-   OR save_data LIKE '%"cuerpoaureo"%'
-   OR save_data LIKE '%"cuerpoáureo"%'
-   OR save_data LIKE '%"cuerpoureo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"baba"', '"gooey"'), '"monotema"', '"gorillatactics"'), '"mantofrondoso"', '"grasspelt"'), '"herbogenesis"', '"grassysurge"'), '"herbogénesis"', '"grassysurge"'), '"herbognesis"', '"grassysurge"'), '"relinchonegro"', '"grimneigh"'), '"perroguardian"', '"guarddog"'), '"perroguardián"', '"guarddog"'), '"perroguardin"', '"guarddog"'), '"tragamisil"', '"gulpmissile"'), '"motorhadronico"', '"hadronengine"'), '"motorhadrónico"', '"hadronengine"'), '"motorhadrnico"', '"hadronengine"'), '"ignifugo"', '"heatproof"'), '"ignífugo"', '"heatproof"'), '"ignfugo"', '"heatproof"'), '"metalpesado"', '"heavymetal"'), '"recogemiel"', '"honeygather"'), '"hospitalidad"', '"hospitality"'), '"mutapetito"', '"hungerswitch"'), '"caradehielo"', '"iceface"'), '"escamadehielo"', '"icescales"'), '"ilusion"', '"illusion"'), '"ilusión"', '"illusion"'), '"ilusin"', '"illusion"'), '"reves"', '"innardsout"'), '"revés"', '"innardsout"'), '"revs"', '"innardsout"'), '"espadaindomita"', '"intrepidsword"'), '"espadaindómita"', '"intrepidsword"'), '"espadaindmita"', '"intrepidsword"'), '"puntaacero"', '"ironbarbs"'), '"zoquete"', '"klutz"'), '"líbero"', '"libero"'), '"lbero"', '"libero"'), '"metalliviano"', '"lightmetal"'), '"olorpersistente"', '"lingeringaroma"'), '"vozfluida"', '"liquidvoice"'), '"remoto"', '"longreach"'), '"espejomagico"', '"magicbounce"'), '"espejomágico"', '"magicbounce"'), '"espejomgico"', '"magicbounce"'), '"prestidigitador"', '"magician"'), '"megadisparador"', '"megalauncher"'), '"megasolar"', '"megasol"'), '"ensanamiento"', '"merciless"'), '"ensañamiento"', '"merciless"'), '"ensaamiento"', '"merciless"'), '"mimetismo"', '"mimicry"')
-WHERE save_data LIKE '%"baba"%'
-   OR save_data LIKE '%"monotema"%'
-   OR save_data LIKE '%"mantofrondoso"%'
-   OR save_data LIKE '%"herbogenesis"%'
-   OR save_data LIKE '%"herbogénesis"%'
-   OR save_data LIKE '%"herbognesis"%'
-   OR save_data LIKE '%"relinchonegro"%'
-   OR save_data LIKE '%"perroguardian"%'
-   OR save_data LIKE '%"perroguardián"%'
-   OR save_data LIKE '%"perroguardin"%'
-   OR save_data LIKE '%"tragamisil"%'
-   OR save_data LIKE '%"motorhadronico"%'
-   OR save_data LIKE '%"motorhadrónico"%'
-   OR save_data LIKE '%"motorhadrnico"%'
-   OR save_data LIKE '%"ignifugo"%'
-   OR save_data LIKE '%"ignífugo"%'
-   OR save_data LIKE '%"ignfugo"%'
-   OR save_data LIKE '%"metalpesado"%'
-   OR save_data LIKE '%"recogemiel"%'
-   OR save_data LIKE '%"hospitalidad"%'
-   OR save_data LIKE '%"mutapetito"%'
-   OR save_data LIKE '%"caradehielo"%'
-   OR save_data LIKE '%"escamadehielo"%'
-   OR save_data LIKE '%"ilusion"%'
-   OR save_data LIKE '%"ilusión"%'
-   OR save_data LIKE '%"ilusin"%'
-   OR save_data LIKE '%"reves"%'
-   OR save_data LIKE '%"revés"%'
-   OR save_data LIKE '%"revs"%'
-   OR save_data LIKE '%"espadaindomita"%'
-   OR save_data LIKE '%"espadaindómita"%'
-   OR save_data LIKE '%"espadaindmita"%'
-   OR save_data LIKE '%"puntaacero"%'
-   OR save_data LIKE '%"zoquete"%'
-   OR save_data LIKE '%"líbero"%'
-   OR save_data LIKE '%"lbero"%'
-   OR save_data LIKE '%"metalliviano"%'
-   OR save_data LIKE '%"olorpersistente"%'
-   OR save_data LIKE '%"vozfluida"%'
-   OR save_data LIKE '%"remoto"%'
-   OR save_data LIKE '%"espejomagico"%'
-   OR save_data LIKE '%"espejomágico"%'
-   OR save_data LIKE '%"espejomgico"%'
-   OR save_data LIKE '%"prestidigitador"%'
-   OR save_data LIKE '%"megadisparador"%'
-   OR save_data LIKE '%"megasolar"%'
-   OR save_data LIKE '%"ensanamiento"%'
-   OR save_data LIKE '%"ensañamiento"%'
-   OR save_data LIKE '%"ensaamiento"%'
-   OR save_data LIKE '%"mimetismo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"ojomental"', '"mindseye"'), '"corazareflejo"', '"mirrorarmor"'), '"nebulogenesis"', '"mistysurge"'), '"nebulogénesis"', '"mistysurge"'), '"nebulognesis"', '"mistysurge"'), '"veleta"', '"moody"'), '"electromotor"', '"motordrive"'), '"multitipo"', '"multitype"'), '"momia"', '"mummy"'), '"poderfungico"', '"myceliummight"'), '"poderfúngico"', '"myceliummight"'), '"poderfngico"', '"myceliummight"'), '"fuerzacerebral"', '"neuroforce"'), '"normalidad"', '"normalize"'), '"oportunista"', '"opportunist"'), '"latidooricalco"', '"orichalcumpulse"'), '"amorfilial"', '"parentalbond"'), '"velopastel"', '"pastelveil"'), '"cuerpomortal"', '"perishbody"'), '"hurto"', '"pickpocket"'), '"turbotaladro"', '"piercingdrill"'), '"pielfeerica"', '"pixilate"'), '"pielfeérica"', '"pixilate"'), '"pielferica"', '"pixilate"'), '"antidoto"', '"poisonheal"'), '"antídoto"', '"poisonheal"'), '"antdoto"', '"poisonheal"'), '"titeretoxico"', '"poisonpuppeteer"'), '"títeretóxico"', '"poisonpuppeteer"'), '"tteretxico"', '"poisonpuppeteer"'), '"agrupamiento"', '"powerconstruct"'), '"reaccionquimica"', '"powerofalchemy"'), '"reacciónquímica"', '"powerofalchemy"'), '"reaccinqumica"', '"powerofalchemy"'), '"fuenteenergia"', '"powerspot"'), '"fuenteenergía"', '"powerspot"'), '"fuenteenerga"', '"powerspot"'), '"bromista"', '"prankster"'), '"mardelalbor"', '"primordialsea"'), '"armaduraprisma"', '"prismarmor"'), '"helicecaudal"', '"propellertail"'), '"hélicecaudal"', '"propellertail"'), '"hlicecaudal"', '"propellertail"'), '"mutatipo"', '"protean"'), '"paleosintesis"', '"protosynthesis"'), '"paleosíntesis"', '"protosynthesis"'), '"paleosntesis"', '"protosynthesis"'), '"psicogenesis"', '"psychicsurge"'), '"psicogénesis"', '"psychicsurge"'), '"psicognesis"', '"psychicsurge"')
-WHERE save_data LIKE '%"ojomental"%'
-   OR save_data LIKE '%"corazareflejo"%'
-   OR save_data LIKE '%"nebulogenesis"%'
-   OR save_data LIKE '%"nebulogénesis"%'
-   OR save_data LIKE '%"nebulognesis"%'
-   OR save_data LIKE '%"veleta"%'
-   OR save_data LIKE '%"electromotor"%'
-   OR save_data LIKE '%"multitipo"%'
-   OR save_data LIKE '%"momia"%'
-   OR save_data LIKE '%"poderfungico"%'
-   OR save_data LIKE '%"poderfúngico"%'
-   OR save_data LIKE '%"poderfngico"%'
-   OR save_data LIKE '%"fuerzacerebral"%'
-   OR save_data LIKE '%"normalidad"%'
-   OR save_data LIKE '%"oportunista"%'
-   OR save_data LIKE '%"latidooricalco"%'
-   OR save_data LIKE '%"amorfilial"%'
-   OR save_data LIKE '%"velopastel"%'
-   OR save_data LIKE '%"cuerpomortal"%'
-   OR save_data LIKE '%"hurto"%'
-   OR save_data LIKE '%"turbotaladro"%'
-   OR save_data LIKE '%"pielfeerica"%'
-   OR save_data LIKE '%"pielfeérica"%'
-   OR save_data LIKE '%"pielferica"%'
-   OR save_data LIKE '%"antidoto"%'
-   OR save_data LIKE '%"antídoto"%'
-   OR save_data LIKE '%"antdoto"%'
-   OR save_data LIKE '%"titeretoxico"%'
-   OR save_data LIKE '%"títeretóxico"%'
-   OR save_data LIKE '%"tteretxico"%'
-   OR save_data LIKE '%"agrupamiento"%'
-   OR save_data LIKE '%"reaccionquimica"%'
-   OR save_data LIKE '%"reacciónquímica"%'
-   OR save_data LIKE '%"reaccinqumica"%'
-   OR save_data LIKE '%"fuenteenergia"%'
-   OR save_data LIKE '%"fuenteenergía"%'
-   OR save_data LIKE '%"fuenteenerga"%'
-   OR save_data LIKE '%"bromista"%'
-   OR save_data LIKE '%"mardelalbor"%'
-   OR save_data LIKE '%"armaduraprisma"%'
-   OR save_data LIKE '%"helicecaudal"%'
-   OR save_data LIKE '%"hélicecaudal"%'
-   OR save_data LIKE '%"hlicecaudal"%'
-   OR save_data LIKE '%"mutatipo"%'
-   OR save_data LIKE '%"paleosintesis"%'
-   OR save_data LIKE '%"paleosíntesis"%'
-   OR save_data LIKE '%"paleosntesis"%'
-   OR save_data LIKE '%"psicogenesis"%'
-   OR save_data LIKE '%"psicogénesis"%'
-   OR save_data LIKE '%"psicognesis"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"salpurificadora"', '"purifyingsalt"'), '"cargacuark"', '"quarkdrive"'), '"regiapresencia"', '"queenlymajesty"'), '"manorapida"', '"quickdraw"'), '"manorápida"', '"quickdraw"'), '"manorpida"', '"quickdraw"'), '"receptor"', '"receiver"'), '"pielhelada"', '"refrigerate"'), '"maduracion"', '"ripen"'), '"maduración"', '"ripen"'), '"maduracin"', '"ripen"'), '"sistemaalfa"', '"rkssystem"'), '"transportarrocas"', '"rockypayload"'), '"expulsarena"', '"sandspit"'), '"herbivoro"', '"sapsipper"'), '"herbívoro"', '"sapsipper"'), '"herbvoro"', '"sapsipper"'), '"banco"', '"schooling"'), '"antibarrera"', '"screencleaner"'), '"disemillar"', '"seedsower"'), '"guardiaespectro"', '"shadowshield"'), '"cortante"', '"sharpness"'), '"escudolimitado"', '"shieldsdown"'), '"iniciolento"', '"slowstart"'), '"quitanieves"', '"slushrush"'), '"nevada"', '"snowwarning"'), '"rocasolida"', '"solidrock"'), '"rocasólida"', '"solidrock"'), '"rocaslida"', '"solidrock"'), '"coranima"', '"soulheart"'), '"coránima"', '"soulheart"'), '"cornima"', '"soulheart"'), '"salpicante"', '"spicyspray"'), '"vigilante"', '"stakeout"'), '"rezagado"', '"stall"'), '"acerrimo"', '"stalwart"'), '"acérrimo"', '"stalwart"'), '"acrrimo"', '"stalwart"'), '"firmeza"', '"stamina"'), '"cambiotactico"', '"stancechange"'), '"cambiotáctico"', '"stancechange"'), '"cambiotctico"', '"stancechange"'), '"combustible"', '"steamengine"'), '"acerotemplado"', '"steelworker"'), '"almaacerada"', '"steelyspirit"'), '"colector"', '"stormdrain"'), '"mandibulafuerte"', '"strongjaw"'), '"mandíbulafuerte"', '"strongjaw"'), '"mandbulafuerte"', '"strongjaw"'), '"nectardulce"', '"supersweetsyrup"')
-WHERE save_data LIKE '%"salpurificadora"%'
-   OR save_data LIKE '%"cargacuark"%'
-   OR save_data LIKE '%"regiapresencia"%'
-   OR save_data LIKE '%"manorapida"%'
-   OR save_data LIKE '%"manorápida"%'
-   OR save_data LIKE '%"manorpida"%'
-   OR save_data LIKE '%"receptor"%'
-   OR save_data LIKE '%"pielhelada"%'
-   OR save_data LIKE '%"maduracion"%'
-   OR save_data LIKE '%"maduración"%'
-   OR save_data LIKE '%"maduracin"%'
-   OR save_data LIKE '%"sistemaalfa"%'
-   OR save_data LIKE '%"transportarrocas"%'
-   OR save_data LIKE '%"expulsarena"%'
-   OR save_data LIKE '%"herbivoro"%'
-   OR save_data LIKE '%"herbívoro"%'
-   OR save_data LIKE '%"herbvoro"%'
-   OR save_data LIKE '%"banco"%'
-   OR save_data LIKE '%"antibarrera"%'
-   OR save_data LIKE '%"disemillar"%'
-   OR save_data LIKE '%"guardiaespectro"%'
-   OR save_data LIKE '%"cortante"%'
-   OR save_data LIKE '%"escudolimitado"%'
-   OR save_data LIKE '%"iniciolento"%'
-   OR save_data LIKE '%"quitanieves"%'
-   OR save_data LIKE '%"nevada"%'
-   OR save_data LIKE '%"rocasolida"%'
-   OR save_data LIKE '%"rocasólida"%'
-   OR save_data LIKE '%"rocaslida"%'
-   OR save_data LIKE '%"coranima"%'
-   OR save_data LIKE '%"coránima"%'
-   OR save_data LIKE '%"cornima"%'
-   OR save_data LIKE '%"salpicante"%'
-   OR save_data LIKE '%"vigilante"%'
-   OR save_data LIKE '%"rezagado"%'
-   OR save_data LIKE '%"acerrimo"%'
-   OR save_data LIKE '%"acérrimo"%'
-   OR save_data LIKE '%"acrrimo"%'
-   OR save_data LIKE '%"firmeza"%'
-   OR save_data LIKE '%"cambiotactico"%'
-   OR save_data LIKE '%"cambiotáctico"%'
-   OR save_data LIKE '%"cambiotctico"%'
-   OR save_data LIKE '%"combustible"%'
-   OR save_data LIKE '%"acerotemplado"%'
-   OR save_data LIKE '%"almaacerada"%'
-   OR save_data LIKE '%"colector"%'
-   OR save_data LIKE '%"mandibulafuerte"%'
-   OR save_data LIKE '%"mandíbulafuerte"%'
-   OR save_data LIKE '%"mandbulafuerte"%'
-   OR save_data LIKE '%"nectardulce"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"néctardulce"', '"supersweetsyrup"'), '"nctardulce"', '"supersweetsyrup"'), '"generalsupremo"', '"supremeoverlord"'), '"colasurf"', '"surgesurfer"'), '"velodulce"', '"sweetveil"'), '"espadadebacle"', '"swordofruin"'), '"simbiosis"', '"symbiosis"'), '"tablilladebacle"', '"tabletsofruin"'), '"rizosrebeldes"', '"tanglinghair"'), '"telepatia"', '"telepathy"'), '"telepatía"', '"telepathy"'), '"telepata"', '"telepathy"'), '"teraformacion0"', '"teraformzero"'), '"teraformación0"', '"teraformzero"'), '"teraformacin0"', '"teraformzero"'), '"teracaparazon"', '"terashell"'), '"teracaparazón"', '"terashell"'), '"teracaparazn"', '"terashell"'), '"teracambio"', '"terashift"'), '"terravoltaje"', '"teravolt"'), '"termoconversion"', '"thermalexchange"'), '"termoconversión"', '"thermalexchange"'), '"termoconversin"', '"thermalexchange"'), '"garradura"', '"toughclaws"'), '"impetutoxico"', '"toxicboost"'), '"ímpetutóxico"', '"toxicboost"'), '"mpetutxico"', '"toxicboost"'), '"cadenatoxica"', '"toxicchain"'), '"cadenatóxica"', '"toxicchain"'), '"cadenatxica"', '"toxicchain"'), '"capatoxica"', '"toxicdebris"'), '"capatóxica"', '"toxicdebris"'), '"capatxica"', '"toxicdebris"'), '"primerauxilio"', '"triage"'), '"turbollama"', '"turboblaze"'), '"punoinvisible"', '"unseenfist"'), '"puñoinvisible"', '"unseenfist"'), '"puoinvisible"', '"unseenfist"'), '"calderodebacle"', '"vesselofruin"'), '"tinovictoria"', '"victorystar"'), '"almaerrante"', '"wanderingspirit"'), '"pompa"', '"waterbubble"'), '"hidrorrefuerzo"', '"watercompaction"'), '"cuerpohorneado"', '"wellbakedbody"'), '"huida"', '"wimpout"'), '"energiaeolica"', '"windpower"'), '"energíaeólica"', '"windpower"'), '"energaelica"', '"windpower"'), '"surcavientos"', '"windrider"'), '"mododaruma"', '"zenmode"')
-WHERE save_data LIKE '%"néctardulce"%'
-   OR save_data LIKE '%"nctardulce"%'
-   OR save_data LIKE '%"generalsupremo"%'
-   OR save_data LIKE '%"colasurf"%'
-   OR save_data LIKE '%"velodulce"%'
-   OR save_data LIKE '%"espadadebacle"%'
-   OR save_data LIKE '%"simbiosis"%'
-   OR save_data LIKE '%"tablilladebacle"%'
-   OR save_data LIKE '%"rizosrebeldes"%'
-   OR save_data LIKE '%"telepatia"%'
-   OR save_data LIKE '%"telepatía"%'
-   OR save_data LIKE '%"telepata"%'
-   OR save_data LIKE '%"teraformacion0"%'
-   OR save_data LIKE '%"teraformación0"%'
-   OR save_data LIKE '%"teraformacin0"%'
-   OR save_data LIKE '%"teracaparazon"%'
-   OR save_data LIKE '%"teracaparazón"%'
-   OR save_data LIKE '%"teracaparazn"%'
-   OR save_data LIKE '%"teracambio"%'
-   OR save_data LIKE '%"terravoltaje"%'
-   OR save_data LIKE '%"termoconversion"%'
-   OR save_data LIKE '%"termoconversión"%'
-   OR save_data LIKE '%"termoconversin"%'
-   OR save_data LIKE '%"garradura"%'
-   OR save_data LIKE '%"impetutoxico"%'
-   OR save_data LIKE '%"ímpetutóxico"%'
-   OR save_data LIKE '%"mpetutxico"%'
-   OR save_data LIKE '%"cadenatoxica"%'
-   OR save_data LIKE '%"cadenatóxica"%'
-   OR save_data LIKE '%"cadenatxica"%'
-   OR save_data LIKE '%"capatoxica"%'
-   OR save_data LIKE '%"capatóxica"%'
-   OR save_data LIKE '%"capatxica"%'
-   OR save_data LIKE '%"primerauxilio"%'
-   OR save_data LIKE '%"turbollama"%'
-   OR save_data LIKE '%"punoinvisible"%'
-   OR save_data LIKE '%"puñoinvisible"%'
-   OR save_data LIKE '%"puoinvisible"%'
-   OR save_data LIKE '%"calderodebacle"%'
-   OR save_data LIKE '%"tinovictoria"%'
-   OR save_data LIKE '%"almaerrante"%'
-   OR save_data LIKE '%"pompa"%'
-   OR save_data LIKE '%"hidrorrefuerzo"%'
-   OR save_data LIKE '%"cuerpohorneado"%'
-   OR save_data LIKE '%"huida"%'
-   OR save_data LIKE '%"energiaeolica"%'
-   OR save_data LIKE '%"energíaeólica"%'
-   OR save_data LIKE '%"energaelica"%'
-   OR save_data LIKE '%"surcavientos"%'
-   OR save_data LIKE '%"mododaruma"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"cambioheroico"', '"zerotohero"'), '"escudopolvo"', '"shielddust"'), '"correcaminos"', '"runaway"'), '"escape"', '"runaway"'), '"lluvialigera"', '"raindish"'), '"nerviosismo"', '"hustle"'), '"obstruir"', '"soundproof"'), '"absorbevoltio"', '"voltabsorb"'), '"aclimatacion"', '"cloudnine"'), '"aclimatacin"', '"cloudnine"'), '"rafaga"', '"speedboost"'), '"velohumedo"', '"waterveil"'), '"velohmedo"', '"waterveil"'), '"puntocura"', '"naturalcure"'), '"escurridizo"', '"limber"'), '"metamorfosis"', '"shedskin"'), '"activa"', '"active"'), '"activo"', '"active"'), '"hurana"', '"lonely"'), '"hurano"', '"lonely"'), '"audaz"', '"brave"'), '"firme"', '"adamant"'), '"picara"', '"naughty"'), '"picaro"', '"naughty"'), '"osada"', '"bold"'), '"osado"', '"bold"'), '"docil"', '"docile"'), '"placida"', '"relaxed"'), '"placido"', '"relaxed"'), '"agitada"', '"impish"'), '"agitado"', '"impish"'), '"floja"', '"lax"'), '"flojo"', '"lax"'), '"timida"', '"timid"'), '"timido"', '"timid"'), '"afable"', '"mild"'), '"tasa"', '"quiet"'), '"seria"', '"serious"'), '"serio"', '"serious"'), '"alegre"', '"jolly"'), '"ingenua"', '"naive"'), '"ingenuo"', '"naive"'), '"modesta"', '"modest"'), '"modesto"', '"modest"'), '"raro"', '"serious"'), '"rara"', '"quirky"'), '"serena"', '"calm"'), '"sereno"', '"calm"'), '"amable"', '"gentle"'), '"grosera"', '"sassy"')
-WHERE save_data LIKE '%"cambioheroico"%'
-   OR save_data LIKE '%"escudopolvo"%'
-   OR save_data LIKE '%"correcaminos"%'
-   OR save_data LIKE '%"escape"%'
-   OR save_data LIKE '%"lluvialigera"%'
-   OR save_data LIKE '%"nerviosismo"%'
-   OR save_data LIKE '%"obstruir"%'
-   OR save_data LIKE '%"absorbevoltio"%'
-   OR save_data LIKE '%"aclimatacion"%'
-   OR save_data LIKE '%"aclimatacin"%'
-   OR save_data LIKE '%"rafaga"%'
-   OR save_data LIKE '%"velohumedo"%'
-   OR save_data LIKE '%"velohmedo"%'
-   OR save_data LIKE '%"puntocura"%'
-   OR save_data LIKE '%"escurridizo"%'
-   OR save_data LIKE '%"metamorfosis"%'
-   OR save_data LIKE '%"activa"%'
-   OR save_data LIKE '%"activo"%'
-   OR save_data LIKE '%"hurana"%'
-   OR save_data LIKE '%"hurano"%'
-   OR save_data LIKE '%"audaz"%'
-   OR save_data LIKE '%"firme"%'
-   OR save_data LIKE '%"picara"%'
-   OR save_data LIKE '%"picaro"%'
-   OR save_data LIKE '%"osada"%'
-   OR save_data LIKE '%"osado"%'
-   OR save_data LIKE '%"docil"%'
-   OR save_data LIKE '%"placida"%'
-   OR save_data LIKE '%"placido"%'
-   OR save_data LIKE '%"agitada"%'
-   OR save_data LIKE '%"agitado"%'
-   OR save_data LIKE '%"floja"%'
-   OR save_data LIKE '%"flojo"%'
-   OR save_data LIKE '%"timida"%'
-   OR save_data LIKE '%"timido"%'
-   OR save_data LIKE '%"afable"%'
-   OR save_data LIKE '%"tasa"%'
-   OR save_data LIKE '%"seria"%'
-   OR save_data LIKE '%"serio"%'
-   OR save_data LIKE '%"alegre"%'
-   OR save_data LIKE '%"ingenua"%'
-   OR save_data LIKE '%"ingenuo"%'
-   OR save_data LIKE '%"modesta"%'
-   OR save_data LIKE '%"modesto"%'
-   OR save_data LIKE '%"raro"%'
-   OR save_data LIKE '%"rara"%'
-   OR save_data LIKE '%"serena"%'
-   OR save_data LIKE '%"sereno"%'
-   OR save_data LIKE '%"amable"%'
-   OR save_data LIKE '%"grosera"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"grosero"', '"sassy"'), '"cauta"', '"careful"'), '"cauto"', '"careful"'), '"manso"', '"quiet"'), '"alocada"', '"rash"'), '"alocado"', '"rash"'), '"moderado"', '"serious"'), '"jovial"', '"jolly"'), '"tranquilo"', '"calm"'), '"pícaro"', '"naughty"'), '"plácido"', '"relaxed"'), '"dócil"', '"docile"'), '"hechizo"', '"spell_tag"'), '"cinturonnegro"', '"blackbelt"'), '"lentezoom"', '"scope_lens"'), '"cucharatorcida"', '"twisted_spoon"'), '"restos"', '"leftovers"'), '"huesogrueso"', '"thick_club"'), '"bolaluminosa"', '"light_ball"'), '"bulboasimilador"', '"absorb_bulb"'), '"absorbbulb"', '"absorb_bulb"'), '"bayaguaya"', '"aguav_berry"'), '"aguavberry"', '"aguav_berry"'), '"globohelio"', '"air_balloon"'), '"airballoon"', '"air_balloon"'), '"bayaapicote"', '"apicot_berry"'), '"apicotberry"', '"apicot_berry"'), '"bayaperasi"', '"aspear_berry"'), '"aspearberry"', '"aspear_berry"'), '"chalecoasalto"', '"assaultvest"'), '"armaduraauspicio"', '"auspicious_armor"'), '"auspiciousarmor"', '"auspicious_armor"'), '"babiriberry"', '"babiri_berry"'), '"enteball"', '"beast_ball"'), '"beastball"', '"beast_ball"'), '"bandaatadura"', '"binding_band"'), '"bindingband"', '"binding_band"'), '"lodonegro"', '"black_sludge"'), '"blacksludge"', '"black_sludge"'), '"energiapotenciadora"', '"booster_energy"'), '"energíapotenciadora"', '"booster_energy"'), '"energapotenciadora"', '"booster_energy"'), '"boosterenergy"', '"booster_energy"'), '"polvobrillo"', '"brightpowder"'), '"pilacelula"', '"cell_battery"'), '"pilacélula"', '"cell_battery"'), '"pilaclula"', '"cell_battery"'), '"cellbattery"', '"cell_battery"'), '"bayacharti"', '"charti_berry"'), '"chartiberry"', '"charti_berry"')
-WHERE save_data LIKE '%"grosero"%'
-   OR save_data LIKE '%"cauta"%'
-   OR save_data LIKE '%"cauto"%'
-   OR save_data LIKE '%"manso"%'
-   OR save_data LIKE '%"alocada"%'
-   OR save_data LIKE '%"alocado"%'
-   OR save_data LIKE '%"moderado"%'
-   OR save_data LIKE '%"jovial"%'
-   OR save_data LIKE '%"tranquilo"%'
-   OR save_data LIKE '%"pícaro"%'
-   OR save_data LIKE '%"plácido"%'
-   OR save_data LIKE '%"dócil"%'
-   OR save_data LIKE '%"hechizo"%'
-   OR save_data LIKE '%"cinturonnegro"%'
-   OR save_data LIKE '%"lentezoom"%'
-   OR save_data LIKE '%"cucharatorcida"%'
-   OR save_data LIKE '%"restos"%'
-   OR save_data LIKE '%"huesogrueso"%'
-   OR save_data LIKE '%"bolaluminosa"%'
-   OR save_data LIKE '%"bulboasimilador"%'
-   OR save_data LIKE '%"absorbbulb"%'
-   OR save_data LIKE '%"bayaguaya"%'
-   OR save_data LIKE '%"aguavberry"%'
-   OR save_data LIKE '%"globohelio"%'
-   OR save_data LIKE '%"airballoon"%'
-   OR save_data LIKE '%"bayaapicote"%'
-   OR save_data LIKE '%"apicotberry"%'
-   OR save_data LIKE '%"bayaperasi"%'
-   OR save_data LIKE '%"aspearberry"%'
-   OR save_data LIKE '%"chalecoasalto"%'
-   OR save_data LIKE '%"armaduraauspicio"%'
-   OR save_data LIKE '%"auspiciousarmor"%'
-   OR save_data LIKE '%"babiriberry"%'
-   OR save_data LIKE '%"enteball"%'
-   OR save_data LIKE '%"beastball"%'
-   OR save_data LIKE '%"bandaatadura"%'
-   OR save_data LIKE '%"bindingband"%'
-   OR save_data LIKE '%"lodonegro"%'
-   OR save_data LIKE '%"blacksludge"%'
-   OR save_data LIKE '%"energiapotenciadora"%'
-   OR save_data LIKE '%"energíapotenciadora"%'
-   OR save_data LIKE '%"energapotenciadora"%'
-   OR save_data LIKE '%"boosterenergy"%'
-   OR save_data LIKE '%"polvobrillo"%'
-   OR save_data LIKE '%"pilacelula"%'
-   OR save_data LIKE '%"pilacélula"%'
-   OR save_data LIKE '%"pilaclula"%'
-   OR save_data LIKE '%"cellbattery"%'
-   OR save_data LIKE '%"bayacharti"%'
-   OR save_data LIKE '%"chartiberry"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"bayacereza"', '"cheri_berry"'), '"cheriberry"', '"cheri_berry"'), '"gloriaball"', '"cherish_ball"'), '"cherishball"', '"cherish_ball"'), '"bayaatania"', '"chesto_berry"'), '"chestoberry"', '"chesto_berry"'), '"bayachilan"', '"chilan_berry"'), '"chilanberry"', '"chilan_berry"'), '"tejerarota"', '"chipped_pot"'), '"chippedpot"', '"chipped_pot"'), '"bayachople"', '"chople_berry"'), '"chopleberry"', '"chople_berry"'), '"amuletoclaro"', '"clear_amulet"'), '"clearamulet"', '"clear_amulet"'), '"bayacoba"', '"coba_berry"'), '"cobaberry"', '"coba_berry"'), '"bayacolbur"', '"colbur_berry"'), '"colburberry"', '"colbur_berry"'), '"cornerstonemask"', '"cornerstone_mask"'), '"capasigilo"', '"covert_cloak"'), '"covertcloak"', '"covert_cloak"'), '"tejeraagrietada"', '"cracked_pot"'), '"crackedpot"', '"cracked_pot"'), '"bayacustap"', '"custap_berry"'), '"custapberry"', '"custap_berry"'), '"rocalluvia"', '"damp_rock"'), '"damprock"', '"damp_rock"'), '"tabladraco"', '"draco_plate"'), '"dracoplate"', '"draco_plate"'), '"tablaoscura"', '"dread_plate"'), '"dreadplate"', '"dread_plate"'), '"ensuenoball"', '"dream_ball"'), '"ensueñoball"', '"dream_ball"'), '"ensueoball"', '"dream_ball"'), '"dreamball"', '"dream_ball"'), '"discoextrano"', '"dubious_disc"'), '"discoextraño"', '"dubious_disc"'), '"discoextrao"', '"dubious_disc"'), '"dubiousdisc"', '"dubious_disc"'), '"tablatierra"', '"earth_plate"'), '"earthplate"', '"earth_plate"'), '"botonescape"', '"eject_button"'), '"botónescape"', '"eject_button"'), '"botnescape"', '"eject_button"'), '"ejectbutton"', '"eject_button"'), '"mochilaescape"', '"eject_pack"'), '"ejectpack"', '"eject_pack"'), '"electrizador"', '"electirizer"'), '"semillaelectro"', '"electric_seed"'), '"electricseed"', '"electric_seed"')
-WHERE save_data LIKE '%"bayacereza"%'
-   OR save_data LIKE '%"cheriberry"%'
-   OR save_data LIKE '%"gloriaball"%'
-   OR save_data LIKE '%"cherishball"%'
-   OR save_data LIKE '%"bayaatania"%'
-   OR save_data LIKE '%"chestoberry"%'
-   OR save_data LIKE '%"bayachilan"%'
-   OR save_data LIKE '%"chilanberry"%'
-   OR save_data LIKE '%"tejerarota"%'
-   OR save_data LIKE '%"chippedpot"%'
-   OR save_data LIKE '%"bayachople"%'
-   OR save_data LIKE '%"chopleberry"%'
-   OR save_data LIKE '%"amuletoclaro"%'
-   OR save_data LIKE '%"clearamulet"%'
-   OR save_data LIKE '%"bayacoba"%'
-   OR save_data LIKE '%"cobaberry"%'
-   OR save_data LIKE '%"bayacolbur"%'
-   OR save_data LIKE '%"colburberry"%'
-   OR save_data LIKE '%"cornerstonemask"%'
-   OR save_data LIKE '%"capasigilo"%'
-   OR save_data LIKE '%"covertcloak"%'
-   OR save_data LIKE '%"tejeraagrietada"%'
-   OR save_data LIKE '%"crackedpot"%'
-   OR save_data LIKE '%"bayacustap"%'
-   OR save_data LIKE '%"custapberry"%'
-   OR save_data LIKE '%"rocalluvia"%'
-   OR save_data LIKE '%"damprock"%'
-   OR save_data LIKE '%"tabladraco"%'
-   OR save_data LIKE '%"dracoplate"%'
-   OR save_data LIKE '%"tablaoscura"%'
-   OR save_data LIKE '%"dreadplate"%'
-   OR save_data LIKE '%"ensuenoball"%'
-   OR save_data LIKE '%"ensueñoball"%'
-   OR save_data LIKE '%"ensueoball"%'
-   OR save_data LIKE '%"dreamball"%'
-   OR save_data LIKE '%"discoextrano"%'
-   OR save_data LIKE '%"discoextraño"%'
-   OR save_data LIKE '%"discoextrao"%'
-   OR save_data LIKE '%"dubiousdisc"%'
-   OR save_data LIKE '%"tablatierra"%'
-   OR save_data LIKE '%"earthplate"%'
-   OR save_data LIKE '%"botonescape"%'
-   OR save_data LIKE '%"botónescape"%'
-   OR save_data LIKE '%"botnescape"%'
-   OR save_data LIKE '%"ejectbutton"%'
-   OR save_data LIKE '%"mochilaescape"%'
-   OR save_data LIKE '%"ejectpack"%'
-   OR save_data LIKE '%"electrizador"%'
-   OR save_data LIKE '%"semillaelectro"%'
-   OR save_data LIKE '%"electricseed"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"bayaenigma"', '"enigma_berry"'), '"enigmaberry"', '"enigma_berry"'), '"cintaexperto"', '"expertbelt"'), '"plumahada"', '"fairy_feather"'), '"fairyfeather"', '"fairy_feather"'), '"rapidaball"', '"fast_ball"'), '"rápidaball"', '"fast_ball"'), '"rpidaball"', '"fast_ball"'), '"fastball"', '"fast_ball"'), '"bayahigo"', '"figy_berry"'), '"figyberry"', '"figy_berry"'), '"tablafuerte"', '"fist_plate"'), '"fistplate"', '"fist_plate"'), '"llamasfera"', '"flame_orb"'), '"flameorb"', '"flame_orb"'), '"tablallama"', '"flame_plate"'), '"flameplate"', '"flame_plate"'), '"piedrapomez"', '"float_stone"'), '"piedrapómez"', '"float_stone"'), '"piedrapmez"', '"float_stone"'), '"floatstone"', '"float_stone"'), '"cintafocus"', '"focus_band"'), '"focusband"', '"focus_band"'), '"amigoball"', '"friend_ball"'), '"friendball"', '"friend_ball"'), '"brazalgalarica"', '"galarica_cuff"'), '"galaricacuff"', '"galarica_cuff"'), '"coronagalarica"', '"galarica_wreath"'), '"galaricawreath"', '"galarica_wreath"'), '"bayaganlon"', '"ganlon_berry"'), '"ganlonberry"', '"ganlon_berry"'), '"semillahierba"', '"grassy_seed"'), '"grassyseed"', '"grassy_seed"'), '"bayauva"', '"grepa_berry"'), '"grepaberry"', '"grepa_berry"'), '"garragarfio"', '"grip_claw"'), '"gripclaw"', '"grip_claw"'), '"bayahaban"', '"haban_berry"'), '"habanberry"', '"haban_berry"'), '"hardstone"', '"hard_stone"'), '"sanaball"', '"heal_ball"'), '"healball"', '"heal_ball"'), '"hearthflamemask"', '"hearthflame_mask"'), '"rocacalor"', '"heat_rock"'), '"heatrock"', '"heat_rock"'), '"pesoball"', '"heavy_ball"'), '"heavyball"', '"heavy_ball"'), '"botassuelagruesa"', '"heavy_duty_boots"'), '"heavydutyboots"', '"heavy_duty_boots"'), '"bayamelon"', '"hondew_berry"')
-WHERE save_data LIKE '%"bayaenigma"%'
-   OR save_data LIKE '%"enigmaberry"%'
-   OR save_data LIKE '%"cintaexperto"%'
-   OR save_data LIKE '%"plumahada"%'
-   OR save_data LIKE '%"fairyfeather"%'
-   OR save_data LIKE '%"rapidaball"%'
-   OR save_data LIKE '%"rápidaball"%'
-   OR save_data LIKE '%"rpidaball"%'
-   OR save_data LIKE '%"fastball"%'
-   OR save_data LIKE '%"bayahigo"%'
-   OR save_data LIKE '%"figyberry"%'
-   OR save_data LIKE '%"tablafuerte"%'
-   OR save_data LIKE '%"fistplate"%'
-   OR save_data LIKE '%"llamasfera"%'
-   OR save_data LIKE '%"flameorb"%'
-   OR save_data LIKE '%"tablallama"%'
-   OR save_data LIKE '%"flameplate"%'
-   OR save_data LIKE '%"piedrapomez"%'
-   OR save_data LIKE '%"piedrapómez"%'
-   OR save_data LIKE '%"piedrapmez"%'
-   OR save_data LIKE '%"floatstone"%'
-   OR save_data LIKE '%"cintafocus"%'
-   OR save_data LIKE '%"focusband"%'
-   OR save_data LIKE '%"amigoball"%'
-   OR save_data LIKE '%"friendball"%'
-   OR save_data LIKE '%"brazalgalarica"%'
-   OR save_data LIKE '%"galaricacuff"%'
-   OR save_data LIKE '%"coronagalarica"%'
-   OR save_data LIKE '%"galaricawreath"%'
-   OR save_data LIKE '%"bayaganlon"%'
-   OR save_data LIKE '%"ganlonberry"%'
-   OR save_data LIKE '%"semillahierba"%'
-   OR save_data LIKE '%"grassyseed"%'
-   OR save_data LIKE '%"bayauva"%'
-   OR save_data LIKE '%"grepaberry"%'
-   OR save_data LIKE '%"garragarfio"%'
-   OR save_data LIKE '%"gripclaw"%'
-   OR save_data LIKE '%"bayahaban"%'
-   OR save_data LIKE '%"habanberry"%'
-   OR save_data LIKE '%"hardstone"%'
-   OR save_data LIKE '%"sanaball"%'
-   OR save_data LIKE '%"healball"%'
-   OR save_data LIKE '%"hearthflamemask"%'
-   OR save_data LIKE '%"rocacalor"%'
-   OR save_data LIKE '%"heatrock"%'
-   OR save_data LIKE '%"pesoball"%'
-   OR save_data LIKE '%"heavyball"%'
-   OR save_data LIKE '%"botassuelagruesa"%'
-   OR save_data LIKE '%"heavydutyboots"%'
-   OR save_data LIKE '%"bayamelon"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"bayamelón"', '"hondew_berry"'), '"bayameln"', '"hondew_berry"'), '"hondewberry"', '"hondew_berry"'), '"bayaiapapa"', '"iapapa_berry"'), '"iapapaberry"', '"iapapa_berry"'), '"tablahelada"', '"icicle_plate"'), '"icicleplate"', '"icicle_plate"'), '"rocahelada"', '"icy_rock"'), '"icyrock"', '"icy_rock"'), '"tablabicho"', '"insect_plate"'), '"insectplate"', '"insect_plate"'), '"bolahierro"', '"iron_ball"'), '"ironball"', '"iron_ball"'), '"tablaacero"', '"iron_plate"'), '"ironplate"', '"iron_plate"'), '"bayajaboca"', '"jaboca_berry"'), '"jabocaberry"', '"jaboca_berry"'), '"bayakasib"', '"kasib_berry"'), '"kasibberry"', '"kasib_berry"'), '"bayakebia"', '"kebia_berry"'), '"kebiaberry"', '"kebia_berry"'), '"bayarimoya"', '"kee_berry"'), '"keeberry"', '"kee_berry"'), '"bayaalgama"', '"kelpsy_berry"'), '"kelpsyberry"', '"kelpsy_berry"'), '"rocadelrey"', '"kingsrock"'), '"bayalansat"', '"lansat_berry"'), '"lansatberry"', '"lansat_berry"'), '"bayazanama"', '"leppa_berry"'), '"leppaberry"', '"leppa_berry"'), '"nivelball"', '"level_ball"'), '"levelball"', '"level_ball"'), '"refleluz"', '"light_clay"'), '"lightclay"', '"light_clay"'), '"dadocargado"', '"loaded_dice"'), '"loadeddice"', '"loaded_dice"'), '"amorball"', '"love_ball"'), '"loveball"', '"love_ball"'), '"bayaziuela"', '"lum_berry"'), '"lumberry"', '"lum_berry"'), '"musgoluminoso"', '"luminous_moss"'), '"luminousmoss"', '"luminous_moss"'), '"ceboball"', '"lure_ball"'), '"lureball"', '"lure_ball"'), '"magmatizador"', '"magmarizer"'), '"bayamago"', '"mago_berry"'), '"magoberry"', '"mago_berry"'), '"armaduramaliciosa"', '"malicious_armor"'), '"maliciousarmor"', '"malicious_armor"'), '"bayamaranga"', '"maranga_berry"')
-WHERE save_data LIKE '%"bayamelón"%'
-   OR save_data LIKE '%"bayameln"%'
-   OR save_data LIKE '%"hondewberry"%'
-   OR save_data LIKE '%"bayaiapapa"%'
-   OR save_data LIKE '%"iapapaberry"%'
-   OR save_data LIKE '%"tablahelada"%'
-   OR save_data LIKE '%"icicleplate"%'
-   OR save_data LIKE '%"rocahelada"%'
-   OR save_data LIKE '%"icyrock"%'
-   OR save_data LIKE '%"tablabicho"%'
-   OR save_data LIKE '%"insectplate"%'
-   OR save_data LIKE '%"bolahierro"%'
-   OR save_data LIKE '%"ironball"%'
-   OR save_data LIKE '%"tablaacero"%'
-   OR save_data LIKE '%"ironplate"%'
-   OR save_data LIKE '%"bayajaboca"%'
-   OR save_data LIKE '%"jabocaberry"%'
-   OR save_data LIKE '%"bayakasib"%'
-   OR save_data LIKE '%"kasibberry"%'
-   OR save_data LIKE '%"bayakebia"%'
-   OR save_data LIKE '%"kebiaberry"%'
-   OR save_data LIKE '%"bayarimoya"%'
-   OR save_data LIKE '%"keeberry"%'
-   OR save_data LIKE '%"bayaalgama"%'
-   OR save_data LIKE '%"kelpsyberry"%'
-   OR save_data LIKE '%"rocadelrey"%'
-   OR save_data LIKE '%"bayalansat"%'
-   OR save_data LIKE '%"lansatberry"%'
-   OR save_data LIKE '%"bayazanama"%'
-   OR save_data LIKE '%"leppaberry"%'
-   OR save_data LIKE '%"nivelball"%'
-   OR save_data LIKE '%"levelball"%'
-   OR save_data LIKE '%"refleluz"%'
-   OR save_data LIKE '%"lightclay"%'
-   OR save_data LIKE '%"dadocargado"%'
-   OR save_data LIKE '%"loadeddice"%'
-   OR save_data LIKE '%"amorball"%'
-   OR save_data LIKE '%"loveball"%'
-   OR save_data LIKE '%"bayaziuela"%'
-   OR save_data LIKE '%"lumberry"%'
-   OR save_data LIKE '%"musgoluminoso"%'
-   OR save_data LIKE '%"luminousmoss"%'
-   OR save_data LIKE '%"ceboball"%'
-   OR save_data LIKE '%"lureball"%'
-   OR save_data LIKE '%"magmatizador"%'
-   OR save_data LIKE '%"bayamago"%'
-   OR save_data LIKE '%"magoberry"%'
-   OR save_data LIKE '%"armaduramaliciosa"%'
-   OR save_data LIKE '%"maliciousarmor"%'
-   OR save_data LIKE '%"bayamaranga"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"marangaberry"', '"maranga_berry"'), '"tazaobramaestra"', '"masterpiece_teacup"'), '"masterpieceteacup"', '"masterpiece_teacup"'), '"tablapradal"', '"meadow_plate"'), '"meadowplate"', '"meadow_plate"'), '"hierbamental"', '"whiteherb"'), '"revestimientometalico"', '"metal_coat"'), '"revestimientometálico"', '"metal_coat"'), '"revestimientometlico"', '"metal_coat"'), '"metalcoat"', '"metal_coat"'), '"bayamicle"', '"micle_berry"'), '"micleberry"', '"micle_berry"'), '"tablamente"', '"mind_plate"'), '"mindplate"', '"mind_plate"'), '"hierbaespejo"', '"mirror_herb"'), '"mirrorherb"', '"mirror_herb"'), '"semillaniebla"', '"misty_seed"'), '"mistyseed"', '"misty_seed"'), '"lunaball"', '"moon_ball"'), '"moonball"', '"moon_ball"'), '"gemanormal"', '"normal_gem"'), '"normalgem"', '"normal_gem"'), '"bayacaoba"', '"occa_berry"'), '"occaberry"', '"occa_berry"'), '"bayaaranja"', '"oran_berry"'), '"oranberry"', '"oran_berry"'), '"piedraoval"', '"oval_stone"'), '"ovalstone"', '"oval_stone"'), '"parqueball"', '"park_ball"'), '"parkball"', '"park_ball"'), '"bayapasio"', '"passho_berry"'), '"passhoberry"', '"passho_berry"'), '"bayapayapa"', '"payapa_berry"'), '"payapaberry"', '"payapa_berry"'), '"bayameloc"', '"pecha_berry"'), '"pechaberry"', '"pecha_berry"'), '"bayacaqui"', '"persim_berry"'), '"persimberry"', '"persim_berry"'), '"bayapetaya"', '"petaya_berry"'), '"petayaberry"', '"petaya_berry"'), '"tablaninfa"', '"splash_plate"'), '"pixieplate"', '"pixie_plate"'), '"bayagrana"', '"pomeg_berry"'), '"pomegberry"', '"pomeg_berry"'), '"hierbaunica"', '"power_herb"'), '"hierbaúnica"', '"power_herb"'), '"hierbanica"', '"power_herb"'), '"powerherb"', '"power_herb"'), '"honorball"', '"premier_ball"'), '"premierball"', '"premier_ball"')
-WHERE save_data LIKE '%"marangaberry"%'
-   OR save_data LIKE '%"tazaobramaestra"%'
-   OR save_data LIKE '%"masterpieceteacup"%'
-   OR save_data LIKE '%"tablapradal"%'
-   OR save_data LIKE '%"meadowplate"%'
-   OR save_data LIKE '%"hierbamental"%'
-   OR save_data LIKE '%"revestimientometalico"%'
-   OR save_data LIKE '%"revestimientometálico"%'
-   OR save_data LIKE '%"revestimientometlico"%'
-   OR save_data LIKE '%"metalcoat"%'
-   OR save_data LIKE '%"bayamicle"%'
-   OR save_data LIKE '%"micleberry"%'
-   OR save_data LIKE '%"tablamente"%'
-   OR save_data LIKE '%"mindplate"%'
-   OR save_data LIKE '%"hierbaespejo"%'
-   OR save_data LIKE '%"mirrorherb"%'
-   OR save_data LIKE '%"semillaniebla"%'
-   OR save_data LIKE '%"mistyseed"%'
-   OR save_data LIKE '%"lunaball"%'
-   OR save_data LIKE '%"moonball"%'
-   OR save_data LIKE '%"gemanormal"%'
-   OR save_data LIKE '%"normalgem"%'
-   OR save_data LIKE '%"bayacaoba"%'
-   OR save_data LIKE '%"occaberry"%'
-   OR save_data LIKE '%"bayaaranja"%'
-   OR save_data LIKE '%"oranberry"%'
-   OR save_data LIKE '%"piedraoval"%'
-   OR save_data LIKE '%"ovalstone"%'
-   OR save_data LIKE '%"parqueball"%'
-   OR save_data LIKE '%"parkball"%'
-   OR save_data LIKE '%"bayapasio"%'
-   OR save_data LIKE '%"passhoberry"%'
-   OR save_data LIKE '%"bayapayapa"%'
-   OR save_data LIKE '%"payapaberry"%'
-   OR save_data LIKE '%"bayameloc"%'
-   OR save_data LIKE '%"pechaberry"%'
-   OR save_data LIKE '%"bayacaqui"%'
-   OR save_data LIKE '%"persimberry"%'
-   OR save_data LIKE '%"bayapetaya"%'
-   OR save_data LIKE '%"petayaberry"%'
-   OR save_data LIKE '%"tablaninfa"%'
-   OR save_data LIKE '%"pixieplate"%'
-   OR save_data LIKE '%"bayagrana"%'
-   OR save_data LIKE '%"pomegberry"%'
-   OR save_data LIKE '%"hierbaunica"%'
-   OR save_data LIKE '%"hierbaúnica"%'
-   OR save_data LIKE '%"hierbanica"%'
-   OR save_data LIKE '%"powerherb"%'
-   OR save_data LIKE '%"honorball"%'
-   OR save_data LIKE '%"premierball"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"escamabella"', '"prism_scale"'), '"prismscale"', '"prism_scale"'), '"coderasprotectoras"', '"protective_pads"'), '"protectivepads"', '"protective_pads"'), '"semillapsique"', '"psychic_seed"'), '"psychicseed"', '"psychic_seed"'), '"guantepuno"', '"punching_glove"'), '"guantepuño"', '"punching_glove"'), '"guantepuo"', '"punching_glove"'), '"punchingglove"', '"punching_glove"'), '"bayaispero"', '"qualot_berry"'), '"qualotberry"', '"qualot_berry"'), '"garrarapida"', '"quickclaw"'), '"garrarápida"', '"quickclaw"'), '"garrarpida"', '"quickclaw"'), '"bayasafre"', '"rawst_berry"'), '"rawstberry"', '"rawst_berry"'), '"garraafilada"', '"razor_claw"'), '"razorclaw"', '"razor_claw"'), '"colmilloagudo"', '"razor_fang"'), '"razorfang"', '"razor_fang"'), '"telaterrible"', '"reaper_cloth"'), '"reapercloth"', '"reaper_cloth"'), '"tarjetaroja"', '"red_card"'), '"redcard"', '"red_card"'), '"acopioball"', '"repeat_ball"'), '"repeatball"', '"repeat_ball"'), '"bayarindo"', '"rindo_berry"'), '"rindoberry"', '"rindo_berry"'), '"blancopasivo"', '"ring_target"'), '"ringtarget"', '"ring_target"'), '"cascodentado"', '"rockyhelmet"'), '"serviciodecuarto"', '"room_service"'), '"roomservice"', '"room_service"'), '"bayaroseli"', '"roseli_berry"'), '"roseliberry"', '"roseli_berry"'), '"bayarowap"', '"rowap_berry"'), '"rowapberry"', '"rowap_berry"'), '"safariball"', '"safari_ball"'), '"gafasprotectoras"', '"safety_goggles"'), '"safetygoggles"', '"safety_goggles"'), '"mudaconcha"', '"shed_shell"'), '"shedshell"', '"shed_shell"'), '"bayashuca"', '"shuca_berry"'), '"shucaberry"', '"shuca_berry"'), '"bayacidra"', '"sitrus_berry"'), '"sitrusberry"', '"sitrus_berry"'), '"tablacielo"', '"sky_plate"'), '"skyplate"', '"sky_plate"'), '"rocasuave"', '"smooth_rock"')
-WHERE save_data LIKE '%"escamabella"%'
-   OR save_data LIKE '%"prismscale"%'
-   OR save_data LIKE '%"coderasprotectoras"%'
-   OR save_data LIKE '%"protectivepads"%'
-   OR save_data LIKE '%"semillapsique"%'
-   OR save_data LIKE '%"psychicseed"%'
-   OR save_data LIKE '%"guantepuno"%'
-   OR save_data LIKE '%"guantepuño"%'
-   OR save_data LIKE '%"guantepuo"%'
-   OR save_data LIKE '%"punchingglove"%'
-   OR save_data LIKE '%"bayaispero"%'
-   OR save_data LIKE '%"qualotberry"%'
-   OR save_data LIKE '%"garrarapida"%'
-   OR save_data LIKE '%"garrarápida"%'
-   OR save_data LIKE '%"garrarpida"%'
-   OR save_data LIKE '%"bayasafre"%'
-   OR save_data LIKE '%"rawstberry"%'
-   OR save_data LIKE '%"garraafilada"%'
-   OR save_data LIKE '%"razorclaw"%'
-   OR save_data LIKE '%"colmilloagudo"%'
-   OR save_data LIKE '%"razorfang"%'
-   OR save_data LIKE '%"telaterrible"%'
-   OR save_data LIKE '%"reapercloth"%'
-   OR save_data LIKE '%"tarjetaroja"%'
-   OR save_data LIKE '%"redcard"%'
-   OR save_data LIKE '%"acopioball"%'
-   OR save_data LIKE '%"repeatball"%'
-   OR save_data LIKE '%"bayarindo"%'
-   OR save_data LIKE '%"rindoberry"%'
-   OR save_data LIKE '%"blancopasivo"%'
-   OR save_data LIKE '%"ringtarget"%'
-   OR save_data LIKE '%"cascodentado"%'
-   OR save_data LIKE '%"serviciodecuarto"%'
-   OR save_data LIKE '%"roomservice"%'
-   OR save_data LIKE '%"bayaroseli"%'
-   OR save_data LIKE '%"roseliberry"%'
-   OR save_data LIKE '%"bayarowap"%'
-   OR save_data LIKE '%"rowapberry"%'
-   OR save_data LIKE '%"safariball"%'
-   OR save_data LIKE '%"gafasprotectoras"%'
-   OR save_data LIKE '%"safetygoggles"%'
-   OR save_data LIKE '%"mudaconcha"%'
-   OR save_data LIKE '%"shedshell"%'
-   OR save_data LIKE '%"bayashuca"%'
-   OR save_data LIKE '%"shucaberry"%'
-   OR save_data LIKE '%"bayacidra"%'
-   OR save_data LIKE '%"sitrusberry"%'
-   OR save_data LIKE '%"tablacielo"%'
-   OR save_data LIKE '%"skyplate"%'
-   OR save_data LIKE '%"rocasuave"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"smoothrock"', '"smooth_rock"'), '"boladenieve"', '"snow_ball"'), '"snowball"', '"snow_ball"'), '"rociobondad"', '"soul_dew"'), '"rocíobondad"', '"soul_dew"'), '"rocobondad"', '"soul_dew"'), '"souldew"', '"soul_dew"'), '"splashplate"', '"splash_plate"'), '"tablaterror"', '"spooky_plate"'), '"spookyplate"', '"spooky_plate"'), '"competiball"', '"sport_ball"'), '"sportball"', '"sport_ball"'), '"bayastarf"', '"starf_berry"'), '"starfberry"', '"starf_berry"'), '"tachuelaadhesiva"', '"sticky_barb"'), '"stickybarb"', '"sticky_barb"'), '"tablapetrea"', '"stone_plate"'), '"tablapétrea"', '"stone_plate"'), '"tablaptrea"', '"stone_plate"'), '"stoneplate"', '"stone_plate"'), '"extranaball"', '"strange_ball"'), '"extrañaball"', '"strange_ball"'), '"extraaball"', '"strange_ball"'), '"strangeball"', '"strange_ball"'), '"manzanadulce"', '"sweet_apple"'), '"sweetapple"', '"sweet_apple"'), '"manzanasirope"', '"syrupy_apple"'), '"syrupyapple"', '"syrupy_apple"'), '"bayatamate"', '"tamato_berry"'), '"tamatoberry"', '"tamato_berry"'), '"bayatanga"', '"tanga_berry"'), '"tangaberry"', '"tanga_berry"'), '"manzanaacida"', '"tart_apple"'), '"manzanaácida"', '"tart_apple"'), '"manzanacida"', '"tart_apple"'), '"tartapple"', '"tart_apple"'), '"extensordeterreno"', '"terrain_extender"'), '"terrainextender"', '"terrain_extender"'), '"spraygarganta"', '"throat_spray"'), '"throatspray"', '"throat_spray"'), '"toxisfera"', '"toxic_orb"'), '"toxicorb"', '"toxic_orb"'), '"tablatoxica"', '"toxic_plate"'), '"tablatóxica"', '"toxic_plate"'), '"tablatxica"', '"toxic_plate"'), '"toxicplate"', '"toxic_plate"'), '"tazacomun"', '"unremarkable_teacup"'), '"tazacomún"', '"unremarkable_teacup"'), '"tazacomn"', '"unremarkable_teacup"'), '"unremarkableteacup"', '"unremarkable_teacup"')
-WHERE save_data LIKE '%"smoothrock"%'
-   OR save_data LIKE '%"boladenieve"%'
-   OR save_data LIKE '%"snowball"%'
-   OR save_data LIKE '%"rociobondad"%'
-   OR save_data LIKE '%"rocíobondad"%'
-   OR save_data LIKE '%"rocobondad"%'
-   OR save_data LIKE '%"souldew"%'
-   OR save_data LIKE '%"splashplate"%'
-   OR save_data LIKE '%"tablaterror"%'
-   OR save_data LIKE '%"spookyplate"%'
-   OR save_data LIKE '%"competiball"%'
-   OR save_data LIKE '%"sportball"%'
-   OR save_data LIKE '%"bayastarf"%'
-   OR save_data LIKE '%"starfberry"%'
-   OR save_data LIKE '%"tachuelaadhesiva"%'
-   OR save_data LIKE '%"stickybarb"%'
-   OR save_data LIKE '%"tablapetrea"%'
-   OR save_data LIKE '%"tablapétrea"%'
-   OR save_data LIKE '%"tablaptrea"%'
-   OR save_data LIKE '%"stoneplate"%'
-   OR save_data LIKE '%"extranaball"%'
-   OR save_data LIKE '%"extrañaball"%'
-   OR save_data LIKE '%"extraaball"%'
-   OR save_data LIKE '%"strangeball"%'
-   OR save_data LIKE '%"manzanadulce"%'
-   OR save_data LIKE '%"sweetapple"%'
-   OR save_data LIKE '%"manzanasirope"%'
-   OR save_data LIKE '%"syrupyapple"%'
-   OR save_data LIKE '%"bayatamate"%'
-   OR save_data LIKE '%"tamatoberry"%'
-   OR save_data LIKE '%"bayatanga"%'
-   OR save_data LIKE '%"tangaberry"%'
-   OR save_data LIKE '%"manzanaacida"%'
-   OR save_data LIKE '%"manzanaácida"%'
-   OR save_data LIKE '%"manzanacida"%'
-   OR save_data LIKE '%"tartapple"%'
-   OR save_data LIKE '%"extensordeterreno"%'
-   OR save_data LIKE '%"terrainextender"%'
-   OR save_data LIKE '%"spraygarganta"%'
-   OR save_data LIKE '%"throatspray"%'
-   OR save_data LIKE '%"toxisfera"%'
-   OR save_data LIKE '%"toxicorb"%'
-   OR save_data LIKE '%"tablatoxica"%'
-   OR save_data LIKE '%"tablatóxica"%'
-   OR save_data LIKE '%"tablatxica"%'
-   OR save_data LIKE '%"toxicplate"%'
-   OR save_data LIKE '%"tazacomun"%'
-   OR save_data LIKE '%"tazacomún"%'
-   OR save_data LIKE '%"tazacomn"%'
-   OR save_data LIKE '%"unremarkableteacup"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"mejora"', '"upgrade"'), '"paraguasmultiuso"', '"utility_umbrella"'), '"utilityumbrella"', '"utility_umbrella"'), '"bayawacan"', '"wacan_berry"'), '"wacanberry"', '"wacan_berry"'), '"segurodebilidad"', '"weaknesspolicy"'), '"wellspringmask"', '"wellspring_mask"'), '"bayawiki"', '"wiki_berry"'), '"wikiberry"', '"wiki_berry"'), '"bayayache"', '"yache_berry"'), '"yacheberry"', '"yache_berry"'), '"tablatrueno"', '"zap_plate"'), '"zapplate"', '"zap_plate"'), '"bayadebronce"', '"berry_bronze"'), '"berrybronze"', '"berry_bronze"'), '"bayadeplata"', '"berry_silver"'), '"berrysilver"', '"berry_silver"'), '"bayadeoro"', '"berry_gold"'), '"berrygold"', '"berry_gold"'), '"piedraeterna"', '"everstone"'), '"lazodestino"', '"destiny_knot"'), '"destinyknot"', '"destiny_knot"'), '"restauradordevigor"', '"vigor_restorer"'), '"vigorrestorer"', '"vigor_restorer"'), '"pesarecia"', '"power_weight"'), '"powerweight"', '"power_weight"'), '"brazalrecio"', '"power_bracer"'), '"powerbracer"', '"power_bracer"'), '"cintorecio"', '"power_belt"'), '"powerbelt"', '"power_belt"'), '"lenterecia"', '"power_lens"'), '"powerlens"', '"power_lens"'), '"bandarecia"', '"power_band"'), '"powerband"', '"power_band"'), '"franjarecia"', '"power_anklet"'), '"poweranklet"', '"power_anklet"'), '"pokéball"', '"pokeball"'), '"pokball"', '"pokeball"'), '"superball"', '"great_ball"'), '"súperball"', '"great_ball"'), '"sperball"', '"great_ball"'), '"greatball"', '"great_ball"'), '"ultraball"', '"ultra_ball"'), '"redball"', '"net_ball"'), '"netball"', '"net_ball"'), '"ocasoball"', '"dusk_ball"'), '"duskball"', '"dusk_ball"'), '"turnoball"', '"timer_ball"'), '"timerball"', '"timer_ball"'), '"masterball"', '"master_ball"')
-WHERE save_data LIKE '%"mejora"%'
-   OR save_data LIKE '%"paraguasmultiuso"%'
-   OR save_data LIKE '%"utilityumbrella"%'
-   OR save_data LIKE '%"bayawacan"%'
-   OR save_data LIKE '%"wacanberry"%'
-   OR save_data LIKE '%"segurodebilidad"%'
-   OR save_data LIKE '%"wellspringmask"%'
-   OR save_data LIKE '%"bayawiki"%'
-   OR save_data LIKE '%"wikiberry"%'
-   OR save_data LIKE '%"bayayache"%'
-   OR save_data LIKE '%"yacheberry"%'
-   OR save_data LIKE '%"tablatrueno"%'
-   OR save_data LIKE '%"zapplate"%'
-   OR save_data LIKE '%"bayadebronce"%'
-   OR save_data LIKE '%"berrybronze"%'
-   OR save_data LIKE '%"bayadeplata"%'
-   OR save_data LIKE '%"berrysilver"%'
-   OR save_data LIKE '%"bayadeoro"%'
-   OR save_data LIKE '%"berrygold"%'
-   OR save_data LIKE '%"piedraeterna"%'
-   OR save_data LIKE '%"lazodestino"%'
-   OR save_data LIKE '%"destinyknot"%'
-   OR save_data LIKE '%"restauradordevigor"%'
-   OR save_data LIKE '%"vigorrestorer"%'
-   OR save_data LIKE '%"pesarecia"%'
-   OR save_data LIKE '%"powerweight"%'
-   OR save_data LIKE '%"brazalrecio"%'
-   OR save_data LIKE '%"powerbracer"%'
-   OR save_data LIKE '%"cintorecio"%'
-   OR save_data LIKE '%"powerbelt"%'
-   OR save_data LIKE '%"lenterecia"%'
-   OR save_data LIKE '%"powerlens"%'
-   OR save_data LIKE '%"bandarecia"%'
-   OR save_data LIKE '%"powerband"%'
-   OR save_data LIKE '%"franjarecia"%'
-   OR save_data LIKE '%"poweranklet"%'
-   OR save_data LIKE '%"pokéball"%'
-   OR save_data LIKE '%"pokball"%'
-   OR save_data LIKE '%"superball"%'
-   OR save_data LIKE '%"súperball"%'
-   OR save_data LIKE '%"sperball"%'
-   OR save_data LIKE '%"greatball"%'
-   OR save_data LIKE '%"ultraball"%'
-   OR save_data LIKE '%"redball"%'
-   OR save_data LIKE '%"netball"%'
-   OR save_data LIKE '%"ocasoball"%'
-   OR save_data LIKE '%"duskball"%'
-   OR save_data LIKE '%"turnoball"%'
-   OR save_data LIKE '%"timerball"%'
-   OR save_data LIKE '%"masterball"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"pocion"', '"potion"'), '"poción"', '"potion"'), '"pocin"', '"potion"'), '"superpocion"', '"super_potion"'), '"súperpoción"', '"super_potion"'), '"sperpocin"', '"super_potion"'), '"superpotion"', '"super_potion"'), '"hiperpocion"', '"hyper_potion"'), '"hiperpoción"', '"hyper_potion"'), '"hiperpocin"', '"hyper_potion"'), '"hyperpotion"', '"hyper_potion"'), '"pocionmaxima"', '"max_potion"'), '"pociónmáxima"', '"max_potion"'), '"pocinmxima"', '"max_potion"'), '"maxpotion"', '"max_potion"'), '"refresco"', '"soda_pop"'), '"sodapop"', '"soda_pop"'), '"limonada"', '"lemonade"'), '"revivir"', '"revive"'), '"revivirmaximo"', '"revive_max"'), '"revivirmáximo"', '"revive_max"'), '"revivirmximo"', '"revive_max"'), '"revivemax"', '"revive_max"'), '"antidoto"', '"antidote"'), '"antídoto"', '"antidote"'), '"antdoto"', '"antidote"'), '"curaquemadura"', '"burn_heal"'), '"burnheal"', '"burn_heal"'), '"antiparaliz"', '"paralyze_heal"'), '"paralyzeheal"', '"paralyze_heal"'), '"despertar"', '"awakening"'), '"anticongelante"', '"ice_heal"'), '"iceheal"', '"ice_heal"'), '"curatotal"', '"full_heal"'), '"fullheal"', '"full_heal"'), '"eter"', '"ether"'), '"éter"', '"ether"'), '"ter"', '"ether"'), '"elixirmaximo"', '"elixir_max"'), '"elixirmáximo"', '"elixir_max"'), '"elixirmximo"', '"elixir_max"'), '"elixirmax"', '"elixir_max"'), '"piedrafuego"', '"fire_stone"'), '"firestone"', '"fire_stone"'), '"piedraagua"', '"water_stone"'), '"waterstone"', '"water_stone"'), '"piedratrueno"', '"thunder_stone"'), '"thunderstone"', '"thunder_stone"'), '"piedrahoja"', '"leaf_stone"'), '"leafstone"', '"leaf_stone"')
-WHERE save_data LIKE '%"pocion"%'
-   OR save_data LIKE '%"poción"%'
-   OR save_data LIKE '%"pocin"%'
-   OR save_data LIKE '%"superpocion"%'
-   OR save_data LIKE '%"súperpoción"%'
-   OR save_data LIKE '%"sperpocin"%'
-   OR save_data LIKE '%"superpotion"%'
-   OR save_data LIKE '%"hiperpocion"%'
-   OR save_data LIKE '%"hiperpoción"%'
-   OR save_data LIKE '%"hiperpocin"%'
-   OR save_data LIKE '%"hyperpotion"%'
-   OR save_data LIKE '%"pocionmaxima"%'
-   OR save_data LIKE '%"pociónmáxima"%'
-   OR save_data LIKE '%"pocinmxima"%'
-   OR save_data LIKE '%"maxpotion"%'
-   OR save_data LIKE '%"refresco"%'
-   OR save_data LIKE '%"sodapop"%'
-   OR save_data LIKE '%"limonada"%'
-   OR save_data LIKE '%"revivir"%'
-   OR save_data LIKE '%"revivirmaximo"%'
-   OR save_data LIKE '%"revivirmáximo"%'
-   OR save_data LIKE '%"revivirmximo"%'
-   OR save_data LIKE '%"revivemax"%'
-   OR save_data LIKE '%"antidoto"%'
-   OR save_data LIKE '%"antídoto"%'
-   OR save_data LIKE '%"antdoto"%'
-   OR save_data LIKE '%"curaquemadura"%'
-   OR save_data LIKE '%"burnheal"%'
-   OR save_data LIKE '%"antiparaliz"%'
-   OR save_data LIKE '%"paralyzeheal"%'
-   OR save_data LIKE '%"despertar"%'
-   OR save_data LIKE '%"anticongelante"%'
-   OR save_data LIKE '%"iceheal"%'
-   OR save_data LIKE '%"curatotal"%'
-   OR save_data LIKE '%"fullheal"%'
-   OR save_data LIKE '%"eter"%'
-   OR save_data LIKE '%"éter"%'
-   OR save_data LIKE '%"ter"%'
-   OR save_data LIKE '%"elixirmaximo"%'
-   OR save_data LIKE '%"elixirmáximo"%'
-   OR save_data LIKE '%"elixirmximo"%'
-   OR save_data LIKE '%"elixirmax"%'
-   OR save_data LIKE '%"piedrafuego"%'
-   OR save_data LIKE '%"firestone"%'
-   OR save_data LIKE '%"piedraagua"%'
-   OR save_data LIKE '%"waterstone"%'
-   OR save_data LIKE '%"piedratrueno"%'
-   OR save_data LIKE '%"thunderstone"%'
-   OR save_data LIKE '%"piedrahoja"%'
-   OR save_data LIKE '%"leafstone"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"piedralunar"', '"moon_stone"'), '"moonstone"', '"moon_stone"'), '"piedrasolar"', '"sun_stone"'), '"sunstone"', '"sun_stone"'), '"compartirexp"', '"exp_share"'), '"expshare"', '"exp_share"'), '"cascabelconcha"', '"shell_bell"'), '"shellbell"', '"shell_bell"'), '"cintaelegida"', '"choice_band"'), '"choiceband"', '"choice_band"'), '"bandafocus"', '"focus_sash"'), '"focussash"', '"focus_sash"'), '"scopelens"', '"scope_lens"'), '"iman"', '"magnet"'), '"imán"', '"magnet"'), '"imn"', '"magnet"'), '"carameloraro"', '"rare_candy"'), '"rarecandy"', '"rare_candy"'), '"caramelodevigor"', '"vigor_candy"'), '"vigorcandy"', '"vigor_candy"'), '"recordadordemovimientos"', '"move_relearner"'), '"moverelearner"', '"move_relearner"'), '"parchedenaturaleza"', '"nature_patch"'), '"naturepatch"', '"nature_patch"'), '"pildoradecambiodehabilidad"', '"ability_pill"'), '"píldoradecambiodehabilidad"', '"ability_pill"'), '"pldoradecambiodehabilidad"', '"ability_pill"'), '"abilitypill"', '"ability_pill"'), '"ticketshiny"', '"ticket_shiny"'), '"monedaamuleto"', '"amulet_coin"'), '"amuletcoin"', '"amulet_coin"'), '"ticketsafari"', '"ticket_safari"'), '"ticketcuevaceleste"', '"ticket_cerulean"'), '"ticketcerulean"', '"ticket_cerulean"'), '"inciensofuego"', '"incense_fire"'), '"incensefire"', '"incense_fire"'), '"inciensoagua"', '"incense_water"'), '"incensewater"', '"incense_water"'), '"inciensoplanta"', '"incense_grass"'), '"incensegrass"', '"incense_grass"'), '"inciensonormal"', '"incense_normal"'), '"incensenormal"', '"incense_normal"'), '"inciensofantasma"', '"incense_ghost"'), '"incenseghost"', '"incense_ghost"'), '"inciensopsiquico"', '"incense_psychic"'), '"inciensopsíquico"', '"incense_psychic"'), '"inciensopsquico"', '"incense_psychic"'), '"incensepsychic"', '"incense_psychic"'), '"subidadepp"', '"pp_up"'), '"ppup"', '"pp_up"')
-WHERE save_data LIKE '%"piedralunar"%'
-   OR save_data LIKE '%"moonstone"%'
-   OR save_data LIKE '%"piedrasolar"%'
-   OR save_data LIKE '%"sunstone"%'
-   OR save_data LIKE '%"compartirexp"%'
-   OR save_data LIKE '%"expshare"%'
-   OR save_data LIKE '%"cascabelconcha"%'
-   OR save_data LIKE '%"shellbell"%'
-   OR save_data LIKE '%"cintaelegida"%'
-   OR save_data LIKE '%"choiceband"%'
-   OR save_data LIKE '%"bandafocus"%'
-   OR save_data LIKE '%"focussash"%'
-   OR save_data LIKE '%"scopelens"%'
-   OR save_data LIKE '%"iman"%'
-   OR save_data LIKE '%"imán"%'
-   OR save_data LIKE '%"imn"%'
-   OR save_data LIKE '%"carameloraro"%'
-   OR save_data LIKE '%"rarecandy"%'
-   OR save_data LIKE '%"caramelodevigor"%'
-   OR save_data LIKE '%"vigorcandy"%'
-   OR save_data LIKE '%"recordadordemovimientos"%'
-   OR save_data LIKE '%"moverelearner"%'
-   OR save_data LIKE '%"parchedenaturaleza"%'
-   OR save_data LIKE '%"naturepatch"%'
-   OR save_data LIKE '%"pildoradecambiodehabilidad"%'
-   OR save_data LIKE '%"píldoradecambiodehabilidad"%'
-   OR save_data LIKE '%"pldoradecambiodehabilidad"%'
-   OR save_data LIKE '%"abilitypill"%'
-   OR save_data LIKE '%"ticketshiny"%'
-   OR save_data LIKE '%"monedaamuleto"%'
-   OR save_data LIKE '%"amuletcoin"%'
-   OR save_data LIKE '%"ticketsafari"%'
-   OR save_data LIKE '%"ticketcuevaceleste"%'
-   OR save_data LIKE '%"ticketcerulean"%'
-   OR save_data LIKE '%"inciensofuego"%'
-   OR save_data LIKE '%"incensefire"%'
-   OR save_data LIKE '%"inciensoagua"%'
-   OR save_data LIKE '%"incensewater"%'
-   OR save_data LIKE '%"inciensoplanta"%'
-   OR save_data LIKE '%"incensegrass"%'
-   OR save_data LIKE '%"inciensonormal"%'
-   OR save_data LIKE '%"incensenormal"%'
-   OR save_data LIKE '%"inciensofantasma"%'
-   OR save_data LIKE '%"incenseghost"%'
-   OR save_data LIKE '%"inciensopsiquico"%'
-   OR save_data LIKE '%"inciensopsíquico"%'
-   OR save_data LIKE '%"inciensopsquico"%'
-   OR save_data LIKE '%"incensepsychic"%'
-   OR save_data LIKE '%"subidadepp"%'
-   OR save_data LIKE '%"ppup"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"huevosuertepequeno"', '"lucky_egg"'), '"huevosuertepequeño"', '"lucky_egg"'), '"huevosuertepequeo"', '"lucky_egg"'), '"luckyegg"', '"lucky_egg"'), '"repelente"', '"repel"'), '"superrepelente"', '"super_repel"'), '"superrepel"', '"super_repel"'), '"maximorepelente"', '"max_repel"'), '"máximorepelente"', '"max_repel"'), '"mximorepelente"', '"max_repel"'), '"maxrepel"', '"max_repel"'), '"canadepescar"', '"fishing_rod"'), '"cañadepescar"', '"fishing_rod"'), '"caadepescar"', '"fishing_rod"'), '"fishingrod"', '"fishing_rod"'), '"canabuena"', '"fishing_rod_good"'), '"cañabuena"', '"fishing_rod_good"'), '"caabuena"', '"fishing_rod_good"'), '"fishingrodgood"', '"fishing_rod_good"'), '"supercana"', '"fishing_rod_super"'), '"supercaña"', '"fishing_rod_super"'), '"supercaa"', '"fishing_rod_super"'), '"fishingrodsuper"', '"fishing_rod_super"'), '"picodeexcavacion"', '"pickaxe"'), '"picodeexcavación"', '"pickaxe"'), '"picodeexcavacin"', '"pickaxe"'), '"picobueno"', '"pickaxe_silver"'), '"pickaxesilver"', '"pickaxe_silver"'), '"superpico"', '"pickaxe_gold"'), '"pickaxegold"', '"pickaxe_gold"'), '"pinceldeexcavacion"', '"brush"'), '"pinceldeexcavación"', '"brush"'), '"pinceldeexcavacin"', '"brush"'), '"pincelbueno"', '"brush_good"'), '"brushgood"', '"brush_good"'), '"superpincel"', '"brush_super"'), '"brushsuper"', '"brush_super"'), '"fosilhelix"', '"helix_fossil"'), '"fósilhélix"', '"helix_fossil"'), '"fsilhlix"', '"helix_fossil"'), '"helixfossil"', '"helix_fossil"'), '"fosildomo"', '"dome_fossil"'), '"fósildomo"', '"dome_fossil"'), '"fsildomo"', '"dome_fossil"'), '"domefossil"', '"dome_fossil"'), '"ambarviejo"', '"old_amber"'), '"ámbarviejo"', '"old_amber"'), '"mbarviejo"', '"old_amber"'), '"oldamber"', '"old_amber"'), '"pepita"', '"nugget"')
-WHERE save_data LIKE '%"huevosuertepequeno"%'
-   OR save_data LIKE '%"huevosuertepequeño"%'
-   OR save_data LIKE '%"huevosuertepequeo"%'
-   OR save_data LIKE '%"luckyegg"%'
-   OR save_data LIKE '%"repelente"%'
-   OR save_data LIKE '%"superrepelente"%'
-   OR save_data LIKE '%"superrepel"%'
-   OR save_data LIKE '%"maximorepelente"%'
-   OR save_data LIKE '%"máximorepelente"%'
-   OR save_data LIKE '%"mximorepelente"%'
-   OR save_data LIKE '%"maxrepel"%'
-   OR save_data LIKE '%"canadepescar"%'
-   OR save_data LIKE '%"cañadepescar"%'
-   OR save_data LIKE '%"caadepescar"%'
-   OR save_data LIKE '%"fishingrod"%'
-   OR save_data LIKE '%"canabuena"%'
-   OR save_data LIKE '%"cañabuena"%'
-   OR save_data LIKE '%"caabuena"%'
-   OR save_data LIKE '%"fishingrodgood"%'
-   OR save_data LIKE '%"supercana"%'
-   OR save_data LIKE '%"supercaña"%'
-   OR save_data LIKE '%"supercaa"%'
-   OR save_data LIKE '%"fishingrodsuper"%'
-   OR save_data LIKE '%"picodeexcavacion"%'
-   OR save_data LIKE '%"picodeexcavación"%'
-   OR save_data LIKE '%"picodeexcavacin"%'
-   OR save_data LIKE '%"picobueno"%'
-   OR save_data LIKE '%"pickaxesilver"%'
-   OR save_data LIKE '%"superpico"%'
-   OR save_data LIKE '%"pickaxegold"%'
-   OR save_data LIKE '%"pinceldeexcavacion"%'
-   OR save_data LIKE '%"pinceldeexcavación"%'
-   OR save_data LIKE '%"pinceldeexcavacin"%'
-   OR save_data LIKE '%"pincelbueno"%'
-   OR save_data LIKE '%"brushgood"%'
-   OR save_data LIKE '%"superpincel"%'
-   OR save_data LIKE '%"brushsuper"%'
-   OR save_data LIKE '%"fosilhelix"%'
-   OR save_data LIKE '%"fósilhélix"%'
-   OR save_data LIKE '%"fsilhlix"%'
-   OR save_data LIKE '%"helixfossil"%'
-   OR save_data LIKE '%"fosildomo"%'
-   OR save_data LIKE '%"fósildomo"%'
-   OR save_data LIKE '%"fsildomo"%'
-   OR save_data LIKE '%"domefossil"%'
-   OR save_data LIKE '%"ambarviejo"%'
-   OR save_data LIKE '%"ámbarviejo"%'
-   OR save_data LIKE '%"mbarviejo"%'
-   OR save_data LIKE '%"oldamber"%'
-   OR save_data LIKE '%"pepita"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"perla"', '"pearl"'), '"perlagrande"', '"big_pearl"'), '"bigpearl"', '"big_pearl"'), '"polvoestelar"', '"stardust"'), '"trozoestrella"', '"star_piece"'), '"starpiece"', '"star_piece"'), '"mineraldecarbon"', '"coal_ore"'), '"mineraldecarbón"', '"coal_ore"'), '"mineraldecarbn"', '"coal_ore"'), '"coalore"', '"coal_ore"'), '"mineraldecobre"', '"copper_ore"'), '"copperore"', '"copper_ore"'), '"mineraldehierro"', '"iron_ore"'), '"ironore"', '"iron_ore"'), '"mineraldeplata"', '"silver_ore"'), '"silverore"', '"silver_ore"'), '"mineraldeoro"', '"gold_ore"'), '"goldore"', '"gold_ore"'), '"mineraldewolframio"', '"tungsten_ore"'), '"tungstenore"', '"tungsten_ore"'), '"mineraldeuranio"', '"uranium_ore"'), '"uraniumore"', '"uranium_ore"'), '"mineralderubi"', '"rubi_ore"'), '"mineralderubí"', '"rubi_ore"'), '"mineralderub"', '"rubi_ore"'), '"rubiore"', '"rubi_ore"'), '"mineraldezafiro"', '"zaphire_ore"'), '"zaphireore"', '"zaphire_ore"'), '"mineraldeesmeralda"', '"emmerald_ore"'), '"emmeraldore"', '"emmerald_ore"'), '"mineraldetopacio"', '"topaz_ore"'), '"topazore"', '"topaz_ore"'), '"mineraldediamante"', '"diamond_ore"'), '"diamondore"', '"diamond_ore"'), '"lingotedecobre"', '"copper"'), '"lingotedehierro"', '"iron"'), '"lingotedeplata"', '"silver"'), '"lingotedeoro"', '"gold"'), '"lingotedewolframio"', '"tungsten"'), '"lingotedeuranio"', '"uranium"'), '"rubipulido"', '"rubi"'), '"rubípulido"', '"rubi"'), '"rubpulido"', '"rubi"'), '"zafiropulido"', '"zaphire"'), '"esmeraldapulida"', '"emmerald"'), '"topaciopulido"', '"topaz"'), '"diamantepulido"', '"diamond"'), '"lightball"', '"light_ball"'), '"thickclub"', '"thick_club"'), '"palo"', '"stick"')
-WHERE save_data LIKE '%"perla"%'
-   OR save_data LIKE '%"perlagrande"%'
-   OR save_data LIKE '%"bigpearl"%'
-   OR save_data LIKE '%"polvoestelar"%'
-   OR save_data LIKE '%"trozoestrella"%'
-   OR save_data LIKE '%"starpiece"%'
-   OR save_data LIKE '%"mineraldecarbon"%'
-   OR save_data LIKE '%"mineraldecarbón"%'
-   OR save_data LIKE '%"mineraldecarbn"%'
-   OR save_data LIKE '%"coalore"%'
-   OR save_data LIKE '%"mineraldecobre"%'
-   OR save_data LIKE '%"copperore"%'
-   OR save_data LIKE '%"mineraldehierro"%'
-   OR save_data LIKE '%"ironore"%'
-   OR save_data LIKE '%"mineraldeplata"%'
-   OR save_data LIKE '%"silverore"%'
-   OR save_data LIKE '%"mineraldeoro"%'
-   OR save_data LIKE '%"goldore"%'
-   OR save_data LIKE '%"mineraldewolframio"%'
-   OR save_data LIKE '%"tungstenore"%'
-   OR save_data LIKE '%"mineraldeuranio"%'
-   OR save_data LIKE '%"uraniumore"%'
-   OR save_data LIKE '%"mineralderubi"%'
-   OR save_data LIKE '%"mineralderubí"%'
-   OR save_data LIKE '%"mineralderub"%'
-   OR save_data LIKE '%"rubiore"%'
-   OR save_data LIKE '%"mineraldezafiro"%'
-   OR save_data LIKE '%"zaphireore"%'
-   OR save_data LIKE '%"mineraldeesmeralda"%'
-   OR save_data LIKE '%"emmeraldore"%'
-   OR save_data LIKE '%"mineraldetopacio"%'
-   OR save_data LIKE '%"topazore"%'
-   OR save_data LIKE '%"mineraldediamante"%'
-   OR save_data LIKE '%"diamondore"%'
-   OR save_data LIKE '%"lingotedecobre"%'
-   OR save_data LIKE '%"lingotedehierro"%'
-   OR save_data LIKE '%"lingotedeplata"%'
-   OR save_data LIKE '%"lingotedeoro"%'
-   OR save_data LIKE '%"lingotedewolframio"%'
-   OR save_data LIKE '%"lingotedeuranio"%'
-   OR save_data LIKE '%"rubipulido"%'
-   OR save_data LIKE '%"rubípulido"%'
-   OR save_data LIKE '%"rubpulido"%'
-   OR save_data LIKE '%"zafiropulido"%'
-   OR save_data LIKE '%"esmeraldapulida"%'
-   OR save_data LIKE '%"topaciopulido"%'
-   OR save_data LIKE '%"diamantepulido"%'
-   OR save_data LIKE '%"lightball"%'
-   OR save_data LIKE '%"thickclub"%'
-   OR save_data LIKE '%"palo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"polvometalico"', '"metal_powder"'), '"polvometálico"', '"metal_powder"'), '"polvometlico"', '"metal_powder"'), '"metalpowder"', '"metal_powder"'), '"twistedspoon"', '"twisted_spoon"'), '"spelltag"', '"spell_tag"'), '"ticketarticuno"', '"ticket_articuno"'), '"ticketmewtwo"', '"ticket_mewtwo"'), '"escanerdeivs"', '"iv_scanner"'), '"escánerdeivs"', '"iv_scanner"'), '"escnerdeivs"', '"iv_scanner"'), '"ivscanner"', '"iv_scanner"'), '"mt01punocertero"', '"tm01"'), '"mt01puñocertero"', '"tm01"'), '"mt01puocertero"', '"tm01"'), '"mt02garradragon"', '"tm02"'), '"mt02garradragón"', '"tm02"'), '"mt02garradragn"', '"tm02"'), '"mt03pulsoagua"', '"tm03"'), '"mt04pazmental"', '"tm04"'), '"mt05rugido"', '"tm05"'), '"mt06toxico"', '"tm06"'), '"mt06tóxico"', '"tm06"'), '"mt06txico"', '"tm06"'), '"mt07granizo"', '"tm07"'), '"mt08corpulencia"', '"tm08"'), '"mt09recurrente"', '"tm09"'), '"mt10poderoculto"', '"tm10"'), '"mt11diasoleado"', '"tm11"'), '"mt11díasoleado"', '"tm11"'), '"mt11dasoleado"', '"tm11"'), '"mt12mofa"', '"tm12"'), '"mt13rayohielo"', '"tm13"'), '"mt14ventisca"', '"tm14"'), '"mt15hiperrayo"', '"tm15"'), '"mt16pantalladeluz"', '"tm16"'), '"mt17proteccion"', '"tm17"'), '"mt17protección"', '"tm17"'), '"mt17proteccin"', '"tm17"'), '"mt18danzalluvia"', '"tm18"'), '"mt19gigadrenado"', '"tm19"'), '"mt20velosagrado"', '"tm20"'), '"mt21frustracion"', '"tm21"'), '"mt21frustración"', '"tm21"'), '"mt21frustracin"', '"tm21"'), '"mt22rayosolar"', '"tm22"'), '"mt23colaferrea"', '"tm23"'), '"mt23colaférrea"', '"tm23"'), '"mt23colafrrea"', '"tm23"'), '"mt24rayo"', '"tm24"')
-WHERE save_data LIKE '%"polvometalico"%'
-   OR save_data LIKE '%"polvometálico"%'
-   OR save_data LIKE '%"polvometlico"%'
-   OR save_data LIKE '%"metalpowder"%'
-   OR save_data LIKE '%"twistedspoon"%'
-   OR save_data LIKE '%"spelltag"%'
-   OR save_data LIKE '%"ticketarticuno"%'
-   OR save_data LIKE '%"ticketmewtwo"%'
-   OR save_data LIKE '%"escanerdeivs"%'
-   OR save_data LIKE '%"escánerdeivs"%'
-   OR save_data LIKE '%"escnerdeivs"%'
-   OR save_data LIKE '%"ivscanner"%'
-   OR save_data LIKE '%"mt01punocertero"%'
-   OR save_data LIKE '%"mt01puñocertero"%'
-   OR save_data LIKE '%"mt01puocertero"%'
-   OR save_data LIKE '%"mt02garradragon"%'
-   OR save_data LIKE '%"mt02garradragón"%'
-   OR save_data LIKE '%"mt02garradragn"%'
-   OR save_data LIKE '%"mt03pulsoagua"%'
-   OR save_data LIKE '%"mt04pazmental"%'
-   OR save_data LIKE '%"mt05rugido"%'
-   OR save_data LIKE '%"mt06toxico"%'
-   OR save_data LIKE '%"mt06tóxico"%'
-   OR save_data LIKE '%"mt06txico"%'
-   OR save_data LIKE '%"mt07granizo"%'
-   OR save_data LIKE '%"mt08corpulencia"%'
-   OR save_data LIKE '%"mt09recurrente"%'
-   OR save_data LIKE '%"mt10poderoculto"%'
-   OR save_data LIKE '%"mt11diasoleado"%'
-   OR save_data LIKE '%"mt11díasoleado"%'
-   OR save_data LIKE '%"mt11dasoleado"%'
-   OR save_data LIKE '%"mt12mofa"%'
-   OR save_data LIKE '%"mt13rayohielo"%'
-   OR save_data LIKE '%"mt14ventisca"%'
-   OR save_data LIKE '%"mt15hiperrayo"%'
-   OR save_data LIKE '%"mt16pantalladeluz"%'
-   OR save_data LIKE '%"mt17proteccion"%'
-   OR save_data LIKE '%"mt17protección"%'
-   OR save_data LIKE '%"mt17proteccin"%'
-   OR save_data LIKE '%"mt18danzalluvia"%'
-   OR save_data LIKE '%"mt19gigadrenado"%'
-   OR save_data LIKE '%"mt20velosagrado"%'
-   OR save_data LIKE '%"mt21frustracion"%'
-   OR save_data LIKE '%"mt21frustración"%'
-   OR save_data LIKE '%"mt21frustracin"%'
-   OR save_data LIKE '%"mt22rayosolar"%'
-   OR save_data LIKE '%"mt23colaferrea"%'
-   OR save_data LIKE '%"mt23colaférrea"%'
-   OR save_data LIKE '%"mt23colafrrea"%'
-   OR save_data LIKE '%"mt24rayo"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"mt25trueno"', '"tm25"'), '"mt26terremoto"', '"tm26"'), '"mt27retribucion"', '"tm27"'), '"mt27retribución"', '"tm27"'), '"mt27retribucin"', '"tm27"'), '"mt28excavar"', '"tm28"'), '"mt29psiquico"', '"tm29"'), '"mt29psíquico"', '"tm29"'), '"mt29psquico"', '"tm29"'), '"mt30bolasombra"', '"tm30"'), '"mt31demolicion"', '"tm31"'), '"mt31demolición"', '"tm31"'), '"mt31demolicin"', '"tm31"'), '"mt32dobleequipo"', '"tm32"'), '"mt33reflejo"', '"tm33"'), '"mt34ondavoltio"', '"tm34"'), '"mt35lanzallamas"', '"tm35"'), '"mt36bombalodo"', '"tm36"'), '"mt37tormentadearena"', '"tm37"'), '"mt38llamarada"', '"tm38"'), '"mt39tumbarocas"', '"tm39"'), '"mt40golpeaereo"', '"tm40"'), '"mt40golpeaéreo"', '"tm40"'), '"mt40golpeareo"', '"tm40"'), '"mt41tormento"', '"tm41"'), '"mt42imagen"', '"tm42"'), '"mt43danosecreto"', '"tm43"'), '"mt43dañosecreto"', '"tm43"'), '"mt43daosecreto"', '"tm43"'), '"mt44descanso"', '"tm44"'), '"mt45atraccion"', '"tm45"'), '"mt45atracción"', '"tm45"'), '"mt45atraccin"', '"tm45"'), '"mt46ladron"', '"tm46"'), '"mt46ladrón"', '"tm46"'), '"mt46ladrn"', '"tm46"'), '"mt47aladeacero"', '"tm47"'), '"mt48intercambio"', '"tm48"'), '"mt49robo"', '"tm49"'), '"mt50sofoco"', '"tm50"'), '"bonguriazul"', '"apricorn_blue"'), '"apricornblue"', '"apricorn_blue"'), '"bongurirojo"', '"apricorn_red"'), '"apricornred"', '"apricorn_red"'), '"bonguriamarillo"', '"apricorn_yellow"'), '"apricornyellow"', '"apricorn_yellow"'), '"azucardebaya"', '"berry_sugar"'), '"azúcardebaya"', '"berry_sugar"'), '"azcardebaya"', '"berry_sugar"'), '"berrysugar"', '"berry_sugar"')
-WHERE save_data LIKE '%"mt25trueno"%'
-   OR save_data LIKE '%"mt26terremoto"%'
-   OR save_data LIKE '%"mt27retribucion"%'
-   OR save_data LIKE '%"mt27retribución"%'
-   OR save_data LIKE '%"mt27retribucin"%'
-   OR save_data LIKE '%"mt28excavar"%'
-   OR save_data LIKE '%"mt29psiquico"%'
-   OR save_data LIKE '%"mt29psíquico"%'
-   OR save_data LIKE '%"mt29psquico"%'
-   OR save_data LIKE '%"mt30bolasombra"%'
-   OR save_data LIKE '%"mt31demolicion"%'
-   OR save_data LIKE '%"mt31demolición"%'
-   OR save_data LIKE '%"mt31demolicin"%'
-   OR save_data LIKE '%"mt32dobleequipo"%'
-   OR save_data LIKE '%"mt33reflejo"%'
-   OR save_data LIKE '%"mt34ondavoltio"%'
-   OR save_data LIKE '%"mt35lanzallamas"%'
-   OR save_data LIKE '%"mt36bombalodo"%'
-   OR save_data LIKE '%"mt37tormentadearena"%'
-   OR save_data LIKE '%"mt38llamarada"%'
-   OR save_data LIKE '%"mt39tumbarocas"%'
-   OR save_data LIKE '%"mt40golpeaereo"%'
-   OR save_data LIKE '%"mt40golpeaéreo"%'
-   OR save_data LIKE '%"mt40golpeareo"%'
-   OR save_data LIKE '%"mt41tormento"%'
-   OR save_data LIKE '%"mt42imagen"%'
-   OR save_data LIKE '%"mt43danosecreto"%'
-   OR save_data LIKE '%"mt43dañosecreto"%'
-   OR save_data LIKE '%"mt43daosecreto"%'
-   OR save_data LIKE '%"mt44descanso"%'
-   OR save_data LIKE '%"mt45atraccion"%'
-   OR save_data LIKE '%"mt45atracción"%'
-   OR save_data LIKE '%"mt45atraccin"%'
-   OR save_data LIKE '%"mt46ladron"%'
-   OR save_data LIKE '%"mt46ladrón"%'
-   OR save_data LIKE '%"mt46ladrn"%'
-   OR save_data LIKE '%"mt47aladeacero"%'
-   OR save_data LIKE '%"mt48intercambio"%'
-   OR save_data LIKE '%"mt49robo"%'
-   OR save_data LIKE '%"mt50sofoco"%'
-   OR save_data LIKE '%"bonguriazul"%'
-   OR save_data LIKE '%"apricornblue"%'
-   OR save_data LIKE '%"bongurirojo"%'
-   OR save_data LIKE '%"apricornred"%'
-   OR save_data LIKE '%"bonguriamarillo"%'
-   OR save_data LIKE '%"apricornyellow"%'
-   OR save_data LIKE '%"azucardebaya"%'
-   OR save_data LIKE '%"azúcardebaya"%'
-   OR save_data LIKE '%"azcardebaya"%'
-   OR save_data LIKE '%"berrysugar"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"fragmentodehueso"', '"bone_fragment"'), '"bonefragment"', '"bone_fragment"'), '"brocoli"', '"broccoli"'), '"brócoli"', '"broccoli"'), '"brcoli"', '"broccoli"'), '"zanahoria"', '"carrot"'), '"tela"', '"cloth"'), '"mieldecombee"', '"combee_honey"'), '"combeehoney"', '"combee_honey"'), '"piedraalba"', '"dawn_stone"'), '"dawnstone"', '"dawn_stone"'), '"piedracrepusculo"', '"dusk_stone"'), '"piedracrepúsculo"', '"dusk_stone"'), '"piedracrepsculo"', '"dusk_stone"'), '"duskstone"', '"dusk_stone"'), '"chatarraelectronica"', '"electronic_scrap"'), '"chatarraelectrónica"', '"electronic_scrap"'), '"chatarraelectrnica"', '"electronic_scrap"'), '"electronicscrap"', '"electronic_scrap"'), '"polvoenergia"', '"energy_powder"'), '"polvoenergía"', '"energy_powder"'), '"polvoenerga"', '"energy_powder"'), '"energypowder"', '"energy_powder"'), '"sobrasdecomida"', '"food_scraps"'), '"foodscraps"', '"food_scraps"'), '"aguafresca"', '"fresh_water"'), '"freshwater"', '"fresh_water"'), '"hierbarara"', '"herb_rare"'), '"herbrare"', '"herb_rare"'), '"cristaldehielo"', '"ice_crystal"'), '"icecrystal"', '"ice_crystal"'), '"piedrahielo"', '"ice_stone"'), '"icestone"', '"ice_stone"'), '"tiradecuero"', '"leather_strip"'), '"leatherstrip"', '"leather_strip"'), '"lechuga"', '"lettuce"'), '"bayalichi"', '"liechi_berry"'), '"liechiberry"', '"liechi_berry"'), '"chatarrademetal"', '"metal_scrap"'), '"metalscrap"', '"metal_scrap"'), '"champinon"', '"mushroom"'), '"champiñón"', '"mushroom"'), '"champin"', '"mushroom"'), '"mineraldeniquel"', '"nickel_ore"'), '"mineraldeníquel"', '"nickel_ore"'), '"mineraldenquel"', '"nickel_ore"'), '"nickelore"', '"nickel_ore"'), '"aceite"', '"oil"'), '"cebolla"', '"onion"'), '"bayamelocsilvestre"', '"pecha_berry_wild"')
-WHERE save_data LIKE '%"fragmentodehueso"%'
-   OR save_data LIKE '%"bonefragment"%'
-   OR save_data LIKE '%"brocoli"%'
-   OR save_data LIKE '%"brócoli"%'
-   OR save_data LIKE '%"brcoli"%'
-   OR save_data LIKE '%"zanahoria"%'
-   OR save_data LIKE '%"tela"%'
-   OR save_data LIKE '%"mieldecombee"%'
-   OR save_data LIKE '%"combeehoney"%'
-   OR save_data LIKE '%"piedraalba"%'
-   OR save_data LIKE '%"dawnstone"%'
-   OR save_data LIKE '%"piedracrepusculo"%'
-   OR save_data LIKE '%"piedracrepúsculo"%'
-   OR save_data LIKE '%"piedracrepsculo"%'
-   OR save_data LIKE '%"duskstone"%'
-   OR save_data LIKE '%"chatarraelectronica"%'
-   OR save_data LIKE '%"chatarraelectrónica"%'
-   OR save_data LIKE '%"chatarraelectrnica"%'
-   OR save_data LIKE '%"electronicscrap"%'
-   OR save_data LIKE '%"polvoenergia"%'
-   OR save_data LIKE '%"polvoenergía"%'
-   OR save_data LIKE '%"polvoenerga"%'
-   OR save_data LIKE '%"energypowder"%'
-   OR save_data LIKE '%"sobrasdecomida"%'
-   OR save_data LIKE '%"foodscraps"%'
-   OR save_data LIKE '%"aguafresca"%'
-   OR save_data LIKE '%"freshwater"%'
-   OR save_data LIKE '%"hierbarara"%'
-   OR save_data LIKE '%"herbrare"%'
-   OR save_data LIKE '%"cristaldehielo"%'
-   OR save_data LIKE '%"icecrystal"%'
-   OR save_data LIKE '%"piedrahielo"%'
-   OR save_data LIKE '%"icestone"%'
-   OR save_data LIKE '%"tiradecuero"%'
-   OR save_data LIKE '%"leatherstrip"%'
-   OR save_data LIKE '%"lechuga"%'
-   OR save_data LIKE '%"bayalichi"%'
-   OR save_data LIKE '%"liechiberry"%'
-   OR save_data LIKE '%"chatarrademetal"%'
-   OR save_data LIKE '%"metalscrap"%'
-   OR save_data LIKE '%"champinon"%'
-   OR save_data LIKE '%"champiñón"%'
-   OR save_data LIKE '%"champin"%'
-   OR save_data LIKE '%"mineraldeniquel"%'
-   OR save_data LIKE '%"mineraldeníquel"%'
-   OR save_data LIKE '%"mineraldenquel"%'
-   OR save_data LIKE '%"nickelore"%'
-   OR save_data LIKE '%"aceite"%'
-   OR save_data LIKE '%"cebolla"%'
-   OR save_data LIKE '%"bayamelocsilvestre"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"pechaberrywild"', '"pecha_berry_wild"'), '"saviapetrificada"', '"petrified_sap"'), '"petrifiedsap"', '"petrified_sap"'), '"pigmentonegro"', '"pigment_black"'), '"pigmentblack"', '"pigment_black"'), '"pigmentoazul"', '"pigment_blue"'), '"pigmentblue"', '"pigment_blue"'), '"pigmentoverde"', '"pigment_green"'), '"pigmentgreen"', '"pigment_green"'), '"pigmentonaranja"', '"pigment_orange"'), '"pigmentorange"', '"pigment_orange"'), '"pigmentomorado"', '"pigment_purple"'), '"pigmentpurple"', '"pigment_purple"'), '"pigmentorojo"', '"pigment_red"'), '"pigmentred"', '"pigment_red"'), '"pigmentoblanco"', '"pigment_white"'), '"pigmentwhite"', '"pigment_white"'), '"pigmentoamarillo"', '"pigment_yellow"'), '"pigmentyellow"', '"pigment_yellow"'), '"patata"', '"potato"'), '"raizderevivir"', '"revive_root"'), '"raízderevivir"', '"revive_root"'), '"razderevivir"', '"revive_root"'), '"reviveroot"', '"revive_root"'), '"compuestodegoma"', '"rubber_compound"'), '"rubbercompound"', '"rubber_compound"'), '"bayasalac"', '"salac_berry"'), '"salacberry"', '"salac_berry"'), '"arenadesilice"', '"sand_silica"'), '"arenadesílice"', '"sand_silica"'), '"arenadeslice"', '"sand_silica"'), '"sandsilica"', '"sand_silica"'), '"serrin"', '"saw_dust"'), '"serrín"', '"saw_dust"'), '"serrn"', '"saw_dust"'), '"sawdust"', '"saw_dust"'), '"piedradia"', '"shiny_stone"'), '"piedradía"', '"shiny_stone"'), '"piedrada"', '"shiny_stone"'), '"shinystone"', '"shiny_stone"'), '"saviadulce"', '"sweet_sap"'), '"sweetsap"', '"sweet_sap"'), '"minichampinon"', '"tiny_mushroom"'), '"minichampiñón"', '"tiny_mushroom"'), '"minichampin"', '"tiny_mushroom"'), '"tinymushroom"', '"tiny_mushroom"'), '"mineraldeestano"', '"tin_ore"'), '"mineraldeestaño"', '"tin_ore"'), '"mineraldeestao"', '"tin_ore"'), '"tinore"', '"tin_ore"')
-WHERE save_data LIKE '%"pechaberrywild"%'
-   OR save_data LIKE '%"saviapetrificada"%'
-   OR save_data LIKE '%"petrifiedsap"%'
-   OR save_data LIKE '%"pigmentonegro"%'
-   OR save_data LIKE '%"pigmentblack"%'
-   OR save_data LIKE '%"pigmentoazul"%'
-   OR save_data LIKE '%"pigmentblue"%'
-   OR save_data LIKE '%"pigmentoverde"%'
-   OR save_data LIKE '%"pigmentgreen"%'
-   OR save_data LIKE '%"pigmentonaranja"%'
-   OR save_data LIKE '%"pigmentorange"%'
-   OR save_data LIKE '%"pigmentomorado"%'
-   OR save_data LIKE '%"pigmentpurple"%'
-   OR save_data LIKE '%"pigmentorojo"%'
-   OR save_data LIKE '%"pigmentred"%'
-   OR save_data LIKE '%"pigmentoblanco"%'
-   OR save_data LIKE '%"pigmentwhite"%'
-   OR save_data LIKE '%"pigmentoamarillo"%'
-   OR save_data LIKE '%"pigmentyellow"%'
-   OR save_data LIKE '%"patata"%'
-   OR save_data LIKE '%"raizderevivir"%'
-   OR save_data LIKE '%"raízderevivir"%'
-   OR save_data LIKE '%"razderevivir"%'
-   OR save_data LIKE '%"reviveroot"%'
-   OR save_data LIKE '%"compuestodegoma"%'
-   OR save_data LIKE '%"rubbercompound"%'
-   OR save_data LIKE '%"bayasalac"%'
-   OR save_data LIKE '%"salacberry"%'
-   OR save_data LIKE '%"arenadesilice"%'
-   OR save_data LIKE '%"arenadesílice"%'
-   OR save_data LIKE '%"arenadeslice"%'
-   OR save_data LIKE '%"sandsilica"%'
-   OR save_data LIKE '%"serrin"%'
-   OR save_data LIKE '%"serrín"%'
-   OR save_data LIKE '%"serrn"%'
-   OR save_data LIKE '%"sawdust"%'
-   OR save_data LIKE '%"piedradia"%'
-   OR save_data LIKE '%"piedradía"%'
-   OR save_data LIKE '%"piedrada"%'
-   OR save_data LIKE '%"shinystone"%'
-   OR save_data LIKE '%"saviadulce"%'
-   OR save_data LIKE '%"sweetsap"%'
-   OR save_data LIKE '%"minichampinon"%'
-   OR save_data LIKE '%"minichampiñón"%'
-   OR save_data LIKE '%"minichampin"%'
-   OR save_data LIKE '%"tinymushroom"%'
-   OR save_data LIKE '%"mineraldeestano"%'
-   OR save_data LIKE '%"mineraldeestaño"%'
-   OR save_data LIKE '%"mineraldeestao"%'
-   OR save_data LIKE '%"tinore"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"tomate"', '"tomato"'), '"madera"', '"wood"'), '"aleaciondebronce"', '"bronze_alloy"'), '"aleacióndebronce"', '"bronze_alloy"'), '"aleacindebronce"', '"bronze_alloy"'), '"bronzealloy"', '"bronze_alloy"'), '"basequimica"', '"chemical_base"'), '"basequímica"', '"chemical_base"'), '"basequmica"', '"chemical_base"'), '"chemicalbase"', '"chemical_base"'), '"carbonrefinado"', '"coal"'), '"carbónrefinado"', '"coal"'), '"carbnrefinado"', '"coal"'), '"aleaciondeelectrum"', '"electrum_alloy"'), '"aleacióndeelectrum"', '"electrum_alloy"'), '"aleacindeelectrum"', '"electrum_alloy"'), '"electrumalloy"', '"electrum_alloy"'), '"botelladevidrio"', '"glass_bottle"'), '"glassbottle"', '"glass_bottle"'), '"aleacionendurecida"', '"hardened_alloy"'), '"aleaciónendurecida"', '"hardened_alloy"'), '"aleacinendurecida"', '"hardened_alloy"'), '"hardenedalloy"', '"hardened_alloy"'), '"lingotedeniquel"', '"nickel"'), '"lingotedeníquel"', '"nickel"'), '"lingotedenquel"', '"nickel"'), '"astilladepintura"', '"paint_splint"'), '"paintsplint"', '"paint_splint"'), '"plastico"', '"plastic"'), '"plástico"', '"plastic"'), '"plstico"', '"plastic"'), '"aleaciondeacero"', '"steel_alloy"'), '"aleacióndeacero"', '"steel_alloy"'), '"aleacindeacero"', '"steel_alloy"'), '"steelalloy"', '"steel_alloy"'), '"maderadeconstruccion"', '"timber"'), '"maderadeconstrucción"', '"timber"'), '"maderadeconstruccin"', '"timber"'), '"lingotedeestano"', '"tin"'), '"lingotedeestaño"', '"tin"'), '"lingotedeestao"', '"tin"'), '"tintenegro"', '"tint_black"'), '"tintblack"', '"tint_black"'), '"tinteazul"', '"tint_blue"'), '"tintblue"', '"tint_blue"'), '"tinteverde"', '"tint_green"'), '"tintgreen"', '"tint_green"'), '"tintenaranja"', '"tint_orange"'), '"tintorange"', '"tint_orange"'), '"tintemorado"', '"tint_purple"')
-WHERE save_data LIKE '%"tomate"%'
-   OR save_data LIKE '%"madera"%'
-   OR save_data LIKE '%"aleaciondebronce"%'
-   OR save_data LIKE '%"aleacióndebronce"%'
-   OR save_data LIKE '%"aleacindebronce"%'
-   OR save_data LIKE '%"bronzealloy"%'
-   OR save_data LIKE '%"basequimica"%'
-   OR save_data LIKE '%"basequímica"%'
-   OR save_data LIKE '%"basequmica"%'
-   OR save_data LIKE '%"chemicalbase"%'
-   OR save_data LIKE '%"carbonrefinado"%'
-   OR save_data LIKE '%"carbónrefinado"%'
-   OR save_data LIKE '%"carbnrefinado"%'
-   OR save_data LIKE '%"aleaciondeelectrum"%'
-   OR save_data LIKE '%"aleacióndeelectrum"%'
-   OR save_data LIKE '%"aleacindeelectrum"%'
-   OR save_data LIKE '%"electrumalloy"%'
-   OR save_data LIKE '%"botelladevidrio"%'
-   OR save_data LIKE '%"glassbottle"%'
-   OR save_data LIKE '%"aleacionendurecida"%'
-   OR save_data LIKE '%"aleaciónendurecida"%'
-   OR save_data LIKE '%"aleacinendurecida"%'
-   OR save_data LIKE '%"hardenedalloy"%'
-   OR save_data LIKE '%"lingotedeniquel"%'
-   OR save_data LIKE '%"lingotedeníquel"%'
-   OR save_data LIKE '%"lingotedenquel"%'
-   OR save_data LIKE '%"astilladepintura"%'
-   OR save_data LIKE '%"paintsplint"%'
-   OR save_data LIKE '%"plastico"%'
-   OR save_data LIKE '%"plástico"%'
-   OR save_data LIKE '%"plstico"%'
-   OR save_data LIKE '%"aleaciondeacero"%'
-   OR save_data LIKE '%"aleacióndeacero"%'
-   OR save_data LIKE '%"aleacindeacero"%'
-   OR save_data LIKE '%"steelalloy"%'
-   OR save_data LIKE '%"maderadeconstruccion"%'
-   OR save_data LIKE '%"maderadeconstrucción"%'
-   OR save_data LIKE '%"maderadeconstruccin"%'
-   OR save_data LIKE '%"lingotedeestano"%'
-   OR save_data LIKE '%"lingotedeestaño"%'
-   OR save_data LIKE '%"lingotedeestao"%'
-   OR save_data LIKE '%"tintenegro"%'
-   OR save_data LIKE '%"tintblack"%'
-   OR save_data LIKE '%"tinteazul"%'
-   OR save_data LIKE '%"tintblue"%'
-   OR save_data LIKE '%"tinteverde"%'
-   OR save_data LIKE '%"tintgreen"%'
-   OR save_data LIKE '%"tintenaranja"%'
-   OR save_data LIKE '%"tintorange"%'
-   OR save_data LIKE '%"tintemorado"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"tintpurple"', '"tint_purple"'), '"tinterojo"', '"tint_red"'), '"tintred"', '"tint_red"'), '"tinteblanco"', '"tint_white"'), '"tintwhite"', '"tint_white"'), '"tinteamarillo"', '"tint_yellow"'), '"tintyellow"', '"tint_yellow"'), '"hilotejido"', '"woven_thread"'), '"woventhread"', '"woven_thread"'), '"moduloelectronicoavanzado"', '"advanced_electronics_module"'), '"móduloelectrónicoavanzado"', '"advanced_electronics_module"'), '"mduloelectrnicoavanzado"', '"advanced_electronics_module"'), '"advancedelectronicsmodule"', '"advanced_electronics_module"'), '"reactivodeantidoto"', '"antidote_reactive"'), '"reactivodeantídoto"', '"antidote_reactive"'), '"reactivodeantdoto"', '"antidote_reactive"'), '"antidotereactive"', '"antidote_reactive"'), '"bateriagrande"', '"big_battery"'), '"bateríagrande"', '"big_battery"'), '"bateragrande"', '"big_battery"'), '"bigbattery"', '"big_battery"'), '"procesadorgrande"', '"big_cpu"'), '"bigcpu"', '"big_cpu"'), '"tornilloytuerca"', '"bolt_nut"'), '"boltnut"', '"bolt_nut"'), '"nectardebronce"', '"bronze_nectar"'), '"néctardebronce"', '"bronze_nectar"'), '"nctardebronce"', '"bronze_nectar"'), '"bronzenectar"', '"bronze_nectar"'), '"pesocalibrado"', '"calibrated_weight"'), '"calibratedweight"', '"calibrated_weight"'), '"esenciaquimica"', '"chemical_essence"'), '"esenciaquímica"', '"chemical_essence"'), '"esenciaqumica"', '"chemical_essence"'), '"chemicalessence"', '"chemical_essence"'), '"resucitadorquimico"', '"chemical_resuscitant"'), '"resucitadorquímico"', '"chemical_resuscitant"'), '"resucitadorqumico"', '"chemical_resuscitant"'), '"chemicalresuscitant"', '"chemical_resuscitant"'), '"chipelectronico"', '"chip"'), '"chipelectrónico"', '"chip"'), '"chipelectrnico"', '"chip"'), '"moduloelectronico"', '"electronics_module"'), '"móduloelectrónico"', '"electronics_module"'), '"mduloelectrnico"', '"electronics_module"'), '"electronicsmodule"', '"electronics_module"'), '"monitorcrt"', '"fat_monitor"'), '"fatmonitor"', '"fat_monitor"'), '"monitorplano"', '"flat_monitor"'), '"flatmonitor"', '"flat_monitor"')
-WHERE save_data LIKE '%"tintpurple"%'
-   OR save_data LIKE '%"tinterojo"%'
-   OR save_data LIKE '%"tintred"%'
-   OR save_data LIKE '%"tinteblanco"%'
-   OR save_data LIKE '%"tintwhite"%'
-   OR save_data LIKE '%"tinteamarillo"%'
-   OR save_data LIKE '%"tintyellow"%'
-   OR save_data LIKE '%"hilotejido"%'
-   OR save_data LIKE '%"woventhread"%'
-   OR save_data LIKE '%"moduloelectronicoavanzado"%'
-   OR save_data LIKE '%"móduloelectrónicoavanzado"%'
-   OR save_data LIKE '%"mduloelectrnicoavanzado"%'
-   OR save_data LIKE '%"advancedelectronicsmodule"%'
-   OR save_data LIKE '%"reactivodeantidoto"%'
-   OR save_data LIKE '%"reactivodeantídoto"%'
-   OR save_data LIKE '%"reactivodeantdoto"%'
-   OR save_data LIKE '%"antidotereactive"%'
-   OR save_data LIKE '%"bateriagrande"%'
-   OR save_data LIKE '%"bateríagrande"%'
-   OR save_data LIKE '%"bateragrande"%'
-   OR save_data LIKE '%"bigbattery"%'
-   OR save_data LIKE '%"procesadorgrande"%'
-   OR save_data LIKE '%"bigcpu"%'
-   OR save_data LIKE '%"tornilloytuerca"%'
-   OR save_data LIKE '%"boltnut"%'
-   OR save_data LIKE '%"nectardebronce"%'
-   OR save_data LIKE '%"néctardebronce"%'
-   OR save_data LIKE '%"nctardebronce"%'
-   OR save_data LIKE '%"bronzenectar"%'
-   OR save_data LIKE '%"pesocalibrado"%'
-   OR save_data LIKE '%"calibratedweight"%'
-   OR save_data LIKE '%"esenciaquimica"%'
-   OR save_data LIKE '%"esenciaquímica"%'
-   OR save_data LIKE '%"esenciaqumica"%'
-   OR save_data LIKE '%"chemicalessence"%'
-   OR save_data LIKE '%"resucitadorquimico"%'
-   OR save_data LIKE '%"resucitadorquímico"%'
-   OR save_data LIKE '%"resucitadorqumico"%'
-   OR save_data LIKE '%"chemicalresuscitant"%'
-   OR save_data LIKE '%"chipelectronico"%'
-   OR save_data LIKE '%"chipelectrónico"%'
-   OR save_data LIKE '%"chipelectrnico"%'
-   OR save_data LIKE '%"moduloelectronico"%'
-   OR save_data LIKE '%"móduloelectrónico"%'
-   OR save_data LIKE '%"mduloelectrnico"%'
-   OR save_data LIKE '%"electronicsmodule"%'
-   OR save_data LIKE '%"monitorcrt"%'
-   OR save_data LIKE '%"fatmonitor"%'
-   OR save_data LIKE '%"monitorplano"%'
-   OR save_data LIKE '%"flatmonitor"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"engranaje"', '"gear"'), '"nectardorado"', '"golden_nectar"'), '"néctardorado"', '"golden_nectar"'), '"nctardorado"', '"golden_nectar"'), '"goldennectar"', '"golden_nectar"'), '"unidadgpu"', '"gpu"'), '"electronicaindustrial"', '"industrial_electronics"'), '"electrónicaindustrial"', '"industrial_electronics"'), '"electrnicaindustrial"', '"industrial_electronics"'), '"industrialelectronics"', '"industrial_electronics"'), '"extractomedicinal"', '"medicinal_extract"'), '"medicinalextract"', '"medicinal_extract"'), '"contenedordemetal"', '"metal_container"'), '"metalcontainer"', '"metal_container"'), '"marcodemetal"', '"metal_frame"'), '"metalframe"', '"metal_frame"'), '"placabase"', '"motherboard"'), '"clavos"', '"nails"'), '"unidadnpu"', '"npu"'), '"desechonuclear"', '"nuclear_waste"'), '"nuclearwaste"', '"nuclear_waste"'), '"lenteoptica"', '"optical_lens"'), '"lenteóptica"', '"optical_lens"'), '"lenteptica"', '"optical_lens"'), '"opticallens"', '"optical_lens"'), '"fibraoptica"', '"optic_fiber"'), '"fibraóptica"', '"optic_fiber"'), '"fibraptica"', '"optic_fiber"'), '"opticfiber"', '"optic_fiber"'), '"fertilizanteorganico"', '"organic_fertilizer"'), '"fertilizanteorgánico"', '"organic_fertilizer"'), '"fertilizanteorgnico"', '"organic_fertilizer"'), '"organicfertilizer"', '"organic_fertilizer"'), '"recubrimientodepintura"', '"paint_coating"'), '"paintcoating"', '"paint_coating"'), '"carcasadeplastico"', '"plastic_shell"'), '"carcasadeplástico"', '"plastic_shell"'), '"carcasadeplstico"', '"plastic_shell"'), '"plasticshell"', '"plastic_shell"'), '"contenedorreforzado"', '"reinforced_container"'), '"reinforcedcontainer"', '"reinforced_container"'), '"carcasadeplasticoreforzada"', '"reinforced_plastic_shell"'), '"carcasadeplásticoreforzada"', '"reinforced_plastic_shell"'), '"carcasadeplsticoreforzada"', '"reinforced_plastic_shell"'), '"reinforcedplasticshell"', '"reinforced_plastic_shell"'), '"correareforzada"', '"reinforced_strap"'), '"reinforcedstrap"', '"reinforced_strap"'), '"juntadegoma"', '"rubber_gasket"'), '"rubbergasket"', '"rubber_gasket"'), '"pantalla"', '"screen"')
-WHERE save_data LIKE '%"engranaje"%'
-   OR save_data LIKE '%"nectardorado"%'
-   OR save_data LIKE '%"néctardorado"%'
-   OR save_data LIKE '%"nctardorado"%'
-   OR save_data LIKE '%"goldennectar"%'
-   OR save_data LIKE '%"unidadgpu"%'
-   OR save_data LIKE '%"electronicaindustrial"%'
-   OR save_data LIKE '%"electrónicaindustrial"%'
-   OR save_data LIKE '%"electrnicaindustrial"%'
-   OR save_data LIKE '%"industrialelectronics"%'
-   OR save_data LIKE '%"extractomedicinal"%'
-   OR save_data LIKE '%"medicinalextract"%'
-   OR save_data LIKE '%"contenedordemetal"%'
-   OR save_data LIKE '%"metalcontainer"%'
-   OR save_data LIKE '%"marcodemetal"%'
-   OR save_data LIKE '%"metalframe"%'
-   OR save_data LIKE '%"placabase"%'
-   OR save_data LIKE '%"clavos"%'
-   OR save_data LIKE '%"unidadnpu"%'
-   OR save_data LIKE '%"desechonuclear"%'
-   OR save_data LIKE '%"nuclearwaste"%'
-   OR save_data LIKE '%"lenteoptica"%'
-   OR save_data LIKE '%"lenteóptica"%'
-   OR save_data LIKE '%"lenteptica"%'
-   OR save_data LIKE '%"opticallens"%'
-   OR save_data LIKE '%"fibraoptica"%'
-   OR save_data LIKE '%"fibraóptica"%'
-   OR save_data LIKE '%"fibraptica"%'
-   OR save_data LIKE '%"opticfiber"%'
-   OR save_data LIKE '%"fertilizanteorganico"%'
-   OR save_data LIKE '%"fertilizanteorgánico"%'
-   OR save_data LIKE '%"fertilizanteorgnico"%'
-   OR save_data LIKE '%"organicfertilizer"%'
-   OR save_data LIKE '%"recubrimientodepintura"%'
-   OR save_data LIKE '%"paintcoating"%'
-   OR save_data LIKE '%"carcasadeplastico"%'
-   OR save_data LIKE '%"carcasadeplástico"%'
-   OR save_data LIKE '%"carcasadeplstico"%'
-   OR save_data LIKE '%"plasticshell"%'
-   OR save_data LIKE '%"contenedorreforzado"%'
-   OR save_data LIKE '%"reinforcedcontainer"%'
-   OR save_data LIKE '%"carcasadeplasticoreforzada"%'
-   OR save_data LIKE '%"carcasadeplásticoreforzada"%'
-   OR save_data LIKE '%"carcasadeplsticoreforzada"%'
-   OR save_data LIKE '%"reinforcedplasticshell"%'
-   OR save_data LIKE '%"correareforzada"%'
-   OR save_data LIKE '%"reinforcedstrap"%'
-   OR save_data LIKE '%"juntadegoma"%'
-   OR save_data LIKE '%"rubbergasket"%'
-   OR save_data LIKE '%"pantalla"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"cristaldesensor"', '"sensor_crystal"'), '"sensorcrystal"', '"sensor_crystal"'), '"nectardeplata"', '"silver_nectar"'), '"néctardeplata"', '"silver_nectar"'), '"nctardeplata"', '"silver_nectar"'), '"silvernectar"', '"silver_nectar"'), '"antenapequena"', '"small_antenna"'), '"antenapequeña"', '"small_antenna"'), '"antenapequea"', '"small_antenna"'), '"smallantenna"', '"small_antenna"'), '"bateriapequena"', '"small_battery"'), '"bateríapequeña"', '"small_battery"'), '"baterapequea"', '"small_battery"'), '"smallbattery"', '"small_battery"'), '"procesadorpequeno"', '"small_cpu"'), '"procesadorpequeño"', '"small_cpu"'), '"procesadorpequeo"', '"small_cpu"'), '"smallcpu"', '"small_cpu"'), '"monitorpequeno"', '"small_monitor"'), '"monitorpequeño"', '"small_monitor"'), '"monitorpequeo"', '"small_monitor"'), '"smallmonitor"', '"small_monitor"'), '"resorte"', '"spring"'), '"siropedulce"', '"sweet_syrup"'), '"sweetsyrup"', '"sweet_syrup"'), '"impresora3d"', '"3d_printer"'), '"3dprinter"', '"3d_printer"'), '"bancodetrabajoavanzado"', '"advanced_workbench"'), '"advancedworkbench"', '"advanced_workbench"'), '"alambique"', '"alembic"'), '"antena"', '"antenna"'), '"generadordeantimateria"', '"antimatter_generator"'), '"antimattergenerator"', '"antimatter_generator"'), '"antenagrande"', '"big_antenna"'), '"bigantenna"', '"big_antenna"'), '"binoculares"', '"binoculars"'), '"camara"', '"camera"'), '"cámara"', '"camera"'), '"cmara"', '"camera"'), '"carbonvegetal"', '"charcoal"'), '"carbónvegetal"', '"charcoal"'), '"carbnvegetal"', '"charcoal"'), '"panueloelegido"', '"choice_scarf"'), '"pañueloelegido"', '"choice_scarf"'), '"paueloelegido"', '"choice_scarf"'), '"choicescarf"', '"choice_scarf"'), '"gafaselegidas"', '"choice_specs"'), '"choicespecs"', '"choice_specs"'), '"generadordecarbon"', '"coal_generator"'), '"generadordecarbón"', '"coal_generator"')
-WHERE save_data LIKE '%"cristaldesensor"%'
-   OR save_data LIKE '%"sensorcrystal"%'
-   OR save_data LIKE '%"nectardeplata"%'
-   OR save_data LIKE '%"néctardeplata"%'
-   OR save_data LIKE '%"nctardeplata"%'
-   OR save_data LIKE '%"silvernectar"%'
-   OR save_data LIKE '%"antenapequena"%'
-   OR save_data LIKE '%"antenapequeña"%'
-   OR save_data LIKE '%"antenapequea"%'
-   OR save_data LIKE '%"smallantenna"%'
-   OR save_data LIKE '%"bateriapequena"%'
-   OR save_data LIKE '%"bateríapequeña"%'
-   OR save_data LIKE '%"baterapequea"%'
-   OR save_data LIKE '%"smallbattery"%'
-   OR save_data LIKE '%"procesadorpequeno"%'
-   OR save_data LIKE '%"procesadorpequeño"%'
-   OR save_data LIKE '%"procesadorpequeo"%'
-   OR save_data LIKE '%"smallcpu"%'
-   OR save_data LIKE '%"monitorpequeno"%'
-   OR save_data LIKE '%"monitorpequeño"%'
-   OR save_data LIKE '%"monitorpequeo"%'
-   OR save_data LIKE '%"smallmonitor"%'
-   OR save_data LIKE '%"resorte"%'
-   OR save_data LIKE '%"siropedulce"%'
-   OR save_data LIKE '%"sweetsyrup"%'
-   OR save_data LIKE '%"impresora3d"%'
-   OR save_data LIKE '%"3dprinter"%'
-   OR save_data LIKE '%"bancodetrabajoavanzado"%'
-   OR save_data LIKE '%"advancedworkbench"%'
-   OR save_data LIKE '%"alambique"%'
-   OR save_data LIKE '%"antena"%'
-   OR save_data LIKE '%"generadordeantimateria"%'
-   OR save_data LIKE '%"antimattergenerator"%'
-   OR save_data LIKE '%"antenagrande"%'
-   OR save_data LIKE '%"bigantenna"%'
-   OR save_data LIKE '%"binoculares"%'
-   OR save_data LIKE '%"camara"%'
-   OR save_data LIKE '%"cámara"%'
-   OR save_data LIKE '%"cmara"%'
-   OR save_data LIKE '%"carbonvegetal"%'
-   OR save_data LIKE '%"carbónvegetal"%'
-   OR save_data LIKE '%"carbnvegetal"%'
-   OR save_data LIKE '%"panueloelegido"%'
-   OR save_data LIKE '%"pañueloelegido"%'
-   OR save_data LIKE '%"paueloelegido"%'
-   OR save_data LIKE '%"choicescarf"%'
-   OR save_data LIKE '%"gafaselegidas"%'
-   OR save_data LIKE '%"choicespecs"%'
-   OR save_data LIKE '%"generadordecarbon"%'
-   OR save_data LIKE '%"generadordecarbón"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"generadordecarbn"', '"coal_generator"'), '"coalgenerator"', '"coal_generator"'), '"olladecocina"', '"cooking_pot"'), '"cookingpot"', '"cooking_pot"'), '"buceoball"', '"dive_ball"'), '"diveball"', '"dive_ball"'), '"colmillodragon"', '"dragon_fang"'), '"colmillodragón"', '"dragon_fang"'), '"colmillodragn"', '"dragon_fang"'), '"dragonfang"', '"dragon_fang"'), '"escamadragon"', '"dragon_scale"'), '"escamadragón"', '"dragon_scale"'), '"escamadragn"', '"dragon_scale"'), '"dragonscale"', '"dragon_scale"'), '"moduladordeenergia"', '"energy_modulator"'), '"moduladordeenergía"', '"energy_modulator"'), '"moduladordeenerga"', '"energy_modulator"'), '"energymodulator"', '"energy_modulator"'), '"mineralevolutivo"', '"eviolite"'), '"dispensadordecomida"', '"food_dispenser"'), '"fooddispenser"', '"food_dispenser"'), '"molinillodecomida"', '"food_grinder"'), '"foodgrinder"', '"food_grinder"'), '"procesadordealimentos"', '"food_processor"'), '"foodprocessor"', '"food_processor"'), '"restaurartodo"', '"full_restore"'), '"fullrestore"', '"full_restore"'), '"hornodefundicion"', '"furnace"'), '"hornodefundición"', '"furnace"'), '"hornodefundicin"', '"furnace"'), '"bateriaindustrial"', '"industrial_battery"'), '"bateríaindustrial"', '"industrial_battery"'), '"bateraindustrial"', '"industrial_battery"'), '"industrialbattery"', '"industrial_battery"'), '"equipodelaboratorio"', '"lab_equipment"'), '"labequipment"', '"lab_equipment"'), '"maquinalapidaria"', '"lapidary_machine"'), '"máquinalapidaria"', '"lapidary_machine"'), '"mquinalapidaria"', '"lapidary_machine"'), '"lapidarymachine"', '"lapidary_machine"'), '"cortadorlaser"', '"laser_cutter"'), '"cortadorláser"', '"laser_cutter"'), '"cortadorlser"', '"laser_cutter"'), '"lasercutter"', '"laser_cutter"'), '"vidasfera"', '"life_orb"'), '"lifeorb"', '"life_orb"'), '"lujoball"', '"luxury_ball"'), '"luxuryball"', '"luxury_ball"'), '"dispositivomedico"', '"medical_device"'), '"dispositivomédico"', '"medical_device"')
-WHERE save_data LIKE '%"generadordecarbn"%'
-   OR save_data LIKE '%"coalgenerator"%'
-   OR save_data LIKE '%"olladecocina"%'
-   OR save_data LIKE '%"cookingpot"%'
-   OR save_data LIKE '%"buceoball"%'
-   OR save_data LIKE '%"diveball"%'
-   OR save_data LIKE '%"colmillodragon"%'
-   OR save_data LIKE '%"colmillodragón"%'
-   OR save_data LIKE '%"colmillodragn"%'
-   OR save_data LIKE '%"dragonfang"%'
-   OR save_data LIKE '%"escamadragon"%'
-   OR save_data LIKE '%"escamadragón"%'
-   OR save_data LIKE '%"escamadragn"%'
-   OR save_data LIKE '%"dragonscale"%'
-   OR save_data LIKE '%"moduladordeenergia"%'
-   OR save_data LIKE '%"moduladordeenergía"%'
-   OR save_data LIKE '%"moduladordeenerga"%'
-   OR save_data LIKE '%"energymodulator"%'
-   OR save_data LIKE '%"mineralevolutivo"%'
-   OR save_data LIKE '%"dispensadordecomida"%'
-   OR save_data LIKE '%"fooddispenser"%'
-   OR save_data LIKE '%"molinillodecomida"%'
-   OR save_data LIKE '%"foodgrinder"%'
-   OR save_data LIKE '%"procesadordealimentos"%'
-   OR save_data LIKE '%"foodprocessor"%'
-   OR save_data LIKE '%"restaurartodo"%'
-   OR save_data LIKE '%"fullrestore"%'
-   OR save_data LIKE '%"hornodefundicion"%'
-   OR save_data LIKE '%"hornodefundición"%'
-   OR save_data LIKE '%"hornodefundicin"%'
-   OR save_data LIKE '%"bateriaindustrial"%'
-   OR save_data LIKE '%"bateríaindustrial"%'
-   OR save_data LIKE '%"bateraindustrial"%'
-   OR save_data LIKE '%"industrialbattery"%'
-   OR save_data LIKE '%"equipodelaboratorio"%'
-   OR save_data LIKE '%"labequipment"%'
-   OR save_data LIKE '%"maquinalapidaria"%'
-   OR save_data LIKE '%"máquinalapidaria"%'
-   OR save_data LIKE '%"mquinalapidaria"%'
-   OR save_data LIKE '%"lapidarymachine"%'
-   OR save_data LIKE '%"cortadorlaser"%'
-   OR save_data LIKE '%"cortadorláser"%'
-   OR save_data LIKE '%"cortadorlser"%'
-   OR save_data LIKE '%"lasercutter"%'
-   OR save_data LIKE '%"vidasfera"%'
-   OR save_data LIKE '%"lifeorb"%'
-   OR save_data LIKE '%"lujoball"%'
-   OR save_data LIKE '%"luxuryball"%'
-   OR save_data LIKE '%"dispositivomedico"%'
-   OR save_data LIKE '%"dispositivomédico"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"dispositivomdico"', '"medical_device"'), '"medicaldevice"', '"medical_device"'), '"microscopio"', '"microscope"'), '"semillamilagro"', '"miracle_seed"'), '"miracleseed"', '"miracle_seed"'), '"aguamistica"', '"mystic_water"'), '"aguamística"', '"mystic_water"'), '"aguamstica"', '"mystic_water"'), '"mysticwater"', '"mystic_water"'), '"nidoball"', '"nest_ball"'), '"nestball"', '"nest_ball"'), '"generadornuclear"', '"nuclear_generator"'), '"nucleargenerator"', '"nuclear_generator"'), '"flechavenenosa"', '"poison_barb"'), '"poisonbarb"', '"poison_barb"'), '"pokédex"', '"pokedex"'), '"pokdex"', '"pokedex"'), '"maximopp"', '"pp_max"'), '"máximopp"', '"pp_max"'), '"mximopp"', '"pp_max"'), '"ppmax"', '"pp_max"'), '"velozball"', '"quick_ball"'), '"quickball"', '"quick_ball"'), '"trituradoraderoca"', '"rock_grinder"'), '"rockgrinder"', '"rock_grinder"'), '"bascula"', '"scale"'), '"báscula"', '"scale"'), '"bscula"', '"scale"'), '"servidor"', '"server"'), '"polvoplata"', '"silver_powder"'), '"silverpowder"', '"silver_powder"'), '"fundidora"', '"smelter"'), '"panelsolar"', '"solar_panel"'), '"solarpanel"', '"solar_panel"'), '"estacionmeteorologica"', '"weather_station"'), '"estaciónmeteorológica"', '"weather_station"'), '"estacinmeteorolgica"', '"weather_station"'), '"weatherstation"', '"weather_station"'), '"cortadorademadera"', '"woodcutting_machine"'), '"woodcuttingmachine"', '"woodcutting_machine"'), '"bancodetrabajo"', '"workbench"'), '"chupa-vidas"', '"leechlife"'), '"Hechizo"', '"spell_tag"'), '"tímido"', '"timid"'), '"Compartir EXP"', '"exp_share"'), '"compartir exp"', '"exp_share"'), '"acidificación"', '"acidarmor"'), '"Ácido"', '"acid"'), '"previsión"', '"foresight"'), '"patadaÍgnea"', '"blazekick"')
-WHERE save_data LIKE '%"dispositivomdico"%'
-   OR save_data LIKE '%"medicaldevice"%'
-   OR save_data LIKE '%"microscopio"%'
-   OR save_data LIKE '%"semillamilagro"%'
-   OR save_data LIKE '%"miracleseed"%'
-   OR save_data LIKE '%"aguamistica"%'
-   OR save_data LIKE '%"aguamística"%'
-   OR save_data LIKE '%"aguamstica"%'
-   OR save_data LIKE '%"mysticwater"%'
-   OR save_data LIKE '%"nidoball"%'
-   OR save_data LIKE '%"nestball"%'
-   OR save_data LIKE '%"generadornuclear"%'
-   OR save_data LIKE '%"nucleargenerator"%'
-   OR save_data LIKE '%"flechavenenosa"%'
-   OR save_data LIKE '%"poisonbarb"%'
-   OR save_data LIKE '%"pokédex"%'
-   OR save_data LIKE '%"pokdex"%'
-   OR save_data LIKE '%"maximopp"%'
-   OR save_data LIKE '%"máximopp"%'
-   OR save_data LIKE '%"mximopp"%'
-   OR save_data LIKE '%"ppmax"%'
-   OR save_data LIKE '%"velozball"%'
-   OR save_data LIKE '%"quickball"%'
-   OR save_data LIKE '%"trituradoraderoca"%'
-   OR save_data LIKE '%"rockgrinder"%'
-   OR save_data LIKE '%"bascula"%'
-   OR save_data LIKE '%"báscula"%'
-   OR save_data LIKE '%"bscula"%'
-   OR save_data LIKE '%"servidor"%'
-   OR save_data LIKE '%"polvoplata"%'
-   OR save_data LIKE '%"silverpowder"%'
-   OR save_data LIKE '%"fundidora"%'
-   OR save_data LIKE '%"panelsolar"%'
-   OR save_data LIKE '%"solarpanel"%'
-   OR save_data LIKE '%"estacionmeteorologica"%'
-   OR save_data LIKE '%"estaciónmeteorológica"%'
-   OR save_data LIKE '%"estacinmeteorolgica"%'
-   OR save_data LIKE '%"weatherstation"%'
-   OR save_data LIKE '%"cortadorademadera"%'
-   OR save_data LIKE '%"woodcuttingmachine"%'
-   OR save_data LIKE '%"bancodetrabajo"%'
-   OR save_data LIKE '%"chupa-vidas"%'
-   OR save_data LIKE '%"Hechizo"%'
-   OR save_data LIKE '%"tímido"%'
-   OR save_data LIKE '%"Compartir EXP"%'
-   OR save_data LIKE '%"compartir exp"%'
-   OR save_data LIKE '%"acidificación"%'
-   OR save_data LIKE '%"Ácido"%'
-   OR save_data LIKE '%"previsión"%'
-   OR save_data LIKE '%"patadaÍgnea"%';
-
-UPDATE game_saves
-SET save_data = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(save_data, '"armaduraÁcida"', '"acidarmor"'), '"aclimatación"', '"cloudnine"'), '"tailglow"', '"swiftswim"'), '"Cinturón Negro"', '"blackbelt"'), '"cinturón negro"', '"blackbelt"'), '"Lente Zoom"', '"scope_lens"'), '"lente zoom"', '"scope_lens"'), '"Cuchara Torcida"', '"twisted_spoon"'), '"cuchara torcida"', '"twisted_spoon"'), '"Restos"', '"leftovers"'), '"Hueso Grueso"', '"thick_club"'), '"hueso grueso"', '"thick_club"'), '"Bola Luminosa"', '"light_ball"'), '"bola luminosa"', '"light_ball"'), '"velohúmedo"', '"waterveil"')
-WHERE save_data LIKE '%"armaduraÁcida"%'
-   OR save_data LIKE '%"aclimatación"%'
-   OR save_data LIKE '%"tailglow"%'
-   OR save_data LIKE '%"Cinturón Negro"%'
-   OR save_data LIKE '%"cinturón negro"%'
-   OR save_data LIKE '%"Lente Zoom"%'
-   OR save_data LIKE '%"lente zoom"%'
-   OR save_data LIKE '%"Cuchara Torcida"%'
-   OR save_data LIKE '%"cuchara torcida"%'
-   OR save_data LIKE '%"Restos"%'
-   OR save_data LIKE '%"Hueso Grueso"%'
-   OR save_data LIKE '%"hueso grueso"%'
-   OR save_data LIKE '%"Bola Luminosa"%'
-   OR save_data LIKE '%"bola luminosa"%'
-   OR save_data LIKE '%"velohúmedo"%';
-
+UPDATE game_saves SET save_data = replace(save_data, '"absorber"', '"absorb"') WHERE save_data LIKE '%"absorber"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acido"', '"acid"') WHERE save_data LIKE '%"acido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ácido"', '"acid"') WHERE save_data LIKE '%"ácido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cido"', '"acid"') WHERE save_data LIKE '%"cido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduraacida"', '"acidarmor"') WHERE save_data LIKE '%"armaduraacida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduraácida"', '"acidarmor"') WHERE save_data LIKE '%"armaduraácida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduracida"', '"acidarmor"') WHERE save_data LIKE '%"armaduracida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeaereo"', '"aerialace"') WHERE save_data LIKE '%"golpeaereo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeaéreo"', '"aerialace"') WHERE save_data LIKE '%"golpeaéreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeareo"', '"aerialace"') WHERE save_data LIKE '%"golpeareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aerochorro"', '"aeroblast"') WHERE save_data LIKE '%"aerochorro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agilidad"', '"agility"') WHERE save_data LIKE '%"agilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aireafilado"', '"aircutter"') WHERE save_data LIKE '%"aireafilado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderpasado"', '"ancientpower"') WHERE save_data LIKE '%"poderpasado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"empujon"', '"armthrust"') WHERE save_data LIKE '%"empujon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"empujón"', '"armthrust"') WHERE save_data LIKE '%"empujón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"empujn"', '"armthrust"') WHERE save_data LIKE '%"empujn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aromaterapia"', '"aromatherapy"') WHERE save_data LIKE '%"aromaterapia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ayuda"', '"assist"') WHERE save_data LIKE '%"ayuda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impresionar"', '"astonish"') WHERE save_data LIKE '%"impresionar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atraccion"', '"attract"') WHERE save_data LIKE '%"atraccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atracción"', '"attract"') WHERE save_data LIKE '%"atracción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atraccin"', '"attract"') WHERE save_data LIKE '%"atraccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoaurora"', '"aurorabeam"') WHERE save_data LIKE '%"rayoaurora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombardeo"', '"barrage"') WHERE save_data LIKE '%"bombardeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"barrera"', '"barrier"') WHERE save_data LIKE '%"barrera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relevo"', '"batonpass"') WHERE save_data LIKE '%"relevo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paliza"', '"beatup"') WHERE save_data LIKE '%"paliza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tambor"', '"bellydrum"') WHERE save_data LIKE '%"tambor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"venganza"', '"bide"') WHERE save_data LIKE '%"venganza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atadura"', '"bind"') WHERE save_data LIKE '%"atadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mordisco"', '"bite"') WHERE save_data LIKE '%"mordisco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anilloigneo"', '"blastburn"') WHERE save_data LIKE '%"anilloigneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anilloígneo"', '"blastburn"') WHERE save_data LIKE '%"anilloígneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anillogneo"', '"blastburn"') WHERE save_data LIKE '%"anillogneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadaignea"', '"blazekick"') WHERE save_data LIKE '%"patadaignea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadaígnea"', '"blazekick"') WHERE save_data LIKE '%"patadaígnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadagnea"', '"blazekick"') WHERE save_data LIKE '%"patadagnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ventisca"', '"blizzard"') WHERE save_data LIKE '%"ventisca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bloqueo"', '"block"') WHERE save_data LIKE '%"bloqueo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpecuerpo"', '"bodyslam"') WHERE save_data LIKE '%"golpecuerpo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesopalo"', '"boneclub"') WHERE save_data LIKE '%"huesopalo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesomerang"', '"bonemerang"') WHERE save_data LIKE '%"huesomerang"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueoseo"', '"bonerush"') WHERE save_data LIKE '%"ataqueoseo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueóseo"', '"bonerush"') WHERE save_data LIKE '%"ataqueóseo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueseo"', '"bonerush"') WHERE save_data LIKE '%"ataqueseo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bote"', '"bounce"') WHERE save_data LIKE '%"bote"%';
+UPDATE game_saves SET save_data = replace(save_data, '"demolicion"', '"brickbreak"') WHERE save_data LIKE '%"demolicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"demolición"', '"brickbreak"') WHERE save_data LIKE '%"demolición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"demolicin"', '"brickbreak"') WHERE save_data LIKE '%"demolicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"burbuja"', '"bubble"') WHERE save_data LIKE '%"burbuja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoburbuja"', '"bubblebeam"') WHERE save_data LIKE '%"rayoburbuja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corpulencia"', '"bulkup"') WHERE save_data LIKE '%"corpulencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semilladora"', '"bulletseed"') WHERE save_data LIKE '%"semilladora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pazmental"', '"calmmind"') WHERE save_data LIKE '%"pazmental"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camuflaje"', '"camouflage"') WHERE save_data LIKE '%"camuflaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carga"', '"charge"') WHERE save_data LIKE '%"carga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"encanto"', '"charm"') WHERE save_data LIKE '%"encanto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tenaza"', '"clamp"') WHERE save_data LIKE '%"tenaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punocometa"', '"cometpunch"') WHERE save_data LIKE '%"punocometa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñocometa"', '"cometpunch"') WHERE save_data LIKE '%"puñocometa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puocometa"', '"cometpunch"') WHERE save_data LIKE '%"puocometa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoconfuso"', '"confuseray"') WHERE save_data LIKE '%"rayoconfuso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"confusión"', '"confusion"') WHERE save_data LIKE '%"confusión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"confusin"', '"confusion"') WHERE save_data LIKE '%"confusin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restriccion"', '"constrict"') WHERE save_data LIKE '%"restriccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restricción"', '"constrict"') WHERE save_data LIKE '%"restricción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restriccin"', '"constrict"') WHERE save_data LIKE '%"restriccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conversión"', '"conversion"') WHERE save_data LIKE '%"conversión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conversin"', '"conversion"') WHERE save_data LIKE '%"conversin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conversión2"', '"conversion2"') WHERE save_data LIKE '%"conversión2"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conversin2"', '"conversion2"') WHERE save_data LIKE '%"conversin2"%';
+UPDATE game_saves SET save_data = replace(save_data, '"masacosmica"', '"cosmicpower"') WHERE save_data LIKE '%"masacosmica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"masacósmica"', '"cosmicpower"') WHERE save_data LIKE '%"masacósmica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"masacsmica"', '"cosmicpower"') WHERE save_data LIKE '%"masacsmica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esporagodon"', '"cottonspore"') WHERE save_data LIKE '%"esporagodon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esporagodón"', '"cottonspore"') WHERE save_data LIKE '%"esporagodón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esporagodn"', '"cottonspore"') WHERE save_data LIKE '%"esporagodn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"contraataque"', '"counter"') WHERE save_data LIKE '%"contraataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antojo"', '"covet"') WHERE save_data LIKE '%"antojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"martillazo"', '"crabhammer"') WHERE save_data LIKE '%"martillazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajocruzado"', '"crosschop"') WHERE save_data LIKE '%"tajocruzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"triturar"', '"crunch"') WHERE save_data LIKE '%"triturar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garrabrutal"', '"crushclaw"') WHERE save_data LIKE '%"garrabrutal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maldicion"', '"curse"') WHERE save_data LIKE '%"maldicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maldición"', '"curse"') WHERE save_data LIKE '%"maldición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maldicin"', '"curse"') WHERE save_data LIKE '%"maldicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corte"', '"cut"') WHERE save_data LIKE '%"corte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rizodefensa"', '"defensecurl"') WHERE save_data LIKE '%"rizodefensa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mismodestino"', '"destinybond"') WHERE save_data LIKE '%"mismodestino"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deteccion"', '"detect"') WHERE save_data LIKE '%"deteccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"detección"', '"detect"') WHERE save_data LIKE '%"detección"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deteccin"', '"detect"') WHERE save_data LIKE '%"deteccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"excavar"', '"dig"') WHERE save_data LIKE '%"excavar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anulacion"', '"disable"') WHERE save_data LIKE '%"anulacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anulación"', '"disable"') WHERE save_data LIKE '%"anulación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anulacin"', '"disable"') WHERE save_data LIKE '%"anulacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"buceo"', '"dive"') WHERE save_data LIKE '%"buceo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punomareo"', '"dizzypunch"') WHERE save_data LIKE '%"punomareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñomareo"', '"dizzypunch"') WHERE save_data LIKE '%"puñomareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puomareo"', '"dizzypunch"') WHERE save_data LIKE '%"puomareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deseooculto"', '"doomdesire"') WHERE save_data LIKE '%"deseooculto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblefilo"', '"doubleedge"') WHERE save_data LIKE '%"doblefilo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblepatada"', '"doublekick"') WHERE save_data LIKE '%"doblepatada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblebofeton"', '"doubleslap"') WHERE save_data LIKE '%"doblebofeton"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblebofetón"', '"doubleslap"') WHERE save_data LIKE '%"doblebofetón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblebofetn"', '"doubleslap"') WHERE save_data LIKE '%"doblebofetn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dobleequipo"', '"doubleteam"') WHERE save_data LIKE '%"dobleequipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dragoaliento"', '"dragonbreath"') WHERE save_data LIKE '%"dragoaliento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garradragon"', '"dragonclaw"') WHERE save_data LIKE '%"garradragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garradragón"', '"dragonclaw"') WHERE save_data LIKE '%"garradragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garradragn"', '"dragonclaw"') WHERE save_data LIKE '%"garradragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzadragon"', '"dragondance"') WHERE save_data LIKE '%"danzadragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzadragón"', '"dragondance"') WHERE save_data LIKE '%"danzadragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzadragn"', '"dragondance"') WHERE save_data LIKE '%"danzadragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furiadragon"', '"dragonrage"') WHERE save_data LIKE '%"furiadragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furiadragón"', '"dragonrage"') WHERE save_data LIKE '%"furiadragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furiadragn"', '"dragonrage"') WHERE save_data LIKE '%"furiadragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"comesuenos"', '"dreameater"') WHERE save_data LIKE '%"comesuenos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"comesueños"', '"dreameater"') WHERE save_data LIKE '%"comesueños"%';
+UPDATE game_saves SET save_data = replace(save_data, '"comesueos"', '"dreameater"') WHERE save_data LIKE '%"comesueos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picotaladro"', '"drillpeck"') WHERE save_data LIKE '%"picotaladro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punodinamico"', '"dynamicpunch"') WHERE save_data LIKE '%"punodinamico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñodinámico"', '"dynamicpunch"') WHERE save_data LIKE '%"puñodinámico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puodinmico"', '"dynamicpunch"') WHERE save_data LIKE '%"puodinmico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"terremoto"', '"earthquake"') WHERE save_data LIKE '%"terremoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombahuevo"', '"eggbomb"') WHERE save_data LIKE '%"bombahuevo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ascuas"', '"ember"') WHERE save_data LIKE '%"ascuas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"otravez"', '"encore"') WHERE save_data LIKE '%"otravez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esfuerzo"', '"endeavor"') WHERE save_data LIKE '%"esfuerzo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguante"', '"endure"') WHERE save_data LIKE '%"aguante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estallido"', '"eruption"') WHERE save_data LIKE '%"estallido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"explosión"', '"explosion"') WHERE save_data LIKE '%"explosión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"explosin"', '"explosion"') WHERE save_data LIKE '%"explosin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paranormal"', '"extrasensory"') WHERE save_data LIKE '%"paranormal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velocidadextrema"', '"extremespeed"') WHERE save_data LIKE '%"velocidadextrema"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imagen"', '"facade"') WHERE save_data LIKE '%"imagen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sorpresa"', '"fakeout"') WHERE save_data LIKE '%"sorpresa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llantofalso"', '"faketears"') WHERE save_data LIKE '%"llantofalso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"falsotortazo"', '"falseswipe"') WHERE save_data LIKE '%"falsotortazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzapluma"', '"featherdance"') WHERE save_data LIKE '%"danzapluma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"finta"', '"feintattack"') WHERE save_data LIKE '%"finta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamarada"', '"fireblast"') WHERE save_data LIKE '%"llamarada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punofuego"', '"firepunch"') WHERE save_data LIKE '%"punofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñofuego"', '"firepunch"') WHERE save_data LIKE '%"puñofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puofuego"', '"firepunch"') WHERE save_data LIKE '%"puofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girofuego"', '"firespin"') WHERE save_data LIKE '%"girofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fisura"', '"fissure"') WHERE save_data LIKE '%"fisura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"azote"', '"flail"') WHERE save_data LIKE '%"azote"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lanzallamas"', '"flamethrower"') WHERE save_data LIKE '%"lanzallamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ruedafuego"', '"flamewheel"') WHERE save_data LIKE '%"ruedafuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"destello"', '"flash"') WHERE save_data LIKE '%"destello"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camelo"', '"flatter"') WHERE save_data LIKE '%"camelo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vuelo"', '"fly"') WHERE save_data LIKE '%"vuelo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focoenergia"', '"focusenergy"') WHERE save_data LIKE '%"focoenergia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focoenergía"', '"focusenergy"') WHERE save_data LIKE '%"focoenergía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focoenerga"', '"focusenergy"') WHERE save_data LIKE '%"focoenerga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punocertero"', '"focuspunch"') WHERE save_data LIKE '%"punocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñocertero"', '"focuspunch"') WHERE save_data LIKE '%"puñocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puocertero"', '"focuspunch"') WHERE save_data LIKE '%"puocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"senuelo"', '"followme"') WHERE save_data LIKE '%"senuelo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"señuelo"', '"followme"') WHERE save_data LIKE '%"señuelo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seuelo"', '"followme"') WHERE save_data LIKE '%"seuelo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"profecia"', '"foresight"') WHERE save_data LIKE '%"profecia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"profecía"', '"foresight"') WHERE save_data LIKE '%"profecía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"profeca"', '"foresight"') WHERE save_data LIKE '%"profeca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plantaferoz"', '"frenzyplant"') WHERE save_data LIKE '%"plantaferoz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"frustracion"', '"frustration"') WHERE save_data LIKE '%"frustracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"frustración"', '"frustration"') WHERE save_data LIKE '%"frustración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"frustracin"', '"frustration"') WHERE save_data LIKE '%"frustracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquefuria"', '"furyattack"') WHERE save_data LIKE '%"ataquefuria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortefuria"', '"furycutter"') WHERE save_data LIKE '%"cortefuria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpesfuria"', '"furyswipes"') WHERE save_data LIKE '%"golpesfuria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"premonicion"', '"futuresight"') WHERE save_data LIKE '%"premonicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"premonición"', '"futuresight"') WHERE save_data LIKE '%"premonición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"premonicin"', '"futuresight"') WHERE save_data LIKE '%"premonicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gigadrenado"', '"gigadrain"') WHERE save_data LIKE '%"gigadrenado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deslumbrar"', '"glare"') WHERE save_data LIKE '%"deslumbrar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"silbato"', '"grasswhistle"') WHERE save_data LIKE '%"silbato"%';
+UPDATE game_saves SET save_data = replace(save_data, '"grunido"', '"growl"') WHERE save_data LIKE '%"grunido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gruñido"', '"growl"') WHERE save_data LIKE '%"gruñido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gruido"', '"growl"') WHERE save_data LIKE '%"gruido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"desarrollo"', '"growth"') WHERE save_data LIKE '%"desarrollo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rabia"', '"grudge"') WHERE save_data LIKE '%"rabia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guillotina"', '"guillotine"') WHERE save_data LIKE '%"guillotina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tornado"', '"gust"') WHERE save_data LIKE '%"tornado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"granizo"', '"hail"') WHERE save_data LIKE '%"granizo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fortaleza"', '"harden"') WHERE save_data LIKE '%"fortaleza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"niebla"', '"haze"') WHERE save_data LIKE '%"niebla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpecabeza"', '"headbutt"') WHERE save_data LIKE '%"golpecabeza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campanacura"', '"healbell"') WHERE save_data LIKE '%"campanacura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondaignea"', '"heatwave"') WHERE save_data LIKE '%"ondaignea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondaígnea"', '"heatwave"') WHERE save_data LIKE '%"ondaígnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondagnea"', '"heatwave"') WHERE save_data LIKE '%"ondagnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"refuerzo"', '"helpinghand"') WHERE save_data LIKE '%"refuerzo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderoculto"', '"hiddenpower"') WHERE save_data LIKE '%"poderoculto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patsaltoalta"', '"highjumpkick"') WHERE save_data LIKE '%"patsaltoalta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pat.saltoalta"', '"highjumpkick"') WHERE save_data LIKE '%"pat.saltoalta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cornada"', '"hornattack"') WHERE save_data LIKE '%"cornada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perforador"', '"horndrill"') WHERE save_data LIKE '%"perforador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aullido"', '"howl"') WHERE save_data LIKE '%"aullido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrocanon"', '"hydrocannon"') WHERE save_data LIKE '%"hidrocanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrocañón"', '"hydrocannon"') WHERE save_data LIKE '%"hidrocañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrocan"', '"hydrocannon"') WHERE save_data LIKE '%"hidrocan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrobomba"', '"hydropump"') WHERE save_data LIKE '%"hidrobomba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hiperrayo"', '"hyperbeam"') WHERE save_data LIKE '%"hiperrayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hipercolmillo"', '"hyperfang"') WHERE save_data LIKE '%"hipercolmillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vozarron"', '"hypervoice"') WHERE save_data LIKE '%"vozarron"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vozarrón"', '"hypervoice"') WHERE save_data LIKE '%"vozarrón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vozarrn"', '"hypervoice"') WHERE save_data LIKE '%"vozarrn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hipnosis"', '"hypnosis"') WHERE save_data LIKE '%"hipnosis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolahielo"', '"iceball"') WHERE save_data LIKE '%"bolahielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayohielo"', '"icebeam"') WHERE save_data LIKE '%"rayohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punohielo"', '"icepunch"') WHERE save_data LIKE '%"punohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñohielo"', '"icepunch"') WHERE save_data LIKE '%"puñohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puohielo"', '"icepunch"') WHERE save_data LIKE '%"puohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carambano"', '"iciclespear"') WHERE save_data LIKE '%"carambano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carámbano"', '"iciclespear"') WHERE save_data LIKE '%"carámbano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carmbano"', '"iciclespear"') WHERE save_data LIKE '%"carmbano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientohielo"', '"icywind"') WHERE save_data LIKE '%"vientohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sellar"', '"imprison"') WHERE save_data LIKE '%"sellar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arraigo"', '"ingrain"') WHERE save_data LIKE '%"arraigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"defensaferrea"', '"irondefense"') WHERE save_data LIKE '%"defensaferrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"defensaférrea"', '"irondefense"') WHERE save_data LIKE '%"defensaférrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"defensafrrea"', '"irondefense"') WHERE save_data LIKE '%"defensafrrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colaferrea"', '"irontail"') WHERE save_data LIKE '%"colaferrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colaférrea"', '"irontail"') WHERE save_data LIKE '%"colaférrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colafrrea"', '"irontail"') WHERE save_data LIKE '%"colafrrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadasalto"', '"jumpkick"') WHERE save_data LIKE '%"patadasalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpekarate"', '"karatechop"') WHERE save_data LIKE '%"golpekarate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpekárate"', '"karatechop"') WHERE save_data LIKE '%"golpekárate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpekrate"', '"karatechop"') WHERE save_data LIKE '%"golpekrate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kinetico"', '"kinesis"') WHERE save_data LIKE '%"kinetico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kinético"', '"kinesis"') WHERE save_data LIKE '%"kinético"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kintico"', '"kinesis"') WHERE save_data LIKE '%"kintico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"desarme"', '"knockoff"') WHERE save_data LIKE '%"desarme"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hojaaguda"', '"leafblade"') WHERE save_data LIKE '%"hojaaguda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chupavidas"', '"leechlife"') WHERE save_data LIKE '%"chupavidas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"drenadoras"', '"leechseed"') WHERE save_data LIKE '%"drenadoras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"malicioso"', '"leer"') WHERE save_data LIKE '%"malicioso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lenguetazo"', '"lick"') WHERE save_data LIKE '%"lenguetazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lengüetazo"', '"lick"') WHERE save_data LIKE '%"lengüetazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lengetazo"', '"lick"') WHERE save_data LIKE '%"lengetazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pantalladeluz"', '"lightscreen"') WHERE save_data LIKE '%"pantalladeluz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fijarblanco"', '"lockon"') WHERE save_data LIKE '%"fijarblanco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"besoamoroso"', '"lovelykiss"') WHERE save_data LIKE '%"besoamoroso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadabaja"', '"lowkick"') WHERE save_data LIKE '%"patadabaja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resplandor"', '"lusterpurge"') WHERE save_data LIKE '%"resplandor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultrapuno"', '"machpunch"') WHERE save_data LIKE '%"ultrapuno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultrapuño"', '"machpunch"') WHERE save_data LIKE '%"ultrapuño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultrapuo"', '"machpunch"') WHERE save_data LIKE '%"ultrapuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hojamagica"', '"magicalleaf"') WHERE save_data LIKE '%"hojamagica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hojamágica"', '"magicalleaf"') WHERE save_data LIKE '%"hojamágica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hojamgica"', '"magicalleaf"') WHERE save_data LIKE '%"hojamgica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capamagica"', '"magiccoat"') WHERE save_data LIKE '%"capamagica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capamágica"', '"magiccoat"') WHERE save_data LIKE '%"capamágica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capamgica"', '"magiccoat"') WHERE save_data LIKE '%"capamgica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"magnitud"', '"magnitude"') WHERE save_data LIKE '%"magnitud"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maldeojo"', '"meanlook"') WHERE save_data LIKE '%"maldeojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meditacion"', '"meditate"') WHERE save_data LIKE '%"meditacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meditación"', '"meditate"') WHERE save_data LIKE '%"meditación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meditacin"', '"meditate"') WHERE save_data LIKE '%"meditacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megaagotar"', '"megadrain"') WHERE save_data LIKE '%"megaagotar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megacuerno"', '"megahorn"') WHERE save_data LIKE '%"megacuerno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megapatada"', '"megakick"') WHERE save_data LIKE '%"megapatada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megapuno"', '"megapunch"') WHERE save_data LIKE '%"megapuno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megapuño"', '"megapunch"') WHERE save_data LIKE '%"megapuño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megapuo"', '"megapunch"') WHERE save_data LIKE '%"megapuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"legado"', '"memento"') WHERE save_data LIKE '%"legado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garrametal"', '"metalclaw"') WHERE save_data LIKE '%"garrametal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ecometalico"', '"metalsound"') WHERE save_data LIKE '%"ecometalico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ecometálico"', '"metalsound"') WHERE save_data LIKE '%"ecometálico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ecometlico"', '"metalsound"') WHERE save_data LIKE '%"ecometlico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punometeoro"', '"meteormash"') WHERE save_data LIKE '%"punometeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñometeoro"', '"meteormash"') WHERE save_data LIKE '%"puñometeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puometeoro"', '"meteormash"') WHERE save_data LIKE '%"puometeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metronomo"', '"metronome"') WHERE save_data LIKE '%"metronomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metrónomo"', '"metronome"') WHERE save_data LIKE '%"metrónomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metrnomo"', '"metronome"') WHERE save_data LIKE '%"metrnomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"batido"', '"milkdrink"') WHERE save_data LIKE '%"batido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mimetico"', '"mimic"') WHERE save_data LIKE '%"mimetico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mimético"', '"mimic"') WHERE save_data LIKE '%"mimético"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mimtico"', '"mimic"') WHERE save_data LIKE '%"mimtico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telepata"', '"mindreader"') WHERE save_data LIKE '%"telepata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telépata"', '"mindreader"') WHERE save_data LIKE '%"telépata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telpata"', '"mindreader"') WHERE save_data LIKE '%"telpata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reduccion"', '"minimize"') WHERE save_data LIKE '%"reduccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reducción"', '"minimize"') WHERE save_data LIKE '%"reducción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reduccin"', '"minimize"') WHERE save_data LIKE '%"reduccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mantoespejo"', '"mirrorcoat"') WHERE save_data LIKE '%"mantoespejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espejo"', '"mirrormove"') WHERE save_data LIKE '%"espejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"neblina"', '"mist"') WHERE save_data LIKE '%"neblina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolaneblina"', '"mistball"') WHERE save_data LIKE '%"bolaneblina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"luzlunar"', '"moonlight"') WHERE save_data LIKE '%"luzlunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"solmatinal"', '"morningsun"') WHERE save_data LIKE '%"solmatinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agualodosa"', '"muddywater"') WHERE save_data LIKE '%"agualodosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disparolodo"', '"mudshot"') WHERE save_data LIKE '%"disparolodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bofetonlodo"', '"mudslap"') WHERE save_data LIKE '%"bofetonlodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bofetónlodo"', '"mudslap"') WHERE save_data LIKE '%"bofetónlodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bofetnlodo"', '"mudslap"') WHERE save_data LIKE '%"bofetnlodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chapoteolodo"', '"mudsport"') WHERE save_data LIKE '%"chapoteolodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"adaptacion"', '"naturepower"') WHERE save_data LIKE '%"adaptacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"adaptación"', '"naturepower"') WHERE save_data LIKE '%"adaptación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"adaptacin"', '"naturepower"') WHERE save_data LIKE '%"adaptacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brazopincho"', '"needlearm"') WHERE save_data LIKE '%"brazopincho"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pesadilla"', '"nightmare"') WHERE save_data LIKE '%"pesadilla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinieblas"', '"nightshade"') WHERE save_data LIKE '%"tinieblas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulpocanon"', '"octazooka"') WHERE save_data LIKE '%"pulpocanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulpocañón"', '"octazooka"') WHERE save_data LIKE '%"pulpocañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulpocan"', '"octazooka"') WHERE save_data LIKE '%"pulpocan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rastreo"', '"odorsleuth"') WHERE save_data LIKE '%"rastreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enfado"', '"outrage"') WHERE save_data LIKE '%"enfado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sofoco"', '"overheat"') WHERE save_data LIKE '%"sofoco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dividedolor"', '"painsplit"') WHERE save_data LIKE '%"dividedolor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diadepago"', '"payday"') WHERE save_data LIKE '%"diadepago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"díadepago"', '"payday"') WHERE save_data LIKE '%"díadepago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dadepago"', '"payday"') WHERE save_data LIKE '%"dadepago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picotazo"', '"peck"') WHERE save_data LIKE '%"picotazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cantomortal"', '"perishsong"') WHERE save_data LIKE '%"cantomortal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzapetalo"', '"petaldance"') WHERE save_data LIKE '%"danzapetalo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzapétalo"', '"petaldance"') WHERE save_data LIKE '%"danzapétalo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzaptalo"', '"petaldance"') WHERE save_data LIKE '%"danzaptalo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinmisil"', '"pinmissile"') WHERE save_data LIKE '%"pinmisil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmilloveneno"', '"poisonfang"') WHERE save_data LIKE '%"colmilloveneno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gasvenenoso"', '"poisongas"') WHERE save_data LIKE '%"gasvenenoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoveneno"', '"poisonpowder"') WHERE save_data LIKE '%"polvoveneno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picotazoveneno"', '"poisonsting"') WHERE save_data LIKE '%"picotazoveneno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colaveneno"', '"poisontail"') WHERE save_data LIKE '%"colaveneno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"destructor"', '"pound"') WHERE save_data LIKE '%"destructor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nievepolvo"', '"powdersnow"') WHERE save_data LIKE '%"nievepolvo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presente"', '"present"') WHERE save_data LIKE '%"presente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"proteccion"', '"protect"') WHERE save_data LIKE '%"proteccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"protección"', '"protect"') WHERE save_data LIKE '%"protección"%';
+UPDATE game_saves SET save_data = replace(save_data, '"proteccin"', '"protect"') WHERE save_data LIKE '%"proteccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicorrayo"', '"psybeam"') WHERE save_data LIKE '%"psicorrayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psiquico"', '"psychic"') WHERE save_data LIKE '%"psiquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psíquico"', '"psychic"') WHERE save_data LIKE '%"psíquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psquico"', '"psychic"') WHERE save_data LIKE '%"psquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicoataque"', '"psychoboost"') WHERE save_data LIKE '%"psicoataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maspsique"', '"psychup"') WHERE save_data LIKE '%"maspsique"%';
+UPDATE game_saves SET save_data = replace(save_data, '"máspsique"', '"psychup"') WHERE save_data LIKE '%"máspsique"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mspsique"', '"psychup"') WHERE save_data LIKE '%"mspsique"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicoonda"', '"psywave"') WHERE save_data LIKE '%"psicoonda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"persecucion"', '"pursuit"') WHERE save_data LIKE '%"persecucion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"persecución"', '"pursuit"') WHERE save_data LIKE '%"persecución"%';
+UPDATE game_saves SET save_data = replace(save_data, '"persecucin"', '"pursuit"') WHERE save_data LIKE '%"persecucin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquerapido"', '"quickattack"') WHERE save_data LIKE '%"ataquerapido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquerápido"', '"quickattack"') WHERE save_data LIKE '%"ataquerápido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquerpido"', '"quickattack"') WHERE save_data LIKE '%"ataquerpido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furia"', '"rage"') WHERE save_data LIKE '%"furia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzalluvia"', '"raindance"') WHERE save_data LIKE '%"danzalluvia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girorapido"', '"rapidspin"') WHERE save_data LIKE '%"girorapido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girorápido"', '"rapidspin"') WHERE save_data LIKE '%"girorápido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girorpido"', '"rapidspin"') WHERE save_data LIKE '%"girorpido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hojaafilada"', '"razorleaf"') WHERE save_data LIKE '%"hojaafilada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientocortante"', '"razorwind"') WHERE save_data LIKE '%"vientocortante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recuperacion"', '"recover"') WHERE save_data LIKE '%"recuperacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recuperación"', '"recover"') WHERE save_data LIKE '%"recuperación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recuperacin"', '"recover"') WHERE save_data LIKE '%"recuperacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reciclaje"', '"recycle"') WHERE save_data LIKE '%"reciclaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reflejo"', '"reflect"') WHERE save_data LIKE '%"reflejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alivio"', '"refresh"') WHERE save_data LIKE '%"alivio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"descanso"', '"rest"') WHERE save_data LIKE '%"descanso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"retribucion"', '"return"') WHERE save_data LIKE '%"retribucion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"retribución"', '"return"') WHERE save_data LIKE '%"retribución"%';
+UPDATE game_saves SET save_data = replace(save_data, '"retribucin"', '"return"') WHERE save_data LIKE '%"retribucin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"desquite"', '"revenge"') WHERE save_data LIKE '%"desquite"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inversion"', '"reversal"') WHERE save_data LIKE '%"inversion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inversión"', '"reversal"') WHERE save_data LIKE '%"inversión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inversin"', '"reversal"') WHERE save_data LIKE '%"inversin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rugido"', '"roar"') WHERE save_data LIKE '%"rugido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pedrada"', '"rockblast"') WHERE save_data LIKE '%"pedrada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"avalancha"', '"rockslide"') WHERE save_data LIKE '%"avalancha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golperoca"', '"rocksmash"') WHERE save_data LIKE '%"golperoca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lanzarrocas"', '"rockthrow"') WHERE save_data LIKE '%"lanzarrocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tumbarocas"', '"rocktomb"') WHERE save_data LIKE '%"tumbarocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imitacion"', '"roleplay"') WHERE save_data LIKE '%"imitacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imitación"', '"roleplay"') WHERE save_data LIKE '%"imitación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imitacin"', '"roleplay"') WHERE save_data LIKE '%"imitacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadagiro"', '"rollingkick"') WHERE save_data LIKE '%"patadagiro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rodar"', '"rollout"') WHERE save_data LIKE '%"rodar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuegosagrado"', '"sacredfire"') WHERE save_data LIKE '%"fuegosagrado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velosagrado"', '"safeguard"') WHERE save_data LIKE '%"velosagrado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquearena"', '"sandattack"') WHERE save_data LIKE '%"ataquearena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tormentaarena"', '"sandstorm"') WHERE save_data LIKE '%"tormentaarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"buclearena"', '"sandtomb"') WHERE save_data LIKE '%"buclearena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carasusto"', '"scaryface"') WHERE save_data LIKE '%"carasusto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aranazo"', '"scratch"') WHERE save_data LIKE '%"aranazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arañazo"', '"scratch"') WHERE save_data LIKE '%"arañazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"araazo"', '"scratch"') WHERE save_data LIKE '%"araazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chirrido"', '"screech"') WHERE save_data LIKE '%"chirrido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danosecreto"', '"secretpower"') WHERE save_data LIKE '%"danosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dañosecreto"', '"secretpower"') WHERE save_data LIKE '%"dañosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"daosecreto"', '"secretpower"') WHERE save_data LIKE '%"daosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sismico"', '"seismictoss"') WHERE save_data LIKE '%"sismico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sísmico"', '"seismictoss"') WHERE save_data LIKE '%"sísmico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ssmico"', '"seismictoss"') WHERE save_data LIKE '%"ssmico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"autodestruccion"', '"selfdestruct"') WHERE save_data LIKE '%"autodestruccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"autodestrucción"', '"selfdestruct"') WHERE save_data LIKE '%"autodestrucción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"autodestruccin"', '"selfdestruct"') WHERE save_data LIKE '%"autodestruccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolasombra"', '"shadowball"') WHERE save_data LIKE '%"bolasombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punosombra"', '"shadowpunch"') WHERE save_data LIKE '%"punosombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñosombra"', '"shadowpunch"') WHERE save_data LIKE '%"puñosombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puosombra"', '"shadowpunch"') WHERE save_data LIKE '%"puosombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"afilar"', '"sharpen"') WHERE save_data LIKE '%"afilar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"friopolar"', '"sheercold"') WHERE save_data LIKE '%"friopolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fríopolar"', '"sheercold"') WHERE save_data LIKE '%"fríopolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fropolar"', '"sheercold"') WHERE save_data LIKE '%"fropolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondavoltio"', '"shockwave"') WHERE save_data LIKE '%"ondavoltio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblerayo"', '"signalbeam"') WHERE save_data LIKE '%"doblerayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoplata"', '"silverwind"') WHERE save_data LIKE '%"vientoplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canto"', '"sing"') WHERE save_data LIKE '%"canto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esquema"', '"sketch"') WHERE save_data LIKE '%"esquema"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intercambio"', '"skillswap"') WHERE save_data LIKE '%"intercambio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cabezazo"', '"skullbash"') WHERE save_data LIKE '%"cabezazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueaereo"', '"skyattack"') WHERE save_data LIKE '%"ataqueaereo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueaéreo"', '"skyattack"') WHERE save_data LIKE '%"ataqueaéreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueareo"', '"skyattack"') WHERE save_data LIKE '%"ataqueareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ganchoalto"', '"skyuppercut"') WHERE save_data LIKE '%"ganchoalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relajo"', '"slackoff"') WHERE save_data LIKE '%"relajo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atizar"', '"slam"') WHERE save_data LIKE '%"atizar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuchillada"', '"slash"') WHERE save_data LIKE '%"cuchillada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"somnifera"', '"sleeppowder"') WHERE save_data LIKE '%"somnifera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"somnífera"', '"sleeppowder"') WHERE save_data LIKE '%"somnífera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"somnfera"', '"sleeppowder"') WHERE save_data LIKE '%"somnfera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sonambulo"', '"sleeptalk"') WHERE save_data LIKE '%"sonambulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sonámbulo"', '"sleeptalk"') WHERE save_data LIKE '%"sonámbulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sonmbulo"', '"sleeptalk"') WHERE save_data LIKE '%"sonmbulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"residuos"', '"sludge"') WHERE save_data LIKE '%"residuos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombalodo"', '"sludgebomb"') WHERE save_data LIKE '%"bombalodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estimulo"', '"smellingsalts"') WHERE save_data LIKE '%"estimulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estímulo"', '"smellingsalts"') WHERE save_data LIKE '%"estímulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estmulo"', '"smellingsalts"') WHERE save_data LIKE '%"estmulo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polucion"', '"smog"') WHERE save_data LIKE '%"polucion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polución"', '"smog"') WHERE save_data LIKE '%"polución"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polucin"', '"smog"') WHERE save_data LIKE '%"polucin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pantalladehumo"', '"smokescreen"') WHERE save_data LIKE '%"pantalladehumo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"robo"', '"snatch"') WHERE save_data LIKE '%"robo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ronquido"', '"snore"') WHERE save_data LIKE '%"ronquido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amortiguador"', '"softboiled"') WHERE save_data LIKE '%"amortiguador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayosolar"', '"solarbeam"') WHERE save_data LIKE '%"rayosolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondasonica"', '"sonicboom"') WHERE save_data LIKE '%"ondasonica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondasónica"', '"sonicboom"') WHERE save_data LIKE '%"ondasónica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondasnica"', '"sonicboom"') WHERE save_data LIKE '%"ondasnica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chispa"', '"spark"') WHERE save_data LIKE '%"chispa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telarana"', '"spiderweb"') WHERE save_data LIKE '%"telarana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telaraña"', '"spiderweb"') WHERE save_data LIKE '%"telaraña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telaraa"', '"spiderweb"') WHERE save_data LIKE '%"telaraa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavocanon"', '"spikecannon"') WHERE save_data LIKE '%"clavocanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavocañón"', '"spikecannon"') WHERE save_data LIKE '%"clavocañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavocan"', '"spikecannon"') WHERE save_data LIKE '%"clavocan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puas"', '"spikes"') WHERE save_data LIKE '%"puas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"púas"', '"spikes"') WHERE save_data LIKE '%"púas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pas"', '"spikes"') WHERE save_data LIKE '%"pas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rencor"', '"spite"') WHERE save_data LIKE '%"rencor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escupir"', '"spitup"') WHERE save_data LIKE '%"escupir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salpicadura"', '"splash"') WHERE save_data LIKE '%"salpicadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espora"', '"spore"') WHERE save_data LIKE '%"espora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aladeacero"', '"steelwing"') WHERE save_data LIKE '%"aladeacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reserva"', '"stockpile"') WHERE save_data LIKE '%"reserva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pisoton"', '"stomp"') WHERE save_data LIKE '%"pisoton"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pisotón"', '"stomp"') WHERE save_data LIKE '%"pisotón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pisotn"', '"stomp"') WHERE save_data LIKE '%"pisotn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerza"', '"strength"') WHERE save_data LIKE '%"fuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disparodemora"', '"stringshot"') WHERE save_data LIKE '%"disparodemora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"forcejeo"', '"struggle"') WHERE save_data LIKE '%"forcejeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paralizador"', '"stunspore"') WHERE save_data LIKE '%"paralizador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sumision"', '"submission"') WHERE save_data LIKE '%"sumision"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sumisión"', '"submission"') WHERE save_data LIKE '%"sumisión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sumisin"', '"submission"') WHERE save_data LIKE '%"sumisin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sustituto"', '"substitute"') WHERE save_data LIKE '%"sustituto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diasoleado"', '"sunnyday"') WHERE save_data LIKE '%"diasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"díasoleado"', '"sunnyday"') WHERE save_data LIKE '%"díasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dasoleado"', '"sunnyday"') WHERE save_data LIKE '%"dasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supercolmillo"', '"superfang"') WHERE save_data LIKE '%"supercolmillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"súpercolmillo"', '"superfang"') WHERE save_data LIKE '%"súpercolmillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"spercolmillo"', '"superfang"') WHERE save_data LIKE '%"spercolmillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzabruta"', '"superpower"') WHERE save_data LIKE '%"fuerzabruta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supersonico"', '"supersonic"') WHERE save_data LIKE '%"supersonico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supersónico"', '"supersonic"') WHERE save_data LIKE '%"supersónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supersnico"', '"supersonic"') WHERE save_data LIKE '%"supersnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"contoneo"', '"swagger"') WHERE save_data LIKE '%"contoneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tragar"', '"swallow"') WHERE save_data LIKE '%"tragar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"besodulce"', '"sweetkiss"') WHERE save_data LIKE '%"besodulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dulcearoma"', '"sweetscent"') WHERE save_data LIKE '%"dulcearoma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rapidez"', '"swift"') WHERE save_data LIKE '%"rapidez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzaespada"', '"swordsdance"') WHERE save_data LIKE '%"danzaespada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sintesis"', '"synthesis"') WHERE save_data LIKE '%"sintesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"síntesis"', '"synthesis"') WHERE save_data LIKE '%"síntesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sntesis"', '"synthesis"') WHERE save_data LIKE '%"sntesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placaje"', '"tackle"') WHERE save_data LIKE '%"placaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rafaga"', '"tailglow"') WHERE save_data LIKE '%"rafaga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ráfaga"', '"tailglow"') WHERE save_data LIKE '%"ráfaga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rfaga"', '"tailglow"') WHERE save_data LIKE '%"rfaga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"latigo"', '"tailwhip"') WHERE save_data LIKE '%"latigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"látigo"', '"tailwhip"') WHERE save_data LIKE '%"látigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltigo"', '"tailwhip"') WHERE save_data LIKE '%"ltigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"derribo"', '"takedown"') WHERE save_data LIKE '%"derribo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mofa"', '"taunt"') WHERE save_data LIKE '%"mofa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzacaos"', '"teeterdance"') WHERE save_data LIKE '%"danzacaos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teletransporte"', '"teleport"') WHERE save_data LIKE '%"teletransporte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ladron"', '"thief"') WHERE save_data LIKE '%"ladron"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ladrón"', '"thief"') WHERE save_data LIKE '%"ladrón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ladrn"', '"thief"') WHERE save_data LIKE '%"ladrn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpe"', '"thrash"') WHERE save_data LIKE '%"golpe"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trueno"', '"thunder"') WHERE save_data LIKE '%"trueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayo"', '"thunderbolt"') WHERE save_data LIKE '%"rayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punotrueno"', '"thunderpunch"') WHERE save_data LIKE '%"punotrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñotrueno"', '"thunderpunch"') WHERE save_data LIKE '%"puñotrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puotrueno"', '"thunderpunch"') WHERE save_data LIKE '%"puotrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impactrueno"', '"thundershock"') WHERE save_data LIKE '%"impactrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondatrueno"', '"thunderwave"') WHERE save_data LIKE '%"ondatrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cosquillas"', '"tickle"') WHERE save_data LIKE '%"cosquillas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tormento"', '"torment"') WHERE save_data LIKE '%"tormento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toxico"', '"toxic"') WHERE save_data LIKE '%"toxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tóxico"', '"toxic"') WHERE save_data LIKE '%"tóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"txico"', '"toxic"') WHERE save_data LIKE '%"txico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"transformacion"', '"transform"') WHERE save_data LIKE '%"transformacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"transformación"', '"transform"') WHERE save_data LIKE '%"transformación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"transformacin"', '"transform"') WHERE save_data LIKE '%"transformacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"triataque"', '"triattack"') WHERE save_data LIKE '%"triataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"truco"', '"trick"') WHERE save_data LIKE '%"truco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"triplepatada"', '"triplekick"') WHERE save_data LIKE '%"triplepatada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dobleataque"', '"twineedle"') WHERE save_data LIKE '%"dobleataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ciclon"', '"twister"') WHERE save_data LIKE '%"ciclon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ciclón"', '"twister"') WHERE save_data LIKE '%"ciclón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cicln"', '"twister"') WHERE save_data LIKE '%"cicln"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alboroto"', '"uproar"') WHERE save_data LIKE '%"alboroto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"latigocepa"', '"vinewhip"') WHERE save_data LIKE '%"latigocepa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"látigocepa"', '"vinewhip"') WHERE save_data LIKE '%"látigocepa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltigocepa"', '"vinewhip"') WHERE save_data LIKE '%"ltigocepa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tirovital"', '"vitalthrow"') WHERE save_data LIKE '%"tirovital"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placajeelec"', '"volttackle"') WHERE save_data LIKE '%"placajeelec"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placajeeléc"', '"volttackle"') WHERE save_data LIKE '%"placajeeléc"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placajeelc"', '"volttackle"') WHERE save_data LIKE '%"placajeelc"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cascada"', '"waterfall"') WHERE save_data LIKE '%"cascada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pistolaagua"', '"watergun"') WHERE save_data LIKE '%"pistolaagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidropulso"', '"waterpulse"') WHERE save_data LIKE '%"hidropulso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrochorro"', '"watersport"') WHERE save_data LIKE '%"hidrochorro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salpicar"', '"waterspout"') WHERE save_data LIKE '%"salpicar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meteorobola"', '"weatherball"') WHERE save_data LIKE '%"meteorobola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"torbellino"', '"whirlpool"') WHERE save_data LIKE '%"torbellino"%';
+UPDATE game_saves SET save_data = replace(save_data, '"remolino"', '"whirlwind"') WHERE save_data LIKE '%"remolino"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuegofatuo"', '"willowisp"') WHERE save_data LIKE '%"fuegofatuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueala"', '"wingattack"') WHERE save_data LIKE '%"ataqueala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deseo"', '"wish"') WHERE save_data LIKE '%"deseo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"refugio"', '"withdraw"') WHERE save_data LIKE '%"refugio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constriccion"', '"wrap"') WHERE save_data LIKE '%"constriccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constricción"', '"wrap"') WHERE save_data LIKE '%"constricción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constriccin"', '"wrap"') WHERE save_data LIKE '%"constriccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bostezo"', '"yawn"') WHERE save_data LIKE '%"bostezo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrocanon"', '"zapcannon"') WHERE save_data LIKE '%"electrocanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrocañón"', '"zapcannon"') WHERE save_data LIKE '%"electrocañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrocan"', '"zapcannon"') WHERE save_data LIKE '%"electrocan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gigarrayofulminante"', '"10000000voltthunderbolt"') WHERE save_data LIKE '%"gigarrayofulminante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocaveloz"', '"accelerock"') WHERE save_data LIKE '%"rocaveloz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diluviocorrosivo"', '"aciddownpour"') WHERE save_data LIKE '%"diluviocorrosivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaacida"', '"acidspray"') WHERE save_data LIKE '%"bombaacida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaácida"', '"acidspray"') WHERE save_data LIKE '%"bombaácida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombacida"', '"acidspray"') WHERE save_data LIKE '%"bombacida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acrobata"', '"acrobatics"') WHERE save_data LIKE '%"acrobata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acróbata"', '"acrobatics"') WHERE save_data LIKE '%"acróbata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acrbata"', '"acrobatics"') WHERE save_data LIKE '%"acrbata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acupresion"', '"acupressure"') WHERE save_data LIKE '%"acupresion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acupresión"', '"acupressure"') WHERE save_data LIKE '%"acupresión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acupresin"', '"acupressure"') WHERE save_data LIKE '%"acupresin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cedepaso"', '"afteryou"') WHERE save_data LIKE '%"cedepaso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoaereo"', '"airslash"') WHERE save_data LIKE '%"tajoaereo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoaéreo"', '"airslash"') WHERE save_data LIKE '%"tajoaéreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoareo"', '"airslash"') WHERE save_data LIKE '%"tajoareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rafagademoledora"', '"alloutpummeling"') WHERE save_data LIKE '%"rafagademoledora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ráfagademoledora"', '"alloutpummeling"') WHERE save_data LIKE '%"ráfagademoledora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rfagademoledora"', '"alloutpummeling"') WHERE save_data LIKE '%"rfagademoledora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cantoencantador"', '"alluringvoice"') WHERE save_data LIKE '%"cantoencantador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiodebanda"', '"allyswitch"') WHERE save_data LIKE '%"cambiodebanda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anclaje"', '"anchorshot"') WHERE save_data LIKE '%"anclaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acidomalico"', '"appleacid"') WHERE save_data LIKE '%"acidomalico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ácidomálico"', '"appleacid"') WHERE save_data LIKE '%"ácidomálico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cidomlico"', '"appleacid"') WHERE save_data LIKE '%"cidomlico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acuajet"', '"aquajet"') WHERE save_data LIKE '%"acuajet"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acuaaro"', '"aquaring"') WHERE save_data LIKE '%"acuaaro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acuacola"', '"aquatail"') WHERE save_data LIKE '%"acuacola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nieblaaromatica"', '"aromaticmist"') WHERE save_data LIKE '%"nieblaaromatica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nieblaaromática"', '"aromaticmist"') WHERE save_data LIKE '%"nieblaaromática"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nieblaaromtica"', '"aromaticmist"') WHERE save_data LIKE '%"nieblaaromtica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"buenabaza"', '"assurance"') WHERE save_data LIKE '%"buenabaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"orbesespectro"', '"astralbarrage"') WHERE save_data LIKE '%"orbesespectro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alataque"', '"attackorder"') WHERE save_data LIKE '%"alataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esferaaural"', '"aurasphere"') WHERE save_data LIKE '%"esferaaural"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ruedaaural"', '"aurawheel"') WHERE save_data LIKE '%"ruedaaural"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veloaurora"', '"auroraveil"') WHERE save_data LIKE '%"veloaurora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aligerar"', '"autotomize"') WHERE save_data LIKE '%"aligerar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alud"', '"avalanche"') WHERE save_data LIKE '%"alud"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ojitostiernos"', '"babydolleyes"') WHERE save_data LIKE '%"ojitostiernos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"umbreozona"', '"baddybad"') WHERE save_data LIKE '%"umbreozona"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bunker"', '"banefulbunker"') WHERE save_data LIKE '%"bunker"%';
+UPDATE game_saves SET save_data = replace(save_data, '"búnker"', '"banefulbunker"') WHERE save_data LIKE '%"búnker"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bnker"', '"banefulbunker"') WHERE save_data LIKE '%"bnker"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picocanon"', '"beakblast"') WHERE save_data LIKE '%"picocanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picocañón"', '"beakblast"') WHERE save_data LIKE '%"picocañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picocan"', '"beakblast"') WHERE save_data LIKE '%"picocan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embatesupremo"', '"behemothbash"') WHERE save_data LIKE '%"embatesupremo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajosupremo"', '"behemothblade"') WHERE save_data LIKE '%"tajosupremo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"eructo"', '"belch"') WHERE save_data LIKE '%"eructo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ofrenda"', '"bestow"') WHERE save_data LIKE '%"ofrenda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agujeronegroaniquilador"', '"blackholeeclipse"') WHERE save_data LIKE '%"agujeronegroaniquilador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megatonfloral"', '"bloomdoom"') WHERE save_data LIKE '%"megatonfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megatónfloral"', '"bloomdoom"') WHERE save_data LIKE '%"megatónfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megatnfloral"', '"bloomdoom"') WHERE save_data LIKE '%"megatnfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamaazul"', '"blueflare"') WHERE save_data LIKE '%"llamaazul"%';
+UPDATE game_saves SET save_data = replace(save_data, '"planchacorporal"', '"bodypress"') WHERE save_data LIKE '%"planchacorporal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electropico"', '"boltbeak"') WHERE save_data LIKE '%"electropico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataquefulgor"', '"boltstrike"') WHERE save_data LIKE '%"ataquefulgor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estruendo"', '"boomburst"') WHERE save_data LIKE '%"estruendo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vapodrenaje"', '"bouncybubble"') WHERE save_data LIKE '%"vapodrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punzadarama"', '"branchpoke"') WHERE save_data LIKE '%"punzadarama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pajaroosado"', '"bravebird"') WHERE save_data LIKE '%"pajaroosado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pájaroosado"', '"bravebird"') WHERE save_data LIKE '%"pájaroosado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pjaroosado"', '"bravebird"') WHERE save_data LIKE '%"pjaroosado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vastoimpacto"', '"breakingswipe"') WHERE save_data LIKE '%"vastoimpacto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carreraarrolladora"', '"breakneckblitz"') WHERE save_data LIKE '%"carreraarrolladora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salmuera"', '"brine"') WHERE save_data LIKE '%"salmuera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girovil"', '"brutalswing"') WHERE save_data LIKE '%"girovil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picadura"', '"bugbite"') WHERE save_data LIKE '%"picadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zumbido"', '"bugbuzz"') WHERE save_data LIKE '%"zumbido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"terratemblor"', '"bulldoze"') WHERE save_data LIKE '%"terratemblor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punobala"', '"bulletpunch"') WHERE save_data LIKE '%"punobala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñobala"', '"bulletpunch"') WHERE save_data LIKE '%"puñobala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puobala"', '"bulletpunch"') WHERE save_data LIKE '%"puobala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamaprotectora"', '"burningbulwark"') WHERE save_data LIKE '%"llamaprotectora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"envidiaardiente"', '"burningjealousy"') WHERE save_data LIKE '%"envidiaardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamafinal"', '"burnup"') WHERE save_data LIKE '%"llamafinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"joltioparalisis"', '"buzzybuzz"') WHERE save_data LIKE '%"joltioparalisis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"joltioparálisis"', '"buzzybuzz"') WHERE save_data LIKE '%"joltioparálisis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"joltioparlisis"', '"buzzybuzz"') WHERE save_data LIKE '%"joltioparlisis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seduccion"', '"captivate"') WHERE save_data LIKE '%"seduccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seducción"', '"captivate"') WHERE save_data LIKE '%"seducción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seduccin"', '"captivate"') WHERE save_data LIKE '%"seduccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pikavoltioletal"', '"catastropika"') WHERE save_data LIKE '%"pikavoltioletal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"celebracion"', '"celebrate"') WHERE save_data LIKE '%"celebracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"celebración"', '"celebrate"') WHERE save_data LIKE '%"celebración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"celebracin"', '"celebrate"') WHERE save_data LIKE '%"celebracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayocarga"', '"chargebeam"') WHERE save_data LIKE '%"rayocarga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chachara"', '"chatter"') WHERE save_data LIKE '%"chachara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cháchara"', '"chatter"') WHERE save_data LIKE '%"cháchara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chchara"', '"chatter"') WHERE save_data LIKE '%"chchara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guardiabaja"', '"chipaway"') WHERE save_data LIKE '%"guardiabaja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llavegiro"', '"circlethrow"') WHERE save_data LIKE '%"llavegiro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fragorescamas"', '"clangingscales"') WHERE save_data LIKE '%"fragorescamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estruendoescama"', '"clangoroussoul"') WHERE save_data LIKE '%"estruendoescama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estruendoimplacable"', '"clangoroussoulblaze"') WHERE save_data LIKE '%"estruendoimplacable"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nieblaclara"', '"clearsmog"') WHERE save_data LIKE '%"nieblaclara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"abocajarro"', '"closecombat"') WHERE save_data LIKE '%"abocajarro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motivacion"', '"coaching"') WHERE save_data LIKE '%"motivacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motivación"', '"coaching"') WHERE save_data LIKE '%"motivación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motivacin"', '"coaching"') WHERE save_data LIKE '%"motivacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enrosque"', '"coil"') WHERE save_data LIKE '%"enrosque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"confidencia"', '"confide"') WHERE save_data LIKE '%"confidencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aplastamientogigalitico"', '"continentalcrush"') WHERE save_data LIKE '%"aplastamientogigalitico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aplastamientogigalítico"', '"continentalcrush"') WHERE save_data LIKE '%"aplastamientogigalítico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aplastamientogigaltico"', '"continentalcrush"') WHERE save_data LIKE '%"aplastamientogigaltico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"copion"', '"copycat"') WHERE save_data LIKE '%"copion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"copión"', '"copycat"') WHERE save_data LIKE '%"copión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"copin"', '"copycat"') WHERE save_data LIKE '%"copin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nucleocastigo"', '"coreenforcer"') WHERE save_data LIKE '%"nucleocastigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"núcleocastigo"', '"coreenforcer"') WHERE save_data LIKE '%"núcleocastigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ncleocastigo"', '"coreenforcer"') WHERE save_data LIKE '%"ncleocastigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"helicetrepanadora"', '"corkscrewcrash"') WHERE save_data LIKE '%"helicetrepanadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hélicetrepanadora"', '"corkscrewcrash"') WHERE save_data LIKE '%"hélicetrepanadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hlicetrepanadora"', '"corkscrewcrash"') WHERE save_data LIKE '%"hlicetrepanadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gascorrosivo"', '"corrosivegas"') WHERE save_data LIKE '%"gascorrosivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rizoalgodon"', '"cottonguard"') WHERE save_data LIKE '%"rizoalgodon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rizoalgodón"', '"cottonguard"') WHERE save_data LIKE '%"rizoalgodón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rizoalgodn"', '"cottonguard"') WHERE save_data LIKE '%"rizoalgodn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiodecancha"', '"courtchange"') WHERE save_data LIKE '%"cambiodecancha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trucodefensa"', '"craftyshield"') WHERE save_data LIKE '%"trucodefensa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"venenox"', '"crosspoison"') WHERE save_data LIKE '%"venenox"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agarron"', '"crushgrip"') WHERE save_data LIKE '%"agarron"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agarrón"', '"crushgrip"') WHERE save_data LIKE '%"agarrón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agarrn"', '"crushgrip"') WHERE save_data LIKE '%"agarrn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lariatoscuro"', '"darkestlariat"') WHERE save_data LIKE '%"lariatoscuro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsoumbrio"', '"darkpulse"') WHERE save_data LIKE '%"pulsoumbrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsoumbrío"', '"darkpulse"') WHERE save_data LIKE '%"pulsoumbrío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsoumbro"', '"darkpulse"') WHERE save_data LIKE '%"pulsoumbro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brechanegra"', '"darkvoid"') WHERE save_data LIKE '%"brechanegra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brillomagico"', '"dazzlinggleam"') WHERE save_data LIKE '%"brillomagico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brillomágico"', '"dazzlinggleam"') WHERE save_data LIKE '%"brillomágico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brillomgico"', '"dazzlinggleam"') WHERE save_data LIKE '%"brillomgico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"decoracion"', '"decorate"') WHERE save_data LIKE '%"decoracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"decoración"', '"decorate"') WHERE save_data LIKE '%"decoración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"decoracin"', '"decorate"') WHERE save_data LIKE '%"decoracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"adefender"', '"defendorder"') WHERE save_data LIKE '%"adefender"%';
+UPDATE game_saves SET save_data = replace(save_data, '"despejar"', '"defog"') WHERE save_data LIKE '%"despejar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoalientodevastador"', '"devastatingdrake"') WHERE save_data LIKE '%"dracoalientodevastador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tormdiamantes"', '"diamondstorm"') WHERE save_data LIKE '%"tormdiamantes"%';
+UPDATE game_saves SET save_data = replace(save_data, '"torm.diamantes"', '"diamondstorm"') WHERE save_data LIKE '%"torm.diamantes"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vozcautivadora"', '"disarmingvoice"') WHERE save_data LIKE '%"vozcautivadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chispazo"', '"discharge"') WHERE save_data LIKE '%"chispazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"doblegolpe"', '"doublehit"') WHERE save_data LIKE '%"doblegolpe"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ferropunodoble"', '"doubleironbash"') WHERE save_data LIKE '%"ferropunodoble"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ferropuñodoble"', '"doubleironbash"') WHERE save_data LIKE '%"ferropuñodoble"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ferropuodoble"', '"doubleironbash"') WHERE save_data LIKE '%"ferropuodoble"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cometadraco"', '"dracometeor"') WHERE save_data LIKE '%"cometadraco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ascensodraco"', '"dragonascent"') WHERE save_data LIKE '%"ascensodraco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bramidodragon"', '"dragoncheer"') WHERE save_data LIKE '%"bramidodragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bramidodragón"', '"dragoncheer"') WHERE save_data LIKE '%"bramidodragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bramidodragn"', '"dragoncheer"') WHERE save_data LIKE '%"bramidodragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoflechas"', '"dragondarts"') WHERE save_data LIKE '%"dracoflechas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoenergia"', '"dragonenergy"') WHERE save_data LIKE '%"dracoenergia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoenergía"', '"dragonenergy"') WHERE save_data LIKE '%"dracoenergía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoenerga"', '"dragonenergy"') WHERE save_data LIKE '%"dracoenerga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"martillodragon"', '"dragonhammer"') WHERE save_data LIKE '%"martillodragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"martillodragón"', '"dragonhammer"') WHERE save_data LIKE '%"martillodragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"martillodragn"', '"dragonhammer"') WHERE save_data LIKE '%"martillodragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsodragon"', '"dragonpulse"') WHERE save_data LIKE '%"pulsodragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsodragón"', '"dragonpulse"') WHERE save_data LIKE '%"pulsodragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsodragn"', '"dragonpulse"') WHERE save_data LIKE '%"pulsodragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargadragon"', '"dragonrush"') WHERE save_data LIKE '%"cargadragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargadragón"', '"dragonrush"') WHERE save_data LIKE '%"cargadragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargadragn"', '"dragonrush"') WHERE save_data LIKE '%"cargadragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coladragon"', '"dragontail"') WHERE save_data LIKE '%"coladragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coladragón"', '"dragontail"') WHERE save_data LIKE '%"coladragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coladragn"', '"dragontail"') WHERE save_data LIKE '%"coladragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"besodrenaje"', '"drainingkiss"') WHERE save_data LIKE '%"besodrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punodrenaje"', '"drainpunch"') WHERE save_data LIKE '%"punodrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñodrenaje"', '"drainpunch"') WHERE save_data LIKE '%"puñodrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puodrenaje"', '"drainpunch"') WHERE save_data LIKE '%"puodrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"taladradora"', '"drillrun"') WHERE save_data LIKE '%"taladradora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateriaasalto"', '"drumbeating"') WHERE save_data LIKE '%"bateriaasalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateríaasalto"', '"drumbeating"') WHERE save_data LIKE '%"bateríaasalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateraasalto"', '"drumbeating"') WHERE save_data LIKE '%"bateraasalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpebis"', '"dualchop"') WHERE save_data LIKE '%"golpebis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alabis"', '"dualwingbeat"') WHERE save_data LIKE '%"alabis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canondinamax"', '"dynamaxcannon"') WHERE save_data LIKE '%"canondinamax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cañóndinamax"', '"dynamaxcannon"') WHERE save_data LIKE '%"cañóndinamax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"candinamax"', '"dynamaxcannon"') WHERE save_data LIKE '%"candinamax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tierraviva"', '"earthpower"') WHERE save_data LIKE '%"tierraviva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ecovoz"', '"echoedvoice"') WHERE save_data LIKE '%"ecovoz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondaanomala"', '"eerieimpulse"') WHERE save_data LIKE '%"ondaanomala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondaanómala"', '"eerieimpulse"') WHERE save_data LIKE '%"ondaanómala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondaanmala"', '"eerieimpulse"') WHERE save_data LIKE '%"ondaanmala"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conjurofunesto"', '"eeriespell"') WHERE save_data LIKE '%"conjurofunesto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campoelectrico"', '"electricterrain"') WHERE save_data LIKE '%"campoelectrico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campoeléctrico"', '"electricterrain"') WHERE save_data LIKE '%"campoeléctrico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campoelctrico"', '"electricterrain"') WHERE save_data LIKE '%"campoelctrico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrificacion"', '"electrify"') WHERE save_data LIKE '%"electrificacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrificación"', '"electrify"') WHERE save_data LIKE '%"electrificación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrificacin"', '"electrify"') WHERE save_data LIKE '%"electrificacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolavoltio"', '"electroball"') WHERE save_data LIKE '%"bolavoltio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrorrayo"', '"electroshot"') WHERE save_data LIKE '%"electrorrayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrotela"', '"electroweb"') WHERE save_data LIKE '%"electrotela"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energibola"', '"energyball"') WHERE save_data LIKE '%"energibola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzaamiga"', '"entrainment"') WHERE save_data LIKE '%"danzaamiga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoinfinito"', '"eternabeam"') WHERE save_data LIKE '%"rayoinfinito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vastafuerza"', '"expandingforce"') WHERE save_data LIKE '%"vastafuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"novenapotencia"', '"extremeevoboost"') WHERE save_data LIKE '%"novenapotencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cerrojofeerico"', '"fairylock"') WHERE save_data LIKE '%"cerrojofeerico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cerrojofeérico"', '"fairylock"') WHERE save_data LIKE '%"cerrojofeérico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cerrojoferico"', '"fairylock"') WHERE save_data LIKE '%"cerrojoferico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientofeerico"', '"fairywind"') WHERE save_data LIKE '%"vientofeerico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientofeérico"', '"fairywind"') WHERE save_data LIKE '%"vientofeérico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoferico"', '"fairywind"') WHERE save_data LIKE '%"vientoferico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"irreverencia"', '"falsesurrender"') WHERE save_data LIKE '%"irreverencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amago"', '"feint"') WHERE save_data LIKE '%"amago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguijonletal"', '"fellstinger"') WHERE save_data LIKE '%"aguijonletal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguijónletal"', '"fellstinger"') WHERE save_data LIKE '%"aguijónletal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguijnletal"', '"fellstinger"') WHERE save_data LIKE '%"aguijnletal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"laserveleidoso"', '"ficklebeam"') WHERE save_data LIKE '%"laserveleidoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"láserveleidoso"', '"ficklebeam"') WHERE save_data LIKE '%"láserveleidoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lserveleidoso"', '"ficklebeam"') WHERE save_data LIKE '%"lserveleidoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzallama"', '"fierydance"') WHERE save_data LIKE '%"danzallama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furiacandente"', '"fierywrath"') WHERE save_data LIKE '%"furiacandente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sacrificio"', '"finalgambit"') WHERE save_data LIKE '%"sacrificio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmilloigneo"', '"firefang"') WHERE save_data LIKE '%"colmilloigneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmilloígneo"', '"firefang"') WHERE save_data LIKE '%"colmilloígneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillogneo"', '"firefang"') WHERE save_data LIKE '%"colmillogneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"latigoigneo"', '"firelash"') WHERE save_data LIKE '%"latigoigneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"látigoígneo"', '"firelash"') WHERE save_data LIKE '%"látigoígneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltigogneo"', '"firelash"') WHERE save_data LIKE '%"ltigogneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"votofuego"', '"firepledge"') WHERE save_data LIKE '%"votofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escaramuza"', '"firstimpression"') WHERE save_data LIKE '%"escaramuza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"branquibocado"', '"fishiousrend"') WHERE save_data LIKE '%"branquibocado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pirotecnia"', '"flameburst"') WHERE save_data LIKE '%"pirotecnia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nitrocarga"', '"flamecharge"') WHERE save_data LIKE '%"nitrocarga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enviteigneo"', '"flareblitz"') WHERE save_data LIKE '%"enviteigneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enviteígneo"', '"flareblitz"') WHERE save_data LIKE '%"enviteígneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"envitegneo"', '"flareblitz"') WHERE save_data LIKE '%"envitegneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focoresplandor"', '"flashcannon"') WHERE save_data LIKE '%"focoresplandor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canonfloral"', '"fleurcannon"') WHERE save_data LIKE '%"canonfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cañónfloral"', '"fleurcannon"') WHERE save_data LIKE '%"cañónfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canfloral"', '"fleurcannon"') WHERE save_data LIKE '%"canfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lanzamiento"', '"fling"') WHERE save_data LIKE '%"lanzamiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"viraje"', '"flipturn"') WHERE save_data LIKE '%"viraje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pikapicado"', '"floatyfall"') WHERE save_data LIKE '%"pikapicado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curafloral"', '"floralhealing"') WHERE save_data LIKE '%"curafloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"defensafloral"', '"flowershield"') WHERE save_data LIKE '%"defensafloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"planchavoladora"', '"flyingpress"') WHERE save_data LIKE '%"planchavoladora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondacertera"', '"focusblast"') WHERE save_data LIKE '%"ondacertera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"palmeo"', '"forcepalm"') WHERE save_data LIKE '%"palmeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"condenasilvana"', '"forestscurse"') WHERE save_data LIKE '%"condenasilvana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"juegosucio"', '"foulplay"') WHERE save_data LIKE '%"juegosucio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"liofilizacion"', '"freezedry"') WHERE save_data LIKE '%"liofilizacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"liofilización"', '"freezedry"') WHERE save_data LIKE '%"liofilización"%';
+UPDATE game_saves SET save_data = replace(save_data, '"liofilizacin"', '"freezedry"') WHERE save_data LIKE '%"liofilizacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayogelido"', '"freezeshock"') WHERE save_data LIKE '%"rayogelido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayogélido"', '"freezeshock"') WHERE save_data LIKE '%"rayogélido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoglido"', '"freezeshock"') WHERE save_data LIKE '%"rayoglido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"miradaheladora"', '"freezingglare"') WHERE save_data LIKE '%"miradaheladora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"glaceoprisma"', '"freezyfrost"') WHERE save_data LIKE '%"glaceoprisma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vahogelido"', '"frostbreath"') WHERE save_data LIKE '%"vahogelido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vahogélido"', '"frostbreath"') WHERE save_data LIKE '%"vahogélido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vahoglido"', '"frostbreath"') WHERE save_data LIKE '%"vahoglido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayofusion"', '"fusionbolt"') WHERE save_data LIKE '%"rayofusion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayofusión"', '"fusionbolt"') WHERE save_data LIKE '%"rayofusión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayofusin"', '"fusionbolt"') WHERE save_data LIKE '%"rayofusin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamafusion"', '"fusionflare"') WHERE save_data LIKE '%"llamafusion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamafusión"', '"fusionflare"') WHERE save_data LIKE '%"llamafusión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamafusin"', '"fusionflare"') WHERE save_data LIKE '%"llamafusin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bilis"', '"gastroacid"') WHERE save_data LIKE '%"bilis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ruedadoble"', '"geargrind"') WHERE save_data LIKE '%"ruedadoble"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinonauxiliar"', '"gearup"') WHERE save_data LIKE '%"pinonauxiliar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piñónauxiliar"', '"gearup"') WHERE save_data LIKE '%"piñónauxiliar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinauxiliar"', '"gearup"') WHERE save_data LIKE '%"pinauxiliar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supernovaoriginal"', '"genesissupernova"') WHERE save_data LIKE '%"supernovaoriginal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"geocontrol"', '"geomancy"') WHERE save_data LIKE '%"geocontrol"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gigaimpacto"', '"gigaimpact"') WHERE save_data LIKE '%"gigaimpacto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gigavoltiodestructor"', '"gigavolthavoc"') WHERE save_data LIKE '%"gigavoltiodestructor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lanzaglacial"', '"glaciallance"') WHERE save_data LIKE '%"lanzaglacial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mundogelido"', '"glaciate"') WHERE save_data LIKE '%"mundogelido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mundogélido"', '"glaciate"') WHERE save_data LIKE '%"mundogélido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mundoglido"', '"glaciate"') WHERE save_data LIKE '%"mundoglido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espeaura"', '"glitzyglow"') WHERE save_data LIKE '%"espeaura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbalazo"', '"grassknot"') WHERE save_data LIKE '%"hierbalazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"votoplanta"', '"grasspledge"') WHERE save_data LIKE '%"votoplanta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fitoimpulso"', '"grassyglide"') WHERE save_data LIKE '%"fitoimpulso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campodehierba"', '"grassyterrain"') WHERE save_data LIKE '%"campodehierba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzag"', '"gravapple"') WHERE save_data LIKE '%"fuerzag"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gravedad"', '"gravity"') WHERE save_data LIKE '%"gravedad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coleradelguardian"', '"guardianofalola"') WHERE save_data LIKE '%"coleradelguardian"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cóleradelguardián"', '"guardianofalola"') WHERE save_data LIKE '%"cóleradelguardián"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cleradelguardin"', '"guardianofalola"') WHERE save_data LIKE '%"cleradelguardin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"isoguardia"', '"guardsplit"') WHERE save_data LIKE '%"isoguardia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiadefensa"', '"guardswap"') WHERE save_data LIKE '%"cambiadefensa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lanzamugre"', '"gunkshot"') WHERE save_data LIKE '%"lanzamugre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"girobola"', '"gyroball"') WHERE save_data LIKE '%"girobola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"machada"', '"hammerarm"') WHERE save_data LIKE '%"machada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pagaextra"', '"happyhour"') WHERE save_data LIKE '%"pagaextra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prensametalica"', '"hardpress"') WHERE save_data LIKE '%"prensametalica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prensametálica"', '"hardpress"') WHERE save_data LIKE '%"prensametálica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prensametlica"', '"hardpress"') WHERE save_data LIKE '%"prensametlica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ariete"', '"headcharge"') WHERE save_data LIKE '%"ariete"%';
+UPDATE game_saves SET save_data = replace(save_data, '"testarazo"', '"headsmash"') WHERE save_data LIKE '%"testarazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticura"', '"healblock"') WHERE save_data LIKE '%"anticura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deseocura"', '"healingwish"') WHERE save_data LIKE '%"deseocura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auxilio"', '"healorder"') WHERE save_data LIKE '%"auxilio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsocura"', '"healpulse"') WHERE save_data LIKE '%"pulsocura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arrumaco"', '"heartstamp"') WHERE save_data LIKE '%"arrumaco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiaalmas"', '"heartswap"') WHERE save_data LIKE '%"cambiaalmas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpecalor"', '"heatcrash"') WHERE save_data LIKE '%"golpecalor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpopesado"', '"heavyslam"') WHERE save_data LIKE '%"cuerpopesado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"infortunio"', '"hex"') WHERE save_data LIKE '%"infortunio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzaequina"', '"highhorsepower"') WHERE save_data LIKE '%"fuerzaequina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clemencia"', '"holdback"') WHERE save_data LIKE '%"clemencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manosjuntas"', '"holdhands"') WHERE save_data LIKE '%"manosjuntas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"afilagarras"', '"honeclaws"') WHERE save_data LIKE '%"afilagarras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"astadrenaje"', '"hornleech"') WHERE save_data LIKE '%"astadrenaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vendaval"', '"hurricane"') WHERE save_data LIKE '%"vendaval"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrovapor"', '"hydrosteam"') WHERE save_data LIKE '%"hidrovapor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrovorticeabisal"', '"hydrovortex"') WHERE save_data LIKE '%"hidrovorticeabisal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrovórticeabisal"', '"hydrovortex"') WHERE save_data LIKE '%"hidrovórticeabisal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrovrticeabisal"', '"hydrovortex"') WHERE save_data LIKE '%"hidrovrticeabisal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cercodimension"', '"hyperspacefury"') WHERE save_data LIKE '%"cercodimension"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cercodimensión"', '"hyperspacefury"') WHERE save_data LIKE '%"cercodimensión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cercodimensin"', '"hyperspacefury"') WHERE save_data LIKE '%"cercodimensin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pasodimensional"', '"hyperspacehole"') WHERE save_data LIKE '%"pasodimensional"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamagelida"', '"iceburn"') WHERE save_data LIKE '%"llamagelida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamagélida"', '"iceburn"') WHERE save_data LIKE '%"llamagélida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamaglida"', '"iceburn"') WHERE save_data LIKE '%"llamaglida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillohielo"', '"icefang"') WHERE save_data LIKE '%"colmillohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"martillohielo"', '"icehammer"') WHERE save_data LIKE '%"martillohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cantohelado"', '"iceshard"') WHERE save_data LIKE '%"cantohelado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chuzos"', '"iciclecrash"') WHERE save_data LIKE '%"chuzos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"calcinacion"', '"incinerate"') WHERE save_data LIKE '%"calcinacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"calcinación"', '"incinerate"') WHERE save_data LIKE '%"calcinación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"calcinacin"', '"incinerate"') WHERE save_data LIKE '%"calcinacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"infierno"', '"inferno"') WHERE save_data LIKE '%"infierno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hecatombepirica"', '"infernooverdrive"') WHERE save_data LIKE '%"hecatombepirica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hecatombepírica"', '"infernooverdrive"') WHERE save_data LIKE '%"hecatombepírica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hecatombeprica"', '"infernooverdrive"') WHERE save_data LIKE '%"hecatombeprica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acoso"', '"infestation"') WHERE save_data LIKE '%"acoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandato"', '"instruct"') WHERE save_data LIKE '%"mandato"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortinaplasma"', '"iondeluge"') WHERE save_data LIKE '%"cortinaplasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cabezadehierro"', '"ironhead"') WHERE save_data LIKE '%"cabezadehierro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presamaxilar"', '"jawlock"') WHERE save_data LIKE '%"presamaxilar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sentencia"', '"judgment"') WHERE save_data LIKE '%"sentencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curaselvatica"', '"junglehealing"') WHERE save_data LIKE '%"curaselvatica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curaselvática"', '"junglehealing"') WHERE save_data LIKE '%"curaselvática"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curaselvtica"', '"junglehealing"') WHERE save_data LIKE '%"curaselvtica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escudoreal"', '"kingsshield"') WHERE save_data LIKE '%"escudoreal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzatelurica"', '"landswrath"') WHERE save_data LIKE '%"fuerzatelurica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzatelúrica"', '"landswrath"') WHERE save_data LIKE '%"fuerzatelúrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzatelrica"', '"landswrath"') WHERE save_data LIKE '%"fuerzatelrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguzar"', '"laserfocus"') WHERE save_data LIKE '%"aguzar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"desahogo"', '"lashout"') WHERE save_data LIKE '%"desahogo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultimabaza"', '"lastresort"') WHERE save_data LIKE '%"ultimabaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"últimabaza"', '"lastresort"') WHERE save_data LIKE '%"últimabaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltimabaza"', '"lastresort"') WHERE save_data LIKE '%"ltimabaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"humareda"', '"lavaplume"') WHERE save_data LIKE '%"humareda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"follaje"', '"leafage"') WHERE save_data LIKE '%"follaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lluevehojas"', '"leafstorm"') WHERE save_data LIKE '%"lluevehojas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ciclondehojas"', '"leaftornado"') WHERE save_data LIKE '%"ciclondehojas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ciclóndehojas"', '"leaftornado"') WHERE save_data LIKE '%"ciclóndehojas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ciclndehojas"', '"leaftornado"') WHERE save_data LIKE '%"ciclndehojas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"somantaamistosa"', '"letssnuggleforever"') WHERE save_data LIKE '%"somantaamistosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gotavital"', '"lifedew"') WHERE save_data LIKE '%"gotavital"%';
+UPDATE game_saves SET save_data = replace(save_data, '"luzaniquiladora"', '"lightofruin"') WHERE save_data LIKE '%"luzaniquiladora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fotodestruccionapocaliptica"', '"lightthatburnsthesky"') WHERE save_data LIKE '%"fotodestruccionapocaliptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fotodestrucciónapocalíptica"', '"lightthatburnsthesky"') WHERE save_data LIKE '%"fotodestrucciónapocalíptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fotodestruccinapocalptica"', '"lightthatburnsthesky"') WHERE save_data LIKE '%"fotodestruccinapocalptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidroariete"', '"liquidation"') WHERE save_data LIKE '%"hidroariete"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntapie"', '"lowsweep"') WHERE save_data LIKE '%"puntapie"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntapié"', '"lowsweep"') WHERE save_data LIKE '%"puntapié"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntapi"', '"lowsweep"') WHERE save_data LIKE '%"puntapi"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conjuro"', '"luckychant"') WHERE save_data LIKE '%"conjuro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzalunar"', '"lunardance"') WHERE save_data LIKE '%"danzalunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plancha"', '"lunge"') WHERE save_data LIKE '%"plancha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvomagico"', '"magicpowder"') WHERE save_data LIKE '%"polvomagico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvomágico"', '"magicpowder"') WHERE save_data LIKE '%"polvomágico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvomgico"', '"magicpowder"') WHERE save_data LIKE '%"polvomgico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonamagica"', '"magicroom"') WHERE save_data LIKE '%"zonamagica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonamágica"', '"magicroom"') WHERE save_data LIKE '%"zonamágica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonamgica"', '"magicroom"') WHERE save_data LIKE '%"zonamgica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lluviaignea"', '"magmastorm"') WHERE save_data LIKE '%"lluviaignea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lluviaígnea"', '"magmastorm"') WHERE save_data LIKE '%"lluviaígnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lluviagnea"', '"magmastorm"') WHERE save_data LIKE '%"lluviagnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaiman"', '"magnetbomb"') WHERE save_data LIKE '%"bombaiman"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaimán"', '"magnetbomb"') WHERE save_data LIKE '%"bombaimán"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaimn"', '"magnetbomb"') WHERE save_data LIKE '%"bombaimn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auramagnetica"', '"magneticflux"') WHERE save_data LIKE '%"auramagnetica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auramagnética"', '"magneticflux"') WHERE save_data LIKE '%"auramagnética"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auramagntica"', '"magneticflux"') WHERE save_data LIKE '%"auramagntica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"leviton"', '"magnetrise"') WHERE save_data LIKE '%"leviton"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levitón"', '"magnetrise"') WHERE save_data LIKE '%"levitón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levitn"', '"magnetrise"') WHERE save_data LIKE '%"levitn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hiperplanchaoscura"', '"maliciousmoonsault"') WHERE save_data LIKE '%"hiperplanchaoscura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cadenavirulenta"', '"malignantchain"') WHERE save_data LIKE '%"cadenavirulenta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escudotatami"', '"matblock"') WHERE save_data LIKE '%"escudotatami"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiciclon"', '"maxairstream"') WHERE save_data LIKE '%"maxiciclon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiciclón"', '"maxairstream"') WHERE save_data LIKE '%"maxiciclón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxicicln"', '"maxairstream"') WHERE save_data LIKE '%"maxicicln"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxisombra"', '"maxdarkness"') WHERE save_data LIKE '%"maxisombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxignicion"', '"maxflare"') WHERE save_data LIKE '%"maxignicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxignición"', '"maxflare"') WHERE save_data LIKE '%"maxignición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxignicin"', '"maxflare"') WHERE save_data LIKE '%"maxignicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxinsecto"', '"maxflutterby"') WHERE save_data LIKE '%"maxinsecto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxichorro"', '"maxgeyser"') WHERE save_data LIKE '%"maxichorro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxibarrera"', '"maxguard"') WHERE save_data LIKE '%"maxibarrera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxihelada"', '"maxhailstorm"') WHERE save_data LIKE '%"maxihelada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxipuno"', '"maxknuckle"') WHERE save_data LIKE '%"maxipuno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxipuño"', '"maxknuckle"') WHERE save_data LIKE '%"maxipuño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxipuo"', '"maxknuckle"') WHERE save_data LIKE '%"maxipuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxitormenta"', '"maxlightning"') WHERE save_data LIKE '%"maxitormenta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxionda"', '"maxmindstorm"') WHERE save_data LIKE '%"maxionda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiacido"', '"maxooze"') WHERE save_data LIKE '%"maxiacido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiácido"', '"maxooze"') WHERE save_data LIKE '%"maxiácido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxicido"', '"maxooze"') WHERE save_data LIKE '%"maxicido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiflora"', '"maxovergrowth"') WHERE save_data LIKE '%"maxiflora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiespectro"', '"maxphantasm"') WHERE save_data LIKE '%"maxiespectro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxitemblor"', '"maxquake"') WHERE save_data LIKE '%"maxitemblor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxilito"', '"maxrockfall"') WHERE save_data LIKE '%"maxilito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiestela"', '"maxstarfall"') WHERE save_data LIKE '%"maxiestela"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maximetal"', '"maxsteelspike"') WHERE save_data LIKE '%"maximetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxiataque"', '"maxstrike"') WHERE save_data LIKE '%"maxiataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxidraco"', '"maxwyrmwind"') WHERE save_data LIKE '%"maxidraco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"yoprimero"', '"mefirst"') WHERE save_data LIKE '%"yoprimero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deflagracionlunar"', '"menacingmoonrazemaelstrom"') WHERE save_data LIKE '%"deflagracionlunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deflagraciónlunar"', '"menacingmoonrazemaelstrom"') WHERE save_data LIKE '%"deflagraciónlunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"deflagracinlunar"', '"menacingmoonrazemaelstrom"') WHERE save_data LIKE '%"deflagracinlunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"represionmetal"', '"metalburst"') WHERE save_data LIKE '%"represionmetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"represiónmetal"', '"metalburst"') WHERE save_data LIKE '%"represiónmetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"represinmetal"', '"metalburst"') WHERE save_data LIKE '%"represinmetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"asaltoestelar"', '"meteorassault"') WHERE save_data LIKE '%"asaltoestelar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayometeorico"', '"meteorbeam"') WHERE save_data LIKE '%"rayometeorico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayometeórico"', '"meteorbeam"') WHERE save_data LIKE '%"rayometeórico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayometerico"', '"meteorbeam"') WHERE save_data LIKE '%"rayometerico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"filopotente"', '"mightycleave"') WHERE save_data LIKE '%"filopotente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cabezasorpresa"', '"mindblown"') WHERE save_data LIKE '%"cabezasorpresa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"granojo"', '"miracleeye"') WHERE save_data LIKE '%"granojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disparoespejo"', '"mirrorshot"') WHERE save_data LIKE '%"disparoespejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brumaexplosiva"', '"mistyexplosion"') WHERE save_data LIKE '%"brumaexplosiva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campodeniebla"', '"mistyterrain"') WHERE save_data LIKE '%"campodeniebla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzalunar"', '"moonblast"') WHERE save_data LIKE '%"fuerzalunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoumbrio"', '"moongeistbeam"') WHERE save_data LIKE '%"rayoumbrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoumbrío"', '"moongeistbeam"') WHERE save_data LIKE '%"rayoumbrío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rayoumbro"', '"moongeistbeam"') WHERE save_data LIKE '%"rayoumbro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombafango"', '"mudbomb"') WHERE save_data LIKE '%"bombafango"%';
+UPDATE game_saves SET save_data = replace(save_data, '"multiataque"', '"multiattack"') WHERE save_data LIKE '%"multiataque"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamaembrujada"', '"mysticalfire"') WHERE save_data LIKE '%"llamaembrujada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maquinacion"', '"nastyplot"') WHERE save_data LIKE '%"maquinacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maquinación"', '"nastyplot"') WHERE save_data LIKE '%"maquinación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maquinacin"', '"nastyplot"') WHERE save_data LIKE '%"maquinacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"donnatural"', '"naturalgift"') WHERE save_data LIKE '%"donnatural"%';
+UPDATE game_saves SET save_data = replace(save_data, '"furianatural"', '"naturesmadness"') WHERE save_data LIKE '%"furianatural"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presaespectral"', '"neverendingnightmare"') WHERE save_data LIKE '%"presaespectral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsonoche"', '"nightdaze"') WHERE save_data LIKE '%"pulsonoche"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoumbrio"', '"nightslash"') WHERE save_data LIKE '%"tajoumbrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoumbrío"', '"nightslash"') WHERE save_data LIKE '%"tajoumbrío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajoumbro"', '"nightslash"') WHERE save_data LIKE '%"tajoumbro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rugidodeguerra"', '"nobleroar"') WHERE save_data LIKE '%"rugidodeguerra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bastionfinal"', '"noretreat"') WHERE save_data LIKE '%"bastionfinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bastiónfinal"', '"noretreat"') WHERE save_data LIKE '%"bastiónfinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bastinfinal"', '"noretreat"') WHERE save_data LIKE '%"bastinfinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mofleteestatico"', '"nuzzle"') WHERE save_data LIKE '%"mofleteestatico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mofleteestático"', '"nuzzle"') WHERE save_data LIKE '%"mofleteestático"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mofleteesttico"', '"nuzzle"') WHERE save_data LIKE '%"mofleteesttico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alamortifera"', '"oblivionwing"') WHERE save_data LIKE '%"alamortifera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alamortífera"', '"oblivionwing"') WHERE save_data LIKE '%"alamortífera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alamortfera"', '"oblivionwing"') WHERE save_data LIKE '%"alamortfera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"obstruccion"', '"obstruct"') WHERE save_data LIKE '%"obstruccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"obstrucción"', '"obstruct"') WHERE save_data LIKE '%"obstrucción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"obstruccin"', '"obstruct"') WHERE save_data LIKE '%"obstruccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sinfoniadeladivamarina"', '"oceanicoperetta"') WHERE save_data LIKE '%"sinfoniadeladivamarina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sinfoníadeladivamarina"', '"oceanicoperetta"') WHERE save_data LIKE '%"sinfoníadeladivamarina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sinfonadeladivamarina"', '"oceanicoperetta"') WHERE save_data LIKE '%"sinfonadeladivamarina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"octopresa"', '"octolock"') WHERE save_data LIKE '%"octopresa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoaciago"', '"ominouswind"') WHERE save_data LIKE '%"vientoaciago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsoprimigenio"', '"originpulse"') WHERE save_data LIKE '%"pulsoprimigenio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amplificador"', '"overdrive"') WHERE save_data LIKE '%"amplificador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargaparabola"', '"paraboliccharge"') WHERE save_data LIKE '%"cargaparabola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargaparábola"', '"paraboliccharge"') WHERE save_data LIKE '%"cargaparábola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargaparbola"', '"paraboliccharge"') WHERE save_data LIKE '%"cargaparbola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultimapalabra"', '"partingshot"') WHERE save_data LIKE '%"ultimapalabra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"últimapalabra"', '"partingshot"') WHERE save_data LIKE '%"últimapalabra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltimapalabra"', '"partingshot"') WHERE save_data LIKE '%"ltimapalabra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vendetta"', '"payback"') WHERE save_data LIKE '%"vendetta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tormentafloral"', '"petalblizzard"') WHERE save_data LIKE '%"tormentafloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpefantasma"', '"phantomforce"') WHERE save_data LIKE '%"golpefantasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"geiserfotonico"', '"photongeyser"') WHERE save_data LIKE '%"geiserfotonico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"géiserfotónico"', '"photongeyser"') WHERE save_data LIKE '%"géiserfotónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"giserfotnico"', '"photongeyser"') WHERE save_data LIKE '%"giserfotnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pikatormenta"', '"pikapapow"') WHERE save_data LIKE '%"pikatormenta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punosplasma"', '"plasmafists"') WHERE save_data LIKE '%"punosplasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñosplasma"', '"plasmafists"') WHERE save_data LIKE '%"puñosplasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puosplasma"', '"plasmafists"') WHERE save_data LIKE '%"puosplasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camaraderia"', '"playnice"') WHERE save_data LIKE '%"camaraderia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camaradería"', '"playnice"') WHERE save_data LIKE '%"camaradería"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camaradera"', '"playnice"') WHERE save_data LIKE '%"camaradera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carantona"', '"playrough"') WHERE save_data LIKE '%"carantona"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carantoña"', '"playrough"') WHERE save_data LIKE '%"carantoña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carantoa"', '"playrough"') WHERE save_data LIKE '%"carantoa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picoteo"', '"pluck"') WHERE save_data LIKE '%"picoteo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puyanociva"', '"poisonjab"') WHERE save_data LIKE '%"puyanociva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"boladepolen"', '"pollenpuff"') WHERE save_data LIKE '%"boladepolen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoexplosivo"', '"powder"') WHERE save_data LIKE '%"polvoexplosivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"joyadeluz"', '"powergem"') WHERE save_data LIKE '%"joyadeluz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"isofuerza"', '"powersplit"') WHERE save_data LIKE '%"isofuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiafuerza"', '"powerswap"') WHERE save_data LIKE '%"cambiafuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trucofuerza"', '"powertrick"') WHERE save_data LIKE '%"trucofuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chuleria"', '"powertrip"') WHERE save_data LIKE '%"chuleria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chulería"', '"powertrip"') WHERE save_data LIKE '%"chulería"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chulera"', '"powertrip"') WHERE save_data LIKE '%"chulera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punoincremento"', '"poweruppunch"') WHERE save_data LIKE '%"punoincremento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñoincremento"', '"poweruppunch"') WHERE save_data LIKE '%"puñoincremento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puoincremento"', '"poweruppunch"') WHERE save_data LIKE '%"puoincremento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"latigazo"', '"powerwhip"') WHERE save_data LIKE '%"latigazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"filodelabismo"', '"precipiceblades"') WHERE save_data LIKE '%"filodelabismo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"laserprisma"', '"prismaticlaser"') WHERE save_data LIKE '%"laserprisma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"láserprisma"', '"prismaticlaser"') WHERE save_data LIKE '%"láserprisma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lserprisma"', '"prismaticlaser"') WHERE save_data LIKE '%"lserprisma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicohojas"', '"psyblade"') WHERE save_data LIKE '%"psicohojas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicocolmillo"', '"psychicfangs"') WHERE save_data LIKE '%"psicocolmillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicorruido"', '"psychicnoise"') WHERE save_data LIKE '%"psicorruido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campopsiquico"', '"psychicterrain"') WHERE save_data LIKE '%"campopsiquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campopsíquico"', '"psychicterrain"') WHERE save_data LIKE '%"campopsíquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"campopsquico"', '"psychicterrain"') WHERE save_data LIKE '%"campopsquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicocorte"', '"psychocut"') WHERE save_data LIKE '%"psicocorte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicocambio"', '"psychoshift"') WHERE save_data LIKE '%"psicocambio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicocarga"', '"psyshock"') WHERE save_data LIKE '%"psicocarga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondamental"', '"psystrike"') WHERE save_data LIKE '%"ondamental"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arrojointempestivo"', '"pulverizingpancake"') WHERE save_data LIKE '%"arrojointempestivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"castigo"', '"punishment"') WHERE save_data LIKE '%"castigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"purificacion"', '"purify"') WHERE save_data LIKE '%"purificacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"purificación"', '"purify"') WHERE save_data LIKE '%"purificación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"purificacin"', '"purify"') WHERE save_data LIKE '%"purificacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"balonigneo"', '"pyroball"') WHERE save_data LIKE '%"balonigneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"balónígneo"', '"pyroball"') WHERE save_data LIKE '%"balónígneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"balngneo"', '"pyroball"') WHERE save_data LIKE '%"balngneo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultimolugar"', '"quash"') WHERE save_data LIKE '%"ultimolugar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"últimolugar"', '"quash"') WHERE save_data LIKE '%"últimolugar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ltimolugar"', '"quash"') WHERE save_data LIKE '%"ltimolugar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticipo"', '"quickguard"') WHERE save_data LIKE '%"anticipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzaaleteo"', '"quiverdance"') WHERE save_data LIKE '%"danzaaleteo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoira"', '"ragepowder"') WHERE save_data LIKE '%"polvoira"%';
+UPDATE game_saves SET save_data = replace(save_data, '"conchafilo"', '"razorshell"') WHERE save_data LIKE '%"conchafilo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clonatipo"', '"reflecttype"') WHERE save_data LIKE '%"clonatipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cantoarcaico"', '"relicsong"') WHERE save_data LIKE '%"cantoarcaico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"represalia"', '"retaliate"') WHERE save_data LIKE '%"represalia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"danzadespertar"', '"revelationdance"') WHERE save_data LIKE '%"danzadespertar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"altovoltaje"', '"risingvoltage"') WHERE save_data LIKE '%"altovoltaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"distorsion"', '"roaroftime"') WHERE save_data LIKE '%"distorsion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"distorsión"', '"roaroftime"') WHERE save_data LIKE '%"distorsión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"distorsin"', '"roaroftime"') WHERE save_data LIKE '%"distorsin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"treparrocas"', '"rockclimb"') WHERE save_data LIKE '%"treparrocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulimento"', '"rockpolish"') WHERE save_data LIKE '%"pulimento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"romperrocas"', '"rockwrecker"') WHERE save_data LIKE '%"romperrocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"respiro"', '"roost"') WHERE save_data LIKE '%"respiro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fertilizante"', '"rototiller"') WHERE save_data LIKE '%"fertilizante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canon"', '"round"') WHERE save_data LIKE '%"canon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espadasanta"', '"sacredsword"') WHERE save_data LIKE '%"espadasanta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"leafitobombas"', '"sappyseed"') WHERE save_data LIKE '%"leafitobombas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guadanasedosa"', '"savagespinout"') WHERE save_data LIKE '%"guadanasedosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guadañasedosa"', '"savagespinout"') WHERE save_data LIKE '%"guadañasedosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guadaasedosa"', '"savagespinout"') WHERE save_data LIKE '%"guadaasedosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escaldar"', '"scald"') WHERE save_data LIKE '%"escaldar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rafagaescamas"', '"scaleshot"') WHERE save_data LIKE '%"rafagaescamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ráfagaescamas"', '"scaleshot"') WHERE save_data LIKE '%"ráfagaescamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rfagaescamas"', '"scaleshot"') WHERE save_data LIKE '%"rfagaescamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arenasardientes"', '"scorchingsands"') WHERE save_data LIKE '%"arenasardientes"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaignea"', '"searingshot"') WHERE save_data LIKE '%"bombaignea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombaígnea"', '"searingshot"') WHERE save_data LIKE '%"bombaígnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombagnea"', '"searingshot"') WHERE save_data LIKE '%"bombagnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embestidasolar"', '"searingsunrazesmash"') WHERE save_data LIKE '%"embestidasolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sablemistico"', '"secretsword"') WHERE save_data LIKE '%"sablemistico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sablemístico"', '"secretsword"') WHERE save_data LIKE '%"sablemístico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sablemstico"', '"secretsword"') WHERE save_data LIKE '%"sablemstico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bombagermen"', '"seedbomb"') WHERE save_data LIKE '%"bombagermen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fogonazo"', '"seedflare"') WHERE save_data LIKE '%"fogonazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesosombrio"', '"shadowbone"') WHERE save_data LIKE '%"huesosombrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesosombrío"', '"shadowbone"') WHERE save_data LIKE '%"huesosombrío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesosombro"', '"shadowbone"') WHERE save_data LIKE '%"huesosombro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garraumbria"', '"shadowclaw"') WHERE save_data LIKE '%"garraumbria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garraumbría"', '"shadowclaw"') WHERE save_data LIKE '%"garraumbría"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garraumbra"', '"shadowclaw"') WHERE save_data LIKE '%"garraumbra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeumbrio"', '"shadowforce"') WHERE save_data LIKE '%"golpeumbrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeumbrío"', '"shadowforce"') WHERE save_data LIKE '%"golpeumbrío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeumbro"', '"shadowforce"') WHERE save_data LIKE '%"golpeumbro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sombravil"', '"shadowsneak"') WHERE save_data LIKE '%"sombravil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disruptorpsiquico"', '"shatteredpsyche"') WHERE save_data LIKE '%"disruptorpsiquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disruptorpsíquico"', '"shatteredpsyche"') WHERE save_data LIKE '%"disruptorpsíquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disruptorpsquico"', '"shatteredpsyche"') WHERE save_data LIKE '%"disruptorpsquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moluscanon"', '"shellsidearm"') WHERE save_data LIKE '%"moluscanon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moluscañón"', '"shellsidearm"') WHERE save_data LIKE '%"moluscañón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moluscan"', '"shellsidearm"') WHERE save_data LIKE '%"moluscan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rompecoraza"', '"shellsmash"') WHERE save_data LIKE '%"rompecoraza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corazatrampa"', '"shelltrap"') WHERE save_data LIKE '%"corazatrampa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiodemarcha"', '"shiftgear"') WHERE save_data LIKE '%"cambiodemarcha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recogearena"', '"shoreup"') WHERE save_data LIKE '%"recogearena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondasimple"', '"simplebeam"') WHERE save_data LIKE '%"ondasimple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aluviondeflechassombrias"', '"sinisterarrowraid"') WHERE save_data LIKE '%"aluviondeflechassombrias"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aluvióndeflechassombrías"', '"sinisterarrowraid"') WHERE save_data LIKE '%"aluvióndeflechassombrías"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aluvindeflechassombras"', '"sinisterarrowraid"') WHERE save_data LIKE '%"aluvindeflechassombras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flarembestida"', '"sizzlyslide"') WHERE save_data LIKE '%"flarembestida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golperastrero"', '"skittersmack"') WHERE save_data LIKE '%"golperastrero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caidalibre"', '"skydrop"') WHERE save_data LIKE '%"caidalibre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caídalibre"', '"skydrop"') WHERE save_data LIKE '%"caídalibre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cadalibre"', '"skydrop"') WHERE save_data LIKE '%"cadalibre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondatoxica"', '"sludgewave"') WHERE save_data LIKE '%"ondatoxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondatóxica"', '"sludgewave"') WHERE save_data LIKE '%"ondatóxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondatxica"', '"sludgewave"') WHERE save_data LIKE '%"ondatxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antiaereo"', '"smackdown"') WHERE save_data LIKE '%"antiaereo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antiaéreo"', '"smackdown"') WHERE save_data LIKE '%"antiaéreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antiareo"', '"smackdown"') WHERE save_data LIKE '%"antiareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuernocertero"', '"smartstrike"') WHERE save_data LIKE '%"cuernocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cepo"', '"snaptrap"') WHERE save_data LIKE '%"cepo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alarido"', '"snarl"') WHERE save_data LIKE '%"alarido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disparocertero"', '"snipeshot"') WHERE save_data LIKE '%"disparocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anegar"', '"soak"') WHERE save_data LIKE '%"anegar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuchillasolar"', '"solarblade"') WHERE save_data LIKE '%"cuchillasolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constelacionrobaalmas"', '"soulstealing7starstrike"') WHERE save_data LIKE '%"constelacionrobaalmas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constelaciónrobaalmas"', '"soulstealing7starstrike"') WHERE save_data LIKE '%"constelaciónrobaalmas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"constelacinrobaalmas"', '"soulstealing7starstrike"') WHERE save_data LIKE '%"constelacinrobaalmas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortevacio"', '"spacialrend"') WHERE save_data LIKE '%"cortevacio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortevacío"', '"spacialrend"') WHERE save_data LIKE '%"cortevacío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortevaco"', '"spacialrend"') WHERE save_data LIKE '%"cortevaco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ariaburbuja"', '"sparklingaria"') WHERE save_data LIKE '%"ariaburbuja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sylveotornado"', '"sparklyswirl"') WHERE save_data LIKE '%"sylveotornado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"robasombra"', '"spectralthief"') WHERE save_data LIKE '%"robasombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiavelocidad"', '"speedswap"') WHERE save_data LIKE '%"cambiavelocidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"barreraespinosa"', '"spikyshield"') WHERE save_data LIKE '%"barreraespinosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choqueanimico"', '"spiritbreak"') WHERE save_data LIKE '%"choqueanimico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choqueanímico"', '"spiritbreak"') WHERE save_data LIKE '%"choqueanímico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choqueanmico"', '"spiritbreak"') WHERE save_data LIKE '%"choqueanmico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntadasombria"', '"spiritshackle"') WHERE save_data LIKE '%"puntadasombria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntadasombría"', '"spiritshackle"') WHERE save_data LIKE '%"puntadasombría"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntadasombra"', '"spiritshackle"') WHERE save_data LIKE '%"puntadasombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tempestadrocosa"', '"splinteredstormshards"') WHERE save_data LIKE '%"tempestadrocosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salpikasurf"', '"splishysplash"') WHERE save_data LIKE '%"salpikasurf"%';
+UPDATE game_saves SET save_data = replace(save_data, '"foco"', '"spotlight"') WHERE save_data LIKE '%"foco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tramparocas"', '"stealthrock"') WHERE save_data LIKE '%"tramparocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chorrodevapor"', '"steameruption"') WHERE save_data LIKE '%"chorrodevapor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rodillodepuas"', '"steamroller"') WHERE save_data LIKE '%"rodillodepuas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rodillodepúas"', '"steamroller"') WHERE save_data LIKE '%"rodillodepúas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rodillodepas"', '"steamroller"') WHERE save_data LIKE '%"rodillodepas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalaser"', '"steelbeam"') WHERE save_data LIKE '%"metalaser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metaláser"', '"steelbeam"') WHERE save_data LIKE '%"metaláser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalser"', '"steelbeam"') WHERE save_data LIKE '%"metalser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"allanadorferreo"', '"steelroller"') WHERE save_data LIKE '%"allanadorferreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"allanadorférreo"', '"steelroller"') WHERE save_data LIKE '%"allanadorférreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"allanadorfrreo"', '"steelroller"') WHERE save_data LIKE '%"allanadorfrreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"redviscosa"', '"stickyweb"') WHERE save_data LIKE '%"redviscosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"surfeogalvanico"', '"stokedsparksurfer"') WHERE save_data LIKE '%"surfeogalvanico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"surfeogalvánico"', '"stokedsparksurfer"') WHERE save_data LIKE '%"surfeogalvánico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"surfeogalvnico"', '"stokedsparksurfer"') WHERE save_data LIKE '%"surfeogalvnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pataleta"', '"stompingtantrum"') WHERE save_data LIKE '%"pataleta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocaafilada"', '"stoneedge"') WHERE save_data LIKE '%"rocaafilada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderreserva"', '"storedpower"') WHERE save_data LIKE '%"poderreserva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llavecorse"', '"stormthrow"') WHERE save_data LIKE '%"llavecorse"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llavecorsé"', '"stormthrow"') WHERE save_data LIKE '%"llavecorsé"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llavecors"', '"stormthrow"') WHERE save_data LIKE '%"llavecors"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cautivapor"', '"strangesteam"') WHERE save_data LIKE '%"cautivapor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbefuerza"', '"strengthsap"') WHERE save_data LIKE '%"absorbefuerza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estoicismo"', '"strugglebug"') WHERE save_data LIKE '%"estoicismo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"atiborramiento"', '"stuffcheeks"') WHERE save_data LIKE '%"atiborramiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"crioalientodespiadado"', '"subzeroslammer"') WHERE save_data LIKE '%"crioalientodespiadado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpebajo"', '"suckerpunch"') WHERE save_data LIKE '%"golpebajo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meteoimpacto"', '"sunsteelstrike"') WHERE save_data LIKE '%"meteoimpacto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"planchavoltaica"', '"supercellslam"') WHERE save_data LIKE '%"planchavoltaica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picadosupersonico"', '"supersonicskystrike"') WHERE save_data LIKE '%"picadosupersonico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picadosupersónico"', '"supersonicskystrike"') WHERE save_data LIKE '%"picadosupersónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picadosupersnico"', '"supersonicskystrike"') WHERE save_data LIKE '%"picadosupersnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"azotetorrencial"', '"surgingstrikes"') WHERE save_data LIKE '%"azotetorrencial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trapicheo"', '"switcheroo"') WHERE save_data LIKE '%"trapicheo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sincrorruido"', '"synchronoise"') WHERE save_data LIKE '%"sincrorruido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajotaquion"', '"tachyoncutter"') WHERE save_data LIKE '%"tajotaquion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajotaquión"', '"tachyoncutter"') WHERE save_data LIKE '%"tajotaquión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tajotaquin"', '"tachyoncutter"') WHERE save_data LIKE '%"tajotaquin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plumerazo"', '"tailslap"') WHERE save_data LIKE '%"plumerazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoafin"', '"tailwind"') WHERE save_data LIKE '%"vientoafin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoafín"', '"tailwind"') WHERE save_data LIKE '%"vientoafín"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vientoafn"', '"tailwind"') WHERE save_data LIKE '%"vientoafn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alquitranazo"', '"tarshot"') WHERE save_data LIKE '%"alquitranazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ojosllorosos"', '"tearfullook"') WHERE save_data LIKE '%"ojosllorosos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"horadelte"', '"teatime"') WHERE save_data LIKE '%"horadelte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"horadelté"', '"teatime"') WHERE save_data LIKE '%"horadelté"%';
+UPDATE game_saves SET save_data = replace(save_data, '"horadelt"', '"teatime"') WHERE save_data LIKE '%"horadelt"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tecnoshock"', '"technoblast"') WHERE save_data LIKE '%"tecnoshock"%';
+UPDATE game_saves SET save_data = replace(save_data, '"barrenatelurica"', '"tectonicrage"') WHERE save_data LIKE '%"barrenatelurica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"barrenatelúrica"', '"tectonicrage"') WHERE save_data LIKE '%"barrenatelúrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"barrenatelrica"', '"tectonicrage"') WHERE save_data LIKE '%"barrenatelrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telequinesis"', '"telekinesis"') WHERE save_data LIKE '%"telequinesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coleraardiente"', '"temperflare"') WHERE save_data LIKE '%"coleraardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cóleraardiente"', '"temperflare"') WHERE save_data LIKE '%"cóleraardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cleraardiente"', '"temperflare"') WHERE save_data LIKE '%"cleraardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teracluster"', '"terastarstorm"') WHERE save_data LIKE '%"teracluster"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teraclúster"', '"terastarstorm"') WHERE save_data LIKE '%"teraclúster"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teraclster"', '"terastarstorm"') WHERE save_data LIKE '%"teraclster"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pulsodecampo"', '"terrainpulse"') WHERE save_data LIKE '%"pulsodecampo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"milflechas"', '"thousandarrows"') WHERE save_data LIKE '%"milflechas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"miltemblores"', '"thousandwaves"') WHERE save_data LIKE '%"miltemblores"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpemordaza"', '"throatchop"') WHERE save_data LIKE '%"golpemordaza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrojaula"', '"thundercage"') WHERE save_data LIKE '%"electrojaula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relampagosubito"', '"thunderclap"') WHERE save_data LIKE '%"relampagosubito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relámpagosúbito"', '"thunderclap"') WHERE save_data LIKE '%"relámpagosúbito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relmpagosbito"', '"thunderclap"') WHERE save_data LIKE '%"relmpagosbito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillorayo"', '"thunderfang"') WHERE save_data LIKE '%"colmillorayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadarelampago"', '"thunderouskick"') WHERE save_data LIKE '%"patadarelampago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadarelámpago"', '"thunderouskick"') WHERE save_data LIKE '%"patadarelámpago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadarelmpago"', '"thunderouskick"') WHERE save_data LIKE '%"patadarelmpago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reversion"', '"topsyturvy"') WHERE save_data LIKE '%"reversion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reversión"', '"topsyturvy"') WHERE save_data LIKE '%"reversión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reversin"', '"topsyturvy"') WHERE save_data LIKE '%"reversin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puastoxicas"', '"toxicspikes"') WHERE save_data LIKE '%"puastoxicas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"púastóxicas"', '"toxicspikes"') WHERE save_data LIKE '%"púastóxicas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pastxicas"', '"toxicspikes"') WHERE save_data LIKE '%"pastxicas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hilovenenoso"', '"toxicthread"') WHERE save_data LIKE '%"hilovenenoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"halloween"', '"trickortreat"') WHERE save_data LIKE '%"halloween"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espacioraro"', '"trickroom"') WHERE save_data LIKE '%"espacioraro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadatropical"', '"tropkick"') WHERE save_data LIKE '%"patadatropical"%';
+UPDATE game_saves SET save_data = replace(save_data, '"asoculto"', '"trumpcard"') WHERE save_data LIKE '%"asoculto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arrumacosideral"', '"twinkletackle"') WHERE save_data LIKE '%"arrumacosideral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"palmarauda"', '"upperhand"') WHERE save_data LIKE '%"palmarauda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"idayvuelta"', '"uturn"') WHERE save_data LIKE '%"idayvuelta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondavacio"', '"vacuumwave"') WHERE save_data LIKE '%"ondavacio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondavacío"', '"vacuumwave"') WHERE save_data LIKE '%"ondavacío"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ondavaco"', '"vacuumwave"') WHERE save_data LIKE '%"ondavaco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vdefuego"', '"vcreate"') WHERE save_data LIKE '%"vdefuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"eevimpacto"', '"veeveevolley"') WHERE save_data LIKE '%"eevimpacto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trampavenenosa"', '"venomdrench"') WHERE save_data LIKE '%"trampavenenosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargatoxica"', '"venoshock"') WHERE save_data LIKE '%"cargatoxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargatóxica"', '"venoshock"') WHERE save_data LIKE '%"cargatóxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargatxica"', '"venoshock"') WHERE save_data LIKE '%"cargatxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"voltiocambio"', '"voltswitch"') WHERE save_data LIKE '%"voltiocambio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espabila"', '"wakeupslap"') WHERE save_data LIKE '%"espabila"%';
+UPDATE game_saves SET save_data = replace(save_data, '"votoagua"', '"waterpledge"') WHERE save_data LIKE '%"votoagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"shurikendeagua"', '"watershuriken"') WHERE save_data LIKE '%"shurikendeagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpeoscuro"', '"wickedblow"') WHERE save_data LIKE '%"golpeoscuro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vastaguardia"', '"wideguard"') WHERE save_data LIKE '%"vastaguardia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"voltiocruel"', '"wildcharge"') WHERE save_data LIKE '%"voltiocruel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonaextrana"', '"wonderroom"') WHERE save_data LIKE '%"zonaextrana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonaextraña"', '"wonderroom"') WHERE save_data LIKE '%"zonaextraña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zonaextraa"', '"wonderroom"') WHERE save_data LIKE '%"zonaextraa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mazazo"', '"woodhammer"') WHERE save_data LIKE '%"mazazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"avivar"', '"workup"') WHERE save_data LIKE '%"avivar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"abatidoras"', '"worryseed"') WHERE save_data LIKE '%"abatidoras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estrujon"', '"wringout"') WHERE save_data LIKE '%"estrujon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estrujón"', '"wringout"') WHERE save_data LIKE '%"estrujón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estrujn"', '"wringout"') WHERE save_data LIKE '%"estrujn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tijerax"', '"xscissor"') WHERE save_data LIKE '%"tijerax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cabezazozen"', '"zenheadbutt"') WHERE save_data LIKE '%"cabezazozen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electropunzada"', '"zingzap"') WHERE save_data LIKE '%"electropunzada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pikaturbo"', '"zippyzap"') WHERE save_data LIKE '%"pikaturbo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prevision"', '"foresight"') WHERE save_data LIKE '%"prevision"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicocontrol"', '"psychup"') WHERE save_data LIKE '%"psicocontrol"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mud_punch"', '"mudslap"') WHERE save_data LIKE '%"mud_punch"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punolodo"', '"mudslap"') WHERE save_data LIKE '%"punolodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñolodo"', '"mudslap"') WHERE save_data LIKE '%"puñolodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"envolver"', '"wrap"') WHERE save_data LIKE '%"envolver"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arena"', '"sandattack"') WHERE save_data LIKE '%"arena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"portazo"', '"slam"') WHERE save_data LIKE '%"portazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"golpekaratazo"', '"karatechop"') WHERE save_data LIKE '%"golpekaratazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"movsismico"', '"seismictoss"') WHERE save_data LIKE '%"movsismico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mov.sismico"', '"seismictoss"') WHERE save_data LIKE '%"mov.sismico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mov.sísmico"', '"seismictoss"') WHERE save_data LIKE '%"mov.sísmico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acidificacion"', '"acidarmor"') WHERE save_data LIKE '%"acidificacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesorus"', '"bonerush"') WHERE save_data LIKE '%"huesorus"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesumerang"', '"bonemerang"') WHERE save_data LIKE '%"huesumerang"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seguimiento"', '"pursuit"') WHERE save_data LIKE '%"seguimiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cola"', '"tailwhip"') WHERE save_data LIKE '%"cola"%';
+UPDATE game_saves SET save_data = replace(save_data, '"repeticin"', '"wrap"') WHERE save_data LIKE '%"repeticin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ataqueaero"', '"skyattack"') WHERE save_data LIKE '%"ataqueaero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavocann"', '"spikecannon"') WHERE save_data LIKE '%"clavocann"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metrnom"', '"metronome"') WHERE save_data LIKE '%"metrnom"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punetazo"', '"pound"') WHERE save_data LIKE '%"punetazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñetazo"', '"pound"') WHERE save_data LIKE '%"puñetazo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavocaon"', '"spikecannon"') WHERE save_data LIKE '%"clavocaon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"adaptable"', '"adaptability"') WHERE save_data LIKE '%"adaptable"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bucleaire"', '"cloudnine"') WHERE save_data LIKE '%"bucleaire"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trampaarena"', '"arenatrap"') WHERE save_data LIKE '%"trampaarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armadurabatalla"', '"battlearmor"') WHERE save_data LIKE '%"armadurabatalla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sacapecho"', '"bigpecks"') WHERE save_data LIKE '%"sacapecho"%';
+UPDATE game_saves SET save_data = replace(save_data, '"marllamas"', '"blaze"') WHERE save_data LIKE '%"marllamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clorofila"', '"chlorophyll"') WHERE save_data LIKE '%"clorofila"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpopuro"', '"clearbody"') WHERE save_data LIKE '%"cuerpopuro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiocolor"', '"colorchange"') WHERE save_data LIKE '%"cambiocolor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ojocompuesto"', '"compoundeyes"') WHERE save_data LIKE '%"ojocompuesto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"granencanto"', '"cutecharm"') WHERE save_data LIKE '%"granencanto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"humedad"', '"damp"') WHERE save_data LIKE '%"humedad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llovizna"', '"drizzle"') WHERE save_data LIKE '%"llovizna"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sequia"', '"drought"') WHERE save_data LIKE '%"sequia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sequía"', '"drought"') WHERE save_data LIKE '%"sequía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sequa"', '"drought"') WHERE save_data LIKE '%"sequa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"madrugar"', '"earlybird"') WHERE save_data LIKE '%"madrugar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"efectoespora"', '"effectspore"') WHERE save_data LIKE '%"efectoespora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpollama"', '"flamebody"') WHERE save_data LIKE '%"cuerpollama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbefuego"', '"flashfire"') WHERE save_data LIKE '%"absorbefuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prediccion"', '"forecast"') WHERE save_data LIKE '%"prediccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"predicción"', '"forecast"') WHERE save_data LIKE '%"predicción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prediccin"', '"forecast"') WHERE save_data LIKE '%"prediccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agallas"', '"guts"') WHERE save_data LIKE '%"agallas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"potencia"', '"hugepower"') WHERE save_data LIKE '%"potencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"entusiasmo"', '"hustle"') WHERE save_data LIKE '%"entusiasmo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortefuerte"', '"hypercutter"') WHERE save_data LIKE '%"cortefuerte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iluminacion"', '"illuminate"') WHERE save_data LIKE '%"iluminacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iluminación"', '"illuminate"') WHERE save_data LIKE '%"iluminación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iluminacin"', '"illuminate"') WHERE save_data LIKE '%"iluminacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inmunidad"', '"immunity"') WHERE save_data LIKE '%"inmunidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"infiltrador"', '"infiltrator"') WHERE save_data LIKE '%"infiltrador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focointerno"', '"innerfocus"') WHERE save_data LIKE '%"focointerno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"insomnio"', '"insomnia"') WHERE save_data LIKE '%"insomnio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intimidacion"', '"intimidate"') WHERE save_data LIKE '%"intimidacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intimidación"', '"intimidate"') WHERE save_data LIKE '%"intimidación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intimidacin"', '"intimidate"') WHERE save_data LIKE '%"intimidacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vistalince"', '"keeneye"') WHERE save_data LIKE '%"vistalince"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levitacion"', '"levitate"') WHERE save_data LIKE '%"levitacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levitación"', '"levitate"') WHERE save_data LIKE '%"levitación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levitacin"', '"levitate"') WHERE save_data LIKE '%"levitacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pararrayos"', '"lightningrod"') WHERE save_data LIKE '%"pararrayos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flexibilidad"', '"limber"') WHERE save_data LIKE '%"flexibilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"viscosidad"', '"liquidooze"') WHERE save_data LIKE '%"viscosidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iman"', '"magnetpull"') WHERE save_data LIKE '%"iman"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imán"', '"magnetpull"') WHERE save_data LIKE '%"imán"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imn"', '"magnetpull"') WHERE save_data LIKE '%"imn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamaespecial"', '"marvelscale"') WHERE save_data LIKE '%"escamaespecial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"menos"', '"minus"') WHERE save_data LIKE '%"menos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curanatural"', '"naturalcure"') WHERE save_data LIKE '%"curanatural"%';
+UPDATE game_saves SET save_data = replace(save_data, '"despiste"', '"owntempo"') WHERE save_data LIKE '%"despiste"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espesura"', '"overgrow"') WHERE save_data LIKE '%"espesura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recogida"', '"pickup"') WHERE save_data LIKE '%"recogida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mas"', '"plus"') WHERE save_data LIKE '%"mas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"más"', '"plus"') WHERE save_data LIKE '%"más"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ms"', '"plus"') WHERE save_data LIKE '%"ms"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntotoxico"', '"poisonpoint"') WHERE save_data LIKE '%"puntotoxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntotóxico"', '"poisonpoint"') WHERE save_data LIKE '%"puntotóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntotxico"', '"poisonpoint"') WHERE save_data LIKE '%"puntotxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presion"', '"pressure"') WHERE save_data LIKE '%"presion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presión"', '"pressure"') WHERE save_data LIKE '%"presión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"presin"', '"pressure"') WHERE save_data LIKE '%"presin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energiapura"', '"purepower"') WHERE save_data LIKE '%"energiapura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energíapura"', '"purepower"') WHERE save_data LIKE '%"energíapura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energapura"', '"purepower"') WHERE save_data LIKE '%"energapura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curalluvia"', '"raindish"') WHERE save_data LIKE '%"curalluvia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rivalidad"', '"rivalry"') WHERE save_data LIKE '%"rivalidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cabezaroca"', '"rockhead"') WHERE save_data LIKE '%"cabezaroca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pieltosca"', '"roughskin"') WHERE save_data LIKE '%"pieltosca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuga"', '"runaway"') WHERE save_data LIKE '%"fuga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impetuarena"', '"sandrush"') WHERE save_data LIKE '%"impetuarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ímpetuarena"', '"sandrush"') WHERE save_data LIKE '%"ímpetuarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mpetuarena"', '"sandrush"') WHERE save_data LIKE '%"mpetuarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chorroarena"', '"sandstream"') WHERE save_data LIKE '%"chorroarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veloarena"', '"sandveil"') WHERE save_data LIKE '%"veloarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dicha"', '"serenegrace"') WHERE save_data LIKE '%"dicha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sombratrampa"', '"shadowtag"') WHERE save_data LIKE '%"sombratrampa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mudar"', '"shedskin"') WHERE save_data LIKE '%"mudar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caparazon"', '"shellarmor"') WHERE save_data LIKE '%"caparazon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caparazón"', '"shellarmor"') WHERE save_data LIKE '%"caparazón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caparazn"', '"shellarmor"') WHERE save_data LIKE '%"caparazn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoescudo"', '"shielddust"') WHERE save_data LIKE '%"polvoescudo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"francotirador"', '"sniper"') WHERE save_data LIKE '%"francotirador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"podersolar"', '"solarpower"') WHERE save_data LIKE '%"podersolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"insonorizar"', '"soundproof"') WHERE save_data LIKE '%"insonorizar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impulso"', '"speedboost"') WHERE save_data LIKE '%"impulso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electricidadestatica"', '"static"') WHERE save_data LIKE '%"electricidadestatica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electricidadestática"', '"static"') WHERE save_data LIKE '%"electricidadestática"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electricidadesttica"', '"static"') WHERE save_data LIKE '%"electricidadesttica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hedor"', '"stench"') WHERE save_data LIKE '%"hedor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"viscoso"', '"stickyhold"') WHERE save_data LIKE '%"viscoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"robustez"', '"sturdy"') WHERE save_data LIKE '%"robustez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ventosas"', '"suctioncups"') WHERE save_data LIKE '%"ventosas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enjambre"', '"swarm"') WHERE save_data LIKE '%"enjambre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nadorapido"', '"swiftswim"') WHERE save_data LIKE '%"nadorapido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nadorápido"', '"swiftswim"') WHERE save_data LIKE '%"nadorápido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nadorpido"', '"swiftswim"') WHERE save_data LIKE '%"nadorpido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sincronia"', '"synchronize"') WHERE save_data LIKE '%"sincronia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sincronía"', '"synchronize"') WHERE save_data LIKE '%"sincronía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sincrona"', '"synchronize"') WHERE save_data LIKE '%"sincrona"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tumbos"', '"tangledfeet"') WHERE save_data LIKE '%"tumbos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sebo"', '"thickfat"') WHERE save_data LIKE '%"sebo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cromolente"', '"tintedlens"') WHERE save_data LIKE '%"cromolente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"torrente"', '"torrent"') WHERE save_data LIKE '%"torrente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rastro"', '"trace"') WHERE save_data LIKE '%"rastro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ausente"', '"truant"') WHERE save_data LIKE '%"ausente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tension"', '"unnerve"') WHERE save_data LIKE '%"tension"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tensión"', '"unnerve"') WHERE save_data LIKE '%"tensión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tensin"', '"unnerve"') WHERE save_data LIKE '%"tensin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espirituvital"', '"vitalspirit"') WHERE save_data LIKE '%"espirituvital"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espírituvital"', '"vitalspirit"') WHERE save_data LIKE '%"espírituvital"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esprituvital"', '"vitalspirit"') WHERE save_data LIKE '%"esprituvital"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbeelectricidad"', '"voltabsorb"') WHERE save_data LIKE '%"absorbeelectricidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbeagua"', '"waterabsorb"') WHERE save_data LIKE '%"absorbeagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veloagua"', '"waterveil"') WHERE save_data LIKE '%"veloagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"humoblanco"', '"whitesmoke"') WHERE save_data LIKE '%"humoblanco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superguarda"', '"wonderguard"') WHERE save_data LIKE '%"superguarda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"potenciabruta"', '"sheerforce"') WHERE save_data LIKE '%"potenciabruta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"muromagico"', '"magicguard"') WHERE save_data LIKE '%"muromagico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"muromágico"', '"magicguard"') WHERE save_data LIKE '%"muromágico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"muromgico"', '"magicguard"') WHERE save_data LIKE '%"muromgico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compadrazgo"', '"friendguard"') WHERE save_data LIKE '%"compadrazgo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ignorante"', '"unaware"') WHERE save_data LIKE '%"ignorante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tenacidad"', '"competitive"') WHERE save_data LIKE '%"tenacidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cacheo"', '"frisk"') WHERE save_data LIKE '%"cacheo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielseca"', '"dryskin"') WHERE save_data LIKE '%"pielseca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielmilagro"', '"wonderskin"') WHERE save_data LIKE '%"pielmilagro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzaarena"', '"sandforce"') WHERE save_data LIKE '%"fuerzaarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"experto"', '"technician"') WHERE save_data LIKE '%"experto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"irascible"', '"angerpoint"') WHERE save_data LIKE '%"irascible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"competitivo"', '"defiant"') WHERE save_data LIKE '%"competitivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"justiciero"', '"justified"') WHERE save_data LIKE '%"justiciero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"indefenso"', '"noguard"') WHERE save_data LIKE '%"indefenso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impasible"', '"steadfast"') WHERE save_data LIKE '%"impasible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gula"', '"gluttony"') WHERE save_data LIKE '%"gula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"regeneracion"', '"regenerator"') WHERE save_data LIKE '%"regeneracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"regeneración"', '"regenerator"') WHERE save_data LIKE '%"regeneración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"regeneracin"', '"regenerator"') WHERE save_data LIKE '%"regeneracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"analitico"', '"analytic"') WHERE save_data LIKE '%"analitico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"analítico"', '"analytic"') WHERE save_data LIKE '%"analítico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"analtico"', '"analytic"') WHERE save_data LIKE '%"analtico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidratacion"', '"hydration"') WHERE save_data LIKE '%"hidratacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidratación"', '"hydration"') WHERE save_data LIKE '%"hidratación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidratacin"', '"hydration"') WHERE save_data LIKE '%"hidratacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gelido"', '"icebody"') WHERE save_data LIKE '%"gelido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gélido"', '"icebody"') WHERE save_data LIKE '%"gélido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"glido"', '"icebody"') WHERE save_data LIKE '%"glido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toquetoxico"', '"poisontouch"') WHERE save_data LIKE '%"toquetoxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toquetóxico"', '"poisontouch"') WHERE save_data LIKE '%"toquetóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toquetxico"', '"poisontouch"') WHERE save_data LIKE '%"toquetxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"encadenado"', '"skilllink"') WHERE save_data LIKE '%"encadenado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"funda"', '"overcoat"') WHERE save_data LIKE '%"funda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpomaldito"', '"cursedbody"') WHERE save_data LIKE '%"cuerpomaldito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armadurafragil"', '"weakarmor"') WHERE save_data LIKE '%"armadurafragil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armadurafrágil"', '"weakarmor"') WHERE save_data LIKE '%"armadurafrágil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armadurafrgil"', '"weakarmor"') WHERE save_data LIKE '%"armadurafrgil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alerta"', '"forewarn"') WHERE save_data LIKE '%"alerta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resquicio"', '"aftermath"') WHERE save_data LIKE '%"resquicio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cosecha"', '"harvest"') WHERE save_data LIKE '%"cosecha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"audaz"', '"reckless"') WHERE save_data LIKE '%"audaz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"liviano"', '"unburden"') WHERE save_data LIKE '%"liviano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punoferreo"', '"ironfist"') WHERE save_data LIKE '%"punoferreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñoférreo"', '"ironfist"') WHERE save_data LIKE '%"puñoférreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puofrreo"', '"ironfist"') WHERE save_data LIKE '%"puofrreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gasreactivo"', '"neutralizinggas"') WHERE save_data LIKE '%"gasreactivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"almacura"', '"healer"') WHERE save_data LIKE '%"almacura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"defensahoja"', '"leafguard"') WHERE save_data LIKE '%"defensahoja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intrepido"', '"scrappy"') WHERE save_data LIKE '%"intrepido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intrépido"', '"scrappy"') WHERE save_data LIKE '%"intrépido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"intrpido"', '"scrappy"') WHERE save_data LIKE '%"intrpido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"filtro"', '"filter"') WHERE save_data LIKE '%"filtro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rompemoldes"', '"moldbreaker"') WHERE save_data LIKE '%"rompemoldes"%';
+UPDATE game_saves SET save_data = replace(save_data, '"autoestima"', '"moxie"') WHERE save_data LIKE '%"autoestima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cobardia"', '"rattled"') WHERE save_data LIKE '%"cobardia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cobardía"', '"rattled"') WHERE save_data LIKE '%"cobardía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cobarda"', '"rattled"') WHERE save_data LIKE '%"cobarda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impostor"', '"imposter"') WHERE save_data LIKE '%"impostor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piesrapidos"', '"quickfeet"') WHERE save_data LIKE '%"piesrapidos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piesrápidos"', '"quickfeet"') WHERE save_data LIKE '%"piesrápidos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piesrpidos"', '"quickfeet"') WHERE save_data LIKE '%"piesrpidos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"descarga"', '"download"') WHERE save_data LIKE '%"descarga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mantoniveo"', '"snowcloak"') WHERE save_data LIKE '%"mantoniveo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mantoníveo"', '"snowcloak"') WHERE save_data LIKE '%"mantoníveo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mantonveo"', '"snowcloak"') WHERE save_data LIKE '%"mantonveo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compensacion"', '"multiscale"') WHERE save_data LIKE '%"compensacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compensación"', '"multiscale"') WHERE save_data LIKE '%"compensación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compensacin"', '"multiscale"') WHERE save_data LIKE '%"compensacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"afortunado"', '"superluck"') WHERE save_data LIKE '%"afortunado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticipacion"', '"anticipation"') WHERE save_data LIKE '%"anticipacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticipación"', '"anticipation"') WHERE save_data LIKE '%"anticipación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticipacin"', '"anticipation"') WHERE save_data LIKE '%"anticipacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielceleste"', '"aerilate"') WHERE save_data LIKE '%"pielceleste"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corazaira"', '"angershell"') WHERE save_data LIKE '%"corazaira"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colaarmadura"', '"armortail"') WHERE save_data LIKE '%"colaarmadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veloaroma"', '"aromaveil"') WHERE save_data LIKE '%"veloaroma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"asone(glastrier)"', '"asoneglastrier"') WHERE save_data LIKE '%"asone(glastrier)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"asone(spectrier)"', '"asonespectrier"') WHERE save_data LIKE '%"asone(spectrier)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rompeaura"', '"aurabreak"') WHERE save_data LIKE '%"rompeaura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"malsueno"', '"baddreams"') WHERE save_data LIKE '%"malsueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"malsueño"', '"baddreams"') WHERE save_data LIKE '%"malsueño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"malsueo"', '"baddreams"') WHERE save_data LIKE '%"malsueo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recogebolas"', '"ballfetch"') WHERE save_data LIKE '%"recogebolas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateria"', '"battery"') WHERE save_data LIKE '%"bateria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"batería"', '"battery"') WHERE save_data LIKE '%"batería"%';
+UPDATE game_saves SET save_data = replace(save_data, '"batera"', '"battery"') WHERE save_data LIKE '%"batera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerteafecto"', '"battlebond"') WHERE save_data LIKE '%"fuerteafecto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"abaloriodebacle"', '"beadsofruin"') WHERE save_data LIKE '%"abaloriodebacle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultraimpulso"', '"beastboost"') WHERE save_data LIKE '%"ultraimpulso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colera"', '"berserk"') WHERE save_data LIKE '%"colera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cólera"', '"berserk"') WHERE save_data LIKE '%"cólera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clera"', '"berserk"') WHERE save_data LIKE '%"clera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antibalas"', '"bulletproof"') WHERE save_data LIKE '%"antibalas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carrillo"', '"cheekpouch"') WHERE save_data LIKE '%"carrillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relinchoblanco"', '"chillingneigh"') WHERE save_data LIKE '%"relinchoblanco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"letargoperenne"', '"comatose"') WHERE save_data LIKE '%"letargoperenne"%';
+UPDATE game_saves SET save_data = replace(save_data, '"comandar"', '"commander"') WHERE save_data LIKE '%"comandar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"respondon"', '"contrary"') WHERE save_data LIKE '%"respondon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"respondón"', '"contrary"') WHERE save_data LIKE '%"respondón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"respondn"', '"contrary"') WHERE save_data LIKE '%"respondn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corrosión"', '"corrosion"') WHERE save_data LIKE '%"corrosión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corrosin"', '"corrosion"') WHERE save_data LIKE '%"corrosin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unisono"', '"costar"') WHERE save_data LIKE '%"unisono"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unísono"', '"costar"') WHERE save_data LIKE '%"unísono"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unsono"', '"costar"') WHERE save_data LIKE '%"unsono"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pelusa"', '"cottondown"') WHERE save_data LIKE '%"pelusa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rumia"', '"cudchew"') WHERE save_data LIKE '%"rumia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"medicinaextrana"', '"curiousmedicine"') WHERE save_data LIKE '%"medicinaextrana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"medicinaextraña"', '"curiousmedicine"') WHERE save_data LIKE '%"medicinaextraña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"medicinaextraa"', '"curiousmedicine"') WHERE save_data LIKE '%"medicinaextraa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"parejadebaile"', '"dancer"') WHERE save_data LIKE '%"parejadebaile"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auraoscura"', '"darkaura"') WHERE save_data LIKE '%"auraoscura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escudorecio"', '"dauntlessshield"') WHERE save_data LIKE '%"escudorecio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpovivido"', '"dazzling"') WHERE save_data LIKE '%"cuerpovivido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpovívido"', '"dazzling"') WHERE save_data LIKE '%"cuerpovívido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpovvido"', '"dazzling"') WHERE save_data LIKE '%"cuerpovvido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flaqueza"', '"defeatist"') WHERE save_data LIKE '%"flaqueza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rafagadelta"', '"deltastream"') WHERE save_data LIKE '%"rafagadelta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ráfagadelta"', '"deltastream"') WHERE save_data LIKE '%"ráfagadelta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rfagadelta"', '"deltastream"') WHERE save_data LIKE '%"rfagadelta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tierradelocaso"', '"desolateland"') WHERE save_data LIKE '%"tierradelocaso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disfraz"', '"disguise"') WHERE save_data LIKE '%"disfraz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pieldragontina"', '"dragonize"') WHERE save_data LIKE '%"pieldragontina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandibuladragon"', '"dragonsmaw"') WHERE save_data LIKE '%"mandibuladragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandíbuladragón"', '"dragonsmaw"') WHERE save_data LIKE '%"mandíbuladragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandbuladragn"', '"dragonsmaw"') WHERE save_data LIKE '%"mandbuladragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"geofagia"', '"eartheater"') WHERE save_data LIKE '%"geofagia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrogenesis"', '"electricsurge"') WHERE save_data LIKE '%"electrogenesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrogénesis"', '"electricsurge"') WHERE save_data LIKE '%"electrogénesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrognesis"', '"electricsurge"') WHERE save_data LIKE '%"electrognesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dinamo"', '"electromorphosis"') WHERE save_data LIKE '%"dinamo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embodyaspect(cornerstone)"', '"embodyaspectcornerstone"') WHERE save_data LIKE '%"embodyaspect(cornerstone)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embodyaspect(hearthflame)"', '"embodyaspecthearthflame"') WHERE save_data LIKE '%"embodyaspect(hearthflame)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embodyaspect(teal)"', '"embodyaspectteal"') WHERE save_data LIKE '%"embodyaspect(teal)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"embodyaspect(wellspring)"', '"embodyaspectwellspring"') WHERE save_data LIKE '%"embodyaspect(wellspring)"%';
+UPDATE game_saves SET save_data = replace(save_data, '"retirada"', '"emergencyexit"') WHERE save_data LIKE '%"retirada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aurafeerica"', '"fairyaura"') WHERE save_data LIKE '%"aurafeerica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aurafeérica"', '"fairyaura"') WHERE save_data LIKE '%"aurafeérica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auraferica"', '"fairyaura"') WHERE save_data LIKE '%"auraferica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impetuardiente"', '"flareboost"') WHERE save_data LIKE '%"impetuardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ímpetuardiente"', '"flareboost"') WHERE save_data LIKE '%"ímpetuardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mpetuardiente"', '"flareboost"') WHERE save_data LIKE '%"mpetuardiente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"donfloral"', '"flowergift"') WHERE save_data LIKE '%"donfloral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veloflor"', '"flowerveil"') WHERE save_data LIKE '%"veloflor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"peluche"', '"fluffy"') WHERE save_data LIKE '%"peluche"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guardiametalica"', '"fullmetalbody"') WHERE save_data LIKE '%"guardiametalica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guardiametálica"', '"fullmetalbody"') WHERE save_data LIKE '%"guardiametálica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guardiametlica"', '"fullmetalbody"') WHERE save_data LIKE '%"guardiametlica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pelajerecio"', '"furcoat"') WHERE save_data LIKE '%"pelajerecio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alasvendaval"', '"galewings"') WHERE save_data LIKE '%"alasvendaval"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielelectrica"', '"galvanize"') WHERE save_data LIKE '%"pielelectrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pieleléctrica"', '"galvanize"') WHERE save_data LIKE '%"pieleléctrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielelctrica"', '"galvanize"') WHERE save_data LIKE '%"pielelctrica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpoaureo"', '"goodasgold"') WHERE save_data LIKE '%"cuerpoaureo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpoáureo"', '"goodasgold"') WHERE save_data LIKE '%"cuerpoáureo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpoureo"', '"goodasgold"') WHERE save_data LIKE '%"cuerpoureo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"baba"', '"gooey"') WHERE save_data LIKE '%"baba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monotema"', '"gorillatactics"') WHERE save_data LIKE '%"monotema"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mantofrondoso"', '"grasspelt"') WHERE save_data LIKE '%"mantofrondoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbogenesis"', '"grassysurge"') WHERE save_data LIKE '%"herbogenesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbogénesis"', '"grassysurge"') WHERE save_data LIKE '%"herbogénesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbognesis"', '"grassysurge"') WHERE save_data LIKE '%"herbognesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"relinchonegro"', '"grimneigh"') WHERE save_data LIKE '%"relinchonegro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perroguardian"', '"guarddog"') WHERE save_data LIKE '%"perroguardian"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perroguardián"', '"guarddog"') WHERE save_data LIKE '%"perroguardián"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perroguardin"', '"guarddog"') WHERE save_data LIKE '%"perroguardin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tragamisil"', '"gulpmissile"') WHERE save_data LIKE '%"tragamisil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motorhadronico"', '"hadronengine"') WHERE save_data LIKE '%"motorhadronico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motorhadrónico"', '"hadronengine"') WHERE save_data LIKE '%"motorhadrónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"motorhadrnico"', '"hadronengine"') WHERE save_data LIKE '%"motorhadrnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ignifugo"', '"heatproof"') WHERE save_data LIKE '%"ignifugo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ignífugo"', '"heatproof"') WHERE save_data LIKE '%"ignífugo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ignfugo"', '"heatproof"') WHERE save_data LIKE '%"ignfugo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalpesado"', '"heavymetal"') WHERE save_data LIKE '%"metalpesado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recogemiel"', '"honeygather"') WHERE save_data LIKE '%"recogemiel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hospitalidad"', '"hospitality"') WHERE save_data LIKE '%"hospitalidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mutapetito"', '"hungerswitch"') WHERE save_data LIKE '%"mutapetito"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caradehielo"', '"iceface"') WHERE save_data LIKE '%"caradehielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamadehielo"', '"icescales"') WHERE save_data LIKE '%"escamadehielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ilusion"', '"illusion"') WHERE save_data LIKE '%"ilusion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ilusión"', '"illusion"') WHERE save_data LIKE '%"ilusión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ilusin"', '"illusion"') WHERE save_data LIKE '%"ilusin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reves"', '"innardsout"') WHERE save_data LIKE '%"reves"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revés"', '"innardsout"') WHERE save_data LIKE '%"revés"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revs"', '"innardsout"') WHERE save_data LIKE '%"revs"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espadaindomita"', '"intrepidsword"') WHERE save_data LIKE '%"espadaindomita"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espadaindómita"', '"intrepidsword"') WHERE save_data LIKE '%"espadaindómita"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espadaindmita"', '"intrepidsword"') WHERE save_data LIKE '%"espadaindmita"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntaacero"', '"ironbarbs"') WHERE save_data LIKE '%"puntaacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zoquete"', '"klutz"') WHERE save_data LIKE '%"zoquete"%';
+UPDATE game_saves SET save_data = replace(save_data, '"líbero"', '"libero"') WHERE save_data LIKE '%"líbero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lbero"', '"libero"') WHERE save_data LIKE '%"lbero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalliviano"', '"lightmetal"') WHERE save_data LIKE '%"metalliviano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"olorpersistente"', '"lingeringaroma"') WHERE save_data LIKE '%"olorpersistente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vozfluida"', '"liquidvoice"') WHERE save_data LIKE '%"vozfluida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"remoto"', '"longreach"') WHERE save_data LIKE '%"remoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espejomagico"', '"magicbounce"') WHERE save_data LIKE '%"espejomagico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espejomágico"', '"magicbounce"') WHERE save_data LIKE '%"espejomágico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espejomgico"', '"magicbounce"') WHERE save_data LIKE '%"espejomgico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prestidigitador"', '"magician"') WHERE save_data LIKE '%"prestidigitador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megadisparador"', '"megalauncher"') WHERE save_data LIKE '%"megadisparador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"megasolar"', '"megasol"') WHERE save_data LIKE '%"megasolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensanamiento"', '"merciless"') WHERE save_data LIKE '%"ensanamiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensañamiento"', '"merciless"') WHERE save_data LIKE '%"ensañamiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensaamiento"', '"merciless"') WHERE save_data LIKE '%"ensaamiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mimetismo"', '"mimicry"') WHERE save_data LIKE '%"mimetismo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ojomental"', '"mindseye"') WHERE save_data LIKE '%"ojomental"%';
+UPDATE game_saves SET save_data = replace(save_data, '"corazareflejo"', '"mirrorarmor"') WHERE save_data LIKE '%"corazareflejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nebulogenesis"', '"mistysurge"') WHERE save_data LIKE '%"nebulogenesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nebulogénesis"', '"mistysurge"') WHERE save_data LIKE '%"nebulogénesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nebulognesis"', '"mistysurge"') WHERE save_data LIKE '%"nebulognesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"veleta"', '"moody"') WHERE save_data LIKE '%"veleta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electromotor"', '"motordrive"') WHERE save_data LIKE '%"electromotor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"multitipo"', '"multitype"') WHERE save_data LIKE '%"multitipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"momia"', '"mummy"') WHERE save_data LIKE '%"momia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderfungico"', '"myceliummight"') WHERE save_data LIKE '%"poderfungico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderfúngico"', '"myceliummight"') WHERE save_data LIKE '%"poderfúngico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poderfngico"', '"myceliummight"') WHERE save_data LIKE '%"poderfngico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuerzacerebral"', '"neuroforce"') WHERE save_data LIKE '%"fuerzacerebral"%';
+UPDATE game_saves SET save_data = replace(save_data, '"normalidad"', '"normalize"') WHERE save_data LIKE '%"normalidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"oportunista"', '"opportunist"') WHERE save_data LIKE '%"oportunista"%';
+UPDATE game_saves SET save_data = replace(save_data, '"latidooricalco"', '"orichalcumpulse"') WHERE save_data LIKE '%"latidooricalco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amorfilial"', '"parentalbond"') WHERE save_data LIKE '%"amorfilial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velopastel"', '"pastelveil"') WHERE save_data LIKE '%"velopastel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpomortal"', '"perishbody"') WHERE save_data LIKE '%"cuerpomortal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hurto"', '"pickpocket"') WHERE save_data LIKE '%"hurto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"turbotaladro"', '"piercingdrill"') WHERE save_data LIKE '%"turbotaladro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielfeerica"', '"pixilate"') WHERE save_data LIKE '%"pielfeerica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielfeérica"', '"pixilate"') WHERE save_data LIKE '%"pielfeérica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielferica"', '"pixilate"') WHERE save_data LIKE '%"pielferica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antidoto"', '"poisonheal"') WHERE save_data LIKE '%"antidoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antídoto"', '"poisonheal"') WHERE save_data LIKE '%"antídoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antdoto"', '"poisonheal"') WHERE save_data LIKE '%"antdoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"titeretoxico"', '"poisonpuppeteer"') WHERE save_data LIKE '%"titeretoxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"títeretóxico"', '"poisonpuppeteer"') WHERE save_data LIKE '%"títeretóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tteretxico"', '"poisonpuppeteer"') WHERE save_data LIKE '%"tteretxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agrupamiento"', '"powerconstruct"') WHERE save_data LIKE '%"agrupamiento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reaccionquimica"', '"powerofalchemy"') WHERE save_data LIKE '%"reaccionquimica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reacciónquímica"', '"powerofalchemy"') WHERE save_data LIKE '%"reacciónquímica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reaccinqumica"', '"powerofalchemy"') WHERE save_data LIKE '%"reaccinqumica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuenteenergia"', '"powerspot"') WHERE save_data LIKE '%"fuenteenergia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuenteenergía"', '"powerspot"') WHERE save_data LIKE '%"fuenteenergía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fuenteenerga"', '"powerspot"') WHERE save_data LIKE '%"fuenteenerga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bromista"', '"prankster"') WHERE save_data LIKE '%"bromista"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mardelalbor"', '"primordialsea"') WHERE save_data LIKE '%"mardelalbor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduraprisma"', '"prismarmor"') WHERE save_data LIKE '%"armaduraprisma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"helicecaudal"', '"propellertail"') WHERE save_data LIKE '%"helicecaudal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hélicecaudal"', '"propellertail"') WHERE save_data LIKE '%"hélicecaudal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hlicecaudal"', '"propellertail"') WHERE save_data LIKE '%"hlicecaudal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mutatipo"', '"protean"') WHERE save_data LIKE '%"mutatipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paleosintesis"', '"protosynthesis"') WHERE save_data LIKE '%"paleosintesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paleosíntesis"', '"protosynthesis"') WHERE save_data LIKE '%"paleosíntesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paleosntesis"', '"protosynthesis"') WHERE save_data LIKE '%"paleosntesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicogenesis"', '"psychicsurge"') WHERE save_data LIKE '%"psicogenesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicogénesis"', '"psychicsurge"') WHERE save_data LIKE '%"psicogénesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psicognesis"', '"psychicsurge"') WHERE save_data LIKE '%"psicognesis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salpurificadora"', '"purifyingsalt"') WHERE save_data LIKE '%"salpurificadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cargacuark"', '"quarkdrive"') WHERE save_data LIKE '%"cargacuark"%';
+UPDATE game_saves SET save_data = replace(save_data, '"regiapresencia"', '"queenlymajesty"') WHERE save_data LIKE '%"regiapresencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manorapida"', '"quickdraw"') WHERE save_data LIKE '%"manorapida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manorápida"', '"quickdraw"') WHERE save_data LIKE '%"manorápida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manorpida"', '"quickdraw"') WHERE save_data LIKE '%"manorpida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"receptor"', '"receiver"') WHERE save_data LIKE '%"receptor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pielhelada"', '"refrigerate"') WHERE save_data LIKE '%"pielhelada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maduracion"', '"ripen"') WHERE save_data LIKE '%"maduracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maduración"', '"ripen"') WHERE save_data LIKE '%"maduración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maduracin"', '"ripen"') WHERE save_data LIKE '%"maduracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sistemaalfa"', '"rkssystem"') WHERE save_data LIKE '%"sistemaalfa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"transportarrocas"', '"rockypayload"') WHERE save_data LIKE '%"transportarrocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"expulsarena"', '"sandspit"') WHERE save_data LIKE '%"expulsarena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbivoro"', '"sapsipper"') WHERE save_data LIKE '%"herbivoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbívoro"', '"sapsipper"') WHERE save_data LIKE '%"herbívoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbvoro"', '"sapsipper"') WHERE save_data LIKE '%"herbvoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"banco"', '"schooling"') WHERE save_data LIKE '%"banco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antibarrera"', '"screencleaner"') WHERE save_data LIKE '%"antibarrera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"disemillar"', '"seedsower"') WHERE save_data LIKE '%"disemillar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guardiaespectro"', '"shadowshield"') WHERE save_data LIKE '%"guardiaespectro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortante"', '"sharpness"') WHERE save_data LIKE '%"cortante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escudolimitado"', '"shieldsdown"') WHERE save_data LIKE '%"escudolimitado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iniciolento"', '"slowstart"') WHERE save_data LIKE '%"iniciolento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"quitanieves"', '"slushrush"') WHERE save_data LIKE '%"quitanieves"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nevada"', '"snowwarning"') WHERE save_data LIKE '%"nevada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocasolida"', '"solidrock"') WHERE save_data LIKE '%"rocasolida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocasólida"', '"solidrock"') WHERE save_data LIKE '%"rocasólida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocaslida"', '"solidrock"') WHERE save_data LIKE '%"rocaslida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coranima"', '"soulheart"') WHERE save_data LIKE '%"coranima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coránima"', '"soulheart"') WHERE save_data LIKE '%"coránima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cornima"', '"soulheart"') WHERE save_data LIKE '%"cornima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salpicante"', '"spicyspray"') WHERE save_data LIKE '%"salpicante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vigilante"', '"stakeout"') WHERE save_data LIKE '%"vigilante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rezagado"', '"stall"') WHERE save_data LIKE '%"rezagado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acerrimo"', '"stalwart"') WHERE save_data LIKE '%"acerrimo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acérrimo"', '"stalwart"') WHERE save_data LIKE '%"acérrimo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acrrimo"', '"stalwart"') WHERE save_data LIKE '%"acrrimo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"firmeza"', '"stamina"') WHERE save_data LIKE '%"firmeza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiotactico"', '"stancechange"') WHERE save_data LIKE '%"cambiotactico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiotáctico"', '"stancechange"') WHERE save_data LIKE '%"cambiotáctico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambiotctico"', '"stancechange"') WHERE save_data LIKE '%"cambiotctico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"combustible"', '"steamengine"') WHERE save_data LIKE '%"combustible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acerotemplado"', '"steelworker"') WHERE save_data LIKE '%"acerotemplado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"almaacerada"', '"steelyspirit"') WHERE save_data LIKE '%"almaacerada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colector"', '"stormdrain"') WHERE save_data LIKE '%"colector"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandibulafuerte"', '"strongjaw"') WHERE save_data LIKE '%"mandibulafuerte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandíbulafuerte"', '"strongjaw"') WHERE save_data LIKE '%"mandíbulafuerte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mandbulafuerte"', '"strongjaw"') WHERE save_data LIKE '%"mandbulafuerte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nectardulce"', '"supersweetsyrup"') WHERE save_data LIKE '%"nectardulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"néctardulce"', '"supersweetsyrup"') WHERE save_data LIKE '%"néctardulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nctardulce"', '"supersweetsyrup"') WHERE save_data LIKE '%"nctardulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generalsupremo"', '"supremeoverlord"') WHERE save_data LIKE '%"generalsupremo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colasurf"', '"surgesurfer"') WHERE save_data LIKE '%"colasurf"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velodulce"', '"sweetveil"') WHERE save_data LIKE '%"velodulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"espadadebacle"', '"swordofruin"') WHERE save_data LIKE '%"espadadebacle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"simbiosis"', '"symbiosis"') WHERE save_data LIKE '%"simbiosis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablilladebacle"', '"tabletsofruin"') WHERE save_data LIKE '%"tablilladebacle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rizosrebeldes"', '"tanglinghair"') WHERE save_data LIKE '%"rizosrebeldes"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telepatia"', '"telepathy"') WHERE save_data LIKE '%"telepatia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telepatía"', '"telepathy"') WHERE save_data LIKE '%"telepatía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telepata"', '"telepathy"') WHERE save_data LIKE '%"telepata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teraformacion0"', '"teraformzero"') WHERE save_data LIKE '%"teraformacion0"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teraformación0"', '"teraformzero"') WHERE save_data LIKE '%"teraformación0"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teraformacin0"', '"teraformzero"') WHERE save_data LIKE '%"teraformacin0"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teracaparazon"', '"terashell"') WHERE save_data LIKE '%"teracaparazon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teracaparazón"', '"terashell"') WHERE save_data LIKE '%"teracaparazón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teracaparazn"', '"terashell"') WHERE save_data LIKE '%"teracaparazn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"teracambio"', '"terashift"') WHERE save_data LIKE '%"teracambio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"terravoltaje"', '"teravolt"') WHERE save_data LIKE '%"terravoltaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"termoconversion"', '"thermalexchange"') WHERE save_data LIKE '%"termoconversion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"termoconversión"', '"thermalexchange"') WHERE save_data LIKE '%"termoconversión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"termoconversin"', '"thermalexchange"') WHERE save_data LIKE '%"termoconversin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garradura"', '"toughclaws"') WHERE save_data LIKE '%"garradura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impetutoxico"', '"toxicboost"') WHERE save_data LIKE '%"impetutoxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ímpetutóxico"', '"toxicboost"') WHERE save_data LIKE '%"ímpetutóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mpetutxico"', '"toxicboost"') WHERE save_data LIKE '%"mpetutxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cadenatoxica"', '"toxicchain"') WHERE save_data LIKE '%"cadenatoxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cadenatóxica"', '"toxicchain"') WHERE save_data LIKE '%"cadenatóxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cadenatxica"', '"toxicchain"') WHERE save_data LIKE '%"cadenatxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capatoxica"', '"toxicdebris"') WHERE save_data LIKE '%"capatoxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capatóxica"', '"toxicdebris"') WHERE save_data LIKE '%"capatóxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capatxica"', '"toxicdebris"') WHERE save_data LIKE '%"capatxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"primerauxilio"', '"triage"') WHERE save_data LIKE '%"primerauxilio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"turbollama"', '"turboblaze"') WHERE save_data LIKE '%"turbollama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punoinvisible"', '"unseenfist"') WHERE save_data LIKE '%"punoinvisible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puñoinvisible"', '"unseenfist"') WHERE save_data LIKE '%"puñoinvisible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puoinvisible"', '"unseenfist"') WHERE save_data LIKE '%"puoinvisible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"calderodebacle"', '"vesselofruin"') WHERE save_data LIKE '%"calderodebacle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinovictoria"', '"victorystar"') WHERE save_data LIKE '%"tinovictoria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"almaerrante"', '"wanderingspirit"') WHERE save_data LIKE '%"almaerrante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pompa"', '"waterbubble"') WHERE save_data LIKE '%"pompa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hidrorrefuerzo"', '"watercompaction"') WHERE save_data LIKE '%"hidrorrefuerzo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuerpohorneado"', '"wellbakedbody"') WHERE save_data LIKE '%"cuerpohorneado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huida"', '"wimpout"') WHERE save_data LIKE '%"huida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energiaeolica"', '"windpower"') WHERE save_data LIKE '%"energiaeolica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energíaeólica"', '"windpower"') WHERE save_data LIKE '%"energíaeólica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energaelica"', '"windpower"') WHERE save_data LIKE '%"energaelica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"surcavientos"', '"windrider"') WHERE save_data LIKE '%"surcavientos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mododaruma"', '"zenmode"') WHERE save_data LIKE '%"mododaruma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cambioheroico"', '"zerotohero"') WHERE save_data LIKE '%"cambioheroico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escudopolvo"', '"shielddust"') WHERE save_data LIKE '%"escudopolvo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"correcaminos"', '"runaway"') WHERE save_data LIKE '%"correcaminos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escape"', '"runaway"') WHERE save_data LIKE '%"escape"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lluvialigera"', '"raindish"') WHERE save_data LIKE '%"lluvialigera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nerviosismo"', '"hustle"') WHERE save_data LIKE '%"nerviosismo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"obstruir"', '"soundproof"') WHERE save_data LIKE '%"obstruir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbevoltio"', '"voltabsorb"') WHERE save_data LIKE '%"absorbevoltio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aclimatacion"', '"cloudnine"') WHERE save_data LIKE '%"aclimatacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aclimatacin"', '"cloudnine"') WHERE save_data LIKE '%"aclimatacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rafaga"', '"speedboost"') WHERE save_data LIKE '%"rafaga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velohumedo"', '"waterveil"') WHERE save_data LIKE '%"velohumedo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velohmedo"', '"waterveil"') WHERE save_data LIKE '%"velohmedo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"puntocura"', '"naturalcure"') WHERE save_data LIKE '%"puntocura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escurridizo"', '"limber"') WHERE save_data LIKE '%"escurridizo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metamorfosis"', '"shedskin"') WHERE save_data LIKE '%"metamorfosis"%';
+UPDATE game_saves SET save_data = replace(save_data, '"activa"', '"active"') WHERE save_data LIKE '%"activa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"activo"', '"active"') WHERE save_data LIKE '%"activo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hurana"', '"lonely"') WHERE save_data LIKE '%"hurana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hurano"', '"lonely"') WHERE save_data LIKE '%"hurano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"audaz"', '"brave"') WHERE save_data LIKE '%"audaz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"firme"', '"adamant"') WHERE save_data LIKE '%"firme"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picara"', '"naughty"') WHERE save_data LIKE '%"picara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picaro"', '"naughty"') WHERE save_data LIKE '%"picaro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"osada"', '"bold"') WHERE save_data LIKE '%"osada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"osado"', '"bold"') WHERE save_data LIKE '%"osado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"docil"', '"docile"') WHERE save_data LIKE '%"docil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placida"', '"relaxed"') WHERE save_data LIKE '%"placida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placido"', '"relaxed"') WHERE save_data LIKE '%"placido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agitada"', '"impish"') WHERE save_data LIKE '%"agitada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"agitado"', '"impish"') WHERE save_data LIKE '%"agitado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"floja"', '"lax"') WHERE save_data LIKE '%"floja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flojo"', '"lax"') WHERE save_data LIKE '%"flojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"timida"', '"timid"') WHERE save_data LIKE '%"timida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"timido"', '"timid"') WHERE save_data LIKE '%"timido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"afable"', '"mild"') WHERE save_data LIKE '%"afable"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tasa"', '"quiet"') WHERE save_data LIKE '%"tasa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"seria"', '"serious"') WHERE save_data LIKE '%"seria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serio"', '"serious"') WHERE save_data LIKE '%"serio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alegre"', '"jolly"') WHERE save_data LIKE '%"alegre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ingenua"', '"naive"') WHERE save_data LIKE '%"ingenua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ingenuo"', '"naive"') WHERE save_data LIKE '%"ingenuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"modesta"', '"modest"') WHERE save_data LIKE '%"modesta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"modesto"', '"modest"') WHERE save_data LIKE '%"modesto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"raro"', '"serious"') WHERE save_data LIKE '%"raro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rara"', '"quirky"') WHERE save_data LIKE '%"rara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serena"', '"calm"') WHERE save_data LIKE '%"serena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sereno"', '"calm"') WHERE save_data LIKE '%"sereno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amable"', '"gentle"') WHERE save_data LIKE '%"amable"%';
+UPDATE game_saves SET save_data = replace(save_data, '"grosera"', '"sassy"') WHERE save_data LIKE '%"grosera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"grosero"', '"sassy"') WHERE save_data LIKE '%"grosero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cauta"', '"careful"') WHERE save_data LIKE '%"cauta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cauto"', '"careful"') WHERE save_data LIKE '%"cauto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manso"', '"quiet"') WHERE save_data LIKE '%"manso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alocada"', '"rash"') WHERE save_data LIKE '%"alocada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alocado"', '"rash"') WHERE save_data LIKE '%"alocado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moderado"', '"serious"') WHERE save_data LIKE '%"moderado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"jovial"', '"jolly"') WHERE save_data LIKE '%"jovial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tranquilo"', '"calm"') WHERE save_data LIKE '%"tranquilo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pícaro"', '"naughty"') WHERE save_data LIKE '%"pícaro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plácido"', '"relaxed"') WHERE save_data LIKE '%"plácido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dócil"', '"docile"') WHERE save_data LIKE '%"dócil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hechizo"', '"spell_tag"') WHERE save_data LIKE '%"hechizo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cinturonnegro"', '"blackbelt"') WHERE save_data LIKE '%"cinturonnegro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lentezoom"', '"scope_lens"') WHERE save_data LIKE '%"lentezoom"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cucharatorcida"', '"twisted_spoon"') WHERE save_data LIKE '%"cucharatorcida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restos"', '"leftovers"') WHERE save_data LIKE '%"restos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huesogrueso"', '"thick_club"') WHERE save_data LIKE '%"huesogrueso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolaluminosa"', '"light_ball"') WHERE save_data LIKE '%"bolaluminosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bulboasimilador"', '"absorb_bulb"') WHERE save_data LIKE '%"bulboasimilador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"absorbbulb"', '"absorb_bulb"') WHERE save_data LIKE '%"absorbbulb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaguaya"', '"aguav_berry"') WHERE save_data LIKE '%"bayaguaya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguavberry"', '"aguav_berry"') WHERE save_data LIKE '%"aguavberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"globohelio"', '"air_balloon"') WHERE save_data LIKE '%"globohelio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"airballoon"', '"air_balloon"') WHERE save_data LIKE '%"airballoon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaapicote"', '"apicot_berry"') WHERE save_data LIKE '%"bayaapicote"%';
+UPDATE game_saves SET save_data = replace(save_data, '"apicotberry"', '"apicot_berry"') WHERE save_data LIKE '%"apicotberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaperasi"', '"aspear_berry"') WHERE save_data LIKE '%"bayaperasi"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aspearberry"', '"aspear_berry"') WHERE save_data LIKE '%"aspearberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chalecoasalto"', '"assaultvest"') WHERE save_data LIKE '%"chalecoasalto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduraauspicio"', '"auspicious_armor"') WHERE save_data LIKE '%"armaduraauspicio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"auspiciousarmor"', '"auspicious_armor"') WHERE save_data LIKE '%"auspiciousarmor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"babiriberry"', '"babiri_berry"') WHERE save_data LIKE '%"babiriberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enteball"', '"beast_ball"') WHERE save_data LIKE '%"enteball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"beastball"', '"beast_ball"') WHERE save_data LIKE '%"beastball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bandaatadura"', '"binding_band"') WHERE save_data LIKE '%"bandaatadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bindingband"', '"binding_band"') WHERE save_data LIKE '%"bindingband"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lodonegro"', '"black_sludge"') WHERE save_data LIKE '%"lodonegro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"blacksludge"', '"black_sludge"') WHERE save_data LIKE '%"blacksludge"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energiapotenciadora"', '"booster_energy"') WHERE save_data LIKE '%"energiapotenciadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energíapotenciadora"', '"booster_energy"') WHERE save_data LIKE '%"energíapotenciadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energapotenciadora"', '"booster_energy"') WHERE save_data LIKE '%"energapotenciadora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"boosterenergy"', '"booster_energy"') WHERE save_data LIKE '%"boosterenergy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvobrillo"', '"brightpowder"') WHERE save_data LIKE '%"polvobrillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pilacelula"', '"cell_battery"') WHERE save_data LIKE '%"pilacelula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pilacélula"', '"cell_battery"') WHERE save_data LIKE '%"pilacélula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pilaclula"', '"cell_battery"') WHERE save_data LIKE '%"pilaclula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cellbattery"', '"cell_battery"') WHERE save_data LIKE '%"cellbattery"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacharti"', '"charti_berry"') WHERE save_data LIKE '%"bayacharti"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chartiberry"', '"charti_berry"') WHERE save_data LIKE '%"chartiberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacereza"', '"cheri_berry"') WHERE save_data LIKE '%"bayacereza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cheriberry"', '"cheri_berry"') WHERE save_data LIKE '%"cheriberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gloriaball"', '"cherish_ball"') WHERE save_data LIKE '%"gloriaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cherishball"', '"cherish_ball"') WHERE save_data LIKE '%"cherishball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaatania"', '"chesto_berry"') WHERE save_data LIKE '%"bayaatania"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chestoberry"', '"chesto_berry"') WHERE save_data LIKE '%"chestoberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayachilan"', '"chilan_berry"') WHERE save_data LIKE '%"bayachilan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chilanberry"', '"chilan_berry"') WHERE save_data LIKE '%"chilanberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tejerarota"', '"chipped_pot"') WHERE save_data LIKE '%"tejerarota"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chippedpot"', '"chipped_pot"') WHERE save_data LIKE '%"chippedpot"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayachople"', '"chople_berry"') WHERE save_data LIKE '%"bayachople"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chopleberry"', '"chople_berry"') WHERE save_data LIKE '%"chopleberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amuletoclaro"', '"clear_amulet"') WHERE save_data LIKE '%"amuletoclaro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clearamulet"', '"clear_amulet"') WHERE save_data LIKE '%"clearamulet"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacoba"', '"coba_berry"') WHERE save_data LIKE '%"bayacoba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cobaberry"', '"coba_berry"') WHERE save_data LIKE '%"cobaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacolbur"', '"colbur_berry"') WHERE save_data LIKE '%"bayacolbur"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colburberry"', '"colbur_berry"') WHERE save_data LIKE '%"colburberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cornerstonemask"', '"cornerstone_mask"') WHERE save_data LIKE '%"cornerstonemask"%';
+UPDATE game_saves SET save_data = replace(save_data, '"capasigilo"', '"covert_cloak"') WHERE save_data LIKE '%"capasigilo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"covertcloak"', '"covert_cloak"') WHERE save_data LIKE '%"covertcloak"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tejeraagrietada"', '"cracked_pot"') WHERE save_data LIKE '%"tejeraagrietada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"crackedpot"', '"cracked_pot"') WHERE save_data LIKE '%"crackedpot"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacustap"', '"custap_berry"') WHERE save_data LIKE '%"bayacustap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"custapberry"', '"custap_berry"') WHERE save_data LIKE '%"custapberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocalluvia"', '"damp_rock"') WHERE save_data LIKE '%"rocalluvia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"damprock"', '"damp_rock"') WHERE save_data LIKE '%"damprock"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tabladraco"', '"draco_plate"') WHERE save_data LIKE '%"tabladraco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dracoplate"', '"draco_plate"') WHERE save_data LIKE '%"dracoplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablaoscura"', '"dread_plate"') WHERE save_data LIKE '%"tablaoscura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dreadplate"', '"dread_plate"') WHERE save_data LIKE '%"dreadplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensuenoball"', '"dream_ball"') WHERE save_data LIKE '%"ensuenoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensueñoball"', '"dream_ball"') WHERE save_data LIKE '%"ensueñoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ensueoball"', '"dream_ball"') WHERE save_data LIKE '%"ensueoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dreamball"', '"dream_ball"') WHERE save_data LIKE '%"dreamball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"discoextrano"', '"dubious_disc"') WHERE save_data LIKE '%"discoextrano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"discoextraño"', '"dubious_disc"') WHERE save_data LIKE '%"discoextraño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"discoextrao"', '"dubious_disc"') WHERE save_data LIKE '%"discoextrao"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dubiousdisc"', '"dubious_disc"') WHERE save_data LIKE '%"dubiousdisc"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablatierra"', '"earth_plate"') WHERE save_data LIKE '%"tablatierra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"earthplate"', '"earth_plate"') WHERE save_data LIKE '%"earthplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"botonescape"', '"eject_button"') WHERE save_data LIKE '%"botonescape"%';
+UPDATE game_saves SET save_data = replace(save_data, '"botónescape"', '"eject_button"') WHERE save_data LIKE '%"botónescape"%';
+UPDATE game_saves SET save_data = replace(save_data, '"botnescape"', '"eject_button"') WHERE save_data LIKE '%"botnescape"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ejectbutton"', '"eject_button"') WHERE save_data LIKE '%"ejectbutton"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mochilaescape"', '"eject_pack"') WHERE save_data LIKE '%"mochilaescape"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ejectpack"', '"eject_pack"') WHERE save_data LIKE '%"ejectpack"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrizador"', '"electirizer"') WHERE save_data LIKE '%"electrizador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semillaelectro"', '"electric_seed"') WHERE save_data LIKE '%"semillaelectro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electricseed"', '"electric_seed"') WHERE save_data LIKE '%"electricseed"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaenigma"', '"enigma_berry"') WHERE save_data LIKE '%"bayaenigma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"enigmaberry"', '"enigma_berry"') WHERE save_data LIKE '%"enigmaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cintaexperto"', '"expertbelt"') WHERE save_data LIKE '%"cintaexperto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plumahada"', '"fairy_feather"') WHERE save_data LIKE '%"plumahada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fairyfeather"', '"fairy_feather"') WHERE save_data LIKE '%"fairyfeather"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rapidaball"', '"fast_ball"') WHERE save_data LIKE '%"rapidaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rápidaball"', '"fast_ball"') WHERE save_data LIKE '%"rápidaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rpidaball"', '"fast_ball"') WHERE save_data LIKE '%"rpidaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fastball"', '"fast_ball"') WHERE save_data LIKE '%"fastball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayahigo"', '"figy_berry"') WHERE save_data LIKE '%"bayahigo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"figyberry"', '"figy_berry"') WHERE save_data LIKE '%"figyberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablafuerte"', '"fist_plate"') WHERE save_data LIKE '%"tablafuerte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fistplate"', '"fist_plate"') WHERE save_data LIKE '%"fistplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"llamasfera"', '"flame_orb"') WHERE save_data LIKE '%"llamasfera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flameorb"', '"flame_orb"') WHERE save_data LIKE '%"flameorb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablallama"', '"flame_plate"') WHERE save_data LIKE '%"tablallama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flameplate"', '"flame_plate"') WHERE save_data LIKE '%"flameplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrapomez"', '"float_stone"') WHERE save_data LIKE '%"piedrapomez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrapómez"', '"float_stone"') WHERE save_data LIKE '%"piedrapómez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrapmez"', '"float_stone"') WHERE save_data LIKE '%"piedrapmez"%';
+UPDATE game_saves SET save_data = replace(save_data, '"floatstone"', '"float_stone"') WHERE save_data LIKE '%"floatstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cintafocus"', '"focus_band"') WHERE save_data LIKE '%"cintafocus"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focusband"', '"focus_band"') WHERE save_data LIKE '%"focusband"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amigoball"', '"friend_ball"') WHERE save_data LIKE '%"amigoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"friendball"', '"friend_ball"') WHERE save_data LIKE '%"friendball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brazalgalarica"', '"galarica_cuff"') WHERE save_data LIKE '%"brazalgalarica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"galaricacuff"', '"galarica_cuff"') WHERE save_data LIKE '%"galaricacuff"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coronagalarica"', '"galarica_wreath"') WHERE save_data LIKE '%"coronagalarica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"galaricawreath"', '"galarica_wreath"') WHERE save_data LIKE '%"galaricawreath"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaganlon"', '"ganlon_berry"') WHERE save_data LIKE '%"bayaganlon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ganlonberry"', '"ganlon_berry"') WHERE save_data LIKE '%"ganlonberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semillahierba"', '"grassy_seed"') WHERE save_data LIKE '%"semillahierba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"grassyseed"', '"grassy_seed"') WHERE save_data LIKE '%"grassyseed"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayauva"', '"grepa_berry"') WHERE save_data LIKE '%"bayauva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"grepaberry"', '"grepa_berry"') WHERE save_data LIKE '%"grepaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garragarfio"', '"grip_claw"') WHERE save_data LIKE '%"garragarfio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gripclaw"', '"grip_claw"') WHERE save_data LIKE '%"gripclaw"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayahaban"', '"haban_berry"') WHERE save_data LIKE '%"bayahaban"%';
+UPDATE game_saves SET save_data = replace(save_data, '"habanberry"', '"haban_berry"') WHERE save_data LIKE '%"habanberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hardstone"', '"hard_stone"') WHERE save_data LIKE '%"hardstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sanaball"', '"heal_ball"') WHERE save_data LIKE '%"sanaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"healball"', '"heal_ball"') WHERE save_data LIKE '%"healball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hearthflamemask"', '"hearthflame_mask"') WHERE save_data LIKE '%"hearthflamemask"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocacalor"', '"heat_rock"') WHERE save_data LIKE '%"rocacalor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"heatrock"', '"heat_rock"') WHERE save_data LIKE '%"heatrock"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pesoball"', '"heavy_ball"') WHERE save_data LIKE '%"pesoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"heavyball"', '"heavy_ball"') WHERE save_data LIKE '%"heavyball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"botassuelagruesa"', '"heavy_duty_boots"') WHERE save_data LIKE '%"botassuelagruesa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"heavydutyboots"', '"heavy_duty_boots"') WHERE save_data LIKE '%"heavydutyboots"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamelon"', '"hondew_berry"') WHERE save_data LIKE '%"bayamelon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamelón"', '"hondew_berry"') WHERE save_data LIKE '%"bayamelón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayameln"', '"hondew_berry"') WHERE save_data LIKE '%"bayameln"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hondewberry"', '"hondew_berry"') WHERE save_data LIKE '%"hondewberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaiapapa"', '"iapapa_berry"') WHERE save_data LIKE '%"bayaiapapa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iapapaberry"', '"iapapa_berry"') WHERE save_data LIKE '%"iapapaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablahelada"', '"icicle_plate"') WHERE save_data LIKE '%"tablahelada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"icicleplate"', '"icicle_plate"') WHERE save_data LIKE '%"icicleplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocahelada"', '"icy_rock"') WHERE save_data LIKE '%"rocahelada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"icyrock"', '"icy_rock"') WHERE save_data LIKE '%"icyrock"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablabicho"', '"insect_plate"') WHERE save_data LIKE '%"tablabicho"%';
+UPDATE game_saves SET save_data = replace(save_data, '"insectplate"', '"insect_plate"') WHERE save_data LIKE '%"insectplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bolahierro"', '"iron_ball"') WHERE save_data LIKE '%"bolahierro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ironball"', '"iron_ball"') WHERE save_data LIKE '%"ironball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablaacero"', '"iron_plate"') WHERE save_data LIKE '%"tablaacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ironplate"', '"iron_plate"') WHERE save_data LIKE '%"ironplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayajaboca"', '"jaboca_berry"') WHERE save_data LIKE '%"bayajaboca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"jabocaberry"', '"jaboca_berry"') WHERE save_data LIKE '%"jabocaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayakasib"', '"kasib_berry"') WHERE save_data LIKE '%"bayakasib"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kasibberry"', '"kasib_berry"') WHERE save_data LIKE '%"kasibberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayakebia"', '"kebia_berry"') WHERE save_data LIKE '%"bayakebia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kebiaberry"', '"kebia_berry"') WHERE save_data LIKE '%"kebiaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayarimoya"', '"kee_berry"') WHERE save_data LIKE '%"bayarimoya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"keeberry"', '"kee_berry"') WHERE save_data LIKE '%"keeberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaalgama"', '"kelpsy_berry"') WHERE save_data LIKE '%"bayaalgama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"kelpsyberry"', '"kelpsy_berry"') WHERE save_data LIKE '%"kelpsyberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocadelrey"', '"kingsrock"') WHERE save_data LIKE '%"rocadelrey"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayalansat"', '"lansat_berry"') WHERE save_data LIKE '%"bayalansat"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lansatberry"', '"lansat_berry"') WHERE save_data LIKE '%"lansatberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayazanama"', '"leppa_berry"') WHERE save_data LIKE '%"bayazanama"%';
+UPDATE game_saves SET save_data = replace(save_data, '"leppaberry"', '"leppa_berry"') WHERE save_data LIKE '%"leppaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nivelball"', '"level_ball"') WHERE save_data LIKE '%"nivelball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"levelball"', '"level_ball"') WHERE save_data LIKE '%"levelball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"refleluz"', '"light_clay"') WHERE save_data LIKE '%"refleluz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lightclay"', '"light_clay"') WHERE save_data LIKE '%"lightclay"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dadocargado"', '"loaded_dice"') WHERE save_data LIKE '%"dadocargado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"loadeddice"', '"loaded_dice"') WHERE save_data LIKE '%"loadeddice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amorball"', '"love_ball"') WHERE save_data LIKE '%"amorball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"loveball"', '"love_ball"') WHERE save_data LIKE '%"loveball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaziuela"', '"lum_berry"') WHERE save_data LIKE '%"bayaziuela"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lumberry"', '"lum_berry"') WHERE save_data LIKE '%"lumberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"musgoluminoso"', '"luminous_moss"') WHERE save_data LIKE '%"musgoluminoso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"luminousmoss"', '"luminous_moss"') WHERE save_data LIKE '%"luminousmoss"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ceboball"', '"lure_ball"') WHERE save_data LIKE '%"ceboball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lureball"', '"lure_ball"') WHERE save_data LIKE '%"lureball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"magmatizador"', '"magmarizer"') WHERE save_data LIKE '%"magmatizador"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamago"', '"mago_berry"') WHERE save_data LIKE '%"bayamago"%';
+UPDATE game_saves SET save_data = replace(save_data, '"magoberry"', '"mago_berry"') WHERE save_data LIKE '%"magoberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduramaliciosa"', '"malicious_armor"') WHERE save_data LIKE '%"armaduramaliciosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maliciousarmor"', '"malicious_armor"') WHERE save_data LIKE '%"maliciousarmor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamaranga"', '"maranga_berry"') WHERE save_data LIKE '%"bayamaranga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"marangaberry"', '"maranga_berry"') WHERE save_data LIKE '%"marangaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tazaobramaestra"', '"masterpiece_teacup"') WHERE save_data LIKE '%"tazaobramaestra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"masterpieceteacup"', '"masterpiece_teacup"') WHERE save_data LIKE '%"masterpieceteacup"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablapradal"', '"meadow_plate"') WHERE save_data LIKE '%"tablapradal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"meadowplate"', '"meadow_plate"') WHERE save_data LIKE '%"meadowplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbamental"', '"whiteherb"') WHERE save_data LIKE '%"hierbamental"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revestimientometalico"', '"metal_coat"') WHERE save_data LIKE '%"revestimientometalico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revestimientometálico"', '"metal_coat"') WHERE save_data LIKE '%"revestimientometálico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revestimientometlico"', '"metal_coat"') WHERE save_data LIKE '%"revestimientometlico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalcoat"', '"metal_coat"') WHERE save_data LIKE '%"metalcoat"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamicle"', '"micle_berry"') WHERE save_data LIKE '%"bayamicle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"micleberry"', '"micle_berry"') WHERE save_data LIKE '%"micleberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablamente"', '"mind_plate"') WHERE save_data LIKE '%"tablamente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mindplate"', '"mind_plate"') WHERE save_data LIKE '%"mindplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbaespejo"', '"mirror_herb"') WHERE save_data LIKE '%"hierbaespejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mirrorherb"', '"mirror_herb"') WHERE save_data LIKE '%"mirrorherb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semillaniebla"', '"misty_seed"') WHERE save_data LIKE '%"semillaniebla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mistyseed"', '"misty_seed"') WHERE save_data LIKE '%"mistyseed"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lunaball"', '"moon_ball"') WHERE save_data LIKE '%"lunaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moonball"', '"moon_ball"') WHERE save_data LIKE '%"moonball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gemanormal"', '"normal_gem"') WHERE save_data LIKE '%"gemanormal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"normalgem"', '"normal_gem"') WHERE save_data LIKE '%"normalgem"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacaoba"', '"occa_berry"') WHERE save_data LIKE '%"bayacaoba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"occaberry"', '"occa_berry"') WHERE save_data LIKE '%"occaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaaranja"', '"oran_berry"') WHERE save_data LIKE '%"bayaaranja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"oranberry"', '"oran_berry"') WHERE save_data LIKE '%"oranberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedraoval"', '"oval_stone"') WHERE save_data LIKE '%"piedraoval"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ovalstone"', '"oval_stone"') WHERE save_data LIKE '%"ovalstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"parqueball"', '"park_ball"') WHERE save_data LIKE '%"parqueball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"parkball"', '"park_ball"') WHERE save_data LIKE '%"parkball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayapasio"', '"passho_berry"') WHERE save_data LIKE '%"bayapasio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"passhoberry"', '"passho_berry"') WHERE save_data LIKE '%"passhoberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayapayapa"', '"payapa_berry"') WHERE save_data LIKE '%"bayapayapa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"payapaberry"', '"payapa_berry"') WHERE save_data LIKE '%"payapaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayameloc"', '"pecha_berry"') WHERE save_data LIKE '%"bayameloc"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pechaberry"', '"pecha_berry"') WHERE save_data LIKE '%"pechaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacaqui"', '"persim_berry"') WHERE save_data LIKE '%"bayacaqui"%';
+UPDATE game_saves SET save_data = replace(save_data, '"persimberry"', '"persim_berry"') WHERE save_data LIKE '%"persimberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayapetaya"', '"petaya_berry"') WHERE save_data LIKE '%"bayapetaya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"petayaberry"', '"petaya_berry"') WHERE save_data LIKE '%"petayaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablaninfa"', '"splash_plate"') WHERE save_data LIKE '%"tablaninfa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pixieplate"', '"pixie_plate"') WHERE save_data LIKE '%"pixieplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayagrana"', '"pomeg_berry"') WHERE save_data LIKE '%"bayagrana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pomegberry"', '"pomeg_berry"') WHERE save_data LIKE '%"pomegberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbaunica"', '"power_herb"') WHERE save_data LIKE '%"hierbaunica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbaúnica"', '"power_herb"') WHERE save_data LIKE '%"hierbaúnica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbanica"', '"power_herb"') WHERE save_data LIKE '%"hierbanica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerherb"', '"power_herb"') WHERE save_data LIKE '%"powerherb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"honorball"', '"premier_ball"') WHERE save_data LIKE '%"honorball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"premierball"', '"premier_ball"') WHERE save_data LIKE '%"premierball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamabella"', '"prism_scale"') WHERE save_data LIKE '%"escamabella"%';
+UPDATE game_saves SET save_data = replace(save_data, '"prismscale"', '"prism_scale"') WHERE save_data LIKE '%"prismscale"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coderasprotectoras"', '"protective_pads"') WHERE save_data LIKE '%"coderasprotectoras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"protectivepads"', '"protective_pads"') WHERE save_data LIKE '%"protectivepads"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semillapsique"', '"psychic_seed"') WHERE save_data LIKE '%"semillapsique"%';
+UPDATE game_saves SET save_data = replace(save_data, '"psychicseed"', '"psychic_seed"') WHERE save_data LIKE '%"psychicseed"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guantepuno"', '"punching_glove"') WHERE save_data LIKE '%"guantepuno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guantepuño"', '"punching_glove"') WHERE save_data LIKE '%"guantepuño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"guantepuo"', '"punching_glove"') WHERE save_data LIKE '%"guantepuo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"punchingglove"', '"punching_glove"') WHERE save_data LIKE '%"punchingglove"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaispero"', '"qualot_berry"') WHERE save_data LIKE '%"bayaispero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"qualotberry"', '"qualot_berry"') WHERE save_data LIKE '%"qualotberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garrarapida"', '"quickclaw"') WHERE save_data LIKE '%"garrarapida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garrarápida"', '"quickclaw"') WHERE save_data LIKE '%"garrarápida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garrarpida"', '"quickclaw"') WHERE save_data LIKE '%"garrarpida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayasafre"', '"rawst_berry"') WHERE save_data LIKE '%"bayasafre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rawstberry"', '"rawst_berry"') WHERE save_data LIKE '%"rawstberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"garraafilada"', '"razor_claw"') WHERE save_data LIKE '%"garraafilada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"razorclaw"', '"razor_claw"') WHERE save_data LIKE '%"razorclaw"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmilloagudo"', '"razor_fang"') WHERE save_data LIKE '%"colmilloagudo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"razorfang"', '"razor_fang"') WHERE save_data LIKE '%"razorfang"%';
+UPDATE game_saves SET save_data = replace(save_data, '"telaterrible"', '"reaper_cloth"') WHERE save_data LIKE '%"telaterrible"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reapercloth"', '"reaper_cloth"') WHERE save_data LIKE '%"reapercloth"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tarjetaroja"', '"red_card"') WHERE save_data LIKE '%"tarjetaroja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"redcard"', '"red_card"') WHERE save_data LIKE '%"redcard"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acopioball"', '"repeat_ball"') WHERE save_data LIKE '%"acopioball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"repeatball"', '"repeat_ball"') WHERE save_data LIKE '%"repeatball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayarindo"', '"rindo_berry"') WHERE save_data LIKE '%"bayarindo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rindoberry"', '"rindo_berry"') WHERE save_data LIKE '%"rindoberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"blancopasivo"', '"ring_target"') WHERE save_data LIKE '%"blancopasivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ringtarget"', '"ring_target"') WHERE save_data LIKE '%"ringtarget"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cascodentado"', '"rockyhelmet"') WHERE save_data LIKE '%"cascodentado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serviciodecuarto"', '"room_service"') WHERE save_data LIKE '%"serviciodecuarto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"roomservice"', '"room_service"') WHERE save_data LIKE '%"roomservice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayaroseli"', '"roseli_berry"') WHERE save_data LIKE '%"bayaroseli"%';
+UPDATE game_saves SET save_data = replace(save_data, '"roseliberry"', '"roseli_berry"') WHERE save_data LIKE '%"roseliberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayarowap"', '"rowap_berry"') WHERE save_data LIKE '%"bayarowap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rowapberry"', '"rowap_berry"') WHERE save_data LIKE '%"rowapberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"safariball"', '"safari_ball"') WHERE save_data LIKE '%"safariball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gafasprotectoras"', '"safety_goggles"') WHERE save_data LIKE '%"gafasprotectoras"%';
+UPDATE game_saves SET save_data = replace(save_data, '"safetygoggles"', '"safety_goggles"') WHERE save_data LIKE '%"safetygoggles"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mudaconcha"', '"shed_shell"') WHERE save_data LIKE '%"mudaconcha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"shedshell"', '"shed_shell"') WHERE save_data LIKE '%"shedshell"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayashuca"', '"shuca_berry"') WHERE save_data LIKE '%"bayashuca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"shucaberry"', '"shuca_berry"') WHERE save_data LIKE '%"shucaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayacidra"', '"sitrus_berry"') WHERE save_data LIKE '%"bayacidra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sitrusberry"', '"sitrus_berry"') WHERE save_data LIKE '%"sitrusberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablacielo"', '"sky_plate"') WHERE save_data LIKE '%"tablacielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"skyplate"', '"sky_plate"') WHERE save_data LIKE '%"skyplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocasuave"', '"smooth_rock"') WHERE save_data LIKE '%"rocasuave"%';
+UPDATE game_saves SET save_data = replace(save_data, '"smoothrock"', '"smooth_rock"') WHERE save_data LIKE '%"smoothrock"%';
+UPDATE game_saves SET save_data = replace(save_data, '"boladenieve"', '"snow_ball"') WHERE save_data LIKE '%"boladenieve"%';
+UPDATE game_saves SET save_data = replace(save_data, '"snowball"', '"snow_ball"') WHERE save_data LIKE '%"snowball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rociobondad"', '"soul_dew"') WHERE save_data LIKE '%"rociobondad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocíobondad"', '"soul_dew"') WHERE save_data LIKE '%"rocíobondad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rocobondad"', '"soul_dew"') WHERE save_data LIKE '%"rocobondad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"souldew"', '"soul_dew"') WHERE save_data LIKE '%"souldew"%';
+UPDATE game_saves SET save_data = replace(save_data, '"splashplate"', '"splash_plate"') WHERE save_data LIKE '%"splashplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablaterror"', '"spooky_plate"') WHERE save_data LIKE '%"tablaterror"%';
+UPDATE game_saves SET save_data = replace(save_data, '"spookyplate"', '"spooky_plate"') WHERE save_data LIKE '%"spookyplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"competiball"', '"sport_ball"') WHERE save_data LIKE '%"competiball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sportball"', '"sport_ball"') WHERE save_data LIKE '%"sportball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayastarf"', '"starf_berry"') WHERE save_data LIKE '%"bayastarf"%';
+UPDATE game_saves SET save_data = replace(save_data, '"starfberry"', '"starf_berry"') WHERE save_data LIKE '%"starfberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tachuelaadhesiva"', '"sticky_barb"') WHERE save_data LIKE '%"tachuelaadhesiva"%';
+UPDATE game_saves SET save_data = replace(save_data, '"stickybarb"', '"sticky_barb"') WHERE save_data LIKE '%"stickybarb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablapetrea"', '"stone_plate"') WHERE save_data LIKE '%"tablapetrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablapétrea"', '"stone_plate"') WHERE save_data LIKE '%"tablapétrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablaptrea"', '"stone_plate"') WHERE save_data LIKE '%"tablaptrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"stoneplate"', '"stone_plate"') WHERE save_data LIKE '%"stoneplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"extranaball"', '"strange_ball"') WHERE save_data LIKE '%"extranaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"extrañaball"', '"strange_ball"') WHERE save_data LIKE '%"extrañaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"extraaball"', '"strange_ball"') WHERE save_data LIKE '%"extraaball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"strangeball"', '"strange_ball"') WHERE save_data LIKE '%"strangeball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manzanadulce"', '"sweet_apple"') WHERE save_data LIKE '%"manzanadulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sweetapple"', '"sweet_apple"') WHERE save_data LIKE '%"sweetapple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manzanasirope"', '"syrupy_apple"') WHERE save_data LIKE '%"manzanasirope"%';
+UPDATE game_saves SET save_data = replace(save_data, '"syrupyapple"', '"syrupy_apple"') WHERE save_data LIKE '%"syrupyapple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayatamate"', '"tamato_berry"') WHERE save_data LIKE '%"bayatamate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tamatoberry"', '"tamato_berry"') WHERE save_data LIKE '%"tamatoberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayatanga"', '"tanga_berry"') WHERE save_data LIKE '%"bayatanga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tangaberry"', '"tanga_berry"') WHERE save_data LIKE '%"tangaberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manzanaacida"', '"tart_apple"') WHERE save_data LIKE '%"manzanaacida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manzanaácida"', '"tart_apple"') WHERE save_data LIKE '%"manzanaácida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"manzanacida"', '"tart_apple"') WHERE save_data LIKE '%"manzanacida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tartapple"', '"tart_apple"') WHERE save_data LIKE '%"tartapple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"extensordeterreno"', '"terrain_extender"') WHERE save_data LIKE '%"extensordeterreno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"terrainextender"', '"terrain_extender"') WHERE save_data LIKE '%"terrainextender"%';
+UPDATE game_saves SET save_data = replace(save_data, '"spraygarganta"', '"throat_spray"') WHERE save_data LIKE '%"spraygarganta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"throatspray"', '"throat_spray"') WHERE save_data LIKE '%"throatspray"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toxisfera"', '"toxic_orb"') WHERE save_data LIKE '%"toxisfera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toxicorb"', '"toxic_orb"') WHERE save_data LIKE '%"toxicorb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablatoxica"', '"toxic_plate"') WHERE save_data LIKE '%"tablatoxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablatóxica"', '"toxic_plate"') WHERE save_data LIKE '%"tablatóxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablatxica"', '"toxic_plate"') WHERE save_data LIKE '%"tablatxica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"toxicplate"', '"toxic_plate"') WHERE save_data LIKE '%"toxicplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tazacomun"', '"unremarkable_teacup"') WHERE save_data LIKE '%"tazacomun"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tazacomún"', '"unremarkable_teacup"') WHERE save_data LIKE '%"tazacomún"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tazacomn"', '"unremarkable_teacup"') WHERE save_data LIKE '%"tazacomn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unremarkableteacup"', '"unremarkable_teacup"') WHERE save_data LIKE '%"unremarkableteacup"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mejora"', '"upgrade"') WHERE save_data LIKE '%"mejora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paraguasmultiuso"', '"utility_umbrella"') WHERE save_data LIKE '%"paraguasmultiuso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"utilityumbrella"', '"utility_umbrella"') WHERE save_data LIKE '%"utilityumbrella"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayawacan"', '"wacan_berry"') WHERE save_data LIKE '%"bayawacan"%';
+UPDATE game_saves SET save_data = replace(save_data, '"wacanberry"', '"wacan_berry"') WHERE save_data LIKE '%"wacanberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"segurodebilidad"', '"weaknesspolicy"') WHERE save_data LIKE '%"segurodebilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"wellspringmask"', '"wellspring_mask"') WHERE save_data LIKE '%"wellspringmask"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayawiki"', '"wiki_berry"') WHERE save_data LIKE '%"bayawiki"%';
+UPDATE game_saves SET save_data = replace(save_data, '"wikiberry"', '"wiki_berry"') WHERE save_data LIKE '%"wikiberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayayache"', '"yache_berry"') WHERE save_data LIKE '%"bayayache"%';
+UPDATE game_saves SET save_data = replace(save_data, '"yacheberry"', '"yache_berry"') WHERE save_data LIKE '%"yacheberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tablatrueno"', '"zap_plate"') WHERE save_data LIKE '%"tablatrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zapplate"', '"zap_plate"') WHERE save_data LIKE '%"zapplate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayadebronce"', '"berry_bronze"') WHERE save_data LIKE '%"bayadebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"berrybronze"', '"berry_bronze"') WHERE save_data LIKE '%"berrybronze"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayadeplata"', '"berry_silver"') WHERE save_data LIKE '%"bayadeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"berrysilver"', '"berry_silver"') WHERE save_data LIKE '%"berrysilver"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayadeoro"', '"berry_gold"') WHERE save_data LIKE '%"bayadeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"berrygold"', '"berry_gold"') WHERE save_data LIKE '%"berrygold"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedraeterna"', '"everstone"') WHERE save_data LIKE '%"piedraeterna"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lazodestino"', '"destiny_knot"') WHERE save_data LIKE '%"lazodestino"%';
+UPDATE game_saves SET save_data = replace(save_data, '"destinyknot"', '"destiny_knot"') WHERE save_data LIKE '%"destinyknot"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restauradordevigor"', '"vigor_restorer"') WHERE save_data LIKE '%"restauradordevigor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vigorrestorer"', '"vigor_restorer"') WHERE save_data LIKE '%"vigorrestorer"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pesarecia"', '"power_weight"') WHERE save_data LIKE '%"pesarecia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerweight"', '"power_weight"') WHERE save_data LIKE '%"powerweight"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brazalrecio"', '"power_bracer"') WHERE save_data LIKE '%"brazalrecio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerbracer"', '"power_bracer"') WHERE save_data LIKE '%"powerbracer"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cintorecio"', '"power_belt"') WHERE save_data LIKE '%"cintorecio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerbelt"', '"power_belt"') WHERE save_data LIKE '%"powerbelt"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lenterecia"', '"power_lens"') WHERE save_data LIKE '%"lenterecia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerlens"', '"power_lens"') WHERE save_data LIKE '%"powerlens"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bandarecia"', '"power_band"') WHERE save_data LIKE '%"bandarecia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"powerband"', '"power_band"') WHERE save_data LIKE '%"powerband"%';
+UPDATE game_saves SET save_data = replace(save_data, '"franjarecia"', '"power_anklet"') WHERE save_data LIKE '%"franjarecia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poweranklet"', '"power_anklet"') WHERE save_data LIKE '%"poweranklet"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pokéball"', '"pokeball"') WHERE save_data LIKE '%"pokéball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pokball"', '"pokeball"') WHERE save_data LIKE '%"pokball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superball"', '"great_ball"') WHERE save_data LIKE '%"superball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"súperball"', '"great_ball"') WHERE save_data LIKE '%"súperball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sperball"', '"great_ball"') WHERE save_data LIKE '%"sperball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"greatball"', '"great_ball"') WHERE save_data LIKE '%"greatball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ultraball"', '"ultra_ball"') WHERE save_data LIKE '%"ultraball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"redball"', '"net_ball"') WHERE save_data LIKE '%"redball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"netball"', '"net_ball"') WHERE save_data LIKE '%"netball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ocasoball"', '"dusk_ball"') WHERE save_data LIKE '%"ocasoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"duskball"', '"dusk_ball"') WHERE save_data LIKE '%"duskball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"turnoball"', '"timer_ball"') WHERE save_data LIKE '%"turnoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"timerball"', '"timer_ball"') WHERE save_data LIKE '%"timerball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"masterball"', '"master_ball"') WHERE save_data LIKE '%"masterball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pocion"', '"potion"') WHERE save_data LIKE '%"pocion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poción"', '"potion"') WHERE save_data LIKE '%"poción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pocin"', '"potion"') WHERE save_data LIKE '%"pocin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superpocion"', '"super_potion"') WHERE save_data LIKE '%"superpocion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"súperpoción"', '"super_potion"') WHERE save_data LIKE '%"súperpoción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sperpocin"', '"super_potion"') WHERE save_data LIKE '%"sperpocin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superpotion"', '"super_potion"') WHERE save_data LIKE '%"superpotion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hiperpocion"', '"hyper_potion"') WHERE save_data LIKE '%"hiperpocion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hiperpoción"', '"hyper_potion"') WHERE save_data LIKE '%"hiperpoción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hiperpocin"', '"hyper_potion"') WHERE save_data LIKE '%"hiperpocin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hyperpotion"', '"hyper_potion"') WHERE save_data LIKE '%"hyperpotion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pocionmaxima"', '"max_potion"') WHERE save_data LIKE '%"pocionmaxima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pociónmáxima"', '"max_potion"') WHERE save_data LIKE '%"pociónmáxima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pocinmxima"', '"max_potion"') WHERE save_data LIKE '%"pocinmxima"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxpotion"', '"max_potion"') WHERE save_data LIKE '%"maxpotion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"refresco"', '"soda_pop"') WHERE save_data LIKE '%"refresco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sodapop"', '"soda_pop"') WHERE save_data LIKE '%"sodapop"%';
+UPDATE game_saves SET save_data = replace(save_data, '"limonada"', '"lemonade"') WHERE save_data LIKE '%"limonada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revivir"', '"revive"') WHERE save_data LIKE '%"revivir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revivirmaximo"', '"revive_max"') WHERE save_data LIKE '%"revivirmaximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revivirmáximo"', '"revive_max"') WHERE save_data LIKE '%"revivirmáximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revivirmximo"', '"revive_max"') WHERE save_data LIKE '%"revivirmximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"revivemax"', '"revive_max"') WHERE save_data LIKE '%"revivemax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antidoto"', '"antidote"') WHERE save_data LIKE '%"antidoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antídoto"', '"antidote"') WHERE save_data LIKE '%"antídoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antdoto"', '"antidote"') WHERE save_data LIKE '%"antdoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curaquemadura"', '"burn_heal"') WHERE save_data LIKE '%"curaquemadura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"burnheal"', '"burn_heal"') WHERE save_data LIKE '%"burnheal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antiparaliz"', '"paralyze_heal"') WHERE save_data LIKE '%"antiparaliz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paralyzeheal"', '"paralyze_heal"') WHERE save_data LIKE '%"paralyzeheal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"despertar"', '"awakening"') WHERE save_data LIKE '%"despertar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"anticongelante"', '"ice_heal"') WHERE save_data LIKE '%"anticongelante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iceheal"', '"ice_heal"') WHERE save_data LIKE '%"iceheal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"curatotal"', '"full_heal"') WHERE save_data LIKE '%"curatotal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fullheal"', '"full_heal"') WHERE save_data LIKE '%"fullheal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"eter"', '"ether"') WHERE save_data LIKE '%"eter"%';
+UPDATE game_saves SET save_data = replace(save_data, '"éter"', '"ether"') WHERE save_data LIKE '%"éter"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ter"', '"ether"') WHERE save_data LIKE '%"ter"%';
+UPDATE game_saves SET save_data = replace(save_data, '"elixirmaximo"', '"elixir_max"') WHERE save_data LIKE '%"elixirmaximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"elixirmáximo"', '"elixir_max"') WHERE save_data LIKE '%"elixirmáximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"elixirmximo"', '"elixir_max"') WHERE save_data LIKE '%"elixirmximo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"elixirmax"', '"elixir_max"') WHERE save_data LIKE '%"elixirmax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrafuego"', '"fire_stone"') WHERE save_data LIKE '%"piedrafuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"firestone"', '"fire_stone"') WHERE save_data LIKE '%"firestone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedraagua"', '"water_stone"') WHERE save_data LIKE '%"piedraagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"waterstone"', '"water_stone"') WHERE save_data LIKE '%"waterstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedratrueno"', '"thunder_stone"') WHERE save_data LIKE '%"piedratrueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"thunderstone"', '"thunder_stone"') WHERE save_data LIKE '%"thunderstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrahoja"', '"leaf_stone"') WHERE save_data LIKE '%"piedrahoja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"leafstone"', '"leaf_stone"') WHERE save_data LIKE '%"leafstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedralunar"', '"moon_stone"') WHERE save_data LIKE '%"piedralunar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moonstone"', '"moon_stone"') WHERE save_data LIKE '%"moonstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrasolar"', '"sun_stone"') WHERE save_data LIKE '%"piedrasolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sunstone"', '"sun_stone"') WHERE save_data LIKE '%"sunstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compartirexp"', '"exp_share"') WHERE save_data LIKE '%"compartirexp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"expshare"', '"exp_share"') WHERE save_data LIKE '%"expshare"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cascabelconcha"', '"shell_bell"') WHERE save_data LIKE '%"cascabelconcha"%';
+UPDATE game_saves SET save_data = replace(save_data, '"shellbell"', '"shell_bell"') WHERE save_data LIKE '%"shellbell"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cintaelegida"', '"choice_band"') WHERE save_data LIKE '%"cintaelegida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choiceband"', '"choice_band"') WHERE save_data LIKE '%"choiceband"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bandafocus"', '"focus_sash"') WHERE save_data LIKE '%"bandafocus"%';
+UPDATE game_saves SET save_data = replace(save_data, '"focussash"', '"focus_sash"') WHERE save_data LIKE '%"focussash"%';
+UPDATE game_saves SET save_data = replace(save_data, '"scopelens"', '"scope_lens"') WHERE save_data LIKE '%"scopelens"%';
+UPDATE game_saves SET save_data = replace(save_data, '"iman"', '"magnet"') WHERE save_data LIKE '%"iman"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imán"', '"magnet"') WHERE save_data LIKE '%"imán"%';
+UPDATE game_saves SET save_data = replace(save_data, '"imn"', '"magnet"') WHERE save_data LIKE '%"imn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carameloraro"', '"rare_candy"') WHERE save_data LIKE '%"carameloraro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rarecandy"', '"rare_candy"') WHERE save_data LIKE '%"rarecandy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caramelodevigor"', '"vigor_candy"') WHERE save_data LIKE '%"caramelodevigor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vigorcandy"', '"vigor_candy"') WHERE save_data LIKE '%"vigorcandy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recordadordemovimientos"', '"move_relearner"') WHERE save_data LIKE '%"recordadordemovimientos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moverelearner"', '"move_relearner"') WHERE save_data LIKE '%"moverelearner"%';
+UPDATE game_saves SET save_data = replace(save_data, '"parchedenaturaleza"', '"nature_patch"') WHERE save_data LIKE '%"parchedenaturaleza"%';
+UPDATE game_saves SET save_data = replace(save_data, '"naturepatch"', '"nature_patch"') WHERE save_data LIKE '%"naturepatch"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pildoradecambiodehabilidad"', '"ability_pill"') WHERE save_data LIKE '%"pildoradecambiodehabilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"píldoradecambiodehabilidad"', '"ability_pill"') WHERE save_data LIKE '%"píldoradecambiodehabilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pldoradecambiodehabilidad"', '"ability_pill"') WHERE save_data LIKE '%"pldoradecambiodehabilidad"%';
+UPDATE game_saves SET save_data = replace(save_data, '"abilitypill"', '"ability_pill"') WHERE save_data LIKE '%"abilitypill"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketshiny"', '"ticket_shiny"') WHERE save_data LIKE '%"ticketshiny"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monedaamuleto"', '"amulet_coin"') WHERE save_data LIKE '%"monedaamuleto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"amuletcoin"', '"amulet_coin"') WHERE save_data LIKE '%"amuletcoin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketsafari"', '"ticket_safari"') WHERE save_data LIKE '%"ticketsafari"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketcuevaceleste"', '"ticket_cerulean"') WHERE save_data LIKE '%"ticketcuevaceleste"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketcerulean"', '"ticket_cerulean"') WHERE save_data LIKE '%"ticketcerulean"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensofuego"', '"incense_fire"') WHERE save_data LIKE '%"inciensofuego"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incensefire"', '"incense_fire"') WHERE save_data LIKE '%"incensefire"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensoagua"', '"incense_water"') WHERE save_data LIKE '%"inciensoagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incensewater"', '"incense_water"') WHERE save_data LIKE '%"incensewater"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensoplanta"', '"incense_grass"') WHERE save_data LIKE '%"inciensoplanta"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incensegrass"', '"incense_grass"') WHERE save_data LIKE '%"incensegrass"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensonormal"', '"incense_normal"') WHERE save_data LIKE '%"inciensonormal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incensenormal"', '"incense_normal"') WHERE save_data LIKE '%"incensenormal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensofantasma"', '"incense_ghost"') WHERE save_data LIKE '%"inciensofantasma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incenseghost"', '"incense_ghost"') WHERE save_data LIKE '%"incenseghost"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensopsiquico"', '"incense_psychic"') WHERE save_data LIKE '%"inciensopsiquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensopsíquico"', '"incense_psychic"') WHERE save_data LIKE '%"inciensopsíquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"inciensopsquico"', '"incense_psychic"') WHERE save_data LIKE '%"inciensopsquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"incensepsychic"', '"incense_psychic"') WHERE save_data LIKE '%"incensepsychic"%';
+UPDATE game_saves SET save_data = replace(save_data, '"subidadepp"', '"pp_up"') WHERE save_data LIKE '%"subidadepp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ppup"', '"pp_up"') WHERE save_data LIKE '%"ppup"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huevosuertepequeno"', '"lucky_egg"') WHERE save_data LIKE '%"huevosuertepequeno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huevosuertepequeño"', '"lucky_egg"') WHERE save_data LIKE '%"huevosuertepequeño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"huevosuertepequeo"', '"lucky_egg"') WHERE save_data LIKE '%"huevosuertepequeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"luckyegg"', '"lucky_egg"') WHERE save_data LIKE '%"luckyegg"%';
+UPDATE game_saves SET save_data = replace(save_data, '"repelente"', '"repel"') WHERE save_data LIKE '%"repelente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superrepelente"', '"super_repel"') WHERE save_data LIKE '%"superrepelente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superrepel"', '"super_repel"') WHERE save_data LIKE '%"superrepel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maximorepelente"', '"max_repel"') WHERE save_data LIKE '%"maximorepelente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"máximorepelente"', '"max_repel"') WHERE save_data LIKE '%"máximorepelente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mximorepelente"', '"max_repel"') WHERE save_data LIKE '%"mximorepelente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maxrepel"', '"max_repel"') WHERE save_data LIKE '%"maxrepel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canadepescar"', '"fishing_rod"') WHERE save_data LIKE '%"canadepescar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cañadepescar"', '"fishing_rod"') WHERE save_data LIKE '%"cañadepescar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caadepescar"', '"fishing_rod"') WHERE save_data LIKE '%"caadepescar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fishingrod"', '"fishing_rod"') WHERE save_data LIKE '%"fishingrod"%';
+UPDATE game_saves SET save_data = replace(save_data, '"canabuena"', '"fishing_rod_good"') WHERE save_data LIKE '%"canabuena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cañabuena"', '"fishing_rod_good"') WHERE save_data LIKE '%"cañabuena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"caabuena"', '"fishing_rod_good"') WHERE save_data LIKE '%"caabuena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fishingrodgood"', '"fishing_rod_good"') WHERE save_data LIKE '%"fishingrodgood"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supercana"', '"fishing_rod_super"') WHERE save_data LIKE '%"supercana"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supercaña"', '"fishing_rod_super"') WHERE save_data LIKE '%"supercaña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"supercaa"', '"fishing_rod_super"') WHERE save_data LIKE '%"supercaa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fishingrodsuper"', '"fishing_rod_super"') WHERE save_data LIKE '%"fishingrodsuper"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picodeexcavacion"', '"pickaxe"') WHERE save_data LIKE '%"picodeexcavacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picodeexcavación"', '"pickaxe"') WHERE save_data LIKE '%"picodeexcavación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picodeexcavacin"', '"pickaxe"') WHERE save_data LIKE '%"picodeexcavacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"picobueno"', '"pickaxe_silver"') WHERE save_data LIKE '%"picobueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pickaxesilver"', '"pickaxe_silver"') WHERE save_data LIKE '%"pickaxesilver"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superpico"', '"pickaxe_gold"') WHERE save_data LIKE '%"superpico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pickaxegold"', '"pickaxe_gold"') WHERE save_data LIKE '%"pickaxegold"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinceldeexcavacion"', '"brush"') WHERE save_data LIKE '%"pinceldeexcavacion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinceldeexcavación"', '"brush"') WHERE save_data LIKE '%"pinceldeexcavación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pinceldeexcavacin"', '"brush"') WHERE save_data LIKE '%"pinceldeexcavacin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pincelbueno"', '"brush_good"') WHERE save_data LIKE '%"pincelbueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brushgood"', '"brush_good"') WHERE save_data LIKE '%"brushgood"%';
+UPDATE game_saves SET save_data = replace(save_data, '"superpincel"', '"brush_super"') WHERE save_data LIKE '%"superpincel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brushsuper"', '"brush_super"') WHERE save_data LIKE '%"brushsuper"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fosilhelix"', '"helix_fossil"') WHERE save_data LIKE '%"fosilhelix"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fósilhélix"', '"helix_fossil"') WHERE save_data LIKE '%"fósilhélix"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fsilhlix"', '"helix_fossil"') WHERE save_data LIKE '%"fsilhlix"%';
+UPDATE game_saves SET save_data = replace(save_data, '"helixfossil"', '"helix_fossil"') WHERE save_data LIKE '%"helixfossil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fosildomo"', '"dome_fossil"') WHERE save_data LIKE '%"fosildomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fósildomo"', '"dome_fossil"') WHERE save_data LIKE '%"fósildomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fsildomo"', '"dome_fossil"') WHERE save_data LIKE '%"fsildomo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"domefossil"', '"dome_fossil"') WHERE save_data LIKE '%"domefossil"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ambarviejo"', '"old_amber"') WHERE save_data LIKE '%"ambarviejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ámbarviejo"', '"old_amber"') WHERE save_data LIKE '%"ámbarviejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mbarviejo"', '"old_amber"') WHERE save_data LIKE '%"mbarviejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"oldamber"', '"old_amber"') WHERE save_data LIKE '%"oldamber"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pepita"', '"nugget"') WHERE save_data LIKE '%"pepita"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perla"', '"pearl"') WHERE save_data LIKE '%"perla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"perlagrande"', '"big_pearl"') WHERE save_data LIKE '%"perlagrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bigpearl"', '"big_pearl"') WHERE save_data LIKE '%"bigpearl"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoestelar"', '"stardust"') WHERE save_data LIKE '%"polvoestelar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trozoestrella"', '"star_piece"') WHERE save_data LIKE '%"trozoestrella"%';
+UPDATE game_saves SET save_data = replace(save_data, '"starpiece"', '"star_piece"') WHERE save_data LIKE '%"starpiece"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldecarbon"', '"coal_ore"') WHERE save_data LIKE '%"mineraldecarbon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldecarbón"', '"coal_ore"') WHERE save_data LIKE '%"mineraldecarbón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldecarbn"', '"coal_ore"') WHERE save_data LIKE '%"mineraldecarbn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coalore"', '"coal_ore"') WHERE save_data LIKE '%"coalore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldecobre"', '"copper_ore"') WHERE save_data LIKE '%"mineraldecobre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"copperore"', '"copper_ore"') WHERE save_data LIKE '%"copperore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldehierro"', '"iron_ore"') WHERE save_data LIKE '%"mineraldehierro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ironore"', '"iron_ore"') WHERE save_data LIKE '%"ironore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeplata"', '"silver_ore"') WHERE save_data LIKE '%"mineraldeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"silverore"', '"silver_ore"') WHERE save_data LIKE '%"silverore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeoro"', '"gold_ore"') WHERE save_data LIKE '%"mineraldeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"goldore"', '"gold_ore"') WHERE save_data LIKE '%"goldore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldewolframio"', '"tungsten_ore"') WHERE save_data LIKE '%"mineraldewolframio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tungstenore"', '"tungsten_ore"') WHERE save_data LIKE '%"tungstenore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeuranio"', '"uranium_ore"') WHERE save_data LIKE '%"mineraldeuranio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"uraniumore"', '"uranium_ore"') WHERE save_data LIKE '%"uraniumore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineralderubi"', '"rubi_ore"') WHERE save_data LIKE '%"mineralderubi"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineralderubí"', '"rubi_ore"') WHERE save_data LIKE '%"mineralderubí"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineralderub"', '"rubi_ore"') WHERE save_data LIKE '%"mineralderub"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubiore"', '"rubi_ore"') WHERE save_data LIKE '%"rubiore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldezafiro"', '"zaphire_ore"') WHERE save_data LIKE '%"mineraldezafiro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zaphireore"', '"zaphire_ore"') WHERE save_data LIKE '%"zaphireore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeesmeralda"', '"emmerald_ore"') WHERE save_data LIKE '%"mineraldeesmeralda"%';
+UPDATE game_saves SET save_data = replace(save_data, '"emmeraldore"', '"emmerald_ore"') WHERE save_data LIKE '%"emmeraldore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldetopacio"', '"topaz_ore"') WHERE save_data LIKE '%"mineraldetopacio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"topazore"', '"topaz_ore"') WHERE save_data LIKE '%"topazore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldediamante"', '"diamond_ore"') WHERE save_data LIKE '%"mineraldediamante"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diamondore"', '"diamond_ore"') WHERE save_data LIKE '%"diamondore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedecobre"', '"copper"') WHERE save_data LIKE '%"lingotedecobre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedehierro"', '"iron"') WHERE save_data LIKE '%"lingotedehierro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeplata"', '"silver"') WHERE save_data LIKE '%"lingotedeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeoro"', '"gold"') WHERE save_data LIKE '%"lingotedeoro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedewolframio"', '"tungsten"') WHERE save_data LIKE '%"lingotedewolframio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeuranio"', '"uranium"') WHERE save_data LIKE '%"lingotedeuranio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubipulido"', '"rubi"') WHERE save_data LIKE '%"rubipulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubípulido"', '"rubi"') WHERE save_data LIKE '%"rubípulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubpulido"', '"rubi"') WHERE save_data LIKE '%"rubpulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zafiropulido"', '"zaphire"') WHERE save_data LIKE '%"zafiropulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esmeraldapulida"', '"emmerald"') WHERE save_data LIKE '%"esmeraldapulida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"topaciopulido"', '"topaz"') WHERE save_data LIKE '%"topaciopulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diamantepulido"', '"diamond"') WHERE save_data LIKE '%"diamantepulido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lightball"', '"light_ball"') WHERE save_data LIKE '%"lightball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"thickclub"', '"thick_club"') WHERE save_data LIKE '%"thickclub"%';
+UPDATE game_saves SET save_data = replace(save_data, '"palo"', '"stick"') WHERE save_data LIKE '%"palo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvometalico"', '"metal_powder"') WHERE save_data LIKE '%"polvometalico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvometálico"', '"metal_powder"') WHERE save_data LIKE '%"polvometálico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvometlico"', '"metal_powder"') WHERE save_data LIKE '%"polvometlico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalpowder"', '"metal_powder"') WHERE save_data LIKE '%"metalpowder"%';
+UPDATE game_saves SET save_data = replace(save_data, '"twistedspoon"', '"twisted_spoon"') WHERE save_data LIKE '%"twistedspoon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"spelltag"', '"spell_tag"') WHERE save_data LIKE '%"spelltag"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketarticuno"', '"ticket_articuno"') WHERE save_data LIKE '%"ticketarticuno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ticketmewtwo"', '"ticket_mewtwo"') WHERE save_data LIKE '%"ticketmewtwo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escanerdeivs"', '"iv_scanner"') WHERE save_data LIKE '%"escanerdeivs"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escánerdeivs"', '"iv_scanner"') WHERE save_data LIKE '%"escánerdeivs"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escnerdeivs"', '"iv_scanner"') WHERE save_data LIKE '%"escnerdeivs"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ivscanner"', '"iv_scanner"') WHERE save_data LIKE '%"ivscanner"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt01punocertero"', '"tm01"') WHERE save_data LIKE '%"mt01punocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt01puñocertero"', '"tm01"') WHERE save_data LIKE '%"mt01puñocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt01puocertero"', '"tm01"') WHERE save_data LIKE '%"mt01puocertero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt02garradragon"', '"tm02"') WHERE save_data LIKE '%"mt02garradragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt02garradragón"', '"tm02"') WHERE save_data LIKE '%"mt02garradragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt02garradragn"', '"tm02"') WHERE save_data LIKE '%"mt02garradragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt03pulsoagua"', '"tm03"') WHERE save_data LIKE '%"mt03pulsoagua"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt04pazmental"', '"tm04"') WHERE save_data LIKE '%"mt04pazmental"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt05rugido"', '"tm05"') WHERE save_data LIKE '%"mt05rugido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt06toxico"', '"tm06"') WHERE save_data LIKE '%"mt06toxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt06tóxico"', '"tm06"') WHERE save_data LIKE '%"mt06tóxico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt06txico"', '"tm06"') WHERE save_data LIKE '%"mt06txico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt07granizo"', '"tm07"') WHERE save_data LIKE '%"mt07granizo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt08corpulencia"', '"tm08"') WHERE save_data LIKE '%"mt08corpulencia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt09recurrente"', '"tm09"') WHERE save_data LIKE '%"mt09recurrente"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt10poderoculto"', '"tm10"') WHERE save_data LIKE '%"mt10poderoculto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt11diasoleado"', '"tm11"') WHERE save_data LIKE '%"mt11diasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt11díasoleado"', '"tm11"') WHERE save_data LIKE '%"mt11díasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt11dasoleado"', '"tm11"') WHERE save_data LIKE '%"mt11dasoleado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt12mofa"', '"tm12"') WHERE save_data LIKE '%"mt12mofa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt13rayohielo"', '"tm13"') WHERE save_data LIKE '%"mt13rayohielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt14ventisca"', '"tm14"') WHERE save_data LIKE '%"mt14ventisca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt15hiperrayo"', '"tm15"') WHERE save_data LIKE '%"mt15hiperrayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt16pantalladeluz"', '"tm16"') WHERE save_data LIKE '%"mt16pantalladeluz"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt17proteccion"', '"tm17"') WHERE save_data LIKE '%"mt17proteccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt17protección"', '"tm17"') WHERE save_data LIKE '%"mt17protección"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt17proteccin"', '"tm17"') WHERE save_data LIKE '%"mt17proteccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt18danzalluvia"', '"tm18"') WHERE save_data LIKE '%"mt18danzalluvia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt19gigadrenado"', '"tm19"') WHERE save_data LIKE '%"mt19gigadrenado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt20velosagrado"', '"tm20"') WHERE save_data LIKE '%"mt20velosagrado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt21frustracion"', '"tm21"') WHERE save_data LIKE '%"mt21frustracion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt21frustración"', '"tm21"') WHERE save_data LIKE '%"mt21frustración"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt21frustracin"', '"tm21"') WHERE save_data LIKE '%"mt21frustracin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt22rayosolar"', '"tm22"') WHERE save_data LIKE '%"mt22rayosolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt23colaferrea"', '"tm23"') WHERE save_data LIKE '%"mt23colaferrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt23colaférrea"', '"tm23"') WHERE save_data LIKE '%"mt23colaférrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt23colafrrea"', '"tm23"') WHERE save_data LIKE '%"mt23colafrrea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt24rayo"', '"tm24"') WHERE save_data LIKE '%"mt24rayo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt25trueno"', '"tm25"') WHERE save_data LIKE '%"mt25trueno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt26terremoto"', '"tm26"') WHERE save_data LIKE '%"mt26terremoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt27retribucion"', '"tm27"') WHERE save_data LIKE '%"mt27retribucion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt27retribución"', '"tm27"') WHERE save_data LIKE '%"mt27retribución"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt27retribucin"', '"tm27"') WHERE save_data LIKE '%"mt27retribucin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt28excavar"', '"tm28"') WHERE save_data LIKE '%"mt28excavar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt29psiquico"', '"tm29"') WHERE save_data LIKE '%"mt29psiquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt29psíquico"', '"tm29"') WHERE save_data LIKE '%"mt29psíquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt29psquico"', '"tm29"') WHERE save_data LIKE '%"mt29psquico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt30bolasombra"', '"tm30"') WHERE save_data LIKE '%"mt30bolasombra"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt31demolicion"', '"tm31"') WHERE save_data LIKE '%"mt31demolicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt31demolición"', '"tm31"') WHERE save_data LIKE '%"mt31demolición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt31demolicin"', '"tm31"') WHERE save_data LIKE '%"mt31demolicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt32dobleequipo"', '"tm32"') WHERE save_data LIKE '%"mt32dobleequipo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt33reflejo"', '"tm33"') WHERE save_data LIKE '%"mt33reflejo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt34ondavoltio"', '"tm34"') WHERE save_data LIKE '%"mt34ondavoltio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt35lanzallamas"', '"tm35"') WHERE save_data LIKE '%"mt35lanzallamas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt36bombalodo"', '"tm36"') WHERE save_data LIKE '%"mt36bombalodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt37tormentadearena"', '"tm37"') WHERE save_data LIKE '%"mt37tormentadearena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt38llamarada"', '"tm38"') WHERE save_data LIKE '%"mt38llamarada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt39tumbarocas"', '"tm39"') WHERE save_data LIKE '%"mt39tumbarocas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt40golpeaereo"', '"tm40"') WHERE save_data LIKE '%"mt40golpeaereo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt40golpeaéreo"', '"tm40"') WHERE save_data LIKE '%"mt40golpeaéreo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt40golpeareo"', '"tm40"') WHERE save_data LIKE '%"mt40golpeareo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt41tormento"', '"tm41"') WHERE save_data LIKE '%"mt41tormento"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt42imagen"', '"tm42"') WHERE save_data LIKE '%"mt42imagen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt43danosecreto"', '"tm43"') WHERE save_data LIKE '%"mt43danosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt43dañosecreto"', '"tm43"') WHERE save_data LIKE '%"mt43dañosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt43daosecreto"', '"tm43"') WHERE save_data LIKE '%"mt43daosecreto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt44descanso"', '"tm44"') WHERE save_data LIKE '%"mt44descanso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt45atraccion"', '"tm45"') WHERE save_data LIKE '%"mt45atraccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt45atracción"', '"tm45"') WHERE save_data LIKE '%"mt45atracción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt45atraccin"', '"tm45"') WHERE save_data LIKE '%"mt45atraccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt46ladron"', '"tm46"') WHERE save_data LIKE '%"mt46ladron"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt46ladrón"', '"tm46"') WHERE save_data LIKE '%"mt46ladrón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt46ladrn"', '"tm46"') WHERE save_data LIKE '%"mt46ladrn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt47aladeacero"', '"tm47"') WHERE save_data LIKE '%"mt47aladeacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt48intercambio"', '"tm48"') WHERE save_data LIKE '%"mt48intercambio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt49robo"', '"tm49"') WHERE save_data LIKE '%"mt49robo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mt50sofoco"', '"tm50"') WHERE save_data LIKE '%"mt50sofoco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bonguriazul"', '"apricorn_blue"') WHERE save_data LIKE '%"bonguriazul"%';
+UPDATE game_saves SET save_data = replace(save_data, '"apricornblue"', '"apricorn_blue"') WHERE save_data LIKE '%"apricornblue"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bongurirojo"', '"apricorn_red"') WHERE save_data LIKE '%"bongurirojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"apricornred"', '"apricorn_red"') WHERE save_data LIKE '%"apricornred"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bonguriamarillo"', '"apricorn_yellow"') WHERE save_data LIKE '%"bonguriamarillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"apricornyellow"', '"apricorn_yellow"') WHERE save_data LIKE '%"apricornyellow"%';
+UPDATE game_saves SET save_data = replace(save_data, '"azucardebaya"', '"berry_sugar"') WHERE save_data LIKE '%"azucardebaya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"azúcardebaya"', '"berry_sugar"') WHERE save_data LIKE '%"azúcardebaya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"azcardebaya"', '"berry_sugar"') WHERE save_data LIKE '%"azcardebaya"%';
+UPDATE game_saves SET save_data = replace(save_data, '"berrysugar"', '"berry_sugar"') WHERE save_data LIKE '%"berrysugar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fragmentodehueso"', '"bone_fragment"') WHERE save_data LIKE '%"fragmentodehueso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bonefragment"', '"bone_fragment"') WHERE save_data LIKE '%"bonefragment"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brocoli"', '"broccoli"') WHERE save_data LIKE '%"brocoli"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brócoli"', '"broccoli"') WHERE save_data LIKE '%"brócoli"%';
+UPDATE game_saves SET save_data = replace(save_data, '"brcoli"', '"broccoli"') WHERE save_data LIKE '%"brcoli"%';
+UPDATE game_saves SET save_data = replace(save_data, '"zanahoria"', '"carrot"') WHERE save_data LIKE '%"zanahoria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tela"', '"cloth"') WHERE save_data LIKE '%"tela"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mieldecombee"', '"combee_honey"') WHERE save_data LIKE '%"mieldecombee"%';
+UPDATE game_saves SET save_data = replace(save_data, '"combeehoney"', '"combee_honey"') WHERE save_data LIKE '%"combeehoney"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedraalba"', '"dawn_stone"') WHERE save_data LIKE '%"piedraalba"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dawnstone"', '"dawn_stone"') WHERE save_data LIKE '%"dawnstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedracrepusculo"', '"dusk_stone"') WHERE save_data LIKE '%"piedracrepusculo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedracrepúsculo"', '"dusk_stone"') WHERE save_data LIKE '%"piedracrepúsculo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedracrepsculo"', '"dusk_stone"') WHERE save_data LIKE '%"piedracrepsculo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"duskstone"', '"dusk_stone"') WHERE save_data LIKE '%"duskstone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chatarraelectronica"', '"electronic_scrap"') WHERE save_data LIKE '%"chatarraelectronica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chatarraelectrónica"', '"electronic_scrap"') WHERE save_data LIKE '%"chatarraelectrónica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chatarraelectrnica"', '"electronic_scrap"') WHERE save_data LIKE '%"chatarraelectrnica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electronicscrap"', '"electronic_scrap"') WHERE save_data LIKE '%"electronicscrap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoenergia"', '"energy_powder"') WHERE save_data LIKE '%"polvoenergia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoenergía"', '"energy_powder"') WHERE save_data LIKE '%"polvoenergía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoenerga"', '"energy_powder"') WHERE save_data LIKE '%"polvoenerga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energypowder"', '"energy_powder"') WHERE save_data LIKE '%"energypowder"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sobrasdecomida"', '"food_scraps"') WHERE save_data LIKE '%"sobrasdecomida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"foodscraps"', '"food_scraps"') WHERE save_data LIKE '%"foodscraps"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguafresca"', '"fresh_water"') WHERE save_data LIKE '%"aguafresca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"freshwater"', '"fresh_water"') WHERE save_data LIKE '%"freshwater"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hierbarara"', '"herb_rare"') WHERE save_data LIKE '%"hierbarara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"herbrare"', '"herb_rare"') WHERE save_data LIKE '%"herbrare"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cristaldehielo"', '"ice_crystal"') WHERE save_data LIKE '%"cristaldehielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"icecrystal"', '"ice_crystal"') WHERE save_data LIKE '%"icecrystal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrahielo"', '"ice_stone"') WHERE save_data LIKE '%"piedrahielo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"icestone"', '"ice_stone"') WHERE save_data LIKE '%"icestone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tiradecuero"', '"leather_strip"') WHERE save_data LIKE '%"tiradecuero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"leatherstrip"', '"leather_strip"') WHERE save_data LIKE '%"leatherstrip"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lechuga"', '"lettuce"') WHERE save_data LIKE '%"lechuga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayalichi"', '"liechi_berry"') WHERE save_data LIKE '%"bayalichi"%';
+UPDATE game_saves SET save_data = replace(save_data, '"liechiberry"', '"liechi_berry"') WHERE save_data LIKE '%"liechiberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chatarrademetal"', '"metal_scrap"') WHERE save_data LIKE '%"chatarrademetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalscrap"', '"metal_scrap"') WHERE save_data LIKE '%"metalscrap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"champinon"', '"mushroom"') WHERE save_data LIKE '%"champinon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"champiñón"', '"mushroom"') WHERE save_data LIKE '%"champiñón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"champin"', '"mushroom"') WHERE save_data LIKE '%"champin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeniquel"', '"nickel_ore"') WHERE save_data LIKE '%"mineraldeniquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeníquel"', '"nickel_ore"') WHERE save_data LIKE '%"mineraldeníquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldenquel"', '"nickel_ore"') WHERE save_data LIKE '%"mineraldenquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nickelore"', '"nickel_ore"') WHERE save_data LIKE '%"nickelore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aceite"', '"oil"') WHERE save_data LIKE '%"aceite"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cebolla"', '"onion"') WHERE save_data LIKE '%"cebolla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayamelocsilvestre"', '"pecha_berry_wild"') WHERE save_data LIKE '%"bayamelocsilvestre"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pechaberrywild"', '"pecha_berry_wild"') WHERE save_data LIKE '%"pechaberrywild"%';
+UPDATE game_saves SET save_data = replace(save_data, '"saviapetrificada"', '"petrified_sap"') WHERE save_data LIKE '%"saviapetrificada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"petrifiedsap"', '"petrified_sap"') WHERE save_data LIKE '%"petrifiedsap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentonegro"', '"pigment_black"') WHERE save_data LIKE '%"pigmentonegro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentblack"', '"pigment_black"') WHERE save_data LIKE '%"pigmentblack"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentoazul"', '"pigment_blue"') WHERE save_data LIKE '%"pigmentoazul"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentblue"', '"pigment_blue"') WHERE save_data LIKE '%"pigmentblue"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentoverde"', '"pigment_green"') WHERE save_data LIKE '%"pigmentoverde"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentgreen"', '"pigment_green"') WHERE save_data LIKE '%"pigmentgreen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentonaranja"', '"pigment_orange"') WHERE save_data LIKE '%"pigmentonaranja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentorange"', '"pigment_orange"') WHERE save_data LIKE '%"pigmentorange"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentomorado"', '"pigment_purple"') WHERE save_data LIKE '%"pigmentomorado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentpurple"', '"pigment_purple"') WHERE save_data LIKE '%"pigmentpurple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentorojo"', '"pigment_red"') WHERE save_data LIKE '%"pigmentorojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentred"', '"pigment_red"') WHERE save_data LIKE '%"pigmentred"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentoblanco"', '"pigment_white"') WHERE save_data LIKE '%"pigmentoblanco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentwhite"', '"pigment_white"') WHERE save_data LIKE '%"pigmentwhite"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentoamarillo"', '"pigment_yellow"') WHERE save_data LIKE '%"pigmentoamarillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pigmentyellow"', '"pigment_yellow"') WHERE save_data LIKE '%"pigmentyellow"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patata"', '"potato"') WHERE save_data LIKE '%"patata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"raizderevivir"', '"revive_root"') WHERE save_data LIKE '%"raizderevivir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"raízderevivir"', '"revive_root"') WHERE save_data LIKE '%"raízderevivir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"razderevivir"', '"revive_root"') WHERE save_data LIKE '%"razderevivir"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reviveroot"', '"revive_root"') WHERE save_data LIKE '%"reviveroot"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compuestodegoma"', '"rubber_compound"') WHERE save_data LIKE '%"compuestodegoma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubbercompound"', '"rubber_compound"') WHERE save_data LIKE '%"rubbercompound"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bayasalac"', '"salac_berry"') WHERE save_data LIKE '%"bayasalac"%';
+UPDATE game_saves SET save_data = replace(save_data, '"salacberry"', '"salac_berry"') WHERE save_data LIKE '%"salacberry"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arenadesilice"', '"sand_silica"') WHERE save_data LIKE '%"arenadesilice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arenadesílice"', '"sand_silica"') WHERE save_data LIKE '%"arenadesílice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"arenadeslice"', '"sand_silica"') WHERE save_data LIKE '%"arenadeslice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sandsilica"', '"sand_silica"') WHERE save_data LIKE '%"sandsilica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serrin"', '"saw_dust"') WHERE save_data LIKE '%"serrin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serrín"', '"saw_dust"') WHERE save_data LIKE '%"serrín"%';
+UPDATE game_saves SET save_data = replace(save_data, '"serrn"', '"saw_dust"') WHERE save_data LIKE '%"serrn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sawdust"', '"saw_dust"') WHERE save_data LIKE '%"sawdust"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedradia"', '"shiny_stone"') WHERE save_data LIKE '%"piedradia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedradía"', '"shiny_stone"') WHERE save_data LIKE '%"piedradía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"piedrada"', '"shiny_stone"') WHERE save_data LIKE '%"piedrada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"shinystone"', '"shiny_stone"') WHERE save_data LIKE '%"shinystone"%';
+UPDATE game_saves SET save_data = replace(save_data, '"saviadulce"', '"sweet_sap"') WHERE save_data LIKE '%"saviadulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sweetsap"', '"sweet_sap"') WHERE save_data LIKE '%"sweetsap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"minichampinon"', '"tiny_mushroom"') WHERE save_data LIKE '%"minichampinon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"minichampiñón"', '"tiny_mushroom"') WHERE save_data LIKE '%"minichampiñón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"minichampin"', '"tiny_mushroom"') WHERE save_data LIKE '%"minichampin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinymushroom"', '"tiny_mushroom"') WHERE save_data LIKE '%"tinymushroom"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeestano"', '"tin_ore"') WHERE save_data LIKE '%"mineraldeestano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeestaño"', '"tin_ore"') WHERE save_data LIKE '%"mineraldeestaño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineraldeestao"', '"tin_ore"') WHERE save_data LIKE '%"mineraldeestao"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinore"', '"tin_ore"') WHERE save_data LIKE '%"tinore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tomate"', '"tomato"') WHERE save_data LIKE '%"tomate"%';
+UPDATE game_saves SET save_data = replace(save_data, '"madera"', '"wood"') WHERE save_data LIKE '%"madera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleaciondebronce"', '"bronze_alloy"') WHERE save_data LIKE '%"aleaciondebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacióndebronce"', '"bronze_alloy"') WHERE save_data LIKE '%"aleacióndebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacindebronce"', '"bronze_alloy"') WHERE save_data LIKE '%"aleacindebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bronzealloy"', '"bronze_alloy"') WHERE save_data LIKE '%"bronzealloy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"basequimica"', '"chemical_base"') WHERE save_data LIKE '%"basequimica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"basequímica"', '"chemical_base"') WHERE save_data LIKE '%"basequímica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"basequmica"', '"chemical_base"') WHERE save_data LIKE '%"basequmica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chemicalbase"', '"chemical_base"') WHERE save_data LIKE '%"chemicalbase"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbonrefinado"', '"coal"') WHERE save_data LIKE '%"carbonrefinado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbónrefinado"', '"coal"') WHERE save_data LIKE '%"carbónrefinado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbnrefinado"', '"coal"') WHERE save_data LIKE '%"carbnrefinado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleaciondeelectrum"', '"electrum_alloy"') WHERE save_data LIKE '%"aleaciondeelectrum"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacióndeelectrum"', '"electrum_alloy"') WHERE save_data LIKE '%"aleacióndeelectrum"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacindeelectrum"', '"electrum_alloy"') WHERE save_data LIKE '%"aleacindeelectrum"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrumalloy"', '"electrum_alloy"') WHERE save_data LIKE '%"electrumalloy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"botelladevidrio"', '"glass_bottle"') WHERE save_data LIKE '%"botelladevidrio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"glassbottle"', '"glass_bottle"') WHERE save_data LIKE '%"glassbottle"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacionendurecida"', '"hardened_alloy"') WHERE save_data LIKE '%"aleacionendurecida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleaciónendurecida"', '"hardened_alloy"') WHERE save_data LIKE '%"aleaciónendurecida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacinendurecida"', '"hardened_alloy"') WHERE save_data LIKE '%"aleacinendurecida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hardenedalloy"', '"hardened_alloy"') WHERE save_data LIKE '%"hardenedalloy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeniquel"', '"nickel"') WHERE save_data LIKE '%"lingotedeniquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeníquel"', '"nickel"') WHERE save_data LIKE '%"lingotedeníquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedenquel"', '"nickel"') WHERE save_data LIKE '%"lingotedenquel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"astilladepintura"', '"paint_splint"') WHERE save_data LIKE '%"astilladepintura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paintsplint"', '"paint_splint"') WHERE save_data LIKE '%"paintsplint"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plastico"', '"plastic"') WHERE save_data LIKE '%"plastico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plástico"', '"plastic"') WHERE save_data LIKE '%"plástico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plstico"', '"plastic"') WHERE save_data LIKE '%"plstico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleaciondeacero"', '"steel_alloy"') WHERE save_data LIKE '%"aleaciondeacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacióndeacero"', '"steel_alloy"') WHERE save_data LIKE '%"aleacióndeacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aleacindeacero"', '"steel_alloy"') WHERE save_data LIKE '%"aleacindeacero"%';
+UPDATE game_saves SET save_data = replace(save_data, '"steelalloy"', '"steel_alloy"') WHERE save_data LIKE '%"steelalloy"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maderadeconstruccion"', '"timber"') WHERE save_data LIKE '%"maderadeconstruccion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maderadeconstrucción"', '"timber"') WHERE save_data LIKE '%"maderadeconstrucción"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maderadeconstruccin"', '"timber"') WHERE save_data LIKE '%"maderadeconstruccin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeestano"', '"tin"') WHERE save_data LIKE '%"lingotedeestano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeestaño"', '"tin"') WHERE save_data LIKE '%"lingotedeestaño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lingotedeestao"', '"tin"') WHERE save_data LIKE '%"lingotedeestao"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintenegro"', '"tint_black"') WHERE save_data LIKE '%"tintenegro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintblack"', '"tint_black"') WHERE save_data LIKE '%"tintblack"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinteazul"', '"tint_blue"') WHERE save_data LIKE '%"tinteazul"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintblue"', '"tint_blue"') WHERE save_data LIKE '%"tintblue"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinteverde"', '"tint_green"') WHERE save_data LIKE '%"tinteverde"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintgreen"', '"tint_green"') WHERE save_data LIKE '%"tintgreen"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintenaranja"', '"tint_orange"') WHERE save_data LIKE '%"tintenaranja"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintorange"', '"tint_orange"') WHERE save_data LIKE '%"tintorange"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintemorado"', '"tint_purple"') WHERE save_data LIKE '%"tintemorado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintpurple"', '"tint_purple"') WHERE save_data LIKE '%"tintpurple"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinterojo"', '"tint_red"') WHERE save_data LIKE '%"tinterojo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintred"', '"tint_red"') WHERE save_data LIKE '%"tintred"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinteblanco"', '"tint_white"') WHERE save_data LIKE '%"tinteblanco"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintwhite"', '"tint_white"') WHERE save_data LIKE '%"tintwhite"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tinteamarillo"', '"tint_yellow"') WHERE save_data LIKE '%"tinteamarillo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tintyellow"', '"tint_yellow"') WHERE save_data LIKE '%"tintyellow"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hilotejido"', '"woven_thread"') WHERE save_data LIKE '%"hilotejido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"woventhread"', '"woven_thread"') WHERE save_data LIKE '%"woventhread"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moduloelectronicoavanzado"', '"advanced_electronics_module"') WHERE save_data LIKE '%"moduloelectronicoavanzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"móduloelectrónicoavanzado"', '"advanced_electronics_module"') WHERE save_data LIKE '%"móduloelectrónicoavanzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mduloelectrnicoavanzado"', '"advanced_electronics_module"') WHERE save_data LIKE '%"mduloelectrnicoavanzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"advancedelectronicsmodule"', '"advanced_electronics_module"') WHERE save_data LIKE '%"advancedelectronicsmodule"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reactivodeantidoto"', '"antidote_reactive"') WHERE save_data LIKE '%"reactivodeantidoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reactivodeantídoto"', '"antidote_reactive"') WHERE save_data LIKE '%"reactivodeantídoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reactivodeantdoto"', '"antidote_reactive"') WHERE save_data LIKE '%"reactivodeantdoto"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antidotereactive"', '"antidote_reactive"') WHERE save_data LIKE '%"antidotereactive"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateriagrande"', '"big_battery"') WHERE save_data LIKE '%"bateriagrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateríagrande"', '"big_battery"') WHERE save_data LIKE '%"bateríagrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateragrande"', '"big_battery"') WHERE save_data LIKE '%"bateragrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bigbattery"', '"big_battery"') WHERE save_data LIKE '%"bigbattery"%';
+UPDATE game_saves SET save_data = replace(save_data, '"procesadorgrande"', '"big_cpu"') WHERE save_data LIKE '%"procesadorgrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bigcpu"', '"big_cpu"') WHERE save_data LIKE '%"bigcpu"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tornilloytuerca"', '"bolt_nut"') WHERE save_data LIKE '%"tornilloytuerca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"boltnut"', '"bolt_nut"') WHERE save_data LIKE '%"boltnut"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nectardebronce"', '"bronze_nectar"') WHERE save_data LIKE '%"nectardebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"néctardebronce"', '"bronze_nectar"') WHERE save_data LIKE '%"néctardebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nctardebronce"', '"bronze_nectar"') WHERE save_data LIKE '%"nctardebronce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bronzenectar"', '"bronze_nectar"') WHERE save_data LIKE '%"bronzenectar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pesocalibrado"', '"calibrated_weight"') WHERE save_data LIKE '%"pesocalibrado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"calibratedweight"', '"calibrated_weight"') WHERE save_data LIKE '%"calibratedweight"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esenciaquimica"', '"chemical_essence"') WHERE save_data LIKE '%"esenciaquimica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esenciaquímica"', '"chemical_essence"') WHERE save_data LIKE '%"esenciaquímica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"esenciaqumica"', '"chemical_essence"') WHERE save_data LIKE '%"esenciaqumica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chemicalessence"', '"chemical_essence"') WHERE save_data LIKE '%"chemicalessence"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resucitadorquimico"', '"chemical_resuscitant"') WHERE save_data LIKE '%"resucitadorquimico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resucitadorquímico"', '"chemical_resuscitant"') WHERE save_data LIKE '%"resucitadorquímico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resucitadorqumico"', '"chemical_resuscitant"') WHERE save_data LIKE '%"resucitadorqumico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chemicalresuscitant"', '"chemical_resuscitant"') WHERE save_data LIKE '%"chemicalresuscitant"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chipelectronico"', '"chip"') WHERE save_data LIKE '%"chipelectronico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chipelectrónico"', '"chip"') WHERE save_data LIKE '%"chipelectrónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chipelectrnico"', '"chip"') WHERE save_data LIKE '%"chipelectrnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moduloelectronico"', '"electronics_module"') WHERE save_data LIKE '%"moduloelectronico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"móduloelectrónico"', '"electronics_module"') WHERE save_data LIKE '%"móduloelectrónico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mduloelectrnico"', '"electronics_module"') WHERE save_data LIKE '%"mduloelectrnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electronicsmodule"', '"electronics_module"') WHERE save_data LIKE '%"electronicsmodule"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monitorcrt"', '"fat_monitor"') WHERE save_data LIKE '%"monitorcrt"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fatmonitor"', '"fat_monitor"') WHERE save_data LIKE '%"fatmonitor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monitorplano"', '"flat_monitor"') WHERE save_data LIKE '%"monitorplano"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flatmonitor"', '"flat_monitor"') WHERE save_data LIKE '%"flatmonitor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"engranaje"', '"gear"') WHERE save_data LIKE '%"engranaje"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nectardorado"', '"golden_nectar"') WHERE save_data LIKE '%"nectardorado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"néctardorado"', '"golden_nectar"') WHERE save_data LIKE '%"néctardorado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nctardorado"', '"golden_nectar"') WHERE save_data LIKE '%"nctardorado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"goldennectar"', '"golden_nectar"') WHERE save_data LIKE '%"goldennectar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unidadgpu"', '"gpu"') WHERE save_data LIKE '%"unidadgpu"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electronicaindustrial"', '"industrial_electronics"') WHERE save_data LIKE '%"electronicaindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrónicaindustrial"', '"industrial_electronics"') WHERE save_data LIKE '%"electrónicaindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"electrnicaindustrial"', '"industrial_electronics"') WHERE save_data LIKE '%"electrnicaindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"industrialelectronics"', '"industrial_electronics"') WHERE save_data LIKE '%"industrialelectronics"%';
+UPDATE game_saves SET save_data = replace(save_data, '"extractomedicinal"', '"medicinal_extract"') WHERE save_data LIKE '%"extractomedicinal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"medicinalextract"', '"medicinal_extract"') WHERE save_data LIKE '%"medicinalextract"%';
+UPDATE game_saves SET save_data = replace(save_data, '"contenedordemetal"', '"metal_container"') WHERE save_data LIKE '%"contenedordemetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalcontainer"', '"metal_container"') WHERE save_data LIKE '%"metalcontainer"%';
+UPDATE game_saves SET save_data = replace(save_data, '"marcodemetal"', '"metal_frame"') WHERE save_data LIKE '%"marcodemetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"metalframe"', '"metal_frame"') WHERE save_data LIKE '%"metalframe"%';
+UPDATE game_saves SET save_data = replace(save_data, '"placabase"', '"motherboard"') WHERE save_data LIKE '%"placabase"%';
+UPDATE game_saves SET save_data = replace(save_data, '"clavos"', '"nails"') WHERE save_data LIKE '%"clavos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"unidadnpu"', '"npu"') WHERE save_data LIKE '%"unidadnpu"%';
+UPDATE game_saves SET save_data = replace(save_data, '"desechonuclear"', '"nuclear_waste"') WHERE save_data LIKE '%"desechonuclear"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nuclearwaste"', '"nuclear_waste"') WHERE save_data LIKE '%"nuclearwaste"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lenteoptica"', '"optical_lens"') WHERE save_data LIKE '%"lenteoptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lenteóptica"', '"optical_lens"') WHERE save_data LIKE '%"lenteóptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lenteptica"', '"optical_lens"') WHERE save_data LIKE '%"lenteptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"opticallens"', '"optical_lens"') WHERE save_data LIKE '%"opticallens"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fibraoptica"', '"optic_fiber"') WHERE save_data LIKE '%"fibraoptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fibraóptica"', '"optic_fiber"') WHERE save_data LIKE '%"fibraóptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fibraptica"', '"optic_fiber"') WHERE save_data LIKE '%"fibraptica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"opticfiber"', '"optic_fiber"') WHERE save_data LIKE '%"opticfiber"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fertilizanteorganico"', '"organic_fertilizer"') WHERE save_data LIKE '%"fertilizanteorganico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fertilizanteorgánico"', '"organic_fertilizer"') WHERE save_data LIKE '%"fertilizanteorgánico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fertilizanteorgnico"', '"organic_fertilizer"') WHERE save_data LIKE '%"fertilizanteorgnico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"organicfertilizer"', '"organic_fertilizer"') WHERE save_data LIKE '%"organicfertilizer"%';
+UPDATE game_saves SET save_data = replace(save_data, '"recubrimientodepintura"', '"paint_coating"') WHERE save_data LIKE '%"recubrimientodepintura"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paintcoating"', '"paint_coating"') WHERE save_data LIKE '%"paintcoating"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplastico"', '"plastic_shell"') WHERE save_data LIKE '%"carcasadeplastico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplástico"', '"plastic_shell"') WHERE save_data LIKE '%"carcasadeplástico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplstico"', '"plastic_shell"') WHERE save_data LIKE '%"carcasadeplstico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"plasticshell"', '"plastic_shell"') WHERE save_data LIKE '%"plasticshell"%';
+UPDATE game_saves SET save_data = replace(save_data, '"contenedorreforzado"', '"reinforced_container"') WHERE save_data LIKE '%"contenedorreforzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reinforcedcontainer"', '"reinforced_container"') WHERE save_data LIKE '%"reinforcedcontainer"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplasticoreforzada"', '"reinforced_plastic_shell"') WHERE save_data LIKE '%"carcasadeplasticoreforzada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplásticoreforzada"', '"reinforced_plastic_shell"') WHERE save_data LIKE '%"carcasadeplásticoreforzada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carcasadeplsticoreforzada"', '"reinforced_plastic_shell"') WHERE save_data LIKE '%"carcasadeplsticoreforzada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reinforcedplasticshell"', '"reinforced_plastic_shell"') WHERE save_data LIKE '%"reinforcedplasticshell"%';
+UPDATE game_saves SET save_data = replace(save_data, '"correareforzada"', '"reinforced_strap"') WHERE save_data LIKE '%"correareforzada"%';
+UPDATE game_saves SET save_data = replace(save_data, '"reinforcedstrap"', '"reinforced_strap"') WHERE save_data LIKE '%"reinforcedstrap"%';
+UPDATE game_saves SET save_data = replace(save_data, '"juntadegoma"', '"rubber_gasket"') WHERE save_data LIKE '%"juntadegoma"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rubbergasket"', '"rubber_gasket"') WHERE save_data LIKE '%"rubbergasket"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pantalla"', '"screen"') WHERE save_data LIKE '%"pantalla"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cristaldesensor"', '"sensor_crystal"') WHERE save_data LIKE '%"cristaldesensor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sensorcrystal"', '"sensor_crystal"') WHERE save_data LIKE '%"sensorcrystal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nectardeplata"', '"silver_nectar"') WHERE save_data LIKE '%"nectardeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"néctardeplata"', '"silver_nectar"') WHERE save_data LIKE '%"néctardeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nctardeplata"', '"silver_nectar"') WHERE save_data LIKE '%"nctardeplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"silvernectar"', '"silver_nectar"') WHERE save_data LIKE '%"silvernectar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antenapequena"', '"small_antenna"') WHERE save_data LIKE '%"antenapequena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antenapequeña"', '"small_antenna"') WHERE save_data LIKE '%"antenapequeña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antenapequea"', '"small_antenna"') WHERE save_data LIKE '%"antenapequea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"smallantenna"', '"small_antenna"') WHERE save_data LIKE '%"smallantenna"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateriapequena"', '"small_battery"') WHERE save_data LIKE '%"bateriapequena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateríapequeña"', '"small_battery"') WHERE save_data LIKE '%"bateríapequeña"%';
+UPDATE game_saves SET save_data = replace(save_data, '"baterapequea"', '"small_battery"') WHERE save_data LIKE '%"baterapequea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"smallbattery"', '"small_battery"') WHERE save_data LIKE '%"smallbattery"%';
+UPDATE game_saves SET save_data = replace(save_data, '"procesadorpequeno"', '"small_cpu"') WHERE save_data LIKE '%"procesadorpequeno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"procesadorpequeño"', '"small_cpu"') WHERE save_data LIKE '%"procesadorpequeño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"procesadorpequeo"', '"small_cpu"') WHERE save_data LIKE '%"procesadorpequeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"smallcpu"', '"small_cpu"') WHERE save_data LIKE '%"smallcpu"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monitorpequeno"', '"small_monitor"') WHERE save_data LIKE '%"monitorpequeno"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monitorpequeño"', '"small_monitor"') WHERE save_data LIKE '%"monitorpequeño"%';
+UPDATE game_saves SET save_data = replace(save_data, '"monitorpequeo"', '"small_monitor"') WHERE save_data LIKE '%"monitorpequeo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"smallmonitor"', '"small_monitor"') WHERE save_data LIKE '%"smallmonitor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"resorte"', '"spring"') WHERE save_data LIKE '%"resorte"%';
+UPDATE game_saves SET save_data = replace(save_data, '"siropedulce"', '"sweet_syrup"') WHERE save_data LIKE '%"siropedulce"%';
+UPDATE game_saves SET save_data = replace(save_data, '"sweetsyrup"', '"sweet_syrup"') WHERE save_data LIKE '%"sweetsyrup"%';
+UPDATE game_saves SET save_data = replace(save_data, '"impresora3d"', '"3d_printer"') WHERE save_data LIKE '%"impresora3d"%';
+UPDATE game_saves SET save_data = replace(save_data, '"3dprinter"', '"3d_printer"') WHERE save_data LIKE '%"3dprinter"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bancodetrabajoavanzado"', '"advanced_workbench"') WHERE save_data LIKE '%"bancodetrabajoavanzado"%';
+UPDATE game_saves SET save_data = replace(save_data, '"advancedworkbench"', '"advanced_workbench"') WHERE save_data LIKE '%"advancedworkbench"%';
+UPDATE game_saves SET save_data = replace(save_data, '"alambique"', '"alembic"') WHERE save_data LIKE '%"alambique"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antena"', '"antenna"') WHERE save_data LIKE '%"antena"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generadordeantimateria"', '"antimatter_generator"') WHERE save_data LIKE '%"generadordeantimateria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antimattergenerator"', '"antimatter_generator"') WHERE save_data LIKE '%"antimattergenerator"%';
+UPDATE game_saves SET save_data = replace(save_data, '"antenagrande"', '"big_antenna"') WHERE save_data LIKE '%"antenagrande"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bigantenna"', '"big_antenna"') WHERE save_data LIKE '%"bigantenna"%';
+UPDATE game_saves SET save_data = replace(save_data, '"binoculares"', '"binoculars"') WHERE save_data LIKE '%"binoculares"%';
+UPDATE game_saves SET save_data = replace(save_data, '"camara"', '"camera"') WHERE save_data LIKE '%"camara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cámara"', '"camera"') WHERE save_data LIKE '%"cámara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cmara"', '"camera"') WHERE save_data LIKE '%"cmara"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbonvegetal"', '"charcoal"') WHERE save_data LIKE '%"carbonvegetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbónvegetal"', '"charcoal"') WHERE save_data LIKE '%"carbónvegetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"carbnvegetal"', '"charcoal"') WHERE save_data LIKE '%"carbnvegetal"%';
+UPDATE game_saves SET save_data = replace(save_data, '"panueloelegido"', '"choice_scarf"') WHERE save_data LIKE '%"panueloelegido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pañueloelegido"', '"choice_scarf"') WHERE save_data LIKE '%"pañueloelegido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"paueloelegido"', '"choice_scarf"') WHERE save_data LIKE '%"paueloelegido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choicescarf"', '"choice_scarf"') WHERE save_data LIKE '%"choicescarf"%';
+UPDATE game_saves SET save_data = replace(save_data, '"gafaselegidas"', '"choice_specs"') WHERE save_data LIKE '%"gafaselegidas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"choicespecs"', '"choice_specs"') WHERE save_data LIKE '%"choicespecs"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generadordecarbon"', '"coal_generator"') WHERE save_data LIKE '%"generadordecarbon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generadordecarbón"', '"coal_generator"') WHERE save_data LIKE '%"generadordecarbón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generadordecarbn"', '"coal_generator"') WHERE save_data LIKE '%"generadordecarbn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"coalgenerator"', '"coal_generator"') WHERE save_data LIKE '%"coalgenerator"%';
+UPDATE game_saves SET save_data = replace(save_data, '"olladecocina"', '"cooking_pot"') WHERE save_data LIKE '%"olladecocina"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cookingpot"', '"cooking_pot"') WHERE save_data LIKE '%"cookingpot"%';
+UPDATE game_saves SET save_data = replace(save_data, '"buceoball"', '"dive_ball"') WHERE save_data LIKE '%"buceoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"diveball"', '"dive_ball"') WHERE save_data LIKE '%"diveball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillodragon"', '"dragon_fang"') WHERE save_data LIKE '%"colmillodragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillodragón"', '"dragon_fang"') WHERE save_data LIKE '%"colmillodragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"colmillodragn"', '"dragon_fang"') WHERE save_data LIKE '%"colmillodragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dragonfang"', '"dragon_fang"') WHERE save_data LIKE '%"dragonfang"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamadragon"', '"dragon_scale"') WHERE save_data LIKE '%"escamadragon"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamadragón"', '"dragon_scale"') WHERE save_data LIKE '%"escamadragón"%';
+UPDATE game_saves SET save_data = replace(save_data, '"escamadragn"', '"dragon_scale"') WHERE save_data LIKE '%"escamadragn"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dragonscale"', '"dragon_scale"') WHERE save_data LIKE '%"dragonscale"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moduladordeenergia"', '"energy_modulator"') WHERE save_data LIKE '%"moduladordeenergia"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moduladordeenergía"', '"energy_modulator"') WHERE save_data LIKE '%"moduladordeenergía"%';
+UPDATE game_saves SET save_data = replace(save_data, '"moduladordeenerga"', '"energy_modulator"') WHERE save_data LIKE '%"moduladordeenerga"%';
+UPDATE game_saves SET save_data = replace(save_data, '"energymodulator"', '"energy_modulator"') WHERE save_data LIKE '%"energymodulator"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mineralevolutivo"', '"eviolite"') WHERE save_data LIKE '%"mineralevolutivo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dispensadordecomida"', '"food_dispenser"') WHERE save_data LIKE '%"dispensadordecomida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fooddispenser"', '"food_dispenser"') WHERE save_data LIKE '%"fooddispenser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"molinillodecomida"', '"food_grinder"') WHERE save_data LIKE '%"molinillodecomida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"foodgrinder"', '"food_grinder"') WHERE save_data LIKE '%"foodgrinder"%';
+UPDATE game_saves SET save_data = replace(save_data, '"procesadordealimentos"', '"food_processor"') WHERE save_data LIKE '%"procesadordealimentos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"foodprocessor"', '"food_processor"') WHERE save_data LIKE '%"foodprocessor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"restaurartodo"', '"full_restore"') WHERE save_data LIKE '%"restaurartodo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fullrestore"', '"full_restore"') WHERE save_data LIKE '%"fullrestore"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hornodefundicion"', '"furnace"') WHERE save_data LIKE '%"hornodefundicion"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hornodefundición"', '"furnace"') WHERE save_data LIKE '%"hornodefundición"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hornodefundicin"', '"furnace"') WHERE save_data LIKE '%"hornodefundicin"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateriaindustrial"', '"industrial_battery"') WHERE save_data LIKE '%"bateriaindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateríaindustrial"', '"industrial_battery"') WHERE save_data LIKE '%"bateríaindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bateraindustrial"', '"industrial_battery"') WHERE save_data LIKE '%"bateraindustrial"%';
+UPDATE game_saves SET save_data = replace(save_data, '"industrialbattery"', '"industrial_battery"') WHERE save_data LIKE '%"industrialbattery"%';
+UPDATE game_saves SET save_data = replace(save_data, '"equipodelaboratorio"', '"lab_equipment"') WHERE save_data LIKE '%"equipodelaboratorio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"labequipment"', '"lab_equipment"') WHERE save_data LIKE '%"labequipment"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maquinalapidaria"', '"lapidary_machine"') WHERE save_data LIKE '%"maquinalapidaria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"máquinalapidaria"', '"lapidary_machine"') WHERE save_data LIKE '%"máquinalapidaria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mquinalapidaria"', '"lapidary_machine"') WHERE save_data LIKE '%"mquinalapidaria"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lapidarymachine"', '"lapidary_machine"') WHERE save_data LIKE '%"lapidarymachine"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortadorlaser"', '"laser_cutter"') WHERE save_data LIKE '%"cortadorlaser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortadorláser"', '"laser_cutter"') WHERE save_data LIKE '%"cortadorláser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortadorlser"', '"laser_cutter"') WHERE save_data LIKE '%"cortadorlser"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lasercutter"', '"laser_cutter"') WHERE save_data LIKE '%"lasercutter"%';
+UPDATE game_saves SET save_data = replace(save_data, '"vidasfera"', '"life_orb"') WHERE save_data LIKE '%"vidasfera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lifeorb"', '"life_orb"') WHERE save_data LIKE '%"lifeorb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lujoball"', '"luxury_ball"') WHERE save_data LIKE '%"lujoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"luxuryball"', '"luxury_ball"') WHERE save_data LIKE '%"luxuryball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dispositivomedico"', '"medical_device"') WHERE save_data LIKE '%"dispositivomedico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dispositivomédico"', '"medical_device"') WHERE save_data LIKE '%"dispositivomédico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"dispositivomdico"', '"medical_device"') WHERE save_data LIKE '%"dispositivomdico"%';
+UPDATE game_saves SET save_data = replace(save_data, '"medicaldevice"', '"medical_device"') WHERE save_data LIKE '%"medicaldevice"%';
+UPDATE game_saves SET save_data = replace(save_data, '"microscopio"', '"microscope"') WHERE save_data LIKE '%"microscopio"%';
+UPDATE game_saves SET save_data = replace(save_data, '"semillamilagro"', '"miracle_seed"') WHERE save_data LIKE '%"semillamilagro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"miracleseed"', '"miracle_seed"') WHERE save_data LIKE '%"miracleseed"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguamistica"', '"mystic_water"') WHERE save_data LIKE '%"aguamistica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguamística"', '"mystic_water"') WHERE save_data LIKE '%"aguamística"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aguamstica"', '"mystic_water"') WHERE save_data LIKE '%"aguamstica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mysticwater"', '"mystic_water"') WHERE save_data LIKE '%"mysticwater"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nidoball"', '"nest_ball"') WHERE save_data LIKE '%"nidoball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nestball"', '"nest_ball"') WHERE save_data LIKE '%"nestball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"generadornuclear"', '"nuclear_generator"') WHERE save_data LIKE '%"generadornuclear"%';
+UPDATE game_saves SET save_data = replace(save_data, '"nucleargenerator"', '"nuclear_generator"') WHERE save_data LIKE '%"nucleargenerator"%';
+UPDATE game_saves SET save_data = replace(save_data, '"flechavenenosa"', '"poison_barb"') WHERE save_data LIKE '%"flechavenenosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"poisonbarb"', '"poison_barb"') WHERE save_data LIKE '%"poisonbarb"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pokédex"', '"pokedex"') WHERE save_data LIKE '%"pokédex"%';
+UPDATE game_saves SET save_data = replace(save_data, '"pokdex"', '"pokedex"') WHERE save_data LIKE '%"pokdex"%';
+UPDATE game_saves SET save_data = replace(save_data, '"maximopp"', '"pp_max"') WHERE save_data LIKE '%"maximopp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"máximopp"', '"pp_max"') WHERE save_data LIKE '%"máximopp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"mximopp"', '"pp_max"') WHERE save_data LIKE '%"mximopp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"ppmax"', '"pp_max"') WHERE save_data LIKE '%"ppmax"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velozball"', '"quick_ball"') WHERE save_data LIKE '%"velozball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"quickball"', '"quick_ball"') WHERE save_data LIKE '%"quickball"%';
+UPDATE game_saves SET save_data = replace(save_data, '"trituradoraderoca"', '"rock_grinder"') WHERE save_data LIKE '%"trituradoraderoca"%';
+UPDATE game_saves SET save_data = replace(save_data, '"rockgrinder"', '"rock_grinder"') WHERE save_data LIKE '%"rockgrinder"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bascula"', '"scale"') WHERE save_data LIKE '%"bascula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"báscula"', '"scale"') WHERE save_data LIKE '%"báscula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bscula"', '"scale"') WHERE save_data LIKE '%"bscula"%';
+UPDATE game_saves SET save_data = replace(save_data, '"servidor"', '"server"') WHERE save_data LIKE '%"servidor"%';
+UPDATE game_saves SET save_data = replace(save_data, '"polvoplata"', '"silver_powder"') WHERE save_data LIKE '%"polvoplata"%';
+UPDATE game_saves SET save_data = replace(save_data, '"silverpowder"', '"silver_powder"') WHERE save_data LIKE '%"silverpowder"%';
+UPDATE game_saves SET save_data = replace(save_data, '"fundidora"', '"smelter"') WHERE save_data LIKE '%"fundidora"%';
+UPDATE game_saves SET save_data = replace(save_data, '"panelsolar"', '"solar_panel"') WHERE save_data LIKE '%"panelsolar"%';
+UPDATE game_saves SET save_data = replace(save_data, '"solarpanel"', '"solar_panel"') WHERE save_data LIKE '%"solarpanel"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estacionmeteorologica"', '"weather_station"') WHERE save_data LIKE '%"estacionmeteorologica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estaciónmeteorológica"', '"weather_station"') WHERE save_data LIKE '%"estaciónmeteorológica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"estacinmeteorolgica"', '"weather_station"') WHERE save_data LIKE '%"estacinmeteorolgica"%';
+UPDATE game_saves SET save_data = replace(save_data, '"weatherstation"', '"weather_station"') WHERE save_data LIKE '%"weatherstation"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cortadorademadera"', '"woodcutting_machine"') WHERE save_data LIKE '%"cortadorademadera"%';
+UPDATE game_saves SET save_data = replace(save_data, '"woodcuttingmachine"', '"woodcutting_machine"') WHERE save_data LIKE '%"woodcuttingmachine"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bancodetrabajo"', '"workbench"') WHERE save_data LIKE '%"bancodetrabajo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"chupa-vidas"', '"leechlife"') WHERE save_data LIKE '%"chupa-vidas"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Hechizo"', '"spell_tag"') WHERE save_data LIKE '%"Hechizo"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tímido"', '"timid"') WHERE save_data LIKE '%"tímido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Compartir EXP"', '"exp_share"') WHERE save_data LIKE '%"Compartir EXP"%';
+UPDATE game_saves SET save_data = replace(save_data, '"compartir exp"', '"exp_share"') WHERE save_data LIKE '%"compartir exp"%';
+UPDATE game_saves SET save_data = replace(save_data, '"acidificación"', '"acidarmor"') WHERE save_data LIKE '%"acidificación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Ácido"', '"acid"') WHERE save_data LIKE '%"Ácido"%';
+UPDATE game_saves SET save_data = replace(save_data, '"previsión"', '"foresight"') WHERE save_data LIKE '%"previsión"%';
+UPDATE game_saves SET save_data = replace(save_data, '"patadaÍgnea"', '"blazekick"') WHERE save_data LIKE '%"patadaÍgnea"%';
+UPDATE game_saves SET save_data = replace(save_data, '"armaduraÁcida"', '"acidarmor"') WHERE save_data LIKE '%"armaduraÁcida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"aclimatación"', '"cloudnine"') WHERE save_data LIKE '%"aclimatación"%';
+UPDATE game_saves SET save_data = replace(save_data, '"tailglow"', '"swiftswim"') WHERE save_data LIKE '%"tailglow"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Cinturón Negro"', '"blackbelt"') WHERE save_data LIKE '%"Cinturón Negro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cinturón negro"', '"blackbelt"') WHERE save_data LIKE '%"cinturón negro"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Lente Zoom"', '"scope_lens"') WHERE save_data LIKE '%"Lente Zoom"%';
+UPDATE game_saves SET save_data = replace(save_data, '"lente zoom"', '"scope_lens"') WHERE save_data LIKE '%"lente zoom"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Cuchara Torcida"', '"twisted_spoon"') WHERE save_data LIKE '%"Cuchara Torcida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"cuchara torcida"', '"twisted_spoon"') WHERE save_data LIKE '%"cuchara torcida"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Restos"', '"leftovers"') WHERE save_data LIKE '%"Restos"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Hueso Grueso"', '"thick_club"') WHERE save_data LIKE '%"Hueso Grueso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"hueso grueso"', '"thick_club"') WHERE save_data LIKE '%"hueso grueso"%';
+UPDATE game_saves SET save_data = replace(save_data, '"Bola Luminosa"', '"light_ball"') WHERE save_data LIKE '%"Bola Luminosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"bola luminosa"', '"light_ball"') WHERE save_data LIKE '%"bola luminosa"%';
+UPDATE game_saves SET save_data = replace(save_data, '"velohúmedo"', '"waterveil"') WHERE save_data LIKE '%"velohúmedo"%';

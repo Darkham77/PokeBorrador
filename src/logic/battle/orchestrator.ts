@@ -104,13 +104,19 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { useMapStore } = await import('@/stores/map')
   const mapStore = useMapStore() as unknown as MapStore
   const finalEnemyPoke = enemyPoke
+  const startingEnemyPoke = (isTrainer || isGym) && enemyTeam && enemyTeam.length > 0
+    ? enemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
+    : finalEnemyPoke
 
   sanitizePokemon(playerPoke)
   sanitizePokemon(finalEnemyPoke)
+  if (enemyTeam) {
+    enemyTeam.forEach((p: Pokemon) => p && sanitizePokemon(p))
+  }
 
   // LIMPIEZA DE ESTADOS VOLÁTILES
   ctx.clearVolatileStatus(playerPoke)
-  ctx.clearVolatileStatus(finalEnemyPoke)
+  ctx.clearVolatileStatus(startingEnemyPoke)
 
   // Initial context values
   let rarity = 50
@@ -118,7 +124,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   ctx.activeBattle.value = {
     enemy: null, 
     player: null, 
-    _initialEnemy: finalEnemyPoke,
+    _initialEnemy: startingEnemyPoke,
     _initialPlayer: playerPoke,
     _rewardCombatants: [],
     isGym, gymId, isTrainer, enemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
@@ -277,7 +283,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   logger.info('Orchestrator', 'Calling initBattleSequence...');
   await initBattleSequence(ctx, { 
     locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
-    initialEnemy: finalEnemyPoke,
+    initialEnemy: startingEnemyPoke,
     initialPlayer: playerPoke
   })
 }

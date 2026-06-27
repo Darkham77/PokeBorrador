@@ -1,6 +1,7 @@
 // fallow-ignore-file security-sink
 import { Battle, ID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { getShowdownFormatId } from './showdownAdapter.ts';
 
 /** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */
 interface PkmnSimSide {
@@ -28,9 +29,10 @@ self.onmessage = (event: MessageEvent) => {
         ];
 
         currentBattle = new Battle({ 
-          formatid: `gen${ACTIVE_GENERATION}customgame@@@!Team Preview` as ID,
+          formatid: getShowdownFormatId(),
           seed: seedArr.join(',') as unknown as `${number},${string}`
         });
+
 
         // Configurar los dos jugadores
         currentBattle.setPlayer('p1', { name: p1.name, team: p1.team });

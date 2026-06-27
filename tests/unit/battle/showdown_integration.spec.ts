@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { mapToShowdownSet, getShowdownSlot } from '@/logic/battle/showdownAdapter';
+import { mapToShowdownSet, getShowdownSlot, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
+import { Battle, type ID } from '@pkmn/sim';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 describe('Showdown Integration & Adapters', () => {
   setActivePinia(createPinia());
@@ -103,8 +106,8 @@ describe('Showdown Integration & Adapters', () => {
       await parseShowdownLogLine(mockContext, '|-boost|p1a: Bulbasaur|atk|2');
       expect(playerStages.value.atk).toBe(2);
 
-      await parseShowdownLogLine(mockContext, '|-unboost|p1a: Bulbasaur|atk|1');
-      expect(playerStages.value.atk).toBe(1);
+      await parseShowdownLogLine(mockContext, '|-unboost|p2a: Pikachu|atk|1');
+      expect(enemyStages.value.atk).toBe(-1);
     });
 
     it('debería registrar lastMove y manejar twoturnmove en -prepare y move', async () => {
@@ -165,7 +168,7 @@ describe('Showdown Integration & Adapters', () => {
     });
   });
 
-  describe('Reordenamiento y Sincronización de HP', () => {
+  describe('Player team order sorting', () => {
     it('debería reordenar el equipo poniendo al Pokémon inicial activo primero', () => {
       const initialPlayer = { uid: 'vaporeon-uid' } as Pokemon;
       const team = [
@@ -197,6 +200,27 @@ describe('Showdown Integration & Adapters', () => {
 
       const p1Hps = showdownPlayerTeamOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
       expect(p1Hps).toEqual([120, 30, 0]);
+    });
+  });
+
+  describe('Battle simulation choose move test', () => {
+    it('should allow rocktomb choice', () => {
+      const playerPoke = makePokemon('bulbasaur', 15)!;
+      const enemyPoke = makePokemon('onix', 14)!;
+
+      const p1Team = [mapToShowdownSet(playerPoke)];
+      const p2Team = [mapToShowdownSet(enemyPoke)];
+
+      const battle = new Battle({ 
+        formatid: getShowdownFormatId()
+      });
+
+      battle.setPlayer('p1', { name: 'Player', team: p1Team });
+      battle.setPlayer('p2', { name: 'Brock', team: p2Team });
+
+      battle.choose('p1', 'move 1');
+      const res2 = battle.choose('p2', 'move rocktomb');
+      expect(res2).toBe(true);
     });
   });
 });
