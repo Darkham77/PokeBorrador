@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-CCarikTI.js";export{e as default};
