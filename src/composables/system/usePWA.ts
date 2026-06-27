@@ -159,7 +159,19 @@ export function usePWA() {
     })
 
     try {
-      // --- STEP 1: Activate the waiting SW via SKIP_WAITING so it takes control ---
+      // --- STEP 1: Clear app-shell caches (NOT game data caches) ---
+      // We clear the cache first so the reload is guaranteed to fetch fresh files.
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        for (const key of keys) {
+          // Preserve game data caches (images/audio), only wipe app-shell
+          if (!key.startsWith('game-images') && !key.startsWith('game-audio')) {
+            await caches.delete(key)
+          }
+        }
+      }
+
+      // --- STEP 2: Activate the waiting SW via SKIP_WAITING so it takes control ---
       // This is the critical fix: updateServiceWorker() posts { type: 'SKIP_WAITING' }
       // to the SW in waiting state. Without this, the OLD SW keeps intercepting
       // navigations and serving the old cached JS, causing the infinite update loop.
@@ -182,17 +194,6 @@ export function usePWA() {
           const registrations = await navigator.serviceWorker.getRegistrations()
           for (const registration of registrations) {
             await registration.unregister()
-          }
-        }
-      }
-
-      // --- STEP 2: Clear app-shell caches (NOT game data caches) ---
-      if ('caches' in window) {
-        const keys = await caches.keys()
-        for (const key of keys) {
-          // Preserve game data caches (images/audio), only wipe app-shell
-          if (!key.startsWith('game-images') && !key.startsWith('game-audio')) {
-            await caches.delete(key)
           }
         }
       }
