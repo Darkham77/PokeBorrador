@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-tui1TeCX.js";export{e as default};

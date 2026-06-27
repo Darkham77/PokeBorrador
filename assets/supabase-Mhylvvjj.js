@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-rjHlvlKi.js";export{e as default,e as supabase};

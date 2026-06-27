@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-DVT2FIUI.js";export{e as default};
