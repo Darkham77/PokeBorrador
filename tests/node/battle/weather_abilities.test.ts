@@ -202,4 +202,26 @@ describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
     });
   });
 
+  describe('Gym Weather Restrictions & Move exceptions', () => {
+    it('should block natural weather in gyms but allow move-activated weather', () => {
+      const attacker: PurePokemon = { level: 50, spa: 100, type: 'water' };
+      const defender: PurePokemon = { level: 50, spd: 100, type: 'normal' };
+      const waterMove: PureMove = { name: 'Surf', type: 'water', power: 90, cat: 'special' };
+
+      // 1. Natural rain in gym (blocked, weather turns = -1)
+      const naturalRain: PureBattleWeather = { type: 'rain', turns: -1 };
+      const dmgGymNatural = calculateDamagePure(attacker, defender, waterMove, { weather: naturalRain, isGym: true });
+      
+      // 2. Clear weather in gym
+      const dmgClear = calculateDamagePure(attacker, defender, waterMove, { weather: clear, isGym: true });
+      assert.strictEqual(dmgGymNatural.dmg, dmgClear.dmg, 'Natural rain in gym must be blocked and match clear weather damage');
+
+      // 3. Move-activated rain in gym (turns = 5, not blocked)
+      const moveRain: PureBattleWeather = { type: 'rain', turns: 5 };
+      const dmgGymMove = calculateDamagePure(attacker, defender, waterMove, { weather: moveRain, isGym: true });
+      
+      assert.ok(dmgGymMove.dmg > dmgClear.dmg, 'Move-activated rain in gym must NOT be blocked (deals boosted water damage)');
+    });
+  });
+
 });

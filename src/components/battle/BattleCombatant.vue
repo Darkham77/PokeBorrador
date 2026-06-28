@@ -76,6 +76,7 @@ const {
   displaySize,
   feetPoints,
   idleKey,
+  variationKey,
   variationMeta
 } = useBattleCombatantState(props, emit, spriteRef)
 
@@ -100,8 +101,14 @@ watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAni
     isAnimated: true,
   })
 
-  idleImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
-  variationImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}v${suff}.webp`)
+  const getAnimatedUrl = (baseAssetUrl: string, key: string | null) => {
+    if (!key || !baseAssetUrl) return ''
+    const filename = key.replace(/_back$/, '')
+    return baseAssetUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
+  }
+
+  idleImageUrl.value = getAnimatedUrl(baseAssetUrl, idleKey.value)
+  variationImageUrl.value = getAnimatedUrl(baseAssetUrl, variationKey.value)
 
   nextTick(() => {
     animateSpritesheet()

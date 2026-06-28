@@ -8,6 +8,7 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
 import { Battle } from '@pkmn/sim';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { decideEnemyMove } from '@/logic/battle/ai/battleAI';
 
 describe('Showdown Integration & Adapters', () => {
   setActivePinia(createPinia());
@@ -39,6 +40,21 @@ describe('Showdown Integration & Adapters', () => {
       expect(set.nature).toBe('adamant');
       expect(set.moves).toContain('tackle');
       expect(set.moves).toContain('growl');
+    });
+
+    it('debería mapear correctamente los movimientos oficiales de Showdown sin guiones bajos', () => {
+      const mockPoke: Pokemon = {
+        uid: 'p1',
+        id: 'rhyhorn',
+        name: 'Rhyhorn',
+        level: 50,
+        moves: [
+          { id: 'stoneedge', name: 'Roca Afilada', pp: 5, maxPp: 5, power: 100, type: 'rock', cat: 'physical' }
+        ]
+      } as unknown as Pokemon;
+
+      const set = mapToShowdownSet(mockPoke);
+      expect(set.moves).toContain('stoneedge');
     });
   });
 
@@ -189,15 +205,15 @@ describe('Showdown Integration & Adapters', () => {
       expect(slot2?.uid).toBe('chispa-uid');
     });
 
-    it('debería mapear correctamente los HP en el orden de showdownPlayerTeamOrder', () => {
-      const showdownPlayerTeamOrder = ['vaporeon-uid', 'poliwhirl-uid', 'chispa-uid'];
+    it('debería mapear correctamente los HP en el orden inicial del equipo (initialPlayerTeamOrder)', () => {
+      const initialPlayerTeamOrder = ['vaporeon-uid', 'poliwhirl-uid', 'chispa-uid'];
       const team = [
         { uid: 'poliwhirl-uid', hp: 30 } as Pokemon,
         { uid: 'vaporeon-uid', hp: 120 } as Pokemon,
         { uid: 'chispa-uid', hp: 0 } as Pokemon
       ];
 
-      const p1Hps = showdownPlayerTeamOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+      const p1Hps = initialPlayerTeamOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
       expect(p1Hps).toEqual([120, 30, 0]);
     });
   });
@@ -220,6 +236,121 @@ describe('Showdown Integration & Adapters', () => {
       battle.choose('p1', 'move 1');
       const res2 = battle.choose('p2', 'move rocktomb');
       expect(res2).toBe(true);
+    });
+
+    it('debería reproducir el error de elección inválida cuando los HP están desincronizados por el orden de cambio (Dugtrio/Rhydon) y verificar que con el orden inicial funciona', () => {
+      const rhydon = makePokemon('rhydon', 50)!;
+      const dugtrio = makePokemon('dugtrio', 42)!;
+      
+      const p1Team = [mapToShowdownSet(makePokemon('magikarp', 1)!)];
+      const p2Team = [mapToShowdownSet(rhydon), mapToShowdownSet(dugtrio)];
+
+      // Caso 1: Desincronizado (Bug)
+      {
+        const battle = new Battle({ 
+          formatid: getShowdownFormatId()
+        });
+        battle.setPlayer('p1', { name: 'Player', team: p1Team });
+        battle.setPlayer('p2', { name: 'Giovanni', team: p2Team });
+        
+        // Registrar el primer turno y hacer que p2 cambie a Dugtrio
+        battle.choose('p1', 'move 1');
+        battle.choose('p2', 'switch 2');
+
+        const p2Hps = [0, 136]; // El bug: enviar HPs en orden inicial [Rhydon=0, Dugtrio=136] cuando mons está en orden cambiado
+        const mons = battle.p2.pokemon;
+        p2Hps.forEach((hp, index) => {
+          const pokemon = mons[index];
+          if (pokemon) {
+            pokemon.hp = hp;
+            if (hp <= 0) {
+              pokemon.fainted = true;
+              pokemon.status = 'fnt';
+            } else {
+              pokemon.fainted = false;
+              if (pokemon.status === 'fnt') pokemon.status = '';
+            }
+          }
+        });
+        const res = battle.choose('p2', 'move earthpower');
+        expect(res).toBe(false);
+      }
+
+      // Caso 2: Sincronizado en orden inicial (Solución)
+      {
+        const battle = new Battle({ 
+          formatid: getShowdownFormatId()
+        });
+        battle.setPlayer('p1', { name: 'Player', team: p1Team });
+        battle.setPlayer('p2', { name: 'Giovanni', team: p2Team });
+
+        // Registrar el primer turno y hacer que p2 cambie a Dugtrio
+        battle.choose('p1', 'move 1');
+        battle.choose('p2', 'switch 2');
+
+        const p2Hps = [136, 0]; // La solución: enviar HPs en el orden actual/cambiado [Dugtrio=136, Rhydon=0]
+        const mons = battle.p2.pokemon;
+        p2Hps.forEach((hp, index) => {
+          const pokemon = mons[index];
+          if (pokemon) {
+            pokemon.hp = hp;
+            if (hp <= 0) {
+              pokemon.fainted = true;
+              pokemon.status = 'fnt';
+            } else {
+              pokemon.fainted = false;
+              if (pokemon.status === 'fnt') pokemon.status = '';
+            }
+          }
+        });
+        console.log("MONS IN CASO 2:", battle.p2.pokemon.map(p => ({ name: p.name, hp: p.hp, fainted: p.fainted, status: p.status })));
+        battle.choose('p1', 'move 1');
+        const res = battle.choose('p2', 'move earthpower');
+        expect(res).toBe(true);
+      }
+    });
+
+    it('debería verificar si un Dugtrio nivel 42 puede elegir Terremoto (earthquake) en Showdown', () => {
+      const dugtrio = makePokemon('dugtrio', 42)!;
+      // Forzar que tenga terremoto (si es que no lo tiene)
+      dugtrio.moves = [
+        { id: 'earthquake', name: 'Terremoto', pp: 10, maxPp: 10, power: 100, type: 'ground', cat: 'physical' }
+      ] as any;
+
+      const p1Team = [mapToShowdownSet(makePokemon('vaporeon', 50)!)];
+      const p2Team = [mapToShowdownSet(dugtrio)];
+
+      const battle = new Battle({ 
+        formatid: getShowdownFormatId()
+      });
+
+      battle.setPlayer('p1', { name: 'Player', team: p1Team });
+      battle.setPlayer('p2', { name: 'Giovanni', team: p2Team });
+
+      battle.choose('p1', 'move 1');
+      const res = battle.choose('p2', 'move earthquake');
+      // Verificamos si Showdown lo acepta
+      expect(res).toBe(true);
+    });
+
+    it('debería ignorar los movimientos desactivados (disabledMove) en la lógica de decisión de la IA del enemigo', () => {
+      const enemy = makePokemon('gengar', 50)!;
+      enemy.moves = [
+        { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
+        { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 90, type: 'poison', cat: 'special' }
+      ] as any;
+
+      const player = makePokemon('vaporeon', 50)!;
+      const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+
+      // Caso 1: Sin desactivar, puede elegir Bomba Lodo (potencia 90 > Bola Sombra 80)
+      const move1 = decideEnemyMove(enemy, player, stages, false);
+      expect(move1?.id).toBe('sludgebomb'); 
+
+      // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
+      enemy.disabledMove = { id: 'sludgebomb' } as any;
+      const move2 = decideEnemyMove(enemy, player, stages, false);
+      expect(move2?.id).toBe('shadowball');
     });
   });
 });

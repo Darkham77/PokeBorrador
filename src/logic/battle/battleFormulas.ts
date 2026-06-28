@@ -73,8 +73,11 @@ export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stage
   let isGym = false;
   try {
     const battleStore = useBattleStore();
-    if (battleStore.state?.isGym) {
+    const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+    if (battleStore.state?.isGym && !isMoveWeather) {
       activeWeather = null;
+      isGym = true;
+    } else if (battleStore.state?.isGym) {
       isGym = true;
     }
   } catch {
@@ -96,8 +99,11 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   let isGym = false;
   try {
     const battleStore = useBattleStore();
-    if (battleStore.state?.isGym) {
+    const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+    if (battleStore.state?.isGym && !isMoveWeather) {
       activeWeather = null;
+      isGym = true;
+    } else if (battleStore.state?.isGym) {
       isGym = true;
     }
   } catch {

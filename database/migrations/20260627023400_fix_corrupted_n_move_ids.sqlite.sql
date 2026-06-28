@@ -2966,3 +2966,5 @@ UPDATE game_saves SET save_data = replace(save_data, '"hueso grueso"', '"thick_c
 UPDATE game_saves SET save_data = replace(save_data, '"Bola Luminosa"', '"light_ball"') WHERE save_data LIKE '%"Bola Luminosa"%';
 UPDATE game_saves SET save_data = replace(save_data, '"bola luminosa"', '"light_ball"') WHERE save_data LIKE '%"bola luminosa"%';
 UPDATE game_saves SET save_data = replace(save_data, '"velohúmedo"', '"waterveil"') WHERE save_data LIKE '%"velohúmedo"%';
+UPDATE game_saves SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now');
+

@@ -206,12 +206,36 @@ export function useSaveActions(
       if (result.migrated) authStore.user.db_version = 3
       if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
       
-      if (result.rollback && db.value) {
-        if (result.outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄')
-        const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single() as unknown as { data: { save_data: GameState, last_save_id: string } | null }
-        if (freshSave) {
-          updateState(freshSave.save_data)
-          authStore.user.last_save_id = freshSave.last_save_id
+      if (result.rollback) {
+        if (result.outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄');
+        else notifyFn('Actualización detectada. Cargando partida desde la base de datos...', '📥');
+        
+        let rollbackData = (result as { serverData?: GameState }).serverData;
+        let freshSaveId = result.lastSaveId;
+        
+        if (!rollbackData && db.value) {
+          const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single() as unknown as { data: { save_data: GameState, last_save_id: string } | null };
+          if (freshSave) {
+            rollbackData = freshSave.save_data;
+            freshSaveId = freshSave.last_save_id;
+          }
+        }
+        
+        if (rollbackData) {
+          updateState(rollbackData);
+          if (freshSaveId) {
+            authStore.user.last_save_id = freshSaveId;
+          }
+          // Actualizar localStorage para evitar bucles de carga de datos obsoletos
+          try {
+            localStorage.setItem('pokemon_local_save_' + authStore.user.id, JSON.stringify(rollbackData));
+          } catch (e) {
+            logger.warn('SAVE', 'Error al actualizar localStorage durante el rollback:', e);
+          }
+          // Recargar la página para limpiar estados obsoletos de otros stores (batallas, etc.)
+          setTimeout(() => {
+            if (typeof window !== 'undefined') window.location.reload();
+          }, 1000);
         }
       }
     }

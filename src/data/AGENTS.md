@@ -16,6 +16,9 @@ Game Designers / Data Maintainers.
 
 - Avoid adding any logic or runtime calculations inside these datasets. All operations must be pure declarations.
 - Large JSON-like files inside this folder should be mapped using TS type constraints (e.g., `satisfies` or typed constant assertions) to prevent schema drift.
+- **Precomputed Database Mapping**: When designing dictionaries that map entities to multiple traits, pre-flatten and precompute these combined pools at module load time (storing them in a direct key-value hash map) instead of dynamic flattening on queries to ensure O(1) lookup speed.
+- **Strict English ID Mandate**: Never create or use logical identifiers (`id`) in Spanish for items, Pokémon, abilities, natures, moves, or stats. All internal databases, files, and saves must use English Showdown IDs (processed with `toID`).
+- **Static Database Duplication Exemption**: Massive static databases containing duplicate literal lists (like identical learnsets for evolutions) are exempt from refactoring. Do not unify them dynamically. Add them to `ignorePatterns` in `.fallowrc.json` to bypass clone detection.
 
 ## Child DOX Index
 

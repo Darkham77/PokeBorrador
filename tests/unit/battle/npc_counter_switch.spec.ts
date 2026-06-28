@@ -11,6 +11,7 @@ import type { BattleStages } from '@/types/battle/battle'
 const mockExecuteTurn = vi.hoisted(() => vi.fn())
 const mockGetShowdownSlot = vi.hoisted(() => vi.fn(() => 3))
 const mockFindBestSwitchIndex = vi.hoisted(() => vi.fn(() => 1))
+const mockResolveShowdownSlot = vi.hoisted(() => vi.fn(() => 3))
 
 vi.mock('@/logic/battle/orchestrator', () => ({
   showdownWorker: {}, // Truthy worker to trigger the showdown flow
@@ -19,7 +20,9 @@ vi.mock('@/logic/battle/orchestrator', () => ({
 
 vi.mock('@/logic/battle/showdownAdapter', () => ({
   getShowdownSlot: mockGetShowdownSlot,
-  swapShowdownOrder: vi.fn((arr) => arr)
+  swapActivePokemon: vi.fn((arr) => arr),
+  resolveShowdownSlot: mockResolveShowdownSlot,
+  resolveCurrentTeamOrder: vi.fn((_order, team) => team)
 }))
 
 vi.mock('@/logic/battle/ai/battleAI', () => ({
@@ -94,8 +97,7 @@ describe('NPC Counter Switching & Showdown Sync', () => {
     // 2. Should have selected index 1 (Alakazam) as the next enemy
     expect(activeBattle.value.enemy?.uid).toBe(nextEnemy2.uid)
 
-    const expectedOrder = enemyTeam.map(p => p.uid)
-    expect(mockGetShowdownSlot).toHaveBeenCalledWith(expectedOrder, nextEnemy2.uid)
+    expect(mockResolveShowdownSlot).toHaveBeenCalledWith(activeBattle.value, 'enemy', nextEnemy2.uid)
 
     // 4. Should have sent the switch command to Showdown worker
     expect(mockExecuteTurn).toHaveBeenCalledWith('', 'switch 3')

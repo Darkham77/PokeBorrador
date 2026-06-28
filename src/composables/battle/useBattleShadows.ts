@@ -10,7 +10,11 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { logger } from '@/logic/utils/logger'
 
-function resolveAnimatedKey(pokemonId: string | number | null | undefined, isBack = false): string | null {
+function resolveAnimatedKey(
+  pokemonId: string | number | null | undefined,
+  isBack = false,
+  gender?: string | null
+): string | null {
   if (!pokemonId) return null
   const strId = String(pokemonId).toLowerCase()
   const spriteNum = (POKEMON_SPRITE_IDS as Record<string, number | string>)[strId] || pokemonId
@@ -18,39 +22,45 @@ function resolveAnimatedKey(pokemonId: string | number | null | undefined, isBac
   if (!match) return null
   const numId = match[1]!
   const suffix = match[2]!
-  const backSuffix = isBack ? '_back' : ''
+  const isFemale = gender === 'F'
 
-  const cand = `${numId}i${suffix}`
-  if (ANIMATED_SPRITE_DATABASE[`${cand}${backSuffix}`]) {
-    return `${cand}${backSuffix}`
-  }
-  if (ANIMATED_SPRITE_DATABASE[cand]) {
-    return cand
-  }
-  
-  // Fallback to check candidates without 'i'
-  const rawCand = `${numId}${suffix}`
-  if (ANIMATED_SPRITE_DATABASE[`${rawCand}${backSuffix}`]) {
-    return `${rawCand}${backSuffix}`
-  }
-  if (ANIMATED_SPRITE_DATABASE[rawCand]) {
-    return rawCand
+  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`]
+  for (const cand of candidates) {
+    if (isBack) {
+      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) {
+        return `${cand}_f_back`
+      }
+      if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) {
+        return `${cand}_back`
+      }
+    } else {
+      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) {
+        return `${cand}_f`
+      }
+      if (ANIMATED_SPRITE_DATABASE[cand]) {
+        return cand
+      }
+    }
   }
 
   return null
 }
 
-function checkAnimated(pokemonId: string | null | undefined): boolean {
+function checkAnimated(pokemonId: string | null | undefined, gender?: string | null): boolean {
   if (!pokemonId) return false
-  return !!resolveAnimatedKey(pokemonId, false) || !!resolveAnimatedKey(pokemonId, true)
+  return !!resolveAnimatedKey(pokemonId, false, gender) || !!resolveAnimatedKey(pokemonId, true, gender)
 }
 
-function getFinalSpriteUrl(pokemon: { id: string | number; form?: string }, isShiny: boolean, isBack: boolean): string {
+function getFinalSpriteUrl(pokemon: { id: string | number; form?: string; gender?: string | null }, isShiny: boolean, isBack: boolean): string {
   const spriteId = pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
-  const isAnim = checkAnimated(spriteId)
+  const isAnim = checkAnimated(spriteId, pokemon.gender)
   const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim })
   if (isAnim && url) {
-    return url.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+    const key = resolveAnimatedKey(spriteId, isBack, pokemon.gender)
+    if (key) {
+      const filename = key.replace(/_back$/, '')
+      return url.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
+    }
   }
   return url
 }
@@ -81,9 +91,9 @@ export function useBattleShadows() {
   const getEffectiveSpriteId = (pokemon: { id: string | number; form?: string }): string =>
     pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
 
-  const getShadowWidth = (pokemon: { id: string | number; form?: string }, isBack: boolean): string => {
+  const getShadowWidth = (pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string => {
     const spriteId = getEffectiveSpriteId(pokemon)
-    const animKey = resolveAnimatedKey(spriteId, isBack) || resolveAnimatedKey(spriteId, !isBack)
+    const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
     const meta = animKey ? ANIMATED_SPRITE_DATABASE[animKey] : null
     const bodyRadius = meta?.bodyRadius ?? 0.4
     return `${bodyRadius * 250}%` // bodyRadius * 2.5 (representing radius + 25%)
@@ -134,7 +144,7 @@ export function useBattleShadows() {
 
     // Ocultar sombra si está en cualquier estado de transición de Poké Ball (energía)
     const isEnergyState = !!animState 
-    if (!visible || !data || data.hp <= 0 || isEnergyState) {
+    if (!visible || !data || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
       return
     }
@@ -173,7 +183,7 @@ export function useBattleShadows() {
 
     // Ocultar sombra durante transiciones de energía
     const isEnergyState = !!animState
-    if (!pokemon || pokemon.hp <= 0 || isEnergyState) {
+    if (!pokemon || isEnergyState) {
       if (shadowId) shadowStore.hideShadow(shadowId)
       return
     }

@@ -12,6 +12,7 @@ import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationPr
 import { useGameStore } from '@/stores/game'
 import { useProfileStore } from '@/stores/player/profile'
 import { supabase } from '@/logic/db/supabase'
+import { getItemName } from '@/data/inventory/items'
 
 function formatAbilityDescription(desc: string): string {
   const lines: string[] = []
@@ -196,6 +197,33 @@ export function useCombatantStatus(
           isAdminOnly: !isPlayerVal.value && !isIvScannerActive.value && isAdmin.value
         })
       }
+    }
+
+    // 0.5. Mochila/Inventario del NPC (Solo visible para admins/debug)
+    if (!isPlayerVal.value && isAdmin.value && battleStore.state?.enemyInventory) {
+      const inv = battleStore.state.enemyInventory;
+      const money = battleStore.state.enemyMoney ?? 0;
+      
+      const itemKeys = Object.keys(inv).filter(k => inv[k]! > 0);
+      let itemsListText = '';
+      if (itemKeys.length === 0) {
+        itemsListText = 'Mochila Vacía';
+      } else {
+        itemsListText = itemKeys.map(k => {
+          const qty = inv[k]!;
+          const name = getItemName(k);
+          return `• ${name} x${qty}`;
+        }).join('\n');
+      }
+
+      const level = battleStore.state.enemyMaxLevel ?? target.level;
+      const invText = `INVENTARIO DEL NPC (Lv. ${level}):\nPresupuesto restante: ₽${money}\n\nObjetos:\n${itemsListText}`;
+
+      list.push({
+        icon: '🎒',
+        text: invText,
+        isAdminOnly: true
+      });
     }
 
     // 1. Estados Propios del Pokémon

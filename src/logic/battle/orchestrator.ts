@@ -12,6 +12,7 @@ import type { UIStore, MapStore } from '@/types/system/stores'
 import { mapToShowdownSet } from './showdownAdapter.ts'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
+import { generateNPCInventory } from './trainerInventory.ts'
 
 export let showdownWorker: Worker | null = null;
 
@@ -19,24 +20,74 @@ export async function executeTurnInWorker(
   p1Choice: string, 
   p2Choice?: string,
   p1Hps?: number[],
-  p2Hps?: number[]
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null }> {
+  p2Hps?: number[],
+  p1Statuses?: string[],
+  p2Statuses?: string[],
+  p1Skip?: boolean,
+  p2Skip?: boolean
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice, p1Hps, p2Hps }
+    payload: { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip }
   })
   return new Promise((resolve, reject) => {
     if (!showdownWorker) return reject(new Error('showdownWorker is null'))
-    showdownWorker.onmessage = (event) => {
+    const handler = (event: MessageEvent) => {
       const { type, payload } = event.data
       if (type === 'TURN_SUCCESS') {
+        if (showdownWorker.removeEventListener) {
+          showdownWorker.removeEventListener('message', handler)
+        } else {
+          showdownWorker.onmessage = null
+        }
         resolve(payload)
       } else if (type === 'ERROR') {
-        reject(new Error(payload.message))
+        if (showdownWorker.removeEventListener) {
+          showdownWorker.removeEventListener('message', handler)
+        } else {
+          showdownWorker.onmessage = null
+        }
+        const errorMsg = payload.message || '';
+        const err = new Error(errorMsg);
+        if (errorMsg.includes('INVALID_CHOICE')) {
+          err.name = 'InvalidChoiceError';
+        }
+        reject(err);
       }
+    }
+    if (showdownWorker.addEventListener) {
+      showdownWorker.addEventListener('message', handler)
+    } else {
+      showdownWorker.onmessage = handler
+    }
+  })
+}
+
+export async function isPlayerTrappedInWorker(): Promise<boolean> {
+  if (!showdownWorker) return false
+  showdownWorker.postMessage({
+    type: 'CHECK_TRAPPED'
+  })
+  return new Promise((resolve) => {
+    if (!showdownWorker) return resolve(false)
+    const handler = (event: MessageEvent) => {
+      const { type, payload } = event.data
+      if (type === 'CHECK_TRAPPED_RESPONSE') {
+        if (showdownWorker.removeEventListener) {
+          showdownWorker.removeEventListener('message', handler)
+        } else {
+          showdownWorker.onmessage = null
+        }
+        resolve(!!payload.trapped)
+      }
+    }
+    if (showdownWorker.addEventListener) {
+      showdownWorker.addEventListener('message', handler)
+    } else {
+      showdownWorker.onmessage = handler
     }
   })
 }
@@ -121,6 +172,15 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   // Initial context values
   let rarity = 50
 
+  const maxEnemyLv = enemyTeam && enemyTeam.length > 0
+    ? Math.max(...enemyTeam.map(p => p?.level || 1))
+    : (finalEnemyPoke ? finalEnemyPoke.level : 1);
+  const npcInvResult = (isTrainer || isGym)
+    ? generateNPCInventory(maxEnemyLv, difficulty as 'easy' | 'normal' | 'hard', isGym, isRival || (battleOptions.isRival as boolean), trainerArchetype || (battleOptions.trainerArchetype as string))
+    : null;
+  const enemyInventory = npcInvResult?.inventory;
+  const enemyMoney = npcInvResult?.remainingMoney;
+
   ctx.activeBattle.value = {
     enemy: null, 
     player: null, 
@@ -128,6 +188,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialPlayer: playerPoke,
     _rewardCombatants: [],
     isGym, gymId, isTrainer, enemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
+    enemyInventory,
+    enemyMoney,
+    enemyMaxLevel: maxEnemyLv,
     trainerSprite: trainerSprite || (battleOptions.trainerSprite as string) || undefined,
     trainerArchetype: trainerArchetype || (battleOptions.trainerArchetype as string) || undefined,
     isRival: isRival || (battleOptions.isRival as boolean) || false,
@@ -337,6 +400,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
   // Reset activeBattle state fields if reusing object
   if (ctx.activeBattle.value) {
+    const { useMapStore } = await import('@/stores/map')
+    const mapStore = useMapStore() as unknown as MapStore
+    ctx.activeBattle.value.weather = { 
+      type: isGym ? 'none' : mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION), 
+      visual: isGym ? 'clear' : mapStore.currentWeather, 
+      turns: -1 
+    }
     ctx.activeBattle.value.over = false
     ctx.activeBattle.value.turnCount = 1
     ctx.activeBattle.value.turn = 'player'
@@ -360,10 +430,22 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       if (p) playerTeamList.unshift(p);
     }
 
+    // Reordenar el equipo del rival para que el Pokémon inicial (initialEnemy) esté en la primera posición.
+    const enemyTeamList = [...(ctx.activeBattle.value.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
+    if (initialEnemy) {
+      const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
+      if (initialEnemyIdx > 0) {
+        const [p] = enemyTeamList.splice(initialEnemyIdx, 1);
+        if (p) enemyTeamList.unshift(p);
+      }
+    }
+
     ctx.activeBattle.value.playerSideConditions = {}
     ctx.activeBattle.value.enemySideConditions = {}
     ctx.activeBattle.value.showdownPlayerTeamOrder = playerTeamList.map((p: Pokemon) => p.uid)
-    ctx.activeBattle.value.showdownEnemyTeamOrder = (ctx.activeBattle.value.enemyTeam || (initialEnemy ? [initialEnemy] : [])).filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
+    ctx.activeBattle.value.showdownEnemyTeamOrder = enemyTeamList.map((p: Pokemon) => p.uid)
+    ctx.activeBattle.value.initialPlayerTeamOrder = [...ctx.activeBattle.value.showdownPlayerTeamOrder]
+    ctx.activeBattle.value.initialEnemyTeamOrder = [...ctx.activeBattle.value.showdownEnemyTeamOrder]
   }
 
   // Reset stage variables, fainted sides and logs to prevent state leakages
@@ -388,7 +470,14 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     }
     const p1Team = playerTeamList.map(p => mapToShowdownSet(p));
     const p1Hps = playerTeamList.map(p => p.hp);
-    const enemyTeamList = (battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+    const enemyTeamList = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
+    if (initialEnemy) {
+      const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
+      if (initialEnemyIdx > 0) {
+        const [p] = enemyTeamList.splice(initialEnemyIdx, 1);
+        if (p) enemyTeamList.unshift(p);
+      }
+    }
     const p2Team = enemyTeamList.map(p => mapToShowdownSet(p));
     const p2Hps = enemyTeamList.map(p => p.hp);
     const initialWeatherOfficial = mapVisualToOfficialWeather(battleState?.weather?.type, ACTIVE_GENERATION);
@@ -406,12 +495,22 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       }
     });
 
-    showdownWorker.onmessage = async (e) => {
+    const initHandler = async (e: MessageEvent) => {
       const { type: responseType, payload: responsePayload } = e.data;
       if (responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
+        if (showdownWorker.removeEventListener) {
+          showdownWorker.removeEventListener('message', initHandler);
+        } else {
+          showdownWorker.onmessage = null;
+        }
       } else if (responseType === 'ERROR') {
         logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${responsePayload.message}`);
+        if (showdownWorker.removeEventListener) {
+          showdownWorker.removeEventListener('message', initHandler);
+        } else {
+          showdownWorker.onmessage = null;
+        }
         const { useErrorStore } = await import('@/stores/errorStore');
         useErrorStore().setError(new Error(responsePayload.message), { 
           type: 'Simulator Initialization Error', 
@@ -419,6 +518,11 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         });
       }
     };
+    if (showdownWorker.addEventListener) {
+      showdownWorker.addEventListener('message', initHandler);
+    } else {
+      showdownWorker.onmessage = initHandler;
+    }
   }
 
   // Clear volatile status on all player team members and the initial enemy
@@ -568,33 +672,65 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   if (isTrainer || isGym) await ctx.gs.scheduleSave()
 
   // Team Rocket: Robo Rápido
+  // Team Rocket: Robo Rápido
   if (ctx.gs.state.playerClass === 'rocket' && isTrainer && !isGym) {
-    const { calculateQuickStealChance } = await import('@/logic/player/classMath');
+    const { calculateQuickStealChance, calculateMaxNpcRobberyLimit } = await import('@/logic/player/classMath');
     const level = ctx.classStore.classLevel;
     const stealChance = calculateQuickStealChance(level);
     if (Math.random() < stealChance) {
-      // Intentar robar
-      const criminalItems = ['potion', 'super_potion', 'revive', 'full_heal', 'pokeball', 'great_ball'];
-      const stolenItem = criminalItems[Math.floor(Math.random() * criminalItems.length)];
-      if (stolenItem) {
-        
-        // Agregar al inventario
-        if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
-        ctx.gs.state.inventory[stolenItem] = (ctx.gs.state.inventory[stolenItem] || 0) + 1;
-        
-        // Criminalidad +10
-        ctx.classStore.addCriminality(10);
-        
-        const { getItemById } = await import('@/data/inventory/items');
-        const itemDef = getItemById(stolenItem);
-        const itemName = itemDef?.name || stolenItem;
-        
-        // Mensaje y Notificación
-        ctx.addLog(`¡Robo Rápido exitoso! Le robaste un ${itemName} a tu oponente.`, 'log-success', 'player');
-        ctx.uiStore.notify(`¡Robaste un ${itemName}! (+10 criminalidad)`, '🏴‍☠️');
-        
-        // Sonido retro de robo
-        ctx.audio.play('steal');
+      const maxLimit = calculateMaxNpcRobberyLimit(level);
+      const enemyInv = ctx.activeBattle.value?.enemyInventory || {};
+      const { getItemById } = await import('@/data/inventory/items');
+
+      const availableItems = Object.keys(enemyInv).filter(k => (enemyInv[k] || 0) > 0);
+      if (availableItems.length > 0) {
+        let stolenTotalCost = 0;
+        const stolenItemsList: { id: string; qty: number; name: string }[] = [];
+
+        // Mezclar para aleatoriedad
+        const shuffled = [...availableItems].sort(() => Math.random() - 0.5);
+        for (const itemId of shuffled) {
+          if (stolenTotalCost >= maxLimit) break;
+
+          let itemDef = null;
+          try {
+            itemDef = getItemById(itemId);
+          } catch {
+            continue;
+          }
+          const itemPrice = itemDef?.price || 100;
+          const availableQty = enemyInv[itemId] || 0;
+
+          const remainingBudget = maxLimit - stolenTotalCost;
+          const maxQtyToSteal = Math.floor(remainingBudget / itemPrice);
+
+          if (maxQtyToSteal >= 1 && availableQty > 0) {
+            const qtyAllowed = Math.min(availableQty, maxQtyToSteal);
+            const qtyToSteal = Math.floor(Math.random() * qtyAllowed) + 1;
+
+            // Decrementar del inventario del NPC
+            enemyInv[itemId] = availableQty - qtyToSteal;
+            if (enemyInv[itemId] <= 0) {
+              delete enemyInv[itemId];
+            }
+
+            // Agregar al inventario del jugador
+            if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
+            ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + qtyToSteal;
+
+            stolenTotalCost += qtyToSteal * itemPrice;
+            stolenItemsList.push({ id: itemId, qty: qtyToSteal, name: itemDef?.name || itemId });
+          }
+        }
+
+        if (stolenItemsList.length > 0) {
+          ctx.classStore.addCriminality(10);
+
+          const itemsText = stolenItemsList.map(item => `${item.name} x${item.qty}`).join(', ');
+          ctx.addLog(`¡Robo Rápido exitoso! Le robaste ${itemsText} a tu oponente.`, 'log-success', 'player');
+          ctx.uiStore.notify(`¡Robaste ${itemsText}! (+10 criminalidad)`, '🏴‍☠️');
+          ctx.audio.play('steal');
+        }
       }
     }
   }
@@ -655,6 +791,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
               playerInventory[itemId] = availableQty - qtyToSteal;
               stolenItems[itemId] = (stolenItems[itemId] || 0) + qtyToSteal;
               stolenTotalCost += qtyToSteal * itemPrice;
+              // Agregar al inventario del NPC para que pueda usarlo
+              if (ctx.activeBattle.value) {
+                if (!ctx.activeBattle.value.enemyInventory) {
+                  ctx.activeBattle.value.enemyInventory = {};
+                }
+                ctx.activeBattle.value.enemyInventory[itemId] = (ctx.activeBattle.value.enemyInventory[itemId] || 0) + qtyToSteal;
+              }
             }
           }
         }

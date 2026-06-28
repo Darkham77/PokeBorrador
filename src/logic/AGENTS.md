@@ -12,6 +12,9 @@ Logic Developers / Game Designers.
 - Complete separation of calculations from visual code (Pure Modules Pattern).
 - **Asset ID Immutability**: Asset/item IDs MUST pass through the system without transformation (no `.toLowerCase()`, `.replace(/_/g, '')`). The asset service resolves by exact ID. If an ID arrives malformed, throw an explicit `Error`.
 - **No Silent Fallbacks**: In capture/combat animations requiring a valid asset ID (e.g., Pokéball), hardcoded fallbacks (`ballId = 'pokeball'`) are STRICTLY FORBIDDEN. Always throw a descriptive `Error` so the root cause is visible.
+- **Thread-safe Worker Messages**: Always use `addEventListener` / `removeEventListener` when communicating asynchronously with `showdownWorker`. Direct `onmessage` assignment overrides are strictly prohibited as they destroy concurrent event handlers and cause race conditions. For test runner mock compatibility (where `addEventListener` might be missing), provide a fallback check: `if (showdownWorker.addEventListener) { ... } else { showdownWorker.onmessage = handler }`.
+- **Showdown Trapping Mechanics**: In Gen 4 / customgame formats without Team Preview, Showdown's `activeRequest` does not set `trapped: true` for Arena Trap/Shadow Tag. Instead, it sets `maybeTrapped: true`. Client-side trapping checks must verify both `trapped` and `maybeTrapped`.
+- **Disabled Move NPC AI Checks**: The enemy AI decision-making logic (`decideEnemyMove`) must filter out any moves that match `enemy.disabledMove` (e.g., from Disable or Cursed Body) to prevent selecting disabled moves and crashing the battle engine with `INVALID_CHOICE`.
 
 ## Work Guidance
 
@@ -27,11 +30,31 @@ Logic Developers / Game Designers.
 - **Struggle Choice Resolution**: In `@pkmn/sim` battles, when all move PP is depleted, pass `'default'` as the choice to execute native Struggle.
 - **Double KO Sequence Order**: In Double KO scenarios, always trigger and await the enemy's faint animation before the player's faint sequence to prevent premature FSM exits and UI animation cutoffs.
 - **Showdown Team Preview Format Constraint**: When configuring native `@pkmn/sim` battles, the `!Team Preview` rule filter must only be appended for Gen 5+ formats. Appending it for Gen 1-4 throws a fatal simulator rule error because Team Preview does not exist in those generations.
+- **Map Eligibility Centralization**: When a boolean condition about a map location is needed in ≥2 places, centralize it in a pure helper in `src/logic/map/` instead of duplicating conditions.
+- **Shared NPC Chance Helpers**: When multiple views need encounter probabilities, implement a single pure helper (e.g. `getNpcEncounterChances()` in `weatherUtils.ts`) returning 0-100 scale percentages.
+- **Centralized Formatters**: All numeric formatting (currency, suffixes) must use `src/logic/utils/formatters.ts`. Never call `toLocaleString()` directly for currency; use `formatCurrency()`.
+- **Showdown Generation Centralization**: Never hardcode the target generation number. Always import `ACTIVE_GENERATION` from `@/data/system/constants` for easy upgrades.
+- **Centralized Audio Play API**: Never invoke dynamic sound methods directly on `audioStore` (like `audioStore.sentMsg()`). Always use the central method `audioStore.play('soundName')`.
+- **Dynamic Move Coverage Validation**: Any new moves with special effects added to `POKEMON_DB` must be mapped to valid action handlers in `ActionRegistry`. This is validated at build time via `actionRegistry.spec.ts`.
 
 ## Verification
 
 - Run `npm run test:node` using the native Node.js test runner for pure mathematical logic.
 - Run `npm run audit:full` to verify type integrity and avoid any `any` usage.
+
+## Reference Manuals
+
+- [battle_mechanics_manual.md](../../.agents/skills/project-standards/references/battle/battle_mechanics_manual.md): Core battle engine mechanics and math formulas.
+- [game_mechanics_manual.md](../../.agents/skills/project-standards/references/core/game_mechanics_manual.md): Game loops, stats, and states.
+- [game_formulas_manual.md](../../.agents/skills/project-standards/references/core/game_formulas_manual.md): Formulas reference sheet.
+- [time_system_manual.md](../../.agents/skills/project-standards/references/core/time_system_manual.md): Cycles, weather, and seasonal timers.
+- [evolution_manual.md](../../.agents/skills/project-standards/references/systems/evolution_manual.md): Evolution system triggers.
+- [encounter_manual.md](../../.agents/skills/project-standards/references/systems/encounter_manual.md): Wild encounters multipliers.
+- [gym_system_manual.md](../../.agents/skills/project-standards/references/systems/gym_system_manual.md): Gym leaders and rematch formulas.
+- [trade_social_manual.md](../../.agents/skills/project-standards/references/systems/trade_social_manual.md): Trading profiles and social chat structures.
+- [spawn_grid_manual.md](../../.agents/skills/project-standards/references/systems/spawn_grid_manual.md): Map spawns and grids coordinates.
+- [combat_camera_manual.md](../../.agents/skills/project-standards/references/battle/combat_camera_manual.md): Viewports and battle camera triggers.
+- [animated_sprites_manual.md](../../.agents/skills/project-standards/references/technical/animated_sprites_manual.md): Sprite database structure and scales.
 
 ## Child DOX Index
 

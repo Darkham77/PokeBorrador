@@ -127,3 +127,85 @@ describe('Battle Store - Struggle Recoil Integration', () => {
   })
 })
 
+describe('Battle Store - Weather Reset', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    // Mock useMapStore
+    const { useMapStore } = await import('@/stores/map')
+    useMapStore().globalWeather = 'clear'
+
+    // Mock global Worker
+    class MockWorker {
+      postMessage() {}
+      terminate() {}
+      addEventListener() {}
+      removeEventListener() {}
+    }
+    (globalThis as unknown as Record<string, unknown>).Worker = MockWorker
+  })
+
+  it('should reset temporary combat weather to natural map weather when starting a battle', async () => {
+    const { initBattleSequence } = await import('@/logic/battle/orchestrator')
+    const { ref } = await import('vue')
+
+    const activeBattleVal = {
+      weather: { type: 'rain', visual: 'rain', turns: 5 }, // Active move weather from prev battle
+      isGym: false,
+      enemyTeam: [],
+      over: false
+    }
+    const activeBattleRef = ref(activeBattleVal)
+
+    const ctx = {
+      activeBattle: activeBattleRef,
+      playerStages: ref({}),
+      enemyStages: ref({}),
+      faintedSides: ref(new Set()),
+      clearLogs: vi.fn(),
+      clearVolatileStatus: vi.fn(),
+      isIntroAnimating: ref(false),
+      audio: { play: vi.fn() },
+      animations: {
+        triggerTrainerEntry: vi.fn(),
+        triggerTrainerDialogs: vi.fn(),
+        triggerTrainerRetreat: vi.fn(),
+        handleReleaseRequest: vi.fn(),
+        handleCatchRequest: vi.fn()
+      },
+      exitingPlayer: ref(null),
+      exitingEnemy: ref(null),
+      attackerSide: ref(null),
+      activeMove: ref(null),
+      addLog: vi.fn(),
+      gs: { state: { team: [{ uid: 'p1', moves: [] }], playerClass: 'trainer' }, scheduleSave: vi.fn() },
+      fsm: { transition: vi.fn(), currentState: ref(''), currentSubState: ref('') },
+      BATTLE_STATES: {
+        INITIALIZING: 'INITIALIZING',
+        FIRST_INTRO: 'FIRST_INTRO',
+        REORDER_TEAM: 'REORDER_TEAM'
+      },
+      BATTLE_SUBSTATES: {
+        PRELOAD_FINAL_COORDS: 'PRELOAD_FINAL_COORDS',
+        ENTRY_ANIM: 'ENTRY_ANIM',
+        POKEMON_CALL: 'POKEMON_CALL',
+        TRAINER_ENCOUNTER: 'TRAINER_ENCOUNTER',
+        RETREAT_AND_FADEOUT: 'RETREAT_AND_FADEOUT',
+        ENCOUNTER_TYPE_CHECK: 'ENCOUNTER_TYPE_CHECK',
+        TRAINER_ENTRY: 'TRAINER_ENTRY',
+        SHOW_DIALOGS: 'SHOW_DIALOGS'
+      }
+    } as unknown as import('@/types/battle/battleContext').BattleContext
+
+    await initBattleSequence(ctx, {
+      initialPlayer: { uid: 'p1', moves: [] } as unknown as import('@/types/pokemon/pokemon').Pokemon,
+      initialEnemy: { uid: 'e1', moves: [] } as unknown as import('@/types/pokemon/pokemon').Pokemon
+    })
+
+    // Should reset turns to -1 (natural weather)
+    expect(activeBattleRef.value.weather.turns).toBe(-1)
+    expect(activeBattleRef.value.weather.type).toBe('none')
+    expect(activeBattleRef.value.weather.visual).toBe('clear')
+  })
+})
+
+

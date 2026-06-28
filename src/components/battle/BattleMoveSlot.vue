@@ -104,6 +104,19 @@ const isDisabled = computed(() => {
     if (p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
       return true
     }
+
+    // Last Resort (Última Baza) requirements check
+    if (props.move.id === 'lastresort') {
+      const allMoves = p.moves.filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
+      if (allMoves.length <= 1) {
+        return true
+      }
+      const otherMoveIds = allMoves.filter(m => m.id !== 'lastresort' && !!m.id).map(m => m.id as string)
+      const hasUnused = otherMoveIds.some(id => !battleStore.playerUsedMoves.includes(id))
+      if (hasUnused) {
+        return true
+      }
+    }
   }
   return false
 })

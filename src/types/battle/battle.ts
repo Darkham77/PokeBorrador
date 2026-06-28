@@ -61,6 +61,10 @@ export interface BattleState {
   isArchaeology?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
+  playerUsedItem?: boolean;
+  enemyInventory?: Record<string, number>;
+  enemyMoney?: number;
+  enemyMaxLevel?: number;
   rewardTM?: string;
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
@@ -75,12 +79,15 @@ export interface BattleState {
   quote?: string;
   wasSearching?: boolean;
   cannotEscape?: boolean;
+  isBatonPass?: boolean;
   stolenResources?: {
     money: number;
     items: Record<string, number>;
   };
   showdownPlayerTeamOrder?: string[];
   showdownEnemyTeamOrder?: string[];
+  initialPlayerTeamOrder?: string[];
+  initialEnemyTeamOrder?: string[];
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

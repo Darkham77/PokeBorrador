@@ -110,7 +110,8 @@ function startSlotAnimations(index: number) {
     borderColor: 'rgba(34, 197, 94, 0.4)',
     boxShadow: '0 0 20px rgba(34, 197, 94, 0.2)',
     duration: 0.5,
-    ease: 'power3.out'
+    ease: 'power3.out',
+    force3D: false
   }))
 
   if (aura) {
@@ -121,13 +122,14 @@ function startSlotAnimations(index: number) {
       duration: 0.75,
       yoyo: true,
       repeat: -1,
-      ease: 'sine.inOut'
+      ease: 'sine.inOut',
+      force3D: false
     }))
   }
 
   if (sprite) {
     gsap.set(sprite, {
-      filter: 'brightness(1.2) drop-shadow(0 0 10px rgba(255, 255, 255, 0.6))'
+      filter: 'brightness(1.2)'
     })
     tweens.push(gsap.to(sprite, {
       scale: 1.15,
@@ -135,7 +137,8 @@ function startSlotAnimations(index: number) {
       duration: 0.6,
       yoyo: true,
       repeat: -1,
-      ease: 'sine.inOut'
+      ease: 'sine.inOut',
+      force3D: false
     }))
   }
 

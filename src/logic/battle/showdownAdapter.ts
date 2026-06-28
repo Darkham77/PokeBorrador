@@ -1,7 +1,7 @@
 import type { PokemonSet, ID } from '@pkmn/sim';
-import type { Pokemon as GamePokemon } from '@/types/pokemon/pokemon';
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
+import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
+import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 
 /**
  * Retorna el ID de formato oficial de Pokémon Showdown.
@@ -19,8 +19,8 @@ export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
  */
 export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   // Traducir habilidad y naturaleza (por defecto vacías o neutras si no hay coincidencia)
-  const abilityKey = poke.ability ? normalizeKey(poke.ability) : 'overgrow';
-  const natureKey = poke.nature ? normalizeKey(poke.nature) : 'serious';
+  const abilityKey = poke.ability || 'overgrow';
+  const natureKey = poke.nature || 'serious';
 
   // Filtrar movimientos no nulos y mapear IDs
   const moves = poke.moves
@@ -69,10 +69,6 @@ function resolveShowdownSpecies(raw: string | undefined): string {
   return raw;
 }
 
-function normalizeKey(str: string): string {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
 /**
  * Retorna el slot de Showdown (1-indexed, de 1 a 6) para un Pokémon del equipo
  */
@@ -97,17 +93,57 @@ export function getShowdownSlot(
   }
 }
 
-export function swapShowdownOrder(currentOrder: string[], targetUid: string): string[] {
+export function swapActivePokemon(currentOrder: string[], activeUid: string, activeIndex: number = 0): string[] {
   const nextOrder = [...currentOrder];
-  const idx = nextOrder.indexOf(targetUid);
-  if (idx > 0) {
-    const active = nextOrder[0];
+  const idx = nextOrder.indexOf(activeUid);
+  if (idx !== -1 && idx !== activeIndex) {
+    const active = nextOrder[activeIndex];
     const target = nextOrder[idx];
     if (active !== undefined && target !== undefined) {
-      nextOrder[0] = target;
+      nextOrder[activeIndex] = target;
       nextOrder[idx] = active;
     }
   }
   return nextOrder;
 }
+
+export function resolveCurrentTeamOrder(
+  active: {
+    showdownPlayerTeamOrder?: string[] | null;
+    initialPlayerTeamOrder?: string[] | null;
+    playerTeam?: Array<GamePokemon | null> | null;
+    showdownEnemyTeamOrder?: string[] | null;
+    initialEnemyTeamOrder?: string[] | null;
+    enemyTeam?: Array<GamePokemon | null> | null;
+  },
+  side: 'player' | 'enemy',
+  fallbackTeam: Array<GamePokemon | null> = []
+): string[] {
+  if (side === 'player') {
+    const list = active.showdownPlayerTeamOrder || active.initialPlayerTeamOrder || active.playerTeam || fallbackTeam;
+    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
+  } else {
+    const list = active.showdownEnemyTeamOrder || active.initialEnemyTeamOrder || active.enemyTeam || fallbackTeam;
+    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
+  }
+}
+
+export function resolveShowdownSlot(
+  active: {
+    showdownPlayerTeamOrder?: string[] | null;
+    initialPlayerTeamOrder?: string[] | null;
+    playerTeam?: Array<GamePokemon | null> | null;
+    showdownEnemyTeamOrder?: string[] | null;
+    initialEnemyTeamOrder?: string[] | null;
+    enemyTeam?: Array<GamePokemon | null> | null;
+  },
+  side: 'player' | 'enemy',
+  pokemonUid: string,
+  fallbackTeam: Array<GamePokemon | null> = []
+): number {
+  const order = resolveCurrentTeamOrder(active, side, fallbackTeam);
+  return getShowdownSlot(order, pokemonUid);
+}
+
+
 

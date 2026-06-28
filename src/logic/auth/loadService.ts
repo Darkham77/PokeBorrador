@@ -2,7 +2,7 @@
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { TRAINER_RANKS } from '@/data/player/trainer';
 
-import { validateAndSanitize } from './saveService.ts';
+import { validateAndSanitize, setLastLoadedSaveTime } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
@@ -185,6 +185,25 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   
   // 4. Backfill and Deep Normalization (Legacy Parity)
   const normalized = normalizeData(sanitized as unknown as GameState);
+
+  // Determinar la fecha de carga exacta de esta sesión para control de precedencia
+  let loadedTime = 0;
+  if (finalSaveData === localData) {
+    loadedTime = (localData as unknown as { _last_updated?: number })._last_updated || 0;
+  } else if (cloudSaveRow) {
+    if (cloudSaveRow.updated_at) {
+      try {
+        let dateStr = cloudSaveRow.updated_at;
+        if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
+          dateStr = dateStr.replace(' ', 'T') + 'Z';
+        }
+        loadedTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
+      } catch (_) {
+        loadedTime = Date.parse(cloudSaveRow.updated_at) || 0;
+      }
+    }
+  }
+  setLastLoadedSaveTime(loadedTime);
 
   return {
     data: normalized,
