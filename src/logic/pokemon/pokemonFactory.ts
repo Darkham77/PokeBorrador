@@ -62,10 +62,10 @@ export function getExpNeeded(level: number): number {
   return getExpNeededPure(level);
 }
 
-export function recalcPokemonStats(p: Pokemon): void {
+export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
   
-  const base = pokemonDataProvider.getPokemonData(p.id);
+  const base = pokemonDataProvider.getPokemonData(p.id, bypassWhitelist);
   if (!base) return;
   
   const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
@@ -109,18 +109,18 @@ export function recalcPokemonStats(p: Pokemon): void {
     }
   });
 
-  sanitizePokemon(p);
+  sanitizePokemon(p, bypassWhitelist);
 }
 
 /**
  * Sanitizes Pokémon data to ensure all mandatory battle fields are present.
  */
-export function sanitizePokemon(p: Pokemon): void {
+export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
   if (!p.volatileCounters) p.volatileCounters = {};
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
-  const base = pokemonDataProvider.getPokemonData(p.id);
+  const base = pokemonDataProvider.getPokemonData(p.id, bypassWhitelist);
   if (base) {
     // Si es Castform y tiene una forma activa diferente de normal, no sobreescribir su tipo con el base de la base de datos (que es siempre normal)
     const isCastformForm = p.id === 'castform' && p.form && p.form !== 'normal';
@@ -436,7 +436,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
-    moves: getMovesAtLevel(id, level) as PokemonMove[],
+    moves: getMovesAtLevel(id, level, bypass) as PokemonMove[],
     status: null, sleepTurns: 0, friendship: 70, vigor, maxVigor,
     heldItem,
     nickname: null,
@@ -446,9 +446,9 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 
-  recalcPokemonStats(p);
+  recalcPokemonStats(p, bypass);
   p.hp = p.maxHp;
-  sanitizePokemon(p);
+  sanitizePokemon(p, bypass);
   return p;
 }
 

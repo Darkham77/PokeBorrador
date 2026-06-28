@@ -16,6 +16,13 @@ vi.mock('@/logic/db/supabase', async () => {
   }
 })
 
+vi.mock('@/stores/game', () => ({
+  useGameStore: () => ({
+    isReady: false,
+    save: vi.fn()
+  })
+}))
+
 setupLocalStorageMock()
 
 describe('Auth Store', () => {
@@ -69,7 +76,7 @@ describe('Auth Store', () => {
     auth.user = { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as NonNullable<typeof auth.user>
     auth.sessionConflict = true
     
-    await auth.logout()
+    await auth.logout(true)
     
     expect(auth.user).toBeNull()
     expect(auth.sessionConflict).toBe(false)

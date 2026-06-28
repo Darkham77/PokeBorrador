@@ -14,25 +14,9 @@ const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS
 const shadowStore = useCombatShadowStore()
 const shadow = computed(() => shadowStore.activeShadows.get(props.shadowId))
 
-/**
- * Generates the standard low-resolution pixel shadow.
- * Using a small canvas to ensure pixelation and retro feel.
- */
-const generatePixelShadow = (w = SHADOW_WIDTH, h = SHADOW_HEIGHT) => {
-  if (typeof document === 'undefined') return ''
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return ''
-  ctx.fillStyle = 'Rgba(0, 0, 0, 0.35)'
-  ctx.beginPath()
-  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
-  ctx.fill()
-  return canvas.toDataURL('image/png')
-}
+import { generatePixelShadow } from '@/logic/combat/shadowHelpers'
 
-const shadowUrl = generatePixelShadow()
+const shadowUrl = generatePixelShadow(SHADOW_WIDTH, SHADOW_HEIGHT)
 
 const shadowStyle = computed(() => {
   if (!shadow.value) return { opacity: 0 }
@@ -73,7 +57,10 @@ const shadowStyle = computed(() => {
   top: var(--shadow-y, 90%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  @include pixelated;
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
   transform-origin: center center;
   
   will-change: opacity;

@@ -127,7 +127,8 @@ export function getEffectiveStatPure(
   _dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
   isGym: boolean = false
 ): number {
-  const mechWeather = isGym ? 'clear' : getMechWeather(weather?.type);
+  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechWeather(weather?.type);
 
   let baseVal = (pokemon[statKey] as number) || 10;
   if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk ?? 10;
@@ -151,8 +152,8 @@ export function getEffectiveStatPure(
   let val = Math.floor(baseVal * stageMult);
 
   const ab = pokemon.ability;
-  const isSun  = !isGym && (mechWeather === WEATHER_KEYS.SUN || (mechWeather === WEATHER_KEYS.CLEAR && (_dayCycle === 'day' || _dayCycle === 'morning')));
-  const isRain  = !isGym && mechWeather === WEATHER_KEYS.RAIN;
+  const isSun  = (!isGym || isMoveWeather) && (mechWeather === WEATHER_KEYS.SUN || (mechWeather === WEATHER_KEYS.CLEAR && !isGym && (_dayCycle === 'day' || _dayCycle === 'morning')));
+  const isRain  = (!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.RAIN;
 
 
   if (statKey === 'atk') {
@@ -265,7 +266,8 @@ export function calculateDamagePure(
   if (attacker.ability === 'adaptability' && stab > 1) stab = 2;
 
   let weatherMult = 1;
-  if (!isGym && weather && weather.turns !== 0) {
+  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
+  if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
     if (mechWeather === WEATHER_KEYS.SUN) {
       if (moveType === 'fire')  weatherMult = 1.5;
       if (moveType === 'water') {
@@ -298,7 +300,7 @@ export function calculateDamagePure(
 
   // Delta Stream (strong_winds) remueve debilidades del tipo volador
   let finalEff = eff;
-  const isStrongWinds = !isGym && weather && weather.turns !== 0 && getMechWeather(weather.type) === 'clear' && weather.type === 'strong_winds';
+  const isStrongWinds = (!isGym || isMoveWeather) && weather && weather.turns !== 0 && getMechWeather(weather.type) === 'clear' && weather.type === 'strong_winds';
   if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
     // Si el movimiento es super efectivo contra el defensor y este es Volador, removemos la debilidad
     if (finalEff > 1) {
@@ -324,7 +326,7 @@ export function calculateDamagePure(
   if (isSolarBeam && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_KEYS.SUN;
     const isClear = mechWeather === WEATHER_KEYS.CLEAR;
-    if (!isGym && !isSun && !isClear) {
+    if ((!isGym || isMoveWeather) && !isSun && !isClear) {
       weatherMult *= 0.5;
     }
   }

@@ -31,15 +31,37 @@ export async function generateMigrations() {
     return;
   }
 
-  // 1. Get all SQL files
+  // 1. Get all SQL files (excluding .sqlite.sql which are paired as companion sql)
   const list = await fs.readdir(MIGRATIONS_DIR);
   const files = list
-    .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema'))
+    .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
     .sort((a, b) => a.localeCompare(b));
 
   const migrations = await Promise.all(files.map(async (filename) => {
-    const id = filename.replace('.sql', '');
+    const id = filename.replace(/\.sql$/, '');
     const content = await fs.readFile(path.join(MIGRATIONS_DIR, filename), 'utf-8');
+
+    // Check for SQLite companion file
+    const sqliteFilename = filename.replace(/\.sql$/, '.sqlite.sql');
+    let sqliteSql: string | undefined = undefined;
+    try {
+      const sqliteContent = await fs.readFile(path.join(MIGRATIONS_DIR, sqliteFilename), 'utf-8');
+      sqliteSql = sqliteContent.split('\n')
+        .map(line => {
+          const commentIndex = line.indexOf('--');
+          if (commentIndex !== -1) {
+            if (line.includes('check:')) return '';
+            return line.substring(0, commentIndex);
+          }
+          return line;
+        })
+        .filter(line => line.trim().length > 0)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    } catch {
+      // SQLite companion does not exist, which is normal
+    }
 
     // Parse metadata from comments
     // Example: -- check: { "table": "profiles", "column": "role" }
@@ -73,6 +95,7 @@ export async function generateMigrations() {
     return {
       id,
       sql: sqlLines,
+      sqlite_sql: sqliteSql,
       check
     };
   }));

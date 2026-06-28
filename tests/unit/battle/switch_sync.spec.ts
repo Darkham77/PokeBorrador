@@ -17,7 +17,8 @@ vi.mock('@/logic/battle/orchestrator', () => ({
   executeTurnInWorker: vi.fn(async (p1Choice: string, p2Choice?: string) => {
     mockWorker.postMessage({ type: 'EXECUTE_TURN', payload: { p1Choice, p2Choice } })
     return { logs: [], isOver: false, winner: null }
-  })
+  }),
+  isPlayerTrappedInWorker: vi.fn(async () => false)
 }))
 
 // Mock de typeEngine para getCombinedEffectiveness
@@ -139,5 +140,33 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
         p1Choice: 'switch 2'
       }
     })
+  })
+
+  it('should restore player active pokemon and index if worker throws error during switch', async () => {
+    const { ctx, p1 } = createMockContext()
+    
+    const { executeTurnInWorker } = await import('@/logic/battle/orchestrator')
+    vi.mocked(executeTurnInWorker).mockRejectedValueOnce(new Error('INVALID_CHOICE'))
+
+    await expect(executeSwitch(ctx, 1, false)).rejects.toThrow('INVALID_CHOICE')
+
+    expect(ctx.activeBattle.value?.player!.uid).toBe(p1.uid)
+    expect(ctx.activeBattle.value?.playerTeamIndex).toBe(0)
+  })
+
+  it('should abort switch early and notify player if trapped by Arena Trap/Shadow Tag', async () => {
+    const { ctx, p1 } = createMockContext()
+    
+    const { isPlayerTrappedInWorker } = await import('@/logic/battle/orchestrator')
+    vi.mocked(isPlayerTrappedInWorker).mockResolvedValueOnce(true)
+
+    const transitionSpy = vi.spyOn(ctx.fsm, 'transition')
+
+    await executeSwitch(ctx, 1, false)
+
+    // Verify it did not transition to REORDER_TEAM
+    expect(transitionSpy).not.toHaveBeenCalledWith('REORDER_TEAM')
+    // Active player is still p1
+    expect(ctx.activeBattle.value?.player!.uid).toBe(p1.uid)
   })
 })

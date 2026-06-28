@@ -203,8 +203,14 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
     case ASSET_TYPES.FX:
       return resolveAsset(`/assets/fx/${id}.webp`);
 
-    case ASSET_TYPES.BANNER:
-      return resolveAsset(`/assets/ui/banners/${id}${extension}`);
+    case ASSET_TYPES.BANNER: {
+      const idStr = String(id);
+      if (idStr.startsWith('pokecenter_')) {
+        const cleanId = idStr.replace('pokecenter_', '');
+        return resolveAsset(`/assets/ui/pokecenter/${cleanId}${extension}`);
+      }
+      return resolveAsset(`/assets/ui/events/${idStr}${extension}`);
+    }
 
     case ASSET_TYPES.BATTLE_BG:
       return resolveAsset(`/assets/maps_battle/${id}${extension}`);

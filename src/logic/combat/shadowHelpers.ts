@@ -1,6 +1,20 @@
 import { gsap } from 'gsap'
 import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
 
+export function generatePixelShadow(w = 10, h = 7): string {
+  if (typeof document === 'undefined') return ''
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return ''
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+  ctx.beginPath()
+  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  return canvas.toDataURL('image/png')
+}
+
 export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY: number } {
   let dbKey = spriteUrl || ''
   const base = import.meta.env.BASE_URL || '/'

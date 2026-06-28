@@ -225,3 +225,44 @@
     }
   }
 }
+
+/* --- RIVAL SPECIAL PRESENTATION ALERT --- */
+.rival-alert-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-base) + 100);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rival-alert-flicker {
+  position: absolute;
+  inset: 0;
+  background: var(--white, #ffffff);
+  opacity: 0;
+}
+
+.rival-alert-exclamation {
+  position: relative;
+  @include pixelated;
+  font-size: 120px;
+  font-weight: bold;
+  color: #ff3b30;
+  text-shadow: 0 0 20px Rgba(255, 59, 48, 0.8), 4px 4px 0px #000;
+  opacity: 0;
+  transform: Scale(0);
+}
+
+.trainer-shadow {
+  position: absolute;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+  pointer-events: none;
+}
+

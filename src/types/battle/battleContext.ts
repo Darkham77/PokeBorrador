@@ -51,6 +51,7 @@ export interface BattleContext {
   initBattle: () => Promise<void>;
   
   animations?: {
+    seats?: import('vue').Ref<Record<string, import('@/composables/battle/useBattleSeats').SeatState>>;
     triggerSearchEncounter: () => Promise<void>;
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;

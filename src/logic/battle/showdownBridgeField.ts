@@ -52,6 +52,13 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
         if (cleanEffect === 'confusion') {
           target.volatileCounters['confusion'] = 1;
           delete target.volatileCounters['lockedmove'];
+        } else if (cleanEffect === 'disable') {
+          const moveName = parts[4] || '';
+          const moveId = moveName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const moveData = pokemonDataProvider.getMoveData(moveId);
+          const translatedName = moveData?.name || moveName;
+          target.disabledMove = { id: moveId, name: translatedName } as any;
+          target.disabledTurns = 4;
         } else {
           let isLockedEffect = cleanEffect === 'lockedmove';
           if (!isLockedEffect) {
@@ -74,6 +81,9 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
         if (target.volatileCounters) {
           if (cleanEffect === 'confusion') {
             delete target.volatileCounters['confusion'];
+          } else if (cleanEffect === 'disable') {
+            target.disabledMove = null;
+            target.disabledTurns = 0;
           } else {
             let isLockedEffect = cleanEffect === 'lockedmove';
             if (!isLockedEffect) {

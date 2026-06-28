@@ -13,6 +13,11 @@ import type { DBRouter } from '@/logic/db/dbRouter';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
 import { sanitizePokemon } from '@/logic/pokemon/pokemonFactory';
 
+export let lastLoadedSaveTime = 0;
+export function setLastLoadedSaveTime(time: number) {
+  lastLoadedSaveTime = time;
+}
+
 export interface SaveResult {
   success?: boolean;
   remote?: boolean;
@@ -154,7 +159,7 @@ interface ActiveBattleSerialized {
 }
 export function serializeState(state: GameState): SaveData {
   let activeBattle: ActiveBattleSerialized | null = null;
-  const battle = state.battle;
+  const battle = state.activeBattle;
 
   if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
     try {
@@ -443,6 +448,38 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
     }
 
+    const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
+
+    // Check precedence: Database has absolute priority if it contains a newer save (due to migrations or concurrent play)
+    if (db && !options.skipRemote && !isOnlineLocalUser) {
+      try {
+        const { data: dbSave } = await db.from('game_saves').select('updated_at').eq('user_id', user.id).maybeSingle() as { data: { updated_at: string } | null };
+        if (dbSave && dbSave.updated_at) {
+          let dbTime = 0;
+          try {
+            let dateStr = dbSave.updated_at;
+            if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
+              dateStr = dateStr.replace(' ', 'T') + 'Z';
+            }
+            dbTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
+          } catch (_) {
+            dbTime = Date.parse(dbSave.updated_at) || 0;
+          }
+          
+          const localStateTime = lastLoadedSaveTime;
+          if (localStateTime > 0 && dbTime > localStateTime + 1000) {
+            logger.warn('SAVE', `El guardado de la base de datos es más reciente que el estado actual (DB: ${dbTime} vs Local Loaded: ${localStateTime}). Abortando.`);
+            const { data: fullSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
+            const serverSave = fullSave as { save_data: GameState } | null;
+            _isSaving = false;
+            return { rollback: true, serverData: serverSave?.save_data, error: 'La base de datos tiene una versión de guardado más reciente.' };
+          }
+        }
+      } catch (e) {
+        logger.warn('SAVE', `Error al validar precedencia del guardado con DB: ${(e as Error).message}`);
+      }
+    }
+
     (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
 
     // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
@@ -457,7 +494,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
     }
 
-    const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
+
 
     // 2. Database
     if (!db || options.skipRemote || isOnlineLocalUser) {
@@ -471,6 +508,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
       }
       
+      lastLoadedSaveTime = save_data._last_updated || 0;
       return { success: true, remote: false };
     }
 
@@ -487,6 +525,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
         return { rollback: true, outOfSync: true };
       }
+
+      lastLoadedSaveTime = save_data._last_updated || 0;
 
       // Sincronizar campos principales en la tabla profiles para mantener consistencia
       try {

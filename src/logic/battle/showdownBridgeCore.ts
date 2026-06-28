@@ -20,8 +20,13 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const style = attacker === p ? 'log-player' : 'log-enemy';
         store.addLog(`¡${attacker.name} usó ${translatedName}!`, style, attacker);
 
+        const cleanMoveId = moveId.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanMoveId === 'batonpass' && store.activeBattle.value) {
+          store.activeBattle.value.isBatonPass = true;
+        }
+
         attacker.lastMove = {
-          id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+          id: cleanMoveId,
           name: translatedName,
           pp: 0,
           maxPP: 0

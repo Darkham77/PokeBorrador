@@ -90,7 +90,7 @@ interface Prize {
 
 const prizes = computed<{ first?: Prize, second?: Prize, third?: Prize } | null>(() => {
   const c = cfg.value
-  if (c.hasCompetition === false || !c.prizes) return null
+  if (c.hasCompetition !== true || !c.prizes) return null
   return c.prizes
 })
 
@@ -106,7 +106,7 @@ const getPrizeDesc = (p: Prize) => {
 }
 
 const metricText = computed(() => {
-  if (cfg.value.hasCompetition === false) return null
+  if (cfg.value.hasCompetition !== true) return null
   const sortBy = cfg.value.sortBy || 'data.total_ivs'
   const labels: Record<string, string> = {
     'data.total_ivs': '🧬 Mayor cantidad de IVs totales',
@@ -261,53 +261,51 @@ const scheduleText = computed(() => {
 }
 
 .event-main-icon {
-  font-size: 64px;
+  font-size: 48px;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 15px Rgba(255, 214, 10, 0.4));
+  filter: Drop-Shadow(0 0 12px Rgba(255, 214, 10, 0.4));
 }
 
 .event-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 
   .event-title {
     @include pixelated;
     font-size: 14px;
     color: var(--yellow);
-    margin-bottom: 15px;
-    line-height: 1.6;
-    @include pixelated;
+    margin-bottom: 8px;
+    line-height: 1.4;
   }
 
   .event-desc {
-    font-size: 13px;
+    font-size: 12px;
     color: Rgba(148, 163, 184, 1);
-    line-height: 1.6;
-    padding: 0 20px;
+    line-height: 1.4;
+    padding: 0 16px;
   }
 }
 
 .event-section {
-  margin-bottom: 25px;
+  margin-bottom: 16px;
   text-align: center;
 
   .section-tag {
     @include pixelated;
     font-size: 9px;
     color: $muted;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     letter-spacing: 1px;
     display: inline-block;
-    @include pixelated;
   }
 }
 
 .bonus-grid {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .bonus-item {
@@ -316,53 +314,52 @@ const scheduleText = computed(() => {
   justify-content: space-between;
   background: Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 14px 20px;
+  padding: 10px 16px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
 
   .bonus-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .bonus-emoji {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .bonus-label {
-    font-size: 14px;
+    font-size: 13px;
     color: Rgba(203, 213, 225, 1);
   }
 
   .bonus-value {
     @include pixelated;
     font-size: 11px;
-    @include pixelated;
   }
 }
 
 .prizes-container {
   background: Rgba(0, 0, 0, 0.2);
   border-radius: 16px;
-  padding: 20px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .prize-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
 
   .rank {
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .desc {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
   }
 
@@ -374,8 +371,8 @@ const scheduleText = computed(() => {
 .info-box {
   background: Rgba(255, 255, 255, 0.04);
   border-radius: 12px;
-  padding: 15px 20px;
-  font-size: 14px;
+  padding: 10px 16px;
+  font-size: 13px;
   color: Rgba(203, 213, 225, 1);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   text-align: center;
@@ -388,7 +385,7 @@ const scheduleText = computed(() => {
 }
 
 .legacy-confirm-btn {
-  margin: 20px 0 10px;
+  margin: 12px 0 4px;
   width: 100%;
   @include btn-vicio-primary;
 }

@@ -128,7 +128,7 @@ export async function updateSupabaseDb() {
       const appliedIds = new Set(appliedRows.map(r => r.id as string));
 
       const files = (await fsPromises.readdir(MIGRATIONS_DIR))
-        .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema'))
+        .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema') && !f.includes('.sqlite.'))
         .sort((a, b) => a.localeCompare(b));
 
       let patchesApplied = 0;

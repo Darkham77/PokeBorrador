@@ -16,8 +16,9 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { Battle, ID } from '@pkmn/sim'
+import { Battle } from '@pkmn/sim'
 import type { PokemonSet } from '@pkmn/sim'
+import { getShowdownFormatId } from '@/logic/battle/showdownAdapter'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared mocks
@@ -310,7 +311,7 @@ describe('Struggle recoil — 4 uses KO the user', () => {
 
 describe('Showdown Simulator Struggle Choices Integration', () => {
   it('should execute Struggle and apply recoil in Gen 9 simulator when using correct choice string', () => {
-    const battle = new Battle({ formatid: 'gen9customgame@@@!Team Preview' as ID })
+    const battle = new Battle({ formatid: getShowdownFormatId(9) })
     battle.setPlayer('p1', { name: 'Player', team: [{ species: 'Vaporeon', level: 100, moves: ['surf', 'icebeam'] } as unknown as PokemonSet] })
     battle.setPlayer('p2', { name: 'Enemy', team: [{ species: 'Bulbasaur', level: 100, moves: ['tackle'] } as unknown as PokemonSet] })
 

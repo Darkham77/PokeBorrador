@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
+import { useAudioStore } from '@/stores/audio'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { useCombatCamera } from '@/composables/battle/useCombatCamera'
@@ -17,7 +18,7 @@ import { logger } from '@/logic/utils/logger'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GYMS } from '@/data/world/gyms.ts'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
-import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
+import { getPokemonFeetCoords, generatePixelShadow } from '@/logic/combat/shadowHelpers'
 
 // Composables
 import { useBattleShadows } from '@/composables/battle/useBattleShadows'
@@ -41,6 +42,7 @@ const battleStore = useBattleStore()
 const { isSearching } = storeToRefs(battleStore)
 const mapStore = useMapStore()
 const uiStore = useUIStore()
+const audioStore = useAudioStore()
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
@@ -49,6 +51,10 @@ provide('isModalPerformanceMode', computed(() => false))
 const arenaRef = ref<HTMLElement | null>(null)
 const trainerRef = ref<HTMLElement | null>(null)
 const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
+
+const showRivalAlert = ref(false)
+const rivalFlickerRef = ref<HTMLElement | null>(null)
+const rivalExclamationRef = ref<HTMLElement | null>(null)
 
 const battle = computed(() => battleStore.state)
 const enemy = computed(() => battle.value?.enemy)
@@ -67,19 +73,7 @@ watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
 
 const trainerShadowUrl = ref('')
 onMounted(() => {
-  if (typeof document !== 'undefined') {
-    const canvas = document.createElement('canvas')
-    canvas.width = 10
-    canvas.height = 7
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
-      ctx.beginPath()
-      ctx.ellipse(5, 3.5, 5, 3.5, 0, 0, Math.PI * 2)
-      ctx.fill()
-      trainerShadowUrl.value = canvas.toDataURL('image/png')
-    }
-  }
+  trainerShadowUrl.value = generatePixelShadow(10, 7)
 })
 
 const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
@@ -227,11 +221,12 @@ const {
 } = useBattleHud(animations, battleStore, enemy)
 
 const computedWeather = computed(() => {
-  if (battle.value?.isGym) return 'clear'
-  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1
+  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1 (incluso en gimnasios)
   if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
     return battle.value.weather.visual || battle.value.weather.type
   }
+  // Bloquear clima natural en gimnasios
+  if (battle.value?.isGym) return 'clear'
   // De lo contrario, cae en el clima global o del mapa
   if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
@@ -456,7 +451,47 @@ watch(trainerAnimState, async (newState) => {
   if (!el) return
   gsap.killTweensOf(el)
   if (newState === 'entering') {
-    gsap.fromTo(el, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
+    if (battle.value?.isRival) {
+      if (audioStore && typeof audioStore.play === 'function') {
+        audioStore.play('rival')
+      }
+      showRivalAlert.value = true
+
+      const tlAlert = gsap.timeline({
+        onComplete: () => {
+          showRivalAlert.value = false
+        }
+      })
+
+      if (rivalFlickerRef.value) {
+        tlAlert.fromTo(rivalFlickerRef.value, 
+          { opacity: 0 }, 
+          { opacity: 0.8, duration: 0.05, repeat: 7, yoyo: true, ease: 'none' }
+        )
+      }
+
+      if (rivalExclamationRef.value) {
+        tlAlert.fromTo(rivalExclamationRef.value,
+          { scale: 0, opacity: 0 },
+          { scale: 1.5, opacity: 1, duration: 0.25, ease: 'back.out(1.7)' },
+          0.1
+        )
+        tlAlert.to(rivalExclamationRef.value, {
+          y: '-=10', duration: 0.1, repeat: 5, yoyo: true, ease: 'sine.inOut'
+        })
+        tlAlert.to(rivalExclamationRef.value, {
+          opacity: 0, scale: 0.5, duration: 0.3, ease: 'power2.in'
+        }, '+=0.4')
+      }
+
+      // Slide in trainer with delay
+      gsap.fromTo(el, 
+        { x: '150%', scale: 0.8, opacity: 0 }, 
+        { x: '0%', scale: 1, opacity: 1, delay: 1.2, duration: 0.8, ease: 'back.out(1.2)' }
+      )
+    } else {
+      gsap.fromTo(el, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
+    }
   } else if (newState === 'retreating') {
     // Mover al entrenador a su lugar designado (300, -10) en unidades virtuales
     gsap.to(el, { x: 300, y: -10, scale: 0.8, opacity: 0.85, duration: 0.8, ease: 'power2.inOut' })
@@ -868,6 +903,23 @@ const onDialogLeave = (el: Element, done: () => void) => {
 
     <!-- Controles de Zoom de Cámara -->
     <CameraZoomControls />
+
+    <!-- Rival Special Presentation Alert -->
+    <div
+      v-show="showRivalAlert"
+      class="rival-alert-overlay"
+    >
+      <div
+        ref="rivalFlickerRef"
+        class="rival-alert-flicker"
+      />
+      <div
+        ref="rivalExclamationRef"
+        class="rival-alert-exclamation"
+      >
+        !
+      </div>
+    </div>
   </div>
 </template>
 

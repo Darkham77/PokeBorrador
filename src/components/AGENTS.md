@@ -18,7 +18,20 @@ Frontend UI Developers / UI Designers.
 - Prevent font layout clipping on pixelated fonts (`Pokemon FireRed LeafGreen`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.
 - Implement micro-animations and state hover transitions exclusively using GSAP timelines/tweens in `@mouseenter` and `@mouseleave` handlers. CSS `transition` and `@keyframes` are forbidden for dynamic state transitions.
 - Teleported tooltips must scale the inner wrapper, not the parent, to avoid breaking absolute calculations.
-- **Overlay Stacking Context**: Absolute overlays designed to cover interactive grids (e.g. moves panel) must specify a Z-index of `calc(var(--z-base) + 10)` or higher to cover grid items rendering at `var(--z-base)`.
+- **Overlapping Sprite Stacking (Cards Deck)**: In reward grids or sprite lists, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create an overlapping deck. Animate on hover via GSAP to scale (`scale(1.2)`), lift (`translateY(-4px)`), and raise the z-index (`z-index: 10`).
+- **Retro Font Layout Clipping Prevention**: For text using `Pokemon FireRed LeafGreen` in containers with `overflow: hidden`, set `line-height` to `1.5` or `1.6` and add top padding. For `<input>` elements specifically, use `font-size: 12px` + `line-height: 1.5` + symmetric `padding: 10px 14px` to prevent glyph top-clipping.
+- **GPU & Rendering Integrity**: Promotion via `will-change` must be context-aware; only add it if a `filter` or `transform` is present and no other `will-change` exists within the same block (500-char window). Ensure status effects (Burn, Poison) override persistent auras (Guardian, Shiny) via mutually exclusive logic instead of superimposing them.
+- **GSAP Filter Order**: When animating multiple filters in custom sprite FX, apply lighting filters (`Brightness`, `Contrast`) BEFORE outline or glow filters (`feMorphology`, `Drop-Shadow`) to prevent the effects from getting washed out.
+- **Organic Feel**: Weather animations must pass the synced weather seed (`getWeatherAnimSeed` function) as `:anim-seed` (never `:seed`) to `<AtmosphereLayer>`. Terrain in `CombatGrass.vue` must generate a new random seed per battle to inject scale (0.7x to 1.5x), horizontal flip, and offset variations.
+- **Zero Heavy Logic in Vue Templates**: Accessing databases, data providers, or performing `.map`, `.filter`, `.reduce` in templates is strictly prohibited. All data must be resolved in `<script>` and cached using computed properties or mapped helpers.
+- **GSAP for Progress Indicators**: Animate progress bars smoothly using a reactive ref watched and bound with GSAP (`gsap.to`), not with manual CSS transitions.
+- **Pure Vue Compliance**: Avoid direct DOM/Canvas operations in Vue components. For mandatory low-level canvas/DOM code, use `// [PureVue-Ignore]`, `// [PureVue-Ignore-Length]`, or `// [PureVue-Ignore-Aesthetics]` to bypass automated audits.
+- **Template Event Casting & Fallbacks**: Cast event targets in the template (e.g. `(e.target as HTMLImageElement)`) to satisfy strict TypeScript. Always implement a fallback error handler like `@error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"` on images that may be missing.
+- **Style Consolidation & Visual Extraction**: When modularizing visual components to stay under the 1000-line limit, extract data/configuration dictionaries to external `.ts` files (e.g., `fx-configs.ts`) and extensive stylesheet blocks to external SCSS files.
+- **Decoupled FX**: Trigger non-critical visual animations or multi-component effects via `GameBus.emit()` to avoid direct dependencies.
+- **Strict DB-to-UI Comparison**: When writing UI conditionals dependent on database models, compare against official database string values in Spanish (e.g., `'poder'` instead of `'power'`).
+- **Form Selectors Localization**: Selector components must store and bind English Showdown IDs internally while presenting and allowing search by their localized Spanish translations in the UI.
+- **Modal Metadata**: Full-screen experiences or overlays that obscure the background must be registered in the `MODAL_METADATA` registry using standard flags (`isFullscreen`, `obscuresBackground`) instead of name comparisons in stores.
 
 ## Verification
 

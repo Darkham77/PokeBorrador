@@ -100,18 +100,21 @@ export const pokemonDebugService = {
 
     // 3. Handle Moves
     if (moves && Array.isArray(moves)) {
-      p.moves = moves.map((mName: string) => {
-        const mData = pokemonDataProvider.getMoveData(mName)
-        return { 
-          name: mName || '???', 
-          pp: mData?.pp || 35, 
-          maxPP: mData?.pp || 35,
-          type: mData?.type || 'normal',
-          power: mData?.power || 0,
-          acc: mData?.acc || 100,
-          cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
-        };
-      }).slice(0, 4);
+      p.moves = moves
+        .filter((m): m is string => typeof m === 'string' && !!m)
+        .map((mName: string) => {
+          const mData = pokemonDataProvider.getMoveData(mName)
+          return { 
+            id: mData?.id || mName,
+            name: mData?.name || mName, 
+            pp: mData?.pp || 35, 
+            maxPP: mData?.pp || 35,
+            type: mData?.type || 'normal',
+            power: mData?.power || 0,
+            acc: mData?.acc || 100,
+            cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
+          };
+        }).slice(0, 4);
     }
 
     // 4. Final Recalc

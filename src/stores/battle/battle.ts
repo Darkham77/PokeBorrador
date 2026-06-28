@@ -116,6 +116,13 @@ export const useBattleStore = defineStore('battle', () => {
 
   const player = computed(() => activeBattle.value?.player)
   const enemy = computed(() => activeBattle.value?.enemy)
+  const playerUsedMoves = ref<string[]>([])
+  
+  watch(() => player.value?.uid, (newUid, oldUid) => {
+    if (newUid !== oldUid) {
+      playerUsedMoves.value = []
+    }
+  })
   
   watch(() => mapStore.currentWeather, (newWeather) => {
     if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
@@ -272,6 +279,14 @@ export const useBattleStore = defineStore('battle', () => {
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
+      
+      const move = player.value?.moves[moveIndex]
+      if (move && move.id) {
+        if (!playerUsedMoves.value.includes(move.id)) {
+          playerUsedMoves.value.push(move.id)
+        }
+      }
+      
       await executeTurn(getContext(), moveIndex)
       
       if (!activeBattle.value) {
@@ -287,9 +302,19 @@ export const useBattleStore = defineStore('battle', () => {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
-      logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
-      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
+      if ((error as Error).name === 'InvalidChoiceError') {
+        logger.warn('BattleStore', `Choice was invalid: ${(error as Error).message}`)
+        uiStore.notify('¡Ese ataque no se puede usar ahora!', '🚫')
+        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+        }
+      } else {
+        logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
+        addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
+        useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
+      }
     } finally {
       isProcessing.value = false
     }
@@ -314,9 +339,19 @@ export const useBattleStore = defineStore('battle', () => {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
-      logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
-      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
+      if ((error as Error).name === 'InvalidChoiceError') {
+        logger.warn('BattleStore', `Struggle choice was invalid: ${(error as Error).message}`)
+        uiStore.notify('¡Ese ataque no se puede usar ahora!', '🚫')
+        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+        }
+      } else {
+        logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
+        addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
+        useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
+      }
     } finally {
       isProcessing.value = false
     }
@@ -454,13 +489,33 @@ export const useBattleStore = defineStore('battle', () => {
   }
   const _executeSwitch = async (teamIndex: number, isForced = false) => {
     if (isProcessing.value && !isForced) return
+    
+    if (!isForced) {
+      const { isPlayerTrappedInWorker } = await import('@/logic/battle/orchestrator')
+      const isTrapped = await isPlayerTrappedInWorker()
+      if (isTrapped) {
+        uiStore.notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
+        return
+      }
+    }
+
     isProcessing.value = true
     try {
       await switchAction(getContext(), teamIndex, isForced)
     } catch (error) {
-      logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
-      useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
+      if ((error as Error).name === 'InvalidChoiceError') {
+        logger.warn('BattleStore', `Switch choice was invalid: ${(error as Error).message}`)
+        uiStore.notify('¡No puedes cambiar a ese Pokémon ahora!', '🚫')
+        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+        }
+      } else {
+        logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
+        addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
+        useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
+      }
     } finally {
       isProcessing.value = false
     }
@@ -497,6 +552,7 @@ export const useBattleStore = defineStore('battle', () => {
     isSearching,
     player,
     enemy,
+    playerUsedMoves,
     isIntroAnimating,
     isPvP,
     playerStages,

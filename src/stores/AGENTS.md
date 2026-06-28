@@ -18,6 +18,9 @@ State Architects / Frontend Developers.
 - Ensure explicit error propagation in dynamic imports (never silent `.catch(() => {})`).
 - **Gender is a Save Property**: The player's gender (`'h'` | `'m'`) is set once at signup and persists in the save. Login flows MUST NEVER ask for gender — only signup/registration forms include the gender selector. Use separate components for login (no gender) and signup (with gender).
 - When visual/state variables are modified, keep them atomic and fully initialized to prevent race conditions in HUD layers.
+- **Save Shield (Zero-Pokemon Save Prohibition)**: It is strictly forbidden to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`. A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
+- **No Runtime Sanitization Patches**: State loading or initialization hooks must not use dynamic patches to fix legacy identifiers at runtime. All data schema migrations must occur inside migration scripts.
+- **isProcessing Gate Rule**: `isProcessing.value = true` MUST be set only after all synchronous and async pre-conditions that may abort the action have been evaluated. Setting it early (before a worker/network check that may reject the action) causes UI elements gated on `isProcessing` to flicker unnecessarily. Correct order: ① return early if already processing; ② await all blocking checks (e.g. `isPlayerTrappedInWorker()`); ③ abort with user notification if a check fails — **never touching `isProcessing`**; ④ only then set `isProcessing.value = true` and proceed.
 
 ## Verification
 

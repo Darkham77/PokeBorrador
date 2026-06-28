@@ -8,7 +8,11 @@ import type { BattleStages } from '@/types/battle/battle'
  */
 
 export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: BattleStages, isWild = false): Move | null => {
-  const validMoves = enemy.moves.filter((m): m is Move => !!m && m.pp > 0)
+  const validMoves = enemy.moves.filter((m): m is Move => {
+    if (!m || m.pp <= 0) return false
+    if (enemy.disabledMove && m.id === enemy.disabledMove.id) return false
+    return true
+  })
   if (validMoves.length === 0) return null
 
   // Si es salvaje, elige al azar (Gen 3 wild behavior)

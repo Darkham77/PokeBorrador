@@ -104,6 +104,19 @@ const isDisabled = computed(() => {
     if (p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
       return true
     }
+
+    // Last Resort (Última Baza) requirements check
+    if (props.move.id === 'lastresort') {
+      const allMoves = p.moves.filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
+      if (allMoves.length <= 1) {
+        return true
+      }
+      const otherMoveIds = allMoves.filter(m => m.id !== 'lastresort' && !!m.id).map(m => m.id as string)
+      const hasUnused = otherMoveIds.some(id => !battleStore.playerUsedMoves.includes(id))
+      if (hasUnused) {
+        return true
+      }
+    }
   }
   return false
 })
@@ -234,6 +247,16 @@ onMounted(() => {
 onUnmounted(() => {
   if (glowTween) glowTween.kill()
 })
+
+const formatMoveName = (name: string) => {
+  return name.toUpperCase()
+    .replace(/Ñ/g, 'ñ')
+    .replace(/Á/g, 'á')
+    .replace(/É/g, 'é')
+    .replace(/Í/g, 'í')
+    .replace(/Ó/g, 'ó')
+    .replace(/Ú/g, 'ú')
+}
 </script>
 
 <template>
@@ -313,7 +336,7 @@ onUnmounted(() => {
     >
       <template v-if="move">
         <div class="move-top">
-          <span class="mv-name pixelated">{{ move.name ? move.name.toUpperCase() : '???' }}</span>
+          <span class="mv-name pixelated">{{ move.name ? formatMoveName(move.name) : '???' }}</span>
           <PokemonTypeTag
             :type="moveData!.type || 'normal'"
             size="ssm"

@@ -44,6 +44,18 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const reason = parts[3] || '';
+      
+      if (reason === 'flinch') {
+        const isPlayer = target === p;
+        const activeBattle = store.activeBattle.value;
+        if (isPlayer && activeBattle?.playerUsedItem) {
+          return true;
+        }
+        if (!isPlayer && activeBattle?.enemyUsedItem) {
+          return true;
+        }
+      }
+      
       if (target) {
         const style = target === p ? 'log-player' : 'log-enemy';
         const cantMessages: Record<string, string> = {
@@ -53,6 +65,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           'attract': 'está enamorado y no puede atacar',
           'recharge': 'debe recargar',
           'Disable': 'tiene el movimiento desactivado',
+          'flinch': 'retrocedió',
         };
         const hint = cantMessages[reason] ?? 'no puede moverse';
         store.addLog(`¡${target.name} ${hint}!`, style, target);

@@ -7,7 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
 import { clearVolatileStatus } from './battleStatus'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
-import { getShowdownSlot, swapShowdownOrder } from './showdownAdapter.ts'
+import { resolveShowdownSlot, swapActivePokemon } from './showdownAdapter.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 /**
@@ -165,18 +165,18 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
       
-      active.enemy = nextEnemy
       ctx.faintedSides.value.delete('enemy')
       ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
       
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
-        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
-        const slot = getShowdownSlot(currentOrder, nextEnemy.uid)
+        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
         await executeTurnInWorker('', `switch ${slot}`)
-        active.showdownEnemyTeamOrder = swapShowdownOrder(currentOrder, nextEnemy.uid)
+        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
+        active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
       }
 
+      active.enemy = nextEnemy
       if (ctx.animations?.handleReleaseRequest) {
         await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
       } else {
@@ -566,5 +566,51 @@ export function syncAndPersist(ctx: BattleContext) {
   ctx.gs.save(false)
 }
 
+/**
+ * Handles forced switch request (e.g. from Dragon Tail or Whirlwind).
+ */
+export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'enemy') {
+  const active = ctx.activeBattle.value
+  if (!active || active.over) return
 
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  const fsm = ctx.fsm
 
+  if (side === 'player') {
+    ctx.uiStore.isBattleSwitchForced = true
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
+  } else {
+    let nextEnemy: Pokemon | null = null
+    if (active.enemyTeam) {
+      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== active.enemy?.uid) || null
+    }
+    if (nextEnemy) {
+      const currentEnemy = active.enemy
+      if (currentEnemy) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
+        if (ctx.animations?.handleCatchRequest) {
+          await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy })
+        } else {
+          gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
+        }
+      }
+
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
+      
+      const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+      if (showdownWorker && active.enemyTeam) {
+        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid, active.enemyTeam)
+        await executeTurnInWorker('', `switch ${slot}`)
+        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
+        active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
+      }
+
+      active.enemy = nextEnemy
+      if (ctx.animations?.handleReleaseRequest) {
+        await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
+      } else {
+        gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+      }
+    }
+  }
+}

@@ -51,7 +51,7 @@ export function useBattleAnimations(
   } = captureAnims
 
   // 2. Trainer Domain delegation
-  const trainerAnims = useBattleTrainerAnimations(seats)
+  const trainerAnims = useBattleTrainerAnimations(seats, battleStore)
   const {
     trainerAnimState,
     isTrainerVisible,
@@ -83,7 +83,7 @@ export function useBattleAnimations(
   const isGlobalFadeActive = ref(false)
 
   const isIntroInProgress = computed(() => {
-    const s = toValue(battleStore.fsm.currentState)
+    const s = toValue(battleStore.currentFsmState)
     return s === 'INITIALIZING' ||
            s === 'FIRST_INTRO' ||
            isWildEntryAnimation.value || 
@@ -100,7 +100,7 @@ export function useBattleAnimations(
 
   // FSM Watcher for sync
   watch(
-    () => [toValue(battleStore.fsm.currentState), toValue(battleStore.fsm.currentSubState)],
+    () => [toValue(battleStore.currentFsmState), toValue(battleStore.currentSubState)],
     ([state, sub]) => {
       if (!state) return
 

@@ -99,7 +99,7 @@ export const GYMS: Gym[] = [
     difficulties: {
       easy: { pokemon: ['koffing', 'muk', 'koffing', 'weezing'], levels: [37, 39, 37, 43] },
       normal: { pokemon: ['golbat', 'venomoth', 'muk', 'weezing'], levels: [54, 56, 58, 62] },
-      hard: { pokemon: ['crobat', 'venomoth', 'muk', 'nidoking', 'nidoqueen', 'weezing'], levels: [74, 76, 76, 78, 78, 80] }
+      hard: { pokemon: ['golbat', 'venomoth', 'muk', 'nidoking', 'nidoqueen', 'weezing'], levels: [74, 76, 76, 78, 78, 80] }
     }
   },
   {
@@ -110,11 +110,11 @@ export const GYMS: Gym[] = [
     quote: '¡Puedo leer tu mente y ver cada uno de tus movimientos!',
     victoryQuote: 'Lo predije... Tu victoria estaba escrita en las estrellas. Toma esto, desarrolla tu fuerza interior tanto como la de tus Pokémon.',
     rewardTM: 'MT04 Paz Mental',
-    pokemon: ['kadabra', 'mr_mime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43], badgesRequired: 5,
+    pokemon: ['kadabra', 'mrmime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43], badgesRequired: 5,
     difficulties: {
-      easy: { pokemon: ['kadabra', 'mr_mime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43] },
-      normal: { pokemon: ['kadabra', 'mr_mime', 'jynx', 'alakazam'], levels: [58, 56, 58, 62] },
-      hard: { pokemon: ['hypno', 'slowbro', 'jynx', 'mr_mime', 'exeggutor', 'alakazam'], levels: [78, 78, 78, 78, 78, 82] }
+      easy: { pokemon: ['kadabra', 'mrmime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43] },
+      normal: { pokemon: ['kadabra', 'mrmime', 'jynx', 'alakazam'], levels: [58, 56, 58, 62] },
+      hard: { pokemon: ['hypno', 'slowbro', 'jynx', 'mrmime', 'exeggutor', 'alakazam'], levels: [78, 78, 78, 78, 78, 82] }
     }
   },
   {

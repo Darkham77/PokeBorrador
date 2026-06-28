@@ -292,7 +292,7 @@ const teamBallsStatus = computed(() => {
                 {{ status.description }}
               </p>
               
-              <template v-if="showStatsTable">
+              <template v-if="showStatsTable && status.emoji !== '🎒'">
                 <div class="tooltip-divider" />
                 
                 <div class="stats-comparison-grid">
@@ -724,6 +724,7 @@ const teamBallsStatus = computed(() => {
     font-size: 8px;
     color: #aeaebe;
     line-height: 1.4;
+    white-space: pre-wrap;
   }
 
   .tooltip-divider {

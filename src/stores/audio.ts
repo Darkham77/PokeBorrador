@@ -38,13 +38,14 @@ export const useAudioStore = defineStore('audio', () => {
   const cryCache = new Map<string, AudioBuffer>();
 
   const fetchCryBuffer = async (name: string, ctx: AudioContext): Promise<AudioBuffer> => {
-    const response = await fetch(`/cries/${name}.mp3`);
+    const base = import.meta.env.BASE_URL || '/';
+    const response = await fetch(`${base}cries/${name}.mp3`);
     if (!response.ok) {
-      throw new Error(`Cry file not found: /cries/${name}.mp3`);
+      throw new Error(`Cry file not found: ${base}cries/${name}.mp3`);
     }
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('text/html')) {
-      throw new Error(`Cry file not found (HTML redirect fallback): /cries/${name}.mp3`);
+      throw new Error(`Cry file not found (HTML redirect fallback): ${base}cries/${name}.mp3`);
     }
     const arrayBuffer = await response.arrayBuffer();
     return await ctx.decodeAudioData(arrayBuffer);
