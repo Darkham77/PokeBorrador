@@ -77,6 +77,14 @@ describe('AssetService & Resolver', () => {
     })
   })
 
+  describe('AssetService: Raw URLs and Test Paths', () => {
+    it('debe devolver la URL o ruta intacta si empieza con http, data:, o /test aventura/', () => {
+      expect(getAssetUrl(ASSET_TYPES.MAP, 'https://example.com/image.png')).toBe('https://example.com/image.png')
+      expect(getAssetUrl(ASSET_TYPES.POKEMON, 'data:image/png;base64,123')).toBe('data:image/png;base64,123')
+      expect(getAssetUrl(ASSET_TYPES.MAP, '/test aventura/imagenes/Pallet_Town_FRLG.png')).toBe('/test aventura/imagenes/Pallet_Town_FRLG.png')
+    })
+  })
+
   describe('AssetResolver', () => {
     it('no debe devolver sufijo independientemente del ancho', () => {
       vi.stubGlobal('innerWidth', 400)

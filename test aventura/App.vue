@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import MapCard from '@/components/map/MapCard.vue'
 import AdventureInventoryModal from './AdventureInventoryModal.vue'
 import AdventureDebugModal from './AdventureDebugModal.vue'
@@ -14,7 +15,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
-import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
 import { useModalStore } from '@/stores/modals'
@@ -40,12 +41,12 @@ const SPACING_MULTIPLIER = 2.5
 const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
 
 const URL_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/4/41/latest/20200501140954/Rojo_RFVF_bici.png"
-const FALLBACK_BICI = "https://play.pokemonshowdown.com/sprites/trainers/red.png" 
-const URL_VUELO = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/83.png"
+const FALLBACK_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/1/12/latest/20110203235447/Rojo_mini_RFVH.png" 
+const URL_VUELO = "https://archives.bulbagarden.net/media/upload/9/9d/FRLG_Surf_M.png"
 
-const HTML_BICI = `<img src="${URL_BICI}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${FALLBACK_BICI}';" class="pixel-art" alt="Bici">`
-const HTML_WALK = `<img src="${FALLBACK_BICI}" class="pixel-art scale-[1.2]" alt="Caminando">`
-const HTML_VUELO = `<img src="${URL_VUELO}" class="pixel-art scale-[1.7]" alt="Volando">`
+const HTML_BICI = `<img src="${URL_BICI}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${FALLBACK_BICI}';" class="pixel-art scale-[1.5]" alt="Bici">`
+const HTML_WALK = `<img src="${FALLBACK_BICI}" class="pixel-art scale-[1.6]" alt="Caminando">`
+const HTML_VUELO = `<img src="${URL_VUELO}" class="pixel-art scale-[1.5]" alt="Volando">`
 
 const baseWalkSpeed = 350 
 const baseBikeSpeed = 700
@@ -72,6 +73,12 @@ const currentNode = ref<string>('pallet')
 const isMoving = ref(false)
 const isZoomedIn = ref(true)
 const isPlanning = ref(false)
+const playerDirection = ref<'down' | 'up' | 'left' | 'right'>('down')
+
+const playerSpriteTransform = computed(() => {
+  if (playerDirection.value === 'left') return 'scaleX(-1)'
+  return 'scaleX(1)'
+})
 
 const currentScale = ref(ZOOM_SCALE)
 const cardScale = computed(() => {
@@ -102,13 +109,41 @@ const mapNodes = computed(() => {
   return result
 })
 
-// Official Map Location objects indexed by local node ID
+const cityDescriptions: Record<string, string> = {
+  pallet: 'El comienzo de tu viaje.',
+  viridian: 'La ciudad del eterno verdor.',
+  pewter: 'Una ciudad gris y de roca.',
+  cerulean: 'Rodeada de un halo azulado.',
+  vermilion: 'El puerto de los bellos atardeceres.',
+  lavender: 'Un pueblo tranquilo y espiritual.',
+  celadon: 'La ciudad de los arcoíris y sueños.',
+  saffron: 'La gran metrópolis dorada.',
+  fuchsia: 'Una ciudad histórica y salvaje.',
+  cinnabar: 'La isla del conocimiento ardiente.',
+  indigo: 'La cumbre de la Liga Pokémon.'
+}
+
 const mapLocationsById = computed(() => {
   const map: Record<string, MapLocation> = {}
   for (const [localId, officialId] of Object.entries(officialMapIdMap)) {
     const loc = FIRE_RED_MAPS.find(m => m.id === officialId)
     if (loc) {
       map[localId] = loc as MapLocation
+    } else {
+      const rawNode = rawNodes[localId]
+      if (rawNode && (rawNode.type === 'city' || rawNode.type === 'league')) {
+        map[localId] = {
+          id: officialId,
+          name: rawNode.name,
+          icon: rawNode.type === 'league' ? '🏆' : '🏙️',
+          badges: 0,
+          desc: cityDescriptions[localId] || 'Centro urbano de Kanto.',
+          wild: { morning: [], day: [], dusk: [], night: [] },
+          rates: { morning: [], day: [], dusk: [], night: [] },
+          lv: [1, 1],
+          weather: {}
+        } as unknown as MapLocation
+      }
     }
   }
   return map
@@ -158,17 +193,9 @@ function setStatus(text: string, isMovingState = false) {
 // Alert Modals
 const alertOpen = ref(false)
 const alertMsg = ref('')
+const showActionAlert = (msg: string) => { alertMsg.value = msg; alertOpen.value = true }
 
-function showActionAlert(msg: string) {
-  alertMsg.value = msg
-  alertOpen.value = true
-}
-
-function closeAlert() {
-  alertOpen.value = false
-}
-
-
+const closeAlert = () => { alertOpen.value = false }
 
 function setCompanion(comp: string) {
   activeCompanion.value = comp
@@ -185,30 +212,16 @@ function updateInventory(item: string, value: boolean) {
 
 // Player visuals
 const playerSpriteHtml = ref(HTML_WALK)
-function updatePlayerVisuals() {
-  if (playerInventory.value['Bicicleta']) {
-    playerSpriteHtml.value = HTML_BICI
-  } else {
-    playerSpriteHtml.value = HTML_WALK
-  }
-}
+const updatePlayerVisuals = () => { playerSpriteHtml.value = playerInventory.value['Bicicleta'] ? HTML_BICI : HTML_WALK }
 
 // Modals toggles
 const showInventoryModal = ref(false)
 const showRadarModal = ref(false)
 const showDebugModal = ref(false)
 
-function toggleInventoryModal() {
-  showInventoryModal.value = !showInventoryModal.value
-}
-
-function toggleRadarModal() {
-  showRadarModal.value = !showRadarModal.value
-}
-
-function toggleDebugModal() {
-  showDebugModal.value = !showDebugModal.value
-}
+const toggleInventoryModal = () => { showInventoryModal.value = !showInventoryModal.value }
+const toggleRadarModal = () => { showRadarModal.value = !showRadarModal.value }
+const toggleDebugModal = () => { showDebugModal.value = !showDebugModal.value }
 
 // Camera control
 function updateCameraTransform(smooth = false) {
@@ -522,57 +535,37 @@ function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolea
   return new Promise<void>(resolve => {
     const start = mapNodes.value[startId]
     const end = mapNodes.value[endId]
-    
-    if (playerSprite.value) {
-      if (end.x - start.x < 0) { 
-        playerSprite.value.style.transform = 'scaleX(-1)'
-      } else { 
-        playerSprite.value.style.transform = 'scaleX(1)'
-      }
-    }
+    const dx = end.x - start.x
+    const dy = end.y - start.y
+    playerDirection.value = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')
 
-    const distance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))
-    let speed = baseWalkSpeed
-    if (isFlying) speed = flySpeed
-    else if (playerInventory.value['Bicicleta']) speed = baseBikeSpeed
+    const distance = Math.hypot(dx, dy)
+    const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
+    const duration = distance / speed
 
-    const duration = (distance / speed) * 1000
-
+    const tl = gsap.timeline({ onComplete: resolve })
     if (playerToken.value) {
-      playerToken.value.style.transitionDuration = `${duration}ms`
-      playerToken.value.style.left = `${end.x}px` 
-      playerToken.value.style.top = `${end.y}px`
+      tl.to(playerToken.value, { left: end.x, top: end.y, duration, ease: 'none' }, 0)
     }
-
-    let startTime: number | null = null
-    function track(time: number) {
-      if (!isMoving.value) return
-      if (!startTime) startTime = time
-      let progress = (time - startTime) / duration
-      if (progress > 1) progress = 1
-      
-      const currentX = start.x + (end.x - start.x) * progress
-      const currentY = start.y + (end.y - start.y) * progress
-      
-      centerCameraOn(currentX, currentY, false, MAP_SCALE)
-      
-      if (progress < 1) requestAnimationFrame(track)
-      else resolve()
-    }
-    requestAnimationFrame(track)
+    const camObj = { x: start.x, y: start.y }
+    tl.to(camObj, {
+      x: end.x,
+      y: end.y,
+      duration,
+      ease: 'none',
+      onUpdate: () => centerCameraOn(camObj.x, camObj.y, false, MAP_SCALE)
+    }, 0)
   })
 }
 
 // Swarms
-function triggerSwarm() {
+const triggerSwarm = () => {
   const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id].type.includes('route'))
   currentSwarmRoute.value = routes[Math.floor(Math.random() * routes.length)]
 }
 
 // Explore & Heal
-function exploreZone() {
-  showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
-}
+const exploreZone = () => showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
 
 function healPokemon() {
   playerEnergy.value = 100
@@ -580,8 +573,14 @@ function healPokemon() {
   showActionAlert("Turururu-ru~<br><br>Tus Pokémon están listos para seguir luchando. <b class='text-yellow-600'>¡Energía restaurada al 100%!</b>")
 }
 
+function setInfiniteEnergy(val: boolean) {
+  infiniteEnergy.value = val
+  localStorage.setItem('pokeVicioDebugEnergy', String(val))
+  if (isPlanning.value) updatePlanUI()
+}
+
 // Debug features
-function debugUnlockAll() {
+const debugUnlockAll = () => {
   discoveredNodes.value = Object.keys(mapNodes.value)
   localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
   showActionAlert("⚙️ Cheat: Todo el mapa ha sido descubierto.")
@@ -594,7 +593,7 @@ function debugGiveAllMOs() {
   showActionAlert("⚙️ Cheat: Tienes todos los Objetos y MOs.")
 }
 
-function debugTriggerSwarm() {
+const debugTriggerSwarm = () => {
   triggerSwarm()
   showActionAlert("⚙️ Enjambre forzado en: " + mapNodes.value[currentSwarmRoute.value!].name)
 }
@@ -789,11 +788,11 @@ onMounted(() => {
             <div
               v-if="discoveredNodes.includes(id as string) && mapLocationsById[id]"
               :id="`node-${id}`"
-              class="absolute origin-center translate-x-[-50%] translate-y-[-50%] z-10"
-              :style="{ left: `${node.x}px`, top: `${node.y}px` }"
+              class="absolute origin-center translate-x-[-50%] translate-y-[-50%]"
+              :style="{ left: `${node.x}px`, top: `${node.y}px`, zIndex: (isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? 20 : 10 }"
               @click.stop="() => {
                 if (!isMoving) {
-                  if (getAdjacentNodes(currentNode).includes(id as string)) {
+                  if (getAdjacentNodes(currentNode, connections).includes(id as string)) {
                     travelToAdjacent(id as string)
                   } else {
                     planTravel(id as string)
@@ -802,9 +801,15 @@ onMounted(() => {
               }"
             >
               <div
-                :style="{ transform: `scale(${cardScale})` }"
-                class="origin-center shadow-2xl rounded-2xl transition-transform hover:brightness-110"
+                :style="{ transform: `scale(${(isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? cardScale * 3 : cardScale})` }"
+                class="origin-center shadow-2xl rounded-2xl transition-all duration-300 hover:brightness-110 relative"
               >
+                <!-- True Spherical Background Glow Effect (Only Zoomed-out map, stationary) -->
+                <div 
+                  v-if="!isZoomedIn && !isMoving && currentNode === id"
+                  class="absolute inset-[-20px] bg-green-500 rounded-full blur-2xl opacity-90 z-[-1] pointer-events-none animate-pulse-glow"
+                />
+
                 <MapCard 
                   :map="mapLocationsById[id]"
                   :is-locked="node.requiresMO && !playerInventory[node.requiresMO]"
@@ -815,6 +820,26 @@ onMounted(() => {
                   style="width: 250px; pointer-events: none;"
                   @navigate="() => {}"
                 />
+
+                <!-- Action Buttons integrated inside the active MapCard -->
+                <div
+                  v-if="isZoomedIn && !isMoving && !isPlanning && currentNode === id"
+                  class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-50 pointer-events-auto"
+                >
+                  <button
+                    class="bg-gradient-to-b from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white font-black py-1.5 px-3 rounded-lg border border-red-800 shadow-[0_3px_0_#7f1d1d] active:shadow-[0_0px_0_#7f1d1d] active:translate-y-0.5 flex items-center gap-1 text-[9px] transition-all uppercase tracking-wider"
+                    @click.stop="exploreZone"
+                  >
+                    🔍 Explorar
+                  </button>
+                  <button
+                    v-if="mapNodes[currentNode]?.hasCenter"
+                    class="bg-gradient-to-b from-pink-400 to-pink-500 hover:from-pink-300 hover:to-pink-400 text-white font-black py-1.5 px-3 rounded-lg border border-pink-700 shadow-[0_3px_0_#831843] active:shadow-[0_0px_0_#831843] active:translate-y-0.5 flex items-center gap-1 text-[9px] transition-all uppercase tracking-wider"
+                    @click.stop="healPokemon"
+                  >
+                    ❤️ Curar
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -838,7 +863,7 @@ onMounted(() => {
               :style="{ left: `${node.x}px`, top: `${node.y}px` }"
               @click.stop="() => {
                 if (!isMoving) {
-                  if (getAdjacentNodes(currentNode).includes(id as string)) {
+                  if (getAdjacentNodes(currentNode, connections).includes(id as string)) {
                     travelToAdjacent(id as string)
                   } else {
                     planTravel(id as string)
@@ -870,6 +895,7 @@ onMounted(() => {
             id="player-sprite"
             ref="playerSprite"
             :class="{ 'anim-bounce': isMoving }"
+            :style="{ transform: playerSpriteTransform }"
             v-html="playerSpriteHtml"
           />
         </div>
@@ -909,7 +935,7 @@ onMounted(() => {
       <!-- Botones de Navegación Adyacentes (Rodeando la tarjeta central) -->
       <div class="fixed-navigation-arrows pointer-events-none">
         <!-- North Group -->
-        <div class="absolute top-[calc(50%-175px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
+        <div class="absolute top-[calc(50%-360px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
           <button
             v-for="btn in adjacentButtons.filter(b => b.direction === 'N')"
             :key="btn.id"
@@ -921,7 +947,7 @@ onMounted(() => {
         </div>
         
         <!-- South Group -->
-        <div class="absolute top-[calc(50%+175px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
+        <div class="absolute top-[calc(50%+360px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
           <button
             v-for="btn in adjacentButtons.filter(b => b.direction === 'S')"
             :key="btn.id"
@@ -933,7 +959,7 @@ onMounted(() => {
         </div>
 
         <!-- West Group -->
-        <div class="absolute left-[calc(50%-220px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <div class="absolute left-[calc(50%-460px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
           <button
             v-for="btn in adjacentButtons.filter(b => b.direction === 'W')"
             :key="btn.id"
@@ -945,7 +971,7 @@ onMounted(() => {
         </div>
 
         <!-- East Group -->
-        <div class="absolute left-[calc(50%+220px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <div class="absolute left-[calc(50%+460px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
           <button
             v-for="btn in adjacentButtons.filter(b => b.direction === 'E')"
             :key="btn.id"
@@ -955,23 +981,6 @@ onMounted(() => {
             {{ btn.discovered ? btn.name : '???' }} <span>➡️</span>
           </button>
         </div>
-      </div>
-
-      <div id="bottom-action-panel">
-        <button
-          class="bg-gradient-to-b from-red-400 to-red-600 text-white font-black py-3 px-8 rounded-full border-2 border-red-800 shadow-[0_6px_0_#7f1d1d] active:shadow-[0_0px_0_#7f1d1d] active:translate-y-1.5 flex items-center gap-2 text-lg transition-all"
-          @click="exploreZone"
-        >
-          🔍 Explorar
-        </button>
-        <button
-          v-if="mapNodes[currentNode]?.hasCenter"
-          id="btn-heal"
-          class="bg-gradient-to-b from-pink-400 to-pink-500 text-white font-black py-3 px-8 rounded-full border-2 border-pink-700 shadow-[0_6px_0_#831843] active:shadow-[0_0px_0_#831843] active:translate-y-1.5 flex items-center gap-2 text-lg transition-all"
-          @click="healPokemon"
-        >
-          ❤️ Curar
-        </button>
       </div>
     </div>
 
@@ -1156,11 +1165,7 @@ onMounted(() => {
     <AdventureDebugModal
       :show="showDebugModal"
       :infinite-energy="infiniteEnergy"
-      @update-infinite-energy="(val) => {
-        infiniteEnergy = val
-        localStorage.setItem('pokeVicioDebugEnergy', String(infiniteEnergy))
-        if (isPlanning) updatePlanUI()
-      }"
+      @update-infinite-energy="setInfiniteEnergy"
       @unlock-all="debugUnlockAll"
       @give-all-m-os="debugGiveAllMOs"
       @trigger-swarm="debugTriggerSwarm"

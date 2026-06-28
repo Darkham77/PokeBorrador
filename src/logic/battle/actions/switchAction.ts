@@ -5,6 +5,7 @@ import { runEnemyAction } from '../battleTurn.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { resolveShowdownSlot, swapActivePokemon } from '../showdownAdapter.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { useUIStore } from '@/stores/ui'
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
   const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, exitingPlayer, animations, playerStages, enemyStages, persistBattle, handleFaint } = ctx

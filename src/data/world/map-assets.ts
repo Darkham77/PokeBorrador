@@ -26,7 +26,19 @@ export const MAP_ROUTE_MAPPING = {
   mansion: 'mansionpokemon',
   route23: 'ruta23',
   victory_road: 'callevictoria',
-  cerulean_cave: 'cuevaceleste'
+  cerulean_cave: 'cuevaceleste',
+  
+  // Kanto Cities (test aventura)
+  pallet_town: '/test aventura/imagenes/Pallet_Town_FRLG.png',
+  viridian_city: '/test aventura/imagenes/Viridian_City_FRLG.png',
+  pewter_city: '/test aventura/imagenes/Pewter_City_FRLG.png',
+  cerulean_city: '/test aventura/imagenes/Cerulean_City_FRLG.png',
+  vermilion_city: '/test aventura/imagenes/Vermilion_City_FRLG.png',
+  lavender_town: '/test aventura/imagenes/Lavender_Town_FRLG.png',
+  celadon_city: '/test aventura/imagenes/Celadon_City_FRLG.png',
+  saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
+  fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
+  cinnabar_island: '/test aventura/imagenes/150px-Cinnabar_Island_FRLG.png'
 };
 
 export const MAPS_WITH_CYCLES = [

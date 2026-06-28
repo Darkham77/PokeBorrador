@@ -66,8 +66,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
   const isShiny = isShinyPrimary ?? isShinyLegacy ?? false;
   const isBack = isBackPrimary ?? isBackLegacy ?? false;
 
-  // If it's already a full URL, return it
-  if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:'))) {
+  // If it's already a full URL or local test path, return it
+  if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:') || rawId.startsWith('/test aventura/'))) {
     return rawId;
   }
 

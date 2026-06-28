@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mapToShowdownSet, getShowdownSlot, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
