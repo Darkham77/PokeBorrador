@@ -2,6 +2,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
 import type { SBCtx } from './showdownBridgeCtx';
+import type { Move } from '@/types/pokemon/pokemon';
 
 /**
  * Maneja eventos de campo y efectos persistentes:
@@ -57,7 +58,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
           const moveId = moveName.toLowerCase().replace(/[^a-z0-9]/g, '');
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
-          target.disabledMove = { id: moveId, name: translatedName } as any;
+          target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
           target.disabledTurns = 4;
         } else {
           let isLockedEffect = cleanEffect === 'lockedmove';

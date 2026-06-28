@@ -16,4 +16,17 @@ declare module '*.scss' {
   export default content
 }
 
+declare module 'sql.js' {
+  const initSqlJs: () => Promise<{
+    Database: new (data?: Uint8Array) => {
+      run: (sql: string, params?: unknown[]) => void;
+      exec: (sql: string, params?: unknown[]) => { columns: string[]; values: unknown[][] }[];
+      export: () => Uint8Array;
+      close: () => void;
+    };
+  }>;
+  export default initSqlJs;
+}
+
+
 

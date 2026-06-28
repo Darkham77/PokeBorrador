@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mapToShowdownSet, getShowdownSlot, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { ref } from 'vue';
@@ -315,7 +315,7 @@ describe('Showdown Integration & Adapters', () => {
       // Forzar que tenga terremoto (si es que no lo tiene)
       dugtrio.moves = [
         { id: 'earthquake', name: 'Terremoto', pp: 10, maxPp: 10, power: 100, type: 'ground', cat: 'physical' }
-      ] as any;
+      ] as unknown as Pokemon['moves'];
 
       const p1Team = [mapToShowdownSet(makePokemon('vaporeon', 50)!)];
       const p2Team = [mapToShowdownSet(dugtrio)];
@@ -338,7 +338,7 @@ describe('Showdown Integration & Adapters', () => {
       enemy.moves = [
         { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
         { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 90, type: 'poison', cat: 'special' }
-      ] as any;
+      ] as unknown as Pokemon['moves'];
 
       const player = makePokemon('vaporeon', 50)!;
       const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 } as BattleStages;
@@ -348,7 +348,7 @@ describe('Showdown Integration & Adapters', () => {
       expect(move1?.id).toBe('sludgebomb'); 
 
       // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
-      enemy.disabledMove = { id: 'sludgebomb' } as any;
+      enemy.disabledMove = { id: 'sludgebomb', name: 'Bomba Lodo' } as unknown as Move;
       const move2 = decideEnemyMove(enemy, player, stages, false);
       expect(move2?.id).toBe('shadowball');
     });
