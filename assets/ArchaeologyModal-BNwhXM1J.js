@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-_WpZo-Ih.js";export{e as default};
