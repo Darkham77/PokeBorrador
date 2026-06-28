@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import MapCard from '@/components/map/MapCard.vue'
 import AdventureInventoryModal from './AdventureInventoryModal.vue'
 import AdventureDebugModal from './AdventureDebugModal.vue'
@@ -192,17 +193,9 @@ function setStatus(text: string, isMovingState = false) {
 // Alert Modals
 const alertOpen = ref(false)
 const alertMsg = ref('')
+const showActionAlert = (msg: string) => { alertMsg.value = msg; alertOpen.value = true }
 
-function showActionAlert(msg: string) {
-  alertMsg.value = msg
-  alertOpen.value = true
-}
-
-function closeAlert() {
-  alertOpen.value = false
-}
-
-
+const closeAlert = () => { alertOpen.value = false }
 
 function setCompanion(comp: string) {
   activeCompanion.value = comp
@@ -219,30 +212,16 @@ function updateInventory(item: string, value: boolean) {
 
 // Player visuals
 const playerSpriteHtml = ref(HTML_WALK)
-function updatePlayerVisuals() {
-  if (playerInventory.value['Bicicleta']) {
-    playerSpriteHtml.value = HTML_BICI
-  } else {
-    playerSpriteHtml.value = HTML_WALK
-  }
-}
+const updatePlayerVisuals = () => { playerSpriteHtml.value = playerInventory.value['Bicicleta'] ? HTML_BICI : HTML_WALK }
 
 // Modals toggles
 const showInventoryModal = ref(false)
 const showRadarModal = ref(false)
 const showDebugModal = ref(false)
 
-function toggleInventoryModal() {
-  showInventoryModal.value = !showInventoryModal.value
-}
-
-function toggleRadarModal() {
-  showRadarModal.value = !showRadarModal.value
-}
-
-function toggleDebugModal() {
-  showDebugModal.value = !showDebugModal.value
-}
+const toggleInventoryModal = () => { showInventoryModal.value = !showInventoryModal.value }
+const toggleRadarModal = () => { showRadarModal.value = !showRadarModal.value }
+const toggleDebugModal = () => { showDebugModal.value = !showDebugModal.value }
 
 // Camera control
 function updateCameraTransform(smooth = false) {
@@ -556,58 +535,37 @@ function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolea
   return new Promise<void>(resolve => {
     const start = mapNodes.value[startId]
     const end = mapNodes.value[endId]
-    
-    // Calculate 4-way direction from movement vector
     const dx = end.x - start.x
     const dy = end.y - start.y
-    if (Math.abs(dx) > Math.abs(dy)) {
-      playerDirection.value = dx > 0 ? 'right' : 'left'
-    } else {
-      playerDirection.value = dy > 0 ? 'down' : 'up'
-    }
+    playerDirection.value = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')
 
-    const distance = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))
-    let speed = baseWalkSpeed
-    if (isFlying) speed = flySpeed
-    else if (playerInventory.value['Bicicleta']) speed = baseBikeSpeed
+    const distance = Math.hypot(dx, dy)
+    const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
+    const duration = distance / speed
 
-    const duration = (distance / speed) * 1000
-
+    const tl = gsap.timeline({ onComplete: resolve })
     if (playerToken.value) {
-      playerToken.value.style.transitionDuration = `${duration}ms`
-      playerToken.value.style.left = `${end.x}px` 
-      playerToken.value.style.top = `${end.y}px`
+      tl.to(playerToken.value, { left: end.x, top: end.y, duration, ease: 'none' }, 0)
     }
-
-    let startTime: number | null = null
-    function track(time: number) {
-      if (!isMoving.value) return
-      if (!startTime) startTime = time
-      let progress = (time - startTime) / duration
-      if (progress > 1) progress = 1
-      
-      const currentX = start.x + (end.x - start.x) * progress
-      const currentY = start.y + (end.y - start.y) * progress
-      
-      centerCameraOn(currentX, currentY, false, MAP_SCALE)
-      
-      if (progress < 1) requestAnimationFrame(track)
-      else resolve()
-    }
-    requestAnimationFrame(track)
+    const camObj = { x: start.x, y: start.y }
+    tl.to(camObj, {
+      x: end.x,
+      y: end.y,
+      duration,
+      ease: 'none',
+      onUpdate: () => centerCameraOn(camObj.x, camObj.y, false, MAP_SCALE)
+    }, 0)
   })
 }
 
 // Swarms
-function triggerSwarm() {
+const triggerSwarm = () => {
   const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id].type.includes('route'))
   currentSwarmRoute.value = routes[Math.floor(Math.random() * routes.length)]
 }
 
 // Explore & Heal
-function exploreZone() {
-  showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
-}
+const exploreZone = () => showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
 
 function healPokemon() {
   playerEnergy.value = 100
@@ -622,7 +580,7 @@ function setInfiniteEnergy(val: boolean) {
 }
 
 // Debug features
-function debugUnlockAll() {
+const debugUnlockAll = () => {
   discoveredNodes.value = Object.keys(mapNodes.value)
   localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
   showActionAlert("⚙️ Cheat: Todo el mapa ha sido descubierto.")
@@ -635,7 +593,7 @@ function debugGiveAllMOs() {
   showActionAlert("⚙️ Cheat: Tienes todos los Objetos y MOs.")
 }
 
-function debugTriggerSwarm() {
+const debugTriggerSwarm = () => {
   triggerSwarm()
   showActionAlert("⚙️ Enjambre forzado en: " + mapNodes.value[currentSwarmRoute.value!].name)
 }
