@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-28T18:36:51.341Z",
+  "generatedAt": "2026-06-28T18:56:42.480Z",
   "summary": {
     "totalMoves": 684,
-    "passedMoves": 677,
+    "passedMoves": 676,
     "failedMoves": 0,
-    "untestedMoves": 7,
+    "untestedMoves": 8,
     "totalAbilities": 310,
-    "passedAbilities": 44,
+    "passedAbilities": 43,
     "failedAbilities": 0,
-    "untestedAbilities": 266
+    "untestedAbilities": 267
   },
   "moves": [
     {
@@ -417,7 +417,7 @@
       "id": "brickbreak",
       "name": "brickbreak",
       "type": "move",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "brine",
@@ -4367,7 +4367,7 @@
       "id": "cursedbody",
       "name": "cursedbody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cutecharm",
@@ -4385,7 +4385,7 @@
       "id": "dancer",
       "name": "dancer",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "darkaura",
@@ -4481,7 +4481,7 @@
       "id": "effectspore",
       "name": "effectspore",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "electricsurge",
@@ -4787,7 +4787,7 @@
       "id": "immunity",
       "name": "immunity",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "imposter",
@@ -4835,7 +4835,7 @@
       "id": "ironbarbs",
       "name": "ironbarbs",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ironfist",

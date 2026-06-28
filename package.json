@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:node": "node --experimental-strip-types --experimental-test-coverage --test \"tests/node/**/*.test.ts\"",
     "test:all": "npm run test:node && npm run test",
-    "test:move-coverage": "vitest run tests/unit/battle/coverage_fuzzer.spec.ts",
+    "test:combat-coverage": "vitest run tests/unit/battle/coverage_fuzzer.spec.ts tests/unit/battle/showdown_item_sync.spec.ts",
     "lint": "npm run validate:types && eslint . --fix && npm run lint:md",
     "lint:analyze": "eslint . -f json -o lint-results.json || node analyze_lint.cjs",
     "lint:md": "markdownlint \"**/*.md\" --ignore \"node_modules/**\" --ignore \"dist/**\" --ignore \"dev-dist/**\" --ignore \"backup_legacy_code/**\" --ignore \"supabase/**\" --ignore \"docs/media/**\" --ignore \"scratch/**\" --fix",
