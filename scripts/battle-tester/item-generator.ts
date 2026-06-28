@@ -1,5 +1,5 @@
 // scripts/battle-tester/item-generator.ts
-import { Dex, toID } from '@pkmn/sim';
+import { Dex } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 

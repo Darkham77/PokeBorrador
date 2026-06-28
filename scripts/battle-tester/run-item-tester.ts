@@ -1,5 +1,4 @@
 // scripts/battle-tester/run-item-tester.ts
-import { describe, it } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
@@ -168,8 +167,7 @@ export async function runItemCoverageFuzzer() {
           }
         });
       }
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : String(err);
+    } catch (_err: unknown) {
       batch.itemsToTest.forEach(itemId => {
         if (itemCoverage[itemId]) {
           itemCoverage[itemId]!.status = 'FAIL';
