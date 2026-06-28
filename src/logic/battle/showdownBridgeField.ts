@@ -119,6 +119,14 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
       return true;
     }
 
+    case '-fieldactivate': {
+      if (line.includes('[silent]')) return true;
+      const rawMove = parts[2] || '';
+      const moveName = rawMove.startsWith('move:') ? rawMove.replace('move:', '').trim() : rawMove;
+      store.addLog(`¡Se activó ${moveName} en el campo!`, 'log-info', '🌀');
+      return true;
+    }
+
     default:
       return false;
   }

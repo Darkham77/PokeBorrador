@@ -26,7 +26,10 @@ export function filterShowdownLogs(logs: string[]): string[] {
       }
       i += 2;
     } else {
-      filtered.push(line);
+      // Filtrar líneas de debug, hints y nothing de Showdown que no representan eventos visuales de combate
+      if (!line.startsWith('|debug|') && !line.startsWith('|-hint|') && line !== '|-nothing') {
+        filtered.push(line);
+      }
     }
   }
   return filtered;

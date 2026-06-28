@@ -145,6 +145,12 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
+    case 'win': {
+      const winnerName = parts[2] || 'Entrenador';
+      store.addLog(`¡El combate ha terminado! Ganador: ${winnerName}`, 'log-info');
+      return true;
+    }
+
     default:
       return false;
   }

@@ -235,6 +235,11 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       return true;
     }
 
+    case '-anim': {
+      // Registrar que la animación de movimiento fue recibida (y opcionalmente dispararla en UI)
+      return true;
+    }
+
     default:
       return false;
   }
