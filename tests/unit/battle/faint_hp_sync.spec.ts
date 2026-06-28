@@ -38,11 +38,11 @@ describe('Faint HP Sync', () => {
     })
 
     const fsm = {
-      currentState: { value: BATTLE_STATES.ACTIVE_BATTLE },
-      currentSubState: { value: BATTLE_SUBSTATES.CLEANUP_MEMORY },
+      currentState: { value: BATTLE_STATES.ACTIVE_BATTLE as typeof BATTLE_STATES[keyof typeof BATTLE_STATES] },
+      currentSubState: { value: BATTLE_SUBSTATES.CLEANUP_MEMORY as typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUBSTATES] },
       transition: vi.fn(async (s: string, sub?: string) => {
-        fsm.currentState.value = s
-        if (sub) fsm.currentSubState.value = sub
+        fsm.currentState.value = s as typeof BATTLE_STATES[keyof typeof BATTLE_STATES]
+        if (sub) fsm.currentSubState.value = sub as typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUBSTATES]
       })
     }
 

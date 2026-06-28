@@ -150,7 +150,7 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
 
     await expect(executeSwitch(ctx, 1, false)).rejects.toThrow('INVALID_CHOICE')
 
-    expect(ctx.activeBattle.value?.player.uid).toBe(p1.uid)
+    expect(ctx.activeBattle.value?.player!.uid).toBe(p1.uid)
     expect(ctx.activeBattle.value?.playerTeamIndex).toBe(0)
   })
 
@@ -167,6 +167,6 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
     // Verify it did not transition to REORDER_TEAM
     expect(transitionSpy).not.toHaveBeenCalledWith('REORDER_TEAM')
     // Active player is still p1
-    expect(ctx.activeBattle.value?.player.uid).toBe(p1.uid)
+    expect(ctx.activeBattle.value?.player!.uid).toBe(p1.uid)
   })
 })

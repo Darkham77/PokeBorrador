@@ -4,7 +4,11 @@ import { getShowdownFormatId } from './showdownAdapter.ts';
 
 /** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */
 interface PkmnSimSide {
-  active?: Array<{ moveSlots?: Array<{ id: string; pp: number; disabled?: boolean | string } | null> } | null>;
+  active?: Array<{
+    moveSlots?: Array<{ id: string; pp: number; disabled?: boolean | string } | null>;
+    trapped?: boolean | string;
+    maybeTrapped?: boolean | string;
+  } | null>;
   pokemon?: Array<{ hp: number; fainted: boolean; status: string } | null>;
 }
 
@@ -38,8 +42,8 @@ self.onmessage = (event: MessageEvent) => {
         currentBattle.setPlayer('p2', { name: p2.name, team: p2.team });
 
         // Sincronizar HP iniciales
-        syncSideStates(currentBattle.p1, payload.p1Hps, undefined);
-        syncSideStates(currentBattle.p2, payload.p2Hps, undefined);
+        syncSideStates(currentBattle.p1 as unknown as PkmnSimSide, payload.p1Hps, undefined);
+        syncSideStates(currentBattle.p2 as unknown as PkmnSimSide, payload.p2Hps, undefined);
 
         if (payload.weather && payload.weather !== 'none') {
           currentBattle.field.setWeather(payload.weather, 'debug' as const);
@@ -59,8 +63,8 @@ self.onmessage = (event: MessageEvent) => {
         const { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip } = payload;
 
         // Sincronizar HP y Estados antes del turno
-        syncSideStates(currentBattle.p1, p1Hps, p1Statuses);
-        syncSideStates(currentBattle.p2, p2Hps, p2Statuses);
+        syncSideStates(currentBattle.p1 as unknown as PkmnSimSide, p1Hps, p1Statuses);
+        syncSideStates(currentBattle.p2 as unknown as PkmnSimSide, p2Hps, p2Statuses);
 
         // Si se indicó saltar turno (por uso de objeto), aplicar volatile flinch para omitir ataque
         if (p1Skip && currentBattle.p1.active?.[0]) {
@@ -92,7 +96,7 @@ self.onmessage = (event: MessageEvent) => {
         };
 
         if (p1Choice) {
-          const resolved1 = resolveChoice(currentBattle.p1, p1Choice);
+          const resolved1 = resolveChoice(currentBattle.p1 as unknown as PkmnSimSide, p1Choice);
           const res1 = currentBattle.choose('p1', resolved1);
           console.log(`[Showdown Worker] p1 choose(${resolved1}) res:`, res1);
           if (!res1) {
@@ -100,7 +104,7 @@ self.onmessage = (event: MessageEvent) => {
           }
         }
         if (p2Choice) {
-          const resolved2 = resolveChoice(currentBattle.p2, p2Choice);
+          const resolved2 = resolveChoice(currentBattle.p2 as unknown as PkmnSimSide, p2Choice);
           const res2 = currentBattle.choose('p2', resolved2);
           console.log(`[Showdown Worker] p2 choose(${resolved2}) res:`, res2);
           if (!res2) {
@@ -128,7 +132,7 @@ self.onmessage = (event: MessageEvent) => {
       }
 
       case 'CHECK_TRAPPED': {
-        const activeReq = currentBattle?.p1?.activeRequest;
+        const activeReq = (currentBattle?.p1?.activeRequest as unknown as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined);
         const trapped = !!(activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped);
         self.postMessage({
           type: 'CHECK_TRAPPED_RESPONSE',

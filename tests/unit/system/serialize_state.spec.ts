@@ -34,11 +34,12 @@ describe('serializeState - Active Battle serialization', () => {
     } as unknown as GameState;
 
     const serialized = serializeState(mockState);
-    expect(serialized.activeBattle).not.toBeNull();
-    expect(serialized.activeBattle?.isGym).toBe(true);
-    expect(serialized.activeBattle?.gymId).toBe('pewter');
-    expect(serialized.activeBattle?.trainerName).toBe('Brock');
-    expect(serialized.activeBattle?.enemyTeam?.[0]?.hp).toBe(165);
+    const battle = serialized.activeBattle as Record<string, unknown> | null;
+    expect(battle).not.toBeNull();
+    expect(battle?.['isGym']).toBe(true);
+    expect(battle?.['gymId']).toBe('pewter');
+    expect(battle?.['trainerName']).toBe('Brock');
+    expect((battle?.['enemyTeam'] as Array<{ hp: number }>)?.[0]?.hp).toBe(165);
   });
 
   it('should return null for activeBattle if there is no active battle', () => {

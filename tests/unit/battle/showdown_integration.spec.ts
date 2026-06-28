@@ -260,7 +260,7 @@ describe('Showdown Integration & Adapters', () => {
         const p2Hps = [0, 136]; // El bug: enviar HPs en orden inicial [Rhydon=0, Dugtrio=136] cuando mons está en orden cambiado
         const mons = battle.p2.pokemon;
         p2Hps.forEach((hp, index) => {
-          const pokemon = mons[index];
+          const pokemon = mons[index] as unknown as { hp: number; fainted: boolean; status: string } | undefined;
           if (pokemon) {
             pokemon.hp = hp;
             if (hp <= 0) {
@@ -291,7 +291,7 @@ describe('Showdown Integration & Adapters', () => {
         const p2Hps = [136, 0]; // La solución: enviar HPs en el orden actual/cambiado [Dugtrio=136, Rhydon=0]
         const mons = battle.p2.pokemon;
         p2Hps.forEach((hp, index) => {
-          const pokemon = mons[index];
+          const pokemon = mons[index] as unknown as { hp: number; fainted: boolean; status: string } | undefined;
           if (pokemon) {
             pokemon.hp = hp;
             if (hp <= 0) {
@@ -341,7 +341,7 @@ describe('Showdown Integration & Adapters', () => {
       ] as any;
 
       const player = makePokemon('vaporeon', 50)!;
-      const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+      const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 } as BattleStages;
 
       // Caso 1: Sin desactivar, puede elegir Bomba Lodo (potencia 90 > Bola Sombra 80)
       const move1 = decideEnemyMove(enemy, player, stages, false);

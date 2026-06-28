@@ -37,18 +37,19 @@ export async function executeTurnInWorker(
     if (!showdownWorker) return reject(new Error('showdownWorker is null'))
     const handler = (event: MessageEvent) => {
       const { type, payload } = event.data
+      const worker = showdownWorker!
       if (type === 'TURN_SUCCESS') {
-        if (showdownWorker.removeEventListener) {
-          showdownWorker.removeEventListener('message', handler)
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', handler)
         } else {
-          showdownWorker.onmessage = null
+          worker.onmessage = null
         }
         resolve(payload)
       } else if (type === 'ERROR') {
-        if (showdownWorker.removeEventListener) {
-          showdownWorker.removeEventListener('message', handler)
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', handler)
         } else {
-          showdownWorker.onmessage = null
+          worker.onmessage = null
         }
         const errorMsg = payload.message || '';
         const err = new Error(errorMsg);
@@ -75,11 +76,12 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
     if (!showdownWorker) return resolve(false)
     const handler = (event: MessageEvent) => {
       const { type, payload } = event.data
+      const worker = showdownWorker!
       if (type === 'CHECK_TRAPPED_RESPONSE') {
-        if (showdownWorker.removeEventListener) {
-          showdownWorker.removeEventListener('message', handler)
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', handler)
         } else {
-          showdownWorker.onmessage = null
+          worker.onmessage = null
         }
         resolve(!!payload.trapped)
       }
@@ -497,19 +499,20 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
     const initHandler = async (e: MessageEvent) => {
       const { type: responseType, payload: responsePayload } = e.data;
+      const worker = showdownWorker!
       if (responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
-        if (showdownWorker.removeEventListener) {
-          showdownWorker.removeEventListener('message', initHandler);
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', initHandler);
         } else {
-          showdownWorker.onmessage = null;
+          worker.onmessage = null;
         }
       } else if (responseType === 'ERROR') {
         logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${responsePayload.message}`);
-        if (showdownWorker.removeEventListener) {
-          showdownWorker.removeEventListener('message', initHandler);
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', initHandler);
         } else {
-          showdownWorker.onmessage = null;
+          worker.onmessage = null;
         }
         const { useErrorStore } = await import('@/stores/errorStore');
         useErrorStore().setError(new Error(responsePayload.message), { 

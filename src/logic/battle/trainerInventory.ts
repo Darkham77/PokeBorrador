@@ -1,4 +1,4 @@
-import type { BattleState } from '../../types/battle/battle';
+import type { BattleState } from '../../types/battle/battle.ts';
 
 interface PurchaseCandidate {
   id: string;
