@@ -1,1 +1,0 @@
-import{M as e,N as t}from"./game-data-Cv8m3QvT.js";export{e as SHOP_ITEMS,t as getItemById};
