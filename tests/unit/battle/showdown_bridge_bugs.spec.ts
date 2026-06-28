@@ -4,6 +4,8 @@ import { parseShowdownLogLine } from '../../../src/logic/battle/showdownBridge.t
 import { logger } from '../../../src/logic/utils/logger.ts';
 import { toID } from '@pkmn/sim';
 
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+
 function createLocalPoke(name: string, species: string) {
   return {
     uid: Math.random().toString(36).substring(2, 11),
@@ -16,7 +18,7 @@ function createLocalPoke(name: string, species: string) {
     status: null,
     volatileCounters: {},
     moves: [{ id: 'tackle', name: 'Tackle', pp: 20, maxPP: 20 }]
-  } as any;
+  } as unknown as Pokemon;
 }
 
 describe('ShowdownBridge Unhandled Logs Regression Tests', () => {

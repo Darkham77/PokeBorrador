@@ -57,7 +57,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
           const moveId = moveName.toLowerCase().replace(/[^a-z0-9]/g, '');
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
-          target.disabledMove = { id: moveId, name: translatedName } as any;
+          target.disabledMove = { id: moveId, name: translatedName } as unknown as import('@/types/pokemon/pokemon').Move;
           target.disabledTurns = 4;
         } else {
           let isLockedEffect = cleanEffect === 'lockedmove';

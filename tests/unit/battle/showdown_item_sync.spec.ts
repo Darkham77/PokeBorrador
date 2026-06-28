@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { Battle } from '@pkmn/sim';
+import type { ID } from '@pkmn/sim';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
 
 describe('Showdown Consumable Items Synchronization Tests', () => {
   beforeEach(() => {
@@ -18,8 +20,8 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       maxHp: 341,
       ability: 'noability',
       nature: 'serious',
-      moves: [{ id: 'tackle', name: 'Tackle' }]
-    } as any;
+      moves: [{ id: 'tackle', name: 'Tackle', pp: 20, maxPP: 20 }]
+    } as unknown as Pokemon;
 
     const ePokeActive = {
       uid: 'e-active',
@@ -30,8 +32,8 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       maxHp: 341,
       ability: 'noability',
       nature: 'serious',
-      moves: [{ id: 'tackle', name: 'Tackle' }]
-    } as any;
+      moves: [{ id: 'tackle', name: 'Tackle', pp: 20, maxPP: 20 }]
+    } as unknown as Pokemon;
 
     const ePokeBenched = {
       uid: 'e-benched',
@@ -42,16 +44,13 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       maxHp: 341,
       ability: 'noability',
       nature: 'serious',
-      moves: [{ id: 'tackle', name: 'Tackle' }]
-    } as any;
+      moves: [{ id: 'tackle', name: 'Tackle', pp: 20, maxPP: 20 }]
+    } as unknown as Pokemon;
 
     return { p1Poke, ePokeActive, ePokeBenched };
   };
 
-  it('debería sincronizar la salud correctamente en el simulador después de usar un Revivir en un aliado debilitado', async () => {
-    const { p1Poke, ePokeActive, ePokeBenched } = createTestTeams();
-    ePokeBenched.hp = 0; // Debilitado
-
+  const setupItemSyncBattle = (p1Poke: Pokemon, ePokeActive: Pokemon, ePokeBenched: Pokemon) => {
     const playerTeam = [mapToShowdownSet(p1Poke)];
     const enemyTeamList = [ePokeActive, ePokeBenched];
     const enemyTeam = enemyTeamList.map(p => mapToShowdownSet(p));
@@ -63,6 +62,15 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
     simBattle.choose('p1', 'move tackle');
     simBattle.choose('p2', 'move tackle');
 
+    return { simBattle, enemyTeamList };
+  };
+
+  it('debería sincronizar la salud correctamente en el simulador después de usar un Revivir en un aliado debilitado', async () => {
+    const { p1Poke, ePokeActive, ePokeBenched } = createTestTeams();
+    ePokeBenched.hp = 0; // Debilitado
+
+    const { simBattle, enemyTeamList } = setupItemSyncBattle(p1Poke, ePokeActive, ePokeBenched);
+
     const p2Side = simBattle.p2;
     if (p2Side && p2Side.pokemon) {
       const mon0 = p2Side.pokemon[0];
@@ -72,7 +80,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
         mon0.hp = 341;
         mon1.hp = 0;
         mon1.fainted = true;
-        mon1.status = 'fnt' as any;
+        mon1.status = 'fnt' as ID;
       }
     }
 
@@ -87,10 +95,10 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
         simMon.hp = hp;
         if (hp <= 0) {
           simMon.fainted = true;
-          simMon.status = 'fnt' as any;
+          simMon.status = 'fnt' as ID;
         } else {
           simMon.fainted = false;
-          if (simMon.status === 'fnt') simMon.status = '' as any;
+          if (simMon.status === 'fnt') simMon.status = '' as ID;
         }
       }
     });
@@ -105,7 +113,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
   });
 
   it('debería sincronizar estados alterados después de usar Cura Total / Restaurar Todo o curas específicas', async () => {
-    const statusesToTest = [
+    const statusesToTest: Array<{ status: PokemonStatus; item: string }> = [
       { status: 'psn', item: 'antidote' },
       { status: 'brn', item: 'burn_heal' },
       { status: 'par', item: 'paralyze_heal' },
@@ -117,22 +125,13 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       const { p1Poke, ePokeActive, ePokeBenched } = createTestTeams();
       ePokeActive.status = testCase.status;
 
-      const playerTeam = [mapToShowdownSet(p1Poke)];
-      const enemyTeamList = [ePokeActive, ePokeBenched];
-      const enemyTeam = enemyTeamList.map(p => mapToShowdownSet(p));
-
-      const simBattle = new Battle({ formatid: getShowdownFormatId() });
-      simBattle.setPlayer('p1', { name: 'Player', team: playerTeam });
-      simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: enemyTeam });
-
-      simBattle.choose('p1', 'move tackle');
-      simBattle.choose('p2', 'move tackle');
+      const { simBattle, enemyTeamList } = setupItemSyncBattle(p1Poke, ePokeActive, ePokeBenched);
 
       const p2Side = simBattle.p2;
       const firstMon = p2Side?.pokemon?.[0];
       if (firstMon) {
         // Sincronizar el estado en Showdown
-        firstMon.status = testCase.status as any;
+        firstMon.status = testCase.status as ID;
       }
 
       // Simular uso de objeto curativo (cura estado)
@@ -143,7 +142,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       p2Statuses.forEach((status, idx) => {
         const simMon = p2Side?.pokemon?.[idx];
         if (simMon && !simMon.fainted) {
-          simMon.status = status ? (status.toLowerCase() as any) : '';
+          simMon.status = status ? (status.toLowerCase() as ID) : ('' as ID);
         }
       });
 
@@ -168,16 +167,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       const { p1Poke, ePokeActive, ePokeBenched } = createTestTeams();
       ePokeActive.hp = testCase.startHp;
 
-      const playerTeam = [mapToShowdownSet(p1Poke)];
-      const enemyTeamList = [ePokeActive, ePokeBenched];
-      const enemyTeam = enemyTeamList.map(p => mapToShowdownSet(p));
-
-      const simBattle = new Battle({ formatid: getShowdownFormatId() });
-      simBattle.setPlayer('p1', { name: 'Player', team: playerTeam });
-      simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: enemyTeam });
-
-      simBattle.choose('p1', 'move tackle');
-      simBattle.choose('p2', 'move tackle');
+      const { simBattle, enemyTeamList } = setupItemSyncBattle(p1Poke, ePokeActive, ePokeBenched);
 
       const p2Side = simBattle.p2;
       const firstMon = p2Side?.pokemon?.[0];

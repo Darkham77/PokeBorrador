@@ -14,7 +14,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
     const isTrapped = await isPlayerTrappedInWorker()
     if (isTrapped) {
       const { useUIStore } = await import('@/stores/ui')
-      ;(useUIStore() as any).notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
+      ;(useUIStore() as unknown as { notify: (msg: string, icon: string) => void }).notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       return
     }
