@@ -105,7 +105,6 @@ export const officialMapIdMap: Record<string, string> = {
   'route23': 'route23',
   'route24': 'route24',
   'route25': 'route25',
-  'billshouse': 'route25',
   'pewter': 'pewter_city',
   'route3': 'route3',
   'mtmoon': 'mt_moon',
@@ -116,7 +115,7 @@ export const officialMapIdMap: Record<string, string> = {
   'powerplant': 'power_plant',
   'rocktunnel': 'rock_tunnel',
   'route2_n': 'route2',
-  'viridianforest': 'viridian_forest',
+  'viridianforest': 'forest',
   'route2_s': 'route2',
   'route5': 'route5',
   'celadon': 'celadon_city',
@@ -129,7 +128,7 @@ export const officialMapIdMap: Record<string, string> = {
   'route22': 'route22',
   'route6': 'route6',
   'vermilion': 'vermilion_city',
-  'diglettcave': 'digletts_cave',
+  'diglettcave': 'diglett_cave',
   'route11': 'route11',
   'route12': 'route12',
   'route13': 'route13',
@@ -147,5 +146,5 @@ export const officialMapIdMap: Record<string, string> = {
   'seafoam': 'seafoam_islands',
   'route20': 'route20',
   'cinnabar': 'cinnabar_island',
-  'mansion': 'pokemon_mansion'
+  'mansion': 'mansion'
 }
