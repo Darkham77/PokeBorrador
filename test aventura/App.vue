@@ -15,7 +15,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
-import { getMapSpawnPoolData } from '@/logic/utils/routeSpawnHelpers'
+import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
 import { useModalStore } from '@/stores/modals'
