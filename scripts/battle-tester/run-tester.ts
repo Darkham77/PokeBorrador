@@ -9,7 +9,7 @@ import { createMockBattleContext } from './mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
 import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
 import { logger } from '../../src/logic/utils/logger.ts';
-import type { Pokemon } from '../../src/types/pokemon/pokemon';
+import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from './ability-scenarios.ts';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/battle-tester/results');

@@ -1,8 +1,8 @@
 // scripts/battle-tester/mock-battle-store.ts
 import { ref } from 'vue';
-import type { BattleContext } from '../../src/types/battle/battleContext';
-import type { BattleState, BattleStages, BattleLog } from '../../src/types/battle/battle';
-import type { Pokemon, Move } from '../../src/types/pokemon/pokemon';
+import type { BattleContext } from '../../src/types/battle/battleContext.ts';
+import type { BattleState, BattleStages, BattleLog } from '../../src/types/battle/battle.ts';
+import type { Pokemon, Move } from '../../src/types/pokemon/pokemon.ts';
 
 export function createMockBattleContext(playerPoke: Pokemon, enemyPoke: Pokemon): BattleContext {
   const activeBattle = ref<BattleState | null>({

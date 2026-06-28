@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-28T18:28:44.833Z",
+  "generatedAt": "2026-06-28T18:36:51.341Z",
   "summary": {
     "totalMoves": 684,
     "passedMoves": 677,
     "failedMoves": 0,
     "untestedMoves": 7,
     "totalAbilities": 310,
-    "passedAbilities": 41,
+    "passedAbilities": 44,
     "failedAbilities": 0,
-    "untestedAbilities": 269
+    "untestedAbilities": 266
   },
   "moves": [
     {
@@ -4301,7 +4301,7 @@
       "id": "colorchange",
       "name": "colorchange",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "comatose",
@@ -4481,7 +4481,7 @@
       "id": "effectspore",
       "name": "effectspore",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "electricsurge",
@@ -4787,7 +4787,7 @@
       "id": "immunity",
       "name": "immunity",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "imposter",
@@ -4865,7 +4865,7 @@
       "id": "leafguard",
       "name": "leafguard",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "levitate",
@@ -5939,7 +5939,7 @@
       "id": "wimpout",
       "name": "wimpout",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "windpower",
