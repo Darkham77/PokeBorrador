@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-28T18:56:42.480Z",
+  "generatedAt": "2026-06-28T21:03:08.396Z",
   "summary": {
     "totalMoves": 684,
-    "passedMoves": 676,
+    "passedMoves": 675,
     "failedMoves": 0,
-    "untestedMoves": 8,
+    "untestedMoves": 9,
     "totalAbilities": 310,
-    "passedAbilities": 43,
+    "passedAbilities": 45,
     "failedAbilities": 0,
-    "untestedAbilities": 267
+    "untestedAbilities": 265
   },
   "moves": [
     {
@@ -2889,7 +2889,7 @@
       "id": "roleplay",
       "name": "roleplay",
       "type": "move",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "rollout",
@@ -4133,7 +4133,7 @@
       "id": "aftermath",
       "name": "aftermath",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "airlock",
@@ -4301,7 +4301,7 @@
       "id": "colorchange",
       "name": "colorchange",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "comatose",
@@ -4481,7 +4481,7 @@
       "id": "effectspore",
       "name": "effectspore",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "electricsurge",
@@ -4523,7 +4523,7 @@
       "id": "emergencyexit",
       "name": "emergencyexit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "fairyaura",
@@ -4541,7 +4541,7 @@
       "id": "flamebody",
       "name": "flamebody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "flareboost",
@@ -4745,7 +4745,7 @@
       "id": "hydration",
       "name": "hydration",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "hypercutter",
