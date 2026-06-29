@@ -1,5 +1,154 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { generateTestBatches } from '../../scripts/battle-tester/team-generator.ts';
+
+interface TeamSet {
+  species: string;
+  level?: number;
+  ability?: string;
+  moves?: string[];
+  item?: string;
+  name?: string;
+}
+
+// Helper: Esperar a que la máquina de estados retorne a WAIT_INPUT (el turno anterior y sus animaciones terminaron)
+async function waitForWaitInput(page: Page, turnCount: number, batchIndex: number) {
+  try {
+    await page.waitForFunction(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return store.currentSubState === 'WAIT_INPUT' || !store.state || store.state.over;
+    }, { timeout: 8000 });
+  } catch (_e) {
+    await page.screenshot({ path: `scratch/lock-batch-${batchIndex}-turn-${turnCount}.png` });
+    throw new Error(`Bloqueo detectado: La FSM de combate se quedó trabada en el turno ${turnCount}. Captura guardada en scratch/.`);
+  }
+}
+
+// Helper: Confirmar e iniciar combate real clickeando ¡COMBATIR!
+async function confirmAndStartBattle(page: Page) {
+  const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
+  await combatirBtn.waitFor({ state: 'attached', timeout: 5000 });
+  await combatirBtn.click({ force: true });
+}
+
+// Helper: Verificación de paridad 1:1 entre Store (Showdown) y DOM (Interfaz Gráfica)
+async function verifyHpParity(page: Page) {
+  const storeData = await page.evaluate(async () => {
+    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+    const store = useBattleStore();
+    return {
+      playerHp: store.state?.player?.hp ?? 0,
+      playerMaxHp: store.state?.player?.maxHp ?? 1,
+      enemyHp: store.state?.enemy?.hp ?? 0,
+      enemyMaxHp: store.state?.enemy?.maxHp ?? 1
+    };
+  });
+
+  // Esperar a que la barra de HP del DOM termine de animarse y refleje exactamente la vida del Store
+  if (storeData.playerHp > 0) {
+    const expectedPlayerPct = (storeData.playerHp / storeData.playerMaxHp) * 100;
+    await page.waitForFunction((expectedPct) => {
+      const bar = document.querySelector('.player-card .hp-bar-inner');
+      if (!bar) return false;
+      const style = bar.getAttribute('style') || '';
+      const match = style.match(/width:\s*([\d.]+)%/);
+      if (!match || !match[1]) return false;
+      return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
+    }, expectedPlayerPct, { timeout: 2000 }).catch(() => {});
+
+    const playerHpText = await page.locator('.player-card .hp-values').innerText();
+    expect(playerHpText).toContain(`${storeData.playerHp}/${storeData.playerMaxHp}`);
+  }
+
+  if (storeData.enemyHp > 0) {
+    const expectedEnemyPct = (storeData.enemyHp / storeData.enemyMaxHp) * 100;
+    await page.waitForFunction((expectedPct) => {
+      const bar = document.querySelector('.enemy-card .hp-bar-inner');
+      if (!bar) return false;
+      const style = bar.getAttribute('style') || '';
+      const match = style.match(/width:\s*([\d.]+)%/);
+      if (!match || !match[1]) return false;
+      return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
+    }, expectedEnemyPct, { timeout: 2000 }).catch(() => {});
+
+    const enemyHpText = await page.locator('.enemy-card .hp-values').innerText();
+    expect(enemyHpText).toContain(`${storeData.enemyHp}/${storeData.enemyMaxHp}`);
+  }
+}
+
+// Helper: Determinar qué botones están activos en la pantalla y clickear
+async function handleBattleInput(page: Page) {
+  const moveBtn = page.locator('.battle-move-btn, button[id^="move-btn-"]').first();
+  const activeMoveBtn = page.locator('.battle-move-btn:not([disabled]), button[id^="move-btn-"]:not([disabled])').first();
+  const activeSwitchBtn = page.locator('button:has-text("SLOT"):not([disabled])').first();
+
+  if (await moveBtn.isVisible()) {
+    if (await activeMoveBtn.isVisible()) {
+      await activeMoveBtn.click({ force: true });
+    } else {
+      // Si el jugador está atrapado/obligado a cambiar o usar switch
+      const changeBtn = page.locator('button:has-text("CAMBIAR")').first();
+      if (await changeBtn.isVisible()) {
+        await changeBtn.click({ force: true });
+        await activeSwitchBtn.waitFor({ state: 'attached', timeout: 2000 });
+        await activeSwitchBtn.click({ force: true });
+      }
+    }
+  } else if (await activeSwitchBtn.isVisible()) {
+    // Reemplazo obligatorio por K.O.
+    await activeSwitchBtn.click({ force: true });
+  } else {
+    await page.waitForTimeout(100);
+  }
+}
+
+// Helper: Bucle de ejecución automática de turnos
+async function executeAutoBattle(page: Page, batchIndex: number) {
+  let turnCount = 0;
+  const maxTurns = 50;
+
+  while (turnCount < maxTurns) {
+    // Verificar si la batalla ya concluyó en el store
+    const isOver = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return !store.state || store.state.over;
+    });
+
+    if (isOver) {
+      break;
+    }
+
+    await waitForWaitInput(page, turnCount, batchIndex);
+
+    // Re-verificar estado de finalización
+    const isOverAfterWait = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return !store.state || store.state.over;
+    });
+
+    if (isOverAfterWait) {
+      break;
+    }
+
+    // Verificar paridad DOM/Store
+    await verifyHpParity(page);
+
+    // Procesar acción del turno
+    await handleBattleInput(page);
+
+    turnCount++;
+  }
+
+  // Validar que el combate finalizó correctamente sin errores críticos
+  const battleOverSuccess = await page.evaluate(async () => {
+    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+    const store = useBattleStore();
+    return !store.state || store.state.over;
+  });
+  expect(battleOverSuccess).toBe(true);
+}
 
 test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   // Configurar Playwright para correr todos los tests de este archivo en paralelo maximizando la concurrencia
@@ -14,7 +163,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
     // 1. Inyectar configuraciones de E2E y mockear permisos
     await page.addInitScript(() => {
-      (window as any).__E2E__ = true;
+      (window as unknown as Record<string, unknown>).__E2E__ = true;
       localStorage.setItem('pwa_permissions_accepted', 'true');
       if ('Notification' in window) {
         Object.defineProperty(Notification, 'permission', {
@@ -40,7 +189,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     try {
       await starterCard.waitFor({ state: 'attached', timeout: 5000 });
       await starterCard.click({ force: true });
-    } catch (e) {
+    } catch (_e) {
       // Ignorar si no aparece
     }
 
@@ -54,15 +203,15 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     test(`debería simular el lote #${index + 1} (${batch.movesToTest.length} movimientos, ${batch.abilitiesToTest.length} habilidades) sin bloqueos de FSM`, async ({ page }) => {
       // 1. Construir e inyectar el equipo del jugador y del enemigo en la sesión del navegador
       await page.evaluate(async (b) => {
-        const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const { useGameStore } = await import('/src/stores/game.ts');
+        const { pokemonDebugService } = await import('../../src/logic/debug/pokemonDebugService.ts');
+        const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+        const { useGameStore } = await import('../../src/stores/game.ts');
         
         const battleStore = useBattleStore();
         const gameStore = useGameStore();
         
         // Generar equipo local para el jugador usando la API de depuración
-        const localPlayerTeam = b.playerTeam.map((set: any) => {
+        const localPlayerTeam = b.playerTeam.map((set: TeamSet) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,
@@ -74,7 +223,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         });
 
         // Generar equipo local para el enemigo (NPC)
-        const localEnemyTeam = b.enemyTeam.map((set: any) => {
+        const localEnemyTeam = b.enemyTeam.map((set: TeamSet) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,
@@ -90,6 +239,8 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
         // Iniciar la batalla como combate de entrenador usando el primer enemigo y la plantilla completa
         const firstEnemy = localEnemyTeam[0];
+        if (!firstEnemy) throw new Error('No enemy generated for E2E test');
+
         await battleStore.startBattle(firstEnemy, {
           isTrainer: true,
           enemyTeam: localEnemyTeam,
@@ -98,129 +249,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         });
       }, batch);
 
-      // 2. Hacer click en "¡COMBATIR!" para iniciar la secuencia de combate real
-      const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-      await combatirBtn.waitFor({ state: 'attached', timeout: 5000 });
-      await combatirBtn.click({ force: true });
+      // 2. Confirmar combate e iniciar
+      await confirmAndStartBattle(page);
 
-      // 3. Bucle de ejecución automática del combate
-      let turnCount = 0;
-      const maxTurns = 50;
-
-      while (turnCount < maxTurns) {
-        // Verificar si la batalla ya concluyó en el store
-        const isOver = await page.evaluate(async () => {
-          const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-          const store = useBattleStore();
-          return !store.activeBattle || store.activeBattle.over;
-        });
-
-        if (isOver) {
-          break;
-        }
-
-        // Esperar a que la máquina de estados retorne a WAIT_INPUT (el turno anterior y sus animaciones terminaron)
-        try {
-          await page.waitForFunction(async () => {
-            const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-            const store = useBattleStore();
-            return store.currentSubState === 'WAIT_INPUT' || !store.activeBattle || store.activeBattle.over;
-          }, { timeout: 8000 });
-        } catch (e) {
-          await page.screenshot({ path: `scratch/lock-batch-${index + 1}-turn-${turnCount}.png` });
-          throw new Error(`Bloqueo detectado: La FSM de combate se quedó trabada en el turno ${turnCount}. Captura guardada en scratch/.`);
-        }
-
-        // Re-verificar estado de finalización
-        const isOverAfterWait = await page.evaluate(async () => {
-          const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-          const store = useBattleStore();
-          return !store.activeBattle || store.activeBattle.over;
-        });
-
-        if (isOverAfterWait) {
-          break;
-        }
-
-        // 4. Verificación de paridad 1:1 entre Store (Showdown) y DOM (Interfaz Gráfica)
-        const storeData = await page.evaluate(async () => {
-          const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-          const store = useBattleStore();
-          return {
-            playerHp: store.state?.player?.hp ?? 0,
-            playerMaxHp: store.state?.player?.maxHp ?? 1,
-            enemyHp: store.state?.enemy?.hp ?? 0,
-            enemyMaxHp: store.state?.enemy?.maxHp ?? 1,
-            playerStatus: store.state?.player?.status,
-            enemyStatus: store.state?.enemy?.status
-          };
-        });
-
-        // Esperar a que la barra de HP del DOM termine de animarse y refleje exactamente la vida del Store
-        if (storeData.playerHp > 0) {
-          const expectedPlayerPct = (storeData.playerHp / storeData.playerMaxHp) * 100;
-          await page.waitForFunction((expectedPct) => {
-            const bar = document.querySelector('.player-card .hp-bar-inner');
-            if (!bar) return false;
-            const style = bar.getAttribute('style') || '';
-            const match = style.match(/width:\s*([\d.]+)%/);
-            if (!match || !match[1]) return false;
-            return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
-          }, expectedPlayerPct, { timeout: 2000 }).catch(() => {});
-
-          const playerHpText = await page.locator('.player-card .hp-values').innerText();
-          expect(playerHpText).toContain(`${storeData.playerHp}/${storeData.playerMaxHp}`);
-        }
-
-        if (storeData.enemyHp > 0) {
-          const expectedEnemyPct = (storeData.enemyHp / storeData.enemyMaxHp) * 100;
-          await page.waitForFunction((expectedPct) => {
-            const bar = document.querySelector('.enemy-card .hp-bar-inner');
-            if (!bar) return false;
-            const style = bar.getAttribute('style') || '';
-            const match = style.match(/width:\s*([\d.]+)%/);
-            if (!match || !match[1]) return false;
-            return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
-          }, expectedEnemyPct, { timeout: 2000 }).catch(() => {});
-
-          const enemyHpText = await page.locator('.enemy-card .hp-values').innerText();
-          expect(enemyHpText).toContain(`${storeData.enemyHp}/${storeData.enemyMaxHp}`);
-        }
-
-        // 5. Determinar qué botones están activos en la pantalla y clickear
-        const moveBtn = page.locator('.battle-move-btn, button[id^="move-btn-"]').first();
-        const activeMoveBtn = page.locator('.battle-move-btn:not([disabled]), button[id^="move-btn-"]:not([disabled])').first();
-        const activeSwitchBtn = page.locator('button:has-text("SLOT"):not([disabled])').first();
-
-        if (await moveBtn.isVisible()) {
-          if (await activeMoveBtn.isVisible()) {
-            await activeMoveBtn.click({ force: true });
-          } else {
-            // Si el jugador está atrapado/obligado a cambiar o usar switch
-            const changeBtn = page.locator('button:has-text("CAMBIAR")').first();
-            if (await changeBtn.isVisible()) {
-              await changeBtn.click({ force: true });
-              await activeSwitchBtn.waitFor({ state: 'attached', timeout: 2000 });
-              await activeSwitchBtn.click({ force: true });
-            }
-          }
-        } else if (await activeSwitchBtn.isVisible()) {
-          // Reemplazo obligatorio por K.O.
-          await activeSwitchBtn.click({ force: true });
-        } else {
-          await page.waitForTimeout(100);
-        }
-
-        turnCount++;
-      }
-
-      // Validar que el combate finalizó correctamente sin errores críticos
-      const battleOverSuccess = await page.evaluate(async () => {
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const store = useBattleStore();
-        return !store.activeBattle || store.activeBattle.over;
-      });
-      expect(battleOverSuccess).toBe(true);
+      // 3. Ejecutar auto-batalla y validaciones
+      await executeAutoBattle(page, index + 1);
     });
   });
 
@@ -228,12 +261,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   test('debería consumir una Poción en combate y mantener la sincronía del turno y FSM', async ({ page }) => {
     // 1. Iniciar un combate de prueba contra Pikachu a través de VITE_DEBUG e inicializar inventario
     await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-      const { useGameStore } = await import('/src/stores/game.ts');
-      const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
+      const { useGameStore: getGameStore } = await import('../../src/stores/game.ts');
+      const { useBattleStore: getBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { pokemonDebugService: debugService } = await import('../../src/logic/debug/pokemonDebugService.ts');
       
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+      const gameStore = getGameStore();
+      const battleStore = getBattleStore();
 
       // Inicializar inventario con Pociones
       gameStore.state.inventory = {
@@ -241,18 +274,16 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
       };
 
       // Generar equipo local con Bulbasaur dañado (10 HP de 20)
-      const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 5 });
+      const bulbasaur = debugService.generate({ id: 'bulbasaur', level: 5 });
       bulbasaur.hp = 10;
       gameStore.state.team = [bulbasaur];
 
-      const pikachu = pokemonDebugService.generate({ id: 'pikachu', level: 5 });
+      const pikachu = debugService.generate({ id: 'pikachu', level: 5 });
       await battleStore.startBattle(pikachu, { locationId: 'route1' });
     });
 
-    // 2. Confirmar combate
-    const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-    await combatirBtn.waitFor({ state: 'attached', timeout: 5000 });
-    await combatirBtn.click({ force: true });
+    // 2. Confirmar combate e iniciar
+    await confirmAndStartBattle(page);
 
     // 3. Esperar a que la UI de batalla termine las animaciones de inicio y el botón de la poción esté activo
     const potionCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Poción"]), .quick-item-card:not(.is-disabled):has(img[alt*="Poc"])').first();
@@ -268,14 +299,14 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
     // 5. Esperar a que la FSM procese el turno del uso del objeto + el ataque enemigo y vuelva a WAIT_INPUT
     await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
-      return store.currentSubState === 'WAIT_INPUT' || store.state?.player?.hp === 0;
+      return store.currentSubState === 'WAIT_INPUT' || (store.state && store.state.player && store.state.player.hp === 0);
     }, { timeout: 10000 });
 
     // 6. Verificar que la cantidad de pociones bajó a 2 en el GameStore
     const itemsCount = await page.evaluate(async () => {
-      const { useGameStore } = await import('/src/stores/game.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
       const gameStore = useGameStore();
       return gameStore.state.inventory?.potion ?? 0;
     });
@@ -283,97 +314,41 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
     // 6.5 Verificar que la vida de Bulbasaur en el Store realmente aumentó (debe ser mayor a 10, validando que el simulador no ignoró el objeto)
     const finalHp = await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
       return store.state?.player?.hp ?? 0;
     });
     expect(finalHp).toBeGreaterThan(10);
 
     // 7. Continuar el combate de forma automática hasta que finalice por completo (evitando cortes tempranos que oculten bugs en turnos futuros)
-    let turnCount = 0;
-    const maxTurns = 50;
-
-    while (turnCount < maxTurns) {
-      const isOver = await page.evaluate(async () => {
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const store = useBattleStore();
-        return !store.activeBattle || store.activeBattle.over;
-      });
-
-      if (isOver) {
-        break;
-      }
-
-      try {
-        await page.waitForFunction(async () => {
-          const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-          const store = useBattleStore();
-          return store.currentSubState === 'WAIT_INPUT' || !store.activeBattle || store.activeBattle.over;
-        }, { timeout: 8000 });
-      } catch (e) {
-        await page.screenshot({ path: `scratch/lock-potion-turn-${turnCount}.png` });
-        throw new Error(`Bloqueo detectado post-poción: La FSM se trabó en el turno ${turnCount}.`);
-      }
-
-      const isOverAfterWait = await page.evaluate(async () => {
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const store = useBattleStore();
-        return !store.activeBattle || store.activeBattle.over;
-      });
-
-      if (isOverAfterWait) {
-        break;
-      }
-
-      const activeMoveBtn = page.locator('.battle-move-btn:not([disabled]), button[id^="move-btn-"]:not([disabled])').first();
-      const activeSwitchBtn = page.locator('button:has-text("SLOT"):not([disabled])').first();
-
-      if (await activeMoveBtn.isVisible()) {
-        await activeMoveBtn.click({ force: true });
-      } else if (await activeSwitchBtn.isVisible()) {
-        await activeSwitchBtn.click({ force: true });
-      } else {
-        await page.waitForTimeout(100);
-      }
-
-      turnCount++;
-    }
-
-    const battleOverSuccess = await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-      const store = useBattleStore();
-      return !store.activeBattle || store.activeBattle.over;
-    });
-    expect(battleOverSuccess).toBe(true);
+    await executeAutoBattle(page, 999);
   });
 
   // --- TEST ADICIONAL: Lanzamiento de Pokéball y Captura ---
   test('debería lanzar una Pokéball e intentar capturar al Pokémon enemigo salvaje', async ({ page }) => {
     // 1. Iniciar un combate salvaje contra un Caterpie de nivel 1
     await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-      const { useGameStore } = await import('/src/stores/game.ts');
-      const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
+      const { useBattleStore: battleLoader } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore: gameLoader } = await import('../../src/stores/game.ts');
+      const { pokemonDebugService: pkmnDebugger } = await import('../../src/logic/debug/pokemonDebugService.ts');
       
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+      const gameStore = gameLoader();
+      const battleStore = battleLoader();
 
       // Inicializar inventario con Pokéballs
       gameStore.state.inventory = {
         pokeball: 10
       };
 
-      const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 5 });
+      const bulbasaur = pkmnDebugger.generate({ id: 'bulbasaur', level: 5 });
       gameStore.state.team = [bulbasaur];
 
-      const caterpie = pokemonDebugService.generate({ id: 'caterpie', level: 1 });
+      const caterpie = pkmnDebugger.generate({ id: 'caterpie', level: 1 });
       await battleStore.startBattle(caterpie, { locationId: 'route1' });
     });
 
-    // 2. Confirmar combate
-    const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-    await combatirBtn.waitFor({ state: 'attached', timeout: 5000 });
-    await combatirBtn.click({ force: true });
+    // 2. Confirmar combate e iniciar
+    await confirmAndStartBattle(page);
 
     // 3. Esperar a que termine la introducción y la pokéball esté activa
     const pokeballCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Pokéball"]), .quick-item-card:not(.is-disabled):has(img[alt*="ball"])').first();
@@ -384,16 +359,16 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
     // 5. Esperar a que finalice la secuencia de captura y termine la batalla
     await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
-      return !store.activeBattle || store.activeBattle.over;
+      return !store.state || store.state.over;
     }, { timeout: 10000 });
 
     // 6. Validar que la batalla cerró
     const isOver = await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
-      return !store.activeBattle || store.activeBattle.over;
+      return !store.state || store.state.over;
     });
     expect(isOver).toBe(true);
   });
@@ -402,12 +377,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
     // 1. Iniciar un combate de prueba contra Pikachu a través de VITE_DEBUG e inicializar inventario y equipo
     await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-      const { useGameStore } = await import('/src/stores/game.ts');
-      const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
+      const { useBattleStore: storeBattle } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore: storeGame } = await import('../../src/stores/game.ts');
+      const { pokemonDebugService: serviceDebug } = await import('../../src/logic/debug/pokemonDebugService.ts');
       
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
+      const gameStore = storeGame();
+      const battleStore = storeBattle();
 
       // Inicializar inventario con Revivir
       gameStore.state.inventory = {
@@ -415,19 +390,17 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
       };
 
       // Generar equipo local con Bulbasaur (activo) y Charmander debilitado (0 HP)
-      const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 5 });
-      const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
+      const bulbasaur = serviceDebug.generate({ id: 'bulbasaur', level: 5 });
+      const charmander = serviceDebug.generate({ id: 'charmander', level: 5 });
       charmander.hp = 0; // Debilitado
       gameStore.state.team = [bulbasaur, charmander];
 
-      const pikachu = pokemonDebugService.generate({ id: 'pikachu', level: 5 });
+      const pikachu = serviceDebug.generate({ id: 'pikachu', level: 5 });
       await battleStore.startBattle(pikachu, { locationId: 'route1' });
     });
 
-    // 2. Confirmar combate
-    const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-    await combatirBtn.waitFor({ state: 'attached', timeout: 5000 });
-    await combatirBtn.click({ force: true });
+    // 2. Confirmar combate e iniciar
+    await confirmAndStartBattle(page);
 
     // 3. Esperar a que la UI de batalla termine las animaciones de inicio y el botón de Revivir esté activo
     const reviveCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Revivir"]), .quick-item-card:not(.is-disabled):has(img[alt*="Rev"])').first();
@@ -443,74 +416,20 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
     // 5. Esperar a que la FSM procese el turno del uso del objeto + el ataque enemigo y vuelva a WAIT_INPUT
     await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
-      return store.currentSubState === 'WAIT_INPUT' || store.state?.player?.hp === 0;
+      return store.currentSubState === 'WAIT_INPUT' || (store.state && store.state.player && store.state.player.hp === 0);
     }, { timeout: 10000 });
 
     // 6. Verificar que Charmander en la banca ya no está debilitado (su HP es mayor a 0)
     const charmanderHp = await page.evaluate(async () => {
-      const { useGameStore } = await import('/src/stores/game.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
       const gameStore = useGameStore();
       return gameStore.state.team[1]?.hp ?? 0;
     });
     expect(charmanderHp).toBeGreaterThan(0);
 
     // 7. Continuar el combate de forma automática hasta que finalice por completo para verificar que no ocurra ningún bloqueo post-revivir
-    let turnCount = 0;
-    const maxTurns = 50;
-
-    while (turnCount < maxTurns) {
-      const isOver = await page.evaluate(async () => {
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const store = useBattleStore();
-        return !store.activeBattle || store.activeBattle.over;
-      });
-
-      if (isOver) {
-        break;
-      }
-
-      try {
-        await page.waitForFunction(async () => {
-          const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-          const store = useBattleStore();
-          return store.currentSubState === 'WAIT_INPUT' || !store.activeBattle || store.activeBattle.over;
-        }, { timeout: 8000 });
-      } catch (e) {
-        await page.screenshot({ path: `scratch/lock-revive-turn-${turnCount}.png` });
-        throw new Error(`Bloqueo detectado post-revivir: La FSM se trabó en el turno ${turnCount}.`);
-      }
-
-      const isOverAfterWait = await page.evaluate(async () => {
-        const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-        const store = useBattleStore();
-        return !store.activeBattle || store.activeBattle.over;
-      });
-
-      if (isOverAfterWait) {
-        break;
-      }
-
-      const activeMoveBtn = page.locator('.battle-move-btn:not([disabled]), button[id^="move-btn-"]:not([disabled])').first();
-      const activeSwitchBtn = page.locator('button:has-text("SLOT"):not([disabled])').first();
-
-      if (await activeMoveBtn.isVisible()) {
-        await activeMoveBtn.click({ force: true });
-      } else if (await activeSwitchBtn.isVisible()) {
-        await activeSwitchBtn.click({ force: true });
-      } else {
-        await page.waitForTimeout(100);
-      }
-
-      turnCount++;
-    }
-
-    const battleOverSuccess = await page.evaluate(async () => {
-      const { useBattleStore } = await import('/src/stores/battle/battle.ts');
-      const store = useBattleStore();
-      return !store.activeBattle || store.activeBattle.over;
-    });
-    expect(battleOverSuccess).toBe(true);
+    await executeAutoBattle(page, 998);
   });
 });
