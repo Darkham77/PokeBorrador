@@ -1,1 +1,0 @@
-import{r as e}from"./vendor-gsap-3JeujgXc.js";var t=e=>new Promise(t=>{e.eventCallback(`onComplete`,t)}),n=t=>e.timeline({...t,defaults:{ease:`power2.out`,duration:.4,...t?.defaults}}),r=t=>new Promise(n=>{e.delayedCall(t/1e3,n)});export{n,r,t};

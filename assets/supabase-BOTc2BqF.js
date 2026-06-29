@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-yL7T-fch.js";export{e as default,e as supabase};

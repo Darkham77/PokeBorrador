@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-CFq-kp0a.js";export{e as default};
