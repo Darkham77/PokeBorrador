@@ -34,7 +34,7 @@ Core logic modules and critical system components MUST have dedicated unit tests
 
 1. **Factory Integrity**: Every data factory (e.g., `pokemonFactory.ts`) must be covered by unit tests verifying generation, level-up, and sanitization.
 2. **Regression Prevention**: When modifying `src/logic/`, perform a **Test Gap Analysis**; if a module is "worthy" (core behavior), create a new `.spec.ts` file.
-3. **Execution**: Run `npm run test` or `npm run test:node` before every commit to ensure 100% pass rate.
+3. **Execution**: Run `npm run test`, `npm run test:node`, or `npm run test:e2e` before every commit to ensure 100% pass rate.
 4. **Deterministic Environment**: All logic tests dependent on environmental variables (time cycles, seasons, weather) MUST mock `getDayCycle` or `getServerInstant` from `@/logic/timeUtils` to ensure consistent and reproducible results across all timezones and execution hours.
 
 ---
@@ -105,6 +105,7 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run lint`: Style and syntax verification (includes type-check).
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
 - `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
+- `npm run test:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
 - `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 

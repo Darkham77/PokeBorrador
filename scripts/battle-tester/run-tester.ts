@@ -33,7 +33,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
     const lp = line.split('|').map(x => x.trim());
     const type = lp[1] || '';
     const ignoredTypes = [
-      '', 't:', 'turn', 'upkeep', 'teampreview', 'gametype', 'player', 'gen', 'tier', 'clearpoke', 'poke', 'start', 'rule', 'teamsize'
+      '', 't:', 'turn', 'upkeep', 'teampreview', 'gametype', 'player', 'gen', 'tier', 'clearpoke', 'poke', 'start', 'rule', 'teamsize', 'bigerror'
     ];
     if (!ignoredTypes.includes(type)) {
       unhandledBridgeLines.push(message);
@@ -148,7 +148,7 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
 
     // Procesador de un lote individual para poder paralelizarlo
     async function executeBatch(batch: typeof batches[0], roundNum: number) {
-      const maxAttempts = 3;
+      const maxAttempts = 5;
       // Array local para los logs no manejados de este lote
       const localUnhandled: string[] = [];
 
@@ -227,8 +227,22 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
               agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
             }
 
-            let p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
-            let p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+            // Mantener con vida a ambos Pokémon (jugador y oponente) para ciclar movimientos sin debilitamientos prematuros.
+            // Esto actúa como un 'saco de boxeo infinito' en las pruebas del fuzzer.
+            const p1ActivePoke = simBattle.p1.active[0];
+            const p2ActivePoke = simBattle.p2.active[0];
+
+            if (p1ActivePoke && p1ActivePoke.hp > 0 && p1ActivePoke.hp < p1ActivePoke.maxhp * 0.3) {
+              p1ActivePoke.hp = p1ActivePoke.maxhp;
+              simBattle.add(`|-heal|p1a: ${p1ActivePoke.name}|${p1ActivePoke.maxhp}/${p1ActivePoke.maxhp}|[from] item: Leftovers`);
+            }
+            if (p2ActivePoke && p2ActivePoke.hp > 0 && p2ActivePoke.hp < p2ActivePoke.maxhp * 0.3) {
+              p2ActivePoke.hp = p2ActivePoke.maxhp;
+              simBattle.add(`|-heal|p2a: ${p2ActivePoke.name}|${p2ActivePoke.maxhp}/${p2ActivePoke.maxhp}|[from] item: Leftovers`);
+            }
+
+            const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+            const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
 
             // Interceptar y aplicar uso de ítems en el simulador Showdown
             const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {

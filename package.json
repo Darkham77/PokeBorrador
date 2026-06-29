@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:node": "node --experimental-strip-types --experimental-test-coverage --test \"tests/node/**/*.test.ts\"",
     "test:all": "npm run test:node && npm run test",
+    "test:e2e": "playwright test",
     "test:combat-coverage": "vitest run tests/integration/battle/coverage_fuzzer.spec.ts tests/integration/battle/item_coverage_fuzzer.spec.ts tests/integration/battle/showdown_item_sync.spec.ts",
     "test:item-coverage": "vitest run tests/integration/battle/item_coverage_fuzzer.spec.ts",
     "lint": "npm run validate:types && eslint . --fix && npm run lint:md",
@@ -91,6 +92,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@pkmn/sim": "^0.10.9",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^25.6.0",
     "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-vue": "^6.0.6",

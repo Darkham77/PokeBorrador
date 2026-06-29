@@ -89,9 +89,7 @@ export const useBattleStore = defineStore('battle', () => {
   const debugShowPokeRadius = ref(false)
   
   const savedZoomVal = safeStorage.getItem('pvs_combat_zoom')
-  const parsedZoom = savedZoomVal !== null ? parseFloat(savedZoomVal) : 1.0
-  const initialZoom = !isNaN(parsedZoom) ? Math.max(0.5, Math.min(1.0, parsedZoom)) : 1.0
-  const debugZoom = ref(initialZoom)
+  const debugZoom = ref(savedZoomVal ? Math.max(0.5, Math.min(1.0, parseFloat(savedZoomVal) || 1.0)) : 1.0)
 
   watch(debugZoom, (newZoom) => {
     safeStorage.setItem('pvs_combat_zoom', String(newZoom))
@@ -547,43 +545,15 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   return {
-    state: activeBattle,
-    isBattleActive,
-    awardDebugExp,
-    isFinishing,
-    isProcessing,
-    isSearching,
-    player,
-    enemy,
-    playerUsedMoves,
-    isIntroAnimating,
-    isPvP,
-    playerStages,
-    enemyStages,
-    battleLogs,
-    debugLoopPokemon,
-    debugBinoculars,
-    debugShowGuides,
-    debugShowFxRadius,
-    debugShowPokeRadius,
-    debugZoom,
-    attackerSide,
-    activeMove,
-    exitingPlayer,
-    exitingEnemy,
-    animations,
-    trainerAnimState,
-    isSilhouetteMode,
-    fsm,
-    currentFsmState,
-    currentSubState,
-    isReadyToExit,
-    restoreBattle,
-    addLog,
-    clearLogs,
-    executeMove,
-    executeStruggle,
-    persistBattle,
+    state: activeBattle, isBattleActive, awardDebugExp, isFinishing, isProcessing,
+    isSearching, player, enemy, playerUsedMoves, isIntroAnimating, isPvP,
+    playerStages, enemyStages, battleLogs, debugLoopPokemon, debugBinoculars,
+    debugShowGuides, debugShowFxRadius, debugShowPokeRadius, debugZoom,
+    attackerSide, activeMove, exitingPlayer, exitingEnemy, animations,
+    trainerAnimState, isSilhouetteMode, fsm, currentFsmState, currentSubState,
+    isReadyToExit, restoreBattle, addLog, clearLogs, executeMove, executeStruggle,
+    persistBattle, useItemInBattle, endBattle, handleFaint, applyEndTurnEffects,
+    startBattle, _startBattle: startBattle, initBattle, executeSwitch: _executeSwitch,
     flee: async () => {
       try {
         await executeFlee(getContext())
@@ -595,14 +565,6 @@ export const useBattleStore = defineStore('battle', () => {
     completeBattleFlow: (option?: string) => completeBattleFlow(option),
     triggerSearchEncounter,
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
-    useItemInBattle,
-    endBattle,
-    handleFaint,
-    applyEndTurnEffects,
-    startBattle,
-    _startBattle: startBattle,
-    initBattle,
-    startEncounter: async () => await startEncounter(getContext()),
-    executeSwitch: _executeSwitch
+    startEncounter: async () => await startEncounter(getContext())
   }
 })

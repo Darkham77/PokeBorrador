@@ -64,11 +64,13 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Zero-Invention Policy**: Never create new "islands" of logic or styling if a generic system (e.g., `BaseModal`, `UnifiedCard`, `DBRouter`) already exists.
 - **Extend, Don't Duplicate**: Always prioritize parameterization and inheritance to adapt existing systems instead of starting from scratch.
 
-## 6. CLI-First Debugging
+## 6. CLI-First Debugging & Testing Integrity
 
 - **Efficiency Over GUI**: When simulating game states or testing conditional UI (e.g., money, levels, map dominance), **ALWAYS** prioritize using the `window.__VITE_DEBUG__` console commands over manual GUI interaction.
 - **Speed & Reliability**: CLI-based state simulation is faster and more reliable for automated tests and subagent tasks.
 - **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill.
+- **Zero-Untested Goal Principle**: It is strictly forbidden to report a coverage or mass-testing goal as "Completed" if there is even one (1) move, ability, or item reported as `UNTESTED` in the final fuzzer output. The coverage must be numerically absolute (0 untested) to declare the goal fulfilled.
+- **Infinite Punching Bag Pattern**: To prevent fuzzing battles from ending prematurely due to rapid Pokémon fainting, the testing framework should implement silent health maintenance (restoring HP above a threshold directly in the Showdown simulator instance), acting as an infinite punching bag.
 
 ## 7. TypeScript Integrity & Zero-Ignore Policy
 
@@ -85,6 +87,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Explicit Command Disclosure**: The confirmation request MUST include the exact command(s) that are about to be executed so the user can review them.
 - **Safety First**: Rollbacks are high-risk operations. Never assume the user wants a destructive revert without a clear, final "Yes" from their side.
 - **Massive Script Execution on Uncommitted Files**: Before running any massive or bulk modification script (e.g., code formatters, batch replacements, refactoring utilities) on files that have uncommitted changes, the agent MUST either propose committing the current changes first, or make temporary backups of the targeted files inside the `scratch/` directory to ensure they can be recovered if something breaks.
+- **Git Commit & Safe-Commit Prohibition**: It is STRICTLY FORBIDDEN to execute any commit or safe-commit flow autonomously without an explicit user instruction to commit or save the repository. The agent MUST NOT assume completion or initiate the git pipeline on its own.
 
 ## 9. Output Directory Integrity (Scratch Folder)
 

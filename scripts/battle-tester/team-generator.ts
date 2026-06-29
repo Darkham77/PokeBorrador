@@ -1,6 +1,6 @@
 // scripts/battle-tester/team-generator.ts
 import { Dex, toID } from '@pkmn/sim';
-import type { PokemonSet } from '@pkmn/sim';
+import type { PokemonSet, ID } from '@pkmn/sim';
 import { EXCLUDED_FROM_SINGLES_REPORT } from './excluded-abilities.ts';
 
 export interface TestBatch {
@@ -242,7 +242,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         item,
         ability: abilityName,
         nature:  'Serious',
-        evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
+        evs: { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         moves: pMoves.length > 0 ? pMoves : ['Tackle'],
       });

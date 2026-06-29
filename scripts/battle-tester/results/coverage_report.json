@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-06-29T12:06:25.855Z",
+  "generatedAt": "2026-06-29T14:40:06.404Z",
   "summary": {
     "totalMoves": 684,
     "passedMoves": 684,
     "failedMoves": 0,
     "untestedMoves": 0,
     "totalAbilities": 283,
-    "passedAbilities": 91,
+    "passedAbilities": 283,
     "failedAbilities": 0,
-    "untestedAbilities": 192,
+    "untestedAbilities": 0,
     "excludedAbilities": 27
   },
   "moves": [
@@ -4128,13 +4128,13 @@
       "id": "aerilate",
       "name": "aerilate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "aftermath",
       "name": "aftermath",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "airlock",
@@ -4146,13 +4146,13 @@
       "id": "analytic",
       "name": "analytic",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "angerpoint",
       "name": "angerpoint",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "angershell",
@@ -4164,19 +4164,19 @@
       "id": "anticipation",
       "name": "anticipation",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "arenatrap",
       "name": "arenatrap",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "armortail",
       "name": "armortail",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "aurabreak",
@@ -4188,19 +4188,19 @@
       "id": "baddreams",
       "name": "baddreams",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ballfetch",
       "name": "ballfetch",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "battlearmor",
       "name": "battlearmor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "beadsofruin",
@@ -4212,7 +4212,7 @@
       "id": "beastboost",
       "name": "beastboost",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "berserk",
@@ -4224,19 +4224,19 @@
       "id": "bigpecks",
       "name": "bigpecks",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "blaze",
       "name": "blaze",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "bulletproof",
       "name": "bulletproof",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cheekpouch",
@@ -4248,19 +4248,19 @@
       "id": "chillingneigh",
       "name": "chillingneigh",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "chlorophyll",
       "name": "chlorophyll",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "clearbody",
       "name": "clearbody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cloudnine",
@@ -4284,25 +4284,25 @@
       "id": "competitive",
       "name": "competitive",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "compoundeyes",
       "name": "compoundeyes",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "contrary",
       "name": "contrary",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "corrosion",
       "name": "corrosion",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cottondown",
@@ -4314,13 +4314,13 @@
       "id": "cudchew",
       "name": "cudchew",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "curiousmedicine",
       "name": "curiousmedicine",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cursedbody",
@@ -4332,19 +4332,19 @@
       "id": "cutecharm",
       "name": "cutecharm",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "damp",
       "name": "damp",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "dancer",
       "name": "dancer",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "darkaura",
@@ -4368,13 +4368,13 @@
       "id": "defeatist",
       "name": "defeatist",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "defiant",
       "name": "defiant",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "deltastream",
@@ -4392,7 +4392,7 @@
       "id": "disguise",
       "name": "disguise",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "download",
@@ -4404,7 +4404,7 @@
       "id": "dragonsmaw",
       "name": "dragonsmaw",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "drizzle",
@@ -4428,13 +4428,13 @@
       "id": "earlybird",
       "name": "earlybird",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "eartheater",
       "name": "eartheater",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "effectspore",
@@ -4452,13 +4452,13 @@
       "id": "electromorphosis",
       "name": "electromorphosis",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "emergencyexit",
       "name": "emergencyexit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "fairyaura",
@@ -4476,13 +4476,13 @@
       "id": "flamebody",
       "name": "flamebody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "flareboost",
       "name": "flareboost",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "flashfire",
@@ -4494,7 +4494,7 @@
       "id": "flowergift",
       "name": "flowergift",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "fluffy",
@@ -4506,7 +4506,7 @@
       "id": "forecast",
       "name": "forecast",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "forewarn",
@@ -4518,13 +4518,13 @@
       "id": "frisk",
       "name": "frisk",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "fullmetalbody",
       "name": "fullmetalbody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "furcoat",
@@ -4536,25 +4536,25 @@
       "id": "galewings",
       "name": "galewings",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "galvanize",
       "name": "galvanize",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "gluttony",
       "name": "gluttony",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "goodasgold",
       "name": "goodasgold",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "gooey",
@@ -4566,13 +4566,13 @@
       "id": "gorillatactics",
       "name": "gorillatactics",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "grasspelt",
       "name": "grasspelt",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "grassysurge",
@@ -4584,25 +4584,25 @@
       "id": "grimneigh",
       "name": "grimneigh",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "guarddog",
       "name": "guarddog",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "gulpmissile",
       "name": "gulpmissile",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "guts",
       "name": "guts",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hadronengine",
@@ -4626,55 +4626,55 @@
       "id": "heavymetal",
       "name": "heavymetal",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "honeygather",
       "name": "honeygather",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hugepower",
       "name": "hugepower",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hungerswitch",
       "name": "hungerswitch",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hustle",
       "name": "hustle",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hydration",
       "name": "hydration",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "hypercutter",
       "name": "hypercutter",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "icebody",
       "name": "icebody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "iceface",
       "name": "iceface",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "icescales",
@@ -4686,19 +4686,19 @@
       "id": "illuminate",
       "name": "illuminate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "illusion",
       "name": "illusion",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "immunity",
       "name": "immunity",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "imposter",
@@ -4710,25 +4710,25 @@
       "id": "infiltrator",
       "name": "infiltrator",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "innardsout",
       "name": "innardsout",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "innerfocus",
       "name": "innerfocus",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "insomnia",
       "name": "insomnia",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "intimidate",
@@ -4758,31 +4758,31 @@
       "id": "justified",
       "name": "justified",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "keeneye",
       "name": "keeneye",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "klutz",
       "name": "klutz",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "leafguard",
       "name": "leafguard",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "levitate",
       "name": "levitate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "libero",
@@ -4794,7 +4794,7 @@
       "id": "lightmetal",
       "name": "lightmetal",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "lightningrod",
@@ -4806,7 +4806,7 @@
       "id": "limber",
       "name": "limber",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "lingeringaroma",
@@ -4818,19 +4818,19 @@
       "id": "liquidooze",
       "name": "liquidooze",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "liquidvoice",
       "name": "liquidvoice",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "longreach",
       "name": "longreach",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "magicbounce",
@@ -4842,31 +4842,31 @@
       "id": "magicguard",
       "name": "magicguard",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "magician",
       "name": "magician",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "magmaarmor",
       "name": "magmaarmor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "magnetpull",
       "name": "magnetpull",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "marvelscale",
       "name": "marvelscale",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "megalauncher",
@@ -4878,25 +4878,25 @@
       "id": "merciless",
       "name": "merciless",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "mimicry",
       "name": "mimicry",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "mindseye",
       "name": "mindseye",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "mirrorarmor",
       "name": "mirrorarmor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "mistysurge",
@@ -4926,7 +4926,7 @@
       "id": "moxie",
       "name": "moxie",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "multiscale",
@@ -4938,7 +4938,7 @@
       "id": "multitype",
       "name": "multitype",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "mummy",
@@ -4950,7 +4950,7 @@
       "id": "myceliummight",
       "name": "myceliummight",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "naturalcure",
@@ -4974,25 +4974,25 @@
       "id": "noguard",
       "name": "noguard",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "normalize",
       "name": "normalize",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "oblivious",
       "name": "oblivious",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "opportunist",
       "name": "opportunist",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "orichalcumpulse",
@@ -5004,31 +5004,31 @@
       "id": "overcoat",
       "name": "overcoat",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "overgrow",
       "name": "overgrow",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "owntempo",
       "name": "owntempo",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "parentalbond",
       "name": "parentalbond",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "pastelveil",
       "name": "pastelveil",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "perishbody",
@@ -5040,19 +5040,19 @@
       "id": "pickpocket",
       "name": "pickpocket",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "pickup",
       "name": "pickup",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "pixilate",
       "name": "pixilate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "poisonheal",
@@ -5070,25 +5070,25 @@
       "id": "poisonpuppeteer",
       "name": "poisonpuppeteer",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "poisontouch",
       "name": "poisontouch",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "powerofalchemy",
       "name": "powerofalchemy",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "prankster",
       "name": "prankster",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "pressure",
@@ -5118,7 +5118,7 @@
       "id": "protosynthesis",
       "name": "protosynthesis",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "psychicsurge",
@@ -5136,7 +5136,7 @@
       "id": "purepower",
       "name": "purepower",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "purifyingsalt",
@@ -5148,43 +5148,43 @@
       "id": "quarkdrive",
       "name": "quarkdrive",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "queenlymajesty",
       "name": "queenlymajesty",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "quickdraw",
       "name": "quickdraw",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "quickfeet",
       "name": "quickfeet",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "raindish",
       "name": "raindish",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rattled",
       "name": "rattled",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "receiver",
       "name": "receiver",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "reckless",
@@ -5196,13 +5196,13 @@
       "id": "refrigerate",
       "name": "refrigerate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "regenerator",
       "name": "regenerator",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ripen",
@@ -5214,25 +5214,25 @@
       "id": "rivalry",
       "name": "rivalry",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rkssystem",
       "name": "rkssystem",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rockhead",
       "name": "rockhead",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rockypayload",
       "name": "rockypayload",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "roughskin",
@@ -5244,25 +5244,25 @@
       "id": "runaway",
       "name": "runaway",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sandforce",
       "name": "sandforce",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sandrush",
       "name": "sandrush",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sandspit",
       "name": "sandspit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sandstream",
@@ -5274,7 +5274,7 @@
       "id": "sandveil",
       "name": "sandveil",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sapsipper",
@@ -5286,31 +5286,31 @@
       "id": "schooling",
       "name": "schooling",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "scrappy",
       "name": "scrappy",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "screencleaner",
       "name": "screencleaner",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "seedsower",
       "name": "seedsower",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "serenegrace",
       "name": "serenegrace",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shadowshield",
@@ -5322,19 +5322,19 @@
       "id": "shadowtag",
       "name": "shadowtag",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sharpness",
       "name": "sharpness",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shedskin",
       "name": "shedskin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sheerforce",
@@ -5346,43 +5346,43 @@
       "id": "shellarmor",
       "name": "shellarmor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shielddust",
       "name": "shielddust",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shieldsdown",
       "name": "shieldsdown",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "simple",
       "name": "simple",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "skilllink",
       "name": "skilllink",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "slowstart",
       "name": "slowstart",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "slushrush",
       "name": "slushrush",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sniper",
@@ -5394,7 +5394,7 @@
       "id": "snowcloak",
       "name": "snowcloak",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "snowwarning",
@@ -5406,7 +5406,7 @@
       "id": "solarpower",
       "name": "solarpower",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "solidrock",
@@ -5418,37 +5418,37 @@
       "id": "soulheart",
       "name": "soulheart",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "soundproof",
       "name": "soundproof",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "speedboost",
       "name": "speedboost",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stakeout",
       "name": "stakeout",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stall",
       "name": "stall",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stamina",
       "name": "stamina",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stancechange",
@@ -5466,43 +5466,43 @@
       "id": "steadfast",
       "name": "steadfast",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "steamengine",
       "name": "steamengine",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "steelworker",
       "name": "steelworker",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "steelyspirit",
       "name": "steelyspirit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stench",
       "name": "stench",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stickyhold",
       "name": "stickyhold",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stormdrain",
       "name": "stormdrain",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "strongjaw",
@@ -5514,19 +5514,19 @@
       "id": "sturdy",
       "name": "sturdy",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "suctioncups",
       "name": "suctioncups",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "superluck",
       "name": "superluck",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "supersweetsyrup",
@@ -5538,25 +5538,25 @@
       "id": "supremeoverlord",
       "name": "supremeoverlord",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "surgesurfer",
       "name": "surgesurfer",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "swarm",
       "name": "swarm",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "swiftswim",
       "name": "swiftswim",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "swordofruin",
@@ -5568,31 +5568,31 @@
       "id": "symbiosis",
       "name": "symbiosis",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "synchronize",
       "name": "synchronize",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "tabletsofruin",
       "name": "tabletsofruin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "tangledfeet",
       "name": "tangledfeet",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "tanglinghair",
       "name": "tanglinghair",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "technician",
@@ -5610,7 +5610,7 @@
       "id": "thermalexchange",
       "name": "thermalexchange",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "thickfat",
@@ -5628,7 +5628,7 @@
       "id": "torrent",
       "name": "torrent",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "toughclaws",
@@ -5640,37 +5640,37 @@
       "id": "toxicboost",
       "name": "toxicboost",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "toxicchain",
       "name": "toxicchain",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "toxicdebris",
       "name": "toxicdebris",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "trace",
       "name": "trace",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "transistor",
       "name": "transistor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "triage",
       "name": "triage",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "truant",
@@ -5682,31 +5682,31 @@
       "id": "turboblaze",
       "name": "turboblaze",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "unaware",
       "name": "unaware",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "unburden",
       "name": "unburden",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "unnerve",
       "name": "unnerve",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "unseenfist",
       "name": "unseenfist",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "vesselofruin",
@@ -5718,13 +5718,13 @@
       "id": "victorystar",
       "name": "victorystar",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "vitalspirit",
       "name": "vitalspirit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "voltabsorb",
@@ -5736,7 +5736,7 @@
       "id": "wanderingspirit",
       "name": "wanderingspirit",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "waterabsorb",
@@ -5748,37 +5748,37 @@
       "id": "waterbubble",
       "name": "waterbubble",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "watercompaction",
       "name": "watercompaction",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "waterveil",
       "name": "waterveil",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "weakarmor",
       "name": "weakarmor",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "wellbakedbody",
       "name": "wellbakedbody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "whitesmoke",
       "name": "whitesmoke",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "wimpout",
@@ -5790,19 +5790,19 @@
       "id": "windpower",
       "name": "windpower",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "windrider",
       "name": "windrider",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "wonderguard",
       "name": "wonderguard",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "wonderskin",
@@ -5814,7 +5814,7 @@
       "id": "zenmode",
       "name": "zenmode",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     }
   ],
   "excludedAbilities": {
