@@ -58,7 +58,25 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
   const getPoke = (rawId: string) => {
     const side = getSide(rawId);
-    return side === 'player' ? p : side === 'enemy' ? e : null;
+    if (!side) return null;
+
+    // Extraer nombre. Ej: "p1a: Mew" -> "Mew" o "p1: Blissey" -> "Blissey"
+    const colonIdx = rawId.indexOf(':');
+    const nameInLog = colonIdx !== -1 ? rawId.substring(colonIdx + 1).trim() : '';
+
+    const team = side === 'player'
+      ? (store.activeBattle.value?.playerTeam || [])
+      : (store.activeBattle.value?.enemyTeam || []);
+
+    if (nameInLog && team.length > 0) {
+      const cleanName = nameInLog.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const found = team.find(mon =>
+        mon && mon.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanName
+      );
+      if (found) return found;
+    }
+
+    return side === 'player' ? p : e;
   };
 
   const ctx: SBCtx = { store, type: type ?? '', parts, line, p, e, turnLogs, getSide, getPoke };

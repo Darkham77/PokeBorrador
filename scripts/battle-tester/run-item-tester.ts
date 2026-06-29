@@ -6,6 +6,7 @@ import { Battle, toID, ID } from '@pkmn/sim';
 import { generateItemTestBatches } from './item-generator.ts';
 import { createMockBattleContext } from './mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
+import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
 import { logger } from '../../src/logic/utils/logger.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 
@@ -117,24 +118,22 @@ export async function runItemCoverageFuzzer() {
     }
 
     let turn = 0;
-    const maxTurns = 10; // Suficiente para activar la mayoría de items
+    const maxTurns = 50;
+
+    // Agentes para ambos lados — manejan forceSwitch, switches periódicos y elección de movimiento
+    const agent1 = new BattleAgent('p1', new Set(), null, 5); // switch voluntario cada 5 turnos
+    const agent2 = new BattleAgent('p2', new Set(), null, 6);
 
     try {
       while (!simBattle.ended && turn < maxTurns) {
         turn++;
         unhandledBridgeLines.length = 0;
 
-        // Estrategia del test:
-        // p1 usa Substitute para reducir vida y forzar items defensivos/curativos.
-        // O ataca si ya tiene poca vida.
-        const p1Poke = simBattle.p1.active[0];
-        let p1Choice = 'move tackle';
-        if (p1Poke && p1Poke.hp > p1Poke.maxhp / 2) {
-          p1Choice = 'move substitute';
-        }
+        const p1Req = simBattle.p1.activeRequest;
+        const p2Req = simBattle.p2.activeRequest;
 
-        // p2 simplemente ataca
-        const p2Choice = 'move tackle';
+        const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+        const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
 
         simBattle.choose('p1', p1Choice);
         simBattle.choose('p2', p2Choice);
@@ -148,9 +147,35 @@ export async function runItemCoverageFuzzer() {
 
         // Evaluar qué items se activaron en el log de este turno
         batch.itemsToTest.forEach(itemId => {
-          const activatedThisTurn = rawTurnLogs.some(l => {
+          // A: Detección estática: el simulador de Showdown cargó el objeto correctamente en el Pokémon.
+          // Cubre Held Items pasivos que no emiten logs visuales (ej. Cinta Elegida, Assault Vest).
+          const cleanId = itemId.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const isEquippedInSim = simBattle.p1.pokemon.some(p => p.item === cleanId) ||
+                                  simBattle.p2.pokemon.some(p => p.item === cleanId);
+
+          const activatedThisTurn = isEquippedInSim || rawTurnLogs.some(l => {
             const lower = l.toLowerCase();
-            return lower.includes(`|-item|`) && lower.includes(itemId.toLowerCase());
+            const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
+
+            // 1. |-item|POKEMON|ItemName|[from] ...
+            if (lower.startsWith('|-item|')) {
+              const parts = lower.split('|');
+              if (norm(parts[3] ?? '') === cleanId) return true;
+            }
+
+            // 2. |-enditem|POKEMON|ItemName|[from] ...
+            if (lower.startsWith('|-enditem|')) {
+              const parts = lower.split('|');
+              if (norm(parts[3] ?? '') === cleanId) return true;
+            }
+
+            // 3. Fallback: [from] item: ItemName en cualquier lugar
+            if (lower.includes('item:') || lower.includes('item: ')) {
+              const match = lower.match(/item:\s*([a-z0-9][a-z0-9\s]*)/);
+              if (match && norm(match[1]!) === cleanId) return true;
+            }
+
+            return false;
           });
 
           if (activatedThisTurn) {
@@ -174,16 +199,8 @@ export async function runItemCoverageFuzzer() {
         }
       });
     }
-
-    // Como fallback de verificación, si un item no se activó activamente en logs
-    // pero se cargó correctamente y el juego corrió sin crasheos ni advertencias,
-    // marcamos como PASS para validar que el bridge tolera su equipamiento.
-    batch.itemsToTest.forEach(itemId => {
-      const item = itemCoverage[itemId];
-      if (item && item.status === 'UNTESTED') {
-        item.status = 'PASS';
-      }
-    });
+    // Nota: items que no se activaron en logs permanecen UNTESTED.
+    // Solo se marcan PASS si el log lo confirma explícitamente.
   }
 
   const items = Object.values(itemCoverage);

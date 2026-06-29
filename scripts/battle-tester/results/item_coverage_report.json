@@ -615,11 +615,6 @@
     "status": "PASS"
   },
   {
-    "id": "oval_stone",
-    "name": "oval_stone",
-    "status": "PASS"
-  },
-  {
     "id": "passho_berry",
     "name": "passho_berry",
     "status": "PASS"
@@ -995,41 +990,6 @@
     "status": "PASS"
   },
   {
-    "id": "destiny_knot",
-    "name": "destiny_knot",
-    "status": "PASS"
-  },
-  {
-    "id": "power_weight",
-    "name": "power_weight",
-    "status": "PASS"
-  },
-  {
-    "id": "power_bracer",
-    "name": "power_bracer",
-    "status": "PASS"
-  },
-  {
-    "id": "power_belt",
-    "name": "power_belt",
-    "status": "PASS"
-  },
-  {
-    "id": "power_lens",
-    "name": "power_lens",
-    "status": "PASS"
-  },
-  {
-    "id": "power_band",
-    "name": "power_band",
-    "status": "PASS"
-  },
-  {
-    "id": "power_anklet",
-    "name": "power_anklet",
-    "status": "PASS"
-  },
-  {
     "id": "pokeball",
     "name": "pokeball",
     "status": "PASS"
@@ -1062,36 +1022,6 @@
   {
     "id": "master_ball",
     "name": "master_ball",
-    "status": "PASS"
-  },
-  {
-    "id": "fire_stone",
-    "name": "fire_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "water_stone",
-    "name": "water_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "thunder_stone",
-    "name": "thunder_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "leaf_stone",
-    "name": "leaf_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "moon_stone",
-    "name": "moon_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "sun_stone",
-    "name": "sun_stone",
     "status": "PASS"
   },
   {
@@ -1140,36 +1070,6 @@
     "status": "PASS"
   },
   {
-    "id": "dawn_stone",
-    "name": "dawn_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "dusk_stone",
-    "name": "dusk_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "ice_stone",
-    "name": "ice_stone",
-    "status": "PASS"
-  },
-  {
-    "id": "liechi_berry",
-    "name": "liechi_berry",
-    "status": "PASS"
-  },
-  {
-    "id": "salac_berry",
-    "name": "salac_berry",
-    "status": "PASS"
-  },
-  {
-    "id": "shiny_stone",
-    "name": "shiny_stone",
-    "status": "PASS"
-  },
-  {
     "id": "charcoal",
     "name": "charcoal",
     "status": "PASS"
@@ -1192,11 +1092,6 @@
   {
     "id": "dragon_fang",
     "name": "dragon_fang",
-    "status": "PASS"
-  },
-  {
-    "id": "dragon_scale",
-    "name": "dragon_scale",
     "status": "PASS"
   },
   {

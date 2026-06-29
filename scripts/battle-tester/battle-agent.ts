@@ -1,106 +1,229 @@
 // scripts/battle-tester/battle-agent.ts
 
+export interface SidePokemon {
+  ident: string;
+  details: string;
+  condition: string;
+  active: boolean;
+  stats: { hp: number };
+  moves: string[];
+  ability: string;
+}
+
+//
+// BattleAgent robusto para el fuzzer de cobertura.
+// Maneja los cuatro tipos de request del simulador Showdown:
+//   null / undefined → pass
+//   teamPreview      → team 1
+//   forceSwitch      → switch <N> (nunca pass si hay candidatos)
+//   active (move)    → movimiento o switch voluntario
+//
+// La regla más importante: NUNCA enviar 'move X' si el request no tiene
+// un bloque 'active' válido, y NUNCA enviar 'switch X' si el request
+// no es forceSwitch ni periódico. Esto elimina el error "invalid action".
+
 export interface ChoiceRequest {
   teamPreview?: boolean;
   forceSwitch?: boolean[];
+  wait?: boolean;
   active?: Array<{
     moves: Array<{
       id: string;
       move: string;
       pp: number;
       disabled?: boolean;
+      maxMove?: { id: string };
     }>;
-  }>;
+    canMegaEvo?: boolean;
+    trapped?: boolean;
+  }> | null;
   side?: {
-    pokemon: Array<{
-      ident: string;
-      details: string;
-      condition: string;
-      active: boolean;
-      stats: { hp: number };
-      moves: string[];
-      ability: string;
-    }>;
+    pokemon: SidePokemon[];
   };
 }
 
+/** Tipo discriminado del request de Showdown para evitar acciones inválidas. */
+type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'move' | 'wait';
+
+function classifyRequest(req: ChoiceRequest | null | undefined): RequestKind {
+  if (!req) return 'none';
+  if (req.wait) return 'wait';
+  if (req.teamPreview) return 'team-preview';
+  if (req.forceSwitch?.length) return 'force-switch';
+  if (req.active?.length) return 'move';
+  return 'none';
+}
+
 export class BattleAgent {
-  constructor(public sideId: 'p1' | 'p2', public movesToTest: Set<string> = new Set()) {}
+  private turnCount = 0;
+  /** Marca si el último decide() ejecutó un switch voluntario (para evitar doble-switch). */
+  private justSwitched = false;
+
+  constructor(
+    public sideId: 'p1' | 'p2',
+    public movesToTest: Set<string> = new Set(),
+    /** Slot de movimiento (1-based) que el agente NPC debe priorizar para disparar la habilidad rival. */
+    public abilityTriggerMoveSlot: number | null = null,
+    /** Cada cuántos turnos rotar voluntariamente al siguiente Pokémon sano de la banca. */
+    public periodicSwitchEvery: number = 4,
+  ) {}
 
   /**
-   * Decide la mejor opción basándose en la petición del simulador y
-   * los movimientos que aún faltan por testear.
+   * Decide la acción según el request actual del simulador.
+   * Garantiza que el tipo de acción (move/switch/pass) sea siempre coherente
+   * con lo que Showdown espera en ese momento.
    */
-  decide(request: ChoiceRequest): string {
-    // 0. Si es Team Preview
-    if (request.teamPreview) {
-      return 'team 1';
-    }
+  decide(request: ChoiceRequest | null | undefined): string {
+    const kind = classifyRequest(request);
 
-    // 1. Si es obligatorio cambiar de Pokémon
-    if (request.forceSwitch && request.forceSwitch[0]) {
-      const candidates = request.side?.pokemon || [];
-      for (let i = 0; i < candidates.length; i++) {
-        const mon = candidates[i]!;
-        if (!mon.active && !mon.condition.includes('fnt')) {
+    // Si el simulador no espera nada de este lado, no hacer nada.
+    if (kind === 'none' || kind === 'wait') return 'pass';
+
+    this.turnCount++;
+    this.justSwitched = false;
+
+    // --- TEAM PREVIEW ---
+    if (kind === 'team-preview') return 'team 1';
+
+    const team: SidePokemon[] = request!.side?.pokemon ?? [];
+
+    // --- FORCE SWITCH ---
+    // El simulador EXIGE un switch. Iterar todo el equipo para encontrar un
+    // candidato vivo y disponible. Solo se permite 'pass' si todos están debilitados.
+    if (kind === 'force-switch') {
+      for (let i = 0; i < team.length; i++) {
+        const mon = team[i]!;
+        if (!mon.active && !this.isFainted(mon.condition)) {
           return `switch ${i + 1}`;
         }
       }
+      // Todos debilitados: es el único caso válido para 'pass' en forceSwitch.
       return 'pass';
     }
 
-    // 2. Auto-switch si el activo ya no tiene movimientos pendientes pero hay banca con pendientes
-    if (request.active && request.active[0] && request.side?.pokemon) {
-      const activePoke = request.side.pokemon.find(p => p.active);
-      const activeHasPending = activePoke?.moves.some(m => this.movesToTest.has(m.toLowerCase().replace(/[^a-z0-9]/g, '')));
+    // --- MOVE REQUEST ---
+    // A partir de aquí kind === 'move'. El simulador espera una acción del Pokémon activo.
 
-      if (!activeHasPending) {
-        const candidates = request.side.pokemon;
-        for (let i = 0; i < candidates.length; i++) {
-          const mon = candidates[i]!;
-          if (!mon.active && !mon.condition.includes('fnt')) {
-            const candidateHasPending = mon.moves.some(m => this.movesToTest.has(m.toLowerCase().replace(/[^a-z0-9]/g, '')));
-            if (candidateHasPending) {
-              return `switch ${i + 1}`;
-            }
+    // Alinear con la IA del juego real en battleTurn.ts:
+    // 1. Revivir banca si el activo está estable (HP >= 50%)
+    const activePoke = team.find(p => p.active) || team[0];
+    if (!activePoke) return 'move 1';
+
+    const activeHpStr = activePoke.condition.split('/')[0] || '100';
+    const activeMaxHpStr = activePoke.condition.split('/')[1] || '100';
+    const activeHp = parseInt(activeHpStr, 10);
+    const activeMaxHp = parseInt(activeMaxHpStr, 10);
+
+    if (activeHp >= activeMaxHp * 0.5) {
+      for (let i = 0; i < team.length; i++) {
+        const mon = team[i]!;
+        if (!mon.active && this.isFainted(mon.condition)) {
+          return `useitem:revive:${i + 1}`;
+        }
+      }
+    }
+
+    // 2. Curar activo si su HP cae por debajo del 25% (umbral de poción real de la IA del juego)
+    if (activeHp > 0 && activeHp < activeMaxHp * 0.25) {
+      const activeIdx = team.findIndex(p => p.active) + 1;
+      return `useitem:potion:${activeIdx}`;
+    }
+
+    // Switch periódico voluntario (para probar habilidades de switch-out/in).
+    // Solo si el equipo tiene banca disponible y no acabamos de switchear.
+    if (
+      !this.justSwitched &&
+      this.periodicSwitchEvery > 0 &&
+      this.turnCount % this.periodicSwitchEvery === 0 &&
+      team.length > 1
+    ) {
+      const switchTarget = this.findBenchCandidate(team);
+      if (switchTarget !== null) {
+        this.justSwitched = true;
+        return `switch ${switchTarget}`;
+      }
+    }
+
+    // Auto-switch si el Pokémon activo agotó su lista de movimientos pendientes
+    // pero otro en banca todavía tiene pendientes.
+    const activeHasPending = activePoke?.moves.some(
+      m => this.movesToTest.has(toCleanId(m)),
+    );
+    if (!activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
+      for (let i = 0; i < team.length; i++) {
+        const mon = team[i]!;
+        if (!mon.active && !this.isFainted(mon.condition)) {
+          const hasPending = mon.moves.some(m => this.movesToTest.has(toCleanId(m)));
+          if (hasPending) {
+            this.justSwitched = true;
+            return `switch ${i + 1}`;
           }
         }
       }
     }
 
-    // 3. Si es posible usar un movimiento
-    if (request.active && request.active[0]) {
-      const moves = request.active[0].moves;
-      
-      // Intentar priorizar un movimiento que esté en nuestra lista de pendientes
-      for (let i = 0; i < moves.length; i++) {
-        const m = moves[i]!;
-        if (!m.disabled && m.pp > 0) {
-          const moveIdClean = m.id.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (this.movesToTest.has(moveIdClean)) {
-            // Eliminar de pendientes ya que lo vamos a usar
-            this.movesToTest.delete(moveIdClean);
-            return `move ${i + 1}`;
-          }
-        }
-      }
+    // Elegir movimiento del Pokémon activo.
+    const activeSlot = request!.active![0];
+    if (!activeSlot) return 'pass';
 
-      // Si no hay pendientes válidos en la lista, elegir un movimiento no deshabilitado de forma aleatoria para mayor dinamismo
-      const validMoves: number[] = [];
-      for (let i = 0; i < moves.length; i++) {
-        const m = moves[i]!;
-        if (!m.disabled && m.pp > 0) {
-          validMoves.push(i + 1);
-        }
-      }
-      if (validMoves.length > 0) {
-        const randomIdx = Math.floor(Math.random() * validMoves.length);
-        return `move ${validMoves[randomIdx]}`;
-      }
+    const moves = activeSlot.moves;
 
-      return 'move 1'; // fallback
+    // Slot trigger de habilidad (agente NPC: provoca la habilidad del jugador).
+    if (this.abilityTriggerMoveSlot !== null) {
+      const triggerIdx = this.abilityTriggerMoveSlot - 1;
+      const trigger = moves[triggerIdx];
+      if (trigger && !trigger.disabled && trigger.pp > 0) {
+        return `move ${this.abilityTriggerMoveSlot}`;
+      }
     }
 
-    return 'pass';
+    // Priorizar movimientos pendientes de testear.
+    for (let i = 0; i < moves.length; i++) {
+      const m = moves[i]!;
+      if (!m.disabled && m.pp > 0) {
+        const id = toCleanId(m.id);
+        if (this.movesToTest.has(id)) {
+          this.movesToTest.delete(id);
+          return `move ${i + 1}`;
+        }
+      }
+    }
+
+    // Cualquier movimiento válido disponible.
+    const validSlots: number[] = [];
+    for (let i = 0; i < moves.length; i++) {
+      const m = moves[i]!;
+      if (!m.disabled && m.pp > 0) validSlots.push(i + 1);
+    }
+    if (validSlots.length > 0) {
+      return `move ${validSlots[Math.floor(Math.random() * validSlots.length)]}`;
+    }
+
+    // Último recurso: si todos los movimientos están deshabilitados (struggle).
+    // Showdown acepta 'move 1' para usar Struggle automáticamente.
+    return 'move 1';
   }
+
+  // ---------------------------------------------------------------------------
+  // Helpers privados
+  // ---------------------------------------------------------------------------
+
+  /** Devuelve el índice 1-based de un candidato en banca, o null si no hay ninguno. */
+  private findBenchCandidate(team: SidePokemon[]): number | null {
+    for (let i = 0; i < team.length; i++) {
+      const mon = team[i]!;
+      if (!mon.active && !this.isFainted(mon.condition)) return i + 1;
+    }
+    return null;
+  }
+
+  /** Devuelve true si la condición del Pokémon indica que está debilitado. */
+  private isFainted(condition: string): boolean {
+    return condition === '0 fnt' || condition.endsWith(' fnt');
+  }
+}
+
+/** Normaliza un ID de movimiento para comparación contra movesToTest. */
+function toCleanId(id: string): string {
+  return id.toLowerCase().replace(/[^a-z0-9]/g, '');
 }

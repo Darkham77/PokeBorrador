@@ -1,14 +1,15 @@
 {
-  "generatedAt": "2026-06-28T21:03:08.396Z",
+  "generatedAt": "2026-06-29T12:06:25.855Z",
   "summary": {
     "totalMoves": 684,
-    "passedMoves": 675,
+    "passedMoves": 684,
     "failedMoves": 0,
-    "untestedMoves": 9,
-    "totalAbilities": 310,
-    "passedAbilities": 45,
+    "untestedMoves": 0,
+    "totalAbilities": 283,
+    "passedAbilities": 91,
     "failedAbilities": 0,
-    "untestedAbilities": 265
+    "untestedAbilities": 192,
+    "excludedAbilities": 27
   },
   "moves": [
     {
@@ -285,7 +286,7 @@
       "id": "belch",
       "name": "belch",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "bellydrum",
@@ -417,7 +418,7 @@
       "id": "brickbreak",
       "name": "brickbreak",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "brine",
@@ -2121,7 +2122,7 @@
       "id": "malignantchain",
       "name": "malignantchain",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "matchagotcha",
@@ -2703,25 +2704,25 @@
       "id": "quickattack",
       "name": "quickattack",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "quickguard",
       "name": "quickguard",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "quiverdance",
       "name": "quiverdance",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ragefist",
       "name": "ragefist",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ragepowder",
@@ -2889,7 +2890,7 @@
       "id": "roleplay",
       "name": "roleplay",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rollout",
@@ -3465,7 +3466,7 @@
       "id": "stuffcheeks",
       "name": "stuffcheeks",
       "type": "move",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "stunspore",
@@ -4121,7 +4122,7 @@
       "id": "adaptability",
       "name": "adaptability",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "aerilate",
@@ -4133,13 +4134,13 @@
       "id": "aftermath",
       "name": "aftermath",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "airlock",
       "name": "airlock",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "analytic",
@@ -4157,7 +4158,7 @@
       "id": "angershell",
       "name": "angershell",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "anticipation",
@@ -4178,28 +4179,10 @@
       "status": "UNTESTED"
     },
     {
-      "id": "aromaveil",
-      "name": "aromaveil",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "asoneglastrier",
-      "name": "asoneglastrier",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "asonespectrier",
-      "name": "asonespectrier",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "aurabreak",
       "name": "aurabreak",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "baddreams",
@@ -4214,20 +4197,8 @@
       "status": "UNTESTED"
     },
     {
-      "id": "battery",
-      "name": "battery",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "battlearmor",
       "name": "battlearmor",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "battlebond",
-      "name": "battlebond",
       "type": "ability",
       "status": "UNTESTED"
     },
@@ -4235,7 +4206,7 @@
       "id": "beadsofruin",
       "name": "beadsofruin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "beastboost",
@@ -4247,7 +4218,7 @@
       "id": "berserk",
       "name": "berserk",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "bigpecks",
@@ -4271,7 +4242,7 @@
       "id": "cheekpouch",
       "name": "cheekpouch",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "chillingneigh",
@@ -4295,25 +4266,19 @@
       "id": "cloudnine",
       "name": "cloudnine",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "colorchange",
       "name": "colorchange",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "comatose",
       "name": "comatose",
       "type": "ability",
       "status": "PASS"
-    },
-    {
-      "id": "commander",
-      "name": "commander",
-      "type": "ability",
-      "status": "UNTESTED"
     },
     {
       "id": "competitive",
@@ -4340,16 +4305,10 @@
       "status": "UNTESTED"
     },
     {
-      "id": "costar",
-      "name": "costar",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "cottondown",
       "name": "cottondown",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "cudchew",
@@ -4391,19 +4350,19 @@
       "id": "darkaura",
       "name": "darkaura",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "dauntlessshield",
       "name": "dauntlessshield",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "dazzling",
       "name": "dazzling",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "defeatist",
@@ -4439,7 +4398,7 @@
       "id": "download",
       "name": "download",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "dragonsmaw",
@@ -4493,55 +4452,31 @@
       "id": "electromorphosis",
       "name": "electromorphosis",
       "type": "ability",
-      "status": "PASS"
-    },
-    {
-      "id": "embodyaspectcornerstone",
-      "name": "embodyaspectcornerstone",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "embodyaspecthearthflame",
-      "name": "embodyaspecthearthflame",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "embodyaspectteal",
-      "name": "embodyaspectteal",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "embodyaspectwellspring",
-      "name": "embodyaspectwellspring",
-      "type": "ability",
       "status": "UNTESTED"
     },
     {
       "id": "emergencyexit",
       "name": "emergencyexit",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "fairyaura",
       "name": "fairyaura",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "filter",
       "name": "filter",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "flamebody",
       "name": "flamebody",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "flareboost",
@@ -4553,7 +4488,7 @@
       "id": "flashfire",
       "name": "flashfire",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "flowergift",
@@ -4562,16 +4497,10 @@
       "status": "UNTESTED"
     },
     {
-      "id": "flowerveil",
-      "name": "flowerveil",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "fluffy",
       "name": "fluffy",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "forecast",
@@ -4584,12 +4513,6 @@
       "name": "forewarn",
       "type": "ability",
       "status": "PASS"
-    },
-    {
-      "id": "friendguard",
-      "name": "friendguard",
-      "type": "ability",
-      "status": "UNTESTED"
     },
     {
       "id": "frisk",
@@ -4607,7 +4530,7 @@
       "id": "furcoat",
       "name": "furcoat",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "galewings",
@@ -4631,13 +4554,13 @@
       "id": "goodasgold",
       "name": "goodasgold",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "gooey",
       "name": "gooey",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "gorillatactics",
@@ -4691,19 +4614,13 @@
       "id": "harvest",
       "name": "harvest",
       "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "healer",
-      "name": "healer",
-      "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "heatproof",
       "name": "heatproof",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "heavymetal",
@@ -4714,12 +4631,6 @@
     {
       "id": "honeygather",
       "name": "honeygather",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "hospitality",
-      "name": "hospitality",
       "type": "ability",
       "status": "UNTESTED"
     },
@@ -4769,7 +4680,7 @@
       "id": "icescales",
       "name": "icescales",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "illuminate",
@@ -4817,19 +4728,19 @@
       "id": "insomnia",
       "name": "insomnia",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "intimidate",
       "name": "intimidate",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "intrepidsword",
       "name": "intrepidsword",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "ironbarbs",
@@ -4841,7 +4752,7 @@
       "id": "ironfist",
       "name": "ironfist",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "justified",
@@ -4889,7 +4800,7 @@
       "id": "lightningrod",
       "name": "lightningrod",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "limber",
@@ -4961,7 +4872,7 @@
       "id": "megalauncher",
       "name": "megalauncher",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "merciless",
@@ -4982,12 +4893,6 @@
       "status": "UNTESTED"
     },
     {
-      "id": "minus",
-      "name": "minus",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "mirrorarmor",
       "name": "mirrorarmor",
       "type": "ability",
@@ -5003,19 +4908,19 @@
       "id": "moldbreaker",
       "name": "moldbreaker",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "moody",
       "name": "moody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "motordrive",
       "name": "motordrive",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "moxie",
@@ -5027,7 +4932,7 @@
       "id": "multiscale",
       "name": "multiscale",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "multitype",
@@ -5051,13 +4956,13 @@
       "id": "naturalcure",
       "name": "naturalcure",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "neuroforce",
       "name": "neuroforce",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "neutralizinggas",
@@ -5123,13 +5028,13 @@
       "id": "pastelveil",
       "name": "pastelveil",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "perishbody",
       "name": "perishbody",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "pickpocket",
@@ -5150,16 +5055,10 @@
       "status": "UNTESTED"
     },
     {
-      "id": "plus",
-      "name": "plus",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "poisonheal",
       "name": "poisonheal",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "poisonpoint",
@@ -5177,23 +5076,11 @@
       "id": "poisontouch",
       "name": "poisontouch",
       "type": "ability",
-      "status": "PASS"
-    },
-    {
-      "id": "powerconstruct",
-      "name": "powerconstruct",
-      "type": "ability",
       "status": "UNTESTED"
     },
     {
       "id": "powerofalchemy",
       "name": "powerofalchemy",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "powerspot",
-      "name": "powerspot",
       "type": "ability",
       "status": "UNTESTED"
     },
@@ -5207,7 +5094,7 @@
       "id": "pressure",
       "name": "pressure",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "primordialsea",
@@ -5219,19 +5106,13 @@
       "id": "prismarmor",
       "name": "prismarmor",
       "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "propellertail",
-      "name": "propellertail",
-      "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "protean",
       "name": "protean",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "protosynthesis",
@@ -5249,7 +5130,7 @@
       "id": "punkrock",
       "name": "punkrock",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "purepower",
@@ -5261,7 +5142,7 @@
       "id": "purifyingsalt",
       "name": "purifyingsalt",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "quarkdrive",
@@ -5279,7 +5160,7 @@
       "id": "quickdraw",
       "name": "quickdraw",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "quickfeet",
@@ -5291,7 +5172,7 @@
       "id": "raindish",
       "name": "raindish",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "rattled",
@@ -5309,7 +5190,7 @@
       "id": "reckless",
       "name": "reckless",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "refrigerate",
@@ -5327,7 +5208,7 @@
       "id": "ripen",
       "name": "ripen",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "rivalry",
@@ -5381,7 +5262,7 @@
       "id": "sandspit",
       "name": "sandspit",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "sandstream",
@@ -5399,7 +5280,7 @@
       "id": "sapsipper",
       "name": "sapsipper",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "schooling",
@@ -5423,7 +5304,7 @@
       "id": "seedsower",
       "name": "seedsower",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "serenegrace",
@@ -5435,7 +5316,7 @@
       "id": "shadowshield",
       "name": "shadowshield",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shadowtag",
@@ -5453,13 +5334,13 @@
       "id": "shedskin",
       "name": "shedskin",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "sheerforce",
       "name": "sheerforce",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "shellarmor",
@@ -5495,7 +5376,7 @@
       "id": "slowstart",
       "name": "slowstart",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "slushrush",
@@ -5507,7 +5388,7 @@
       "id": "sniper",
       "name": "sniper",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "snowcloak",
@@ -5519,7 +5400,7 @@
       "id": "snowwarning",
       "name": "snowwarning",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "solarpower",
@@ -5531,7 +5412,7 @@
       "id": "solidrock",
       "name": "solidrock",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "soulheart",
@@ -5564,12 +5445,6 @@
       "status": "UNTESTED"
     },
     {
-      "id": "stalwart",
-      "name": "stalwart",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "stamina",
       "name": "stamina",
       "type": "ability",
@@ -5579,13 +5454,13 @@
       "id": "stancechange",
       "name": "stancechange",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "static",
       "name": "static",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "steadfast",
@@ -5633,7 +5508,7 @@
       "id": "strongjaw",
       "name": "strongjaw",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "sturdy",
@@ -5657,7 +5532,7 @@
       "id": "supersweetsyrup",
       "name": "supersweetsyrup",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "supremeoverlord",
@@ -5678,12 +5553,6 @@
       "status": "UNTESTED"
     },
     {
-      "id": "sweetveil",
-      "name": "sweetveil",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
       "id": "swiftswim",
       "name": "swiftswim",
       "type": "ability",
@@ -5693,7 +5562,7 @@
       "id": "swordofruin",
       "name": "swordofruin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "symbiosis",
@@ -5705,7 +5574,7 @@
       "id": "synchronize",
       "name": "synchronize",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "tabletsofruin",
@@ -5729,37 +5598,13 @@
       "id": "technician",
       "name": "technician",
       "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "telepathy",
-      "name": "telepathy",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "teraformzero",
-      "name": "teraformzero",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "terashell",
-      "name": "terashell",
-      "type": "ability",
-      "status": "UNTESTED"
-    },
-    {
-      "id": "terashift",
-      "name": "terashift",
-      "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "teravolt",
       "name": "teravolt",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "thermalexchange",
@@ -5771,13 +5616,13 @@
       "id": "thickfat",
       "name": "thickfat",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "tintedlens",
       "name": "tintedlens",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "torrent",
@@ -5789,7 +5634,7 @@
       "id": "toughclaws",
       "name": "toughclaws",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "toxicboost",
@@ -5813,7 +5658,7 @@
       "id": "trace",
       "name": "trace",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "transistor",
@@ -5867,7 +5712,7 @@
       "id": "vesselofruin",
       "name": "vesselofruin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "victorystar",
@@ -5885,7 +5730,7 @@
       "id": "voltabsorb",
       "name": "voltabsorb",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "wanderingspirit",
@@ -5897,7 +5742,7 @@
       "id": "waterabsorb",
       "name": "waterabsorb",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "waterbubble",
@@ -5957,25 +5802,160 @@
       "id": "wonderguard",
       "name": "wonderguard",
       "type": "ability",
-      "status": "PASS"
+      "status": "UNTESTED"
     },
     {
       "id": "wonderskin",
       "name": "wonderskin",
       "type": "ability",
-      "status": "UNTESTED"
+      "status": "PASS"
     },
     {
       "id": "zenmode",
       "name": "zenmode",
       "type": "ability",
       "status": "UNTESTED"
-    },
-    {
-      "id": "zerotohero",
-      "name": "zerotohero",
-      "type": "ability",
-      "status": "UNTESTED"
     }
-  ]
+  ],
+  "excludedAbilities": {
+    "simulatorNote": "Estas habilidades requieren un simulador de Dobles, Tera, o son mecánicas de fusión de forma no reproducibles en 1v1. El tester actual solo cubre batallas 1v1 Singles (gen9customgame).",
+    "total": 27,
+    "entries": [
+      {
+        "id": "aromaveil",
+        "reason": "doubles-only",
+        "note": "Protects team from mind-targeting moves"
+      },
+      {
+        "id": "battery",
+        "reason": "doubles-only",
+        "note": "Boosts ally's Special moves by 30%"
+      },
+      {
+        "id": "commander",
+        "reason": "doubles-only",
+        "note": "Tatsugiri inside Dondozo mechanic"
+      },
+      {
+        "id": "costar",
+        "reason": "doubles-only",
+        "note": "Copies ally's stat changes on entry"
+      },
+      {
+        "id": "flowerveil",
+        "reason": "doubles-only",
+        "note": "Protects Grass-type allies from status"
+      },
+      {
+        "id": "friendguard",
+        "reason": "doubles-only",
+        "note": "Reduces damage to adjacent allies by 25%"
+      },
+      {
+        "id": "healer",
+        "reason": "doubles-only",
+        "note": "30% chance to cure ally's status each turn"
+      },
+      {
+        "id": "hospitality",
+        "reason": "doubles-only",
+        "note": "Heals ally 1/4 max HP on entry"
+      },
+      {
+        "id": "minus",
+        "reason": "doubles-only",
+        "note": "Boosts SpA when ally has Plus"
+      },
+      {
+        "id": "plus",
+        "reason": "doubles-only",
+        "note": "Boosts SpA when ally has Minus"
+      },
+      {
+        "id": "powerspot",
+        "reason": "doubles-only",
+        "note": "Boosts adjacent ally's moves by 30%"
+      },
+      {
+        "id": "propellertail",
+        "reason": "doubles-only",
+        "note": "Ignores redirection — only relevant in doubles"
+      },
+      {
+        "id": "stalwart",
+        "reason": "doubles-only",
+        "note": "Ignores redirection — only relevant in doubles"
+      },
+      {
+        "id": "sweetveil",
+        "reason": "doubles-only",
+        "note": "Protects ally from falling asleep"
+      },
+      {
+        "id": "telepathy",
+        "reason": "doubles-only",
+        "note": "Avoids damage from ally's multi-target moves"
+      },
+      {
+        "id": "embodyaspectcornerstone",
+        "reason": "tera-only",
+        "note": "Ogerpon Cornerstone — activates on Terastallization"
+      },
+      {
+        "id": "embodyaspecthearthflame",
+        "reason": "tera-only",
+        "note": "Ogerpon Hearthflame — activates on Terastallization"
+      },
+      {
+        "id": "embodyaspectteal",
+        "reason": "tera-only",
+        "note": "Ogerpon Teal — activates on Terastallization"
+      },
+      {
+        "id": "embodyaspectwellspring",
+        "reason": "tera-only",
+        "note": "Ogerpon Wellspring — activates on Terastallization"
+      },
+      {
+        "id": "teraformzero",
+        "reason": "tera-only",
+        "note": "Terapagos Stellar — requires Tera mechanic"
+      },
+      {
+        "id": "terashell",
+        "reason": "tera-only",
+        "note": "Terapagos Stellar: resists all types at full HP when Tera"
+      },
+      {
+        "id": "terashift",
+        "reason": "tera-only",
+        "note": "Terapagos: Normal → Terastal form on entry"
+      },
+      {
+        "id": "asoneglastrier",
+        "reason": "fusion-locked",
+        "note": "Calyrex-Ice fused form — Chilling Neigh + Unnerve"
+      },
+      {
+        "id": "asonespectrier",
+        "reason": "fusion-locked",
+        "note": "Calyrex-Shadow fused form — Grim Neigh + Unnerve"
+      },
+      {
+        "id": "battlebond",
+        "reason": "fusion-locked",
+        "note": "Greninja: Ash-Greninja form after KO — requires specific format"
+      },
+      {
+        "id": "powerconstruct",
+        "reason": "fusion-locked",
+        "note": "Zygarde 10%/50% → Complete at 50% HP"
+      },
+      {
+        "id": "zerotohero",
+        "reason": "fusion-locked",
+        "note": "Palafin: must switch in as Zero form to trigger Hero transform"
+      }
+    ]
+  }
 }

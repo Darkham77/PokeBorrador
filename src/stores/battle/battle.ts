@@ -420,12 +420,15 @@ export const useBattleStore = defineStore('battle', () => {
         await endBattle(true, false)
         return
       } else if (castRes.action !== 'fail') {
-        if (castRes.pokemon && activeBattle.value?.player) {
-          const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex)
-          if (isTargetActive) {
-            activeBattle.value.player = { ...castRes.pokemon }
-            syncTeamHP()
+        if (castRes.pokemon) {
+          if (targetIndex !== null && gs.state.team[targetIndex]) {
+            gs.state.team[targetIndex] = { ...castRes.pokemon };
           }
+          const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex);
+          if (isTargetActive && activeBattle.value?.player) {
+            activeBattle.value.player = { ...castRes.pokemon };
+          }
+          syncTeamHP();
         }
         persistBattle()
         if (castRes.action === 'heal') {

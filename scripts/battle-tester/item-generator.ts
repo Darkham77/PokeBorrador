@@ -12,13 +12,15 @@ export interface ItemTestBatch {
 export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] {
   const dexItems = Dex.items;
 
-  // Filtrar todos los items del juego (SHOP_ITEMS) que existen en Showdown y son usables en combate
+  // Filtrar objetos usables en combate: combat_held, potions, pokeballs
   const combatItems = SHOP_ITEMS.filter(i => {
     if (!i.id) return false;
     const dexItem = dexItems.get(i.id);
-    // Verificar si existe en el dex y es un item real de batalla
-    // (excluyendo cartas, repelentes, y otros items de aventura)
-    return dexItem && dexItem.exists && !dexItem.isNonstandard;
+    
+    // Categorías válidas en combate
+    const isCombatCategory = ['combat_held', 'potions', 'pokeballs'].includes(i.cat || '');
+    
+    return isCombatCategory && dexItem && dexItem.exists && !dexItem.isNonstandard;
   });
 
   const itemPool = combatItems.map(i => i.id);

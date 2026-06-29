@@ -4,13 +4,21 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Battle, toID, ID } from '@pkmn/sim';
-import { generateTestBatches } from './team-generator.ts';
+import { generateTestBatches, getTriggerSlot } from './team-generator.ts';
 import { createMockBattleContext } from './mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
 import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
 import { logger } from '../../src/logic/utils/logger.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from './ability-scenarios.ts';
+import {
+  EXCLUDED_ABILITY_ENTRIES,
+  EXCLUDED_FROM_SINGLES_REPORT,
+  EXCLUDED_SIMULATOR_NOTE,
+  DOUBLES_ONLY_ABILITIES,
+  TERA_ONLY_ABILITIES,
+  FUSION_LOCKED_ABILITIES,
+} from './excluded-abilities.ts';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/battle-tester/results');
 const REPORT_FILE = path.join(RESULTS_DIR, 'coverage_report.json');
@@ -123,50 +131,52 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
     const moveCoverage: Record<string, CoverageItem> = {};
     const abilityCoverage: Record<string, CoverageItem> = {};
 
-    // Inicializar mapa de cobertura
+    // Inicializar mapa de cobertura (excluir habilidades no testeables en singles)
     batches.forEach(b => {
       b.movesToTest.forEach(m => {
         moveCoverage[m] = { id: m, name: m, type: 'move', status: 'UNTESTED' };
       });
       b.abilitiesToTest.forEach(a => {
-        abilityCoverage[a] = { id: a, name: a, type: 'ability', status: 'UNTESTED' };
+        if (!EXCLUDED_FROM_SINGLES_REPORT.has(a)) {
+          abilityCoverage[a] = { id: a, name: a, type: 'ability', status: 'UNTESTED' };
+        }
       });
     });
 
     const totalRounds = batches.length;
-    let currentRound = 0;
+    console.log(`\n⚔️ Iniciando simulación concurrente de ${totalRounds} rondas...`);
 
-    for (const batch of batches) {
-      currentRound++;
-      
-      // Correr todos los batches para cobertura completa
-
-      console.log(`\n⚔️ Corriendo ronda ${currentRound}/${totalRounds}...`);
-
+    // Procesador de un lote individual para poder paralelizarlo
+    async function executeBatch(batch: typeof batches[0], roundNum: number) {
       const maxAttempts = 3;
+      // Array local para los logs no manejados de este lote
+      const localUnhandled: string[] = [];
+
+      // Interceptor local para este lote. Compara si las especies o pokémon en la línea de log
+      // corresponden a las de este lote, para evitar mezclar logs de batallas concurrentes.
+      const belongsToThisBatch = (msg: string): boolean => {
+        const lower = msg.toLowerCase();
+        // Verificar si se mencionan especies exclusivas de este batch
+        const playerSpecies = batch.playerTeam.map(p => p.species.toLowerCase());
+        return playerSpecies.some(sp => lower.includes(sp));
+      };
+
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Filtrar qué queda UNTESTED en este lote
         const remainingMoves = batch.movesToTest.filter(m => moveCoverage[m]?.status === 'UNTESTED');
         const remainingAbilities = batch.abilitiesToTest.filter(a => abilityCoverage[a]?.status === 'UNTESTED');
 
         if (attempt > 1 && remainingMoves.length === 0 && remainingAbilities.length === 0) {
-          break; // Todo testeado en este lote, salir del intento
-        }
-
-        if (attempt > 1) {
-          console.log(`   🔄 Re-intentando ronda ${currentRound} (Intento ${attempt}/${maxAttempts}) para cubrir ${remainingMoves.length} movimientos y ${remainingAbilities.length} habilidades UNTESTED...`);
+          break;
         }
 
         const movesSet = new Set(remainingMoves);
         const agent1 = new BattleAgent('p1', movesSet);
-        const agent2 = new BattleAgent('p2');
+        const agent2 = new BattleAgent('p2', new Set(), null); // switch y trigger dinámicos
 
-        // Inicializar el simulador de Showdown
         const simBattle = new Battle({ formatid: 'gen9customgame' as ID });
-        simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
-        simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
+        simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: batch.playerTeam });
+        simBattle.setPlayer('p2', { name: `E-${roundNum}`, team: batch.enemyTeam });
 
-        // Inicializar el estado de nuestro store mock
         const p1Active = batch.playerTeam[0]!;
         const p2Active = batch.enemyTeam[0]!;
         const localP1 = createLocalPoke(p1Active.name || '', p1Active.species, p1Active.level, p1Active.moves, p1Active.ability);
@@ -181,52 +191,106 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
           return newLogs;
         };
 
-        // Procesar logs iniciales
         const initLogs = filterShowdownLogs(getNewLogs());
         for (const logLine of initLogs) {
           await parseShowdownLogLine(mockStore, logLine, initLogs);
         }
 
+        // Habilidades de entrada
+        batch.abilitiesToTest.forEach(a => {
+          if (EXCLUDED_FROM_SINGLES_REPORT.has(a)) return;
+          if (initLogs.some(l => abilityTriggeredInLog(l, a))) {
+            const item = abilityCoverage[a];
+            if (item && item.status === 'UNTESTED') item.status = 'PASS';
+          }
+        });
+
         let turn = 0;
-        const maxTurns = 30;
+        const maxTurns = 50;
         const steps: string[] = [];
 
         try {
           while (!simBattle.ended && turn < maxTurns) {
             turn++;
-            unhandledBridgeLines.length = 0; // Limpiar buffer de este turno
+
+            // Capturar las líneas no manejadas del bridge correspondientes a este lote antes del turno
+            const preTurnUnhandledCount = unhandledBridgeLines.length;
 
             const p1Req = simBattle.p1.activeRequest;
             const p2Req = simBattle.p2.activeRequest;
 
-            console.log(`[Turn ${turn}] p1Req:`, JSON.stringify(p1Req), 'p2Req:', !!p2Req);
+            // Trigger dinámico: buscar habilidad activa
+            const activeSidePoke = (p1Req as unknown as ChoiceRequest)?.side?.pokemon?.find(p => p.active);
+            const activeAbilityId = activeSidePoke?.ability ?? '';
+            const dynamicTriggerSlot = getTriggerSlot(activeAbilityId.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (dynamicTriggerSlot !== null) {
+              agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
+            }
 
-            const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
-            const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+            let p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+            let p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
 
-            console.log(`[Turn ${turn}] Choices - p1: "${p1Choice}", p2: "${p2Choice}"`);
+            // Interceptar y aplicar uso de ítems en el simulador Showdown
+            const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {
+              if (choice.startsWith('useitem:')) {
+                const parts = choice.split(':');
+                const itemType = parts[1] || 'potion';
+                const targetIdx = parseInt(parts[2] || '1', 10) - 1;
+                const side = simBattle[sideId];
+                const pokemon = side.pokemon[targetIdx];
 
-            const res1 = simBattle.choose('p1', p1Choice);
-            const res2 = simBattle.choose('p2', p2Choice);
-            console.log(`[Turn ${turn}] Choose results - p1: ${res1}, p2: ${res2}`);
+                if (pokemon) {
+                  const oldHp = pokemon.hp;
+                  let newHp = oldHp;
 
-            // Capturar y procesar logs del turno
+                  if (itemType === 'potion') {
+                    // Potion: cura 200 HP
+                    newHp = Math.min(pokemon.maxhp, oldHp + 200);
+                    pokemon.hp = newHp;
+                    // Inyectar log de curación en el simulador
+                    simBattle.add(`|-heal|${sideId}a: ${pokemon.name}|${newHp}/${pokemon.maxhp}|[from] item: Potion`);
+                  } else if (itemType === 'revive') {
+                    // Revive: revive al 50% HP
+                    newHp = Math.floor(pokemon.maxhp * 0.5);
+                    pokemon.hp = newHp;
+                    pokemon.fainted = false;
+                    pokemon.status = '' as ID;
+                    // Inyectar log de revivir/curación en la banca
+                    simBattle.add(`|-heal|${sideId}: ${pokemon.name}|${newHp}/${pokemon.maxhp}`);
+                  }
+                }
+
+                // Las elecciones de mochila consumen el turno del jugador.
+                // En Showdown customgame, pasamos el turno del activo enviando un movimiento por defecto o pass.
+                return 'move 1';
+              }
+              return choice;
+            };
+
+            const finalP1Choice = applyItemUsage('p1', p1Choice);
+            const finalP2Choice = applyItemUsage('p2', p2Choice);
+
+            simBattle.choose('p1', finalP1Choice);
+            simBattle.choose('p2', finalP2Choice);
+
             const rawTurnLogs = getNewLogs();
             const turnLogs = filterShowdownLogs(rawTurnLogs);
-            console.log(`[Turn ${turn}] Logs generated: ${rawTurnLogs.length} lines`);
-            if (rawTurnLogs.length > 0) {
-              console.log(rawTurnLogs.slice(0, 5).join('\n'));
-            }
 
             for (const logLine of turnLogs) {
               const stepDesc = simplifyLogLine(logLine);
-              if (stepDesc) {
-                steps.push(`Turno ${turn}: ${stepDesc}`);
-              }
+              if (stepDesc) steps.push(`Turno ${turn}: ${stepDesc}`);
               await parseShowdownLogLine(mockStore, logLine, turnLogs);
             }
 
-            // Registrar resultados para los movimientos y habilidades activas
+            // Filtrar los logs no manejados globales agregados en este turno que correspondan a este batch
+            const addedUnhandled = unhandledBridgeLines.slice(preTurnUnhandledCount);
+            for (const line of addedUnhandled) {
+              if (belongsToThisBatch(line)) {
+                localUnhandled.push(line);
+              }
+            }
+
+            // Registrar movimientos usados
             batch.movesToTest.forEach(m => {
               const usedThisTurn = rawTurnLogs.some(l => {
                 if (!l.startsWith('|')) return false;
@@ -234,15 +298,14 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
                 return p[1] === 'move' && toID(p[3]) === m;
               });
               if (usedThisTurn) {
-                const hasFailure = unhandledBridgeLines.length > 0;
                 const item = moveCoverage[m];
                 if (item) {
-                  if (hasFailure) {
+                  if (localUnhandled.length > 0) {
                     item.status = 'FAIL';
-                    item.unhandledLogs = [...(item.unhandledLogs || []), ...unhandledBridgeLines];
+                    item.unhandledLogs = [...(item.unhandledLogs || []), ...localUnhandled];
                     item.reproduceTrace = {
-                      playerTeam: batch.playerTeam.map(p => `${p.name} (${p.species}) [moves: ${p.moves.join(', ')}]`),
-                      enemyTeam: batch.enemyTeam.map(e => `${e.name} (${e.species}) [moves: ${e.moves.join(', ')}]`),
+                      playerTeam: batch.playerTeam.map(p => `${p.name} (${p.species})`),
+                      enemyTeam: batch.enemyTeam.map(e => `${e.name} (${e.species})`),
                       steps: [...steps]
                     };
                   } else if (item.status !== 'FAIL') {
@@ -252,23 +315,18 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
               }
             });
 
+            // Registrar habilidades usadas
             batch.abilitiesToTest.forEach(a => {
-              const triggeredThisTurn = rawTurnLogs.some(l => {
-                const cleanLine = l.toLowerCase().replace(/\s+/g, '');
-                return cleanLine.includes(`|ability|${a}`) || 
-                       cleanLine.includes(`|-ability|${a}`) || 
-                       cleanLine.includes(`ability:${a}`);
-              });
-              if (triggeredThisTurn) {
-                const hasFailure = unhandledBridgeLines.length > 0;
+              if (EXCLUDED_FROM_SINGLES_REPORT.has(a)) return;
+              if (rawTurnLogs.some(l => abilityTriggeredInLog(l, a))) {
                 const item = abilityCoverage[a];
                 if (item) {
-                  if (hasFailure) {
+                  if (localUnhandled.length > 0) {
                     item.status = 'FAIL';
-                    item.unhandledLogs = [...(item.unhandledLogs || []), ...unhandledBridgeLines];
+                    item.unhandledLogs = [...(item.unhandledLogs || []), ...localUnhandled];
                     item.reproduceTrace = {
-                      playerTeam: batch.playerTeam.map(p => `${p.name} (${p.species}) [moves: ${p.moves.join(', ')}]`),
-                      enemyTeam: batch.enemyTeam.map(e => `${e.name} (${e.species}) [moves: ${e.moves.join(', ')}]`),
+                      playerTeam: batch.playerTeam.map(p => `${p.name} (${p.species})`),
+                      enemyTeam: batch.enemyTeam.map(e => `${e.name} (${e.species})`),
                       steps: [...steps]
                     };
                   } else if (item.status !== 'FAIL') {
@@ -280,7 +338,6 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
           }
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : String(err);
-          console.error(styleText('red', `❌ Error fatal en combate en ronda ${currentRound}: ${errMsg}`));
           batch.movesToTest.forEach(m => {
             if (moveCoverage[m]) {
               moveCoverage[m]!.status = 'FAIL';
@@ -290,6 +347,10 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
         }
       }
     }
+
+    // Ejecutar todos los batches concurrentemente
+    await Promise.all(batches.map((b, idx) => executeBatch(b, idx + 1)));
+
 
     // FASE 2: Escenarios Scriptados para Habilidades Específicas
     console.log(styleText('bold', '\n--- 🎭 EJECUTANDO ESCENARIOS SCRIPTADOS PARA HABILIDADES ---'));
@@ -301,7 +362,12 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
       simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
       simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
 
-      // Descartar logs de entrada inicial
+      // Descartar logs de entrada inicial y avanzar Team Preview si está activo
+      if (simBattle.p1.activeRequest?.teamPreview || simBattle.p2.activeRequest?.teamPreview) {
+        simBattle.choose('p1', 'default');
+        simBattle.choose('p2', 'default');
+      }
+
       const discardLogs = (): string[] => {
         return simBattle.log;
       };
@@ -341,13 +407,11 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
 
         // Registrar resultados para cada habilidad del escenario
         scenario.abilities.forEach(a => {
-          const triggered = rawTurnLogs.some(l => {
-            const cleanLine = l.toLowerCase().replace(/\s+/g, '');
-            return cleanLine.includes(`|ability|${a}`) || 
-                   cleanLine.includes(`|-ability|${a}`) || 
-                   cleanLine.includes(`ability:${a}`);
-          });
-          if (triggered) {
+          if (EXCLUDED_FROM_SINGLES_REPORT.has(a)) return;
+          const triggeredInLogs = rawTurnLogs.some(l => abilityTriggeredInLog(l, a));
+          const triggeredByValidate = scenario.validate ? scenario.validate(simBattle) : false;
+
+          if (triggeredInLogs || triggeredByValidate) {
             const hasFailure = unhandledBridgeLines.length > 0;
             const item = abilityCoverage[a];
             if (item) {
@@ -362,6 +426,21 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
               } else if (item.status !== 'FAIL') {
                 item.status = 'PASS';
               }
+            }
+          }
+        });
+
+        // Registrar también movimientos usados en este turno del escenario
+        Object.keys(moveCoverage).forEach(m => {
+          const usedThisTurn = rawTurnLogs.some(l => {
+            if (!l.startsWith('|')) return false;
+            const p = l.split('|').map(x => x.trim());
+            return p[1] === 'move' && toID(p[3]) === m;
+          });
+          if (usedThisTurn) {
+            const item = moveCoverage[m];
+            if (item && item.status !== 'FAIL') {
+              item.status = 'PASS';
             }
           }
         });
@@ -383,16 +462,72 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
         passedAbilities: abilitiesList.filter(a => a.status === 'PASS').length,
         failedAbilities: abilitiesList.filter(a => a.status === 'FAIL').length,
         untestedAbilities: abilitiesList.filter(a => a.status === 'UNTESTED').length,
+        excludedAbilities: EXCLUDED_ABILITY_ENTRIES.length,
       },
       moves: movesList,
-      abilities: abilitiesList
+      abilities: abilitiesList,
+      excludedAbilities: {
+        simulatorNote: EXCLUDED_SIMULATOR_NOTE,
+        total: EXCLUDED_ABILITY_ENTRIES.length,
+        entries: EXCLUDED_ABILITY_ENTRIES,
+      },
     };
 
     await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
 
-    console.log(styleText('bold', '\n--- 📊 RESUMEN DE COBERTURA ---'));
-    console.log(`Movimientos: ${report.summary.passedMoves} PASS / ${report.summary.failedMoves} FAIL / ${report.summary.untestedMoves} UNTESTED`);
-    console.log(`Habilidades: ${report.summary.passedAbilities} PASS / ${report.summary.failedAbilities} FAIL / ${report.summary.untestedAbilities} UNTESTED`);
+    // --- Cuadro 1: Cobertura singleplayer ---
+    console.log(styleText('bold', '\n--- 📊 RESUMEN DE COBERTURA (SINGLEPLAYER) ---'));
+    console.log(`Movimientos: ${report.summary.passedMoves} PASS / ${styleText('red', String(report.summary.failedMoves) + ' FAIL')} / ${report.summary.untestedMoves} UNTESTED`);
+    console.log(`Habilidades: ${report.summary.passedAbilities} PASS / ${styleText('red', String(report.summary.failedAbilities) + ' FAIL')} / ${report.summary.untestedAbilities} UNTESTED  (de ${report.summary.totalAbilities} testeables)`);
+
+    // --- Cuadro 2: Habilidades excluidas del reporte singles ---
+    console.log(styleText('bold', '\n--- 🚫 HABILIDADES EXCLUIDAS DEL REPORTE SINGLES (27 total) ---'));
+    console.log(styleText('yellow', `⚠️  ${EXCLUDED_SIMULATOR_NOTE}`));
+    console.log(`  Dobles-only   (${DOUBLES_ONLY_ABILITIES.length}): ${DOUBLES_ONLY_ABILITIES.join(', ')}`);
+    console.log(`  Tera-only     (${TERA_ONLY_ABILITIES.length}): ${TERA_ONLY_ABILITIES.join(', ')}`);
+    console.log(`  Fusion-locked (${FUSION_LOCKED_ABILITIES.length}): ${FUSION_LOCKED_ABILITIES.join(', ')}`);
+    console.log(styleText('cyan', `  ℹ️  Las habilidades species-locked (forecast, multitype, etc.) SÍ se testean via escenarios con la especie correcta.`));
+
     console.log(styleText('green', `\n💾 Reporte guardado con éxito en: ${REPORT_FILE}`));
+
+    logger.debug = originalDebug;
   });
 });
+
+// ---------------------------------------------------------------------------
+// Detecta si una línea del protocolo Showdown indica que una habilidad se activó.
+//
+// Formatos reales verificados contra @pkmn/sim:
+//   |-ability|p1a: Mew|Intimidate|boost       → entrada (Intimidate, Trace, etc.)
+//   |-weather|SunnyDay|[from] ability: Drought|[of] p1a: Mew
+//   |-fieldstart|...|[from] ability: Electric Surge|...
+//   |-activate|p2a: Mew|ability: Mummy|...
+//   |-immune|p2a: Mew|[from] ability: Volt Absorb
+//   |-start|p1a: Mew|ability: Slow Start
+//   cualquier línea con [from] ability: AbilityName
+//
+// IMPORTANTE: NO hacer replace(/\s+/g,'') — rompe "Volt Absorb" → "VoltAbsorb"
+// ---------------------------------------------------------------------------
+function abilityTriggeredInLog(line: string, abilityId: string): boolean {
+  const lower = line.toLowerCase();
+  const a = abilityId.toLowerCase(); // id sin espacios (ej: "voltabsorb")
+
+  // Helper: extrae el ID normalizado de un nombre de habilidad con espacios
+  const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
+
+  // 1. |-ability|POKEMON|AbilityName[|extra]  — habilidad de entrada / on-switch
+  //    La habilidad es el CUARTO campo (índice 3), no el segundo.
+  if (lower.startsWith('|-ability|')) {
+    const parts = lower.split('|');
+    if (norm(parts[3] ?? '') === a) return true;
+  }
+
+  // 2-7. Patrones con "ability: Name" en la línea (clima, terreno, inmunidad, etc.)
+  //      Capturamos el nombre con regex y normalizamos para comparar.
+  if (lower.includes('ability:') || lower.includes('ability: ')) {
+    const match = lower.match(/ability:\s*([a-z][a-z\s]*)/);
+    if (match && norm(match[1]!) === a) return true;
+  }
+
+  return false;
+}
