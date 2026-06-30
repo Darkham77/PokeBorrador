@@ -27,6 +27,7 @@ export interface BattleState {
   player: Pokemon | null;
   enemy: Pokemon | null;
   playerTeamIndex: number;
+  enemyTeamIndex: number;
   participants: string[];
   locationId: string;
   isCave?: boolean;

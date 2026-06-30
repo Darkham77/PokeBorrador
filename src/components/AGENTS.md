@@ -32,6 +32,7 @@ Frontend UI Developers / UI Designers.
 - **Strict DB-to-UI Comparison**: When writing UI conditionals dependent on database models, compare against official database string values in Spanish (e.g., `'poder'` instead of `'power'`).
 - **Form Selectors Localization**: Selector components must store and bind English Showdown IDs internally while presenting and allowing search by their localized Spanish translations in the UI.
 - **Modal Metadata**: Full-screen experiences or overlays that obscure the background must be registered in the `MODAL_METADATA` registry using standard flags (`isFullscreen`, `obscuresBackground`) instead of name comparisons in stores.
+- **Showdown Move ID Normalization**: When matching or searching for moves returned by Showdown request/state data in visual components (e.g. to disable move buttons with 0 PP), always normalize both IDs to a lowercase alphanumeric format (e.g., `id.toLowerCase().replace(/[^a-z0-9]/g, '')`). This prevents matching failures caused by naming convention mismatches (such as local kebab-case IDs versus Showdown's flat alphanumeric IDs).
 
 ## Verification
 

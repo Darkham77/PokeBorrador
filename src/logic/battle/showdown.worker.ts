@@ -5,6 +5,8 @@ import { getShowdownFormatId } from './showdownAdapter.ts';
 /** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */
 interface PkmnSimSide {
   active?: Array<{
+    name?: string;
+    moves?: string[];
     moveSlots?: Array<{ id: string; pp: number; disabled?: boolean | string } | null>;
     trapped?: boolean | string;
     maybeTrapped?: boolean | string;
@@ -38,8 +40,8 @@ self.onmessage = (event: MessageEvent) => {
 
 
         // Configurar los dos jugadores
-        currentBattle.setPlayer('p1', { name: p1.name, team: p1.team });
-        currentBattle.setPlayer('p2', { name: p2.name, team: p2.team });
+        currentBattle.setPlayer('p1', { name: p1.name || 'Player 1', team: p1.team });
+        currentBattle.setPlayer('p2', { name: p2.name || 'Player 2', team: p2.team });
 
         // Sincronizar HP iniciales
         syncSideStates(currentBattle.p1 as unknown as PkmnSimSide, payload.p1Hps, undefined);
@@ -52,7 +54,7 @@ self.onmessage = (event: MessageEvent) => {
         // Enviar logs iniciales de inicio de combate junto con los requests iniciales
         const initLogs = getNewLogs();
         self.postMessage({ 
-          type: 'INIT_SUCCESS', 
+          type: 'INIT_BATTLE_SUCCESS', 
           payload: { 
             logs: initLogs,
             p1Request: currentBattle.p1.activeRequest,
@@ -63,26 +65,26 @@ self.onmessage = (event: MessageEvent) => {
       }
 
       case 'EXECUTE_TURN': {
-        if (!currentBattle) {
-          throw new Error('No hay ninguna batalla activa inicializada en el worker.');
-        }
+        if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
 
         const { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip } = payload;
 
-        // Sincronizar HP y Estados antes del turno
-        syncSideStates(battle.p1 as unknown as PkmnSimSide, p1Hps, p1Statuses);
-        syncSideStates(battle.p2 as unknown as PkmnSimSide, p2Hps, p2Statuses);
+        // Sincronizar estados de HP y Statuses antes de mandar elecciones
+        const p1Side = battle.p1 as unknown as PkmnSimSide;
+        const p2Side = battle.p2 as unknown as PkmnSimSide;
+        syncSideStates(p1Side, p1Hps, p1Statuses);
+        syncSideStates(p2Side, p2Hps, p2Statuses);
 
         // Si se indicó saltar turno (por uso de objeto), aplicar volatile flinch para omitir ataque
-        if (p1Skip && battle.p1.active?.[0]) {
-          const activeMon = battle.p1.active[0] as unknown as { addVolatile: (status: string) => void };
+        if (p1Skip && p1Side.active?.[0]) {
+          const activeMon = p1Side.active[0] as unknown as { addVolatile: (status: string) => void };
           if (typeof activeMon?.addVolatile === 'function') {
             activeMon.addVolatile('flinch');
           }
         }
-        if (p2Skip && battle.p2.active?.[0]) {
-          const activeMon = battle.p2.active[0] as unknown as { addVolatile: (status: string) => void };
+        if (p2Skip && p2Side.active?.[0]) {
+          const activeMon = p2Side.active[0] as unknown as { addVolatile: (status: string) => void };
           if (typeof activeMon?.addVolatile === 'function') {
             activeMon.addVolatile('flinch');
           }
@@ -105,7 +107,7 @@ self.onmessage = (event: MessageEvent) => {
 
         const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
           const side = battle[player] as unknown as PkmnSimSide;
-          const activeMon = side.active[0];
+          const activeMon = side.active?.[0];
           const resolved = resolveChoice(side, choice);
           let ok = battle.choose(player, resolved);
           if (!ok) {
@@ -189,8 +191,8 @@ function getNewLogs(): string[] {
 
 function syncSideStates(
   side: PkmnSimSide,
-  hps: Record<string, number> | number[] | undefined,
-  statuses: Record<string, string> | string[] | undefined
+  hps: any,
+  statuses: any
 ) {
   const mons = side.pokemon;
   if (!mons) return;

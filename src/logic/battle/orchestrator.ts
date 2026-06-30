@@ -34,12 +34,12 @@ export async function executeTurnInWorker(
   try {
     const { useBattleStore } = await import('@/stores/battle/battle');
     const battleStore = useBattleStore();
-    if (battleStore.activeBattle) {
-      if (!battleStore.activeBattle.battleHistory) {
-        battleStore.activeBattle.battleHistory = [];
+    if (battleStore.state) {
+      if (!battleStore.state.battleHistory) {
+        battleStore.state.battleHistory = [];
       }
-      battleStore.activeBattle.battleHistory.push({
-        turnCount: battleStore.activeBattle.turnCount,
+      battleStore.state.battleHistory.push({
+        turnCount: battleStore.state.turnCount,
         p1Choice,
         p2Choice: p2Choice || 'struggle',
         p1Hps: p1Hps ? JSON.parse(JSON.stringify(p1Hps)) : undefined,
@@ -78,25 +78,25 @@ export async function executeTurnInWorker(
         try {
           const { useBattleStore } = await import('@/stores/battle/battle');
           const battleStore = useBattleStore();
-          const active = battleStore.activeBattle;
+          const active = battleStore.state;
           if (active) {
             const reportObj = {
               seed: active.seed || [],
-              p1Team: active.playerTeam?.map(p => ({
+              p1Team: active.playerTeam?.map((p: any) => ({
                 id: p.id,
                 level: p.level,
                 ability: p.ability,
-                moves: p.moves.map(m => m?.id || ''),
+                moves: p.moves.map((m: any) => m?.id || ''),
                 gender: p.gender,
                 hp: p.hp,
                 maxHp: p.maxHp,
                 stats: p.stats
               })) || [],
-              p2Team: active.enemyTeam?.map(p => ({
+              p2Team: active.enemyTeam?.map((p: any) => ({
                 id: p.id,
                 level: p.level,
                 ability: p.ability,
-                moves: p.moves.map(m => m?.id || ''),
+                moves: p.moves.map((m: any) => m?.id || ''),
                 gender: p.gender,
                 hp: p.hp,
                 maxHp: p.maxHp,
@@ -271,6 +271,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
       turns: -1 
     },
     playerTeamIndex: ctx.gs.state.team.indexOf(playerPoke),
+    enemyTeamIndex: 0,
     participants: [playerPoke.uid], learnQueue: [], ...battleOptions,
     escapeAttempts: 0,
     playerSideConditions: {},

@@ -198,7 +198,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       };
     });
     lastSimulatorTurn = stateInfo.turn;
-    lastSubState = stateInfo.subState;
+    lastSubState = stateInfo.subState || '';
 
     // Procesar acción del turno
     await handleBattleInput(page);

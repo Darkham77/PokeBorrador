@@ -239,7 +239,7 @@ export async function runEnemyAction(store: BattleContext) {
     const active = store.activeBattle.value;
     let p1Choice = 'struggle';
     if (active?.playerRequest?.active?.[0]?.moves) {
-      const validMove = active.playerRequest.active[0].moves.find(m => !m.disabled);
+      const validMove = active.playerRequest.active[0].moves.find((m: any) => !m.disabled);
       if (validMove) {
         p1Choice = `move ${validMove.id || validMove.move}`;
       }
@@ -247,7 +247,7 @@ export async function runEnemyAction(store: BattleContext) {
 
     let p2Choice = 'struggle';
     if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
-      const validMove = active.enemyRequest.active[0].moves.find(m => !m.disabled);
+      const validMove = active.enemyRequest.active[0].moves.find((m: any) => !m.disabled);
       if (validMove) {
         p2Choice = `move ${validMove.id || validMove.move}`;
       }

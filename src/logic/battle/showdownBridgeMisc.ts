@@ -201,11 +201,13 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const hpString = parts[4] || '';
       if (target && hpString) {
         const hpAndStatus = hpString.split(' ');
-        const hpParts = hpAndStatus[0].split('/');
+        const rawHp = hpAndStatus[0] || '0';
+        const hpParts = rawHp.split('/');
         target.hp = parseInt(hpParts[0] || '0');
         target.maxHp = parseInt(hpParts[1] || '100');
-        if (hpAndStatus[1]) {
-          target.status = hpAndStatus[1] as import('@/types/pokemon/pokemon').PokemonStatus;
+        const statusStr = hpAndStatus[1];
+        if (statusStr) {
+          target.status = statusStr as import('@/types/pokemon/pokemon').PokemonStatus;
         } else {
           target.status = null;
         }

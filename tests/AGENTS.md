@@ -24,6 +24,7 @@ QA / Automation Engineers.
 - **Extension-First Imports**: Internal imports in Node native tests must include the `.ts` extension (e.g. `import { foo } from './bar.ts'`) and use relative paths instead of path aliases.
 - **Mandatory Audit Pipeline**: Running `npm run audit:full` is mandatory before any commit. It runs: ① `test:node`, ② `audit` (SASS, GPU, Node 26+), ③ `validate:fsm` (parity), ④ `validate:items/abilities/moves`, and ⑤ `validate:sql`.
 - **CLI-Ready Visuals**: Battle animations must be triggerable via the debug bridge (e.g. `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) for headless CLI verification.
+- **FSM State Sychronization in E2E Tests**: When automating battles with Playwright, do not assume that the FSM will immediately transition to the next turn number if a Pokémon faints. Fainting and mandatory replacement switches occur during the active turn (e.g. `SWITCH_MENU` or `PLAYER_FAINT_SEQ`). The synchronization helper (`waitForWaitInput`) must track progress based on the `(currentTurn, currentSubState)` tuple rather than just turn count, preventing infinite wait timeouts when a turn does not increment.
 
 ## Verification
 
