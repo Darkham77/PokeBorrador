@@ -32,7 +32,6 @@ export const useErrorStore = defineStore('error', () => {
       context.type !== 'Vue Render Error' && (
         errorMessage.includes('Failed to fetch dynamically imported module') ||
         errorMessage.includes('Unable to preload CSS') ||
-        errorMessage.includes('Failed to fetch') ||
         errorMessage.includes('chunk') ||
         errorMessage.includes('Load chunk') ||
         errorMessage.includes('error loading dynamically imported module')
