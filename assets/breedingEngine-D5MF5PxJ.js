@@ -1,0 +1,1 @@
+import{a as e}from"./breedingEngine-BSYdTFe0.js";export{e as getEggSpecies};

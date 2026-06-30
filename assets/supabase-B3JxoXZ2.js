@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-5U1_6Nyt.js";export{e as default,e as supabase};

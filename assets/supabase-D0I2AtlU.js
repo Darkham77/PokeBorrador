@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-Dec2QGDX.js";export{e as default,e as supabase};
