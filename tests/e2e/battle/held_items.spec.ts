@@ -1,127 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-
-// Helper: Determinar qué botones están activos en la pantalla y clickear
-async function handleBattleInput(page: Page, choice?: string): Promise<boolean> {
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    return !resolver().isProcessing;
-  }, undefined, { timeout: 2000 }).catch(() => {});
-
-  const isProcessing = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-    return useBattleStore().isProcessing;
-  });
-
-  if (isProcessing) return false;
-
-  const subState = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-    return useBattleStore().currentSubState;
-  });
-
-  const isModalOpen = await page.evaluate(() => {
-    const overlays = Array.from(document.querySelectorAll('.base-modal-root')) as HTMLElement[];
-    return overlays.some(el => {
-      if (el.querySelector('.battle-arena-modal')) return false;
-      const style = window.getComputedStyle(el);
-      return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetWidth > 0 && el.offsetHeight > 0;
-    });
-  });
-
-  if (isModalOpen && subState === 'WAIT_INPUT') return false;
-
-  const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
-
-  if (subState === 'SWITCH_MENU') {
-    await activeSwitchBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await activeSwitchBtn.click();
-    return true;
-  }
-
-  if (choice) {
-    const cleanChoice = choice.trim().toLowerCase();
-    if (cleanChoice.startsWith('move ')) {
-      const moveIdx = parseInt(cleanChoice.split(' ')[1] || '1', 10) - 1;
-      const moveBtn = page.locator('.move-card-vicio').nth(moveIdx);
-      await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await moveBtn.click();
-      return true;
-    } else if (cleanChoice.startsWith('switch ')) {
-      const switchIdx = parseInt(cleanChoice.split(' ')[1] || '2', 10) - 1;
-      const switchBtn = page.locator('.quick-card-override').nth(switchIdx);
-      await switchBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await switchBtn.click();
-      return true;
-    } else if (cleanChoice.startsWith('useitem:')) {
-      const parts = cleanChoice.split(':');
-      const itemId = parts[1] || 'potion';
-      console.log(`[E2E] Interactive item usage detected: "${itemId}"`);
-      const itemCard = page.locator(`.quick-item-card:not(.is-disabled)`).first();
-      await itemCard.waitFor({ state: 'visible', timeout: 5000 });
-      await itemCard.click();
-
-      const targetBtn = page.locator('.list-item, button:has-text("Bulbasaur"), button:has-text("Mew")').first();
-      await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await targetBtn.click();
-      return true;
-    } else {
-      console.log(`[E2E] Non-interactive choice detected: "${choice}". Auto-passing.`);
-      return true;
-    }
-  } else {
-    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled])').first();
-    try {
-      await activeMoveBtn.waitFor({ state: 'visible', timeout: 2000 });
-      await activeMoveBtn.click();
-      return true;
-    } catch (_e) {
-      if (await activeSwitchBtn.isVisible()) {
-        await activeSwitchBtn.click();
-        return true;
-      } else {
-        await page.waitForTimeout(200);
-        return false;
-      }
-    }
-  }
-}
-
-interface DebugStore {
-  currentFsmState?: string;
-  currentSubState?: string;
-  isProcessing?: boolean;
-  isIntroAnimating?: boolean;
-  state?: {
-    over?: boolean;
-    turnCount?: number;
-    player?: { hp?: number; maxHp?: number } | null;
-    enemy?: { hp?: number; maxHp?: number } | null;
-  } | null;
-}
-
-type WindowWithResolver = typeof window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-};
-
-async function waitForWaitInput(page: Page) {
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return false;
-    const store = resolver();
-    return (store.currentFsmState === 'ACTIVE_BATTLE' && 
-            (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-            !store.state || store.state.over;
-  }, undefined, { timeout: 15000 });
-}
-
-async function confirmAndStartBattle(page: Page) {
-  const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-  await combatirBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await combatirBtn.click();
-}
+import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 async function executeSingleTurn(page: Page) {
   await waitForWaitInput(page);
@@ -134,28 +14,9 @@ async function executeSingleTurn(page: Page) {
 test.describe('E2E Held Items Verification', () => {
   test.beforeEach(async ({ page }) => {
     test.setTimeout(360000);
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E__ = true;
-      localStorage.setItem('pwa_permissions_accepted', 'true');
-      localStorage.setItem('auto-battle', 'false');
-    });
-
-    await page.goto('/login');
-    await page.locator('button:has-text("Local")').click();
+    await setupE2ESession(page);
     const testUser = `TEST_ITEMS_${Date.now()}`;
-    await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-    await page.click('button:has-text("JUGAR LOCAL")');
-
-    const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-    try {
-      await starterCard.waitFor({ state: 'visible', timeout: 10000 });
-      await starterCard.click();
-    } catch (_e) {
-      // Ignore if starter already chosen
-    }
-
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
-    await mapaBtn.waitFor({ state: 'attached', timeout: 30000 });
+    await loginTestUser(page, testUser);
   });
 
   test('should apply passive healing from Leftovers at the end of a turn', async ({ page }) => {

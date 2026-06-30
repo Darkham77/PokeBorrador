@@ -1,31 +1,12 @@
 import { test, expect, Page } from '@playwright/test';
+import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
 
 async function loginAndSetupUser(page: Page, username: string, initialMoney: number, giveTestPokemon: boolean) {
   // 1. Inyectar configuraciones
-  await page.addInitScript(() => {
-    (window as unknown as Record<string, unknown>).__E2E__ = true;
-    localStorage.setItem('pwa_permissions_accepted', 'true');
-    localStorage.setItem('auto-battle', 'false');
-  });
+  await setupE2ESession(page);
 
   // 2. Navegar y logear
-  await page.goto('/login');
-  await page.locator('button:has-text("Local")').click();
-  await page.fill('input[placeholder="Nombre de Entrenador"]', username);
-  await page.click('button:has-text("JUGAR LOCAL")');
-
-  // Elegir inicial si es necesario
-  const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-  try {
-    await starterCard.waitFor({ state: 'visible', timeout: 5000 });
-    await starterCard.click();
-  } catch (_e) {
-    // Ignore if starter already chosen
-  }
-
-  // Esperar al mapa
-  const mapaBtn = page.locator('button:has-text("MAPA")').first();
-  await mapaBtn.waitFor({ state: 'attached', timeout: 30000 });
+  await loginTestUser(page, username);
 
   // 3. Modificar dinero y equipo en el navegador usando evaluate
   await page.evaluate(async ({ money, givePkmn }) => {
@@ -47,7 +28,7 @@ async function loginAndSetupUser(page: Page, username: string, initialMoney: num
 
   // Recargar la página para asegurar la correcta lectura de los datos de la base de datos SQLite recién persistida
   await page.reload();
-  await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('button:has-text("MAPA")').first().waitFor({ state: 'visible', timeout: 15000 });
 }
 
 test.describe('GTS Multi-Account E2E Transactions', () => {

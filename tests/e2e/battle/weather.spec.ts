@@ -1,38 +1,9 @@
 import { test, expect, Page } from '@playwright/test';
-
-interface DebugStore {
-  currentFsmState?: string;
-  currentSubState?: string;
-  isProcessing?: boolean;
-  isIntroAnimating?: boolean;
-  state?: {
-    over?: boolean;
-    turnCount?: number;
-    player?: { hp?: number; maxHp?: number } | null;
-    enemy?: { hp?: number; maxHp?: number } | null;
-  } | null;
-}
+import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
 
 type WindowWithResolver = typeof window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
+  __VITE_DEBUG_STORE_RESOLVER__?: () => any;
 };
-
-async function waitForWaitInput(page: Page) {
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return false;
-    const store = resolver();
-    return (store.currentFsmState === 'ACTIVE_BATTLE' && 
-            (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-            !store.state || store.state.over;
-  }, undefined, { timeout: 15000 });
-}
-
-async function confirmAndStartBattle(page: Page) {
-  const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-  await combatirBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await combatirBtn.click();
-}
 
 async function executeSingleTurn(page: Page) {
   await waitForWaitInput(page);
@@ -43,28 +14,9 @@ async function executeSingleTurn(page: Page) {
 
 test.describe('E2E Weather Effects Verification', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E__ = true;
-      localStorage.setItem('pwa_permissions_accepted', 'true');
-      localStorage.setItem('auto-battle', 'false');
-    });
-
-    await page.goto('/login');
-    await page.locator('button:has-text("Local")').click();
+    await setupE2ESession(page);
     const testUser = `TEST_WEATHER_${Date.now()}`;
-    await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-    await page.click('button:has-text("JUGAR LOCAL")');
-
-    const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-    try {
-      await starterCard.waitFor({ state: 'visible', timeout: 10000 });
-      await starterCard.click();
-    } catch (_e) {
-      // Ignore if starter already chosen
-    }
-
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
-    await mapaBtn.waitFor({ state: 'attached', timeout: 30000 });
+    await loginTestUser(page, testUser);
   });
 
   test('should trigger rain weather with Drizzle and clean DOM after battle', async ({ page }) => {

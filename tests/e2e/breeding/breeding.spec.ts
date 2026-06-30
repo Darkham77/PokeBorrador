@@ -1,29 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
 
 test.describe('Breeding & Hatching E2E Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E__ = true;
-      localStorage.setItem('pwa_permissions_accepted', 'true');
-      localStorage.setItem('auto-battle', 'false');
-    });
-
-    await page.goto('/login');
-    await page.locator('button:has-text("Local")').click();
+    await setupE2ESession(page);
     const testUser = `TEST_BREED_${Date.now()}`;
-    await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-    await page.click('button:has-text("JUGAR LOCAL")');
-
-    const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-    try {
-      await starterCard.waitFor({ state: 'visible', timeout: 5000 });
-      await starterCard.click();
-    } catch (_e) {
-      // Ignore if starter already chosen
-    }
-
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
-    await mapaBtn.waitFor({ state: 'attached', timeout: 30000 });
+    await loginTestUser(page, testUser);
   });
 
   test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {

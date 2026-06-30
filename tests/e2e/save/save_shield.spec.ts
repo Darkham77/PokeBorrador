@@ -1,29 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
 
 test.describe('Save Shield Integration & Security E2E', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E__ = true;
-      localStorage.setItem('pwa_permissions_accepted', 'true');
-      localStorage.setItem('auto-battle', 'false');
-    });
-
-    await page.goto('/login');
-    await page.locator('button:has-text("Local")').click();
+    await setupE2ESession(page);
     const testUser = `TEST_SAVE_SHIELD_${Date.now()}`;
-    await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-    await page.click('button:has-text("JUGAR LOCAL")');
-
-    const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-    try {
-      await starterCard.waitFor({ state: 'visible', timeout: 10000 });
-      await starterCard.click();
-    } catch (_e) {
-      // Ignore if starter already chosen
-    }
-
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
-    await mapaBtn.waitFor({ state: 'attached', timeout: 30000 });
+    await loginTestUser(page, testUser);
   });
 
   test('should block saving the game when Pokemon count is 0', async ({ page }) => {

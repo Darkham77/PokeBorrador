@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { generateTestBatches, type TestBatch } from '../../../scripts/battle-tester/team-generator.ts';
 import fs from 'node:fs';
 import path from 'node:path';
+import { setupE2ESession, loginTestUser, confirmAndStartBattle, handleBattleInput } from '../e2e_helpers.ts';
 
 interface TeamSet {
   species: string;
@@ -72,12 +73,7 @@ async function waitForWaitInput(page: Page, turnCount: number, batchIndex: numbe
   }
 }
 
-// Helper: Confirmar e iniciar combate real clickeando ¡COMBATIR!
-async function confirmAndStartBattle(page: Page) {
-  const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-  await combatirBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await combatirBtn.click();
-}
+
 
 // Helper: Verificación de paridad 1:1 entre Store (Showdown) y DOM (Interfaz Gráfica)
 // Lee store y DOM simultáneamente en el mismo polling loop para evitar snapshots desactualizados.
@@ -120,122 +116,7 @@ async function verifyHpParity(page: Page) {
   }
 }
 
-// Helper: Determinar qué botones están activos en la pantalla y clickear
-async function handleBattleInput(page: Page, choice?: string): Promise<boolean> {
-  // Esperar a que el estado de procesamiento termine (microtasks/animaciones) antes de decidir
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    return !resolver().isProcessing;
-  }, undefined, { timeout: 2000 }).catch(() => {});
 
-  const isProcessing = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-    return useBattleStore().isProcessing;
-  });
-
-  if (isProcessing) {
-    console.log(`[E2E] handleBattleInput: Store is already processing. Skipping input click.`);
-    return false;
-  }
-
-  const subState = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-    return useBattleStore().currentSubState;
-  });
-
-  const isModalOpen = await page.evaluate(() => {
-    const overlays = Array.from(document.querySelectorAll('.base-modal-root')) as HTMLElement[];
-    return overlays.some(el => {
-      // Ignorar el contenedor principal de la batalla
-      if (el.querySelector('.battle-arena-modal')) return false;
-      const style = window.getComputedStyle(el);
-      return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetWidth > 0 && el.offsetHeight > 0;
-    });
-  });
-
-  if (isModalOpen && subState === 'WAIT_INPUT') {
-    console.log(`[E2E] handleBattleInput: Modal/Overlay is open in WAIT_INPUT. Skipping input click.`);
-    return false;
-  }
-
-  console.log(`[E2E] handleBattleInput started. subState is: "${subState}", choice is: "${choice || 'auto'}"`);
-
-  const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
-
-  if (subState === 'SWITCH_MENU') {
-    // Si la máquina de estados nos pide obligatoriamente elegir reemplazo, esperamos que el botón esté visible y clickeamos.
-    console.log(`[E2E] In SWITCH_MENU block. Waiting for activeSwitchBtn...`);
-    const count = await page.locator('.quick-card-override').count();
-    console.log(`[E2E] Total .quick-card-override buttons: ${count}`);
-    for (let i = 0; i < count; i++) {
-      const cls = await page.locator('.quick-card-override').nth(i).getAttribute('class');
-      console.log(`[E2E] Button index ${i} class list: "${cls}"`);
-    }
-    await activeSwitchBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await activeSwitchBtn.click();
-    return true;
-  }
-
-  // Si se nos indica una elección determinista (Fuzzer sync)
-  if (choice) {
-    const cleanChoice = choice.trim().toLowerCase();
-    if (cleanChoice.startsWith('move ')) {
-      // Formato: "move N" (e.g., "move 1") -> click en el movimiento N (1-indexed)
-      const moveIdx = parseInt(cleanChoice.split(' ')[1] || '1', 10) - 1;
-      const moveBtn = page.locator('.move-card-vicio').nth(moveIdx);
-      await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await moveBtn.click();
-      return true;
-    } else if (cleanChoice.startsWith('switch ')) {
-      // Formato: "switch N" (e.g., "switch 2") -> click en el Pokémon de banca (2 = primer Pokémon en banca)
-      const switchIdx = parseInt(cleanChoice.split(' ')[1] || '2', 10) - 1;
-      const switchBtn = page.locator('.quick-card-override').nth(switchIdx);
-      await switchBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await switchBtn.click();
-      return true;
-    } else if (cleanChoice.startsWith('useitem:')) {
-      // Formato: "useitem:ITEM_ID:TARGET_INDEX" (e.g., "useitem:potion:1")
-      const parts = cleanChoice.split(':');
-      const itemId = parts[1] || 'potion';
-      console.log(`[E2E] Interactive item usage detected: "${itemId}"`);
-      const itemCard = page.locator(`.quick-item-card:not(.is-disabled)`).first();
-      await itemCard.waitFor({ state: 'visible', timeout: 5000 });
-      await itemCard.click();
-
-      // Clicar en el Pokémon objetivo en el modal
-      const targetBtn = page.locator('.list-item, button:has-text("Bulbasaur"), button:has-text("Mew")').first();
-      await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-      await targetBtn.click();
-      return true;
-    } else {
-      // Opciones no interactivas en el frontend (ej: "team 1" o "pass") -> se consideran auto-procesadas
-      console.log(`[E2E] Non-interactive choice detected: "${choice}". Auto-passing.`);
-      return true;
-    }
-  } else {
-    // En un turno normal, preferir usar movimiento si está visible o se vuelve visible en 2 segundos.
-    console.log(`[E2E] In normal turn block.`);
-    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled])').first();
-    try {
-      await activeMoveBtn.waitFor({ state: 'visible', timeout: 2000 });
-      await activeMoveBtn.click();
-      return true;
-    } catch (_e) {
-      // Si no hay movimientos disponibles (o están ocultos/cargando), intentar cambiar voluntariamente usando el acceso directo del banco (quick-card).
-      console.log(`[E2E] Move button not visible. Attempting voluntary quick-switch...`);
-      if (await activeSwitchBtn.isVisible()) {
-        await activeSwitchBtn.click();
-        return true;
-      } else {
-        // Como último recurso, esperar un poco.
-        console.log(`[E2E] Quick-switch button not visible. Waiting 30ms...`);
-        await page.waitForTimeout(30);
-        return false;
-      }
-    }
-  }
-}
 
 // Helper: Bucle de ejecución automática de turnos
 async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>) {
@@ -400,41 +281,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     test.setTimeout(120000);
 
     // 1. Inyectar configuraciones de E2E y mockear permisos
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E__ = true;
-      localStorage.setItem('pwa_permissions_accepted', 'true');
-      localStorage.setItem('auto-battle', 'false');
-      if ('Notification' in window) {
-        Object.defineProperty(Notification, 'permission', {
-          get() { return 'granted'; }
-        });
-      }
-    });
+    await setupE2ESession(page);
 
-    // 2. Navegar al Login
-    await page.goto('/login');
-
-    // 3. Seleccionar servidor local
-    const localTab = page.locator('button:has-text("Local")');
-    await localTab.click();
-
-    // 4. Iniciar sesión con un usuario dedicado para pruebas locales
+    // 2. Iniciar sesión con un usuario dedicado para pruebas locales
     const testUser = `TEST_USER_${Date.now()}`;
-    await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-    await page.click('button:has-text("JUGAR LOCAL")');
-
-    // 5. Elegir inicial si aparece
-    const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-    try {
-      await starterCard.waitFor({ state: 'visible', timeout: 30000 });
-      await starterCard.click();
-    } catch (_e) {
-      // Ignorar si no aparece
-    }
-
-    // 6. Esperar a que cargue la interfaz principal (aumentado a 45s para soportar carga concurrente pesada)
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
-    await mapaBtn.waitFor({ state: 'attached', timeout: 45000 });
+    await loginTestUser(page, testUser);
   });
 
   // Generar dinámicamente un caso de prueba de Playwright para cada lote de simulación.
