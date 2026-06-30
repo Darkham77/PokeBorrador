@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-Be2iHrSE.js";export{e as default};
