@@ -453,37 +453,6 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
 
-    // Check precedence: Database has absolute priority if it contains a newer save (due to migrations or concurrent play)
-    if (db && !options.skipRemote && !isOnlineLocalUser) {
-      try {
-        const { data: dbSave } = await db.from('game_saves').select('updated_at').eq('user_id', user.id).maybeSingle() as { data: { updated_at: string } | null };
-        if (dbSave && dbSave.updated_at) {
-          let dbTime = 0;
-          try {
-            let dateStr = dbSave.updated_at;
-            if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
-              dateStr = dateStr.replace(' ', 'T') + 'Z';
-            }
-            dbTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
-          } catch (_) {
-            dbTime = Date.parse(dbSave.updated_at) || 0;
-          }
-          
-          const localStateTime = lastLoadedSaveTime;
-          if (localStateTime > 0 && dbTime > localStateTime + 1000) {
-            logger.warn('SAVE', `El guardado de la base de datos es más reciente que el estado actual (DB: ${dbTime} vs Local Loaded: ${localStateTime}). Abortando.`);
-            const { data: fullSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
-            const serverSave = fullSave as { save_data: GameState } | null;
-            _isSaving = false;
-            _isRollingBack = true;
-            return { rollback: true, serverData: serverSave?.save_data, error: 'La base de datos tiene una versión de guardado más reciente.' };
-          }
-        }
-      } catch (e) {
-        logger.warn('SAVE', `Error al validar precedencia del guardado con DB: ${(e as Error).message}`);
-      }
-    }
-
     (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
 
     // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
