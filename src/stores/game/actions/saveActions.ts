@@ -166,6 +166,18 @@ export function useSaveActions(
       return { success: false, error: 'Cannot save with 0 Pokémon or unchosen starter' };
     }
 
+    // Guard: Prevent saving during evolution or move learning to prevent state regression/loss
+    try {
+      const { useModalStore } = await import('@/stores/modals.ts');
+      const modalStore = useModalStore();
+      if (modalStore.isOpen('Evolution') || modalStore.isOpen('MoveLearning')) {
+        logger.warn('SAVE', 'Guardado abortado: El jugador está en medio de una evolución o aprendizaje de movimientos.');
+        return { success: false, error: 'Cannot save during evolution or move learning' };
+      }
+    } catch (e) {
+      logger.warn('SAVE', 'No se pudo validar el estado de los modales para el guardado:', e);
+    }
+
     if (isSandboxActive.value) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))
