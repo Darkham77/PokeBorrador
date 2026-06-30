@@ -78,6 +78,14 @@ export interface BattleState {
   isPvP?: boolean;
   difficulty?: 'easy' | 'normal' | 'hard';
   _lastActivePlayer?: Pokemon | null;
+  seed?: number[];
+  battleHistory?: Array<{
+    turnCount: number;
+    p1Choice: string;
+    p2Choice: string;
+    p1Hps?: Record<string, number> | number[];
+    p2Hps?: Record<string, number> | number[];
+  }>;
   playerFled?: boolean;
   quote?: string;
   wasSearching?: boolean;

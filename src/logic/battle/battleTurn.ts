@@ -12,6 +12,7 @@ import { updateCastformForm } from './battleFlow.ts'
 export async function executeTurn(store: BattleContext, moveIndex: number) {
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
+  console.log(`[BattleTurn] executeTurn started. store.persistBattle type: ${typeof store.persistBattle}`);
   
   if (!p || !e) {
     logger.warn('BattleTurn', 'Aborting turn: Player or Enemy is null', { p, e })
@@ -183,6 +184,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     return
   }
   
+  console.log(`[BattleTurn] executeTurn finished. calling store.persistBattle`);
   if (store.persistBattle) store.persistBattle()
 }
 
@@ -233,12 +235,30 @@ export async function runEnemyAction(store: BattleContext) {
 
   const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
   const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
-
   if (showdownWorker) {
-    const p1Choice = 'struggle';
-    const p2Choice = enemyMove ? `move ${enemyMove.id}` : 'struggle';
-
     const active = store.activeBattle.value;
+    let p1Choice = 'struggle';
+    if (active?.playerRequest?.active?.[0]?.moves) {
+      const validMove = active.playerRequest.active[0].moves.find(m => !m.disabled);
+      if (validMove) {
+        p1Choice = `move ${validMove.id || validMove.move}`;
+      }
+    }
+
+    let p2Choice = 'struggle';
+    if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
+      const validMove = active.enemyRequest.active[0].moves.find(m => !m.disabled);
+      if (validMove) {
+        p2Choice = `move ${validMove.id || validMove.move}`;
+      }
+    } else if (!p2Skip && enemyMove) {
+      p2Choice = `move ${enemyMove.id}`;
+    }
+    
+    console.log(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
+    console.log(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
+    console.log(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
+
     let p1Hps: number[] | undefined = undefined;
     let p2Hps: number[] | undefined = undefined;
     let p1Statuses: string[] | undefined = undefined;

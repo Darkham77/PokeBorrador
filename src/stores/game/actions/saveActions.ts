@@ -44,7 +44,7 @@ export function useSaveActions(
       try {
         const loadPromise = loadBestSave(authStore.user as AuthUser, db.value)
         const timeoutPromise = new Promise((_, reject) => 
-          gsap.delayedCall(8, () => reject(new Error('LOAD_TIMEOUT')))
+          gsap.delayedCall(30, () => reject(new Error('LOAD_TIMEOUT')))
         );
         
         const result = await Promise.race([loadPromise, timeoutPromise]) as { data: GameState, issues: string[], lastSaveId: string | null, isNewerThanCloud: boolean };

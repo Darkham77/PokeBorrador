@@ -15,10 +15,10 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     if (!m || m.pp <= 0) return false
     if (enemy.disabledMove && m.id === enemy.disabledMove.id) return false
     
-    // Excluir movimientos deshabilitados informados por el request del simulador
+    // Excluir movimientos deshabilitados o ausentes informados por el request del simulador
     if (enemyRequest && enemyRequest.active?.[0]?.moves) {
       const reqMove = enemyRequest.active[0].moves.find((rm: any) => rm.id === m.id);
-      if (reqMove && reqMove.disabled) return false;
+      if (!reqMove || reqMove.disabled) return false;
     }
     
     return true

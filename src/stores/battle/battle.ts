@@ -294,25 +294,20 @@ export const useBattleStore = defineStore('battle', () => {
       if (!activeBattle.value.over) await applyEndTurnEffects()
       activeMove.value = null
       
-      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+      const sub = fsm.currentSubState.value
+      const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
+                         sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                         sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+      console.log(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
-      if ((error as Error).name === 'InvalidChoiceError') {
-        logger.warn('BattleStore', `Choice was invalid: ${(error as Error).message}`)
-        uiStore.notify('¡Ese ataque no se puede usar ahora!', '🚫')
-        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-        }
-      } else {
-        logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
-        addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
-        useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
-      }
+      logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
     } finally {
       isProcessing.value = false
     }
@@ -331,25 +326,19 @@ export const useBattleStore = defineStore('battle', () => {
       if (!activeBattle.value.over) await applyEndTurnEffects()
       activeMove.value = null
 
-      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+      const sub = fsm.currentSubState.value
+      const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
+                         sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                         sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
-      if ((error as Error).name === 'InvalidChoiceError') {
-        logger.warn('BattleStore', `Struggle choice was invalid: ${(error as Error).message}`)
-        uiStore.notify('¡Ese ataque no se puede usar ahora!', '🚫')
-        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-        }
-      } else {
-        logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
-        addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
-        useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
-      }
+      logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
     } finally {
       isProcessing.value = false
     }
@@ -512,19 +501,9 @@ export const useBattleStore = defineStore('battle', () => {
     try {
       await switchAction(getContext(), teamIndex, isForced)
     } catch (error) {
-      if ((error as Error).name === 'InvalidChoiceError') {
-        logger.warn('BattleStore', `Switch choice was invalid: ${(error as Error).message}`)
-        uiStore.notify('¡No puedes cambiar a ese Pokémon ahora!', '🚫')
-        if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-          fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-        }
-      } else {
-        logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
-        addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
-        useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
-      }
+      logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
     } finally {
       isProcessing.value = false
     }

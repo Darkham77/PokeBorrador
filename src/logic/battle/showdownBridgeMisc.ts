@@ -10,7 +10,7 @@ import type { SBCtx } from './showdownBridgeCtx';
  * -burst, -candynamax
  */
 export function handleMiscEvents(ctx: SBCtx): boolean {
-  const { store, type, parts, line, p, getPoke } = ctx;
+  const { store, type, parts, line, p, getPoke, getSide } = ctx;
 
   switch (type) {
     case '-miss': {
@@ -197,8 +197,39 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
     case 'switch':
     case 'drag': {
+      const target = getPoke(parts[2] || '');
+      const hpString = parts[4] || '';
+      if (target && hpString) {
+        const hpAndStatus = hpString.split(' ');
+        const hpParts = hpAndStatus[0].split('/');
+        target.hp = parseInt(hpParts[0] || '0');
+        target.maxHp = parseInt(hpParts[1] || '100');
+        if (hpAndStatus[1]) {
+          target.status = hpAndStatus[1] as import('@/types/pokemon/pokemon').PokemonStatus;
+        } else {
+          target.status = null;
+        }
+
+        const side = getSide(parts[2] || '');
+        if (store.activeBattle.value) {
+          if (side === 'player') {
+            store.activeBattle.value.player = target;
+            const team = store.activeBattle.value.playerTeam || [];
+            const idx = team.findIndex(p => p && p.uid === target.uid);
+            if (idx !== -1) {
+              store.activeBattle.value.playerTeamIndex = idx;
+            }
+          } else if (side === 'enemy') {
+            store.activeBattle.value.enemy = target;
+            const team = store.activeBattle.value.enemyTeam || [];
+            const idx = team.findIndex(p => p && p.uid === target.uid);
+            if (idx !== -1) {
+              store.activeBattle.value.enemyTeamIndex = idx;
+            }
+          }
+        }
+      }
       if (type === 'drag' && !line.includes('[silent]')) {
-        const target = getPoke(parts[2] || '');
         if (target) store.addLog(`¡${target.name} fue arrastrado al campo!`, 'log-info', target);
       }
       return true;
@@ -250,6 +281,14 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
     case '-anim': {
       // Registrar que la animación de movimiento fue recibida (y opcionalmente dispararla en UI)
+      return true;
+    }
+
+    case 'turn': {
+      const turnNum = parseInt(parts[2] || '1', 10);
+      if (store.activeBattle.value) {
+        store.activeBattle.value.turnCount = turnNum;
+      }
       return true;
     }
 

@@ -63,6 +63,7 @@ const canUseItems = computed(() => {
   if (!p) return false
   
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
+  if (battleStore.currentSubState !== 'WAIT_INPUT') return false
   
   const volatile = p.volatileCounters
   if (volatile) {

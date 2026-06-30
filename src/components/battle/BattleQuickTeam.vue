@@ -17,8 +17,12 @@ const canSwitch = computed(() => {
   const isForced = uiStore.isBattleSwitchForced
   if (isForced) return true
   
+  if (battleStore.currentSubState === 'SWITCH_MENU') return true // Si la FSM pide cambio, siempre permitir
+  
   const p = battleStore.state?.player
   if (!p) return false
+  
+  if (p.hp <= 0) return true // Si el activo está debilitado, siempre se puede cambiar
   
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
   if (p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
@@ -36,10 +40,20 @@ const canSwitch = computed(() => {
 
 const handleSwitch = (index: number) => {
   const pokemon = team.value[index]
-  if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) return
-  if (!canSwitch.value) return
+  const isForced = uiStore.isBattleSwitchForced || battleStore.currentSubState === 'SWITCH_MENU'
+  console.log(`[BattleQuickTeam] handleSwitch clicked for index: ${index}, pokemon: ${pokemon?.name}, hp: ${pokemon?.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
   
-  battleStore.executeSwitch(index, uiStore.isBattleSwitchForced)
+  if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) {
+    console.log(`[BattleQuickTeam] handleSwitch early return check failed`);
+    return
+  }
+  if (!canSwitch.value) {
+    console.log(`[BattleQuickTeam] handleSwitch canSwitch is false`);
+    return
+  }
+  
+  console.log(`[BattleQuickTeam] Calling battleStore.executeSwitch with index: ${index}, isForced: ${isForced}`);
+  battleStore.executeSwitch(index, isForced)
 }
 </script>
 

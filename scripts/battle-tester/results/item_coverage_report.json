@@ -60,8 +60,8 @@
     "status": "PASS"
   },
   {
-    "id": "beast_ball",
-    "name": "beast_ball",
+    "id": "beastball",
+    "name": "beastball",
     "status": "PASS"
   },
   {
@@ -210,8 +210,8 @@
     "status": "PASS"
   },
   {
-    "id": "dream_ball",
-    "name": "dream_ball",
+    "id": "dreamball",
+    "name": "dreamball",
     "status": "PASS"
   },
   {
@@ -260,8 +260,8 @@
     "status": "PASS"
   },
   {
-    "id": "fast_ball",
-    "name": "fast_ball",
+    "id": "fastball",
+    "name": "fastball",
     "status": "PASS"
   },
   {
@@ -300,8 +300,8 @@
     "status": "PASS"
   },
   {
-    "id": "friend_ball",
-    "name": "friend_ball",
+    "id": "friendball",
+    "name": "friendball",
     "status": "PASS"
   },
   {
@@ -360,8 +360,8 @@
     "status": "PASS"
   },
   {
-    "id": "heal_ball",
-    "name": "heal_ball",
+    "id": "healball",
+    "name": "healball",
     "status": "PASS"
   },
   {
@@ -375,8 +375,8 @@
     "status": "PASS"
   },
   {
-    "id": "heavy_ball",
-    "name": "heavy_ball",
+    "id": "heavyball",
+    "name": "heavyball",
     "status": "PASS"
   },
   {
@@ -410,8 +410,8 @@
     "status": "PASS"
   },
   {
-    "id": "iron_ball",
-    "name": "iron_ball",
+    "id": "ironball",
+    "name": "ironball",
     "status": "PASS"
   },
   {
@@ -465,8 +465,8 @@
     "status": "PASS"
   },
   {
-    "id": "level_ball",
-    "name": "level_ball",
+    "id": "levelball",
+    "name": "levelball",
     "status": "PASS"
   },
   {
@@ -480,8 +480,8 @@
     "status": "PASS"
   },
   {
-    "id": "love_ball",
-    "name": "love_ball",
+    "id": "loveball",
+    "name": "loveball",
     "status": "PASS"
   },
   {
@@ -500,8 +500,8 @@
     "status": "PASS"
   },
   {
-    "id": "lure_ball",
-    "name": "lure_ball",
+    "id": "lureball",
+    "name": "lureball",
     "status": "PASS"
   },
   {
@@ -585,8 +585,8 @@
     "status": "PASS"
   },
   {
-    "id": "moon_ball",
-    "name": "moon_ball",
+    "id": "moonball",
+    "name": "moonball",
     "status": "PASS"
   },
   {
@@ -655,8 +655,8 @@
     "status": "PASS"
   },
   {
-    "id": "premier_ball",
-    "name": "premier_ball",
+    "id": "premierball",
+    "name": "premierball",
     "status": "PASS"
   },
   {
@@ -730,8 +730,8 @@
     "status": "PASS"
   },
   {
-    "id": "repeat_ball",
-    "name": "repeat_ball",
+    "id": "repeatball",
+    "name": "repeatball",
     "status": "PASS"
   },
   {
@@ -780,8 +780,8 @@
     "status": "PASS"
   },
   {
-    "id": "safari_ball",
-    "name": "safari_ball",
+    "id": "safariball",
+    "name": "safariball",
     "status": "PASS"
   },
   {
@@ -825,8 +825,8 @@
     "status": "PASS"
   },
   {
-    "id": "snow_ball",
-    "name": "snow_ball",
+    "id": "snowball",
+    "name": "snowball",
     "status": "PASS"
   },
   {
@@ -850,8 +850,8 @@
     "status": "PASS"
   },
   {
-    "id": "sport_ball",
-    "name": "sport_ball",
+    "id": "sportball",
+    "name": "sportball",
     "status": "PASS"
   },
   {
@@ -995,33 +995,33 @@
     "status": "PASS"
   },
   {
-    "id": "great_ball",
-    "name": "great_ball",
+    "id": "greatball",
+    "name": "greatball",
     "status": "PASS"
   },
   {
-    "id": "ultra_ball",
-    "name": "ultra_ball",
+    "id": "ultraball",
+    "name": "ultraball",
     "status": "PASS"
   },
   {
-    "id": "net_ball",
-    "name": "net_ball",
+    "id": "netball",
+    "name": "netball",
     "status": "PASS"
   },
   {
-    "id": "dusk_ball",
-    "name": "dusk_ball",
+    "id": "duskball",
+    "name": "duskball",
     "status": "PASS"
   },
   {
-    "id": "timer_ball",
-    "name": "timer_ball",
+    "id": "timerball",
+    "name": "timerball",
     "status": "PASS"
   },
   {
-    "id": "master_ball",
-    "name": "master_ball",
+    "id": "masterball",
+    "name": "masterball",
     "status": "PASS"
   },
   {
@@ -1055,8 +1055,8 @@
     "status": "PASS"
   },
   {
-    "id": "light_ball",
-    "name": "light_ball",
+    "id": "lightball",
+    "name": "lightball",
     "status": "PASS"
   },
   {
@@ -1085,8 +1085,8 @@
     "status": "PASS"
   },
   {
-    "id": "dive_ball",
-    "name": "dive_ball",
+    "id": "diveball",
+    "name": "diveball",
     "status": "PASS"
   },
   {
@@ -1105,8 +1105,8 @@
     "status": "PASS"
   },
   {
-    "id": "luxury_ball",
-    "name": "luxury_ball",
+    "id": "luxuryball",
+    "name": "luxuryball",
     "status": "PASS"
   },
   {
@@ -1120,8 +1120,8 @@
     "status": "PASS"
   },
   {
-    "id": "nest_ball",
-    "name": "nest_ball",
+    "id": "nestball",
+    "name": "nestball",
     "status": "PASS"
   },
   {
@@ -1130,8 +1130,8 @@
     "status": "PASS"
   },
   {
-    "id": "quick_ball",
-    "name": "quick_ball",
+    "id": "quickball",
+    "name": "quickball",
     "status": "PASS"
   },
   {

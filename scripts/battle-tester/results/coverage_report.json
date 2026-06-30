@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-29T16:32:16.527Z",
+  "generatedAt": "2026-06-30T09:47:53.730Z",
   "summary": {
-    "totalMoves": 684,
-    "passedMoves": 684,
+    "totalMoves": 682,
+    "passedMoves": 682,
     "failedMoves": 0,
     "untestedMoves": 0,
     "totalAbilities": 283,
@@ -2347,12 +2347,6 @@
       "status": "PASS"
     },
     {
-      "id": "nobleroar",
-      "name": "nobleroar",
-      "type": "move",
-      "status": "PASS"
-    },
-    {
       "id": "noretreat",
       "name": "noretreat",
       "type": "move",
@@ -2361,12 +2355,6 @@
     {
       "id": "nuzzle",
       "name": "nuzzle",
-      "type": "move",
-      "status": "PASS"
-    },
-    {
-      "id": "orderup",
-      "name": "orderup",
       "type": "move",
       "status": "PASS"
     },

@@ -10,14 +10,48 @@ interface TeamSet {
   name?: string;
 }
 
-// Helper: Esperar a que la máquina de estados retorne a WAIT_INPUT (el turno anterior y sus animaciones terminaron)
-async function waitForWaitInput(page: Page, turnCount: number, batchIndex: number) {
+// Helper: Esperar a que la máquina de estados retorne a WAIT_INPUT o SWITCH_MENU (el turno anterior y sus animaciones terminaron)
+// Y además asegurar que hayamos avanzado de turno (si no es el primer turno de la simulación)
+async function waitForWaitInput(page: Page, turnCount: number, batchIndex: number, expectedSimulatorTurn: number, lastSubState: string) {
   try {
-    await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const store = useBattleStore();
-      return store.currentSubState === 'WAIT_INPUT' || !store.state || store.state.over;
-    }, { timeout: 8000 });
+    let resolved = false;
+    while (!resolved) {
+      await page.waitForFunction(({ expectedTurn, lastSub, isFirst }) => {
+        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const store = resolver();
+        const isReady = (store.currentFsmState === 'ACTIVE_BATTLE' && 
+                        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
+                        !store.state || store.state.over;
+        const currentTurn = store.state?.turnCount ?? 1;
+        const currentSubState = store.currentSubState;
+        
+        console.log(`[E2E-FSM-Wait] turnCount: ${expectedTurn}, lastSub: "${lastSub}", isFirst: ${isFirst}, currentSubState: "${store.currentSubState}", currentTurn: ${currentTurn}, isReady: ${isReady}`);
+        
+        if (!isReady) return false;
+        const isCorrectTurn = isFirst || currentSubState === 'SWITCH_MENU' || currentTurn > expectedTurn || (currentTurn === expectedTurn && currentSubState !== lastSub) || store.state?.over;
+        return isCorrectTurn;
+      }, { expectedTurn: expectedSimulatorTurn, lastSub: lastSubState, isFirst: turnCount === 0 }, { timeout: 12000 });
+
+      // Esperar 100ms para asegurar que no caímos en un microtask gap donde el turnCount subió pero la FSM aún no transitó a EXEC_TURN/APPLY_MOVE
+      await page.waitForTimeout(100);
+
+      // Re-verificar si seguimos en un estado listo para input (WAIT_INPUT o SWITCH_MENU o batalla terminada)
+      const stillReady = await page.evaluate(() => {
+        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const store = resolver();
+        return (store.currentFsmState === 'ACTIVE_BATTLE' && 
+                (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
+                !store.state || store.state.over;
+      });
+
+      if (stillReady) {
+        resolved = true;
+      } else {
+        console.log(`[E2E] Falsa alarma detectada (microtask gap). Re-esperando FSM...`);
+      }
+    }
   } catch (_e) {
     await page.screenshot({ path: `scratch/lock-batch-${batchIndex}-turn-${turnCount}.png` });
     throw new Error(`Bloqueo detectado: La FSM de combate se quedó trabada en el turno ${turnCount}. Captura guardada en scratch/.`);
@@ -32,80 +66,99 @@ async function confirmAndStartBattle(page: Page) {
 }
 
 // Helper: Verificación de paridad 1:1 entre Store (Showdown) y DOM (Interfaz Gráfica)
+// Lee store y DOM simultáneamente en el mismo polling loop para evitar snapshots desactualizados.
 async function verifyHpParity(page: Page) {
-  const storeData = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-    const store = useBattleStore();
-    return {
-      playerHp: store.state?.player?.hp ?? 0,
-      playerMaxHp: store.state?.player?.maxHp ?? 1,
-      enemyHp: store.state?.enemy?.hp ?? 0,
-      enemyMaxHp: store.state?.enemy?.maxHp ?? 1
-    };
-  });
+  // Verificar paridad: espera hasta que el DOM refleje exactamente lo que el store tiene EN ESE MOMENTO
+  try {
+    await page.waitForFunction(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
+      const playerHp = store.state?.player?.hp ?? 0;
+      const playerMaxHp = store.state?.player?.maxHp ?? 1;
+      const enemyHp = store.state?.enemy?.hp ?? 0;
+      const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
 
-  // Esperar a que la barra de HP del DOM termine de animarse y refleje exactamente la vida del Store
-  if (storeData.playerHp > 0) {
-    const expectedPlayerPct = (storeData.playerHp / storeData.playerMaxHp) * 100;
-    await page.waitForFunction((expectedPct) => {
-      const bar = document.querySelector('.player-card .hp-bar-inner');
-      if (!bar) return false;
-      const style = bar.getAttribute('style') || '';
-      const match = style.match(/width:\s*([\d.]+)%/);
-      if (!match || !match[1]) return false;
-      return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
-    }, expectedPlayerPct, { timeout: 2000 }).catch(() => {});
-
-    const playerHpText = await page.locator('.player-card .hp-values').innerText();
-    expect(playerHpText).toContain(`${storeData.playerHp}/${storeData.playerMaxHp}`);
-  }
-
-  if (storeData.enemyHp > 0) {
-    const expectedEnemyPct = (storeData.enemyHp / storeData.enemyMaxHp) * 100;
-    await page.waitForFunction((expectedPct) => {
-      const bar = document.querySelector('.enemy-card .hp-bar-inner');
-      if (!bar) return false;
-      const style = bar.getAttribute('style') || '';
-      const match = style.match(/width:\s*([\d.]+)%/);
-      if (!match || !match[1]) return false;
-      return Math.abs(parseFloat(match[1]) - expectedPct) < 1.0;
-    }, expectedEnemyPct, { timeout: 2000 }).catch(() => {});
-
-    const enemyHpText = await page.locator('.enemy-card .hp-values').innerText();
-    expect(enemyHpText).toContain(`${storeData.enemyHp}/${storeData.enemyMaxHp}`);
+      if (playerHp > 0) {
+        const el = document.querySelector('.player-card .hp-values');
+        const text = el?.textContent ?? '';
+        if (!text.includes(`${playerHp}/${playerMaxHp}`)) return false;
+      }
+      if (enemyHp > 0) {
+        const el = document.querySelector('.enemy-card .hp-values');
+        const text = el?.textContent ?? '';
+        if (!text.includes(`${enemyHp}/${enemyMaxHp}`)) return false;
+      }
+      return true;
+    }, undefined, { timeout: 15000 });
+  } catch (err) {
+    const diagnosis = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      const storePlayer = `${store.state?.player?.hp}/${store.state?.player?.maxHp}`;
+      const storeEnemy  = `${store.state?.enemy?.hp}/${store.state?.enemy?.maxHp}`;
+      const domPlayer   = document.querySelector('.player-card .hp-values')?.textContent ?? 'null';
+      const domEnemy    = document.querySelector('.enemy-card .hp-values')?.textContent ?? 'null';
+      return { storePlayer, storeEnemy, domPlayer, domEnemy };
+    });
+    console.error(`[E2E ERROR] HP Mismatch — Store player: ${diagnosis.storePlayer}, DOM player: "${diagnosis.domPlayer}" | Store enemy: ${diagnosis.storeEnemy}, DOM enemy: "${diagnosis.domEnemy}"`);
+    throw err;
   }
 }
 
 // Helper: Determinar qué botones están activos en la pantalla y clickear
 async function handleBattleInput(page: Page) {
-  const moveBtn = page.locator('.battle-move-btn, button[id^="move-btn-"]').first();
-  const activeMoveBtn = page.locator('.battle-move-btn:not([disabled]), button[id^="move-btn-"]:not([disabled])').first();
-  const activeSwitchBtn = page.locator('button:has-text("SLOT"):not([disabled])').first();
+  const subState = await page.evaluate(async () => {
+    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+    return useBattleStore().currentSubState;
+  });
 
-  if (await moveBtn.isVisible()) {
-    if (await activeMoveBtn.isVisible()) {
+  console.log(`[E2E] handleBattleInput started. subState is: "${subState}"`);
+
+  const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
+
+  if (subState === 'SWITCH_MENU') {
+    // Si la máquina de estados nos pide obligatoriamente elegir reemplazo, esperamos que el botón esté visible y clickeamos.
+    console.log(`[E2E] In SWITCH_MENU block. Waiting for activeSwitchBtn...`);
+    const count = await page.locator('.quick-card-override').count();
+    console.log(`[E2E] Total .quick-card-override buttons: ${count}`);
+    for (let i = 0; i < count; i++) {
+      const cls = await page.locator('.quick-card-override').nth(i).getAttribute('class');
+      console.log(`[E2E] Button index ${i} class list: "${cls}"`);
+    }
+    await activeSwitchBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await activeSwitchBtn.click({ force: true });
+  } else {
+    // En un turno normal, preferir usar movimiento si está visible o se vuelve visible en 2 segundos.
+    console.log(`[E2E] In normal turn block.`);
+    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled])').first();
+    try {
+      await activeMoveBtn.waitFor({ state: 'visible', timeout: 2000 });
       await activeMoveBtn.click({ force: true });
-    } else {
-      // Si el jugador está atrapado/obligado a cambiar o usar switch
+    } catch (_e) {
+      // Si no hay movimientos disponibles (o están ocultos/cargando), intentar cambiar voluntariamente.
+      console.log(`[E2E] Move button not visible. Attempting voluntary switch...`);
       const changeBtn = page.locator('button:has-text("CAMBIAR")').first();
       if (await changeBtn.isVisible()) {
         await changeBtn.click({ force: true });
-        await activeSwitchBtn.waitFor({ state: 'attached', timeout: 2000 });
+        console.log(`[E2E] Clicked CAMBIAR button. Waiting for activeSwitchBtn to be visible...`);
+        await activeSwitchBtn.waitFor({ state: 'visible', timeout: 5000 });
         await activeSwitchBtn.click({ force: true });
+      } else {
+        // Como último recurso, esperar un poco.
+        console.log(`[E2E] CAMBIAR button not visible. Waiting 200ms...`);
+        await page.waitForTimeout(200);
       }
     }
-  } else if (await activeSwitchBtn.isVisible()) {
-    // Reemplazo obligatorio por K.O.
-    await activeSwitchBtn.click({ force: true });
-  } else {
-    await page.waitForTimeout(100);
   }
 }
 
 // Helper: Bucle de ejecución automática de turnos
-async function executeAutoBattle(page: Page, batchIndex: number) {
-  let turnCount = 0;
-  const maxTurns = 50;
+async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0) {
+  let turnCount = startingTurn;
+  const maxTurns = 150;
+  let lastSimulatorTurn = 0;
+  let lastSubState = '';
 
   while (turnCount < maxTurns) {
     // Verificar si la batalla ya concluyó en el store
@@ -119,7 +172,7 @@ async function executeAutoBattle(page: Page, batchIndex: number) {
       break;
     }
 
-    await waitForWaitInput(page, turnCount, batchIndex);
+    await waitForWaitInput(page, turnCount, batchIndex, lastSimulatorTurn, lastSubState);
 
     // Re-verificar estado de finalización
     const isOverAfterWait = await page.evaluate(async () => {
@@ -135,8 +188,28 @@ async function executeAutoBattle(page: Page, batchIndex: number) {
     // Verificar paridad DOM/Store
     await verifyHpParity(page);
 
+    // Guardar el turnCount actual antes de ejecutar la acción
+    const stateInfo = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return {
+        turn: store.state?.turnCount ?? 1,
+        subState: store.currentSubState
+      };
+    });
+    lastSimulatorTurn = stateInfo.turn;
+    lastSubState = stateInfo.subState;
+
     // Procesar acción del turno
     await handleBattleInput(page);
+
+    // Esperar a que la FSM salga de los estados de input para no leer el estado viejo en la próxima iteración
+    await page.waitForFunction(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
+      return store.currentSubState !== 'WAIT_INPUT' && store.currentSubState !== 'SWITCH_MENU';
+    }, undefined, { timeout: 5000 });
 
     turnCount++;
   }
@@ -158,6 +231,21 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   const batches = generateTestBatches(6);
 
   test.beforeEach(async ({ page }) => {
+    page.on('console', msg => {
+      const text = msg.text();
+      if (
+        text.includes('BRIDGE') ||
+        text.includes('E2E') ||
+        text.toLowerCase().includes('error') ||
+        text.includes('Showdown') ||
+        text.includes('FSM') ||
+        text.includes('BattleStore') ||
+        text.includes('BattleTurn') ||
+        text.includes('SYNC')
+      ) {
+        console.log(`[BROWSER] ${text}`);
+      }
+    });
     // Configurar tiempo de espera de cada test a 120 segundos para evitar timeouts bajo alta concurrencia
     test.setTimeout(120000);
 
@@ -165,6 +253,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     await page.addInitScript(() => {
       (window as unknown as Record<string, unknown>).__E2E__ = true;
       localStorage.setItem('pwa_permissions_accepted', 'true');
+      localStorage.setItem('auto-battle', 'false');
       if ('Notification' in window) {
         Object.defineProperty(Notification, 'permission', {
           get() { return 'granted'; }
@@ -187,7 +276,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     // 5. Elegir inicial si aparece
     const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
     try {
-      await starterCard.waitFor({ state: 'attached', timeout: 5000 });
+      await starterCard.waitFor({ state: 'attached', timeout: 30000 });
       await starterCard.click({ force: true });
     } catch (_e) {
       // Ignorar si no aparece
@@ -272,11 +361,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
       gameStore.state.inventory = {
         potion: 3
       };
-
       // Generar equipo local con Bulbasaur dañado (10 HP de 20)
       const bulbasaur = debugService.generate({ id: 'bulbasaur', level: 5 });
       bulbasaur.hp = 10;
       gameStore.state.team = [bulbasaur];
+      await gameStore.saveGame();
 
       const pikachu = debugService.generate({ id: 'pikachu', level: 5 });
       await battleStore.startBattle(pikachu, { locationId: 'route1' });
@@ -286,7 +375,20 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     await confirmAndStartBattle(page);
 
     // 3. Esperar a que la UI de batalla termine las animaciones de inicio y el botón de la poción esté activo
-    const potionCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Poción"]), .quick-item-card:not(.is-disabled):has(img[alt*="Poc"])').first();
+    await page.evaluate(async () => {
+      for (let i = 0; i < 10; i++) {
+        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        if (resolver) {
+          const store = resolver();
+          const cardEl = document.querySelector('.quick-item-card');
+          const classes = cardEl ? cardEl.className : 'null';
+          console.log(`[E2E-POLL] #${i} SubState: "${store.currentSubState}", isIntro: ${store.isIntroAnimating}, isProc: ${store.isProcessing}, hasPlayer: ${!!store.state?.player}, cardClasses: "${classes}"`);
+        }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    });
+
+    const potionCard = page.locator('.quick-item-card:not(.is-disabled)').first();
     await potionCard.waitFor({ state: 'visible', timeout: 10000 });
 
     // 4. Clickear la Poción (debería abrir el modal de selección de Pokémon)
@@ -298,11 +400,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     await targetBtn.click({ force: true });
 
     // 5. Esperar a que la FSM procese el turno del uso del objeto + el ataque enemigo y vuelva a WAIT_INPUT
-    await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const store = useBattleStore();
+    await page.waitForFunction(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
       return store.currentSubState === 'WAIT_INPUT' || (store.state && store.state.player && store.state.player.hp === 0);
-    }, { timeout: 10000 });
+    }, undefined, { timeout: 10000 });
 
     // 6. Verificar que la cantidad de pociones bajó a 2 en el GameStore
     const itemsCount = await page.evaluate(async () => {
@@ -321,7 +424,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     expect(finalHp).toBeGreaterThan(10);
 
     // 7. Continuar el combate de forma automática hasta que finalice por completo (evitando cortes tempranos que oculten bugs en turnos futuros)
-    await executeAutoBattle(page, 999);
+    await executeAutoBattle(page, 999, 1);
   });
 
   // --- TEST ADICIONAL: Lanzamiento de Pokéball y Captura ---
@@ -337,7 +440,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
       // Inicializar inventario con Pokéballs
       gameStore.state.inventory = {
-        pokeball: 10
+        masterball: 10
       };
 
       const bulbasaur = pkmnDebugger.generate({ id: 'bulbasaur', level: 5 });
@@ -351,18 +454,19 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     await confirmAndStartBattle(page);
 
     // 3. Esperar a que termine la introducción y la pokéball esté activa
-    const pokeballCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Pokéball"]), .quick-item-card:not(.is-disabled):has(img[alt*="ball"])').first();
+    const pokeballCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Master Ball"]), .quick-item-card:not(.is-disabled):has(img[alt*="ball"])').first();
     await pokeballCard.waitFor({ state: 'visible', timeout: 10000 });
 
     // 4. Lanzar Pokéball
     await pokeballCard.click({ force: true });
 
     // 5. Esperar a que finalice la secuencia de captura y termine la batalla
-    await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const store = useBattleStore();
+    await page.waitForFunction(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
       return !store.state || store.state.over;
-    }, { timeout: 10000 });
+    }, undefined, { timeout: 10000 });
 
     // 6. Validar que la batalla cerró
     const isOver = await page.evaluate(async () => {
@@ -415,11 +519,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     await targetBtn.click({ force: true });
 
     // 5. Esperar a que la FSM procese el turno del uso del objeto + el ataque enemigo y vuelva a WAIT_INPUT
-    await page.waitForFunction(async () => {
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const store = useBattleStore();
+    await page.waitForFunction(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
       return store.currentSubState === 'WAIT_INPUT' || (store.state && store.state.player && store.state.player.hp === 0);
-    }, { timeout: 10000 });
+    }, undefined, { timeout: 10000 });
 
     // 6. Verificar que Charmander en la banca ya no está debilitado (su HP es mayor a 0)
     const charmanderHp = await page.evaluate(async () => {

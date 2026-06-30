@@ -22,13 +22,13 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   const abilityKey = poke.ability || 'overgrow';
   const natureKey = poke.nature || 'serious';
 
-  // Filtrar movimientos no nulos, mapear IDs y filtrar no válidos de la generación actual
+  // Filtrar movimientos no nulos, mapear IDs y permitir cualquier movimiento existente en el Dex global
   const moves = poke.moves
     .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
     .map(m => m.id as string)
     .filter(id => {
-      const mData = Dex.forGen(ACTIVE_GENERATION).moves.get(id);
-      return mData.exists && mData.isNonstandard !== 'Past';
+      const mData = Dex.moves.get(id);
+      return mData.exists;
     });
 
   if (moves.length === 0) {
@@ -158,8 +158,10 @@ export function resolveOriginalTeamOrder(
 
 export function resolveShowdownSlot(
   active: {
+    showdownPlayerTeamOrder?: string[] | null;
     initialPlayerTeamOrder?: string[] | null;
     playerTeam?: Array<GamePokemon | null> | null;
+    showdownEnemyTeamOrder?: string[] | null;
     initialEnemyTeamOrder?: string[] | null;
     enemyTeam?: Array<GamePokemon | null> | null;
   },
@@ -167,7 +169,9 @@ export function resolveShowdownSlot(
   pokemonUid: string,
   fallbackTeam: Array<GamePokemon | null> = []
 ): number {
-  const order = resolveOriginalTeamOrder(active, side, fallbackTeam);
+  // Use the CURRENT order (which tracks internal Showdown slot swaps after each switch).
+  // resolveOriginalTeamOrder was wrong because Showdown physically reorders slots on switch.
+  const order = resolveCurrentTeamOrder(active, side, fallbackTeam);
   return getShowdownSlot(order, pokemonUid);
 }
 

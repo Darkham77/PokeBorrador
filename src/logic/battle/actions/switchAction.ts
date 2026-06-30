@@ -126,17 +126,29 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       }
       const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
 
-       const playerOrder = active.initialPlayerTeamOrder || (active.playerTeam || gs.state.team || []).filter((p): p is Pokemon => !!p).map(p => p.uid);
        const team = gs.state.team || [];
-       const p1Hps = playerOrder.map(uid => team.find(p => p?.uid === uid)?.hp ?? 0);
+       const p1Hps: Record<string, number> = {};
+       const p1Statuses: Record<string, string> = {};
+       for (const p of team) {
+         if (p) {
+           p1Hps[p.uid] = p.hp;
+           p1Statuses[p.uid] = p.status ?? '';
+         }
+       }
  
-       const enemyOrder = active.initialEnemyTeamOrder || (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p).map(p => p.uid);
        const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-       const p2Hps = enemyOrder.map(uid => enemyTeam.find(p => p?.uid === uid)?.hp ?? 0);
+       const p2Hps: Record<string, number> = {};
+       const p2Statuses: Record<string, string> = {};
+       for (const p of enemyTeam) {
+         if (p) {
+           p2Hps[p.uid] = p.hp;
+           p2Statuses[p.uid] = p.status ?? '';
+         }
+       }
 
-      let result;
-      try {
-        result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps)
+       let result;
+       try {
+         result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses)
       } catch (error) {
         if (oldPoke) {
           activeBattle.value.player = oldPoke;
@@ -154,10 +166,6 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
 
       const filteredLogs = filterShowdownLogs(result.logs)
       for (const logLine of filteredLogs) {
-        // Ignorar la línea de switch del propio jugador ya que ejecutamos la animación visualmente arriba
-        if (logLine.startsWith('|switch|p1a:')) {
-          continue
-        }
         await parseShowdownLogLine(ctx, logLine, filteredLogs)
         if (logLine.startsWith('|faint|')) break
       }
@@ -244,5 +252,6 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE)
   }
   
+  persistBattle()
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
 }

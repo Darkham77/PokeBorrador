@@ -29,13 +29,34 @@ export async function executeTurnInWorker(
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
+
+  // Registrar elección en el historial local del combate
+  try {
+    const { useBattleStore } = await import('@/stores/battle/battle');
+    const battleStore = useBattleStore();
+    if (battleStore.activeBattle) {
+      if (!battleStore.activeBattle.battleHistory) {
+        battleStore.activeBattle.battleHistory = [];
+      }
+      battleStore.activeBattle.battleHistory.push({
+        turnCount: battleStore.activeBattle.turnCount,
+        p1Choice,
+        p2Choice: p2Choice || 'struggle',
+        p1Hps: p1Hps ? JSON.parse(JSON.stringify(p1Hps)) : undefined,
+        p2Hps: p2Hps ? JSON.parse(JSON.stringify(p2Hps)) : undefined
+      });
+    }
+  } catch (e) {
+    // Ignorar si se ejecuta fuera de contexto de tienda
+  }
+
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
     payload: { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip }
   })
   return new Promise((resolve, reject) => {
     if (!showdownWorker) return reject(new Error('showdownWorker is null'))
-    const handler = (event: MessageEvent) => {
+    const handler = async (event: MessageEvent) => {
       const { type, payload } = event.data
       const worker = showdownWorker!
       if (type === 'TURN_SUCCESS') {
@@ -51,7 +72,45 @@ export async function executeTurnInWorker(
         } else {
           worker.onmessage = null
         }
-        const errorMsg = payload.message || '';
+
+        // Generar reporte de reproducción detallado
+        let reproductionReport = '';
+        try {
+          const { useBattleStore } = await import('@/stores/battle/battle');
+          const battleStore = useBattleStore();
+          const active = battleStore.activeBattle;
+          if (active) {
+            const reportObj = {
+              seed: active.seed || [],
+              p1Team: active.playerTeam?.map(p => ({
+                id: p.id,
+                level: p.level,
+                ability: p.ability,
+                moves: p.moves.map(m => m?.id || ''),
+                gender: p.gender,
+                hp: p.hp,
+                maxHp: p.maxHp,
+                stats: p.stats
+              })) || [],
+              p2Team: active.enemyTeam?.map(p => ({
+                id: p.id,
+                level: p.level,
+                ability: p.ability,
+                moves: p.moves.map(m => m?.id || ''),
+                gender: p.gender,
+                hp: p.hp,
+                maxHp: p.maxHp,
+                stats: p.stats
+              })) || [],
+              history: active.battleHistory || []
+            };
+            reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;
+          }
+        } catch (e) {
+          // Ignorar fallo al generar reporte
+        }
+
+        const errorMsg = (payload.message || '') + reproductionReport;
         const err = new Error(errorMsg);
         if (errorMsg.includes('INVALID_CHOICE')) {
           err.name = 'InvalidChoiceError';
@@ -462,7 +521,18 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       showdownWorker.terminate();
     }
     showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
-    
+    // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
+    const seedArr = [
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000)
+    ];
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.seed = seedArr;
+      ctx.activeBattle.value.battleHistory = [];
+    }
+
     // Generar el equipo ordenado del jugador para Showdown
     const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
     const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
@@ -493,7 +563,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         p2: { name: battleState?.trainerName || 'Enemigo', team: p2Team },
         p1Hps,
         p2Hps,
-        weather: initialWeatherOfficial
+        weather: initialWeatherOfficial,
+        seed: seedArr
       }
     });
 
@@ -847,6 +918,15 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         }
       }
     }
+  }
+
+  // Esperar a que el worker inicialice y asigne el request inicial con elecciones válidas (máximo 5 segundos)
+  for (let i = 0; i < 100; i++) {
+    const req = ctx.activeBattle.value?.playerRequest
+    if (req && (req.active || req.forceSwitch)) {
+      break
+    }
+    await sleep(50)
   }
 
   ctx.isIntroAnimating.value = false

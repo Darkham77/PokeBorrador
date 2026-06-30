@@ -24,7 +24,7 @@ self.onmessage = (event: MessageEvent) => {
         
         lastLogIndex = 0;
 
-        const seedArr = [
+        const seedArr = payload.seed || [
           Math.floor(Math.random() * 0x10000),
           Math.floor(Math.random() * 0x10000),
           Math.floor(Math.random() * 0x10000),
@@ -104,17 +104,28 @@ self.onmessage = (event: MessageEvent) => {
         };
 
         const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
-          const resolved = resolveChoice(battle[player] as unknown as PkmnSimSide, choice);
+          const side = battle[player] as unknown as PkmnSimSide;
+          const activeMon = side.active[0];
+          const resolved = resolveChoice(side, choice);
           let ok = battle.choose(player, resolved);
           if (!ok) {
-            throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}.`);
+            const activeName = activeMon ? activeMon.name : 'none';
+            const activeMoves = activeMon ? JSON.stringify(activeMon.moves) : 'none';
+            const requestStr = JSON.stringify((battle[player] as any).activeRequest || {});
+            throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}. ActiveMon: ${activeName}, Simulator Moves: ${activeMoves}, Request: ${requestStr}`);
           }
         };
 
+        const logLenBeforeP1 = battle.log.length;
         if (p1Choice) {
           chooseOrThrow('p1', p1Choice);
         }
-        if (p2Choice) {
+        // After p1 chooses, Showdown may auto-process the turn if p2 already had a committed
+        // choice queued (common when p1 voluntary-switches in gen5customgame).
+        // Detect this by checking if new battle logs were emitted after p1's choose.
+        // If the log grew, the turn already resolved — do NOT send p2's choice.
+        const turnAlreadyProcessed = battle.log.length > logLenBeforeP1;
+        if (p2Choice && !turnAlreadyProcessed) {
           chooseOrThrow('p2', p2Choice);
         }
 

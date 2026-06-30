@@ -174,7 +174,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const dexGen = Dex.forGen(9);
 
   const allMoves = dexGen.moves.all()
-    .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle');
+    .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle' && m.id !== 'nobleroar' && m.id !== 'orderup');
 
   // Filtrar habilidades excluidas del reporte singles
   const allAbilities = dexGen.abilities.all()

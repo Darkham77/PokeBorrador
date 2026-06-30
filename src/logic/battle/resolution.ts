@@ -505,15 +505,18 @@ function syncTeamHP(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
   
-  // Si tenemos un pokemon activo, lo sincronizamos.
   if (active.player) {
-    const currentIdx = active.playerTeamIndex ?? ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === active.player?.uid);
+    console.log(`[BRIDGE SYNC] Active Player: ${active.player.name} (uid: ${active.player.uid}) HP: ${active.player.hp}/${active.player.maxHp}`);
+    const currentIdx = ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === active.player?.uid);
+    console.log(`[BRIDGE SYNC] Found index: ${currentIdx}`);
     if (currentIdx !== -1) {
       const teamPoke = ctx.gs.state.team[currentIdx];
       if (teamPoke) {
+        console.log(`[BRIDGE SYNC] Before: ${teamPoke.name} HP: ${teamPoke.hp}/${teamPoke.maxHp}`);
         teamPoke.hp = active.player.hp;
         teamPoke.status = active.player.status;
         teamPoke.moves = active.player.moves;
+        console.log(`[BRIDGE SYNC] After: ${teamPoke.name} HP: ${teamPoke.hp}/${teamPoke.maxHp}`);
       }
     }
   } else if (active._lastActivePlayer) {

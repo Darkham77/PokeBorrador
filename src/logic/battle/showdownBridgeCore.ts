@@ -86,8 +86,10 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const hpString = parts[3] || '';
       if (victim && hpString) {
         const hpParts = hpString.split('/');
+        const oldHp = victim.hp;
         victim.hp = parseInt(hpParts[0] || '0');
         victim.maxHp = parseInt(hpParts[1] || '100');
+        console.log(`[BRIDGE -damage] Victim: ${victim.name} (uid: ${victim.uid}) HP: ${oldHp} -> ${victim.hp}. Active Player: ${store.activeBattle.value?.player?.name} (uid: ${store.activeBattle.value?.player?.uid}) HP: ${store.activeBattle.value?.player?.hp}`);
         store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
         const side = victim === p ? 'player' : 'enemy';
         if (store.animations?.handleShakeRequest) {
