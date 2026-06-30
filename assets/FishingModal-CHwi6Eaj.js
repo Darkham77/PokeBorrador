@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-CJH6--oY.js";export{e as default};
