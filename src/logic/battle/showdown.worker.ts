@@ -103,38 +103,19 @@ self.onmessage = (event: MessageEvent) => {
           return choice
         };
 
-        const chooseWithFallback = (player: 'p1' | 'p2', choice: string): boolean => {
+        const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
           const resolved = resolveChoice(battle[player] as unknown as PkmnSimSide, choice);
           let ok = battle.choose(player, resolved);
           if (!ok) {
-            console.warn(`[Showdown Worker] Choice "${choice}" (resolved: "${resolved}") was rejected for ${player}. Attempting fallbacks.`);
-            // Try moves 1 to 4
-            for (let i = 1; i <= 4; i++) {
-              if (battle.choose(player, `move ${i}`)) {
-                console.log(`[Showdown Worker] Fallback choice "move ${i}" accepted for ${player}`);
-                return true;
-              }
-            }
-            // Try default (Struggle)
-            if (battle.choose(player, 'default')) {
-              console.log(`[Showdown Worker] Fallback choice "default" accepted for ${player}`);
-              return true;
-            }
+            throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}.`);
           }
-          return ok;
         };
 
         if (p1Choice) {
-          const res1 = chooseWithFallback('p1', p1Choice);
-          if (!res1) {
-            throw new Error(`INVALID_CHOICE: Elección inválida e irrecuperable para p1: "${p1Choice}"`);
-          }
+          chooseOrThrow('p1', p1Choice);
         }
         if (p2Choice) {
-          const res2 = chooseWithFallback('p2', p2Choice);
-          if (!res2) {
-            throw new Error(`INVALID_CHOICE: Elección inválida e irrecuperable para p2: "${p2Choice}"`);
-          }
+          chooseOrThrow('p2', p2Choice);
         }
 
         const turnLogs = getNewLogs();

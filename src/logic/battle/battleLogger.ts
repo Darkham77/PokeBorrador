@@ -74,7 +74,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
         try {
           item = getItemById(source);
         } catch {
-          // No es un ID de item válido, usar el string source como spriteId directamente
+          logger.warn('BattleLogger', `La fuente de texto "${source}" no es un ID de item registrado. Se intentará cargar como sprite directo.`);
         }
         const spriteId = (item && item.sprite) ? item.sprite : source;
         icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);

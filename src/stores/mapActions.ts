@@ -251,6 +251,6 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
     inventoryStore.addItem(rewardId, 1);
     const displayName = itemData ? itemData.name : rewardId;
     uiStore.notify(`¡Desenterraste un ${displayName}!`, itemSprite);
-    battleStore.addLog(`¡Desenterraste un <strong style="color:var(--yellow);">${displayName}</strong>!`, 'log-info', displayName);
+    battleStore.addLog(`¡Desenterraste un <strong style="color:var(--yellow);">${displayName}</strong>!`, 'log-info', rewardId);
   }
 }

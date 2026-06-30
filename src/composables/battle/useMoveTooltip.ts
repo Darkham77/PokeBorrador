@@ -32,25 +32,35 @@ export function useMoveTooltip(
 
     let info = calculateMoveModifierInfo(move, weather, cycle);
 
-    if (attacker && attacker.heldItem === 'choice_band') {
+    if (attacker && attacker.heldItem && (attacker.heldItem === 'choice_band' || attacker.heldItem === 'choice_specs' || attacker.heldItem === 'choice_scarf')) {
+      const itemKey = attacker.heldItem;
+      const itemName = itemKey === 'choice_band' ? 'Cinta Elegida' : itemKey === 'choice_specs' ? 'Gafas Elegidas' : 'Pañuelo Elegido';
+      
       const moveIdLookup = move.id || '';
       const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };
       const category = move.cat || md.cat || 'physical';
       const isPhysical = category === 'physical';
+      const isSpecial = category === 'special';
 
       if (attacker.choiceMove && attacker.choiceMove !== move.name) {
-        info = { type: 'penalized', text: `Bloqueado por Cinta Elegida (Elegiste: ${attacker.choiceMove}).` };
-      } else if (isPhysical) {
-        if (!info) {
-          info = { type: 'boosted', text: 'Objeto: Cinta Elegida (+50% Potencia Física, bloquea movimiento).' };
-        } else {
-          info = { ...info, text: `${info.text} | Cinta Elegida (+50% Potencia, bloqueo)` };
-        }
+        info = { type: 'penalized', text: `Bloqueado por ${itemName} (Elegiste: ${attacker.choiceMove}).` };
       } else {
-        if (!info) {
-          info = { type: 'boosted', text: 'Objeto: Cinta Elegida (Bloquea a este movimiento si se selecciona).' };
+        const hasBoost = (itemKey === 'choice_band' && isPhysical) || (itemKey === 'choice_specs' && isSpecial);
+        const boostText = itemKey === 'choice_band' ? '+50% Potencia Física' : itemKey === 'choice_specs' ? '+50% Potencia Especial' : '+50% Velocidad';
+        
+        if (hasBoost) {
+          if (!info) {
+            info = { type: 'boosted', text: `Objeto: ${itemName} (${boostText}, bloquea movimiento).` };
+          } else {
+            info = { ...info, text: `${info.text} | ${itemName} (${boostText}, bloqueo)` };
+          }
         } else {
-          info = { ...info, text: `${info.text} | Cinta Elegida (Bloqueo)` };
+          const boostDesc = itemKey === 'choice_scarf' ? ` (+50% Velocidad, bloqueo)` : ' (Bloqueo)';
+          if (!info) {
+            info = { type: 'boosted', text: `Objeto: ${itemName}${boostDesc}.` };
+          } else {
+            info = { ...info, text: `${info.text} | ${itemName}${boostDesc}` };
+          }
         }
       }
     }

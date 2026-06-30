@@ -85,7 +85,7 @@ const isDisabled = computed(() => {
 
   if (p) {
     // Choice Item Logic
-    if (p.heldItem === 'choice_band') {
+    if (p.heldItem && (p.heldItem === 'choice_band' || p.heldItem === 'choice_specs' || p.heldItem === 'choice_scarf')) {
       const pk = p as Pokemon & { choiceMove?: string }
       if (pk.choiceMove && pk.choiceMove !== props.move.name) {
         return true
