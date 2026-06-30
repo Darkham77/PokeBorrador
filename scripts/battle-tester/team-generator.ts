@@ -1,7 +1,20 @@
 // scripts/battle-tester/team-generator.ts
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
+import crypto from 'node:crypto';
 import { EXCLUDED_FROM_SINGLES_REPORT } from './excluded-abilities.ts';
+
+export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string {
+  const data = {
+    playerTeam: batch.playerTeam,
+    enemyTeam: batch.enemyTeam,
+    steps: batch.steps || []
+  };
+  return crypto.createHash('md5')
+    .update(JSON.stringify(data))
+    .digest('hex')
+    .substring(0, 12);
+}
 
 export interface TestBatch {
   playerTeam: PokemonSet[];

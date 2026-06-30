@@ -572,7 +572,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const initHandler = async (e: MessageEvent) => {
       const { type: responseType, payload: responsePayload } = e.data;
       const worker = showdownWorker!
-      if (responseType === 'INIT_SUCCESS') {
+      if (responseType === 'INIT_BATTLE_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
         if (ctx.activeBattle.value && responsePayload) {
           ctx.activeBattle.value.playerRequest = responsePayload.p1Request;

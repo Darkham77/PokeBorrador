@@ -23,3 +23,22 @@ QA / Automation Engineers.
 - **Relative Imports for Browser Sandbox**: When importing modules dynamically inside `page.evaluate()` or `page.waitForFunction()`, do not use root-relative paths like `/src/stores/...` (which are browser-only and cause TS2307 compilation errors in `tsc`/`vue-tsc`). Always use relative paths (`../../src/...`) to satisfy both the static TypeScript compiler and the Vite server.
 - **Active Battle Store Typing**: Access the active battle state via `store.state` instead of `store.activeBattle` (which is private to the store setup scope). Check for `!store.state || store.state.over` to verify combat completion.
 - **Fallow Duplicate Code Evasion**: To prevent Fallow from flagging identical boilerplate code blocks (such as dynamic store imports and initializations inside browser sandboxes) as critical duplications, vary local variable names, import aliases, or structural spacing within each sandbox evaluation block.
+
+## Verification
+
+- Run `npm run test:e2e` to execute all modular Playwright tests.
+- Run `npm run test:e2e:battle` to run battle-related tests.
+- Run `npm run test:e2e:gts` to run GTS transactions tests.
+- Run `npm run test:e2e:save` to run save-related tests.
+- Run `npm run test:e2e:breeding` to run breeding-related tests.
+- Run `npm run test:e2e:missions` to run missions-related tests.
+- Run `npm run test:e2e:gyms` to run gym progression tests.
+
+## Child DOX Index
+
+- [battle/](./battle/AGENTS.md): Battle-related E2E tests including FSM synchronization, held items, and weather.
+- [breeding/](./breeding/AGENTS.md): E2E validation tests for daycare breeding, egg generation, and hatching.
+- [gts/](./gts/AGENTS.md): Global Trade Station (GTS) multi-account E2E transactions tests.
+- [gyms/](./gyms/AGENTS.md): E2E tests for gym progression and badge verification.
+- [missions/](./missions/AGENTS.md): E2E tests for daily daycare missions.
+- [save/](./save/AGENTS.md): E2E validation tests for the Save Shield.

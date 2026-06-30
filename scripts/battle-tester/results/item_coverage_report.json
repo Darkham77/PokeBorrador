@@ -1,1142 +1,914 @@
 [
   {
     "id": "abilityshield",
-    "name": "abilityshield",
     "status": "PASS"
   },
   {
-    "id": "absorb_bulb",
-    "name": "absorb_bulb",
+    "id": "absorbbulb",
     "status": "PASS"
   },
   {
     "id": "adamantcrystal",
-    "name": "adamantcrystal",
     "status": "PASS"
   },
   {
     "id": "adamantorb",
-    "name": "adamantorb",
     "status": "PASS"
   },
   {
     "id": "adrenalineorb",
-    "name": "adrenalineorb",
     "status": "PASS"
   },
   {
-    "id": "aguav_berry",
-    "name": "aguav_berry",
+    "id": "aguavberry",
     "status": "PASS"
   },
   {
     "id": "airballoon",
-    "name": "airballoon",
     "status": "PASS"
   },
   {
     "id": "apicotberry",
-    "name": "apicotberry",
     "status": "PASS"
   },
   {
     "id": "aspearberry",
-    "name": "aspearberry",
     "status": "PASS"
   },
   {
     "id": "assaultvest",
-    "name": "assaultvest",
     "status": "PASS"
   },
   {
     "id": "auspiciousarmor",
-    "name": "auspiciousarmor",
     "status": "PASS"
   },
   {
     "id": "babiriberry",
-    "name": "babiriberry",
     "status": "PASS"
   },
   {
     "id": "beastball",
-    "name": "beastball",
     "status": "PASS"
   },
   {
     "id": "berrysweet",
-    "name": "berrysweet",
     "status": "PASS"
   },
   {
     "id": "bignugget",
-    "name": "bignugget",
     "status": "PASS"
   },
   {
     "id": "bigroot",
-    "name": "bigroot",
     "status": "PASS"
   },
   {
     "id": "bindingband",
-    "name": "bindingband",
     "status": "PASS"
   },
   {
     "id": "blackbelt",
-    "name": "blackbelt",
     "status": "PASS"
   },
   {
     "id": "blackglasses",
-    "name": "blackglasses",
     "status": "PASS"
   },
   {
     "id": "blacksludge",
-    "name": "blacksludge",
     "status": "PASS"
   },
   {
     "id": "blunderpolicy",
-    "name": "blunderpolicy",
     "status": "PASS"
   },
   {
     "id": "boosterenergy",
-    "name": "boosterenergy",
     "status": "PASS"
   },
   {
     "id": "bottlecap",
-    "name": "bottlecap",
     "status": "PASS"
   },
   {
     "id": "brightpowder",
-    "name": "brightpowder",
     "status": "PASS"
   },
   {
     "id": "cellbattery",
-    "name": "cellbattery",
     "status": "PASS"
   },
   {
     "id": "chartiberry",
-    "name": "chartiberry",
     "status": "PASS"
   },
   {
     "id": "cheriberry",
-    "name": "cheriberry",
     "status": "PASS"
   },
   {
     "id": "chestoberry",
-    "name": "chestoberry",
     "status": "PASS"
   },
   {
     "id": "chilanberry",
-    "name": "chilanberry",
     "status": "PASS"
   },
   {
     "id": "chippedpot",
-    "name": "chippedpot",
     "status": "PASS"
   },
   {
     "id": "chopleberry",
-    "name": "chopleberry",
     "status": "PASS"
   },
   {
     "id": "clearamulet",
-    "name": "clearamulet",
     "status": "PASS"
   },
   {
     "id": "cloversweet",
-    "name": "cloversweet",
     "status": "PASS"
   },
   {
     "id": "cobaberry",
-    "name": "cobaberry",
     "status": "PASS"
   },
   {
     "id": "colburberry",
-    "name": "colburberry",
     "status": "PASS"
   },
   {
     "id": "cornerstonemask",
-    "name": "cornerstonemask",
     "status": "PASS"
   },
   {
     "id": "covertcloak",
-    "name": "covertcloak",
     "status": "PASS"
   },
   {
     "id": "crackedpot",
-    "name": "crackedpot",
     "status": "PASS"
   },
   {
     "id": "custapberry",
-    "name": "custapberry",
     "status": "PASS"
   },
   {
     "id": "damprock",
-    "name": "damprock",
     "status": "PASS"
   },
   {
     "id": "dracoplate",
-    "name": "dracoplate",
     "status": "PASS"
   },
   {
     "id": "dreadplate",
-    "name": "dreadplate",
     "status": "PASS"
   },
   {
     "id": "dreamball",
-    "name": "dreamball",
     "status": "PASS"
   },
   {
     "id": "dubiousdisc",
-    "name": "dubiousdisc",
     "status": "PASS"
   },
   {
     "id": "earthplate",
-    "name": "earthplate",
     "status": "PASS"
   },
   {
     "id": "ejectbutton",
-    "name": "ejectbutton",
     "status": "PASS"
   },
   {
     "id": "ejectpack",
-    "name": "ejectpack",
     "status": "PASS"
   },
   {
     "id": "electirizer",
-    "name": "electirizer",
     "status": "PASS"
   },
   {
     "id": "electricseed",
-    "name": "electricseed",
     "status": "PASS"
   },
   {
     "id": "enigmaberry",
-    "name": "enigmaberry",
     "status": "PASS"
   },
   {
     "id": "expertbelt",
-    "name": "expertbelt",
     "status": "PASS"
   },
   {
     "id": "fairyfeather",
-    "name": "fairyfeather",
     "status": "PASS"
   },
   {
     "id": "fastball",
-    "name": "fastball",
     "status": "PASS"
   },
   {
     "id": "figyberry",
-    "name": "figyberry",
     "status": "PASS"
   },
   {
     "id": "fistplate",
-    "name": "fistplate",
     "status": "PASS"
   },
   {
     "id": "flameorb",
-    "name": "flameorb",
     "status": "PASS"
   },
   {
     "id": "flameplate",
-    "name": "flameplate",
     "status": "PASS"
   },
   {
     "id": "floatstone",
-    "name": "floatstone",
     "status": "PASS"
   },
   {
     "id": "flowersweet",
-    "name": "flowersweet",
     "status": "PASS"
   },
   {
     "id": "focusband",
-    "name": "focusband",
     "status": "PASS"
   },
   {
     "id": "friendball",
-    "name": "friendball",
     "status": "PASS"
   },
   {
     "id": "galaricacuff",
-    "name": "galaricacuff",
     "status": "PASS"
   },
   {
     "id": "galaricawreath",
-    "name": "galaricawreath",
     "status": "PASS"
   },
   {
     "id": "ganlonberry",
-    "name": "ganlonberry",
     "status": "PASS"
   },
   {
     "id": "goldbottlecap",
-    "name": "goldbottlecap",
     "status": "PASS"
   },
   {
     "id": "grassyseed",
-    "name": "grassyseed",
     "status": "PASS"
   },
   {
     "id": "grepaberry",
-    "name": "grepaberry",
     "status": "PASS"
   },
   {
     "id": "gripclaw",
-    "name": "gripclaw",
     "status": "PASS"
   },
   {
     "id": "griseouscore",
-    "name": "griseouscore",
     "status": "PASS"
   },
   {
     "id": "griseousorb",
-    "name": "griseousorb",
     "status": "PASS"
   },
   {
     "id": "habanberry",
-    "name": "habanberry",
     "status": "PASS"
   },
   {
     "id": "hardstone",
-    "name": "hardstone",
     "status": "PASS"
   },
   {
     "id": "healball",
-    "name": "healball",
     "status": "PASS"
   },
   {
     "id": "hearthflamemask",
-    "name": "hearthflamemask",
     "status": "PASS"
   },
   {
     "id": "heatrock",
-    "name": "heatrock",
     "status": "PASS"
   },
   {
     "id": "heavyball",
-    "name": "heavyball",
     "status": "PASS"
   },
   {
     "id": "heavydutyboots",
-    "name": "heavydutyboots",
     "status": "PASS"
   },
   {
     "id": "hondewberry",
-    "name": "hondewberry",
     "status": "PASS"
   },
   {
     "id": "iapapaberry",
-    "name": "iapapaberry",
     "status": "PASS"
   },
   {
     "id": "icicleplate",
-    "name": "icicleplate",
     "status": "PASS"
   },
   {
     "id": "icyrock",
-    "name": "icyrock",
     "status": "PASS"
   },
   {
     "id": "insectplate",
-    "name": "insectplate",
     "status": "PASS"
   },
   {
     "id": "ironball",
-    "name": "ironball",
     "status": "PASS"
   },
   {
     "id": "ironplate",
-    "name": "ironplate",
     "status": "PASS"
   },
   {
     "id": "jabocaberry",
-    "name": "jabocaberry",
     "status": "PASS"
   },
   {
     "id": "kasibberry",
-    "name": "kasibberry",
     "status": "PASS"
   },
   {
     "id": "kebiaberry",
-    "name": "kebiaberry",
     "status": "PASS"
   },
   {
     "id": "keeberry",
-    "name": "keeberry",
     "status": "PASS"
   },
   {
     "id": "kelpsyberry",
-    "name": "kelpsyberry",
     "status": "PASS"
   },
   {
     "id": "kingsrock",
-    "name": "kingsrock",
     "status": "PASS"
   },
   {
     "id": "laggingtail",
-    "name": "laggingtail",
     "status": "PASS"
   },
   {
     "id": "lansatberry",
-    "name": "lansatberry",
     "status": "PASS"
   },
   {
     "id": "leppaberry",
-    "name": "leppaberry",
     "status": "PASS"
   },
   {
     "id": "levelball",
-    "name": "levelball",
     "status": "PASS"
   },
   {
     "id": "lightclay",
-    "name": "lightclay",
     "status": "PASS"
   },
   {
     "id": "loadeddice",
-    "name": "loadeddice",
     "status": "PASS"
   },
   {
     "id": "loveball",
-    "name": "loveball",
     "status": "PASS"
   },
   {
     "id": "lovesweet",
-    "name": "lovesweet",
     "status": "PASS"
   },
   {
     "id": "lumberry",
-    "name": "lumberry",
     "status": "PASS"
   },
   {
     "id": "luminousmoss",
-    "name": "luminousmoss",
     "status": "PASS"
   },
   {
     "id": "lureball",
-    "name": "lureball",
     "status": "PASS"
   },
   {
     "id": "lustrousglobe",
-    "name": "lustrousglobe",
     "status": "PASS"
   },
   {
     "id": "lustrousorb",
-    "name": "lustrousorb",
     "status": "PASS"
   },
   {
     "id": "magmarizer",
-    "name": "magmarizer",
     "status": "PASS"
   },
   {
     "id": "magoberry",
-    "name": "magoberry",
     "status": "PASS"
   },
   {
     "id": "maliciousarmor",
-    "name": "maliciousarmor",
     "status": "PASS"
   },
   {
     "id": "marangaberry",
-    "name": "marangaberry",
     "status": "PASS"
   },
   {
     "id": "masterpieceteacup",
-    "name": "masterpieceteacup",
     "status": "PASS"
   },
   {
     "id": "meadowplate",
-    "name": "meadowplate",
     "status": "PASS"
   },
   {
     "id": "mentalherb",
-    "name": "mentalherb",
     "status": "PASS"
   },
   {
     "id": "metalalloy",
-    "name": "metalalloy",
     "status": "PASS"
   },
   {
     "id": "metalcoat",
-    "name": "metalcoat",
     "status": "PASS"
   },
   {
     "id": "metronome",
-    "name": "metronome",
     "status": "PASS"
   },
   {
     "id": "micleberry",
-    "name": "micleberry",
     "status": "PASS"
   },
   {
     "id": "mindplate",
-    "name": "mindplate",
     "status": "PASS"
   },
   {
     "id": "mirrorherb",
-    "name": "mirrorherb",
     "status": "PASS"
   },
   {
     "id": "mistyseed",
-    "name": "mistyseed",
     "status": "PASS"
   },
   {
     "id": "moonball",
-    "name": "moonball",
     "status": "PASS"
   },
   {
     "id": "muscleband",
-    "name": "muscleband",
     "status": "PASS"
   },
   {
     "id": "nevermeltice",
-    "name": "nevermeltice",
     "status": "PASS"
   },
   {
     "id": "normalgem",
-    "name": "normalgem",
     "status": "PASS"
   },
   {
     "id": "occaberry",
-    "name": "occaberry",
     "status": "PASS"
   },
   {
     "id": "oranberry",
-    "name": "oranberry",
     "status": "PASS"
   },
   {
     "id": "passhoberry",
-    "name": "passhoberry",
     "status": "PASS"
   },
   {
     "id": "payapaberry",
-    "name": "payapaberry",
     "status": "PASS"
   },
   {
     "id": "pechaberry",
-    "name": "pechaberry",
     "status": "PASS"
   },
   {
     "id": "persimberry",
-    "name": "persimberry",
     "status": "PASS"
   },
   {
     "id": "petayaberry",
-    "name": "petayaberry",
     "status": "PASS"
   },
   {
     "id": "pixieplate",
-    "name": "pixieplate",
     "status": "PASS"
   },
   {
     "id": "pomegberry",
-    "name": "pomegberry",
     "status": "PASS"
   },
   {
     "id": "powerherb",
-    "name": "powerherb",
     "status": "PASS"
   },
   {
     "id": "premierball",
-    "name": "premierball",
     "status": "PASS"
   },
   {
     "id": "prettyfeather",
-    "name": "prettyfeather",
     "status": "PASS"
   },
   {
     "id": "prismscale",
-    "name": "prismscale",
     "status": "PASS"
   },
   {
     "id": "protectivepads",
-    "name": "protectivepads",
     "status": "PASS"
   },
   {
     "id": "protector",
-    "name": "protector",
     "status": "PASS"
   },
   {
     "id": "psychicseed",
-    "name": "psychicseed",
     "status": "PASS"
   },
   {
     "id": "punchingglove",
-    "name": "punchingglove",
     "status": "PASS"
   },
   {
     "id": "qualotberry",
-    "name": "qualotberry",
     "status": "PASS"
   },
   {
     "id": "quickclaw",
-    "name": "quickclaw",
     "status": "PASS"
   },
   {
     "id": "rarebone",
-    "name": "rarebone",
     "status": "PASS"
   },
   {
     "id": "rawstberry",
-    "name": "rawstberry",
     "status": "PASS"
   },
   {
     "id": "razorclaw",
-    "name": "razorclaw",
     "status": "PASS"
   },
   {
     "id": "razorfang",
-    "name": "razorfang",
     "status": "PASS"
   },
   {
     "id": "reapercloth",
-    "name": "reapercloth",
     "status": "PASS"
   },
   {
     "id": "redcard",
-    "name": "redcard",
     "status": "PASS"
   },
   {
     "id": "repeatball",
-    "name": "repeatball",
     "status": "PASS"
   },
   {
     "id": "ribbonsweet",
-    "name": "ribbonsweet",
     "status": "PASS"
   },
   {
     "id": "rindoberry",
-    "name": "rindoberry",
     "status": "PASS"
   },
   {
     "id": "ringtarget",
-    "name": "ringtarget",
     "status": "PASS"
   },
   {
     "id": "rockyhelmet",
-    "name": "rockyhelmet",
     "status": "PASS"
   },
   {
     "id": "roomservice",
-    "name": "roomservice",
     "status": "PASS"
   },
   {
     "id": "roseliberry",
-    "name": "roseliberry",
     "status": "PASS"
   },
   {
     "id": "rowapberry",
-    "name": "rowapberry",
     "status": "PASS"
   },
   {
     "id": "rustedshield",
-    "name": "rustedshield",
     "status": "PASS"
   },
   {
     "id": "rustedsword",
-    "name": "rustedsword",
     "status": "PASS"
   },
   {
     "id": "safariball",
-    "name": "safariball",
     "status": "PASS"
   },
   {
     "id": "safetygoggles",
-    "name": "safetygoggles",
     "status": "PASS"
   },
   {
     "id": "sharpbeak",
-    "name": "sharpbeak",
     "status": "PASS"
   },
   {
     "id": "shedshell",
-    "name": "shedshell",
     "status": "PASS"
   },
   {
     "id": "shucaberry",
-    "name": "shucaberry",
     "status": "PASS"
   },
   {
     "id": "silkscarf",
-    "name": "silkscarf",
     "status": "PASS"
   },
   {
     "id": "sitrusberry",
-    "name": "sitrusberry",
     "status": "PASS"
   },
   {
     "id": "skyplate",
-    "name": "skyplate",
     "status": "PASS"
   },
   {
     "id": "smoothrock",
-    "name": "smoothrock",
     "status": "PASS"
   },
   {
     "id": "snowball",
-    "name": "snowball",
     "status": "PASS"
   },
   {
     "id": "softsand",
-    "name": "softsand",
     "status": "PASS"
   },
   {
     "id": "souldew",
-    "name": "souldew",
     "status": "PASS"
   },
   {
     "id": "splashplate",
-    "name": "splashplate",
     "status": "PASS"
   },
   {
     "id": "spookyplate",
-    "name": "spookyplate",
     "status": "PASS"
   },
   {
     "id": "sportball",
-    "name": "sportball",
     "status": "PASS"
   },
   {
     "id": "starfberry",
-    "name": "starfberry",
     "status": "PASS"
   },
   {
     "id": "starsweet",
-    "name": "starsweet",
     "status": "PASS"
   },
   {
     "id": "stickybarb",
-    "name": "stickybarb",
     "status": "PASS"
   },
   {
     "id": "stoneplate",
-    "name": "stoneplate",
     "status": "PASS"
   },
   {
     "id": "strawberrysweet",
-    "name": "strawberrysweet",
     "status": "PASS"
   },
   {
     "id": "sweetapple",
-    "name": "sweetapple",
     "status": "PASS"
   },
   {
     "id": "syrupyapple",
-    "name": "syrupyapple",
     "status": "PASS"
   },
   {
     "id": "tamatoberry",
-    "name": "tamatoberry",
     "status": "PASS"
   },
   {
     "id": "tangaberry",
-    "name": "tangaberry",
     "status": "PASS"
   },
   {
     "id": "tartapple",
-    "name": "tartapple",
     "status": "PASS"
   },
   {
     "id": "terrainextender",
-    "name": "terrainextender",
     "status": "PASS"
   },
   {
     "id": "throatspray",
-    "name": "throatspray",
     "status": "PASS"
   },
   {
     "id": "toxicorb",
-    "name": "toxicorb",
     "status": "PASS"
   },
   {
     "id": "toxicplate",
-    "name": "toxicplate",
     "status": "PASS"
   },
   {
     "id": "unremarkableteacup",
-    "name": "unremarkableteacup",
     "status": "PASS"
   },
   {
     "id": "upgrade",
-    "name": "upgrade",
     "status": "PASS"
   },
   {
     "id": "utilityumbrella",
-    "name": "utilityumbrella",
     "status": "PASS"
   },
   {
     "id": "wacanberry",
-    "name": "wacanberry",
     "status": "PASS"
   },
   {
     "id": "weaknesspolicy",
-    "name": "weaknesspolicy",
     "status": "PASS"
   },
   {
     "id": "wellspringmask",
-    "name": "wellspringmask",
     "status": "PASS"
   },
   {
     "id": "whiteherb",
-    "name": "whiteherb",
     "status": "PASS"
   },
   {
     "id": "widelens",
-    "name": "widelens",
     "status": "PASS"
   },
   {
     "id": "wikiberry",
-    "name": "wikiberry",
     "status": "PASS"
   },
   {
     "id": "wiseglasses",
-    "name": "wiseglasses",
     "status": "PASS"
   },
   {
     "id": "yacheberry",
-    "name": "yacheberry",
     "status": "PASS"
   },
   {
     "id": "zapplate",
-    "name": "zapplate",
     "status": "PASS"
   },
   {
     "id": "zoomlens",
-    "name": "zoomlens",
     "status": "PASS"
   },
   {
     "id": "pokeball",
-    "name": "pokeball",
     "status": "PASS"
   },
   {
     "id": "greatball",
-    "name": "greatball",
     "status": "PASS"
   },
   {
     "id": "ultraball",
-    "name": "ultraball",
     "status": "PASS"
   },
   {
     "id": "netball",
-    "name": "netball",
     "status": "PASS"
   },
   {
     "id": "duskball",
-    "name": "duskball",
     "status": "PASS"
   },
   {
     "id": "timerball",
-    "name": "timerball",
     "status": "PASS"
   },
   {
     "id": "masterball",
-    "name": "masterball",
     "status": "PASS"
   },
   {
     "id": "leftovers",
-    "name": "leftovers",
     "status": "PASS"
   },
   {
     "id": "shellbell",
-    "name": "shellbell",
     "status": "PASS"
   },
   {
     "id": "choiceband",
-    "name": "choiceband",
     "status": "PASS"
   },
   {
     "id": "focussash",
-    "name": "focussash",
     "status": "PASS"
   },
   {
     "id": "scopelens",
-    "name": "scopelens",
     "status": "PASS"
   },
   {
     "id": "magnet",
-    "name": "magnet",
     "status": "PASS"
   },
   {
     "id": "lightball",
-    "name": "lightball",
     "status": "PASS"
   },
   {
     "id": "twistedspoon",
-    "name": "twistedspoon",
     "status": "PASS"
   },
   {
     "id": "spelltag",
-    "name": "spelltag",
     "status": "PASS"
   },
   {
     "id": "charcoal",
-    "name": "charcoal",
     "status": "PASS"
   },
   {
     "id": "choicescarf",
-    "name": "choicescarf",
     "status": "PASS"
   },
   {
     "id": "choicespecs",
-    "name": "choicespecs",
     "status": "PASS"
   },
   {
     "id": "diveball",
-    "name": "diveball",
     "status": "PASS"
   },
   {
     "id": "dragonfang",
-    "name": "dragonfang",
     "status": "PASS"
   },
   {
     "id": "eviolite",
-    "name": "eviolite",
     "status": "PASS"
   },
   {
     "id": "lifeorb",
-    "name": "lifeorb",
     "status": "PASS"
   },
   {
     "id": "luxuryball",
-    "name": "luxuryball",
     "status": "PASS"
   },
   {
     "id": "miracleseed",
-    "name": "miracleseed",
     "status": "PASS"
   },
   {
     "id": "mysticwater",
-    "name": "mysticwater",
     "status": "PASS"
   },
   {
     "id": "nestball",
-    "name": "nestball",
     "status": "PASS"
   },
   {
     "id": "poisonbarb",
-    "name": "poisonbarb",
     "status": "PASS"
   },
   {
     "id": "quickball",
-    "name": "quickball",
     "status": "PASS"
   },
   {
     "id": "silverpowder",
-    "name": "silverpowder",
     "status": "PASS"
   }
 ]

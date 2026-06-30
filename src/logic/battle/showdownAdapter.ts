@@ -43,7 +43,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     level: poke.level,
     shiny: poke.isShiny || false,
     gender: (poke.gender === 'M' || poke.gender === 'F') ? poke.gender : '',
-    item: '',
+    item: poke.heldItem || '',
     ability: abilityKey,
     nature: natureKey,
     ivs: {

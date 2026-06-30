@@ -38,7 +38,7 @@ if (typeof gameStore.enterSandboxMode === 'function') {
 
 // Ported constants
 const SPACING_MULTIPLIER = 2.5
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
 
 const URL_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/4/41/latest/20200501140954/Rojo_RFVF_bici.png"

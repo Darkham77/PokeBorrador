@@ -11,6 +11,10 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
   const battleStore = useBattleStore()
   const enemyRequest = battleStore.state?.enemyRequest
 
+  console.log('[DEBUG-AI] decideEnemyMove called for:', enemy.name, 'isWild:', isWild);
+  console.log('[DEBUG-AI] enemy.moves:', enemy.moves ? enemy.moves.map(m => m ? `${m.id}(pp:${m.pp}/${m.maxPP})` : 'null') : 'null');
+  console.log('[DEBUG-AI] enemyRequest:', JSON.stringify(enemyRequest || null));
+
   const validMoves = enemy.moves.filter((m): m is Move => {
     if (!m || m.pp <= 0) return false
     if (enemy.disabledMove && m.id === enemy.disabledMove.id) return false
@@ -35,6 +39,7 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     
     return true
   })
+  console.log('[DEBUG-AI] filtered validMoves:', validMoves.map(m => m.id));
   if (validMoves.length === 0) return null
 
   // Si es salvaje, elige al azar (Gen 3 wild behavior)

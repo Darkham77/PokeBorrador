@@ -89,11 +89,17 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const active = store.activeBattle.value;
     if (active?.playerRequest?.active?.[0]?.moves) {
       const activeMoves = active.playerRequest.active[0].moves;
-      if (activeMoves && activeMoves.length === 1 && activeMoves[0] && (activeMoves[0].id === 'recharge' || activeMoves[0].move === 'Recharge')) {
+      if (activeMoves && activeMoves.length === 1 && activeMoves[0] && activeMoves[0].id === 'recharge') {
         p1Choice = 'move recharge';
       }
     }
-    const p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
+    let p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
+    if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
+      const validMove = active.enemyRequest.active[0].moves.find((m: { id?: string; disabled?: boolean | string }) => !m.disabled);
+      if (validMove) {
+        p2Choice = `move ${validMove.id}`;
+      }
+    }
     let p1Hps: Record<string, number> | undefined = undefined;
     let p2Hps: Record<string, number> | undefined = undefined;
     let p1Statuses: Record<string, string> | undefined = undefined;
@@ -261,7 +267,7 @@ export async function runEnemyAction(store: BattleContext) {
     if (playerRequest?.active?.[0]?.moves) {
       const validMove = playerRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
       if (validMove) {
-        p1Choice = `move ${validMove.id || validMove.move}`;
+        p1Choice = `move ${validMove.id}`;
       }
     } else if (p && p.moves && p.moves.length > 0) {
       const firstMove = p.moves[0];
@@ -274,7 +280,7 @@ export async function runEnemyAction(store: BattleContext) {
     if (p2Skip && enemyRequest?.active?.[0]?.moves) {
       const validMove = enemyRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
       if (validMove) {
-        p2Choice = `move ${validMove.id || validMove.move}`;
+        p2Choice = `move ${validMove.id}`;
       }
     } else if (!p2Skip && enemyMove) {
       p2Choice = `move ${enemyMove.id}`;

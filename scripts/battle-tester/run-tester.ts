@@ -4,7 +4,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Battle, toID, ID } from '@pkmn/sim';
-import { generateTestBatches, getTriggerSlot } from './team-generator.ts';
+import { generateTestBatches, getTriggerSlot, generateBatchHash } from './team-generator.ts';
+import { generateItemTestBatches } from './item-generator.ts';
 import { createMockBattleContext } from './mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
 import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
@@ -43,7 +44,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
 };
 
 // Función auxiliar para mapear el set a formato local Pokemon
-function createLocalPoke(name: string, species: string, level: number, moves: string[], ability: string): Pokemon {
+function createLocalPoke(name: string, species: string, level: number, moves: string[], ability: string, item?: string): Pokemon {
   return {
     uid: Math.random().toString(36).substring(2, 11),
     id: toID(species),
@@ -60,6 +61,7 @@ function createLocalPoke(name: string, species: string, level: number, moves: st
     spe: 100,
     type: 'Normal',
     ability: toID(ability),
+    item: item ? toID(item) : undefined,
     status: null,
     volatileCounters: {},
     moves: moves.map(m => ({
@@ -107,7 +109,6 @@ function simplifyLogLine(line: string): string | null {
 
 interface CoverageItem {
   id: string;
-  name: string;
   type: 'move' | 'ability';
   status: 'PASS' | 'FAIL' | 'UNTESTED';
   details?: string;
@@ -134,11 +135,11 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
     // Inicializar mapa de cobertura (excluir habilidades no testeables en singles)
     batches.forEach(b => {
       b.movesToTest.forEach(m => {
-        moveCoverage[m] = { id: m, name: m, type: 'move', status: 'UNTESTED' };
+        moveCoverage[m] = { id: m, type: 'move', status: 'UNTESTED' };
       });
       b.abilitiesToTest.forEach(a => {
         if (!EXCLUDED_FROM_SINGLES_REPORT.has(a)) {
-          abilityCoverage[a] = { id: a, name: a, type: 'ability', status: 'UNTESTED' };
+          abilityCoverage[a] = { id: a, type: 'ability', status: 'UNTESTED' };
         }
       });
     });
@@ -208,6 +209,8 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
         let turn = 0;
         const maxTurns = 50;
         const steps: string[] = [];
+        const batchChoices: string[] = [];
+        const batchCheats: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> = [];
 
         try {
           while (!simBattle.ended && turn < maxTurns) {
@@ -235,13 +238,16 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
             if (p1ActivePoke && p1ActivePoke.hp > 0 && p1ActivePoke.hp < p1ActivePoke.maxhp * 0.3) {
               p1ActivePoke.hp = p1ActivePoke.maxhp;
               simBattle.add(`|-heal|p1a: ${p1ActivePoke.name}|${p1ActivePoke.maxhp}/${p1ActivePoke.maxhp}|[from] item: Leftovers`);
+              batchCheats.push({ turn: turn, side: 'p1', type: 'heal' });
             }
             if (p2ActivePoke && p2ActivePoke.hp > 0 && p2ActivePoke.hp < p2ActivePoke.maxhp * 0.3) {
               p2ActivePoke.hp = p2ActivePoke.maxhp;
               simBattle.add(`|-heal|p2a: ${p2ActivePoke.name}|${p2ActivePoke.maxhp}/${p2ActivePoke.maxhp}|[from] item: Leftovers`);
+              batchCheats.push({ turn: turn, side: 'p2', type: 'heal' });
             }
 
             const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+            batchChoices.push(p1Choice);
             const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
 
             // Interceptar y aplicar uso de ítems en el simulador Showdown
@@ -349,6 +355,9 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
                 }
               }
             });
+            (batch as unknown as Record<string, unknown>).playerChoices = batchChoices;
+            (batch as unknown as Record<string, unknown>).cheats = batchCheats;
+            (batch as unknown as Record<string, unknown>).steps = steps;
           }
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : String(err);
@@ -497,6 +506,41 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
 
     await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
 
+    // Guardar también en el archivo consolidado de Playwright en results/
+    const consolidatorPath = path.resolve(process.cwd(), 'scripts/battle-tester/results/certified_fuzzer_cases.json');
+    let consolidatedData: Record<string, unknown> = {};
+    let shouldWrite = true;
+    try {
+      const existing = await fs.readFile(consolidatorPath, 'utf8');
+      consolidatedData = JSON.parse(existing);
+      if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.battle) {
+        shouldWrite = false;
+        console.log(`⚠️  Conservando casos de combate certificados existentes en results/certified_fuzzer_cases.json (usa REGENERATE_CASES=true para pisar).`);
+      }
+    } catch (_e) {
+      // Ignore if file doesn't exist yet
+    }
+
+    if (shouldWrite) {
+      consolidatedData.battle = batches.map((b, idx) => {
+        const hash = generateBatchHash(b);
+        return {
+          id: `case-${hash}`,
+          idx: idx + 1,
+          playerTeam: b.playerTeam,
+          enemyTeam: b.enemyTeam,
+          movesToTest: b.movesToTest,
+          abilitiesToTest: b.abilitiesToTest,
+          playerChoices: (b as unknown as Record<string, unknown>).playerChoices || [],
+          cheats: (b as unknown as Record<string, unknown>).cheats || [],
+          steps: (b as unknown as Record<string, unknown>).steps || []
+        };
+      });
+      await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
+      await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
+      console.log(`💾 Casos de combate consolidados guardados con éxito en: ${consolidatorPath}`);
+    }
+
     // --- Cuadro 1: Cobertura singleplayer ---
     console.log(styleText('bold', '\n--- 📊 RESUMEN DE COBERTURA (SINGLEPLAYER) ---'));
     console.log(`Movimientos: ${report.summary.passedMoves} PASS / ${styleText('red', String(report.summary.failedMoves) + ' FAIL')} / ${report.summary.untestedMoves} UNTESTED`);
@@ -513,6 +557,14 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
     console.log(styleText('green', `\n💾 Reporte guardado con éxito en: ${REPORT_FILE}`));
 
     logger.debug = originalDebug;
+
+    // Validación estricta de paridad y cobertura total
+    if (report.summary.failedMoves > 0 || report.summary.failedAbilities > 0) {
+      throw new Error(`CRITICAL: Se detectaron fallos en la sincronización del fuzzer.`);
+    }
+    if (report.summary.untestedMoves > 0 || report.summary.untestedAbilities > 0) {
+      throw new Error(`CRITICAL: Hay movimientos o habilidades UNTESTED en el fuzzer de combate.`);
+    }
   });
 });
 
@@ -552,4 +604,200 @@ function abilityTriggeredInLog(line: string, abilityId: string): boolean {
   }
 
   return false;
+}
+
+export interface ItemCoverageItem {
+  id: string;
+  status: 'PASS' | 'FAIL' | 'UNTESTED';
+  unhandledLogs?: string[];
+}
+
+export async function runItemCoverageFuzzer() {
+  console.log(styleText('bold', '\n--- 🧪 POKEMON BATTLE ITEM COVERAGE TESTER (ALL GENERATIONS) ---'));
+
+  const itemsReportFile = path.join(RESULTS_DIR, 'item_coverage_report.json');
+  await fs.mkdir(RESULTS_DIR, { recursive: true });
+
+  const batches = generateItemTestBatches(6);
+  console.log(`📦 Batches generados para items: ${batches.length}`);
+
+  const itemCoverage: Record<string, ItemCoverageItem> = {};
+
+  // Inicializar mapa de cobertura
+  batches.forEach(b => {
+    b.itemsToTest.forEach(id => {
+      itemCoverage[id] = { id, status: 'UNTESTED' };
+    });
+  });
+
+  const totalRounds = batches.length;
+  let currentRound = 0;
+
+  for (const batch of batches) {
+    currentRound++;
+    console.log(`\n⚔️ Corriendo ronda ${currentRound}/${totalRounds} de items...`);
+
+    const p1Active = batch.playerTeam[0]!;
+    const p2Active = batch.enemyTeam[0]!;
+
+    const localP1 = createLocalPoke(p1Active.name || '', p1Active.species, p1Active.level, p1Active.moves, p1Active.ability, p1Active.item || '');
+    const localP2 = createLocalPoke(p2Active.name || '', p2Active.species, p2Active.level, p2Active.moves, p2Active.ability, p2Active.item || '');
+    const mockStore = createMockBattleContext(localP1, localP2);
+
+    // Inicializar el simulador de Showdown
+    const simBattle = new Battle({ formatid: 'gen9customgame' as ID });
+    simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
+    simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
+
+    let lastLogIndex = 0;
+    const getNewLogs = (): string[] => {
+      const allLogs = simBattle.log;
+      const newLogs = allLogs.slice(lastLogIndex);
+      lastLogIndex = allLogs.length;
+      return newLogs;
+    };
+
+    // Logs iniciales
+    const initLogs = filterShowdownLogs(getNewLogs());
+    for (const logLine of initLogs) {
+      await parseShowdownLogLine(mockStore, logLine, initLogs);
+    }
+
+    let turn = 0;
+    const maxTurns = 50;
+
+    // Agentes para ambos lados
+    const agent1 = new BattleAgent('p1', new Set(), null, 5);
+    const agent2 = new BattleAgent('p2', new Set(), null, 6);
+
+    const batchChoices: string[] = [];
+    const steps: string[] = [];
+    try {
+      while (!simBattle.ended && turn < maxTurns) {
+        turn++;
+        unhandledBridgeLines.length = 0;
+
+        const p1Req = simBattle.p1.activeRequest;
+        const p2Req = simBattle.p2.activeRequest;
+
+        const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+        batchChoices.push(p1Choice);
+        const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+
+        simBattle.choose('p1', p1Choice);
+        simBattle.choose('p2', p2Choice);
+
+        const rawTurnLogs = getNewLogs();
+        const turnLogs = filterShowdownLogs(rawTurnLogs);
+
+        for (const logLine of turnLogs) {
+          steps.push(`Turn ${turn}: ${logLine}`);
+          await parseShowdownLogLine(mockStore, logLine, turnLogs);
+        }
+
+        // Evaluar qué items se activaron en el log de este turno
+        batch.itemsToTest.forEach(itemId => {
+          const cleanId = itemId.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const isEquippedInSim = simBattle.p1.pokemon.some(p => p.item === cleanId) ||
+                                  simBattle.p2.pokemon.some(p => p.item === cleanId);
+
+          const activatedThisTurn = isEquippedInSim || rawTurnLogs.some(l => {
+            const lower = l.toLowerCase();
+            const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
+
+            if (lower.startsWith('|-item|')) {
+              const parts = lower.split('|');
+              if (norm(parts[3] ?? '') === cleanId) return true;
+            }
+
+            if (lower.startsWith('|-enditem|')) {
+              const parts = lower.split('|');
+              if (norm(parts[3] ?? '') === cleanId) return true;
+            }
+
+            if (lower.includes('item:') || lower.includes('item: ')) {
+              const match = lower.match(/item:\s*([a-z0-9][a-z0-9\s]*)/);
+              if (match && norm(match[1]!) === cleanId) return true;
+            }
+
+            return false;
+          });
+
+          if (activatedThisTurn) {
+            const hasFailure = unhandledBridgeLines.length > 0;
+            const item = itemCoverage[itemId];
+            if (item) {
+              if (hasFailure) {
+                item.status = 'FAIL';
+                item.unhandledLogs = [...(item.unhandledLogs || []), ...unhandledBridgeLines];
+              } else if (item.status !== 'FAIL') {
+                item.status = 'PASS';
+              }
+            }
+          }
+        });
+      }
+      (batch as unknown as Record<string, unknown>).playerChoices = batchChoices;
+      (batch as unknown as Record<string, unknown>).steps = steps;
+    } catch (_err: unknown) {
+      batch.itemsToTest.forEach(itemId => {
+        if (itemCoverage[itemId]) {
+          itemCoverage[itemId]!.status = 'FAIL';
+        }
+      });
+    }
+  }
+
+  const items = Object.values(itemCoverage);
+  const passed = items.filter(i => i.status === 'PASS').length;
+  const failed = items.filter(i => i.status === 'FAIL').length;
+  const untested = items.filter(i => i.status === 'UNTESTED').length;
+
+  console.log(styleText('bold', '\n--- 📊 RESUMEN DE COBERTURA DE ITEMS ---'));
+  console.log(`Objetos: ${passed} PASS / ${failed} FAIL / ${untested} UNTESTED`);
+
+  await fs.writeFile(itemsReportFile, JSON.stringify(items, null, 2), 'utf-8');
+
+  // Guardar también en el archivo consolidado de Playwright en results/
+  const consolidatorPath = path.resolve(process.cwd(), 'scripts/battle-tester/results/certified_fuzzer_cases.json');
+  let consolidatedData: Record<string, unknown> = {};
+  let shouldWrite = true;
+  try {
+    const existing = await fs.readFile(consolidatorPath, 'utf8');
+    consolidatedData = JSON.parse(existing);
+    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.items) {
+      shouldWrite = false;
+      console.log(`⚠️  Conservando casos de items certificados existentes en results/certified_fuzzer_cases.json (usa REGENERATE_CASES=true para pisar).`);
+    }
+  } catch (_e) {
+    // Ignore if file doesn't exist yet
+  }
+
+  if (shouldWrite) {
+    consolidatedData.items = batches.map((b, idx) => {
+      const hash = generateBatchHash(b);
+      return {
+        id: `case-${hash}`,
+        idx: idx + 1,
+        playerTeam: b.playerTeam,
+        enemyTeam: b.enemyTeam,
+        itemsToTest: b.itemsToTest,
+        playerChoices: (b as unknown as Record<string, unknown>).playerChoices || [],
+        cheats: [],
+        steps: (b as unknown as Record<string, unknown>).steps || []
+      };
+    });
+    await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
+    await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
+    console.log(`💾 Casos de items consolidados guardados con éxito en: ${consolidatorPath}`);
+  }
+
+  console.log(`\n💾 Reporte de items guardado con éxito en: ${itemsReportFile}`);
+
+  if (failed > 0) {
+    throw new Error(`CRITICAL: Se detectaron ${failed} fallos en la sincronización de objetos.`);
+  }
+  if (untested > 0) {
+    throw new Error(`CRITICAL: Hay objetos UNTESTED (${untested}) en el fuzzer de items.`);
+  }
 }
