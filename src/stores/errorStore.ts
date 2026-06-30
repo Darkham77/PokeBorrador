@@ -48,8 +48,8 @@ export const useErrorStore = defineStore('error', () => {
     logger.error('CRITICAL', `Critical Game Error: ${errorMessage}`, context)
     ;(console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__ = false
 
-    // Deduplicate consecutive errors with the same message (console interceptor echo)
-    if (errors.value.length > 0 && errors.value[errors.value.length - 1].message === errorMessage) {
+    const lastError = errors.value[errors.value.length - 1]
+    if (lastError && lastError.message === errorMessage) {
       return
     }
 

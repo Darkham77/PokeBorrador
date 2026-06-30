@@ -1,8 +1,8 @@
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonBaseData } from '@/types/system/database';
-import { ACTIVE_GENERATION, IMPLEMENTED_GENERATION } from '@/data/system/constants';
-import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
-import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
+import { ACTIVE_GENERATION, IMPLEMENTED_GENERATION } from '../system/constants.ts';
+import { MOVE_TRANSLATIONS_ES } from '../battle/moves.ts';
+import { SPECIES_METADATA } from './speciesMetadata.ts';
 
 const MAX_DEX_NUMS: Record<number, number> = {
   1: 151,
