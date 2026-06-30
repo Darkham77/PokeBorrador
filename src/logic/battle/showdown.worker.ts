@@ -94,8 +94,8 @@ self.onmessage = (event: MessageEvent) => {
         // Caso especial: 'struggle' = drenar PP del activo en el sim y enviar 'move 1'
         // para que @pkmn/sim lo procese como Struggle correctamente.
         // NOTA: en @pkmn/sim, .moves es string[], .moveSlots contiene los objetos {id, pp, maxpp}.
-        const resolveChoice = (side: PkmnSimSide, choice: string): string => {
-          if (choice.includes('struggle') && side?.active?.[0]) {
+        const resolveChoice = (side: PkmnSimSide, choice: string, isSkip: boolean): string => {
+          if (choice.includes('struggle') && !isSkip && side?.active?.[0]) {
             const activeMon = side.active[0]
             if (activeMon?.moveSlots) {
               activeMon.moveSlots.forEach((m: { id: string; pp: number; disabled?: boolean | string } | null) => { if (m) m.pp = 0 })
@@ -108,12 +108,12 @@ self.onmessage = (event: MessageEvent) => {
         const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
           const side = battle[player] as unknown as PkmnSimSide;
           const activeMon = side.active?.[0];
-          const resolved = resolveChoice(side, choice);
-          let ok = battle.choose(player, resolved);
+          const resolved = resolveChoice(side, choice, player === 'p1' ? p1Skip : p2Skip);
+          const ok = battle.choose(player, resolved);
           if (!ok) {
             const activeName = activeMon ? activeMon.name : 'none';
             const activeMoves = activeMon ? JSON.stringify(activeMon.moves) : 'none';
-            const requestStr = JSON.stringify((battle[player] as any).activeRequest || {});
+            const requestStr = JSON.stringify((battle[player] as unknown as { activeRequest?: unknown }).activeRequest || {});
             throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}. ActiveMon: ${activeName}, Simulator Moves: ${activeMoves}, Request: ${requestStr}`);
           }
         };
@@ -191,24 +191,25 @@ function getNewLogs(): string[] {
 
 function syncSideStates(
   side: PkmnSimSide,
-  hps: any,
-  statuses: any
+  hps: unknown,
+  statuses: unknown
 ) {
   const mons = side.pokemon;
   if (!mons) return;
 
-  const isRecord = (obj: any): obj is Record<string, any> => {
-    return obj && typeof obj === 'object' && !Array.isArray(obj);
+  const isRecord = (obj: unknown): obj is Record<string, unknown> => {
+    return !!obj && typeof obj === 'object' && !Array.isArray(obj);
   };
 
   if (isRecord(hps)) {
     mons.forEach((pokemon) => {
-      if (pokemon && (pokemon as any).set?.uid) {
-        const uid = (pokemon as any).set.uid;
+      const set = (pokemon as unknown as { set?: { uid?: string } })?.set;
+      if (pokemon && set?.uid) {
+        const uid = set.uid;
         const hp = hps[uid];
         if (hp !== undefined) {
-          pokemon.hp = hp;
-          if (hp <= 0) {
+          pokemon.hp = hp as number;
+          if ((hp as number) <= 0) {
             pokemon.fainted = true;
             pokemon.status = 'fnt';
           } else {
@@ -236,11 +237,12 @@ function syncSideStates(
 
   if (isRecord(statuses)) {
     mons.forEach((pokemon) => {
-      if (pokemon && (pokemon as any).set?.uid) {
-        const uid = (pokemon as any).set.uid;
+      const set = (pokemon as unknown as { set?: { uid?: string } })?.set;
+      if (pokemon && set?.uid) {
+        const uid = set.uid;
         const status = statuses[uid];
         if (status !== undefined && !pokemon.fainted) {
-          pokemon.status = status ? status.toLowerCase() : '';
+          pokemon.status = status ? (status as string).toLowerCase() : '';
         }
       }
     });

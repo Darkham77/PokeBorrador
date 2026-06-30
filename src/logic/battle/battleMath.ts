@@ -217,7 +217,7 @@ export function calculateDamagePure(
   const aStages: PureBattleStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
   const dStages: PureBattleStages = { [isPhysical ? 'def' : 'spd']: defStages };
 
-  let critRate = (ACTIVE_RULE_SET as number) === 2 ? 0.0625 : (attacker.heldItem === 'scope_lens' ? 0.12 : 0.06);
+  let critRate = (ACTIVE_RULE_SET as number) === 2 ? 0.0625 : (attacker.heldItem === 'scopelens' ? 0.12 : 0.06);
   if (attacker.focusEnergy) critRate = 0.25;
   let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
   if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
@@ -259,7 +259,7 @@ export function calculateDamagePure(
       poison_barb: 'poison'
     };
     if (typeBoosters[h] === moveType) itemMult = 1.2;
-    if (h === 'choice_band' && moveCat === 'physical') itemMult = 1.5;
+    if (h === 'choiceband' && moveCat === 'physical') itemMult = 1.5;
   }
 
   let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;

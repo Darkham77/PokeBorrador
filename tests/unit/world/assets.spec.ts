@@ -54,7 +54,7 @@ describe('AssetService & Resolver', () => {
 
   describe('AssetService: Item Routing', () => {
     it('debe resolver la URL del sprite a partir de su ID de ítem en inglés', () => {
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_potion'))
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'superpotion'))
         .toBe('/assets/sprites/crafting/tier3/super_potion.webp')
     })
 

@@ -106,6 +106,20 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
 - `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
 - `npm run test:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
+- `npm run test:combat:all`: Runs the entire combat test suite, including fuzzer coverages, sync tests, unit tests, and Playwright E2E browser tests in parallel.
+- `npm run test:combat:fuzzer`: Runs the move and ability coverage fuzzer in Vitest.
+- `npm run test:combat:fuzzer:report`: Runs the fuzzer test and saves the verbose report in `scratch/fuzzer_report.txt`.
+- `npm run test:combat:items`: Runs the item coverage fuzzer in Vitest.
+- `npm run test:combat:items:report`: Runs the items fuzzer test and saves the verbose report in `scratch/items_coverage_report.txt`.
+- `npm run test:combat:e2e-fsm`: Runs only the Playwright E2E battle FSM sync test suite.
+- `npm run test:combat:e2e-fsm:report`: Runs the Playwright E2E FSM tests and saves the output in `scratch/e2e_fsm_report.txt`.
+- `npm run test:combat:cleanup`: Runs the unit test suite verifying volatile status and stat stage resets on switch.
+- `npm run test:combat:cleanup:report`: Runs the cleanup test and saves the verbose report in `scratch/cleanup_report.txt`.
+- `npm run test:combat:weather`: Runs the unit test suite verifying weather and terrain effects on speed and status.
+- `npm run test:combat:weather:report`: Runs the weather test and saves the verbose report in `scratch/weather_report.txt`.
+- `npm run test:combat:choice`: Runs the unit test suite verifying Choice item locking and UI disabling behavior.
+- `npm run test:combat:choice:report`: Runs the choice test and saves the verbose report in `scratch/choice_report.txt`.
+- `npm run test:combat:all:report`: Runs the entire combat suite and outputs reports to `scratch/combat_report.txt` and `scratch/playwright_report.txt`.
 - `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 

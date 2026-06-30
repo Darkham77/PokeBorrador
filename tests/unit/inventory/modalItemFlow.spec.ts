@@ -111,7 +111,7 @@ function setupStores(inventoryOverrides: Record<string, number> = {}) {
   return { gameStore, inventoryStore }
 }
 
-function openPPUpModal(itemId: 'pp_up' | 'pp_max') {
+function openPPUpModal(itemId: 'pp_up' | 'ppmax') {
   const uiStore = useUIStore()
   uiStore.activePokemonForPPUp = { context: 'team', index: 0 }
   uiStore.activeItemForPPUp = itemId
@@ -141,7 +141,7 @@ describe('PPUpModal (pp_max) — integración', () => {
 
   it('sube maxPP al techo exacto (32) en gameStore al elegir movimiento', async () => {
     const { gameStore } = setupStores({ pp_max: 1 })
-    openPPUpModal('pp_max')
+    openPPUpModal('ppmax')
 
     // Click slot 0 (Carga, pp=16, maxPP=20)
     await selectPPUpMove(0)
@@ -153,7 +153,7 @@ describe('PPUpModal (pp_max) — integración', () => {
     expect(gameStore.state.team[0]!.moves[0]!.pp).toBe(16)
 
     // Item consumed exactly once
-    expect((gameStore.state.inventory as Record<string, number>)['pp_max']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['ppmax']).toBeUndefined()
 
     // Modal closed and refs cleared
     const uiStore = useUIStore()
@@ -163,18 +163,18 @@ describe('PPUpModal (pp_max) — integración', () => {
 
   it('funciona igual en slot 1 (Pico Taladro, pp=13, maxPP=20 → 32)', async () => {
     const { gameStore } = setupStores({ pp_max: 1 })
-    openPPUpModal('pp_max')
+    openPPUpModal('ppmax')
 
     await selectPPUpMove(1)
 
     expect(gameStore.state.team[0]!.moves[1]!.maxPP).toBe(PP_MAX_CEILING)  // 32
     expect(gameStore.state.team[0]!.moves[1]!.pp).toBe(13)                  // unchanged
-    expect((gameStore.state.inventory as Record<string, number>)['pp_max']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['ppmax']).toBeUndefined()
   })
 
   it('NO consume si cierra sin elegir movimiento', async () => {
     const { gameStore } = setupStores({ pp_max: 1 })
-    const uiStore = openPPUpModal('pp_max')
+    const uiStore = openPPUpModal('ppmax')
     const originalMaxPP = gameStore.state.team[0]!.moves[0]!.maxPP  // 20
 
     await mountPPUpModal()
@@ -184,26 +184,26 @@ describe('PPUpModal (pp_max) — integración', () => {
     else uiStore.isPPUpOpen = false
     await flushPromises()
 
-    expect((gameStore.state.inventory as Record<string, number>)['pp_max']).toBe(1)
+    expect((gameStore.state.inventory as Record<string, number>)['ppmax']).toBe(1)
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(originalMaxPP)
   })
 
   it('NO aplica ni consume si maxPP ya es el techo (32)', async () => {
     const { gameStore } = setupStores({ pp_max: 1 })
     gameStore.state.team[0]!.moves[0]!.maxPP = PP_MAX_CEILING  // ya en 32
-    openPPUpModal('pp_max')
+    openPPUpModal('ppmax')
 
     // El slot 0 tiene clase 'maxed' → pointer-events:none en CSS real.
     // En JSDOM no hay CSS, así que el click pasa pero el guard lo rechaza.
     await selectPPUpMove(0)
 
-    expect((gameStore.state.inventory as Record<string, number>)['pp_max']).toBe(1)
+    expect((gameStore.state.inventory as Record<string, number>)['ppmax']).toBe(1)
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(PP_MAX_CEILING)
   })
 
   it('regresión: muta el objeto en gameStore, NO una copia interna del UIStore', async () => {
     const { gameStore } = setupStores({ pp_max: 1 })
-    openPPUpModal('pp_max')
+    openPPUpModal('ppmax')
 
     // Capture direct reference BEFORE mounting
     const moveRef = gameStore.state.team[0]!.moves[0]!

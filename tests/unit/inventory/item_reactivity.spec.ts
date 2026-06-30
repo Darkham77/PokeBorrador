@@ -64,7 +64,7 @@ describe('Item Reactivity & Integrity', () => {
   })
 
   it('should heal HP and return the modified pokemon object', () => {
-    const result = useItemOnPokemon('hyper_potion', mockPokemon)
+    const result = useItemOnPokemon('hyperpotion', mockPokemon)
     
     expect(result).toBeDefined()
     expect('success' in result!).toBe(false) // El proveedor devuelve { message, pokemon }
@@ -107,7 +107,7 @@ describe('Item Reactivity & Integrity', () => {
 
   it('should fail gracefully if pokemon is already at full health', () => {
     mockPokemon.hp = 100
-    const result = useItemOnPokemon('hyper_potion', mockPokemon)
+    const result = useItemOnPokemon('hyperpotion', mockPokemon)
     
     expect(result).toBeNull() // El proveedor devuelve null si result.success es falso
   })

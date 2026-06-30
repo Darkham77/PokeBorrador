@@ -70,8 +70,8 @@ export interface BattleState {
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
   playerNames?: Record<string, 'player' | 'enemy'>;
-  playerRequest?: any;
-  enemyRequest?: any;
+  playerRequest?: ShowdownPlayerRequest;
+  enemyRequest?: ShowdownPlayerRequest;
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';
@@ -167,5 +167,18 @@ export interface BattleCombatantProps {
   hidden?: boolean;
   hasSeat?: boolean;
   stages?: Partial<BattleStages>;
+}
+
+export interface ShowdownPlayerRequest {
+  active?: {
+    moves?: {
+      id?: string;
+      move?: string;
+      disabled?: boolean | string;
+    }[];
+    trapped?: boolean;
+    maybeTrapped?: boolean;
+  }[];
+  forceSwitch?: boolean[];
 }
 

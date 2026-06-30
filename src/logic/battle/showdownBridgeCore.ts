@@ -1,4 +1,5 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx';
 
 /**
@@ -20,7 +21,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const style = attacker === p ? 'log-player' : 'log-enemy';
         store.addLog(`¡${attacker.name} usó ${translatedName}!`, style, attacker);
 
-        const cleanMoveId = moveId.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanMoveId = toID(moveId);
         if (cleanMoveId === 'batonpass' && store.activeBattle.value) {
           store.activeBattle.value.isBatonPass = true;
         }
@@ -48,7 +49,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
 
         store.attackerSide.value = side;
         store.activeMove.value = {
-          id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+          id: toID(moveId),
           name: translatedName,
           cat: moveData?.cat || 'physical'
         } as unknown as import('@/types/pokemon/pokemon').Move;
@@ -72,7 +73,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (!attacker.volatileCounters) attacker.volatileCounters = {};
         attacker.volatileCounters['twoturnmove'] = 1;
         attacker.lastMove = {
-          id: moveId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+          id: toID(moveId),
           name: translatedName,
           pp: 0,
           maxPP: 0

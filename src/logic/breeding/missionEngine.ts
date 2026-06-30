@@ -181,20 +181,20 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   // Rewards
   const rewardQty = trainerLevel >= 40 ? 4 : (trainerLevel >= 20 ? 3 : 2);
   const possibleRewards: MissionReward[] = [
-    { id: 'berry_bronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' },
-    { id: 'berry_silver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' },
-    { id: 'berry_gold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' },
+    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' },
+    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' },
+    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' },
     { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' }
   ];
 
   if (trainerLevel >= 15) {
     const powerItems: MissionReward[] = [
-      { id: 'power_weight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
-      { id: 'power_bracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
-      { id: 'power_belt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
-      { id: 'power_lens', name: 'Lente Recia', qty: 1, icon: '🔍' },
-      { id: 'power_band', name: 'Banda Recia', qty: 1, icon: '🎗️' },
-      { id: 'power_anklet', name: 'Franja Recia', qty: 1, icon: '👢' }
+      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
+      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
+      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
+      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' },
+      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' },
+      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' }
     ];
     possibleRewards.push(...powerItems);
   }

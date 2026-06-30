@@ -2694,7 +2694,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -2714,7 +2714,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -3439,8 +3439,8 @@
             "pokeball": 2,
             "everstone": 1,
             "great_ball": 2,
-            "berry_bronze": -13,
-            "berry_silver": 0,
+            "berrybronze": -13,
+            "berrysilver": 0,
             "nature_patch": 1
           },
           "repelSecs": 0,
@@ -3546,7 +3546,7 @@
             {
               "date": "2026-04-13",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -4468,7 +4468,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -7316,7 +7316,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -7492,9 +7492,9 @@
             "blackMarketDaily": {
               "date": "2026-04-10",
               "items": [
-                "twisted_spoon",
+                "twistedspoon",
                 "tm41",
-                "focus_band"
+                "focusband"
               ],
               "purchased": []
             },
@@ -7507,10 +7507,10 @@
             "revive": 4,
             "antidote": 2,
             "pokeball": 11,
-            "full_heal": 1,
-            "elixir_max": 1,
-            "hyper_potion": 2,
-            "super_potion": 2
+            "fullheal": 1,
+            "elixirmax": 1,
+            "hyperpotion": 2,
+            "superpotion": 2
           },
           "repelSecs": 0,
           "classLevel": 1,
@@ -7560,7 +7560,7 @@
             {
               "date": "2026-04-11",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -7580,7 +7580,7 @@
             {
               "date": "2026-04-11",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -7864,7 +7864,7 @@
             {
               "date": "2026-04-10",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -7884,7 +7884,7 @@
             {
               "date": "2026-04-10",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -8293,7 +8293,7 @@
             {
               "date": "2026-03-26",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -8313,7 +8313,7 @@
             {
               "date": "2026-03-26",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -8461,7 +8461,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -8481,7 +8481,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -11151,9 +11151,9 @@
             "timer_ball": 13,
             "ultra_ball": 12,
             "master_ball": 1,
-            "berry_bronze": 2,
-            "berry_silver": 2,
-            "mystic_water": 1,
+            "berrybronze": 2,
+            "berrysilver": 2,
+            "mysticwater": 1,
             "nature_patch": 1,
             "ticket_shiny": 1,
             "ticket_cerulean": 5
@@ -13750,7 +13750,7 @@
           "trainer": "Sköll",
           "inventory": {
             "pokeball": 6,
-            "exp_share": 1,
+            "expshare": 1,
             "great_ball": 10
           },
           "trainerExp": 3769,
@@ -29553,7 +29553,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "berry_bronze",
+              "heldItem": "berrybronze",
               "nickname": null,
               "attracted": false,
               "badPoison": 0,
@@ -29669,7 +29669,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "_revealed": true,
               "attracted": false,
               "badPoison": 0,
@@ -29920,7 +29920,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "tri_attack",
                 "pp": 3,
@@ -30359,7 +30359,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "flamethrower",
                 "pp": 15,
@@ -30490,7 +30490,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "wing_attack",
                 "pp": 10,
@@ -30624,7 +30624,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "thrash",
                 "pp": 10,
@@ -30760,7 +30760,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "bide",
                 "pp": 10,
@@ -30894,7 +30894,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "scratch",
                 "pp": 24,
@@ -31031,7 +31031,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "outrage",
                 "pp": 13,
@@ -31358,10 +31358,10 @@
               "items": [
                 "tm13",
                 "magnet",
-                "shell_bell"
+                "shellbell"
               ],
               "purchased": [
-                "shell_bell"
+                "shellbell"
               ]
             },
             "blackMarketSales": 883
@@ -31382,7 +31382,7 @@
             "elixir": 10,
             "magnet": 2,
             "potion": 30,
-            "pp_max": 1,
+            "ppmax": 1,
             "revive": 75,
             "furnace": 1,
             "smelter": 1,
@@ -31393,58 +31393,58 @@
             "lemonade": 260,
             "net_ball": 148,
             "pokeball": 101,
-            "soda_pop": 250,
+            "sodapop": 250,
             "stardust": 2,
             "awakening": 30,
             "big_pearl": 2,
-            "burn_heal": 10,
+            "burnheal": 10,
             "dusk_ball": 205,
             "everstone": 2,
-            "exp_share": 1,
-            "full_heal": 127,
+            "expshare": 1,
+            "fullheal": 127,
             "greatball": 9,
             "old_amber": 4,
-            "sun_stone": 3,
+            "sunstone": 3,
             "workbench": 1,
             "3d_printer": 1,
-            "berry_gold": 2,
+            "berrygold": 2,
             "copper_ore": 2,
-            "elixir_max": 19,
-            "fire_stone": 4,
+            "elixirmax": 19,
+            "firestone": 4,
             "great_ball": 86,
-            "leaf_stone": 1,
+            "leafstone": 1,
             "light_ball": 1,
-            "max_potion": 39,
-            "moon_stone": 4,
+            "maxpotion": 39,
+            "moonstone": 4,
             "poke_radar": 12,
-            "power_lens": 1,
-            "revive_max": 28,
-            "shell_bell": 1,
+            "powerlens": 1,
+            "revivemax": 28,
+            "shellbell": 1,
             "silver_ore": 3,
             "star_piece": 4,
             "timer_ball": 150,
             "ultra_ball": 117,
             "amulet_coin": 2,
             "dome_fossil": 7,
-            "dragon_fang": 2,
+            "dragonfang": 2,
             "luxury_ball": 10,
-            "poison_barb": 2,
-            "water_stone": 6,
+            "poisonbarb": 2,
+            "waterstone": 6,
             "zaphire_ore": 1,
-            "berry_bronze": 9,
-            "berry_silver": 2,
-            "choice_specs": 2,
+            "berrybronze": 9,
+            "berrysilver": 2,
+            "choicespecs": 2,
             "dragon_scale": 1,
-            "full_restore": 6,
+            "fullrestore": 6,
             "helix_fossil": 1,
-            "hyper_potion": 137,
+            "hyperpotion": 137,
             "laser_cutter": 1,
-            "metal_powder": 1,
+            "metalpowder": 1,
             "nature_patch": 1,
-            "super_potion": 28,
+            "superpotion": 28,
             "tungsten_ore": 2,
             "lab_equipment": 1,
-            "thunder_stone": 2,
+            "thunderstone": 2,
             "ticket_safari": 1,
             "food_dispenser": 1,
             "medical_device": 1,
@@ -31760,7 +31760,7 @@
             {
               "date": "2026-06-15",
               "reward": {
-                "id": "power_lens",
+                "id": "powerlens",
                 "qty": 1,
                 "icon": "🔍",
                 "name": "Lente Recia"
@@ -31780,7 +31780,7 @@
             {
               "date": "2026-06-15",
               "reward": {
-                "id": "power_anklet",
+                "id": "poweranklet",
                 "qty": 1,
                 "icon": "👢",
                 "name": "Franja Recia"
@@ -44905,7 +44905,7 @@
               "isShiny": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "power_anklet",
+              "heldItem": "poweranklet",
               "_revealed": true,
               "expNeeded": 61,
               "inDaycare": false,
@@ -46205,7 +46205,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "twisted_spoon",
+              "heldItem": "twistedspoon",
               "lastMove": {
                 "id": "psybeam",
                 "pp": 16,
@@ -46333,7 +46333,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "attracted": false,
               "badPoison": 0,
               "bindTurns": 0,
@@ -46453,7 +46453,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "_revealed": true,
               "attracted": false,
               "badPoison": 0,
@@ -46574,7 +46574,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "quick_attack",
                 "pp": 29,
@@ -46704,7 +46704,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "_revealed": true,
               "attracted": false,
               "badPoison": 0,
@@ -46828,7 +46828,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "_revealed": true,
               "attracted": false,
               "badPoison": 0,
@@ -47485,32 +47485,32 @@
             "big_pearl": 1,
             "dusk_ball": 9,
             "everstone": 10,
-            "exp_share": 1,
-            "sun_stone": 1,
-            "berry_gold": 4,
-            "fire_stone": 1,
-            "focus_sash": 1,
+            "expshare": 1,
+            "sunstone": 1,
+            "berrygold": 4,
+            "firestone": 1,
+            "focussash": 1,
             "great_ball": 151,
-            "leaf_stone": 2,
-            "moon_stone": 1,
-            "power_band": 3,
-            "power_belt": 1,
-            "power_lens": 3,
-            "revive_max": 50,
+            "leafstone": 2,
+            "moonstone": 1,
+            "powerband": 3,
+            "powerbelt": 1,
+            "powerlens": 3,
+            "revivemax": 50,
             "timer_ball": 51,
             "ultra_ball": 0,
             "amulet_coin": 1,
             "master_ball": 1,
             "vigor_candy": 1,
-            "berry_bronze": 9,
-            "berry_silver": 7,
+            "berrybronze": 9,
+            "berrysilver": 7,
             "helix_fossil": 1,
-            "hyper_potion": 49,
+            "hyperpotion": 49,
             "nature_patch": 3,
-            "power_anklet": 0,
-            "power_bracer": 3,
-            "power_weight": 2,
-            "thunder_stone": 1,
+            "poweranklet": 0,
+            "powerbracer": 3,
+            "powerweight": 2,
+            "thunderstone": 1,
             "ticket_safari": 1,
             "ticket_cerulean": 1
           },
@@ -47770,7 +47770,7 @@
             {
               "date": "2026-06-14",
               "reward": {
-                "id": "power_anklet",
+                "id": "poweranklet",
                 "qty": 1,
                 "icon": "👢",
                 "name": "Franja Recia"
@@ -47790,7 +47790,7 @@
             {
               "date": "2026-06-14",
               "reward": {
-                "id": "power_belt",
+                "id": "powerbelt",
                 "qty": 1,
                 "icon": "🛡️",
                 "name": "Cinto Recio"
@@ -50472,7 +50472,7 @@
               "items": [
                 "tm08",
                 "tm48",
-                "shell_bell"
+                "shellbell"
               ],
               "purchased": []
             },
@@ -50496,9 +50496,9 @@
             "pokeball": 74,
             "dusk_ball": 31,
             "great_ball": 31,
-            "berry_bronze": 3,
+            "berrybronze": 3,
             "nature_patch": 1,
-            "super_potion": 29
+            "superpotion": 29
           },
           "repelSecs": 0,
           "classLevel": 1,
@@ -50653,7 +50653,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -50673,7 +50673,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -51289,7 +51289,7 @@
             "blackMarketDaily": {
               "date": "2026-04-08",
               "items": [
-                "spell_tag",
+                "spelltag",
                 "max_repel",
                 "pp_up"
               ],
@@ -51430,7 +51430,7 @@
             {
               "date": "2026-04-09",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -52837,7 +52837,7 @@
               "items": [
                 "tm16",
                 "leftovers",
-                "exp_share"
+                "expshare"
               ],
               "purchased": []
             },
@@ -52857,14 +52857,14 @@
             "net_ball": 0,
             "pokeball": 0,
             "dusk_ball": 0,
-            "berry_gold": 0,
-            "elixir_max": 3,
+            "berrygold": 0,
+            "elixirmax": 3,
             "great_ball": 0,
             "ultra_ball": 0,
-            "berry_bronze": 3,
-            "berry_silver": 3,
-            "hyper_potion": 1,
-            "mystic_water": 1,
+            "berrybronze": 3,
+            "berrysilver": 3,
+            "hyperpotion": 1,
+            "mysticwater": 1,
             "ticket_cerulean": 1
           },
           "repelSecs": 0,
@@ -53069,7 +53069,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -53549,7 +53549,7 @@
             {
               "date": "2026-03-21",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -54717,7 +54717,7 @@
             {
               "date": "2026-05-02",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -54996,7 +54996,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -55016,7 +55016,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -63084,14 +63084,14 @@
             "stick": 1,
             "pokeball": 0,
             "big_pearl": 1,
-            "exp_share": 2,
-            "berry_gold": 0,
+            "expshare": 2,
+            "berrygold": 0,
             "great_ball": 21,
             "iv_scanner": 3,
             "ultra_ball": 19,
-            "berry_silver": 1,
-            "metal_powder": 1,
-            "power_bracer": 0
+            "berrysilver": 1,
+            "metalpowder": 1,
+            "powerbracer": 0
           },
           "repelSecs": 0,
           "classLevel": 1,
@@ -63303,7 +63303,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -63323,7 +63323,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "power_lens",
+                "id": "powerlens",
                 "qty": 1,
                 "icon": "🔍",
                 "name": "Lente Recia"
@@ -67983,7 +67983,7 @@
               "isShiny": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "thick_club",
+              "heldItem": "thickclub",
               "_revealed": true,
               "expNeeded": 7651,
               "inDaycare": false,
@@ -70421,7 +70421,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "spell_tag",
+              "heldItem": "spelltag",
               "lastMove": {
                 "id": "hypnosis",
                 "pp": 20,
@@ -70554,7 +70554,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "confusion",
                 "pp": 25,
@@ -70687,7 +70687,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "horn_attack",
                 "pp": 24,
@@ -70815,7 +70815,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "water_gun",
                 "pp": 25,
@@ -70933,7 +70933,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "wrap",
                 "pp": 20,
@@ -71063,7 +71063,7 @@
               "trapped": false,
               "confused": 0,
               "flinched": false,
-              "heldItem": "exp_share",
+              "heldItem": "expshare",
               "lastMove": {
                 "id": "flamethrower",
                 "pp": 15,
@@ -71442,12 +71442,12 @@
             "blackMarketDaily": {
               "date": "2026-04-20",
               "items": [
-                "mystic_water",
-                "exp_share",
+                "mysticwater",
+                "expshare",
                 "stick"
               ],
               "purchased": [
-                "mystic_water",
+                "mysticwater",
                 "stick"
               ]
             },
@@ -71475,20 +71475,20 @@
             "pokeball": 0,
             "stardust": 1,
             "everstone": 1,
-            "full_heal": 4,
+            "fullheal": 4,
             "greatball": 1,
             "old_amber": 1,
-            "berry_gold": 2,
-            "fire_stone": 1,
-            "focus_sash": 1,
+            "berrygold": 2,
+            "firestone": 1,
+            "focussash": 1,
             "timer_ball": 6,
             "ultra_ball": 19,
             "dragon_scale": 1,
-            "hyper_potion": 3,
-            "mystic_water": 1,
+            "hyperpotion": 3,
+            "mysticwater": 1,
             "nature_patch": 1,
-            "super_potion": 1,
-            "thunder_stone": 1,
+            "superpotion": 1,
+            "thunderstone": 1,
             "ticket_articuno": 1
           },
           "repelSecs": 0,
@@ -71725,7 +71725,7 @@
             {
               "date": "2026-06-15",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"
@@ -71745,7 +71745,7 @@
             {
               "date": "2026-06-15",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -72014,7 +72014,7 @@
             {
               "date": "2026-04-03",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "Baya de Bronce"
@@ -72034,7 +72034,7 @@
             {
               "date": "2026-04-03",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "Baya de Oro"
@@ -73798,7 +73798,7 @@
           "inventory": {
             "pokeball": 2,
             "great_ball": 7,
-            "leaf_stone": 1
+            "leafstone": 1
           },
           "repelSecs": 0,
           "classLevel": 1,
@@ -73893,7 +73893,7 @@
             {
               "date": "2026-04-05",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "Baya de Plata"

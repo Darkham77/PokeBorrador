@@ -171,7 +171,9 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
-        await executeTurnInWorker('', `switch ${slot}`)
+        const result = await executeTurnInWorker('', `switch ${slot}`)
+        active.playerRequest = result.p1Request
+        active.enemyRequest = result.p2Request
         const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
         active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
       }
@@ -603,7 +605,9 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid, active.enemyTeam)
-        await executeTurnInWorker('', `switch ${slot}`)
+        const result = await executeTurnInWorker('', `switch ${slot}`)
+        active.playerRequest = result.p1Request
+        active.enemyRequest = result.p2Request
         const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
         active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
       }

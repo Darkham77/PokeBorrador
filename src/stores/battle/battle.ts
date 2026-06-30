@@ -2,7 +2,7 @@
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { sleep } from '@/logic/utils/timeUtils'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage.ts'
 import { useGameStore } from '@/stores/game.ts'
@@ -302,6 +302,7 @@ export const useBattleStore = defineStore('battle', () => {
       if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+        isProcessing.value = false
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
@@ -463,6 +464,7 @@ export const useBattleStore = defineStore('battle', () => {
         }
       }
       if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+        isProcessing.value = false
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
     } catch (error) {
@@ -524,6 +526,31 @@ export const useBattleStore = defineStore('battle', () => {
     const { awardDebugExp: awardExpFn } = await import('@/logic/battle/resolution.ts')
     await awardExpFn(getContext())
   }
+
+  const checkAndAutoRecharge = async () => {
+    if (!activeBattle.value || activeBattle.value.over) return
+    const req = activeBattle.value.playerRequest
+    if (req && req.active?.[0]?.moves) {
+      const moves = req.active[0].moves
+      if (moves && moves.length === 1 && moves[0] && (moves[0].id === 'recharge' || moves[0].move === 'Recharge')) {
+        logger.info('BattleStore', 'Forced recharge detected, waiting for isProcessing to clear...')
+        await nextTick()
+        let retries = 0
+        while (isProcessing.value && retries < 20) {
+          await sleep(20)
+          retries++
+        }
+        logger.info('BattleStore', 'Auto-submitting executeMove(0) for forced recharge.')
+        await executeMove(0)
+      }
+    }
+  }
+
+  watch(fsm.currentSubState, async (newVal) => {
+    if (newVal === BATTLE_SUBSTATES.WAIT_INPUT) {
+      await checkAndAutoRecharge()
+    }
+  })
 
   if (typeof window !== 'undefined') {
     const win = window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => unknown }

@@ -99,7 +99,7 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
     ivs[forcedB] = Math.random() < 0.5 ? pA.ivs[forcedB] : pB.ivs[forcedB]
   }
   
-  const hasDestinyKnot = itemA === 'destiny_knot' || itemB === 'destiny_knot'
+  const hasDestinyKnot = itemA === 'destinyknot' || itemB === 'destinyknot'
   const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0)
   
   // Criador hereda +1 stat adicional base
@@ -216,7 +216,7 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
   const itemB = pB.heldItem || ''
   
   const hasEverstone = itemA === 'everstone' || itemB === 'everstone'
-  const hasDestinyKnot = itemA === 'destiny_knot' || itemB === 'destiny_knot'
+  const hasDestinyKnot = itemA === 'destinyknot' || itemB === 'destinyknot'
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id
   
   const ivCount = (hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT) + (playerClass === 'criador' ? 1 : 0)

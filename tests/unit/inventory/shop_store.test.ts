@@ -70,7 +70,7 @@ describe('Shop Store', () => {
     game.state.inventory = {};
     
     // Destiny Knot costs 4800 BC
-    const item = SHOP_ITEMS.find(i => i.id === 'destiny_knot')!;
+    const item = SHOP_ITEMS.find(i => i.id === 'destinyknot')!;
     
     shop.buyItemBC(item.id);
     

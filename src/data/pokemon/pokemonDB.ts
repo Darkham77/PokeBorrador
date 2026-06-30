@@ -16,10 +16,6 @@ const MAX_DEX_NUMS: Record<number, number> = {
   9: 1025
 };
 
-function toGameId(id: string): string {
-  return id.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
 const maxDexNum = MAX_DEX_NUMS[IMPLEMENTED_GENERATION] ?? 1025;
 const allSpecies = Dex.forGen(ACTIVE_GENERATION).species.all();
 const db: Record<string, PokemonBaseData> = {};
@@ -29,7 +25,7 @@ for (const species of allSpecies) {
     continue;
   }
 
-  const speciesId = toGameId(species.id);
+  const speciesId = toID(species.id);
   const type = (species.types[0] ?? '').toLowerCase();
   const type2 = species.types[1] ? species.types[1].toLowerCase() : undefined;
 

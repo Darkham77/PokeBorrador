@@ -164,7 +164,7 @@ export function calculateMovePower(
       let itemMult = 1;
       if (typeBoosters[h] === moveType) itemMult = 1.2;
       
-      if (h === 'choice_band') {
+      if (h === 'choiceband') {
         if (move.cat === 'physical') {
           itemMult = 1.5;
         } else {
@@ -254,7 +254,7 @@ export function calculateCritChance(
   defender: PurePokemon | null
 ): { value: string; class: string } {
   let critRate = 0.0625;
-  if (attacker.heldItem === 'scope_lens') critRate = 0.12;
+  if (attacker.heldItem === 'scopelens') critRate = 0.12;
   if (attacker.focusEnergy) critRate = 0.25;
   if (defender && (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla')) {
     critRate = 0;

@@ -15,9 +15,21 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     if (!m || m.pp <= 0) return false
     if (enemy.disabledMove && m.id === enemy.disabledMove.id) return false
     
+    interface ShowdownMoveRequest {
+      id: string;
+      disabled?: boolean;
+    }
+    interface ShowdownActiveRequest {
+      moves?: ShowdownMoveRequest[];
+    }
+    interface ShowdownPlayerRequest {
+      active?: ShowdownActiveRequest[];
+    }
+
     // Excluir movimientos deshabilitados o ausentes informados por el request del simulador
-    if (enemyRequest && enemyRequest.active?.[0]?.moves) {
-      const reqMove = enemyRequest.active[0].moves.find((rm: any) => rm.id === m.id);
+    const enemyReq = enemyRequest as ShowdownPlayerRequest | undefined;
+    if (enemyReq && enemyReq.active?.[0]?.moves) {
+      const reqMove = enemyReq.active[0].moves.find((rm: ShowdownMoveRequest) => rm.id === m.id);
       if (!reqMove || reqMove.disabled) return false;
     }
     

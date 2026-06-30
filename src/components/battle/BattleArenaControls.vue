@@ -92,7 +92,7 @@ const execShowBattleBag = () => {
 
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
-    if (typeof window !== 'undefined' && (window as any).__E2E__) {
+    if (typeof window !== 'undefined' && (window as typeof window & { __E2E__?: boolean }).__E2E__) {
       uiStore.isBattleSwitchForced = false
       return
     }

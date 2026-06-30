@@ -12,7 +12,7 @@ const uiStore = useUIStore()
 const gameStore = useGameStore()
 const inventoryStore = useInventoryStore()
 
-const isPPMax = computed(() => uiStore.activeItemForPPUp === 'pp_max')
+const isPPMax = computed(() => uiStore.activeItemForPPUp === 'ppmax')
 
 /** Resolve the actual Pokémon from gameStore by index — avoids cross-store ref issues. */
 const ppPokemon = computed(() => {

@@ -211,7 +211,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
         rewardIcon = '💎';
       }
     } else if (selectedCategory === 'stone') {
-      const stones = ['fire_stone', 'water_stone', 'thunder_stone', 'leaf_stone', 'moon_stone', 'sun_stone'];
+      const stones = ['firestone', 'waterstone', 'thunderstone', 'leafstone', 'moonstone', 'sunstone'];
       rewardId = stones[Math.floor(Math.random() * stones.length)]!;
       rewardIcon = '💎';
     } else if (selectedCategory === 'common') {

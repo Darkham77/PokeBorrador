@@ -147,7 +147,7 @@ export function calculateFinalPower(
       poison_barb: 'poison'
     }
     if (typeBoosters[h] === moveType) itemMult = 1.2
-    if (h === 'choice_band' && md.cat === 'physical') itemMult = 1.5
+    if (h === 'choiceband' && md.cat === 'physical') itemMult = 1.5
   }
   power *= itemMult
 

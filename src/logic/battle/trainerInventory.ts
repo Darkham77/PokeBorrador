@@ -32,28 +32,28 @@ export function generateNPCInventory(
   // Nivel 1+: Poción común y curas de estado específicas
   candidates.push({ id: 'potion', price: 200, type: 'heal' });
   candidates.push({ id: 'antidote', price: 100, type: 'cure' });
-  candidates.push({ id: 'paralyze_heal', price: 200, type: 'cure' });
-  candidates.push({ id: 'burn_heal', price: 250, type: 'cure' });
+  candidates.push({ id: 'paralyzeheal', price: 200, type: 'cure' });
+  candidates.push({ id: 'burnheal', price: 250, type: 'cure' });
   candidates.push({ id: 'awakening', price: 250, type: 'cure' });
-  candidates.push({ id: 'ice_heal', price: 250, type: 'cure' });
+  candidates.push({ id: 'iceheal', price: 250, type: 'cure' });
 
   // Nivel 15+: Súper Poción y Cura Total
   if (maxLevel >= 15) {
-    candidates.push({ id: 'super_potion', price: 600, type: 'heal' });
-    candidates.push({ id: 'full_heal', price: 600, type: 'cure' });
+    candidates.push({ id: 'superpotion', price: 600, type: 'heal' });
+    candidates.push({ id: 'fullheal', price: 600, type: 'cure' });
   }
 
   // Nivel 30+: Hiper Poción y Revivir
   if (maxLevel >= 30) {
-    candidates.push({ id: 'hyper_potion', price: 1500, type: 'heal' });
+    candidates.push({ id: 'hyperpotion', price: 1500, type: 'heal' });
     candidates.push({ id: 'revive', price: 2000, type: 'revive' });
   }
 
   // Nivel 50+: Poción Máxima, Restaurar Todo y Revivir Máximo
   if (maxLevel >= 50) {
-    candidates.push({ id: 'max_potion', price: 2500, type: 'heal' });
-    candidates.push({ id: 'full_restore', price: 5000, type: 'heal' }); // actúa como heal/cure híbrido
-    candidates.push({ id: 'revive_max', price: 3000, type: 'revive' });
+    candidates.push({ id: 'maxpotion', price: 2500, type: 'heal' });
+    candidates.push({ id: 'fullrestore', price: 5000, type: 'heal' }); // actúa como heal/cure híbrido
+    candidates.push({ id: 'revivemax', price: 3000, type: 'revive' });
   }
 
   // 4. Realizar compras inteligentes iterativamente hasta agotar el presupuesto o alcanzar el límite de objetos

@@ -80,15 +80,15 @@ const WEATHER_MAP: Record<string, string> = {
 const ITEMS_MAP: Record<string, string> = {
   'charcoal': 'charcoal',
   'magnet': 'magnet',
-  'mystic_water': 'mysticwater',
-  'miracle_seed': 'miracleseed',
+  'mysticwater': 'mysticwater',
+  'miracleseed': 'miracleseed',
   'black_belt': 'blackbelt',
-  'twisted_spoon': 'twistedspoon',
-  'spell_tag': 'spelltag',
-  'silver_powder': 'silverpowder',
-  'poison_barb': 'poisonbarb',
-  'choice_band': 'choiceband',
-  'scope_lens': 'scopelens'
+  'twistedspoon': 'twistedspoon',
+  'spelltag': 'spelltag',
+  'silverpowder': 'silverpowder',
+  'poisonbarb': 'poisonbarb',
+  'choiceband': 'choiceband',
+  'scopelens': 'scopelens'
 };
 
 const gen3Dex = Dex.forGen(ACTIVE_GENERATION);

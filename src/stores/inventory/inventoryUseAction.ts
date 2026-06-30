@@ -114,7 +114,7 @@ export function executeUseItem(
       uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
       uiStore.isNaturePatchOpen = true;
       shouldConsumeImmediately = false; // Handled by NaturePatchModal on confirm
-    } else if (result.resultType === 'pp_up' || result.resultType === 'pp_max') {
+    } else if (result.resultType === 'pp_up' || result.resultType === 'ppmax') {
       uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
       uiStore.activeItemForPPUp = itemId;
       uiStore.isPPUpOpen = true;
@@ -132,9 +132,9 @@ export function executeUseItem(
 
     const audioStore = useAudioStore();
     const healItems = [
-      'potion', 'super_potion', 'hyper_potion', 'max_potion',
-      'revive', 'revive_max', 'antidote', 'burn_heal',
-      'paralyze_heal', 'awakening', 'ice_heal', 'full_heal', 'soda_pop', 'lemonade'
+      'potion', 'superpotion', 'hyperpotion', 'maxpotion',
+      'revive', 'revivemax', 'antidote', 'burnheal',
+      'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'sodapop', 'lemonade'
     ];
     if (healItems.includes(itemId)) {
       audioStore.play('heal');

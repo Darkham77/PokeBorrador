@@ -65,11 +65,22 @@ const isDisabled = computed(() => {
   if (props.isProcessing) return true
   if (!props.move) return true
 
+  interface ShowdownMoveRequest {
+    id: string;
+    disabled?: boolean;
+  }
+  interface ShowdownActiveRequest {
+    moves?: ShowdownMoveRequest[];
+  }
+  interface ShowdownPlayerRequest {
+    active?: ShowdownActiveRequest[];
+  }
+
   // Consultar directamente el request de Showdown para bloquear botones en la UI
-  const playerRequest = battleStore.state?.playerRequest
+  const playerRequest = battleStore.state?.playerRequest as ShowdownPlayerRequest | undefined;
   if (playerRequest && playerRequest.active?.[0]?.moves) {
-    const reqMove = playerRequest.active[0].moves.find((rm: any) => rm.id === props.move?.id);
-    if (reqMove && reqMove.disabled) return true;
+    const reqMove = playerRequest.active[0].moves.find((rm: ShowdownMoveRequest) => rm.id === props.move?.id);
+    if (!reqMove || reqMove.disabled) return true;
   }
 
   const p = props.playerInfo
@@ -85,9 +96,9 @@ const isDisabled = computed(() => {
 
   if (p) {
     // Choice Item Logic
-    if (p.heldItem && (p.heldItem === 'choice_band' || p.heldItem === 'choice_specs' || p.heldItem === 'choice_scarf')) {
+    if (p.heldItem && (p.heldItem === 'choiceband' || p.heldItem === 'choicespecs' || p.heldItem === 'choicescarf')) {
       const pk = p as Pokemon & { choiceMove?: string }
-      if (pk.choiceMove && pk.choiceMove !== props.move.name) {
+      if (pk.choiceMove && pk.choiceMove !== props.move.id) {
         return true
       }
     }

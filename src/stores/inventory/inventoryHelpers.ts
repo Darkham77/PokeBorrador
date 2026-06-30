@@ -33,7 +33,7 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
 
   if (pokemon.inDaycare) {
     if (!item) return false;
-    const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy';
+    const isVigorRestorer = item.id === 'vigorrestorer' || item.id === 'vigor_candy';
     const isBreedingHeld = item.cat === 'breeding' || item.cat === 'breeding_held';
     return !!(isVigorRestorer || isBreedingHeld);
   }
@@ -41,7 +41,7 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
   if (item && (
     item.cat === 'held' || 
     item.type === 'held' || 
-    ((item.cat === 'breeding' || item.cat === 'breeding_held') && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
+    ((item.cat === 'breeding' || item.cat === 'breeding_held') && item.id !== 'vigorrestorer' && !item.id.includes('berry'))
   )) return true;
 
   const p = JSON.parse(JSON.stringify(pokemon));

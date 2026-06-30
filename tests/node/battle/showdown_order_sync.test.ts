@@ -447,10 +447,9 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     // If we map HP using original team order (which was the bug!):
     const wrongHps = uiTeam.map(p => p.hp); // [0, 80, 100]
     
-    // If we sync simMons using wrongHps:
     const mockSim1 = JSON.parse(JSON.stringify(simMons));
-    mockSim1.forEach((mon: any, idx: number) => {
-      mon.hp = wrongHps[idx];
+    mockSim1.forEach((mon: { hp: number; fainted?: boolean }, idx: number) => {
+      mon.hp = wrongHps[idx]!;
       if (mon.hp <= 0) mon.fainted = true;
     });
     // Gengar gets 0 HP and faints!
@@ -464,8 +463,8 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
 
     // If we sync simMons using correctHps:
     const mockSim2 = JSON.parse(JSON.stringify(simMons));
-    mockSim2.forEach((mon: any, idx: number) => {
-      mon.hp = correctHps[idx];
+    mockSim2.forEach((mon: { hp: number; fainted?: boolean }, idx: number) => {
+      mon.hp = correctHps[idx]!;
       if (mon.hp <= 0) mon.fainted = true;
     });
     assert.strictEqual(mockSim2[0].fainted, false, 'Correct mapping keeps Gengar healthy');

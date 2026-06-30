@@ -115,10 +115,10 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
   it('debería sincronizar estados alterados después de usar Cura Total / Restaurar Todo o curas específicas', async () => {
     const statusesToTest: Array<{ status: PokemonStatus; item: string }> = [
       { status: 'psn', item: 'antidote' },
-      { status: 'brn', item: 'burn_heal' },
-      { status: 'par', item: 'paralyze_heal' },
+      { status: 'brn', item: 'burnheal' },
+      { status: 'par', item: 'paralyzeheal' },
       { status: 'slp', item: 'awakening' },
-      { status: 'frz', item: 'ice_heal' }
+      { status: 'frz', item: 'iceheal' }
     ];
 
     for (const testCase of statusesToTest) {
@@ -158,9 +158,9 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
   it('debería sincronizar los HP después de usar Pociones (Poción, Súper Poción, Hiper Poción, Poción Máxima)', async () => {
     const potionsToTest = [
       { startHp: 50, healAmount: 20, item: 'potion', expectedHp: 70 },
-      { startHp: 50, healAmount: 50, item: 'super_potion', expectedHp: 100 },
-      { startHp: 50, healAmount: 120, item: 'hyper_potion', expectedHp: 170 },
-      { startHp: 50, healAmount: 291, item: 'max_potion', expectedHp: 341 }
+      { startHp: 50, healAmount: 50, item: 'superpotion', expectedHp: 100 },
+      { startHp: 50, healAmount: 120, item: 'hyperpotion', expectedHp: 170 },
+      { startHp: 50, healAmount: 291, item: 'maxpotion', expectedHp: 341 }
     ];
 
     for (const testCase of potionsToTest) {

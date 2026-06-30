@@ -62,8 +62,8 @@ initGlobalHoverSystem()
 if (typeof window !== 'undefined') {
   if ((window as unknown as Record<string, unknown>).__E2E__ || window.location.search.includes('e2e=true')) {
     import('gsap').then(({ gsap }) => {
-      gsap.globalTimeline.timeScale(1000);
-      console.log('⚡ [E2E] GSAP timeScale set to 1000x for instant animations.');
+      gsap.globalTimeline.timeScale(100);
+      console.log('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
     });
   }
 }

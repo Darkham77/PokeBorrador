@@ -22,137 +22,137 @@ interface TriggerConfig {
 
 export const ABILITY_TRIGGER_MAP: Readonly<Record<string, TriggerConfig>> = {
   // Inmunidades de tipo — el rival ataca con el tipo que la habilidad absorbe/bloquea
-  voltabsorb:      { enemyMove: 'Thunderbolt' },
-  lightningrod:    { enemyMove: 'Thunderbolt' },
-  motordrive:      { enemyMove: 'Thunderbolt' },
-  transistor:      { enemyMove: 'Thunderbolt' }, // boost al usar eléctrico
-  waterabsorb:     { enemyMove: 'Surf' },
-  stormdrain:      { enemyMove: 'Surf' },
-  dryskin:         { enemyMove: 'Surf' },
-  waterbubble:     { enemyMove: 'Surf' },         // boost al usar agua
-  flashfire:       { enemyMove: 'Flamethrower' },
-  wellbakedbody:   { enemyMove: 'Flamethrower' },
-  heatproof:       { enemyMove: 'Flamethrower' },
-  thermalexchange: { enemyMove: 'Flame Wheel' },
-  sapsipper:       { enemyMove: 'Giga Drain' },
-  levitate:        { enemyMove: 'Earthquake' },
-  eartheater:      { enemyMove: 'Earthquake' },
+  voltabsorb:      { enemyMove: 'thunderbolt' },
+  lightningrod:    { enemyMove: 'thunderbolt' },
+  motordrive:      { enemyMove: 'thunderbolt' },
+  transistor:      { enemyMove: 'thunderbolt' }, // boost al usar eléctrico
+  waterabsorb:     { enemyMove: 'surf' },
+  stormdrain:      { enemyMove: 'surf' },
+  dryskin:         { enemyMove: 'surf' },
+  waterbubble:     { enemyMove: 'surf' },         // boost al usar agua
+  flashfire:       { enemyMove: 'flamethrower' },
+  wellbakedbody:   { enemyMove: 'flamethrower' },
+  heatproof:       { enemyMove: 'flamethrower' },
+  thermalexchange: { enemyMove: 'flamewheel' },
+  sapsipper:       { enemyMove: 'gigadrain' },
+  levitate:        { enemyMove: 'earthquake' },
+  eartheater:      { enemyMove: 'earthquake' },
 
   // Habilidades de contacto — rival usa movimiento físico de contacto
-  static:          { enemyMove: 'Body Slam' },
-  flamebody:       { enemyMove: 'Body Slam' },
-  poisonpoint:     { enemyMove: 'Body Slam' },
-  roughskin:       { enemyMove: 'Body Slam' },
-  ironbarbs:       { enemyMove: 'Body Slam' },
-  gooey:           { enemyMove: 'Body Slam' },
-  tanglinghair:    { enemyMove: 'Body Slam' },
-  cutecharm:       { enemyMove: 'Body Slam' },
-  effectspore:     { enemyMove: 'Body Slam' },
-  mummy:           { enemyMove: 'Body Slam' },
-  wanderingspirit: { enemyMove: 'Body Slam' },
-  perishbody:      { enemyMove: 'Body Slam' },
-  lingeringaroma:  { enemyMove: 'Body Slam' },
+  static:          { enemyMove: 'bodyslam' },
+  flamebody:       { enemyMove: 'bodyslam' },
+  poisonpoint:     { enemyMove: 'bodyslam' },
+  roughskin:       { enemyMove: 'bodyslam' },
+  ironbarbs:       { enemyMove: 'bodyslam' },
+  gooey:           { enemyMove: 'bodyslam' },
+  tanglinghair:    { enemyMove: 'bodyslam' },
+  cutecharm:       { enemyMove: 'bodyslam' },
+  effectspore:     { enemyMove: 'bodyslam' },
+  mummy:           { enemyMove: 'bodyslam' },
+  wanderingspirit: { enemyMove: 'bodyslam' },
+  perishbody:      { enemyMove: 'bodyslam' },
+  lingeringaroma:  { enemyMove: 'bodyslam' },
 
   // Habilidades de recoil/no-recoil — jugador usa movimiento con recoil
-  rockhead:        { enemyMove: 'Seismic Toss' }, // p1 usa Double-Edge sin recoil
-  reckless:        { enemyMove: 'Seismic Toss' },
+  rockhead:        { enemyMove: 'seismictoss' }, // p1 usa Double-Edge sin recoil
+  reckless:        { enemyMove: 'seismictoss' },
 
   // Habilidades activadas por baja vida — rival usa False Swipe para dejar a 1 HP
-  blaze:           { enemyMove: 'False Swipe' },
-  torrent:         { enemyMove: 'False Swipe' },
-  overgrow:        { enemyMove: 'False Swipe' },
-  swarm:           { enemyMove: 'False Swipe' },
-  berserk:         { enemyMove: 'False Swipe' },
-  emergencyexit:   { enemyMove: 'False Swipe' },
-  wimpout:         { enemyMove: 'False Swipe' },
-  defeatist:       { enemyMove: 'False Swipe' },
+  blaze:           { enemyMove: 'falseswipe' },
+  torrent:         { enemyMove: 'falseswipe' },
+  overgrow:        { enemyMove: 'falseswipe' },
+  swarm:           { enemyMove: 'falseswipe' },
+  berserk:         { enemyMove: 'falseswipe' },
+  emergencyexit:   { enemyMove: 'falseswipe' },
+  wimpout:         { enemyMove: 'falseswipe' },
+  defeatist:       { enemyMove: 'falseswipe' },
 
   // Activadas por reducciones de stats — rival usa Charm (baja Atk x2)
-  competitive:     { enemyMove: 'Charm' },
-  defiant:         { enemyMove: 'Charm' },
-  rattled:         { enemyMove: 'Shadow Ball' }, // baja SpD + Oscuro/Bicho/Fantasma
-  justified:       { enemyMove: 'Sucker Punch' }, // tipo Oscuro sube Atk
-  guarddog:        { enemyMove: 'Charm' },        // bloquea Intimidate + sube Atk
-  opportunist:     { enemyMove: 'Charm' },        // copia bajada de stats del rival
+  competitive:     { enemyMove: 'charm' },
+  defiant:         { enemyMove: 'charm' },
+  rattled:         { enemyMove: 'shadowball' }, // baja SpD + Oscuro/Bicho/Fantasma
+  justified:       { enemyMove: 'suckerpunch' }, // tipo Oscuro sube Atk
+  guarddog:        { enemyMove: 'charm' },        // bloquea Intimidate + sube Atk
+  opportunist:     { enemyMove: 'charm' },        // copia bajada de stats del rival
 
   // Activadas por tipos específicos de daño
-  weakarmor:       { enemyMove: 'Rock Slide' },   // físico → +Spe, -Def
-  steamengine:     { enemyMove: 'Flame Wheel' },  // Fuego/Agua → +6 Spe
-  stamina:         { enemyMove: 'Rock Slide' },   // recibir daño → +Def
-  watercompaction: { enemyMove: 'Surf' },         // agua → +2 Def
-  innardsout:      { enemyMove: 'False Swipe' },  // al K.O. → devuelve daño
+  weakarmor:       { enemyMove: 'rockslide' },   // físico → +Spe, -Def
+  steamengine:     { enemyMove: 'flamewheel' },  // Fuego/Agua → +6 Spe
+  stamina:         { enemyMove: 'rockslide' },   // recibir daño → +Def
+  watercompaction: { enemyMove: 'surf' },         // agua → +2 Def
+  innardsout:      { enemyMove: 'falseswipe' },  // al K.O. → devuelve daño
 
   // Activadas por tipo Oscuro
-  darkside:        { enemyMove: 'Sucker Punch' },
+  darkside:        { enemyMove: 'suckerpunch' },
 
   // Habilidades de stat boost por tipo de ataque recibido
-  angerpoint:      { enemyMove: 'Storm Throw' },  // golpe crítico → +6 Atk
-  angershell:      { enemyMove: 'False Swipe' },  // baja de 50% HP → stats mixtos
+  angerpoint:      { enemyMove: 'stormthrow' },  // golpe crítico → +6 Atk
+  angershell:      { enemyMove: 'falseswipe' },  // baja de 50% HP → stats mixtos
 
   // Habilidades de clima — ya cubiertas por ABILITY_SCENARIOS pero mapeamos igual
   // para el generador dinámico cuando aparecen solas en un batch
-  swiftswim:       { enemyMove: 'Rain Dance' },
-  chlorophyll:     { enemyMove: 'Sunny Day' },
-  sandrush:        { enemyMove: 'Sandstorm' },
-  slushrush:       { enemyMove: 'Snowscape' },
-  sandforce:       { enemyMove: 'Sandstorm' },
-  solarpower:      { enemyMove: 'Sunny Day' },
-  leafguard:       { enemyMove: 'Sunny Day' },
-  icebody:         { enemyMove: 'Snowscape' },
-  snowcloak:       { enemyMove: 'Snowscape' },
-  sandveil:        { enemyMove: 'Sandstorm' },
-  raindish:        { enemyMove: 'Rain Dance' },
-  hydration:       { enemyMove: 'Rain Dance' },
+  swiftswim:       { enemyMove: 'raindance' },
+  chlorophyll:     { enemyMove: 'sunnyday' },
+  sandrush:        { enemyMove: 'sandstorm' },
+  slushrush:       { enemyMove: 'snowscape' },
+  sandforce:       { enemyMove: 'sandstorm' },
+  solarpower:      { enemyMove: 'sunnyday' },
+  leafguard:       { enemyMove: 'sunnyday' },
+  icebody:         { enemyMove: 'snowscape' },
+  snowcloak:       { enemyMove: 'snowscape' },
+  sandveil:        { enemyMove: 'sandstorm' },
+  raindish:        { enemyMove: 'raindance' },
+  hydration:       { enemyMove: 'raindance' },
 
   // Habilidades de terreno
-  surgesurfer:     { enemyMove: 'Electric Terrain' },
-  mimicry:         { enemyMove: 'Electric Terrain' },
+  surgesurfer:     { enemyMove: 'electricterrain' },
+  mimicry:         { enemyMove: 'electricterrain' },
 
   // Inmunidades de estado
-  limber:          { enemyMove: 'Thunder Wave' },
-  immunity:        { enemyMove: 'Toxic' },
-  magmaarmor:      { enemyMove: 'Lovely Kiss' },   // inmune a congelar (usamos sleep como proxy)
-  oblivious:       { enemyMove: 'Lovely Kiss' },
-  vitalspirit:     { enemyMove: 'Lovely Kiss' },
-  insomnia:        { enemyMove: 'Lovely Kiss' },
-  owntempo:        { enemyMove: 'Confuse Ray' },
-  innerfocus:      { enemyMove: 'Fake Out' },
-  steadfast:       { enemyMove: 'Fake Out' },      // al hacer flinch → +Spe
-  clearsmog:       { enemyMove: 'Confuse Ray' },
+  limber:          { enemyMove: 'thunderwave' },
+  immunity:        { enemyMove: 'toxic' },
+  magmaarmor:      { enemyMove: 'lovelykiss' },   // inmune a congelar (usamos sleep como proxy)
+  oblivious:       { enemyMove: 'lovelykiss' },
+  vitalspirit:     { enemyMove: 'lovelykiss' },
+  insomnia:        { enemyMove: 'lovelykiss' },
+  owntempo:        { enemyMove: 'confuseray' },
+  innerfocus:      { enemyMove: 'fakeout' },
+  steadfast:       { enemyMove: 'fakeout' },      // al hacer flinch → +Spe
+  clearsmog:       { enemyMove: 'confuseray' },
 
   // Activadas por movimientos de estado del rival
-  soundproof:      { enemyMove: 'Hyper Voice' },   // inmune a sonido
-  bulletproof:     { enemyMove: 'Shadow Ball' },   // inmune a balas/bombas
-  damp:            { enemyMove: 'Self-Destruct' }, // bloquea Self-Destruct
-  queenlymajesty:  { enemyMove: 'Quick Attack' },  // bloquea prioridad
-  dazzling:        { enemyMove: 'Quick Attack' },  // bloquea prioridad
-  armortail:       { enemyMove: 'Quick Attack' },  // bloquea prioridad
+  soundproof:      { enemyMove: 'hypervoice' },   // inmune a sonido
+  bulletproof:     { enemyMove: 'shadowball' },   // inmune a balas/bombas
+  damp:            { enemyMove: 'selfdestruct' }, // bloquea Self-Destruct
+  queenlymajesty:  { enemyMove: 'quickattack' },  // bloquea prioridad
+  dazzling:        { enemyMove: 'quickattack' },  // bloquea prioridad
+  armortail:       { enemyMove: 'quickattack' },  // bloquea prioridad
 
   // Habilidades misceláneas reactivas
-  pressure:        { enemyMove: 'Body Slam' },     // PP extra consumidos
-  unnerve:         { enemyMove: 'Body Slam' },     // rival no puede comer berries
-  suctioncups:     { enemyMove: 'Whirlwind' },     // bloquea phazing
-  shadowtag:       { enemyMove: 'Body Slam' },     // rival no puede escapar
-  arenatrap:       { enemyMove: 'Body Slam' },
-  magnetpull:      { enemyMove: 'Body Slam' },
-  stickyhold:      { enemyMove: 'Knock Off' },     // bloquea robo de item
-  colorchange:     { enemyMove: 'Thunderbolt' },   // cambia tipo al ser golpeado
-  klutz:           { enemyMove: 'Body Slam' },     // no puede usar su item
+  pressure:        { enemyMove: 'bodyslam' },     // PP extra consumidos
+  unnerve:         { enemyMove: 'bodyslam' },     // rival no puede comer berries
+  suctioncups:     { enemyMove: 'whirlwind' },     // bloquea phazing
+  shadowtag:       { enemyMove: 'bodyslam' },     // rival no puede escapar
+  arenatrap:       { enemyMove: 'bodyslam' },
+  magnetpull:      { enemyMove: 'bodyslam' },
+  stickyhold:      { enemyMove: 'knockoff' },     // bloquea robo de item
+  colorchange:     { enemyMove: 'thunderbolt' },   // cambia tipo al ser golpeado
+  klutz:           { enemyMove: 'bodyslam' },     // no puede usar su item
 };
 
 // ---------------------------------------------------------------------------
 // Equipo universal del NPC: 4 slots con movimientos de tipos distintos.
 // El run-tester lee la habilidad activa de p1 por turno y elige el slot correcto.
-// Slot 1 = Thunderbolt  → cubre inmunidades/boost eléctrico
-// Slot 2 = Surf          → cubre inmunidades/boost acuático
-// Slot 3 = Flamethrower  → cubre inmunidades/boost fuego
-// Slot 4 = Body Slam     → cubre habilidades de contacto
+// Slot 1 = thunderbolt  → cubre inmunidades/boost eléctrico
+// Slot 2 = surf          → cubre inmunidades/boost acuático
+// Slot 3 = flamethrower  → cubre inmunidades/boost fuego
+// Slot 4 = bodyslam     → cubre habilidades de contacto
 // ---------------------------------------------------------------------------
 export const ENEMY_TRIGGER_MOVES = [
-  'Thunderbolt',  // slot 1
-  'Surf',         // slot 2
-  'Flamethrower', // slot 3
-  'Body Slam',    // slot 4
+  'thunderbolt',  // slot 1
+  'surf',         // slot 2
+  'flamethrower', // slot 3
+  'bodyslam',    // slot 4
 ] as const;
 
 /** Slot 1-based del ENEMY_TRIGGER_MOVES que activa la habilidad dada, o null si no aplica. */
@@ -180,8 +180,8 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const allAbilities = dexGen.abilities.all()
     .filter(a => a.exists && !a.isNonstandard && !EXCLUDED_FROM_SINGLES_REPORT.has(a.id));
 
-  const movePool    = allMoves.map(m => m.name);
-  const abilityPool = allAbilities.map(a => a.name);
+  const movePool    = allMoves.map(m => m.id);
+  const abilityPool = allAbilities.map(a => a.id);
 
   const batches: TestBatch[] = [];
   let moveIdx    = 0;
@@ -206,7 +206,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         }
       }
 
-      let abilityName = 'No Ability';
+      let abilityName = 'noability';
       if (abilityIdx < abilityPool.length) {
         abilityName = abilityPool[abilityIdx]!;
         batchAbilities.push(toID(abilityName));
@@ -218,21 +218,21 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // Items para activar ciertas habilidades que requieren estado o movimientos específicos
       let item = '';
       if (['guts', 'marvelscale', 'quickfeet', 'flareboost'].includes(abilityId)) {
-        item = 'Flame Orb';
+        item = 'flameorb';
       } else if (['poisonheal', 'toxicboost'].includes(abilityId)) {
-        item = 'Toxic Orb';
+        item = 'toxicorb';
       } else if (['harvest', 'cheekpouch', 'ripen', 'gluttony', 'unburden'].includes(abilityId)) {
-        item = 'Sitrus Berry';
+        item = 'sitrusberry';
       }
 
       // Si tiene movimientos que requieren baya obligatoria para ser válidos
       const movesToId = pMoves.map(m => toID(m));
       if (movesToId.includes('belch' as ID) || movesToId.includes('stuffcheeks' as ID)) {
-        item = 'Sitrus Berry';
+        item = 'sitrusberry';
       }
 
       // noretreat requiere ser Falinks para poder ejecutarse
-      const species = movesToId.includes('noretreat' as ID) ? 'Falinks' : 'Mew';
+      const species = movesToId.includes('noretreat' as ID) ? 'falinks' : 'mew';
 
       playerTeam.push({
         name:   `P-Poke${p + 1}`,
@@ -241,10 +241,10 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         gender:  '',
         item,
         ability: abilityName,
-        nature:  'Serious',
+        nature:  'serious',
         evs: { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: pMoves.length > 0 ? pMoves : ['Tackle'],
+        moves: pMoves.length > 0 ? pMoves : ['tackle'],
       });
     }
 
@@ -258,17 +258,17 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // El NPC siempre tiene disponibles: eléctrico, agua, fuego y contacto.
       // Si el jugador tiene focuspunch, forzamos a que el NPC no ataque para no romper la concentración.
       const eMoves: string[] = hasFocusPunch
-        ? ['Soft-Boiled', 'Sunny Day', 'Rain Dance', 'Sandstorm']
+        ? ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
         : [...ENEMY_TRIGGER_MOVES];
 
       enemyTeam.push({
         name:    `E-Poke${e + 1}`,
-        species: 'Blissey',
+        species: 'blissey',
         level:   100,
         gender:  '',
         item:    '',
-        ability: 'Natural Cure',
-        nature:  'Serious',
+        ability: 'naturalcure',
+        nature:  'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
         moves: eMoves,

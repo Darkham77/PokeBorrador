@@ -79,7 +79,7 @@ describe('Breeding Engine', () => {
     it('should inherit forced IV from Power Item', () => {
       const pA = { id: 'pA', ivs: { hp: 31, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
       const pB = { id: 'pB', ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
-      const res = calculateInheritance(pA, pB, 'power_weight', '')
+      const res = calculateInheritance(pA, pB, 'powerweight', '')
       expect(res.hp).toBe(31)
     })
 

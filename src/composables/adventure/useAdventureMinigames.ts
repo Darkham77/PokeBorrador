@@ -45,7 +45,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
       config.travelLog.value.push(`🦴 ¡Excavación exitosa! Has recuperado el fósil completo: +1 ${name} obtenido en tu mochila de pruebas.`)
       config.triggerExtraLoot(chosen, 1)
     } else {
-      const fishLoot = ['pearl', 'big_pearl', 'water_stone']
+      const fishLoot = ['pearl', 'big_pearl', 'waterstone']
       const chosen = fishLoot[Math.floor(Math.random() * fishLoot.length)]!
       config.inventoryStore.addItem(chosen, 1)
       config.injectedItems.value.add(chosen)

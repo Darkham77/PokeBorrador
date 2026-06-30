@@ -273,7 +273,7 @@ export function useBattleCombatantAnims(
       const tl = gsap.timeline()
       
       const moveIdLookup = move.id || ''
-      const cleanMoveId = moveIdLookup.toLowerCase().replace(/[^a-z0-9]/g, '')
+      const cleanMoveId = moveIdLookup
       if (VOICE_MOVE_IDS.has(cleanMoveId) && props.pokemon) {
         tl.add(() => {
           gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name })

@@ -9,7 +9,7 @@ QA / Automation Engineers.
 ## Local Contracts
 
 - Playwright E2E tests run in local browser instances.
-- Speed up animations using `gsap.globalTimeline.timeScale(1000)` under E2E testing mode.
+- Speed up animations using `gsap.globalTimeline.timeScale(100)` under E2E testing mode.
 - Mock native Web APIs (like `Notification` permission) and local flags (like `pwa_permissions_accepted` in `localStorage`) in order to bypass popups and overlays that block UI synchronization.
 
 ## Work Guidance

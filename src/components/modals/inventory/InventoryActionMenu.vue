@@ -34,7 +34,7 @@ const isItemHeld = computed(() => {
   if (!props.item) return false
   const dbItem = getItemById(props.item.id)
   if (!dbItem) return false
-  return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
+  return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))
 })
 
 const handleSelect = (actionType: 'use' | 'sell' | 'release') => {

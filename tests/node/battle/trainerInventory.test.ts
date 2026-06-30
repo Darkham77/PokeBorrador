@@ -75,13 +75,13 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
       
       // Should not have unlock-restricted items like revives
       assert.strictEqual(inventory['revive'], undefined);
-      assert.strictEqual(inventory['revive_max'], undefined);
+      assert.strictEqual(inventory['revivemax'], undefined);
     });
 
     it('generates a richer inventory for a hard-mode Gym Leader', () => {
       const { inventory, remainingMoney } = generateNPCInventory(60, 'hard', true, false);
       
-      const recoveryItems = ['potion', 'super_potion', 'hyper_potion', 'max_potion', 'full_restore', 'antidote', 'burn_heal', 'paralyze_heal', 'awakening', 'ice_heal', 'full_heal', 'revive', 'revive_max'];
+      const recoveryItems = ['potion', 'superpotion', 'hyperpotion', 'maxpotion', 'fullrestore', 'antidote', 'burnheal', 'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'revive', 'revivemax'];
       const totalRecoveryCount = Object.keys(inventory).filter(k => recoveryItems.includes(k)).reduce((a, b) => a + inventory[b]!, 0);
 
       assert.ok(totalRecoveryCount <= 8, 'Gym Leader on hard should have at most 8 recovery items');
@@ -94,14 +94,14 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
       const enemyInventory: Record<string, number> = {
         'potion': 3,
         'pokeball': 5,
-        'super_potion': 2,
+        'superpotion': 2,
         'ultra_ball': 1
       };
       
       const itemPrices: Record<string, number> = {
         'potion': 200,
         'pokeball': 200,
-        'super_potion': 600,
+        'superpotion': 600,
         'ultra_ball': 1000
       };
 

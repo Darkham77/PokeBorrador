@@ -19,25 +19,25 @@ import { Dex, toID } from '@pkmn/sim';
  * Probabilidades de items equipados en estado salvaje
  */
 const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
-  butterfree: { rare: 'silver_powder' },
-  beedrill: { rare: 'poison_barb' },
-  pikachu: { common: 'berry_bronze', rare: 'light_ball' },
+  butterfree: { rare: 'silverpowder' },
+  beedrill: { rare: 'poisonbarb' },
+  pikachu: { common: 'berrybronze', rare: 'light_ball' },
   meowth: { rare: 'amulet_coin' },
-  abra: { rare: 'twisted_spoon' },
-  kadabra: { rare: 'twisted_spoon' },
-  machoke: { rare: 'focus_sash' },
+  abra: { rare: 'twistedspoon' },
+  kadabra: { rare: 'twistedspoon' },
+  machoke: { rare: 'focussash' },
   magneton: { rare: 'magnet' },
   farfetchd: { rare: 'stick' },
   shellder: { common: 'big_pearl', rare: 'pearl' },
   cloyster: { common: 'big_pearl', rare: 'pearl' },
-  haunter: { rare: 'spell_tag' },
-  gengar: { rare: 'spell_tag' },
-  cubone: { rare: 'thick_club' },
-  marowak: { rare: 'thick_club' },
+  haunter: { rare: 'spelltag' },
+  gengar: { rare: 'spelltag' },
+  cubone: { rare: 'thickclub' },
+  marowak: { rare: 'thickclub' },
   chansey: { rare: 'lucky_egg' },
   staryu: { common: 'star_piece', rare: 'stardust' },
   starmie: { common: 'star_piece', rare: 'stardust' },
-  ditto: { rare: 'metal_powder' },
+  ditto: { rare: 'metalpowder' },
   snorlax: { rare: 'leftovers' },
   dragonair: { rare: 'dragon_scale' },
   dragonite: { rare: 'dragon_scale' }
@@ -69,7 +69,7 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   if (!base) return;
   
   const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
-  const isDittoMetalPowder = p.heldItem === 'metal_powder' && p.id === 'ditto';
+  const isDittoMetalPowder = p.heldItem === 'metalpowder' && p.id === 'ditto';
 
   const calculated = calcStatsPure(
     p.level,

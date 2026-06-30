@@ -244,14 +244,14 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     }
 
     if (evt.type === 'obstacle_cut') {
-      config.inventoryStore.addItem('berry_bronze', 2)
-      config.injectedItems.value.add('berry_bronze')
-      config.inventoryStore.addItem('berry_silver', 1)
-      config.injectedItems.value.add('berry_silver')
+      config.inventoryStore.addItem('berrybronze', 2)
+      config.injectedItems.value.add('berrybronze')
+      config.inventoryStore.addItem('berrysilver', 1)
+      config.injectedItems.value.add('berrysilver')
       config.travelLog.value.push('✂️ ¡Cortas el arbusto con MO Corte y recolectas bayas del árbol!')
       config.travelLog.value.push('🫐 +2 Baya de Bronce, +1 Baya de Plata obtenidas en tu mochila de pruebas.')
       
-      config.triggerExtraLoot('berry_bronze', 1)
+      config.triggerExtraLoot('berrybronze', 1)
 
       if (isManualExploration) { activeEvent.value = null; return }
       config.resumeTravelAfterEvent()

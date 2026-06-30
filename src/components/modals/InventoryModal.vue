@@ -250,7 +250,7 @@ const handleActionSelect = (type: string) => {
 
     if (uiStore.inventoryTarget) {
       // Logic for pre-selected target
-      if (dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))) {
+      if (dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))) {
         const success = inventoryStore.equipItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
         if (success) {
           uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
@@ -276,7 +276,7 @@ const handleActionSelect = (type: string) => {
       return
     }
 
-    const isHeld = dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
+    const isHeld = dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))
     const validTargets = isHeld
       ? (gameStore.state.team || [])
       : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.id, p))

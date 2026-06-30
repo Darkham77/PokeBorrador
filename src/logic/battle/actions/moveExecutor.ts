@@ -47,8 +47,8 @@ export async function executeMoveAction(
   if (attacker.furyCutterCount && move.effect !== 'fury_cutter') attacker.furyCutterCount = 0
   attacker.destinyBond = false
   attacker.snatching = false
-  if (attacker.heldItem === 'choice_band') {
-    attacker.choiceMove = move.name
+  if (attacker.heldItem && (attacker.heldItem === 'choiceband' || attacker.heldItem === 'choicespecs' || attacker.heldItem === 'choicescarf')) {
+    attacker.choiceMove = move.id
   }
   attacker.lastMove = move
   store.attackerSide.value = side

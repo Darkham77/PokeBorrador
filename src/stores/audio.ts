@@ -5,6 +5,7 @@ import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
 import { POKEMON_CRIES_DATABASE } from '@/data/pokemon/pokemonFeetDatabase';
+import { toID } from '@pkmn/sim';
 
 /**
  * AudioStore
@@ -59,7 +60,7 @@ export const useAudioStore = defineStore('audio', () => {
     const dest = masterGain.value;
     if (!ctx || !dest) return;
 
-    const cleanName = pokemonName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanName = toID(pokemonName);
     const cryToFetch = POKEMON_CRIES_DATABASE[cleanName] || cleanName;
 
     let buffer = cryCache.get(cryToFetch);

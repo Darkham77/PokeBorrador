@@ -1,3 +1,5 @@
+import { toID } from '@pkmn/sim';
+
 /**
  * Weather Generation Provider
  * Maps visual/environmental climates to official Showdown weather IDs
@@ -64,7 +66,7 @@ export function mapVisualToOfficialWeather(visualWeather: string | null | undefi
  */
 export function getLocalizedWeatherName(weatherId: string | null | undefined, gen: number): string {
   if (!weatherId || weatherId === 'none') return 'Despejado';
-  const lower = weatherId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const lower = toID(weatherId);
 
   const localizedMap: Record<string, string> = {
     sunnyday: 'Sol',
@@ -85,7 +87,7 @@ export function getLocalizedWeatherName(weatherId: string | null | undefined, ge
  */
 export function getWeatherCombatDescription(visualWeather: string | null | undefined, gen: number): string {
   const officialWeather = mapVisualToOfficialWeather(visualWeather, gen);
-  const lower = officialWeather.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const lower = toID(officialWeather);
 
   if (lower === 'raindance') {
     return '▲ Potencia Agua (x1.5)\n▼ Debilita Fuego (x0.5)\n• Efecto: Trueno 100% precisión';
@@ -129,7 +131,7 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
  */
 export function mapOfficialToVisualWeather(officialWeather: string | null | undefined, gen: number): string {
   if (!officialWeather) return 'clear';
-  const lower = officialWeather.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const lower = toID(officialWeather);
 
   if (lower === 'raindance' || lower === 'rain') return 'rain';
   if (lower === 'sunnyday' || lower === 'sun') return 'sun';

@@ -30,18 +30,18 @@
     "status": "PASS"
   },
   {
-    "id": "air_balloon",
-    "name": "air_balloon",
+    "id": "airballoon",
+    "name": "airballoon",
     "status": "PASS"
   },
   {
-    "id": "apicot_berry",
-    "name": "apicot_berry",
+    "id": "apicotberry",
+    "name": "apicotberry",
     "status": "PASS"
   },
   {
-    "id": "aspear_berry",
-    "name": "aspear_berry",
+    "id": "aspearberry",
+    "name": "aspearberry",
     "status": "PASS"
   },
   {
@@ -50,13 +50,13 @@
     "status": "PASS"
   },
   {
-    "id": "auspicious_armor",
-    "name": "auspicious_armor",
+    "id": "auspiciousarmor",
+    "name": "auspiciousarmor",
     "status": "PASS"
   },
   {
-    "id": "babiri_berry",
-    "name": "babiri_berry",
+    "id": "babiriberry",
+    "name": "babiriberry",
     "status": "PASS"
   },
   {
@@ -80,8 +80,8 @@
     "status": "PASS"
   },
   {
-    "id": "binding_band",
-    "name": "binding_band",
+    "id": "bindingband",
+    "name": "bindingband",
     "status": "PASS"
   },
   {
@@ -95,8 +95,8 @@
     "status": "PASS"
   },
   {
-    "id": "black_sludge",
-    "name": "black_sludge",
+    "id": "blacksludge",
+    "name": "blacksludge",
     "status": "PASS"
   },
   {
@@ -105,8 +105,8 @@
     "status": "PASS"
   },
   {
-    "id": "booster_energy",
-    "name": "booster_energy",
+    "id": "boosterenergy",
+    "name": "boosterenergy",
     "status": "PASS"
   },
   {
@@ -120,43 +120,43 @@
     "status": "PASS"
   },
   {
-    "id": "cell_battery",
-    "name": "cell_battery",
+    "id": "cellbattery",
+    "name": "cellbattery",
     "status": "PASS"
   },
   {
-    "id": "charti_berry",
-    "name": "charti_berry",
+    "id": "chartiberry",
+    "name": "chartiberry",
     "status": "PASS"
   },
   {
-    "id": "cheri_berry",
-    "name": "cheri_berry",
+    "id": "cheriberry",
+    "name": "cheriberry",
     "status": "PASS"
   },
   {
-    "id": "chesto_berry",
-    "name": "chesto_berry",
+    "id": "chestoberry",
+    "name": "chestoberry",
     "status": "PASS"
   },
   {
-    "id": "chilan_berry",
-    "name": "chilan_berry",
+    "id": "chilanberry",
+    "name": "chilanberry",
     "status": "PASS"
   },
   {
-    "id": "chipped_pot",
-    "name": "chipped_pot",
+    "id": "chippedpot",
+    "name": "chippedpot",
     "status": "PASS"
   },
   {
-    "id": "chople_berry",
-    "name": "chople_berry",
+    "id": "chopleberry",
+    "name": "chopleberry",
     "status": "PASS"
   },
   {
-    "id": "clear_amulet",
-    "name": "clear_amulet",
+    "id": "clearamulet",
+    "name": "clearamulet",
     "status": "PASS"
   },
   {
@@ -165,48 +165,48 @@
     "status": "PASS"
   },
   {
-    "id": "coba_berry",
-    "name": "coba_berry",
+    "id": "cobaberry",
+    "name": "cobaberry",
     "status": "PASS"
   },
   {
-    "id": "colbur_berry",
-    "name": "colbur_berry",
+    "id": "colburberry",
+    "name": "colburberry",
     "status": "PASS"
   },
   {
-    "id": "cornerstone_mask",
-    "name": "cornerstone_mask",
+    "id": "cornerstonemask",
+    "name": "cornerstonemask",
     "status": "PASS"
   },
   {
-    "id": "covert_cloak",
-    "name": "covert_cloak",
+    "id": "covertcloak",
+    "name": "covertcloak",
     "status": "PASS"
   },
   {
-    "id": "cracked_pot",
-    "name": "cracked_pot",
+    "id": "crackedpot",
+    "name": "crackedpot",
     "status": "PASS"
   },
   {
-    "id": "custap_berry",
-    "name": "custap_berry",
+    "id": "custapberry",
+    "name": "custapberry",
     "status": "PASS"
   },
   {
-    "id": "damp_rock",
-    "name": "damp_rock",
+    "id": "damprock",
+    "name": "damprock",
     "status": "PASS"
   },
   {
-    "id": "draco_plate",
-    "name": "draco_plate",
+    "id": "dracoplate",
+    "name": "dracoplate",
     "status": "PASS"
   },
   {
-    "id": "dread_plate",
-    "name": "dread_plate",
+    "id": "dreadplate",
+    "name": "dreadplate",
     "status": "PASS"
   },
   {
@@ -215,23 +215,23 @@
     "status": "PASS"
   },
   {
-    "id": "dubious_disc",
-    "name": "dubious_disc",
+    "id": "dubiousdisc",
+    "name": "dubiousdisc",
     "status": "PASS"
   },
   {
-    "id": "earth_plate",
-    "name": "earth_plate",
+    "id": "earthplate",
+    "name": "earthplate",
     "status": "PASS"
   },
   {
-    "id": "eject_button",
-    "name": "eject_button",
+    "id": "ejectbutton",
+    "name": "ejectbutton",
     "status": "PASS"
   },
   {
-    "id": "eject_pack",
-    "name": "eject_pack",
+    "id": "ejectpack",
+    "name": "ejectpack",
     "status": "PASS"
   },
   {
@@ -240,13 +240,13 @@
     "status": "PASS"
   },
   {
-    "id": "electric_seed",
-    "name": "electric_seed",
+    "id": "electricseed",
+    "name": "electricseed",
     "status": "PASS"
   },
   {
-    "id": "enigma_berry",
-    "name": "enigma_berry",
+    "id": "enigmaberry",
+    "name": "enigmaberry",
     "status": "PASS"
   },
   {
@@ -255,8 +255,8 @@
     "status": "PASS"
   },
   {
-    "id": "fairy_feather",
-    "name": "fairy_feather",
+    "id": "fairyfeather",
+    "name": "fairyfeather",
     "status": "PASS"
   },
   {
@@ -265,28 +265,28 @@
     "status": "PASS"
   },
   {
-    "id": "figy_berry",
-    "name": "figy_berry",
+    "id": "figyberry",
+    "name": "figyberry",
     "status": "PASS"
   },
   {
-    "id": "fist_plate",
-    "name": "fist_plate",
+    "id": "fistplate",
+    "name": "fistplate",
     "status": "PASS"
   },
   {
-    "id": "flame_orb",
-    "name": "flame_orb",
+    "id": "flameorb",
+    "name": "flameorb",
     "status": "PASS"
   },
   {
-    "id": "flame_plate",
-    "name": "flame_plate",
+    "id": "flameplate",
+    "name": "flameplate",
     "status": "PASS"
   },
   {
-    "id": "float_stone",
-    "name": "float_stone",
+    "id": "floatstone",
+    "name": "floatstone",
     "status": "PASS"
   },
   {
@@ -295,8 +295,8 @@
     "status": "PASS"
   },
   {
-    "id": "focus_band",
-    "name": "focus_band",
+    "id": "focusband",
+    "name": "focusband",
     "status": "PASS"
   },
   {
@@ -305,18 +305,18 @@
     "status": "PASS"
   },
   {
-    "id": "galarica_cuff",
-    "name": "galarica_cuff",
+    "id": "galaricacuff",
+    "name": "galaricacuff",
     "status": "PASS"
   },
   {
-    "id": "galarica_wreath",
-    "name": "galarica_wreath",
+    "id": "galaricawreath",
+    "name": "galaricawreath",
     "status": "PASS"
   },
   {
-    "id": "ganlon_berry",
-    "name": "ganlon_berry",
+    "id": "ganlonberry",
+    "name": "ganlonberry",
     "status": "PASS"
   },
   {
@@ -325,18 +325,18 @@
     "status": "PASS"
   },
   {
-    "id": "grassy_seed",
-    "name": "grassy_seed",
+    "id": "grassyseed",
+    "name": "grassyseed",
     "status": "PASS"
   },
   {
-    "id": "grepa_berry",
-    "name": "grepa_berry",
+    "id": "grepaberry",
+    "name": "grepaberry",
     "status": "PASS"
   },
   {
-    "id": "grip_claw",
-    "name": "grip_claw",
+    "id": "gripclaw",
+    "name": "gripclaw",
     "status": "PASS"
   },
   {
@@ -350,13 +350,13 @@
     "status": "PASS"
   },
   {
-    "id": "haban_berry",
-    "name": "haban_berry",
+    "id": "habanberry",
+    "name": "habanberry",
     "status": "PASS"
   },
   {
-    "id": "hard_stone",
-    "name": "hard_stone",
+    "id": "hardstone",
+    "name": "hardstone",
     "status": "PASS"
   },
   {
@@ -365,13 +365,13 @@
     "status": "PASS"
   },
   {
-    "id": "hearthflame_mask",
-    "name": "hearthflame_mask",
+    "id": "hearthflamemask",
+    "name": "hearthflamemask",
     "status": "PASS"
   },
   {
-    "id": "heat_rock",
-    "name": "heat_rock",
+    "id": "heatrock",
+    "name": "heatrock",
     "status": "PASS"
   },
   {
@@ -380,33 +380,33 @@
     "status": "PASS"
   },
   {
-    "id": "heavy_duty_boots",
-    "name": "heavy_duty_boots",
+    "id": "heavydutyboots",
+    "name": "heavydutyboots",
     "status": "PASS"
   },
   {
-    "id": "hondew_berry",
-    "name": "hondew_berry",
+    "id": "hondewberry",
+    "name": "hondewberry",
     "status": "PASS"
   },
   {
-    "id": "iapapa_berry",
-    "name": "iapapa_berry",
+    "id": "iapapaberry",
+    "name": "iapapaberry",
     "status": "PASS"
   },
   {
-    "id": "icicle_plate",
-    "name": "icicle_plate",
+    "id": "icicleplate",
+    "name": "icicleplate",
     "status": "PASS"
   },
   {
-    "id": "icy_rock",
-    "name": "icy_rock",
+    "id": "icyrock",
+    "name": "icyrock",
     "status": "PASS"
   },
   {
-    "id": "insect_plate",
-    "name": "insect_plate",
+    "id": "insectplate",
+    "name": "insectplate",
     "status": "PASS"
   },
   {
@@ -415,33 +415,33 @@
     "status": "PASS"
   },
   {
-    "id": "iron_plate",
-    "name": "iron_plate",
+    "id": "ironplate",
+    "name": "ironplate",
     "status": "PASS"
   },
   {
-    "id": "jaboca_berry",
-    "name": "jaboca_berry",
+    "id": "jabocaberry",
+    "name": "jabocaberry",
     "status": "PASS"
   },
   {
-    "id": "kasib_berry",
-    "name": "kasib_berry",
+    "id": "kasibberry",
+    "name": "kasibberry",
     "status": "PASS"
   },
   {
-    "id": "kebia_berry",
-    "name": "kebia_berry",
+    "id": "kebiaberry",
+    "name": "kebiaberry",
     "status": "PASS"
   },
   {
-    "id": "kee_berry",
-    "name": "kee_berry",
+    "id": "keeberry",
+    "name": "keeberry",
     "status": "PASS"
   },
   {
-    "id": "kelpsy_berry",
-    "name": "kelpsy_berry",
+    "id": "kelpsyberry",
+    "name": "kelpsyberry",
     "status": "PASS"
   },
   {
@@ -455,13 +455,13 @@
     "status": "PASS"
   },
   {
-    "id": "lansat_berry",
-    "name": "lansat_berry",
+    "id": "lansatberry",
+    "name": "lansatberry",
     "status": "PASS"
   },
   {
-    "id": "leppa_berry",
-    "name": "leppa_berry",
+    "id": "leppaberry",
+    "name": "leppaberry",
     "status": "PASS"
   },
   {
@@ -470,13 +470,13 @@
     "status": "PASS"
   },
   {
-    "id": "light_clay",
-    "name": "light_clay",
+    "id": "lightclay",
+    "name": "lightclay",
     "status": "PASS"
   },
   {
-    "id": "loaded_dice",
-    "name": "loaded_dice",
+    "id": "loadeddice",
+    "name": "loadeddice",
     "status": "PASS"
   },
   {
@@ -490,13 +490,13 @@
     "status": "PASS"
   },
   {
-    "id": "lum_berry",
-    "name": "lum_berry",
+    "id": "lumberry",
+    "name": "lumberry",
     "status": "PASS"
   },
   {
-    "id": "luminous_moss",
-    "name": "luminous_moss",
+    "id": "luminousmoss",
+    "name": "luminousmoss",
     "status": "PASS"
   },
   {
@@ -520,28 +520,28 @@
     "status": "PASS"
   },
   {
-    "id": "mago_berry",
-    "name": "mago_berry",
+    "id": "magoberry",
+    "name": "magoberry",
     "status": "PASS"
   },
   {
-    "id": "malicious_armor",
-    "name": "malicious_armor",
+    "id": "maliciousarmor",
+    "name": "maliciousarmor",
     "status": "PASS"
   },
   {
-    "id": "maranga_berry",
-    "name": "maranga_berry",
+    "id": "marangaberry",
+    "name": "marangaberry",
     "status": "PASS"
   },
   {
-    "id": "masterpiece_teacup",
-    "name": "masterpiece_teacup",
+    "id": "masterpieceteacup",
+    "name": "masterpieceteacup",
     "status": "PASS"
   },
   {
-    "id": "meadow_plate",
-    "name": "meadow_plate",
+    "id": "meadowplate",
+    "name": "meadowplate",
     "status": "PASS"
   },
   {
@@ -555,8 +555,8 @@
     "status": "PASS"
   },
   {
-    "id": "metal_coat",
-    "name": "metal_coat",
+    "id": "metalcoat",
+    "name": "metalcoat",
     "status": "PASS"
   },
   {
@@ -565,23 +565,23 @@
     "status": "PASS"
   },
   {
-    "id": "micle_berry",
-    "name": "micle_berry",
+    "id": "micleberry",
+    "name": "micleberry",
     "status": "PASS"
   },
   {
-    "id": "mind_plate",
-    "name": "mind_plate",
+    "id": "mindplate",
+    "name": "mindplate",
     "status": "PASS"
   },
   {
-    "id": "mirror_herb",
-    "name": "mirror_herb",
+    "id": "mirrorherb",
+    "name": "mirrorherb",
     "status": "PASS"
   },
   {
-    "id": "misty_seed",
-    "name": "misty_seed",
+    "id": "mistyseed",
+    "name": "mistyseed",
     "status": "PASS"
   },
   {
@@ -600,58 +600,58 @@
     "status": "PASS"
   },
   {
-    "id": "normal_gem",
-    "name": "normal_gem",
+    "id": "normalgem",
+    "name": "normalgem",
     "status": "PASS"
   },
   {
-    "id": "occa_berry",
-    "name": "occa_berry",
+    "id": "occaberry",
+    "name": "occaberry",
     "status": "PASS"
   },
   {
-    "id": "oran_berry",
-    "name": "oran_berry",
+    "id": "oranberry",
+    "name": "oranberry",
     "status": "PASS"
   },
   {
-    "id": "passho_berry",
-    "name": "passho_berry",
+    "id": "passhoberry",
+    "name": "passhoberry",
     "status": "PASS"
   },
   {
-    "id": "payapa_berry",
-    "name": "payapa_berry",
+    "id": "payapaberry",
+    "name": "payapaberry",
     "status": "PASS"
   },
   {
-    "id": "pecha_berry",
-    "name": "pecha_berry",
+    "id": "pechaberry",
+    "name": "pechaberry",
     "status": "PASS"
   },
   {
-    "id": "persim_berry",
-    "name": "persim_berry",
+    "id": "persimberry",
+    "name": "persimberry",
     "status": "PASS"
   },
   {
-    "id": "petaya_berry",
-    "name": "petaya_berry",
+    "id": "petayaberry",
+    "name": "petayaberry",
     "status": "PASS"
   },
   {
-    "id": "pixie_plate",
-    "name": "pixie_plate",
+    "id": "pixieplate",
+    "name": "pixieplate",
     "status": "PASS"
   },
   {
-    "id": "pomeg_berry",
-    "name": "pomeg_berry",
+    "id": "pomegberry",
+    "name": "pomegberry",
     "status": "PASS"
   },
   {
-    "id": "power_herb",
-    "name": "power_herb",
+    "id": "powerherb",
+    "name": "powerherb",
     "status": "PASS"
   },
   {
@@ -665,13 +665,13 @@
     "status": "PASS"
   },
   {
-    "id": "prism_scale",
-    "name": "prism_scale",
+    "id": "prismscale",
+    "name": "prismscale",
     "status": "PASS"
   },
   {
-    "id": "protective_pads",
-    "name": "protective_pads",
+    "id": "protectivepads",
+    "name": "protectivepads",
     "status": "PASS"
   },
   {
@@ -680,18 +680,18 @@
     "status": "PASS"
   },
   {
-    "id": "psychic_seed",
-    "name": "psychic_seed",
+    "id": "psychicseed",
+    "name": "psychicseed",
     "status": "PASS"
   },
   {
-    "id": "punching_glove",
-    "name": "punching_glove",
+    "id": "punchingglove",
+    "name": "punchingglove",
     "status": "PASS"
   },
   {
-    "id": "qualot_berry",
-    "name": "qualot_berry",
+    "id": "qualotberry",
+    "name": "qualotberry",
     "status": "PASS"
   },
   {
@@ -705,28 +705,28 @@
     "status": "PASS"
   },
   {
-    "id": "rawst_berry",
-    "name": "rawst_berry",
+    "id": "rawstberry",
+    "name": "rawstberry",
     "status": "PASS"
   },
   {
-    "id": "razor_claw",
-    "name": "razor_claw",
+    "id": "razorclaw",
+    "name": "razorclaw",
     "status": "PASS"
   },
   {
-    "id": "razor_fang",
-    "name": "razor_fang",
+    "id": "razorfang",
+    "name": "razorfang",
     "status": "PASS"
   },
   {
-    "id": "reaper_cloth",
-    "name": "reaper_cloth",
+    "id": "reapercloth",
+    "name": "reapercloth",
     "status": "PASS"
   },
   {
-    "id": "red_card",
-    "name": "red_card",
+    "id": "redcard",
+    "name": "redcard",
     "status": "PASS"
   },
   {
@@ -740,13 +740,13 @@
     "status": "PASS"
   },
   {
-    "id": "rindo_berry",
-    "name": "rindo_berry",
+    "id": "rindoberry",
+    "name": "rindoberry",
     "status": "PASS"
   },
   {
-    "id": "ring_target",
-    "name": "ring_target",
+    "id": "ringtarget",
+    "name": "ringtarget",
     "status": "PASS"
   },
   {
@@ -755,18 +755,18 @@
     "status": "PASS"
   },
   {
-    "id": "room_service",
-    "name": "room_service",
+    "id": "roomservice",
+    "name": "roomservice",
     "status": "PASS"
   },
   {
-    "id": "roseli_berry",
-    "name": "roseli_berry",
+    "id": "roseliberry",
+    "name": "roseliberry",
     "status": "PASS"
   },
   {
-    "id": "rowap_berry",
-    "name": "rowap_berry",
+    "id": "rowapberry",
+    "name": "rowapberry",
     "status": "PASS"
   },
   {
@@ -785,8 +785,8 @@
     "status": "PASS"
   },
   {
-    "id": "safety_goggles",
-    "name": "safety_goggles",
+    "id": "safetygoggles",
+    "name": "safetygoggles",
     "status": "PASS"
   },
   {
@@ -795,13 +795,13 @@
     "status": "PASS"
   },
   {
-    "id": "shed_shell",
-    "name": "shed_shell",
+    "id": "shedshell",
+    "name": "shedshell",
     "status": "PASS"
   },
   {
-    "id": "shuca_berry",
-    "name": "shuca_berry",
+    "id": "shucaberry",
+    "name": "shucaberry",
     "status": "PASS"
   },
   {
@@ -810,18 +810,18 @@
     "status": "PASS"
   },
   {
-    "id": "sitrus_berry",
-    "name": "sitrus_berry",
+    "id": "sitrusberry",
+    "name": "sitrusberry",
     "status": "PASS"
   },
   {
-    "id": "sky_plate",
-    "name": "sky_plate",
+    "id": "skyplate",
+    "name": "skyplate",
     "status": "PASS"
   },
   {
-    "id": "smooth_rock",
-    "name": "smooth_rock",
+    "id": "smoothrock",
+    "name": "smoothrock",
     "status": "PASS"
   },
   {
@@ -835,18 +835,18 @@
     "status": "PASS"
   },
   {
-    "id": "soul_dew",
-    "name": "soul_dew",
+    "id": "souldew",
+    "name": "souldew",
     "status": "PASS"
   },
   {
-    "id": "splash_plate",
-    "name": "splash_plate",
+    "id": "splashplate",
+    "name": "splashplate",
     "status": "PASS"
   },
   {
-    "id": "spooky_plate",
-    "name": "spooky_plate",
+    "id": "spookyplate",
+    "name": "spookyplate",
     "status": "PASS"
   },
   {
@@ -855,8 +855,8 @@
     "status": "PASS"
   },
   {
-    "id": "starf_berry",
-    "name": "starf_berry",
+    "id": "starfberry",
+    "name": "starfberry",
     "status": "PASS"
   },
   {
@@ -865,13 +865,13 @@
     "status": "PASS"
   },
   {
-    "id": "sticky_barb",
-    "name": "sticky_barb",
+    "id": "stickybarb",
+    "name": "stickybarb",
     "status": "PASS"
   },
   {
-    "id": "stone_plate",
-    "name": "stone_plate",
+    "id": "stoneplate",
+    "name": "stoneplate",
     "status": "PASS"
   },
   {
@@ -880,53 +880,53 @@
     "status": "PASS"
   },
   {
-    "id": "sweet_apple",
-    "name": "sweet_apple",
+    "id": "sweetapple",
+    "name": "sweetapple",
     "status": "PASS"
   },
   {
-    "id": "syrupy_apple",
-    "name": "syrupy_apple",
+    "id": "syrupyapple",
+    "name": "syrupyapple",
     "status": "PASS"
   },
   {
-    "id": "tamato_berry",
-    "name": "tamato_berry",
+    "id": "tamatoberry",
+    "name": "tamatoberry",
     "status": "PASS"
   },
   {
-    "id": "tanga_berry",
-    "name": "tanga_berry",
+    "id": "tangaberry",
+    "name": "tangaberry",
     "status": "PASS"
   },
   {
-    "id": "tart_apple",
-    "name": "tart_apple",
+    "id": "tartapple",
+    "name": "tartapple",
     "status": "PASS"
   },
   {
-    "id": "terrain_extender",
-    "name": "terrain_extender",
+    "id": "terrainextender",
+    "name": "terrainextender",
     "status": "PASS"
   },
   {
-    "id": "throat_spray",
-    "name": "throat_spray",
+    "id": "throatspray",
+    "name": "throatspray",
     "status": "PASS"
   },
   {
-    "id": "toxic_orb",
-    "name": "toxic_orb",
+    "id": "toxicorb",
+    "name": "toxicorb",
     "status": "PASS"
   },
   {
-    "id": "toxic_plate",
-    "name": "toxic_plate",
+    "id": "toxicplate",
+    "name": "toxicplate",
     "status": "PASS"
   },
   {
-    "id": "unremarkable_teacup",
-    "name": "unremarkable_teacup",
+    "id": "unremarkableteacup",
+    "name": "unremarkableteacup",
     "status": "PASS"
   },
   {
@@ -935,13 +935,13 @@
     "status": "PASS"
   },
   {
-    "id": "utility_umbrella",
-    "name": "utility_umbrella",
+    "id": "utilityumbrella",
+    "name": "utilityumbrella",
     "status": "PASS"
   },
   {
-    "id": "wacan_berry",
-    "name": "wacan_berry",
+    "id": "wacanberry",
+    "name": "wacanberry",
     "status": "PASS"
   },
   {
@@ -950,8 +950,8 @@
     "status": "PASS"
   },
   {
-    "id": "wellspring_mask",
-    "name": "wellspring_mask",
+    "id": "wellspringmask",
+    "name": "wellspringmask",
     "status": "PASS"
   },
   {
@@ -965,8 +965,8 @@
     "status": "PASS"
   },
   {
-    "id": "wiki_berry",
-    "name": "wiki_berry",
+    "id": "wikiberry",
+    "name": "wikiberry",
     "status": "PASS"
   },
   {
@@ -975,13 +975,13 @@
     "status": "PASS"
   },
   {
-    "id": "yache_berry",
-    "name": "yache_berry",
+    "id": "yacheberry",
+    "name": "yacheberry",
     "status": "PASS"
   },
   {
-    "id": "zap_plate",
-    "name": "zap_plate",
+    "id": "zapplate",
+    "name": "zapplate",
     "status": "PASS"
   },
   {
@@ -1030,23 +1030,23 @@
     "status": "PASS"
   },
   {
-    "id": "shell_bell",
-    "name": "shell_bell",
+    "id": "shellbell",
+    "name": "shellbell",
     "status": "PASS"
   },
   {
-    "id": "choice_band",
-    "name": "choice_band",
+    "id": "choiceband",
+    "name": "choiceband",
     "status": "PASS"
   },
   {
-    "id": "focus_sash",
-    "name": "focus_sash",
+    "id": "focussash",
+    "name": "focussash",
     "status": "PASS"
   },
   {
-    "id": "scope_lens",
-    "name": "scope_lens",
+    "id": "scopelens",
+    "name": "scopelens",
     "status": "PASS"
   },
   {
@@ -1060,13 +1060,13 @@
     "status": "PASS"
   },
   {
-    "id": "twisted_spoon",
-    "name": "twisted_spoon",
+    "id": "twistedspoon",
+    "name": "twistedspoon",
     "status": "PASS"
   },
   {
-    "id": "spell_tag",
-    "name": "spell_tag",
+    "id": "spelltag",
+    "name": "spelltag",
     "status": "PASS"
   },
   {
@@ -1075,13 +1075,13 @@
     "status": "PASS"
   },
   {
-    "id": "choice_scarf",
-    "name": "choice_scarf",
+    "id": "choicescarf",
+    "name": "choicescarf",
     "status": "PASS"
   },
   {
-    "id": "choice_specs",
-    "name": "choice_specs",
+    "id": "choicespecs",
+    "name": "choicespecs",
     "status": "PASS"
   },
   {
@@ -1090,8 +1090,8 @@
     "status": "PASS"
   },
   {
-    "id": "dragon_fang",
-    "name": "dragon_fang",
+    "id": "dragonfang",
+    "name": "dragonfang",
     "status": "PASS"
   },
   {
@@ -1100,8 +1100,8 @@
     "status": "PASS"
   },
   {
-    "id": "life_orb",
-    "name": "life_orb",
+    "id": "lifeorb",
+    "name": "lifeorb",
     "status": "PASS"
   },
   {
@@ -1110,13 +1110,13 @@
     "status": "PASS"
   },
   {
-    "id": "miracle_seed",
-    "name": "miracle_seed",
+    "id": "miracleseed",
+    "name": "miracleseed",
     "status": "PASS"
   },
   {
-    "id": "mystic_water",
-    "name": "mystic_water",
+    "id": "mysticwater",
+    "name": "mysticwater",
     "status": "PASS"
   },
   {
@@ -1125,8 +1125,8 @@
     "status": "PASS"
   },
   {
-    "id": "poison_barb",
-    "name": "poison_barb",
+    "id": "poisonbarb",
+    "name": "poisonbarb",
     "status": "PASS"
   },
   {
@@ -1135,8 +1135,8 @@
     "status": "PASS"
   },
   {
-    "id": "silver_powder",
-    "name": "silver_powder",
+    "id": "silverpowder",
+    "name": "silverpowder",
     "status": "PASS"
   }
 ]

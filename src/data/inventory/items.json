@@ -102,7 +102,7 @@
       "desc": "Equipable. Holder's Ability cannot be changed, suppressed, or ignored by any effect."
     },
     {
-      "id": "absorb_bulb",
+      "id": "absorbbulb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/life_orb",
@@ -174,7 +174,7 @@
       "desc": "Equipable. Raises holder's Speed by 1 stage if it gets affected by Intimidate. Single use."
     },
     {
-      "id": "aguav_berry",
+      "id": "aguavberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -192,7 +192,7 @@
       "desc": "Restaura PS pero puede confundir si no le gusta el sabor."
     },
     {
-      "id": "air_balloon",
+      "id": "airballoon",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -210,7 +210,7 @@
       "desc": "Equipable. El portador flota en el aire, haciéndose inmune a Tierra hasta que reciba un golpe."
     },
     {
-      "id": "apicot_berry",
+      "id": "apicotberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -228,7 +228,7 @@
       "desc": "Sube la Defensa Especial en combate cuando los PS son bajos."
     },
     {
-      "id": "aspear_berry",
+      "id": "aspearberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -264,7 +264,7 @@
       "desc": "Equipable. Aumenta la Def. Especial un 50%, pero impide usar movimientos de estado."
     },
     {
-      "id": "auspicious_armor",
+      "id": "auspiciousarmor",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -282,7 +282,7 @@
       "desc": "Evoluciona a Charcadet en Armarouge."
     },
     {
-      "id": "babiri_berry",
+      "id": "babiriberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -371,7 +371,7 @@
       "desc": "Equipable. Holder gains 1.3x HP from draining/Aqua Ring/Ingrain/Leech Seed/Strength Sap."
     },
     {
-      "id": "binding_band",
+      "id": "bindingband",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_band",
@@ -425,7 +425,7 @@
       "desc": "Equipable. Holder's Dark-type attacks have 1.2x power."
     },
     {
-      "id": "black_sludge",
+      "id": "blacksludge",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -461,7 +461,7 @@
       "desc": "Equipable. If the holder misses due to accuracy, its Speed is raised by 2 stages. Single use."
     },
     {
-      "id": "booster_energy",
+      "id": "boosterenergy",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -515,7 +515,7 @@
       "desc": "Equipable. Reduce la precisión de los movimientos dirigidos al portador un 10%."
     },
     {
-      "id": "cell_battery",
+      "id": "cellbattery",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -533,7 +533,7 @@
       "desc": "Equipable. Sube el Ataque al recibir un ataque de tipo Eléctrico."
     },
     {
-      "id": "charti_berry",
+      "id": "chartiberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -551,7 +551,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Rock."
     },
     {
-      "id": "cheri_berry",
+      "id": "cheriberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -586,7 +586,7 @@
       "desc": "Una Pokéball muy rara y elegante para ocasiones especiales."
     },
     {
-      "id": "chesto_berry",
+      "id": "chestoberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -604,7 +604,7 @@
       "desc": "Despierta al Pokémon del sueño en combate de forma automática."
     },
     {
-      "id": "chilan_berry",
+      "id": "chilanberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -622,7 +622,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque de tipo Normal."
     },
     {
-      "id": "chipped_pot",
+      "id": "chippedpot",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -640,7 +640,7 @@
       "desc": "Evoluciona a Sinistea genuino en Polteageist genuino."
     },
     {
-      "id": "chople_berry",
+      "id": "chopleberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -658,7 +658,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Lucha."
     },
     {
-      "id": "clear_amulet",
+      "id": "clearamulet",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -694,7 +694,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "coba_berry",
+      "id": "cobaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -712,7 +712,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Volador."
     },
     {
-      "id": "colbur_berry",
+      "id": "colburberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -730,7 +730,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Siniestro."
     },
     {
-      "id": "cornerstone_mask",
+      "id": "cornerstonemask",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -748,7 +748,7 @@
       "desc": "Equipable. Ogerpon-Cornerstone: 1.2x power attacks; Terastallize to gain Embody Aspect."
     },
     {
-      "id": "covert_cloak",
+      "id": "covertcloak",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/focus_sash",
@@ -766,7 +766,7 @@
       "desc": "Equipable. Protege al portador de los efectos secundarios de los ataques enemigos."
     },
     {
-      "id": "cracked_pot",
+      "id": "crackedpot",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -784,7 +784,7 @@
       "desc": "Evoluciona a Sinistea en Polteageist."
     },
     {
-      "id": "custap_berry",
+      "id": "custapberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -802,7 +802,7 @@
       "desc": "Permite atacar primero en el turno una vez cuando los PS son bajos."
     },
     {
-      "id": "damp_rock",
+      "id": "damprock",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -820,7 +820,7 @@
       "desc": "Equipable. Extiende la duración de la lluvia a 8 turnos."
     },
     {
-      "id": "draco_plate",
+      "id": "dracoplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -838,7 +838,7 @@
       "desc": "Equipable. Holder's Dragon-type attacks have 1.2x power. Judgment is Dragon type."
     },
     {
-      "id": "dread_plate",
+      "id": "dreadplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -873,7 +873,7 @@
       "desc": "Facilita la captura de Pokémon dormidos."
     },
     {
-      "id": "dubious_disc",
+      "id": "dubiousdisc",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -891,7 +891,7 @@
       "desc": "Evoluciona a Porygon2 en Porygon-Z al intercambiarlo."
     },
     {
-      "id": "earth_plate",
+      "id": "earthplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -909,7 +909,7 @@
       "desc": "Equipable. Holder's Ground-type attacks have 1.2x power. Judgment is Ground type."
     },
     {
-      "id": "eject_button",
+      "id": "ejectbutton",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -927,7 +927,7 @@
       "desc": "Equipable. Cambia automáticamente al portador por otro Pokémon al recibir daño."
     },
     {
-      "id": "eject_pack",
+      "id": "ejectpack",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -963,7 +963,7 @@
       "desc": "Evoluciona a Electabuzz en Electivire al intercambiarlo."
     },
     {
-      "id": "electric_seed",
+      "id": "electricseed",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -981,7 +981,7 @@
       "desc": "Equipable. Sube la Defensa en Campo Eléctrico."
     },
     {
-      "id": "enigma_berry",
+      "id": "enigmaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1017,7 +1017,7 @@
       "desc": "Equipable. Aumenta un 20% el daño de los ataques súper eficaces."
     },
     {
-      "id": "fairy_feather",
+      "id": "fairyfeather",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1052,7 +1052,7 @@
       "desc": "Facilita la captura de Pokémon muy veloces o que huyen rápido."
     },
     {
-      "id": "figy_berry",
+      "id": "figyberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1070,7 +1070,7 @@
       "desc": "Restaura PS pero puede confundir si no le gusta el sabor."
     },
     {
-      "id": "fist_plate",
+      "id": "fistplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1088,7 +1088,7 @@
       "desc": "Equipable. Holder's Fighting-type attacks have 1.2x power. Judgment is Fighting type."
     },
     {
-      "id": "flame_orb",
+      "id": "flameorb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/life_orb",
@@ -1106,7 +1106,7 @@
       "desc": "Equipable. Quema al portador al final del primer turno."
     },
     {
-      "id": "flame_plate",
+      "id": "flameplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1124,7 +1124,7 @@
       "desc": "Equipable. Holder's Fire-type attacks have 1.2x power. Judgment is Fire type."
     },
     {
-      "id": "float_stone",
+      "id": "floatstone",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1160,7 +1160,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "focus_band",
+      "id": "focusband",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_band",
@@ -1195,7 +1195,7 @@
       "desc": "Hace que el Pokémon capturado sea muy amistoso al instante."
     },
     {
-      "id": "galarica_cuff",
+      "id": "galaricacuff",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1213,7 +1213,7 @@
       "desc": "Evoluciona a Slowpoke de Galar en Slowbro de Galar."
     },
     {
-      "id": "galarica_wreath",
+      "id": "galaricawreath",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1231,7 +1231,7 @@
       "desc": "Evoluciona a Slowpoke de Galar en Slowking de Galar."
     },
     {
-      "id": "ganlon_berry",
+      "id": "ganlonberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1267,7 +1267,7 @@
       "desc": "Equipable. Used for Hyper Training. All of a Pokemon's stats are calculated with an IV of 31."
     },
     {
-      "id": "grassy_seed",
+      "id": "grassyseed",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -1285,7 +1285,7 @@
       "desc": "Equipable. Sube la Defensa en Campo de Hierba."
     },
     {
-      "id": "grepa_berry",
+      "id": "grepaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1303,7 +1303,7 @@
       "desc": "Una baya. Reduce los EVs de Defensa Especial y aumenta la amistad."
     },
     {
-      "id": "grip_claw",
+      "id": "gripclaw",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1357,7 +1357,7 @@
       "desc": "Equipable. If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power."
     },
     {
-      "id": "haban_berry",
+      "id": "habanberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1375,7 +1375,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Dragón."
     },
     {
-      "id": "hard_stone",
+      "id": "hardstone",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1410,7 +1410,7 @@
       "desc": "Cura completamente los PS y estados del Pokémon capturado al instante."
     },
     {
-      "id": "hearthflame_mask",
+      "id": "hearthflamemask",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1428,7 +1428,7 @@
       "desc": "Equipable. Ogerpon-Hearthflame: 1.2x power attacks; Terastallize to gain Embody Aspect."
     },
     {
-      "id": "heat_rock",
+      "id": "heatrock",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1463,7 +1463,7 @@
       "desc": "Facilita la captura de Pokémon muy pesados."
     },
     {
-      "id": "heavy_duty_boots",
+      "id": "heavydutyboots",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_scarf",
@@ -1481,7 +1481,7 @@
       "desc": "Equipable. Protege al portador de las trampas del campo (Trampa Rocas, Red Viscosa, etc.)."
     },
     {
-      "id": "hondew_berry",
+      "id": "hondewberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1499,7 +1499,7 @@
       "desc": "Una baya. Reduce los EVs de Ataque Especial y aumenta la amistad."
     },
     {
-      "id": "iapapa_berry",
+      "id": "iapapaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1517,7 +1517,7 @@
       "desc": "Restaura PS pero puede confundir si no le gusta el sabor."
     },
     {
-      "id": "icicle_plate",
+      "id": "icicleplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1535,7 +1535,7 @@
       "desc": "Equipable. Holder's Ice-type attacks have 1.2x power. Judgment is Ice type."
     },
     {
-      "id": "icy_rock",
+      "id": "icyrock",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1553,7 +1553,7 @@
       "desc": "Equipable. Extiende la duración del granizo/nieve a 8 turnos."
     },
     {
-      "id": "insect_plate",
+      "id": "insectplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1589,7 +1589,7 @@
       "desc": "Equipable. Reduce la Velocidad un 50% y hace al portador vulnerable a Tierra."
     },
     {
-      "id": "iron_plate",
+      "id": "ironplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1607,7 +1607,7 @@
       "desc": "Equipable. Holder's Steel-type attacks have 1.2x power. Judgment is Steel type."
     },
     {
-      "id": "jaboca_berry",
+      "id": "jabocaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1625,7 +1625,7 @@
       "desc": "Daño por retroceso al atacante físico."
     },
     {
-      "id": "kasib_berry",
+      "id": "kasibberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1643,7 +1643,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Fantasma."
     },
     {
-      "id": "kebia_berry",
+      "id": "kebiaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1661,7 +1661,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Veneno."
     },
     {
-      "id": "kee_berry",
+      "id": "keeberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1679,7 +1679,7 @@
       "desc": "Sube la Defensa al recibir un golpe físico."
     },
     {
-      "id": "kelpsy_berry",
+      "id": "kelpsyberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1733,7 +1733,7 @@
       "desc": "Equipable. Holder moves last in its priority bracket."
     },
     {
-      "id": "lansat_berry",
+      "id": "lansatberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1751,7 +1751,7 @@
       "desc": "Sube mucho la probabilidad de golpe crítico cuando los PS son bajos."
     },
     {
-      "id": "leppa_berry",
+      "id": "leppaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1786,7 +1786,7 @@
       "desc": "Facilita la captura de Pokémon de nivel muy inferior al tuyo."
     },
     {
-      "id": "light_clay",
+      "id": "lightclay",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1804,7 +1804,7 @@
       "desc": "Equipable. Prolonga la duración de Reflejo y Pantalla de Luz a 8 turnos."
     },
     {
-      "id": "loaded_dice",
+      "id": "loadeddice",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1857,7 +1857,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "lum_berry",
+      "id": "lumberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/lum_berry",
@@ -1875,7 +1875,7 @@
       "desc": "Cura cualquier estado alterado o confusión de forma automática."
     },
     {
-      "id": "luminous_moss",
+      "id": "luminousmoss",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1964,7 +1964,7 @@
       "desc": "Evoluciona a Magmar en Magmortar al intercambiarlo."
     },
     {
-      "id": "mago_berry",
+      "id": "magoberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -1982,7 +1982,7 @@
       "desc": "Restaura PS pero puede confundir si no le gusta el sabor."
     },
     {
-      "id": "malicious_armor",
+      "id": "maliciousarmor",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2000,7 +2000,7 @@
       "desc": "Evoluciona a Charcadet en Ceruledge."
     },
     {
-      "id": "maranga_berry",
+      "id": "marangaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2018,7 +2018,7 @@
       "desc": "Sube la Defensa Especial al recibir un golpe especial."
     },
     {
-      "id": "masterpiece_teacup",
+      "id": "masterpieceteacup",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2036,7 +2036,7 @@
       "desc": "Evoluciona a Poltchageist genuino en Sinistcha genuino."
     },
     {
-      "id": "meadow_plate",
+      "id": "meadowplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2090,7 +2090,7 @@
       "desc": "Equipable. Evolves Duraludon into Archaludon when used."
     },
     {
-      "id": "metal_coat",
+      "id": "metalcoat",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2126,7 +2126,7 @@
       "desc": "Equipable. Potencia los movimientos usados consecutivamente."
     },
     {
-      "id": "micle_berry",
+      "id": "micleberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2144,7 +2144,7 @@
       "desc": "Aumenta la precisión del siguiente movimiento cuando los PS son bajos."
     },
     {
-      "id": "mind_plate",
+      "id": "mindplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2162,7 +2162,7 @@
       "desc": "Equipable. Holder's Psychic-type attacks have 1.2x power. Judgment is Psychic type."
     },
     {
-      "id": "mirror_herb",
+      "id": "mirrorherb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2180,7 +2180,7 @@
       "desc": "Equipable. Copia los aumentos de estadísticas del oponente."
     },
     {
-      "id": "misty_seed",
+      "id": "mistyseed",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -2251,7 +2251,7 @@
       "desc": "Equipable. Holder's Ice-type attacks have 1.2x power."
     },
     {
-      "id": "normal_gem",
+      "id": "normalgem",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/life_orb",
@@ -2269,7 +2269,7 @@
       "desc": "Equipable. Potencia un movimiento de tipo Normal en un 30% una sola vez."
     },
     {
-      "id": "occa_berry",
+      "id": "occaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2287,7 +2287,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Fuego."
     },
     {
-      "id": "oran_berry",
+      "id": "oranberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2305,7 +2305,7 @@
       "desc": "Restaura 10 PS si la salud baja del 50%."
     },
     {
-      "id": "oval_stone",
+      "id": "ovalstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/shiny_stone",
@@ -2341,7 +2341,7 @@
       "desc": "Una Pokéball especial que asegura la captura."
     },
     {
-      "id": "passho_berry",
+      "id": "passhoberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2359,7 +2359,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Agua."
     },
     {
-      "id": "payapa_berry",
+      "id": "payapaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2377,7 +2377,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Psíquico."
     },
     {
-      "id": "pecha_berry",
+      "id": "pechaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/pecha_berry_wild",
@@ -2395,7 +2395,7 @@
       "desc": "Cura el envenenamiento en combate de forma automática."
     },
     {
-      "id": "persim_berry",
+      "id": "persimberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2413,7 +2413,7 @@
       "desc": "Cura la confusión en combate de forma automática."
     },
     {
-      "id": "petaya_berry",
+      "id": "petayaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2431,7 +2431,7 @@
       "desc": "Sube el Ataque Especial en combate cuando los PS son bajos."
     },
     {
-      "id": "pixie_plate",
+      "id": "pixieplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2449,7 +2449,7 @@
       "desc": "Equipable. Holder's Fairy-type attacks have 1.2x power. Judgment is Fairy type."
     },
     {
-      "id": "pomeg_berry",
+      "id": "pomegberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2467,7 +2467,7 @@
       "desc": "Una baya muy dulce. Reduce los EVs de PS y aumenta la amistad."
     },
     {
-      "id": "power_herb",
+      "id": "powerherb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2520,7 +2520,7 @@
       "desc": "Equipable. Though this feather is beautiful, it's just a regular feather and has no effect."
     },
     {
-      "id": "prism_scale",
+      "id": "prismscale",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -2538,7 +2538,7 @@
       "desc": "Evoluciona a Feebas en Milotic al intercambiarlo."
     },
     {
-      "id": "protective_pads",
+      "id": "protectivepads",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2574,7 +2574,7 @@
       "desc": "Evoluciona a Rhydon en Rhyperior al intercambiarlo."
     },
     {
-      "id": "psychic_seed",
+      "id": "psychicseed",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -2592,7 +2592,7 @@
       "desc": "Equipable. Sube la Def. Especial en Campo Psíquico."
     },
     {
-      "id": "punching_glove",
+      "id": "punchingglove",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2610,7 +2610,7 @@
       "desc": "Equipable. Potencia los ataques de puño y evita contacto."
     },
     {
-      "id": "qualot_berry",
+      "id": "qualotberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2664,7 +2664,7 @@
       "desc": "Equipable. No competitive use other than when used with Fling."
     },
     {
-      "id": "rawst_berry",
+      "id": "rawstberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2682,7 +2682,7 @@
       "desc": "Cura las quemaduras en combate de forma automática."
     },
     {
-      "id": "razor_claw",
+      "id": "razorclaw",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2700,7 +2700,7 @@
       "desc": "Evoluciona a Sneasel de noche."
     },
     {
-      "id": "razor_fang",
+      "id": "razorfang",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2718,7 +2718,7 @@
       "desc": "Evoluciona a Gligar de noche."
     },
     {
-      "id": "reaper_cloth",
+      "id": "reapercloth",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2736,7 +2736,7 @@
       "desc": "Evoluciona a Dusclops en Dusknoir al intercambiarlo."
     },
     {
-      "id": "red_card",
+      "id": "redcard",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2789,7 +2789,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "rindo_berry",
+      "id": "rindoberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2807,7 +2807,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Planta."
     },
     {
-      "id": "ring_target",
+      "id": "ringtarget",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2843,7 +2843,7 @@
       "desc": "Equipable. Si el portador es golpeado por un ataque de contacto, el agresor pierde 1/6 de sus PS."
     },
     {
-      "id": "room_service",
+      "id": "roomservice",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2861,7 +2861,7 @@
       "desc": "Equipable. Reduce la Velocidad del portador en Espacio Raro."
     },
     {
-      "id": "roseli_berry",
+      "id": "roseliberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2879,7 +2879,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Hada."
     },
     {
-      "id": "rowap_berry",
+      "id": "rowapberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -2950,7 +2950,7 @@
       "desc": "Una Pokéball de color camuflaje, usada en zonas especiales."
     },
     {
-      "id": "safety_goggles",
+      "id": "safetygoggles",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -2986,7 +2986,7 @@
       "desc": "Equipable. Holder's Flying-type attacks have 1.2x power."
     },
     {
-      "id": "shed_shell",
+      "id": "shedshell",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3004,7 +3004,7 @@
       "desc": "Equipable. Permite al portador retirarse de la batalla sin importar bloqueos."
     },
     {
-      "id": "shuca_berry",
+      "id": "shucaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3040,7 +3040,7 @@
       "desc": "Equipable. Holder's Normal-type attacks have 1.2x power."
     },
     {
-      "id": "sitrus_berry",
+      "id": "sitrusberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/sitrus_berry",
@@ -3058,7 +3058,7 @@
       "desc": "Restaura el 25% de los PS si la salud baja del 50%."
     },
     {
-      "id": "sky_plate",
+      "id": "skyplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3076,7 +3076,7 @@
       "desc": "Equipable. Holder's Flying-type attacks have 1.2x power. Judgment is Flying type."
     },
     {
-      "id": "smooth_rock",
+      "id": "smoothrock",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3130,7 +3130,7 @@
       "desc": "Equipable. Holder's Ground-type attacks have 1.2x power."
     },
     {
-      "id": "soul_dew",
+      "id": "souldew",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3148,7 +3148,7 @@
       "desc": "Equipable. Potencia los ataques de Latios y Latias."
     },
     {
-      "id": "splash_plate",
+      "id": "splashplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3166,7 +3166,7 @@
       "desc": "Equipable. Holder's Water-type attacks have 1.2x power. Judgment is Water type."
     },
     {
-      "id": "spooky_plate",
+      "id": "spookyplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3201,7 +3201,7 @@
       "desc": "Una Pokéball especial decorada, usada en eventos."
     },
     {
-      "id": "starf_berry",
+      "id": "starfberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3237,7 +3237,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "sticky_barb",
+      "id": "stickybarb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3255,7 +3255,7 @@
       "desc": "Equipable. Daña al portador cada turno, y puede adherirse al rival al contacto."
     },
     {
-      "id": "stone_plate",
+      "id": "stoneplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3308,7 +3308,7 @@
       "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around."
     },
     {
-      "id": "sweet_apple",
+      "id": "sweetapple",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3326,7 +3326,7 @@
       "desc": "Evoluciona a Applin en Appletun."
     },
     {
-      "id": "syrupy_apple",
+      "id": "syrupyapple",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3344,7 +3344,7 @@
       "desc": "Evoluciona a Applin en Dipplin."
     },
     {
-      "id": "tamato_berry",
+      "id": "tamatoberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3362,7 +3362,7 @@
       "desc": "Una baya. Reduce los EVs de Velocidad y aumenta la amistad."
     },
     {
-      "id": "tanga_berry",
+      "id": "tangaberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3380,7 +3380,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Bicho."
     },
     {
-      "id": "tart_apple",
+      "id": "tartapple",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3398,7 +3398,7 @@
       "desc": "Evoluciona a Applin en Flapple."
     },
     {
-      "id": "terrain_extender",
+      "id": "terrainextender",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3416,7 +3416,7 @@
       "desc": "Equipable. Extiende la duración de los campos a 8 turnos."
     },
     {
-      "id": "throat_spray",
+      "id": "throatspray",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3434,7 +3434,7 @@
       "desc": "Equipable. Sube el At. Especial tras usar un movimiento de sonido."
     },
     {
-      "id": "toxic_orb",
+      "id": "toxicorb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/life_orb",
@@ -3452,7 +3452,7 @@
       "desc": "Equipable. Envenena gravemente al portador al final del primer turno."
     },
     {
-      "id": "toxic_plate",
+      "id": "toxicplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3470,7 +3470,7 @@
       "desc": "Equipable. Holder's Poison-type attacks have 1.2x power. Judgment is Poison type."
     },
     {
-      "id": "unremarkable_teacup",
+      "id": "unremarkableteacup",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3506,7 +3506,7 @@
       "desc": "Evoluciona a Porygon en Porygon2 al intercambiarlo."
     },
     {
-      "id": "utility_umbrella",
+      "id": "utilityumbrella",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3524,7 +3524,7 @@
       "desc": "Equipable. Protege al portador de los efectos del clima."
     },
     {
-      "id": "wacan_berry",
+      "id": "wacanberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3560,7 +3560,7 @@
       "desc": "Equipable. Aumenta mucho el Ataque y At. Especial al recibir un golpe súper eficaz."
     },
     {
-      "id": "wellspring_mask",
+      "id": "wellspringmask",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3614,7 +3614,7 @@
       "desc": "Equipable. The accuracy of attacks by the holder is 1.1x."
     },
     {
-      "id": "wiki_berry",
+      "id": "wikiberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3650,7 +3650,7 @@
       "desc": "Equipable. Holder's special attacks have 1.1x power."
     },
     {
-      "id": "yache_berry",
+      "id": "yacheberry",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3668,7 +3668,7 @@
       "desc": "Reduce a la mitad el daño recibido de un ataque súper eficaz de tipo Hielo."
     },
     {
-      "id": "zap_plate",
+      "id": "zapplate",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3722,7 +3722,7 @@
       "desc": "Equipable. If held by a Venomicon, its Poison- and Flying-type attacks have 1.2x power."
     },
     {
-      "id": "berry_bronze",
+      "id": "berrybronze",
       "craftingTier": 0,
       "cat": "breeding_held",
       "sprite": "crafting/tier0/oran_berry",
@@ -3739,7 +3739,7 @@
       "desc": "Acorta el tiempo de la guardería un 10%. Solo un uso por ciclo."
     },
     {
-      "id": "berry_silver",
+      "id": "berrysilver",
       "craftingTier": 0,
       "cat": "breeding_held",
       "sprite": "crafting/tier0/sitrus_berry",
@@ -3756,7 +3756,7 @@
       "desc": "Acorta el tiempo de la guardería un 30%. Solo un uso por ciclo."
     },
     {
-      "id": "berry_gold",
+      "id": "berrygold",
       "craftingTier": 0,
       "cat": "breeding_held",
       "sprite": "crafting/tier0/lum_berry",
@@ -3790,7 +3790,7 @@
       "desc": "Equipada en la guardería, asegura que la cría herede la naturaleza de este padre."
     },
     {
-      "id": "destiny_knot",
+      "id": "destinyknot",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/destiny_knot",
@@ -3807,7 +3807,7 @@
       "desc": "Equipado en la guardería, hace que la cría herede 5 IVs de los padres en lugar de 3."
     },
     {
-      "id": "vigor_restorer",
+      "id": "vigorrestorer",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/rare_candy",
@@ -3824,7 +3824,7 @@
       "desc": "Restaura el vigor de un Pokémon veterano para que pueda volver a criar. ¡Uso limitado!"
     },
     {
-      "id": "power_weight",
+      "id": "powerweight",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_weight",
@@ -3841,7 +3841,7 @@
       "desc": "Equipado en la guardería, fuerza la herencia del IV de HP de este padre."
     },
     {
-      "id": "power_bracer",
+      "id": "powerbracer",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_bracer",
@@ -3858,7 +3858,7 @@
       "desc": "Equipado en la guardería, fuerza la herencia del IV de Ataque de este padre."
     },
     {
-      "id": "power_belt",
+      "id": "powerbelt",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_belt",
@@ -3875,7 +3875,7 @@
       "desc": "Equipado en la guardería, fuerza la herencia del IV de Defensa de este padre."
     },
     {
-      "id": "power_lens",
+      "id": "powerlens",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_lens",
@@ -3892,7 +3892,7 @@
       "desc": "Equipado en la guardería, fuerza la herencia del IV de At. Especial de este padre."
     },
     {
-      "id": "power_band",
+      "id": "powerband",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_band",
@@ -3909,7 +3909,7 @@
       "desc": "Equipado en la guardería, fuerza la herencia del IV de Def. Especial de este padre."
     },
     {
-      "id": "power_anklet",
+      "id": "poweranklet",
       "craftingTier": 3,
       "cat": "breeding_held",
       "sprite": "crafting/tier3/power_anklet",
@@ -4062,7 +4062,7 @@
       "desc": "Restaura 20 HP a un Pokémon."
     },
     {
-      "id": "super_potion",
+      "id": "superpotion",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/super_potion",
@@ -4079,7 +4079,7 @@
       "desc": "Restaura 50 HP a un Pokémon."
     },
     {
-      "id": "hyper_potion",
+      "id": "hyperpotion",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/hyper_potion",
@@ -4096,7 +4096,7 @@
       "desc": "Restaura 200 HP a un Pokémon."
     },
     {
-      "id": "max_potion",
+      "id": "maxpotion",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/max_potion",
@@ -4113,7 +4113,7 @@
       "desc": "Restaura todo el HP de un Pokémon."
     },
     {
-      "id": "soda_pop",
+      "id": "sodapop",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/soda_pop",
@@ -4166,7 +4166,7 @@
       "desc": "Revive a un Pokémon debilitado con la mitad del HP."
     },
     {
-      "id": "revive_max",
+      "id": "revivemax",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/max_revive",
@@ -4200,7 +4200,7 @@
       "desc": "Cura el envenenamiento de un Pokémon."
     },
     {
-      "id": "burn_heal",
+      "id": "burnheal",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/burn_heal",
@@ -4217,7 +4217,7 @@
       "desc": "Cura la quemadura de un Pokémon."
     },
     {
-      "id": "paralyze_heal",
+      "id": "paralyzeheal",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/heal_paralyze",
@@ -4251,7 +4251,7 @@
       "desc": "Despierta a un Pokémon dormido."
     },
     {
-      "id": "ice_heal",
+      "id": "iceheal",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/ice_heal",
@@ -4268,7 +4268,7 @@
       "desc": "Cura el congelamiento de un Pokémon."
     },
     {
-      "id": "full_heal",
+      "id": "fullheal",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/full_heal",
@@ -4319,7 +4319,7 @@
       "desc": "Restaura 10 PP de todos los movimientos."
     },
     {
-      "id": "elixir_max",
+      "id": "elixirmax",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/max_elixir",
@@ -4336,7 +4336,7 @@
       "desc": "Restaura todos los PP de todos los movimientos."
     },
     {
-      "id": "fire_stone",
+      "id": "firestone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/fire_stone",
@@ -4355,7 +4355,7 @@
       "desc": "Hace evolucionar a Vulpix, Growlithe, Eevee y otros Pokémon de Fuego."
     },
     {
-      "id": "water_stone",
+      "id": "waterstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/water_stone",
@@ -4374,7 +4374,7 @@
       "desc": "Hace evolucionar a Poliwhirl, Shellder, Staryu y Eevee."
     },
     {
-      "id": "thunder_stone",
+      "id": "thunderstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/thunder_stone",
@@ -4393,7 +4393,7 @@
       "desc": "Hace evolucionar a Pikachu and Eevee."
     },
     {
-      "id": "leaf_stone",
+      "id": "leafstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/leaf_stone",
@@ -4412,7 +4412,7 @@
       "desc": "Hace evolucionar a Gloom, Weepinbell, Exeggcute y Eevee."
     },
     {
-      "id": "moon_stone",
+      "id": "moonstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/moon_stone",
@@ -4431,7 +4431,7 @@
       "desc": "Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff."
     },
     {
-      "id": "sun_stone",
+      "id": "sunstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/sun_stone",
@@ -4450,7 +4450,7 @@
       "desc": "Hace evolucionar a Gloom y Sunkern."
     },
     {
-      "id": "exp_share",
+      "id": "expshare",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/exp_share",
@@ -4462,7 +4462,7 @@
       "unlockLv": 5,
       "tier": "rare",
       "type": "held",
-      "heldEffect": "exp_share",
+      "heldEffect": "expshare",
       "showInNormalShop": false,
       "showInBCShop": true,
       "showInWarShop": false,
@@ -4488,7 +4488,7 @@
       "desc": "Equipable. El portador recupera 1/16 de su HP máx. cada turno."
     },
     {
-      "id": "shell_bell",
+      "id": "shellbell",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/shell_bell",
@@ -4500,14 +4500,14 @@
       "unlockLv": 10,
       "tier": "epic",
       "type": "held",
-      "heldEffect": "shell_bell",
+      "heldEffect": "shellbell",
       "showInNormalShop": false,
       "showInBCShop": true,
       "showInWarShop": false,
       "desc": "Equipable. El portador recupera HP igual a 1/8 del daño infligido."
     },
     {
-      "id": "choice_band",
+      "id": "choiceband",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_band",
@@ -4519,14 +4519,14 @@
       "unlockLv": 12,
       "tier": "legend",
       "type": "held",
-      "heldEffect": "choice_band",
+      "heldEffect": "choiceband",
       "showInNormalShop": false,
       "showInBCShop": true,
       "showInWarShop": false,
       "desc": "Equipable. Aumenta 50% el Ataque, pero solo permite un movimiento."
     },
     {
-      "id": "focus_sash",
+      "id": "focussash",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/focus_sash",
@@ -4538,14 +4538,14 @@
       "unlockLv": 15,
       "tier": "legend",
       "type": "held",
-      "heldEffect": "focus_sash",
+      "heldEffect": "focussash",
       "showInNormalShop": false,
       "showInBCShop": true,
       "showInWarShop": false,
       "desc": "Equipable. Sobrevive con 1 HP si el portador tiene HP completo al recibir un golpe KO."
     },
     {
-      "id": "scope_lens",
+      "id": "scopelens",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/scope_lens",
@@ -4557,7 +4557,7 @@
       "unlockLv": 8,
       "tier": "epic",
       "type": "held",
-      "heldEffect": "scope_lens",
+      "heldEffect": "scopelens",
       "showInNormalShop": false,
       "showInBCShop": true,
       "showInWarShop": false,
@@ -5660,7 +5660,7 @@
       "desc": "Equipado en Pikachu: Duplica su Ataque y At. Especial."
     },
     {
-      "id": "thick_club",
+      "id": "thickclub",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/thick_club",
@@ -5696,7 +5696,7 @@
       "desc": "Equipado en Farfetch'd: Aumenta mucho el ratio de críticos."
     },
     {
-      "id": "metal_powder",
+      "id": "metalpowder",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/metal_powder",
@@ -5714,7 +5714,7 @@
       "desc": "Equipado en Ditto: Aumenta su Defensa un 50%."
     },
     {
-      "id": "twisted_spoon",
+      "id": "twistedspoon",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/twisted_spoon",
@@ -5732,7 +5732,7 @@
       "desc": "Equipado: Potencia ataques de tipo Psíquico (+20%)."
     },
     {
-      "id": "spell_tag",
+      "id": "spelltag",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/spell_tag",
@@ -6827,7 +6827,7 @@
       "desc": "Miel natural y extremadamente dulce producida por Combee, ideal para atraer Pokémon."
     },
     {
-      "id": "dawn_stone",
+      "id": "dawnstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/dawn_stone",
@@ -6844,7 +6844,7 @@
       "desc": "Piedra evolutiva especial que induce la evolución en ciertas especies de Pokémon."
     },
     {
-      "id": "dusk_stone",
+      "id": "duskstone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/dusk_stone",
@@ -6912,7 +6912,7 @@
       "desc": "Sobras de comida utilizables para cocinar o alimentar Pokémon."
     },
     {
-      "id": "fresh_water",
+      "id": "freshwater",
       "craftingTier": 0,
       "cat": "potions",
       "sprite": "crafting/tier0/fresh_water",
@@ -6964,7 +6964,7 @@
       "desc": "Cristal de hielo perenne que no se derrite a temperatura ambiente."
     },
     {
-      "id": "ice_stone",
+      "id": "icestone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/ice_stone",
@@ -7389,7 +7389,7 @@
       "desc": "Serrín fino obtenido del corte de madera, utilizado como absorbente o aglomerante."
     },
     {
-      "id": "shiny_stone",
+      "id": "shinystone",
       "craftingTier": 0,
       "cat": "stones",
       "sprite": "crafting/tier0/shiny_stone",
@@ -8767,7 +8767,7 @@
       "desc": "Equipable. Potencia los movimientos de tipo Fuego un 20%."
     },
     {
-      "id": "choice_scarf",
+      "id": "choicescarf",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_scarf",
@@ -8785,7 +8785,7 @@
       "desc": "Equipable. Aumenta 50% la Velocidad, pero solo permite usar un movimiento."
     },
     {
-      "id": "choice_specs",
+      "id": "choicespecs",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/choice_specs",
@@ -8854,7 +8854,7 @@
       "desc": "Pokéball especial que facilita la captura de Pokémon en el agua."
     },
     {
-      "id": "dragon_fang",
+      "id": "dragonfang",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/dragon_fang",
@@ -8975,7 +8975,7 @@
       "desc": "Procesador de alimentos automático para dosificar e integrar ingredientes."
     },
     {
-      "id": "full_restore",
+      "id": "fullrestore",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/full_restore",
@@ -9077,7 +9077,7 @@
       "desc": "Cortador láser de alta potencia para cortar planchas de metal y materiales duros."
     },
     {
-      "id": "life_orb",
+      "id": "lifeorb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/life_orb",
@@ -9146,7 +9146,7 @@
       "desc": "Microscopio óptico de alta precisión para examinar muestras."
     },
     {
-      "id": "miracle_seed",
+      "id": "miracleseed",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/miracle_seed",
@@ -9164,7 +9164,7 @@
       "desc": "Equipable. Potencia los movimientos de tipo Planta un 20%."
     },
     {
-      "id": "mystic_water",
+      "id": "mysticwater",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/mystic_water",
@@ -9216,7 +9216,7 @@
       "desc": "Generador nuclear de fisión de altísima potencia para alimentar grandes redes."
     },
     {
-      "id": "poison_barb",
+      "id": "poisonbarb",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/poison_barb",
@@ -9251,7 +9251,7 @@
       "desc": "Una enciclopedia electrónica de alta tecnología que registra todos los Pokémon."
     },
     {
-      "id": "pp_max",
+      "id": "ppmax",
       "craftingTier": 3,
       "cat": "potions",
       "sprite": "crafting/tier3/pp_max",
@@ -9353,7 +9353,7 @@
       "desc": "Servidor de red para almacenar datos y gestionar automatizaciones complejas."
     },
     {
-      "id": "silver_powder",
+      "id": "silverpowder",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/silver_powder",

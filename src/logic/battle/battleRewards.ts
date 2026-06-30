@@ -30,7 +30,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
     participantsSet = null 
   } = options
 
-  if (!participantsSet?.has(p.uid) && p.heldItem !== 'exp_share') return null
+  if (!participantsSet?.has(p.uid) && p.heldItem !== 'expshare') return null
 
   if (p.level >= MAX_POKEMON_LEVEL) {
     p.exp = 0;

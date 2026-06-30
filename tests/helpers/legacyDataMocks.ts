@@ -5,15 +5,15 @@ export const LEGENDARIES = new Set([
 
 export const legacyItemMap: Record<string, string> = {
   pocion: 'potion',
-  super_pocion: 'super_potion',
-  hiper_pocion: 'hyper_potion',
-  pocion_max: 'max_potion',
-  piedra_fuego: 'fire_stone',
-  piedra_agua: 'water_stone',
-  piedra_trueno: 'thunder_stone',
-  piedra_hoja: 'leaf_stone',
-  piedra_luna: 'moon_stone',
-  piedra_solar: 'sun_stone',
+  super_pocion: 'superpotion',
+  hiper_pocion: 'hyperpotion',
+  pocion_max: 'maxpotion',
+  piedra_fuego: 'firestone',
+  piedra_agua: 'waterstone',
+  piedra_trueno: 'thunderstone',
+  piedra_hoja: 'leafstone',
+  piedra_luna: 'moonstone',
+  piedra_solar: 'sunstone',
   caramelo_vigor: 'vigor_candy',
   repelente: 'repel'
 };

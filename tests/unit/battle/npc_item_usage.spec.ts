@@ -45,7 +45,7 @@ describe('NPC Item Usage & Turn Skipping', () => {
       over: false,
       locationId: 'route1',
       enemyInventory: {
-        'super_potion': 1
+        'superpotion': 1
       },
       playerUsedItem: false,
       enemyUsedItem: false
@@ -86,7 +86,7 @@ describe('NPC Item Usage & Turn Skipping', () => {
 
     // 1. Should have detected low health and used the super_potion (healing Pikachu from 10 to 50)
     expect(enemy.hp).toBe(50) // healed by 50 hp (super_potion)
-    expect(activeBattle.value.enemyInventory['super_potion']).toBeUndefined() // consumed
+    expect(activeBattle.value.enemyInventory['superpotion']).toBeUndefined() // consumed
 
     // 2. Should have flagged the item usage on the battle state
     expect(activeBattle.value.enemyUsedItem).toBe(true)

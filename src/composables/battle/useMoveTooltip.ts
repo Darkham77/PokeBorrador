@@ -32,9 +32,9 @@ export function useMoveTooltip(
 
     let info = calculateMoveModifierInfo(move, weather, cycle);
 
-    if (attacker && attacker.heldItem && (attacker.heldItem === 'choice_band' || attacker.heldItem === 'choice_specs' || attacker.heldItem === 'choice_scarf')) {
+    if (attacker && attacker.heldItem && (attacker.heldItem === 'choiceband' || attacker.heldItem === 'choicespecs' || attacker.heldItem === 'choicescarf')) {
       const itemKey = attacker.heldItem;
-      const itemName = itemKey === 'choice_band' ? 'Cinta Elegida' : itemKey === 'choice_specs' ? 'Gafas Elegidas' : 'Pañuelo Elegido';
+      const itemName = itemKey === 'choiceband' ? 'Cinta Elegida' : itemKey === 'choicespecs' ? 'Gafas Elegidas' : 'Pañuelo Elegido';
       
       const moveIdLookup = move.id || '';
       const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };
@@ -42,11 +42,12 @@ export function useMoveTooltip(
       const isPhysical = category === 'physical';
       const isSpecial = category === 'special';
 
-      if (attacker.choiceMove && attacker.choiceMove !== move.name) {
-        info = { type: 'penalized', text: `Bloqueado por ${itemName} (Elegiste: ${attacker.choiceMove}).` };
+      if (attacker.choiceMove && attacker.choiceMove !== move.id) {
+        const choiceMoveName = pokemonDataProvider.getMoveData(attacker.choiceMove)?.name || attacker.choiceMove;
+        info = { type: 'penalized', text: `Bloqueado por ${itemName} (Elegiste: ${choiceMoveName}).` };
       } else {
-        const hasBoost = (itemKey === 'choice_band' && isPhysical) || (itemKey === 'choice_specs' && isSpecial);
-        const boostText = itemKey === 'choice_band' ? '+50% Potencia Física' : itemKey === 'choice_specs' ? '+50% Potencia Especial' : '+50% Velocidad';
+        const hasBoost = (itemKey === 'choiceband' && isPhysical) || (itemKey === 'choicespecs' && isSpecial);
+        const boostText = itemKey === 'choiceband' ? '+50% Potencia Física' : itemKey === 'choicespecs' ? '+50% Potencia Especial' : '+50% Velocidad';
         
         if (hasBoost) {
           if (!info) {
@@ -55,7 +56,7 @@ export function useMoveTooltip(
             info = { ...info, text: `${info.text} | ${itemName} (${boostText}, bloqueo)` };
           }
         } else {
-          const boostDesc = itemKey === 'choice_scarf' ? ` (+50% Velocidad, bloqueo)` : ' (Bloqueo)';
+          const boostDesc = itemKey === 'choicescarf' ? ` (+50% Velocidad, bloqueo)` : ' (Bloqueo)';
           if (!info) {
             info = { type: 'boosted', text: `Objeto: ${itemName}${boostDesc}.` };
           } else {

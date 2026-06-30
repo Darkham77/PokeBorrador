@@ -42,7 +42,7 @@ const ITEM_MAPPING: Record<string, string> = {
   'cura_total': 'full-heal',
   'elixir': 'elixir',
   'iman': 'magnet',
-  'elixir_max': 'max-elixir',
+  'elixirmax': 'max-elixir',
   'piedra_fuego': 'fire-stone',
   'piedra_agua': 'water-stone',
   'piedra_trueno': 'thunder-stone',

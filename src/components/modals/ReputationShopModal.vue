@@ -77,7 +77,7 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
     repCost: 15,
     desc: 'Otorga 3x Cura Total. Cura cualquier problema de estado.',
     sprite: 'crafting/tier3/full_heal',
-    givesId: 'full_heal',
+    givesId: 'fullheal',
     givesQty: 3,
     tier: 'rare',
     cat: 'potions'

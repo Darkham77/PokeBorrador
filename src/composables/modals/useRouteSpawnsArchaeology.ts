@@ -128,7 +128,7 @@ export function useRouteSpawnsArchaeology(
       name: 'Piedras Evolutivas',
       type: 'Evolución',
       icon: '⚡',
-      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'fire_stone'),
+      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'firestone'),
       percentage: (activeCategoryWeights.stone / activeTotal) * 100,
       basePercentage: (baseCategoryWeights.stone / baseTotal) * 100,
       statusClass: 'visitor',

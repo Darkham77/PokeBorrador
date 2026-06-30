@@ -7,7 +7,7 @@ import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
+import type { BattleState, BattleStages, BattleLog, ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { UIStore, MapStore } from '@/types/system/stores'
 import { mapToShowdownSet } from './showdownAdapter.ts'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
@@ -25,7 +25,7 @@ export async function executeTurnInWorker(
   p2Statuses?: Record<string, string> | string[],
   p1Skip?: boolean,
   p2Skip?: boolean
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: any; p2Request?: any }> {
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
@@ -46,7 +46,7 @@ export async function executeTurnInWorker(
         p2Hps: p2Hps ? JSON.parse(JSON.stringify(p2Hps)) : undefined
       });
     }
-  } catch (e) {
+  } catch (_e) {
     // Ignorar si se ejecuta fuera de contexto de tienda
   }
 
@@ -82,31 +82,31 @@ export async function executeTurnInWorker(
           if (active) {
             const reportObj = {
               seed: active.seed || [],
-              p1Team: active.playerTeam?.map((p: any) => ({
+              p1Team: active.playerTeam?.map((p: Pokemon) => ({
                 id: p.id,
                 level: p.level,
                 ability: p.ability,
-                moves: p.moves.map((m: any) => m?.id || ''),
+                moves: p.moves.map((m: { id?: string } | null) => m?.id || ''),
                 gender: p.gender,
                 hp: p.hp,
                 maxHp: p.maxHp,
-                stats: p.stats
+                stats: { hp: p.maxHp, atk: p.atk, def: p.def, spa: p.spa, spd: p.spd, spe: p.spe }
               })) || [],
-              p2Team: active.enemyTeam?.map((p: any) => ({
+              p2Team: active.enemyTeam?.map((p: Pokemon) => ({
                 id: p.id,
                 level: p.level,
                 ability: p.ability,
-                moves: p.moves.map((m: any) => m?.id || ''),
+                moves: p.moves.map((m: { id?: string } | null) => m?.id || ''),
                 gender: p.gender,
                 hp: p.hp,
                 maxHp: p.maxHp,
-                stats: p.stats
+                stats: { hp: p.maxHp, atk: p.atk, def: p.def, spa: p.spa, spd: p.spd, spe: p.spe }
               })) || [],
               history: active.battleHistory || []
             };
             reproductionReport = `\n\n--- REPRODUCE BATTLE TEST CASE ---\nJSON Payload:\n${JSON.stringify(reportObj, null, 2)}\n----------------------------------`;
           }
-        } catch (e) {
+        } catch (_e) {
           // Ignorar fallo al generar reporte
         }
 
@@ -574,7 +574,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       const worker = showdownWorker!
       if (responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
-        if (ctx.activeBattle.value) {
+        if (ctx.activeBattle.value && responsePayload) {
           ctx.activeBattle.value.playerRequest = responsePayload.p1Request;
           ctx.activeBattle.value.enemyRequest = responsePayload.p2Request;
         }

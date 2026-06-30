@@ -58,7 +58,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
     moves: moves,
     uid: poke.uid
-  } as any;
+  } as PokemonSet & { uid?: string };
 }
 
 // Mapa inverso: número → nombre Showdown (construido una sola vez)

@@ -4,7 +4,7 @@ import '../../helpers/battleMockSetup'
 import { decideEnemyMove } from '@/logic/battle/ai/battleAI'
 import { useBattleStore } from '@/stores/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages } from '@/types/battle/battle'
+import type { BattleStages, BattleState } from '@/types/battle/battle'
 
 describe('Enemy AI - Disabled Moves Filtering', () => {
   let enemy: Pokemon;
@@ -15,24 +15,26 @@ describe('Enemy AI - Disabled Moves Filtering', () => {
     setActivePinia(createPinia())
 
     enemy = {
-      uid: 'enemy-1',
+      id: 'gengar',
       name: 'Gengar',
-      hp: 100,
-      maxHp: 100,
+      level: 50,
       moves: [
-        { id: 'shadowpunch', name: 'Shadow Punch', pp: 20, maxPp: 20, power: 60, type: 'ghost', cat: 'physical' },
-        { id: 'belch', name: 'Belch', pp: 10, maxPp: 10, power: 120, type: 'poison', cat: 'special' }
+        { id: 'shadowpunch', name: 'Shadow Punch', pp: 10, maxPP: 10 },
+        { id: 'belch', name: 'Belch', pp: 5, maxPP: 5 }
       ]
     } as unknown as Pokemon
 
     player = {
-      uid: 'player-1',
-      name: 'Pikachu',
-      hp: 100,
-      maxHp: 100
+      id: 'mew',
+      name: 'Mew',
+      level: 50,
+      moves: []
     } as unknown as Pokemon
 
-    playerStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    playerStages = {
+      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
+      reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
+    }
   })
 
   it('should choose the best move under normal circumstances when no request is present', () => {
@@ -42,8 +44,7 @@ describe('Enemy AI - Disabled Moves Filtering', () => {
     expect(['shadowpunch', 'belch']).toContain(chosenMove!.id)
   })
 
-  it('should filter out moves that are reported as disabled in the Showdown enemyRequest', () => {
-    // Mock the activeBattle state to supply the request with Belch disabled (because no berry was eaten)
+  it('should filter out moves disabled by Showdown activeRequest', () => {
     const battleStore = useBattleStore()
     battleStore.state = {
       enemyRequest: {
@@ -56,7 +57,7 @@ describe('Enemy AI - Disabled Moves Filtering', () => {
           }
         ]
       }
-    } as any
+    } as unknown as BattleState
 
     // The AI should now filter out Belch and choose Shadow Punch instead
     const chosenMove = decideEnemyMove(enemy, player, playerStages, false)
@@ -77,7 +78,7 @@ describe('Enemy AI - Disabled Moves Filtering', () => {
           }
         ]
       }
-    } as any
+    } as unknown as BattleState
 
     const chosenMove = decideEnemyMove(enemy, player, playerStages, false)
     expect(chosenMove).toBeNull()

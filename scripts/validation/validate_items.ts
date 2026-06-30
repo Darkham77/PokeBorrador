@@ -112,7 +112,7 @@ async function main() {
 
     if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
       // 'Restaurador de Vigor' (vigor_restorer) is a breeding item that is explicitly usable to restore vigor
-      if (item.id !== 'vigor_restorer') {
+      if (item.id !== 'vigorrestorer') {
         errors.push(`${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`);
       }
     }

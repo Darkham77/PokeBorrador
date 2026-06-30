@@ -54,38 +54,38 @@ const stateEffect = (fn: (s: GameState) => ItemEffectResult) => (p: unknown) => 
 export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   // --- Healing & Status ---
   'potion': pokeEffect((p) => healHp(p, 20)),
-  'super_potion': pokeEffect((p) => healHp(p, 50)),
-  'hyper_potion': pokeEffect((p) => healHp(p, 200)),
-  'max_potion': pokeEffect((p) => healHp(p, p.maxHp)),
+  'superpotion': pokeEffect((p) => healHp(p, 50)),
+  'hyperpotion': pokeEffect((p) => healHp(p, 200)),
+  'maxpotion': pokeEffect((p) => healHp(p, p.maxHp)),
   'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / 2))),
-  'revive_max': pokeEffect((p) => revive(p, p.maxHp)),
+  'revivemax': pokeEffect((p) => revive(p, p.maxHp)),
   'antidote': pokeEffect((p) => clearStatus(p, 'psn')),
-  'burn_heal': pokeEffect((p) => clearStatus(p, 'brn')),
-  'paralyze_heal': pokeEffect((p) => clearStatus(p, 'par')),
+  'burnheal': pokeEffect((p) => clearStatus(p, 'brn')),
+  'paralyzeheal': pokeEffect((p) => clearStatus(p, 'par')),
   'awakening': pokeEffect((p) => clearStatus(p, 'slp')),
-  'ice_heal': pokeEffect((p) => clearStatus(p, 'frz')),
-  'full_heal': pokeEffect((p) => curaTotal(p)),
-  'soda_pop': pokeEffect((p) => healHp(p, 60)),
-  'fresh_water': pokeEffect((p) => healHp(p, 30)),
+  'iceheal': pokeEffect((p) => clearStatus(p, 'frz')),
+  'fullheal': pokeEffect((p) => curaTotal(p)),
+  'sodapop': pokeEffect((p) => healHp(p, 60)),
+  'freshwater': pokeEffect((p) => healHp(p, 30)),
   'lemonade': pokeEffect((p) => healHp(p, 80)),
 
   // --- Evolutions ---
-  'fire_stone': pokeEffect((p) => handleStone(p, 'Piedra Fuego')),
-  'thunder_stone': pokeEffect((p) => handleStone(p, 'Piedra Trueno')),
-  'water_stone': pokeEffect((p) => handleStone(p, 'Piedra Agua')),
-  'leaf_stone': pokeEffect((p) => handleStone(p, 'Piedra Hoja')),
-  'moon_stone': pokeEffect((p) => handleStone(p, 'Piedra Lunar')),
-  'sun_stone': pokeEffect((p) => handleStone(p, 'Piedra Solar')),
-  'dawn_stone': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
-  'dusk_stone': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
-  'ice_stone': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
-  'shiny_stone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
-  'oval_stone': pokeEffect((p) => handleStone(p, 'Piedra Oval')),
+  'firestone': pokeEffect((p) => handleStone(p, 'Piedra Fuego')),
+  'thunderstone': pokeEffect((p) => handleStone(p, 'Piedra Trueno')),
+  'waterstone': pokeEffect((p) => handleStone(p, 'Piedra Agua')),
+  'leafstone': pokeEffect((p) => handleStone(p, 'Piedra Hoja')),
+  'moonstone': pokeEffect((p) => handleStone(p, 'Piedra Lunar')),
+  'sunstone': pokeEffect((p) => handleStone(p, 'Piedra Solar')),
+  'dawnstone': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
+  'duskstone': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
+  'icestone': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
+  'shinystone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
+  'ovalstone': pokeEffect((p) => handleStone(p, 'Piedra Oval')),
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, 10)),
   'elixir': pokeEffect((p) => restorePP(p, 10)),
-  'elixir_max': pokeEffect((p) => restorePP(p, 999)),
+  'elixirmax': pokeEffect((p) => restorePP(p, 999)),
   
   // --- Buffs / Special ---
   'rare_candy': pokeEffect((p) => {
@@ -100,7 +100,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
     p.vigor = currentVigor + 1;
     return { success: true, message: `recuperó 1 de vigor (${p.vigor}/${maxVigor})` };
   }),
-  'vigor_restorer': pokeEffect((p) => {
+  'vigorrestorer': pokeEffect((p) => {
     const maxVigor = 10;
     const currentVigor = Number(p.vigor || 0);
     if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
@@ -119,7 +119,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'pp_up': pokeEffect((_p) => {
     return { success: true, message: 'selecciona un movimiento para mejorar', deferred: true, resultType: 'pp_up' };
   }),
-  'full_restore': pokeEffect((p) => {
+  'fullrestore': pokeEffect((p) => {
     const hpRes = healHp(p, p.maxHp);
     const statusRes = curaTotal(p);
     if (!hpRes.success && !statusRes.success) {
@@ -127,8 +127,8 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
     }
     return { success: true, message: 'recuperó todo su HP y se curó de sus problemas de estado.' };
   }),
-  'pp_max': pokeEffect((_p) => {
-    return { success: true, message: 'selecciona un movimiento para maximizar sus PP', deferred: true, resultType: 'pp_max' };
+  'ppmax': pokeEffect((_p) => {
+    return { success: true, message: 'selecciona un movimiento para maximizar sus PP', deferred: true, resultType: 'ppmax' };
   }),
 
   // --- Buffs Globales ---

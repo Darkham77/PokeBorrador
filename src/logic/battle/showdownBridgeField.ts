@@ -1,6 +1,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
+import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx';
 
 /**
@@ -46,7 +47,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const effect = parts[3] || '';
       if (target && effect) {
-        const cleanEffect = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanEffect = toID(effect);
         if (!target.volatileCounters) target.volatileCounters = {};
 
         if (cleanEffect === 'confusion') {
@@ -54,7 +55,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
           delete target.volatileCounters['lockedmove'];
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
-          const moveId = moveName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const moveId = toID(moveName);
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
           target.disabledMove = { id: moveId, name: translatedName } as unknown as import('@/types/pokemon/pokemon').Move;
@@ -77,7 +78,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const effect = parts[3] || '';
       if (target && effect) {
-        const cleanEffect = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanEffect = toID(effect);
         if (target.volatileCounters) {
           if (cleanEffect === 'confusion') {
             delete target.volatileCounters['confusion'];
