@@ -88,21 +88,26 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
 
     const active = store.activeBattle.value;
-    let p1Hps: number[] | undefined = undefined;
-    let p2Hps: number[] | undefined = undefined;
-    let p1Statuses: string[] | undefined = undefined;
-    let p2Statuses: string[] | undefined = undefined;
+    let p1Hps: Record<string, number> | undefined = undefined;
+    let p2Hps: Record<string, number> | undefined = undefined;
+    let p1Statuses: Record<string, string> | undefined = undefined;
+    let p2Statuses: Record<string, string> | undefined = undefined;
     if (active) {
-      const { resolveCurrentTeamOrder } = await import('./showdownAdapter.ts');
       const team = (store.gs.state.team || []).filter((p): p is Pokemon => !!p);
-      const playerOrder = resolveCurrentTeamOrder(active, 'player', team);
-      p1Hps = playerOrder.map(uid => team.find(p => p.uid === uid)?.hp ?? 0);
-      p1Statuses = playerOrder.map(uid => team.find(p => p.uid === uid)?.status ?? '');
+      p1Hps = {};
+      p1Statuses = {};
+      for (const p of team) {
+        p1Hps[p.uid] = p.hp;
+        p1Statuses[p.uid] = p.status ?? '';
+      }
 
       const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-      const enemyOrder = resolveCurrentTeamOrder(active, 'enemy', enemyTeam);
-      p2Hps = enemyOrder.map(uid => enemyTeam.find(p => p.uid === uid)?.hp ?? 0);
-      p2Statuses = enemyOrder.map(uid => enemyTeam.find(p => p.uid === uid)?.status ?? '');
+      p2Hps = {};
+      p2Statuses = {};
+      for (const p of enemyTeam) {
+        p2Hps[p.uid] = p.hp;
+        p2Statuses[p.uid] = p.status ?? '';
+      }
     }
 
     logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice} (p2Skip: ${p2Skip})`);

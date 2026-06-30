@@ -19,10 +19,10 @@ export let showdownWorker: Worker | null = null;
 export async function executeTurnInWorker(
   p1Choice: string, 
   p2Choice?: string,
-  p1Hps?: number[],
-  p2Hps?: number[],
-  p1Statuses?: string[],
-  p2Statuses?: string[],
+  p1Hps?: Record<string, number> | number[],
+  p2Hps?: Record<string, number> | number[],
+  p1Statuses?: Record<string, string> | string[],
+  p2Statuses?: Record<string, string> | string[],
   p1Skip?: boolean,
   p2Skip?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: any; p2Request?: any }> {

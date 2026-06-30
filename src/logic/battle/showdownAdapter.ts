@@ -56,8 +56,9 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     },
     // No usamos EVs detallados por defecto en el modo aventura, o mapeamos 0 si no se manejan
     evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-    moves: moves
-  };
+    moves: moves,
+    uid: poke.uid
+  } as any;
 }
 
 // Mapa inverso: número → nombre Showdown (construido una sola vez)

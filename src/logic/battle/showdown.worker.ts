@@ -176,13 +176,24 @@ function getNewLogs(): string[] {
   return newLogs;
 }
 
-function syncSideStates(side: PkmnSimSide, hps: number[] | undefined, statuses: string[] | undefined) {
+function syncSideStates(
+  side: PkmnSimSide,
+  hps: Record<string, number> | number[] | undefined,
+  statuses: Record<string, string> | string[] | undefined
+) {
   const mons = side.pokemon;
-  if (mons) {
-    if (hps) {
-      hps.forEach((hp: number, index: number) => {
-        const pokemon = mons[index];
-        if (pokemon) {
+  if (!mons) return;
+
+  const isRecord = (obj: any): obj is Record<string, any> => {
+    return obj && typeof obj === 'object' && !Array.isArray(obj);
+  };
+
+  if (isRecord(hps)) {
+    mons.forEach((pokemon) => {
+      if (pokemon && (pokemon as any).set?.uid) {
+        const uid = (pokemon as any).set.uid;
+        const hp = hps[uid];
+        if (hp !== undefined) {
           pokemon.hp = hp;
           if (hp <= 0) {
             pokemon.fainted = true;
@@ -192,16 +203,41 @@ function syncSideStates(side: PkmnSimSide, hps: number[] | undefined, statuses: 
             if (pokemon.status === 'fnt') pokemon.status = '';
           }
         }
-      });
-    }
-    if (statuses) {
-      statuses.forEach((status: string, index: number) => {
-        const pokemon = mons[index];
-        if (pokemon && !pokemon.fainted) {
+      }
+    });
+  } else if (Array.isArray(hps)) {
+    hps.forEach((hp: number, index: number) => {
+      const pokemon = mons[index];
+      if (pokemon) {
+        pokemon.hp = hp;
+        if (hp <= 0) {
+          pokemon.fainted = true;
+          pokemon.status = 'fnt';
+        } else {
+          pokemon.fainted = false;
+          if (pokemon.status === 'fnt') pokemon.status = '';
+        }
+      }
+    });
+  }
+
+  if (isRecord(statuses)) {
+    mons.forEach((pokemon) => {
+      if (pokemon && (pokemon as any).set?.uid) {
+        const uid = (pokemon as any).set.uid;
+        const status = statuses[uid];
+        if (status !== undefined && !pokemon.fainted) {
           pokemon.status = status ? status.toLowerCase() : '';
         }
-      });
-    }
+      }
+    });
+  } else if (Array.isArray(statuses)) {
+    statuses.forEach((status: string, index: number) => {
+      const pokemon = mons[index];
+      if (pokemon && !pokemon.fainted) {
+        pokemon.status = status ? status.toLowerCase() : '';
+      }
+    });
   }
 }
 
