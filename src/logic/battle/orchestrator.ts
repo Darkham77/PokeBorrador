@@ -25,7 +25,7 @@ export async function executeTurnInWorker(
   p2Statuses?: string[],
   p1Skip?: boolean,
   p2Skip?: boolean
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean }> {
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: any; p2Request?: any }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
@@ -502,6 +502,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       const worker = showdownWorker!
       if (responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
+        if (ctx.activeBattle.value) {
+          ctx.activeBattle.value.playerRequest = responsePayload.p1Request;
+          ctx.activeBattle.value.enemyRequest = responsePayload.p2Request;
+        }
         if (worker.removeEventListener) {
           worker.removeEventListener('message', initHandler);
         } else {

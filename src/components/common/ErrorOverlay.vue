@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import gsap from 'gsap'
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 import { useErrorStore } from '@/stores/errorStore'
@@ -13,28 +13,30 @@ const errorStore = useErrorStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
+const userAction = ref('')
 const copied = ref(false)
 
+const accumulatedDetails = computed(() => {
+  return errorStore.errors.map((err, index) => {
+    return `[ERROR ${index + 1}/${errorStore.errors.length}] (${err.type || 'Uncaught'} - ${err.source || 'N/A'})\nMessage: ${err.message}\nStack:\n${err.stack}`
+  }).join('\n\n----------------------------------------\n\n')
+})
+
 const copyError = async () => {
-  if (!errorStore.activeError) return
+  if (errorStore.errors.length === 0) return
   
-  const error = errorStore.activeError
   const report = [
     'POKEBORRADOR ERROR REPORT',
     '',
     `¿QUÉ ESTABA HACIENDO EL JUGADOR?`,
-    error.userAction || 'No especificado',
-    '',
-    `MENSAJE: ${error.message}`,
+    userAction.value || 'No especificado',
     '',
     'CONTEXTO DEL JUEGO:',
     `Entrenador: ${gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A'} (Nv. ${gameStore.state.trainerLevel || 0})`,
     `Medallas: ${gameStore.state.badges || 0}`,
-    `Tipo: ${error.type}`,
-    `Origen: ${error.source || 'N/A'} (${error.lineno || '?'}:${error.colno || '?'})`,
     '',
-    'STACK TRACE:',
-    error.stack
+    'ERRORES DETECTADOS:',
+    accumulatedDetails.value
   ].join('\n')
 
   try {
@@ -53,6 +55,7 @@ const reloadGame = () => {
 }
 
 const closeError = () => {
+  userAction.value = ''
   errorStore.clearError()
   uiStore.closeAll() // Restore background block by clearing the stack
 }
@@ -87,10 +90,6 @@ const transitionHooks = useGsapTransition({
               ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
             </p>
 
-            <div class="error-message-box">
-              <strong>Mensaje:</strong> {{ errorStore.activeError.message }}
-            </div>
-
             <div class="error-user-action-container">
               <label
                 for="error-overlay-user-action"
@@ -99,7 +98,7 @@ const transitionHooks = useGsapTransition({
                 ¿QUÉ ESTABAS HACIENDO?
                 <textarea
                   id="error-overlay-user-action"
-                  v-model="errorStore.activeError.userAction"
+                  v-model="userAction"
                   placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
                 />
               </label>
@@ -112,7 +111,7 @@ const transitionHooks = useGsapTransition({
               <div class="error-sub-title">
                 DETALLES TÉCNICOS:
               </div>
-              <pre class="error-stack modal-scrollable-content">{{ errorStore.activeError.stack }}</pre>
+              <pre class="error-stack modal-scrollable-content">{{ accumulatedDetails }}</pre>
             </div>
 
             <div class="error-game-context">
@@ -124,15 +123,6 @@ const transitionHooks = useGsapTransition({
               </div>
               <div class="error-context-item">
                 <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
-              </div>
-              <div class="error-context-item">
-                <strong>Tipo:</strong> {{ errorStore.activeError.type }}
-              </div>
-              <div
-                v-if="errorStore.activeError.lineno"
-                class="error-context-item"
-              >
-                <strong>Línea:</strong> {{ errorStore.activeError.lineno }}:{{ errorStore.activeError.colno }}
               </div>
             </div>
           </div>

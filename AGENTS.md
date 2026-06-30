@@ -51,7 +51,8 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via the `DBRouter`.
 - **Zero-Pokemon Save Prohibition (Save Shield)**: To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`. A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
-- **No Runtime Sanitization Patches**: It is strictly forbidden to implement runtime data patches, sanitizers, or adapters in application code (e.g. inside save loading or initialization hooks) to dynamically fix legacy identifiers. All data structure updates and identifier migrations MUST be executed exclusively via proper SQL database migration scripts (PostgreSQL and SQLite companion scripts) to preserve database cleanliness and prevent application bloat.
+- **No Runtime Sanitization Patches / Compatibility Adapters**: It is strictly forbidden to implement runtime compatibility patches, sanitizers, or adapters in application code (e.g. inside save loading, initialization hooks, or lookup helpers like `getItemById`) to dynamically bridge or fix mismatched/incorrect identifiers. All data structure updates, static catalog databases (such as `items.json`), and database identifiers MUST be corrected directly at their source to preserve absolute cleanliness and prevent application code bloat. IDs (such as item, move, and Pokémon IDs) are strictly constant, final, and immutable; they MUST never be translated, normalized, or patched at runtime. If a lookup fails, it MUST fail with an explicit error to signal that the source identifier or database save is wrong and must be corrected directly at the source.
+- **Absolute Prohibition on Database Updates**: It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger the database update/migration scripts (e.g., `npm run servers:db:update` or similar) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`). Agents must NEVER touch or update these databases; database updates are strictly reserved for manual execution by the USER.
 
 ## 4. Code Modularity (500/1000 Rule)
 
@@ -99,6 +100,12 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - Agent must follow DOX instructions across any edits
 - **Relative Paths Mandate**: All links to other files and indices in all `AGENTS.md` files MUST use relative paths (e.g. `./database/AGENTS.md` or `../database/AGENTS.md`). Absolute paths (e.g., `file:///C:/...` or absolute file system URLs) are strictly forbidden to ensure portability across different development environments. If any absolute paths are found in any `AGENTS.md` files, they must be corrected to relative paths immediately.
 - **Gitignored Paths in DOX Indices**: Directories or files that exist locally but are excluded via `.gitignore` (e.g. credential folders, generated local configs) MUST still be referenced in their parent's Child DOX Index if they represent a real domain boundary. Mark them with the suffix `_(gitignored — reason)_` so agents and reviewers understand why they are absent from the repo. The DOX audit engine skips existence checks for gitignored paths automatically, so these entries will never produce CI failures.
+
+## 11. State Integrity & Reference Safety (Zero-Cloning Mandate)
+
+- **Absolute Prohibition on Pokémon Object Cloning**: It is STRICTLY FORBIDDEN to clone, shallow-copy (`{ ... }`), or replace Pokémon instances representing active combatants or team members to trigger Vue reactivity updates. Doing so breaks object reference parity, creating desynchronized copies where changes to HP, status conditions, experience, or items are not propagated back to the team source of truth.
+- **UID-Based Resolution**: When referencing combatants or passing team elements to components, always pass the unique identifier (`uid`) and resolve the object dynamically using getters from the primary source of truth (`gameStore.state.team` or `gameStore.state.box`).
+- **In-Place Mutations**: If statistical or volatile properties of a Pokémon must be altered, mutate the object properties directly on its reference to maintain reactive bindings across all active views (bag, quick-switch, battle interface).
 
 ## Core Contract
 

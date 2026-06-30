@@ -409,6 +409,7 @@ export function isValidState(data: SaveData): boolean {
  * Saves the game to localStorage and the database.
  */
 let _isSaving = false;
+let _isRollingBack = false;
 
 interface SaveOptions {
   showNotif?: boolean
@@ -421,7 +422,7 @@ interface SaveOptions {
 
 export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
   const { showNotif = true, notifyFn, db } = options;
-  if (!user || _isSaving) return null;
+  if (!user || _isSaving || _isRollingBack) return null;
 
   _isSaving = true;
   try {
@@ -440,11 +441,13 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
         const serverSave = data as { save_data: GameState } | null;
         if (serverSave?.save_data) {
+          _isRollingBack = true;
           return { rollback: true, serverData: serverSave.save_data };
         }
       } catch(e) {
         logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
       }
+      _isRollingBack = true;
       return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
     }
 
@@ -472,6 +475,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             const { data: fullSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
             const serverSave = fullSave as { save_data: GameState } | null;
             _isSaving = false;
+            _isRollingBack = true;
             return { rollback: true, serverData: serverSave?.save_data, error: 'La base de datos tiene una versión de guardado más reciente.' };
           }
         }
@@ -523,6 +527,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       const resData = res as { success: boolean; error: string; last_save_id: string } | null;
       if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
         logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
+        _isRollingBack = true;
         return { rollback: true, outOfSync: true };
       }
 

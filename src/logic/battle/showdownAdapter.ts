@@ -1,3 +1,4 @@
+import { Dex } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
@@ -13,7 +14,6 @@ export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
   return `gen${gen}customgame@@@!Team Preview` as ID;
 }
 
-
 /**
  * Mapea un Pokémon de Poké Vicio al formato oficial de Pokémon Showdown (PokemonSet).
  */
@@ -22,10 +22,18 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   const abilityKey = poke.ability || 'overgrow';
   const natureKey = poke.nature || 'serious';
 
-  // Filtrar movimientos no nulos y mapear IDs
+  // Filtrar movimientos no nulos, mapear IDs y filtrar no válidos de la generación actual
   const moves = poke.moves
     .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
-    .map(m => m.id as string);
+    .map(m => m.id as string)
+    .filter(id => {
+      const mData = Dex.forGen(ACTIVE_GENERATION).moves.get(id);
+      return mData.exists && mData.isNonstandard !== 'Past';
+    });
+
+  if (moves.length === 0) {
+    moves.push('tackle');
+  }
 
   const speciesName = resolveShowdownSpecies(poke.id);
 
@@ -128,12 +136,29 @@ export function resolveCurrentTeamOrder(
   }
 }
 
-export function resolveShowdownSlot(
+export function resolveOriginalTeamOrder(
   active: {
-    showdownPlayerTeamOrder?: string[] | null;
     initialPlayerTeamOrder?: string[] | null;
     playerTeam?: Array<GamePokemon | null> | null;
-    showdownEnemyTeamOrder?: string[] | null;
+    initialEnemyTeamOrder?: string[] | null;
+    enemyTeam?: Array<GamePokemon | null> | null;
+  },
+  side: 'player' | 'enemy',
+  fallbackTeam: Array<GamePokemon | null> = []
+): string[] {
+  if (side === 'player') {
+    const list = active.initialPlayerTeamOrder || active.playerTeam || fallbackTeam;
+    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
+  } else {
+    const list = active.initialEnemyTeamOrder || active.enemyTeam || fallbackTeam;
+    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
+  }
+}
+
+export function resolveShowdownSlot(
+  active: {
+    initialPlayerTeamOrder?: string[] | null;
+    playerTeam?: Array<GamePokemon | null> | null;
     initialEnemyTeamOrder?: string[] | null;
     enemyTeam?: Array<GamePokemon | null> | null;
   },
@@ -141,7 +166,7 @@ export function resolveShowdownSlot(
   pokemonUid: string,
   fallbackTeam: Array<GamePokemon | null> = []
 ): number {
-  const order = resolveCurrentTeamOrder(active, side, fallbackTeam);
+  const order = resolveOriginalTeamOrder(active, side, fallbackTeam);
   return getShowdownSlot(order, pokemonUid);
 }
 

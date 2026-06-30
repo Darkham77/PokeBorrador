@@ -300,7 +300,7 @@
       "desc": "Equipable. Halves damage taken from a supereffective Steel-type attack. Single use."
     },
     {
-      "id": "beast_ball",
+      "id": "beastball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -569,7 +569,7 @@
       "desc": "Cura la parálisis en combate de forma automática."
     },
     {
-      "id": "cherish_ball",
+      "id": "cherishball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -856,7 +856,7 @@
       "desc": "Equipable. Holder's Dark-type attacks have 1.2x power. Judgment is Dark type."
     },
     {
-      "id": "dream_ball",
+      "id": "dreamball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1035,7 +1035,7 @@
       "desc": "Equipable. Potencia los movimientos de tipo Hada un 20%."
     },
     {
-      "id": "fast_ball",
+      "id": "fastball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1178,7 +1178,7 @@
       "desc": "Equipable. Tiene un 10% de probabilidad de evitar el debilitamiento dejando al portador con 1 PS."
     },
     {
-      "id": "friend_ball",
+      "id": "friendball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1393,7 +1393,7 @@
       "desc": "Equipable. Holder's Rock-type attacks have 1.2x power."
     },
     {
-      "id": "heal_ball",
+      "id": "healball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1446,7 +1446,7 @@
       "desc": "Equipable. Extiende la duración del día soleado a 8 turnos."
     },
     {
-      "id": "heavy_ball",
+      "id": "heavyball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1571,7 +1571,7 @@
       "desc": "Equipable. Holder's Bug-type attacks have 1.2x power. Judgment is Bug type."
     },
     {
-      "id": "iron_ball",
+      "id": "ironball",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -1769,7 +1769,7 @@
       "desc": "Restaura 10 PP de un movimiento agotado de forma automática."
     },
     {
-      "id": "level_ball",
+      "id": "levelball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1822,7 +1822,7 @@
       "desc": "Equipable. Asegura que los ataques de golpes múltiples acierten más veces."
     },
     {
-      "id": "love_ball",
+      "id": "loveball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -1893,7 +1893,7 @@
       "desc": "Equipable. Sube la Def. Especial al recibir un ataque de tipo Agua."
     },
     {
-      "id": "lure_ball",
+      "id": "lureball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -2198,7 +2198,7 @@
       "desc": "Equipable. Sube la Def. Especial en Campo de Niebla."
     },
     {
-      "id": "moon_ball",
+      "id": "moonball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -2324,7 +2324,7 @@
       "desc": "Hace evolucionar a Happiny al subir de nivel de día."
     },
     {
-      "id": "park_ball",
+      "id": "parkball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -2485,7 +2485,7 @@
       "desc": "Equipable. Permite ejecutar movimientos de dos turnos en el primer turno una sola vez."
     },
     {
-      "id": "premier_ball",
+      "id": "premierball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -2754,7 +2754,7 @@
       "desc": "Equipable. Fuerza al rival a cambiarse al golpear al portador."
     },
     {
-      "id": "repeat_ball",
+      "id": "repeatball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -2933,7 +2933,7 @@
       "desc": "Equipable. If held by a Zacian, this item changes its forme to Crowned Sword."
     },
     {
-      "id": "safari_ball",
+      "id": "safariball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -3094,7 +3094,7 @@
       "desc": "Equipable. Extiende la duración de la tormenta de arena a 8 turnos."
     },
     {
-      "id": "snow_ball",
+      "id": "snowball",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
@@ -3184,7 +3184,7 @@
       "desc": "Equipable. Holder's Ghost-type attacks have 1.2x power. Judgment is Ghost type."
     },
     {
-      "id": "sport_ball",
+      "id": "sportball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -3273,7 +3273,7 @@
       "desc": "Equipable. Holder's Rock-type attacks have 1.2x power. Judgment is Rock type."
     },
     {
-      "id": "strange_ball",
+      "id": "strangeball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/poke_ball",
@@ -3943,7 +3943,7 @@
       "desc": "Captura Pokémon salvajes. Tasa de captura estándar."
     },
     {
-      "id": "great_ball",
+      "id": "greatball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/great_ball",
@@ -3960,7 +3960,7 @@
       "desc": "Tasa de captura x1.5 respecto a la Pokéball normal."
     },
     {
-      "id": "ultra_ball",
+      "id": "ultraball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/ultra_ball",
@@ -3977,7 +3977,7 @@
       "desc": "Tasa de captura x2. Alta efectividad contra Pokémon raros."
     },
     {
-      "id": "net_ball",
+      "id": "netball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/net_ball",
@@ -3994,7 +3994,7 @@
       "desc": "Tasa de captura x3 contra Pokémon de tipo Agua o Bicho."
     },
     {
-      "id": "dusk_ball",
+      "id": "duskball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/dusk_ball",
@@ -4011,7 +4011,7 @@
       "desc": "Tasa de captura x3 en cuevas o de noche."
     },
     {
-      "id": "timer_ball",
+      "id": "timerball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/timer_ball",
@@ -4028,7 +4028,7 @@
       "desc": "Tasa de captura que aumenta según turnos transcurridos."
     },
     {
-      "id": "master_ball",
+      "id": "masterball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/master_ball",
@@ -5642,7 +5642,7 @@
       "desc": "Un diamante perfectamente facetado y pulido que refleja la luz."
     },
     {
-      "id": "light_ball",
+      "id": "lightball",
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/light_ball",
@@ -8837,7 +8837,7 @@
       "desc": "Olla de cocina industrial para preparar deliciosos alimentos Pokémon en lote."
     },
     {
-      "id": "dive_ball",
+      "id": "diveball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/dive_ball",
@@ -9095,7 +9095,7 @@
       "desc": "Equipable. Potencia los movimientos un 30% a cambio de perder 10% de HP por golpe."
     },
     {
-      "id": "luxury_ball",
+      "id": "luxuryball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/luxury_ball",
@@ -9182,7 +9182,7 @@
       "desc": "Equipable. Potencia los movimientos de tipo Agua un 20%."
     },
     {
-      "id": "nest_ball",
+      "id": "nestball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/nest_ball",
@@ -9268,7 +9268,7 @@
       "desc": "Aumenta al máximo los PP de un movimiento de forma permanente."
     },
     {
-      "id": "quick_ball",
+      "id": "quickball",
       "craftingTier": 3,
       "cat": "pokeballs",
       "sprite": "crafting/tier3/quick_ball",

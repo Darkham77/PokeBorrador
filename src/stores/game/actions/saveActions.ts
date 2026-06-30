@@ -221,21 +221,32 @@ export function useSaveActions(
           }
         }
         
-        if (rollbackData) {
+        if (rollbackData && authStore.user) {
+          const user = authStore.user;
           updateState(rollbackData);
           if (freshSaveId) {
-            authStore.user.last_save_id = freshSaveId;
+            user.last_save_id = freshSaveId;
           }
-          // Actualizar localStorage para evitar bucles de carga de datos obsoletos
-          try {
-            localStorage.setItem('pokemon_local_save_' + authStore.user.id, JSON.stringify(rollbackData));
-          } catch (e) {
-            logger.warn('SAVE', 'Error al actualizar localStorage durante el rollback:', e);
-          }
-          // Recargar la página para limpiar estados obsoletos de otros stores (batallas, etc.)
-          setTimeout(() => {
-            if (typeof window !== 'undefined') window.location.reload();
-          }, 1000);
+          // Actualizar localStorage y OPFS para evitar bucles de carga de datos obsoletos
+          (async () => {
+            try {
+              const json = JSON.stringify(rollbackData);
+              localStorage.setItem('pokemon_local_save_' + user.id, json);
+
+              const { writeOpfsFile } = await import('@/logic/utils/opfsStorage');
+              const { compress } = await import('@/logic/utils/compression');
+              const compressed = await compress(json);
+              await writeOpfsFile(`save_${user.id}.gz`, compressed);
+              logger.info('SAVE', 'Rollback local storage (LS/OPFS) updated successfully');
+            } catch (e) {
+              logger.warn('SAVE', 'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:', e);
+            } finally {
+              // Recargar la página para limpiar estados obsoletos de otros stores (batallas, etc.)
+              setTimeout(() => {
+                if (typeof window !== 'undefined') window.location.reload();
+              }, 1000);
+            }
+          })();
         }
       }
     }

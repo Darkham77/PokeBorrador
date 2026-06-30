@@ -6,42 +6,15 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: string): string | null {
   if (!id) return null;
-  const normalizedId = String(id).toLowerCase().trim()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Quitar acentos
-    .replace(/\s+/g, '_') // Reemplazar espacios por guiones bajos
-    .replace(/[^a-z0-9_]/g, ''); // Limpiar caracteres especiales
+  const normalizedId = String(id).toLowerCase().trim();
 
   const inv = gameStore.state.inventory || {};
   if (inv[normalizedId] !== undefined) return normalizedId;
   if (inv[id] !== undefined) return id;
 
-  // Buscar por aproximación o aliases en las claves del inventario real
   const keys = Object.keys(inv);
-  
-  // Buscar coincidencia exacta insensible a mayúsculas/minúsculas
   const matchCaseInsensitive = keys.find(k => k.toLowerCase() === normalizedId || k.toLowerCase() === id.toLowerCase());
   if (matchCaseInsensitive) return matchCaseInsensitive;
-
-  // Mapa básico de traducción/normalización para tests heredados
-  const aliasMap: Record<string, string> = {
-    'pokeball': 'pokeball',
-    'pokeball_de_prueba': 'pokeball',
-    'pokeballs': 'pokeball',
-    'pocion': 'potion',
-    'pociones': 'potion',
-    'iman': 'magnet',
-    'pp_up': 'pp_up',
-    'subida_pp': 'pp_up',
-    'subida_de_pp': 'pp_up',
-    'mt06': 'tm06',
-    'mt_toxico': 'tm06',
-    'mt06_toxico': 'tm06',
-  };
-
-  const aliasKey = aliasMap[normalizedId] || aliasMap[id.toLowerCase()];
-  if (aliasKey && inv[aliasKey] !== undefined) {
-    return aliasKey;
-  }
 
   return null;
 }

@@ -100,6 +100,7 @@ interface UnifiedStatus {
 interface VolatileStatusItem {
   icon: string
   text?: string
+  count?: number
   isBoosted?: boolean
   isAdminOnly?: boolean
 }
@@ -240,7 +241,7 @@ export function useCombatantStatus(
           } else if (def.prop === 'perishSongCount') {
             customText = `CANTO MORTAL: El Pokémon caerá en ${num} turnos.`;
           }
-          list.push({ icon: def.icon, text: customText });
+          list.push({ icon: def.icon, text: customText, count: num });
         }
       } else {
         list.push({ icon: def.icon, text: def.text });
@@ -251,11 +252,11 @@ export function useCombatantStatus(
     // 2. Efectos de Campo (Side-based)
     const stages = isPlayerVal.value ? battleStore.playerStages : battleStore.enemyStages
     if (stages) {
-      if (stages.reflect > 0) list.push({ icon: '🪞', text: `REFLEJO: Reduce el daño físico (${stages.reflect}t).` })
-      if (stages.lightScreen > 0) list.push({ icon: '💡', text: `PANTALLA LUZ: Reduce el daño especial (${stages.lightScreen}t).` })
-      if (stages.safeguard > 0) list.push({ icon: '🛡️', text: `VELO SAGRADO: Protege contra estados (${stages.safeguard}t).` })
-      if (stages.mist > 0) list.push({ icon: '🌫️', text: `NEBLINA: Protege contra reducción de stats (${stages.mist}t).` })
-      if (stages.spikes > 0) list.push({ icon: '📍', text: `PÚAS: Daña a los Pokémon que entran al campo (${stages.spikes} capas).` })
+      if (stages.reflect > 0) list.push({ icon: '🪞', text: `REFLEJO: Reduce el daño físico (${stages.reflect}t).`, count: stages.reflect })
+      if (stages.lightScreen > 0) list.push({ icon: '💡', text: `PANTALLA LUZ: Reduce el daño especial (${stages.lightScreen}t).`, count: stages.lightScreen })
+      if (stages.safeguard > 0) list.push({ icon: '🛡️', text: `VELO SAGRADO: Protege contra estados (${stages.safeguard}t).`, count: stages.safeguard })
+      if (stages.mist > 0) list.push({ icon: '🌫️', text: `NEBLINA: Protege contra reducción de stats (${stages.mist}t).`, count: stages.mist })
+      if (stages.spikes > 0) list.push({ icon: '📍', text: `PÚAS: Daña a los Pokémon que entran al campo (${stages.spikes} capas).`, count: stages.spikes })
     }
 
     // 3. Clima
@@ -348,6 +349,7 @@ export function useCombatantStatus(
         title: title || '',
         description: description || text || '',
         class: 'volatile',
+        count: vs.count,
         isBoosted: vs.isBoosted,
         isAdminOnly: (vs as VolatileStatusItem).isAdminOnly
       })

@@ -15,7 +15,7 @@ export function initGlobalErrorHandlers(): void {
   // fallow-ignore-next-line complexity
   console.error = function(...args: unknown[]): void {
     originalConsoleError.apply(console, args)
-    if (isHandlingError) return
+    if (isHandlingError || (console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__) return
     isHandlingError = true
     try {
       const firstErr = args.find(arg => arg instanceof Error)

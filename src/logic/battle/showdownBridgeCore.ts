@@ -150,9 +150,27 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
+    case 'player': {
+      const sideId = parts[2];
+      const name = parts[3];
+      if (sideId && name && store.activeBattle.value) {
+        if (!store.activeBattle.value.playerNames) {
+          store.activeBattle.value.playerNames = {};
+        }
+        store.activeBattle.value.playerNames[name] = sideId === 'p1' ? 'player' : 'enemy';
+      }
+      return true;
+    }
+
     case 'win': {
       const winnerName = parts[2] || 'Entrenador';
-      store.addLog(`¡El combate ha terminado! Ganador: ${winnerName}`, 'log-info');
+      let source: 'player' | 'enemy_trainer' = 'enemy_trainer';
+      if (store.activeBattle.value?.playerNames && store.activeBattle.value.playerNames[winnerName] === 'player') {
+        source = 'player';
+      } else if (winnerName === 'Player') {
+        source = 'player';
+      }
+      store.addLog(`¡El combate ha terminado! Ganador: ${winnerName}`, 'log-info', source);
       return true;
     }
 

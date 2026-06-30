@@ -65,6 +65,13 @@ const isDisabled = computed(() => {
   if (props.isProcessing) return true
   if (!props.move) return true
 
+  // Consultar directamente el request de Showdown para bloquear botones en la UI
+  const playerRequest = battleStore.state?.playerRequest
+  if (playerRequest && playerRequest.active?.[0]?.moves) {
+    const reqMove = playerRequest.active[0].moves.find((rm: any) => rm.id === props.move?.id);
+    if (reqMove && reqMove.disabled) return true;
+  }
+
   const p = props.playerInfo
 
   // A Pokémon locked into a multi-turn move (Thrash, Outrage, Petal Dance...)

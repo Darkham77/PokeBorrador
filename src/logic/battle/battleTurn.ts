@@ -93,19 +93,27 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     let p1Statuses: string[] | undefined = undefined;
     let p2Statuses: string[] | undefined = undefined;
     if (active) {
+      const { resolveCurrentTeamOrder } = await import('./showdownAdapter.ts');
       const team = (store.gs.state.team || []).filter((p): p is Pokemon => !!p);
-      p1Hps = team.map(p => p.hp);
-      p1Statuses = team.map(p => p.status || '');
+      const playerOrder = resolveCurrentTeamOrder(active, 'player', team);
+      p1Hps = playerOrder.map(uid => team.find(p => p.uid === uid)?.hp ?? 0);
+      p1Statuses = playerOrder.map(uid => team.find(p => p.uid === uid)?.status ?? '');
 
       const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-      p2Hps = enemyTeam.map(p => p.hp);
-      p2Statuses = enemyTeam.map(p => p.status || '');
+      const enemyOrder = resolveCurrentTeamOrder(active, 'enemy', enemyTeam);
+      p2Hps = enemyOrder.map(uid => enemyTeam.find(p => p.uid === uid)?.hp ?? 0);
+      p2Statuses = enemyOrder.map(uid => enemyTeam.find(p => p.uid === uid)?.status ?? '');
     }
 
     logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice} (p2Skip: ${p2Skip})`);
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, false, p2Skip)
     logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
+
+    if (active) {
+      active.playerRequest = result.p1Request;
+      active.enemyRequest = result.p2Request;
+    }
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
 
@@ -117,14 +125,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       await parseShowdownLogLine(store, logLine, filteredLogs);
     }
 
-    if (store.activeBattle.value) {
-      if (store.activeBattle.value.player) {
-        store.activeBattle.value.player = { ...store.activeBattle.value.player };
-      }
-      if (store.activeBattle.value.enemy) {
-        store.activeBattle.value.enemy = { ...store.activeBattle.value.enemy };
-      }
-    }
+
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
@@ -248,19 +249,16 @@ export async function runEnemyAction(store: BattleContext) {
     }
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, true, p2Skip)
+    if (active) {
+      active.playerRequest = result.p1Request;
+      active.enemyRequest = result.p2Request;
+    }
     const filteredLogs = filterShowdownLogs(result.logs);
     for (const logLine of filteredLogs) {
       await parseShowdownLogLine(store, logLine, filteredLogs);
     }
 
-    if (store.activeBattle.value) {
-      if (store.activeBattle.value.player) {
-        store.activeBattle.value.player = { ...store.activeBattle.value.player };
-      }
-      if (store.activeBattle.value.enemy) {
-        store.activeBattle.value.enemy = { ...store.activeBattle.value.enemy };
-      }
-    }
+
 
     const playerFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
     const enemyFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0

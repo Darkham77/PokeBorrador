@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { gameBus } from '@/logic/events/gameBus'
 
@@ -15,7 +15,8 @@ export const useErrorStore = defineStore('error', () => {
     isUpdateOrNetworkError: boolean;
   }
 
-  const activeError = ref<ErrorData | null>(null)
+  const errors = ref<ErrorData[]>([])
+  const activeError = computed(() => errors.value[0] || null)
 
   interface ErrorContext {
     type?: string;
@@ -43,10 +44,14 @@ export const useErrorStore = defineStore('error', () => {
       return
     }
 
+    ;(console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__ = true
     logger.error('CRITICAL', `Critical Game Error: ${errorMessage}`, context)
-    
-    // Prevent duplicated overlays
-    if (activeError.value) return
+    ;(console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__ = false
+
+    // Deduplicate consecutive errors with the same message (console interceptor echo)
+    if (errors.value.length > 0 && errors.value[errors.value.length - 1].message === errorMessage) {
+      return
+    }
 
     let errorStack = ''
     if (error instanceof Error && error.stack) {
@@ -59,7 +64,7 @@ export const useErrorStore = defineStore('error', () => {
       errorStack = tempError.stack || 'No stack trace available.'
     }
 
-    activeError.value = {
+    errors.value.push({
       message: errorMessage,
       stack: errorStack,
       type: context.type || 'Uncaught Error',
@@ -68,14 +73,15 @@ export const useErrorStore = defineStore('error', () => {
       colno: context.colno || 0,
       userAction: '',
       isUpdateOrNetworkError: false
-    }
+    })
   }
 
   function clearError() {
-    activeError.value = null
+    errors.value = []
   }
 
   return {
+    errors,
     activeError,
     setError,
     clearError

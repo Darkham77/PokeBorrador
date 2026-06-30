@@ -14,41 +14,12 @@ export const SHOP_ITEMS = dbJson.SHOP_ITEMS as Item[];
 
 export const getItemById = (id: string): Item => {
   if (!id) throw new Error("ID de objeto no proporcionado");
-  const normalizedId = String(id).toLowerCase().trim()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '');
+  const normalizedId = String(id).toLowerCase().trim();
 
   const item = SHOP_ITEMS.find(i => 
     i.id === id || 
-    i.id === normalizedId || 
-    i.id.toLowerCase() === normalizedId || 
-    i.name.toLowerCase() === id.toLowerCase() ||
-    i.name.toLowerCase() === normalizedId.replace(/_/g, ' ')
+    i.id === normalizedId
   );
-
-  // Mapa de aliases comunes para compatibilidad con tests legacy
-  if (!item) {
-    const aliasMap: Record<string, string> = {
-      'pokeball': 'pokeball',
-      'poke_ball': 'pokeball',
-      'pokeball_de_prueba': 'pokeball',
-      'pocion': 'potion',
-      'pociones': 'potion',
-      'iman': 'magnet',
-      'pp_up': 'pp_up',
-      'subida_pp': 'pp_up',
-      'subida_de_pp': 'pp_up',
-      'mt06': 'tm06',
-      'mt_toxico': 'tm06',
-      'mt06_toxico': 'tm06',
-    };
-    const aliasId = aliasMap[normalizedId] || aliasMap[id.toLowerCase()];
-    if (aliasId) {
-      const aliasItem = SHOP_ITEMS.find(i => i.id === aliasId);
-      if (aliasItem) return aliasItem;
-    }
-  }
 
   if (!item) {
     throw new Error(`Objeto no encontrado por ID: ${id}`);

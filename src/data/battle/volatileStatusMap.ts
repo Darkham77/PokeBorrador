@@ -17,7 +17,7 @@ export const VOLATILE_STATUS_LIST: VolatileStatusDefinition[] = [
   { prop: 'badPoison', icon: '☣️', text: 'TÓXICO: El daño del veneno aumenta cada turno.' },
   { prop: 'endure', icon: '🛡️', text: 'AGUANTE: Sobrevivirá el próximo golpe fatal.' },
   { prop: 'trapped', icon: '🪤', text: 'ATRAPADO: No puede escapar del combate.' },
-  { prop: 'disabledTurns', icon: '🚫', text: 'ANULADO: Un movimiento está bloqueado', isCounter: true },
+  { prop: 'disabledTurns', icon: '🔒', text: 'ANULADO: Un movimiento está bloqueado', isCounter: true },
   { prop: 'encoreTurns', icon: '🔁', text: 'OTRA VEZ: Repite el mismo movimiento', isCounter: true },
   { prop: 'tauntTurns', icon: '🤐', text: 'MOFA: No puede usar movimientos de estado', isCounter: true },
   { prop: 'flinched', icon: '💫', text: 'RETROCEDER: No puede atacar este turno.' },

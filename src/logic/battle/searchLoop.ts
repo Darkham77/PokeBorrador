@@ -258,8 +258,8 @@ export async function startEncounter(ctx: BattleContext) {
 
   if (isMinigame) {
     if (ctx.activeBattle.value && enemyPoke) {
-      ctx.activeBattle.value.enemy = { ...enemyPoke }
-      ctx.activeBattle.value._initialEnemy = { ...enemyPoke }
+      ctx.activeBattle.value.enemy = enemyPoke
+      ctx.activeBattle.value._initialEnemy = enemyPoke
     }
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)

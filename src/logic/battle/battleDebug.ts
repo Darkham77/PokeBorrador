@@ -27,8 +27,6 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active && active.player) {
         active.player.status = s
-        active.player = { ...active.player }
-        ctx.activeBattle.value = { ...active }
         logger.info('DEBUG', `Status de jugador cambiado a: ${s}`)
       }
     },
@@ -36,8 +34,6 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active && active.enemy) {
         active.enemy.status = s
-        active.enemy = { ...active.enemy }
-        ctx.activeBattle.value = { ...active }
         logger.info('DEBUG', `Status de enemigo cambiado a: ${s}`)
       }
     },
@@ -53,7 +49,6 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active) {
         active.weather = { type: w, turns: 5 }
-        ctx.activeBattle.value = { ...active }
         logger.info('DEBUG', `Clima cambiado a: ${w}`)
       }
     },
@@ -75,10 +70,6 @@ export function setupBattleDebug(ctx: BattleContext) {
           }
         }
         
-        // Forzar reactividad reasignando referencias
-        active.player = { ...active.player }
-        ctx.activeBattle.value = { ...active }
-        
         logger.info('DEBUG', '¡Curación completa aplicada reactivamente al jugador!')
       }
     },
@@ -86,9 +77,6 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active && active.enemy) {
         active.enemy.hp = 0
-        // Forzar reactividad
-        active.enemy = { ...active.enemy }
-        ctx.activeBattle.value = { ...active }
         
         logger.warn('DEBUG', 'Enemigo fulminado (HP = 0), iniciando secuencia de debilitamiento/faint...')
         await ctx.handleFaint('enemy')

@@ -65,7 +65,8 @@ describe('Backup Full validation and Dex compatibility test', () => {
       'database/migrations/20260622000100_migrate_save_move_ids.sqlite.sql',
       'database/migrations/20260622000200_fix_accented_spanish_move_ids.sqlite.sql',
       'database/migrations/20260622000300_migrate_save_eggs_and_missions.sqlite.sql',
-      'database/migrations/20260627023400_fix_corrupted_n_move_ids.sqlite.sql'
+      'database/migrations/20260627023400_fix_corrupted_n_move_ids.sqlite.sql',
+      'database/migrations/20260629230200_migrate_item_ids_in_saves_v3.sqlite.sql'
     ];
 
     for (const file of migrationFiles) {
@@ -146,6 +147,20 @@ describe('Backup Full validation and Dex compatibility test', () => {
               errors.push(`${tag} - Invalid move: ID '${m.id}' (Name: '${m.name}')`);
             }
           }
+        }
+      }
+
+      // Validate inventory items
+      const inventory = saveData.inventory || {};
+      const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
+      const validItemIds = new Set([
+        ...itemsDict.SHOP_ITEMS.map((item: { id: string }) => item.id),
+      ]);
+
+      for (const itemKey of Object.keys(inventory)) {
+        const isTM = itemKey.startsWith('tm') || itemKey.startsWith('hm');
+        if (!validItemIds.has(itemKey) && !isTM) {
+          errors.push(`[User: ${userId}] Inventory - Invalid item ID: '${itemKey}'`);
         }
       }
     }

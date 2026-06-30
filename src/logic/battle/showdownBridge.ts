@@ -1,5 +1,6 @@
 // fallow-ignore-file security-sink
 import type { BattleContext } from '@/types/battle/battleContext';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import { logger } from '@/logic/utils/logger';
 import type { SBCtx } from './showdownBridgeCtx';
 import { handleCoreEvents } from './showdownBridgeCore';
@@ -73,7 +74,26 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       const found = team.find(mon =>
         mon && mon.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanName
       );
-      if (found) return found;
+      if (found) {
+        // En combates 2vs2, pueden existir múltiples asientos activos por lado (ej. player, player2, enemy, enemy2).
+        // Sincronizamos devolviendo la instancia reactiva del asiento activo que coincida en UID.
+        const battle = store.activeBattle.value;
+        if (battle) {
+          const keys = Object.keys(battle);
+          for (const key of keys) {
+            const matchesSide = side === 'player' 
+              ? (key.startsWith('player') || key === 'ally') 
+              : key.startsWith('enemy');
+            if (matchesSide) {
+              const val = (battle as Record<string, any>)[key];
+              if (val && typeof val === 'object' && 'uid' in val && val.uid === found.uid) {
+                return val as Pokemon;
+              }
+            }
+          }
+        }
+        return found;
+      }
     }
 
     return side === 'player' ? p : e;

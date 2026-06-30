@@ -49,9 +49,16 @@ self.onmessage = (event: MessageEvent) => {
           currentBattle.field.setWeather(payload.weather, 'debug' as const);
         }
 
-        // Enviar logs iniciales de inicio de combate
+        // Enviar logs iniciales de inicio de combate junto con los requests iniciales
         const initLogs = getNewLogs();
-        self.postMessage({ type: 'INIT_SUCCESS', payload: { logs: initLogs } });
+        self.postMessage({ 
+          type: 'INIT_SUCCESS', 
+          payload: { 
+            logs: initLogs,
+            p1Request: currentBattle.p1.activeRequest,
+            p2Request: currentBattle.p2.activeRequest
+          } 
+        });
         break;
       }
 
@@ -59,22 +66,23 @@ self.onmessage = (event: MessageEvent) => {
         if (!currentBattle) {
           throw new Error('No hay ninguna batalla activa inicializada en el worker.');
         }
+        const battle = currentBattle;
 
         const { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip } = payload;
 
         // Sincronizar HP y Estados antes del turno
-        syncSideStates(currentBattle.p1 as unknown as PkmnSimSide, p1Hps, p1Statuses);
-        syncSideStates(currentBattle.p2 as unknown as PkmnSimSide, p2Hps, p2Statuses);
+        syncSideStates(battle.p1 as unknown as PkmnSimSide, p1Hps, p1Statuses);
+        syncSideStates(battle.p2 as unknown as PkmnSimSide, p2Hps, p2Statuses);
 
         // Si se indicó saltar turno (por uso de objeto), aplicar volatile flinch para omitir ataque
-        if (p1Skip && currentBattle.p1.active?.[0]) {
-          const activeMon = currentBattle.p1.active[0] as unknown as { addVolatile: (status: string) => void };
+        if (p1Skip && battle.p1.active?.[0]) {
+          const activeMon = battle.p1.active[0] as unknown as { addVolatile: (status: string) => void };
           if (typeof activeMon?.addVolatile === 'function') {
             activeMon.addVolatile('flinch');
           }
         }
-        if (p2Skip && currentBattle.p2.active?.[0]) {
-          const activeMon = currentBattle.p2.active[0] as unknown as { addVolatile: (status: string) => void };
+        if (p2Skip && battle.p2.active?.[0]) {
+          const activeMon = battle.p2.active[0] as unknown as { addVolatile: (status: string) => void };
           if (typeof activeMon?.addVolatile === 'function') {
             activeMon.addVolatile('flinch');
           }
@@ -95,28 +103,45 @@ self.onmessage = (event: MessageEvent) => {
           return choice
         };
 
+        const chooseWithFallback = (player: 'p1' | 'p2', choice: string): boolean => {
+          const resolved = resolveChoice(battle[player] as unknown as PkmnSimSide, choice);
+          let ok = battle.choose(player, resolved);
+          if (!ok) {
+            console.warn(`[Showdown Worker] Choice "${choice}" (resolved: "${resolved}") was rejected for ${player}. Attempting fallbacks.`);
+            // Try moves 1 to 4
+            for (let i = 1; i <= 4; i++) {
+              if (battle.choose(player, `move ${i}`)) {
+                console.log(`[Showdown Worker] Fallback choice "move ${i}" accepted for ${player}`);
+                return true;
+              }
+            }
+            // Try default (Struggle)
+            if (battle.choose(player, 'default')) {
+              console.log(`[Showdown Worker] Fallback choice "default" accepted for ${player}`);
+              return true;
+            }
+          }
+          return ok;
+        };
+
         if (p1Choice) {
-          const resolved1 = resolveChoice(currentBattle.p1 as unknown as PkmnSimSide, p1Choice);
-          const res1 = currentBattle.choose('p1', resolved1);
-          console.log(`[Showdown Worker] p1 choose(${resolved1}) res:`, res1);
+          const res1 = chooseWithFallback('p1', p1Choice);
           if (!res1) {
-            throw new Error(`INVALID_CHOICE: Elección inválida para p1: "${p1Choice}" (resuelto a "${resolved1}")`);
+            throw new Error(`INVALID_CHOICE: Elección inválida e irrecuperable para p1: "${p1Choice}"`);
           }
         }
         if (p2Choice) {
-          const resolved2 = resolveChoice(currentBattle.p2 as unknown as PkmnSimSide, p2Choice);
-          const res2 = currentBattle.choose('p2', resolved2);
-          console.log(`[Showdown Worker] p2 choose(${resolved2}) res:`, res2);
+          const res2 = chooseWithFallback('p2', p2Choice);
           if (!res2) {
-            throw new Error(`INVALID_CHOICE: Elección inválida para p2: "${p2Choice}" (resuelto a "${resolved2}")`);
+            throw new Error(`INVALID_CHOICE: Elección inválida e irrecuperable para p2: "${p2Choice}"`);
           }
         }
 
         const turnLogs = getNewLogs();
-        const isOver = currentBattle.ended;
-        const winner = currentBattle.winner;
-        const p1ForceSwitch = !!(currentBattle.p1.activeRequest?.forceSwitch?.[0]);
-        const p2ForceSwitch = !!(currentBattle.p2.activeRequest?.forceSwitch?.[0]);
+        const isOver = battle.ended;
+        const winner = battle.winner;
+        const p1ForceSwitch = !!(battle.p1.activeRequest?.forceSwitch?.[0]);
+        const p2ForceSwitch = !!(battle.p2.activeRequest?.forceSwitch?.[0]);
 
         self.postMessage({ 
           type: 'TURN_SUCCESS', 
@@ -125,7 +150,9 @@ self.onmessage = (event: MessageEvent) => {
             isOver,
             winner,
             p1ForceSwitch,
-            p2ForceSwitch
+            p2ForceSwitch,
+            p1Request: battle.p1.activeRequest,
+            p2Request: battle.p2.activeRequest
           } 
         });
         break;

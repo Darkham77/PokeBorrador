@@ -345,7 +345,7 @@ const handleFishingFail = async () => {
   logger.warn('BattleArenaView', 'Fishing FAIL')
   const uiStore = useUIStore()
   uiStore.notify('El Pokémon escapó...', '💨')
-  battleStore.addLog('El Pokémon escapó...', 'log-info')
+  battleStore.addLog('El Pokémon escapó...', 'log-info', '💨')
 
   // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
   if (battleStore.state) {

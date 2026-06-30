@@ -419,4 +419,56 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     const validChoiceRes = battle.choose('p2', 'move bulldoze');
     assert.strictEqual(validChoiceRes, true, 'Should succeed to choose move because Geodude has been synced with 31 HP');
   });
+
+  it('correctly maps HP arrays when the lead Pokemon is fainted and the active Pokemon is at index 1 at battle start', async () => {
+    // Simulator side.pokemon order at start: Gengar (index 0), Vaporeon (index 1), Eevee (index 2)
+    // because Gengar (active) was unshifted to index 0 during setup.
+    const simMons = [
+      { name: 'Gengar', hp: 80, fainted: false, status: '' },
+      { name: 'Vaporeon', hp: 100, fainted: false, status: '' },
+      { name: 'Eevee', hp: 100, fainted: false, status: '' }
+    ];
+
+    const uiTeam = [
+      { uid: 'vaporeon-uid', name: 'Vaporeon', hp: 0 },
+      { uid: 'gengar-uid', name: 'Gengar', hp: 80 },
+      { uid: 'eevee-uid', name: 'Eevee', hp: 100 }
+    ];
+
+    // activeBattle state after initBattle (Gengar is active, Vaporeon is lead but fainted)
+    const activeBattleMock = {
+      showdownPlayerTeamOrder: ['gengar-uid', 'vaporeon-uid', 'eevee-uid'],
+      initialPlayerTeamOrder: ['vaporeon-uid', 'gengar-uid', 'eevee-uid'],
+      player: { uid: 'gengar-uid', hp: 80 }
+    };
+
+    const { resolveCurrentTeamOrder } = await import('../../../src/logic/battle/showdownAdapter.ts');
+
+    // If we map HP using original team order (which was the bug!):
+    const wrongHps = uiTeam.map(p => p.hp); // [0, 80, 100]
+    
+    // If we sync simMons using wrongHps:
+    const mockSim1 = JSON.parse(JSON.stringify(simMons));
+    mockSim1.forEach((mon: any, idx: number) => {
+      mon.hp = wrongHps[idx];
+      if (mon.hp <= 0) mon.fainted = true;
+    });
+    // Gengar gets 0 HP and faints!
+    assert.strictEqual(mockSim1[0].fainted, true, 'Wrong mapping faints the active Gengar');
+
+    // If we map HP using resolveCurrentTeamOrder (correct):
+    type TargetParam = Parameters<typeof resolveCurrentTeamOrder>[0];
+    const correctOrder = resolveCurrentTeamOrder(activeBattleMock as unknown as TargetParam, 'player', uiTeam as unknown as Parameters<typeof resolveCurrentTeamOrder>[2]);
+    const correctHps = correctOrder.map(uid => uiTeam.find(p => p.uid === uid)?.hp ?? 0);
+    assert.deepStrictEqual(correctHps, [80, 0, 100]);
+
+    // If we sync simMons using correctHps:
+    const mockSim2 = JSON.parse(JSON.stringify(simMons));
+    mockSim2.forEach((mon: any, idx: number) => {
+      mon.hp = correctHps[idx];
+      if (mon.hp <= 0) mon.fainted = true;
+    });
+    assert.strictEqual(mockSim2[0].fainted, false, 'Correct mapping keeps Gengar healthy');
+    assert.strictEqual(mockSim2[1].fainted, true, 'Correct mapping marks Vaporeon as fainted');
+  });
 });

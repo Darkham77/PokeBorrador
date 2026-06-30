@@ -68,6 +68,9 @@ export interface BattleState {
   rewardTM?: string;
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
+  playerNames?: Record<string, 'player' | 'enemy'>;
+  playerRequest?: any;
+  enemyRequest?: any;
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';

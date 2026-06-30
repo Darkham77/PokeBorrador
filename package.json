@@ -77,8 +77,7 @@
     "validate:fsm:summary": "npm run validate:fsm:implementation -- --summary",
     "validate:fsm:errors": "npm run validate:fsm:implementation -- --errors-only",
     "validate:fsm:report": "npm run validate:fsm:implementation -- --output=scratch/fsm_report.txt",
-    "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts",
-    "db:sync": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/maintenance/sync_db_with_showdown.ts"
+    "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

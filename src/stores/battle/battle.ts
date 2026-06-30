@@ -385,6 +385,14 @@ export const useBattleStore = defineStore('battle', () => {
       const res = await handleItemUsage(itemId, targetPoke, activeBattle.value.enemy, { 
         eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm, itemId
       })
+
+      // Sincronizar de vuelta si el Pokémon modificado es el activo en el combate
+      if (activeBattle.value.player && targetPoke.uid === activeBattle.value.player.uid) {
+        activeBattle.value.player.hp = targetPoke.hp
+        activeBattle.value.player.status = targetPoke.status
+        activeBattle.value.player.moves = targetPoke.moves
+      }
+
       attackerSide.value = null
       activeMove.value = null
       
@@ -420,11 +428,11 @@ export const useBattleStore = defineStore('battle', () => {
       } else if (castRes.action !== 'fail') {
         if (castRes.pokemon) {
           if (targetIndex !== null && gs.state.team[targetIndex]) {
-            gs.state.team[targetIndex] = { ...castRes.pokemon };
+            gs.state.team[targetIndex] = castRes.pokemon;
           }
           const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex);
           if (isTargetActive && activeBattle.value?.player) {
-            activeBattle.value.player = { ...castRes.pokemon };
+            activeBattle.value.player = castRes.pokemon;
           }
           syncTeamHP();
         }

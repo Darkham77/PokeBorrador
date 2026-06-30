@@ -39,7 +39,7 @@ const handleSwitch = (index: number) => {
   if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) return
   if (!canSwitch.value) return
   
-  battleStore.executeSwitch(index)
+  battleStore.executeSwitch(index, uiStore.isBattleSwitchForced)
 }
 </script>
 
