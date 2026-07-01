@@ -92,14 +92,14 @@ describe('Breeding Engine', () => {
 
   describe('inheritMoves', () => {
     it('should inherit Egg Moves if parents know them', () => {
-      const pA = { id: 'charizard', moves: [{ name: 'dragon_dance' }] } as unknown as Pokemon
+      const pA = { id: 'charizard', moves: [{ id: 'dragondance', name: 'Dragon Dance', pp: 20, maxPP: 20 }] } as unknown as Pokemon
       const pB = { id: 'charizard', moves: [] } as unknown as Pokemon
       const res = inheritMoves(pA, pB, 'charmander')
-      expect(res).toContain('dragon_dance')
+      expect(res).toContain('dragondance')
     })
 
-    it('should not inherit moves that are not in EGG_MOVES_DB', () => {
-      const pA = { id: 'charizard', moves: [{ name: 'tackle' }] } as unknown as Pokemon
+    it('should not inherit moves that are not egg moves', () => {
+      const pA = { id: 'charizard', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
       const pB = { id: 'charizard', moves: [] } as unknown as Pokemon
       const res = inheritMoves(pA, pB, 'charmander')
       expect(res).not.toContain('tackle')
@@ -128,7 +128,7 @@ describe('Breeding Engine', () => {
 
   describe('getGeneticsForecast', () => {
     it('should return correct summary for UI', () => {
-      const pA = { id: 'pikachu', gender: 'F', moves: [{ name: 'volt_tackle' }], heldItem: 'everstone' } as unknown as Pokemon
+      const pA = { id: 'pikachu', gender: 'F', moves: [{ id: 'volttackle', name: 'Volt Tackle', pp: 15, maxPP: 15 }], heldItem: 'everstone' } as unknown as Pokemon
       const pB = { id: 'pikachu', gender: 'M', moves: [] } as unknown as Pokemon
       const res = getGeneticsForecast(pA, pB, '')
       expect(res.natureGuaranteed).toBe(true)

@@ -104,10 +104,10 @@ export function generateNPCInventory(
     { id: 'pokeball', price: 200 }
   ];
   if (maxLevel >= 15) {
-    pbCandidates.push({ id: 'great_ball', price: 500 });
+    pbCandidates.push({ id: 'greatball', price: 500 });
   }
   if (maxLevel >= 35) {
-    pbCandidates.push({ id: 'ultra_ball', price: 1000 });
+    pbCandidates.push({ id: 'ultraball', price: 1000 });
   }
 
   const sortedPBs = pbCandidates.sort((a, b) => b.price - a.price);

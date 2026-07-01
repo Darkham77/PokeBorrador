@@ -24,7 +24,11 @@ test.describe('Daycare Daily Missions E2E Flow', () => {
       const masterCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: 50 });
       masterCaterpie.nickname = 'MASTER_CATERPIE';
 
-      // Agregar ambos
+      // Para evitar que el Save Shield bloquee el guardado:
+      gameStore.state.starterChosen = true;
+      gameStore.state.team = [pokemonDebugService.generate({ id: 'caterpie', level: 5 })];
+
+      // Agregar ambos a la caja
       gameStore.state.box = [babyCaterpie, masterCaterpie];
 
       // Forzar misiones diarias estáticas para hacer el test predecible
@@ -40,7 +44,7 @@ test.describe('Daycare Daily Missions E2E Flow', () => {
           },
           reqText: 'Caterpie con nivel superior a 30',
           reward: {
-            id: 'rare_candy',
+            id: 'rarecandy',
             name: 'Caramelo Raro',
             qty: 1,
             icon: '🍬'
@@ -142,7 +146,7 @@ test.describe('Daycare Daily Missions E2E Flow', () => {
       const gameStore = getStore();
       const hasMaster = gameStore.state.box.some((p: TargetPoke | null) => p?.nickname === 'MASTER_CATERPIE');
       const hasBaby = gameStore.state.box.some((p: TargetPoke | null) => p?.nickname === 'BABY_CATERPIE');
-      const candyQty = gameStore.state.inventory?.rare_candy ?? 0;
+      const candyQty = gameStore.state.inventory?.rarecandy ?? 0;
       return { hasMaster, hasBaby, candyQty };
     });
 

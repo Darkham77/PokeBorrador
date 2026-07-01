@@ -50,19 +50,19 @@ export function calculateActiveTravelModifiers(items: Set<string> | string[]) {
   let typeFocus: string | null = null
 
   if (itemSet.has('repel')) encounterRateMod = -50
-  else if (itemSet.has('super_repel')) encounterRateMod = -80
-  else if (itemSet.has('max_repel')) encounterRateMod = -100
+  else if (itemSet.has('superrepel')) encounterRateMod = -80
+  else if (itemSet.has('maxrepel')) encounterRateMod = -100
 
-  if (itemSet.has('lucky_egg')) expMultiplier = 1.5
-  if (itemSet.has('amulet_coin')) moneyMultiplier = 2.0
-  if (itemSet.has('ticket_shiny')) shinyChanceMod = 2.0
+  if (itemSet.has('luckyegg')) expMultiplier = 1.5
+  if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0
+  if (itemSet.has('ticketshiny')) shinyChanceMod = 2.0
 
-  if (itemSet.has('incense_fire')) typeFocus = 'fire'
-  else if (itemSet.has('incense_water')) typeFocus = 'water'
-  else if (itemSet.has('incense_grass')) typeFocus = 'grass'
-  else if (itemSet.has('incense_normal')) typeFocus = 'normal'
-  else if (itemSet.has('incense_ghost')) typeFocus = 'ghost'
-  else if (itemSet.has('incense_psychic')) typeFocus = 'psychic'
+  if (itemSet.has('incensefire')) typeFocus = 'fire'
+  else if (itemSet.has('incensewater')) typeFocus = 'water'
+  else if (itemSet.has('incensegrass')) typeFocus = 'grass'
+  else if (itemSet.has('incensenormal')) typeFocus = 'normal'
+  else if (itemSet.has('incenseghost')) typeFocus = 'ghost'
+  else if (itemSet.has('incensepsychic')) typeFocus = 'psychic'
 
   return {
     encounterRateMod,

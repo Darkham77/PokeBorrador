@@ -85,8 +85,29 @@ const isDisabled = computed(() => {
     }
   }
 
-  // 2. Fallback (si no hay request activo o no se encuentra el movimiento): Validar si no le quedan PP
+  // 2. Fallback (si no hay request activo o no se encuentra el movimiento):
   const p = props.playerInfo
+
+  // 2.1 Validación de movimiento de dos turnos (twoturnmove)
+  const isTwoTurnActive = !!(p?.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0);
+  if (isTwoTurnActive && p?.lastMove) {
+    if (props.move.id !== p.lastMove.id) {
+      return true;
+    }
+  }
+
+  // 2.2 Validación de Choice Items (Choice Band, Specs, Scarf)
+  const isChoiceItem = p?.heldItem && ['choiceband', 'choicespecs', 'choicescarf'].includes(p.heldItem.toLowerCase());
+  if (isChoiceItem && p?.choiceMove) {
+    const choiceLower = p.choiceMove.toLowerCase();
+    const moveNameLower = (props.move?.name || '').toLowerCase();
+    const moveIdLower = (props.move?.id || '').toLowerCase();
+    if (moveNameLower !== choiceLower && moveIdLower !== choiceLower) {
+      return true;
+    }
+  }
+
+  // 2.3 Validar si no le quedan PP
   const isLockedMove = !!(p?.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0)
   const isThrashLocked = !!(p?.thrashTurns && p.thrashTurns > 0)
   const isLocked = isLockedMove || isThrashLocked

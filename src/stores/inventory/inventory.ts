@@ -24,7 +24,7 @@ export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type
   const type = item.type
   const id = item.id
 
-  const valuables = ['nugget', 'pearl', 'big_pearl', 'stardust', 'star_piece']
+  const valuables = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece']
   if (valuables.includes(id)) return false
 
   if (cat === 'pokeballs') return false

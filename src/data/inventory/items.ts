@@ -37,21 +37,21 @@ export const getItemName = (id: string): string => {
 };
 
 export const BUFF_FIELD_TO_ITEM_IDS: Record<string, string[]> = {
-  repelSecs: ['repel', 'super_repel', 'max_repel'],
-  luckyEggSecs: ['lucky_egg'],
-  amuletCoinSecs: ['amulet_coin'],
-  fishingRodSecs: ['fishing_rod', 'fishing_rod_good', 'fishing_rod_super'],
-  pickaxeSecs: ['pickaxe', 'pickaxe_silver', 'pickaxe_gold'],
-  brushSecs: ['brush', 'brush_good', 'brush_super'],
-  shinyBoostSecs: ['ticket_shiny'],
-  safariTicketSecs: ['ticket_safari'],
-  ceruleanTicketSecs: ['ticket_cerulean'],
-  articunoTicketSecs: ['ticket_articuno'],
-  mewtwoTicketSecs: ['ticket_mewtwo'],
-  ivScannerSecs: ['iv_scanner'],
+  repelSecs: ['repel', 'superrepel', 'maxrepel'],
+  luckyEggSecs: ['luckyegg'],
+  amuletCoinSecs: ['amuletcoin'],
+  fishingRodSecs: ['fishingrod', 'fishingrodgood', 'fishingrodsuper'],
+  pickaxeSecs: ['pickaxe', 'pickaxesilver', 'pickaxegold'],
+  brushSecs: ['brush', 'brushgood', 'brushsuper'],
+  shinyBoostSecs: ['ticketshiny'],
+  safariTicketSecs: ['ticketsafari'],
+  ceruleanTicketSecs: ['ticketcerulean'],
+  articunoTicketSecs: ['ticketarticuno'],
+  mewtwoTicketSecs: ['ticketmewtwo'],
+  ivScannerSecs: ['ivscanner'],
   incenseSecs: [
-    'incense_fire', 'incense_water', 'incense_grass', 
-    'incense_normal', 'incense_ghost', 'incense_psychic'
+    'incensefire', 'incensewater', 'incensegrass',
+    'incensenormal', 'incenseghost', 'incensepsychic'
   ]
 };
 

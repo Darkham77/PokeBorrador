@@ -78,102 +78,26 @@ function resolveShowdownSpecies(raw: string | undefined): string {
   return raw;
 }
 
+
 /**
- * Retorna el slot de Showdown (1-indexed, de 1 a 6) para un Pokémon del equipo
+ * Returns the Showdown slot number (1-indexed) for a Pokemon UID within a slot order array.
+ * The slot order array must be in @pkmn/sim's internal order (active = index 0).
  */
-export function getShowdownSlot(
-  teamOrOrder: (string | GamePokemon)[],
-  activePokeOrTargetUid: string | GamePokemon,
-  targetPoke?: GamePokemon
-): number {
-  if (typeof teamOrOrder[0] === 'string') {
-    const currentOrder = teamOrOrder as string[];
-    const targetUid = activePokeOrTargetUid as string;
-    const idx = currentOrder.indexOf(targetUid);
-    return idx !== -1 ? idx + 1 : 1;
-  } else {
-    const team = teamOrOrder as GamePokemon[];
-    const activePoke = activePokeOrTargetUid as GamePokemon;
-    const target = targetPoke!;
-    if (target.uid === activePoke.uid) return 1;
-    const others = team.filter(p => !!p && p.uid !== activePoke.uid);
-    const idx = others.findIndex(p => p.uid === target.uid);
-    return idx !== -1 ? idx + 2 : 1;
-  }
+export function getShowdownSlot(slotOrder: string[], uid: string): number {
+  const idx = slotOrder.indexOf(uid)
+  return idx !== -1 ? idx + 1 : 1
 }
 
-export function swapActivePokemon(currentOrder: string[], activeUid: string, activeIndex: number = 0): string[] {
-  const nextOrder = [...currentOrder];
-  const idx = nextOrder.indexOf(activeUid);
-  if (idx !== -1 && idx !== activeIndex) {
-    const active = nextOrder[activeIndex];
-    const target = nextOrder[idx];
-    if (active !== undefined && target !== undefined) {
-      nextOrder[activeIndex] = target;
-      nextOrder[idx] = active;
-    }
-  }
-  return nextOrder;
-}
-
-export function resolveCurrentTeamOrder(
-  active: {
-    showdownPlayerTeamOrder?: string[] | null;
-    initialPlayerTeamOrder?: string[] | null;
-    playerTeam?: Array<GamePokemon | null> | null;
-    showdownEnemyTeamOrder?: string[] | null;
-    initialEnemyTeamOrder?: string[] | null;
-    enemyTeam?: Array<GamePokemon | null> | null;
-  },
-  side: 'player' | 'enemy',
-  fallbackTeam: Array<GamePokemon | null> = []
-): string[] {
-  if (side === 'player') {
-    const list = active.showdownPlayerTeamOrder || active.initialPlayerTeamOrder || active.playerTeam || fallbackTeam;
-    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
-  } else {
-    const list = active.showdownEnemyTeamOrder || active.initialEnemyTeamOrder || active.enemyTeam || fallbackTeam;
-    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
-  }
-}
-
-export function resolveOriginalTeamOrder(
-  active: {
-    initialPlayerTeamOrder?: string[] | null;
-    playerTeam?: Array<GamePokemon | null> | null;
-    initialEnemyTeamOrder?: string[] | null;
-    enemyTeam?: Array<GamePokemon | null> | null;
-  },
-  side: 'player' | 'enemy',
-  fallbackTeam: Array<GamePokemon | null> = []
-): string[] {
-  if (side === 'player') {
-    const list = active.initialPlayerTeamOrder || active.playerTeam || fallbackTeam;
-    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
-  } else {
-    const list = active.initialEnemyTeamOrder || active.enemyTeam || fallbackTeam;
-    return list.filter((p): p is string | GamePokemon => !!p).map(p => typeof p === 'string' ? p : p.uid);
-  }
-}
-
+/**
+ * Resolves the Showdown slot number for a Pokemon using the canonical slot order
+ * provided by the worker (p1SlotOrder / p2SlotOrder).
+ */
 export function resolveShowdownSlot(
-  active: {
-    showdownPlayerTeamOrder?: string[] | null;
-    initialPlayerTeamOrder?: string[] | null;
-    playerTeam?: Array<GamePokemon | null> | null;
-    showdownEnemyTeamOrder?: string[] | null;
-    initialEnemyTeamOrder?: string[] | null;
-    enemyTeam?: Array<GamePokemon | null> | null;
-  },
+  active: { p1SlotOrder?: string[] | null; p2SlotOrder?: string[] | null },
   side: 'player' | 'enemy',
-  pokemonUid: string,
-  fallbackTeam: Array<GamePokemon | null> = []
+  pokemonUid: string
 ): number {
-  // Use the CURRENT order (which tracks internal Showdown slot swaps after each switch).
-  // resolveOriginalTeamOrder was wrong because Showdown physically reorders slots on switch.
-  const order = resolveCurrentTeamOrder(active, side, fallbackTeam);
-  return getShowdownSlot(order, pokemonUid);
+  const order = side === 'player' ? active.p1SlotOrder : active.p2SlotOrder
+  if (!order?.length) return 1
+  return getShowdownSlot(order, pokemonUid)
 }
-
-
-

@@ -47,20 +47,23 @@ export function useAdventureRouting(options: {
     }
   })
 
+  const INCENSE_TYPE: Readonly<Record<string, string>> = {
+    incensefire: 'fire', incensewater: 'water', incensegrass: 'grass',
+    incensenormal: 'normal', incenseghost: 'ghost', incensepsychic: 'psychic'
+  }
+
   const toggleTravelItem = (itemId: string) => {
     const next = new Set(selectedTravelItems.value)
     if (next.has(itemId)) {
       next.delete(itemId)
     } else {
-      if (['repel', 'super_repel', 'max_repel'].includes(itemId)) {
+      if (['repel', 'superrepel', 'maxrepel'].includes(itemId)) {
         next.delete('repel')
-        next.delete('super_repel')
-        next.delete('max_repel')
+        next.delete('superrepel')
+        next.delete('maxrepel')
       }
-      if (itemId.startsWith('incense_')) {
-        next.forEach(id => {
-          if (id.startsWith('incense_')) next.delete(id)
-        })
+      if (itemId in INCENSE_TYPE) {
+        next.forEach(id => { if (id in INCENSE_TYPE) next.delete(id) })
       }
       next.add(itemId)
     }
@@ -183,14 +186,13 @@ export function useAdventureRouting(options: {
       
       const buffsStore = useBuffsStore()
       if (itemId === 'repel') buffsStore.addBuff('repel', 5 * 60)
-      else if (itemId === 'super_repel') buffsStore.addBuff('repel', 15 * 60)
-      else if (itemId === 'max_repel') buffsStore.addBuff('repel', 30 * 60)
-      else if (itemId === 'lucky_egg') buffsStore.addBuff('lucky-egg', 30 * 60)
-      else if (itemId === 'amulet_coin') buffsStore.addBuff('amulet', 60 * 60)
-      else if (itemId === 'ticket_shiny') buffsStore.addBuff('shiny', 60 * 60)
-      else if (itemId.startsWith('incense_')) {
-        const type = itemId.split('_')[1]
-        buffsStore.addBuff('incense', 30 * 60, type)
+      else if (itemId === 'superrepel') buffsStore.addBuff('repel', 15 * 60)
+      else if (itemId === 'maxrepel') buffsStore.addBuff('repel', 30 * 60)
+      else if (itemId === 'luckyegg') buffsStore.addBuff('lucky-egg', 30 * 60)
+      else if (itemId === 'amuletcoin') buffsStore.addBuff('amulet', 60 * 60)
+      else if (itemId === 'ticketshiny') buffsStore.addBuff('shiny', 60 * 60)
+      else if (itemId in INCENSE_TYPE) {
+        buffsStore.addBuff('incense', 30 * 60, INCENSE_TYPE[itemId])
       }
     })
 
@@ -204,9 +206,9 @@ export function useAdventureRouting(options: {
 
   const filteredBuffItems = computed(() => {
     const buffIds = [
-      'repel', 'super_repel', 'max_repel',
-      'lucky_egg', 'amulet_coin', 'ticket_shiny',
-      'incense_fire', 'incense_water', 'incense_grass', 'incense_normal', 'incense_ghost', 'incense_psychic'
+      'repel', 'superrepel', 'maxrepel',
+      'luckyegg', 'amuletcoin', 'ticketshiny',
+      'incensefire', 'incensewater', 'incensegrass', 'incensenormal', 'incenseghost', 'incensepsychic'
     ]
     return SHOP_ITEMS.filter(item => buffIds.includes(item.id) && (options.gameStore.state.inventory?.[item.id] || 0) > 0)
   })

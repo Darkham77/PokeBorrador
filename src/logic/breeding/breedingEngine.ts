@@ -1,5 +1,6 @@
 
-import { EGG_GROUPS, BABY_MAP, EGG_MOVES_DB, BREEDING_CONSTANTS } from './breedingData.ts'
+import { Dex } from '@pkmn/sim'
+import { EGG_GROUPS, BABY_MAP, BREEDING_CONSTANTS } from './breedingData.ts'
 import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon/pokemon'
 
@@ -7,6 +8,18 @@ import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon
  * breedingEngine.ts
  * Motor lógico de crianza: compatibilidad, herencia y generación de especies.
  */
+
+/** Memoized: Egg Moves de una especie base consultadas desde @pkmn/sim. */
+const _eggMovesCache = new Map<string, string[]>()
+function getEggMoves(speciesId: string): string[] {
+  if (_eggMovesCache.has(speciesId)) return _eggMovesCache.get(speciesId)!
+  const learnset = Dex.data.Learnsets[speciesId]?.learnset ?? {}
+  const eggMoves = Object.entries(learnset)
+    .filter(([, sources]) => sources.some(s => s.includes('E')))
+    .map(([moveId]) => moveId)
+  _eggMovesCache.set(speciesId, eggMoves)
+  return eggMoves
+}
 
 /**
  * Retorna el ID base de un Pokémon (remueve sufijos de género si existen).
@@ -83,11 +96,17 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
   
   const powerMap: Record<string, keyof PokemonIVs> = {
     power_weight: 'hp',
+    powerweight: 'hp',
     power_bracer: 'atk',
+    powerbracer: 'atk',
     power_belt: 'def',
+    powerbelt: 'def',
     power_lens: 'spa',
+    powerlens: 'spa',
     power_band: 'spd',
-    power_anklet: 'spe'
+    powerband: 'spd',
+    power_anklet: 'spe',
+    poweranklet: 'spe'
   }
   
   const forcedA = powerMap[itemA]
@@ -125,22 +144,22 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
  */
 export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: string): string[] {
   const babyId = getBreedingBaseId(eggSpeciesId)
-  const possibleEggMoves = EGG_MOVES_DB[babyId] || []
+  const possibleEggMoves = getEggMoves(babyId)
   const inheritedMoves: string[] = []
 
   // 1. Egg Moves (si el padre o la madre lo conocen Y está en la DB de posibles egg moves)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])]
   possibleEggMoves.forEach(moveId => {
-    if (parentsMoves.some(m => m && m.name === moveId)) {
+    if (parentsMoves.some(m => m && m.id === moveId)) {
       if (!inheritedMoves.includes(moveId)) inheritedMoves.push(moveId)
     }
   })
 
   // 2. TMs: Si ambos padres conocen una MT que la cría puede aprender (simplificación legacy)
-  const sharedMoves = (pA.moves || []).filter(ma => ma && (pB.moves || []).some(mb => mb && mb.name === ma.name))
+  const sharedMoves = (pA.moves || []).filter(ma => ma?.id && (pB.moves || []).some(mb => mb?.id === ma.id))
   sharedMoves.forEach(m => {
-    if (m && !inheritedMoves.includes(m.name) && inheritedMoves.length < 4) {
-      inheritedMoves.push(m.name)
+    if (m?.id && !inheritedMoves.includes(m.id) && inheritedMoves.length < 4) {
+      inheritedMoves.push(m.id)
     }
   })
 
@@ -223,9 +242,9 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
   
   // Calcular si hay posibles Egg Moves
   const babyId = getBreedingBaseId(getEggSpecies(pA.id))
-  const possibleEggMoves = EGG_MOVES_DB[babyId] || []
+  const possibleEggMoves = getEggMoves(babyId)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])]
-  const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m && m.name === moveId))
+  const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m && m.id === moveId))
 
   return {
     natureGuaranteed: hasEverstone,

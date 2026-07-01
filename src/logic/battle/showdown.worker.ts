@@ -16,6 +16,14 @@ interface PkmnSimSide {
 
 let currentBattle: Battle | null = null;
 
+/** Reads the real internal slot order from a @pkmn/sim side (active Pokemon is always at index 0). */
+function readSlotOrder(side: Battle['p1']): string[] {
+  return (side.pokemon as unknown as Array<{ uid?: string } | null>)
+    .filter((p): p is { uid?: string } => p != null)
+    .map(p => p.uid ?? '')
+    .filter(uid => uid !== '')
+}
+
 self.onmessage = (event: MessageEvent) => {
   const { type, payload } = event.data;
 
@@ -48,7 +56,7 @@ self.onmessage = (event: MessageEvent) => {
           currentBattle.p1.pokemon.forEach((pokemon, idx) => {
             const set = p1.team[idx];
             if (pokemon && set && set.uid) {
-              (pokemon as any).uid = set.uid;
+              (pokemon as unknown as Record<string, unknown>).uid = set.uid;
               console.log(`[ShowdownWorker] Injected p1[${idx}] ${pokemon.name} with UID: ${set.uid}`);
             } else {
               console.log(`[ShowdownWorker] WARNING: p1[${idx}] has no UID in set!`);
@@ -59,7 +67,7 @@ self.onmessage = (event: MessageEvent) => {
           currentBattle.p2.pokemon.forEach((pokemon, idx) => {
             const set = p2.team[idx];
             if (pokemon && set && set.uid) {
-              (pokemon as any).uid = set.uid;
+              (pokemon as unknown as Record<string, unknown>).uid = set.uid;
               console.log(`[ShowdownWorker] Injected p2[${idx}] ${pokemon.name} with UID: ${set.uid}`);
             } else {
               console.log(`[ShowdownWorker] WARNING: p2[${idx}] has no UID in set!`);
@@ -82,7 +90,9 @@ self.onmessage = (event: MessageEvent) => {
           payload: { 
             logs: initLogs,
             p1Request: currentBattle.p1.activeRequest,
-            p2Request: currentBattle.p2.activeRequest
+            p2Request: currentBattle.p2.activeRequest,
+            p1SlotOrder: readSlotOrder(currentBattle.p1),
+            p2SlotOrder: readSlotOrder(currentBattle.p2)
           } 
         });
         break;
@@ -162,24 +172,24 @@ self.onmessage = (event: MessageEvent) => {
 
         // Sincronizar estados finales tras procesar el turno para corregir desincronizaciones de daño
         if (p1Hps && battle.p1.active?.[0]) {
-          const activeMon = battle.p1.active[0] as any;
+          const activeMon = battle.p1.active[0] as unknown as { uid?: string; hp: number; fainted: boolean; status: string };
           if (activeMon.uid && p1Hps[activeMon.uid] > 0) {
             activeMon.hp = p1Hps[activeMon.uid];
             activeMon.fainted = false;
             if (activeMon.status === 'fnt') activeMon.status = '';
             if (battle.p1.activeRequest) {
-              delete (battle.p1.activeRequest as any).forceSwitch;
+              delete (battle.p1.activeRequest as unknown as Record<string, unknown>).forceSwitch;
             }
           }
         }
         if (p2Hps && battle.p2.active?.[0]) {
-          const activeMon = battle.p2.active[0] as any;
+          const activeMon = battle.p2.active[0] as unknown as { uid?: string; hp: number; fainted: boolean; status: string };
           if (activeMon.uid && p2Hps[activeMon.uid] > 0) {
             activeMon.hp = p2Hps[activeMon.uid];
             activeMon.fainted = false;
             if (activeMon.status === 'fnt') activeMon.status = '';
             if (battle.p2.activeRequest) {
-              delete (battle.p2.activeRequest as any).forceSwitch;
+              delete (battle.p2.activeRequest as unknown as Record<string, unknown>).forceSwitch;
             }
           }
         }
@@ -199,7 +209,9 @@ self.onmessage = (event: MessageEvent) => {
             p1ForceSwitch,
             p2ForceSwitch,
             p1Request: battle.p1.activeRequest,
-            p2Request: battle.p2.activeRequest
+            p2Request: battle.p2.activeRequest,
+            p1SlotOrder: readSlotOrder(battle.p1),
+            p2SlotOrder: readSlotOrder(battle.p2)
           } 
         });
         break;
@@ -256,37 +268,38 @@ function syncSideStates(
 
   if (isRecord(hps)) {
     mons.forEach((pokemon, idx) => {
-      const uid = (pokemon as any)?.uid;
-      if (pokemon && uid) {
+      const p = pokemon as unknown as { uid?: string; name?: string; hp: number; fainted: boolean; status: string; faint?: () => void };
+      const uid = p?.uid;
+      if (p && uid) {
         const hp = hps[uid];
         if (hp !== undefined) {
-          console.log(`[ShowdownWorker] Syncing ${pokemon.name} (UID:${uid}, idx:${idx}) HP: ${pokemon.hp} -> ${hp}`);
-          pokemon.hp = hp as number;
+          console.log(`[ShowdownWorker] Syncing ${p.name} (UID:${uid}, idx:${idx}) HP: ${p.hp} -> ${hp}`);
+          p.hp = hp as number;
           if ((hp as number) <= 0) {
-            if (!pokemon.fainted) {
-              if (typeof pokemon.faint === 'function') pokemon.faint();
+            if (!p.fainted) {
+              if (typeof p.faint === 'function') p.faint();
               else {
-                pokemon.fainted = true;
-                pokemon.status = 'fnt';
+                p.fainted = true;
+                p.status = 'fnt';
               }
             } else {
-              pokemon.fainted = true;
-              pokemon.status = 'fnt';
+              p.fainted = true;
+              p.status = 'fnt';
             }
           } else {
-            pokemon.fainted = false;
-            if (pokemon.status === 'fnt') pokemon.status = '';
+            p.fainted = false;
+            if (p.status === 'fnt') p.status = '';
           }
         } else {
           console.log(`[ShowdownWorker] WARNING: HP not found for UID: ${uid} in payload:`, JSON.stringify(hps));
         }
-      } else if (pokemon) {
+      } else if (p) {
         console.log(`[ShowdownWorker] WARNING: pokemon at idx ${idx} has no UID!`);
       }
     });
   } else if (Array.isArray(hps)) {
     hps.forEach((hp: number, index: number) => {
-      const pokemon = mons[index];
+      const pokemon = mons[index] as unknown as { hp: number; fainted: boolean; status: string; faint?: () => void };
       if (pokemon) {
         pokemon.hp = hp;
         if (hp <= 0) {
@@ -310,7 +323,7 @@ function syncSideStates(
 
   if (isRecord(statuses)) {
     mons.forEach((pokemon) => {
-      const uid = (pokemon as any)?.uid;
+      const uid = (pokemon as unknown as { uid?: string })?.uid;
       if (pokemon && uid) {
         const status = statuses[uid];
         if (status !== undefined && !pokemon.fainted) {
@@ -322,12 +335,12 @@ function syncSideStates(
     statuses.forEach((status: string, index: number) => {
       const pokemon = mons[index];
       if (pokemon && !pokemon.fainted) {
-        pokemon.status = status ? status.toLowerCase() : '' as any;
+        pokemon.status = status ? status.toLowerCase() : '';
       }
     });
   }
 
   // Recalcular pokemonLeft basándose en los Pokémon que no están debilitados
-  (side as any).pokemonLeft = mons.filter(p => p && !p.fainted).length;
+  (side as unknown as { pokemonLeft: number }).pokemonLeft = mons.filter(p => p && !p.fainted).length;
 }
 

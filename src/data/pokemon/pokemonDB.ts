@@ -83,6 +83,20 @@ for (const species of allSpecies) {
       });
     }
   }
+  if (learnset.length === 0) {
+    const defaultMoveId = speciesId === 'unown' ? 'hiddenpower' : 'tackle';
+    const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId);
+    if (moveData.exists) {
+      const translated = MOVE_TRANSLATIONS_ES[defaultMoveId];
+      const espName = translated ? translated.name : moveData.name;
+      learnset.push({
+        lv: 1,
+        id: defaultMoveId,
+        name: espName,
+        pp: moveData.pp
+      });
+    }
+  }
   learnset.sort((a, b) => a.lv - b.lv);
 
   const metadata = SPECIES_METADATA[speciesId];

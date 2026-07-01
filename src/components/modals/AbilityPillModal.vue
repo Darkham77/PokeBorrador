@@ -32,7 +32,7 @@ const handleApplyAbility = (ability: string) => {
   const old = abilityPokemon.value.ability
   abilityPokemon.value.ability = ability
   // Consume only after confirming
-  inventoryStore.removeItem('ability_pill', 1)
+  inventoryStore.removeItem('abilitypill', 1)
   uiStore.notify(`¡Habilidad cambiada: ${old} → ${ability}!`, '💊')
   uiStore.isAbilityPillOpen = false
   uiStore.activePokemonForAbility = null

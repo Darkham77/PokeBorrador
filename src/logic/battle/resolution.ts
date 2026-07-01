@@ -7,7 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
 import { clearVolatileStatus } from './battleStatus'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
-import { resolveShowdownSlot, swapActivePokemon } from './showdownAdapter.ts'
+import { resolveShowdownSlot } from './showdownAdapter.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 /**
@@ -173,10 +173,12 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
         const result = await executeTurnInWorker('', `switch ${slot}`)
-        active.playerRequest = result.p1Request
-        active.enemyRequest = result.p2Request
-        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
-        active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
+        if (result) {
+          active.playerRequest = result.p1Request
+          active.enemyRequest = result.p2Request
+          if (result.p1SlotOrder) active.p1SlotOrder = result.p1SlotOrder
+          if (result.p2SlotOrder) active.p2SlotOrder = result.p2SlotOrder
+        }
       }
 
       active.enemy = nextEnemy
@@ -605,12 +607,12 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
       
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
-        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid, active.enemyTeam)
+        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
         const result = await executeTurnInWorker('', `switch ${slot}`)
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
-        const currentOrder = active.showdownEnemyTeamOrder || active.enemyTeam.filter((p): p is Pokemon => !!p).map(p => p.uid)
-        active.showdownEnemyTeamOrder = swapActivePokemon(currentOrder, nextEnemy.uid)
+        if (result.p1SlotOrder) active.p1SlotOrder = result.p1SlotOrder
+        if (result.p2SlotOrder) active.p2SlotOrder = result.p2SlotOrder
       }
 
       active.enemy = nextEnemy

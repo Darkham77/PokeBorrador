@@ -64,17 +64,17 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     const randRec = Math.random() * 100
     let rewardedItemKey = ''
     if (randRec < 20) {
-      rewardedItemKey = 'master_ball'
+      rewardedItemKey = 'masterball'
     } else if (randRec < 40) {
-      rewardedItemKey = 'ticket_shiny'
+      rewardedItemKey = 'ticketshiny'
     } else if (randRec < 60) {
-      rewardedItemKey = 'ticket_safari'
+      rewardedItemKey = 'ticketsafari'
     } else if (randRec < 80) {
-      rewardedItemKey = 'ticket_cerulean'
+      rewardedItemKey = 'ticketcerulean'
     } else if (randRec < 95) {
-      rewardedItemKey = 'ticket_articuno'
+      rewardedItemKey = 'ticketarticuno'
     } else {
-      rewardedItemKey = 'ticket_mewtwo'
+      rewardedItemKey = 'ticketmewtwo'
     }
 
     if (rewardedItemKey) {

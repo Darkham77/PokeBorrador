@@ -18,6 +18,16 @@ export interface PokemonIVs {
   spe: number;
 }
 
+export interface PokemonEVs {
+  [key: string]: number | boolean | undefined;
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+}
+
 export interface MoveEffect {
   type: 'status' | 'stat' | 'flinch' | 'confuse' | 'trap' | 'drain' | 'recoil' | 'recharge' | 'fixed' | 'multi' | 'heal' | string;
   status?: PokemonStatus;
@@ -113,6 +123,7 @@ export interface Pokemon {
   caught?: boolean;
   isBoxed?: boolean;
   ivs: PokemonIVs;
+  evs?: PokemonEVs;
   nature: string;
   heldItem?: string | null;
   item?: string | null; // @deprecated use heldItem

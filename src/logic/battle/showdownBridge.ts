@@ -82,7 +82,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       ? (battle?.playerTeam || [])
       : (battle?.enemyTeam || []);
     if (nameInLog && team.length > 0) {
-      const found = team.find(mon => mon && ((mon as any).nickname === nameInLog || mon.name === nameInLog));
+      const found = team.find(mon => mon && ((mon as unknown as { nickname?: string }).nickname === nameInLog || mon.name === nameInLog));
       if (found) {
         // En combates 2vs2, pueden existir múltiples asientos activos por lado (ej. player, player2, enemy, enemy2).
         // Sincronizamos devolviendo la instancia reactiva del asiento activo que coincida en UID.
@@ -93,7 +93,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
               ? (key.startsWith('player') || key === 'ally') 
               : key.startsWith('enemy');
             if (matchesSide) {
-              const val = (battle as Record<string, unknown>)[key];
+              const val = (battle as unknown as Record<string, unknown>)[key];
               if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
                 return val as unknown as Pokemon;
               }

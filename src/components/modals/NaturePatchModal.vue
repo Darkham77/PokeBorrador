@@ -31,7 +31,7 @@ const handleApplyNature = (nature: string) => {
       uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`, '✨')
     }
     // Consume only after confirming
-    inventoryStore.removeItem('nature_patch', 1)
+    inventoryStore.removeItem('naturepatch', 1)
     uiStore.isNaturePatchOpen = false
     uiStore.activePokemonForNature = null
     gameStore.save()

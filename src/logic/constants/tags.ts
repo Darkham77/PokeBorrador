@@ -127,27 +127,17 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
   const itemBadge = POKEMON_BADGES['item'];
   if (heldItemRaw && itemBadge) {
-    // Normalizar para búsqueda: "Rare Candy" -> "rare_candy"
-    const normalizedId = String(heldItemRaw).toLowerCase().replace(/ /g, '_')
-    let itemData = null
-    try {
-      itemData = getItemById(heldItemRaw)
-    } catch {
-      try {
-        itemData = getItemById(normalizedId)
-      } catch {
-        // Objeto no encontrado
-      }
-    }
+    const itemId = String(heldItemRaw);
+    const itemData = getItemById(itemId);
 
     badges.push({ 
       ...itemBadge, 
       id: 'item',
-      label: itemData ? itemData.name.toUpperCase() : String(heldItemRaw).toUpperCase(),
+      label: itemData ? itemData.name.toUpperCase() : itemId.toUpperCase(),
       shortLabel: itemBadge.shortLabel,
       desc: (itemData && itemData.desc) ? itemData.desc : (itemBadge.desc ?? ''),
       isAutomatic: true,
-      itemId: itemData ? itemData.id : normalizedId
+      itemId: itemId
     })
   }
 

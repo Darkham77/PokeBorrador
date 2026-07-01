@@ -201,13 +201,13 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
       const pool = loc?.archaeology?.pool || ['kabuto', 'omanyte'];
       const selectedPoke = pool[Math.floor(Math.random() * pool.length)];
       if (selectedPoke === 'kabuto') {
-        rewardId = 'dome_fossil';
+        rewardId = 'domefossil';
         rewardIcon = '🛡';
       } else if (selectedPoke === 'omanyte') {
-        rewardId = 'helix_fossil';
+        rewardId = 'helixfossil';
         rewardIcon = '🐚';
       } else {
-        rewardId = 'old_amber';
+        rewardId = 'oldamber';
         rewardIcon = '💎';
       }
     } else if (selectedCategory === 'stone') {
@@ -218,9 +218,9 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
       const commons = [
         { id: 'pearl', icon: '⚪' },
         { id: 'stardust', icon: '✨' },
-        { id: 'coal_ore', icon: '🪨' },
-        { id: 'copper_ore', icon: '🟫' },
-        { id: 'iron_ore', icon: '🧱' }
+        { id: 'coalore', icon: '🪨' },
+        { id: 'copperore', icon: '🟫' },
+        { id: 'ironore', icon: '🧱' }
       ];
       const item = commons[Math.floor(Math.random() * commons.length)]!;
       rewardId = item.id;
@@ -228,17 +228,17 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
     } else {
       const rares = [
         { id: 'nugget', icon: '🟡' },
-        { id: 'big_pearl', icon: '🔘' },
-        { id: 'star_piece', icon: '⭐' },
-        { id: 'silver_ore', icon: '⬜' },
-        { id: 'gold_ore', icon: '🟨' },
-        { id: 'tungsten_ore', icon: '🌑' },
-        { id: 'uranium_ore', icon: '🟢' },
-        { id: 'rubi_ore', icon: '🔺' },
-        { id: 'zaphire_ore', icon: '🔹' },
-        { id: 'emmerald_ore', icon: '💚' },
-        { id: 'topaz_ore', icon: '🟡' },
-        { id: 'diamond_ore', icon: '💎' }
+        { id: 'bigpearl', icon: '🔘' },
+        { id: 'starpiece', icon: '⭐' },
+        { id: 'silverore', icon: '⬜' },
+        { id: 'goldore', icon: '🟨' },
+        { id: 'tungstenore', icon: '🌑' },
+        { id: 'uraniumore', icon: '🟢' },
+        { id: 'rubiore', icon: '🔺' },
+        { id: 'zaphireore', icon: '🔹' },
+        { id: 'emmeraldore', icon: '💚' },
+        { id: 'topazore', icon: '🟡' },
+        { id: 'diamondore', icon: '💎' }
       ];
       const item = rares[Math.floor(Math.random() * rares.length)]!;
       rewardId = item.id;

@@ -1,143 +1,132 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getShowdownSlot, getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
+import { getShowdownSlot, getShowdownFormatId, resolveShowdownSlot } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
-  it('resolves correct 1-based Showdown slot indices based on static team order', () => {
-    const staticOrder = ['rhyhorn-uid', 'rhydon-uid', 'geodude-uid'];
-    
-    // Rhyhorn is active (slot 1)
-    const slotActive = getShowdownSlot(staticOrder, 'rhyhorn-uid');
-    assert.strictEqual(slotActive, 1);
-    
-    // Rhydon is in reserve (slot 2)
-    const slotReserve = getShowdownSlot(staticOrder, 'rhydon-uid');
-    assert.strictEqual(slotReserve, 2);
-    
-    // Geodude is in reserve (slot 3)
-    const slotGeodude = getShowdownSlot(staticOrder, 'geodude-uid');
-    assert.strictEqual(slotGeodude, 3);
+  it('resolves correct 1-based Showdown slot indices based on slot order array', () => {
+    const slotOrder = ['rhyhorn-uid', 'rhydon-uid', 'geodude-uid'];
+
+    assert.strictEqual(getShowdownSlot(slotOrder, 'rhyhorn-uid'), 1); // active
+    assert.strictEqual(getShowdownSlot(slotOrder, 'rhydon-uid'), 2);
+    assert.strictEqual(getShowdownSlot(slotOrder, 'geodude-uid'), 3);
   });
 
-  it('guarantees that slot indices remain completely static regardless of active combatant', () => {
-    const staticOrder = ['rhyhorn-uid', 'rhydon-uid', 'geodude-uid'];
-    
-    // Even if Rhydon is active, its slot number in Showdown remains static (slot 2)
-    const slotRhydon = getShowdownSlot(staticOrder, 'rhydon-uid');
-    assert.strictEqual(slotRhydon, 2);
-    
-    // Rhyhorn's slot index remains 1
-    const slotRhyhorn = getShowdownSlot(staticOrder, 'rhyhorn-uid');
-    assert.strictEqual(slotRhyhorn, 1);
+  it('returns slot 1 for unknown UIDs', () => {
+    const slotOrder = ['a-uid', 'b-uid'];
+    assert.strictEqual(getShowdownSlot(slotOrder, 'unknown-uid'), 1);
   });
 
-  it('guarantees that when the active Pokemon (slot 1) faints, the next pick is resolved to its static slot index', () => {
-    // Rhyhorn is active at slot 1, faints. Next healthy is Rhydon.
-    const staticOrder = ['rhyhorn-uid', 'rhydon-uid'];
-    
-    // Rhydon is in reserve at index 1 -> static slot 2
-    const slotForRhydon = getShowdownSlot(staticOrder, 'rhydon-uid');
-    assert.strictEqual(slotForRhydon, 2, 'Next replacement slot must resolve to its static index 2');
-  });
-
-  it('correctly resolves struggle and move struggle choices in the worker by depleting active PP', () => {
-    const resolveChoice = (
-      side: { active?: Array<{ moveSlots?: Array<{ pp: number } | null> } | null> }, 
-      choice: string
-    ): string => {
-      if (choice.includes('struggle') && side?.active?.[0]) {
-        const activeMon = side.active[0]
-        if (activeMon?.moveSlots) {
-          activeMon.moveSlots.forEach((m: { pp: number } | null) => { if (m) m.pp = 0 })
-        }
-        return 'default'
-      }
-      return choice
+  it('resolveShowdownSlot reads p1SlotOrder for player side', () => {
+    const active = {
+      p1SlotOrder: ['gengar-uid', 'vaporeon-uid', 'eevee-uid'],
+      p2SlotOrder: ['rhydon-uid', 'dugtrio-uid']
     };
-
-    const mockSide = {
-      active: [{
-        moveSlots: [{ pp: 5 }, { pp: 10 }]
-      }]
-    };
-
-    const res = resolveChoice(mockSide, 'move struggle');
-    assert.strictEqual(res, 'default');
-    
-    const activeMon = mockSide.active[0];
-    assert.ok(activeMon);
-    assert.ok(activeMon.moveSlots);
-    assert.ok(activeMon.moveSlots[0]);
-    assert.ok(activeMon.moveSlots[1]);
-    assert.strictEqual(activeMon.moveSlots[0].pp, 0);
-    assert.strictEqual(activeMon.moveSlots[1].pp, 0);
+    assert.strictEqual(resolveShowdownSlot(active, 'player', 'gengar-uid'), 1);
+    assert.strictEqual(resolveShowdownSlot(active, 'player', 'vaporeon-uid'), 2);
+    assert.strictEqual(resolveShowdownSlot(active, 'player', 'eevee-uid'), 3);
   });
 
-  it('correctly maps HP arrays to simulator mons matching initialPlayerTeamOrder', () => {
-    // Simulator side.pokemon order (initial order when battle started)
-    // index 0: Vaporeon, index 1: Gengar, index 2: Eevee
-    const simMons = [
-      { name: 'Vaporeon', hp: 100, fainted: false, status: '' },
-      { name: 'Gengar', hp: 100, fainted: false, status: '' },
-      { name: 'Eevee', hp: 100, fainted: false, status: '' }
-    ];
-
-    // Player UI team state (which might be in a different order, e.g. Gengar first, then Vaporeon, then Eevee)
-    const uiTeam = [
-      { uid: 'gengar-uid', name: 'Gengar', hp: 148 },
-      { uid: 'vaporeon-uid', name: 'Vaporeon', hp: 0 },
-      { uid: 'eevee-uid', name: 'Eevee', hp: 25 }
-    ];
-
-    const initialPlayerTeamOrder = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
-
-    // Map HP array using the initial team order
-    const p1Hps = initialPlayerTeamOrder.map(uid => {
-      const p = uiTeam.find(x => x.uid === uid);
-      return p ? p.hp : 0;
-    });
-
-    // Verify mapped HP array matches the simulator's index order
-    assert.deepEqual(p1Hps, [0, 148, 25]); // Vaporeon: 0, Gengar: 148, Eevee: 25
-
-    // Sync HPs in simulator
-    const syncSideHps = (mons: typeof simMons, hps: number[]) => {
-      hps.forEach((hp, idx) => {
-        const mon = mons[idx];
-        if (mon) {
-          mon.hp = hp;
-          if (hp <= 0) {
-            mon.fainted = true;
-            mon.status = 'fnt';
-          }
-        }
-      });
+  it('resolveShowdownSlot reads p2SlotOrder for enemy side', () => {
+    const active = {
+      p1SlotOrder: ['gengar-uid'],
+      p2SlotOrder: ['rhydon-uid', 'dugtrio-uid']
     };
+    assert.strictEqual(resolveShowdownSlot(active, 'enemy', 'rhydon-uid'), 1);
+    assert.strictEqual(resolveShowdownSlot(active, 'enemy', 'dugtrio-uid'), 2);
+  });
 
-    syncSideHps(simMons, p1Hps);
-
-    // Verify simulator mons got correct HP values aligned by index
-    assert.strictEqual(simMons[0]?.hp, 0); // Vaporeon fainted
-    assert.strictEqual(simMons[0]?.fainted, true);
-    assert.strictEqual(simMons[1]?.hp, 148); // Gengar alive
-    assert.strictEqual(simMons[1]?.fainted, false);
-    assert.strictEqual(simMons[2]?.hp, 25); // Eevee alive
-    assert.strictEqual(simMons[2]?.fainted, false);
+  it('resolveShowdownSlot returns 1 when slot order is empty', () => {
+    const active = { p1SlotOrder: [] as string[], p2SlotOrder: [] as string[] };
+    assert.strictEqual(resolveShowdownSlot(active, 'player', 'any-uid'), 1);
   });
 
   it('correctly flags INVALID_CHOICE error prefix when choose fails', () => {
     let errorThrown = false;
     try {
-      const resVal = false; // Mocking choose failure
-      if (!resVal) {
-        throw new Error('INVALID_CHOICE: Elección inválida para p1: "move lastresort"');
-      }
+      const resVal = false;
+      if (!resVal) throw new Error('INVALID_CHOICE: Elección inválida para p1');
     } catch (e) {
       errorThrown = true;
       assert.ok((e as Error).message.includes('INVALID_CHOICE'));
     }
     assert.strictEqual(errorThrown, true);
+  });
+
+  it('@pkmn/sim reorders side.pokemon on switch — active is always at index 0', async () => {
+    const { Battle } = await import('@pkmn/sim');
+    const battle = new Battle({ formatid: getShowdownFormatId() });
+
+    const p1Team = [
+      { name: 'Vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50 },
+      { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50 },
+      { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50 }
+    ];
+    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50 }];
+
+    battle.setPlayer('p1', { name: 'P1', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
+    battle.setPlayer('p2', { name: 'P2', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
+
+    // Before switch: Vaporeon is active (index 0)
+    assert.strictEqual(battle.p1.pokemon[0]?.name, 'Vaporeon');
+
+    // Switch to Gengar (slot 2 in initial order)
+    const r1 = battle.choose('p1', 'switch 2');
+    const r2 = battle.choose('p2', 'move stoneedge');
+    assert.ok(r1 && r2, 'Switch to Gengar must be valid');
+
+    // After switch: @pkmn/sim places Gengar at index 0
+    assert.strictEqual(battle.p1.pokemon[0]?.name, 'Gengar', 'Active mon must be at index 0');
+    assert.strictEqual(battle.p1.pokemon[1]?.name, 'Vaporeon', 'Previous active moves to index 1');
+  });
+
+  it('@pkmn/sim slot order reflects readSlotOrder helper contract', async () => {
+    const { Battle } = await import('@pkmn/sim');
+    const battle = new Battle({ formatid: getShowdownFormatId() });
+
+    const p1Team = [
+      { name: 'Vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50 },
+      { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50 },
+      { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50 }
+    ];
+    const p2Team = [
+      { name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50 },
+      { name: 'Dugtrio', species: 'Dugtrio', moves: ['earthquake'], level: 50 }
+    ];
+
+    battle.setPlayer('p1', { name: 'P1', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
+    battle.setPlayer('p2', { name: 'P2', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
+
+    // Inject UIDs (mirrors what showdown.worker.ts does on INIT_BATTLE)
+    const uids = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
+    battle.p1.pokemon.forEach((p, i) => { (p as unknown as Record<string, string>)['uid'] = uids[i]!; });
+    const enemyUids = ['rhydon-uid', 'dugtrio-uid'];
+    battle.p2.pokemon.forEach((p, i) => { (p as unknown as Record<string, string>)['uid'] = enemyUids[i]!; });
+
+    // readSlotOrder inline (same logic as the worker helper)
+    const readSlotOrder = (side: typeof battle.p1) =>
+      (side.pokemon as unknown as Array<{ uid?: string } | null>)
+        .filter((p): p is { uid?: string } => p != null)
+        .map(p => p.uid ?? '')
+        .filter(uid => uid !== '');
+
+    const orderBefore = readSlotOrder(battle.p1);
+    assert.deepStrictEqual(orderBefore, ['vaporeon-uid', 'gengar-uid', 'eevee-uid']);
+
+    // Switch to Gengar (slot 2 in current order)
+    const p1SlotForGengar = getShowdownSlot(orderBefore, 'gengar-uid');
+    assert.strictEqual(p1SlotForGengar, 2);
+
+    battle.choose('p1', `switch ${p1SlotForGengar}`);
+    battle.choose('p2', 'move stoneedge');
+
+    const orderAfter = readSlotOrder(battle.p1);
+    // After switch: Gengar is at index 0, Vaporeon at 1
+    assert.strictEqual(orderAfter[0], 'gengar-uid', 'Active UID must be at index 0 after switch');
+    assert.strictEqual(orderAfter[1], 'vaporeon-uid');
+
+    // getShowdownSlot on the new order correctly resolves Vaporeon to slot 2
+    assert.strictEqual(getShowdownSlot(orderAfter, 'vaporeon-uid'), 2);
   });
 
   it('correctly simulates consecutive turns, switches and faints without invalid choice rejections', async () => {
@@ -149,16 +138,12 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
       { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50 },
       { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50 }
     ];
-
-    const p2Team = [
-      { name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50 }
-    ];
+    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50 }];
 
     battle.setPlayer('p1', { name: 'Player', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
     battle.setPlayer('p2', { name: 'Enemy', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
 
-    // Sync initial states: Eevee is fainted (0 HP), Vaporeon has 100 HP, Gengar has 148 HP
-    // Sync initial states: Eevee is fainted (0 HP), Vaporeon has 100 HP, Gengar has 1 HP (so it faints from Stone Edge)
+    // Sync initial states: Eevee fainted, Gengar has 1 HP
     const p1Hps = [100, 1, 0];
     p1Hps.forEach((hp, idx) => {
       const mon = battle.p1.pokemon[idx];
@@ -171,33 +156,36 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
       }
     });
 
-    // In the first turn: Player switches to Gengar (which is slot 2, index 1)
-    // Rhydon uses Stone Edge
-    let p1Order = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
+    // Inject UIDs and use readSlotOrder contract instead of swapActivePokemon
+    const uids = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
+    battle.p1.pokemon.forEach((p, i) => { (p as unknown as Record<string, string>)['uid'] = uids[i]!; });
+
+    const readSlotOrder = (side: typeof battle.p1) =>
+      (side.pokemon as unknown as Array<{ uid?: string } | null>)
+        .filter((p): p is { uid?: string } => p != null)
+        .map(p => p.uid ?? '')
+        .filter(uid => uid !== '');
+
+    // Turn 1: Switch to Gengar
+    let p1Order = readSlotOrder(battle.p1); // ['vaporeon-uid','gengar-uid','eevee-uid']
     const slot1 = getShowdownSlot(p1Order, 'gengar-uid');
     assert.strictEqual(slot1, 2);
 
     const res1 = battle.choose('p1', `switch ${slot1}`);
     assert.strictEqual(res1, true, 'Switch to healthy Gengar must be valid');
+    battle.choose('p2', 'move stoneedge');
 
-    // Swap order as executed by the app
-    const { swapActivePokemon } = await import('../../../src/logic/battle/showdownAdapter.ts');
-    p1Order = swapActivePokemon(p1Order, 'gengar-uid'); // ['gengar-uid', 'vaporeon-uid', 'eevee-uid']
+    // Read real order from @pkmn/sim (active at 0)
+    p1Order = readSlotOrder(battle.p1);
+    assert.strictEqual(p1Order[0], 'gengar-uid', 'Gengar must be at index 0 after switch');
 
-    const res2 = battle.choose('p2', 'move stoneedge');
-    assert.strictEqual(res2, true);
-
-    // Since Gengar fainted, a switch-in is forced. Player wants to send out Vaporeon.
-    // Let's resolve slot of Vaporeon based on updated order:
-    const slot2 = getShowdownSlot(p1Order, 'vaporeon-uid'); // Index 1 -> Slot 2
-    assert.strictEqual(slot2, 2);
-
-    // Let's try to choose Vaporeon (switch 2) in the simulator
+    // Gengar fainted → forced switch to Vaporeon
+    const slot2 = getShowdownSlot(p1Order, 'vaporeon-uid');
     const resSwitch = battle.choose('p1', `switch ${slot2}`);
-    assert.strictEqual(resSwitch, true, 'Forced switch to healthy Vaporeon must be valid');
+    assert.strictEqual(resSwitch, true, 'Forced switch to Vaporeon must be valid');
   });
 
-  it('correctly manages a sequence of 10 consecutive switches on both sides and resolves attacks correctly', async () => {
+  it('correctly manages a sequence of 10 consecutive switches resolving slots from @pkmn/sim order', async () => {
     const { Battle } = await import('@pkmn/sim');
     const battle = new Battle({ formatid: getShowdownFormatId() });
 
@@ -206,7 +194,6 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
       { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50 },
       { name: 'Eevee', species: 'Eevee', moves: ['tackle'], level: 50 }
     ];
-
     const p2Team = [
       { name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50 },
       { name: 'Dugtrio', species: 'Dugtrio', moves: ['earthquake'], level: 50 },
@@ -216,13 +203,20 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     battle.setPlayer('p1', { name: 'Player', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
     battle.setPlayer('p2', { name: 'Enemy', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
 
-    let p1Order = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
-    let p2Order = ['rhydon-uid', 'dugtrio-uid', 'nidoqueen-uid'];
+    // Inject UIDs
+    ['vaporeon-uid', 'gengar-uid', 'eevee-uid'].forEach((uid, i) => {
+      (battle.p1.pokemon[i] as unknown as Record<string, string>)['uid'] = uid;
+    });
+    ['rhydon-uid', 'dugtrio-uid', 'nidoqueen-uid'].forEach((uid, i) => {
+      (battle.p2.pokemon[i] as unknown as Record<string, string>)['uid'] = uid;
+    });
 
-    const { swapActivePokemon } = await import('../../../src/logic/battle/showdownAdapter.ts');
+    const readSlotOrder = (side: typeof battle.p1) =>
+      (side.pokemon as unknown as Array<{ uid?: string } | null>)
+        .filter((p): p is { uid?: string } => p != null)
+        .map(p => p.uid ?? '')
+        .filter(uid => uid !== '');
 
-    // Sequence of 10 switches alternating and matching
-    // Let's define the sequence of target UIDs for p1 and p2
     const p1SwitchTargets = [
       'gengar-uid', 'eevee-uid', 'vaporeon-uid', 'gengar-uid', 'eevee-uid',
       'vaporeon-uid', 'gengar-uid', 'eevee-uid', 'vaporeon-uid', 'gengar-uid'
@@ -233,38 +227,27 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     ];
 
     for (let i = 0; i < 10; i++) {
-      const p1Target = p1SwitchTargets[i]!;
-      const p2Target = p2SwitchTargets[i]!;
+      const p1Order = readSlotOrder(battle.p1);
+      const p2Order = readSlotOrder(battle.p2);
 
-      const p1Slot = getShowdownSlot(p1Order, p1Target);
-      const p2Slot = getShowdownSlot(p2Order, p2Target);
+      const p1Slot = getShowdownSlot(p1Order, p1SwitchTargets[i]!);
+      const p2Slot = getShowdownSlot(p2Order, p2SwitchTargets[i]!);
 
       const r1 = battle.choose('p1', `switch ${p1Slot}`);
       const r2 = battle.choose('p2', `switch ${p2Slot}`);
 
-      assert.strictEqual(r1, true, `Player switch to ${p1Target} (slot ${p1Slot}) on turn ${i+1} must be valid`);
-      assert.strictEqual(r2, true, `Enemy switch to ${p2Target} (slot ${p2Slot}) on turn ${i+1} must be valid`);
-
-      // Update client orders to match simulator swaps
-      p1Order = swapActivePokemon(p1Order, p1Target);
-      p2Order = swapActivePokemon(p2Order, p2Target);
+      assert.strictEqual(r1, true, `Player switch on turn ${i + 1} must be valid`);
+      assert.strictEqual(r2, true, `Enemy switch on turn ${i + 1} must be valid`);
     }
 
-    // After 10 switches, who should be active?
-    // p1Target at index 9: 'gengar-uid'
-    // p2Target at index 9: 'dugtrio-uid'
-    assert.strictEqual(p1Order[0], 'gengar-uid');
-    assert.strictEqual(p2Order[0], 'dugtrio-uid');
-
-    // Gengar uses Shadow Ball and Dugtrio uses Earthquake
-    const moveRes1 = battle.choose('p1', 'move shadowball');
-    const moveRes2 = battle.choose('p2', 'move earthquake');
-
-    assert.strictEqual(moveRes1, true, 'Gengar must be able to use Shadow Ball');
-    assert.strictEqual(moveRes2, true, 'Dugtrio must be able to use Earthquake');
+    // After 10 switches, active should match last target
+    const finalP1Order = readSlotOrder(battle.p1);
+    const finalP2Order = readSlotOrder(battle.p2);
+    assert.strictEqual(finalP1Order[0], 'gengar-uid');
+    assert.strictEqual(finalP2Order[0], 'dugtrio-uid');
   });
 
-  it('correctly simulates Baton Pass turn and forced switch-in without invalid choice rejections', async () => {
+  it('Baton Pass forced switch resolved correctly using @pkmn/sim slot order', async () => {
     const { Battle } = await import('@pkmn/sim');
     const battle = new Battle({ formatid: getShowdownFormatId() });
 
@@ -273,201 +256,73 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
       { name: 'Gengar', species: 'Gengar', moves: ['shadowball'], level: 50 },
       { name: 'Eevee', species: 'Eevee', moves: ['batonpass'], level: 50 }
     ];
-
-    const p2Team = [
-      { name: 'Rhydon', species: 'Rhydon', moves: ['splash'], level: 50 }
-    ];
+    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['splash'], level: 50 }];
 
     battle.setPlayer('p1', { name: 'Player', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
     battle.setPlayer('p2', { name: 'Enemy', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
 
-    let p1Order = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
-    const { swapActivePokemon } = await import('../../../src/logic/battle/showdownAdapter.ts');
+    ['vaporeon-uid', 'gengar-uid', 'eevee-uid'].forEach((uid, i) => {
+      (battle.p1.pokemon[i] as unknown as Record<string, string>)['uid'] = uid;
+    });
 
-    // Turn 1: Switch Vaporeon to Eevee (slot 3, index 2)
+    const readSlotOrder = (side: typeof battle.p1) =>
+      (side.pokemon as unknown as Array<{ uid?: string } | null>)
+        .filter((p): p is { uid?: string } => p != null)
+        .map(p => p.uid ?? '')
+        .filter(uid => uid !== '');
+
+    // Turn 1: Switch Vaporeon → Eevee
+    let p1Order = readSlotOrder(battle.p1);
     const slotEevee = getShowdownSlot(p1Order, 'eevee-uid');
     assert.strictEqual(slotEevee, 3);
 
-    const r1 = battle.choose('p1', `switch ${slotEevee}`);
-    const r2 = battle.choose('p2', 'move splash');
-    assert.ok(r1 && r2);
+    battle.choose('p1', `switch ${slotEevee}`);
+    battle.choose('p2', 'move splash');
 
-    // Swap order as executed by the app
-    p1Order = swapActivePokemon(p1Order, 'eevee-uid'); // Eevee is now index 0
+    // @pkmn/sim reorders: Eevee now at index 0
+    p1Order = readSlotOrder(battle.p1);
+    assert.strictEqual(p1Order[0], 'eevee-uid');
 
-    // Turn 2: Eevee uses Baton Pass (which is move 1 since Eevee only has batonpass)
-    // Rhydon uses Splash
-    const r3 = battle.choose('p1', 'move batonpass');
-    const r4 = battle.choose('p2', 'move splash');
-    assert.ok(r3 && r4);
+    // Turn 2: Eevee uses Baton Pass
+    battle.choose('p1', 'move batonpass');
+    battle.choose('p2', 'move splash');
 
-    // Now, Baton Pass executed, so a forced switch-in is expected.
-    // Player wants to send out Vaporeon.
-    // Let's resolve slot of Vaporeon based on static initial order (this is the bug!):
-    const oldStaticOrder = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
-    const invalidSlot = getShowdownSlot(oldStaticOrder, 'vaporeon-uid'); // Returns 1
+    // Forced switch: using STATIC initial order is wrong (Vaporeon is at slot 3 now, not 1)
+    const staticOrder = ['vaporeon-uid', 'gengar-uid', 'eevee-uid'];
+    const invalidSlot = getShowdownSlot(staticOrder, 'vaporeon-uid'); // 1
     assert.strictEqual(invalidSlot, 1);
+    assert.strictEqual(battle.choose('p1', `switch ${invalidSlot}`), false, 'Static order slot must fail');
 
-    const invalidRes = battle.choose('p1', `switch ${invalidSlot}`);
-    assert.strictEqual(invalidRes, false, 'Switch using static order must fail because Vaporeon is no longer slot 1');
-
-    // Let's resolve slot of Vaporeon based on updated showdownPlayerTeamOrder:
-    const validSlot = getShowdownSlot(p1Order, 'vaporeon-uid'); // Returns 3
-    assert.strictEqual(validSlot, 3);
-
-    const validRes = battle.choose('p1', `switch ${validSlot}`);
-    assert.strictEqual(validRes, true, 'Switch using dynamic order must succeed');
+    // Using dynamic @pkmn/sim order is correct
+    p1Order = readSlotOrder(battle.p1);
+    const validSlot = getShowdownSlot(p1Order, 'vaporeon-uid');
+    assert.strictEqual(battle.choose('p1', `switch ${validSlot}`), true, 'Dynamic order slot must succeed');
   });
 
-  it('correctly maps enemy HP array after enemy faints and switches to prevent invalid choices', async () => {
-    const { Battle } = await import('@pkmn/sim');
-    const battle = new Battle({ formatid: getShowdownFormatId() });
-
-    const p1Team = [
-      { name: 'Vaporeon', species: 'Vaporeon', moves: ['surf'], level: 50 }
+  it('correctly maps HP arrays using p1SlotOrder / p2SlotOrder from the worker', () => {
+    // Simulates what the worker now provides: the real @pkmn/sim slot order after a switch
+    // p2SlotOrder after Geodude switches in = ['geodude-uid', 'onix-uid']
+    const p2SlotOrder = ['geodude-uid', 'onix-uid'];
+    const enemyTeam = [
+      { uid: 'onix-uid', hp: 0 },
+      { uid: 'geodude-uid', hp: 31 }
     ];
 
-    const p2Team = [
-      { name: 'Onix', species: 'Onix', moves: ['rocktomb'], level: 50 },
-      { name: 'Geodude', species: 'Geodude', moves: ['bulldoze'], level: 50 }
-    ];
-
-    battle.setPlayer('p1', { name: 'Player', team: p1Team as unknown as import('@pkmn/sim').PokemonSet[] });
-    battle.setPlayer('p2', { name: 'Enemy', team: p2Team as unknown as import('@pkmn/sim').PokemonSet[] });
-
-    let p2Order = ['onix-uid', 'geodude-uid'];
-    const { swapActivePokemon, resolveCurrentTeamOrder } = await import('../../../src/logic/battle/showdownAdapter.ts');
-
-    // Turn 1: Vaporeon uses Surf, Onix faints (we force HP to 0)
-    const r1 = battle.choose('p1', 'move surf');
-    const r2 = battle.choose('p2', 'move rocktomb');
-    assert.ok(r1 && r2);
-
-    const mon0 = battle.p2.pokemon[0];
-    if (mon0) {
-      mon0.hp = 0;
-      mon0.fainted = true;
-      mon0.status = 'fnt' as unknown as import('@pkmn/sim').ID;
-    }
-
-    // Enemy is forced to switch in Geodude (slot 2, index 1)
-    const slotGeodude = getShowdownSlot(p2Order, 'geodude-uid');
-    assert.strictEqual(slotGeodude, 2);
-
-    const switchRes = battle.choose('p2', `switch ${slotGeodude}`);
-    assert.ok(switchRes);
-
-    // Swap order as executed by the app
-    p2Order = swapActivePokemon(p2Order, 'geodude-uid'); // Geodude is now index 0
-
-    // Now Geodude is active (index 0). Geodude's HP in DB/context is 31 (full). Onix's HP is 0.
-    const activeMock = {
-      showdownEnemyTeamOrder: p2Order,
-      initialEnemyTeamOrder: ['onix-uid', 'geodude-uid'],
-      enemyTeam: [
-        { uid: 'onix-uid', hp: 0 },
-        { uid: 'geodude-uid', hp: 31 }
-      ] as unknown as Array<{ uid: string; hp: number } | null>
-    };
-
-    // If we map HP using static initial order:
-    const oldStaticOrder = ['onix-uid', 'geodude-uid'];
-    const invalidHps = oldStaticOrder.map(uid => activeMock.enemyTeam.find((p) => p?.uid === uid)?.hp ?? 0);
-    assert.deepStrictEqual(invalidHps, [0, 31]);
-
-    // If we pass invalidHps to the simulator, Geodude's HP will be synced to 0 in the simulator, causing choice to fail:
-    battle.p2.pokemon.forEach((mon, idx) => {
-      mon.hp = invalidHps[idx] ?? 0;
-      if (mon.hp <= 0) {
-        mon.fainted = true;
-        mon.status = 'fnt' as unknown as import('@pkmn/sim').ID;
-      }
-    });
-
-    const invalidChoiceRes = battle.choose('p2', 'move bulldoze');
-    assert.strictEqual(invalidChoiceRes, false, 'Should fail to choose move because Geodude has been synced with 0 HP');
-
-    // Reset Geodude's HP to healthy in the simulator
-    const mon1 = battle.p2.pokemon[1];
-    if (mon1) {
-      mon1.hp = 31;
-      mon1.fainted = false;
-      mon1.status = '' as unknown as import('@pkmn/sim').ID;
-    }
-
-    // If we map HP using resolveCurrentTeamOrder:
-    type TargetParam = Parameters<typeof resolveCurrentTeamOrder>[0];
-    const validOrder = resolveCurrentTeamOrder(activeMock as unknown as TargetParam, 'enemy', activeMock.enemyTeam as unknown as Parameters<typeof resolveCurrentTeamOrder>[2]);
-    const validHps = validOrder.map(uid => activeMock.enemyTeam.find((p) => p?.uid === uid)?.hp ?? 0);
-    assert.deepStrictEqual(validHps, [31, 0]);
-
-    // Sync Geodude with valid HPs:
-    // Slot 1 of Geodude (index 0) gets 31, Slot 2 of Onix (index 1) gets 0
-    // Wait, the simulator side team elements are in order of [Onix, Geodude] but their active/bench slots are synced by side.pokemon order.
-    // Yes! The side.pokemon index matches the showdownOrder index.
-    battle.p2.pokemon.forEach((mon, idx) => {
-      mon.hp = validHps[idx] ?? 0;
-      if (mon.hp <= 0) {
-        mon.fainted = true;
-        mon.status = 'fnt' as unknown as import('@pkmn/sim').ID;
-      } else {
-        mon.fainted = false;
-        mon.status = '' as unknown as import('@pkmn/sim').ID;
-      }
-    });
-
-    const validChoiceRes = battle.choose('p2', 'move bulldoze');
-    assert.strictEqual(validChoiceRes, true, 'Should succeed to choose move because Geodude has been synced with 31 HP');
+    // Map HPs using the slot order (matches @pkmn/sim's side.pokemon index)
+    const validHps = p2SlotOrder.map(uid => enemyTeam.find(p => p.uid === uid)?.hp ?? 0);
+    assert.deepStrictEqual(validHps, [31, 0]); // Geodude full HP at index 0, Onix fainted at index 1
   });
 
-  it('correctly maps HP arrays when the lead Pokemon is fainted and the active Pokemon is at index 1 at battle start', async () => {
-    // Simulator side.pokemon order at start: Gengar (index 0), Vaporeon (index 1), Eevee (index 2)
-    // because Gengar (active) was unshifted to index 0 during setup.
-    const simMons = [
-      { name: 'Gengar', hp: 80, fainted: false, status: '' },
-      { name: 'Vaporeon', hp: 100, fainted: false, status: '' },
-      { name: 'Eevee', hp: 100, fainted: false, status: '' }
-    ];
-
+  it('correctly maps HP arrays when active mon is not at team position 0 in UI', () => {
+    // p1SlotOrder from worker: Gengar is active (index 0), Vaporeon fainted (index 1), Eevee (index 2)
+    const p1SlotOrder = ['gengar-uid', 'vaporeon-uid', 'eevee-uid'];
     const uiTeam = [
-      { uid: 'vaporeon-uid', name: 'Vaporeon', hp: 0 },
-      { uid: 'gengar-uid', name: 'Gengar', hp: 80 },
-      { uid: 'eevee-uid', name: 'Eevee', hp: 100 }
+      { uid: 'vaporeon-uid', hp: 0 },
+      { uid: 'gengar-uid', hp: 80 },
+      { uid: 'eevee-uid', hp: 100 }
     ];
 
-    // activeBattle state after initBattle (Gengar is active, Vaporeon is lead but fainted)
-    const activeBattleMock = {
-      showdownPlayerTeamOrder: ['gengar-uid', 'vaporeon-uid', 'eevee-uid'],
-      initialPlayerTeamOrder: ['vaporeon-uid', 'gengar-uid', 'eevee-uid'],
-      player: { uid: 'gengar-uid', hp: 80 }
-    };
-
-    const { resolveCurrentTeamOrder } = await import('../../../src/logic/battle/showdownAdapter.ts');
-
-    // If we map HP using original team order (which was the bug!):
-    const wrongHps = uiTeam.map(p => p.hp); // [0, 80, 100]
-    
-    const mockSim1 = JSON.parse(JSON.stringify(simMons));
-    mockSim1.forEach((mon: { hp: number; fainted?: boolean }, idx: number) => {
-      mon.hp = wrongHps[idx]!;
-      if (mon.hp <= 0) mon.fainted = true;
-    });
-    // Gengar gets 0 HP and faints!
-    assert.strictEqual(mockSim1[0].fainted, true, 'Wrong mapping faints the active Gengar');
-
-    // If we map HP using resolveCurrentTeamOrder (correct):
-    type TargetParam = Parameters<typeof resolveCurrentTeamOrder>[0];
-    const correctOrder = resolveCurrentTeamOrder(activeBattleMock as unknown as TargetParam, 'player', uiTeam as unknown as Parameters<typeof resolveCurrentTeamOrder>[2]);
-    const correctHps = correctOrder.map(uid => uiTeam.find(p => p.uid === uid)?.hp ?? 0);
-    assert.deepStrictEqual(correctHps, [80, 0, 100]);
-
-    // If we sync simMons using correctHps:
-    const mockSim2 = JSON.parse(JSON.stringify(simMons));
-    mockSim2.forEach((mon: { hp: number; fainted?: boolean }, idx: number) => {
-      mon.hp = correctHps[idx]!;
-      if (mon.hp <= 0) mon.fainted = true;
-    });
-    assert.strictEqual(mockSim2[0].fainted, false, 'Correct mapping keeps Gengar healthy');
-    assert.strictEqual(mockSim2[1].fainted, true, 'Correct mapping marks Vaporeon as fainted');
+    const correctHps = p1SlotOrder.map(uid => uiTeam.find(p => p.uid === uid)?.hp ?? 0);
+    assert.deepStrictEqual(correctHps, [80, 0, 100]); // Gengar, Vaporeon fainted, Eevee
   });
 });

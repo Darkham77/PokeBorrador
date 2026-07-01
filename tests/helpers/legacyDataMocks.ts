@@ -1,6 +1,6 @@
 export const LEGENDARIES = new Set([
   'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-  'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
+  'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
 ]);
 
 export const legacyItemMap: Record<string, string> = {
@@ -14,7 +14,7 @@ export const legacyItemMap: Record<string, string> = {
   piedra_hoja: 'leafstone',
   piedra_luna: 'moonstone',
   piedra_solar: 'sunstone',
-  caramelo_vigor: 'vigor_candy',
+  caramelo_vigor: 'vigorcandy',
   repelente: 'repel'
 };
 
@@ -40,29 +40,29 @@ export const legacyAbilityMap: Record<string, string> = {
 };
 
 export const legacyMoveMap: Record<string, string> = {
-  cuerpo_pesado: 'heavy_slam',
-  hiper_colmillo: 'hyper_fang',
-  patada_salto_alta: 'high_jump_kick',
-  pajaro_osado: 'brave_bird',
+  cuerpo_pesado: 'heavyslam',
+  hiper_colmillo: 'hyperfang',
+  patada_salto_alta: 'highjumpkick',
+  pajaro_osado: 'bravebird',
   engullir: 'swallow',
-  somnifera: 'sleep_powder',
-  velocidad_extrema: 'extreme_speed',
-  mismodestino: 'destiny_bond',
+  somnifera: 'sleeppowder',
+  velocidad_extrema: 'extremespeed',
+  mismodestino: 'destinybond',
   pantalla_humo: 'smokescreen',
-  super_colmillo: 'super_fang',
-  huevo_bomba: 'egg_bomb',
-  hueso_rus: 'bone_rush',
-  mega_patada: 'mega_kick',
-  mega_puno: 'mega_punch',
-  pozo_venenoso: 'toxic_spikes',
-  vampiro: 'horn_leech',
-  psicocorte: 'psycho_cut',
-  arena: 'sand_attack',
+  super_colmillo: 'superfang',
+  huevo_bomba: 'eggbomb',
+  hueso_rus: 'bonerush',
+  mega_patada: 'megakick',
+  mega_puno: 'megapunch',
+  pozo_venenoso: 'toxicspikes',
+  vampiro: 'hornleech',
+  psicocorte: 'psychocut',
+  arena: 'sandattack',
   minimizar: 'minimize',
-  golpe_karatazo: 'karate_chop',
-  mov_sismico: 'seismic_toss',
-  tajo_aereo: 'air_slash',
-  acidificacion: 'acid_armor',
-  recurrente: 'bullet_seed',
+  golpe_karatazo: 'karatechop',
+  mov_sismico: 'seismictoss',
+  tajo_aereo: 'airslash',
+  acidificacion: 'acidarmor',
+  recurrente: 'bulletseed',
   tormenta_de_arena: 'sandstorm'
 };

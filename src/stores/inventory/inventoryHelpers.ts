@@ -33,7 +33,7 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
 
   if (pokemon.inDaycare) {
     if (!item) return false;
-    const isVigorRestorer = item.id === 'vigorrestorer' || item.id === 'vigor_candy';
+    const isVigorRestorer = item.id === 'vigorrestorer' || item.id === 'vigorcandy';
     const isBreedingHeld = item.cat === 'breeding' || item.cat === 'breeding_held';
     return !!(isVigorRestorer || isBreedingHeld);
   }
@@ -151,29 +151,14 @@ export function mapInventoryToItems(
        if (id === 'bicycle') {
          return { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools', qty } as Item;
        }
-       try {
-         const item = getItemById(id);
-         return { ...item, qty, name: item.name } as Item;
-       } catch {
-         // Fallback para items no registrados en base de datos estática pero presentes en inventario (e.g. en tests)
-         const cleanId = id.toLowerCase().trim();
-         let cat = 'otros';
-         let name = id;
-         if (cleanId.includes('ball')) { cat = 'pokeballs'; name = 'Pokéball'; }
-         else if (cleanId.includes('potion')) { cat = 'potions'; name = 'Poción'; }
-         else if (cleanId.includes('up')) { cat = 'tools'; name = 'Objeto'; }
-         return { id, name, qty, cat, price: 100, tier: 'common' } as Item;
-       }
+       const item = getItemById(id);
+       return { ...item, qty, name: item.name } as Item;
      })
 
    if (isBattleActive) {
      items = items.filter(item => {
-       try {
-         const dbItem = getItemById(item.id)
-         return !(dbItem && dbItem.nonCombat)
-       } catch {
-         return true
-       }
+       const dbItem = getItemById(item.id)
+       return !(dbItem && dbItem.nonCombat)
      })
    }
 

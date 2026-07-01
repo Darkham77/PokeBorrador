@@ -19,7 +19,9 @@ vi.mock('@/logic/services/assetService', () => ({
 }));
 
 vi.mock('@/data/system/constants', () => ({
-  ACTIVE_GENERATION: 4
+  ACTIVE_GENERATION: 4,
+  IMPLEMENTED_GENERATION: 4,
+  MAX_DEX_NUMS: { 3: 386, 4: 493 }
 }));
 
 describe('useCombatantStatus - Weather display filtering', () => {

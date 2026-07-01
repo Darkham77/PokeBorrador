@@ -37,19 +37,19 @@ export function useAdventureMinigames(config: MinigameConfig) {
     showFishing.value = false
     minigamePokemon.value = null
     if (source === 'archaeology') {
-      const fossils = ['helix_fossil', 'dome_fossil', 'old_amber']
+      const fossils = ['helixfossil', 'domefossil', 'oldamber']
       const chosen = fossils[Math.floor(Math.random() * fossils.length)]!
       config.inventoryStore.addItem(chosen, 1)
       config.injectedItems.value.add(chosen)
-      const name = chosen === 'helix_fossil' ? 'Fósil Hélix' : (chosen === 'dome_fossil' ? 'Fósil Domo' : 'Ámbar Viejo')
+      const name = chosen === 'helixfossil' ? 'Fósil Hélix' : (chosen === 'domefossil' ? 'Fósil Domo' : 'Ámbar Viejo')
       config.travelLog.value.push(`🦴 ¡Excavación exitosa! Has recuperado el fósil completo: +1 ${name} obtenido en tu mochila de pruebas.`)
       config.triggerExtraLoot(chosen, 1)
     } else {
-      const fishLoot = ['pearl', 'big_pearl', 'waterstone']
+      const fishLoot = ['pearl', 'bigpearl', 'waterstone']
       const chosen = fishLoot[Math.floor(Math.random() * fishLoot.length)]!
       config.inventoryStore.addItem(chosen, 1)
       config.injectedItems.value.add(chosen)
-      const name = chosen === 'pearl' ? 'Perla' : (chosen === 'big_pearl' ? 'Perla Grande' : 'Piedra Agua')
+      const name = chosen === 'pearl' ? 'Perla' : (chosen === 'bigpearl' ? 'Perla Grande' : 'Piedra Agua')
       config.travelLog.value.push(`🐟 ¡Pesca exitosa! Has capturado un objeto marino: +1 ${name} obtenido en tu mochila de pruebas.`)
       config.triggerExtraLoot(chosen, 1)
     }

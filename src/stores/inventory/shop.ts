@@ -71,7 +71,7 @@ export const useShopStore = defineStore('shop', () => {
     
     // Process special category effects (like balls count)
     if (item.cat === 'pokeballs') {
-       const mult = item.id === 'great_ball' ? 1.5 : (item.id === 'ultra_ball' ? 2 : 1)
+       const mult = item.id === 'greatball' ? 1.5 : (item.id === 'ultraball' ? 2 : 1)
        gameStore.state.balls = (gameStore.state.balls || 0) + Math.floor(qty * mult)
     }
 
@@ -100,7 +100,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1
     
     if (item.cat === 'pokeballs') {
-       const mult = item.id === 'great_ball' ? 1.5 : (item.id === 'ultra_ball' ? 2 : 1)
+       const mult = item.id === 'greatball' ? 1.5 : (item.id === 'ultraball' ? 2 : 1)
        gameStore.state.balls = (gameStore.state.balls || 0) + Math.floor(1 * mult)
     }
 

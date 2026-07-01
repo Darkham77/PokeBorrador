@@ -1,15 +1,44 @@
 import type { Page } from '@playwright/test';
 
+interface DebugPokemon {
+  uid?: string;
+  name?: string;
+  hp?: number;
+  maxHp?: number;
+  status?: string;
+}
+
+interface DebugGameStore {
+  state?: {
+    team?: Array<DebugPokemon | null>;
+  } | null;
+}
+
+interface DebugPinia {
+  _s?: Map<string, DebugGameStore>;
+}
+
 export interface DebugStore {
   currentFsmState?: string;
   currentSubState?: string;
   isProcessing?: boolean;
   isIntroAnimating?: boolean;
+  /** Pinia internals — accessed to reach sibling stores */
+  _p?: DebugPinia;
+  fsm?: {
+    currentState?: { value?: string };
+    currentSubState?: { value?: string };
+  };
   state?: {
     over?: boolean;
     turnCount?: number;
-    player?: { hp?: number; maxHp?: number } | null;
-    enemy?: { hp?: number; maxHp?: number } | null;
+    player?: DebugPokemon | null;
+    enemy?: DebugPokemon | null;
+    enemyTeam?: Array<DebugPokemon | null>;
+    activeBattle?: {
+      player?: DebugPokemon | null;
+      enemy?: DebugPokemon | null;
+    } | null;
   } | null;
 }
 
@@ -148,7 +177,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         // Obtener el estado de la FSM de una sola vez
         const fsmData = await page.evaluate(() => {
           try {
-            const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
             if (!resolver) return null;
             const battleStore = resolver();
             return {
@@ -168,14 +197,14 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           // Obtener el UID del pokemon sano en el índice switchIdx desde la banca de la UI de forma dinámica
           const targetUid = await page.evaluate((idx) => {
             try {
-              const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+              const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
               if (!resolver) return null;
               const battleStore = resolver();
               const pinia = battleStore._p;
               const gameStore = pinia?._s?.get('game');
               const team = gameStore?.state?.team || [];
               // Filtrar los Pokémon sanos de la banca (excluyendo el activo si está vivo, pero como es cambio forzado por debilitación el activo tiene 0 HP)
-              const healthyBackup = team.filter((p: any) => p && p.hp > 0 && p.uid !== battleStore.state?.player?.uid);
+              const healthyBackup = team.filter((p: { uid?: string; hp?: number } | null) => p && p.hp && p.hp > 0 && p.uid !== battleStore.state?.player?.uid);
               return healthyBackup[idx]?.uid || null;
             } catch (_e) {
               return null;
@@ -233,12 +262,12 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         // Obtener el UID del pokemon en el índice targetIdx alineando el orden con Showdown
         const targetUid = await page.evaluate((idx) => {
           try {
-            const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
             if (!resolver) return null;
             const battleStore = resolver();
             const pinia = battleStore._p;
             const gameStore = pinia?._s?.get('game');
-            const team = [...(gameStore?.state?.team || [])].filter(Boolean);
+            const team = [...(gameStore?.state?.team || [])].filter((p): p is NonNullable<typeof p> => p != null);
             const activePoke = battleStore.state?.activeBattle?.player;
             
             const ordered = [];

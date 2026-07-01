@@ -96,10 +96,10 @@ export interface BattleState {
     money: number;
     items: Record<string, number>;
   };
-  showdownPlayerTeamOrder?: string[];
-  showdownEnemyTeamOrder?: string[];
-  initialPlayerTeamOrder?: string[];
-  initialEnemyTeamOrder?: string[];
+  /** UIDs in real @pkmn/sim slot order (active Pokemon is always at index 0). Source of truth for slot numbers. */
+  p1SlotOrder?: string[];
+  /** UIDs in real @pkmn/sim slot order for the enemy side. */
+  p2SlotOrder?: string[];
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

@@ -125,33 +125,7 @@ export const BABY_MAP: Record<string, string> = {
   magmar: 'magby',
 };
 
-/**
- * Movimientos Huevo (Egg Moves) por especie base.
- * Migrado y extendido de legacy '15_breeding.js'.
- */
-export const EGG_MOVES_DB: Record<string, string[]> = {
-  bulbasaur: ['leaf_storm', 'power_whip', 'ingrain'],
-  charmander: ['dragon_rage', 'flare_blitz', 'dragon_dance'],
-  squirtle: ['aqua_jet', 'mirror_coat', 'water_spout'],
-  pichu: ['volt_tackle', 'fake_out', 'encore'],
-  eevee: ['wish', 'synchronoise', 'detect'],
-  meowth: ['payday', 'hypnosis'],
-  machop: ['dynamic_punch', 'bullet_punch', 'close_combat', 'quick_guard'],
-  gastly: ['perish_song', 'disable', 'will_o_wisp', 'haze'],
-  snorlax: ['pursuit', 'curse'],
-  lapras: ['freeze_dry', 'ancient_power'],
-  abra: ['knock_off', 'thunder_punch', 'fire_punch', 'ice_punch', 'barrier', 'encore'],
-  pidgey: ['pursuit', 'steel_wing'],
-  rattata: ['reversal', 'flame_wheel', 'counter'],
-  zubat: ['defog', 'hypnosis'],
-  psyduck: ['hypnosis', 'psybeam', 'confuse_ray'],
-  mankey: ['close_combat', 'reversal', 'encore'],
-  growlithe: ['flare_blitz', 'morning_sun', 'close_combat'],
-  poliwag: ['haze', 'mist', 'endeavor'],
-  horsea: ['dragon_breath', 'signal_beam', 'aurora_beam'],
-  scyther: ['baton_pass', 'night_slash', 'reversal'],
-  magikarp: ['bounce', 'hydro_pump'], 
-};
+
 
 /**
  * Constantes de Probabilidad y Herencia

@@ -96,7 +96,7 @@ export const pokemonDebugService = {
       p.ivs = { ...p.ivs, ...ivs }
     }
     if (evs) {
-      p.evs = { ...p.evs, ...evs }
+      p.evs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...p.evs, ...evs }
     }
     
     if (isGuardian) p.isGuardian = true;

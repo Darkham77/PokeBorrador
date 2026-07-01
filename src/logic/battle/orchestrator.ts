@@ -25,7 +25,7 @@ export async function executeTurnInWorker(
   p2Statuses?: Record<string, string> | string[],
   p1Skip?: boolean,
   p2Skip?: boolean
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest; p1SlotOrder?: string[]; p2SlotOrder?: string[] }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
@@ -276,8 +276,6 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     escapeAttempts: 0,
     playerSideConditions: {},
     enemySideConditions: {},
-    showdownPlayerTeamOrder: ctx.gs.state.team.filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid),
-    showdownEnemyTeamOrder: (enemyTeam || (finalEnemyPoke ? [finalEnemyPoke] : [])).filter((p: Pokemon) => !!p).map((p: Pokemon) => p.uid)
   }
 
   if (battleOptions.isDebug) {
@@ -504,10 +502,6 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
     ctx.activeBattle.value.playerSideConditions = {}
     ctx.activeBattle.value.enemySideConditions = {}
-    ctx.activeBattle.value.showdownPlayerTeamOrder = playerTeamList.map((p: Pokemon) => p.uid)
-    ctx.activeBattle.value.showdownEnemyTeamOrder = enemyTeamList.map((p: Pokemon) => p.uid)
-    ctx.activeBattle.value.initialPlayerTeamOrder = [...ctx.activeBattle.value.showdownPlayerTeamOrder]
-    ctx.activeBattle.value.initialEnemyTeamOrder = [...ctx.activeBattle.value.showdownEnemyTeamOrder]
   }
 
   // Reset stage variables, fainted sides and logs to prevent state leakages
@@ -577,6 +571,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         if (ctx.activeBattle.value && responsePayload) {
           ctx.activeBattle.value.playerRequest = responsePayload.p1Request;
           ctx.activeBattle.value.enemyRequest = responsePayload.p2Request;
+          if (responsePayload.p1SlotOrder) ctx.activeBattle.value.p1SlotOrder = responsePayload.p1SlotOrder;
+          if (responsePayload.p2SlotOrder) ctx.activeBattle.value.p2SlotOrder = responsePayload.p2SlotOrder;
         }
         if (worker.removeEventListener) {
           worker.removeEventListener('message', initHandler);

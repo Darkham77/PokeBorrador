@@ -197,7 +197,7 @@ test.describe('E2E Held Items Verification', () => {
 
   let startIdx = 0;
   if (startFromCaseId) {
-    const foundIdx = itemBatches.findIndex((b: { id?: string }) => b.id === startFromCaseId.trim());
+    const foundIdx = itemBatches.findIndex((b) => (b as unknown as { id?: string }).id === startFromCaseId.trim());
     if (foundIdx !== -1) {
       startIdx = foundIdx;
     }
@@ -231,7 +231,7 @@ test.describe('E2E Held Items Verification', () => {
           const battleStore = useBattleStore();
 
           // Convertir los sets de Showdown a Pokémon locales válidos usando debugService
-          const localPlayerTeam = b.playerTeam.map((set) => {
+          const localPlayerTeam = b.playerTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }) => {
             return pokemonDebugService.generate({
               id: set.species,
               level: set.level || 100,
@@ -245,7 +245,7 @@ test.describe('E2E Held Items Verification', () => {
             });
           });
 
-          const localEnemyTeam = b.enemyTeam.map((set) => {
+          const localEnemyTeam = b.enemyTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }) => {
             return pokemonDebugService.generate({
               id: set.species,
               level: set.level || 100,

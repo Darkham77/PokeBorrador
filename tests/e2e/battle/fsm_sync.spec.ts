@@ -3,32 +3,9 @@ import { generateTestBatches, type TestBatch } from '../../../scripts/battle-tes
 import fs from 'node:fs';
 import path from 'node:path';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, handleBattleInput } from '../e2e_helpers.ts';
+import type { WindowWithResolver } from '../e2e_helpers.ts';
 
-interface TeamSet {
-  species: string;
-  level?: number;
-  ability?: string;
-  moves?: string[];
-  item?: string;
-  name?: string;
-}
 
-interface DebugStore {
-  currentFsmState?: string;
-  currentSubState?: string;
-  isProcessing?: boolean;
-  isIntroAnimating?: boolean;
-  state?: {
-    over?: boolean;
-    turnCount?: number;
-    player?: { hp?: number; maxHp?: number } | null;
-    enemy?: { hp?: number; maxHp?: number } | null;
-  } | null;
-}
-
-type WindowWithResolver = typeof window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-};
 
 // Helper: Esperar a que la máquina de estados retorne a WAIT_INPUT o SWITCH_MENU (el turno anterior y sus animaciones terminaron)
 async function waitForWaitInput(page: Page, turnCount: number, batchIndex: number, expectedSimulatorTurn: number, lastSubState: string) {
@@ -141,7 +118,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       console.log(`[E2E] Se agotaron las elecciones del fuzzer (${turnCount}/${playerChoices.length}). Esperando fin de batalla...`);
       const over = await page.evaluate(async () => {
         try {
-          const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
           if (!resolver) return false;
           const store = resolver();
           return !!store.state?.over;
@@ -187,13 +164,13 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
           const pinia = store._p;
           const gameStore = pinia?._s?.get('game');
           if (ch.side === 'p1' && gameStore?.state?.team && pkm) {
-            const match = gameStore.state.team.find((p: any) => p && p.uid === pkm.uid);
+            const match = gameStore.state.team.find((p) => p && p.uid === pkm.uid);
             if (match) {
               match.hp = match.maxHp;
               if (match.status === 'fnt') match.status = '';
             }
           } else if (ch.side === 'p2' && store.state?.enemyTeam && pkm) {
-            const match = store.state.enemyTeam.find((p: any) => p && p.uid === pkm.uid);
+            const match = store.state.enemyTeam.find((p) => p && p.uid === pkm.uid);
             if (match) {
               match.hp = match.maxHp;
               if (match.status === 'fnt') match.status = '';
@@ -205,12 +182,12 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
 
     // Loguear el estado del equipo y la elección antes de aplicar
     await page.evaluate((tc) => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (resolver) {
         const store = resolver();
         const pinia = store._p;
         const gameStore = pinia?._s?.get('game');
-        const teamInfo = gameStore?.state?.team?.map((p: any, idx: number) => 
+        const teamInfo = gameStore?.state?.team?.map((p, idx: number) => 
           `[${idx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid}`
         ).join(' | ');
         console.log(`[E2E-TEAM-STATE] Turn: ${tc} | FSM: ${store.currentSubState} | ActivePlayer: ${store.state?.player?.name} (UID:${store.state?.player?.uid}) | Team: ${teamInfo}`);
@@ -290,7 +267,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
   let startIdx = 0;
   if (startFromCaseId) {
-    const foundIdx = allBatches.findIndex((b: { id?: string }) => b.id === startFromCaseId.trim());
+    const foundIdx = allBatches.findIndex((b) => (b as unknown as { id?: string }).id === startFromCaseId.trim());
     if (foundIdx !== -1) {
       startIdx = foundIdx;
     }
@@ -373,7 +350,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         const gameStore = useGameStore();
         
         // Generar equipo local para el jugador usando la API de depuración
-        const localPlayerTeam = b.playerTeam.map((set: TeamSet, idx: number) => {
+        const localPlayerTeam = b.playerTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }, idx: number) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,
@@ -388,7 +365,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         });
 
         // Generar equipo local para el enemigo (NPC)
-        const localEnemyTeam = b.enemyTeam.map((set: TeamSet, idx: number) => {
+        const localEnemyTeam = b.enemyTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }, idx: number) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,

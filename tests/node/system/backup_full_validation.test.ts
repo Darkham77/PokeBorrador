@@ -67,7 +67,8 @@ describe('Backup Full validation and Dex compatibility test', () => {
       'database/migrations/20260622000300_migrate_save_eggs_and_missions.sqlite.sql',
       'database/migrations/20260627023400_fix_corrupted_n_move_ids.sqlite.sql',
       'database/migrations/20260629230200_migrate_item_ids_in_saves_v3.sqlite.sql',
-      'database/migrations/20260630125200_migrate_saves_to_pure_pkms_item_ids.sqlite.sql'
+      'database/migrations/20260630125200_migrate_saves_to_pure_pkms_item_ids.sqlite.sql',
+      'database/migrations/20260701140000_migrate_custom_item_ids.sqlite.sql'
     ];
 
     for (const file of migrationFiles) {

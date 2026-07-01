@@ -1,9 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
-
-type WindowWithResolver = typeof window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => any;
-};
+import type { WindowWithResolver } from '../e2e_helpers.ts';
 
 async function executeSingleTurn(page: Page) {
   await waitForWaitInput(page);

@@ -39,10 +39,10 @@ describe('Shop & Healing Logic', () => {
       
       gameStore.state.trainerLevel = 1
       // Ultra Ball unlock level is 8
-      shopStore.buyItem('ultra_ball')
+      shopStore.buyItem('ultraball')
       
       expect(uiStore.notify).toHaveBeenCalledWith(expect.stringContaining('bloqueado'), '🔒')
-      expect(gameStore.state.inventory['ultra_ball']).toBeUndefined()
+      expect(gameStore.state.inventory['ultraball']).toBeUndefined()
     })
   })
 

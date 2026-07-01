@@ -4583,7 +4583,7 @@
       "desc": "Equipado: Potencia ataques de tipo Eléctrico (+20%)."
     },
     {
-      "id": "rare_candy",
+      "id": "rarecandy",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/rare_candy",
@@ -4601,7 +4601,7 @@
       "desc": "Sube un nivel a cualquier Pokémon del equipo al instante."
     },
     {
-      "id": "vigor_candy",
+      "id": "vigorcandy",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/rare_candy",
@@ -4619,7 +4619,7 @@
       "desc": "Restaura 1 punto de vigor a un Pokémon."
     },
     {
-      "id": "move_relearner",
+      "id": "moverelearner",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier0/heart_scale",
@@ -4637,7 +4637,7 @@
       "desc": "Permite a un Pokémon recordar un movimiento olvidado."
     },
     {
-      "id": "nature_patch",
+      "id": "naturepatch",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/ability_capsule",
@@ -4655,7 +4655,7 @@
       "desc": "Permite cambiar la naturaleza de un Pokémon."
     },
     {
-      "id": "ability_pill",
+      "id": "abilitypill",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/ability_capsule",
@@ -4673,7 +4673,7 @@
       "desc": "Permite cambiar la habilidad de un Pokémon si tiene más de una."
     },
     {
-      "id": "ticket_shiny",
+      "id": "ticketshiny",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/eon_ticket",
@@ -4691,7 +4691,7 @@
       "desc": "Aumenta la probabilidad de encontrar Pokémon Variocolor durante 1 hora."
     },
     {
-      "id": "amulet_coin",
+      "id": "amuletcoin",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/amulet_coin",
@@ -4709,7 +4709,7 @@
       "desc": "Duplica el dinero ganado en batallas durante 1 hora."
     },
     {
-      "id": "ticket_safari",
+      "id": "ticketsafari",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/eon_ticket",
@@ -4727,7 +4727,7 @@
       "desc": "Acceso especial o mejoras en la Zona Safari durante 30 min."
     },
     {
-      "id": "ticket_cerulean",
+      "id": "ticketcerulean",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/eon_ticket",
@@ -4745,7 +4745,7 @@
       "desc": "Aumenta la probabilidad de raros en la Cueva Celeste durante 30 min."
     },
     {
-      "id": "incense_fire",
+      "id": "incensefire",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4763,7 +4763,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Fuego durante 30 min."
     },
     {
-      "id": "incense_water",
+      "id": "incensewater",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4781,7 +4781,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Agua durante 30 min."
     },
     {
-      "id": "incense_grass",
+      "id": "incensegrass",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4799,7 +4799,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Planta durante 30 min."
     },
     {
-      "id": "incense_normal",
+      "id": "incensenormal",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4817,7 +4817,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Normal durante 30 min."
     },
     {
-      "id": "incense_ghost",
+      "id": "incenseghost",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4835,7 +4835,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Fantasma durante 30 min."
     },
     {
-      "id": "incense_psychic",
+      "id": "incensepsychic",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/luck_incense",
@@ -4853,7 +4853,7 @@
       "desc": "Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min."
     },
     {
-      "id": "pp_up",
+      "id": "ppup",
       "craftingTier": 3,
       "cat": "otros",
       "type": "usable",
@@ -4871,7 +4871,7 @@
       "desc": "Aumenta los PP máximos de un movimiento en un 20%."
     },
     {
-      "id": "lucky_egg",
+      "id": "luckyegg",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/lucky_egg",
@@ -4908,7 +4908,7 @@
       "desc": "Aleja Pokémon salvajes de nivel inferior al tuyo durante 10 min."
     },
     {
-      "id": "super_repel",
+      "id": "superrepel",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/super_repel",
@@ -4926,7 +4926,7 @@
       "desc": "Aleja Pokémon salvajes de nivel inferior al tuyo durante 20 min."
     },
     {
-      "id": "max_repel",
+      "id": "maxrepel",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/max_repel",
@@ -4944,7 +4944,7 @@
       "desc": "Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min."
     },
     {
-      "id": "fishing_rod",
+      "id": "fishingrod",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/fishing_rod_0",
@@ -4963,7 +4963,7 @@
       "desc": "Sube mucho la pesca por 20 min. Ver % exacto en el mapa."
     },
     {
-      "id": "fishing_rod_good",
+      "id": "fishingrodgood",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/fishing_rod_1",
@@ -4982,7 +4982,7 @@
       "desc": "Sube la pesca por 40 min y bonifica la aparición de Pokémon raros (+500 pts)."
     },
     {
-      "id": "fishing_rod_super",
+      "id": "fishingrodsuper",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/fishing_rod_2",
@@ -5020,7 +5020,7 @@
       "desc": "Sube la arqueología por 20 min. Ver % exacto en el mapa."
     },
     {
-      "id": "pickaxe_silver",
+      "id": "pickaxesilver",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/pickaxe_1",
@@ -5039,7 +5039,7 @@
       "desc": "Sube la arqueología por 40 min. Bonifica minerales y gemas (+500 pts)."
     },
     {
-      "id": "pickaxe_gold",
+      "id": "pickaxegold",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/pickaxe_2",
@@ -5077,7 +5077,7 @@
       "desc": "Sube la arqueología por 20 min. Bonifica fósiles."
     },
     {
-      "id": "brush_good",
+      "id": "brushgood",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/brush_1",
@@ -5096,7 +5096,7 @@
       "desc": "Sube la arqueología por 40 min. Bonifica fósiles (+500 pts)."
     },
     {
-      "id": "brush_super",
+      "id": "brushsuper",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/brush_2",
@@ -5115,7 +5115,7 @@
       "desc": "Sube la arqueología por 60 min. Bonifica fósiles (+1000 pts)."
     },
     {
-      "id": "helix_fossil",
+      "id": "helixfossil",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/helix_fossil",
@@ -5132,7 +5132,7 @@
       "desc": "Un fósil de un Pokémon marino antiguo. Parece un caracol."
     },
     {
-      "id": "dome_fossil",
+      "id": "domefossil",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/dome_fossil",
@@ -5149,7 +5149,7 @@
       "desc": "Un fósil de un Pokémon prehistórico con caparazón rígido."
     },
     {
-      "id": "old_amber",
+      "id": "oldamber",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/old_amber",
@@ -5200,7 +5200,7 @@
       "desc": "Una perla pequeña. Se vende a buen precio."
     },
     {
-      "id": "big_pearl",
+      "id": "bigpearl",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/big_pearl",
@@ -5234,7 +5234,7 @@
       "desc": "Arena roja muy fina. Se vende a buen precio."
     },
     {
-      "id": "star_piece",
+      "id": "starpiece",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/star_piece",
@@ -5251,7 +5251,7 @@
       "desc": "Un trozo de gema roja. Se vende a muy buen precio."
     },
     {
-      "id": "coal_ore",
+      "id": "coalore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/coal_ore",
@@ -5268,7 +5268,7 @@
       "desc": "Un trozo de carbón mineral natural obtenido mediante excavación."
     },
     {
-      "id": "copper_ore",
+      "id": "copperore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/copper_ore",
@@ -5285,7 +5285,7 @@
       "desc": "Una roca con vetas de cobre natural. Se vende tal cual o se purifica."
     },
     {
-      "id": "iron_ore",
+      "id": "ironore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/iron_ore",
@@ -5302,7 +5302,7 @@
       "desc": "Roca rica en hierro natural sin refinar."
     },
     {
-      "id": "silver_ore",
+      "id": "silverore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/silver_ore",
@@ -5319,7 +5319,7 @@
       "desc": "Plata en su estado mineral bruto. Muy valorada en el mercado."
     },
     {
-      "id": "gold_ore",
+      "id": "goldore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/gold_ore",
@@ -5336,7 +5336,7 @@
       "desc": "Veta natural de oro en bruto. Muy codiciada."
     },
     {
-      "id": "tungsten_ore",
+      "id": "tungstenore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/tungsten_ore",
@@ -5353,7 +5353,7 @@
       "desc": "Mineral de tungsteno/wolframio pesado y denso en su estado natural."
     },
     {
-      "id": "uranium_ore",
+      "id": "uraniumore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/uranium_ore",
@@ -5370,7 +5370,7 @@
       "desc": "Mineral de uranio natural con un brillo verdoso misterioso."
     },
     {
-      "id": "rubi_ore",
+      "id": "rubiore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/ruby_ore",
@@ -5387,7 +5387,7 @@
       "desc": "Roca que incrusta un rubí en bruto sin tallar."
     },
     {
-      "id": "zaphire_ore",
+      "id": "zaphireore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/sapphire_ore",
@@ -5404,7 +5404,7 @@
       "desc": "Roca que incrusta un zafiro en bruto sin tallar."
     },
     {
-      "id": "emmerald_ore",
+      "id": "emmeraldore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/emerald_ore",
@@ -5421,7 +5421,7 @@
       "desc": "Roca que incrusta una esmeralda en bruto sin tallar."
     },
     {
-      "id": "topaz_ore",
+      "id": "topazore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/topaz_ore",
@@ -5438,7 +5438,7 @@
       "desc": "Roca que incrusta un topacio en bruto sin tallar."
     },
     {
-      "id": "diamond_ore",
+      "id": "diamondore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/diamond_ore",
@@ -5750,7 +5750,7 @@
       "desc": "Equipado: Potencia ataques de tipo Fantasma (+20%)."
     },
     {
-      "id": "ticket_articuno",
+      "id": "ticketarticuno",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/eon_ticket",
@@ -5769,7 +5769,7 @@
       "desc": "Aumenta la probabilidad de que aparezca Articuno en las Islas Espuma (30 min)."
     },
     {
-      "id": "ticket_mewtwo",
+      "id": "ticketmewtwo",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/eon_ticket",
@@ -5788,7 +5788,7 @@
       "desc": "Aumenta la probabilidad de que aparezca Mewtwo en la Cueva Celeste (30 min)."
     },
     {
-      "id": "iv_scanner",
+      "id": "ivscanner",
       "craftingTier": 3,
       "cat": "tools",
       "sprite": "crafting/tier3/poke_radar",
@@ -6674,7 +6674,7 @@
       "desc": "Frasco con sustancia ácida corrosiva, usada en procesos químicos de refinamiento."
     },
     {
-      "id": "apricorn_blue",
+      "id": "apricornblue",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/apricorn_blue",
@@ -6691,7 +6691,7 @@
       "desc": "Fruto silvestre de cáscara dura, usado tradicionalmente para fabricar Pokéballs artesanales."
     },
     {
-      "id": "apricorn_red",
+      "id": "apricornred",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/apricorn_red",
@@ -6708,7 +6708,7 @@
       "desc": "Fruto silvestre de cáscara dura, usado tradicionalmente para fabricar Pokéballs artesanales."
     },
     {
-      "id": "apricorn_yellow",
+      "id": "apricornyellow",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/apricorn_yellow",
@@ -6725,7 +6725,7 @@
       "desc": "Fruto silvestre de cáscara dura, usado tradicionalmente para fabricar Pokéballs artesanales."
     },
     {
-      "id": "berry_sugar",
+      "id": "berrysugar",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/berry_sugar",
@@ -6742,7 +6742,7 @@
       "desc": "Azúcar refinado a partir de bayas silvestres, ideal para endulzar platillos."
     },
     {
-      "id": "bone_fragment",
+      "id": "bonefragment",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/bone_fragment",
@@ -6810,7 +6810,7 @@
       "desc": "Retazo de tela resistente de algodón, útil para bolsas y vestimentas básicas."
     },
     {
-      "id": "combee_honey",
+      "id": "combeehoney",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/combee_honey",
@@ -6861,7 +6861,7 @@
       "desc": "Piedra evolutiva especial que induce la evolución en ciertas especies de Pokémon."
     },
     {
-      "id": "electronic_scrap",
+      "id": "electronicscrap",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/electronic_scrap",
@@ -6878,7 +6878,7 @@
       "desc": "Chatarra electrónica recuperada de dispositivos rotos, útil para componentes simples."
     },
     {
-      "id": "energy_powder",
+      "id": "energypowder",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/energy_powder",
@@ -6895,7 +6895,7 @@
       "desc": "Polvo medicinal amargo que restaura energía pero reduce la amistad del Pokémon."
     },
     {
-      "id": "food_scraps",
+      "id": "foodscraps",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/food_scraps",
@@ -6930,7 +6930,7 @@
       "nonCombat": true
     },
     {
-      "id": "herb_rare",
+      "id": "herbrare",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/herb_rare",
@@ -6947,7 +6947,7 @@
       "desc": "Hierba silvestre rara con potentes propiedades curativas y químicas."
     },
     {
-      "id": "ice_crystal",
+      "id": "icecrystal",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/ice_crystal",
@@ -6981,7 +6981,7 @@
       "desc": "Piedra evolutiva especial que induce la evolución en ciertas especies de Pokémon."
     },
     {
-      "id": "leather_strip",
+      "id": "leatherstrip",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/leather_strip",
@@ -7015,7 +7015,7 @@
       "desc": "Ingrediente fresco y nutritivo para cocinar deliciosas recetas en la olla."
     },
     {
-      "id": "liechi_berry",
+      "id": "liechiberry",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/liechi_berry",
@@ -7032,7 +7032,7 @@
       "desc": "Baya rara y valiosa con propiedades potenciadoras especiales."
     },
     {
-      "id": "metal_scrap",
+      "id": "metalscrap",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/metal_scrap",
@@ -7066,7 +7066,7 @@
       "desc": "Ingrediente fresco y nutritivo para cocinar deliciosas recetas en la olla."
     },
     {
-      "id": "nickel_ore",
+      "id": "nickelore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/nickel_ore",
@@ -7117,7 +7117,7 @@
       "desc": "Ingrediente fresco y nutritivo para cocinar deliciosas recetas en la olla."
     },
     {
-      "id": "pecha_berry_wild",
+      "id": "pechaberrywild",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pecha_berry_wild",
@@ -7134,7 +7134,7 @@
       "desc": "Baya silvestre dulce con propiedades curativas contra el veneno."
     },
     {
-      "id": "petrified_sap",
+      "id": "petrifiedsap",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/petrified_sap",
@@ -7151,7 +7151,7 @@
       "desc": "Savia fosilizada y endurecida por el tiempo."
     },
     {
-      "id": "pigment_black",
+      "id": "pigmentblack",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_black",
@@ -7168,7 +7168,7 @@
       "desc": "Pigmento concentrado de carbón para teñir o pintar."
     },
     {
-      "id": "pigment_blue",
+      "id": "pigmentblue",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_blue",
@@ -7185,7 +7185,7 @@
       "desc": "Pigmento concentrado mineral para teñir o pintar."
     },
     {
-      "id": "pigment_green",
+      "id": "pigmentgreen",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_green",
@@ -7202,7 +7202,7 @@
       "desc": "Pigmento concentrado vegetal para teñir o pintar."
     },
     {
-      "id": "pigment_orange",
+      "id": "pigmentorange",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_orange",
@@ -7219,7 +7219,7 @@
       "desc": "Pigmento concentrado cítrico para teñir o pintar."
     },
     {
-      "id": "pigment_purple",
+      "id": "pigmentpurple",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_purple",
@@ -7236,7 +7236,7 @@
       "desc": "Pigmento concentrado floral para teñir o pintar."
     },
     {
-      "id": "pigment_red",
+      "id": "pigmentred",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_red",
@@ -7253,7 +7253,7 @@
       "desc": "Pigmento concentrado de arcilla para teñir o pintar."
     },
     {
-      "id": "pigment_white",
+      "id": "pigmentwhite",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_white",
@@ -7270,7 +7270,7 @@
       "desc": "Pigmento concentrado de tiza para teñir o pintar."
     },
     {
-      "id": "pigment_yellow",
+      "id": "pigmentyellow",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/pigment_yellow",
@@ -7304,7 +7304,7 @@
       "desc": "Ingrediente fresco y nutritivo para cocinar deliciosas recetas en la olla."
     },
     {
-      "id": "revive_root",
+      "id": "reviveroot",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/revive_root",
@@ -7321,7 +7321,7 @@
       "desc": "Raíz medicinal amarga que revive a un Pokémon debilitado."
     },
     {
-      "id": "rubber_compound",
+      "id": "rubbercompound",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/rubber_compound",
@@ -7338,7 +7338,7 @@
       "desc": "Compuesto flexible y aislante obtenido del látex natural."
     },
     {
-      "id": "salac_berry",
+      "id": "salacberry",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/salac_berry",
@@ -7355,7 +7355,7 @@
       "desc": "Baya rara y valiosa con propiedades potenciadoras especiales."
     },
     {
-      "id": "sand_silica",
+      "id": "sandsilica",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/sand_silica",
@@ -7372,7 +7372,7 @@
       "desc": "Arena de sílice pura, materia prima fundamental para la fabricación de vidrio."
     },
     {
-      "id": "saw_dust",
+      "id": "sawdust",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/saw_dust",
@@ -7406,7 +7406,7 @@
       "desc": "Piedra evolutiva especial que induce la evolución en ciertas especies de Pokémon."
     },
     {
-      "id": "sweet_sap",
+      "id": "sweetsap",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/sweet_sap",
@@ -7423,7 +7423,7 @@
       "desc": "Savia dulce extraída de árboles, muy codiciada por Pokémon de tipo Bicho."
     },
     {
-      "id": "tiny_mushroom",
+      "id": "tinymushroom",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/tiny_mushroom",
@@ -7440,7 +7440,7 @@
       "desc": "Ingrediente fresco y nutritivo para cocinar deliciosas recetas en la olla."
     },
     {
-      "id": "tin_ore",
+      "id": "tinore",
       "craftingTier": 0,
       "cat": "raw_material",
       "sprite": "crafting/tier0/tin_ore",
@@ -7491,7 +7491,7 @@
       "desc": "Madera básica recolectada de árboles, utilizada en construcciones simples y mangos de herramientas."
     },
     {
-      "id": "bronze_alloy",
+      "id": "bronzealloy",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/bronze_alloy",
@@ -7508,7 +7508,7 @@
       "desc": "Aleación de cobre y estaño, resistente a la corrosión."
     },
     {
-      "id": "chemical_base",
+      "id": "chemicalbase",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/chemical_base",
@@ -7542,7 +7542,7 @@
       "desc": "Carbón refinado y purificado para un alto poder calorífico."
     },
     {
-      "id": "electrum_alloy",
+      "id": "electrumalloy",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/electrum_alloy",
@@ -7559,7 +7559,7 @@
       "desc": "Aleación noble de oro y plata con excelente conductividad eléctrica."
     },
     {
-      "id": "glass_bottle",
+      "id": "glassbottle",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/glass_bottle",
@@ -7576,7 +7576,7 @@
       "desc": "Botella de vidrio vacía lista para contener líquidos o pociones químicas."
     },
     {
-      "id": "hardened_alloy",
+      "id": "hardenedalloy",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/hardened_alloy",
@@ -7610,7 +7610,7 @@
       "desc": "Lingote de níquel puro, utilizado para endurecer aleaciones y evitar corrosión."
     },
     {
-      "id": "paint_splint",
+      "id": "paintsplint",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/paint_splint",
@@ -7644,7 +7644,7 @@
       "desc": "Plástico moldeado de calidad industrial, ligero y aislante."
     },
     {
-      "id": "steel_alloy",
+      "id": "steelalloy",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/steel_alloy",
@@ -7695,7 +7695,7 @@
       "desc": "Lingote de estaño refinado, muy maleable y útil para soldaduras."
     },
     {
-      "id": "tint_black",
+      "id": "tintblack",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_black",
@@ -7712,7 +7712,7 @@
       "desc": "Tinte líquido de color negro vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_blue",
+      "id": "tintblue",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_blue",
@@ -7729,7 +7729,7 @@
       "desc": "Tinte líquido de color azul vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_green",
+      "id": "tintgreen",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_green",
@@ -7746,7 +7746,7 @@
       "desc": "Tinte líquido de color verde vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_orange",
+      "id": "tintorange",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_orange",
@@ -7763,7 +7763,7 @@
       "desc": "Tinte líquido de color naranja vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_purple",
+      "id": "tintpurple",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_purple",
@@ -7780,7 +7780,7 @@
       "desc": "Tinte líquido de color morado vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_red",
+      "id": "tintred",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_red",
@@ -7797,7 +7797,7 @@
       "desc": "Tinte líquido de color rojo vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_white",
+      "id": "tintwhite",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_white",
@@ -7814,7 +7814,7 @@
       "desc": "Tinte líquido de color blanco vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "tint_yellow",
+      "id": "tintyellow",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/tint_yellow",
@@ -7831,7 +7831,7 @@
       "desc": "Tinte líquido de color yellow vibrante para personalizar objetos y estructuras."
     },
     {
-      "id": "woven_thread",
+      "id": "woventhread",
       "craftingTier": 1,
       "cat": "refined_material",
       "sprite": "crafting/tier1/woven_thread",
@@ -7848,7 +7848,7 @@
       "desc": "Hilo fuertemente tejido y resistente para costuras complejas."
     },
     {
-      "id": "advanced_electronics_module",
+      "id": "advancedelectronicsmodule",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/advanced_electronics_module",
@@ -7865,7 +7865,7 @@
       "desc": "Módulo electrónico de última generación para automatización avanzada."
     },
     {
-      "id": "antidote_reactive",
+      "id": "antidotereactive",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/antidote_reactive",
@@ -7882,7 +7882,7 @@
       "desc": "Sustancia neutralizadora de toxinas para síntesis médica."
     },
     {
-      "id": "big_battery",
+      "id": "bigbattery",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/big_battery",
@@ -7899,7 +7899,7 @@
       "desc": "Batería de alta capacidad para maquinaria y dispositivos de mediano tamaño."
     },
     {
-      "id": "big_cpu",
+      "id": "bigcpu",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/big_cpu",
@@ -7916,7 +7916,7 @@
       "desc": "Procesador de alto rendimiento para servidores y computadoras industriales."
     },
     {
-      "id": "bolt_nut",
+      "id": "boltnut",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/bolt_nut",
@@ -7933,7 +7933,7 @@
       "desc": "Juego de tornillo y tuerca metálicos para sujeción estructural."
     },
     {
-      "id": "bronze_nectar",
+      "id": "bronzenectar",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/bronze_nectar",
@@ -7967,7 +7967,7 @@
       "desc": "Cable de cobre aislado para transmisión de energía y datos."
     },
     {
-      "id": "calibrated_weight",
+      "id": "calibratedweight",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/calibrated_weight",
@@ -7984,7 +7984,7 @@
       "desc": "Peso de precisión calibrado para balanzas o mecanismos de presión."
     },
     {
-      "id": "chemical_essence",
+      "id": "chemicalessence",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/chemical_essence",
@@ -8001,7 +8001,7 @@
       "desc": "Extracto químico concentrado para elaboración de reactivos complejos."
     },
     {
-      "id": "chemical_resuscitant",
+      "id": "chemicalresuscitant",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/chemical_resuscitant",
@@ -8035,7 +8035,7 @@
       "desc": "Circuito integrado básico para control de señales eléctricas."
     },
     {
-      "id": "electronics_module",
+      "id": "electronicsmodule",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/electronics_module",
@@ -8052,7 +8052,7 @@
       "desc": "Módulo integrado con circuitos de control estándar."
     },
     {
-      "id": "fat_monitor",
+      "id": "fatmonitor",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/fat_monitor",
@@ -8069,7 +8069,7 @@
       "desc": "Monitor CRT de tubo clásico, pesado pero funcional."
     },
     {
-      "id": "flat_monitor",
+      "id": "flatmonitor",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/flat_monitor",
@@ -8103,7 +8103,7 @@
       "desc": "Engranaje de metal para transmisión de fuerza mecánica."
     },
     {
-      "id": "golden_nectar",
+      "id": "goldennectar",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/golden_nectar",
@@ -8137,7 +8137,7 @@
       "desc": "Procesador gráfico de alta velocidad para renderizado visual."
     },
     {
-      "id": "industrial_electronics",
+      "id": "industrialelectronics",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/industrial_electronics",
@@ -8154,7 +8154,7 @@
       "desc": "Circuitos robustecidos diseñados para soportar altas tensiones industriales."
     },
     {
-      "id": "medicinal_extract",
+      "id": "medicinalextract",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/medicinal_extract",
@@ -8171,7 +8171,7 @@
       "desc": "Concentrado herbal purificado para medicina Pokémon."
     },
     {
-      "id": "metal_container",
+      "id": "metalcontainer",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/metal_container",
@@ -8188,7 +8188,7 @@
       "desc": "Contenedor de metal estándar para almacenamiento seguro."
     },
     {
-      "id": "metal_frame",
+      "id": "metalframe",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/metal_frame",
@@ -8256,7 +8256,7 @@
       "desc": "Unidad de procesamiento neuronal especializada en inteligencia artificial."
     },
     {
-      "id": "nuclear_waste",
+      "id": "nuclearwaste",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/nuclear_waste",
@@ -8273,7 +8273,7 @@
       "desc": "Residuos nucleares radiactivos, deben manejarse con extremo cuidado."
     },
     {
-      "id": "optical_lens",
+      "id": "opticallens",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/optical_lens",
@@ -8290,7 +8290,7 @@
       "desc": "Lente de cristal pulido para enfoque óptico de precisión."
     },
     {
-      "id": "optic_fiber",
+      "id": "opticfiber",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/optic_fiber",
@@ -8307,7 +8307,7 @@
       "desc": "Cable de fibra óptica de alta velocidad para comunicaciones de datos."
     },
     {
-      "id": "organic_fertilizer",
+      "id": "organicfertilizer",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/organic_fertilizer",
@@ -8324,7 +8324,7 @@
       "desc": "Fertilizante rico en nutrientes orgánicos que acelera el crecimiento de bayas."
     },
     {
-      "id": "paint_coating",
+      "id": "paintcoating",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/paint_coating",
@@ -8341,7 +8341,7 @@
       "desc": "Recubrimiento de pintura especial anticorrosivo y aislante."
     },
     {
-      "id": "plastic_shell",
+      "id": "plasticshell",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/plastic_shell",
@@ -8358,7 +8358,7 @@
       "desc": "Carcasa plástica exterior protectora para dispositivos electrónicos."
     },
     {
-      "id": "reinforced_container",
+      "id": "reinforcedcontainer",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/reinforced_container",
@@ -8375,7 +8375,7 @@
       "desc": "Contenedor de aleación reforzada para materiales peligrosos o reactivos."
     },
     {
-      "id": "reinforced_plastic_shell",
+      "id": "reinforcedplasticshell",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/reinforced_plastic_shell",
@@ -8392,7 +8392,7 @@
       "desc": "Carcasa plástica reforzada con fibra para entornos hostiles."
     },
     {
-      "id": "reinforced_strap",
+      "id": "reinforcedstrap",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/reinforced_strap",
@@ -8409,7 +8409,7 @@
       "desc": "Correa trenzada de alta resistencia para sujeción y transporte."
     },
     {
-      "id": "rubber_gasket",
+      "id": "rubbergasket",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/rubber_gasket",
@@ -8460,7 +8460,7 @@
       "desc": "Dispositivo de detección ambiental para temperatura, presión y movimiento."
     },
     {
-      "id": "sensor_crystal",
+      "id": "sensorcrystal",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/sensor_crystal",
@@ -8477,7 +8477,7 @@
       "desc": "Cristal óptico de alta pureza utilizado para enfocar sensores avanzados."
     },
     {
-      "id": "silver_nectar",
+      "id": "silvernectar",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/silver_nectar",
@@ -8494,7 +8494,7 @@
       "desc": "Néctar floral concentrado que atrae Pokémon salvajes raros."
     },
     {
-      "id": "small_antenna",
+      "id": "smallantenna",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/small_antenna",
@@ -8511,7 +8511,7 @@
       "desc": "Antena emisora/receptora para comunicaciones de corto alcance."
     },
     {
-      "id": "small_battery",
+      "id": "smallbattery",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/small_battery",
@@ -8528,7 +8528,7 @@
       "desc": "Batería pequeña para alimentar dispositivos electrónicos portátiles."
     },
     {
-      "id": "small_cpu",
+      "id": "smallcpu",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/small_cpu",
@@ -8545,7 +8545,7 @@
       "desc": "Microprocesador básico para automatización y lógica elemental."
     },
     {
-      "id": "small_monitor",
+      "id": "smallmonitor",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/small_monitor",
@@ -8579,7 +8579,7 @@
       "desc": "Resorte helicoidal de acero para amortiguación y mecanismos móviles."
     },
     {
-      "id": "sweet_syrup",
+      "id": "sweetsyrup",
       "craftingTier": 2,
       "cat": "component",
       "sprite": "crafting/tier2/sweet_syrup",
@@ -8613,7 +8613,7 @@
       "desc": "Componente semiconductor para amplificar o conmutar señales."
     },
     {
-      "id": "3d_printer",
+      "id": "3dprinter",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/3d_printer",
@@ -8630,7 +8630,7 @@
       "desc": "Impresora 3D de alta precisión para fabricar carcasas y componentes complejos."
     },
     {
-      "id": "advanced_workbench",
+      "id": "advancedworkbench",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/advanced_workbench",
@@ -8681,7 +8681,7 @@
       "desc": "Antena transmisora básica para enviar señales inalámbricas a corto alcance."
     },
     {
-      "id": "antimatter_generator",
+      "id": "antimattergenerator",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/antimatter_generator",
@@ -8698,7 +8698,7 @@
       "desc": "Generador de antimateria experimental, produce energía casi ilimitada."
     },
     {
-      "id": "big_antenna",
+      "id": "bigantenna",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/big_antenna",
@@ -8803,7 +8803,7 @@
       "desc": "Equipable. Aumenta 50% el At. Especial, pero solo permite usar un movimiento."
     },
     {
-      "id": "coal_generator",
+      "id": "coalgenerator",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/coal_generator",
@@ -8820,7 +8820,7 @@
       "desc": "Generador eléctrico impulsado por carbón, ideal para tus primeras máquinas."
     },
     {
-      "id": "cooking_pot",
+      "id": "cookingpot",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/cooking_pot",
@@ -8872,7 +8872,7 @@
       "desc": "Equipable. Potencia los movimientos de tipo Dragón un 20%."
     },
     {
-      "id": "dragon_scale",
+      "id": "dragonscale",
       "craftingTier": 3,
       "cat": "otros",
       "sprite": "crafting/tier3/dragon_scale",
@@ -8889,7 +8889,7 @@
       "desc": "Escama dura y gruesa. Hace evolucionar a Seadra en Kingdra al equiparse."
     },
     {
-      "id": "energy_modulator",
+      "id": "energymodulator",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/energy_modulator",
@@ -8924,7 +8924,7 @@
       "desc": "Equipable. Aumenta 50% la Defensa y Def. Especial de Pokémon no evolucionados completamente."
     },
     {
-      "id": "food_dispenser",
+      "id": "fooddispenser",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/food_dispenser",
@@ -8941,7 +8941,7 @@
       "desc": "Dispensador automático para alimentar Pokémon de forma programada."
     },
     {
-      "id": "food_grinder",
+      "id": "foodgrinder",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/food_grinder",
@@ -8958,7 +8958,7 @@
       "desc": "Trituradora industrial de alimentos para preparar harinas y polvos base."
     },
     {
-      "id": "food_processor",
+      "id": "foodprocessor",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/food_processor",
@@ -9009,7 +9009,7 @@
       "desc": "Horno de fundición de carbón para procesar metales y aleaciones básicas."
     },
     {
-      "id": "industrial_battery",
+      "id": "industrialbattery",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/industrial_battery",
@@ -9026,7 +9026,7 @@
       "desc": "Batería industrial de gran capacidad para almacenar energía sobrante."
     },
     {
-      "id": "lab_equipment",
+      "id": "labequipment",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/lab_equipment",
@@ -9043,7 +9043,7 @@
       "desc": "Conjunto de equipos de laboratorio para análisis químico y biológico."
     },
     {
-      "id": "lapidary_machine",
+      "id": "lapidarymachine",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/lapidary_machine",
@@ -9060,7 +9060,7 @@
       "desc": "Máquina lapidaria de precisión para cortar, facetar y pulir gemas y piedras."
     },
     {
-      "id": "laser_cutter",
+      "id": "lasercutter",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/laser_cutter",
@@ -9112,7 +9112,7 @@
       "desc": "Pokéball muy cómoda que hace a los Pokémon capturados más amistosos."
     },
     {
-      "id": "medical_device",
+      "id": "medicaldevice",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/medical_device",
@@ -9199,7 +9199,7 @@
       "desc": "Pokéball que facilita la captura de Pokémon de niveles inferiores."
     },
     {
-      "id": "nuclear_generator",
+      "id": "nucleargenerator",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/nuclear_generator",
@@ -9302,7 +9302,7 @@
       "desc": "Dispositivo de radar active para escanear el terreno circundante."
     },
     {
-      "id": "rock_grinder",
+      "id": "rockgrinder",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/rock_grinder",
@@ -9388,7 +9388,7 @@
       "desc": "Fundidora de inducción eléctrica avanzada para aleaciones complejas."
     },
     {
-      "id": "solar_panel",
+      "id": "solarpanel",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/solar_panel",
@@ -9405,7 +9405,7 @@
       "desc": "Panel solar fotovoltaico para generar energía limpia en tu base."
     },
     {
-      "id": "weather_station",
+      "id": "weatherstation",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/weather_station",
@@ -9422,7 +9422,7 @@
       "desc": "Estación meteorológica digital para medir el clima y predecir tormentas."
     },
     {
-      "id": "woodcutting_machine",
+      "id": "woodcuttingmachine",
       "craftingTier": 3,
       "cat": "machinery",
       "sprite": "crafting/tier3/woodcutting_machine",

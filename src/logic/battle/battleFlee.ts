@@ -94,15 +94,15 @@ export async function executeFlee(ctx: BattleContext) {
           let p1Hps: number[] | undefined = undefined;
           let p2Hps: number[] | undefined = undefined;
           if (active) {
-            const team = (ctx.gs.state.team || []).filter((p): p is Pokemon => !!p);
-            const playerOrder = active.initialPlayerTeamOrder || active.showdownPlayerTeamOrder || team.map(p => p.uid);
+          const team = (ctx.gs.state.team || []).filter((p): p is Pokemon => !!p);
+            const playerOrder = active.p1SlotOrder || team.map(p => p.uid);
             p1Hps = playerOrder.map(uid => {
               const p = team.find(x => x.uid === uid);
               return p ? p.hp : 0;
             });
 
             const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-            const enemyOrder = active.initialEnemyTeamOrder || active.showdownEnemyTeamOrder || enemyTeam.map(p => p.uid);
+            const enemyOrder = active.p2SlotOrder || enemyTeam.map(p => p.uid);
             p2Hps = enemyOrder.map(uid => {
               const p = enemyTeam.find(x => x.uid === uid);
               return p ? p.hp : 0;

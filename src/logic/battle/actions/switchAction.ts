@@ -3,7 +3,7 @@ import { clearVolatileStatus } from '../battleStatus.ts'
 import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { resolveShowdownSlot, swapActivePokemon } from '../showdownAdapter.ts'
+import { resolveShowdownSlot } from '../showdownAdapter.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
@@ -115,10 +115,8 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       const active = activeBattle.value
       if (!active || !active.enemy || !active.player) return
 
-       const slot = resolveShowdownSlot(active, 'player', newPoke.uid, gs.state.team || [])
+       const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
       const p1Choice = `switch ${slot}`
-      const currentOrder = active.showdownPlayerTeamOrder || (active.playerTeam || gs.state.team || []).filter((p): p is Pokemon => !!p).map(p => p.uid)
-      active.showdownPlayerTeamOrder = swapActivePokemon(currentOrder, newPoke.uid)
       const isWild = !active.isTrainer && !active.isGym
       let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild)
       if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
@@ -153,12 +151,14 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
             activeBattle.value.playerTeamIndex = oldIndex;
           }
         }
-        active.showdownPlayerTeamOrder = currentOrder;
         persistBattle();
         throw error;
       }
 
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+
+      if (result.p1SlotOrder) active.p1SlotOrder = result.p1SlotOrder
+      if (result.p2SlotOrder) active.p2SlotOrder = result.p2SlotOrder
 
       const filteredLogs = filterShowdownLogs(result.logs)
       for (const logLine of filteredLogs) {
@@ -238,7 +238,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
     // Si es un cambio forzado (por debilitación)
     if (activeBattle.value) {
       const active = activeBattle.value
-      const slot = resolveShowdownSlot(active, 'player', newPoke.uid, gs.state.team || [])
+      const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
       const { executeTurnInWorker } = await import('../orchestrator.ts')
 
       const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
@@ -257,9 +257,11 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         p2Statuses[p.uid] = p.status ?? '';
       }
 
-      await executeTurnInWorker(`switch ${slot}`, undefined, p1Hps, p2Hps, p1Statuses, p2Statuses)
-      const currentOrder = active.showdownPlayerTeamOrder || (active.playerTeam || gs.state.team || []).filter((p): p is Pokemon => !!p).map(p => p.uid)
-      active.showdownPlayerTeamOrder = swapActivePokemon(currentOrder, newPoke.uid)
+      const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined, p1Hps, p2Hps, p1Statuses, p2Statuses)
+      if (switchResult) {
+        if (switchResult.p1SlotOrder) active.p1SlotOrder = switchResult.p1SlotOrder
+        if (switchResult.p2SlotOrder) active.p2SlotOrder = switchResult.p2SlotOrder
+      }
     }
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE)

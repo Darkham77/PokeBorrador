@@ -51,9 +51,9 @@ export function executeCloneFossil(
   }
 
   const FOSSIL_SPECIES_MAP: Record<string, string> = {
-    'dome_fossil': 'kabuto',
-    'helix_fossil': 'omanyte',
-    'old_amber': 'aerodactyl',
+    'domefossil': 'kabuto',
+    'helixfossil': 'omanyte',
+    'oldamber': 'aerodactyl',
     'Fósil Domo': 'kabuto',
     'Fósil Hélix': 'omanyte',
     'Ámbar Viejo': 'aerodactyl'

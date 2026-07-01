@@ -256,5 +256,5 @@ export const useGameStore = defineStore('game', () => {
 })
 
 if (typeof window !== 'undefined') {
-  (window as any).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore()
+  (window as Window & { __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => ReturnType<typeof useGameStore> }).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore()
 }

@@ -21,26 +21,26 @@ import { Dex, toID } from '@pkmn/sim';
 const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
   butterfree: { rare: 'silverpowder' },
   beedrill: { rare: 'poisonbarb' },
-  pikachu: { common: 'berrybronze', rare: 'light_ball' },
-  meowth: { rare: 'amulet_coin' },
+  pikachu: { common: 'berrybronze', rare: 'lightball' },
+  meowth: { rare: 'amuletcoin' },
   abra: { rare: 'twistedspoon' },
   kadabra: { rare: 'twistedspoon' },
   machoke: { rare: 'focussash' },
   magneton: { rare: 'magnet' },
   farfetchd: { rare: 'stick' },
-  shellder: { common: 'big_pearl', rare: 'pearl' },
-  cloyster: { common: 'big_pearl', rare: 'pearl' },
+  shellder: { common: 'bigpearl', rare: 'pearl' },
+  cloyster: { common: 'bigpearl', rare: 'pearl' },
   haunter: { rare: 'spelltag' },
   gengar: { rare: 'spelltag' },
   cubone: { rare: 'thickclub' },
   marowak: { rare: 'thickclub' },
-  chansey: { rare: 'lucky_egg' },
-  staryu: { common: 'star_piece', rare: 'stardust' },
-  starmie: { common: 'star_piece', rare: 'stardust' },
+  chansey: { rare: 'luckyegg' },
+  staryu: { common: 'starpiece', rare: 'stardust' },
+  starmie: { common: 'starpiece', rare: 'stardust' },
   ditto: { rare: 'metalpowder' },
   snorlax: { rare: 'leftovers' },
-  dragonair: { rare: 'dragon_scale' },
-  dragonite: { rare: 'dragon_scale' }
+  dragonair: { rare: 'dragonscale' },
+  dragonite: { rare: 'dragonscale' }
 };
 
 const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];

@@ -128,7 +128,7 @@ describe('Inventory Store', () => {
 
 
   it('treats PP Up as usable in the bag filters', () => {
-    const ppUp = getItemById('pp_up')
+    const ppUp = getItemById('ppup')
 
     expect(ppUp).toBeDefined()
     expect(isItemUsableOutsideCombat(ppUp)).toBe(true)

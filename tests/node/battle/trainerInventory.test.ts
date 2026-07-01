@@ -95,14 +95,14 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
         'potion': 3,
         'pokeball': 5,
         'superpotion': 2,
-        'ultra_ball': 1
+        'ultraball': 1
       };
       
       const itemPrices: Record<string, number> = {
         'potion': 200,
         'pokeball': 200,
         'superpotion': 600,
-        'ultra_ball': 1000
+        'ultraball': 1000
       };
 
       const classLevel = 5;

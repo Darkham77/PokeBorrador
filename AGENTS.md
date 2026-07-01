@@ -183,6 +183,7 @@ Default section order:
 ## User Preferences
 
 - **Spanish ID Prohibition (Strict English Mandate)**: It is strictly forbidden to create or use logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, or other elements in Spanish. All IDs in databases, saves, and internal logic (including engine code and configurations) MUST be exclusively in English (using official Showdown format). Writing intermediate translation tables, patches, or adapters to preserve or support Spanish IDs in the backend/engine is strictly prohibited. If a developer or agent encounters any legacy Spanish IDs or translation patches already in the codebase, they MUST fix them immediately and migrate them to English Showdown IDs. Spanish is reserved exclusively for display and user-facing fields (such as descriptions or names shown in the UI).
+- **Showdown ID Format Mandate (Strict Lowercase & Alphanumeric)**: All present and future logical identifiers (`id`) for items, Pokémon, abilities, moves, and other game elements MUST strictly adhere to the official Pokémon Showdown format: all lowercase, alphanumeric characters only (no spaces, no hyphens, and no underscores). If any identifier is found violating this format (e.g., containing uppercase letters, spaces, hyphens, or underscores), it MUST be corrected immediately across all config files, source code, and databases (performing migration scripts for user saves if necessary).
 
 ## Child DOX Index
 

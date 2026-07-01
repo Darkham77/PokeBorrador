@@ -111,7 +111,7 @@ function setupStores(inventoryOverrides: Record<string, number> = {}) {
   return { gameStore, inventoryStore }
 }
 
-function openPPUpModal(itemId: 'pp_up' | 'ppmax') {
+function openPPUpModal(itemId: 'ppup' | 'ppmax') {
   const uiStore = useUIStore()
   uiStore.activePokemonForPPUp = { context: 'team', index: 0 }
   uiStore.activeItemForPPUp = itemId
@@ -140,7 +140,7 @@ describe('PPUpModal (pp_max) — integración', () => {
   beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}) })
 
   it('sube maxPP al techo exacto (32) en gameStore al elegir movimiento', async () => {
-    const { gameStore } = setupStores({ pp_max: 1 })
+    const { gameStore } = setupStores({ ppmax: 1 })
     openPPUpModal('ppmax')
 
     // Click slot 0 (Carga, pp=16, maxPP=20)
@@ -162,7 +162,7 @@ describe('PPUpModal (pp_max) — integración', () => {
   })
 
   it('funciona igual en slot 1 (Pico Taladro, pp=13, maxPP=20 → 32)', async () => {
-    const { gameStore } = setupStores({ pp_max: 1 })
+    const { gameStore } = setupStores({ ppmax: 1 })
     openPPUpModal('ppmax')
 
     await selectPPUpMove(1)
@@ -173,7 +173,7 @@ describe('PPUpModal (pp_max) — integración', () => {
   })
 
   it('NO consume si cierra sin elegir movimiento', async () => {
-    const { gameStore } = setupStores({ pp_max: 1 })
+    const { gameStore } = setupStores({ ppmax: 1 })
     const uiStore = openPPUpModal('ppmax')
     const originalMaxPP = gameStore.state.team[0]!.moves[0]!.maxPP  // 20
 
@@ -189,7 +189,7 @@ describe('PPUpModal (pp_max) — integración', () => {
   })
 
   it('NO aplica ni consume si maxPP ya es el techo (32)', async () => {
-    const { gameStore } = setupStores({ pp_max: 1 })
+    const { gameStore } = setupStores({ ppmax: 1 })
     gameStore.state.team[0]!.moves[0]!.maxPP = PP_MAX_CEILING  // ya en 32
     openPPUpModal('ppmax')
 
@@ -202,7 +202,7 @@ describe('PPUpModal (pp_max) — integración', () => {
   })
 
   it('regresión: muta el objeto en gameStore, NO una copia interna del UIStore', async () => {
-    const { gameStore } = setupStores({ pp_max: 1 })
+    const { gameStore } = setupStores({ ppmax: 1 })
     openPPUpModal('ppmax')
 
     // Capture direct reference BEFORE mounting
@@ -223,51 +223,51 @@ describe('PPUpModal (pp_up) — integración', () => {
   beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}) })
 
   it('sube maxPP exactamente +4 (20% de basePP=20) sin tocar pp actual', async () => {
-    const { gameStore } = setupStores({ pp_up: 1 })
-    openPPUpModal('pp_up')
+    const { gameStore } = setupStores({ ppup: 1 })
+    openPPUpModal('ppup')
 
     await selectPPUpMove(0)
 
     // Exact: 20 + floor(20 × 0.2) = 24
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(20 + PP_UP_INCREASE)  // 24
     expect(gameStore.state.team[0]!.moves[0]!.pp).toBe(16)                        // unchanged
-    expect((gameStore.state.inventory as Record<string, number>)['pp_up']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['ppup']).toBeUndefined()
   })
 
   it('acumula correctamente en el 2do y 3er uso hasta el techo (32)', async () => {
-    const { gameStore } = setupStores({ pp_up: 3 })
+    const { gameStore } = setupStores({ ppup: 3 })
 
     // 1st use: 20 → 24
-    openPPUpModal('pp_up')
+    openPPUpModal('ppup')
     let wrapper = await selectPPUpMove(0)
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(24)
     wrapper.unmount()
 
     // 2nd use: 24 → 28
-    openPPUpModal('pp_up')
+    openPPUpModal('ppup')
     wrapper = await selectPPUpMove(0)
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(28)
     wrapper.unmount()
 
     // 3rd use: 28 → 32 (capped at ceiling)
-    openPPUpModal('pp_up')
+    openPPUpModal('ppup')
     wrapper = await selectPPUpMove(0)
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(PP_MAX_CEILING)  // 32
     wrapper.unmount()
 
     // Item count decremented 3 times
-    expect((gameStore.state.inventory as Record<string, number>)['pp_up']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['ppup']).toBeUndefined()
   })
 
   it('NO pasa del techo — 4to intento rechazado por el guard', async () => {
-    const { gameStore } = setupStores({ pp_up: 1 })
+    const { gameStore } = setupStores({ ppup: 1 })
     gameStore.state.team[0]!.moves[0]!.maxPP = PP_MAX_CEILING  // already at 32
-    openPPUpModal('pp_up')
+    openPPUpModal('ppup')
 
     await selectPPUpMove(0)
 
     expect(gameStore.state.team[0]!.moves[0]!.maxPP).toBe(PP_MAX_CEILING)
-    expect((gameStore.state.inventory as Record<string, number>)['pp_up']).toBe(1)
+    expect((gameStore.state.inventory as Record<string, number>)['ppup']).toBe(1)
   })
 })
 
@@ -277,7 +277,7 @@ describe('NaturePatchModal — integración', () => {
   beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}) })
 
   it('cambia naturaleza exacta en gameStore y consume el ítem', async () => {
-    const { gameStore } = setupStores({ nature_patch: 1 })
+    const { gameStore } = setupStores({ naturepatch: 1 })
     const uiStore = useUIStore()
     gameStore.state.team[0]!.nature = 'Fuerte'
     uiStore.activePokemonForNature = { context: 'team', index: 0 }
@@ -297,12 +297,12 @@ describe('NaturePatchModal — integración', () => {
     const { NATURE_DATA } = await import('@/data/battle/natures')
     const chosenNatureKey = Object.keys(NATURE_DATA).find(k => (NATURE_DATA as unknown as Record<string, { name: string }>)[k]?.name === chosenNatureName) || chosenNatureName
     expect(gameStore.state.team[0]!.nature).toBe(chosenNatureKey)
-    expect((gameStore.state.inventory as Record<string, number>)['nature_patch']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['naturepatch']).toBeUndefined()
     expect(uiStore.isNaturePatchOpen).toBe(false)
   })
 
   it('NO consume si cierra sin elegir', async () => {
-    const { gameStore } = setupStores({ nature_patch: 1 })
+    const { gameStore } = setupStores({ naturepatch: 1 })
     const uiStore = useUIStore()
     const original = gameStore.state.team[0]!.nature
     uiStore.activePokemonForNature = { context: 'team', index: 0 }
@@ -314,7 +314,7 @@ describe('NaturePatchModal — integración', () => {
     uiStore.isNaturePatchOpen = false
     await flushPromises()
 
-    expect((gameStore.state.inventory as Record<string, number>)['nature_patch']).toBe(1)
+    expect((gameStore.state.inventory as Record<string, number>)['naturepatch']).toBe(1)
     expect(gameStore.state.team[0]!.nature).toBe(original)
   })
 })
@@ -325,7 +325,7 @@ describe('AbilityPillModal — integración', () => {
   beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}) })
 
   it('cambia habilidad exacta en gameStore y consume el ítem', async () => {
-    const { gameStore } = setupStores({ ability_pill: 1 })
+    const { gameStore } = setupStores({ abilitypill: 1 })
     const uiStore = useUIStore()
     // The mock returns ['Presión', 'Estática'] so both are available
     gameStore.state.team[0]!.ability = 'Presión'
@@ -344,12 +344,12 @@ describe('AbilityPillModal — integración', () => {
     await flushPromises()
 
     expect(gameStore.state.team[0]!.ability).toBe(chosenAbility)  // exact match
-    expect((gameStore.state.inventory as Record<string, number>)['ability_pill']).toBeUndefined()
+    expect((gameStore.state.inventory as Record<string, number>)['abilitypill']).toBeUndefined()
     expect(uiStore.isAbilityPillOpen).toBe(false)
   })
 
   it('NO consume si cierra sin elegir', async () => {
-    const { gameStore } = setupStores({ ability_pill: 1 })
+    const { gameStore } = setupStores({ abilitypill: 1 })
     const uiStore = useUIStore()
     const original = gameStore.state.team[0]!.ability
     uiStore.activePokemonForAbility = { context: 'team', index: 0 }
@@ -361,7 +361,7 @@ describe('AbilityPillModal — integración', () => {
     uiStore.isAbilityPillOpen = false
     await flushPromises()
 
-    expect((gameStore.state.inventory as Record<string, number>)['ability_pill']).toBe(1)
+    expect((gameStore.state.inventory as Record<string, number>)['abilitypill']).toBe(1)
     expect(gameStore.state.team[0]!.ability).toBe(original)
   })
 })

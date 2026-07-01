@@ -60,16 +60,13 @@ describe('Showdown Integration & Adapters', () => {
 
   describe('getShowdownSlot', () => {
     it('debería retornar 1 para el pokemon activo', () => {
-      const active = { uid: 'a' } as Pokemon;
-      const team = [active, { uid: 'b' } as Pokemon];
-      expect(getShowdownSlot(team, active, active)).toBe(1);
+      const slotOrder = ['a', 'b'];
+      expect(getShowdownSlot(slotOrder, 'a')).toBe(1);
     });
 
     it('debería retornar el slot correcto para pokemon en reserva', () => {
-      const active = { uid: 'a' } as Pokemon;
-      const reserve = { uid: 'b' } as Pokemon;
-      const team = [active, reserve, { uid: 'c' } as Pokemon];
-      expect(getShowdownSlot(team, active, reserve)).toBe(2);
+      const slotOrder = ['a', 'b', 'c'];
+      expect(getShowdownSlot(slotOrder, 'b')).toBe(2);
     });
   });
 

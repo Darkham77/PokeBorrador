@@ -114,19 +114,19 @@ describe('Poción (+20 HP)', () => {
 
 describe('Super Poción (+50 HP)', () => {
   it('cura 50 HP', () => {
-    setup({ hp: 30, maxHp: 100 }, { super_potion: 1 })
+    setup({ hp: 30, maxHp: 100 }, { superpotion: 1 })
     useInventoryStore().useItem('superpotion', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(80)
   })
 
   it('tapa en maxHp', () => {
-    setup({ hp: 80, maxHp: 100 }, { super_potion: 1 })
+    setup({ hp: 80, maxHp: 100 }, { superpotion: 1 })
     useInventoryStore().useItem('superpotion', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(100)
   })
 
   it('falla si HP al máximo', () => {
-    setup({ hp: 100, maxHp: 100 }, { super_potion: 1 })
+    setup({ hp: 100, maxHp: 100 }, { superpotion: 1 })
     const res = useInventoryStore().useItem('superpotion', 'team', 0)
     expect(res.success).toBe(false)
   })
@@ -134,13 +134,13 @@ describe('Super Poción (+50 HP)', () => {
 
 describe('Hiper Poción (+200 HP)', () => {
   it('cura 200 HP', () => {
-    setup({ hp: 50, maxHp: 300 }, { hyper_potion: 1 })
+    setup({ hp: 50, maxHp: 300 }, { hyperpotion: 1 })
     useInventoryStore().useItem('hyperpotion', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(250)
   })
 
   it('tapa en maxHp si el Pokémon tiene menos de 200 HP de daño', () => {
-    setup({ hp: 250, maxHp: 300 }, { hyper_potion: 1 })
+    setup({ hp: 250, maxHp: 300 }, { hyperpotion: 1 })
     useInventoryStore().useItem('hyperpotion', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(300)
   })
@@ -148,13 +148,13 @@ describe('Hiper Poción (+200 HP)', () => {
 
 describe('Poción Máxima (HP completo)', () => {
   it('restaura el HP al máximo sin importar el daño', () => {
-    setup({ hp: 1, maxHp: 400 }, { max_potion: 1 })
+    setup({ hp: 1, maxHp: 400 }, { maxpotion: 1 })
     useInventoryStore().useItem('maxpotion', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(400)
   })
 
   it('falla si HP ya está al máximo', () => {
-    setup({ hp: 400, maxHp: 400 }, { max_potion: 1 })
+    setup({ hp: 400, maxHp: 400 }, { maxpotion: 1 })
     const res = useInventoryStore().useItem('maxpotion', 'team', 0)
     expect(res.success).toBe(false)
     expect(useGameStore().state.inventory['maxpotion']).toBe(1)
@@ -163,13 +163,13 @@ describe('Poción Máxima (HP completo)', () => {
 
 describe('Agua Fresca, Soda, Limonada', () => {
   it('Agua Fresca cura 30 HP', () => {
-    setup({ hp: 50, maxHp: 100 }, { fresh_water: 1 })
+    setup({ hp: 50, maxHp: 100 }, { freshwater: 1 })
     useInventoryStore().useItem('freshwater', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(80)
   })
 
   it('Soda Pop cura 60 HP', () => {
-    setup({ hp: 20, maxHp: 100 }, { soda_pop: 1 })
+    setup({ hp: 20, maxHp: 100 }, { sodapop: 1 })
     useInventoryStore().useItem('sodapop', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(80)
   })
@@ -213,20 +213,20 @@ describe('Antídoto', () => {
 
 describe('Quemaduras Curas', () => {
   it('cura quemadura', () => {
-    setup({ hp: 50, maxHp: 100, status: 'brn' }, { burn_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'brn' }, { burnheal: 1 })
     expect(useInventoryStore().useItem('burnheal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
 
   it('falla con otro estado', () => {
-    setup({ hp: 50, maxHp: 100, status: 'frz' }, { burn_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'frz' }, { burnheal: 1 })
     expect(useInventoryStore().useItem('burnheal', 'team', 0).success).toBe(false)
   })
 })
 
 describe('Paralizador Curas', () => {
   it('cura parálisis', () => {
-    setup({ hp: 50, maxHp: 100, status: 'par' }, { paralyze_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'par' }, { paralyzeheal: 1 })
     expect(useInventoryStore().useItem('paralyzeheal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
@@ -250,7 +250,7 @@ describe('Despertar', () => {
 
 describe('Hielo Curas', () => {
   it('descongela al Pokémon', () => {
-    setup({ hp: 50, maxHp: 100, status: 'frz' }, { ice_heal: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'frz' }, { iceheal: 1 })
     expect(useInventoryStore().useItem('iceheal', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
@@ -260,7 +260,7 @@ describe('Cura Total (full_heal)', () => {
   it('cura cualquier estado de alteración', () => {
     for (const status of ['psn', 'brn', 'par', 'slp', 'frz'] as const) {
       setActivePinia(createPinia())
-      setup({ hp: 50, maxHp: 100, status }, { full_heal: 1 })
+      setup({ hp: 50, maxHp: 100, status }, { fullheal: 1 })
       const res = useInventoryStore().useItem('fullheal', 'team', 0)
       expect(res.success, `status ${status}`).toBe(true)
       expect(useGameStore().state.team[0]!.status).toBeNull()
@@ -268,17 +268,17 @@ describe('Cura Total (full_heal)', () => {
   })
 
   it('falla si no tiene estado y HP al máximo', () => {
-    setup({ hp: 100, maxHp: 100, status: null }, { full_heal: 1 })
+    setup({ hp: 100, maxHp: 100, status: null }, { fullheal: 1 })
     expect(useInventoryStore().useItem('fullheal', 'team', 0).success).toBe(false)
   })
 
   it('tiene éxito si tiene estado aunque HP esté al máximo', () => {
-    setup({ hp: 100, maxHp: 100, status: 'psn' }, { full_heal: 1 })
+    setup({ hp: 100, maxHp: 100, status: 'psn' }, { fullheal: 1 })
     expect(useInventoryStore().useItem('fullheal', 'team', 0).success).toBe(true)
   })
 
   it('falla si está debilitado', () => {
-    setup({ hp: 0, maxHp: 100, status: 'psn' }, { full_heal: 1 })
+    setup({ hp: 0, maxHp: 100, status: 'psn' }, { fullheal: 1 })
     expect(useInventoryStore().useItem('fullheal', 'team', 0).success).toBe(false)
   })
 })
@@ -287,7 +287,7 @@ describe('Cura Total (full_heal)', () => {
 
 describe('Restauración Total (full_restore)', () => {
   it('restaura HP y cura estado a la vez', () => {
-    setup({ hp: 30, maxHp: 100, status: 'brn' }, { full_restore: 1 })
+    setup({ hp: 30, maxHp: 100, status: 'brn' }, { fullrestore: 1 })
     const res = useInventoryStore().useItem('fullrestore', 'team', 0)
     expect(res.success).toBe(true)
     const p = useGameStore().state.team[0]!
@@ -296,19 +296,19 @@ describe('Restauración Total (full_restore)', () => {
   })
 
   it('tiene éxito si solo hay daño (sin estado)', () => {
-    setup({ hp: 50, maxHp: 100, status: null }, { full_restore: 1 })
+    setup({ hp: 50, maxHp: 100, status: null }, { fullrestore: 1 })
     expect(useInventoryStore().useItem('fullrestore', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.hp).toBe(100)
   })
 
   it('tiene éxito si solo hay estado (HP lleno)', () => {
-    setup({ hp: 100, maxHp: 100, status: 'par' }, { full_restore: 1 })
+    setup({ hp: 100, maxHp: 100, status: 'par' }, { fullrestore: 1 })
     expect(useInventoryStore().useItem('fullrestore', 'team', 0).success).toBe(true)
     expect(useGameStore().state.team[0]!.status).toBeNull()
   })
 
   it('falla si HP al máximo Y sin estado', () => {
-    setup({ hp: 100, maxHp: 100, status: null }, { full_restore: 1 })
+    setup({ hp: 100, maxHp: 100, status: null }, { fullrestore: 1 })
     const res = useInventoryStore().useItem('fullrestore', 'team', 0)
     expect(res.success).toBe(false)
     expect(useGameStore().state.inventory['fullrestore']).toBe(1)
@@ -335,13 +335,13 @@ describe('Revivir', () => {
 
 describe('Revivir Máximo', () => {
   it('revive con HP completo', () => {
-    setup({ hp: 0, maxHp: 100 }, { revive_max: 1 })
+    setup({ hp: 0, maxHp: 100 }, { revivemax: 1 })
     useInventoryStore().useItem('revivemax', 'team', 0)
     expect(useGameStore().state.team[0]!.hp).toBe(100)
   })
 
   it('falla si no está debilitado', () => {
-    setup({ hp: 1, maxHp: 100 }, { revive_max: 1 })
+    setup({ hp: 1, maxHp: 100 }, { revivemax: 1 })
     expect(useInventoryStore().useItem('revivemax', 'team', 0).success).toBe(false)
   })
 })
@@ -383,7 +383,7 @@ describe('Elixir Máximo (PP completos)', () => {
   it('restaura todos los PP al máximo', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Tackle', pp: 0, maxPP: 35 }, { name: 'Látigo', pp: 5, maxPP: 30 }] as Pokemon['moves'] },
-      { elixir_max: 1 }
+      { elixirmax: 1 }
     )
     useInventoryStore().useItem('elixirmax', 'team', 0)
     const p = useGameStore().state.team[0]!
@@ -396,18 +396,18 @@ describe('Elixir Máximo (PP completos)', () => {
 
 describe('Caramelo Raro', () => {
   it('fuerza la siguiente subida de nivel', () => {
-    setup({ hp: 50, maxHp: 100, level: 10, exp: 0, expNeeded: 500 }, { rare_candy: 1 })
-    const res = useInventoryStore().useItem('rare_candy', 'team', 0)
+    setup({ hp: 50, maxHp: 100, level: 10, exp: 0, expNeeded: 500 }, { rarecandy: 1 })
+    const res = useInventoryStore().useItem('rarecandy', 'team', 0)
     expect(res.success).toBe(true)
     // checkLevelUp resets exp to 0 after leveling — the visible contract is level+1
     expect(useGameStore().state.team[0]!.level).toBe(11)
   })
 
   it('falla si el Pokémon ya tiene nivel máximo', () => {
-    setup({ hp: 50, maxHp: 100, level: 100 }, { rare_candy: 1 })
-    const res = useInventoryStore().useItem('rare_candy', 'team', 0)
+    setup({ hp: 50, maxHp: 100, level: 100 }, { rarecandy: 1 })
+    const res = useInventoryStore().useItem('rarecandy', 'team', 0)
     expect(res.success).toBe(false)
-    expect(useGameStore().state.inventory['rare_candy']).toBe(1)
+    expect(useGameStore().state.inventory['rarecandy']).toBe(1)
   })
 })
 
@@ -415,14 +415,14 @@ describe('Caramelo Raro', () => {
 
 describe('Vigor Candy / Vigor Restorer', () => {
   it('Vigor Candy suma 1 de vigor', () => {
-    setup({ hp: 50, maxHp: 100, vigor: 3 }, { vigor_candy: 1 })
-    useInventoryStore().useItem('vigor_candy', 'team', 0)
+    setup({ hp: 50, maxHp: 100, vigor: 3 }, { vigorcandy: 1 })
+    useInventoryStore().useItem('vigorcandy', 'team', 0)
     expect(useGameStore().state.team[0]!.vigor).toBe(4)
   })
 
   it('Vigor Candy falla si el vigor ya está al máximo', () => {
-    setup({ hp: 50, maxHp: 100, vigor: 10 }, { vigor_candy: 1 })
-    const res = useInventoryStore().useItem('vigor_candy', 'team', 0)
+    setup({ hp: 50, maxHp: 100, vigor: 10 }, { vigorcandy: 1 })
+    const res = useInventoryStore().useItem('vigorcandy', 'team', 0)
     expect(res.success).toBe(false)
   })
 
@@ -476,29 +476,29 @@ describe('isValidTarget — coherencia cross-ítem', () => {
 
 describe('Subida de PP (pp_up) — flujo completo', () => {
   it('abre el modal (isPPUpOpen) sin consumir el ítem todavía', async () => {
-    setup({ hp: 50, maxHp: 100 }, { pp_up: 2 })
+    setup({ hp: 50, maxHp: 100 }, { ppup: 2 })
     const inv = useInventoryStore()
     const gs = useGameStore()
     const { useUIStore } = await import('@/stores/ui')
     const ui = useUIStore()
 
-    inv.useItem('pp_up', 'team', 0)
+    inv.useItem('ppup', 'team', 0)
 
     // Modal flag open — item NOT consumed yet
     expect(ui.isPPUpOpen).toBe(true)
-    expect(gs.state.inventory['pp_up']).toBe(2)
+    expect(gs.state.inventory['ppup']).toBe(2)
   })
 
   it('sube maxPP en 7 (20% de 35) y consume el ítem al confirmar el movimiento', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 20, maxPP: 35 }] as Pokemon['moves'] },
-      { pp_up: 1 }
+      { ppup: 1 }
     )
     const inv = useInventoryStore()
     const gs = useGameStore()
 
     // Simulate full deferred flow: useItem opens modal
-    inv.useItem('pp_up', 'team', 0)
+    inv.useItem('ppup', 'team', 0)
 
     // Simulate modal confirm: manually apply same logic as PPUpModal.handleApplyPPUp
     const move = gs.state.team[0]!.moves[0]!
@@ -506,25 +506,25 @@ describe('Subida de PP (pp_up) — flujo completo', () => {
     const maxPossible = Math.floor(basePP * 1.6) // 56
     const increase = Math.floor(basePP * 0.2)    // 7
     move.maxPP = Math.min(maxPossible, move.maxPP + increase) // 42
-    // pp_up does NOT restore current pp — only raises the ceiling
-    inv.removeItem('pp_up', 1)
+    // ppup does NOT restore current pp — only raises the ceiling
+    inv.removeItem('ppup', 1)
 
     expect(gs.state.team[0]!.moves[0]!.maxPP).toBe(42)
     expect(gs.state.team[0]!.moves[0]!.pp).toBe(20)  // unchanged
-    expect(gs.state.inventory['pp_up']).toBeUndefined()
+    expect(gs.state.inventory['ppup']).toBeUndefined()
   })
 
   it('NO aplica si maxPP ya está al máximo posible (56)', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 35, maxPP: 56 }] as Pokemon['moves'] },
-      { pp_up: 1 }
+      { ppup: 1 }
     )
     // The modal guards against this — simulate the guard
     const move = useGameStore().state.team[0]!.moves[0]!
     const basePP = 35
     const maxPossible = Math.floor(basePP * 1.6) // 56
     expect(move.maxPP >= maxPossible).toBe(true) // guard triggers → no change
-    expect(useGameStore().state.inventory['pp_up']).toBe(1) // not consumed
+    expect(useGameStore().state.inventory['ppup']).toBe(1) // not consumed
   })
 })
 
@@ -532,7 +532,7 @@ describe('Máximo PP (pp_max) — flujo completo', () => {
   it('maximiza maxPP a 56 sin tocar los PP actuales, consume el ítem', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }] as Pokemon['moves'] },
-      { pp_max: 1 }
+      { ppmax: 1 }
     )
     const inv = useInventoryStore()
     const gs = useGameStore()
@@ -554,7 +554,7 @@ describe('Máximo PP (pp_max) — flujo completo', () => {
   it('NO consume el ítem si el modal se cierra sin elegir movimiento', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }] as Pokemon['moves'] },
-      { pp_max: 1 }
+      { ppmax: 1 }
     )
     const inv = useInventoryStore()
     const gs = useGameStore()
@@ -570,7 +570,7 @@ describe('Máximo PP (pp_max) — flujo completo', () => {
   it('NO aplica si maxPP ya es 56 (máximo posible para Placaje)', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 56, maxPP: 56 }] as Pokemon['moves'] },
-      { pp_max: 1 }
+      { ppmax: 1 }
     )
     const move = useGameStore().state.team[0]!.moves[0]!
     const maxPossible = Math.floor(35 * 1.6) // 56
@@ -582,7 +582,7 @@ describe('Máximo PP (pp_max) — flujo completo', () => {
   it('maxPP sube permanentemente sin tocar los PP actuales', () => {
     setup(
       { hp: 50, maxHp: 100, moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }] as Pokemon['moves'] },
-      { pp_max: 1 }
+      { ppmax: 1 }
     )
     const gs = useGameStore()
     const inv = useInventoryStore()

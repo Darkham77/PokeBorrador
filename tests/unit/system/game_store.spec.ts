@@ -9,6 +9,19 @@ vi.mock('@/logic/auth/loadService', () => ({
   loadBestSave: vi.fn()
 }))
 
+vi.mock('gsap', () => {
+  const delayedCall = (delay: number, callback: () => void) => {
+    const timer = setTimeout(callback, delay * 1000);
+    return {
+      kill: () => clearTimeout(timer)
+    };
+  };
+  return {
+    default: { delayedCall },
+    gsap: { delayedCall }
+  };
+})
+
 const mockQuery = {
   select: vi.fn().mockReturnThis(),
   or: vi.fn().mockReturnThis(),
@@ -91,7 +104,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const gameStore = useGameStore()
     loadBestSaveMock.mockReturnValue(new Promise(() => {}))
     const loadPromise = gameStore.loadGame()
-    await vi.advanceTimersByTimeAsync(20000)
+    await vi.advanceTimersByTimeAsync(80000)
     await loadPromise
   }
 
