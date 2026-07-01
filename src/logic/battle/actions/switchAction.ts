@@ -126,25 +126,21 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       }
       const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
 
-       const team = gs.state.team || [];
-       const p1Hps: Record<string, number> = {};
-       const p1Statuses: Record<string, string> = {};
-       for (const p of team) {
-         if (p) {
-           p1Hps[p.uid] = p.hp;
-           p1Statuses[p.uid] = p.status ?? '';
-         }
-       }
+        const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
+        const p1Hps: Record<string, number> = {};
+        const p1Statuses: Record<string, string> = {};
+        for (const p of team) {
+          p1Hps[p.uid] = p.hp;
+          p1Statuses[p.uid] = p.status ?? '';
+        }
  
-       const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-       const p2Hps: Record<string, number> = {};
-       const p2Statuses: Record<string, string> = {};
-       for (const p of enemyTeam) {
-         if (p) {
-           p2Hps[p.uid] = p.hp;
-           p2Statuses[p.uid] = p.status ?? '';
-         }
-       }
+        const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+        const p2Hps: Record<string, number> = {};
+        const p2Statuses: Record<string, string> = {};
+        for (const p of enemyTeam) {
+          p2Hps[p.uid] = p.hp;
+          p2Statuses[p.uid] = p.status ?? '';
+        }
 
        let result;
        try {
@@ -244,7 +240,24 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       const active = activeBattle.value
       const slot = resolveShowdownSlot(active, 'player', newPoke.uid, gs.state.team || [])
       const { executeTurnInWorker } = await import('../orchestrator.ts')
-      await executeTurnInWorker(`switch ${slot}`)
+
+      const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
+      const p1Hps: Record<string, number> = {};
+      const p1Statuses: Record<string, string> = {};
+      for (const p of team) {
+        p1Hps[p.uid] = p.hp;
+        p1Statuses[p.uid] = p.status ?? '';
+      }
+
+      const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
+      const p2Hps: Record<string, number> = {};
+      const p2Statuses: Record<string, string> = {};
+      for (const p of enemyTeam) {
+        p2Hps[p.uid] = p.hp;
+        p2Statuses[p.uid] = p.status ?? '';
+      }
+
+      await executeTurnInWorker(`switch ${slot}`, undefined, p1Hps, p2Hps, p1Statuses, p2Statuses)
       const currentOrder = active.showdownPlayerTeamOrder || (active.playerTeam || gs.state.team || []).filter((p): p is Pokemon => !!p).map(p => p.uid)
       active.showdownPlayerTeamOrder = swapActivePokemon(currentOrder, newPoke.uid)
     }

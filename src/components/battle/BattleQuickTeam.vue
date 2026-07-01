@@ -71,6 +71,7 @@ const handleSwitch = (index: number) => {
         :hide-stats="true"
         type-pill-size="ssm"
         class="quick-card-override"
+        :data-pokemon-uid="pokemon.uid"
         :class="{ 
           'is-active': pokemon.uid === activePokemonUid,
           'is-fainted': pokemon.hp <= 0,

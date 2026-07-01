@@ -137,6 +137,23 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       break;
     }
 
+    if (playerChoices && turnCount >= playerChoices.length) {
+      console.log(`[E2E] Se agotaron las elecciones del fuzzer (${turnCount}/${playerChoices.length}). Esperando fin de batalla...`);
+      const over = await page.evaluate(async () => {
+        try {
+          const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+          if (!resolver) return false;
+          const store = resolver();
+          return !!store.state?.over;
+        } catch (_e) {
+          return true; // Asumir sobre si el store no es accesible
+        }
+      });
+      if (over) break;
+      await page.waitForTimeout(500);
+      continue;
+    }
+
     await waitForWaitInput(page, turnCount, batchIndex, lastSimulatorTurn, lastSubState);
 
     // Re-verificar estado de finalización
@@ -154,9 +171,9 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
     await verifyHpParity(page);
 
     // Aplicar trampas registradas para el turno actual
-    const currentCheats = cheats?.filter(c => c.turn === turnCount) || [];
+    const currentCheats = cheats?.filter(c => c.turn === turnCount + 1) || [];
     for (const cheat of currentCheats) {
-      console.log(`[E2E] Applying cheat at turn ${turnCount}: heal ${cheat.side}`);
+      console.log(`[E2E] Applying cheat at turn ${turnCount + 1}: heal ${cheat.side}`);
       await page.evaluate((ch) => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         if (resolver) {
@@ -164,10 +181,41 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
           const pkm = ch.side === 'p1' ? store.state?.player : store.state?.enemy;
           if (pkm) {
             pkm.hp = pkm.maxHp;
+            if (pkm.status === 'fnt') pkm.status = '';
+          }
+          // Curar también en el equipo del gameStore para que se envíe correctamente al worker
+          const pinia = store._p;
+          const gameStore = pinia?._s?.get('game');
+          if (ch.side === 'p1' && gameStore?.state?.team && pkm) {
+            const match = gameStore.state.team.find((p: any) => p && p.uid === pkm.uid);
+            if (match) {
+              match.hp = match.maxHp;
+              if (match.status === 'fnt') match.status = '';
+            }
+          } else if (ch.side === 'p2' && store.state?.enemyTeam && pkm) {
+            const match = store.state.enemyTeam.find((p: any) => p && p.uid === pkm.uid);
+            if (match) {
+              match.hp = match.maxHp;
+              if (match.status === 'fnt') match.status = '';
+            }
           }
         }
       }, cheat);
     }
+
+    // Loguear el estado del equipo y la elección antes de aplicar
+    await page.evaluate((tc) => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (resolver) {
+        const store = resolver();
+        const pinia = store._p;
+        const gameStore = pinia?._s?.get('game');
+        const teamInfo = gameStore?.state?.team?.map((p: any, idx: number) => 
+          `[${idx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid}`
+        ).join(' | ');
+        console.log(`[E2E-TEAM-STATE] Turn: ${tc} | FSM: ${store.currentSubState} | ActivePlayer: ${store.state?.player?.name} (UID:${store.state?.player?.uid}) | Team: ${teamInfo}`);
+      }
+    }, turnCount);
 
     // Guardar el turnCount actual antes de ejecutar la acción
     const stateInfo = await page.evaluate(async () => {
@@ -237,6 +285,19 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   const batchFilter = process.env.TEST_BATCH;
   const caseFilter = process.env.TEST_CASE;
   const caseIdFilter = process.env.TEST_CASE_ID;
+  const startFromCaseId = process.env.TEST_START_FROM_CASE_ID;
+  const startFromIndex = process.env.TEST_START_FROM_INDEX;
+
+  let startIdx = 0;
+  if (startFromCaseId) {
+    const foundIdx = allBatches.findIndex((b: { id?: string }) => b.id === startFromCaseId.trim());
+    if (foundIdx !== -1) {
+      startIdx = foundIdx;
+    }
+  } else if (startFromIndex) {
+    startIdx = Number(startFromIndex.trim()) - 1;
+  }
+
   const batches = allBatches.map((b: TestBatch, idx: number) => ({ b, idx })).filter(({ b, idx }: { b: TestBatch & { id?: string }, idx: number }) => {
     if (caseIdFilter) {
       return b.id === caseIdFilter.trim();
@@ -244,6 +305,9 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     if (caseFilter) {
       return (idx + 1) === Number(caseFilter.trim());
     }
+    
+    if (idx < startIdx) return false;
+
     if (!batchFilter) return true;
     const cleanFilter = batchFilter.trim();
     if (cleanFilter.includes('-')) {
@@ -294,6 +358,13 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
       test.setTimeout(360000);
       // 1. Construir e inyectar el equipo del jugador y del enemigo en la sesión del navegador
       await page.evaluate(async (b) => {
+        // Sobrescribir Math.random con una función determinista basada en semilla (LCG)
+        let seed = 12345;
+        Math.random = () => {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        };
+
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
         const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -302,31 +373,47 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         const gameStore = useGameStore();
         
         // Generar equipo local para el jugador usando la API de depuración
-        const localPlayerTeam = b.playerTeam.map((set: TeamSet) => {
+        const localPlayerTeam = b.playerTeam.map((set: TeamSet, idx: number) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,
             ability: set.ability,
             moves: set.moves,
             heldItem: set.item,
-            nickname: set.name
+            nickname: `${set.name}-${idx + 1}`,
+            nature: set.nature,
+            ivs: set.ivs,
+            evs: set.evs
           });
         });
 
         // Generar equipo local para el enemigo (NPC)
-        const localEnemyTeam = b.enemyTeam.map((set: TeamSet) => {
+        const localEnemyTeam = b.enemyTeam.map((set: TeamSet, idx: number) => {
           return pokemonDebugService.generate({
             id: set.species.toLowerCase(),
             level: set.level || 100,
             ability: set.ability,
             moves: set.moves,
             heldItem: set.item,
-            nickname: set.name
+            nickname: `${set.name}-${idx + 1}`,
+            nature: set.nature,
+            ivs: set.ivs,
+            evs: set.evs
           });
         });
 
         // Sobrescribir el equipo del jugador en el GameStore
         gameStore.state.team = localPlayerTeam;
+
+        // Inyectar un inventario completo de prueba para asegurar disponibilidad de objetos
+        gameStore.state.inventory = {
+          potion: 99,
+          superpotion: 99,
+          hyperpotion: 99,
+          maxpotion: 99,
+          revive: 99,
+          revivemax: 99
+        };
 
         // Iniciar la batalla como combate de entrenador usando el primer enemigo y la plantilla completa
         const firstEnemy = localEnemyTeam[0];

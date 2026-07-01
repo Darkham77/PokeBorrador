@@ -140,6 +140,7 @@ const getTierColor = (t?: string) => {
         v-for="item in battleItems"
         :key="item.id"
         :class="['quick-item-card', 'tier-' + (item.tier || 'common'), { 'is-disabled': !canUseItems }]"
+        :data-item-id="item.id"
         :style="{ '--tier-color': getTierColor(item.tier) }"
         @click.stop="handleUseItem(item)"
       >

@@ -119,6 +119,7 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run test:combat:items:report`: Runs the items fuzzer test and saves the verbose report in `scratch/items_coverage_report.txt`.
 - `npm run test:combat:e2e-fsm`: Runs only the Playwright E2E battle FSM sync test suite.
   - *Tip*: You can run a single specific battle by its unique hash ID using the `TEST_CASE_ID` environment variable: `$env:TEST_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm`
+  - *Tip*: To skip already verified cases during debugging, you can start execution *from* a specific case ID or index: `$env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm` (or use `$env:TEST_START_FROM_INDEX="15"`)
 - `npm run test:combat:e2e-fsm:report`: Runs the Playwright E2E FSM tests and saves the output in `scratch/e2e_fsm_report.txt`.
 - `npm run test:combat:cleanup`: Runs the unit test suite verifying volatile status and stat stage resets on switch.
 - `npm run test:combat:cleanup:report`: Runs the cleanup test and saves the verbose report in `scratch/cleanup_report.txt`.
@@ -155,3 +156,26 @@ Use these scripts to verify project standards, manage servers, and run audits:
 
 - `npm run assets:convert`: Unified pipeline for WebP conversion and mirroring.
 - `npm run assets:download`: External sprite downloader (PokeAPI/Showdown).
+
+---
+
+## 🛠️ E2E Debugging & Bug Fixing Protocol
+
+When diagnosing or fixing failures in the E2E simulation suites, follow this structured, zero-waste workflow:
+
+1. **Run the E2E Suite**: Execute the tests using the appropriate script:
+   ```powershell
+   npm run test:e2e:battle
+   ```
+2. **Identify and Isolate the Failure**: If a test fails, the runner will abort immediately and output the exact case hash in the console (e.g., `case-8b5b9aabf776`).
+3. **Debug the Specific Case**: Set the `TEST_CASE_ID` environment variable to run **ONLY** that failing case for near-instant loop times:
+   ```powershell
+   $env:TEST_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm
+   ```
+   Apply fixes to the source code and re-run this command until the case passes in green.
+4. **Resume Remaining Cases**: Resume the remaining simulation queue starting *from* the resolved case onwards using `TEST_START_FROM_CASE_ID`:
+   ```powershell
+   $env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm
+   ```
+   Repeat this loop for any subsequent failures.
+5. **Final Regression Pass**: Once the queue finishes completely, clear the environment variables and run a full, clean verification of the E2E suite to guarantee no regressions were introduced.

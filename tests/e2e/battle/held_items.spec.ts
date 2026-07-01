@@ -192,6 +192,19 @@ test.describe('E2E Held Items Verification', () => {
 
   const caseFilter = process.env.TEST_CASE;
   const caseIdFilter = process.env.TEST_CASE_ID;
+  const startFromCaseId = process.env.TEST_START_FROM_CASE_ID;
+  const startFromIndex = process.env.TEST_START_FROM_INDEX;
+
+  let startIdx = 0;
+  if (startFromCaseId) {
+    const foundIdx = itemBatches.findIndex((b: { id?: string }) => b.id === startFromCaseId.trim());
+    if (foundIdx !== -1) {
+      startIdx = foundIdx;
+    }
+  } else if (startFromIndex) {
+    startIdx = Number(startFromIndex.trim()) - 1;
+  }
+
   const filteredItemBatches = itemBatches.map((b, idx) => ({ b, idx })).filter(({ b, idx }) => {
     if (caseIdFilter) {
       return (b as unknown as { id?: string }).id === caseIdFilter.trim();
@@ -199,6 +212,8 @@ test.describe('E2E Held Items Verification', () => {
     if (caseFilter) {
       return (idx + 1) === Number(caseFilter.trim());
     }
+    
+    if (idx < startIdx) return false;
     return true;
   });
 
@@ -223,7 +238,10 @@ test.describe('E2E Held Items Verification', () => {
               ability: set.ability,
               moves: set.moves,
               heldItem: set.item,
-              nickname: set.name
+              nickname: set.name,
+              nature: set.nature,
+              ivs: set.ivs,
+              evs: set.evs
             });
           });
 
@@ -234,7 +252,10 @@ test.describe('E2E Held Items Verification', () => {
               ability: set.ability,
               moves: set.moves,
               heldItem: set.item,
-              nickname: set.name
+              nickname: set.name,
+              nature: set.nature,
+              ivs: set.ivs,
+              evs: set.evs
             });
           });
 

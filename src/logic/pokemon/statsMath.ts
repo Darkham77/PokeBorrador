@@ -58,32 +58,41 @@ export interface CalculatedStats {
  * @param base - The species base stats.
  * @param natureData - Which stat goes up (+10%) and down (-10%).
  * @param isDittoMetalPowder - Special case: Ditto with Metal Powder gets 1.5x Defense.
+ * @param evs - The effort values (0-252).
  */
 export function calcStatsPure(
   level: number,
   ivs: IVs,
   base: BaseStats,
   natureData: NatureData,
-  isDittoMetalPowder: boolean = false
+  isDittoMetalPowder: boolean = false,
+  evs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number } | null
 ): CalculatedStats {
-  const getStat = (baseVal: number, iv: number, lvl: number, statName: string) => {
-    let val = Math.floor(((baseVal * 2) + iv) * lvl / 100 + 5);
+  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statName: string) => {
+    let val = Math.floor(((baseVal * 2) + iv + Math.floor(ev / 4)) * lvl / 100 + 5);
     if (natureData.up === statName) val = Math.floor(val * 1.1);
     if (natureData.down === statName) val = Math.floor(val * 0.9);
     return val;
   };
 
-  const maxHp = Math.floor(((base.hp * 2) + ivs.hp) * level / 100 + level + 10);
-  const atk = getStat(base.atk, ivs.atk, level, 'Ataque');
-  let def = getStat(base.def, ivs.def, level, 'Defensa');
+  const hpEv = evs?.hp ?? 0;
+  const atkEv = evs?.atk ?? 0;
+  const defEv = evs?.def ?? 0;
+  const spaEv = evs?.spa ?? 0;
+  const spdEv = evs?.spd ?? 0;
+  const speEv = evs?.spe ?? 0;
+
+  const maxHp = Math.floor(((base.hp * 2) + ivs.hp + Math.floor(hpEv / 4)) * level / 100 + level + 10);
+  const atk = getStat(base.atk, ivs.atk, atkEv, level, 'Ataque');
+  let def = getStat(base.def, ivs.def, defEv, level, 'Defensa');
   
   if (isDittoMetalPowder) {
     def = Math.floor(def * 1.5);
   }
 
-  const spa = getStat(base.spa ?? base.atk, ivs.spa, level, 'At. Esp');
-  const spd = getStat(base.spd ?? base.def, ivs.spd, level, 'Def. Esp');
-  const spe = getStat(base.spe ?? 45, ivs.spe, level, 'Velocidad');
+  const spa = getStat(base.spa ?? base.atk, ivs.spa, spaEv, level, 'At. Esp');
+  const spd = getStat(base.spd ?? base.def, ivs.spd, spdEv, level, 'Def. Esp');
+  const spe = getStat(base.spe ?? 45, ivs.spe, speEv, level, 'Velocidad');
 
   return { maxHp, atk, def, spa, spd, spe };
 }

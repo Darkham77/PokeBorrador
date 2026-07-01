@@ -141,7 +141,10 @@ export const pokemonDataProvider = {
     getMoveData(id: string): MoveBaseData {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
-        const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
+        let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
+        if (!move || !move.exists) {
+            move = Dex.moves.get(cleanId);
+        }
         if (!move || !move.exists) {
             throw new Error(`Movimiento no encontrado por ID: ${id}`);
         }

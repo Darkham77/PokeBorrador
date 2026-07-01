@@ -17,6 +17,7 @@ interface GenerateParams {
   id?: string
   level?: number
   ivs?: Partial<Pokemon['ivs']> | null
+  evs?: Partial<Pokemon['evs']> | null
   isShiny?: boolean
   isGuardian?: boolean
   nature?: string | null
@@ -58,6 +59,7 @@ export const pokemonDebugService = {
       id = 'pidgey',
       level = 5,
       ivs = null,
+      evs = null,
       isShiny = false,
       isGuardian = false,
       nature = null,
@@ -92,6 +94,9 @@ export const pokemonDebugService = {
     // 2. Apply Overrides
     if (ivs) {
       p.ivs = { ...p.ivs, ...ivs }
+    }
+    if (evs) {
+      p.evs = { ...p.evs, ...evs }
     }
     
     if (isGuardian) p.isGuardian = true;

@@ -146,8 +146,8 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
-    const playerFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
-    const enemyFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0
+    const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
+    const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
 
     if (playerFainted || enemyFainted) {
       if (playerFainted && enemyFainted) {
@@ -290,18 +290,26 @@ export async function runEnemyAction(store: BattleContext) {
     console.log(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
     console.log(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
 
-    let p1Hps: number[] | undefined = undefined;
-    let p2Hps: number[] | undefined = undefined;
-    let p1Statuses: string[] | undefined = undefined;
-    let p2Statuses: string[] | undefined = undefined;
+    let p1Hps: Record<string, number> | undefined = undefined;
+    let p2Hps: Record<string, number> | undefined = undefined;
+    let p1Statuses: Record<string, string> | undefined = undefined;
+    let p2Statuses: Record<string, string> | undefined = undefined;
     if (active) {
       const team = (store.gs.state.team || []).filter((p): p is Pokemon => !!p);
-      p1Hps = team.map(p => p.hp);
-      p1Statuses = team.map(p => p.status || '');
+      p1Hps = {};
+      p1Statuses = {};
+      for (const p of team) {
+        p1Hps[p.uid] = p.hp;
+        p1Statuses[p.uid] = p.status ?? '';
+      }
  
       const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-      p2Hps = enemyTeam.map(p => p.hp);
-      p2Statuses = enemyTeam.map(p => p.status || '');
+      p2Hps = {};
+      p2Statuses = {};
+      for (const p of enemyTeam) {
+        p2Hps[p.uid] = p.hp;
+        p2Statuses[p.uid] = p.status ?? '';
+      }
     }
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, true, p2Skip)

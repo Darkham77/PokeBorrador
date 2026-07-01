@@ -254,3 +254,7 @@ export const useGameStore = defineStore('game', () => {
     checkRouteExpirations
   }
 })
+
+if (typeof window !== 'undefined') {
+  (window as any).__VITE_DEBUG_GAME_STORE_RESOLVER__ = () => useGameStore()
+}

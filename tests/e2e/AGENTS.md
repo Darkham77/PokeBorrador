@@ -15,6 +15,7 @@ QA / Automation Engineers.
 ## Work Guidance
 
 - Run the E2E test suite locally using `npm run test:e2e`.
+- For detailed instructions on executing tests, resolving failures, and following the debugging protocol, refer to the [Validation Manual](../../.agents/skills/project-standards/references/qa/validation_manual.md).
 - Ensure the local Vite development server is configured (default is `http://localhost:5173`) before running the tests. Playwright will automatically start the dev server if it is not already running.
 - **Concurrency Limit and Timeouts**: When running heavy parallel tests in the browser, set a reasonable maximum number of concurrent processes (e.g. `workers: 4`) and an elevated test timeout (`test.setTimeout(120000)`) to prevent false failures caused by CPU congestion on the local development server.
 - **Complete Combat Lifecycle**: Battle flow tests (such as using Potions, Pokéballs, or Revives) must never be truncated early. They must automatically run turn-by-turn until the battle is fully completed (victory or defeat), as FSM desynchronizations or state side effects typically manifest in the turns following the action, not in the immediate turn.

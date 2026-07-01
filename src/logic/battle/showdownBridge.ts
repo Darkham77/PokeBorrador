@@ -61,19 +61,31 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const side = getSide(rawId);
     if (!side) return null;
 
+    const battle = store.activeBattle.value;
+
+    // Si el identificador apunta al activo en pista (sufijo 'a' de individuales/dobles), retornar directamente el activo del bando
+    // (Excepto en eventos switch/drag, donde se está logueando al nuevo Pokémon que entra y el activo actual apunta al que sale)
+    if (battle && type !== 'switch' && type !== 'drag') {
+      if (side === 'player' && (rawId.startsWith('p1a:') || rawId.startsWith('p1:'))) {
+        if (battle.player) return battle.player;
+      }
+      if (side === 'enemy' && (rawId.startsWith('p2a:') || rawId.startsWith('p2:'))) {
+        if (battle.enemy) return battle.enemy;
+      }
+    }
+
     // Extraer nombre. Ej: "p1a: Mew" -> "Mew" o "p1: Blissey" -> "Blissey"
     const colonIdx = rawId.indexOf(':');
     const nameInLog = colonIdx !== -1 ? rawId.substring(colonIdx + 1).trim() : '';
 
     const team = side === 'player'
-      ? (store.activeBattle.value?.playerTeam || [])
-      : (store.activeBattle.value?.enemyTeam || []);
+      ? (battle?.playerTeam || [])
+      : (battle?.enemyTeam || []);
     if (nameInLog && team.length > 0) {
-      const found = team.find(mon => mon && mon.name === nameInLog);
+      const found = team.find(mon => mon && ((mon as any).nickname === nameInLog || mon.name === nameInLog));
       if (found) {
         // En combates 2vs2, pueden existir múltiples asientos activos por lado (ej. player, player2, enemy, enemy2).
         // Sincronizamos devolviendo la instancia reactiva del asiento activo que coincida en UID.
-        const battle = store.activeBattle.value;
         if (battle) {
           const keys = Object.keys(battle);
           for (const key of keys) {
@@ -81,7 +93,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
               ? (key.startsWith('player') || key === 'ally') 
               : key.startsWith('enemy');
             if (matchesSide) {
-              const val = (battle as unknown as Record<string, unknown>)[key];
+              const val = (battle as Record<string, unknown>)[key];
               if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
                 return val as unknown as Pokemon;
               }

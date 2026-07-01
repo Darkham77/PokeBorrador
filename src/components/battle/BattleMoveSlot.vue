@@ -76,66 +76,23 @@ const isDisabled = computed(() => {
     active?: ShowdownActiveRequest[];
   }
 
-  // Consultar directamente el request de Showdown para bloquear botones en la UI
+  // 1. Prioridad Absoluta: Consultar el request de Showdown para bloquear botones en la UI
   const playerRequest = battleStore.state?.playerRequest as ShowdownPlayerRequest | undefined;
   if (playerRequest && playerRequest.active?.[0]?.moves) {
     const reqMove = playerRequest.active[0].moves.find((rm: ShowdownMoveRequest) => rm.id === props.move?.id);
-    if (!reqMove || reqMove.disabled) return true;
+    if (reqMove) {
+      return !!reqMove.disabled;
+    }
   }
 
+  // 2. Fallback (si no hay request activo o no se encuentra el movimiento): Validar si no le quedan PP
   const p = props.playerInfo
-
-  // A Pokémon locked into a multi-turn move (Thrash, Outrage, Petal Dance...)
-  // must be able to click even at 0 PP — the engine handles it without deducting PP.
   const isLockedMove = !!(p?.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0)
   const isThrashLocked = !!(p?.thrashTurns && p.thrashTurns > 0)
   const isLocked = isLockedMove || isThrashLocked
 
-  // Block 0-PP moves only when NOT locked (normal situation).
   if (!isLocked && props.move.pp <= 0) return true
 
-  if (p) {
-    // Choice Item Logic
-    if (p.heldItem && (p.heldItem === 'choiceband' || p.heldItem === 'choicespecs' || p.heldItem === 'choicescarf')) {
-      const pk = p as Pokemon & { choiceMove?: string }
-      if (pk.choiceMove && pk.choiceMove !== props.move.id) {
-        return true
-      }
-    }
-    // Taunt
-    if (p.tauntTurns && p.tauntTurns > 0 && props.move.cat === 'status') {
-      return true
-    }
-    // Disabled Move
-    if (p.disabledMove && props.move.id === p.disabledMove.id) {
-      return true
-    }
-    // Encore
-    if (p.encoreMove && props.move.id !== p.encoreMove.id) {
-      return true
-    }
-    // Locked Move: only the forced move is clickable
-    if (isLockedMove && p.lastMove && props.move.id !== p.lastMove.id) {
-      return true
-    }
-    // Two-Turn charging Move (Fly, Dig, Dive, etc.)
-    if (p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0 && p.lastMove && props.move.id !== p.lastMove.id) {
-      return true
-    }
-
-    // Last Resort (Última Baza) requirements check
-    if (props.move.id === 'lastresort') {
-      const allMoves = p.moves.filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
-      if (allMoves.length <= 1) {
-        return true
-      }
-      const otherMoveIds = allMoves.filter(m => m.id !== 'lastresort' && !!m.id).map(m => m.id as string)
-      const hasUnused = otherMoveIds.some(id => !battleStore.playerUsedMoves.includes(id))
-      if (hasUnused) {
-        return true
-      }
-    }
-  }
   return false
 })
 

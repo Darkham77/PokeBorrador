@@ -264,8 +264,8 @@ describe('Showdown Gen 9 Battle Coverage Fuzzer', () => {
                   let newHp = oldHp;
 
                   if (itemType === 'potion') {
-                    // Potion: cura 200 HP
-                    newHp = Math.min(pokemon.maxhp, oldHp + 200);
+                    // Potion: cura 20 HP (alineado con la base de datos real de PokeBorrador)
+                    newHp = Math.min(pokemon.maxhp, oldHp + 20);
                     pokemon.hp = newHp;
                     // Inyectar log de curación en el simulador
                     simBattle.add(`|-heal|${sideId}a: ${pokemon.name}|${newHp}/${pokemon.maxhp}|[from] item: Potion`);

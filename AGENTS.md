@@ -72,6 +72,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill.
 - **Zero-Untested Goal Principle**: It is strictly forbidden to report a coverage or mass-testing goal as "Completed" if there is even one (1) move, ability, or item reported as `UNTESTED` in the final fuzzer output. The coverage must be numerically absolute (0 untested) to declare the goal fulfilled.
 - **Infinite Punching Bag Pattern**: To prevent fuzzing battles from ending prematurely due to rapid Pokémon fainting, the testing framework should implement silent health maintenance (restoring HP above a threshold directly in the Showdown simulator instance), acting as an infinite punching bag.
+- **Absolute Prohibition on Silent Test Fallbacks & Mocks**: It is STRICTLY FORBIDDEN to implement silent fallbacks, recovery catch blocks, or logical mocks in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize between Showdown and the UI. Any deviation of state, moves availability, or active Pokémon MUST result in a clear, immediate test failure to expose parity bugs instead of hiding them.
 
 ## 7. TypeScript Integrity & Zero-Ignore Policy
 

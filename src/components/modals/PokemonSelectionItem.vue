@@ -82,6 +82,7 @@ function handleClick() {
 <template>
   <div 
     class="list-item"
+    :data-pokemon-uid="item.pokemon.uid"
     :class="{ 
       selected: isSelected,
       'is-premium-tier': isPremiumTier 

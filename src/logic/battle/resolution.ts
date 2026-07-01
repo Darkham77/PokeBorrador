@@ -36,8 +36,9 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await processFaint(ctx, isPlayer ? 'enemy' : 'player')
   }
 
-  if (isPlayer && pokemon) {
-    ctx.addLog(`¡${pokemon.name} se ha debilitado!`, 'log-player', pokemon)
+  if (isPlayer) {
+    const pokeName = pokemon?.name || active?._lastActivePlayer?.name || 'Tu Pokémon';
+    ctx.addLog(`¡${pokeName} se ha debilitado!`, 'log-player', pokemon || undefined)
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)

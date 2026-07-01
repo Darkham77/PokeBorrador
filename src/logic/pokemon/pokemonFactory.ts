@@ -90,7 +90,8 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
       spe: base.spe
     },
     natureData,
-    isDittoMetalPowder
+    isDittoMetalPowder,
+    p.evs
   );
 
   p.maxHp = calculated.maxHp;
