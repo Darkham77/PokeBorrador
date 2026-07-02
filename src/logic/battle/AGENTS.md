@@ -17,6 +17,10 @@ Frontend Developers / Systems Engineers.
   - `showdownBridgeMisc.ts` — misc events (miss, crit, can't, faint, etc.)
   - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.)
 - **Zero-Any Policy**: `showdown.worker.ts` uses `PkmnSimSide` interface for internal `@pkmn/sim` types — never use `any`.
+- **HP Snapshot Helper**: Use `collectHpSnapshots(store, active)` (defined in
+  `battleTurn.ts`) to collect uid-keyed HP and status maps for both sides before
+  sending choices to the worker. Do NOT inline this logic again in new turn
+  execution functions.
 - **Struggle Recoil**: Exactly `Math.floor(maxHp / 4)` damage to the attacker. Never use approximations.
 - **GSAP Exclusive**: All battle animations must use GSAP timelines/tweens. `setTimeout` is forbidden.
 - **FSM Validation**: For FSM transitions, run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts`.

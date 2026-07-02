@@ -24,6 +24,10 @@ QA / Automation Engineers.
 - **Relative Imports for Browser Sandbox**: When importing modules dynamically inside `page.evaluate()` or `page.waitForFunction()`, do not use root-relative paths like `/src/stores/...` (which are browser-only and cause TS2307 compilation errors in `tsc`/`vue-tsc`). Always use relative paths (`../../src/...`) to satisfy both the static TypeScript compiler and the Vite server.
 - **Active Battle Store Typing**: Access the active battle state via `store.state` instead of `store.activeBattle` (which is private to the store setup scope). Check for `!store.state || store.state.over` to verify combat completion.
 - **Fallow Duplicate Code Evasion**: To prevent Fallow from flagging identical boilerplate code blocks (such as dynamic store imports and initializations inside browser sandboxes) as critical duplications, vary local variable names, import aliases, or structural spacing within each sandbox evaluation block.
+- **Shared Types**: Import `WindowWithResolver` and `DebugStore` exclusively from
+  `../e2e_helpers.ts`. Never redefine them locally in individual spec files.
+  If new fields are needed, extend `DebugStore` in `e2e_helpers.ts` and update
+  all specs accordingly.
 
 ## Verification
 

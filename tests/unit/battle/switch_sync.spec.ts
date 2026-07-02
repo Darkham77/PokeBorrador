@@ -15,7 +15,9 @@ const mockWorker = vi.hoisted(() => ({
 vi.mock('@/logic/battle/orchestrator', () => ({
   showdownWorker: mockWorker,
   executeTurnInWorker: vi.fn(async (p1Choice: string, p2Choice?: string) => {
-    mockWorker.postMessage({ type: 'EXECUTE_TURN', payload: { p1Choice, p2Choice } })
+    const payload: { p1Choice: string; p2Choice?: string } = { p1Choice };
+    if (p2Choice !== undefined) payload.p2Choice = p2Choice;
+    mockWorker.postMessage({ type: 'EXECUTE_TURN', payload })
     return { logs: [], isOver: false, winner: null }
   }),
   isPlayerTrappedInWorker: vi.fn(async () => false)
@@ -65,6 +67,8 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
       player: p1,
       enemy,
       playerTeamIndex: 0,
+      p1SlotOrder: [p1.uid, p2.uid],   // p1=slot1, p2=slot2
+      p2SlotOrder: null as string[] | null,
       participants: ['p1'],
       isTrainer: false,
       weather: { type: 'clear', visual: 'clear', turns: -1 }
