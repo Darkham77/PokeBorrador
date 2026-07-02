@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T00:27:06.012Z",
+  "generatedAt": "2026-07-02T10:04:16.824Z",
   "summary": {
     "totalMoves": 682,
     "passedMoves": 682,
@@ -4979,6 +4979,39 @@
         "reason": "fusion-locked",
         "note": "Palafin: must switch in as Zero form to trigger Hero transform"
       }
+    ],
+    "doublesOnly": [
+      "aromaveil",
+      "battery",
+      "commander",
+      "costar",
+      "flowerveil",
+      "friendguard",
+      "healer",
+      "hospitality",
+      "minus",
+      "plus",
+      "powerspot",
+      "propellertail",
+      "stalwart",
+      "sweetveil",
+      "telepathy"
+    ],
+    "teraOnly": [
+      "embodyaspectcornerstone",
+      "embodyaspecthearthflame",
+      "embodyaspectteal",
+      "embodyaspectwellspring",
+      "teraformzero",
+      "terashell",
+      "terashift"
+    ],
+    "fusionLocked": [
+      "asoneglastrier",
+      "asonespectrier",
+      "battlebond",
+      "powerconstruct",
+      "zerotohero"
     ]
   }
 }
