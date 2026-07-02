@@ -21,6 +21,14 @@ export interface TestBatch {
   enemyTeam: PokemonSet[];
   movesToTest: string[];
   abilitiesToTest: string[];
+  /** Populated by run-tester: RNG seed for deterministic battle reproduction */
+  seed?: number[];
+  /** Populated by run-tester: ordered P1 choices for E2E replay */
+  playerChoices?: string[];
+  /** Populated by run-tester: ordered P2 choices for E2E determinism */
+  enemyChoices?: string[];
+  /** Populated by run-tester: per-turn damage/HP snapshots */
+  steps?: string[];
 }
 
 // ---------------------------------------------------------------------------

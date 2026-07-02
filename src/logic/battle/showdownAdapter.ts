@@ -55,7 +55,14 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
       spe: poke.ivs?.spe ?? 31
     },
     // No usamos EVs detallados por defecto en el modo aventura, o mapeamos 0 si no se manejan
-    evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+    evs: {
+      hp: poke.evs?.hp ?? 0,
+      atk: poke.evs?.atk ?? 0,
+      def: poke.evs?.def ?? 0,
+      spa: poke.evs?.spa ?? 0,
+      spd: poke.evs?.spd ?? 0,
+      spe: poke.evs?.spe ?? 0
+    },
     moves: moves,
     uid: poke.uid
   } as PokemonSet & { uid?: string };

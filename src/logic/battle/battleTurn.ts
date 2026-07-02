@@ -129,6 +129,10 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         p2Choice = `move ${validMove.id}`;
       }
     }
+    // Interceptar elección de enemigo si está inyectada en el test determinista
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
+    }
     const { p1Hps, p2Hps, p1Statuses, p2Statuses } = collectHpSnapshots(store, active);
 
     logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice} (p2Skip: ${p2Skip})`);
@@ -293,6 +297,10 @@ export async function runEnemyAction(store: BattleContext) {
       }
     } else if (!p2Skip && enemyMove) {
       p2Choice = `move ${enemyMove.id}`;
+    }
+    // Interceptar elección de enemigo si está inyectada en el test determinista
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
     }
     
     console.log(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);

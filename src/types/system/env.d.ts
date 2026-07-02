@@ -76,7 +76,18 @@ declare global {
   };
 
   interface Window {
-    __VITE_DEBUG__?: Record<string, (...args: unknown[]) => unknown>;
+    __VITE_DEBUG__?: {
+      /** Semilla RNG inyectada por el E2E para combates deterministas */
+      battleSeed?: number[];
+      /** Cola de choices del enemigo consumida por el motor de combate en tests */
+      enemyChoicesQueue?: string[];
+      /** Genera un Pokémon de debug vía encuentro */
+      spawnEncounter?: (config: unknown) => Promise<void>;
+      /** Crea un Pokémon de debug directamente en el equipo */
+      createPokemon?: (config: unknown) => Promise<void>;
+      /** Comandos y utilidades de debug registradas en runtime */
+      [key: string]: unknown;
+    };
     drawBattleBackground?: (locationId: string, cycle: string) => void;
     pwa_app_mounted?: boolean;
   }

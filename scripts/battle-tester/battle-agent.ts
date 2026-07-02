@@ -66,6 +66,12 @@ export class BattleAgent {
     public abilityTriggerMoveSlot: number | null = null,
     /** Cada cuántos turnos rotar voluntariamente al siguiente Pokémon sano de la banca. */
     public periodicSwitchEvery: number = 4,
+    /**
+     * Permite al agente generar elecciones useitem:potion/revive.
+     * Desactivar en fuzzers de movimientos/habilidades para garantizar
+     * determinismo completo con el E2E (solo el fuzzer de ítems lo habilita).
+     */
+    public useItemsEnabled: boolean = true,
   ) {}
 
   /**
@@ -105,29 +111,10 @@ export class BattleAgent {
     // A partir de aquí kind === 'move'. El simulador espera una acción del Pokémon activo.
 
     // Alinear con la IA del juego real en battleTurn.ts:
-    // 1. Revivir banca si el activo está estable (HP >= 50%)
     const activePoke = team.find(p => p.active) || team[0];
     if (!activePoke) return 'move 1';
 
-    const activeHpStr = activePoke.condition.split('/')[0] || '100';
-    const activeMaxHpStr = activePoke.condition.split('/')[1] || '100';
-    const activeHp = parseInt(activeHpStr, 10);
-    const activeMaxHp = parseInt(activeMaxHpStr, 10);
 
-    if (activeHp >= activeMaxHp * 0.5) {
-      for (let i = 0; i < team.length; i++) {
-        const mon = team[i]!;
-        if (!mon.active && this.isFainted(mon.condition)) {
-          return `useitem:revive:${i + 1}`;
-        }
-      }
-    }
-
-    // 2. Curar activo si su HP cae por debajo del 25% (umbral de poción real de la IA del juego)
-    if (activeHp > 0 && activeHp < activeMaxHp * 0.25) {
-      const activeIdx = team.findIndex(p => p.active) + 1;
-      return `useitem:potion:${activeIdx}`;
-    }
 
     // Switch periódico voluntario (para probar habilidades de switch-out/in).
     // Solo si el equipo tiene banca disponible y no acabamos de switchear.

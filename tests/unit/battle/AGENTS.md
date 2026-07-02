@@ -13,6 +13,7 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
   conditionally — only include it in the payload object when it is not `undefined`.
   This mirrors the real worker protocol for forced switches (faint replacement),
   where p2 has no choice to make.
+
   ```ts
   const payload: { p1Choice: string; p2Choice?: string } = { p1Choice };
   if (p2Choice !== undefined) payload.p2Choice = p2Choice;

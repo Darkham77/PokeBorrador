@@ -28,12 +28,6 @@ export interface DebugSystem {
   unregister?: (id: string) => void
 }
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    __VITE_DEBUG__?: Record<string, (...args: any[]) => any>
-  }
-}
 
 export const useDebugStore = defineStore('debug', () => {
   const auth = useAuthStore()

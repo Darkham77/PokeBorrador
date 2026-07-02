@@ -152,12 +152,29 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return false;
   }
 
-  const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
-
   if (subState === 'SWITCH_MENU') {
-    await activeSwitchBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await activeSwitchBtn.click({ timeout: 5000 });
-    return true;
+    const cleanChoice = choice?.trim().toLowerCase() ?? '';
+    if (cleanChoice.startsWith('switch ')) {
+      // El fuzzer grabó este switch — ejecutarlo usando los botones de la barra lateral
+      // (SWITCH_MENU post-debilitación muestra .quick-card-override, NO un modal con .list-item)
+      const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
+      // CRÍTICO: el índice de Showdown es POSICIONAL sobre toda la banca, incluyendo debilitados.
+      // NO filtrar .is-fainted en el conteo — eso desfasaría los índices.
+      // El fuzzer garantiza que el slot target está sano.
+      const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
+      const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+      await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
+      await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+      return true;
+    }
+    // Choice no es un switch (es el move del turno siguiente): manejar con el primer disponible
+    // sin consumir el choice — el loop externo reintentará con el mismo turnCount.
+    const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
+    const isVisible = await activeSwitchBtn.isVisible().catch(() => false);
+    if (isVisible) {
+      await activeSwitchBtn.click({ timeout: 5000 });
+    }
+    return false;
   }
 
   if (choice) {
@@ -167,64 +184,22 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         const moveIdx = parseInt(cleanChoice.split(' ')[1] || '1', 10) - 1;
         const moveBtn = page.locator('.move-card-vicio').nth(moveIdx);
         await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
+        // Si el botón está deshabilitado, el juego está procesando una secuencia de debilitación.
+        // Retornar false para que el loop externo espere y reintente.
+        const isDisabled = await moveBtn.isDisabled().catch(() => true);
+        if (isDisabled) return false;
         await moveBtn.click({ timeout: 5000 });
         return true;
       } else if (cleanChoice.startsWith('switch ')) {
         // En Showdown, slot 1 es el activo, y slots 2-6 son la banca (sana o completa según la fase).
         // Por ende, switch N corresponds al índice N-2 de los elementos disponibles en la banca de la UI.
-        const switchIdx = parseInt(cleanChoice.split(' ')[1] || '2', 10) - 2;
-
-        // Obtener el estado de la FSM de una sola vez
-        const fsmData = await page.evaluate(() => {
-          try {
-            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-            if (!resolver) return null;
-            const battleStore = resolver();
-            return {
-              currentState: battleStore.fsm?.currentState?.value || '',
-              currentSubState: battleStore.fsm?.currentSubState?.value || ''
-            };
-          } catch (_e) {
-            return null;
-          }
-        });
-
-        const isForcedSwitch = fsmData && 
-          (fsmData.currentSubState === 'SWITCH_MENU' || fsmData.currentSubState === 'PLAYER_FAINT_SEQ');
-
-        let switchBtn;
-        if (isForcedSwitch) {
-          // Obtener el UID del pokemon sano en el índice switchIdx desde la banca de la UI de forma dinámica
-          const targetUid = await page.evaluate((idx) => {
-            try {
-              const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-              if (!resolver) return null;
-              const battleStore = resolver();
-              const pinia = battleStore._p;
-              const gameStore = pinia?._s?.get('game');
-              const team = gameStore?.state?.team || [];
-              // Filtrar los Pokémon sanos de la banca (excluyendo el activo si está vivo, pero como es cambio forzado por debilitación el activo tiene 0 HP)
-              const healthyBackup = team.filter((p: { uid?: string; hp?: number } | null) => p && p.hp && p.hp > 0 && p.uid !== battleStore.state?.player?.uid);
-              return healthyBackup[idx]?.uid || null;
-            } catch (_e) {
-              return null;
-            }
-          }, switchIdx);
-
-          if (targetUid) {
-            switchBtn = page.locator(`[data-pokemon-uid="${targetUid}"].list-item`).first();
-          } else {
-            const modalBtnList = page.locator('.list-item');
-            await modalBtnList.first().waitFor({ state: 'visible', timeout: 5000 });
-            switchBtn = modalBtnList.nth(switchIdx);
-          }
-        } else {
-          // En cambios voluntarios, la barra lateral muestra los Pokémon de la banca completa (excluyendo el activo)
-          switchBtn = page.locator('.quick-card-override:not(.is-active)').nth(switchIdx);
-        }
-
-        await switchBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await switchBtn.click({ force: true, timeout: 5000 });
+        const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
+        // Regla posicional: slot 1 = activo, slots 2-6 = banca (índice 0-based = switchSlot - 2).
+        // NO filtrar debilitados en el conteo — el índice de Showdown es absoluto sobre toda la banca.
+        const switchIdx = switchSlot - 2;
+        const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+        await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
+        await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
         return true;
       } else if (cleanChoice.startsWith('useitem:')) {
         const parts = cleanChoice.split(':');
@@ -259,7 +234,6 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           await backpackItem.click({ force: true, timeout: 5000 });
         }
 
-        // Obtener el UID del pokemon en el índice targetIdx alineando el orden con Showdown
         const targetUid = await page.evaluate((idx) => {
           try {
             const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -268,19 +242,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
             const pinia = battleStore._p;
             const gameStore = pinia?._s?.get('game');
             const team = [...(gameStore?.state?.team || [])].filter((p): p is NonNullable<typeof p> => p != null);
-            const activePoke = battleStore.state?.activeBattle?.player;
-            
-            const ordered = [];
-            if (activePoke) {
-              const activeInTeam = team.find(p => p.uid === activePoke.uid);
-              if (activeInTeam) ordered.push(activeInTeam);
-              team.forEach(p => {
-                if (p.uid !== activePoke.uid) ordered.push(p);
-              });
-            } else {
-              ordered.push(...team);
-            }
-            return ordered[idx]?.uid || null;
+            return team[idx]?.uid || null;
           } catch (_e) {
             return null;
           }

@@ -197,13 +197,15 @@ function healHp(p: Pokemon, amount: number): ItemEffectResult {
   const maxHp = Number(p.maxHp || 0);
   const healAmount = Number(amount || 0);
 
-  if (currentHp >= maxHp) return { success: false, message: 'HP ya está al máximo.' };
   if (currentHp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-  
+  if (currentHp >= maxHp) return { success: false, message: 'El HP ya está al máximo.' };
+
   const prev = currentHp;
   p.hp = Math.min(maxHp, currentHp + healAmount);
-  return { success: true, message: `restauró ${p.hp - prev} HP` };
+  const healed = p.hp - prev;
+  return { success: true, message: `restauró ${healed} HP` };
 }
+
 
 function revive(p: Pokemon, amount: number): ItemEffectResult {
   if (p.hp > 0) return { success: false, message: 'El Pokémon no está debilitado.' };

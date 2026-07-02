@@ -177,7 +177,20 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const agent1 = new BattleAgent('p1', movesSet);
       const agent2 = new BattleAgent('p2', new Set(), null);
 
-      const simBattle = new Battle({ formatid: 'gen9customgame' as ID });
+      // Generar una semilla (seed) determinista o aleatoria pero registrada
+      const seedNums = [
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000)
+      ] as [number, number, number, number];
+      // @pkmn/sim espera PRNGSeed como template literal `${number},${string}`
+      const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
+
+      const simBattle = new Battle({
+        formatid: 'gen9customgame' as ID,
+        seed
+      });
       simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: batch.playerTeam });
       simBattle.setPlayer('p2', { name: `E-${roundNum}`, team: batch.enemyTeam });
 
@@ -212,7 +225,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const maxTurns = 50;
       const steps: string[] = [];
       const batchChoices: string[] = [];
-      const batchCheats: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> = [];
+      const batchEnemyChoices: string[] = [];
 
       try {
         while (!simBattle.ended && turn < maxTurns) {
@@ -230,59 +243,18 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
           }
 
-          // Infinite Punching Bag pattern
-          const p1ActivePoke = simBattle.p1.active[0];
-          const p2ActivePoke = simBattle.p2.active[0];
-
-          if (p1ActivePoke && p1ActivePoke.hp > 0 && p1ActivePoke.hp < p1ActivePoke.maxhp * 0.3) {
-            p1ActivePoke.hp = p1ActivePoke.maxhp;
-            simBattle.add(`|-heal|p1a: ${p1ActivePoke.name}|${p1ActivePoke.maxhp}/${p1ActivePoke.maxhp}|[from] item: Leftovers`);
-            batchCheats.push({ turn, side: 'p1', type: 'heal' });
-          }
-          if (p2ActivePoke && p2ActivePoke.hp > 0 && p2ActivePoke.hp < p2ActivePoke.maxhp * 0.3) {
-            p2ActivePoke.hp = p2ActivePoke.maxhp;
-            simBattle.add(`|-heal|p2a: ${p2ActivePoke.name}|${p2ActivePoke.maxhp}/${p2ActivePoke.maxhp}|[from] item: Leftovers`);
-            batchCheats.push({ turn, side: 'p2', type: 'heal' });
-          }
-
+          // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
           const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
-          batchChoices.push(p1Choice);
+          if (p1Choice !== 'pass' && !p1Choice.startsWith('team')) {
+            batchChoices.push(p1Choice);
+          }
           const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+          if (p2Choice !== 'pass' && !p2Choice.startsWith('team') && !p2Choice.startsWith('switch')) {
+            batchEnemyChoices.push(p2Choice);
+          }
 
-          const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {
-            if (choice.startsWith('useitem:')) {
-              const parts = choice.split(':');
-              const itemType = parts[1] || 'potion';
-              const targetIdx = parseInt(parts[2] || '1', 10) - 1;
-              const side = simBattle[sideId];
-              const pokemon = side.pokemon[targetIdx];
-
-              if (pokemon) {
-                const oldHp = pokemon.hp;
-                let newHp = oldHp;
-
-                if (itemType === 'potion') {
-                  newHp = Math.min(pokemon.maxhp, oldHp + 20);
-                  pokemon.hp = newHp;
-                  simBattle.add(`|-heal|${sideId}a: ${pokemon.name}|${newHp}/${pokemon.maxhp}|[from] item: Potion`);
-                } else if (itemType === 'revive') {
-                  newHp = Math.floor(pokemon.maxhp * 0.5);
-                  pokemon.hp = newHp;
-                  pokemon.fainted = false;
-                  pokemon.status = '' as ID;
-                  simBattle.add(`|-heal|${sideId}: ${pokemon.name}|${newHp}/${pokemon.maxhp}`);
-                }
-              }
-              return 'move 1';
-            }
-            return choice;
-          };
-
-          const finalP1Choice = applyItemUsage('p1', p1Choice);
-          const finalP2Choice = applyItemUsage('p2', p2Choice);
-
-          simBattle.choose('p1', finalP1Choice);
-          simBattle.choose('p2', finalP2Choice);
+          simBattle.choose('p1', p1Choice);
+          simBattle.choose('p2', p2Choice);
 
           const rawTurnLogs = getNewLogs();
           const turnLogs = filterShowdownLogs(rawTurnLogs);
@@ -343,9 +315,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
               }
             }
           });
-          (batch as unknown as Record<string, unknown>).playerChoices = batchChoices;
-          (batch as unknown as Record<string, unknown>).cheats = batchCheats;
-          (batch as unknown as Record<string, unknown>).steps = steps;
+          // (saves happen outside the loop after it completes)
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : String(err);
@@ -356,6 +326,22 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           }
         });
       }
+
+      // Save accumulated data and final battle state for E2E verification
+      const batchRecord = batch as unknown as Record<string, unknown>;
+      batchRecord.seed = seedNums;
+      batchRecord.playerChoices = batchChoices;
+      batchRecord.enemyChoices = batchEnemyChoices;
+      batchRecord.steps = steps;
+      batchRecord.ended = simBattle.ended;
+      batchRecord.winner = simBattle.ended
+        ? (simBattle.winner === simBattle.p1.name ? 'p1' : 'p2')
+        : null;
+      batchRecord.finalState = {
+        p1: simBattle.p1.pokemon.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted })),
+        p2: simBattle.p2.pokemon.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted })),
+      };
+
     }
   }
 
@@ -473,6 +459,7 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
   if (shouldWrite) {
     consolidatedData.battle = batches.map((b, idx) => {
       const hash = generateBatchHash(b);
+      const rec = b as unknown as Record<string, unknown>;
       return {
         id: `case-${hash}`,
         idx: idx + 1,
@@ -480,9 +467,14 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
         enemyTeam: b.enemyTeam,
         movesToTest: b.movesToTest,
         abilitiesToTest: b.abilitiesToTest,
-        playerChoices: (b as unknown as Record<string, unknown>).playerChoices || [],
-        cheats: (b as unknown as Record<string, unknown>).cheats || [],
-        steps: (b as unknown as Record<string, unknown>).steps || []
+        seed: rec.seed || null,
+        playerChoices: rec.playerChoices || [],
+        enemyChoices: rec.enemyChoices || [],
+        cheats: rec.cheats || [],
+        steps: rec.steps || [],
+        ended: rec.ended ?? false,
+        winner: rec.winner ?? null,
+        finalState: rec.finalState ?? null,
       };
     });
     await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });

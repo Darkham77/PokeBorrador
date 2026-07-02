@@ -95,8 +95,13 @@ async function verifyHpParity(page: Page) {
 
 
 
+type FinalState = {
+  p1: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
+  p2: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
+};
+
 // Helper: Bucle de ejecución automática de turnos
-async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>) {
+async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>, finalState?: FinalState) {
   let turnCount = startingTurn;
   const maxTurns = 150;
   let lastSimulatorTurn = 0;
@@ -114,21 +119,10 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       break;
     }
 
+
     if (playerChoices && turnCount >= playerChoices.length) {
-      console.log(`[E2E] Se agotaron las elecciones del fuzzer (${turnCount}/${playerChoices.length}). Esperando fin de batalla...`);
-      const over = await page.evaluate(async () => {
-        try {
-          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          if (!resolver) return false;
-          const store = resolver();
-          return !!store.state?.over;
-        } catch (_e) {
-          return true; // Asumir sobre si el store no es accesible
-        }
-      });
-      if (over) break;
-      await page.waitForTimeout(500);
-      continue;
+      // All certified choices replayed. Exit loop — parity check runs next.
+      break;
     }
 
     await waitForWaitInput(page, turnCount, batchIndex, lastSimulatorTurn, lastSubState);
@@ -229,13 +223,53 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
     }
   }
 
-  // Validar que el combate finalizó correctamente sin errores críticos
-  const battleOverSuccess = await page.evaluate(async () => {
+  // Validar paridad del estado final de TODO el equipo contra el snapshot de Showdown
+  const parity = await page.evaluate(async (snapshotState) => {
     const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+    const { useGameStore } = await import('../../../src/stores/game.ts');
     const store = useBattleStore();
-    return !store.state || store.state.over;
-  });
-  expect(battleOverSuccess).toBe(true);
+    if (!store.state || !snapshotState) return { mismatches: [] as string[] };
+
+    const mismatches: string[] = [];
+
+    // Equipo jugador: comparar por posición (el orden del equipo es el mismo que en Showdown)
+    const gameStore = useGameStore();
+    const playerTeam = gameStore.state.team;
+    snapshotState.p1.forEach((expected, i) => {
+      const actual = playerTeam[i];
+      if (!actual) { mismatches.push(`P1[${i}] ${expected.name}: no encontrado en el equipo del juego`); return; }
+      if (Math.abs(actual.hp - expected.hp) > 1) {
+        mismatches.push(`P1[${i}] ${expected.name}: game HP=${actual.hp} vs showdown HP=${expected.hp}`);
+      }
+      const gameFainted = actual.hp <= 0;
+      if (gameFainted !== expected.fainted) {
+        mismatches.push(`P1[${i}] ${expected.name}: game fainted=${gameFainted} vs showdown fainted=${expected.fainted}`);
+      }
+    });
+
+    // Equipo enemigo: comparar contra battleStore.state.enemyTeam
+    const enemyTeam: Array<{ hp: number; name: string }> = (store.state as unknown as Record<string, unknown>).enemyTeam as Array<{ hp: number; name: string }> ?? [];
+    snapshotState.p2.forEach((expected, i) => {
+      const actual = enemyTeam[i];
+      if (!actual) { mismatches.push(`P2[${i}] ${expected.name}: no encontrado en el equipo enemigo`); return; }
+      if (Math.abs(actual.hp - expected.hp) > 1) {
+        mismatches.push(`P2[${i}] ${expected.name}: game HP=${actual.hp} vs showdown HP=${expected.hp}`);
+      }
+      const gameFainted = actual.hp <= 0;
+      if (gameFainted !== expected.fainted) {
+        mismatches.push(`P2[${i}] ${expected.name}: game fainted=${gameFainted} vs showdown fainted=${expected.fainted}`);
+      }
+    });
+
+    return { mismatches };
+  }, finalState ?? null);
+
+  if (parity.mismatches.length > 0) {
+    throw new Error(
+      `[Paridad FSM] El estado final del juego diverge del simulador Showdown:\n` +
+      parity.mismatches.map(m => `  - ${m}`).join('\n')
+    );
+  }
 }
 
 test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
@@ -342,6 +376,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           return x - Math.floor(x);
         };
 
+        // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
+        window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {};
+        window.__VITE_DEBUG__.battleSeed = b.seed ?? undefined;
+        window.__VITE_DEBUG__.enemyChoicesQueue = [...(b.enemyChoices ?? [])];
+
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
         const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -414,7 +453,8 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           index + 1, 
           0, 
           (batch as unknown as Record<string, unknown>).playerChoices as string[] | undefined,
-          (batch as unknown as Record<string, unknown>).cheats as Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> | undefined
+          (batch as unknown as Record<string, unknown>).cheats as Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> | undefined,
+          (batch as unknown as Record<string, unknown>).finalState as FinalState | undefined
         );
       } catch (error: unknown) {
         const caseId = (batch as { id?: string }).id || `lote-${index + 1}`;

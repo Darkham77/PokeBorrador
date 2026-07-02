@@ -516,17 +516,18 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       showdownWorker.terminate();
     }
     showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
-    // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
-    const seedArr = [
-      Math.floor(Math.random() * 0x10000),
-      Math.floor(Math.random() * 0x10000),
-      Math.floor(Math.random() * 0x10000),
-      Math.floor(Math.random() * 0x10000)
-    ];
-    if (ctx.activeBattle.value) {
-      ctx.activeBattle.value.seed = seedArr;
-      ctx.activeBattle.value.battleHistory = [];
-    }
+     // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
+     const debugSeed = (typeof window !== 'undefined' && window.__VITE_DEBUG__?.battleSeed);
+     const seedArr = debugSeed || [
+       Math.floor(Math.random() * 0x10000),
+       Math.floor(Math.random() * 0x10000),
+       Math.floor(Math.random() * 0x10000),
+       Math.floor(Math.random() * 0x10000)
+     ];
+     if (ctx.activeBattle.value) {
+       ctx.activeBattle.value.seed = seedArr;
+       ctx.activeBattle.value.battleHistory = [];
+     }
 
     // Generar el equipo ordenado del jugador para Showdown
     const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);

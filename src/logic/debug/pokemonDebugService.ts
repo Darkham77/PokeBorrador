@@ -29,6 +29,7 @@ interface GenerateParams {
   heldItem?: string | null
   mapId?: string | null
   protocol?: string | null
+  name?: string | null
 }
 
 interface EggData {
@@ -70,7 +71,8 @@ export const pokemonDebugService = {
       friendship = 70,
       heldItem = null,
       mapId = null,
-      protocol = null
+      protocol = null,
+      name = null
     } = params;
 
     const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
@@ -100,6 +102,7 @@ export const pokemonDebugService = {
     }
     
     if (isGuardian) p.isGuardian = true;
+    if (name) p.name = name;
     if (nickname) p.nickname = nickname;
     if (friendship !== undefined) p.friendship = friendship;
 

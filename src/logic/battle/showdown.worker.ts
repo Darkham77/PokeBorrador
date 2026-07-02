@@ -43,7 +43,7 @@ self.onmessage = (event: MessageEvent) => {
 
         currentBattle = new Battle({ 
           formatid: getShowdownFormatId(),
-          seed: seedArr.join(',') as unknown as `${number},${string}`
+          seed: seedArr
         });
 
 
