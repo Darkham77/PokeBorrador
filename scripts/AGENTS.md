@@ -23,6 +23,7 @@ DevOps / Tooling Engineers.
 - **Node.js Permission Model Compliance**: Scripts must explicitly request narrow permissions (e.g. `--allow-net`, `--allow-fs`). Running coverage (`--experimental-test-coverage`) under permissions requires explicit write permissions (`--allow-fs-write=*` or to specific directories) as report files are generated on disk.
 - **Fallow Auditing**: Local dynamic HTTP fetch requests that trigger CWE-918 (security-sink) must be marked with `// fallow-ignore-file security-sink` at the top of the file. Parser scripts for Fallow must map the JSON structure (`file` and `start_line` properties instead of `path` and `line`). Static databases (like `pokemonDB.ts`) are exempt from duplication detectors and must be listed under `ignorePatterns` in `.fallowrc.json`.
 - **Cross-Platform Path Standard**: For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of expressions or replace statements.
+- **No Vitest Coupling in Logic Scripts**: Scripts in `scripts/battle-tester/` must NOT import `describe`, `it`, `expect`, or any other test runner primitives. Logic scripts export pure async functions returning structured data. The test runner coupling lives exclusively in spec files under `tests/`. This keeps logic scripts independently runnable and composable.
 
 ## Verification
 
