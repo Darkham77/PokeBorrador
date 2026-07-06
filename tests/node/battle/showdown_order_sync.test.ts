@@ -335,4 +335,67 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     const correctHps = p1SlotOrder.map(uid => uiTeam.find(p => p.uid === uid)?.hp ?? 0);
     assert.deepStrictEqual(correctHps, [80, 0, 100]); // Gengar, Vaporeon fainted, Eevee
   });
+
+  describe('ShowdownTeamResolver', () => {
+    it('correctly maps and resolves the Showdown active-first order', async () => {
+      const { ShowdownTeamResolver } = await import('../../../src/logic/battle/showdownTeamResolver.ts');
+      const team = [
+        { uid: 'vaporeon-uid', name: 'Vaporeon' },
+        { uid: 'gengar-uid', name: 'Gengar' },
+        { uid: 'eevee-uid', name: 'Eevee' }
+      ] as any[];
+
+      const mockRequest = {
+        side: {
+          pokemon: [
+            { uid: 'gengar-uid' },
+            { uid: 'vaporeon-uid' },
+            { uid: 'eevee-uid' }
+          ]
+        }
+      } as any;
+
+      const resolvedOrder = ShowdownTeamResolver.getShowdownOrder(team, mockRequest);
+      assert.strictEqual(resolvedOrder[0].uid, 'gengar-uid');
+      assert.strictEqual(resolvedOrder[1].uid, 'vaporeon-uid');
+      assert.strictEqual(resolvedOrder[2].uid, 'eevee-uid');
+    });
+
+    it('correctly finds pokemon by UID and throws on missing UID', async () => {
+      const { ShowdownTeamResolver } = await import('../../../src/logic/battle/showdownTeamResolver.ts');
+      const team = [
+        { uid: 'vaporeon-uid', name: 'Vaporeon' }
+      ] as any[];
+
+      const found = ShowdownTeamResolver.getPokemonByUid(team, 'vaporeon-uid');
+      assert.strictEqual(found?.name, 'Vaporeon');
+
+      assert.throws(() => {
+        ShowdownTeamResolver.getPokemonByUid(team, 'non-existent');
+      }, /no encontrado/);
+    });
+
+    it('resolves dynamic slot index and team members by slot correctly', async () => {
+      const { ShowdownTeamResolver } = await import('../../../src/logic/battle/showdownTeamResolver.ts');
+      const team = [
+        { uid: 'vaporeon-uid', name: 'Vaporeon' },
+        { uid: 'gengar-uid', name: 'Gengar' }
+      ] as any[];
+
+      const mockRequest = {
+        side: {
+          pokemon: [
+            { uid: 'gengar-uid' },
+            { uid: 'vaporeon-uid' }
+          ]
+        }
+      } as any;
+
+      assert.strictEqual(ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, 'gengar-uid'), 1);
+      assert.strictEqual(ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, 'vaporeon-uid'), 2);
+
+      const monBySlot = ShowdownTeamResolver.getPokemonByShowdownSlot(team, mockRequest, 2);
+      assert.strictEqual(monBySlot?.uid, 'vaporeon-uid');
+    });
+  });
 });

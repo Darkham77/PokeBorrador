@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createMockBattleContext } from '../../../scripts/battle-tester/mock-battle-store.ts';
+import { createMockBattleContext } from '../../../scripts/battle-tester/fuzzer-mock-battle-store.ts';
 import { parseShowdownLogLine } from '../../../src/logic/battle/showdownBridge.ts';
 import { logger } from '../../../src/logic/utils/logger.ts';
 import { toID } from '@pkmn/sim';

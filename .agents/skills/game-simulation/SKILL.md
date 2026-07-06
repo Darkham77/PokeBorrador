@@ -214,6 +214,16 @@ $env:CONTINUE_ON_ERROR="true"; npm run test:e2e:combat
 **Design rule:** If a simulation is missing `TEST_CASE` support, treat that as
 a design gap. Propose adding it and document the plan before implementing.
 
+## Playwright Dependency & Environment Troubleshooting
+
+If Playwright fails to run due to missing browsers, missing system libraries, or tools like `ffmpeg` (e.g., yielding errors like `Error: playwright needs to install...` or missing ffmpeg for video recordings), the agent MUST attempt to resolve it automatically by running:
+
+```bash
+npx playwright install --with-deps
+```
+
+This command installs the required browsers along with all system dependencies (including `ffmpeg`). If the installation fails due to permissions, the agent should ask the user to run it with appropriate privileges or use the `ask_permission` tool if applicable.
+
 ---
 
 ## Simulation Execution Workflow
@@ -339,6 +349,7 @@ Then summarize in chat with clear action options for the user.
 - Add a `try/catch` that silences a desync or failure
 - Bypass a state-parity check
 - Use silent mock/patch workarounds in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize. The objective is never to finish simulations with fake patches/mocks, but to find and fix bugs in `src/` that prevent matching the fuzzer.
+- Hardcode FSM state transitions or manually manipulate FSM state variables (such as forcing transitions to `WAIT_INPUT` or bypassing `SWITCH_MENU`/`PLAYER_FAINT_SEQ` when a Pokémon is healed/restored) to force E2E simulations or test replays to pass. The FSM must transition naturally and mirror the simulator's requests exactly.
 
 **The simulation is law. src/ must conform.**
 

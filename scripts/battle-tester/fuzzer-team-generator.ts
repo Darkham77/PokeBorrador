@@ -1,9 +1,9 @@
-// scripts/battle-tester/team-generator.ts
+// scripts/battle-tester/fuzzer-team-generator.ts
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
 import crypto from 'node:crypto';
-import { EXCLUDED_FROM_SINGLES_REPORT } from './excluded-abilities.ts';
-import { ABILITY_SCENARIOS } from './ability-scenarios.ts';
+import { EXCLUDED_FROM_SINGLES_REPORT } from './fuzzer-excluded-abilities.ts';
+import { ABILITY_SCENARIOS } from './fuzzer-ability-scenarios.ts';
 
 export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string {
   const data = {
@@ -233,7 +233,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         }
       }
 
-      let abilityName = 'noability';
+      let abilityName = 'illuminate';
       if (abilityIdx < abilityPool.length) {
         abilityName = abilityPool[abilityIdx]!;
         batchAbilities.push(toID(abilityName));
@@ -265,7 +265,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         name:   `P-Poke${p + 1}`,
         species,
         level:   100,
-        gender:  '',
+        gender:  'M',
         item,
         ability: abilityName,
         nature:  'serious',
@@ -292,7 +292,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         name:    `E-Poke${e + 1}`,
         species: 'blissey',
         level:   100,
-        gender:  '',
+        gender:  'M',
         item:    '',
         ability: 'naturalcure',
         nature:  'serious',

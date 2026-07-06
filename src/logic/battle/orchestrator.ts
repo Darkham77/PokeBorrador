@@ -13,8 +13,26 @@ import { mapToShowdownSet } from './showdownAdapter.ts'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
+import { applyHealCheatToSide } from './cheats.ts'
 
 export let showdownWorker: Worker | null = null;
+
+export async function getSimulatorState(): Promise<{ p1: any[]; p2: any[] }> {
+  if (!showdownWorker) {
+    throw new Error('showdownWorker is null');
+  }
+  showdownWorker.postMessage({ type: 'GET_SIMULATOR_STATE' });
+  return new Promise((resolve) => {
+    const handler = (event: MessageEvent) => {
+      const { type, payload } = event.data;
+      if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
+        showdownWorker!.removeEventListener('message', handler);
+        resolve(payload);
+      }
+    };
+    showdownWorker!.addEventListener('message', handler);
+  });
+}
 
 interface ViteDebug {
   mockEnemyChoices?: string[];
@@ -27,11 +45,66 @@ export async function executeTurnInWorker(
   p1Skip?: boolean,
   p2Skip?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
+  console.log(`[DEBUG-ORCHESTRATOR] window.__VITE_DEBUG__ keys:`, typeof window !== 'undefined' && window.__VITE_DEBUG__ ? JSON.stringify(Object.keys(window.__VITE_DEBUG__)) : 'none');
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+    const cheatsArray = (window.__VITE_DEBUG__ as any).cheats;
+    const cheatsLength = Array.isArray(cheatsArray) ? cheatsArray.length : typeof cheatsArray;
+    console.log(`[DEBUG-ORCHESTRATOR] cheats type/length: ${cheatsLength}`);
+    if (Array.isArray(cheatsArray)) {
+      cheatsArray.forEach((c: any, i: number) => {
+        console.log(`[DEBUG-ORCHESTRATOR] cheat #${i}: turn=${c.turn}, side=${c.side}, type=${c.type}`);
+      });
+    }
+  }
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
 
   let finalP2Choice = p2Choice;
+  
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.cheats) {
+    const cheats = window.__VITE_DEBUG__.cheats as Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+    const { useBattleStore } = await import('@/stores/battle/battle');
+    const { useGameStore } = await import('@/stores/game');
+    const battleStore = useBattleStore();
+    const gameStore = useGameStore();
+    
+    if (battleStore.state) {
+      const turnNum = battleStore.state.turnCount;
+      console.log(`[DEBUG-ORCHESTRATOR] turnNum: ${turnNum}, cheats count: ${cheats.length}`);
+      const turnCheats = cheats.filter(c => c.turn === turnNum);
+      
+      for (const ch of turnCheats) {
+        console.log(`[ORCHESTRATOR-CHEAT] Applying cheat for turn ${turnNum}: ${ch.type} ${ch.side}`);
+        showdownWorker.postMessage({
+          type: 'APPLY_CHEAT',
+          payload: { turn: ch.turn, side: ch.side, type: ch.type }
+        });
+        
+        if (ch.side === 'p1') {
+          if (gameStore?.state?.team) {
+            applyHealCheatToSide({ pokemon: gameStore.state.team });
+          }
+          if (battleStore.state?.player) {
+            battleStore.state.player.hp = battleStore.state.player.maxHp;
+            battleStore.state.player.status = null;
+          }
+          if (battleStore.state?.playerTeam) {
+            applyHealCheatToSide({ pokemon: battleStore.state.playerTeam });
+          }
+        } else {
+          if (battleStore.state?.enemy) {
+            battleStore.state.enemy.hp = battleStore.state.enemy.maxHp;
+            battleStore.state.enemy.status = null;
+          }
+          if (battleStore.state?.enemyTeam) {
+            applyHealCheatToSide({ pokemon: battleStore.state.enemyTeam });
+          }
+        }
+      }
+    }
+  }
+
   if (p2Choice && p2Choice !== '' && !p2Skip && !p2Choice.startsWith('switch ')) {
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
       const debugObj = window.__VITE_DEBUG__ as ViteDebug;
@@ -41,7 +114,7 @@ export async function executeTurnInWorker(
         const battleStore = useBattleStore();
         const enemyRequest = battleStore.state?.enemyRequest;
         const forceSwitch = enemyRequest?.forceSwitch;
-        const isForceSwitch = Array.isArray(forceSwitch) && forceSwitch.some(x => !!x);
+        const isForceSwitch = forceSwitch === true || (Array.isArray(forceSwitch) && forceSwitch.some(x => !!x));
 
         let idx = debugObj.enemyChoiceIndex ?? 0;
         while (idx < mockChoices.length) {
@@ -71,7 +144,8 @@ export async function executeTurnInWorker(
             } else if (choiceStr.startsWith('switch ')) {
               const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
               const targetPoke = enemyRequest?.side?.pokemon?.[switchSlot - 1];
-              if (!targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
+              const isTrapped = !!enemyRequest?.active?.[0]?.trapped;
+              if (isTrapped || !targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
                 isValid = false;
               }
             }
@@ -127,6 +201,7 @@ export async function executeTurnInWorker(
       gameStore.state.team.forEach((p: { uid?: string; hp?: number } | null) => {
         if (p && p.uid) p1Hps![p.uid] = p.hp ?? 0;
       });
+      console.log(`[ORCHESTRATOR-EXECUTE] Sending p1Hps:`, JSON.stringify(p1Hps));
     }
     if (battleStore.state?.enemyTeam) {
       p2Hps = {};
@@ -151,6 +226,7 @@ export async function executeTurnInWorker(
       }
       const worker = showdownWorker!
       if (type === 'TURN_SUCCESS') {
+        console.log(`[ORCHESTRATOR-EXECUTE] Received TURN_SUCCESS. p1Request pokemon condition:`, JSON.stringify(payload.p1Request?.side?.pokemon?.map((p: any) => ({ uid: p.uid, cond: p.condition }))));
         if (worker.removeEventListener) {
           worker.removeEventListener('message', handler)
         } else {
@@ -633,12 +709,15 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.clearLogs()
 
   // Inicialización del Web Worker de Showdown
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {
     if (showdownWorker) {
       showdownWorker.terminate();
     }
     showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
     (window as unknown as Record<string, unknown>).__showdownWorker__ = showdownWorker;
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+      (window.__VITE_DEBUG__ as any).getSimulatorState = getSimulatorState;
+    }
      // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
      const debugSeed = (typeof window !== 'undefined' && window.__VITE_DEBUG__?.battleSeed);
      const seedArr = debugSeed || [
@@ -1104,5 +1183,16 @@ export function restoreBattleState(ctx: BattleContext, battleData: unknown) {
     ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
   } else {
     ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  }
+}
+
+export function testResetShowdownWorker(): void {
+  if (showdownWorker) {
+    showdownWorker.terminate();
+    showdownWorker = null;
+  }
+  if (typeof window !== 'undefined' && (window as any).__showdownWorker__) {
+    (window as any).__showdownWorker__.terminate();
+    (window as any).__showdownWorker__ = null;
   }
 }

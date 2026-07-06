@@ -182,8 +182,8 @@ test.describe('E2E Held Items Verification', () => {
   if (fs.existsSync(consolidatorPath)) {
     try {
       const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
-      if (content.items) {
-        itemBatches = content.items as FuzzerBatch[];
+      if (content.items_consumption) {
+        itemBatches = content.items_consumption as FuzzerBatch[];
       }
     } catch (_e) {
       // Ignore if file doesn't exist yet or is malformed
@@ -230,8 +230,8 @@ test.describe('E2E Held Items Verification', () => {
           const gameStore = useGameStore();
           const battleStore = useBattleStore();
 
-          // Convertir los sets de Showdown a Pokémon locales válidos usando debugService
-          const localPlayerTeam = b.playerTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }) => {
+           // Convertir los sets de Showdown a Pokémon locales válidos usando debugService
+          const localPlayerTeam = b.playerTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
             return pokemonDebugService.generate({
               id: set.species,
               level: set.level || 100,
@@ -241,11 +241,13 @@ test.describe('E2E Held Items Verification', () => {
               nickname: set.name,
               nature: set.nature,
               ivs: set.ivs,
-              evs: set.evs
+              evs: set.evs,
+              gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
+              isShiny: set.shiny || false
             });
           });
 
-          const localEnemyTeam = b.enemyTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number> }) => {
+          const localEnemyTeam = b.enemyTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
             return pokemonDebugService.generate({
               id: set.species,
               level: set.level || 100,
@@ -255,7 +257,9 @@ test.describe('E2E Held Items Verification', () => {
               nickname: set.name,
               nature: set.nature,
               ivs: set.ivs,
-              evs: set.evs
+              evs: set.evs,
+              gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
+              isShiny: set.shiny || false
             });
           });
 

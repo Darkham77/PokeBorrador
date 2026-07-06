@@ -95,10 +95,6 @@ describe('NPC Item Usage & Turn Skipping', () => {
     expect(mockExecuteTurn).toHaveBeenCalledWith(
       expect.stringContaining('move'), // player choice
       expect.stringContaining('struggle'), // NPC choice is defaulted/struggle because of skip
-      expect.any(Object),
-      expect.any(Object),
-      expect.any(Object),
-      expect.any(Object),
       false, // p1Skip
       true // p2Skip (NPC used item)
     )

@@ -18,14 +18,14 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
       return ['pressure'];
     }),
     resolveMoveId: vi.fn((name) => {
-      if (!name) return '';
+      if (!name || name === 'undefined' || name === '???') return 'tackle';
       const lower = name.toLowerCase().trim();
       if (lower === 'placaje' || lower === 'ataque') return 'tackle';
       if (lower === 'arañazo') return 'scratch';
       return name;
     }),
     getMoveIdBySpanishName: vi.fn((name) => {
-      if (!name) return '';
+      if (!name || name === 'undefined' || name === '???') return 'tackle';
       const lower = name.toLowerCase().trim();
       if (lower === 'placaje' || lower === 'ataque') return 'tackle';
       if (lower === 'arañazo') return 'scratch';
@@ -62,16 +62,13 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
     expect(p.moves[0]!.power).toBe(40);
   });
 
-  it('should repair invalid abilities', () => {
+  it('should throw an error on invalid abilities', () => {
     const p = {
       id: 'charizard',
       ability: 'Habilidad Inventada'
     } as unknown as Pokemon;
 
-    sanitizePokemon(p);
-
-    // Should fall back to the first valid ability for Charizard
-    expect(p.ability).toBe('blaze');
+    expect(() => sanitizePokemon(p)).toThrow();
   });
 
   it('should provide "Placaje" (tackle) if a pokemon has no moves', () => {

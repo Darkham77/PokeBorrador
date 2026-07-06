@@ -1,4 +1,4 @@
-// scripts/battle-tester/fuzzer-runner.ts
+// scripts/battle-tester/fuzzer-vitest-bridge.ts
 import { describe, it } from 'vitest';
 import { styleText } from 'node:util';
 

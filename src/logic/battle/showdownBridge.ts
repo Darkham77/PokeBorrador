@@ -151,8 +151,8 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team = side === 'player'
-      ? (battle.playerTeam || [])
-      : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
+      ? (battle.playerTeam && battle.playerTeam.length > 0 ? battle.playerTeam : (battle.player ? [battle.player] : []))
+      : (battle.enemyTeam && battle.enemyTeam.length > 0 ? battle.enemyTeam : (battle.enemy ? [battle.enemy] : []));    const findPokemonInBattle = (targetUid: string) => {
       const found = team.find(mon => mon && mon.uid === targetUid);
       if (!found) return null;
 

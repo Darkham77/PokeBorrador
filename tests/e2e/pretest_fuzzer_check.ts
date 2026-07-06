@@ -8,14 +8,16 @@ function checkAndRunFuzzers() {
   console.log(`\n======================================================`);
   console.log(`🔍 [PRE-CHECK E2E] Comprobando casos de fuzzer certificados...`);
 
-  let needsRun = false;
-  if (!fs.existsSync(consolidatorPath)) {
+  let needsRun = process.env.FORCE_FUZZER === 'true';
+  if (needsRun) {
+    console.log(`🔄 FORCE_FUZZER es true. Forzando regeneración de casos...`);
+  } else if (!fs.existsSync(consolidatorPath)) {
     console.log(`⚠️  No se encontró certified_fuzzer_cases.json.`);
     needsRun = true;
   } else {
     try {
       const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8'));
-      if (!content.battle || !content.items) {
+      if (!content.battle || !content.items_consumption) {
         console.log(`⚠️  certified_fuzzer_cases.json está incompleto.`);
         needsRun = true;
       }

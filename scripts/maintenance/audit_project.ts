@@ -996,11 +996,17 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
           continue;
         }
         
-        if (targetUrl.startsWith('file://') || path.isAbsolute(targetUrl) || /^[a-zA-Z]:/.test(targetUrl)) {
+        const isFullPath = targetUrl.startsWith('file://') ||
+                           targetUrl.startsWith('/') ||
+                           targetUrl.startsWith('\\') ||
+                           /^[a-zA-Z]:/.test(targetUrl) ||
+                           path.isAbsolute(targetUrl);
+
+        if (isFullPath) {
           violations.push({
             file: agentsPath,
             line: i + 1,
-            message: `Enlace absoluto o prohibido '${targetUrl}' detectado en '${label}'. Se exige el uso de rutas relativas (RULE 10).`,
+            message: `Enlace absoluto o ruta completa prohibida '${targetUrl}' detectada en '${label}'. Se exige el uso exclusivo de rutas relativas (RULE 10).`,
             context: targetUrl,
             severity: 'error',
             fixable: false

@@ -1,6 +1,6 @@
 // tests/integration/battle/abilities_coverage_fuzzer.spec.ts
-import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-runner.ts';
-import { runAbilitiesFuzzer } from '../../../scripts/battle-tester/run-tester.ts';
+import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-vitest-bridge.ts';
+import { runAbilitiesFuzzer } from '../../../scripts/battle-tester/fuzzer-engine.ts';
 
 registerFuzzerSuite({
   suiteName: 'Fuzzer — Habilidades (Gen 9)',

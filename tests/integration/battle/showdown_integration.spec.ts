@@ -48,6 +48,8 @@ describe('Showdown Integration & Adapters', () => {
         id: 'rhyhorn',
         name: 'Rhyhorn',
         level: 50,
+        ability: 'lightningrod',
+        nature: 'hardy',
         moves: [
           { id: 'stoneedge', name: 'Roca Afilada', pp: 5, maxPp: 5, power: 100, type: 'rock', cat: 'physical' }
         ]
@@ -334,7 +336,7 @@ describe('Showdown Integration & Adapters', () => {
       const enemy = makePokemon('gengar', 50)!;
       enemy.moves = [
         { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
-        { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 90, type: 'poison', cat: 'special' }
+        { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 120, type: 'poison', cat: 'special' }
       ] as unknown as import('@/types/pokemon/pokemon').Move[];
 
       const player = makePokemon('vaporeon', 50)!;

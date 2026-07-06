@@ -150,8 +150,7 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
       if (validAbilities.includes(normAbility)) {
         p.ability = normAbility;
       } else {
-        logger.warn('Self-Healing', `Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}, reasignando.`);
-        p.ability = validAbilities[0];
+        throw new Error(`[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}.`);
       }
     }
   } else {
@@ -200,20 +199,7 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
 
     const moveData = pokemonDataProvider.getMoveData(m.id);
     if (!moveData) {
-      logger.warn('Self-Healing', `Movimiento ${m.id} no existe en DB, reasignando a tackle`);
-      m.id = 'tackle';
-      const fallback = pokemonDataProvider.getMoveData('tackle');
-      if (fallback) {
-        m.name = fallback.name;
-        Object.assign(m, {
-          power: fallback.power,
-          type: fallback.type,
-          acc: fallback.acc,
-          cat: fallback.cat,
-          pp: m.pp || fallback.pp,
-          maxPP: m.maxPP || fallback.pp
-        });
-      }
+      throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos.`);
     } else {
       // Sincronización Mandatoria
       m.id = moveData.id;

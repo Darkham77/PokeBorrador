@@ -1,4 +1,4 @@
-// scripts/battle-tester/mock-battle-store.ts
+// scripts/battle-tester/fuzzer-mock-battle-store.ts
 import { ref } from 'vue';
 import type { BattleContext } from '../../src/types/battle/battleContext.ts';
 import type { BattleState, BattleStages, BattleLog } from '../../src/types/battle/battle.ts';

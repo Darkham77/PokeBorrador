@@ -1,6 +1,6 @@
 // tests/integration/battle/moves_coverage_fuzzer.spec.ts
-import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-runner.ts';
-import { runMovesFuzzer } from '../../../scripts/battle-tester/run-tester.ts';
+import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-vitest-bridge.ts';
+import { runMovesFuzzer } from '../../../scripts/battle-tester/fuzzer-engine.ts';
 
 registerFuzzerSuite({
   suiteName: 'Fuzzer — Movimientos (Gen 9)',

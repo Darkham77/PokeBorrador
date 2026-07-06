@@ -1,6 +1,6 @@
 // tests/integration/battle/items_coverage_fuzzer.spec.ts
-import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-runner.ts';
-import { runItemsFuzzer } from '../../../scripts/battle-tester/run-tester.ts';
+import { registerFuzzerSuite } from '../../../scripts/battle-tester/fuzzer-vitest-bridge.ts';
+import { runItemsFuzzer } from '../../../scripts/battle-tester/fuzzer-engine.ts';
 
 registerFuzzerSuite({
   suiteName: 'Fuzzer — Ítems (All Generations)',

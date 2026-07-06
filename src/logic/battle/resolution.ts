@@ -525,31 +525,94 @@ function syncTeamHP(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
   
-  if (active.player) {
-    console.log(`[BRIDGE SYNC] Active Player: ${active.player.name} (uid: ${active.player.uid}) HP: ${active.player.hp}/${active.player.maxHp}`);
-    const currentIdx = ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === active.player?.uid);
-    console.log(`[BRIDGE SYNC] Found index: ${currentIdx}`);
-    if (currentIdx !== -1) {
-      const teamPoke = ctx.gs.state.team[currentIdx];
-      if (teamPoke) {
-        console.log(`[BRIDGE SYNC] Before: ${teamPoke.name} HP: ${teamPoke.hp}/${teamPoke.maxHp}`);
-        teamPoke.hp = active.player.hp;
-        teamPoke.status = active.player.status;
-        teamPoke.moves = active.player.moves;
-        console.log(`[BRIDGE SYNC] After: ${teamPoke.name} HP: ${teamPoke.hp}/${teamPoke.maxHp}`);
+  console.log(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
+  
+  if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
+    active.playerRequest.side.pokemon.forEach((reqPoke: any) => {
+      if (reqPoke && reqPoke.uid) {
+        const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.uid === reqPoke.uid);
+        const battlePoke = active.playerTeam?.find((p: Pokemon) => p && p.uid === reqPoke.uid);
+
+        const cond = reqPoke.condition || '';
+        let hp = 0;
+        let status: any = null;
+
+        if (!cond.includes('fnt')) {
+          const slashIdx = cond.indexOf('/');
+          if (slashIdx !== -1) {
+            hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+          }
+          const spaceIdx = cond.indexOf(' ');
+          if (spaceIdx !== -1) {
+            status = cond.substring(spaceIdx + 1).trim() || null;
+          }
+        }
+
+        if (teamPoke) {
+          const old = teamPoke.hp;
+          teamPoke.hp = hp;
+          teamPoke.status = status;
+          console.log(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+        }
+
+        if (battlePoke) {
+          const old = battlePoke.hp;
+          battlePoke.hp = hp;
+          battlePoke.status = status;
+          console.log(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+        }
       }
-    }
-  } else if (active._lastActivePlayer) {
-    // Si el asiento está vacío, intentamos sincronizar el último que estuvo (fainted)
-    const last = active._lastActivePlayer as Pokemon;
-    const currentIdx = ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === last.uid);
-    if (currentIdx !== -1) {
-      const teamPoke = ctx.gs.state.team[currentIdx];
-      if (teamPoke) {
-        teamPoke.hp = last.hp;
-        teamPoke.status = last.status;
-        teamPoke.moves = last.moves;
+    });
+  }
+
+  if (active.enemyRequest?.side?.pokemon && active.enemyTeam) {
+    active.enemyRequest.side.pokemon.forEach((reqPoke: any) => {
+      if (reqPoke && reqPoke.uid) {
+        const battlePoke = active.enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid);
+
+        const cond = reqPoke.condition || '';
+        let hp = 0;
+        let status: any = null;
+
+        if (!cond.includes('fnt')) {
+          const slashIdx = cond.indexOf('/');
+          if (slashIdx !== -1) {
+            hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+          }
+          const spaceIdx = cond.indexOf(' ');
+          if (spaceIdx !== -1) {
+            status = cond.substring(spaceIdx + 1).trim() || null;
+          }
+        }
+
+        if (battlePoke) {
+          const old = battlePoke.hp;
+          battlePoke.hp = hp;
+          battlePoke.status = status;
+          console.log(`[SYNC-TEAM-HP] Enemy Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+        }
       }
+    });
+  }
+
+  if (active.player && active.playerRequest?.side?.pokemon) {
+    const activeReqPoke = active.playerRequest.side.pokemon.find((p: any) => p && p.uid === active.player?.uid);
+    if (activeReqPoke) {
+      const cond = activeReqPoke.condition || '';
+      let hp = 0;
+      let status: any = null;
+      if (!cond.includes('fnt')) {
+        const slashIdx = cond.indexOf('/');
+        if (slashIdx !== -1) {
+          hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+        }
+        const spaceIdx = cond.indexOf(' ');
+        if (spaceIdx !== -1) {
+          status = cond.substring(spaceIdx + 1).trim() || null;
+        }
+      }
+      active.player.hp = hp;
+      active.player.status = status;
     }
   }
 

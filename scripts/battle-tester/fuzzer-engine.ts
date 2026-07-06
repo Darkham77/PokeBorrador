@@ -1,17 +1,18 @@
-// scripts/battle-tester/run-tester.ts
+// scripts/battle-tester/fuzzer-engine.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Battle, toID, ID, Dex } from '@pkmn/sim';
-import { generateTestBatches, getTriggerSlot, generateBatchHash } from './team-generator.ts';
-import { generateItemTestBatches } from './item-generator.ts';
-import { createMockBattleContext } from './mock-battle-store.ts';
+import { generateTestBatches, getTriggerSlot, generateBatchHash } from './fuzzer-team-generator.ts';
+import { generateItemTestBatches } from './fuzzer-item-generator.ts';
+import { createMockBattleContext } from './fuzzer-mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
 import { getShowdownFormatId } from '../../src/logic/battle/showdownAdapter.ts';
-import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
+import { BattleAgent, type ChoiceRequest } from './fuzzer-agent.ts';
 import { logger } from '../../src/logic/utils/logger.ts';
+import { applyHealCheatToSide } from '../../src/logic/battle/cheats.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
-import { ABILITY_SCENARIOS } from './ability-scenarios.ts';
+import { ABILITY_SCENARIOS } from './fuzzer-ability-scenarios.ts';
 import {
   EXCLUDED_ABILITY_ENTRIES,
   EXCLUDED_FROM_SINGLES_REPORT,
@@ -19,8 +20,8 @@ import {
   DOUBLES_ONLY_ABILITIES,
   TERA_ONLY_ABILITIES,
   FUSION_LOCKED_ABILITIES,
-} from './excluded-abilities.ts';
-import type { FuzzerResult } from './fuzzer-runner.ts';
+} from './fuzzer-excluded-abilities.ts';
+import type { FuzzerResult } from './fuzzer-vitest-bridge.ts';
 import { calcStatsPure } from '../../src/logic/pokemon/statsMath.ts';
 import type { PokemonSet } from '@pkmn/sim';
 
@@ -230,6 +231,9 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const movesSet = new Set(remainingMoves);
       const agent1 = new BattleAgent('p1', movesSet);
       const agent2 = new BattleAgent('p2', new Set(), null);
+      
+      const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
+      batchRec.cheats = [];
 
       // Generar una semilla (seed) determinista o aleatoria pero registrada
       const seedNums = [
@@ -375,11 +379,9 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             const p1Active = simBattle.p1.active?.[0];
             const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
             if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
-              p1Active.hp = p1Active.maxhp;
-              p1Active.fainted = false;
-              p1Active.status = '';
+              applyHealCheatToSide(simBattle.p1);
               if (!batchRec.cheats) batchRec.cheats = [];
-              batchRec.cheats.push({ turn, side: 'p1', type: 'heal' });
+              batchRec.cheats.push({ turn: simBattle.turn, side: 'p1', type: 'heal' });
               if (mockStore.player?.value) {
                 mockStore.player.value.hp = mockStore.player.value.maxHp;
                 mockStore.player.value.status = null;
@@ -388,11 +390,9 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 
             const p2Active = simBattle.p2.active?.[0];
             if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
-              p2Active.hp = p2Active.maxhp;
-              p2Active.fainted = false;
-              p2Active.status = '';
+              applyHealCheatToSide(simBattle.p2);
               if (!batchRec.cheats) batchRec.cheats = [];
-              batchRec.cheats.push({ turn, side: 'p2', type: 'heal' });
+              batchRec.cheats.push({ turn: simBattle.turn, side: 'p2', type: 'heal' });
               if (mockStore.enemy?.value) {
                 mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
                 mockStore.enemy.value.status = null;
@@ -803,14 +803,14 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
     consolidatedData = JSON.parse(existing);
-    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.items) {
+    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.items_consumption) {
       shouldWrite = false;
       console.log(`⚠️  Conservando casos de ítems certificados existentes (usa REGENERATE_CASES=true para pisar).`);
     }
   } catch (_e) { /* file doesn't exist yet */ }
 
   if (shouldWrite) {
-    consolidatedData.items = batches.map((b, idx) => {
+    consolidatedData.items_consumption = batches.map((b, idx) => {
       const hash = generateBatchHash(b);
       return {
         id: `case-${hash}`,
@@ -827,7 +827,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     try {
       const freshContent = await fs.readFile(consolidatorPath, 'utf8');
       const freshData = JSON.parse(freshContent);
-      consolidatedData = { ...freshData, items: consolidatedData.items };
+      consolidatedData = { ...freshData, items_consumption: consolidatedData.items_consumption };
     } catch (_e) { /* archivo nuevo */ }
 
     await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });

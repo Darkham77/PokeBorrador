@@ -124,19 +124,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
-    case 'switch':
-    case 'drag': {
-      const target = getPoke(parts[2] || '');
-      if (target && store.activeBattle.value) {
-        const side = getSide(parts[2] || '');
-        if (side === 'player') {
-          store.activeBattle.value.player = target;
-        } else if (side === 'enemy') {
-          store.activeBattle.value.enemy = target;
-        }
-      }
-      return true;
-    }
+
 
     case 'faint': {
       const target = getPoke(parts[2] || '');

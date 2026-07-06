@@ -1,6 +1,7 @@
 // fallow-ignore-file security-sink
 import { Battle, type ID } from '@pkmn/sim';
 import { getShowdownFormatId } from './showdownAdapter.ts';
+import { applyHealCheatToSide } from './cheats.ts';
 
 // Global cache to preserve adventure mode custom stats across Showdown's internal set unpacking
 const statsMap = new Map<string, unknown>();
@@ -317,11 +318,14 @@ self.onmessage = (event: MessageEvent) => {
 
         // Si se reciben HPs/estados de la UI (por ejemplo, por cheats del fuzzer), sincronizarlos
         if (p1Hps && typeof p1Hps === 'object') {
+          console.log(`[WORKER-SYNC] Received p1Hps:`, JSON.stringify(p1Hps));
           battle.p1.pokemon.forEach(p => {
             if (p) {
               const uid = (p as unknown as { uid?: string }).uid;
               if (uid && p1Hps[uid] !== undefined) {
+                const oldHp = p.hp;
                 p.hp = p1Hps[uid];
+                console.log(`[WORKER-SYNC] P1 Pokémon ${p.name} (uid: ${uid}): HP ${oldHp} -> ${p.hp}`);
                 if (p.hp <= 0) {
                   p.faint();
                 } else {
@@ -442,11 +446,8 @@ self.onmessage = (event: MessageEvent) => {
         const { side, type: cheatType } = payload;
         if (currentBattle) {
           const sideObj = side === 'p1' ? currentBattle.p1 : currentBattle.p2;
-          const active = sideObj.active?.[0];
-          if (active && cheatType === 'heal') {
-            active.hp = active.maxhp;
-            active.fainted = false;
-            active.status = '';
+          if (cheatType === 'heal') {
+            applyHealCheatToSide(sideObj);
           }
         }
         self.postMessage({ type: 'APPLY_CHEAT_SUCCESS' });
@@ -459,6 +460,28 @@ self.onmessage = (event: MessageEvent) => {
         self.postMessage({
           type: 'CHECK_TRAPPED_RESPONSE',
           payload: { trapped }
+        });
+        break;
+      }
+
+      case 'GET_SIMULATOR_STATE': {
+        const p1State = currentBattle ? currentBattle.p1.pokemon.map(p => ({
+          uid: (p as any).uid || p.name,
+          hp: p.hp,
+          maxhp: p.maxhp,
+          status: p.status,
+          fainted: p.fainted
+        })) : [];
+        const p2State = currentBattle ? currentBattle.p2.pokemon.map(p => ({
+          uid: (p as any).uid || p.name,
+          hp: p.hp,
+          maxhp: p.maxhp,
+          status: p.status,
+          fainted: p.fainted
+        })) : [];
+        self.postMessage({
+          type: 'GET_SIMULATOR_STATE_RESPONSE',
+          payload: { p1: p1State, p2: p2State }
         });
         break;
       }

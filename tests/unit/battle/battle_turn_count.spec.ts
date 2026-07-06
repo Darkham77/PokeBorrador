@@ -6,6 +6,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { testResetShowdownWorker } from '@/logic/battle/orchestrator'
 
 // Mock dependencies
 class DummyWorker {
@@ -28,6 +29,17 @@ class DummyWorker {
           } as MessageEvent)
         }
       }, 0)
+    } else if (msg?.type === 'CHECK_TRAPPED') {
+      setTimeout(() => {
+        if (this.onmessage) {
+          this.onmessage({
+            data: {
+              type: 'CHECK_TRAPPED_RESPONSE',
+              payload: { isTrapped: false }
+            }
+          } as MessageEvent)
+        }
+      }, 0)
     }
   }
   terminate() {}
@@ -45,18 +57,26 @@ describe('Battle Store - Turn Count Logic', () => {
     setActivePinia(createPinia())
     const gs = useGameStore()
     gs.state.trainer = 'Tester'
-    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, moves: [] } as unknown as Pokemon]
+    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, ability: 'static', nature: 'hardy', moves: [{ id: 'tackle', name: 'Tackle' }] } as unknown as Pokemon]
   })
 
   it('should initialize turnCount at 1', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100, ability: 'runaway', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
     expect(battle.state!.turnCount).toBe(1)
   })
 
   it('should increment turnCount after applyEndTurnEffects', async () => {
+    testResetShowdownWorker()
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
+    battle.state = {
+      turnCount: 1,
+      over: false,
+      player: { id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, ability: 'static', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as Pokemon,
+      enemy: { id: 'rattata', uid: 'e1', hp: 50, maxHp: 50, ability: 'runaway', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as Pokemon,
+      weather: { type: 'clear', visual: 'clear', turns: -1 }
+    } as any
+    battle.fsm.currentState = 'ACTIVE_BATTLE'
     
     expect(battle.state!.turnCount).toBe(1)
     
@@ -70,10 +90,17 @@ describe('Battle Store - Turn Count Logic', () => {
   })
 
   it('should not increment turnCount if the battle is over', async () => {
+    testResetShowdownWorker()
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
+    battle.state = {
+      turnCount: 1,
+      over: true,
+      player: { id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, ability: 'static', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as Pokemon,
+      enemy: { id: 'rattata', uid: 'e1', hp: 50, maxHp: 50, ability: 'runaway', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as Pokemon,
+      weather: { type: 'clear', visual: 'clear', turns: -1 }
+    } as any
+    battle.fsm.currentState = 'ACTIVE_BATTLE'
     
-    battle.state!.over = true
     await battle.applyEndTurnEffects()
     
     expect(battle.state!.turnCount).toBe(1)
@@ -93,6 +120,8 @@ describe('Battle Store - Turn Count Logic', () => {
       spe: 50,
       level: 50,
       status: null, 
+      ability: 'static',
+      nature: 'hardy',
       ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [
@@ -113,9 +142,11 @@ describe('Battle Store - Turn Count Logic', () => {
       spe: 50,
       level: 50,
       status: null,
+      ability: 'runaway',
+      nature: 'hardy',
       ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      moves: []
+      moves: [{ id: 'tackle' }]
     } as unknown as Pokemon
 
     await battle._startBattle(enemy, { locationId: 'test', wasSearching: false })
@@ -139,9 +170,11 @@ describe('Battle Store - Turn Count Logic', () => {
       spe: 50,
       level: 5,
       status: null,
+      ability: 'runaway',
+      nature: 'hardy',
       ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      moves: []
+      moves: [{ id: 'tackle' }]
     } as unknown as Pokemon
 
     await battle._startBattle(enemy, { locationId: 'route1', wasSearching: true })

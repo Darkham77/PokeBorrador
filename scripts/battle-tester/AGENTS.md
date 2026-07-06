@@ -16,6 +16,7 @@ Simulate, test, and validate battle log synchronization between the Pokémon Sho
 - No runtime game-engine code is allowed here; this directory is strictly for utility and test automation.
 - All files must be written in TypeScript and adhere to Node.js 26+ requirements (relative imports require explicit `.ts` extensions).
 - The coverage report must be written to `scripts/battle-tester/results/coverage_report.json`.
+- **Durable Progress Files Exception**: Durable progress tracking files (e.g. `tests/sim_progress_YYYYMMDD.md`) generated during simulation runs are official, versioned assets of the fuzzer system and are exempt from the global `scratch/` mandate.
 
 ## Work Guidance
 
@@ -32,4 +33,12 @@ npm run test:move-coverage
 
 ## Child DOX Index
 
-None.
+- [fuzzer-ability-scenarios.ts](./fuzzer-ability-scenarios.ts): Custom initial combat setups and states for complex abilities.
+- [fuzzer-agent.ts](./fuzzer-agent.ts): Headless combat decision agent for fuzzer simulation.
+- [fuzzer-excluded-abilities.ts](./fuzzer-excluded-abilities.ts): List of abilities excluded from the automatic fuzzer testing.
+- [fuzzer-vitest-bridge.ts](./fuzzer-vitest-bridge.ts): Vitest test-bridge helper that registers fuzzer suites in integration tests.
+- [fuzzer-item-generator.ts](./fuzzer-item-generator.ts): Fuzzer helper that selects and attaches random items.
+- [fuzzer-mock-battle-store.ts](./fuzzer-mock-battle-store.ts): Headless Pinia battle store mock.
+- [fuzzer-engine.ts](./fuzzer-engine.ts): Main simulation engine executing fuzzer batches, tracking coverage, and saving logs.
+- [fuzzer-team-generator.ts](./fuzzer-team-generator.ts): Generator for random fuzzer teams and sets.
+- [fuzzer-run-tester.ts](./fuzzer-run-tester.ts): Reusable CLI diagnostic tool to run and trace specific fuzzer cases step-by-step.

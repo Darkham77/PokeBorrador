@@ -1,4 +1,4 @@
-// scripts/battle-tester/item-generator.ts
+// scripts/battle-tester/fuzzer-item-generator.ts
 import { Dex } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';

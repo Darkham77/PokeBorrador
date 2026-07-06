@@ -107,7 +107,15 @@ describe('Battle Switch Out State Cleanup Tests', () => {
       playerTeamIndex: 0,
       participants: ['p1'],
       isTrainer: false,
-      weather: { type: 'clear', visual: 'clear', turns: -1 }
+      weather: { type: 'clear', visual: 'clear', turns: -1 },
+      playerRequest: {
+        side: {
+          pokemon: [
+            { uid: 'p1', condition: '100/100' },
+            { uid: 'p2', condition: '100/100' }
+          ]
+        }
+      }
     })
 
     const playerStages = ref<BattleStages>({

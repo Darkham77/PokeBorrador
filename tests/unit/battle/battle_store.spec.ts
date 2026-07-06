@@ -177,7 +177,7 @@ describe('Battle Store - Weather Reset', () => {
       attackerSide: ref(null),
       activeMove: ref(null),
       addLog: vi.fn(),
-      gs: { state: { team: [{ uid: 'p1', moves: [] }], playerClass: 'trainer' }, scheduleSave: vi.fn() },
+      gs: { state: { team: [{ id: 'bulbasaur', uid: 'p1', name: 'Bulbasaur', ability: 'overgrow', nature: 'hardy', moves: [{ id: 'tackle' }] }], playerClass: 'trainer' }, scheduleSave: vi.fn() },
       fsm: { transition: vi.fn(), currentState: ref(''), currentSubState: ref('') },
       BATTLE_STATES: {
         INITIALIZING: 'INITIALIZING',
@@ -197,8 +197,8 @@ describe('Battle Store - Weather Reset', () => {
     } as unknown as import('@/types/battle/battleContext').BattleContext
 
     await initBattleSequence(ctx, {
-      initialPlayer: { uid: 'p1', moves: [] } as unknown as import('@/types/pokemon/pokemon').Pokemon,
-      initialEnemy: { uid: 'e1', moves: [] } as unknown as import('@/types/pokemon/pokemon').Pokemon
+      initialPlayer: { uid: 'p1', name: 'Bulbasaur', ability: 'overgrow', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon,
+      initialEnemy: { uid: 'e1', name: 'Pikachu', ability: 'static', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon
     })
 
     // Should reset turns to -1 (natural weather)

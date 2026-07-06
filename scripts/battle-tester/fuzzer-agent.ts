@@ -1,4 +1,4 @@
-// scripts/battle-tester/battle-agent.ts
+// scripts/battle-tester/fuzzer-agent.ts
 
 export interface SidePokemon {
   ident: string;

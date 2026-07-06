@@ -10,7 +10,10 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
       return null;
     }),
     getNatureData: vi.fn(() => ({ up: null, down: null })),
-    getSpeciesAbilities: vi.fn(() => ['Mar Llamas']),
+    getSpeciesAbilities: vi.fn((id) => {
+      if (id === 'pidgey') return ['keeneye'];
+      return ['blaze'];
+    }),
     resolveMoveId: vi.fn((name) => {
       if (!name) return '';
       const lower = name.toLowerCase().trim();
@@ -21,6 +24,9 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     getMoveData: vi.fn((id) => {
       if (id === 'tackle') return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
       if (id === 'flamethrower') return { id: 'flamethrower', name: 'Lanzallamas', power: 90, type: 'fire', cat: 'special', pp: 15 };
+      if (id === 'm1' || id === 'm2' || id === 'm3' || id === 'm4') {
+        return { id, name: id.toUpperCase(), power: 40, type: 'normal', cat: 'physical', pp: 35 };
+      }
       return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
     })
   }
@@ -117,10 +123,10 @@ describe('Pokemon Factory', () => {
     it('should return pending moves if moves list is full', () => {
       const p = makePokemon('charmander', 9);
       p!.moves = [
-        { name: 'M1', pp: 10, maxPP: 10 },
-        { name: 'M2', pp: 10, maxPP: 10 },
-        { name: 'M3', pp: 10, maxPP: 10 },
-        { name: 'M4', pp: 10, maxPP: 10 }
+        { id: 'm1', name: 'M1', pp: 10, maxPP: 10 },
+        { id: 'm2', name: 'M2', pp: 10, maxPP: 10 },
+        { id: 'm3', name: 'M3', pp: 10, maxPP: 10 },
+        { id: 'm4', name: 'M4', pp: 10, maxPP: 10 }
       ];
       
       const pending = levelUpPokemon(p!);
