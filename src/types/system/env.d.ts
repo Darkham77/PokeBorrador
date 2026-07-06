@@ -1,4 +1,4 @@
-import type { ShowdownPlayerRequest } from '../battle/battle';
+import type { ShowdownPlayerRequest } from '../battle/battle.ts';
 
 declare global {
   // FileSystem API (OPFS)
