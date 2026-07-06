@@ -77,13 +77,23 @@ function renderLoop() {
   requestAnimationFrame(renderLoop);
 }
 
+interface RenderWorkerMessage {
+  type: 'INIT' | 'RESIZE' | 'UPDATE_STATE';
+  payload: {
+    canvas?: OffscreenCanvas;
+    width?: number;
+    height?: number;
+  } & Partial<RenderState>;
+}
+
 // Message Router
 self.onmessage = (event: MessageEvent) => {
-  const { type, payload } = event.data;
+  const data = event.data as RenderWorkerMessage;
+  const { type, payload } = data;
 
   switch (type) {
     case 'INIT': {
-      canvas = payload.canvas;
+      canvas = payload.canvas || null;
       if (canvas) {
         ctx = canvas.getContext('2d');
         requestAnimationFrame(renderLoop);
@@ -91,7 +101,7 @@ self.onmessage = (event: MessageEvent) => {
       break;
     }
     case 'RESIZE': {
-      if (canvas) {
+      if (canvas && payload.width !== undefined && payload.height !== undefined) {
         canvas.width = payload.width;
         canvas.height = payload.height;
       }

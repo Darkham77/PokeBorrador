@@ -120,7 +120,7 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const isDebug = typeof window !== 'undefined' && !!(window as any).__VITE_DEBUG__;
+  const isDebug = typeof window !== 'undefined' && !!(window as Window & { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__;
   const bypass = bypassWhitelist || isDebug;
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki

@@ -193,7 +193,7 @@ export async function updateSupabaseDb() {
       let appVersion = 'v0.5.0';
       try {
         const verPath = path.resolve(process.cwd(), 'public/version.json');
-        const verContent = JSON.parse(await fsPromises.readFile(verPath, 'utf-8'));
+        const verContent = JSON.parse(await fsPromises.readFile(verPath, 'utf-8')) as { version?: string };
         if (verContent && verContent.version) {
           appVersion = verContent.version;
         }
@@ -215,7 +215,7 @@ export async function updateSupabaseDb() {
       }
 
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? (err as Error).message : String(err);
       console.error(styleText('red', `❌ Error al conectar o migrar la base de datos de [${profile}]: ${msg}`));
       if (msg.includes('password authentication failed') || msg.includes('placeholder')) {
         console.error(styleText('yellow', `👉 Advertencia: SERVER_${profile}_POSTGRES_PASSWORD parece ser un placeholder o es incorrecta.`));
@@ -237,8 +237,9 @@ const isDirectRun = process.argv[1] && (
 );
 
 if (isDirectRun) {
-  updateSupabaseDb().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${err.message}`));
+  updateSupabaseDb().catch((err: unknown) => {
+    const msg = err instanceof Error ? (err as Error).message : String(err);
+    console.error(styleText('red', `❌ Error fatal: ${msg}`));
     process.exit(1);
   });
 }

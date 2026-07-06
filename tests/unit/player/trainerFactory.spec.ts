@@ -2,11 +2,11 @@ import { describe, it, expect, vi } from 'vitest'
 import { buildTrainerTeam } from '@/logic/battle/trainerFactory'
 
 vi.mock('@/logic/evolution/evolutionLogic', () => ({
-  getEvolvedForm: vi.fn((id) => id),
+  getEvolvedForm: vi.fn((id: string) => id),
 }))
 
 vi.mock('@/logic/pokemon/pokemonFactory', () => ({
-  makePokemon: vi.fn((id, lv) => ({
+  makePokemon: vi.fn((id: string, lv: number) => ({
     id,
     level: lv,
     name: id.toUpperCase(),

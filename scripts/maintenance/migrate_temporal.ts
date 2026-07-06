@@ -35,7 +35,7 @@ async function migrate(filePath: string) {
   content = content.replace(/new Date\(\)/g, 'Temporal.Now.instant()');
 
   // 3. new Date(valor) -> Temporal.Instant.fromEpochMilliseconds(valor)
-  content = content.replace(/new Date\(([^)]+)\)/g, (match, p1) => {
+  content = content.replace(/new Date\(([^)]+)\)/g, (match: string, p1: string) => {
     if (p1.trim() === '') return match;
     return `Temporal.Instant.fromEpochMilliseconds(${p1})`;
   });

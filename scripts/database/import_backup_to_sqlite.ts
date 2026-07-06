@@ -106,9 +106,21 @@ try {
   process.exit(1);
 }
 
-let backupData: { data: Record<string, unknown[]> };
+interface BackupProfile {
+  id: string;
+  username: string;
+}
+
+interface BackupData {
+  data: {
+    profiles?: BackupProfile[];
+    [key: string]: unknown[] | undefined;
+  };
+}
+
+let backupData: BackupData;
 try {
-  backupData = JSON.parse(backupContent);
+  backupData = JSON.parse(backupContent) as BackupData;
 } catch (err) {
   console.error(`❌ Error al parsear el archivo JSON: ${(err as Error).message}`);
   process.exit(1);
@@ -122,7 +134,7 @@ if (!backupData.data) {
 // 3. Crear mapeo de IDs: UUID -> local_<username>
 console.log('🔗 Generando diccionario de mapeo de IDs...');
 const idMap = new Map<string, string>();
-const profiles = backupData.data.profiles || [];
+const profiles = (backupData.data.profiles || []) as BackupProfile[];
 
 for (const profile of profiles as Array<{ id: string; username?: string; email?: string }>) {
   if (profile.id) {
@@ -200,7 +212,7 @@ function transformRow(
     // Transformar datos de guardado (JSON)
     if (tableName === 'game_saves' && col === 'save_data') {
       try {
-        const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+        const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as { inventory?: Record<string, number> } | null;
         
         // Migrate inventory keys to IDs if present
         if (parsed && parsed.inventory && typeof parsed.inventory === 'object') {
@@ -274,7 +286,8 @@ function transformRow(
           validIds.add('bicycle');
 
           const newInv: Record<string, number> = {};
-          for (const [key, qty] of Object.entries(parsed.inventory)) {
+          const invObj = parsed.inventory as Record<string, number>;
+          for (const [key, qty] of Object.entries(invObj)) {
             const resolvedName = resolveNormalizedName(key);
             let mappedId = itemMapping[resolvedName];
             if (!mappedId) {
@@ -298,7 +311,7 @@ function transformRow(
       val = 3;
     } else if (tableName === 'market_listings' && col === 'data') {
       try {
-        const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+        const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as unknown;
         const transformed = replaceUserIds(parsed, mapping);
         val = JSON.stringify(transformed);
       } catch {
@@ -391,8 +404,8 @@ for (const tableName of Object.keys(backupData.data)) {
 
   // Mapear y filtrar cada fila
   const transformedRows = rows
-    .map(r => transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId))
-    .filter(row => Object.keys(row).length > 0);
+    .map((r: unknown) => transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId))
+    .filter((row: Record<string, unknown>) => Object.keys(row).length > 0);
 
   if (transformedRows.length === 0) continue;
 

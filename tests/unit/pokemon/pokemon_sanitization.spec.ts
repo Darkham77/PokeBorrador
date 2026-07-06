@@ -6,7 +6,7 @@ import { getMaxBuffDuration } from '@/data/inventory/items';
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
-    getPokemonData: vi.fn((id) => {
+    getPokemonData: vi.fn((id: string) => {
       if (id === 'charizard') return { id: 'charizard', name: 'Charizard', hp: 78, atk: 84, def: 78, spa: 109, spd: 85, spe: 100 };
       if (id === 'zubat') return { id: 'zubat', name: 'Zubat', hp: 40, atk: 45, def: 35, spa: 30, spd: 40, spe: 55 };
       return null;

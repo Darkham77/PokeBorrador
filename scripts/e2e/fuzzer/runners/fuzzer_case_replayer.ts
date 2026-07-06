@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { TestBatch } from '../generators/fuzzer_team_generator.ts';
 import { getShowdownFormatId } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { applyHealCheatToSide } from '../../../../src/logic/battle/cheats.ts';
 
 interface ExtendedPokemon {
   name: string;
@@ -147,15 +148,11 @@ while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx
 
   // Check and apply HP restoration (Infinite Punching Bag) matching the fuzzer's engine behavior
   if (p1ActiveMon && (p1ActiveMon.hp <= p1ActiveMon.maxhp * 0.3 || p1ActiveMon.fainted)) {
-    p1ActiveMon.hp = p1ActiveMon.maxhp;
-    p1ActiveMon.fainted = false;
-    p1ActiveMon.status = '';
+    applyHealCheatToSide(battle.p1);
     console.log(`  [IPB CHEAT] Restored P1 Active HP to max (${p1ActiveMon.name})`);
   }
   if (p2ActiveMon && (p2ActiveMon.hp <= p2ActiveMon.maxhp * 0.3 || p2ActiveMon.fainted)) {
-    p2ActiveMon.hp = p2ActiveMon.maxhp;
-    p2ActiveMon.fainted = false;
-    p2ActiveMon.status = '';
+    applyHealCheatToSide(battle.p2);
     console.log(`  [IPB CHEAT] Restored P2 Active HP to max (${p2ActiveMon.name})`);
   }
 

@@ -101,7 +101,7 @@ export function registerPokeTools(debug: DebugSystem) {
     label: 'INICIAR COMBATE (SIMPLE)',
     command: 'startBattle',
     category: 'pokes',
-    action: async (id = 'pikachu', level = 5, shiny = false) => {
+    action: async (id: string = 'pikachu', level: number = 5, shiny: boolean = false) => {
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
       
       if (id === 'wild') {
@@ -124,7 +124,7 @@ export function registerPokeTools(debug: DebugSystem) {
     label: 'LIMPIAR EQUIPO PVP',
     command: 'clearPvpTeam',
     category: 'pokes',
-    action: async (force = false) => {
+    action: async (force: boolean = false) => {
       if (!force && !confirm('¿Limpiar equipo PVP de forma permanente?')) return
       ui.pvpAutoFillDisabled = true
       game.state.pvpTeam = []
@@ -184,7 +184,7 @@ export function registerPokeTools(debug: DebugSystem) {
     label: 'PROBAR EVOLUCIÓN (CLI)',
     command: 'testEvolution',
     category: 'pokes',
-    action: (slotIndex = 0, targetSpeciesId?: string, itemName?: string) => {
+    action: (slotIndex: number = 0, targetSpeciesId?: string, itemName?: string) => {
       const pokemon = game.state.team[slotIndex]
       if (!pokemon) {
         ui.notify('No hay un Pokémon en la ranura especificada', '❌')

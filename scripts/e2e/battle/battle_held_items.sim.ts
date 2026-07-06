@@ -267,7 +267,7 @@ test.describe('E2E Held Items Verification', () => {
 
           const { useMapStore } = await import('../../../src/stores/map.ts');
           const mapStore = useMapStore();
-          (mapStore as any).currentWeather = 'clear';
+          mapStore.setGlobalWeather('clear');
 
           const firstEnemy = localEnemyTeam[0];
           if (!firstEnemy) throw new Error('No enemy generated for items test');
@@ -337,7 +337,7 @@ test.describe('E2E Held Items Verification', () => {
             const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
               try {
                 if (!choiceStr) return true;
-                const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+                const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
                 if (!resolver) return true;
                 const store = resolver();
                 const playerRequest = store.state?.playerRequest;
@@ -347,7 +347,7 @@ test.describe('E2E Held Items Verification', () => {
                   const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
                   const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
                   if (!targetPoke) return false;
-                  const isFainted = targetPoke.condition?.includes('fnt') || targetPoke.hp === 0;
+                  const isFainted = targetPoke.condition?.includes('fnt');
                   const isActive = !!targetPoke.active;
                   if (isFainted || isActive) {
                     console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (fainted/active). Skipping.`);
@@ -372,7 +372,7 @@ test.describe('E2E Held Items Verification', () => {
               turnCount++;
               await page.evaluate(() => {
                 if (window.__VITE_DEBUG__) {
-                  (window.__VITE_DEBUG__ as any).enemyChoiceIndex = ((window.__VITE_DEBUG__ as any).enemyChoiceIndex ?? 0) + 1;
+                  window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
                 }
               });
               continue;
@@ -395,7 +395,7 @@ test.describe('E2E Held Items Verification', () => {
           expect(isBattleOver).toBe(true);
         } catch (error: unknown) {
           const caseId = (batch as { id?: string }).id || `lote-items-${index + 1}`;
-          const errMessage = error instanceof Error ? error.message : String(error);
+          const errMessage = error instanceof Error ? (error as Error).message : String(error);
           console.error(`\n❌ ERROR EN EL COMBATE DE ITEMS: ${caseId}`);
           console.error(`Detalles del lote de items:`, JSON.stringify({
             id: caseId,

@@ -212,6 +212,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
+  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
   process.exit(1);
 });

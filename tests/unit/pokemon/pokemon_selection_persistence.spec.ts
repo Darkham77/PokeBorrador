@@ -62,7 +62,7 @@ describe('PokemonSelectionModal Persistence', () => {
     // Watchers are async, wait for the next tick/timeout
     await new Promise(resolve => setTimeout(resolve, 50))
 
-    const saved = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
+    const saved = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}') as Record<string, unknown>
     expect(saved).not.toBeNull()
     expect(saved.sortBy).toBe('level')
     expect(saved.sortOrder).toBe('desc')

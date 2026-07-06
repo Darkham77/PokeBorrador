@@ -44,7 +44,7 @@ const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
  */
 const deepClone = <T>(obj: T): T => {
     if (!obj) return obj;
-    return JSON.parse(JSON.stringify(obj));
+    return JSON.parse(JSON.stringify(obj)) as T;
 };
 
 export const pokemonDataProvider = {
@@ -147,14 +147,14 @@ export const pokemonDataProvider = {
             return {
                 id: 'recharge',
                 name: 'Recargar',
-                type: 'Normal',
-                category: 'Special',
+                type: 'normal',
+                cat: 'special',
                 pp: 1,
-                maxPp: 1,
-                accuracy: true,
+                acc: 1000,
                 power: 0,
-                desc: 'El Pokémon debe recargar este turno.'
-            } as MoveBaseData;
+                priority: 0,
+                effect: undefined
+            };
         }
 
         let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);

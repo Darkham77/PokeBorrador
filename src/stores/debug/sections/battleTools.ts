@@ -117,7 +117,9 @@ export function registerBattleTools(debug: DebugSystem) {
       if (type === 'escape_teleport' || type === 'escape_flee') {
         const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee'
         const battle = useBattleStore()
-        const pokemon = side === 'player' ? battle.state?.player : battle.state?.enemy
+        const pokemon = side === 'player'
+          ? (battle.state?.player as Pokemon | null | undefined)
+          : (battle.state?.enemy as Pokemon | null | undefined)
         gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType })
         return `Efecto de escape ${escapeType} emitido para ${side}`
       }

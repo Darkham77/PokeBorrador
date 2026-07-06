@@ -25,7 +25,7 @@ interface AnimationAnalysisResult {
 // CÓDIGO DEL WORKER (HILO SECUNDARIO DE PROCESAMIENTO INDEPENDIENTE)
 // -----------------------------------------------------------------------------
 if (!isMainThread) {
-  const { fileName } = workerData;
+  const { fileName } = workerData as { fileName: string };
 
   const analyzeVariantImage = async (
     varSourcePath: string,
@@ -394,7 +394,8 @@ if (!isMainThread) {
   };
 
   runWorker().catch(err => {
-    parentPort?.postMessage({ success: false, error: err.message });
+    const msg = err instanceof Error ? (err as Error).message : String(err);
+    parentPort?.postMessage({ success: false, error: msg });
   });
 }
 
@@ -580,22 +581,23 @@ if (isMainThread) {
           workerData: { fileName: file, removeOriginal: values['remove-original'] }
         });
 
-        worker.on('message', (msg) => {
-          if (msg.success) {
+        worker.on('message', (msg: unknown) => {
+          const payload = msg as { success: boolean; details?: string; pokemonId: string; suffix: string; animationsFound: number; warning?: string; error?: string };
+          if (payload.success) {
             completedCount++;
-            if (msg.details) {
+            if (payload.details) {
               extraAnimationsReport.push({
-                pokemonId: msg.pokemonId,
-                suffix: msg.suffix,
-                animationsFound: msg.animationsFound,
-                details: msg.details
+                pokemonId: payload.pokemonId,
+                suffix: payload.suffix,
+                animationsFound: payload.animationsFound,
+                details: payload.details
               });
             }
-            if (msg.warning) {
+            if (payload.warning) {
               warningsReport.push({
-                pokemonId: msg.pokemonId,
-                suffix: msg.suffix,
-                warning: msg.warning
+                pokemonId: payload.pokemonId,
+                suffix: payload.suffix,
+                warning: payload.warning
               });
             }
             console.log(`   [OK - HILO] Procesado con éxito: ${file} (${completedCount + failedCount}/${filteredFiles.length})`);
@@ -607,7 +609,7 @@ if (isMainThread) {
           } else {
             hasErrors = true;
             failedCount++;
-            console.error(`❌ Error en hilo procesando ${file}:`, msg.error);
+            console.error(`❌ Error en hilo procesando ${file}:`, payload.error);
           }
         });
 

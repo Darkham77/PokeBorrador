@@ -66,4 +66,41 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     expect(unhandledCalls.length).toBe(0);
     debugSpy.mockRestore();
   });
+
+  it('debería filtrar el estado "fnt" a null al parsear un switch con vida 0', async () => {
+    const p1 = createLocalPoke('P-Poke1', 'Mew');
+    const p2 = createLocalPoke('E-Poke1', 'Blissey');
+    const mockStore = createMockBattleContext(p1, p2);
+    
+    const targetPoke = createLocalPoke('E-Poke2', 'Gengar');
+    targetPoke.uid = 'gengar-123';
+    mockStore.activeBattle.value!.enemyTeam = [p2, targetPoke];
+    
+    await parseShowdownLogLine(mockStore, '|switch|p2a: bd56a16e|Gengar, L100|0 fnt|[uids]p2a:bd56a16e=gengar-123');
+    
+    expect(targetPoke.hp).toBe(0);
+    expect(targetPoke.status).toBeNull();
+  });
+});
+
+import { isPokemonStatus } from '../../../src/types/pokemon/pokemon.ts';
+
+describe('PokemonStatus Type Guard', () => {
+  it('debería retornar true para estados válidos y null', () => {
+    expect(isPokemonStatus('par')).toBe(true);
+    expect(isPokemonStatus('brn')).toBe(true);
+    expect(isPokemonStatus('psn')).toBe(true);
+    expect(isPokemonStatus('slp')).toBe(true);
+    expect(isPokemonStatus('frz')).toBe(true);
+    expect(isPokemonStatus('tox')).toBe(true);
+    expect(isPokemonStatus(null)).toBe(true);
+    expect(isPokemonStatus(undefined)).toBe(true);
+  });
+
+  it('debería retornar false para estados inválidos como fnt o cadenas vacías', () => {
+    expect(isPokemonStatus('fnt')).toBe(false);
+    expect(isPokemonStatus('fainted')).toBe(false);
+    expect(isPokemonStatus('sleep')).toBe(false);
+    expect(isPokemonStatus('')).toBe(false);
+  });
 });

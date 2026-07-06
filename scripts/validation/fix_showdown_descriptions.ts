@@ -79,7 +79,7 @@ function fixShowdownDescriptions() {
     return;
   }
 
-  const db: ShowdownDB = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
+  const db: ShowdownDB = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8')) as ShowdownDB;
   let fixedCount = 0;
 
   for (const [key, descText] of Object.entries(CLEAN_DESCRIPTIONS)) {

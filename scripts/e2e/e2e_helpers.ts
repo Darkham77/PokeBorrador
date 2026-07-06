@@ -1,50 +1,24 @@
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
-interface DebugPokemon {
-  uid?: string;
-  name?: string;
-  hp?: number;
-  maxHp?: number;
-  status?: string;
+async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await locator.click({ timeout: 2000, ...options });
+      return;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? (err as Error).message : String(err);
+      if (msg.includes('detached') || msg.includes('retrying') || msg.includes('visible') || msg.includes('stable')) {
+        console.log(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
+        await new Promise(r => setTimeout(r, 150));
+        continue;
+      }
+      throw err;
+    }
+  }
+  await locator.click(options);
 }
 
-interface DebugGameStore {
-  state?: {
-    team?: Array<DebugPokemon | null>;
-  } | null;
-}
-
-interface DebugPinia {
-  _s?: Map<string, DebugGameStore>;
-}
-
-export interface DebugStore {
-  currentFsmState?: string;
-  currentSubState?: string;
-  isProcessing?: boolean;
-  isIntroAnimating?: boolean;
-  /** Pinia internals — accessed to reach sibling stores */
-  _p?: DebugPinia;
-  fsm?: {
-    currentState?: { value?: string };
-    currentSubState?: { value?: string };
-  };
-  state?: {
-    over?: boolean;
-    turnCount?: number;
-    player?: DebugPokemon | null;
-    enemy?: DebugPokemon | null;
-    enemyTeam?: Array<DebugPokemon | null>;
-    activeBattle?: {
-      player?: DebugPokemon | null;
-      enemy?: DebugPokemon | null;
-    } | null;
-  } | null;
-}
-
-export type WindowWithResolver = typeof window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-};
+export type WindowWithResolver = Window;
 
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
@@ -120,7 +94,7 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
   try {
     await combatirBtn.waitFor({ state: 'visible', timeout: 2000 });
     await combatirBtn.click();
-  } catch (e) {
+  } catch (_e) {
     console.log('[confirmAndStartBattle] "¡COMBATIR!" button not found or battle already started. Proceeding...');
   }
 }
@@ -143,7 +117,7 @@ export async function waitForWaitInput(page: Page): Promise<void> {
  * Maneja el input de la batalla simulada
  */
 export async function handleBattleInput(page: Page, choice?: string): Promise<boolean> {
-  if (!choice || choice.trim() === '') {
+  if (choice !== undefined && choice.trim() === '') {
     // No action needed for player in this step. Return true to advance turnCount.
     return true;
   }
@@ -154,18 +128,28 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return !resolver().isProcessing;
   }, undefined, { timeout: 2000 }).catch(() => {});
 
-  const isProcessing = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-    return useBattleStore().isProcessing;
+  const isProcessing = await page.evaluate(() => {
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+    if (!resolver) return false;
+    try {
+      return resolver().isProcessing;
+    } catch {
+      return false;
+    }
   });
 
   if (isProcessing) {
     return false;
   }
 
-  const subState = await page.evaluate(async () => {
-    const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-    return useBattleStore().currentSubState;
+  const subState = await page.evaluate(() => {
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+    if (!resolver) return 'WAIT_INPUT';
+    try {
+      return resolver().currentSubState;
+    } catch {
+      return 'WAIT_INPUT';
+    }
   });
 
   const isModalOpen = await page.evaluate(() => {
@@ -243,7 +227,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         // Retornar false para que el loop externo espere y reintente.
         const isDisabled = await moveBtn.isDisabled().catch(() => true);
         if (isDisabled) return false;
-        await moveBtn.click({ timeout: 5000 });
+        await clickResilient(moveBtn, { timeout: 5000 });
         return true;
       } else if (cleanChoice.startsWith('switch ')) {
         // En Showdown, slot 1 es el activo, y slots 2-6 son la banca (sana o completa según la fase).
@@ -255,12 +239,12 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         if (targetUid) {
           const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
           await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await cardBtn.click({ force: true, timeout: 5000 });
+          await clickResilient(cardBtn, { force: true, timeout: 5000 });
         } else {
           const switchIdx = switchSlot - 2;
           const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
           await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-          await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+          await clickResilient(allBenchCards.nth(switchIdx), { force: true, timeout: 5000 });
         }
         return true;
       } else if (cleanChoice.startsWith('useitem:')) {
@@ -283,17 +267,17 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         const isQuickVisible = await quickCard.isVisible().catch(() => false);
 
         if (isQuickVisible) {
-          await quickCard.click({ force: true, timeout: 5000 });
+          await clickResilient(quickCard, { force: true, timeout: 5000 });
         } else {
           // Si no está en la bolsa rápida (ej. Revivir), abrir la mochila completa
           const bagBtn = page.locator('.bag-btn');
           await bagBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await bagBtn.click({ force: true, timeout: 5000 });
+          await clickResilient(bagBtn, { force: true, timeout: 5000 });
 
           // Esperar a que aparezca la tarjeta en el modal de la mochila
           const backpackItem = page.locator('.inventory-item-card', { hasText: translatedName }).first();
           await backpackItem.waitFor({ state: 'visible', timeout: 5000 });
-          await backpackItem.click({ force: true, timeout: 5000 });
+          await clickResilient(backpackItem, { force: true, timeout: 5000 });
         }
 
         const targetUid = await page.evaluate((idx) => {
@@ -316,7 +300,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         }
 
         await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await targetBtn.click({ force: true, timeout: 5000 });
+        await clickResilient(targetBtn, { force: true, timeout: 5000 });
         return true;
       } else {
         return true;
@@ -334,7 +318,7 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
   if (!choice) return false;
   return await page.evaluate((ch) => {
     try {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const battleStore = resolver();
       const battle = battleStore.state;
@@ -348,7 +332,7 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
       const clean = ch.trim().toLowerCase();
       if (clean.startsWith('move ')) {
         const idx = parseInt(clean.split(' ')[1] || '1', 10) - 1;
-        const move = battle.player?.moves[idx];
+        const move = battle.player?.moves?.[idx];
         const activeReq = battle.playerRequest?.active?.[0];
         const reqMove = activeReq?.moves?.[idx];
         const isInvalid = !move || (reqMove && reqMove.disabled);
@@ -368,8 +352,8 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
         return !!isInvalid;
       }
       return false;
-    } catch (e: any) {
-      console.error(`[E2E-INVALID-CHECK] Error:`, e.message);
+    } catch (e: unknown) {
+      console.error(`[E2E-INVALID-CHECK] Error:`, (e as Error).message);
       return false;
     }
   }, choice);

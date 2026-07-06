@@ -27,7 +27,7 @@ export function registerItemTools(debug: DebugSystem) {
         // Fallback tolerante en entornos de test
         resolvedId = id.toLowerCase().trim()
       }
-      const inventory = { ...game.state.inventory }
+      const inventory = { ...game.state.inventory } as Record<string, number>
       inventory[resolvedId] = ((inventory[resolvedId] as number) || 0) + qty
       game.state.inventory = inventory
       ui.notify(`Debug: +${qty} ${itemName}`, '🎒')
@@ -42,7 +42,7 @@ export function registerItemTools(debug: DebugSystem) {
     command: 'fillInventory',
     category: 'items',
     action: (qty = 50) => {
-      const inventory = { ...game.state.inventory }
+      const inventory = { ...game.state.inventory } as Record<string, number>
       SHOP_ITEMS.forEach(item => {
         inventory[item.id] = qty
       })

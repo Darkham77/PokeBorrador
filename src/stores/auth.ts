@@ -210,7 +210,7 @@ export const useAuthStore = defineStore('auth', () => {
       // 2. Si no hay sesión online, buscar local
       const localUser = safeStorage.getItem('pokevicio_local_user')
       if (localUser) {
-        user.value = JSON.parse(localUser)
+        user.value = JSON.parse(localUser) as AuthUser
         sessionMode.value = 'offline'
         if (supabase && typeof supabase.setMode === 'function') {
           supabase.setMode('offline')
@@ -222,7 +222,7 @@ export const useAuthStore = defineStore('auth', () => {
       // En caso de error/timeout, si hay usuario local, lo mantenemos como fallback
       const localUser = safeStorage.getItem('pokevicio_local_user')
       if (localUser && !user.value) {
-        user.value = JSON.parse(localUser)
+        user.value = JSON.parse(localUser) as AuthUser
         sessionMode.value = 'offline'
         if (supabase && typeof supabase.setMode === 'function') {
           supabase.setMode('offline')

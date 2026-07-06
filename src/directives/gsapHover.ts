@@ -31,7 +31,7 @@ interface GsapHoverElement extends HTMLElement {
 export const gsapHover: Directive = {
   mounted(el: HTMLElement, binding) {
     const hoverEl = el as GsapHoverElement;
-    const options: GsapHoverOptions = getOptions(binding.value);
+    const options: GsapHoverOptions = getOptions(binding.value as string | GsapHoverOptions | undefined);
     el.dataset.gsapHover = 'true';
     
     // Save original styles/values if needed for resets

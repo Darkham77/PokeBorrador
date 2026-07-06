@@ -76,7 +76,7 @@ async function main() {
   let showdownDB: { pokemon: Record<string, ShowdownPokeEntry>; abilities?: Record<string, { name?: string }> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-    showdownDB = JSON.parse(rawData);
+    showdownDB = JSON.parse(rawData) as typeof showdownDB;
   } catch (error) {
     console.error(styleText('red', `❌ Error cargando base de datos de Showdown: ${(error as Error).message}`));
     process.exit(1);
@@ -130,7 +130,7 @@ async function main() {
     // C. Validar habilidad única asignada (obtenida de Dex)
     const speciesInfo = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
     const sdAbilities = sdPoke.abilities || [];
-    const coreAbilities = speciesInfo.exists ? Object.values(speciesInfo.abilities) : [];
+    const coreAbilities = (speciesInfo.exists ? Object.values(speciesInfo.abilities) : []) as string[];
 
     if (coreAbilities.length === 0) {
       errors.push(`${tag} No tiene ninguna habilidad asignada en el Dex de pkms.`);
@@ -139,8 +139,8 @@ async function main() {
       const coreActive = coreAbilities[0];
       if (officialAbility && coreActive) {
         const cleanActiveId = toID(coreActive);
-        const translated = (showdownDB.abilities as Record<string, { name?: string }>)[cleanActiveId] || {};
-        const espName = translated.name || coreActive;
+        const translated = showdownDB.abilities?.[cleanActiveId];
+        const espName = translated?.name || coreActive;
         if (toID(espName) !== toID(officialAbility)) {
           errors.push(`${tag} Discrepancia en habilidad activa: Juego '${coreActive}' ('${espName}') vs Showdown oficial '${officialAbility}'.`);
         }
@@ -180,7 +180,8 @@ async function main() {
   );
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
+main().catch((err: unknown) => {
+  const msg = err instanceof Error ? (err as Error).message : String(err);
+  console.error(styleText('red', `\n💥 Error fatal: ${msg}`));
   process.exit(1);
 });

@@ -1,5 +1,11 @@
 export type PokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' | null;
 
+export function isPokemonStatus(status: unknown): status is PokemonStatus {
+  if (status === null || status === undefined) return true;
+  if (typeof status !== 'string') return false;
+  return ['par', 'brn', 'psn', 'slp', 'frz', 'tox'].includes(status);
+}
+
 export interface BreedingCompatibility {
   level: number;
   reason: string;

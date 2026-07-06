@@ -76,7 +76,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
       spd: poke.spd,
       spe: poke.spe
     }
-  } as PokemonSet & { uid?: string; stats?: any };
+  } as PokemonSet & { uid?: string };
 }
 
 // Mapa inverso: número → nombre Showdown (construido una sola vez)
@@ -127,14 +127,14 @@ export function resolveShowdownSlot(
   pokemonUid: string
 ): number {
   const req = side === 'player' ? active.playerRequest : active.enemyRequest;
-  const list = req?.side?.pokemon;
+  const list = req?.side?.pokemon as Array<{ uid?: string } | null | undefined> | undefined;
   if (!list || !Array.isArray(list)) {
     throw new Error(`[resolveShowdownSlot] Missing request Pokemon list for side ${side}. Cannot resolve slot for UID: ${pokemonUid}`);
   }
   
-  const idx = list.findIndex((p: any) => p && p.uid === pokemonUid);
+  const idx = list.findIndex((p) => p && p.uid === pokemonUid);
   if (idx === -1) {
-    const uids = list.map((p: any) => p?.uid || 'null');
+    const uids = list.map((p) => p?.uid || 'null');
     throw new Error(`[resolveShowdownSlot] UID ${pokemonUid} not found in ${side} request Pokemon UIDs: ${JSON.stringify(uids)}`);
   }
 

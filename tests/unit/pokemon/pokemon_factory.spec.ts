@@ -4,7 +4,7 @@ import { makePokemon, levelUpPokemon } from '@/logic/pokemon/pokemonFactory';
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
-    getPokemonData: vi.fn((id) => {
+    getPokemonData: vi.fn((id: string) => {
       if (id === 'charmander') return { id: 'charmander', name: 'Charmander', emoji: '🔥', type: 'fire', hp: 39, atk: 52, def: 43, spa: 60, spd: 50, spe: 65, learnset: [{ lv: 10, id: 'flamethrower', name: 'Lanzallamas' }] };
       if (id === 'pidgey') return { id: 'pidgey', name: 'Pidgey', emoji: '🐦', type: 'normal', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, spe: 56 };
       return null;

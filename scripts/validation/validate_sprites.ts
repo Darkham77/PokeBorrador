@@ -133,6 +133,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(styleText('red', `\n💥 Fatal Error: ${err.message}`));
+  console.error(styleText('red', `\n💥 Fatal Error: ${(err as Error).message}`));
   process.exit(1);
 });

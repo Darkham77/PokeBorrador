@@ -104,16 +104,16 @@ export async function adminSupabaseUsers() {
 
     // Resolver identificadores desde la base de datos si falta alguno
     if (targetUsername && !targetEmail) {
-      const existing = await sql`
+      const existing = (await sql`
         SELECT email FROM public.profiles WHERE username = ${targetUsername} LIMIT 1;
-      `;
+      `) as Array<{ email?: string; username?: string }>;
       if (existing.length > 0 && existing[0]?.email) {
         targetEmail = existing[0].email;
       }
     } else if (targetEmail && !targetUsername) {
-      const existing = await sql`
+      const existing = (await sql`
         SELECT username FROM public.profiles WHERE email = ${targetEmail} LIMIT 1;
-      `;
+      `) as Array<{ email?: string; username?: string }>;
       if (existing.length > 0 && existing[0]?.username) {
         targetUsername = existing[0].username;
       }
@@ -245,7 +245,7 @@ const isDirectRun = process.argv[1] && (
 
 if (isDirectRun) {
   adminSupabaseUsers().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${err.message}`));
+    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
     process.exit(1);
   });
 }

@@ -12,8 +12,8 @@ describe('Fossil Engine', () => {
     // Mock localStorage
     const storage: Record<string, string> = {};
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn(key => storage[key] || null),
-      setItem: vi.fn((key, val) => { storage[key] = val.toString(); }),
+      getItem: vi.fn((key: string) => (storage[key] as string | undefined) || null),
+      setItem: vi.fn((key: string, val: string | number) => { storage[key] = val.toString(); }),
       clear: vi.fn(() => { for (const k in storage) delete storage[k]; })
     });
     

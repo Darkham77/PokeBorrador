@@ -103,6 +103,7 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
 - `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
 - `npm run lint`: Style and syntax verification (includes type-check).
+- `npm run lint:report`: Runs ESLint with cache enabled and saves a codeframe report in `scratch/lint_report.txt`.
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
 - `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
 - `npm run test:e2e`: Runs E2E browser and UI synchronization tests using Playwright.

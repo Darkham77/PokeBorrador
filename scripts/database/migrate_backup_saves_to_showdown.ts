@@ -13,6 +13,31 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 
+interface BackupPoke {
+  id?: string;
+  name?: string;
+  species?: string;
+  moves?: Array<{ id?: string; name?: string }>;
+  abilities?: string[] | Record<string, string>;
+  ability?: string;
+  nature?: string;
+}
+
+interface BackupSaveData {
+  team?: BackupPoke[];
+  box?: BackupPoke[];
+}
+
+interface BackupSave {
+  save_data?: BackupSaveData;
+}
+
+interface BackupPayload {
+  data: {
+    game_saves?: BackupSave[];
+  };
+}
+
 const SPECIES_TO_SHOWDOWN: Record<string, string> = {
   "1": "bulbasaur", "2": "ivysaur", "3": "venusaur", "4": "charmander", "5": "charmeleon", "6": "charizard",
   "7": "squirtle", "8": "wartortle", "9": "blastoise", "10": "caterpie", "11": "metapod", "12": "butterfree",
@@ -175,7 +200,10 @@ async function main() {
 
   // 1. Load Showdown database and translations
   const rawShowdown = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-  const showdownDB = JSON.parse(rawShowdown);
+  const showdownDB = JSON.parse(rawShowdown) as {
+    abilities: Record<string, { name?: string }>;
+    moves: Record<string, { name?: string }>;
+  };
 
   // Build Abilities Map
   const abilityMap = new Map<string, string>();
@@ -326,7 +354,7 @@ async function main() {
 
   // 2. Load backup
   const rawBackup = await fs.readFile(BACKUP_FILE, 'utf8');
-  const backup = JSON.parse(rawBackup);
+  const backup = JSON.parse(rawBackup) as BackupPayload;
 
   const gameSaves = backup.data.game_saves || [];
   let migratedPokes = 0;

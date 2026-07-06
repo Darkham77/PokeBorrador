@@ -85,6 +85,7 @@ export function useRouteSpawnsCalculation(
 
     const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
     const typeWords = Object.keys(SPANISH_TYPE_MAP)
+    // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(`\\b(${typeWords.join('|')})\\b`, 'gi')
     return sentences.map(sentence => {
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)

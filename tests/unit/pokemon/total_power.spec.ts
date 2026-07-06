@@ -7,7 +7,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 // Mock the data provider
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
-    getPokemonData: vi.fn((id) => {
+    getPokemonData: vi.fn((id: string) => {
       if (id === 'pikachu') return { hp: 35, atk: 55, def: 40, spa: 50, spd: 50, spe: 90 } // BST 320
       if (id === 'bulbasaur') return { hp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45 } // BST 318
       return null

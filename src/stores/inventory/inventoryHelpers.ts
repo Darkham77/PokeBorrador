@@ -44,7 +44,7 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
     ((item.cat === 'breeding' || item.cat === 'breeding_held') && item.id !== 'vigorrestorer' && !item.id.includes('berry'))
   )) return true;
 
-  const p = JSON.parse(JSON.stringify(pokemon));
+  const p = JSON.parse(JSON.stringify(pokemon)) as Pokemon;
 
   const effectFn = ITEM_EFFECTS[itemId];
   if (effectFn) {

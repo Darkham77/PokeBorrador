@@ -19,7 +19,7 @@ import { DBRouter } from '@/logic/db/dbRouter'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
-  const state = reactive<GameState>(JSON.parse(JSON.stringify(INITIAL_STATE)))
+  const state = reactive<GameState>(JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState)
   
   const db = ref<DBRouter>(supabase)
   const isDataLoaded = ref(false)
@@ -155,19 +155,19 @@ export const useGameStore = defineStore('game', () => {
 
   function enterSandboxMode() {
     if (isSandboxActive.value) return
-    realStateBackup.value = JSON.parse(JSON.stringify(state))
+    realStateBackup.value = JSON.parse(JSON.stringify(state)) as GameState
     
     // Limpiar el estado actual y cargar el guardado del sandbox si existe
     Object.keys(state).forEach(key => {
       delete (state as Record<string, unknown>)[key]
     })
     
-    let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE))
+    let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('pvs_sandbox_save')
       if (saved) {
         try {
-          initialSandbox = JSON.parse(saved)
+          initialSandbox = JSON.parse(saved) as GameState
         } catch (e) {
           logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e)
         }

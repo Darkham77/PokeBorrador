@@ -88,6 +88,7 @@ Status: FIXING | PENDING_RERUN | PASS
    Only create a new one if none exists or the user explicitly starts fresh.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge
    the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
+6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
 
 ---
 
@@ -195,14 +196,31 @@ so both the fuzzer and the real browser reach the same game state.
 ### Filtering Individual Test Cases
 
 Every simulation script must support a `TEST_CASE` (or equivalent) filter to
-enable targeted re-runs. The E2E battle specs already support these env vars:
+enable targeted re-runs. The E2E battle specs and fuzzer replayer support these env vars:
 
 ```bash
-TEST_CASE=<case-id>             # Run only this specific case in battle_fsm_sync
-TEST_START_FROM_CASE_ID=<id>    # Start from this case onwards
-TEST_BATCH=<n>                  # Run only batch N
-REGENERATE_CASES=true           # Force fuzzer to overwrite fuzzer_certified_cases.json
+# Para simulación E2E de Playwright (Navegador):
+TEST_CASE=<case-id>                 # Correr solo este caso (o lista separada por comas) en battle_fsm_sync
+TEST_CASE_ID=<case-id>              # Correr solo este caso (o lista separada por comas)
+TEST_START_FROM_CASE_ID=<id>        # Empezar desde este caso en adelante
+TEST_BATCH=<n>                      # Correr solo el lote N (ej: 1, 9, 17, 25)
+
+# Para depuración Headless (Súper Rápida, 1-2 segundos, sin navegador):
+TEST_CASE_ID=<case-id>              # Correr el replayer headless de un caso (o lista separada por comas)
 ```
+
+> [!IMPORTANT]
+> **REGLA DE ORO DE RENDIMIENTO EN PRUEBAS:**
+> 1. **SIEMPRE PREFERIR EL REPLAY HEADLESS:** Si vas a verificar, depurar o testear la paridad de lógica, HP, FSM o estados de combate, **NUNCA** levantes el navegador con Playwright (`npm run sim:e2e:combat`). Usa siempre el replayer headless oficial:
+>    ```bash
+>    $env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace
+>    ```
+>    Este script corre en Node.js puro y termina en 1-2 segundos, mientras que Playwright tarda más de 30-40 segundos por caso al instanciar el navegador y el servidor Vite.
+> 2. **FILTRADO MULTICASO:** Para ejecutar un conjunto específico de casos (ej: 10 casos que fallaron), pásalos separados por coma:
+>    ```bash
+>    $env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68,case-153adc178311"; npm run sim:fuzzer:trace
+>    ```
+> 3. **PLAYWRIGHT SOLO PARA REGRESIONES FINALES:** Reserva la simulación de navegador Playwright únicamente para validar regresiones finales (una vez que los casos pasen en headless) o para probar comportamientos visuales/reactivos de la UI (ej: modales, animaciones GSAP, arrastrar elementos).
 
 ### E2E Multi-Error Logging Mode (Mass-Debugging)
 
@@ -218,8 +236,7 @@ When `CONTINUE_ON_ERROR=true` is set:
 $env:CONTINUE_ON_ERROR="true"; npm run sim:e2e:combat
 ```
 
-**Design rule:** If a simulation is missing `TEST_CASE` support, treat that as
-a design gap. Propose adding it and document the plan before implementing.
+**Design rule:** If a simulation is missing `TEST_CASE` or `TEST_CASE_ID` support, or does not support comma-separated lists, treat that as a design gap. Propose adding it and document the plan before implementing.
 
 ## Playwright Dependency & Environment Troubleshooting
 

@@ -356,9 +356,9 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
       } as any;
 
       const resolvedOrder = ShowdownTeamResolver.getShowdownOrder(team, mockRequest);
-      assert.strictEqual(resolvedOrder[0].uid, 'gengar-uid');
-      assert.strictEqual(resolvedOrder[1].uid, 'vaporeon-uid');
-      assert.strictEqual(resolvedOrder[2].uid, 'eevee-uid');
+      assert.strictEqual(resolvedOrder[0]?.uid, 'gengar-uid');
+      assert.strictEqual(resolvedOrder[1]?.uid, 'vaporeon-uid');
+      assert.strictEqual(resolvedOrder[2]?.uid, 'eevee-uid');
     });
 
     it('correctly finds pokemon by UID and throws on missing UID', async () => {

@@ -32,10 +32,14 @@ async function waitForWaitInput(page: Page, turnCount: number, batchIndex: numbe
       const stillReady = await page.evaluate(() => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         if (!resolver) return false;
-        const store = resolver();
-        return (store.currentFsmState === 'ACTIVE_BATTLE' && 
-                (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-                !store.state || store.state.over;
+        try {
+          const store = resolver();
+          return (store.currentFsmState === 'ACTIVE_BATTLE' && 
+                  (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
+                  !store.state || store.state.over;
+        } catch (_e) {
+          return false;
+        }
       });
 
       if (stillReady) {
@@ -100,6 +104,13 @@ type FinalState = {
   p2: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
 };
 
+export interface CertifiedTestBatch extends TestBatch {
+  id?: string;
+  cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>;
+  history?: Array<{ p1Choice: string; p2Choice: string }>;
+  finalState?: FinalState;
+}
+
 // Helper: Bucle de ejecución automática de turnos
 async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], _cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>, finalState?: FinalState) {
   let p1ChoiceIdx = startingTurn;
@@ -156,7 +167,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
 
     // 5. Obtener información de la petición del jugador
     const reqStatus = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return { hasChoice: false, turn: 0, subState: '' };
       const store = resolver();
       const req = store.state?.playerRequest;
@@ -186,6 +197,10 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
 
     // 6. Si el jugador tiene una elección activa, procesarla
     if (reqStatus.hasChoice) {
+      if (playerChoices && p1ChoiceIdx >= playerChoices.length) {
+        console.log(`[E2E] Replayed all ${playerChoices.length} recorded player choices. Ending replay loop for parity verification.`);
+        break;
+      }
       const currentChoice = playerChoices ? playerChoices[p1ChoiceIdx] : undefined;
       
       // Caso especial: si fuzzer previó choices pero está vacía para este índice de elección
@@ -200,7 +215,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
         try {
           if (!choiceStr) return true;
-          const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
           if (!resolver) return true;
           const store = resolver();
           const playerRequest = store.state?.playerRequest;
@@ -210,7 +225,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
             const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
             const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
             if (!targetPoke) return false;
-            const isFainted = targetPoke.condition?.includes('fnt') || targetPoke.hp === 0;
+            const isFainted = targetPoke.condition?.includes('fnt') || targetPoke.condition?.startsWith('0 ');
             const isActive = !!targetPoke.active;
             if (isFainted || isActive) {
               console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (fainted/active). Skipping.`);
@@ -234,8 +249,9 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
         console.log(`[E2E] Choice "${currentChoice}" at index ${p1ChoiceIdx} is invalid for P1. Skipping in E2E to match fuzzer.`);
         p1ChoiceIdx++;
         await page.evaluate(() => {
-          if (window.__VITE_DEBUG__) {
-            (window.__VITE_DEBUG__ as any).enemyChoiceIndex = ((window.__VITE_DEBUG__ as any).enemyChoiceIndex ?? 0) + 1;
+          const w = window as WindowWithResolver;
+          if (w.__VITE_DEBUG__) {
+            w.__VITE_DEBUG__.enemyChoiceIndex = (w.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
           }
         });
         continue;
@@ -304,12 +320,12 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
     });
 
     // Equipo enemigo: comparar contra battleStore.state.enemyTeam por nombre/apodo
-    const enemyTeam: Array<{ hp: number; name: string; nickname?: string; uid?: string }> = (store.state as unknown as Record<string, unknown>).enemyTeam as any ?? [];
+    const enemyTeam = store.state?.enemyTeam ?? [];
     console.log(`[E2E-PARITY-DEBUG] enemyTeam in gameStore:`, JSON.stringify(enemyTeam.map(p => p ? { name: p.name, hp: p.hp, uid: p.uid } : null)));
     console.log(`[E2E-PARITY-DEBUG] expected p2 team:`, JSON.stringify(snapshotState.p2));
     snapshotState.p2.forEach((expected, i) => {
       const actual = enemyTeam.find(p => p && (
-        p.name.toLowerCase() === expected.name.toLowerCase() ||
+        (p.name || '').toLowerCase() === expected.name.toLowerCase() ||
         p.nickname?.toLowerCase()?.startsWith(expected.name.toLowerCase())
       ));
       if (!actual) { mismatches.push(`P2[${i}] ${expected.name}: no encontrado en el equipo enemigo`); return; }
@@ -337,11 +353,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
 
   // Cargar lotes desde certified_fuzzer_cases.json o usar generador como fallback
-  let allBatches: TestBatch[] = [];
+  let allBatches: CertifiedTestBatch[] = [];
   const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
   if (fs.existsSync(consolidatorPath)) {
     try {
-      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8'));
+      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as { battle?: CertifiedTestBatch[] };
       if (content.battle) {
         allBatches = content.battle;
       }
@@ -350,7 +366,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     }
   }
   if (allBatches.length === 0) {
-    allBatches = generateTestBatches(6);
+    allBatches = generateTestBatches(6) as CertifiedTestBatch[];
   }
 
   // Permitir filtrar lotes usando la variable de entorno TEST_BATCH, TEST_CASE o TEST_CASE_ID (ej: TEST_CASE_ID=case-a8f9c1b3)
@@ -362,7 +378,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
 
   let startIdx = 0;
   if (startFromCaseId) {
-    const foundIdx = allBatches.findIndex((b) => (b as unknown as { id?: string }).id === startFromCaseId.trim());
+    const foundIdx = allBatches.findIndex((b) => b.id === startFromCaseId.trim());
     if (foundIdx !== -1) {
       startIdx = foundIdx;
     }
@@ -370,9 +386,10 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     startIdx = Number(startFromIndex.trim()) - 1;
   }
 
-  const batches = allBatches.map((b: TestBatch, idx: number) => ({ b, idx })).filter(({ b, idx }: { b: TestBatch & { id?: string }, idx: number }) => {
+  const batches = allBatches.map((b: CertifiedTestBatch, idx: number) => ({ b, idx })).filter(({ b, idx }: { b: CertifiedTestBatch, idx: number }) => {
     if (caseIdFilter) {
-      return b.id === caseIdFilter.trim();
+      const allowedIds = caseIdFilter.split(',').map(id => id.trim());
+      return b.id && allowedIds.includes(b.id);
     }
     if (caseFilter) {
       return (idx + 1) === Number(caseFilter.trim());
@@ -434,7 +451,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
   });
 
   // Generar dinámicamente un caso de prueba de Playwright para cada lote de simulación.
-  batches.forEach(({ b: batch, idx: index }: { b: TestBatch, idx: number }) => {
+  batches.forEach(({ b: batch, idx: index }: { b: CertifiedTestBatch, idx: number }) => {
     test(`debería simular el lote #${index + 1} (${batch.movesToTest?.length ?? 0} movimientos, ${batch.abilitiesToTest?.length ?? 0} habilidades) sin bloqueos de FSM`, async ({ page }) => {
       test.setTimeout(360000);
       // 1. Construir e inyectar el equipo del jugador y del enemigo en la sesión del navegador
@@ -447,14 +464,14 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         };
 
         // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
-        const debugObj = (window as any).__VITE_DEBUG__ || {};
-        (window as any).__VITE_DEBUG__ = debugObj;
+        const debugObj = (window as WindowWithResolver).__VITE_DEBUG__ || {};
+        (window as WindowWithResolver).__VITE_DEBUG__ = debugObj;
         debugObj.battleSeed = b.seed ?? undefined;
-        const enemyChoices = b.enemyChoices ?? (b as any).history?.map((h: any) => h.p2Choice) ?? [];
+        const enemyChoices = b.enemyChoices ?? b.history?.map((h: { p1Choice: string; p2Choice: string }) => h.p2Choice) ?? [];
         debugObj.enemyChoicesQueue = [...enemyChoices];
         debugObj.mockEnemyChoices = [...enemyChoices];
         debugObj.enemyChoiceIndex = 0;
-        debugObj.cheats = (b as any).cheats ?? [];
+        debugObj.cheats = b.cheats ?? [];
 
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
@@ -541,13 +558,13 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           page, 
           index + 1, 
           0, 
-          ((batch as any).playerChoices ?? (batch as any).history?.map((h: any) => h.p1Choice)) as string[] | undefined,
-          (batch as unknown as Record<string, unknown>).cheats as Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> | undefined,
-          (batch as unknown as Record<string, unknown>).finalState as FinalState | undefined
+          batch.playerChoices ?? batch.history?.map((h: { p1Choice: string; p2Choice: string }) => h.p1Choice),
+          batch.cheats,
+          batch.finalState
         );
       } catch (error: unknown) {
-        const caseId = (batch as { id?: string }).id || `lote-${index + 1}`;
-        const errMessage = error instanceof Error ? error.message : String(error);
+        const caseId = batch.id || `lote-${index + 1}`;
+        const errMessage = error instanceof Error ? (error as Error).message : String(error);
         console.error(`\n❌ ERROR EN EL COMBATE: ${caseId}`);
         console.error(`Detalles del lote:`, JSON.stringify({
           id: caseId,
@@ -565,12 +582,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           error: errMessage,
           playerTeam: batch.playerTeam.map(p => `${p.species} (${p.item || 'no item'})`),
           enemyTeam: batch.enemyTeam.map(e => `${e.species} (${e.item || 'no item'})`),
-          timestamp: new Date().toISOString(),
+          timestamp: Temporal.Now.zonedDateTimeISO().toString(),
           reproduce: {
-            seed: (batch as any).seed,
-            playerChoices: (batch as any).playerChoices,
-            enemyChoices: (batch as any).enemyChoices,
-            cheats: (batch as any).cheats,
+            seed: batch.seed,
+            playerChoices: batch.playerChoices,
+            enemyChoices: batch.enemyChoices,
+            cheats: batch.cheats,
             fullPlayerTeam: batch.playerTeam,
             fullEnemyTeam: batch.enemyTeam
           }
@@ -790,12 +807,12 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         .filter((f: string) => f.endsWith('.json'))
         .map((f: string) => {
           try {
-            return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8'));
+            return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as unknown;
           } catch (_e) {
             return null;
           }
         })
-        .filter((x: any) => x !== null);
+        .filter((x: unknown): x is unknown => x !== null);
 
       const reportPath = path.resolve(process.cwd(), 'scripts/e2e/results/e2e_simulation_failures.json');
 

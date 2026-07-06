@@ -1,10 +1,11 @@
 import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
 interface OfflineSaveData {
-  box?: Record<string, unknown>[];
-  team?: Record<string, unknown>[];
+  box?: Pokemon[];
+  team?: Pokemon[];
   inventory?: Record<string, number>;
   money?: number;
   [key: string]: unknown;
@@ -140,10 +141,10 @@ export async function emulateAcceptTrade(
   const receiverSave = (typeof receiverSaves[0]!.save_data === 'string' ? JSON.parse(receiverSaves[0]!.save_data as string) : receiverSaves[0]!.save_data) as OfflineSaveData;
 
   // Parse columns since SQLite stores objects as strings/JSON strings
-  const offerPokeObj = trade.offer_pokemon ? (typeof trade.offer_pokemon === 'string' ? JSON.parse(trade.offer_pokemon) : trade.offer_pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (typeof trade.offer_items === 'string' ? JSON.parse(trade.offer_items) : trade.offer_items) : null;
-  const requestPokeObj = trade.request_pokemon ? (typeof trade.request_pokemon === 'string' ? JSON.parse(trade.request_pokemon) : trade.request_pokemon) : null;
-  const requestItemsObj = trade.request_items ? (typeof trade.request_items === 'string' ? JSON.parse(trade.request_items) : trade.request_items) : null;
+  const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null;
+  const requestPokeObj = trade.request_pokemon ? (JSON.parse(trade.request_pokemon) as Pokemon) : null;
+  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null;
 
   // 1. Validar y Quitar lo que el receptor ofrece (request del trade)
   // 1a. Pokémon
@@ -283,8 +284,8 @@ export async function emulateRejectTrade(
   }
 
   // Devolver activos al emisor (trade.sender_id) en su claim_queue
-  const offerPokeObj = trade.offer_pokemon ? (typeof trade.offer_pokemon === 'string' ? JSON.parse(trade.offer_pokemon) : trade.offer_pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (typeof trade.offer_items === 'string' ? JSON.parse(trade.offer_items) : trade.offer_items) : null;
+  const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null;
 
   if (offerPokeObj) {
     const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);

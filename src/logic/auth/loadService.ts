@@ -88,7 +88,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     const binary = await readOpfsFile(opfsKey)
     if (binary) {
       const json = isGzip(binary) ? await decompress(binary) : new TextDecoder().decode(binary)
-      localData = JSON.parse(json)
+      localData = JSON.parse(json) as GameState
     }
   } catch (e) {
     logger.warn('LOAD', `Error reading OPFS save: ${(e as Error).message}`)
@@ -107,7 +107,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 
     if (lsRaw) {
       try {
-        localData = JSON.parse(lsRaw)
+        localData = JSON.parse(lsRaw) as GameState
         
         // AUTOMATED BACKUP & MIGRATION
         logger.info('LOAD', 'Migrating localStorage to OPFS...')

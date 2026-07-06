@@ -58,7 +58,7 @@ async function main() {
   let showdownDB: { pokemon: Record<string, ShowdownPokeSpec>; moves: Record<string, ShowdownMoveSpec> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-    showdownDB = JSON.parse(rawData);
+    showdownDB = JSON.parse(rawData) as typeof showdownDB;
   } catch (error) {
     console.error(styleText('red', `❌ No se pudo cargar el archivo de Showdown en ${SHOWDOWN_DB_PATH}: ${(error as Error).message}`));
     process.exit(1);

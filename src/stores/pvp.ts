@@ -109,11 +109,11 @@ export const usePvPStore = defineStore('pvp', () => {
     if (!gameStore.db) return
     const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle() as { data: { season_name: string, config: string | Record<string, unknown> } | null }
     if (data) {
-      const configObj = typeof data.config === 'string' ? JSON.parse(data.config || '{}') : (data.config || {})
+      const configObj = (typeof data.config === 'string' ? JSON.parse(data.config || '{}') : (data.config || {})) as Omit<SeasonRules, 'name'>;
       currentSeasonRules.value = {
         name: data.season_name,
         ...configObj
-      }
+      } as SeasonRules;
     }
   }
 

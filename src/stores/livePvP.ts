@@ -149,7 +149,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   function startBattle(invite: BattleInvite, isHost: boolean, isRanked: boolean) {
     battleState.active = true; battleState.isHost = isHost; battleState.isRanked = isRanked; battleState.opponentId = isHost ? invite.opponent_id : invite.challenger_id
-    battleState.myTeam = JSON.parse(JSON.stringify(gameStore.state.team)); 
+    battleState.myTeam = JSON.parse(JSON.stringify(gameStore.state.team)) as Pokemon[]; 
     battleState.myHp = battleState.myTeam.map((p: Pokemon) => p.hp); 
     battleState.myActiveIdx = 0
     battleState.phase = 'sync'; battleState.logs = ['¡Comienza la batalla!']; battleState.myPick = null; battleState.enemyPick = null

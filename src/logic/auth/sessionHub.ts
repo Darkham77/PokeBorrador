@@ -22,7 +22,8 @@ export function initSessionHub(userId: string) {
   if (!sessionChannel) {
     sessionChannel = new BroadcastChannel('pv_session_hub')
     sessionChannel.onmessage = (event) => {
-      if (event.data.type === 'NEW_SESSION' && event.data.sessionId !== SESSION_ID) {
+      const data = event.data as { type?: string; sessionId?: string } | null;
+      if (data?.type === 'NEW_SESSION' && data.sessionId !== SESSION_ID) {
         logger.warn('SessionHub', 'Local session conflict detected!')
         triggerLock()
       }

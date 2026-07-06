@@ -25,10 +25,10 @@ async function openIDB(): Promise<IDBDatabase> {
 export async function getFromIDB(key: string): Promise<Uint8Array | null> {
   try {
     const db = await openIDB()
-    return new Promise((resolve, reject) => {
+    return new Promise<Uint8Array | null>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readonly')
       const req = tx.objectStore(STORE_NAME).get(key)
-      req.onsuccess = () => resolve(req.result)
+      req.onsuccess = () => resolve(req.result as Uint8Array | null)
       req.onerror = () => reject(req.error)
     })
   } catch (_e) { return null }

@@ -1,7 +1,4 @@
-/**
- * Global Type Declarations for Poke Vicio
- * Adds missing modern APIs to TypeScript context.
- */
+import type { ShowdownPlayerRequest } from '../battle/battle';
 
 declare global {
   // FileSystem API (OPFS)
@@ -75,19 +72,70 @@ declare global {
     concat<T>(...iterables: Iterable<T>[]): IteratorObject<T>;
   };
 
+  interface DebugPokemon {
+    uid?: string;
+    name?: string;
+    hp?: number;
+    maxHp?: number;
+    status?: string;
+    nickname?: string;
+    moves?: unknown[];
+  }
+
+  interface DebugGameStore {
+    state?: {
+      team?: Array<DebugPokemon | null>;
+    } | null;
+  }
+
+  interface DebugPinia {
+    _s?: Map<string, DebugGameStore>;
+  }
+
+  interface DebugStore {
+    currentFsmState?: string;
+    currentSubState?: string;
+    isProcessing?: boolean;
+    isIntroAnimating?: boolean;
+    _p?: DebugPinia;
+    fsm?: {
+      currentState?: { value?: string };
+      currentSubState?: { value?: string };
+    };
+    state?: {
+      over?: boolean;
+      turnCount?: number;
+      playerRequest?: ShowdownPlayerRequest;
+      enemyRequest?: ShowdownPlayerRequest;
+      player?: DebugPokemon | null;
+      enemy?: DebugPokemon | null;
+      enemyTeam?: Array<DebugPokemon | null>;
+      activeBattle?: {
+        player?: DebugPokemon | null;
+        enemy?: DebugPokemon | null;
+      } | null;
+    } | null;
+  }
+
   interface Window {
     __VITE_DEBUG__?: {
       /** Semilla RNG inyectada por el E2E para combates deterministas */
       battleSeed?: number[];
       /** Cola de choices del enemigo consumida por el motor de combate en tests */
       enemyChoicesQueue?: string[];
+      mockEnemyChoices?: string[];
+      enemyChoiceIndex?: number;
+      cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+      mockChoices?: string[];
       /** Genera un Pokémon de debug vía encuentro */
       spawnEncounter?: (config: unknown) => Promise<void>;
       /** Crea un Pokémon de debug directamente en el equipo */
       createPokemon?: (config: unknown) => Promise<void>;
+      getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
       /** Comandos y utilidades de debug registradas en runtime */
       [key: string]: unknown;
     };
+    __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
     drawBattleBackground?: (locationId: string, cycle: string) => void;
     pwa_app_mounted?: boolean;
   }

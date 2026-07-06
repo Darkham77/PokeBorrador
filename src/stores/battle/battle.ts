@@ -108,13 +108,13 @@ export const useBattleStore = defineStore('battle', () => {
     const reqMoves = request.active[0].moves
     const currentMoves = poke.moves || []
     
-    const updatedMoves = reqMoves.map((reqMove: any) => {
+    const updatedMoves = reqMoves.map((reqMove) => {
       if (!reqMove) return null
-      const moveId = reqMove.id
+      const moveId = reqMove.id || ''
       const match = currentMoves.find(m => m && m.id === moveId)
       if (match) {
-        match.pp = reqMove.pp
-        match.maxPP = reqMove.maxpp
+        match.pp = reqMove.pp ?? 0
+        match.maxPP = reqMove.maxpp ?? 0
         return match
       }
       
@@ -126,15 +126,15 @@ export const useBattleStore = defineStore('battle', () => {
         cat: (md.cat || 'physical') as 'physical' | 'special' | 'status',
         power: md.power,
         acc: md.acc,
-        pp: reqMove.pp,
-        maxPP: reqMove.maxpp,
+        pp: reqMove.pp ?? 0,
+        maxPP: reqMove.maxpp ?? 0,
         priority: md.priority || 0,
         effect: md.effect || '',
-        target: (md as any).target || 'normal'
+        target: (md as { target?: string }).target || 'normal'
       }
     })
     
-    poke.moves = updatedMoves.filter((m: any): m is Move => m !== null)
+    poke.moves = updatedMoves.filter((m): m is Move => m !== null)
     console.log(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? m.id : '')))
   }
 

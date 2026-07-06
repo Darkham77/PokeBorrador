@@ -260,7 +260,7 @@ describe('Debug System (Commands & Tools)', () => {
         await (callDebug('saveRankedRules', rules) as unknown)
         expect(mockChain.upsert).toHaveBeenCalledWith(expect.objectContaining({
           season_name: 'S1',
-          config: expect.objectContaining({ levelCap: 50 })
+          config: expect.objectContaining({ levelCap: 50 }) as unknown
         }))
       })
 

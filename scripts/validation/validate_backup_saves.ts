@@ -39,7 +39,7 @@ async function main() {
   let showdownDB: { moves: Record<string, { name?: string }>; abilities: Record<string, { name?: string }> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-    showdownDB = JSON.parse(rawData);
+    showdownDB = JSON.parse(rawData) as typeof showdownDB;
   } catch (error) {
     console.error(styleText('red', `❌ Error cargando base de datos de Showdown: ${(error as Error).message}`));
     process.exit(1);
@@ -105,7 +105,7 @@ async function main() {
   let backupData: { data?: { game_saves?: SaveEntry[] } };
   try {
     const rawBackup = await fs.readFile(BACKUP_FILE, 'utf8');
-    backupData = JSON.parse(rawBackup);
+    backupData = JSON.parse(rawBackup) as typeof backupData;
   } catch (error) {
     console.error(styleText('red', `❌ Error cargando archivo de backup: ${(error as Error).message}`));
     process.exit(1);
@@ -210,7 +210,7 @@ async function main() {
   );
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
+main().catch((err: unknown) => {
+  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
   process.exit(1);
 });

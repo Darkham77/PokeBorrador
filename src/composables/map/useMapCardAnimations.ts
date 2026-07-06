@@ -28,11 +28,11 @@ export function useMapCardAnimations(options: {
       return
     }
 
-    pillContext = gsap.context((self) => {
+    pillContext = gsap.context(() => {
       const seed = options.cardSeed.value
 
       // 1. Weather Tag / Location Tag
-      const weatherEl = self.selector!('.location-tag')[0] as HTMLElement | undefined
+      const weatherEl = options.cardRef.value?.querySelector('.location-tag') as HTMLElement | null | undefined
       if (weatherEl) {
         const weather = options.computedWeather.value
         let type: 'glow' | 'drift' | 'shake' | '' = ''
@@ -76,7 +76,7 @@ export function useMapCardAnimations(options: {
       }
 
       // 2. Faction Pill
-      const factionEl = self.selector!('.faction-status-pill')[0] as HTMLElement | undefined
+      const factionEl = options.cardRef.value?.querySelector('.faction-status-pill') as HTMLElement | null | undefined
       if (factionEl) {
         const winner = options.dominanceWinner.value
         if (winner === 'union') {
@@ -106,7 +106,7 @@ export function useMapCardAnimations(options: {
       }
 
       // 3. Fishing Pill
-      const fishingEl = self.selector!('.fishing-pill')[0] as HTMLElement | undefined
+      const fishingEl = options.cardRef.value?.querySelector('.fishing-pill') as HTMLElement | null | undefined
       if (fishingEl) {
         const tl = gsap.timeline({ repeat: -1 })
         tl.to(fishingEl, { y: -8, rotation: 5, duration: 1.32, ease: 'sine.inOut' })
@@ -116,7 +116,7 @@ export function useMapCardAnimations(options: {
       }
 
       // 3.1 Archaeology Pill
-      const archaeologyEl = self.selector!('.archaeology-pill')[0] as HTMLElement | undefined
+      const archaeologyEl = options.cardRef.value?.querySelector('.archaeology-pill') as HTMLElement | null | undefined
       if (archaeologyEl) {
         const pickEl = archaeologyEl.querySelector('.pill-icon')
         if (pickEl) {
@@ -130,7 +130,7 @@ export function useMapCardAnimations(options: {
       }
 
       // 4. Winner Crown
-      const crownEl = self.selector!('.dom-badge')[0] as HTMLElement | undefined
+      const crownEl = options.cardRef.value?.querySelector('.dom-badge') as HTMLElement | null | undefined
       if (crownEl && !options.isLowPowerActive.value) {
         const shineEl = crownEl.querySelector('.crown-shine-aura') as HTMLElement | undefined
         if (shineEl) {
@@ -162,11 +162,12 @@ export function useMapCardAnimations(options: {
     if (auraContext) auraContext.revert()
     if (!options.spawnGridRef.value || !options.isVisible.value) return
 
-    auraContext = gsap.context((self: gsap.Context) => {
+    auraContext = gsap.context(() => {
       const AURA_CYCLE = 2.0
-      const wrappers = self.selector!('.sprite-wrapper') as HTMLElement[]
+      const wrappers = gsap.utils.toArray('.sprite-wrapper', options.spawnGridRef.value || undefined) as HTMLElement[]
 
       wrappers.forEach((el) => {
+        if (!el || !el.classList) return
         const isRare = el.classList.contains('rare-spawn')
         const isAtmos = el.classList.contains('atmospheric-spawn')
         

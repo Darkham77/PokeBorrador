@@ -16,8 +16,7 @@ import { registerBattleTools } from './debug/sections/battleTools.ts'
 export interface DebugTool {
   id: string
   command: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (...args: any[]) => any
+  action: (...args: never[]) => unknown
   label?: string
   category?: string
   description?: string
@@ -107,11 +106,12 @@ export const useDebugStore = defineStore('debug', () => {
     debugObj.multipliers = debugMultipliers.value
 
     tools.value.forEach(tool => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      window.__VITE_DEBUG__![tool.command] = (...args: any[]) => {
+      window.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {
         if (securityCheck()) {
-          return tool.action(...args)
+          const fn = tool.action as (...a: unknown[]) => unknown
+          return fn(...args)
         }
+        return undefined
       }
     })
   }

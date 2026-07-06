@@ -281,6 +281,7 @@ export default defineConfig({
           server.ws.send({ type: 'full-reload' });
           return [];
         }
+        return;
       }
     }
   ],

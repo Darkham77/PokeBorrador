@@ -32,7 +32,8 @@ function getWorker(): Worker | null {
       );
       
       spriteWorker.onmessage = (event) => {
-        const { jobId, success, blob, error } = event.data;
+        const payload = event.data as { jobId: number; success: boolean; blob: Blob | null; error?: string };
+        const { jobId, success, blob, error } = payload;
         const job = pendingJobs.get(jobId);
         if (!job) return;
         

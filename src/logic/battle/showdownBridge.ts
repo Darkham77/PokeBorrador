@@ -219,7 +219,8 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
     if (!foundUid && request && request.side && Array.isArray(request.side.pokemon)) {
       if (line && (line.startsWith('|switch|') || line.startsWith('|drag|')) && (rawId === 'p1a' || rawId.startsWith('p1a:') || rawId === 'p2a' || rawId.startsWith('p2a:'))) {
-        const activeReqPoke = request.side.pokemon.find((rp: any) => rp && rp.active);
+        const list = request.side.pokemon as Array<{ active?: boolean; uid?: string } | null | undefined>;
+        const activeReqPoke = list.find((rp) => rp && rp.active);
         if (activeReqPoke && activeReqPoke.uid) {
           foundUid = activeReqPoke.uid;
         }

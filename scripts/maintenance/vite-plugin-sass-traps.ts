@@ -17,7 +17,7 @@ const SASS_TRAPS = [
 export function sassTrapsFixer() {
   const fixContent = (code: string) => {
     // Regex that captures optional prefix (. or $)
-    return code.replace(/([.$])?\b([a-zA-Z0-9-]+)\(/g, (match, prefix, func) => {
+    return code.replace(/([.$])?\b([a-zA-Z0-9-]+)\(/g, (match: string, prefix: string | undefined, func: string) => {
       // 1. If preceded by . or $, it's a SASS module or variable call. IGNORE.
       if (prefix) return match;
 
@@ -44,7 +44,7 @@ export function sassTrapsFixer() {
       // If it's a .vue file, we only want to fix the <style> blocks
       if (id.endsWith('.vue')) {
         const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
-        const newCode = code.replace(styleRegex, (match, styleContent) => {
+        const newCode = code.replace(styleRegex, (match: string, styleContent: string) => {
           return match.replace(styleContent, fixContent(styleContent));
         });
         if (newCode !== code) return { code: newCode, map: null };
@@ -63,7 +63,7 @@ export function sassTrapsFixer() {
         let fixed = content;
         if (file.endsWith('.vue')) {
           const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
-          fixed = content.replace(styleRegex, (match, styleContent) => {
+          fixed = content.replace(styleRegex, (match: string, styleContent: string) => {
             return match.replace(styleContent, fixContent(styleContent));
           });
         } else {

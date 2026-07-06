@@ -8,7 +8,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 
 vi.mock('@/logic/pokemon/pokemonFactory', () => ({
   makePokemon: vi.fn(),
-  levelUpPokemon: vi.fn((p) => {
+  levelUpPokemon: vi.fn((p: { level: number; expNeeded: number }) => {
     p.level++
     p.expNeeded = p.level * 100
     // Simular aprendizaje de ataque en nivel 10

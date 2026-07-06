@@ -77,7 +77,7 @@ interface SavedFilters {
 
 let savedFilters: SavedFilters = {}
 try {
-  savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}')
+  savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}') as SavedFilters
 } catch (e) {
   logger.warn('PokemonSelectionModal', 'Error loading filters', e)
 }

@@ -27,7 +27,7 @@ const mockQuery = {
   or: vi.fn().mockReturnThis(),
   order: vi.fn().mockReturnThis(),
   limit: vi.fn().mockReturnThis(),
-  then: vi.fn(function(onfulfilled) {
+  then: vi.fn(function(onfulfilled: (value: { data: unknown[]; error: unknown }) => unknown) {
     if (onfulfilled) {
       return Promise.resolve(onfulfilled({ data: [], error: null }))
     }
@@ -69,9 +69,9 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
 
     const sessionStoreMock: Record<string, string> = {}
     vi.stubGlobal('sessionStorage', {
-      getItem: vi.fn((key) => sessionStoreMock[key] || null),
-      setItem: vi.fn((key, val) => { sessionStoreMock[key] = val.toString() }),
-      removeItem: vi.fn((key) => { delete sessionStoreMock[key] }),
+      getItem: vi.fn((key: string) => (sessionStoreMock[key] as string | undefined) || null),
+      setItem: vi.fn((key: string, val: string | number) => { sessionStoreMock[key] = val.toString() }),
+      removeItem: vi.fn((key: string) => { delete sessionStoreMock[key] }),
       clear: vi.fn()
     })
 

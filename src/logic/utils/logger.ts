@@ -31,8 +31,8 @@ if (!isBrowser) {
   try {
     // Hidden from Vite's static analysis to avoid browser bundling warnings
     const nodeUtil = 'node:util';
-    const util = await import(/* @vite-ignore */ nodeUtil);
-    styleText = util.styleText as StyleTextFn;
+    const util = await import(/* @vite-ignore */ nodeUtil) as { styleText: StyleTextFn };
+    styleText = util.styleText;
   } catch (_e) {
     // Fallback if not available
   }

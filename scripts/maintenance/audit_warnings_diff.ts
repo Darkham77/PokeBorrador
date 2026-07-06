@@ -27,6 +27,47 @@ export interface Violation {
   isNew?: boolean;
 }
 
+interface EslintMessage {
+  line?: number;
+  message?: string;
+  source?: string;
+  severity?: number;
+  ruleId?: string;
+}
+
+interface EslintFileResult {
+  filePath: string;
+  messages: EslintMessage[];
+}
+
+interface FallowDupeInstance {
+  file?: string;
+  path?: string;
+  start_line?: number;
+  line?: number;
+}
+
+interface FallowDupeGroup {
+  instances: FallowDupeInstance[];
+  duplicated_tokens: number;
+}
+
+interface FallowDupeData {
+  clone_groups?: FallowDupeGroup[];
+}
+
+interface FallowSecurityFinding {
+  path: string;
+  line: number;
+  cwe: number | string;
+  evidence: string;
+  kind?: string;
+}
+
+interface FallowSecurityData {
+  security_findings?: FallowSecurityFinding[];
+}
+
 // Extensiones a auditar
 const AUDIT_EXTENSIONS = new Set(['.vue', '.ts', '.js', '.scss', '.css']);
 
@@ -123,7 +164,7 @@ async function runProjectEslint(): Promise<Violation[]> {
     const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
     if (!output) return [];
 
-    const results = JSON.parse(output);
+    const results = JSON.parse(output) as EslintFileResult[];
     for (const fileResult of results) {
       const relPath = path.relative(process.cwd(), fileResult.filePath);
       if (relPath.includes('node_modules') || relPath.startsWith('dist/') || relPath.startsWith('dev-dist/') || relPath.startsWith('scratch/')) {
@@ -157,7 +198,7 @@ async function runOriginEslint(filePath: string, content: string): Promise<Viola
     const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
     if (!output) return [];
 
-    const results = JSON.parse(output);
+    const results = JSON.parse(output) as EslintFileResult[];
     for (const fileResult of results) {
       for (const msg of fileResult.messages) {
         violations.push({
@@ -227,7 +268,7 @@ async function runFallowDupes(): Promise<Violation[]> {
 
     const jsonStart = output.indexOf('{');
     if (jsonStart !== -1) {
-      const data = JSON.parse(output.substring(jsonStart));
+      const data = JSON.parse(output.substring(jsonStart)) as FallowDupeData;
       const groups = data.clone_groups || [];
       for (const g of groups) {
         const instances = g.instances || [];
@@ -266,7 +307,7 @@ async function runFallowSecurity(): Promise<Violation[]> {
 
     const jsonStart = output.indexOf('{');
     if (jsonStart !== -1) {
-      const data = JSON.parse(output.substring(jsonStart));
+      const data = JSON.parse(output.substring(jsonStart)) as FallowSecurityData;
       const findings = data.security_findings || [];
       for (const f of findings) {
         violations.push({
@@ -333,7 +374,7 @@ async function main() {
   let auditViolations: Violation[] = [];
   try {
     const rawAudit = await fs.readFile(auditReportJsonPath, 'utf-8');
-    const parsed = JSON.parse(rawAudit);
+    const parsed = JSON.parse(rawAudit) as Violation[];
     auditViolations = parsed.map((v: Violation) => ({
       file: path.relative(process.cwd(), v.file),
       line: v.line,
@@ -460,8 +501,9 @@ async function main() {
 
 // Solo ejecutar main si se corre directamente
 if (process.argv[1] && (process.argv[1].endsWith('audit_warnings_diff.ts') || process.argv[1].endsWith('audit_warnings_diff.js'))) {
-  main().catch(err => {
-    console.error(styleText('red', `💥 Error fatal en audit_warnings_diff: ${err.message}`));
+  main().catch((err: unknown) => {
+    const msg = err instanceof Error ? (err as Error).message : String(err);
+    console.error(styleText('red', `💥 Error fatal en audit_warnings_diff: ${msg}`));
     process.exit(1);
   });
 }

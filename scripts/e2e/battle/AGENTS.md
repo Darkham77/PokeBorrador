@@ -18,10 +18,10 @@ QA / Automation Engineers.
 
 ## Verification
 
-- Run `npm run sim:e2e:battle` to verify all battle simulations.
-- **Run specific simulation batches**: Prefer the native Playwright grep flag (`-g` or `--grep`) via `npm run`. This is clean, fully cross-platform, and avoids system environment variable syntax differences:
-  - Run a specific batch: `npm run sim:e2e:combat -- -g "lote #21"`
-  - Alternatively, use the `TEST_BATCH` environment variable (for advanced ranges or multi-batch runs):
-    - In PowerShell: `$env:TEST_BATCH="3"; npm run sim:e2e:combat`
-    - In Bash/Linux: `TEST_BATCH=3 npm run sim:e2e:combat`
-    - Supported formats: `"3"` (runs batch #3), `"1-5"` (runs batches 1 through 5), `"1,3,5"` (runs batches 1, 3, and 5).
+- **Replay Headless (Recomendado/Rápido):** Si necesitas verificar paridad de HP, FSM, estados de combate o depurar errores de lógica de combate fuzzer, **NUNCA** utilices Playwright. Usa el replayer headless en Node.js que ejecuta Showdown directamente y corre en 1-2 segundos:
+  - Ejecutar un caso: `$env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace`
+  - Ejecutar varios casos: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:fuzzer:trace`
+- **Simulaciones E2E (Navegador):** Usa Playwright (`npm run sim:e2e:battle`) únicamente para regresiones finales de flujo o para verificar animaciones GSAP y UI:
+  - Filtrar por casos específicos: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:e2e:combat`
+  - Filtrar por lote del fuzzer: `npm run sim:e2e:combat -- -g "lote #21"`
+  - Filtrar por rango o lista de lotes: `$env:TEST_BATCH="1,3,5"; npm run sim:e2e:combat` (formatos soportados: `"3"`, `"1-5"`, o `"1,3,5"`)

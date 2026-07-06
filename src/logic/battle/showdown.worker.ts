@@ -1,7 +1,34 @@
 // fallow-ignore-file security-sink
-import { Battle, type ID } from '@pkmn/sim';
+import { Battle, type ID, Pokemon, Side, type PokemonSet, type StatsTable } from '@pkmn/sim';
 import { getShowdownFormatId } from './showdownAdapter.ts';
 import { applyHealCheatToSide } from './cheats.ts';
+
+export interface ExtendedPokemon extends Pokemon {
+  uid?: string;
+  faintQueued: boolean;
+}
+
+export interface ExtendedSide extends Side {
+  pokemon: ExtendedPokemon[];
+}
+
+export interface ShowdownRequestPokemon {
+  ident?: string;
+  uid?: string;
+  condition?: string;
+  active?: boolean;
+}
+
+export interface ShowdownRequest {
+  side?: {
+    pokemon: ShowdownRequestPokemon[];
+  };
+}
+
+export interface CustomPokemonSet extends PokemonSet {
+  stats?: Record<string, number>;
+  uid?: string;
+}
 
 // Global cache to preserve adventure mode custom stats across Showdown's internal set unpacking
 const statsMap = new Map<string, unknown>();
@@ -20,26 +47,14 @@ Battle.prototype.spreadModify = function (baseStats, set) {
     const stats = statsMap.get(set.name);
     logDebug(`[E2E-WORKER-DEBUG] spreadModify stats found for ${set.name}: ${stats ? JSON.stringify(stats) : 'NOT FOUND'}`);
     if (stats) {
-      return { ...(stats as Record<string, number>) };
+      return { ...(stats as Record<string, number>) } as StatsTable;
     }
   }
-  if (set && (set as any).stats) {
-    return { ...(set as any).stats };
+  if (set && (set as CustomPokemonSet).stats) {
+    return { ...(set as CustomPokemonSet).stats as Record<string, number> } as StatsTable;
   }
   return originalSpreadModify.call(this, baseStats, set);
 };
-
-/** Forma estructural mínima del lado interno de @pkmn/sim (no exportado públicamente). */
-interface PkmnSimSide {
-  active?: Array<{
-    name?: string;
-    moves?: string[];
-    moveSlots?: Array<{ id: string; pp: number; disabled?: boolean | string } | null>;
-    trapped?: boolean | string;
-    maybeTrapped?: boolean | string;
-  } | null>;
-  pokemon?: Array<{ hp: number; fainted: boolean; status: string } | null>;
-}
 
 let currentBattle: Battle | null = null;
 
@@ -51,39 +66,39 @@ export function injectUidsIntoRequest(
   playerOrBattle: 'p1' | 'p2' | Battle,
   requestOrPlayer: unknown,
   request?: unknown
-): unknown {
+): ShowdownRequest | null {
   let battle: Battle | null = null;
   let player: 'p1' | 'p2';
-  let req: any = null;
+  let req: ShowdownRequest | null = null;
 
-  if (playerOrBattle instanceof Battle || (playerOrBattle && typeof playerOrBattle === 'object' && 'p1' in playerOrBattle)) {
-    battle = playerOrBattle as Battle;
+  if (playerOrBattle instanceof Battle) {
+    battle = playerOrBattle;
     player = requestOrPlayer as 'p1' | 'p2';
-    req = request;
+    req = request as ShowdownRequest;
   } else {
     battle = currentBattle;
     player = playerOrBattle as 'p1' | 'p2';
-    req = requestOrPlayer;
+    req = requestOrPlayer as ShowdownRequest;
   }
 
   if (req && req.side && Array.isArray(req.side.pokemon)) {
     console.log(`[E2E-WORKER-INJECT] Processing request directly from simulator for side ${player}. reqMon length: ${req.side.pokemon.length}`);
     
-    const simulatorPokemon = battle?.[player]?.pokemon || [];
+    const simulatorPokemon = (battle?.[player] as ExtendedSide | undefined)?.pokemon || [];
     const assignedUids = new Set<string>();
 
-    req.side.pokemon.forEach((reqMon: any) => {
+    req.side.pokemon.forEach((reqMon) => {
       if (reqMon && reqMon.ident) {
         const cleanIdent = reqMon.ident.replace(/^(p1a|p2a|p1|p2):\s*/, '').trim().toLowerCase();
         const matched = simulatorPokemon.find(p => {
-          if (!p || !(p as any).uid) return false;
-          const uid = (p as any).uid.toLowerCase();
-          const uidPrefix = uid.split('-')[0];
+          if (!p || !p.uid) return false;
+          const uid = p.uid.toLowerCase();
+          const uidPrefix = uid.split('-')[0] || '';
           const isMatch = uid.startsWith(cleanIdent) || cleanIdent.startsWith(uidPrefix);
-          return isMatch && !assignedUids.has((p as any).uid);
+          return isMatch && !assignedUids.has(p.uid);
         });
-        if (matched && (matched as any).uid) {
-          reqMon.uid = (matched as any).uid;
+        if (matched && matched.uid) {
+          reqMon.uid = matched.uid;
           assignedUids.add(reqMon.uid);
           console.log(`  -> [E2E-WORKER-INJECT] Matched "${reqMon.ident}" to simulator UID: ${reqMon.uid}`);
         } else {
@@ -95,14 +110,74 @@ export function injectUidsIntoRequest(
   return req;
 }
 
+interface SynchronizedPokemonState {
+  uid: string;
+  hp: number;
+  maxHp: number;
+  status: string;
+  fainted: boolean;
+}
 
-self.onmessage = (event: MessageEvent) => {
+function getSideTeamState(side: ExtendedSide | null | undefined): Array<SynchronizedPokemonState | null> {
+  if (!side || !Array.isArray(side.pokemon)) return [];
+  return side.pokemon.map((p: ExtendedPokemon | null) => {
+    if (!p) return null;
+    const status = p.status || '';
+    return {
+      uid: p.uid || '',
+      hp: p.hp,
+      maxHp: p.maxhp,
+      status: status.toLowerCase() === 'fnt' ? '' : status,
+      fainted: !!p.fainted
+    };
+  });
+}
+
+
+interface WorkerEventPayload {
+  p1?: { name?: string; team: CustomPokemonSet[] };
+  p2?: { name?: string; team: CustomPokemonSet[] };
+  seed?: [number, number, number, number];
+  p1Choice?: string;
+  p2Choice?: string;
+  p1Skip?: boolean;
+  p2Skip?: boolean;
+  p1Hps?: Record<string, number>;
+  p2Hps?: Record<string, number>;
+  p1Statuses?: Record<string, string>;
+  p2Statuses?: Record<string, string>;
+  weather?: string;
+  side?: 'p1' | 'p2';
+  type?: 'heal';
+}
+
+interface WorkerEventData {
+  type: string;
+  payload: WorkerEventPayload;
+}
+
+interface PkmnSimActivePokemon {
+  name: string;
+  moves: string[];
+  moveSlots: Array<{ id: string; pp: number; disabled?: boolean | string } | null>;
+  addVolatile(status: string): void;
+}
+
+interface PkmnSimSide {
+  active: Array<PkmnSimActivePokemon | null>;
+  pokemon: ExtendedPokemon[];
+}
+
+self.onmessage = (event: MessageEvent<WorkerEventData>) => {
   const { type, payload } = event.data;
 
   try {
     switch (type) {
       case 'INIT_BATTLE': {
         const { p1, p2 } = payload;
+        if (!p1 || !p2) {
+          throw new Error('INIT_BATTLE payload must contain p1 and p2');
+        }
         
         logDebug(`[E2E-WORKER-DEBUG] init Battle.prototype.spreadModify type is: ${typeof Battle.prototype.spreadModify}`);
         logDebug(`[E2E-WORKER-DEBUG] init statsMap size is: ${statsMap.size}`);
@@ -110,14 +185,14 @@ self.onmessage = (event: MessageEvent) => {
         // Cache stats by nickname/short-uid prefix to survive Showdown's set parsing
         statsMap.clear();
         if (p1 && Array.isArray(p1.team)) {
-          p1.team.forEach((set: any) => {
+          p1.team.forEach((set: CustomPokemonSet) => {
             if (set && set.name && set.stats) {
               statsMap.set(set.name, set.stats);
             }
           });
         }
         if (p2 && Array.isArray(p2.team)) {
-          p2.team.forEach((set: any) => {
+          p2.team.forEach((set: CustomPokemonSet) => {
             if (set && set.name && set.stats) {
               statsMap.set(set.name, set.stats);
             }
@@ -133,28 +208,28 @@ self.onmessage = (event: MessageEvent) => {
           Math.floor(Math.random() * 0x10000)
         ];
 
-        const seedString = `${seedArr[0]},${seedArr[1]},${seedArr[2]},${seedArr[3]}`;
+        const seedVal = seedArr as [number, number, number, number];
 
         const battleInstance = new Battle({ 
           formatid: getShowdownFormatId(),
-          seed: seedString as any
+          seed: seedVal as unknown as `${number},${string}`
         });
         currentBattle = battleInstance;
 
         // Interceptar y enriquecer el array de logs en tiempo real capturando los UIDs de los Pokémon involucrados en cada llamada a add y addMove
         const originalAdd = battleInstance.add;
-        battleInstance.add = function (...parts: any[]) {
-          originalAdd.apply(this, parts);
+        battleInstance.add = function (...parts: unknown[]) {
+          originalAdd.apply(this, parts as unknown as Parameters<typeof originalAdd>);
           const lastIndex = battleInstance.log.length - 1;
           if (lastIndex >= 0) {
             const line = battleInstance.log[lastIndex];
             const uidMappings: string[] = [];
             parts.forEach(part => {
-              if (part && typeof part === 'object' && 'uid' in part && part.uid) {
+              if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
                 const ident = part.toString();
                 if (ident) {
                   const cleanIdent = ident.replace(/\s+/g, '');
-                  uidMappings.push(`${cleanIdent}=${part.uid}`);
+                  uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
                 }
               }
             });
@@ -166,18 +241,18 @@ self.onmessage = (event: MessageEvent) => {
         };
 
         const originalAddMove = battleInstance.addMove;
-        battleInstance.addMove = function (...parts: any[]) {
-          originalAddMove.apply(this, parts);
+        battleInstance.addMove = function (...parts: unknown[]) {
+          originalAddMove.apply(this, parts as unknown as Parameters<typeof originalAddMove>);
           const lastIndex = battleInstance.log.length - 1;
           if (lastIndex >= 0) {
             const line = battleInstance.log[lastIndex];
             const uidMappings: string[] = [];
             parts.forEach(part => {
-              if (part && typeof part === 'object' && 'uid' in part && part.uid) {
+              if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
                 const ident = part.toString();
                 if (ident) {
                   const cleanIdent = ident.replace(/\s+/g, '');
-                  uidMappings.push(`${cleanIdent}=${part.uid}`);
+                  uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
                 }
               }
             });
@@ -292,6 +367,8 @@ self.onmessage = (event: MessageEvent) => {
             logs: initLogs,
             p1Request: injectUidsIntoRequest('p1', currentBattle.p1.activeRequest),
             p2Request: injectUidsIntoRequest('p2', currentBattle.p2.activeRequest),
+            p1TeamState: getSideTeamState(currentBattle.p1),
+            p2TeamState: getSideTeamState(currentBattle.p2),
             debugLogs
           } 
         });
@@ -302,7 +379,7 @@ self.onmessage = (event: MessageEvent) => {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
 
-        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, weather } = payload;
+        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, weather } = payload;
 
         // Sincronizar clima
         if (weather) {
@@ -331,7 +408,11 @@ self.onmessage = (event: MessageEvent) => {
                 } else {
                   p.fainted = false;
                   (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  if (p.status === 'fnt') p.status = '' as ID;
+                  if (p1Statuses && p1Statuses[uid] !== undefined) {
+                    p.status = (p1Statuses[uid] || '') as ID;
+                  } else if (p.status === 'fnt') {
+                    p.status = '' as ID;
+                  }
                 }
               }
             }
@@ -349,7 +430,11 @@ self.onmessage = (event: MessageEvent) => {
                 } else {
                   p.fainted = false;
                   (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  if (p.status === 'fnt') p.status = '' as ID;
+                  if (p2Statuses && p2Statuses[uid] !== undefined) {
+                    p.status = (p2Statuses[uid] || '') as ID;
+                  } else if (p.status === 'fnt') {
+                    p.status = '' as ID;
+                  }
                 }
               }
             }
@@ -392,7 +477,7 @@ self.onmessage = (event: MessageEvent) => {
         const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
           const side = battle[player] as unknown as PkmnSimSide;
           const activeMon = side.active?.[0];
-          const resolved = resolveChoice(side, choice, player === 'p1' ? p1Skip : p2Skip);
+          const resolved = resolveChoice(side, choice, player === 'p1' ? !!p1Skip : !!p2Skip);
           const ok = battle.choose(player, resolved);
           if (!ok) {
             const activeName = activeMon ? activeMon.name : 'none';
@@ -436,7 +521,9 @@ self.onmessage = (event: MessageEvent) => {
             p1ForceSwitch,
             p2ForceSwitch,
             p1Request: injectUidsIntoRequest('p1', battle.p1.activeRequest),
-            p2Request: injectUidsIntoRequest('p2', battle.p2.activeRequest)
+            p2Request: injectUidsIntoRequest('p2', battle.p2.activeRequest),
+            p1TeamState: getSideTeamState(battle.p1),
+            p2TeamState: getSideTeamState(battle.p2)
           } 
         });
         break;
@@ -466,14 +553,14 @@ self.onmessage = (event: MessageEvent) => {
 
       case 'GET_SIMULATOR_STATE': {
         const p1State = currentBattle ? currentBattle.p1.pokemon.map(p => ({
-          uid: (p as any).uid || p.name,
+          uid: (p as ExtendedPokemon).uid || p.name,
           hp: p.hp,
           maxhp: p.maxhp,
           status: p.status,
           fainted: p.fainted
         })) : [];
         const p2State = currentBattle ? currentBattle.p2.pokemon.map(p => ({
-          uid: (p as any).uid || p.name,
+          uid: (p as ExtendedPokemon).uid || p.name,
           hp: p.hp,
           maxhp: p.maxhp,
           status: p.status,

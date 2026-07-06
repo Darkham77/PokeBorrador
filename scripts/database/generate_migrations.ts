@@ -65,11 +65,11 @@ export async function generateMigrations() {
 
     // Parse metadata from comments
     // Example: -- check: { "table": "profiles", "column": "role" }
-    let check = null;
+    let check: Record<string, unknown> | null = null;
     const checkMatch = content.match(/--\s*check:\s*({.+})/);
     if (checkMatch && checkMatch[1]) {
       try {
-        check = JSON.parse(checkMatch[1]);
+        check = JSON.parse(checkMatch[1]) as Record<string, unknown>;
       } catch (e) {
         console.error(`[Migrations Generator] Error parsing check metadata in ${filename}:`, e);
       }

@@ -3,10 +3,11 @@ import { supabase } from '../db/supabase.ts';
 import { safeStorage } from './storage.ts';
 import { logger } from './logger.ts';
 
-export const GAME_TIMEZONE = 
+export const GAME_TIMEZONE = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||
   (typeof process !== 'undefined' && process.env?.VITE_TIMEZONE) ||
-  'America/Argentina/Buenos_Aires';
+  'America/Argentina/Buenos_Aires'
+) as string;
 
 /**
  * Time Synchronization Utility (Temporal API version)

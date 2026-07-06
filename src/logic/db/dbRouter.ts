@@ -218,7 +218,8 @@ export class DBRouter {
 
     try {
       // Prioritize a dedicated RPC for server time to avoid local clock manipulation
-      const { data, error } = await client.rpc('fn_get_server_time');
+      const res = await client.rpc('fn_get_server_time') as { data: unknown; error: unknown };
+      const { data, error } = res;
       if (!error && data) return Temporal.Instant.fromEpochMilliseconds(Number(data)).epochMilliseconds;
       
       // Fallback: use a fast select if RPC fails
@@ -293,8 +294,9 @@ export class DBRouter {
       let broadcastCallback: RealtimeCallback | null = null;
 
       bc.onmessage = (event) => {
-        if (broadcastCallback && event.data?.type === 'broadcast') {
-          broadcastCallback(event.data);
+        const payload = event.data as { type?: string; event?: string; payload?: Record<string, unknown> } | null;
+        if (broadcastCallback && payload?.type === 'broadcast') {
+          broadcastCallback(payload as Parameters<RealtimeCallback>[0]);
         }
       };
 
@@ -447,8 +449,12 @@ export interface AppCompatibilityResponse {
 function parseAppVersion(val: unknown): string {
   if (!val) return '';
   try {
-    const parsed = typeof val === 'string' ? JSON.parse(val) : val;
-    return typeof parsed === 'string' ? parsed : (parsed as Record<string, string>).app_version || '';
+    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as unknown;
+    if (typeof parsed === 'string') return parsed;
+    if (parsed && typeof parsed === 'object') {
+      return (parsed as Record<string, string>).app_version || '';
+    }
+    return '';
   } catch {
     return typeof val === 'string' ? val : '';
   }

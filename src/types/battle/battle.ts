@@ -98,6 +98,7 @@ export interface BattleState {
   };
   p1SlotOrder?: string[];
   p2SlotOrder?: string[];
+  switchingToEnemy?: Pokemon | null;
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;
@@ -173,6 +174,8 @@ export interface ShowdownPlayerRequest {
       id?: string;
       move?: string;
       disabled?: boolean | string;
+      pp?: number;
+      maxpp?: number;
     }[];
     trapped?: boolean;
     maybeTrapped?: boolean;
@@ -184,7 +187,9 @@ export interface ShowdownPlayerRequest {
       details: string;
       condition: string;
       active: boolean;
+      uid?: string;
     }[];
   };
+  wait?: boolean;
 }
 

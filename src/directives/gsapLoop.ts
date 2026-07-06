@@ -25,7 +25,7 @@ const observer = new IntersectionObserver((entries) => {
  */
 export const gsapLoop: Directive = {
   mounted(el: HTMLElement, binding) {
-    applyAnimation(el, binding.value);
+    applyAnimation(el, binding.value as string | GsapLoopOptions);
   },
   updated(el: HTMLElement, binding) {
     // Basic comparison of configuration values
@@ -33,7 +33,7 @@ export const gsapLoop: Directive = {
     const oldValString = JSON.stringify(binding.oldValue);
     if (valString !== oldValString) {
       cleanupAnimation(el);
-      applyAnimation(el, binding.value);
+      applyAnimation(el, binding.value as string | GsapLoopOptions);
     }
   },
   unmounted(el: HTMLElement) {

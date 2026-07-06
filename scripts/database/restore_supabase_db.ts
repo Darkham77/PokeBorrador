@@ -491,7 +491,7 @@ const isDirectRun = process.argv[1] && (
 
 if (isDirectRun) {
   restoreSupabaseDb().catch((err) => {
-    console.error(styleText('red', `❌ Error fatal: ${err.message}`));
+    console.error(styleText('red', `❌ Error fatal: ${(err as Error).message}`));
     process.exit(1);
   });
 }

@@ -1,4 +1,5 @@
 import type { SBCtx } from './showdownBridgeCtx';
+import { isPokemonStatus } from '@/types/pokemon/pokemon';
 
 /**
  * Maneja eventos misceláneos, efectos de combate y mecánicas Gen 6-9:
@@ -198,7 +199,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case 'switch':
     case 'drag': {
       console.log(`[E2E-DEBUG-BRIDGE-SWITCH] Entering switch/drag parser. type: ${type}, rawId: "${parts[2]}", hpString: "${parts[4]}"`);
-      const target = getPoke(parts[2] || '', undefined, line);
+      const target = getPoke(parts[2] || '');
       const hpString = parts[4] || '';
       if (target && hpString) {
         const hpAndStatus = hpString.split(' ');
@@ -210,8 +211,8 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           if (!isNaN(parsedMax)) target.maxHp = parsedMax;
         }
         const statusStr = hpAndStatus[1];
-        if (statusStr) {
-          target.status = statusStr as import('@/types/pokemon/pokemon').PokemonStatus;
+        if (statusStr && isPokemonStatus(statusStr)) {
+          target.status = statusStr;
         } else {
           target.status = null;
         }

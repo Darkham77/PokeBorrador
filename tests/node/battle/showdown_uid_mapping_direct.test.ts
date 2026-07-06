@@ -137,8 +137,8 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
     battle.choose('p2', 'move splash');
 
     // Now bulb-2 is active (index 0), bulb-1 is benched (index 1)
-    assert.strictEqual(battle.p1.pokemon[0]?.uid, 'bulb-2');
-    assert.strictEqual(battle.p1.pokemon[1]?.uid, 'bulb-1');
+    assert.strictEqual((battle.p1.pokemon[0] as unknown as { uid?: string })?.uid, 'bulb-2');
+    assert.strictEqual((battle.p1.pokemon[1] as unknown as { uid?: string })?.uid, 'bulb-1');
 
     const request2 = {
       side: {

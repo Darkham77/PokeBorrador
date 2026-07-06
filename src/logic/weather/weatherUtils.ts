@@ -2,6 +2,7 @@ import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { WEATHER_REGISTRY } from './weatherRegistry';
+import type { PokemonData } from '@/types/system/database';
 
 type WeatherProbabilityTable = Record<string, number>;
 type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
@@ -70,9 +71,9 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
  * Determina el multiplicador de spawn de una especie basado en el clima actual.
  */
 export function getWeatherMultiplier(id: string, weather: string): number {
-  let pData = null;
+  let pData: (PokemonData & { type: string | string[] }) | null = null;
   try {
-    pData = pokemonDataProvider.getPokemonData(id);
+    pData = pokemonDataProvider.getPokemonData(id) as (PokemonData & { type: string | string[] });
   } catch (_err) {
     return 1.0;
   }

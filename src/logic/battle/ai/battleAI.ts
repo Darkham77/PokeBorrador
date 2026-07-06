@@ -11,19 +11,23 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
   const battleStore = useBattleStore()
   const enemyRequest = battleStore.state?.enemyRequest
 
-  // E2E Replay Hack: si se inyectaron elecciones del oponente desde el spec
-  if (typeof window !== 'undefined' && (window as any).__VITE_DEBUG__?.mockEnemyChoices) {
-    const debugObj = (window as any).__VITE_DEBUG__;
-    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
-    const mockChoices = debugObj.mockEnemyChoices;
-    const idx = debugObj.enemyChoiceIndex;
-    const choiceStr = mockChoices[idx]; // e.g. "move 3"
-    if (choiceStr && choiceStr.startsWith('move ')) {
-      const moveIdx = parseInt(choiceStr.split(' ')[1]) - 1;
-      const targetMove = enemy.moves[moveIdx];
-      if (targetMove) {
-        console.log(`[DEBUG-AI] [E2E-MOCK] decideEnemyMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`);
-        return targetMove;
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.mockEnemyChoices) {
+    const debugObj = window.__VITE_DEBUG__;
+    if (debugObj) {
+      if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
+      const mockChoices = debugObj.mockEnemyChoices;
+      const idx = debugObj.enemyChoiceIndex;
+      if (mockChoices && idx !== undefined) {
+        const choiceStr = mockChoices[idx]; // e.g. "move 3"
+        if (choiceStr && choiceStr.startsWith('move ')) {
+          const splitPart = choiceStr.split(' ')[1] || '0';
+          const moveIdx = parseInt(splitPart, 10) - 1;
+          const targetMove = enemy.moves[moveIdx];
+          if (targetMove) {
+            console.log(`[DEBUG-AI] [E2E-MOCK] decideEnemyMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`);
+            return targetMove;
+          }
+        }
       }
     }
   }
@@ -247,15 +251,19 @@ export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defS
  */
 export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Pokemon[] | undefined) => {
   // E2E Replay Hack: si se inyectaron elecciones del oponente desde el spec
-  if (typeof window !== 'undefined' && (window as any).__VITE_DEBUG__?.mockEnemyChoices) {
-    const debugObj = (window as any).__VITE_DEBUG__;
-    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
-    const mockChoices = debugObj.mockEnemyChoices;
-    const idx = debugObj.enemyChoiceIndex;
-    const choiceStr = mockChoices[idx]; // e.g. "switch 3"
-    if (choiceStr && choiceStr.startsWith('switch ')) {
-      console.log(`[DEBUG-AI] [E2E-MOCK] shouldEnemySwitch replaying choice #${idx}: true (choice is ${choiceStr})`);
-      return true;
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.mockEnemyChoices) {
+    const debugObj = window.__VITE_DEBUG__;
+    if (debugObj) {
+      if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
+      const mockChoices = debugObj.mockEnemyChoices;
+      const idx = debugObj.enemyChoiceIndex;
+      if (mockChoices && idx !== undefined) {
+        const choiceStr = mockChoices[idx]; // e.g. "switch 3"
+        if (choiceStr && choiceStr.startsWith('switch ')) {
+          console.log(`[DEBUG-AI] [E2E-MOCK] shouldEnemySwitch replaying choice #${idx}: true (choice is ${choiceStr})`);
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -282,23 +290,26 @@ export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, curre
     if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
     const mockChoices = debugObj.mockEnemyChoices;
     const idx = debugObj.enemyChoiceIndex;
-    const choiceStr = mockChoices[idx]; // e.g. "switch 3"
-    if (choiceStr && choiceStr.startsWith('switch ')) {
-      const switchSlot = parseInt(choiceStr.split(' ')[1]) - 1; // 0-indexed Showdown slot
-      const enemyRequest = battleStore.state?.enemyRequest;
-      const reqMon = enemyRequest?.side?.pokemon?.[switchSlot];
-      let targetUid = reqMon?.uid || null;
-      if (!targetUid) {
-        const p2SlotOrder = battleStore.state?.p2SlotOrder;
-        if (p2SlotOrder && p2SlotOrder[switchSlot]) {
-          targetUid = p2SlotOrder[switchSlot];
+    if (mockChoices && idx !== undefined) {
+      const choiceStr = mockChoices[idx]; // e.g. "switch 3"
+      if (choiceStr && choiceStr.startsWith('switch ')) {
+        const splitPart = choiceStr.split(' ')[1] || '0';
+        const switchSlot = parseInt(splitPart, 10) - 1; // 0-indexed Showdown slot
+        const enemyRequest = battleStore.state?.enemyRequest;
+        const reqMon = (enemyRequest?.side?.pokemon as unknown as Array<{ uid?: string } | null | undefined>)?.[switchSlot];
+        let targetUid = reqMon?.uid || null;
+        if (!targetUid) {
+          const p2SlotOrder = battleStore.state?.p2SlotOrder;
+          if (p2SlotOrder && p2SlotOrder[switchSlot]) {
+            targetUid = p2SlotOrder[switchSlot];
+          }
         }
-      }
-      if (targetUid) {
-        const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid);
-        if (teamIdx !== -1) {
-          console.log(`[DEBUG-AI] [E2E-MOCK] findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`);
-          return teamIdx;
+        if (targetUid) {
+          const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid);
+          if (teamIdx !== -1) {
+            console.log(`[DEBUG-AI] [E2E-MOCK] findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`);
+            return teamIdx;
+          }
         }
       }
     }

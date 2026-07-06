@@ -52,7 +52,7 @@ export const useProfileStore = defineStore('profile', () => {
       const lsKey = 'pokemon_local_save_' + user.id
       const lsRaw = localStorage.getItem(lsKey)
       if (lsRaw) {
-        const parsed = JSON.parse(lsRaw)
+        const parsed = JSON.parse(lsRaw) as { _last_updated?: string | number };
         if (parsed._last_updated) {
           const temporalInstant = Temporal.Instant.fromEpochMilliseconds(Number(parsed._last_updated))
           const zdt = temporalInstant.toZonedDateTimeISO(GAME_TIMEZONE)

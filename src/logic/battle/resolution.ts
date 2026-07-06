@@ -2,6 +2,7 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
@@ -172,7 +173,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
-        ;(active as any).switchingToEnemy = nextEnemy
+        active.switchingToEnemy = nextEnemy
         const result = await executeTurnInWorker('', `switch ${slot}`)
         if (result) {
           active.playerRequest = result.p1Request
@@ -185,7 +186,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
             await parseShowdownLogLine(ctx, logLine, filteredLogs)
           }
         }
-        delete (active as any).switchingToEnemy
+        delete active.switchingToEnemy
       }
 
       if (nextEnemy.hp <= 0) {
@@ -518,9 +519,9 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
 
 
-function parseCondition(cond: string): { hp: number; status: any } {
+function parseCondition(cond: string): { hp: number; status: Pokemon['status'] } {
   let hp = 0;
-  let status: any = null;
+  let status: Pokemon['status'] = undefined;
   if (!cond.includes('fnt')) {
     const slashIdx = cond.indexOf('/');
     if (slashIdx !== -1) {
@@ -528,7 +529,7 @@ function parseCondition(cond: string): { hp: number; status: any } {
     }
     const spaceIdx = cond.indexOf(' ');
     if (spaceIdx !== -1) {
-      status = cond.substring(spaceIdx + 1).trim() || null;
+      status = (cond.substring(spaceIdx + 1).trim() || undefined) as Pokemon['status'];
     }
   }
   return { hp, status };
@@ -544,7 +545,7 @@ function syncTeamHP(ctx: BattleContext) {
   console.log(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
   
   if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
-    active.playerRequest.side.pokemon.forEach((reqPoke: any) => {
+    active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
       if (reqPoke && reqPoke.uid) {
         const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.uid === reqPoke.uid);
         const battlePoke = active.playerTeam?.find((p: Pokemon) => p && p.uid === reqPoke.uid);
@@ -568,10 +569,11 @@ function syncTeamHP(ctx: BattleContext) {
     });
   }
 
-  if (active.enemyRequest?.side?.pokemon && active.enemyTeam) {
-    active.enemyRequest.side.pokemon.forEach((reqPoke: any) => {
+  const enemyTeam = active.enemyTeam;
+  if (active.enemyRequest?.side?.pokemon && enemyTeam) {
+    active.enemyRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
       if (reqPoke && reqPoke.uid) {
-        const battlePoke = active.enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid);
+        const battlePoke = enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid);
 
         const { hp, status } = parseCondition(reqPoke.condition || '');
 
@@ -586,7 +588,7 @@ function syncTeamHP(ctx: BattleContext) {
   }
 
   if (active.player && active.playerRequest?.side?.pokemon) {
-    const activeReqPoke = active.playerRequest.side.pokemon.find((p: any) => p && p.uid === active.player?.uid);
+    const activeReqPoke = active.playerRequest.side.pokemon.find((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => p && p.uid === active.player?.uid);
     if (activeReqPoke) {
       const { hp, status } = parseCondition(activeReqPoke.condition || '');
       active.player.hp = hp;
@@ -647,8 +649,8 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
     // Determine which Pokémon is currently active according to Showdown's request (source of truth).
     // active.enemy?.uid can be stale after mid-battle switches, so we read the active flag from
     // the Showdown request to guarantee we exclude the correct combatant from nextEnemy selection.
-    const activeUidPerShowdown = active.enemyRequest?.side?.pokemon
-      ?.find((p: { active?: boolean; uid?: string }) => p.active)?.uid
+    const activeUidPerShowdown = (active.enemyRequest?.side?.pokemon as unknown as Array<{ active?: boolean; uid?: string } | null | undefined>)
+      ?.find((p) => p?.active)?.uid
     const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
 
     let nextEnemy: Pokemon | null = null

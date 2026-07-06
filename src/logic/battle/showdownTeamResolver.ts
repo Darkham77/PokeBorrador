@@ -74,9 +74,10 @@ export class ShowdownTeamResolver {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
       throw new Error(`[ShowdownTeamResolver] No se puede obtener slot para UID "${uid}" porque el request de Showdown está ausente.`);
     }
-    const idx = request.side.pokemon.findIndex((p: any) => p && p.uid === uid);
+    const list = request.side.pokemon as Array<{ uid?: string } | null | undefined>;
+    const idx = list.findIndex((p) => p && p.uid === uid);
     if (idx === -1) {
-      const availableUids = request.side.pokemon.map((p: any) => p?.uid || 'null');
+      const availableUids = list.map((p) => p?.uid || 'null');
       throw new Error(`[ShowdownTeamResolver] UID "${uid}" no encontrado en los UIDs del request: ${JSON.stringify(availableUids)}`);
     }
     return idx + 1;

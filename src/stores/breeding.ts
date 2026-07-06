@@ -102,7 +102,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     // Restore eggs from LocalStorage
     const userId = authStore.user?.id || 'default';
     const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
-    warehouseEggs.value = stored ? JSON.parse(stored) : [];
+    warehouseEggs.value = stored ? JSON.parse(stored) as DaycareEgg[] : [];
 
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];

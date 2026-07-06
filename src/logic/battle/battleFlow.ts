@@ -212,7 +212,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return
 
   const { showdownWorker } = await import('./orchestrator.ts')
-  if (showdownWorker || (typeof window !== 'undefined' && (window as any).__showdownWorker__)) {
+  if (showdownWorker || (typeof window !== 'undefined' && (window as Window & { __showdownWorker__?: unknown }).__showdownWorker__)) {
     return
   }
 

@@ -1,4 +1,5 @@
 import { ref, computed, watch, onMounted, onUnmounted, toValue } from 'vue';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 import gsap from 'gsap';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
@@ -435,8 +436,8 @@ export function useBattleCombatantState(
   };
 
   const handleEscapeEvent = (e: Event) => {
-    const data = (e as CustomEvent).detail;
-    if (data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
+    const data = (e as CustomEvent).detail as { side: string; pokemon?: Pokemon | null; type: 'flee' | 'teleport' } | undefined;
+    if (data && data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
       const stateVal = toValue(battleStore.state);
       const isTrainerCombat = !!stateVal?.isTrainer || !!stateVal?.isGym;
       if (isTrainerCombat) return;

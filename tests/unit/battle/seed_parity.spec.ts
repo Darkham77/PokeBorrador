@@ -7,9 +7,9 @@ describe('PRNG Seed Parity unit tests', () => {
 
   it('debería generar la misma secuencia aleatoria usando array vs string en la clase PRNG', () => {
     // PRNG instanciado con array de números
-    const prngFromArray = new PRNG(seedNums);
+    const prngFromArray = new PRNG(seedNums as unknown as `${number},${string}`);
     // PRNG instanciado con el string mapeado
-    const prngFromString = new PRNG(seedString as any);
+    const prngFromString = new PRNG(seedString as unknown as `${number},${string}`);
 
     // Generar 50 números aleatorios y verificar que coincidan exactamente en orden y valor
     for (let i = 0; i < 50; i++) {
@@ -22,12 +22,12 @@ describe('PRNG Seed Parity unit tests', () => {
   it('debería inicializar combates de @pkmn/sim con resultados idénticos usando semilla string vs array', () => {
     const battleFromArray = new Battle({
       formatid: 'gen9customgame' as ID,
-      seed: seedNums
+      seed: seedNums as unknown as `${number},${string}`
     });
 
     const battleFromString = new Battle({
       formatid: 'gen9customgame' as ID,
-      seed: seedString as any
+      seed: seedString as unknown as `${number},${string}`
     });
 
     // Verificar que el generador de números aleatorios interno de ambas batallas empiece con el mismo estado

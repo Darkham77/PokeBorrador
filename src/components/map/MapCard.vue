@@ -266,7 +266,7 @@ useMapCardAnimations({
   dominanceWinner: computed(() => props.dominance?.winner ?? undefined),
   hasFishing: computed(() => props.map.fishing),
   hasArchaeology: computed(() => props.map.archaeology),
-  spawnGridSlots: computed(() => spawnGrid.value.slots)
+  spawnGridSlots: computed(() => spawnGrid.value.slots as (string | null)[])
 })
 
 const { weatherOnlyFilter } = useWeatherVisuals({

@@ -16,7 +16,7 @@ vi.mock('@/logic/services/assetService', () => ({
 }))
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
-    getPokemonData: vi.fn((id) => ({ id, name: id.toUpperCase() }))
+    getPokemonData: vi.fn((id: string) => ({ id, name: id.toUpperCase() }))
   }
 }))
 

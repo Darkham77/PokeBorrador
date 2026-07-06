@@ -111,10 +111,17 @@ const submitRename = async () => {
       if (authStore.user?.id.startsWith('local_')) {
         const localUserStr = localStorage.getItem('pokevicio_local_user')
         if (localUserStr) {
-          const lu = JSON.parse(localUserStr)
-          if (!lu.user_metadata) lu.user_metadata = {}
-          lu.user_metadata.username = targetName
-          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+          interface LocalUser {
+            user_metadata?: {
+              username?: string;
+              [key: string]: unknown;
+            };
+            [key: string]: unknown;
+          }
+          const lu = JSON.parse(localUserStr) as LocalUser;
+          if (!lu.user_metadata) lu.user_metadata = {};
+          lu.user_metadata.username = targetName;
+          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu));
         } else {
           localStorage.setItem('pokevicio_local_user', JSON.stringify({
             id: authStore.user.id,

@@ -161,12 +161,24 @@ function drawPattern(pattern: CanvasPattern, scale: number, offsetX: number, off
   localCtx.globalAlpha = 1.0;
 }
 
+interface AtmosphereWorkerMessage {
+  type: 'INIT' | 'RESIZE' | 'UPDATE_PARAMS' | 'PAUSE' | 'RESUME';
+  payload: {
+    canvas?: OffscreenCanvas;
+    noise1?: ImageBitmap;
+    noise2?: ImageBitmap;
+    width?: number;
+    height?: number;
+  } & Partial<AtmosphereParams>;
+}
+
 self.onmessage = async (event: MessageEvent) => {
-  const { type, payload } = event.data;
+  const data = event.data as AtmosphereWorkerMessage;
+  const { type, payload } = data;
 
   switch (type) {
     case 'INIT': {
-      canvas = payload.canvas;
+      canvas = payload.canvas || null;
       if (canvas) {
         ctx = canvas.getContext('2d');
         if (payload.noise1 && ctx) {
@@ -188,7 +200,7 @@ self.onmessage = async (event: MessageEvent) => {
       break;
     }
     case 'RESIZE': {
-      if (canvas) {
+      if (canvas && payload.width !== undefined && payload.height !== undefined) {
         canvas.width = payload.width;
         canvas.height = payload.height;
       }

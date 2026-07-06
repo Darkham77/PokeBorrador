@@ -7,7 +7,7 @@ export function useBattleTweenRegistry() {
   const pendingTweenResolvers = new Map<string, () => void>()
 
   const onRegisterTween = (e: Event) => {
-    const data = (e as CustomEvent).detail
+    const data = (e as CustomEvent).detail as { key?: string; tween?: unknown } | undefined
     if (data && data.key && data.tween) {
       activeTweens.set(data.key, data.tween)
       // Unblock any awaitTween call that was already waiting for this key

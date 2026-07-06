@@ -686,7 +686,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
       violations.push({
         file: 'fallow',
         line: 0,
-        message: `Error ejecutando fallow ${command}: ${err.message || String(e)} | Stderr: ${err.stderr || ''}`,
+        message: `Error ejecutando fallow ${command}: ${(err as Error).message || String(e)} | Stderr: ${err.stderr || ''}`,
         context: `fallow ${command}`,
         severity: 'error',
         fixable: false
@@ -1117,7 +1117,7 @@ async function main() {
         try {
           execSync(`sass-migrator module --built-in-only ${JSON.stringify(f)}`, { encoding: 'utf-8', stdio: 'pipe' });
         } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err);
+          const msg = err instanceof Error ? (err as Error).message : String(err);
           console.log(styleText('yellow', `  \u26a0\ufe0f  [${path.relative(process.cwd(), f)}]: ${msg.split('\n')[0] ?? msg}`));
         }
       }
@@ -1239,6 +1239,6 @@ async function main() {
   }
 }
 main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal en el audit: ${err.message}`));
+  console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).message}`));
   process.exit(1);
 });

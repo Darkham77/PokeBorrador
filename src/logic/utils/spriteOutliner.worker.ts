@@ -121,8 +121,18 @@ async function processAura(img: ImageBitmap, fillColor: string, blurRadius: numb
 }
 
 // Worker message router
-self.addEventListener('message', async (event) => {
-  const { jobId, action, url, type, fillColor, blurRadius } = event.data;
+interface SpriteOutlinerMessage {
+  jobId: string;
+  action: 'sprite' | 'aura';
+  url: string;
+  type: 'outline' | 'silhouette';
+  fillColor: string;
+  blurRadius: number;
+}
+
+self.addEventListener('message', async (event: MessageEvent) => {
+  const data = event.data as SpriteOutlinerMessage;
+  const { jobId, action, url, type, fillColor, blurRadius } = data;
   
   if (action === 'sprite') {
     const cacheKey = `https://outliner.local/sprite?url=${encodeURIComponent(url)}&type=${type}`;

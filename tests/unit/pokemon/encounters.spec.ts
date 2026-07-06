@@ -11,7 +11,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
 }));
 
 vi.mock('@/logic/pokemon/pokemonFactory', () => ({
-  makePokemon: vi.fn((id, lv) => ({ id, lv, name: id }))
+  makePokemon: vi.fn((id: string, lv: number) => ({ id, lv, name: id }))
 }));
 
 vi.mock('@/logic/war/warEngine', () => ({
@@ -24,7 +24,7 @@ vi.mock('@/logic/war/guardianEngine', () => ({
 }));
 
 vi.mock('@/logic/war/bonusEngine', () => ({
-  applyEncounterBonuses: vi.fn(p => p)
+  applyEncounterBonuses: vi.fn((p: unknown) => p)
 }));
 
 vi.mock('@/stores/events', () => ({

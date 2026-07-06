@@ -42,7 +42,7 @@ vi.mock('@/stores/auth', () => ({
 
 // Mock de la lógica base para no depender de la DB completa de pokémon
 vi.mock('@/logic/evolution/evolutionLogic', () => ({
-  evolvePokemonData: vi.fn((pokemon, targetId) => {
+  evolvePokemonData: vi.fn((pokemon: { id: string; name: string }, targetId: string) => {
     const fromId = pokemon.id;
     pokemon.id = targetId;
     pokemon.name = targetId.toUpperCase();
@@ -54,7 +54,7 @@ vi.mock('@/logic/evolution/evolutionLogic', () => ({
 
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
-    getPokemonData: vi.fn((id) => ({ id, name: id.toUpperCase() }))
+    getPokemonData: vi.fn((id: string) => ({ id, name: id.toUpperCase() }))
   }
 }))
 

@@ -210,8 +210,8 @@ onMounted(async () => {
       cache: 'no-store'
     })
     if (response.ok) {
-      const data = await response.json()
-      const serverVersion = data.version
+      const data = await response.json() as { version?: string }
+      const serverVersion = data.version || ''
       const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''
       
       if (clientVersion && serverVersion && clientVersion < serverVersion) {

@@ -61,6 +61,7 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 - [ ] **Pixel Parity**: Is all game content pixelated and sharp?
 - [ ] **CLI-First**: Have I verified the state via console?
 - [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?
+- [ ] **Linter Cache Compliance**: Have I executed validation exclusively via `npm run lint` or `npm run lint:fix` (avoiding raw or custom eslint commands) to preserve and utilize the `.eslintcache`?
 - [ ] **Language Parity**: Before editing any file, have I verified its primary language and written exclusively in that language? (English file → English edits.)
 
 ## 📊 Diagnostic Tools & Reference

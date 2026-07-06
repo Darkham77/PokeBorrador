@@ -64,13 +64,14 @@ export const useWarStore = defineStore('war', () => {
           .eq('user_id', authStore.user.id)
           .eq('capture_date', today)
         
-        dailyGuardianCaptures.value = (guardians as { map_id: string }[] | null)?.map(g => g.map_id) || []
+        const typedGuardians = guardians as { map_id: string }[] | null;
+        dailyGuardianCaptures.value = typedGuardians?.map(g => g.map_id) || []
 
-        if (guardians && Array.isArray(guardians)) {
+        if (typedGuardians && Array.isArray(typedGuardians)) {
           if (!gameStore.state.guardianCaptures) {
             gameStore.state.guardianCaptures = {}
           }
-          guardians.forEach(g => {
+          typedGuardians.forEach(g => {
             if (g.map_id) {
               gameStore.state.guardianCaptures![g.map_id] = today
             }

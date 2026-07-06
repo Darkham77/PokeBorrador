@@ -20,6 +20,7 @@ export const ENABLED_POKEMON_IDS = new Set<string>([
 ]);
 
 export const MAX_POKEMON_LEVEL = 100;
+export const MAX_BATTLE_TURNS = 150;
 
 export const GAME_RATIOS = {
   // --- Pokémon Level ---

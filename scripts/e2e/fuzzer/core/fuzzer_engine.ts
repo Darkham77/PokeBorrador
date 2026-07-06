@@ -13,6 +13,7 @@ import { logger } from '../../../../src/logic/utils/logger.ts';
 import { applyHealCheatToSide } from '../../../../src/logic/battle/cheats.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
+import { MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
 import {
   EXCLUDED_ABILITY_ENTRIES,
   EXCLUDED_FROM_SINGLES_REPORT,
@@ -280,7 +281,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       });
 
       let turn = 0;
-      const maxTurns = 150;
+      const maxTurns = MAX_BATTLE_TURNS;
       const steps: string[] = [];
       const batchChoices: string[] = [];
       const batchEnemyChoices: string[] = [];
@@ -375,34 +376,32 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           });
 
           // Lógica de cheats activada para lotes dinámicos para garantizar combates naturales sin desincronizaciones
-          if (true) {
-            const p1Active = simBattle.p1.active?.[0];
-            const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
-            if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
-              applyHealCheatToSide(simBattle.p1);
-              if (!batchRec.cheats) batchRec.cheats = [];
-              batchRec.cheats.push({ turn: simBattle.turn, side: 'p1', type: 'heal' });
-              if (mockStore.player?.value) {
-                mockStore.player.value.hp = mockStore.player.value.maxHp;
-                mockStore.player.value.status = null;
-              }
+          const p1Active = simBattle.p1.active?.[0];
+          const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
+          if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
+            applyHealCheatToSide(simBattle.p1);
+            if (!batchRec.cheats) batchRec.cheats = [];
+            batchRec.cheats.push({ turn: simBattle.turn, side: 'p1', type: 'heal' });
+            if (mockStore.player?.value) {
+              mockStore.player.value.hp = mockStore.player.value.maxHp;
+              mockStore.player.value.status = null;
             }
+          }
 
-            const p2Active = simBattle.p2.active?.[0];
-            if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
-              applyHealCheatToSide(simBattle.p2);
-              if (!batchRec.cheats) batchRec.cheats = [];
-              batchRec.cheats.push({ turn: simBattle.turn, side: 'p2', type: 'heal' });
-              if (mockStore.enemy?.value) {
-                mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
-                mockStore.enemy.value.status = null;
-              }
+          const p2Active = simBattle.p2.active?.[0];
+          if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
+            applyHealCheatToSide(simBattle.p2);
+            if (!batchRec.cheats) batchRec.cheats = [];
+            batchRec.cheats.push({ turn: simBattle.turn, side: 'p2', type: 'heal' });
+            if (mockStore.enemy?.value) {
+              mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
+              mockStore.enemy.value.status = null;
             }
           }
           // (saves happen outside the loop after it completes)
         }
       } catch (err: unknown) {
-        const errMsg = err instanceof Error ? err.message : String(err);
+        const errMsg = err instanceof Error ? (err as Error).message : String(err);
         batch.movesToTest.forEach(m => {
           if (moveCoverage[m]) {
             moveCoverage[m]!.status = 'FAIL';
@@ -542,7 +541,7 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
   let shouldWrite = true;
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
-    consolidatedData = JSON.parse(existing);
+    consolidatedData = JSON.parse(existing) as Record<string, unknown>;
     if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.battle) {
       shouldWrite = false;
       console.log(`⚠️  Conservando casos de combate certificados existentes (usa REGENERATE_CASES=true para pisar).`);
@@ -573,7 +572,7 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
     // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes
     try {
       const freshContent = await fs.readFile(consolidatorPath, 'utf8');
-      const freshData = JSON.parse(freshContent);
+      const freshData = JSON.parse(freshContent) as Record<string, unknown>;
       consolidatedData = { ...freshData, battle: consolidatedData.battle };
     } catch (_e) { /* archivo nuevo */ }
 
@@ -802,7 +801,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
   let shouldWrite = true;
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
-    consolidatedData = JSON.parse(existing);
+    consolidatedData = JSON.parse(existing) as Record<string, unknown>;
     if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.items_consumption) {
       shouldWrite = false;
       console.log(`⚠️  Conservando casos de ítems certificados existentes (usa REGENERATE_CASES=true para pisar).`);
@@ -826,7 +825,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes
     try {
       const freshContent = await fs.readFile(consolidatorPath, 'utf8');
-      const freshData = JSON.parse(freshContent);
+      const freshData = JSON.parse(freshContent) as Record<string, unknown>;
       consolidatedData = { ...freshData, items_consumption: consolidatedData.items_consumption };
     } catch (_e) { /* archivo nuevo */ }
 

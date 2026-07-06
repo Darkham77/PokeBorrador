@@ -16,7 +16,10 @@ function checkAndRunFuzzers() {
     needsRun = true;
   } else {
     try {
-      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8'));
+      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as {
+        battle?: unknown;
+        items_consumption?: unknown;
+      };
       if (!content.battle || !content.items_consumption) {
         console.log(`⚠️  fuzzer_certified_cases.json está incompleto.`);
         needsRun = true;
