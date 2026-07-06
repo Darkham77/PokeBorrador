@@ -18,6 +18,7 @@ QA / Automation Engineers.
 - Playwright is preferred for E2E browser testing.
 - When dynamic store mocks are needed, declare local mock interfaces instead of using `as any`.
 - Update test cases immediately when source function signatures change.
+- **Node.js Web Worker Imports**: When importing Web Worker files (like `showdown.worker.ts`) inside Node native unit tests (`tests/node/`), mock global variables like `self` (e.g. `(globalThis as any).self = { onmessage: null, postMessage: () => {} }`) inside a `before` hook and load the worker dynamically using `await import()`. This prevents static ES module imports from throwing `ReferenceError: self is not defined` during compilation/execution.
 - **Bare Node.js vs Vitest Boundaries**: Bare Node.js tests (`tests/node/`) must ONLY import pure math/logic files with no external `@/` path alias dependencies. Any tests involving components, stores, database routing, or modules containing `@/` imports must be written in Vitest under `tests/unit/` or `tests/integration/`.
 - **Array Indexing and Type Narrowing in Tests**: To satisfy strict type checking under `noUncheckedIndexedAccess` without using `any` or bypassing rules, avoid referencing array elements directly (e.g. `arr[0]`). Extract them to local variables and perform explicit existence assertions or throw errors if undefined to narrow their types.
 - **Dynamic Store Loading**: In unit tests, avoid static imports of Vue/Pinia store modules if running in Node.js test runners. Use dynamic imports protected by `typeof window !== 'undefined'` checks.

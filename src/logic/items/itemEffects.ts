@@ -123,7 +123,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
     const hpRes = healHp(p, p.maxHp);
     const statusRes = curaTotal(p);
     if (!hpRes.success && !statusRes.success) {
-      return { success: false, message: 'El HP ya está lleno y no tiene problemas de estado.' };
+      return { success: false, message: 'No tendrá ningún efecto.' };
     }
     return { success: true, message: 'recuperó todo su HP y se curó de sus problemas de estado.' };
   }),
@@ -198,7 +198,7 @@ function healHp(p: Pokemon, amount: number): ItemEffectResult {
   const healAmount = Number(amount || 0);
 
   if (currentHp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
-  if (currentHp >= maxHp) return { success: false, message: 'El HP ya está al máximo.' };
+  if (currentHp >= maxHp) return { success: false, message: 'No tendrá ningún efecto.' };
 
   const prev = currentHp;
   p.hp = Math.min(maxHp, currentHp + healAmount);
@@ -208,7 +208,7 @@ function healHp(p: Pokemon, amount: number): ItemEffectResult {
 
 
 function revive(p: Pokemon, amount: number): ItemEffectResult {
-  if (p.hp > 0) return { success: false, message: 'El Pokémon no está debilitado.' };
+  if (p.hp > 0) return { success: false, message: 'No tendrá ningún efecto.' };
   p.hp = amount;
   return { success: true, message: `revivió con ${p.hp} HP` };
 }

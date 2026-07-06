@@ -126,7 +126,7 @@ export const pokemonDebugService = {
     }
 
     // 4. Final Recalc
-    recalcPokemonStats(p);
+    recalcPokemonStats(p, true);
     p.hp = p.maxHp;
     p.expNeeded = getExpNeeded(p.level);
 

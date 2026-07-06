@@ -11,6 +11,23 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
   const battleStore = useBattleStore()
   const enemyRequest = battleStore.state?.enemyRequest
 
+  // E2E Replay Hack: si se inyectaron elecciones del oponente desde el spec
+  if (typeof window !== 'undefined' && (window as any).__VITE_DEBUG__?.mockEnemyChoices) {
+    const debugObj = (window as any).__VITE_DEBUG__;
+    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
+    const mockChoices = debugObj.mockEnemyChoices;
+    const idx = debugObj.enemyChoiceIndex;
+    const choiceStr = mockChoices[idx]; // e.g. "move 3"
+    if (choiceStr && choiceStr.startsWith('move ')) {
+      const moveIdx = parseInt(choiceStr.split(' ')[1]) - 1;
+      const targetMove = enemy.moves[moveIdx];
+      if (targetMove) {
+        console.log(`[DEBUG-AI] [E2E-MOCK] decideEnemyMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`);
+        return targetMove;
+      }
+    }
+  }
+
   console.log('[DEBUG-AI] decideEnemyMove called for:', enemy.name, 'isWild:', isWild);
   console.log('[DEBUG-AI] enemy.moves:', enemy.moves ? enemy.moves.map(m => m ? `${m.id}(pp:${m.pp}/${m.maxPP})` : 'null') : 'null');
   console.log('[DEBUG-AI] enemyRequest:', JSON.stringify(enemyRequest || null));
@@ -229,6 +246,20 @@ export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defS
  * Evalúa si el oponente debería cambiar de Pokémon
  */
 export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Pokemon[] | undefined) => {
+  // E2E Replay Hack: si se inyectaron elecciones del oponente desde el spec
+  if (typeof window !== 'undefined' && (window as any).__VITE_DEBUG__?.mockEnemyChoices) {
+    const debugObj = (window as any).__VITE_DEBUG__;
+    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
+    const mockChoices = debugObj.mockEnemyChoices;
+    const idx = debugObj.enemyChoiceIndex;
+    const choiceStr = mockChoices[idx]; // e.g. "switch 3"
+    if (choiceStr && choiceStr.startsWith('switch ')) {
+      console.log(`[DEBUG-AI] [E2E-MOCK] shouldEnemySwitch replaying choice #${idx}: true (choice is ${choiceStr})`);
+      return true;
+    }
+    return false;
+  }
+
   if (!enemyTeam || enemyTeam.filter((p) => p.hp > 0).length <= 1) return false
 
   const playerEff = getCombinedEffectiveness(player.type, enemy)
@@ -243,6 +274,36 @@ export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Po
 }
 
 export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, currentEnemyUid: string): number => {
+  const battleStore = useBattleStore()
+
+  // E2E Replay Hack: si se inyectaron elecciones del oponente desde el spec
+  if (typeof window !== 'undefined' && (window as unknown as { __VITE_DEBUG__?: { mockEnemyChoices?: string[] } }).__VITE_DEBUG__?.mockEnemyChoices) {
+    const debugObj = (window as unknown as { __VITE_DEBUG__: { enemyChoiceIndex?: number; mockEnemyChoices?: string[] } }).__VITE_DEBUG__;
+    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0;
+    const mockChoices = debugObj.mockEnemyChoices;
+    const idx = debugObj.enemyChoiceIndex;
+    const choiceStr = mockChoices[idx]; // e.g. "switch 3"
+    if (choiceStr && choiceStr.startsWith('switch ')) {
+      const switchSlot = parseInt(choiceStr.split(' ')[1]) - 1; // 0-indexed Showdown slot
+      const enemyRequest = battleStore.state?.enemyRequest;
+      const reqMon = enemyRequest?.side?.pokemon?.[switchSlot];
+      let targetUid = reqMon?.uid || null;
+      if (!targetUid) {
+        const p2SlotOrder = battleStore.state?.p2SlotOrder;
+        if (p2SlotOrder && p2SlotOrder[switchSlot]) {
+          targetUid = p2SlotOrder[switchSlot];
+        }
+      }
+      if (targetUid) {
+        const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid);
+        if (teamIdx !== -1) {
+          console.log(`[DEBUG-AI] [E2E-MOCK] findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`);
+          return teamIdx;
+        }
+      }
+    }
+  }
+
   let bestIdx = -1
   let bestScore = -1
   

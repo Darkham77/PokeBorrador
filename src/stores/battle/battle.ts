@@ -28,6 +28,7 @@ import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '@/data/system/constants.ts'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -94,6 +95,64 @@ export const useBattleStore = defineStore('battle', () => {
   watch(debugZoom, (newZoom) => {
     safeStorage.setItem('pvs_combat_zoom', String(newZoom))
   })
+
+  const syncActiveMovesFromRequest = (side: 'player' | 'enemy') => {
+    const active = activeBattle.value
+    if (!active) return
+    
+    const request = side === 'player' ? active.playerRequest : active.enemyRequest
+    const poke = side === 'player' ? active.player : active.enemy
+    
+    if (!poke || !request?.active?.[0]?.moves) return
+    
+    const reqMoves = request.active[0].moves
+    const currentMoves = poke.moves || []
+    
+    const updatedMoves = reqMoves.map((reqMove: any) => {
+      if (!reqMove) return null
+      const moveId = reqMove.id
+      const match = currentMoves.find(m => m && m.id === moveId)
+      if (match) {
+        match.pp = reqMove.pp
+        match.maxPP = reqMove.maxpp
+        return match
+      }
+      
+      const md = pokemonDataProvider.getMoveData(moveId) || {}
+      return {
+        id: moveId,
+        name: reqMove.move || md.name || moveId,
+        type: md.type || 'normal',
+        cat: (md.cat || 'physical') as 'physical' | 'special' | 'status',
+        power: md.power,
+        acc: md.acc,
+        pp: reqMove.pp,
+        maxPP: reqMove.maxpp,
+        priority: md.priority || 0,
+        effect: md.effect || '',
+        target: (md as any).target || 'normal'
+      }
+    })
+    
+    poke.moves = updatedMoves.filter((m: any): m is Move => m !== null)
+    console.log(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? m.id : '')))
+  }
+
+  watch(
+    () => activeBattle.value?.playerRequest,
+    () => {
+      syncActiveMovesFromRequest('player')
+    },
+    { deep: true }
+  )
+
+  watch(
+    () => activeBattle.value?.enemyRequest,
+    () => {
+      syncActiveMovesFromRequest('enemy')
+    },
+    { deep: true }
+  )
 
   const battleLogs = ref<BattleLog[]>([])
   const logQueue = ref<BattleLog[]>([])
@@ -291,7 +350,12 @@ export const useBattleStore = defineStore('battle', () => {
         return
       }
 
-      if (!activeBattle.value.over) await applyEndTurnEffects()
+      const subBeforeEndTurn = fsm.currentSubState.value
+      const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
+                               subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                               subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+
+      if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
       activeMove.value = null
       
       const sub = fsm.currentSubState.value
@@ -324,7 +388,12 @@ export const useBattleStore = defineStore('battle', () => {
 
       if (!activeBattle.value) return
 
-      if (!activeBattle.value.over) await applyEndTurnEffects()
+      const subBeforeEndTurn = fsm.currentSubState.value
+      const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
+                               subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                               subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+
+      if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
       activeMove.value = null
 
       const sub = fsm.currentSubState.value

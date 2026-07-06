@@ -116,9 +116,12 @@ export class BattleAgent {
 
 
 
+    const isTrapped = !!request?.active?.[0]?.trapped;
+
     // Switch periódico voluntario (para probar habilidades de switch-out/in).
-    // Solo si el equipo tiene banca disponible y no acabamos de switchear.
+    // Solo si el equipo tiene banca disponible, no acabamos de switchear y NO estamos atrapados.
     if (
+      !isTrapped &&
       !this.justSwitched &&
       this.periodicSwitchEvery > 0 &&
       this.turnCount % this.periodicSwitchEvery === 0 &&
@@ -132,11 +135,11 @@ export class BattleAgent {
     }
 
     // Auto-switch si el Pokémon activo agotó su lista de movimientos pendientes
-    // pero otro en banca todavía tiene pendientes.
+    // pero otro en banca todavía tiene pendientes, y NO estamos atrapados.
     const activeHasPending = activePoke?.moves.some(
       m => this.movesToTest.has(toCleanId(m)),
     );
-    if (!activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
+    if (!isTrapped && !activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
       for (let i = 0; i < team.length; i++) {
         const mon = team[i]!;
         if (!mon.active && !this.isFainted(mon.condition)) {

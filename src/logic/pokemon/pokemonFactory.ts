@@ -120,8 +120,11 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) return;
   if (!p.volatileCounters) p.volatileCounters = {};
 
+  const isDebug = typeof window !== 'undefined' && !!(window as any).__VITE_DEBUG__;
+  const bypass = bypassWhitelist || isDebug;
+
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
-  const base = pokemonDataProvider.getPokemonData(p.id, bypassWhitelist);
+  const base = pokemonDataProvider.getPokemonData(p.id, bypass);
   if (base) {
     // Si es Castform y tiene una forma activa diferente de normal, no sobreescribir su tipo con el base de la base de datos (que es siempre normal)
     const isCastformForm = p.id === 'castform' && p.form && p.form !== 'normal';
@@ -133,20 +136,29 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
   }
 
   // 1. Validar Habilidad usando pkms Dex
-  const speciesData = Dex.species.get(p.id);
-  const validAbilities: string[] = speciesData.exists 
-    ? Object.values(speciesData.abilities).map(a => toID(a)) 
-    : ['overgrow'];
-  
   if (p.ability) {
     const normAbility = toID(p.ability);
-    if (validAbilities.includes(normAbility)) {
+    const abilityData = Dex.abilities.get(normAbility);
+    if (bypass && abilityData.exists) {
       p.ability = normAbility;
     } else {
-      logger.warn('Self-Healing', `Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}, reasignando.`);
-      p.ability = validAbilities[0];
+      const speciesData = Dex.species.get(p.id);
+      const validAbilities: string[] = speciesData.exists 
+        ? Object.values(speciesData.abilities).map(a => toID(a)) 
+        : ['overgrow'];
+      
+      if (validAbilities.includes(normAbility)) {
+        p.ability = normAbility;
+      } else {
+        logger.warn('Self-Healing', `Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}, reasignando.`);
+        p.ability = validAbilities[0];
+      }
     }
   } else {
+    const speciesData = Dex.species.get(p.id);
+    const validAbilities: string[] = speciesData.exists 
+      ? Object.values(speciesData.abilities).map(a => toID(a)) 
+      : ['overgrow'];
     p.ability = validAbilities[0];
   }
 

@@ -19,8 +19,8 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 ## Mandatory Progress Artifact
 
-**Every simulation run MUST maintain a live artifact** at
-`scratch/sim_progress_<session-id>.md` (create it before the first command runs,
+**Every simulation run MUST maintain a live artifact at
+`scripts/battle-tester/tests/sim_progress_YYYYMMDD.md` (create it before the first command runs,
 update it after each meaningful step). This artifact is the single source of truth
 for the current run and allows resuming at any point without losing context.
 
@@ -83,11 +83,11 @@ Status: FIXING | PENDING_RERUN | PASS
 3. **Mark resumption point.** On any interruption (user message, context limit,
    error), ensure the artifact reflects exactly where execution stopped and what
    is next, so a fresh agent can pick up without duplicating work.
-4. **One artifact per session.** If the user resumes a previous run, look for an
-   existing `scratch/sim_progress_*.md` artifact first and continue from it.
+4. **One artifact per session.** If the user resumes a previous run, look for the
+    existing `scripts/battle-tester/tests/sim_progress_<YYYYMMDD>.md` artifact first and continue from it.
    Only create a new one if none exists or the user explicitly starts fresh.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge
-   the artifact summary into the final `scratch/simulation_report_<timestamp>.md`.
+   the artifact summary into the final `scripts/battle-tester/tests/simulation_report_<timestamp>.md`.
 
 ---
 
@@ -197,12 +197,29 @@ TEST_BATCH=<n>                  # Run only batch N
 REGENERATE_CASES=true           # Force fuzzer to overwrite certified_fuzzer_cases.json
 ```
 
+### E2E Multi-Error Logging Mode (Mass-Debugging)
+
+To analyze multiple E2E battle bugs simultaneously and identify patterns without early termination, run the E2E suite with the `CONTINUE_ON_ERROR=true` environment variable.
+
+When `CONTINUE_ON_ERROR=true` is set:
+1. Playwright tests intercept FSM/HP/parity errors, save them to the `scratch/e2e_failures/` directory, and exit the test block successfully.
+2. This avoids triggering Playwright's `maxFailures: 1` setting, allowing all cases in the suite to execute.
+3. At the end, the suite consolidates all failure data into `scratch/failed_e2e_cases.json` and a readable summary in `scratch/failed_e2e_cases.txt`.
+
+**Execution Command:**
+```bash
+$env:CONTINUE_ON_ERROR="true"; npm run test:e2e:combat
+```
+
 **Design rule:** If a simulation is missing `TEST_CASE` support, treat that as
 a design gap. Propose adding it and document the plan before implementing.
 
 ---
 
 ## Simulation Execution Workflow
+
+> [!IMPORTANT]
+> **Strict Sequential Execution Mandate:** NEVER run multiple simulation commands or test suites concurrently or in parallel. Each simulation command already utilizes multicore resources internally. Running two or more simulation commands at the same time will saturate the CPU and generate execution errors. Always wait for one simulation run to completely finish before starting another.
 
 ### Step 1 — Determine scope
 
@@ -239,19 +256,36 @@ DETECT failure in simulation X
   |
 ANALYZE: read the test carefully. Understand what game behavior it asserts.
   |
+STUDY SHOWDOWN: Consult first the local Showdown source code in pokemon-showdown-code/
+                to understand the exact logic and flow Showdown uses for this scenario.
+                CRITICAL: NEVER copy code from Showdown! Use it only to understand
+                how to call the library and manage our state representations.
+  |
 DIAGNOSE: locate the divergence in src/ (never in the test).
   |
+REPRODUCE WITH UNIT TEST: Extract the failing case/context from the failed simulation
+                          and write a minimal, reproducing unit test under tests/unit/
+                          or tests/node/. Verify that the test fails as expected.
+  |
 CLASSIFY complexity:
-  - Simple bug (wrong value, missing case, off-by-one) -> fix immediately
+  - Simple bug (wrong value, missing case, off-by-one) -> proceed to fix
   - Structural (requires design change) -> STOP, explain to user, propose plan
   |
 FIX src/ to match what @pkmn/sim declares as correct.
+  |
+VALIDATE VIA UNIT TESTS: Run the new unit test (and all related unit/node tests)
+                         to verify the fix works at the logic level before running
+                         heavy browser simulations.
   |
 RE-RUN only simulation X (use TEST_CASE filter or domain script).
   |
   +-- PASS -> continue with remaining simulations from where execution stopped
   +-- FAIL -> repeat fix loop (no retry limit for simple bugs)
 ```
+
+**MANDATORY: Unit-Test First & Pre-Simulation Validation Rules**
+1. **Never skip reproducing tests:** Whenever a simulation fails or a bug is reported, you MUST first create or update a unit test (or lightweight Node test) that successfully reproduces the failure BEFORE applying any fix to `src/`.
+2. **Never run E2E simulations on untested code changes:** Any code edits in `src/` must first be validated by executing and passing the unit/integration tests (`npm run test` or specific file path test) BEFORE proposing or running any browser-based E2E Playwright simulations. This saves time and computational resources.
 
 After all individual fixes pass, **run the full E2E suite once more** to catch
 regressions before reporting completion.
@@ -304,6 +338,7 @@ Then summarize in chat with clear action options for the user.
 - Change an expected value to match incorrect `src/` behavior
 - Add a `try/catch` that silences a desync or failure
 - Bypass a state-parity check
+- Use silent mock/patch workarounds in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize. The objective is never to finish simulations with fake patches/mocks, but to find and fix bugs in `src/` that prevent matching the fuzzer.
 
 **The simulation is law. src/ must conform.**
 

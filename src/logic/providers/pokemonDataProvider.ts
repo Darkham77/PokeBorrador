@@ -131,7 +131,7 @@ export const pokemonDataProvider = {
         const species = Dex.forGen(ACTIVE_GENERATION).species.get(speciesId);
         if (!species || !species.exists) return [];
         
-        // Retornar lista de habilidades válidas en Gen 3 de pkms
+        // Retornar lista de habilidades válidas en Gen 9 de pkms
         return Object.values(species.abilities).map(a => toID(a));
     },
 
@@ -141,6 +141,22 @@ export const pokemonDataProvider = {
     getMoveData(id: string): MoveBaseData {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
+        
+        // Manejar el caso especial del movimiento virtual de recarga de Showdown
+        if (cleanId === 'recharge') {
+            return {
+                id: 'recharge',
+                name: 'Recargar',
+                type: 'Normal',
+                category: 'Special',
+                pp: 1,
+                maxPp: 1,
+                accuracy: true,
+                power: 0,
+                desc: 'El Pokémon debe recargar este turno.'
+            } as MoveBaseData;
+        }
+
         let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
         if (!move || !move.exists) {
             move = Dex.moves.get(cleanId);

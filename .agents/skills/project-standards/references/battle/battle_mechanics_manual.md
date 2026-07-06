@@ -197,6 +197,24 @@ These can coexist with primary status and other secondary effects:
 
 ---
 
+## 🩹 Item and Medicine Usage Constraints
+
+To ensure strict parity with official Pokémon game mechanics, all medicines and inventory consumables in both the fuzzer and battle engine must adhere to the following rules:
+
+1. **Potions (Potion, Super Potion, Hyper Potion, Full Restore, etc.)**
+   - **Restriction**: Cannot be consumed if the target Pokemon has maximum HP (Full HP). Attempting to use any health-restoring potion or medicine on a fully healthy Pokemon must stop the action immediately and trigger the standard message: `"No tendrá ningún efecto"` (It won't have any effect). The item must not be consumed and remains in the inventory bag.
+
+2. **Revives (Revive, Max Revive, Revival Herb)**
+   - **Restriction**: Cannot be used if the target Pokemon is at Full HP (or simply alive).
+   - **Mechanic**: Reanimation items require a fainted target (0 HP). If the Pokemon is fainted, it consumes the item (reviving with half or max HP depending on the item). If the Pokemon is alive (even at 1 HP), the game must prevent selection and show the same `"No tendrá ningún efecto"` message without consuming the item.
+
+💡 **Exceptions: Candies and Stat-Boosting Items**
+The only medicine category items that can be consumed at Full HP are those that alter other parameters instead of current health:
+   - **Rare Candy / Exp Candy**: Can be used at Full HP to level up.
+   - **Vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos)**: Can be consumed to increase Effort Values (EVs), provided the target has not reached the limit for that specific stat or the global 510 EVs cap.
+
+---
+
 ## 🔄 Pokémon Withdrawal & Switching (Reorder Team)
 
 ### 1. Manual Switching

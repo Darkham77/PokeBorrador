@@ -168,3 +168,7 @@ This guarantees a clean global state for each test run.
 ### 7. English IDs for Game Objects in Tests
 
 When writing unit tests or specs that verify items or item effects, you MUST always use the English item IDs (e.g., `'everstone'`, `'power_weight'`) instead of Spanish translation names (e.g., `'Piedra Eterna'`, `'Pesa Recia'`). The game logic and engine evaluate items strictly by their canonical English identifier keys, and passing Spanish names will cause test failures due to condition mismatch.
+
+### 8. Medicine Target Checks in Simulations
+
+When writing tests or configuring battle cheats, do not trigger healing or reanimation items on invalid targets. Any test or simulation script attempting to apply a potion to a Full HP Pokemon or a revive to a living Pokemon MUST fail, matching official game mechanics where it has no effect and does not consume the item.

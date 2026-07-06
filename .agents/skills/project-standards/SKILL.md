@@ -21,6 +21,7 @@ Consult these global and cross-functional manuals for project-wide standards (do
 | **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
 | **Save & Persistence**   | [save_system_manual.md](./references/technical/save_system_manual.md)                     |
 | **Showdown Bridge Guide**| [BRIDGE-GUIDE.md](./references/battle/showdown/BRIDGE-GUIDE.md)                           |
+| **Showdown Reference**  | [pokemon-showdown-code/](../../../pokemon-showdown-code/) Source code of Pokémon Showdown (Source of Truth)                     |
 | **Legacy Migration Hub** | [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md)           |
 
 ### 🛠️ Migration & Technical Support
@@ -39,6 +40,7 @@ Consult these global and cross-functional manuals for project-wide standards (do
 ### 2. Modularity & Code Quality
 - **500/1000-Line Rule**: Modularization is recommended for files exceeding **500 lines** (triggers a warning). No logic or style file may exceed **1000 lines** (hard limit, excluding static databases and metadata).
 - **Decoupling and SSoT**: Architectural constraints, SSoT declarations, and validation routines reside in their respective child directories' `AGENTS.md`.
+- **Zero-Cloning & Zero-Fallback Mandates**: It is STRICTLY FORBIDDEN to clone, shallow-copy (`{ ... }`), or replace active model instances (like active combatants or team members) to trigger updates. Always use UID-based resolution to refer to the Single Source of Truth (`gameStore.state.team` or `gameStore.state.box`) and perform in-place mutations directly on the references to maintain reactive bindings and prevent desynchronization bugs. Furthermore, it is STRICTLY FORBIDDEN to implement runtime compatibility adapters, silent fallback values, or default reference fallbacks (e.g. returning the active pokemon reference when a UID resolution or ID lookup fails). If any reference lookup, matching, or ID translation fails, it MUST throw an explicit, descriptive Error immediately to prevent silent behavior desynchronization and ensure bugs are caught at the source.
 
 ---
 

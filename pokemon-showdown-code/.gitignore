@@ -1,0 +1,14 @@
+node_modules/
+build/
+.DS_Store
+Thumbs.db
+*package-lock.json
+.eslintcache
+.tsbuildinfo
+.vscode
+*-debug.log
+.cache/
+dist/
+.parcel-cache
+tsconfig.cjs.json
+tsconfig.esm.json

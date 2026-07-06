@@ -1,0 +1,149 @@
+[
+  {
+    "caseId": "case-16b356fb106e",
+    "error": "page.evaluate: Target page, context or browser has been closed",
+    "playerTeam": [
+      "mew (no item)",
+      "falinks (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:28:20.211Z"
+  },
+  {
+    "caseId": "case-1f0311b3a918",
+    "error": "page.screenshot: Target page, context or browser has been closed",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:28:20.980Z"
+  },
+  {
+    "caseId": "case-1f52469f0053",
+    "error": "[Paridad FSM] El estado final del juego diverge del simulador Showdown:\n  - P1[0] P-Poke2: game HP=291 vs showdown HP=320\n  - P1[1] P-Poke1: game HP=290 vs showdown HP=270\n  - P2[0] E-Poke2: game HP=702 vs showdown HP=565\n  - P2[1] E-Poke1: game HP=689 vs showdown HP=489",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:24:42.131Z"
+  },
+  {
+    "caseId": "case-29dcaf897d68",
+    "error": "[Paridad FSM] El estado final del juego diverge del simulador Showdown:\n  - P1[0] P-Poke2: game HP=0 vs showdown HP=265\n  - P1[0] P-Poke2: game fainted=true vs showdown fainted=false\n  - P1[1] P-Poke3: game HP=245 vs showdown HP=202\n  - P1[2] P-Poke1: game HP=0 vs showdown HP=342\n  - P1[2] P-Poke1: game fainted=true vs showdown fainted=false\n  - P1[3] P-Poke4: game HP=0 vs showdown HP=342\n  - P1[3] P-Poke4: game fainted=true vs showdown fainted=false\n  - P2[0] E-Poke2: game HP=0 vs showdown HP=299\n  - P2[0] E-Poke2: game fainted=true vs showdown fainted=false\n  - P2[1] E-Poke1: game HP=0 vs showdown HP=662\n  - P2[1] E-Poke1: game fainted=true vs showdown fainted=false\n  - P2[2] E-Poke3: game HP=0 vs showdown HP=714\n  - P2[2] E-Poke3: game fainted=true vs showdown fainted=false\n  - P2[3] E-Poke4: game HP=650 vs showdown HP=714",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:24:16.526Z"
+  },
+  {
+    "caseId": "case-8e1a41d09326",
+    "error": "Bloqueo detectado: La FSM de combate se quedó trabada en el turno 30. Captura guardada en scratch/.",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:23:43.712Z"
+  },
+  {
+    "caseId": "case-b32174423339",
+    "error": "page.evaluate: Test ended.",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:28:20.957Z"
+  },
+  {
+    "caseId": "case-ed5b745465e2",
+    "error": "[Paridad FSM] El estado final del juego diverge del simulador Showdown:\n  - P1[0] P-Poke2: game HP=227 vs showdown HP=168\n  - P1[1] P-Poke3: game HP=203 vs showdown HP=148\n  - P2[0] E-Poke2: game HP=0 vs showdown HP=363\n  - P2[0] E-Poke2: game fainted=true vs showdown fainted=false\n  - P2[1] E-Poke1: game HP=0 vs showdown HP=714\n  - P2[1] E-Poke1: game fainted=true vs showdown fainted=false",
+    "playerTeam": [
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (no item)",
+      "mew (sitrusberry)"
+    ],
+    "enemyTeam": [
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)",
+      "blissey (no item)"
+    ],
+    "timestamp": "2026-07-06T01:26:54.791Z"
+  }
+]

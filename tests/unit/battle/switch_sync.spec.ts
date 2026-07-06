@@ -71,7 +71,15 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
       p2SlotOrder: null as string[] | null,
       participants: ['p1'],
       isTrainer: false,
-      weather: { type: 'clear', visual: 'clear', turns: -1 }
+      weather: { type: 'clear', visual: 'clear', turns: -1 },
+      playerRequest: {
+        side: {
+          pokemon: [
+            { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '50/100', active: true, uid: p1.uid },
+            { ident: 'p1: Charizard', details: 'Charizard', condition: '100/100', active: false, uid: p2.uid }
+          ]
+        }
+      }
     })
 
     const playerStages = ref<BattleStages>({

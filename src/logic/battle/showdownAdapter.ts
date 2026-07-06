@@ -18,9 +18,12 @@ export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
  * Mapea un Pokémon de Poké Vicio al formato oficial de Pokémon Showdown (PokemonSet).
  */
 export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
-  // Traducir habilidad y naturaleza (por defecto vacías o neutras si no hay coincidencia)
-  const abilityKey = poke.ability || 'overgrow';
-  const natureKey = poke.nature || 'serious';
+  if (!poke.ability) {
+    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una habilidad definida (ability ID requerida).`);
+  }
+  if (!poke.nature) {
+    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene una naturaleza definida (nature ID requerida).`);
+  }
 
   // Filtrar movimientos no nulos, mapear IDs y permitir cualquier movimiento existente en el Dex global
   const moves = poke.moves
@@ -32,7 +35,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     });
 
   if (moves.length === 0) {
-    moves.push('tackle');
+    throw new Error(`[mapToShowdownSet] El Pokémon "${poke.name}" no tiene ningún movimiento válido cargado.`);
   }
 
   const speciesName = resolveShowdownSpecies(poke.id);
@@ -44,8 +47,8 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     shiny: poke.isShiny || false,
     gender: (poke.gender === 'M' || poke.gender === 'F') ? poke.gender : '',
     item: poke.heldItem || '',
-    ability: abilityKey,
-    nature: natureKey,
+    ability: poke.ability,
+    nature: poke.nature,
     ivs: {
       hp: poke.ivs?.hp ?? 31,
       atk: poke.ivs?.atk ?? 31,
@@ -64,8 +67,16 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
       spe: poke.evs?.spe ?? 0
     },
     moves: moves,
-    uid: poke.uid
-  } as PokemonSet & { uid?: string };
+    uid: poke.uid,
+    stats: {
+      hp: poke.maxHp,
+      atk: poke.atk,
+      def: poke.def,
+      spa: poke.spa,
+      spd: poke.spd,
+      spe: poke.spe
+    }
+  } as PokemonSet & { uid?: string; stats?: any };
 }
 
 // Mapa inverso: número → nombre Showdown (construido una sola vez)
@@ -78,7 +89,9 @@ const _numericToSpecies: Record<string, string> = Object.fromEntries(
  * al nombre de especie que acepta @pkmn/sim.
  */
 function resolveShowdownSpecies(raw: string | undefined): string {
-  if (!raw) return 'bulbasaur';
+  if (!raw) {
+    throw new Error("[resolveShowdownSpecies] ID de especie inválido o indefinido.");
+  }
   // Si es puramente numérico, buscar en mapa inverso
   if (/^\d+$/.test(raw)) return _numericToSpecies[raw] ?? raw;
   // Si ya es nombre Showdown, devolverlo tal cual
@@ -95,16 +108,37 @@ export function getShowdownSlot(slotOrder: string[], uid: string): number {
   return idx !== -1 ? idx + 1 : 1
 }
 
+import type { ShowdownPlayerRequest } from '../../types/battle/battle.ts'
+
+export interface ResolveActiveBattleState {
+  playerRequest?: ShowdownPlayerRequest | null;
+  enemyRequest?: ShowdownPlayerRequest | null;
+  playerTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
+  enemyTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
+}
+
 /**
  * Resolves the Showdown slot number for a Pokemon using the canonical slot order
- * provided by the worker (p1SlotOrder / p2SlotOrder).
+ * provided by the request payload (side.pokemon[].uid).
  */
 export function resolveShowdownSlot(
-  active: { p1SlotOrder?: string[] | null; p2SlotOrder?: string[] | null },
+  active: ResolveActiveBattleState,
   side: 'player' | 'enemy',
   pokemonUid: string
 ): number {
-  const order = side === 'player' ? active.p1SlotOrder : active.p2SlotOrder
-  if (!order?.length) return 1
-  return getShowdownSlot(order, pokemonUid)
+  const req = side === 'player' ? active.playerRequest : active.enemyRequest;
+  const list = req?.side?.pokemon;
+  if (!list || !Array.isArray(list)) {
+    throw new Error(`[resolveShowdownSlot] Missing request Pokemon list for side ${side}. Cannot resolve slot for UID: ${pokemonUid}`);
+  }
+  
+  const idx = list.findIndex((p: any) => p && p.uid === pokemonUid);
+  if (idx === -1) {
+    const uids = list.map((p: any) => p?.uid || 'null');
+    throw new Error(`[resolveShowdownSlot] UID ${pokemonUid} not found in ${side} request Pokemon UIDs: ${JSON.stringify(uids)}`);
+  }
+
+  const slot = idx + 1;
+  console.log(`[resolveShowdownSlot] side: ${side}, resolved slot via PKMS request for UID ${pokemonUid}: ${slot}`);
+  return slot;
 }

@@ -10,7 +10,8 @@
     "src/logic/render/MapRenderer.ts",
     "src/logic/render/render.worker.ts",
     "test aventura/**",
-    "public/test-aventura-animations.css"
+    "public/test-aventura-animations.css",
+    "pokemon-showdown-code/**"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",

@@ -5,35 +5,9 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 import { updateCastformForm } from './battleFlow.ts'
-import type { BattleState } from '@/types/battle/battle'
 
-/** Collects uid-keyed HP and status snapshots for both sides before sending to the worker. */
-function collectHpSnapshots(
-  store: BattleContext,
-  active: BattleState | null | undefined
-): {
-  p1Hps: Record<string, number> | undefined;
-  p2Hps: Record<string, number> | undefined;
-  p1Statuses: Record<string, string> | undefined;
-  p2Statuses: Record<string, string> | undefined;
-} {
-  if (!active) return { p1Hps: undefined, p2Hps: undefined, p1Statuses: undefined, p2Statuses: undefined };
-  const team = (store.gs.state.team || []).filter((p): p is Pokemon => !!p);
-  const p1Hps: Record<string, number> = {};
-  const p1Statuses: Record<string, string> = {};
-  for (const p of team) {
-    p1Hps[p.uid] = p.hp;
-    p1Statuses[p.uid] = p.status ?? '';
-  }
-  const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p: Pokemon | null): p is Pokemon => !!p);
-  const p2Hps: Record<string, number> = {};
-  const p2Statuses: Record<string, string> = {};
-  for (const p of enemyTeam) {
-    p2Hps[p.uid] = p.hp;
-    p2Statuses[p.uid] = p.status ?? '';
-  }
-  return { p1Hps, p2Hps, p1Statuses, p2Statuses };
-}
+
+
 
 /**
  * Handles the turn logic for a single move execution.
@@ -41,7 +15,9 @@ function collectHpSnapshots(
 export async function executeTurn(store: BattleContext, moveIndex: number) {
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
-  console.log(`[BattleTurn] executeTurn started. store.persistBattle type: ${typeof store.persistBattle}`);
+  if (p) {
+    console.log(`[E2E-DEBUG-TURN] executeTurn started. moveIndex: ${moveIndex}, active player: "${p.nickname || p.name}" (UID: ${p.uid}), moves: ${JSON.stringify(p.moves.map(m => m?.id))}`);
+  }
   
   if (!p || !e) {
     logger.warn('BattleTurn', 'Aborting turn: Player or Enemy is null', { p, e })
@@ -129,15 +105,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         p2Choice = `move ${validMove.id}`;
       }
     }
-    // Interceptar elección de enemigo si está inyectada en el test determinista
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
-      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
-    }
-    const { p1Hps, p2Hps, p1Statuses, p2Statuses } = collectHpSnapshots(store, active);
-
-    logger.info('BattleTurn', `Enviando elecciones al worker: Player: ${p1Choice}, Enemy: ${p2Choice} (p2Skip: ${p2Skip})`);
-
-    const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, false, p2Skip)
+    const result = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
     logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
 
     if (active) {
@@ -147,17 +115,28 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
 
-    // Reproducir todos los logs del simulador asíncronamente.
-    // IMPORTANTE: interrumpir en |faint| para que el atacante más lento no ejecute
-    // su movimiento después de haber sido derrotado por el más rápido.
+    // Reproducir todos los logs del simulador asíncronamente omitiendo efectos de dummy moves.
     const filteredLogs = filterShowdownLogs(result.logs);
-    for (const logLine of filteredLogs) {
-      await parseShowdownLogLine(store, logLine, filteredLogs);
-    }
+    await parseLogsWithSkip(store, filteredLogs, false, p2Skip);
 
 
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+    const { handleForceSwitch } = await import('./resolution.ts')
+    
+    // Las sustituciones forzadas por movimientos pivot (U-turn, Chilly Reception, etc.)
+    // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
+    const p1Force = !!result.p1Request?.forceSwitch?.length
+    const p2Force = !!result.p2Request?.forceSwitch?.length
+    if (p1Force) {
+      await handleForceSwitch(store, 'player')
+      return
+    }
+    if (p2Force) {
+      await handleForceSwitch(store, 'enemy')
+      return
+    }
 
     const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
     const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
@@ -179,15 +158,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         await store.handleFaint('enemy')
       }
       if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
-    } else {
-      const { handleForceSwitch } = await import('./resolution.ts')
-      if (result.p2ForceSwitch) {
-        await handleForceSwitch(store, 'enemy')
-      }
-      if (result.p1ForceSwitch) {
-        await handleForceSwitch(store, 'player')
-        return
-      }
     }
 
     if (result.isOver && store.activeBattle.value) {
@@ -307,19 +277,30 @@ export async function runEnemyAction(store: BattleContext) {
     console.log(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
     console.log(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
 
-    const { p1Hps, p2Hps, p1Statuses, p2Statuses } = collectHpSnapshots(store, active);
-
-    const result = await executeTurnInWorker(p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, true, p2Skip)
+    const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip)
     if (active) {
       active.playerRequest = result.p1Request;
       active.enemyRequest = result.p2Request;
     }
     const filteredLogs = filterShowdownLogs(result.logs);
-    for (const logLine of filteredLogs) {
-      await parseShowdownLogLine(store, logLine, filteredLogs);
+    await parseLogsWithSkip(store, filteredLogs, true, p2Skip);
+
+
+
+    const { handleForceSwitch } = await import('./resolution.ts')
+    
+    // Las sustituciones forzadas por movimientos pivot (U-turn, Chilly Reception, etc.)
+    // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
+    const p1Force = !!result.p1Request?.forceSwitch?.length
+    const p2Force = !!result.p2Request?.forceSwitch?.length
+    if (p1Force) {
+      await handleForceSwitch(store, 'player')
+      return
     }
-
-
+    if (p2Force) {
+      await handleForceSwitch(store, 'enemy')
+      return
+    }
 
     const playerFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
     const enemyFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0
@@ -340,15 +321,6 @@ export async function runEnemyAction(store: BattleContext) {
         await store.handleFaint('enemy')
       }
       if (store.fsm.currentState.value === store.BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
-    } else {
-      const { handleForceSwitch } = await import('./resolution.ts')
-      if (result.p2ForceSwitch) {
-        await handleForceSwitch(store, 'enemy')
-      }
-      if (result.p1ForceSwitch) {
-        await handleForceSwitch(store, 'player')
-        return
-      }
     }
 
     if (result.isOver && store.activeBattle.value) {
@@ -523,5 +495,49 @@ async function evaluateAndUseNPCItem(ctx: BattleContext, e: Pokemon): Promise<bo
   }
 
   return false;
+}
+
+async function parseLogsWithSkip(store: BattleContext, logs: string[], p1Skip: boolean, p2Skip: boolean) {
+  let skipLogsForP1 = false;
+  let skipLogsForP2 = false;
+  
+  const { parseShowdownLogLine } = await import('./showdownBridge.ts');
+  
+  for (const logLine of logs) {
+    const parts = logLine.split('|').map(x => x.trim());
+    const type = parts[1];
+    
+    if (p1Skip) {
+      if (type === 'move' && parts[2]?.startsWith('p1')) {
+        skipLogsForP1 = true;
+        continue;
+      }
+      if (skipLogsForP1) {
+        if (type === '-damage' && parts[2]?.startsWith('p2')) {
+          continue;
+        }
+        if (type === 'move' && !parts[2]?.startsWith('p1')) {
+          skipLogsForP1 = false;
+        }
+      }
+    }
+    
+    if (p2Skip) {
+      if (type === 'move' && parts[2]?.startsWith('p2')) {
+        skipLogsForP2 = true;
+        continue;
+      }
+      if (skipLogsForP2) {
+        if (type === '-damage' && parts[2]?.startsWith('p1')) {
+          continue;
+        }
+        if (type === 'move' && !parts[2]?.startsWith('p2')) {
+          skipLogsForP2 = false;
+        }
+      }
+    }
+    
+    await parseShowdownLogLine(store, logLine, logs);
+  }
 }
 

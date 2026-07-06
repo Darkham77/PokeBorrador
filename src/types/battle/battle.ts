@@ -96,9 +96,7 @@ export interface BattleState {
     money: number;
     items: Record<string, number>;
   };
-  /** UIDs in real @pkmn/sim slot order (active Pokemon is always at index 0). Source of truth for slot numbers. */
   p1SlotOrder?: string[];
-  /** UIDs in real @pkmn/sim slot order for the enemy side. */
   p2SlotOrder?: string[];
 }
 
@@ -180,5 +178,13 @@ export interface ShowdownPlayerRequest {
     maybeTrapped?: boolean;
   }[];
   forceSwitch?: boolean[];
+  side?: {
+    pokemon: {
+      ident: string;
+      details: string;
+      condition: string;
+      active: boolean;
+    }[];
+  };
 }
 

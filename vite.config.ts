@@ -269,10 +269,20 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module'
       }
-    })
+    }),
+    {
+      name: 'worker-reload-plugin',
+      handleHotUpdate({ file, server }) {
+        if (file.endsWith('showdown.worker.ts')) {
+          server.config.logger.info(`[HMR] showdown.worker.ts modificado. Forzando recarga de página.`);
+          server.ws.send({ type: 'full-reload' });
+          return [];
+        }
+      }
+    }
   ],
   define: {
     __BUILD_TIME__: JSON.stringify(appVersion.slice(1, 5)),
@@ -282,6 +292,12 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  optimizeDeps: {
+    entries: [
+      'index.html',
+      'src/**/*.{ts,tsx,vue,js,jsx}'
+    ]
   },
   css: {
     devSourcemap: true,

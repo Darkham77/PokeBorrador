@@ -1,3 +1,2 @@
 # Ignore Chrome DevTools dumps and reports
-docs/problem_1.md
-docs/problem_2.md
+pokemon-showdown-code/**

@@ -21,6 +21,7 @@ Rules:
 - Deletion over addition. Boring over clever. Fewest files possible.
 - Question complex requests: "Do you actually need X, or does Y cover it?"
 - Pick the edge-case-correct option when two stdlib approaches are the same size — lazy means less code, not the flimsier algorithm.
+- **Showdown Code as Source of Truth**: The local directory `pokemon-showdown-code/` contains the official Pokémon Showdown source code. AI agents and developers MUST use this directory as the canonical source of truth and reference to understand Showdown's algorithms, battle engine logic, and state transitions, avoiding assumptions. Whenever updates in `@pkmn/sim` or other Showdown-related packages in `package.json` are detected, the local `pokemon-showdown-code/` directory MUST be updated to match the repository `https://github.com/pkmn/ps.git` (preserving clean files without `.git` folders and other non-code resources).
 
 Not lazy about: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Whenever a bug is presented with a reproducing example, you MUST FIRST create a unit test (or other appropriate test setup) that successfully reproduces the bug (verifying it fails) before implementing the fix. This guarantees regression protection. Non-trivial logic leaves ONE runnable check behind — the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
 
@@ -51,8 +52,12 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via the `DBRouter`.
 - **Zero-Pokemon Save Prohibition (Save Shield)**: To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`. A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
-- **No Runtime Sanitization Patches / Compatibility Adapters**: It is strictly forbidden to implement runtime compatibility patches, sanitizers, normalizations, or adapters in application code (e.g. inside components, save loading, initialization hooks, or lookup helpers like `getItemById`) to dynamically bridge or fix mismatched/incorrect identifiers. IDs (such as item, move, and Pokémon IDs) are strictly constant, final, and immutable; they MUST never be translated, normalized, or patched at runtime. Using string manipulation functions (such as `.toLowerCase()`, `.replace(/[^a-z0-9]/g, '')`, or regex sanitizers) to dynamically bypass or "clean up" incorrect IDs is strictly prohibited. If a lookup or matching fails, it MUST fail with an explicit error to signal that the source identifier or database save is wrong and must be corrected directly at the source (creating/running database migrations if the data is persisted).
+- **No Runtime Sanitization Patches / Compatibility Adapters / Resolution Fallbacks**: It is strictly forbidden to implement runtime compatibility patches, sanitizers, normalizations, adapters, fallback values, or default return references (such as defaulting to the active pokemon reference when a UID/ID lookup fails) in application code (e.g. inside components, save loading, initialization hooks, or lookup helpers like `getItemById` and `getPoke`). IDs (such as item, move, and Pokémon IDs) are strictly constant, final, and immutable; they MUST never be translated, normalized, or patched at runtime. Using string manipulation functions (such as `.toLowerCase()`, `.replace(/[^a-z0-9]/g, '')`, or regex sanitizers) to dynamically bypass or "clean up" incorrect IDs is strictly prohibited. If a lookup, reference resolution, or matching fails, it MUST throw an explicit, descriptive Error immediately to guarantee that synchronization and parity desynchronizations are exposed and fixed at the source, preventing silent behavior skew.
 - **Absolute Prohibition on Database Updates**: It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger the database update/migration scripts (e.g., `npm run servers:db:update` or similar) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`). Agents must NEVER touch or update these databases; database updates are strictly reserved for manual execution by the USER.
+- **Strict UID-Based Simulator Parity & Nickname Limit Constraint**:
+  1. Showdown trunca nativamente los nicknames de los Pokémon a un máximo de 18 caracteres. Para evitar truncamientos destructivos al mapear UIDs, la inicialización del equipo en el simulador MUST usar los primeros 8 caracteres del UID (`uid.split('-')[0]`) como el nickname (`name` de Showdown).
+  2. Todos los mapeos e inyecciones de UIDs (`injectUidsIntoRequest`) y resoluciones de logs (`getPoke` en el bridge) MUST ser estrictamente basados en UID o prefijo de UID.
+  3. Queda estrictamente PROHIBIDO implementar fallbacks basados en nombres, apodos genéricos, especies o índices de slots físicos cuando falla una resolución. Si no se puede resolver el UID de un Pokémon en un request o línea de log, MUST lanzar un error descriptivo e interrumpir la ejecución inmediatamente para exponer la anomalía en su origen.
 
 ## 4. Code Modularity (500/1000 Rule)
 
@@ -202,6 +207,8 @@ Default section order:
 - [supabase/AGENTS.md](./supabase/AGENTS.md): Online cloud persistence, migration versioning, and row-level security.
 - [tests/AGENTS.md](./tests/AGENTS.md): Automated unit, integration, and E2E browser tests suites.
 - [CONTEXT.md](./CONTEXT.md): Glossary and domain models for the repository.
+- [pokemon-showdown-code/](./pokemon-showdown-code/): Source code of Pokémon Showdown used as reference and source of truth.
+
 
 ---
 

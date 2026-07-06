@@ -1,0 +1,54 @@
+{
+  "name": "integration",
+  "private": true,
+  "browserslist": "last 1 Chrome version",
+  "dependencies": {
+    "@pkmn/client": "file:../client",
+    "@pkmn/data": "file:../data",
+    "@pkmn/eslint-config": "^9.28.0",
+    "@pkmn/img": "file:../img",
+    "@pkmn/protocol": "file:../protocol",
+    "@pkmn/randoms": "file:../randoms",
+    "@pkmn/sets": "file:../sets",
+    "@pkmn/sim": "file:../sim",
+    "@pkmn/view": "file:../view",
+    "cssnano": "^8.0.1",
+    "eslint": "<10",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jest": "^29.15.2",
+    "jest": "^30.4.2",
+    "minimist": "^1.2.8",
+    "parcel": "^2.16.4",
+    "source-map-support": "^0.5.21",
+    "typescript-eslint": "^8.60.1",
+    "typescript": "^6.0.3"
+  },
+  "alias": {
+    "process": false,
+    "buffer": false
+  },
+  "scripts": {
+    "lint": "eslint --cache src",
+    "fix": "eslint --fix src",
+    "compile": "tsc -p . && node ../vendor/pokemon-showdown/build && node build-client",
+    "build": "npm run compile && parcel build index.html",
+    "gh-pages": "npm run compile && parcel build --public-url /ps/integration/ index.html",
+    "start": "parcel index.html",
+    "test": "jest",
+    "pretest": "npm run compile",
+    "posttest": "npm run lint",
+    "postinstall": "npm -C ../vendor/pokemon-showdown install && npm -C ../vendor/pokemon-showdown-client install"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "node_modules/",
+      "build/"
+    ],
+    "moduleNameMapper": {
+      "^@pkmn/protocol/(.*)$": "<rootDir>/node_modules/@pkmn/protocol/build/$1",
+      "^@pkmn/sim/(.*)$": "<rootDir>/node_modules/@pkmn/sim/build/cjs/sim/$1"
+    }
+  }
+}

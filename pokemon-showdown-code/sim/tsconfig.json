@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "allowUnusedLabels": false,
+    "checkJs": true,
+    "lib": ["es2020", "dom"],
+    "target": "es2020",
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitOverride": false,
+    "noImplicitReturns": false,
+    "tsBuildInfoFile": ".tsbuildinfo"
+  },
+  "exclude": ["eslint.config.mjs", "test", "build"]
+}

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getShowdownSlot, getShowdownFormatId, resolveShowdownSlot } from '../../../src/logic/battle/showdownAdapter.ts';
+import { getShowdownSlot, getShowdownFormatId, resolveShowdownSlot, type ResolveActiveBattleState } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
   it('resolves correct 1-based Showdown slot indices based on slot order array', () => {
@@ -17,28 +17,38 @@ describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
     assert.strictEqual(getShowdownSlot(slotOrder, 'unknown-uid'), 1);
   });
 
-  it('resolveShowdownSlot reads p1SlotOrder for player side', () => {
+  it('resolveShowdownSlot reads playerRequest for player side', () => {
     const active = {
-      p1SlotOrder: ['gengar-uid', 'vaporeon-uid', 'eevee-uid'],
-      p2SlotOrder: ['rhydon-uid', 'dugtrio-uid']
-    };
+      playerRequest: {
+        side: {
+          pokemon: [{ uid: 'gengar-uid' }, { uid: 'vaporeon-uid' }, { uid: 'eevee-uid' }]
+        }
+      } as unknown as ResolveActiveBattleState['playerRequest'],
+      enemyRequest: null
+    } as unknown as ResolveActiveBattleState;
     assert.strictEqual(resolveShowdownSlot(active, 'player', 'gengar-uid'), 1);
     assert.strictEqual(resolveShowdownSlot(active, 'player', 'vaporeon-uid'), 2);
     assert.strictEqual(resolveShowdownSlot(active, 'player', 'eevee-uid'), 3);
   });
 
-  it('resolveShowdownSlot reads p2SlotOrder for enemy side', () => {
+  it('resolveShowdownSlot reads enemyRequest for enemy side', () => {
     const active = {
-      p1SlotOrder: ['gengar-uid'],
-      p2SlotOrder: ['rhydon-uid', 'dugtrio-uid']
-    };
+      playerRequest: null,
+      enemyRequest: {
+        side: {
+          pokemon: [{ uid: 'rhydon-uid' }, { uid: 'dugtrio-uid' }]
+        }
+      } as unknown as ResolveActiveBattleState['enemyRequest']
+    } as unknown as ResolveActiveBattleState;
     assert.strictEqual(resolveShowdownSlot(active, 'enemy', 'rhydon-uid'), 1);
     assert.strictEqual(resolveShowdownSlot(active, 'enemy', 'dugtrio-uid'), 2);
   });
 
-  it('resolveShowdownSlot returns 1 when slot order is empty', () => {
-    const active = { p1SlotOrder: [] as string[], p2SlotOrder: [] as string[] };
-    assert.strictEqual(resolveShowdownSlot(active, 'player', 'any-uid'), 1);
+  it('resolveShowdownSlot throws when slot order is missing or empty', () => {
+    const active = { playerRequest: null, enemyRequest: null } as unknown as ResolveActiveBattleState;
+    assert.throws(() => {
+      resolveShowdownSlot(active, 'player', 'any-uid');
+    }, /Missing request/);
   });
 
   it('correctly flags INVALID_CHOICE error prefix when choose fails', () => {

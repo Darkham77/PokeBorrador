@@ -197,14 +197,18 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
     case 'switch':
     case 'drag': {
-      const target = getPoke(parts[2] || '');
+      console.log(`[E2E-DEBUG-BRIDGE-SWITCH] Entering switch/drag parser. type: ${type}, rawId: "${parts[2]}", hpString: "${parts[4]}"`);
+      const target = getPoke(parts[2] || '', undefined, line);
       const hpString = parts[4] || '';
       if (target && hpString) {
         const hpAndStatus = hpString.split(' ');
         const rawHp = hpAndStatus[0] || '0';
         const hpParts = rawHp.split('/');
         target.hp = parseInt(hpParts[0] || '0');
-        target.maxHp = parseInt(hpParts[1] || '100');
+        if (hpParts[1]) {
+          const parsedMax = parseInt(hpParts[1]);
+          if (!isNaN(parsedMax)) target.maxHp = parsedMax;
+        }
         const statusStr = hpAndStatus[1];
         if (statusStr) {
           target.status = statusStr as import('@/types/pokemon/pokemon').PokemonStatus;

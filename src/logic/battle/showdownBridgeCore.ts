@@ -9,6 +9,12 @@ import type { SBCtx } from './showdownBridgeCtx';
 export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
   const { store, type, parts, p, getPoke, getSide, turnLogs } = ctx;
 
+  if (store.activeBattle.value && (store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+    if (type === 'move' || type === '-damage' || type === '-heal' || type === '-status' || type === '-curestatus' || type === '-sethp' || type === 'faint') {
+      return true;
+    }
+  }
+
   switch (type) {
     case 'move': {
       const side = getSide(parts[2] || '');
@@ -89,7 +95,10 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const hpParts = hpString.split('/');
         const oldHp = victim.hp;
         victim.hp = parseInt(hpParts[0] || '0');
-        victim.maxHp = parseInt(hpParts[1] || '100');
+        if (hpParts[1]) {
+          const parsedMax = parseInt(hpParts[1]);
+          if (!isNaN(parsedMax)) victim.maxHp = parsedMax;
+        }
         console.log(`[BRIDGE -damage] Victim: ${victim.name} (uid: ${victim.uid}) HP: ${oldHp} -> ${victim.hp}. Active Player: ${store.activeBattle.value?.player?.name} (uid: ${store.activeBattle.value?.player?.uid}) HP: ${store.activeBattle.value?.player?.hp}`);
         store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
         const side = victim === p ? 'player' : 'enemy';
@@ -106,8 +115,25 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       if (target && hpString) {
         const hpParts = hpString.split('/');
         target.hp = parseInt(hpParts[0] || '0');
-        target.maxHp = parseInt(hpParts[1] || '100');
+        if (hpParts[1]) {
+          const parsedMax = parseInt(hpParts[1]);
+          if (!isNaN(parsedMax)) target.maxHp = parsedMax;
+        }
         store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
+      }
+      return true;
+    }
+
+    case 'switch':
+    case 'drag': {
+      const target = getPoke(parts[2] || '');
+      if (target && store.activeBattle.value) {
+        const side = getSide(parts[2] || '');
+        if (side === 'player') {
+          store.activeBattle.value.player = target;
+        } else if (side === 'enemy') {
+          store.activeBattle.value.enemy = target;
+        }
       }
       return true;
     }

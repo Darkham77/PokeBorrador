@@ -1,6 +1,5 @@
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export async function executeFlee(ctx: BattleContext) {
   if (ctx.isProcessing.value) return
@@ -90,26 +89,7 @@ export async function executeFlee(ctx: BattleContext) {
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.BUILD_QUEUE)
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POP_ACTION)
 
-          const active = ctx.activeBattle.value;
-          let p1Hps: number[] | undefined = undefined;
-          let p2Hps: number[] | undefined = undefined;
-          if (active) {
-          const team = (ctx.gs.state.team || []).filter((p): p is Pokemon => !!p);
-            const playerOrder = active.p1SlotOrder || team.map(p => p.uid);
-            p1Hps = playerOrder.map(uid => {
-              const p = team.find(x => x.uid === uid);
-              return p ? p.hp : 0;
-            });
-
-            const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-            const enemyOrder = active.p2SlotOrder || enemyTeam.map(p => p.uid);
-            p2Hps = enemyOrder.map(uid => {
-              const p = enemyTeam.find(x => x.uid === uid);
-              return p ? p.hp : 0;
-            });
-          }
-
-          const result = await executeTurnInWorker('move struggle', `move ${enemyMove.id}`, p1Hps, p2Hps)
+          const result = await executeTurnInWorker('move struggle', `move ${enemyMove.id}`)
 
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
 
@@ -123,7 +103,6 @@ export async function executeFlee(ctx: BattleContext) {
 
           for (const logLine of filteredLogs) {
             await parseShowdownLogLine(ctx, logLine, filteredLogs);
-            if (logLine.startsWith('|faint|')) break;
           }
 
           if (result.isOver && ctx.activeBattle.value) {

@@ -1,8 +1,7 @@
-import gsap from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 
 export function useBattleTweenRegistry() {
-  const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()
+  const activeTweens = new Map<string, unknown>()
   // Pending resolvers: set when awaitTween is called before the component has mounted.
   // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
   const pendingTweenResolvers = new Map<string, () => void>()
@@ -49,23 +48,32 @@ export function useBattleTweenRegistry() {
     }
 
     // Slow path: wait for the component to fire REGISTER_TWEEN
-    const fallback = { timer: null as ReturnType<typeof gsap.delayedCall> | null }
+    const fallback = { timer: null as ReturnType<typeof setTimeout> | null }
     await new Promise<void>(resolve => {
       pendingTweenResolvers.set(animKey, resolve)
-      // Safety: if component never mounts or has no sprite, unblock after 2s via GSAP (not setTimeout)
-      fallback.timer = gsap.delayedCall(2, () => {
+      // Safety: if component never mounts or has no sprite, unblock after 2s via setTimeout
+      // to ensure it works even if requestAnimationFrame / GSAP ticker is throttled by the browser.
+      fallback.timer = setTimeout(() => {
         if (pendingTweenResolvers.has(animKey)) {
           pendingTweenResolvers.delete(animKey)
           resolve()
         }
-      })
+      }, 2000)
     })
-    fallback.timer?.kill()
+    if (fallback.timer) clearTimeout(fallback.timer)
 
-    // Now await the actual GSAP tween (native GSAP coordination)
+    // Now await the actual GSAP tween (native GSAP coordination) with a safety fallback
     const tween = activeTweens.get(animKey)
     if (tween) {
-      await tween
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const timeoutPromise = new Promise<void>(res => {
+        timeoutId = setTimeout(res, 2500);
+      });
+      await Promise.race([
+        tween,
+        timeoutPromise
+      ]);
+      if (timeoutId) clearTimeout(timeoutId);
       activeTweens.delete(animKey)
     }
   }

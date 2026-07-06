@@ -16,21 +16,96 @@ import { generateNPCInventory } from './trainerInventory.ts'
 
 export let showdownWorker: Worker | null = null;
 
+interface ViteDebug {
+  mockEnemyChoices?: string[];
+  enemyChoiceIndex?: number;
+}
+
 export async function executeTurnInWorker(
   p1Choice: string, 
   p2Choice?: string,
-  p1Hps?: Record<string, number> | number[],
-  p2Hps?: Record<string, number> | number[],
-  p1Statuses?: Record<string, string> | string[],
-  p2Statuses?: Record<string, string> | string[],
   p1Skip?: boolean,
   p2Skip?: boolean
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest; p1SlotOrder?: string[]; p2SlotOrder?: string[] }> {
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }
 
-  // Registrar elección en el historial local del combate
+  let finalP2Choice = p2Choice;
+  if (p2Choice && p2Choice !== '' && !p2Skip && !p2Choice.startsWith('switch ')) {
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+      const debugObj = window.__VITE_DEBUG__ as ViteDebug;
+      const mockChoices = debugObj.mockEnemyChoices;
+      if (mockChoices) {
+        const { useBattleStore } = await import('@/stores/battle/battle');
+        const battleStore = useBattleStore();
+        const enemyRequest = battleStore.state?.enemyRequest;
+        const forceSwitch = enemyRequest?.forceSwitch;
+        const isForceSwitch = Array.isArray(forceSwitch) && forceSwitch.some(x => !!x);
+
+        let idx = debugObj.enemyChoiceIndex ?? 0;
+        while (idx < mockChoices.length) {
+          const choiceStr = mockChoices[idx];
+          if (choiceStr === undefined) break;
+
+           let isValid = true;
+          if (isForceSwitch) {
+            // ForceSwitch: only switch commands are valid
+            if (!choiceStr.startsWith('switch ')) {
+              isValid = false;
+            } else {
+              const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+              const targetPoke = enemyRequest?.side?.pokemon?.[switchSlot - 1];
+              if (!targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
+                isValid = false;
+              }
+            }
+          } else {
+            // Normal move: skip disabled moves and invalid switch choices
+            if (choiceStr.startsWith('move ')) {
+              const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
+              const reqMove = enemyRequest?.active?.[0]?.moves?.[moveIdx];
+              if (reqMove && reqMove.disabled) {
+                isValid = false;
+              }
+            } else if (choiceStr.startsWith('switch ')) {
+              const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+              const targetPoke = enemyRequest?.side?.pokemon?.[switchSlot - 1];
+              if (!targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
+                isValid = false;
+              }
+            }
+          }
+
+          if (isValid) {
+            finalP2Choice = choiceStr;
+            debugObj.enemyChoiceIndex = idx + 1;
+            console.log(`[E2E-MOCK-CENTRAL] Intercepted enemy choice at index ${idx}: ${p2Choice} -> ${finalP2Choice}`);
+            break;
+          } else {
+            console.log(`[E2E-MOCK-CENTRAL] Choice "${choiceStr}" at index ${idx} is invalid for P2 (isForceSwitch: ${isForceSwitch}). Skipping.`);
+            idx++;
+            debugObj.enemyChoiceIndex = idx;
+          }
+        }
+      }
+    }
+  } else if (p2Choice && p2Choice.startsWith('switch ') && typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+    // The game resolved a switch internally (forceSwitch from faint/pivot).
+    // Consume that slot so the index stays aligned with the fuzzer's choices queue.
+    const debugObj = window.__VITE_DEBUG__ as ViteDebug;
+    if (debugObj.mockEnemyChoices) {
+      const idx = debugObj.enemyChoiceIndex ?? 0;
+      console.log(`[E2E-MOCK-CENTRAL] Game-resolved switch "${p2Choice}" at index ${idx} — consuming slot without replacing.`);
+      debugObj.enemyChoiceIndex = idx + 1;
+    }
+  }
+
+
+  // Registrar elección en el historial local del combate y extraer HPs reactivos para sincronizar cheats con el simulador
+  let p1Hps: Record<string, number> | undefined = undefined;
+  let p2Hps: Record<string, number> | undefined = undefined;
+
   try {
     const { useBattleStore } = await import('@/stores/battle/battle');
     const battleStore = useBattleStore();
@@ -41,9 +116,22 @@ export async function executeTurnInWorker(
       battleStore.state.battleHistory.push({
         turnCount: battleStore.state.turnCount,
         p1Choice,
-        p2Choice: p2Choice || 'struggle',
-        p1Hps: p1Hps ? JSON.parse(JSON.stringify(p1Hps)) : undefined,
-        p2Hps: p2Hps ? JSON.parse(JSON.stringify(p2Hps)) : undefined
+        p2Choice: finalP2Choice || 'struggle'
+      });
+    }
+
+    const { useGameStore } = await import('@/stores/game');
+    const gameStore = useGameStore();
+    if (gameStore?.state?.team) {
+      p1Hps = {};
+      gameStore.state.team.forEach((p: { uid?: string; hp?: number } | null) => {
+        if (p && p.uid) p1Hps![p.uid] = p.hp ?? 0;
+      });
+    }
+    if (battleStore.state?.enemyTeam) {
+      p2Hps = {};
+      battleStore.state.enemyTeam.forEach(p => {
+        if (p && p.uid) p2Hps![p.uid] = p.hp ?? 0;
       });
     }
   } catch (_e) {
@@ -52,12 +140,16 @@ export async function executeTurnInWorker(
 
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice, p1Hps, p2Hps, p1Statuses, p2Statuses, p1Skip, p2Skip }
+    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps }
   })
   return new Promise((resolve, reject) => {
     if (!showdownWorker) return reject(new Error('showdownWorker is null'))
     const handler = async (event: MessageEvent) => {
       const { type, payload } = event.data
+      if (type === 'WORKER_LOG') {
+        console.log(`[WORKER] ${payload}`);
+        return;
+      }
       const worker = showdownWorker!
       if (type === 'TURN_SUCCESS') {
         if (worker.removeEventListener) {
@@ -65,8 +157,58 @@ export async function executeTurnInWorker(
         } else {
           worker.onmessage = null
         }
+
+        // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot
+        try {
+          const { useBattleStore } = await import('@/stores/battle/battle');
+          const { useGameStore } = await import('@/stores/game');
+          const battleStore = useBattleStore();
+          const gameStore = useGameStore();
+          
+          if (payload.p1Request?.side?.pokemon && gameStore.state?.team) {
+            payload.p1Request.side.pokemon.forEach((reqPoke: { condition?: string; uid?: string } | null) => {
+              if (reqPoke && reqPoke.uid) {
+                const match = gameStore.state.team.find(p => p && p.uid === reqPoke.uid);
+                if (match) {
+                  const cond = reqPoke.condition || '';
+                  if (cond.includes('fnt')) {
+                    match.hp = 0;
+                  } else {
+                    const slashIdx = cond.indexOf('/');
+                    if (slashIdx !== -1) {
+                      match.hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
+          const enemyTeam = battleStore.state?.enemyTeam;
+          if (payload.p2Request?.side?.pokemon && enemyTeam) {
+            payload.p2Request.side.pokemon.forEach((reqPoke: { condition?: string; uid?: string } | null) => {
+              if (reqPoke && reqPoke.uid) {
+                const match = enemyTeam.find(p => p && p.uid === reqPoke.uid);
+                if (match) {
+                  const cond = reqPoke.condition || '';
+                  if (cond.includes('fnt')) {
+                    match.hp = 0;
+                  } else {
+                    const slashIdx = cond.indexOf('/');
+                    if (slashIdx !== -1) {
+                      match.hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+                    }
+                  }
+                }
+              }
+            });
+          }
+        } catch (_e) {
+          // Ignorar errores de sincronización
+        }
+
         resolve(payload)
-      } else if (type === 'ERROR') {
+      } else if (type === 'ERROR' || type === 'WORKER_ERROR') {
         if (worker.removeEventListener) {
           worker.removeEventListener('message', handler)
         } else {
@@ -481,25 +623,6 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value.isArchaeology = false
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value._rewardCombatants = []
-    // Reordenar el equipo del jugador para que el Pokémon inicial (initialPlayer) esté en la primera posición.
-    // Esto asegura que Showdown envíe a pista al Pokémon correcto desde el inicio del combate.
-    const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
-    const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
-    if (initialPlayerIdx > 0) {
-      const [p] = playerTeamList.splice(initialPlayerIdx, 1);
-      if (p) playerTeamList.unshift(p);
-    }
-
-    // Reordenar el equipo del rival para que el Pokémon inicial (initialEnemy) esté en la primera posición.
-    const enemyTeamList = [...(ctx.activeBattle.value.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
-    if (initialEnemy) {
-      const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
-      if (initialEnemyIdx > 0) {
-        const [p] = enemyTeamList.splice(initialEnemyIdx, 1);
-        if (p) enemyTeamList.unshift(p);
-      }
-    }
-
     ctx.activeBattle.value.playerSideConditions = {}
     ctx.activeBattle.value.enemySideConditions = {}
   }
@@ -516,6 +639,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       showdownWorker.terminate();
     }
     showdownWorker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' });
+    (window as unknown as Record<string, unknown>).__showdownWorker__ = showdownWorker;
      // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
      const debugSeed = (typeof window !== 'undefined' && window.__VITE_DEBUG__?.battleSeed);
      const seedArr = debugSeed || [
@@ -537,7 +661,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       if (p) playerTeamList.unshift(p);
     }
     const p1Team = playerTeamList.map(p => mapToShowdownSet(p));
-    const p1Hps = playerTeamList.map(p => p.hp);
+    const p1Hps: Record<string, number> = {};
+    playerTeamList.forEach(p => {
+      if (p) p1Hps[p.uid] = p.hp;
+    });
     const enemyTeamList = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
     if (initialEnemy) {
       const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
@@ -547,18 +674,32 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       }
     }
     const p2Team = enemyTeamList.map(p => mapToShowdownSet(p));
-    const p2Hps = enemyTeamList.map(p => p.hp);
+    const p2Hps: Record<string, number> = {};
+    enemyTeamList.forEach(p => {
+      if (p) p2Hps[p.uid] = p.hp;
+    });
     const initialWeatherOfficial = mapVisualToOfficialWeather(battleState?.weather?.type, ACTIVE_GENERATION);
     
-    logger.info('ShowdownWorker', `Inicializando batalla en el worker con clima: ${initialWeatherOfficial}`);
+    const p1Statuses: Record<string, string> = {};
+    playerTeamList.forEach(p => {
+      if (p) p1Statuses[p.uid] = p.status || '';
+    });
+    const p2Statuses: Record<string, string> = {};
+    enemyTeamList.forEach(p => {
+      if (p) p2Statuses[p.uid] = p.status || '';
+    });
+
+    logger.info('ShowdownWorker', `Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`);
     
     showdownWorker.postMessage({
       type: 'INIT_BATTLE',
       payload: {
-        p1: { name: 'Player', team: p1Team },
-        p2: { name: battleState?.trainerName || 'Enemigo', team: p2Team },
+        p1: { name: 'Player', team: p1Team.map((p, idx) => ({ ...p, nickname: playerTeamList[idx]?.uid?.split('-')[0], name: playerTeamList[idx]?.uid?.split('-')[0], uid: playerTeamList[idx]?.uid })) },
+        p2: { name: battleState?.trainerName || 'Enemy', team: p2Team.map((p, idx) => ({ ...p, nickname: enemyTeamList[idx]?.uid?.split('-')[0], name: enemyTeamList[idx]?.uid?.split('-')[0], uid: enemyTeamList[idx]?.uid })) },
         p1Hps,
         p2Hps,
+        p1Statuses,
+        p2Statuses,
         weather: initialWeatherOfficial,
         seed: seedArr
       }
@@ -566,14 +707,26 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
     const initHandler = async (e: MessageEvent) => {
       const { type: responseType, payload: responsePayload } = e.data;
+      if (responseType === 'WORKER_LOG') {
+        console.log(`[WORKER] ${responsePayload}`);
+        return;
+      }
       const worker = showdownWorker!
       if (responseType === 'INIT_BATTLE_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
+        console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}));
+        if (responsePayload) {
+          console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs));
+          if (responsePayload.debugLogs) {
+            console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length);
+            responsePayload.debugLogs.forEach((l: string) => {
+              console.log(`[E2E-WORKER-BUFFERED] ${l}`);
+            });
+          }
+        }
         if (ctx.activeBattle.value && responsePayload) {
           ctx.activeBattle.value.playerRequest = responsePayload.p1Request;
           ctx.activeBattle.value.enemyRequest = responsePayload.p2Request;
-          if (responsePayload.p1SlotOrder) ctx.activeBattle.value.p1SlotOrder = responsePayload.p1SlotOrder;
-          if (responsePayload.p2SlotOrder) ctx.activeBattle.value.p2SlotOrder = responsePayload.p2SlotOrder;
         }
         if (worker.removeEventListener) {
           worker.removeEventListener('message', initHandler);

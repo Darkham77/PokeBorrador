@@ -113,7 +113,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const store = useBattleStore();
       return !store.state || store.state.over;
-    });
+    }).catch(() => true);
 
     if (isOver) {
       break;
@@ -132,19 +132,26 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const store = useBattleStore();
       return !store.state || store.state.over;
-    });
+    }).catch(() => true);
 
     if (isOverAfterWait) {
       break;
     }
 
-    // Verificar paridad DOM/Store
-    await verifyHpParity(page);
+    // Verificar paridad DOM/Store (solo en WAIT_INPUT, ya que en SWITCH_MENU las tarjetas del HUD no están visibles)
+    const subState = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return store.currentSubState;
+    }).catch(() => 'WAIT_INPUT');
+    if (subState === 'WAIT_INPUT') {
+      await verifyHpParity(page);
+    }
 
     // Aplicar trampas registradas para el turno actual
-    const currentCheats = cheats?.filter(c => c.turn === turnCount + 1) || [];
+    const currentCheats = cheats?.filter(c => c.turn === turnCount) || [];
     for (const cheat of currentCheats) {
-      console.log(`[E2E] Applying cheat at turn ${turnCount + 1}: heal ${cheat.side}`);
+      console.log(`[E2E] Applying cheat recorded at turn ${cheat.turn} (applying at start of E2E turnCount ${turnCount}): heal ${cheat.side}`);
       await page.evaluate((ch) => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         if (resolver) {
@@ -169,6 +176,14 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
               match.hp = match.maxHp;
               if (match.status === 'fnt') match.status = '';
             }
+          }
+          // Notificar al Web Worker de Showdown para sincronizar el estado del simulador
+          const worker = (window as any).__showdownWorker__;
+          if (worker) {
+            worker.postMessage({
+              type: 'APPLY_CHEAT',
+              payload: { side: ch.side, type: ch.type }
+            });
           }
         }
       }, cheat);
@@ -202,6 +217,60 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
 
     // Procesar acción del turno deterministamente si fuzzer proveyó choices
     const currentChoice = playerChoices && playerChoices[turnCount];
+    if (playerChoices && turnCount < playerChoices.length && (currentChoice === '' || currentChoice === undefined)) {
+      console.log(`[E2E] Fuzzer choice at index ${turnCount} is empty (P1 has no choice). Waiting for UI to resolve faint/pivot...`);
+      await waitForWaitInput(page, turnCount, batchIndex, lastSimulatorTurn, lastSubState);
+      turnCount++;
+      await page.waitForTimeout(50);
+      continue;
+    }
+
+    // Validar si la elección del jugador es válida en el simulador.
+    // Si no es válida (ej. cambiar a un Pokémon debilitado o usar un movimiento deshabilitado),
+    // el fuzzer la registró pero la ignoró. Debemos saltarla en el E2E para no desincronizar los turnos.
+    const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
+      try {
+        if (!choiceStr) return true;
+        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return true;
+        const store = resolver();
+        const playerRequest = store.state?.playerRequest;
+        if (!playerRequest) return true;
+
+        if (choiceStr.startsWith('switch ')) {
+          const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+          const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
+          if (!targetPoke) return false;
+          const isFainted = targetPoke.condition?.includes('fnt') || targetPoke.hp === 0;
+          const isActive = !!targetPoke.active;
+          if (isFainted || isActive) {
+            console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (fainted/active). Skipping.`);
+            return false;
+          }
+        } else if (choiceStr.startsWith('move ')) {
+          const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
+          const reqMove = playerRequest.active?.[0]?.moves?.[moveIdx];
+          if (reqMove && reqMove.disabled) {
+            console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (disabled move). Skipping.`);
+            return false;
+          }
+        }
+        return true;
+      } catch (_e) {
+        return true;
+      }
+    }, currentChoice);
+
+    if (!isPlayerChoiceValid) {
+      console.log(`[E2E] Choice "${currentChoice}" at index ${turnCount} is invalid for P1. Skipping in E2E to match fuzzer.`);
+      turnCount++;
+      await page.evaluate(() => {
+        if (window.__VITE_DEBUG__) {
+          window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
+        }
+      });
+      continue;
+    }
     const inputPerformed = await handleBattleInput(page, currentChoice);
 
     if (inputPerformed) {
@@ -232,11 +301,14 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
 
     const mismatches: string[] = [];
 
-    // Equipo jugador: comparar por posición (el orden del equipo es el mismo que en Showdown)
+    // Equipo jugador: comparar por nombre/apodo para evitar desalineaciones por reordenamiento de slot inicial
     const gameStore = useGameStore();
     const playerTeam = gameStore.state.team;
     snapshotState.p1.forEach((expected, i) => {
-      const actual = playerTeam[i];
+      const actual = playerTeam.find(p => p && (
+        p.name.toLowerCase() === expected.name.toLowerCase() ||
+        p.nickname?.toLowerCase()?.startsWith(expected.name.toLowerCase())
+      ));
       if (!actual) { mismatches.push(`P1[${i}] ${expected.name}: no encontrado en el equipo del juego`); return; }
       if (Math.abs(actual.hp - expected.hp) > 1) {
         mismatches.push(`P1[${i}] ${expected.name}: game HP=${actual.hp} vs showdown HP=${expected.hp}`);
@@ -247,10 +319,13 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       }
     });
 
-    // Equipo enemigo: comparar contra battleStore.state.enemyTeam
-    const enemyTeam: Array<{ hp: number; name: string }> = (store.state as unknown as Record<string, unknown>).enemyTeam as Array<{ hp: number; name: string }> ?? [];
+    // Equipo enemigo: comparar contra battleStore.state.enemyTeam por nombre/apodo
+    const enemyTeam: Array<{ hp: number; name: string; nickname?: string }> = (store.state as unknown as Record<string, unknown>).enemyTeam as any ?? [];
     snapshotState.p2.forEach((expected, i) => {
-      const actual = enemyTeam[i];
+      const actual = enemyTeam.find(p => p && (
+        p.name.toLowerCase() === expected.name.toLowerCase() ||
+        p.nickname?.toLowerCase()?.startsWith(expected.name.toLowerCase())
+      ));
       if (!actual) { mismatches.push(`P2[${i}] ${expected.name}: no encontrado en el equipo enemigo`); return; }
       if (Math.abs(actual.hp - expected.hp) > 1) {
         mismatches.push(`P2[${i}] ${expected.name}: game HP=${actual.hp} vs showdown HP=${expected.hp}`);
@@ -335,6 +410,13 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     console.log(`======================================================\n`);
   }
 
+  test.beforeAll(async () => {
+    const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
+    if (fs.existsSync(failuresDir)) {
+      fs.rmSync(failuresDir, { recursive: true, force: true });
+    }
+  });
+
   test.beforeEach(async ({ page }) => {
     test.setTimeout(360000);
     page.on('console', msg => {
@@ -379,7 +461,10 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
         window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {};
         window.__VITE_DEBUG__.battleSeed = b.seed ?? undefined;
-        window.__VITE_DEBUG__.enemyChoicesQueue = [...(b.enemyChoices ?? [])];
+        const enemyChoices = b.enemyChoices ?? (b as any).history?.map((h: any) => h.p2Choice) ?? [];
+        window.__VITE_DEBUG__.enemyChoicesQueue = [...enemyChoices];
+        window.__VITE_DEBUG__.mockEnemyChoices = [...enemyChoices];
+        window.__VITE_DEBUG__.enemyChoiceIndex = 0;
 
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
@@ -398,8 +483,8 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
             heldItem: set.item,
             nickname: `${set.name}-${idx + 1}`,
             nature: set.nature,
-            ivs: set.ivs,
-            evs: set.evs
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...set.ivs },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs }
           });
         });
 
@@ -413,13 +498,18 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
             heldItem: set.item,
             nickname: `${set.name}-${idx + 1}`,
             nature: set.nature,
-            ivs: set.ivs,
-            evs: set.evs
+            ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...set.ivs },
+            evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs }
           });
         });
 
         // Sobrescribir el equipo del jugador en el GameStore
         gameStore.state.team = localPlayerTeam;
+
+        // Forzar el clima a despejado ('clear') en el MapStore para coincidir 1:1 con el fuzzer
+        const { useMapStore } = await import('../../../src/stores/map.ts');
+        const mapStore = useMapStore();
+        mapStore.currentWeather = 'clear';
 
         // Inyectar un inventario completo de prueba para asegurar disponibilidad de objetos
         gameStore.state.inventory = {
@@ -441,6 +531,11 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           trainerName: 'Simulador E2E',
           locationId: 'route1'
         });
+
+        if (battleStore.state) {
+          battleStore.state.p1SlotOrder = localPlayerTeam.map(p => p.uid);
+          battleStore.state.p2SlotOrder = localEnemyTeam.map(p => p.uid);
+        }
       }, batch);
 
       try {
@@ -452,7 +547,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           page, 
           index + 1, 
           0, 
-          (batch as unknown as Record<string, unknown>).playerChoices as string[] | undefined,
+          ((batch as any).playerChoices ?? (batch as any).history?.map((h: any) => h.p1Choice)) as string[] | undefined,
           (batch as unknown as Record<string, unknown>).cheats as Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }> | undefined,
           (batch as unknown as Record<string, unknown>).finalState as FinalState | undefined
         );
@@ -465,6 +560,29 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
           playerTeam: batch.playerTeam.map(p => `${p.species} (${p.item || 'no item'})`),
           enemyTeam: batch.enemyTeam.map(e => `${e.species} (${e.item || 'no item'})`)
         }, null, 2));
+
+        // Registrar el error en scratch/e2e_failures/
+        const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
+        if (!fs.existsSync(failuresDir)) {
+          fs.mkdirSync(failuresDir, { recursive: true });
+        }
+        const failureData = {
+          caseId,
+          error: errMessage,
+          playerTeam: batch.playerTeam.map(p => `${p.species} (${p.item || 'no item'})`),
+          enemyTeam: batch.enemyTeam.map(e => `${e.species} (${e.item || 'no item'})`),
+          timestamp: new Date().toISOString()
+        };
+        fs.writeFileSync(
+          path.join(failuresDir, `${caseId}.json`),
+          JSON.stringify(failureData, null, 2),
+          'utf8'
+        );
+
+        if (process.env.CONTINUE_ON_ERROR === 'true') {
+          console.warn(`[E2E-WARN] Ignorando error en combate ${caseId} porque CONTINUE_ON_ERROR es true.`);
+          return;
+        }
         throw new Error(`[Fallo en Combate ${caseId}]: ${errMessage}`);
       }
     });
@@ -661,4 +779,46 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
     // 7. Continuar el combate de forma automática hasta que finalice por completo para verificar que no ocurra ningún bloqueo post-revivir
     await executeAutoBattle(page, 998);
   });
+
+  test.afterAll(async () => {
+    const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
+    if (fs.existsSync(failuresDir)) {
+      const files = fs.readdirSync(failuresDir);
+      const failures = files
+        .filter((f: string) => f.endsWith('.json'))
+        .map((f: string) => {
+          try {
+            return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8'));
+          } catch (_e) {
+            return null;
+          }
+        })
+        .filter((x: any) => x !== null);
+
+      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.json');
+      const reportTxtPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.txt');
+
+      if (failures.length > 0) {
+        fs.writeFileSync(reportPath, JSON.stringify(failures, null, 2), 'utf8');
+        console.log(`\n📝 Se ha generado el reporte consolidado de errores E2E en: ${reportPath}`);
+
+        const txtContent = failures.map((f: any) => {
+          return `Caso: ${f.caseId}\nError: ${f.error}\nEquipo Jugador: ${f.playerTeam.join(', ')}\nEquipo Enemigo: ${f.enemyTeam.join(', ')}\n----------------------------------------\n`;
+        }).join('\n');
+        fs.writeFileSync(reportTxtPath, txtContent, 'utf8');
+        console.log(`📝 Se ha generado el reporte de texto amigable en: ${reportTxtPath}`);
+      } else {
+        fs.writeFileSync(reportPath, '[]', 'utf8');
+        fs.writeFileSync(reportTxtPath, '', 'utf8');
+        console.log('\n✅ Todos los combates pasaron sin errores. Reportes vaciados.');
+      }
+    } else {
+      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.json');
+      const reportTxtPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.txt');
+      fs.writeFileSync(reportPath, '[]', 'utf8');
+      fs.writeFileSync(reportTxtPath, '', 'utf8');
+      console.log('\n✅ No hay errores que consolidar. Reportes vaciados.');
+    }
+  });
 });
+

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 
-const consolidatorPath = path.resolve(process.cwd(), 'scratch/certified_fuzzer_cases.json');
+const consolidatorPath = path.resolve(process.cwd(), 'scripts/battle-tester/results/certified_fuzzer_cases.json');
 
 function checkAndRunFuzzers() {
   console.log(`\n======================================================`);

@@ -1,0 +1,1049 @@
+#!/usr/bin/env node
+/* eslint-disable no-useless-escape */
+'use strict';
+
+// This script syncs the vendored submodules of smogon/pokemon-showdown and
+// smogon/pokemon-showdown-client and highlights 'interesting' changes before performing several
+// manipulations on the former to generate portions of the @pkmn/sim, @pkmn/mods, @pkmn/randoms and
+// @pkmn/dex packages. Each of these packages involve some amount of handwritten code (which may be
+// broken or become out of sync after running this script) in addition to code generated completely
+// from Pokémon Showdown, and many of the other packages in this repository which have been 'hard'
+// forked from Pokémon Showdown will possibly require manual intervention and updates after an
+// import.
+//
+// This is the most 'HERE BE DRAGONS' and hacky code in the entire project, but is also the magic
+// sauce™ that makes everything work. The fragile nature of this whole ordeal is slightly offset
+// by the large amount of unit and integration tests - assume that whenever you run this script
+// everything is broken unless `npm test:integration` and manual inspection suggests otherwise.
+
+const child_process = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const util = require('util');
+
+const stringify = require('json-stringify-pretty-compact');
+
+const debug = process.argv[2] === '--debug';
+
+const exec = async (cmd, cwd = __dirname) => new Promise(resolve => {
+  child_process.exec(cmd, {cwd}, (error, stdout, stderr) => {
+    resolve([error ? error.code : 0, stdout, stderr]);
+  });
+});
+
+const IGNORE_STDERR = true;
+const execOrDie = async (cmd, cwd = __dirname, ignoreStderr = !IGNORE_STDERR) => {
+  const dir = path.relative(__dirname, cwd);
+  console.log(dir ? `${cmd} \x1b[90m(${path.relative(__dirname, cwd)})\x1b[0m` : cmd);
+  const [error, stdout, stderr] = await exec(cmd, cwd);
+  if (error || (!ignoreStderr && stderr)) throw new Error(`exec error ${error}: ${stderr}`);
+  return stdout;
+};
+
+const tree = root => {
+  const leaves = [];
+  for (const child of fs.readdirSync(root)) {
+    if (['build', 'node_modules'].includes(child)) continue;
+    const p = path.join(root, child);
+    leaves.push(...(fs.lstatSync(p).isDirectory() ? tree(p) : [p]));
+  }
+  return leaves;
+};
+
+const replace = async (file, replacements, ignore) => {
+  const stats = await fs.promises.lstat(file);
+  if (stats.isSymbolicLink()) return;
+  if (stats.isFile()) {
+    if (!file.endsWith('.js') || ignore.has(file)) return;
+    let text = await fs.promises.readFile(file, "utf8");
+    let anyMatch = false;
+    for (let i = 0; i < replacements.length; i++) {
+      anyMatch = anyMatch || text.match(replacements[i].regex);
+      if (anyMatch) text = text.replace(replacements[i].regex, replacements[i].replace, ignore);
+    }
+    if (!anyMatch) return;
+    await fs.promises.writeFile(file, text);
+  } else if (stats.isDirectory()) {
+    const files = await fs.promises.readdir(file);
+    const all = [];
+    for (let i = 0; i < files.length; i++) {
+      all.push(replace(path.join(file, files[i]), replacements, ignore));
+    }
+    await Promise.all(all);
+  }
+};
+
+const ps = path.resolve(__dirname, 'vendor/pokemon-showdown');
+const psc = path.resolve(__dirname, 'vendor/pokemon-showdown-client');
+const sim = path.resolve(__dirname, 'sim');
+const dex = path.resolve(__dirname, 'dex');
+const view = path.resolve(__dirname, 'view');
+const mods = path.resolve(__dirname, 'mods');
+const randoms = path.resolve(__dirname, 'randoms');
+const streams = path.resolve(__dirname, 'streams');
+
+// > fucking hell zarle, friends don't let friends use globals :(
+//
+// The simulator relies internally on global ambient types which work to compile a standalone
+// application but which are useless to downstream developers attempting to use this as a library as
+// part of their own application. As such, we need to mirror and modify the `sim/global-types.ts`
+// file to export all of its types *and* add imports to all of the files under `sim/` (ie. any `.ts`
+// files depending on global types - the `data/` files are currently not required to have
+// ///-references to work).
+const IMPORTS = {
+  'data/tags.ts': ['Species', 'Move', 'Item', 'Ability', 'IDEntry'],
+  'sim/battle-actions.ts': [
+    'Battle', 'ModdedDex', 'Pokemon', 'Effect', 'Move', 'ActiveMove',
+    'Side', 'SpreadMoveTargets', 'SpreadMoveDamage', 'ZMoveOptions',
+  ],
+  'sim/battle-queue.ts': ['Pokemon', 'ID', 'Move', 'Effect'],
+  'sim/battle-stream.ts': ['ModdedDex'],
+  'sim/battle.ts': [
+    'Effect', 'Format', 'ID', 'PlayerOptions', 'AnyObject', 'ActiveMove', 'SideID', 'StatsTable',
+    'SparseBoostsTable', 'SpreadMoveDamage', 'Move', 'PokemonSet', 'GameType', 'ModdedDex',
+    'PokemonSlot', 'StatID',
+  ],
+  'sim/dex-abilities.ts': [
+    'AnyObject', 'Battle', 'Pokemon', 'Side', 'Field', 'ModdedDex', 'ID', 'IDEntry',
+  ],
+  'sim/dex-conditions.ts': [
+    'AnyObject', 'Battle', 'Pokemon', 'Side', 'Field', 'Effect', 'ActiveMove', 'Item',
+    'CommonHandlers', 'SparseBoostsTable', 'ModdedDex', 'ID', 'IDEntry',
+  ],
+  'sim/dex-data.ts': [
+    'AnyObject', 'ID', 'SparseStatsTable', 'EffectType', 'Nonstandard',
+    'EffectData', 'StatIDExceptHP', 'ModdedDex', 'StatID', 'IDEntry',
+  ],
+  'sim/dex-items.ts': [
+    'AnyObject', 'Battle', 'Pokemon', 'SparseBoostsTable', 'CommonHandlers', 'ModdedDex', 'ID',
+    'IDEntry',
+  ],
+  'sim/dex-moves.ts': [
+    'AnyObject', 'ID', 'IDEntry', 'SparseBoostsTable', 'Pokemon', 'Ability', 'CommonHandlers',
+    'EffectData', 'Battle', 'Side', 'Effect', 'ModdedDex', 'StatIDExceptHP',
+  ],
+  'sim/field.ts': ['Effect', 'Condition', 'Pokemon', 'Battle', 'Side', 'AnyObject', 'ID'],
+  'sim/pokemon.ts': [
+    'ActiveMove', 'Ability', 'Condition', 'Item', 'Species', 'SparseBoostsTable', 'Side', 'SideID',
+    'AnyObject', 'Move', 'StatIDExceptHP', 'Effect', 'StatsExceptHPTable', 'ID',
+    'BoostsTable', 'StatsTable', 'GenderName', 'PokemonSet', 'Battle', 'PokemonSlot',
+  ],
+  'sim/side.ts': [
+    'AnyObject', 'Effect', 'ActiveMove', 'Condition', 'PokemonSet', 'Battle',
+    'StatsExceptHPTable', 'MoveTarget', 'Move', 'SideID', 'ID',
+  ],
+  'sim/state.ts': [
+    'AnyObject', 'Condition', 'Ability', 'Item', 'Move', 'Species', 'ActiveMove',
+  ],
+  'sim/team-validator.ts': [
+    'Format', 'StatsTable', 'SparseStatsTable', 'Species', 'AnyObject', 'Move',
+    'EventInfo', 'PokemonSet', 'Ability', 'Item', 'ID', 'ModdedDex', 'Nature',
+  ],
+  'sim/tools/random-player-ai.ts': ['AnyObject'],
+  'sim/tools/runner.ts': ['PokemonSet'],
+};
+const MOD_IMPORTS = {
+  // gen1jpn
+  'data/mods/gen1jpn/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen1jpn/rulesets.ts': ['ModdedFormatDataTable'],
+  'data/mods/gen1jpn/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen1stadium
+  'data/mods/gen1stadium/conditions.ts': ['ModdedConditionDataTable'],
+  'data/mods/gen1stadium/moves.ts': ['ModdedMoveDataTable', 'ActiveMove'],
+  'data/mods/gen1stadium/rulesets.ts': ['ModdedFormatDataTable'],
+  'data/mods/gen1stadium/scripts.ts': [
+    'ModdedBattleScriptsData', 'StatIDExceptHP', 'BoostID', 'ActiveMove',
+  ],
+
+  // gen2stadium2
+  'data/mods/gen2stadium2/conditions.ts': [
+    'ModdedConditionDataTable', 'Battle', 'Pokemon', 'ActiveMove',
+  ],
+  'data/mods/gen2stadium2/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen2stadium2/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen2stadium2/rulesets.ts': ['ModdedFormatDataTable'],
+  'data/mods/gen2stadium2/scripts.ts': [
+    'ModdedBattleScriptsData', 'ActiveMove', 'BoostID',
+    'SparseBoostsTable', 'Pokemon', 'StatIDExceptHP',
+  ],
+
+  // gen3frlg
+  'data/mods/gen3frlg/abilities.ts': [
+    'ModdedAbilityDataTable', 'Battle', 'Pokemon', 'ActiveMove',
+  ],
+  'data/mods/gen3frlg/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen3frlg/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen3frlg/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen3frlg/rulesets.ts': ['ModdedFormatDataTable'],
+  'data/mods/gen3frlg/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen3rs
+  'data/mods/gen3rs/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen3rs/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen3rs/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen3rs/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen4pt
+  'data/mods/gen4pt/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen4pt/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen4pt/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen5bw1
+  'data/mods/gen5bw1/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen5bw1/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen5bw1/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen5bw1/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen5bw1/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen6xy
+  'data/mods/gen6xy/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen6xy/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen6xy/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen6xy/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen6xy/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen6xy/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen7letsgo
+  'data/mods/gen7letsgo/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen7letsgo/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen7letsgo/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen7letsgo/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen7letsgo/scripts.ts': [
+    'ModdedBattleScriptsData', 'StatsTable', 'StatID', 'Species', 'Battle',
+  ],
+
+  // gen7sm
+  'data/mods/gen7sm/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen7sm/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen7sm/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen7sm/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen7sm/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen8dlc1
+  'data/mods/gen8dlc1/abilities.ts': ['ModdedAbilityDataTable'],
+  'data/mods/gen8dlc1/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen8dlc1/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen8dlc1/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen8dlc1/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen8dlc1/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen8dlc1/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen9predlc
+  'data/mods/gen9predlc/abilities.ts': ['ModdedAbilityDataTable'],
+  'data/mods/gen9predlc/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen9predlc/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen9predlc/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen9predlc/moves.ts': ['ModdedMoveDataTable'],
+  'data/mods/gen9predlc/pokedex.ts': ['ModdedSpeciesDataTable'],
+  'data/mods/gen9predlc/scripts.ts': ['ModdedBattleScriptsData'],
+
+  // gen9dlc1
+  'data/mods/gen9dlc1/abilities.ts': ['ModdedAbilityDataTable'],
+  'data/mods/gen9dlc1/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/gen9dlc1/items.ts': ['ModdedItemDataTable'],
+  'data/mods/gen9dlc1/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/gen9dlc1/moves.ts': ['ModdedMoveDataTable'],
+
+  // champions
+  'data/mods/champions/abilities.ts': ['ModdedAbilityDataTable'],
+  'data/mods/champions/conditions.ts': ['ModdedConditionDataTable'],
+  'data/mods/champions/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/champions/items.ts': ['ModdedItemDataTable', 'Pokemon'],
+  'data/mods/champions/learnsets.ts': ['ModdedLearnsetDataTable'],
+  'data/mods/champions/moves.ts': ['ModdedMoveDataTable', 'Move', 'ActiveMove'],
+  'data/mods/champions/rulesets.ts': ['ModdedFormatDataTable'],
+  'data/mods/champions/scripts.ts': [
+    'ModdedBattleScriptsData', 'Pokemon', 'ActiveMove', 'toID', 'Condition',
+  ],
+
+  // championsregma
+  'data/mods/championsregma/formats-data.ts': ['ModdedSpeciesFormatsDataTable'],
+  'data/mods/championsregma/items.ts': ['ModdedItemDataTable'],
+  'data/mods/championsregma/scripts.ts': ['ModdedBattleScriptsData'],
+};
+const RANDOMS_IMPORTS = {
+  'data/random-battles/gen9/teams.ts': [
+    [['Utils'], './utils'],
+    [[
+      'PlayerOptions', 'PRNG', 'PRNGSeed', 'PokemonSet', 'StatsTable', 'StatID',
+      'Format', 'Species', 'RandomTeamsTypes', 'toID', 'ModdedDex', 'Move', 'BasicEffect',
+      'RuleTable', 'Tags', 'Teams', 'Item', 'Ability', 'Nature', 'AnyObject', 'ID',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen8/teams.ts': [
+    [['MoveCounter', 'RandomTeams', 'TeamData'], './gen9'],
+    [[
+      'PlayerOptions', 'PRNG', 'PRNGSeed', 'StatsTable', 'Species', 'RandomTeamsTypes', 'toID',
+      'ModdedDex', 'AnyObject', 'Format',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen7/teams.ts': [
+    [['MoveCounter', 'TeamData'], './gen9'],
+    [['RandomGen8Teams'], './gen8'],
+    [[
+      'ModdedDex', 'AnyObject', 'PlayerOptions', 'PRNG', 'PRNGSeed', 'StatID', 'ID',
+      'Format', 'Species', 'RandomTeamsTypes', 'toID', 'Move', 'StatsTable', 'SparseStatsTable',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen6/teams.ts': [
+    [['RandomGen7Teams', 'ZeroAttackHPIVs', 'BattleFactorySpecies'], './gen7'],
+    [['MoveCounter', 'TeamData'], '././gen9'],
+    [[
+      'ModdedDex', 'AnyObject', 'PlayerOptions', 'PRNG', 'PRNGSeed',
+      'Format', 'Species', 'RandomTeamsTypes', 'toID', 'StatID',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen5/teams.ts': [
+    [['MoveCounter'], './gen9'],
+    [['RandomGen6Teams'], './gen6'],
+    [[
+      'Species', 'StatID', 'RandomTeamsTypes', 'toID',
+      'ModdedDex', 'Format', 'PRNG', 'PRNGSeed',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen4/teams.ts': [
+    [['MoveCounter'], './gen9'],
+    [['RandomGen5Teams'], './gen5'],
+    [[
+      'Species', 'RandomTeamsTypes', 'StatID',
+      'ModdedDex', 'Format', 'PRNG', 'PRNGSeed',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen3/teams.ts': [
+    [['MoveCounter'], '././gen9'],
+    [['RandomGen4Teams'], './gen4'],
+    [[
+      'ModdedDex', 'PRNG', 'PRNGSeed', 'Format', 'Species', 'RandomTeamsTypes', 'StatID',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen2/teams.ts': [
+    [['MoveCounter'], '././gen9'],
+    [['RandomGen3Teams'], './gen3'],
+    [[
+      'ModdedDex', 'PRNG', 'PRNGSeed', 'Format', 'Species', 'RandomTeamsTypes', 'StatID',
+      'IDEntry',
+    ], '@pkmn/sim'],
+  ],
+  'data/random-battles/gen1/teams.ts': [
+    [['RandomGen2Teams'], './gen2'],
+    [['Utils'], './utils'],
+    [[
+      'ID', 'IDEntry', 'Species', 'RandomTeamsTypes', 'StatsTable', 'StatID', 'PokemonSet',
+    ], '@pkmn/sim'],
+  ],
+};
+
+const TYPES = new Set([
+  'Normal', 'Fighting', 'Flying', 'Poison', 'Ground', 'Rock', 'Bug', 'Ghost', 'Steel',
+  'Fire', 'Water', 'Grass', 'Electric', 'Psychic', 'Ice', 'Dragon', 'Dark', 'Fairy',
+]);
+
+const imports = (types, where, typeOnly = false) => {
+  types.sort();
+  const importStatement = typeOnly ? 'import type' : 'import';
+  if (types.length <= 5) return `${importStatement} {${types.join(', ')}} from '${where}';\n\n`;
+  return `${importStatement} {\n\t${types.join(',\n\t')},\n} from '${where}';\n\n`;
+};
+
+const KEY = `\t\treturn this.getByID(name.startsWith('item:') || ` +
+  `name.startsWith('ability:') ? name as ID : toID(name));`;
+/* eslint-disable no-template-curly-in-string */
+const VALUE =
+  "\t\tconst special = name.startsWith('item:') ? `item:${toID(name.slice(5))}` as ID :\n" +
+  "\t\t\tname.startsWith('ability:') ? `ability:${toID(name.slice(8))}` as ID :\n" +
+  "\t\t\tname.startsWith('move:') ? `move:${toID(name.slice(5))}` as ID : undefined;\n" +
+  "\t\treturn this.getByID(special || toID(name));";
+const REWRITES = {
+  'sim/side.ts': {
+    '\tgetRequestData() {':
+      '\tgetRequestData(): {id: SideID, name: string, pokemon: AnyObject[]} {',
+  },
+  'sim/pokemon.ts': {
+    '\tgetHealth = () => {':
+      '\tgetHealth = (): {side: SideID, secret: string, shared: string} => {',
+    '\tgetDetails = () => {':
+      '\tgetDetails = (): {side: SideID, secret: string, shared: string} => {',
+  },
+  'sim/dex-abilities.ts': {
+    '\t\tif (ability.exists) this.abilityCache.set(id, this.dex.deepFreeze(ability));':
+      `\t\tif (!(ability as any).kind) (ability as any).kind = 'Ability';\n` +
+      '\t\tif (ability.exists) this.abilityCache.set(id, ability);',
+  },
+  'sim/dex-conditions.ts': {
+    '\t\t} else if (this.dex.data.Rulesets.hasOwnProperty(id)) {':
+      `\t\t} else if (id.startsWith('move:')) {\n` +
+      '\t\t\tconst move = this.dex.moves.getByID(id.slice(5) as ID);\n' +
+      `\t\t\tcondition = move as any as Condition;\n` +
+      '\t\t} else if (this.dex.data.Rulesets.hasOwnProperty(id)) {',
+    "\t\t\tcondition = {...item, id: 'item:' + item.id as ID} as any as Condition;":
+      '\t\t\tcondition = item as any as Condition;',
+    "\t\t\tcondition = {...ability, id: 'ability:' + ability.id as ID} as any as Condition;":
+      '\t\t\tcondition = ability as any as Condition;',
+    "\t\tthis.conditionCache.set(id, this.dex.deepFreeze(condition));":
+      '\t\tthis.conditionCache.set(id, condition);',
+    [KEY]: VALUE,
+  },
+  'sim/dex-items.ts': {
+    '\t\tif (item.exists) this.itemCache.set(id, this.dex.deepFreeze(item));':
+      `\t\t(item as any).kind = 'Item';\n` +
+      '\t\tif (item.exists) this.itemCache.set(id, item);',
+  },
+  'sim/dex-moves.ts': {
+    '\t\tif (move.exists) this.moveCache.set(id, this.dex.deepFreeze(move));':
+      `\t\t(move as any).kind = 'Move';\n` +
+      '\t\tif (move.exists) this.moveCache.set(id, move);',
+  },
+  'sim/dex-data.ts': {
+    '\t\tif (nature.exists) this.natureCache.set(id, this.dex.deepFreeze(nature));':
+      `\t\t(nature as any).kind = 'Nature';\n` +
+      '\t\tif (nature.exists) this.natureCache.set(id, nature);',
+    '\t\tif (type.exists) this.typeCache.set(id, this.dex.deepFreeze(type));':
+      `\t\t(type as any).kind = 'Type';\n` +
+      '\t\tif (type.exists) this.typeCache.set(id, type);',
+  },
+  'sim/battle.ts': {
+    '\tgetCategory(move: string | Move) {':
+      '\tgetCategory(move: string | Move): Move[\'category\'] {',
+    '\t\t\tconst entry = this.dex.data.Scripts[i];':
+      '\t\t\tconst entry = (this.dex.data.Scripts as any)[i];',
+    '\t\treturn team as PokemonSet[];': '\t\treturn team;',
+    '\tconstructor(options: BattleOptions) {': '\tconstructor(options: BattleOptions, dex = Dex) {',
+    '\t\tconst format = options.format || Dex.formats.get(options.formatid, true);':
+      '\t\tconst format = options.format || dex.formats.get(options.formatid, true);',
+    '\t\tthis.dex = Dex.forFormat(format);': '\t\tthis.dex = dex.forFormat(format);',
+    "\t\t\t\t\tnewSet.species = Dex.species.get(set.species + 'crowned').name;":
+      "\t\t\t\t\tnewSet.species = this.dex.species.get(set.species + 'crowned').name;",
+  },
+  // smfh Zarle, please learn how Promises work
+  'sim/battle-stream.ts': {
+    '\t\tvoid this._listen();': undefined,
+    '\tasync _listen() {': '\tasync start() {',
+    "import { Battle, extractChannelMessages } from './battle';":
+      "import { Battle, extractChannelMessages } from './battle';\nimport {Dex} from './dex';",
+    '\tbattle: Battle | null;': '\tbattle: Battle | null;\n\tdex: ModdedDex;',
+    '\t\t\tthis.battle = new Battle(options);':
+      '\t\t\tthis.battle = new Battle(options, this.dex);',
+    '\t} = {}) {': '\t} = {}, dex = Dex) {',
+    '\t\tthis.battle = null;': '\t\tthis.battle = null;\n\t\tthis.dex = dex;',
+  },
+  'sim/team-validator.ts': {
+    '\t\t\t\ttestTeamGenerator.getTeam(options); // Throws error if generation fails':
+      '\t\t\t\ttestTeamGenerator.getTeam(options as any); // Throws error if generation fails',
+  },
+};
+
+// All the files in our sim/ directory, excluding build/ & node_modules/ & test/sim/
+const FILES = new Set(tree(sim)
+  .map(m => m.slice(sim.length + 1))
+  .filter(f => !f.startsWith('test/sim')));
+const MOD_FILES =
+  new Set(tree(path.join(mods, 'src')).map(m => `data/mods/${m.slice(mods.length + 5)}`));
+
+// Files which need special attention if changed (usually manual intervention)
+const FRAGILE = new Set([
+  'sim/dex-abilities.ts',
+  'sim/dex-conditions.ts',
+  'sim/dex-data.ts',
+  'sim/dex-items.ts',
+  'sim/dex-moves.ts',
+  'sim/dex-species.ts',
+  'sim/dex-formats.ts',
+  // `sim/dex.ts` has to have its loading reworked to depend on everything up front so that it can
+  // be used in a browser environment where synchronous `require` and `fs` APIs don't exist.
+  'sim/dex.ts',
+  'sim/prng.ts',
+  'sim/global-types.ts',
+  'sim/global-variables.d.ts',
+]);
+// Files which we want to prevent being copied over from PS, either because of modifications or
+// because they only exist in the generated package
+const OVERRIDDEN = new Set([
+  ...Array.from(FRAGILE).slice(5), // most sim/dex-*.ts have *not* been overridden
+  '.eslintcache',
+  '.tsbuildinfo',
+  'config/formats.ts',
+  'data/index.ts',
+  'data/mods/gen1/index.ts',
+  'data/mods/gen2/index.ts',
+  'data/mods/gen3/index.ts',
+  'data/mods/gen4/index.ts',
+  'data/mods/gen5/index.ts',
+  'data/mods/gen6/index.ts',
+  'data/mods/gen7/index.ts',
+  'data/mods/gen8/index.ts',
+  'data/mods/gen8bdsp/index.ts',
+  'data/mods/gen8legends/index.ts',
+  'data/rulesets.ts',
+  'data/mods/gen1/rulesets.ts',
+  'data/mods/gen3/rulesets.ts',
+  'data/mods/gen8/rulesets.ts',
+  'data/learnsets.ts',
+  'data/mods/gen2/learnsets.ts',
+  'data/mods/gen6/learnsets.ts',
+  'data/mods/gen8/learnsets.ts',
+  'data/mods/gen8bdsp/learnsets.ts',
+  'data/mods/gen8legends/learnsets.ts',
+  'data/legality.ts',
+  'data/mods/gen2/legality.ts',
+  'data/mods/gen6/legality.ts',
+  'data/mods/gen8/legality.ts',
+  'data/mods/gen8bdsp/legality.ts',
+  'data/mods/gen8legends/legality.ts',
+  'eslint.config.mjs',
+  'lib/index.ts',
+  'lib/streams.ts',
+  'package-lock.json', // double sigh...
+  'package.json',
+  'pnpm-debug.log', // sigh...
+  'README.md',
+  'sim/dex-formats.ts',
+  'sim/exported-global-types.ts',
+  'sim/index.ts',
+  'sim/teams.ts',
+  'sim/tools/exhaustive-runner.ts',
+  'sim/tools/index.ts',
+  'test/main.js',
+  'test/sim/rulesets.js',
+  'test/sim/team-validator/basic.js',
+  'test/sim/team-validator/formes.js',
+  'tsconfig.json',
+]);
+const MOD_OVERRIDDEN = new Set([
+  'data/mods/gen1jpn/index.ts',
+  'data/mods/gen1stadium/index.ts',
+  'data/mods/gen2stadium2/index.ts',
+  'data/mods/gen3frlg/index.ts',
+  'data/mods/gen3rs/index.ts',
+  'data/mods/gen4pt/index.ts',
+  'data/mods/gen5bw1/index.ts',
+  'data/mods/gen6xy/index.ts',
+  'data/mods/gen7letsgo/index.ts',
+  'data/mods/gen7sm/index.ts',
+  'data/mods/gen8dlc1/index.ts',
+  'data/mods/gen9predlc/index.ts',
+  'data/mods/gen9dlc1/index.ts',
+  'data/mods/champions/index.ts',
+  'data/mods/championsregma/index.ts',
+  'data/mods/index.test.ts',
+  'data/mods/index.ts',
+]);
+const SKIP_TESTS = new Set([
+  'test/sim/data.js',
+  'test/sim/misc/megaevolution.js',
+  'test/sim/misc/statuses.js',
+  'test/sim/moves/counter.js',
+  'test/sim/othermetas/mixandmega.js',
+  'test/sim/othermetas/partnersincrime.js',
+  'test/sim/prng.js',
+  'test/sim/rulesets/inversebattle.js',
+  'test/sim/state.js',
+  'test/sim/tools/multi-random-runner.js',
+]);
+// Any file that hasn't been 'OVERRIDDEN' we need to copy over from PS
+const COPIED = new Set([...FILES].filter(f => !OVERRIDDEN.has(f)));
+const MOD_COPIED = new Set([...MOD_FILES].filter(f => !MOD_OVERRIDDEN.has(f)));
+
+// Files which are relevant for review in smogon/pokemon-showdown-client
+const INTERESTING = new Set([
+  'build',
+  'build-tools/build-indexes',
+  'js/storage.js',
+  'src/battle-choices.ts',
+  'src/battle-dex-data.ts',
+  'src/battle-dex.ts',
+  'src/battle-scene-stub.ts',
+  'src/battle-text-parser.ts',
+  'src/battle.ts',
+]);
+
+// Pretty much all changes within sim/ and data/ are interesting to review, whether copied or not.
+// This mostly exists to help detect when *new* files are added which may need to be included
+const interesting = f => {
+  if (f.startsWith('sim') || f.startsWith('test/sim')) return true;
+  if (f.startsWith('data') && !f.endsWith('teams.ts')) return true;
+  return COPIED.has(f) || MOD_COPIED.has(f);
+};
+
+const removeFields = (data, fields) => {
+  data = JSON.parse(JSON.stringify(data));
+  for (const id in data) {
+    for (const field of fields) delete data[id][field];
+  }
+  return data;
+};
+
+const RANDOMS_FILES = {
+  'data/random-battles/gen9/teams.ts': 'src/gen9.ts',
+  'data/random-battles/gen8/teams.ts': 'src/gen8.ts',
+  'data/random-battles/gen7/teams.ts': 'src/gen7.ts',
+  'data/random-battles/gen6/teams.ts': 'src/gen6.ts',
+  'data/random-battles/gen5/teams.ts': 'src/gen5.ts',
+  'data/random-battles/gen4/teams.ts': 'src/gen4.ts',
+  'data/random-battles/gen3/teams.ts': 'src/gen3.ts',
+  'data/random-battles/gen2/teams.ts': 'src/gen2.ts',
+  'data/random-battles/gen1/teams.ts': 'src/gen1.ts',
+};
+
+const INLINE_REQUIRE = /^(.*)require\(.*\)(\.matchups)?;.*$/;
+const RANDOM_SETS = /^(\t(?:override )?randomSets:.*=) require\('\.\/sets\.json'\);(.*)/;
+const RANDOM_DOUBLES_SETS =
+  /^(\trandomDoublesSets:.*=) require\('\.\/doubles-sets\.json'\);(.*)/;
+const RANDOM_MEGA_INVASION_SETS =
+  /^(\trandomMegaSets:.*=) require\('\.\/sets\-megainvasion.json'\);(.*)/;
+const RANDOM_DATA = /^(\t(?:override )?randomData:.*=) require\('\.\/data\.json'\);(.*)/;
+const RANDOM_POTD = /potd/i;
+
+const DATA = {
+  'abilities.js': code => [
+    removeFields(code.Abilities, ['rating']), 'abilities.json', (d, gen, data) => {
+      // Pokémon Showdown changed its text inheritance in smogon/pokemon-showdown@ea8f52ce to work
+      // independently of its normal `inherit: true` scheme, meaning certain data fields need to be
+      // patched to paper over the difference.
+      if (gen === 4) {
+        d['hydration'].desc = data[7]['hydration'].desc;
+        d['hydration'].shortDesc = data[9]['hydration'].shortDesc;
+        d['simple'].desc = data[6]['simple'].desc;
+        d['thickfat'].desc = data[9]['thickfat'].desc;
+      }
+    },
+  ],
+  'aliases.js': code => [code.Aliases, 'aliases.json'],
+  'conditions.js': code => [code.Conditions, 'conditions.json'],
+  'formats-data.js': code => [code.FormatsData, 'formats-data.json'],
+  'items.js': code => [removeFields(code.Items, ['spritenum']), 'items.json'],
+  'learnsets.js': code => [code.Learnsets, 'learnsets.json'],
+  'moves.js': code => [removeFields(code.Moves, ['contestType']), 'moves.json'],
+  'natures.js': code => [code.Natures, 'natures.json'],
+  'pokedex.js': code => [removeFields(code.Pokedex, ['color', 'heightm']), 'species.json'],
+  'typechart.js': code => {
+    for (const id in code.TypeChart) {
+      for (const type2 in code.TypeChart[id].damageTaken) {
+        if (!TYPES.has(type2)) {
+          delete code.TypeChart[id].damageTaken[type2];
+        }
+      }
+    }
+    return [code.TypeChart, 'types.json'];
+  },
+};
+
+const fillDescs = (text, gen, contents) => {
+  for (const id in text) {
+    if (!contents[id] && gen === 9) continue;
+    const d = gen === 9 ? text[id] : text[id][`gen${gen}`];
+    const desc = d && d.desc;
+    if (desc) {
+      contents[id] = contents[id] || {inherit: true};
+      contents[id].desc = desc;
+    }
+    const sd = gen === 9 ? text[id] : text[id][`gen${gen}`];
+    const shortDesc = sd && sd.shortDesc;
+    if (shortDesc) {
+      contents[id] = contents[id] || {inherit: true};
+      contents[id].shortDesc = shortDesc;
+    }
+  }
+
+  return contents;
+};
+
+// Yes, this is obviously fragile AF, thanks for noticing
+const rewrite = (original, fn) => {
+  const rewritten = [];
+  for (const line of original.split('\n')) {
+    const rline = fn(line);
+    if (rline !== undefined) rewritten.push(rline);
+  }
+  return rewritten.join('\n');
+};
+
+const HEAD = async where => (await execOrDie('git rev-parse HEAD', where)).slice(0, 8);
+// Figure out what has changed in PS so that we can later filter out just the interesting changes
+// A GitHub URL for the diff is added for convenience in the event review is required
+const changes = async (where, last, now, repo) => ({
+  files: (await execOrDie(`git diff --name-only ${last}..${now}`, where)).trim().split('\n'),
+  url: `https://github.com/smogon/${repo}/compare/${last}..${now}`,
+});
+
+(async () => {
+  const last = {ps: await HEAD(ps), psc: await HEAD(psc)};
+  try {
+    // `git -C vendor/pokemon-showdown pull origin master` etc works for individual submodules, but
+    // this command will update both repositories at once
+    if (!debug) await execOrDie('git submodule update --remote --rebase', __dirname, IGNORE_STDERR);
+    const now = {ps: await HEAD(ps), psc: await HEAD(psc)};
+
+    const changed = {
+      ps: await changes(ps, last.ps, now.ps, 'pokemon-showdown'),
+      psc: await changes(psc, last.psc, now.psc, 'pokemon-showdown-client'),
+    };
+
+    console.log(`\n${changed.ps.url}\n`);
+    for (const change of changed.ps.files) {
+      let color = 0;
+      if (/random|formats-data/.test(change)) {
+        color = 95; // magenta
+      } else if (interesting(change)) {
+        // Even though we copy over `sim/global-types.ts` untouched, any changes to it will have a
+        // large effect on whether we're able to build an acceptable package
+        color = (FRAGILE.has(change) || change === 'sim/global-types.ts')
+          ? 91 // red -> yellow -> lightblue
+          : OVERRIDDEN.has(change) ? 93 : 96;
+      }
+      if (color) console.log(`\x1b[${color}mCHANGED\x1b[0m ${change}`);
+    }
+
+    console.log(`\n${changed.psc.url}\n`);
+    for (const change of changed.psc.files) {
+      if (INTERESTING.has(change)) {
+        console.log(`\x1b[${change.startsWith('build') ? 91 : 96}mCHANGED\x1b[0m ${change}`);
+      }
+    }
+
+    const index = fs.readFileSync(path.resolve(ps, 'lib/streams.ts'), 'utf8').replace(
+      'Documented in STREAMS.md.', 'Documentation can be found at\n' +
+      ' * https://github.com/smogon/pokemon-showdown/blob/master/lib/STREAMS.md'
+    ).replace('let options;', 'let options: any;')
+      .replace('\n\t// eslint-disable-next-line no-restricted-globals', '');
+    // double fuck you zarle, AnyObject is a dreadful hack to begin with, feel ashamed
+    fs.writeFileSync(path.resolve(streams, 'index.ts'),
+      `interface AnyObject {[k: string]: any}\n${index}`);
+    fs.writeFileSync(path.resolve(sim, 'lib/streams.ts'), `export * from "@pkmn/streams";\n`);
+
+    // Copy the files over, generating an 'import' statement for those that need it
+    for (const file of COPIED) {
+      if (IMPORTS[file]) {
+        // Handling arbitrary relative imports is overkill right now, bail
+        if (!file.startsWith('sim/') && file !== 'data/tags.ts') {
+          throw new Error('Unsupported import location');
+        }
+        const prefix = file.startsWith('data') ? '../sim'
+          : file.startsWith('sim/tools/') ? '..' : '.';
+        const original = fs.readFileSync(path.resolve(ps, file), 'utf8');
+        let rewritten = REWRITES[file]
+          ? rewrite(original, line => line in REWRITES[file] ? REWRITES[file][line] : line)
+          : original;
+        rewritten = rewritten.replaceAll(/\n[^\n]*@typescript-eslint\/ban-types[^\n]*/g, '');
+        if (file.startsWith('sim/dex-')) {
+          rewritten = rewritten.replaceAll(/Object.freeze\((.*)\)/g, (_, $1) => $1);
+        }
+        fs.writeFileSync(path.resolve(sim, file),
+          `${imports(IMPORTS[file], prefix + '/exported-global-types')}${rewritten}`);
+      } else {
+        fs.copyFileSync(path.resolve(ps, file), path.resolve(sim, file));
+      }
+    }
+
+    for (const file of tree(path.join(ps, 'test/sim')).map(f => f.slice(ps.length + 1))) {
+      if (OVERRIDDEN.has(file) || SKIP_TESTS.has(file)) continue;
+      fs.copyFileSync(path.resolve(ps, file), path.resolve(sim, file));
+    }
+    for (const file of
+      tree(path.join(ps, 'test/random-battles')).map(f => f.slice(ps.length + 1))) {
+      fs.copyFileSync(path.resolve(ps, file), path.resolve(sim, file));
+    }
+
+    for (const file of MOD_COPIED) {
+      if (!file.startsWith('data/')) throw new Error('Unsupported import location');
+      if (file.endsWith('formats.ts')) continue;
+      let original = fs.readFileSync(path.resolve(ps, file), 'utf8');
+      original = original.replaceAll(/import\(.*\)\./g, '');
+      if (MOD_IMPORTS[file]) {
+        if (file === 'data/mods/gen1jpn/rulesets.ts') {
+          original = original.replace('} else if (set.level < legalityList[moveid]) {',
+            '} else if (set.level < (legalityList[moveid] as number)) {');
+        } else if (file.endsWith('learnsets.ts')) {
+          original = original.replace('/* eslint-disable max-len */\n\n', '');
+        }
+
+        const typesOnly = file !== 'data/mods/champions/scripts.ts';
+        fs.writeFileSync(path.resolve(mods, file.replace('data/mods', 'src')),
+          `${imports(MOD_IMPORTS[file], '@pkmn/sim', typesOnly)}${original}`);
+      } else {
+        fs.writeFileSync(path.resolve(mods, file.replace('data/mods', 'src')), original);
+      }
+    }
+
+    // Unspeakable acts occur below, this is effectively "why we have tests" in a nutshell
+    for (const file in RANDOMS_FILES) {
+      // Sadly, we need to go through each of these line-by-line :( very sigh
+      const original = fs.readFileSync(path.resolve(ps, file), 'utf8');
+      const header = [];
+      if (RANDOMS_IMPORTS[file]) {
+        for (const [type, where] of RANDOMS_IMPORTS[file]) {
+          header.push(imports(type, where).trim());
+        }
+      }
+
+      const rewritten = rewrite(original, line => {
+        if (line.startsWith('import')) return undefined;
+        let m = RANDOM_DATA.exec(line);
+        if (m) return `${m[1]} randomDataJSON;${m[2]}`;
+        m = RANDOM_SETS.exec(line);
+        if (m) return `${m[1]} randomSetsJSON;${m[2]}`;
+        m = RANDOM_DOUBLES_SETS.exec(line);
+        if (m) return `${m[1]} randomDoublesSetsJSON;${m[2]}`;
+        m = RANDOM_MEGA_INVASION_SETS.exec(line);
+        if (m) return `${m[1]} randomMegaInvasionSetsJSON;${m[2]}`;
+        m = INLINE_REQUIRE.exec(line);
+        if (m) return `${m[1]}{};`;
+        m = RANDOM_POTD.exec(line);
+        if (m) return undefined;
+        // Bless me, Father, for I have sinned...
+        if (line.startsWith('\tconstructor(format:')) {
+          return '\tconstructor(dex: ModdedDex, format: Format, prng: PRNG | PRNGSeed | null) {';
+        } else if (line === '\t\tsuper(format, prng);') {
+          return '\t\tsuper(dex, format, prng);';
+        } else if (line === '\t\tformat = Dex.formats.get(format);') {
+          return undefined;
+        } else if (line === '\t\tthis.dex = Dex.forFormat(format);') {
+          return '\t\tthis.dex = dex;';
+        // eslint-disable-next-line max-len
+        } else if (line === '\t\t\tlet species = this.dex.species.get(this.sample(pokemonPool[baseSpecies]));') {
+          // eslint-disable-next-line max-len
+          return '\t\t\tconst species = this.dex.species.get(this.sample(pokemonPool[baseSpecies]));';
+        // eslint-disable-next-line max-len
+        } else if (line === '\t\t\t\t\tmovePool, moves, abilities, types, counter, species as Species, teamDetails') {
+          return '\t\t\t\t\tmovePool, moves, abilities, types, counter, species, teamDetails';
+        } else if (line === '\t\t ) ? this.format.team + \'Team\' : \'\';') {
+          return '\t\t) ? this.format.team + \'Team\' : \'\';';
+        }
+        return line.replace(/Dex\./g, 'this.dex.');
+      });
+
+      let dataJson = '';
+      let doublesJson = '';
+      let megaJson = '';
+      if (file.endsWith('teams.ts')) {
+        const current = file.includes('gen9');
+        const sets = file === 'data/random-battles/gen9/teams.ts' ||
+          file === 'data/random-battles/gen8/teams.ts' ||
+          file === 'data/random-battles/gen7/teams.ts' ||
+          file === 'data/random-battles/gen6/teams.ts' ||
+          file === 'data/random-battles/gen5/teams.ts' ||
+          file === 'data/random-battles/gen4/teams.ts' ||
+          file === 'data/random-battles/gen3/teams.ts' ||
+          file === 'data/random-battles/gen2/teams.ts';
+        let data =
+          path.resolve(path.join(ps, file), '..', `${sets ? 'sets' : 'data'}.json`);
+        let raw = fs.readFileSync(data, 'utf8');
+        dataJson = '\n\n/* eslint-disable */\n' +
+          `const random${sets ? 'Sets' : 'Data'}JSON = ${JSON.stringify(JSON.parse(raw))}` +
+          ' as any;\n/* eslint-enable */';
+        if (sets && current) {
+          data = path.resolve(path.join(ps, file), '..', `doubles-sets.json`);
+          raw = fs.readFileSync(data, 'utf8');
+          doublesJson = '\n\n/* eslint-disable */\n' +
+            `const randomDoublesSetsJSON = ${JSON.stringify(JSON.parse(raw))}` +
+            ' as any;\n/* eslint-enable */';
+          // i fucking hate this bullshit
+          data = path.resolve(path.join(ps, file), '..', `sets-megainvasion.json`);
+          raw = fs.readFileSync(data, 'utf8');
+          megaJson = '\n\n/* eslint-disable */\n' +
+            `const randomMegaInvasionSetsJSON = ${JSON.stringify(JSON.parse(raw))}` +
+            ' as any;\n/* eslint-enable */';
+        }
+      }
+
+      fs.writeFileSync(
+        path.resolve(randoms, RANDOMS_FILES[file]),
+        `${header.join('\n')}${dataJson}${doublesJson}${megaJson}\n${rewritten}`
+      );
+    }
+
+    // The data files are Typescript, so we need to build to convert them to JS before requiring
+    await execOrDie(`node build`, ps);
+
+    const TEXTS = {
+      'moves.json': require(path.resolve(ps, 'dist/data/text/moves.js')).MovesText,
+      'abilities.json': require(path.resolve(ps, 'dist/data/text/abilities.js')).AbilitiesText,
+      'items.json': require(path.resolve(ps, 'dist/data/text/items.js')).ItemsText,
+      // 'species.json': require(path.resolve(ps, 'dist/data/text/pokedex.js')).PokedexText,
+    };
+
+    const DEX = {};
+    for (let gen = 9; gen >= 1; gen--) {
+      let dir = path.join(ps, 'dist/data');
+      if (gen !== 9) dir = path.join(dir, `mods/gen${gen}`);
+      for (const file of fs.readdirSync(dir)) {
+        const fn = DATA[path.basename(file)];
+        if (fn) {
+          const [contents, basename, patch] = fn(require(path.resolve(dir, file)));
+          DEX[basename] = DEX[basename] || {};
+          if (patch) patch(contents, gen, DEX[basename]);
+          const text = TEXTS[basename];
+          DEX[basename][gen] = text ? fillDescs(text, gen, contents) : contents;
+        }
+      }
+    }
+
+    const DefaultText = require(path.resolve(ps, 'dist/data/text/default.js')).DefaultText;
+    const TEXT = {};
+    for (const key in DefaultText) {
+      if (key === 'sandstorm') {
+        DefaultText[key].weatherName = 'Sand';
+      } else if (key === 'desolateland') {
+        DefaultText[key].weatherName = 'Harsh Sunshine';
+      }
+
+      TEXT[key === 'default' ? '_' : key] = DefaultText[key];
+    }
+    for (const text in TEXTS) {
+      for (const id in TEXTS[text]) {
+        const entry = TEXTS[text][id];
+        for (const key in entry) {
+          if (['name', 'desc', 'shortDesc'].includes(key)) continue;
+          TEXT[id] = TEXT[id] || {};
+          if (key.startsWith('gen')) {
+            for (const modKey in entry[key]) {
+              if (['desc', 'shortDesc'].includes(modKey)) continue;
+              TEXT[id][modKey + 'Gen' + key.charAt(3)] = entry[key][modKey];
+            }
+          } else {
+            TEXT[id][key] = entry[key];
+          }
+        }
+        if (TEXT[id] && !Object.keys(TEXT[id]).length) delete TEXT[id];
+      }
+    }
+    fs.writeFileSync(path.join(view, 'src/data/text.json'), stringify(TEXT));
+
+    for (const basename in DEX) {
+      const data = basename === 'aliases.json' ? DEX[basename][9] : DEX[basename];
+      fs.writeFileSync(path.join(dex, 'data', basename), stringify(data));
+    }
+
+    const inspect = s =>
+      util.inspect(s, {
+        colors: false,
+        depth: Infinity,
+        maxArrayLength: Infinity,
+        maxStringLength: Infinity,
+        breakLength: 100,
+      });
+
+    // Prune config/formats.ts
+    const formats = [];
+    const modded = {};
+    const remove = ['rated', 'challengeShow', 'searchShow', 'tournamentShow', 'threads', 'desc'];
+    const skip = [
+      '[Gen 5] Almost Any Ability',
+      '[Gen 7] Balanced Hackmons',
+      '[Gen 9] AAA UU',
+      '[Gen 9] National Dex Godly Gift',
+      '[Gen 9] National Dex AAA',
+      '[Gen 9] National Dex STABmons',
+      '[Gen 9] Legends Z-A OU',
+      '[Gen 9] Monocolor',
+      '[Gen 9] Godly Gift VG 2024 Reg G (Bo3)',
+    ];
+    for (const format of require(path.resolve(ps, 'dist/config/formats.js')).Formats) {
+      if (!format.mod) continue;
+      const isBaseGen = /^gen\d$/.test(format.mod);
+      const hasModDir = fs.existsSync(path.resolve(mods, 'src', format.mod));
+      if (!isBaseGen && !hasModDir) continue;
+      if (format.ruleset.some(r => r.includes('Draft')) ||
+        format.ruleset.includes('Standard OMs') || skip.includes(format.name)) {
+        continue;
+      }
+      if (Object.values(format).some(v => typeof v === 'function')) continue;
+      if (format.battle && !format.name.includes('Custom Game')) continue;
+      if (!isBaseGen) {
+        modded[format.mod] = modded[format.mod] || [];
+        modded[format.mod].push(format);
+        continue;
+      }
+      for (const field of remove) delete format[field];
+      formats.push(format);
+    }
+    fs.writeFileSync(path.resolve(sim, 'config/formats.ts'),
+      `export const Formats: import('../sim/dex-formats').FormatList = ${
+        inspect(formats).replaceAll('trunc: [Function: trunc]', 'trunc: Math.trunc')};\n`);
+    for (const id in modded) {
+      fs.writeFileSync(path.resolve(mods, `src/${id}/formats.ts`),
+        `/* eslint-disable */\n\nexport const Formats = ${
+          inspect(modded[id]).replaceAll('trunc: [Function: trunc]', 'trunc: Math.trunc')};\n`);
+    }
+
+    // Decompose learnsets into learnsets.ts with just the learnset and legality.ts with the rest
+    for (const dir of [
+      'mods/gen2/', 'mods/gen6/', 'mods/gen8/', 'mods/gen8bdsp/', 'mods/gen8legends/', '',
+    ]) {
+      const original = require(path.resolve(ps, `dist/data/${dir}learnsets.js`)).Learnsets;
+      const learnsets = {};
+      const legality = {};
+      for (const id in original) {
+        for (const key in original[id]) {
+          if (key === 'learnset') {
+            const regular = {};
+            const special = {};
+            for (const move in original[id][key]) {
+              for (const source of original[id][key][move]) {
+                if (source.includes('S')) {
+                  special[move] = special[move] || [];
+                  special[move].push(source);
+                } else {
+                  regular[move] = regular[move] || [];
+                  regular[move].push(source);
+                }
+              }
+            }
+            // Simplify our merge algorithm by including every id from the original regardless
+            learnsets[id] = learnsets[id] || {};
+            learnsets[id][key] = regular;
+            // Only a subset of Pokémon have event movepools
+            if (Object.keys(special).length) {
+              legality[id] = legality[id] || {};
+              legality[id][key] = special;
+            }
+          } else {
+            learnsets[id] = learnsets[id] || {};
+            legality[id] = legality[id] || {};
+            legality[id][key] = original[id][key];
+          }
+        }
+      }
+      const d = dir ? '../../' : '';
+      /* eslint-disable max-len */
+      fs.writeFileSync(path.resolve(sim, `data/${dir}learnsets.ts`),
+        `export const Learnsets: {[k: string]:  import('../${d}sim/dex-species').ModdedLearnsetData} = ${inspect(learnsets)};\n`);
+      fs.writeFileSync(path.resolve(sim, `data/${dir}legality.ts`),
+        `export const Legality: {[k: string]:  import('../${d}sim/dex-species').ModdedLearnsetData} = ${inspect(legality)};\n`);
+    }
+
+    // Mirror `sim/global-types.ts` to export all of its types (making it a module). Its possible
+    // that ///-references could also be added to the data/ files and *nothing* then relies on
+    // ambient declarations, but this hack is the least involved way to get things to work
+    const types = fs.readFileSync(path.resolve(ps, 'sim/global-types.ts'), 'utf8');
+    fs.writeFileSync(path.resolve(sim, 'sim/global-types.ts'), types);
+    const exported = [];
+    for (const line of types.split('\n')) {
+      exported.push(/^(type|interface|declare|namespace)/.test(line) ? `export ${line}` : line);
+    }
+    fs.writeFileSync(path.resolve(sim, 'sim/exported-global-types.ts'), exported.join('\n'));
+
+    // The test files require paths are made with PS's build layout in mind - correct that here
+    const ignore = new Set([...Array.from(OVERRIDDEN).map(f => path.join(sim, f))]);
+    await replace(path.join(sim, 'test'), [{
+      regex: new RegExp(`(require\\\(.*?)dist\\\/((?<!build\\\/)sim)(.*?\\\))`, 'g'),
+      replace: `$1build/cjs/sim$3`,
+    }, {
+      regex: new RegExp(`(require\\\(.*?)dist\\\/((?<!build\\\/)lib)(.*?\\\))`, 'g'),
+      replace: `$1build/cjs/lib$3`,
+    }], ignore);
+
+    const messages =
+      `-m "Import smogon/pokemon-showdown@${now.ps}" ` +
+      `-m "smogon/pokemon-showdown-client@${now.psc}"`;
+    console.log(`\ngit add -A && git commit ${messages}`);
+  } catch (err) {
+    await execOrDie(`git reset --hard ${last.ps}`, ps);
+    await execOrDie(`git reset --hard ${last.psc}`, psc);
+    console.error(err);
+    process.exit(1);
+  }
+})().catch(err => {
+  console.log(err);
+  process.exit(2);
+});

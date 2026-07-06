@@ -2,11 +2,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { Battle, toID, ID } from '@pkmn/sim';
+import { Battle, toID, ID, Dex } from '@pkmn/sim';
 import { generateTestBatches, getTriggerSlot, generateBatchHash } from './team-generator.ts';
 import { generateItemTestBatches } from './item-generator.ts';
 import { createMockBattleContext } from './mock-battle-store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
+import { getShowdownFormatId } from '../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, type ChoiceRequest } from './battle-agent.ts';
 import { logger } from '../../src/logic/utils/logger.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
@@ -20,11 +21,24 @@ import {
   FUSION_LOCKED_ABILITIES,
 } from './excluded-abilities.ts';
 import type { FuzzerResult } from './fuzzer-runner.ts';
+import { calcStatsPure } from '../../src/logic/pokemon/statsMath.ts';
+import type { PokemonSet } from '@pkmn/sim';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/battle-tester/results');
 const REPORT_FILE = path.join(RESULTS_DIR, 'coverage_report.json');
 
 // ---------------------------------------------------------------------------
+// Override Math.random with a deterministic LCG (seed 12345) for test parity
+// ---------------------------------------------------------------------------
+let randomSeed = 12345;
+export function resetRandomSeed() {
+  randomSeed = 12345;
+}
+Math.random = () => {
+  const x = Math.sin(randomSeed++) * 10000;
+  return x - Math.floor(x);
+};
+
 // Logger intercept — shared per worker instance (Vitest isolates modules per
 // file, so each fuzzer spec has its own copy of this state).
 // ---------------------------------------------------------------------------
@@ -50,27 +64,66 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createLocalPoke(name: string, species: string, level: number, moves: string[], ability: string, item?: string): Pokemon {
+function createLocalPoke(set: PokemonSet): Pokemon {
+  const speciesData = Dex.species.get(set.species);
+  const baseStats = speciesData.baseStats;
+  const natureData = Dex.natures.get(set.nature || 'serious');
+  const mappedNature = {
+    up: natureData.plus ? (natureData.plus === 'atk' ? 'Ataque' : natureData.plus === 'def' ? 'Defensa' : natureData.plus === 'spa' ? 'At. Esp' : natureData.plus === 'spd' ? 'Def. Esp' : 'Velocidad') : null,
+    down: natureData.minus ? (natureData.minus === 'atk' ? 'Ataque' : natureData.minus === 'def' ? 'Defensa' : natureData.minus === 'spa' ? 'At. Esp' : natureData.minus === 'spd' ? 'Def. Esp' : 'Velocidad') : null,
+  };
+  
+  const calculated = calcStatsPure(
+    set.level,
+    {
+      hp: set.ivs?.hp ?? 31,
+      atk: set.ivs?.atk ?? 31,
+      def: set.ivs?.def ?? 31,
+      spa: set.ivs?.spa ?? 31,
+      spd: set.ivs?.spd ?? 31,
+      spe: set.ivs?.spe ?? 31
+    },
+    {
+      hp: baseStats.hp,
+      atk: baseStats.atk,
+      def: baseStats.def,
+      spa: baseStats.spa,
+      spd: baseStats.spd,
+      spe: baseStats.spe
+    },
+    mappedNature,
+    false,
+    set.evs ? {
+      hp: set.evs.hp,
+      atk: set.evs.atk,
+      def: set.evs.def,
+      spa: set.evs.spa,
+      spd: set.evs.spd,
+      spe: set.evs.spe
+    } : null
+  );
+
   return {
     uid: Math.random().toString(36).substring(2, 11),
-    id: toID(species),
-    name: name || species,
-    level,
+    id: toID(set.species),
+    name: set.name || set.species,
+    level: set.level,
     exp: 0,
     expNeeded: 100,
-    hp: 400,
-    maxHp: 400,
-    atk: 100,
-    def: 100,
-    spa: 100,
-    spd: 100,
-    spe: 100,
-    type: 'Normal',
-    ability: toID(ability),
-    item: item ? toID(item) : undefined,
+    hp: calculated.maxHp,
+    maxHp: calculated.maxHp,
+    atk: calculated.atk,
+    def: calculated.def,
+    spa: calculated.spa,
+    spd: calculated.spd,
+    spe: calculated.spe,
+    type: speciesData.types[0] || 'Normal',
+    type2: speciesData.types[1] || undefined,
+    ability: toID(set.ability),
+    item: set.item ? toID(set.item) : undefined,
     status: null,
     volatileCounters: {},
-    moves: moves.map(m => ({
+    moves: set.moves.map(m => ({
       id: toID(m),
       name: m,
       pp: 20,
@@ -156,6 +209,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   console.log(`📦 ${totalRounds} batches · iniciando simulación concurrente...`);
 
   async function executeBatch(batch: typeof batches[0], roundNum: number) {
+    resetRandomSeed();
     const maxAttempts = 5;
     const localUnhandled: string[] = [];
 
@@ -188,7 +242,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
 
       const simBattle = new Battle({
-        formatid: 'gen9customgame' as ID,
+        formatid: getShowdownFormatId(),
         seed
       });
       simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: batch.playerTeam });
@@ -196,8 +250,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 
       const p1Active = batch.playerTeam[0]!;
       const p2Active = batch.enemyTeam[0]!;
-      const localP1 = createLocalPoke(p1Active.name || '', p1Active.species, p1Active.level, p1Active.moves, p1Active.ability);
-      const localP2 = createLocalPoke(p2Active.name || '', p2Active.species, p2Active.level, p2Active.moves, p2Active.ability);
+      const localP1 = createLocalPoke(p1Active);
+      const localP2 = createLocalPoke(p2Active);
       const mockStore = createMockBattleContext(localP1, localP2);
 
       let lastLogIndex = 0;
@@ -222,7 +276,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       });
 
       let turn = 0;
-      const maxTurns = 50;
+      const maxTurns = 150;
       const steps: string[] = [];
       const batchChoices: string[] = [];
       const batchEnemyChoices: string[] = [];
@@ -249,7 +303,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             batchChoices.push(p1Choice);
           }
           const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
-          if (p2Choice !== 'pass' && !p2Choice.startsWith('team') && !p2Choice.startsWith('switch')) {
+          if (p2Choice !== 'pass' && !p2Choice.startsWith('team')) {
             batchEnemyChoices.push(p2Choice);
           }
 
@@ -315,6 +369,36 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
               }
             }
           });
+
+          // Lógica de cheats activada para lotes dinámicos para garantizar combates naturales sin desincronizaciones
+          if (true) {
+            const p1Active = simBattle.p1.active?.[0];
+            const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
+            if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
+              p1Active.hp = p1Active.maxhp;
+              p1Active.fainted = false;
+              p1Active.status = '';
+              if (!batchRec.cheats) batchRec.cheats = [];
+              batchRec.cheats.push({ turn, side: 'p1', type: 'heal' });
+              if (mockStore.player?.value) {
+                mockStore.player.value.hp = mockStore.player.value.maxHp;
+                mockStore.player.value.status = null;
+              }
+            }
+
+            const p2Active = simBattle.p2.active?.[0];
+            if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
+              p2Active.hp = p2Active.maxhp;
+              p2Active.fainted = false;
+              p2Active.status = '';
+              if (!batchRec.cheats) batchRec.cheats = [];
+              batchRec.cheats.push({ turn, side: 'p2', type: 'heal' });
+              if (mockStore.enemy?.value) {
+                mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
+                mockStore.enemy.value.status = null;
+              }
+            }
+          }
           // (saves happen outside the loop after it completes)
         }
       } catch (err: unknown) {
@@ -337,9 +421,18 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       batchRecord.winner = simBattle.ended
         ? (simBattle.winner === simBattle.p1.name ? 'p1' : 'p2')
         : null;
+      const p1Final = new Array(simBattle.p1.pokemon.length);
+      simBattle.p1.pokemon.forEach(p => {
+        p1Final[p.position] = { name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted };
+      });
+      const p2Final = new Array(simBattle.p2.pokemon.length);
+      simBattle.p2.pokemon.forEach(p => {
+        p2Final[p.position] = { name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted };
+      });
+
       batchRecord.finalState = {
-        p1: simBattle.p1.pokemon.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted })),
-        p2: simBattle.p2.pokemon.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted })),
+        p1: p1Final,
+        p2: p2Final,
       };
 
     }
@@ -352,7 +445,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   for (const scenario of ABILITY_SCENARIOS) {
     console.log(`🎬 Escenario: ${scenario.name}...`);
 
-    const simBattle = new Battle({ formatid: 'gen9customgame' as ID });
+    const simBattle = new Battle({ formatid: getShowdownFormatId() });
     simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
 
@@ -369,8 +462,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       return slice;
     };
 
-    const localP1 = createLocalPoke(scenario.playerTeam[0]!.name || '', scenario.playerTeam[0]!.species, scenario.playerTeam[0]!.level, scenario.playerTeam[0]!.moves, scenario.playerTeam[0]!.ability);
-    const localP2 = createLocalPoke(scenario.enemyTeam[0]!.name || '', scenario.enemyTeam[0]!.species, scenario.enemyTeam[0]!.level, scenario.enemyTeam[0]!.moves, scenario.enemyTeam[0]!.ability);
+    const localP1 = createLocalPoke(scenario.playerTeam[0]!);
+    const localP2 = createLocalPoke(scenario.enemyTeam[0]!);
     const mockStore = createMockBattleContext(localP1, localP2);
 
     const scenarioSteps: string[] = [];
@@ -477,9 +570,22 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
         finalState: rec.finalState ?? null,
       };
     });
+    // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes
+    try {
+      const freshContent = await fs.readFile(consolidatorPath, 'utf8');
+      const freshData = JSON.parse(freshContent);
+      consolidatedData = { ...freshData, battle: consolidatedData.battle };
+    } catch (_e) { /* archivo nuevo */ }
+
     await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
     await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
     console.log(`💾 Casos de combate consolidados guardados en: ${consolidatorPath}`);
+  } else {
+    console.log(`\n======================================================`);
+    console.log(`⚠️  ATENCIÓN: Se conservaron los casos certificados existentes.`);
+    console.log(`💡 Para regenerar y pisar los casos de prueba, ejecuta con:`);
+    console.log(`   REGENERATE_CASES=true npm run test:combat:fuzzer`);
+    console.log(`======================================================\n`);
   }
 }
 
@@ -581,11 +687,11 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     const p1Active = batch.playerTeam[0]!;
     const p2Active = batch.enemyTeam[0]!;
 
-    const localP1 = createLocalPoke(p1Active.name || '', p1Active.species, p1Active.level, p1Active.moves, p1Active.ability, p1Active.item || '');
-    const localP2 = createLocalPoke(p2Active.name || '', p2Active.species, p2Active.level, p2Active.moves, p2Active.ability, p2Active.item || '');
+    const localP1 = createLocalPoke(p1Active);
+    const localP2 = createLocalPoke(p2Active);
     const mockStore = createMockBattleContext(localP1, localP2);
 
-    const simBattle = new Battle({ formatid: 'gen9customgame' as ID });
+    const simBattle = new Battle({ formatid: getShowdownFormatId() });
     simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
 
@@ -603,7 +709,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     }
 
     let turn = 0;
-    const maxTurns = 50;
+    const maxTurns = 150;
 
     const agent1 = new BattleAgent('p1', new Set(), null, 5);
     const agent2 = new BattleAgent('p2', new Set(), null, 6);
@@ -717,9 +823,22 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         steps: (b as unknown as Record<string, unknown>).steps || []
       };
     });
+    // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes
+    try {
+      const freshContent = await fs.readFile(consolidatorPath, 'utf8');
+      const freshData = JSON.parse(freshContent);
+      consolidatedData = { ...freshData, items: consolidatedData.items };
+    } catch (_e) { /* archivo nuevo */ }
+
     await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
     await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
     console.log(`💾 Casos de ítems consolidados guardados en: ${consolidatorPath}`);
+  } else {
+    console.log(`\n======================================================`);
+    console.log(`⚠️  ATENCIÓN: Se conservaron los casos de ítems certificados existentes.`);
+    console.log(`💡 Para regenerar y pisar los casos de prueba de ítems, ejecuta con:`);
+    console.log(`   REGENERATE_CASES=true npm run test:combat:fuzzer`);
+    console.log(`======================================================\n`);
   }
 
   console.log(`💾 Reporte de ítems guardado en: ${itemsReportFile}`);

@@ -36,6 +36,41 @@ export function filterShowdownLogs(logs: string[]): string[] {
   return filtered;
 }
 
+import { useBattleStore } from '@/stores/battle/battle';
+
+// Monkey-patch Worker.prototype.postMessage to inject weather into EXECUTE_TURN (browser only)
+if (typeof Worker !== 'undefined') {
+  const originalPostMessage = Worker.prototype.postMessage;
+  Worker.prototype.postMessage = function (
+    this: Worker,
+    message: unknown,
+    transferOrOptions?: unknown
+  ) {
+    if (
+      message &&
+      typeof message === 'object' &&
+      (message as Record<string, unknown>).type === 'EXECUTE_TURN'
+    ) {
+      const payload = (message as Record<string, unknown>).payload as Record<string, unknown> | undefined;
+      if (payload) {
+        try {
+          const battleStore = useBattleStore();
+          if (battleStore?.state?.weather?.type) {
+            payload.weather = battleStore.state.weather.type;
+          }
+        } catch {
+          // Ignore if Pinia is not active/initialized yet
+        }
+      }
+    }
+    return (originalPostMessage as (this: Worker, message: unknown, transfer?: unknown) => void).call(
+      this,
+      message,
+      transferOrOptions
+    );
+  };
+}
+
 /**
  * Traduce y procesa una sola línea del log estructurado de Showdown,
  * actualizando el estado reactivo del combate y disparando logs/UI.
@@ -46,6 +81,40 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
   const parts = line.split('|').map(p => p.trim());
   const type = parts[1];
+
+  if (type === 'turnStart') {
+    if (store.activeBattle.value) {
+      (store.activeBattle.value as unknown as { p2Skip: boolean }).p2Skip = parts[2] === 'p2Skip=true';
+      (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = false;
+    }
+    return;
+  }
+
+  // Si ignoreEnemyLogs está activo, evaluar si debemos desactivarlo antes de ignorar la línea actual
+  if ((store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+    const isPlayerMove = type === 'move' && (parts[2]?.startsWith('p1a:') || parts[2]?.startsWith('p1:'));
+    const isSwitchOrDrag = type === 'switch' || type === 'drag';
+    const isTurnOrUpkeep = type === 'turn' || type === 'upkeep' || type === 'win' || type === 'tie';
+
+    if (isPlayerMove || isSwitchOrDrag || isTurnOrUpkeep) {
+      (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = false;
+    }
+  }
+
+  // Activar ignoreEnemyLogs si p2Skip está activo y es el turno del enemigo
+  if (
+    (store.activeBattle.value as unknown as { p2Skip?: boolean }).p2Skip &&
+    type === 'move' &&
+    (parts[2]?.startsWith('p2a:') || parts[2]?.startsWith('p2:'))
+  ) {
+    (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = true;
+  }
+
+  // Ignorar por completo si ignoreEnemyLogs está activo
+  if ((store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+    console.log(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
+    return;
+  }
 
   const p = store.activeBattle.value?.player;
   const e = store.activeBattle.value?.enemy;
@@ -62,49 +131,129 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     if (!side) return null;
 
     const battle = store.activeBattle.value;
+    if (!battle) {
+      console.log(`[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`);
+      return side === 'player' ? p : e;
+    }
 
-    // Si el identificador apunta al activo en pista (sufijo 'a' de individuales/dobles), retornar directamente el activo del bando
-    // (Excepto en eventos switch/drag, donde se está logueando al nuevo Pokémon que entra y el activo actual apunta al que sale)
-    if (battle && type !== 'switch' && type !== 'drag') {
-      if (side === 'player' && (rawId.startsWith('p1a:') || rawId.startsWith('p1:'))) {
-        if (battle.player) return battle.player;
-      }
-      if (side === 'enemy' && (rawId.startsWith('p2a:') || rawId.startsWith('p2:'))) {
-        if (battle.enemy) return battle.enemy;
+    console.log(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
+
+    interface RequestPokemon {
+      active?: boolean;
+      ident?: string;
+      uid?: string;
+    }
+    interface RequestSide {
+      pokemon?: RequestPokemon[];
+    }
+    interface ShowdownRequest {
+      side?: RequestSide;
+    }
+    const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
+    const team = side === 'player'
+      ? (battle.playerTeam || [])
+      : (battle.enemyTeam || []);
+
+    let foundUid: string | undefined = undefined;
+
+    if (line && line.includes('|[uids]')) {
+      const lineParts = line.split('|');
+      const uidsPart = lineParts.find(p => p.startsWith('[uids]'));
+      if (uidsPart) {
+        const mappings = uidsPart.substring(6).split(',');
+        const targetIdent = rawId.replace(/\s+/g, '');
+        const match = mappings.find(m => m.startsWith(`${targetIdent}=`));
+        if (match) {
+          foundUid = match.split('=')[1];
+        }
       }
     }
 
-    // Extraer nombre. Ej: "p1a: Mew" -> "Mew" o "p1: Blissey" -> "Blissey"
-    const colonIdx = rawId.indexOf(':');
-    const nameInLog = colonIdx !== -1 ? rawId.substring(colonIdx + 1).trim() : '';
-
-    const team = side === 'player'
-      ? (battle?.playerTeam || [])
-      : (battle?.enemyTeam || []);
-    if (nameInLog && team.length > 0) {
-      const found = team.find(mon => mon && ((mon as unknown as { nickname?: string }).nickname === nameInLog || mon.name === nameInLog));
+    if (foundUid) {
+      const found = team.find(mon => mon && mon.uid === foundUid);
       if (found) {
-        // En combates 2vs2, pueden existir múltiples asientos activos por lado (ej. player, player2, enemy, enemy2).
-        // Sincronizamos devolviendo la instancia reactiva del asiento activo que coincida en UID.
-        if (battle) {
-          const keys = Object.keys(battle);
-          for (const key of keys) {
-            const matchesSide = side === 'player' 
-              ? (key.startsWith('player') || key === 'ally') 
-              : key.startsWith('enemy');
-            if (matchesSide) {
-              const val = (battle as unknown as Record<string, unknown>)[key];
-              if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
-                return val as unknown as Pokemon;
-              }
+        const keys = Object.keys(battle);
+        for (const key of keys) {
+          const matchesSide = side === 'player' 
+            ? (key.startsWith('player') || key === 'ally') 
+            : key.startsWith('enemy');
+          if (matchesSide) {
+            const val = (battle as unknown as Record<string, unknown>)[key];
+            if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
+              console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${found.uid}" matches: "${key}"`);
+              return val as unknown as Pokemon;
             }
           }
         }
+        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${found.uid}" name "${found.name}"`);
         return found;
+      }
+      throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
+    }
+
+    // Si es del jugador y se refiere al slot activo en pista (p1a)
+    if (side === 'player' && (rawId.startsWith('p1a:') || rawId === 'p1a')) {
+      if ((battle as unknown as Record<string, unknown>).switchingToPlayer) {
+        return (battle as unknown as Record<string, unknown>).switchingToPlayer as Pokemon;
+      } else if (battle.player) {
+        return battle.player;
       }
     }
 
-    return side === 'player' ? p : e;
+    // Si es del enemigo y se refiere al slot activo en pista (p2a)
+    if (side === 'enemy' && (rawId.startsWith('p2a:') || rawId === 'p2a')) {
+      if ((battle as unknown as Record<string, unknown>).switchingToEnemy) {
+        console.log(`[E2E-GETPOKE-ACTIVE-SWITCH] Enemy active switch rawId "${rawId}". Returning switchingToEnemy: "${((battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon)?.uid}"`);
+        return (battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon;
+      } else if (battle.enemy) {
+        console.log(`[E2E-GETPOKE-ACTIVE] Enemy active slot rawId "${rawId}". Returning active battle.enemy: "${battle.enemy.name}" (UID: ${battle.enemy.uid})`);
+        return battle.enemy;
+      }
+    }
+
+    if (!foundUid && request && request.side && Array.isArray(request.side.pokemon)) {
+      if (line && (line.startsWith('|switch|') || line.startsWith('|drag|')) && (rawId === 'p1a' || rawId.startsWith('p1a:') || rawId === 'p2a' || rawId.startsWith('p2a:'))) {
+        const activeReqPoke = request.side.pokemon.find((rp: any) => rp && rp.active);
+        if (activeReqPoke && activeReqPoke.uid) {
+          foundUid = activeReqPoke.uid;
+        }
+      }
+      if (!foundUid) {
+        // Resolver por ident (e.g. p1a: P-Poke2-2 -> p1: P-Poke2-2)
+        const identToMatch = rawId.replace(/^(p1|p2)[a-d]:/, '$1:').trim();
+        const reqPoke = request.side.pokemon.find((rp: unknown) => {
+          const p = rp as { ident?: string; uid?: string } | null;
+          return p && p.ident === identToMatch;
+        });
+        if (reqPoke && (reqPoke as { uid?: string }).uid) {
+          foundUid = (reqPoke as { uid?: string }).uid;
+        }
+      }
+    }
+
+    if (foundUid) {
+      const found = team.find(mon => mon && mon.uid === foundUid);
+      if (found) {
+        const keys = Object.keys(battle);
+        for (const key of keys) {
+          const matchesSide = side === 'player' 
+            ? (key.startsWith('player') || key === 'ally') 
+            : key.startsWith('enemy');
+          if (matchesSide) {
+            const val = (battle as unknown as Record<string, unknown>)[key];
+            if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
+              console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${found.uid}" matches: "${key}"`);
+              return val as unknown as Pokemon;
+            }
+          }
+        }
+        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${found.uid}" name "${found.name}"`);
+        return found;
+      }
+      throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
+    }
+
+    throw new Error(`[showdownBridge.ts] Failed to resolve Pokemon reference for "${rawId}" (no UID match found). Line: "${line}"`);
   };
 
   const ctx: SBCtx = { store, type: type ?? '', parts, line, p, e, turnLogs, getSide, getPoke };

@@ -261,6 +261,10 @@ test.describe('E2E Held Items Verification', () => {
 
           gameStore.state.team = localPlayerTeam;
 
+          const { useMapStore } = await import('../../../src/stores/map.ts');
+          const mapStore = useMapStore();
+          mapStore.currentWeather = 'clear';
+
           const firstEnemy = localEnemyTeam[0];
           if (!firstEnemy) throw new Error('No enemy generated for items test');
 
@@ -316,6 +320,60 @@ test.describe('E2E Held Items Verification', () => {
             }
 
             const currentChoice = choices[turnCount];
+            if (choices && turnCount < choices.length && (currentChoice === '' || currentChoice === undefined)) {
+              console.log(`[E2E] Fuzzer choice at index ${turnCount} is empty (P1 has no choice). Waiting for UI to resolve faint/pivot...`);
+              await waitForWaitInput(page);
+              turnCount++;
+              continue;
+            }
+
+            // Validar si la elección del jugador es válida en el simulador.
+            // Si no es válida (ej. cambiar a un Pokémon debilitado o usar un movimiento deshabilitado),
+            // el fuzzer la registró pero la ignoró. Debemos saltarla en el E2E para no desincronizar los turnos.
+            const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
+              try {
+                if (!choiceStr) return true;
+                const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+                if (!resolver) return true;
+                const store = resolver();
+                const playerRequest = store.state?.playerRequest;
+                if (!playerRequest) return true;
+
+                if (choiceStr.startsWith('switch ')) {
+                  const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+                  const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
+                  if (!targetPoke) return false;
+                  const isFainted = targetPoke.condition?.includes('fnt') || targetPoke.hp === 0;
+                  const isActive = !!targetPoke.active;
+                  if (isFainted || isActive) {
+                    console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (fainted/active). Skipping.`);
+                    return false;
+                  }
+                } else if (choiceStr.startsWith('move ')) {
+                  const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
+                  const reqMove = playerRequest.active?.[0]?.moves?.[moveIdx];
+                  if (reqMove && reqMove.disabled) {
+                    console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (disabled move). Skipping.`);
+                    return false;
+                  }
+                }
+                return true;
+              } catch (_e) {
+                return true;
+              }
+            }, currentChoice);
+
+            if (!isPlayerChoiceValid) {
+              console.log(`[E2E] Choice "${currentChoice}" at index ${turnCount} is invalid for P1. Skipping in E2E to match fuzzer.`);
+              turnCount++;
+              await page.evaluate(() => {
+                if (window.__VITE_DEBUG__) {
+                  window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
+                }
+              });
+              continue;
+            }
+
             const inputPerformed = await handleBattleInput(page, currentChoice);
             if (inputPerformed) {
               turnCount++;

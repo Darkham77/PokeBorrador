@@ -78,6 +78,7 @@ export default tseslint.config(
       'scratch/**',
       'tmp/**',
       '.agents/skills/gsap-core/resources/**',
+      'pokemon-showdown-code/**',
     ],
   },
 );

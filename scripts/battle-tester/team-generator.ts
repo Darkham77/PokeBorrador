@@ -3,6 +3,7 @@ import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
 import crypto from 'node:crypto';
 import { EXCLUDED_FROM_SINGLES_REPORT } from './excluded-abilities.ts';
+import { ABILITY_SCENARIOS } from './ability-scenarios.ts';
 
 export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string {
   const data = {
@@ -197,9 +198,14 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const allMoves = dexGen.moves.all()
     .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle' && m.id !== 'nobleroar' && m.id !== 'orderup');
 
-  // Filtrar habilidades excluidas del reporte singles
+  // Obtener todas las habilidades probadas en escenarios scriptados para excluirlas del pool dinámico
+  const scriptedAbilities = new Set(
+    ABILITY_SCENARIOS.flatMap(s => s.abilities.map(a => toID(a)))
+  );
+
+  // Filtrar habilidades excluidas del reporte singles y las que ya tienen escenarios dedicados
   const allAbilities = dexGen.abilities.all()
-    .filter(a => a.exists && !a.isNonstandard && !EXCLUDED_FROM_SINGLES_REPORT.has(a.id));
+    .filter(a => a.exists && !a.isNonstandard && !EXCLUDED_FROM_SINGLES_REPORT.has(a.id) && !scriptedAbilities.has(a.id));
 
   const movePool    = allMoves.map(m => m.id);
   const abilityPool = allAbilities.map(a => a.id);

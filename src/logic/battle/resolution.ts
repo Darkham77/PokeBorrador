@@ -172,13 +172,26 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
+        ;(active as any).switchingToEnemy = nextEnemy
         const result = await executeTurnInWorker('', `switch ${slot}`)
         if (result) {
           active.playerRequest = result.p1Request
           active.enemyRequest = result.p2Request
-          if (result.p1SlotOrder) active.p1SlotOrder = result.p1SlotOrder
-          if (result.p2SlotOrder) active.p2SlotOrder = result.p2SlotOrder
+
+          // Parsear logs para aplicar el daño/debilitación por hazards
+          const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
+          const filteredLogs = filterShowdownLogs(result.logs)
+          for (const logLine of filteredLogs) {
+            await parseShowdownLogLine(ctx, logLine, filteredLogs)
+          }
         }
+        delete (active as any).switchingToEnemy
+      }
+
+      if (nextEnemy.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+        await processFaint(ctx, 'enemy')
+        return
       }
 
       active.enemy = nextEnemy
@@ -187,6 +200,8 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       } else {
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
       }
+
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       return
     }
 
@@ -588,9 +603,16 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
     ctx.uiStore.isBattleSwitchForced = true
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
   } else {
+    // Determine which Pokémon is currently active according to Showdown's request (source of truth).
+    // active.enemy?.uid can be stale after mid-battle switches, so we read the active flag from
+    // the Showdown request to guarantee we exclude the correct combatant from nextEnemy selection.
+    const activeUidPerShowdown = active.enemyRequest?.side?.pokemon
+      ?.find((p: { active?: boolean; uid?: string }) => p.active)?.uid
+    const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
+
     let nextEnemy: Pokemon | null = null
     if (active.enemyTeam) {
-      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== active.enemy?.uid) || null
+      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
     }
     if (nextEnemy) {
       const currentEnemy = active.enemy
@@ -611,8 +633,13 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
         const result = await executeTurnInWorker('', `switch ${slot}`)
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
-        if (result.p1SlotOrder) active.p1SlotOrder = result.p1SlotOrder
-        if (result.p2SlotOrder) active.p2SlotOrder = result.p2SlotOrder
+
+        // Parsear logs para aplicar el daño/debilitación por hazards
+        const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
+        const filteredLogs = filterShowdownLogs(result.logs)
+        for (const logLine of filteredLogs) {
+          await parseShowdownLogLine(ctx, logLine, filteredLogs)
+        }
       }
 
       active.enemy = nextEnemy
@@ -620,6 +647,13 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
         await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
       } else {
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+      }
+
+      // Si el Pokémon entrante se debilitó inmediatamente por hazards al entrar
+      if (nextEnemy.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+        const { processFaint } = await import('./resolution.ts')
+        await processFaint(ctx, 'enemy')
       }
     }
   }

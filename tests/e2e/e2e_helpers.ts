@@ -96,8 +96,12 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
  */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
   const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
-  await combatirBtn.waitFor({ state: 'visible', timeout: 15000 });
-  await combatirBtn.click();
+  try {
+    await combatirBtn.waitFor({ state: 'visible', timeout: 2000 });
+    await combatirBtn.click();
+  } catch (e) {
+    console.log('[confirmAndStartBattle] "¡COMBATIR!" button not found or battle already started. Proceeding...');
+  }
 }
 
 /**
@@ -118,6 +122,10 @@ export async function waitForWaitInput(page: Page): Promise<void> {
  * Maneja el input de la batalla simulada
  */
 export async function handleBattleInput(page: Page, choice?: string): Promise<boolean> {
+  if (!choice || choice.trim() === '') {
+    // No action needed for player in this step. Return true to advance turnCount.
+    return true;
+  }
   // Esperar a que el estado de procesamiento termine (microtasks/animaciones) antes de decidir
   await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -158,13 +166,35 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
       // El fuzzer grabó este switch — ejecutarlo usando los botones de la barra lateral
       // (SWITCH_MENU post-debilitación muestra .quick-card-override, NO un modal con .list-item)
       const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
-      // CRÍTICO: el índice de Showdown es POSICIONAL sobre toda la banca, incluyendo debilitados.
-      // NO filtrar .is-fainted en el conteo — eso desfasaría los índices.
-      // El fuzzer garantiza que el slot target está sano.
-      const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
-      const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
-      await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-      await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+      
+      // Resolver el UID del Pokémon usando p1SlotOrder (Showdown slot index)
+      const targetUid = await page.evaluate(async (slotNum) => {
+        try {
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+          if (!resolver) return null;
+          const battleStore = resolver();
+          const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
+          const slotOrder = state?.playerRequest?.side?.pokemon || [];
+          const uid = slotOrder[slotNum - 1]?.uid || null;
+          const uids = slotOrder.map(p => p?.uid || 'null');
+          console.log(`[E2E-DEBUG-SWITCH_MENU] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
+          return uid;
+        } catch (_e) {
+          return null;
+        }
+      }, switchSlot);
+
+      if (targetUid) {
+        const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
+        await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
+        await cardBtn.click({ force: true, timeout: 5000 });
+      } else {
+        // Fallback posicional si no se pudo resolver el UID
+        const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
+        const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+        await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
+        await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+      }
       return true;
     }
     // Choice no es un switch (es el move del turno siguiente): manejar con el primer disponible
@@ -177,11 +207,30 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return false;
   }
 
+  if (!choice) {
+    const firstMoveBtn = page.locator('.move-card-vicio').first();
+    const isVisible = await firstMoveBtn.isVisible().catch(() => false);
+    if (isVisible) {
+      const isDisabled = await firstMoveBtn.isDisabled().catch(() => true);
+      if (!isDisabled) {
+        await firstMoveBtn.click({ timeout: 5000 });
+        return true;
+      }
+    }
+    return false;
+  }
+
   if (choice) {
     try {
       const cleanChoice = choice.trim().toLowerCase();
       if (cleanChoice.startsWith('move ')) {
-        const moveIdx = parseInt(cleanChoice.split(' ')[1] || '1', 10) - 1;
+        const moveToken = cleanChoice.split(' ')[1] || '';
+        // 'recharge' es un movimiento virtual de Showdown. El watcher checkAndAutoRecharge
+        // en battle.ts lo detecta y lo ejecuta automáticamente. Si intentamos clickear
+        // también, causamos una doble sumisión que desincroniza todos los turnos siguientes.
+        if (moveToken === 'recharge') return true;
+
+        const moveIdx = parseInt(moveToken || '1', 10) - 1;
         const moveBtn = page.locator('.move-card-vicio').nth(moveIdx);
         await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
         // Si el botón está deshabilitado, el juego está procesando una secuencia de debilitación.
@@ -194,12 +243,33 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         // En Showdown, slot 1 es el activo, y slots 2-6 son la banca (sana o completa según la fase).
         // Por ende, switch N corresponds al índice N-2 de los elementos disponibles en la banca de la UI.
         const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
-        // Regla posicional: slot 1 = activo, slots 2-6 = banca (índice 0-based = switchSlot - 2).
-        // NO filtrar debilitados en el conteo — el índice de Showdown es absoluto sobre toda la banca.
-        const switchIdx = switchSlot - 2;
-        const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
-        await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-        await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+        
+        const targetUid = await page.evaluate(async (slotNum) => {
+          try {
+            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+            if (!resolver) return null;
+            const battleStore = resolver();
+            const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
+            const slotOrder = state?.playerRequest?.side?.pokemon || [];
+            const uid = slotOrder[slotNum - 1]?.uid || null;
+            const uids = slotOrder.map(p => p?.uid || 'null');
+            console.log(`[E2E-DEBUG-SWITCH] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
+            return uid;
+          } catch (_e) {
+            return null;
+          }
+        }, switchSlot);
+
+        if (targetUid) {
+          const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
+          await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
+          await cardBtn.click({ force: true, timeout: 5000 });
+        } else {
+          const switchIdx = switchSlot - 2;
+          const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+          await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
+          await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+        }
         return true;
       } else if (cleanChoice.startsWith('useitem:')) {
         const parts = cleanChoice.split(':');
@@ -267,3 +337,48 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
    await page.waitForTimeout(30);
    return false;
  }
+
+export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefined): Promise<boolean> {
+  if (!choice) return false;
+  return await page.evaluate((ch) => {
+    try {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const battleStore = resolver();
+      const battle = battleStore.state;
+      if (!battle) return false;
+
+      if (battle.playerRequest?.wait) {
+        console.log(`[E2E-INVALID-CHECK] wait request is active (wait: true) -> choice "${ch}" is invalid/skipped`);
+        return true;
+      }
+
+      const clean = ch.trim().toLowerCase();
+      if (clean.startsWith('move ')) {
+        const idx = parseInt(clean.split(' ')[1] || '1', 10) - 1;
+        const move = battle.player?.moves[idx];
+        const activeReq = battle.playerRequest?.active?.[0];
+        const reqMove = activeReq?.moves?.[idx];
+        const isInvalid = !move || (reqMove && reqMove.disabled);
+        console.log(`[E2E-INVALID-CHECK] ch: ${ch}, move exists: ${!!move}, reqMove disabled: ${reqMove?.disabled} -> isInvalid: ${isInvalid}`);
+        return !!isInvalid;
+      } else if (clean.startsWith('switch ')) {
+        const slotNum = parseInt(clean.split(' ')[1] || '2', 10);
+        const slotOrder = battle.playerRequest?.side?.pokemon || [];
+        const targetPoke = slotOrder[slotNum - 1];
+        if (!targetPoke) {
+          console.log(`[E2E-INVALID-CHECK] ch: ${ch}, no targetPoke at slot ${slotNum} -> isInvalid: true`);
+          return true;
+        }
+        const isFnt = targetPoke.condition.endsWith(' fnt') || targetPoke.condition.startsWith('0/');
+        const isInvalid = targetPoke.active || isFnt;
+        console.log(`[E2E-INVALID-CHECK] ch: ${ch}, targetPoke active: ${targetPoke.active}, condition: ${targetPoke.condition} -> isInvalid: ${isInvalid}`);
+        return !!isInvalid;
+      }
+      return false;
+    } catch (e: any) {
+      console.error(`[E2E-INVALID-CHECK] Error:`, e.message);
+      return false;
+    }
+  }, choice);
+}

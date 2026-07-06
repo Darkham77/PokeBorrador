@@ -1,0 +1,167 @@
+#!/usr/bin/env node
+'use strict';
+
+try {
+  require('source-map-support').install();
+} catch (err) {
+  if (err.code !== 'MODULE_NOT_FOUND') throw err;
+}
+
+const packages = [];
+for (const dep of ['@pkmn/protocol', 'ws']) {
+  try {
+    require.resolve(dep);
+  } catch (err) {
+    if (err.code !== 'MODULE_NOT_FOUND') throw err;
+    packages.push(dep);
+  }
+}
+if (packages.length) {
+  require('child_process').execSync(`npm install ${packages.join(' ')} --no-audit --no-save `, {
+    stdio: 'inherit',
+    cwd: __dirname,
+  });
+  console.error('Please rerun now that dependencies have been resolved.');
+  process.exit(1);
+}
+
+const https = require('https');
+const readline = require('readline');
+
+const {Protocol} = require('@pkmn/protocol');
+const WebSocket = require('ws');
+
+const {Actions} = require('.');
+
+const server = 'sim.smogon.com';
+const serverport = 8000;
+
+function fetch(action, cookie) {
+  const headers = cookie ? {'Set-Cookie': cookie, ...action.headers} : action.headers;
+  return new Promise((resolve, reject) => {
+    let buf = '';
+    const req = https.request(action.url, {method: action.method, headers}, res => {
+      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+      const sid = res.headers['set-cookie']?.find(c => c.startsWith('sid='));
+      // username,session,rawsid
+      if (sid) console.log('SID:', decodeURIComponent(sid.split(';')[0].slice(4)));
+      res.on('data', d => {
+        buf += d;
+      });
+      res.on('end', () => resolve(buf));
+    });
+    req.on('error', reject);
+    req.write(action.data);
+    req.end();
+  });
+}
+
+class User {
+  constructor(connection) {
+    this.connection = connection;
+  }
+
+  async login(details) {
+    const action = Actions.login(details);
+    const cmd = action.onResponse(await fetch(action));
+    if (cmd) this.connection.send(cmd);
+  }
+
+  async upkeep(details, cookie) {
+    const action = Actions.upkeep(details);
+    const cmd = action.onResponse(await fetch(action, cookie));
+    if (cmd) this.connection.send(cmd);
+  }
+
+  async logout() {
+    if (this.username) {
+      const action = Actions.logout({username: this.username});
+      const cmd = action.onResponse(await fetch(action));
+      if (cmd) this.connection.send(cmd);
+      this.username = undefined;
+    }
+  }
+}
+
+class Connection {
+  open(fn) {
+    this.ws = new WebSocket(`ws://${server}:${serverport}/showdown/websocket`);
+    this.ws.onmessage = ({data}) => {
+      fn(data);
+    };
+    this.ws.onopen = () => {
+      console.log(`Connected to ${this.ws.url}`);
+    };
+    this.ws.onclose = e => {
+      const clean = e.wasClean ? ' cleanly ' : ' ';
+      const reason = e.reason ? `: ${e.reason}` : '';
+      console.log(`Disconnected${clean}from ${this.ws.url} with ${e.code}${reason}`);
+    };
+    this.ws.onerror = e => {
+      const msg = e.message;
+      if (msg === 'TIMEOUT') return;
+      console.error(`Connection error${e.message ? `: ${e.message}` : ''}`);
+    };
+  }
+
+  close() {
+    this.ws.close();
+  }
+
+  send(message) {
+    this.ws.send(message);
+  }
+}
+
+const connection = new Connection();
+const user = new User(connection);
+
+for (const signal of ['SIGINT', 'SIGHUP', 'SIGTERM']) {
+  process.on(signal, async () => {
+    try {
+      // NOTE: This needs to be commented out when testing upkeep (logout kills the sid cookie)
+      await user.logout();
+    } finally {
+      connection.close();
+    }
+  });
+}
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+connection.open(data => {
+  for (const {args} of Protocol.parse(data)) {
+    switch (args[0]) {
+    case 'challstr': {
+      const challstr = args[1];
+      if (!process.argv[2]) {
+        rl.question('Username: ', username => {
+          rl.question('Password: ', password => {
+            user.login({username, challstr, password}).catch(err => {
+              console.error(err);
+              connection.close();
+              process.exit(1);
+            });
+            rl.close();
+          });
+        });
+      } else {
+        user.upkeep({challstr}, process.argv[2]).catch(err => {
+          console.error(err);
+          connection.close();
+          process.exit(1);
+        });
+      }
+      break;
+    }
+    case 'updateuser': {
+      user.username = args[1];
+      console.log(`Logged in as '${user.username.trim()}'`);
+      break;
+    }
+    }
+  }
+});

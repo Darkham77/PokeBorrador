@@ -211,6 +211,11 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   const e = active?.enemy
   if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return
 
+  const { showdownWorker } = await import('./orchestrator.ts')
+  if (showdownWorker) {
+    return
+  }
+
   const { useMapStore } = await import('@/stores/map.ts')
   const mapStore = useMapStore()
 

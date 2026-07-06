@@ -1,0 +1,34 @@
+import pkmn from "@pkmn/eslint-config";
+
+export default [...pkmn, {
+  files: [
+    "src/gen1jpn/*.ts",
+    "src/gen1stadium/*.ts",
+    "src/gen2stadium2/*.ts",
+    "src/gen3frlg/*.ts",
+    "src/gen3rs/*.ts",
+    "src/gen4pt/*.ts",
+    "src/gen5bw1/*.ts",
+    "src/gen6xy/*.ts",
+    "src/gen7letsgo/*.ts",
+    "src/gen7sm/*.ts",
+    "src/gen8dlc1/*.ts",
+    "src/gen9predlc/*.ts",
+    "src/gen9dlc1/*.ts",
+    "src/champions/*.ts",
+    "src/championsregma/*.ts"
+  ],
+  rules: {
+    "@stylistic/eol-last": "off",
+    "@stylistic/indent": "off",
+    "@stylistic/no-mixed-spaces-and-tabs": "off",
+    "@stylistic/object-curly-spacing": "off",
+    "@stylistic/operator-linebreak": "off",
+    "@stylistic/quotes": "off",
+    "@typescript-eslint/no-base-to-string": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/prefer-optional-chain": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "max-len": "off",
+  }
+}];
