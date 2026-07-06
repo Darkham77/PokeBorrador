@@ -20,7 +20,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 ## Mandatory Progress Artifact
 
 **Every simulation run MUST maintain a live artifact at
-`scripts/battle-tester/tests/sim_progress_YYYYMMDD.md` (create it before the first command runs,
+`scripts/battle-tester/results/sim_progress_YYYYMMDD.md` (create it before the first command runs,
 update it after each meaningful step). This artifact is the single source of truth
 for the current run and allows resuming at any point without losing context.
 
@@ -84,10 +84,10 @@ Status: FIXING | PENDING_RERUN | PASS
    error), ensure the artifact reflects exactly where execution stopped and what
    is next, so a fresh agent can pick up without duplicating work.
 4. **One artifact per session.** If the user resumes a previous run, look for the
-    existing `scripts/battle-tester/tests/sim_progress_<YYYYMMDD>.md` artifact first and continue from it.
+    existing `scripts/battle-tester/results/sim_progress_<YYYYMMDD>.md` artifact first and continue from it.
    Only create a new one if none exists or the user explicitly starts fresh.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge
-   the artifact summary into the final `scripts/battle-tester/tests/simulation_report_<timestamp>.md`.
+   the artifact summary into the final `scripts/battle-tester/results/simulation_report_<timestamp>.md`.
 
 ---
 
@@ -204,7 +204,7 @@ To analyze multiple E2E battle bugs simultaneously and identify patterns without
 When `CONTINUE_ON_ERROR=true` is set:
 1. Playwright tests intercept FSM/HP/parity errors, save them to the `scratch/e2e_failures/` directory, and exit the test block successfully.
 2. This avoids triggering Playwright's `maxFailures: 1` setting, allowing all cases in the suite to execute.
-3. At the end, the suite consolidates all failure data into `scratch/failed_e2e_cases.json` and a readable summary in `scratch/failed_e2e_cases.txt`.
+3. At the end, the suite consolidates all failure data into `scripts/battle-tester/results/failed_e2e_cases.json` and a readable summary in `scratch/failed_e2e_cases.txt`.
 
 **Execution Command:**
 ```bash

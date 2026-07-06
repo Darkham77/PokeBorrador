@@ -796,7 +796,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         })
         .filter((x: any) => x !== null);
 
-      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.json');
+      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/results/failed_e2e_cases.json');
 
       if (failures.length > 0) {
         fs.writeFileSync(reportPath, JSON.stringify(failures, null, 2), 'utf8');
@@ -806,7 +806,7 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         console.log('\n✅ Todos los combates pasaron sin errores. Reportes vaciados.');
       }
     } else {
-      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/tests/failed_e2e_cases.json');
+      const reportPath = path.resolve(process.cwd(), 'scripts/battle-tester/results/failed_e2e_cases.json');
       fs.writeFileSync(reportPath, '[]', 'utf8');
       console.log('\n✅ No hay errores que consolidar. Reportes vaciados.');
     }
