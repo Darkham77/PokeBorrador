@@ -58,6 +58,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
   1. Showdown trunca nativamente los nicknames de los Pokémon a un máximo de 18 caracteres. Para evitar truncamientos destructivos al mapear UIDs, la inicialización del equipo en el simulador MUST usar los primeros 8 caracteres del UID (`uid.split('-')[0]`) como el nickname (`name` de Showdown).
   2. Todos los mapeos e inyecciones de UIDs (`injectUidsIntoRequest`) y resoluciones de logs (`getPoke` en el bridge) MUST ser estrictamente basados en UID o prefijo de UID.
   3. Queda estrictamente PROHIBIDO implementar fallbacks basados en nombres, apodos genéricos, especies o índices de slots físicos cuando falla una resolución. Si no se puede resolver el UID de un Pokémon en un request o línea de log, MUST lanzar un error descriptivo e interrumpir la ejecución inmediatamente para exponer la anomalía en su origen.
+- **Showdown Simulator Pokemon Status Constraint**: Any status clearance or assignment on a Showdown simulator Pokemon instance (e.g. inside cheats or initialization scripts) MUST use an empty string `''` instead of `null` to denote no status. Assigning `null` to `status` on simulator instances will cause internal simulator crashes (e.g., calling `.startsWith` on null). Client-side Vue store Pokémon representations may still use `null` to indicate no status.
 
 ## 4. Code Modularity (500/1000 Rule)
 

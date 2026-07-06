@@ -150,9 +150,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       side?: RequestSide;
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
-    const team = side === 'player'
-      ? (battle.playerTeam && battle.playerTeam.length > 0 ? battle.playerTeam : (battle.player ? [battle.player] : []))
-      : (battle.enemyTeam && battle.enemyTeam.length > 0 ? battle.enemyTeam : (battle.enemy ? [battle.enemy] : []));    const findPokemonInBattle = (targetUid: string) => {
+    const team = side === 'player' ? (battle.playerTeam || []) : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
       const found = team.find(mon => mon && mon.uid === targetUid);
       if (!found) return null;
 
@@ -162,7 +160,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
           ? (key.startsWith('player') || key === 'ally') 
           : key.startsWith('enemy');
         if (matchesSide) {
-          const val = (battle as Record<string, unknown>)[key];
+          const val = (battle as unknown as Record<string, unknown>)[key];
           if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
             return { val: val as unknown as Pokemon, found };
           }

@@ -17,12 +17,10 @@ import { applyHealCheatToSide } from './cheats.ts'
 
 export let showdownWorker: Worker | null = null;
 
-export async function getSimulatorState(): Promise<{ p1: any[]; p2: any[] }> {
-  if (!showdownWorker) {
-    throw new Error('showdownWorker is null');
-  }
+export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[] }> {
+  if (!showdownWorker) throw new Error('showdownWorker is null');
   showdownWorker.postMessage({ type: 'GET_SIMULATOR_STATE' });
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const handler = (event: MessageEvent) => {
       const { type, payload } = event.data;
       if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
@@ -433,15 +431,11 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { useMapStore } = await import('@/stores/map')
   const mapStore = useMapStore() as unknown as MapStore
   const finalEnemyPoke = enemyPoke
-  const startingEnemyPoke = (isTrainer || isGym) && enemyTeam && enemyTeam.length > 0
-    ? enemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
-    : finalEnemyPoke
+  const finalEnemyTeam = enemyTeam && enemyTeam.length > 0 ? enemyTeam : [finalEnemyPoke]
+  const startingEnemyPoke = finalEnemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
 
   sanitizePokemon(playerPoke)
-  sanitizePokemon(finalEnemyPoke)
-  if (enemyTeam) {
-    enemyTeam.forEach((p: Pokemon) => p && sanitizePokemon(p))
-  }
+  finalEnemyTeam.forEach((p: Pokemon) => p && sanitizePokemon(p))
 
   // LIMPIEZA DE ESTADOS VOLÁTILES
   ctx.clearVolatileStatus(playerPoke)
@@ -450,9 +444,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   // Initial context values
   let rarity = 50
 
-  const maxEnemyLv = enemyTeam && enemyTeam.length > 0
-    ? Math.max(...enemyTeam.map(p => p?.level || 1))
-    : (finalEnemyPoke ? finalEnemyPoke.level : 1);
+  const maxEnemyLv = Math.max(...finalEnemyTeam.map(p => p?.level || 1))
   const npcInvResult = (isTrainer || isGym)
     ? generateNPCInventory(maxEnemyLv, difficulty as 'easy' | 'normal' | 'hard', isGym, isRival || (battleOptions.isRival as boolean), trainerArchetype || (battleOptions.trainerArchetype as string))
     : null;
@@ -465,7 +457,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialEnemy: startingEnemyPoke,
     _initialPlayer: playerPoke,
     _rewardCombatants: [],
-    isGym, gymId, isTrainer, enemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
+    isGym, gymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
     enemyInventory,
     enemyMoney,
     enemyMaxLevel: maxEnemyLv,
@@ -1150,12 +1142,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   }
 
   // Esperar a que el worker inicialice y asigne el request inicial con elecciones válidas (máximo 5 segundos)
-  for (let i = 0; i < 100; i++) {
-    const req = ctx.activeBattle.value?.playerRequest
-    if (req && (req.active || req.forceSwitch)) {
-      break
-    }
-    await sleep(50)
+  for (let i = 0; i < 100 && !(ctx.activeBattle.value?.playerRequest?.active || ctx.activeBattle.value?.playerRequest?.forceSwitch); i++) {
+    await sleep(50);
   }
 
   ctx.isIntroAnimating.value = false
@@ -1179,11 +1167,7 @@ export function restoreBattleState(ctx: BattleContext, battleData: unknown) {
   if (d.enemyStages) ctx.enemyStages.value = d.enemyStages
   if (d.battleLogs) ctx.battleLogs.value = d.battleLogs
   
-  if (!d.over) {
-    ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-  } else {
-    ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-  }
+  ctx.fsm.transition(!d.over ? BATTLE_STATES.ACTIVE_BATTLE : BATTLE_STATES.EXIT_BATTLE, !d.over ? BATTLE_SUBSTATES.WAIT_INPUT : undefined)
 }
 
 export function testResetShowdownWorker(): void {
@@ -1191,8 +1175,11 @@ export function testResetShowdownWorker(): void {
     showdownWorker.terminate();
     showdownWorker = null;
   }
-  if (typeof window !== 'undefined' && (window as any).__showdownWorker__) {
-    (window as any).__showdownWorker__.terminate();
-    (window as any).__showdownWorker__ = null;
+  if (typeof window !== 'undefined') {
+    const w = window as unknown as Record<string, { terminate: () => void } | null>;
+    if (w.__showdownWorker__) {
+      w.__showdownWorker__.terminate();
+      w.__showdownWorker__ = null;
+    }
   }
 }

@@ -17,6 +17,7 @@ Simulate, test, and validate battle log synchronization between the Pokémon Sho
 - All files must be written in TypeScript and adhere to Node.js 26+ requirements (relative imports require explicit `.ts` extensions).
 - The coverage report must be written to `scripts/battle-tester/results/coverage_report.json`.
 - **Durable Progress Files Exception**: Durable progress tracking files (e.g. `tests/sim_progress_YYYYMMDD.md`) generated during simulation runs are official, versioned assets of the fuzzer system and are exempt from the global `scratch/` mandate.
+- **Uniform Enemy Team Design**: Wild battles and trainer battles MUST be initialized and treated uniformly. If no opponent team is provided during battle initialization, `enemyTeam` MUST be set to `[enemyPoke]`. Bypassing or omitting `enemyTeam` for wild encounters is forbidden to keep store logic clean and prevent desynchronizations.
 
 ## Work Guidance
 
