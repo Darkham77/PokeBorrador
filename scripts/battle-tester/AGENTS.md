@@ -43,3 +43,5 @@ npm run test:move-coverage
 - [fuzzer-engine.ts](./fuzzer-engine.ts): Main simulation engine executing fuzzer batches, tracking coverage, and saving logs.
 - [fuzzer-team-generator.ts](./fuzzer-team-generator.ts): Generator for random fuzzer teams and sets.
 - [fuzzer-run-tester.ts](./fuzzer-run-tester.ts): Reusable CLI diagnostic tool to run and trace specific fuzzer cases step-by-step.
+- [tests/](./tests/): Directory containing moves, abilities, and items coverage fuzzer spec files.
+- [results/](./results/): Directory containing certified fuzzer cases, coverage reports, E2E failure reports, and simulation progress logs.
