@@ -38,7 +38,7 @@ DevOps / Tooling Engineers.
 ## Child DOX Index
 
 - [assets/](./assets/): Conversion, optimization, downloading, and consistency auditing of sprites and images.
-- [battle-tester/](./battle-tester/): Automated Gen 9 combat coverage and testing fuzzer.
 - [database/](./database/): Database schemas backup, restoration, migrations compilation, and seeding.
+- [e2e/](./e2e/AGENTS.md): Playwright-based scenario simulations and test case builders.
 - [maintenance/](./maintenance/): Code quality audit pipelines, local server configurators, temporal migrations, and HMR traps.
 - [validation/](./validation/): Integrity validators for combat FSMs, ability learnsets, translation sheets, and game rules.

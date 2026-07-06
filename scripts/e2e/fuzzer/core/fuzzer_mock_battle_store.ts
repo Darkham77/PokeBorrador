@@ -1,0 +1,84 @@
+// scripts/battle-tester/fuzzer-mock-battle-store.ts
+import { ref } from 'vue';
+import type { BattleContext } from '../../../../src/types/battle/battleContext.ts';
+import type { BattleState, BattleStages, BattleLog } from '../../../../src/types/battle/battle.ts';
+import type { Pokemon, Move } from '../../../../src/types/pokemon/pokemon.ts';
+
+export function createMockBattleContext(playerPoke: Pokemon, enemyPoke: Pokemon): BattleContext {
+  const activeBattle = ref<BattleState | null>({
+    id: 'mock-battle',
+    mode: 'offline',
+    type: 'wild',
+    player: playerPoke,
+    enemy: enemyPoke,
+    turn: 'player',
+    turns: 1,
+    weather: { type: 'clear', turns: 0 },
+    terrain: null,
+    startedAt: '',
+    updatedAt: ''
+  } as unknown as BattleState);
+
+  const playerRef = ref<Pokemon | null | undefined>(playerPoke);
+  const enemyRef = ref<Pokemon | null | undefined>(enemyPoke);
+
+  const logs: string[] = [];
+
+  const addLog = (msg: string, type?: string, _source?: Pokemon | string | null) => {
+    logs.push(`[${type || 'info'}] ${msg}`);
+  };
+
+  const context: Partial<BattleContext> = {
+    activeBattle,
+    player: playerRef,
+    enemy: enemyRef,
+    attackerSide: ref<'player' | 'enemy' | null>(null),
+    activeMove: ref<Move | null>(null),
+    faintedSides: ref(new Set<string>()),
+    playerStages: ref<BattleStages>({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 } as unknown as BattleStages),
+    enemyStages: ref<BattleStages>({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 } as unknown as BattleStages),
+    battleLogs: ref<BattleLog[]>([]),
+    isBattleActive: ref(true),
+    isFinishing: ref(false),
+    isSearching: ref(false),
+    isReadyToExit: ref(false),
+    isIntroAnimating: ref(false),
+    isPvP: ref(false),
+    isProcessing: ref(false),
+    debugBinoculars: ref(false),
+    debugLoopPokemon: ref(null),
+    exitingPlayer: ref(null),
+    exitingEnemy: ref(null),
+    
+    addLog,
+    handleFaint: async () => {},
+    endBattle: async () => {},
+    completeBattleFlow: async () => {},
+    persistBattle: () => {},
+    waitForLogs: async () => {},
+    clearLogs: () => {},
+    clearVolatileStatus: () => {},
+    
+    animations: {
+      triggerSearchEncounter: async () => {},
+      revealWildPokemon: async () => {},
+      triggerWildEmergence: async () => {},
+      triggerCatchSparkles: async () => {},
+      handleCatchRequest: async () => {},
+      handleReleaseRequest: async () => {},
+      handleShakeRequest: async () => {},
+      handleFaintAnim: async () => {},
+      playCatchCelebration: async () => {},
+      playBallFadeOut: async () => {},
+      triggerTrainerEntry: async () => {},
+      triggerTrainerDialogs: async () => {},
+      triggerTrainerRetreat: async () => {},
+      triggerPokemonCall: async () => {},
+      handleHealRequest: async () => {},
+      handleBlinkRequest: async () => {},
+      awaitTween: async () => {}
+    }
+  };
+
+  return context as BattleContext;
+}

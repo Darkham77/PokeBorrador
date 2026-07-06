@@ -39,7 +39,6 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
-- [e2e/](./e2e/AGENTS.md): E2E browser and UI synchronization tests using Playwright.
 - [helpers/](./helpers/AGENTS.md): Seed helper functions and setup configurations.
 - [integration/](./integration/AGENTS.md): Multi-module flow validation test suites.
 - [node/](./node/AGENTS.md): Pure logic tests running under the native Node.js runner.

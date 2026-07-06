@@ -11,23 +11,6 @@ Core Engine Team / QA Engineers.
 - Must utilize Vitest and run under simulated battle flows.
 - Keep tests aligned with Gen 9 mechanics.
 
-## Work Guidance
-
-### Fuzzer Architecture (3-spec + shared base)
-
-All coverage fuzzers follow this pattern — do not break it:
-
-- **`scripts/battle-tester/fuzzer-vitest-bridge.ts`**: shared base. Exports `registerFuzzerSuite(config)` which wraps the spec in `describe/it` with a standardized timeout, unified output format, and strict error policy (throws if any `failed > 0` or `untested > 0`).
-- **`scripts/battle-tester/fuzzer-engine.ts`**: pure logic, no Vitest coupling. Exports three functions: `runMovesFuzzer()`, `runAbilitiesFuzzer()`, `runItemsFuzzer()`, each returning `Promise<FuzzerResult[]>`. Internal shared loop is `runBattleBatchLoop()` (not exported).
-- **3 spec files**: located in `scripts/battle-tester/tests/`. Each is a one-liner that calls `registerFuzzerSuite`. No logic in specs.
-
-**Concurrency**: Vitest runs each spec file in its own worker process. All 3 fuzzers run in parallel. Module-level state (`unhandledBridgeLines`, logger interceptor) is isolated per worker — no locks needed.
-
-**Zero-Untested Goal**: `runBattleBatchLoop()` forces any remaining `UNTESTED` → `PASS` after all batches and ability scenarios complete. `registerFuzzerSuite` throws if any `untested > 0` persists.
-
-**Adding a new fuzzer**: create a new exported function in `fuzzer-engine.ts` returning `FuzzerResult[]`, then add a new one-liner spec in `scripts/battle-tester/tests/` using `registerFuzzerSuite`. No changes to any existing file.
-
 ## Verification
 
-- `npm run test:combat:fuzzer` — runs all 3 fuzzers concurrently, unified output per spec.
-- `npm run test:combat:fuzzer:report` — same, verbose output piped to `scratch/fuzzer_report.txt`.
+- Run `npm run test` or target specific specs (e.g. `npx vitest run tests/integration/battle/showdown_integration.spec.ts`).

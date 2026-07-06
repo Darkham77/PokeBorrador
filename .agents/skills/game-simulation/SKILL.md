@@ -20,7 +20,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 ## Mandatory Progress Artifact
 
 **Every simulation run MUST maintain a live artifact at
-`scripts/battle-tester/results/sim_progress_YYYYMMDD.md` (create it before the first command runs,
+`scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` (create it before the first command runs,
 update it after each meaningful step). This artifact is the single source of truth
 for the current run and allows resuming at any point without losing context.
 
@@ -42,9 +42,9 @@ Resumed at: <step name> (only when resuming)
 <!-- checked = done, unchecked = pending, ⚠ = failed/needs fix -->
 - [x] test:node (unit) — PASS
 - [x] test (integration) — PASS
-- [ ] test:e2e:combat — IN PROGRESS
-- [ ] test:e2e:gyms
-- [ ] test:e2e:breeding
+- [ ] sim:e2e:combat — IN PROGRESS
+- [ ] sim:e2e:gyms
+- [ ] sim:e2e:breeding
 ...
 
 ## Active Fix — <simulation name>
@@ -75,7 +75,7 @@ Status: FIXING | PENDING_RERUN | PASS
 ### Rules for the Progress Artifact
 
 1. **Create before the first simulation command.** The artifact must exist before
-   any `test:*`, `test:e2e:*`, `test:combat:*`, or `npx playwright` command is
+   any `sim:*`, `sim:e2e:*`, `sim:combat:*`, or `npx playwright` command is
    issued. Other `npm run` commands (lint, build, validate:types, etc.) do not
    count as simulation commands and do not require the artifact to exist first.
 2. **Update after every step.** After each simulation pass/fail, after each fix
@@ -84,10 +84,10 @@ Status: FIXING | PENDING_RERUN | PASS
    error), ensure the artifact reflects exactly where execution stopped and what
    is next, so a fresh agent can pick up without duplicating work.
 4. **One artifact per session.** If the user resumes a previous run, look for the
-    existing `scripts/battle-tester/results/sim_progress_<YYYYMMDD>.md` artifact first and continue from it.
+    existing `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` artifact first and continue from it.
    Only create a new one if none exists or the user explicitly starts fresh.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge
-   the artifact summary into the final `scripts/battle-tester/results/simulation_report_<timestamp>.md`.
+   the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
 
 ---
 
@@ -96,15 +96,24 @@ Status: FIXING | PENDING_RERUN | PASS
 The project has **three testing layers**, each with a distinct role:
 
 ```
-scripts/battle-tester/                <- Layer 0: FUZZER (pure logic, @pkmn/sim)
-    run-tester.ts                     <- Main engine
-    team-generator.ts                 <- Builds test batches
-    item-generator.ts                 <- Builds item test batches
-    battle-agent.ts                   <- Decides moves for p1/p2
-    ability-scenarios.ts              <- Scripted scenarios for specific abilities
-    results/
-        certified_fuzzer_cases.json   <- OUTPUT consumed by E2E specs
-        coverage_report.json          <- OUTPUT coverage report
+scripts/e2e/fuzzer/                   <- Layer 0: FUZZER (pure logic, @pkmn/sim)
+    core/
+        fuzzer_engine.ts              <- Main engine
+        fuzzer_agent.ts               <- Decides moves for p1/p2
+        fuzzer_mock_battle_store.ts   <- Headless Pinia battle store mock
+        fuzzer_runner.ts              <- Native fuzzer runner (decoupled from Vitest)
+    generators/
+        fuzzer_team_generator.ts      <- Builds test batches
+        fuzzer_item_generator.ts      <- Builds item test batches
+    scenarios/
+        fuzzer_ability_scenarios.ts   <- Scripted scenarios for specific abilities
+        fuzzer_excluded_abilities.ts  <- List of excluded abilities
+    runners/
+        run_moves_fuzzer.ts           <- Native runner for moves
+        run_abilities_fuzzer.ts       <- Native runner for abilities
+        run_items_fuzzer.ts           <- Native runner for items
+        fuzzer_case_replayer.ts       <- Replay specific cases step-by-step
+        ensure_fuzzer_cases.ts        <- Ensures certified cases exist
 
 tests/node/                           <- Layer 1: UNIT (pure Node.js, no browser)
     battle/         battleMath, showdownAdapter, pp logic, weather abilities...
@@ -114,42 +123,40 @@ tests/node/                           <- Layer 1: UNIT (pure Node.js, no browser
     world/          spawn integrity, weather, maps...
 
 tests/integration/battle/             <- Layer 2: INTEGRATION (Vitest + @pkmn/sim)
-    coverage_fuzzer.spec.ts           <- Vitest entry point (re-exports run-tester)
-    item_coverage_fuzzer.spec.ts
     showdown_integration.spec.ts
     showdown_item_sync.spec.ts
     showdown_bridge_bugs.spec.ts
 
-tests/e2e/                            <- Layer 3: E2E (Playwright, real browser)
+scripts/e2e/                          <- Layer 3: Simulations (Playwright, real browser)
     e2e_helpers.ts                    <- Shared: login, battle input, FSM polling
-    pretest_fuzzer_check.ts           <- Guard: ensures certified_fuzzer_cases.json exists
+    fuzzer/runners/ensure_fuzzer_cases.ts <- Guard: ensures fuzzer_certified_cases.json exists
     battle/
-        fsm_sync.spec.ts              <- Full multi-turn battle (consumes fuzzer output)
-        held_items.spec.ts            <- Item effects in combat (consumes fuzzer output)
-        weather.spec.ts               <- Weather / ability interactions
+        battle_fsm_sync.sim.ts        <- Full multi-turn battle (consumes fuzzer output)
+        battle_held_items.sim.ts      <- Item effects in combat (consumes fuzzer output)
+        battle_weather_effects.sim.ts <- Weather / ability interactions
     gyms/
-        gym_progression.spec.ts       <- Gym challenge -> badge
+        gym_progression.sim.ts        <- Gym challenge -> badge
     gts/
-        transactions.spec.ts          <- Publish/buy trade cycle (dual-page)
+        gts_transactions.sim.ts       <- Publish/buy trade cycle (dual-page)
     breeding/
-        breeding.spec.ts              <- Deposit -> hatch cycle
+        breeding_lifecycle.sim.ts     <- Deposit -> hatch cycle
     missions/
-        daycare_missions.spec.ts      <- Mission completion flow
+        daycare_missions.sim.ts       <- Mission completion flow
     save/
-        save_shield.spec.ts           <- Zero-Pokemon save guard
+        save_shield_restrictions.sim.ts <- Zero-Pokemon save guard
 ```
 
 ### Fuzzer -> E2E Dependency Chain
 
 ```
-run-tester.ts
+run_moves_fuzzer.ts / run_abilities_fuzzer.ts / run_items_fuzzer.ts
   |  simulates battles deterministically using @pkmn/sim
   |  applies Infinite Punching Bag pattern (HP < 30% -> restore to 100%)
   |  records each restoration in batchCheats[]
   |
-  +---> certified_fuzzer_cases.json
-            |-- section "battle" -> consumed by fsm_sync.spec.ts
-            +-- section "items"  -> consumed by held_items.spec.ts
+  +---> fuzzer_certified_cases.json
+            |-- section "battle" -> consumed by battle_fsm_sync.sim.ts
+            +-- section "items"  -> consumed by battle_held_items.sim.ts
                  (E2E replays identical cheats to mirror the fuzzer state)
 ```
 
@@ -172,18 +179,18 @@ so both the fuzzer and the real browser reach the same game state.
 |---|---|
 | `test:node` | All `tests/node/**/*.test.ts` via native `node:test` |
 | `test` | All unit + integration via Vitest |
-| `test:combat:fuzzer` | Coverage fuzzer + item fuzzer (generates certified_fuzzer_cases.json) |
-| `test:e2e` | All Playwright E2E specs |
-| `test:e2e:battle` | Only `tests/e2e/battle/` |
-| `test:e2e:combat` | pretest_fuzzer_check + `fsm_sync.spec.ts` |
-| `test:e2e:combat:report` | Same, output redirected to `scratch/e2e_fsm_report.txt` |
-| `test:e2e:gyms` | Only `tests/e2e/gyms/` |
-| `test:e2e:gts` | Only `tests/e2e/gts/` |
-| `test:e2e:breeding` | Only `tests/e2e/breeding/` |
-| `test:e2e:missions` | Only `tests/e2e/missions/` |
-| `test:e2e:save` | Only `tests/e2e/save/` |
-| `test:combat:all` | Fuzzers + unit/battle + all Playwright E2E |
-| `test:combat:all:report` | All of the above -> `scratch/combat_report.txt` + `scratch/playwright_report.txt` |
+| `sim:fuzzer` | Coverage fuzzer + item fuzzer (generates fuzzer_certified_cases.json) |
+| `sim:e2e` | All Playwright scenario simulations |
+| `sim:e2e:battle` | Only `scripts/e2e/battle/` |
+| `sim:e2e:combat` | ensure_fuzzer_cases + `battle_fsm_sync.sim.ts` |
+| `sim:e2e:combat:report` | Same, output redirected to `scripts/e2e/results/e2e_simulation_failures.json` |
+| `sim:e2e:gyms` | Only `scripts/e2e/gyms/` |
+| `sim:e2e:gts` | Only `scripts/e2e/gts/` |
+| `sim:e2e:breeding` | Only `scripts/e2e/breeding/` |
+| `sim:e2e:missions` | Only `scripts/e2e/missions/` |
+| `sim:e2e:save` | Only `scripts/e2e/save/` |
+| `sim:combat:all` | Fuzzers + all Playwright scenario simulations |
+| `sim:combat:all:report` | All of the above -> `scripts/e2e/results/playwright_report.txt` |
 
 ### Filtering Individual Test Cases
 
@@ -191,10 +198,10 @@ Every simulation script must support a `TEST_CASE` (or equivalent) filter to
 enable targeted re-runs. The E2E battle specs already support these env vars:
 
 ```bash
-TEST_CASE=<case-id>             # Run only this specific case in fsm_sync
+TEST_CASE=<case-id>             # Run only this specific case in battle_fsm_sync
 TEST_START_FROM_CASE_ID=<id>    # Start from this case onwards
 TEST_BATCH=<n>                  # Run only batch N
-REGENERATE_CASES=true           # Force fuzzer to overwrite certified_fuzzer_cases.json
+REGENERATE_CASES=true           # Force fuzzer to overwrite fuzzer_certified_cases.json
 ```
 
 ### E2E Multi-Error Logging Mode (Mass-Debugging)
@@ -202,13 +209,13 @@ REGENERATE_CASES=true           # Force fuzzer to overwrite certified_fuzzer_cas
 To analyze multiple E2E battle bugs simultaneously and identify patterns without early termination, run the E2E suite with the `CONTINUE_ON_ERROR=true` environment variable.
 
 When `CONTINUE_ON_ERROR=true` is set:
-1. Playwright tests intercept FSM/HP/parity errors, save them to the `scratch/e2e_failures/` directory, and exit the test block successfully.
+1. Playwright tests intercept FSM/HP/parity errors, save them to the `scripts/e2e/results/e2e_failures/` directory, and exit the test block successfully.
 2. This avoids triggering Playwright's `maxFailures: 1` setting, allowing all cases in the suite to execute.
-3. At the end, the suite consolidates all failure data into `scripts/battle-tester/results/failed_e2e_cases.json` and a readable summary in `scratch/failed_e2e_cases.txt`.
+3. At the end, the suite consolidates all failure data into `scripts/e2e/results/e2e_simulation_failures.json` and a readable summary in `scripts/e2e/results/failed_e2e_cases.txt`.
 
 **Execution Command:**
 ```bash
-$env:CONTINUE_ON_ERROR="true"; npm run test:e2e:combat
+$env:CONTINUE_ON_ERROR="true"; npm run sim:e2e:combat
 ```
 
 **Design rule:** If a simulation is missing `TEST_CASE` support, treat that as
@@ -235,28 +242,28 @@ This command installs the required browsers along with all system dependencies (
 
 | User intent | Command |
 |---|---|
-| Full game validation | `npm run test:e2e` |
-| Combat only | `npm run test:e2e:combat` |
-| Specific domain | `test:e2e:gyms`, `test:e2e:breeding`, etc. |
-| Single failing test | env var filter or `npx playwright test --grep "<name>"` |
+| Full game validation | `npm run sim:e2e` |
+| Combat only | `npm run sim:e2e:combat` |
+| Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
+| Single failing simulation | env var filter or `npx playwright test --grep "<name>"` |
 
-**Fuzzer rule:** Only run `test:combat:fuzzer` if:
-1. `scripts/battle-tester/results/certified_fuzzer_cases.json` does not exist, OR
+**Fuzzer rule:** Only run `sim:fuzzer` if:
+1. `scripts/e2e/results/fuzzer_certified_cases.json` does not exist, OR
 2. The user explicitly requests `REGENERATE_CASES=true`
 
-Otherwise reuse the existing JSON. `pretest_fuzzer_check.ts` handles this
-automatically when using `test:e2e:combat`.
+Otherwise reuse the existing JSON. `ensure_fuzzer_cases.ts` handles this
+automatically when using `sim:e2e:combat`.
 
 ### Step 2 — Execute and capture output
 
-Always redirect output to `scratch/` so results are preserved for analysis:
+Always redirect output to `scripts/e2e/results/` so results are preserved for analysis:
 
 ```bash
-npm run test:e2e:combat:report     # -> scratch/e2e_fsm_report.txt
-npm run test:combat:all:report     # -> scratch/combat_report.txt + scratch/playwright_report.txt
+npm run sim:e2e:combat:report     # -> scripts/e2e/results/e2e_simulation_failures.json
+npm run sim:combat:all:report     # -> scripts/e2e/results/playwright_report.txt
 
 # Or manually for a specific spec:
-npx playwright test tests/e2e/battle/fsm_sync.spec.ts 2>&1 | tee scratch/sim_run_$(date +%s).txt
+npx playwright test scripts/e2e/battle/battle_fsm_sync.sim.ts 2>&1 | tee scripts/e2e/results/sim_run_$(date +%s).txt
 ```
 
 ### Step 3 — On failure: the fix loop
@@ -302,7 +309,7 @@ regressions before reporting completion.
 
 ### Step 4 — Final report
 
-Generate `scratch/simulation_report_<timestamp>.md`:
+Generate `scripts/e2e/results/simulation_report_<timestamp>.md`:
 
 ```markdown
 # Simulation Run — <date>
@@ -358,7 +365,7 @@ Then summarize in chat with clear action options for the user.
 ## Adding New Fuzzer Scenarios vs. New Playwright Specs
 
 ### Combat coverage gaps -> fuzzer first
-Add scenarios to `scripts/battle-tester/` (ability-scenarios, team-generator,
+Add scenarios to `scripts/e2e/fuzzer/scenarios/` (ability-scenarios, team-generator,
 item-generator). The fuzzer validates them against `@pkmn/sim`. The E2E Playwright
 specs consume the certified output automatically. This is the preferred path because
 Showdown acts as the oracle.
@@ -374,8 +381,8 @@ For new Playwright specs (breeding, GTS, missions, save, gyms):
 ## Detecting Future Simulation Gaps
 
 Look for these signals:
-1. New `src/` features with no corresponding E2E spec (check `tests/e2e/` domain folders).
-2. Untested abilities or items in `coverage_report.json` or `scratch/fuzzer_report.txt`.
+1. New `src/` features with no corresponding simulation (check `scripts/e2e/` domain folders).
+2. Untested abilities or items in `fuzzer_moves_coverage_report.json` or `fuzzer_report.txt`.
 3. `// TODO` / `// test this` comments in `src/`.
 4. Features covered only by unit tests but never exercised in a real browser session.
 5. New npm scripts in `package.json` not linked to any simulation workflow.
