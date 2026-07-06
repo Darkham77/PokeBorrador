@@ -518,6 +518,22 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
 
 
+function parseCondition(cond: string): { hp: number; status: any } {
+  let hp = 0;
+  let status: any = null;
+  if (!cond.includes('fnt')) {
+    const slashIdx = cond.indexOf('/');
+    if (slashIdx !== -1) {
+      hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
+    }
+    const spaceIdx = cond.indexOf(' ');
+    if (spaceIdx !== -1) {
+      status = cond.substring(spaceIdx + 1).trim() || null;
+    }
+  }
+  return { hp, status };
+}
+
 /**
  * Syncs team HP to GameStore.
  */
@@ -533,20 +549,7 @@ function syncTeamHP(ctx: BattleContext) {
         const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.uid === reqPoke.uid);
         const battlePoke = active.playerTeam?.find((p: Pokemon) => p && p.uid === reqPoke.uid);
 
-        const cond = reqPoke.condition || '';
-        let hp = 0;
-        let status: any = null;
-
-        if (!cond.includes('fnt')) {
-          const slashIdx = cond.indexOf('/');
-          if (slashIdx !== -1) {
-            hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
-          }
-          const spaceIdx = cond.indexOf(' ');
-          if (spaceIdx !== -1) {
-            status = cond.substring(spaceIdx + 1).trim() || null;
-          }
-        }
+        const { hp, status } = parseCondition(reqPoke.condition || '');
 
         if (teamPoke) {
           const old = teamPoke.hp;
@@ -570,20 +573,7 @@ function syncTeamHP(ctx: BattleContext) {
       if (reqPoke && reqPoke.uid) {
         const battlePoke = active.enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid);
 
-        const cond = reqPoke.condition || '';
-        let hp = 0;
-        let status: any = null;
-
-        if (!cond.includes('fnt')) {
-          const slashIdx = cond.indexOf('/');
-          if (slashIdx !== -1) {
-            hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
-          }
-          const spaceIdx = cond.indexOf(' ');
-          if (spaceIdx !== -1) {
-            status = cond.substring(spaceIdx + 1).trim() || null;
-          }
-        }
+        const { hp, status } = parseCondition(reqPoke.condition || '');
 
         if (battlePoke) {
           const old = battlePoke.hp;
@@ -598,19 +588,7 @@ function syncTeamHP(ctx: BattleContext) {
   if (active.player && active.playerRequest?.side?.pokemon) {
     const activeReqPoke = active.playerRequest.side.pokemon.find((p: any) => p && p.uid === active.player?.uid);
     if (activeReqPoke) {
-      const cond = activeReqPoke.condition || '';
-      let hp = 0;
-      let status: any = null;
-      if (!cond.includes('fnt')) {
-        const slashIdx = cond.indexOf('/');
-        if (slashIdx !== -1) {
-          hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
-        }
-        const spaceIdx = cond.indexOf(' ');
-        if (spaceIdx !== -1) {
-          status = cond.substring(spaceIdx + 1).trim() || null;
-        }
-      }
+      const { hp, status } = parseCondition(activeReqPoke.condition || '');
       active.player.hp = hp;
       active.player.status = status;
     }

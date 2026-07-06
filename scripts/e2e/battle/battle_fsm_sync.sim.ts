@@ -101,13 +101,13 @@ type FinalState = {
 };
 
 // Helper: Bucle de ejecución automática de turnos
-async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>, finalState?: FinalState) {
+async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 0, playerChoices?: string[], _cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>, finalState?: FinalState) {
   let p1ChoiceIdx = startingTurn;
   const maxIterations = 300;
   let iterations = 0;
   let lastSimulatorTurn = 0;
   let lastSubState = '';
-  const pendingCheats = cheats ? [...cheats] : [];
+
 
   while (iterations < maxIterations) {
     iterations++;
@@ -235,7 +235,7 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
         p1ChoiceIdx++;
         await page.evaluate(() => {
           if (window.__VITE_DEBUG__) {
-            window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
+            (window.__VITE_DEBUG__ as any).enemyChoiceIndex = ((window.__VITE_DEBUG__ as any).enemyChoiceIndex ?? 0) + 1;
           }
         });
         continue;
@@ -447,13 +447,14 @@ test.describe('Battle FSM & GSAP Synchronization - Full Coverage', () => {
         };
 
         // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
-        window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {};
-        window.__VITE_DEBUG__.battleSeed = b.seed ?? undefined;
+        const debugObj = (window as any).__VITE_DEBUG__ || {};
+        (window as any).__VITE_DEBUG__ = debugObj;
+        debugObj.battleSeed = b.seed ?? undefined;
         const enemyChoices = b.enemyChoices ?? (b as any).history?.map((h: any) => h.p2Choice) ?? [];
-        window.__VITE_DEBUG__.enemyChoicesQueue = [...enemyChoices];
-        window.__VITE_DEBUG__.mockEnemyChoices = [...enemyChoices];
-        window.__VITE_DEBUG__.enemyChoiceIndex = 0;
-        window.__VITE_DEBUG__.cheats = b.cheats ?? [];
+        debugObj.enemyChoicesQueue = [...enemyChoices];
+        debugObj.mockEnemyChoices = [...enemyChoices];
+        debugObj.enemyChoiceIndex = 0;
+        debugObj.cheats = (b as any).cheats ?? [];
 
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');

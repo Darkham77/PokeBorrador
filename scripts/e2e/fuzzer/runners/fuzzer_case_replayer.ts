@@ -62,7 +62,11 @@ if (caseId) {
   console.log(`Running with custom seed: ${JSON.stringify(seed)}`);
 }
 
-const battle = new Battle({ formatid: getShowdownFormatId(), seed });
+const battleSeed = seed.length === 4
+  ? `${seed[0]},${seed[1]},${seed[2]},${seed[3]}` as `${number},${string}`
+  : undefined;
+
+const battle = new Battle({ formatid: getShowdownFormatId(), seed: battleSeed });
 battle.setPlayer('p1', { name: 'Player', team: playerTeam });
 battle.setPlayer('p2', { name: 'NPC-Enemy', team: enemyTeam });
 
@@ -106,14 +110,14 @@ while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx
     if (p1Req.teamPreview) {
       p1Choice = 'team 1';
     } else {
-      p1Choice = match.playerChoices[p1ChoiceIdx++];
+      p1Choice = match.playerChoices[p1ChoiceIdx++] ?? 'pass';
     }
   }
   if (p2Req && !p2Req.wait) {
     if (p2Req.teamPreview) {
       p2Choice = 'team 1';
     } else {
-      p2Choice = match.enemyChoices[p2ChoiceIdx++];
+      p2Choice = match.enemyChoices[p2ChoiceIdx++] ?? 'pass';
     }
   }
 

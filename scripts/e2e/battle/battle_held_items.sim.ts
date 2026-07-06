@@ -267,7 +267,7 @@ test.describe('E2E Held Items Verification', () => {
 
           const { useMapStore } = await import('../../../src/stores/map.ts');
           const mapStore = useMapStore();
-          mapStore.currentWeather = 'clear';
+          (mapStore as any).currentWeather = 'clear';
 
           const firstEnemy = localEnemyTeam[0];
           if (!firstEnemy) throw new Error('No enemy generated for items test');
@@ -372,7 +372,7 @@ test.describe('E2E Held Items Verification', () => {
               turnCount++;
               await page.evaluate(() => {
                 if (window.__VITE_DEBUG__) {
-                  window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
+                  (window.__VITE_DEBUG__ as any).enemyChoiceIndex = ((window.__VITE_DEBUG__ as any).enemyChoiceIndex ?? 0) + 1;
                 }
               });
               continue;

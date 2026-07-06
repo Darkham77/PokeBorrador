@@ -6,12 +6,12 @@ import { Battle, toID, ID, Dex } from '@pkmn/sim';
 import { generateTestBatches, getTriggerSlot, generateBatchHash } from '../generators/fuzzer_team_generator.ts';
 import { generateItemTestBatches } from '../generators/fuzzer_item_generator.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
-import { parseShowdownLogLine, filterShowdownLogs } from '../../src/logic/battle/showdownBridge.ts';
-import { getShowdownFormatId } from '../../src/logic/battle/showdownAdapter.ts';
+import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/battle/showdownBridge.ts';
+import { getShowdownFormatId } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
-import { logger } from '../../src/logic/utils/logger.ts';
-import { applyHealCheatToSide } from '../../src/logic/battle/cheats.ts';
-import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
+import { logger } from '../../../../src/logic/utils/logger.ts';
+import { applyHealCheatToSide } from '../../../../src/logic/battle/cheats.ts';
+import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
 import {
   EXCLUDED_ABILITY_ENTRIES,
@@ -22,7 +22,7 @@ import {
   FUSION_LOCKED_ABILITIES,
 } from '../scenarios/fuzzer_excluded_abilities.ts';
 import type { FuzzerResult } from './fuzzer_runner.ts';
-import { calcStatsPure } from '../../src/logic/pokemon/statsMath.ts';
+import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 import type { PokemonSet } from '@pkmn/sim';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
@@ -273,7 +273,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 
       batch.abilitiesToTest.forEach(a => {
         if (EXCLUDED_FROM_SINGLES_REPORT.has(a)) return;
-        if (initLogs.some(l => abilityTriggeredInLog(l, a))) {
+        if (initLogs.some((l: string) => abilityTriggeredInLog(l, a))) {
           const item = abilityCoverage[a];
           if (item && item.status === 'UNTESTED') item.status = 'PASS';
         }
