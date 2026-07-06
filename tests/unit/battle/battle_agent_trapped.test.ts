@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { BattleAgent, type ChoiceRequest, type SidePokemon } from '../../../scripts/battle-tester/battle-agent';
+import { BattleAgent, type ChoiceRequest, type SidePokemon } from '../../../scripts/battle-tester/battle-agent.ts';
 
 test('BattleAgent should not choose voluntary switches when active pokemon is trapped', () => {
   // Configurar agente de pruebas

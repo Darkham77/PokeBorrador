@@ -143,11 +143,10 @@ export async function executeTurnInWorker(
     payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps }
   })
   return new Promise((resolve, reject) => {
-    if (!showdownWorker) return reject(new Error('showdownWorker is null'))
     const handler = async (event: MessageEvent) => {
-      const { type, payload } = event.data
+      const { type, payload } = event.data;
       if (type === 'WORKER_LOG') {
-        console.log(`[WORKER] ${payload}`);
+        logger.debug('ShowdownWorker', `[WORKER] ${String(payload)}`);
         return;
       }
       const worker = showdownWorker!

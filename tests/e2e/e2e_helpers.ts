@@ -92,6 +92,27 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
 }
 
 /**
+ * Resuelve el UID de un Pokémon en un slot de Showdown
+ */
+export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
+  return await page.evaluate(async ({ slotNum, label }) => {
+    try {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return null;
+      const battleStore = resolver();
+      const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
+      const slotOrder = state?.playerRequest?.side?.pokemon || [];
+      const uid = slotOrder[slotNum - 1]?.uid || null;
+      const uids = slotOrder.map(p => p?.uid || 'null');
+      console.log(`[E2E-DEBUG-${label}] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
+      return uid;
+    } catch (_e) {
+      return null;
+    }
+  }, { slotNum, label });
+}
+
+/**
  * Hace clic en el botón de combatir para iniciar la batalla
  */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
@@ -167,22 +188,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
       // (SWITCH_MENU post-debilitación muestra .quick-card-override, NO un modal con .list-item)
       const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
       
-      // Resolver el UID del Pokémon usando p1SlotOrder (Showdown slot index)
-      const targetUid = await page.evaluate(async (slotNum) => {
-        try {
-          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          if (!resolver) return null;
-          const battleStore = resolver();
-          const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
-          const slotOrder = state?.playerRequest?.side?.pokemon || [];
-          const uid = slotOrder[slotNum - 1]?.uid || null;
-          const uids = slotOrder.map(p => p?.uid || 'null');
-          console.log(`[E2E-DEBUG-SWITCH_MENU] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
-          return uid;
-        } catch (_e) {
-          return null;
-        }
-      }, switchSlot);
+      const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH_MENU');
 
       if (targetUid) {
         const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
@@ -244,21 +250,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         // Por ende, switch N corresponds al índice N-2 de los elementos disponibles en la banca de la UI.
         const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
         
-        const targetUid = await page.evaluate(async (slotNum) => {
-          try {
-            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-            if (!resolver) return null;
-            const battleStore = resolver();
-            const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
-            const slotOrder = state?.playerRequest?.side?.pokemon || [];
-            const uid = slotOrder[slotNum - 1]?.uid || null;
-            const uids = slotOrder.map(p => p?.uid || 'null');
-            console.log(`[E2E-DEBUG-SWITCH] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
-            return uid;
-          } catch (_e) {
-            return null;
-          }
-        }, switchSlot);
+        const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH');
 
         if (targetUid) {
           const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();

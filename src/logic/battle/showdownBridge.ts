@@ -152,7 +152,24 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team = side === 'player'
       ? (battle.playerTeam || [])
-      : (battle.enemyTeam || []);
+      : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
+      const found = team.find(mon => mon && mon.uid === targetUid);
+      if (!found) return null;
+
+      const keys = Object.keys(battle);
+      for (const key of keys) {
+        const matchesSide = side === 'player' 
+          ? (key.startsWith('player') || key === 'ally') 
+          : key.startsWith('enemy');
+        if (matchesSide) {
+          const val = (battle as Record<string, unknown>)[key];
+          if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
+            return { val: val as unknown as Pokemon, found };
+          }
+        }
+      }
+      return { val: null, found };
+    };
 
     let foundUid: string | undefined = undefined;
 
@@ -170,23 +187,14 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
 
     if (foundUid) {
-      const found = team.find(mon => mon && mon.uid === foundUid);
-      if (found) {
-        const keys = Object.keys(battle);
-        for (const key of keys) {
-          const matchesSide = side === 'player' 
-            ? (key.startsWith('player') || key === 'ally') 
-            : key.startsWith('enemy');
-          if (matchesSide) {
-            const val = (battle as unknown as Record<string, unknown>)[key];
-            if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
-              console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${found.uid}" matches: "${key}"`);
-              return val as unknown as Pokemon;
-            }
-          }
+      const res = findPokemonInBattle(foundUid);
+      if (res) {
+        if (res.val) {
+          console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
+          return res.val;
         }
-        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${found.uid}" name "${found.name}"`);
-        return found;
+        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
+        return res.found;
       }
       throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
     }
@@ -232,23 +240,14 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
 
     if (foundUid) {
-      const found = team.find(mon => mon && mon.uid === foundUid);
-      if (found) {
-        const keys = Object.keys(battle);
-        for (const key of keys) {
-          const matchesSide = side === 'player' 
-            ? (key.startsWith('player') || key === 'ally') 
-            : key.startsWith('enemy');
-          if (matchesSide) {
-            const val = (battle as unknown as Record<string, unknown>)[key];
-            if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
-              console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${found.uid}" matches: "${key}"`);
-              return val as unknown as Pokemon;
-            }
-          }
+      const res = findPokemonInBattle(foundUid);
+      if (res) {
+        if (res.val) {
+          console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
+          return res.val;
         }
-        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${found.uid}" name "${found.name}"`);
-        return found;
+        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
+        return res.found;
       }
       throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
     }
