@@ -31,6 +31,16 @@ function checkAndRunFuzzers() {
   }
 
   if (needsRun) {
+    // Si por alguna razón se ejecuta el fuzzer otra vez regenerando los casos certificados,
+    // todos los filtros de TEST_CASE quedan anulados y hay que ejecutar una simulación completa
+    // para detectar nuevos fallos.
+    if (process.env.TEST_CASE || process.env.TEST_CASE_ID || process.env.TEST_START_FROM_CASE_ID) {
+      console.log(`⚠️  Se ha regenerado fuzzer_certified_cases.json. Anulando filtros de TEST_CASE/TEST_CASE_ID/TEST_START_FROM_CASE_ID para forzar una simulación completa.`);
+      delete process.env.TEST_CASE;
+      delete process.env.TEST_CASE_ID;
+      delete process.env.TEST_START_FROM_CASE_ID;
+    }
+
     console.log(`🚀 Ejecutando fuzzers lógicos de combate para generar casos de prueba...`);
     try {
       // Ejecutar la suite unificada de fuzzers

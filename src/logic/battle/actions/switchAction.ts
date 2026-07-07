@@ -105,15 +105,15 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   
   if (typeof isForced !== 'undefined' && !isForced) {
     try {
-      console.log('[switchAction] executeSwitch non-forced branch: importing dependencies...');
-      const { showdownWorker, executeTurnInWorker } = await import('../orchestrator.ts')
+      console.debug('[switchAction] executeSwitch non-forced branch: importing dependencies...');
+      const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts')
       if (showdownWorker) {
         const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
         const { decideEnemyMove } = await import('../ai/battleAI.ts')
 
-        console.log('[switchAction] transitioning FSM to BUILD_QUEUE...');
+        console.debug('[switchAction] transitioning FSM to BUILD_QUEUE...');
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
-        console.log('[switchAction] transitioning FSM to POP_ACTION...');
+        console.debug('[switchAction] transitioning FSM to POP_ACTION...');
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
 
         const active = activeBattle.value
@@ -122,18 +122,18 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
           return
         }
 
-        console.log('[switchAction] resolving slot...');
+        console.debug('[switchAction] resolving slot...');
         const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
         const p1Choice = `switch ${slot}`
         const isWild = !active.isTrainer && !active.isGym
-        console.log('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
+        console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
         let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild)
         if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
           eMove = active.enemy.lastMove
         }
         const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
 
-        console.log('[switchAction] building hp/status maps...');
+        console.debug('[switchAction] building hp/status maps...');
         const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
         const p1Hps: Record<string, number> = {};
         const p1Statuses: Record<string, string> = {};
@@ -152,9 +152,9 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
 
         let result;
         try {
-          console.log('[switchAction] calling executeTurnInWorker...', { p1Choice, p2Choice });
+          console.debug('[switchAction] calling executeTurnInWorker...', { p1Choice, p2Choice });
           result = await executeTurnInWorker(p1Choice, p2Choice)
-          console.log(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
+          console.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
         } catch (error) {
           console.error('[switchAction] executeTurnInWorker thrown:', error);
           if (oldPoke) {
@@ -178,6 +178,9 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         for (const logLine of filteredLogs) {
           await parseShowdownLogLine(ctx, logLine, filteredLogs)
         }
+
+        const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+        await syncTeamsFromLastWorkerState()
         delete (active as unknown as Record<string, unknown>).switchingToPlayer;
 
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
@@ -254,9 +257,9 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
     if (activeBattle.value) {
       const active = activeBattle.value
       try {
-        console.log('[switchAction] executeSwitch forced branch: resolving slot...');
+        console.debug('[switchAction] executeSwitch forced branch: resolving slot...');
         const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
-        const { executeTurnInWorker } = await import('../orchestrator.ts')
+        const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
 
         const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
         const p1Hps: Record<string, number> = {};
@@ -274,7 +277,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
           p2Statuses[p.uid] = p.status ?? '';
         }
 
-        console.log('[switchAction] calling executeTurnInWorker for forced switch...', { slot });
+        console.debug('[switchAction] calling executeTurnInWorker for forced switch...', { slot });
         const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined)
         if (switchResult) {
           active.playerRequest = switchResult.p1Request
@@ -286,6 +289,9 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
           for (const logLine of filteredLogs) {
             await parseShowdownLogLine(ctx, logLine, filteredLogs)
           }
+
+          const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+          await syncTeamsFromLastWorkerState()
         }
 
         if (newPoke.hp <= 0) {

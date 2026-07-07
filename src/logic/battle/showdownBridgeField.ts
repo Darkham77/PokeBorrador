@@ -1,8 +1,9 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '@/logic/weather/weatherGenerationProvider';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherGenerationProvider.ts';
 import { toID } from '@pkmn/sim';
-import type { SBCtx } from './showdownBridgeCtx';
+import type { SBCtx } from './showdownBridgeCtx.ts';
+import type { Move } from '../../types/pokemon/pokemon.ts';
 
 /**
  * Maneja eventos de campo y efectos persistentes:
@@ -58,7 +59,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
           const moveId = toID(moveName);
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
-          target.disabledMove = { id: moveId, name: translatedName } as unknown as import('@/types/pokemon/pokemon').Move;
+          target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
           target.disabledTurns = 4;
         } else {
           let isLockedEffect = cleanEffect === 'lockedmove';

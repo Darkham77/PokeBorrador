@@ -1,11 +1,89 @@
 import { logger } from '../utils/logger.ts'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { applyHealCheatToSide, type CheatPokemon } from './cheats.ts'
 
 export let showdownWorker: Worker | null = null;
 export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
+}
+
+let lastSyncP1TeamState: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null> | null = null;
+let lastSyncP2TeamState: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null> | null = null;
+
+export async function syncTeamsFromLastWorkerState(): Promise<void> {
+  const { useBattleStore } = await import('@/stores/battle/battle');
+  const { useGameStore } = await import('@/stores/game');
+  const battleStore = useBattleStore();
+  const gameStore = useGameStore();
+
+  console.debug(`[E2E-SYNC-DEBUG] lastSyncP1TeamState:`, JSON.stringify(lastSyncP1TeamState));
+  console.debug(`[E2E-SYNC-DEBUG] gameStore.state.team before:`, JSON.stringify(gameStore.state?.team?.map(p => p ? { uid: p.uid, name: p.name, hp: p.hp } : null)));
+
+  if (lastSyncP1TeamState && gameStore.state?.team) {
+    lastSyncP1TeamState.forEach(monState => {
+      if (monState && monState.uid) {
+        const match = gameStore.state.team.find(p => p && p.uid === monState.uid);
+        if (match) {
+          console.debug(`[E2E-SYNC-DEBUG] Matching P1 UID "${monState.uid}" (${match.name}): HP ${match.hp} -> ${monState.hp}`);
+          match.hp = monState.hp;
+          match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? null : monState.status as Pokemon['status'];
+          if (monState.fainted || monState.hp <= 0) {
+            match.hp = 0;
+          }
+        } else {
+          console.debug(`[E2E-SYNC-DEBUG] No match found for P1 UID "${monState.uid}"`);
+        }
+      }
+    });
+  }
+
+  if (battleStore.state?.player && lastSyncP1TeamState) {
+    const activeUid = battleStore.state.player.uid;
+    const activeState = lastSyncP1TeamState.find(p => p && p.uid === activeUid);
+    if (activeState) {
+      console.debug(`[E2E-SYNC-DEBUG] Syncing active player HP: ${battleStore.state.player.hp} -> ${activeState.hp}`);
+      battleStore.state.player.hp = activeState.hp;
+      battleStore.state.player.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
+      if (activeState.fainted || activeState.hp <= 0) {
+        battleStore.state.player.hp = 0;
+      }
+    }
+  }
+
+  const enemyTeam = battleStore.state?.enemyTeam;
+  console.debug(`[E2E-SYNC-DEBUG] lastSyncP2TeamState:`, JSON.stringify(lastSyncP2TeamState));
+  console.debug(`[E2E-SYNC-DEBUG] enemyTeam before:`, JSON.stringify(enemyTeam?.map(p => p ? { uid: p.uid, name: p.name, hp: p.hp } : null)));
+
+  if (lastSyncP2TeamState && enemyTeam) {
+    lastSyncP2TeamState.forEach(monState => {
+      if (monState && monState.uid) {
+        const match = enemyTeam.find(p => p && p.uid === monState.uid);
+        if (match) {
+          console.debug(`[E2E-SYNC-DEBUG] Matching P2 UID "${monState.uid}" (${match.name}): HP ${match.hp} -> ${monState.hp}`);
+          match.hp = monState.hp;
+          match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? null : monState.status as Pokemon['status'];
+          if (monState.fainted || monState.hp <= 0) {
+            match.hp = 0;
+          }
+        } else {
+          console.debug(`[E2E-SYNC-DEBUG] No match found for P2 UID "${monState.uid}"`);
+        }
+      }
+    });
+  }
+
+  if (battleStore.state?.enemy && lastSyncP2TeamState) {
+    const activeUid = battleStore.state.enemy.uid;
+    const activeState = lastSyncP2TeamState.find(p => p && p.uid === activeUid);
+    if (activeState) {
+      console.debug(`[E2E-SYNC-DEBUG] Syncing active enemy HP: ${battleStore.state.enemy.hp} -> ${activeState.hp}`);
+      battleStore.state.enemy.hp = activeState.hp;
+      battleStore.state.enemy.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
+      if (activeState.fainted || activeState.hp <= 0) {
+        battleStore.state.enemy.hp = 0;
+      }
+    }
+  }
 }
 
 export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[] }> {
@@ -43,14 +121,14 @@ export async function executeTurnInWorker(
   p1Skip?: boolean,
   p2Skip?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
-  console.log(`[DEBUG-ORCHESTRATOR] window.__VITE_DEBUG__ keys:`, typeof window !== 'undefined' && window.__VITE_DEBUG__ ? JSON.stringify(Object.keys(window.__VITE_DEBUG__)) : 'none');
+  console.debug(`[DEBUG-ORCHESTRATOR] window.__VITE_DEBUG__ keys:`, typeof window !== 'undefined' && window.__VITE_DEBUG__ ? JSON.stringify(Object.keys(window.__VITE_DEBUG__)) : 'none');
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
     const cheatsArray = window.__VITE_DEBUG__.cheats;
     const cheatsLength = Array.isArray(cheatsArray) ? cheatsArray.length : typeof cheatsArray;
-    console.log(`[DEBUG-ORCHESTRATOR] cheats type/length: ${cheatsLength}`);
+    console.debug(`[DEBUG-ORCHESTRATOR] cheats type/length: ${cheatsLength}`);
     if (Array.isArray(cheatsArray)) {
       cheatsArray.forEach((c, i: number) => {
-        console.log(`[DEBUG-ORCHESTRATOR] cheat #${i}: turn=${c.turn}, side=${c.side}, type=${c.type}`);
+        console.debug(`[DEBUG-ORCHESTRATOR] cheat #${i}: turn=${c.turn}, side=${c.side}, type=${c.type}`);
       });
     }
   }
@@ -59,47 +137,20 @@ export async function executeTurnInWorker(
   }
 
   let finalP2Choice = p2Choice;
-  
+  let turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
+
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.cheats) {
     const cheats = window.__VITE_DEBUG__.cheats;
-    const { useBattleStore } = await import('@/stores/battle/battle');
-    const { useGameStore } = await import('@/stores/game');
-    const battleStore = useBattleStore();
-    const gameStore = useGameStore();
-    
-    if (battleStore.state) {
-      const turnNum = battleStore.state.turnCount;
-      console.log(`[DEBUG-ORCHESTRATOR] turnNum: ${turnNum}, cheats count: ${cheats.length}`);
-      const turnCheats = cheats.filter(c => c.turn === turnNum);
-      
-      for (const ch of turnCheats) {
-        console.log(`[ORCHESTRATOR-CHEAT] Applying cheat for turn ${turnNum}: ${ch.type} ${ch.side}`);
-        showdownWorker.postMessage({
-          type: 'APPLY_CHEAT',
-          payload: { turn: ch.turn, side: ch.side, type: ch.type }
-        });
-        
-        if (ch.side === 'p1') {
-          if (gameStore?.state?.team) {
-            applyHealCheatToSide({ pokemon: gameStore.state.team as unknown as Array<CheatPokemon | null> });
-          }
-          if (battleStore.state?.player) {
-            battleStore.state.player.hp = battleStore.state.player.maxHp;
-            battleStore.state.player.status = null;
-          }
-          if (battleStore.state?.playerTeam) {
-            applyHealCheatToSide({ pokemon: battleStore.state.playerTeam as unknown as Array<CheatPokemon | null> });
-          }
-        } else {
-          if (battleStore.state?.enemy) {
-            battleStore.state.enemy.hp = battleStore.state.enemy.maxHp;
-            battleStore.state.enemy.status = null;
-          }
-          if (battleStore.state?.enemyTeam) {
-            applyHealCheatToSide({ pokemon: battleStore.state.enemyTeam as unknown as Array<CheatPokemon | null> });
-          }
-        }
+    try {
+      const { useBattleStore } = await import('@/stores/battle/battle');
+      const battleStore = useBattleStore();
+      if (battleStore.state) {
+        const turnNum = battleStore.state.turnCount;
+        console.debug(`[DEBUG-ORCHESTRATOR] turnNum: ${turnNum}, cheats count: ${cheats.length}`);
+        turnCheats = cheats.filter(c => c.turn === turnNum);
       }
+    } catch (_e) {
+      // Ignorar fuera de tienda
     }
   }
 
@@ -152,10 +203,10 @@ export async function executeTurnInWorker(
           if (isValid) {
             finalP2Choice = choiceStr;
             debugObj.enemyChoiceIndex = idx + 1;
-            console.log(`[E2E-MOCK-CENTRAL] Intercepted enemy choice at index ${idx}: ${p2Choice} -> ${finalP2Choice}`);
+            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice at index ${idx}: ${p2Choice} -> ${finalP2Choice}`);
             break;
           } else {
-            console.log(`[E2E-MOCK-CENTRAL] Choice "${choiceStr}" at index ${idx} is invalid for P2 (isForceSwitch: ${isForceSwitch}). Skipping.`);
+            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Choice "${choiceStr}" at index ${idx} is invalid for P2 (isForceSwitch: ${isForceSwitch}). Skipping.`);
             idx++;
             debugObj.enemyChoiceIndex = idx;
           }
@@ -168,7 +219,7 @@ export async function executeTurnInWorker(
     const debugObj = window.__VITE_DEBUG__;
     if (debugObj.mockEnemyChoices) {
       const idx = debugObj.enemyChoiceIndex ?? 0;
-      console.log(`[E2E-MOCK-CENTRAL] Game-resolved switch "${p2Choice}" at index ${idx} — consuming slot without replacing.`);
+      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Game-resolved switch "${p2Choice}" at index ${idx} — consuming slot without replacing.`);
       debugObj.enemyChoiceIndex = idx + 1;
     }
   }
@@ -205,7 +256,7 @@ export async function executeTurnInWorker(
           p1Statuses![p.uid] = p.status ?? '';
         }
       });
-      console.log(`[ORCHESTRATOR-EXECUTE] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
+      console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
     }
     if (battleStore.state?.enemyTeam) {
       p2Hps = {};
@@ -223,7 +274,7 @@ export async function executeTurnInWorker(
 
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses }
+    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats: turnCheats }
   })
   return new Promise((resolve, reject) => {
     const handler = async (event: MessageEvent) => {
@@ -235,12 +286,15 @@ export async function executeTurnInWorker(
       }
       const worker = showdownWorker!
       if (type === 'TURN_SUCCESS') {
-        console.log(`[ORCHESTRATOR-EXECUTE] Received TURN_SUCCESS. p1Request pokemon condition:`, JSON.stringify(payload.p1Request?.side?.pokemon?.map((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => ({ uid: p.uid, cond: p.condition }))));
+        console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Received TURN_SUCCESS. p1Request pokemon condition:`, JSON.stringify(payload.p1Request?.side?.pokemon?.map((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => ({ uid: p.uid, cond: p.condition }))));
         if (worker.removeEventListener) {
           worker.removeEventListener('message', handler)
         } else {
           worker.onmessage = null
         }
+
+        lastSyncP1TeamState = payload.p1TeamState || null;
+        lastSyncP2TeamState = payload.p2TeamState || null;
 
         // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot
         try {
@@ -374,6 +428,45 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
       showdownWorker.onmessage = handler
     }
   })
+}
+
+export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; type: 'heal' }>): Promise<void> {
+  const worker = showdownWorker;
+  if (!worker) return;
+  worker.postMessage({
+    type: 'APPLY_CHEATS',
+    payload: { cheats }
+  });
+  return new Promise((resolve) => {
+    const handler = async (event: MessageEvent) => {
+      const data = event.data as { type: string; payload: WorkerSuccessPayload };
+      if (data.type === 'APPLY_CHEATS_DONE') {
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', handler);
+        } else {
+          worker.onmessage = null;
+        }
+        
+        lastSyncP1TeamState = data.payload.p1TeamState || null;
+        lastSyncP2TeamState = data.payload.p2TeamState || null;
+        
+        const { useBattleStore } = await import('@/stores/battle/battle');
+        const battleStore = useBattleStore();
+        if (battleStore.state) {
+          battleStore.state.playerRequest = data.payload.p1Request;
+          battleStore.state.enemyRequest = data.payload.p2Request;
+        }
+        
+        await syncTeamsFromLastWorkerState();
+        resolve();
+      }
+    };
+    if (worker.addEventListener) {
+      worker.addEventListener('message', handler);
+    } else {
+      worker.onmessage = handler;
+    }
+  });
 }
 
 export function testResetShowdownWorker(): void {

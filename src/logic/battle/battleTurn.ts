@@ -79,7 +79,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   }
 
   // Importar dinámicamente dependencias asíncronas para evitar dependencias circulares
-  const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+  const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
   const { filterShowdownLogs } = await import('./showdownBridge.ts')
 
   if (showdownWorker) {
@@ -119,7 +119,8 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const filteredLogs = filterShowdownLogs(result.logs);
     await parseLogsWithSkip(store, filteredLogs, false, p2Skip);
 
-
+    const { syncTeamsFromLastWorkerState } = await import('./showdownWorkerClient.ts');
+    await syncTeamsFromLastWorkerState();
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
@@ -129,6 +130,11 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
     const p1Force = !!result.p1Request?.forceSwitch?.length
     const p2Force = !!result.p2Request?.forceSwitch?.length
+    if (p1Force && p2Force) {
+      await handleForceSwitch(store, 'enemy')
+      await handleForceSwitch(store, 'player')
+      return
+    }
     if (p1Force) {
       await handleForceSwitch(store, 'player')
       return
@@ -227,7 +233,7 @@ export async function runEnemyAction(store: BattleContext) {
     enemyMove = e.lastMove
   }
 
-  const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+  const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
   const { filterShowdownLogs } = await import('./showdownBridge.ts')
   if (showdownWorker) {
     interface ShowdownMoveRequest {
@@ -285,7 +291,8 @@ export async function runEnemyAction(store: BattleContext) {
     const filteredLogs = filterShowdownLogs(result.logs);
     await parseLogsWithSkip(store, filteredLogs, true, p2Skip);
 
-
+    const { syncTeamsFromLastWorkerState } = await import('./showdownWorkerClient.ts');
+    await syncTeamsFromLastWorkerState();
 
     const { handleForceSwitch } = await import('./resolution.ts')
     
@@ -293,6 +300,11 @@ export async function runEnemyAction(store: BattleContext) {
     // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
     const p1Force = !!result.p1Request?.forceSwitch?.length
     const p2Force = !!result.p2Request?.forceSwitch?.length
+    if (p1Force && p2Force) {
+      await handleForceSwitch(store, 'enemy')
+      await handleForceSwitch(store, 'player')
+      return
+    }
     if (p1Force) {
       await handleForceSwitch(store, 'player')
       return

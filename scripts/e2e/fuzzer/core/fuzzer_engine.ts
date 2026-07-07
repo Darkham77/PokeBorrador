@@ -10,7 +10,7 @@ import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/
 import { getShowdownFormatId } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
 import { logger } from '../../../../src/logic/utils/logger.ts';
-import { applyHealCheatToSide } from '../../../../src/logic/battle/cheats.ts';
+import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
 import { MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
@@ -380,6 +380,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
           if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
             applyHealCheatToSide(simBattle.p1);
+            syncRequestConditionsWithSimulator(simBattle.p1);
             if (!batchRec.cheats) batchRec.cheats = [];
             batchRec.cheats.push({ turn: simBattle.turn, side: 'p1', type: 'heal' });
             if (mockStore.player?.value) {
@@ -391,6 +392,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           const p2Active = simBattle.p2.active?.[0];
           if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
             applyHealCheatToSide(simBattle.p2);
+            syncRequestConditionsWithSimulator(simBattle.p2);
             if (!batchRec.cheats) batchRec.cheats = [];
             batchRec.cheats.push({ turn: simBattle.turn, side: 'p2', type: 'heal' });
             if (mockStore.enemy?.value) {
@@ -583,7 +585,7 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
     console.log(`\n======================================================`);
     console.log(`⚠️  ATENCIÓN: Se conservaron los casos certificados existentes.`);
     console.log(`💡 Para regenerar y pisar los casos de prueba, ejecuta con:`);
-    console.log(`   REGENERATE_CASES=true npm run test:combat:fuzzer`);
+    console.log(`   REGENERATE_CASES=true npm run sim:fuzzer`);
     console.log(`======================================================\n`);
   }
 }
@@ -836,7 +838,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     console.log(`\n======================================================`);
     console.log(`⚠️  ATENCIÓN: Se conservaron los casos de ítems certificados existentes.`);
     console.log(`💡 Para regenerar y pisar los casos de prueba de ítems, ejecuta con:`);
-    console.log(`   REGENERATE_CASES=true npm run test:combat:fuzzer`);
+    console.log(`   REGENERATE_CASES=true npm run sim:fuzzer`);
     console.log(`======================================================\n`);
   }
 

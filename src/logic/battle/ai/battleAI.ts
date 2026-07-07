@@ -24,7 +24,7 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
           const moveIdx = parseInt(splitPart, 10) - 1;
           const targetMove = enemy.moves[moveIdx];
           if (targetMove) {
-            console.log(`[DEBUG-AI] [E2E-MOCK] decideEnemyMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`);
+            console.debug(`[DEBUG-AI] [E2E-MOCK] decideEnemyMove replaying choice #${idx}: ${choiceStr} -> ${targetMove.id}`);
             return targetMove;
           }
         }
@@ -32,9 +32,9 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     }
   }
 
-  console.log('[DEBUG-AI] decideEnemyMove called for:', enemy.name, 'isWild:', isWild);
-  console.log('[DEBUG-AI] enemy.moves:', enemy.moves ? enemy.moves.map(m => m ? `${m.id}(pp:${m.pp}/${m.maxPP})` : 'null') : 'null');
-  console.log('[DEBUG-AI] enemyRequest:', JSON.stringify(enemyRequest || null));
+  console.debug('[DEBUG-AI] decideEnemyMove called for:', enemy.name, 'isWild:', isWild);
+  console.debug('[DEBUG-AI] enemy.moves:', enemy.moves ? enemy.moves.map(m => m ? `${m.id}(pp:${m.pp}/${m.maxPP})` : 'null') : 'null');
+  console.debug('[DEBUG-AI] enemyRequest:', JSON.stringify(enemyRequest || null));
 
   const validMoves = enemy.moves.filter((m): m is Move => {
     if (!m || m.pp <= 0) return false
@@ -60,7 +60,7 @@ export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: B
     
     return true
   })
-  console.log('[DEBUG-AI] filtered validMoves:', validMoves.map(m => m.id));
+  console.debug('[DEBUG-AI] filtered validMoves:', validMoves.map(m => m.id));
   if (validMoves.length === 0) return null
 
   // Si es salvaje, elige al azar (Gen 3 wild behavior)
@@ -260,7 +260,7 @@ export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Po
       if (mockChoices && idx !== undefined) {
         const choiceStr = mockChoices[idx]; // e.g. "switch 3"
         if (choiceStr && choiceStr.startsWith('switch ')) {
-          console.log(`[DEBUG-AI] [E2E-MOCK] shouldEnemySwitch replaying choice #${idx}: true (choice is ${choiceStr})`);
+          console.debug(`[DEBUG-AI] [E2E-MOCK] shouldEnemySwitch replaying choice #${idx}: true (choice is ${choiceStr})`);
           return true;
         }
       }
@@ -307,7 +307,7 @@ export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, curre
         if (targetUid) {
           const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid);
           if (teamIdx !== -1) {
-            console.log(`[DEBUG-AI] [E2E-MOCK] findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`);
+            console.debug(`[DEBUG-AI] [E2E-MOCK] findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`);
             return teamIdx;
           }
         }

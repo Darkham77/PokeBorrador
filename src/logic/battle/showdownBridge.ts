@@ -1,12 +1,12 @@
 // fallow-ignore-file security-sink
-import type { BattleContext } from '@/types/battle/battleContext';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import { logger } from '@/logic/utils/logger';
-import type { SBCtx } from './showdownBridgeCtx';
-import { handleCoreEvents } from './showdownBridgeCore';
-import { handleStageEvents } from './showdownBridgeStages';
-import { handleFieldEvents } from './showdownBridgeField';
-import { handleMiscEvents } from './showdownBridgeMisc';
+import type { BattleContext } from '../../types/battle/battleContext.ts';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+import { logger } from '../utils/logger.ts';
+import type { SBCtx } from './showdownBridgeCtx.ts';
+import { handleCoreEvents } from './showdownBridgeCore.ts';
+import { handleStageEvents } from './showdownBridgeStages.ts';
+import { handleFieldEvents } from './showdownBridgeField.ts';
+import { handleMiscEvents } from './showdownBridgeMisc.ts';
 
 /**
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.

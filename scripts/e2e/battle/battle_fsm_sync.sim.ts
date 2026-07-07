@@ -290,6 +290,25 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
     }
   }
 
+  // Esperar a que se resuelva la última acción enviada antes de verificar la paridad final
+  await waitForWaitInput(page, p1ChoiceIdx, batchIndex, lastSimulatorTurn, lastSubState);
+
+  // Aplicar cualquier cheat restante para el turno final antes de verificar la paridad
+  if (_cheats && _cheats.length > 0) {
+    await page.evaluate(async (cheatsList) => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      if (!store.state) return;
+      const currentTurn = store.state.turnCount + 1; // 1-based current turn count
+      const finalCheats = cheatsList.filter(c => c.turn >= currentTurn);
+      if (finalCheats.length > 0) {
+        console.log(`[E2E] Applying final cheats: ${JSON.stringify(finalCheats)}`);
+        const { applyCheatsInWorker } = await import('../../../src/logic/battle/showdownWorkerClient.ts');
+        await applyCheatsInWorker(finalCheats);
+      }
+    }, _cheats);
+  }
+
   // Validar paridad del estado final de TODO el equipo contra el snapshot de Showdown
   const parity = await page.evaluate(async (snapshotState) => {
     const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');

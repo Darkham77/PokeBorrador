@@ -75,8 +75,7 @@ Status: FIXING | PENDING_RERUN | PASS
 ### Rules for the Progress Artifact
 
 1. **Create before the first simulation command.** The artifact must exist before
-   any `sim:*`, `sim:e2e:*`, `sim:combat:*`, or `npx playwright` command is
-   issued. Other `npm run` commands (lint, build, validate:types, etc.) do not
+   any `sim:*` or `sim:e2e:*` command is issued. Other `npm run` commands (lint, build, validate:types, etc.) do not
    count as simulation commands and do not require the artifact to exist first.
 2. **Update after every step.** After each simulation pass/fail, after each fix
    applied, after each file touched — update the artifact.
@@ -262,14 +261,16 @@ This command installs the required browsers along with all system dependencies (
 | Full game validation | `npm run sim:e2e` |
 | Combat only | `npm run sim:e2e:combat` |
 | Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
-| Single failing simulation | env var filter or `npx playwright test --grep "<name>"` |
+| Single failing simulation | env var filter or `npm run sim:e2e -- -g "<name>"` |
 
 **Fuzzer rule:** Only run `sim:fuzzer` if:
 1. `scripts/e2e/results/fuzzer_certified_cases.json` does not exist, OR
-2. The user explicitly requests `REGENERATE_CASES=true`
+2. The user explicitly requests `REGENERATE_CASES=true` (or `FORCE_FUZZER=true`)
 
 Otherwise reuse the existing JSON. `ensure_fuzzer_cases.ts` handles this
 automatically when using `sim:e2e:combat`.
+
+**Important Fuzzer Regeneration Rule:** If the fuzzer is executed again and regenerates the certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated (deleted) inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all regenerated cases to identify any new regressions or bugs.
 
 ### Step 2 — Execute and capture output
 
@@ -280,7 +281,7 @@ npm run sim:e2e:combat:report     # -> scripts/e2e/results/e2e_simulation_failur
 npm run sim:combat:all:report     # -> scripts/e2e/results/playwright_report.txt
 
 # Or manually for a specific spec:
-npx playwright test scripts/e2e/battle/battle_fsm_sync.sim.ts 2>&1 | tee scripts/e2e/results/sim_run_$(date +%s).txt
+npm run sim:e2e -- scripts/e2e/battle/battle_fsm_sync.sim.ts 2>&1 | tee scripts/e2e/results/sim_run_$(date +%s).txt
 ```
 
 ### Step 3 — On failure: the fix loop
@@ -316,6 +317,8 @@ RE-RUN only simulation X (use TEST_CASE filter or domain script).
   +-- PASS -> continue with remaining simulations from where execution stopped
   +-- FAIL -> repeat fix loop (no retry limit for simple bugs)
 ```
+
+**Fuzzer Regeneration during Fix Loop (CRITICAL):** If at any point during the fix loop the fuzzer is run again (regenerating `fuzzer_certified_cases.json`), the specific `TEST_CASE` / `TEST_CASE_ID` you were debugging is **completely invalidated** (it no longer exists in the newly generated file). You **MUST NOT** attempt to re-run or filter by that old case ID. Instead, you must immediately run a full simulation (`npm run sim:e2e:combat`) to discover the new case mappings and verify the fix against the new suite.
 
 **MANDATORY: Unit-Test First & Pre-Simulation Validation Rules**
 1. **Never skip reproducing tests:** Whenever a simulation fails or a bug is reported, you MUST first create or update a unit test (or lightweight Node test) that successfully reproduces the failure BEFORE applying any fix to `src/`.

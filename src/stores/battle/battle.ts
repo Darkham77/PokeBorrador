@@ -147,11 +147,25 @@ export const useBattleStore = defineStore('battle', () => {
   )
 
   watch(
+    () => activeBattle.value?.player,
+    () => {
+      syncActiveMovesFromRequest('player')
+    }
+  )
+
+  watch(
     () => activeBattle.value?.enemyRequest,
     () => {
       syncActiveMovesFromRequest('enemy')
     },
     { deep: true }
+  )
+
+  watch(
+    () => activeBattle.value?.enemy,
+    () => {
+      syncActiveMovesFromRequest('enemy')
+    }
   )
 
   const battleLogs = ref<BattleLog[]>([])
@@ -346,35 +360,47 @@ export const useBattleStore = defineStore('battle', () => {
       
       await executeTurn(getContext(), moveIndex)
       
-      if (!activeBattle.value) {
-        return
-      }
-
-      const subBeforeEndTurn = fsm.currentSubState.value
-      const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
-                               subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                               subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-
-      if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
-      activeMove.value = null
-      
-      const sub = fsm.currentSubState.value
-      const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
-                         sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                         sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-      console.log(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
-      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-        isProcessing.value = false
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-      }
+      await finalizeTurnExecution()
     } catch (error) {
       logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
       addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
       useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
     } finally {
       isProcessing.value = false
+    }
+  }
+
+  const finalizeTurnExecution = async () => {
+    if (!activeBattle.value) {
+      return
+    }
+
+    const subBeforeEndTurn = fsm.currentSubState.value
+    const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
+                             subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                             subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+
+    if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
+    activeMove.value = null
+    
+    let sub = fsm.currentSubState.value
+    if ((sub === BATTLE_SUBSTATES.SWITCH_MENU || sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ) && 
+        activeBattle.value?.player && activeBattle.value.player.hp > 0 && 
+        !activeBattle.value.playerRequest?.forceSwitch?.length) {
+      console.debug(`[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`);
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+      sub = BATTLE_SUBSTATES.ANIM_SYNC
+    }
+
+    const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
+                       sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
+                       sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
+    console.log(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
+    if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+      isProcessing.value = false
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     }
   }
 
@@ -386,25 +412,7 @@ export const useBattleStore = defineStore('battle', () => {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
       await executeTurn(getContext(), -1)
 
-      if (!activeBattle.value) return
-
-      const subBeforeEndTurn = fsm.currentSubState.value
-      const isFaintSeqBefore = subBeforeEndTurn === BATTLE_SUBSTATES.SWITCH_MENU || 
-                               subBeforeEndTurn === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                               subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-
-      if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
-      activeMove.value = null
-
-      const sub = fsm.currentSubState.value
-      const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
-                         sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
-                         sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-      }
+      await finalizeTurnExecution()
     } catch (error) {
       logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
       addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')

@@ -82,7 +82,7 @@ export async function executeFlee(ctx: BattleContext) {
           enemyMove = e.lastMove
         }
 
-        const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+        const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
         const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
 
         if (showdownWorker && enemyMove) {

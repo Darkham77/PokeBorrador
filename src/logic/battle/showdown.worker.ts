@@ -1,16 +1,17 @@
 // fallow-ignore-file security-sink
 import { Battle, type ID, Pokemon, Side, type PokemonSet, type StatsTable } from '@pkmn/sim';
 import { getShowdownFormatId } from './showdownAdapter.ts';
-import { applyHealCheatToSide } from './cheats.ts';
+import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
 
 export interface ExtendedPokemon extends Pokemon {
   uid?: string;
   faintQueued: boolean;
 }
 
-export interface ExtendedSide extends Side {
+export type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
   pokemon: ExtendedPokemon[];
-}
+  activeRequest?: ShowdownRequest;
+};
 
 export interface ShowdownRequestPokemon {
   ident?: string;
@@ -149,6 +150,7 @@ interface WorkerEventPayload {
   weather?: string;
   side?: 'p1' | 'p2';
   type?: 'heal';
+  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
 }
 
 interface WorkerEventData {
@@ -367,10 +369,33 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             logs: initLogs,
             p1Request: injectUidsIntoRequest('p1', currentBattle.p1.activeRequest),
             p2Request: injectUidsIntoRequest('p2', currentBattle.p2.activeRequest),
-            p1TeamState: getSideTeamState(currentBattle.p1),
-            p2TeamState: getSideTeamState(currentBattle.p2),
+            p1TeamState: getSideTeamState(currentBattle.p1 as ExtendedSide),
+            p2TeamState: getSideTeamState(currentBattle.p2 as ExtendedSide),
             debugLogs
           } 
+        });
+        break;
+      }
+
+      case 'APPLY_CHEATS': {
+        if (!currentBattle) throw new Error('currentBattle is null');
+        const battle = currentBattle;
+        const { cheats } = payload;
+        if (cheats && Array.isArray(cheats)) {
+          cheats.forEach(c => {
+            const side = c.side === 'p1' ? battle.p1 : battle.p2;
+            applyHealCheatToSide(side);
+            syncRequestConditionsWithSimulator(side);
+          });
+        }
+        self.postMessage({
+          type: 'APPLY_CHEATS_DONE',
+          payload: {
+            p1Request: injectUidsIntoRequest('p1', battle.p1.activeRequest),
+            p2Request: injectUidsIntoRequest('p2', battle.p2.activeRequest),
+            p1TeamState: getSideTeamState(battle.p1 as ExtendedSide),
+            p2TeamState: getSideTeamState(battle.p2 as ExtendedSide)
+          }
         });
         break;
       }
@@ -404,7 +429,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
                 p.hp = p1Hps[uid];
                 console.log(`[WORKER-SYNC] P1 Pokémon ${p.name} (uid: ${uid}): HP ${oldHp} -> ${p.hp}`);
                 if (p.hp <= 0) {
-                  p.faint();
+                  if (!p.fainted) {
+                    p.faint();
+                  }
                 } else {
                   p.fainted = false;
                   (p as unknown as { faintQueued: boolean }).faintQueued = false;
@@ -426,7 +453,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
               if (uid && p2Hps[uid] !== undefined) {
                 p.hp = p2Hps[uid];
                 if (p.hp <= 0) {
-                  p.faint();
+                  if (!p.fainted) {
+                    p.faint();
+                  }
                 } else {
                   p.fainted = false;
                   (p as unknown as { faintQueued: boolean }).faintQueued = false;
@@ -487,19 +516,42 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           }
         };
 
-        const logLenBeforeP1 = battle.log.length;
+        console.debug(`[WORKER-EXECUTE-DEBUG] payload keys: ${JSON.stringify(Object.keys(payload))}, cheats: ${JSON.stringify(payload.cheats || null)}`);
+        console.debug(`[WORKER-EXECUTE-DEBUG] cheats typeof: ${typeof payload.cheats}, isArray: ${Array.isArray(payload.cheats)}, length: ${payload.cheats ? payload.cheats.length : 'null'}`);
+
+        // Aplicar cheats del fuzzer/IPB al simulator ANTES de procesar las elecciones del turno
+        if (payload.cheats && Array.isArray(payload.cheats)) {
+          const chList = payload.cheats;
+          for (let i = 0; i < chList.length; i++) {
+            const ch = chList[i];
+            console.debug(`[WORKER-CHEAT-PRE-DEBUG] Processing cheat index ${i} for turn ${battle.turn}: ${JSON.stringify(ch)}`);
+            try {
+              if (ch && ch.turn === battle.turn && ch.type === 'heal') {
+                const sideObj = ch.side === 'p1' ? battle.p1 : battle.p2;
+                applyHealCheatToSide(sideObj);
+                syncRequestConditionsWithSimulator(sideObj as ExtendedSide);
+                console.debug(`[WORKER-CHEAT-PRE-DEBUG] Healed side ${ch.side} successfully and synced request conditions before choices for turn ${ch.turn}`);
+              }
+            } catch (err: unknown) {
+              const errMsg = err instanceof Error ? err.message : String(err);
+              console.error(`[WORKER-CHEAT-ERROR] Failed to apply pre-turn cheat at index ${i}: ${errMsg}`);
+            }
+          }
+        }
+
+        console.debug(`[WORKER-EXECUTE-CHOICES-DEBUG] p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${p1Skip}, p2Skip: ${p2Skip}`);
+
+        const turnBeforeP1 = battle.turn;
         if (p1Choice) {
           chooseOrThrow('p1', p1Choice);
         }
         // After p1 chooses, Showdown may auto-process the turn if p2 already had a committed
         // choice queued (common when p1 voluntary-switches in gen5customgame).
-        // Detect this by checking if new battle logs were emitted after p1's choose.
-        // If the log grew, the turn already resolved — do NOT send p2's choice.
-        const turnAlreadyProcessed = battle.log.length > logLenBeforeP1;
+        // Detect this by checking if the battle turn advanced.
+        const turnAlreadyProcessed = battle.turn > turnBeforeP1;
         if (p2Choice && !turnAlreadyProcessed) {
           chooseOrThrow('p2', p2Choice);
         }
-
 
         const turnLogs = getNewLogs();
         if (p2Skip) {
@@ -522,8 +574,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             p2ForceSwitch,
             p1Request: injectUidsIntoRequest('p1', battle.p1.activeRequest),
             p2Request: injectUidsIntoRequest('p2', battle.p2.activeRequest),
-            p1TeamState: getSideTeamState(battle.p1),
-            p2TeamState: getSideTeamState(battle.p2)
+            p1TeamState: getSideTeamState(battle.p1 as ExtendedSide),
+            p2TeamState: getSideTeamState(battle.p2 as ExtendedSide)
           } 
         });
         break;

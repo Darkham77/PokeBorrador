@@ -22,9 +22,9 @@ Any change in `src/data/moves.ts` or in battle logic must be validated:
 
 Any modification to `orchestrator.ts`, `battle.ts`, or the battle state machine MUST pass these audits:
 
-- **Diagram Parity**: `npm run fsm:verify` (detects missing states or broken transitions).
-- **Implementation Integrity**: `npm run fsm:audit` (detects race conditions and unimplemented sub-states).
-- **Sequential Flow Parity**: `npm run fsm:flow` (ensures the orchestrator follows the manual's Mermaid diagrams 1:1).
+- **Diagram Parity**: `npm run validate:fsm:diagrams` (detects missing states or broken transitions).
+- **Implementation Integrity**: `npm run validate:fsm:implementation` (detects race conditions and unimplemented sub-states).
+- **Sequential Flow Parity**: `npm run validate:fsm:flow` (ensures the orchestrator follows the manual's Mermaid diagrams 1:1).
 
 ---
 
@@ -106,29 +106,27 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run lint:report`: Runs ESLint with cache enabled and saves a codeframe report in `scratch/lint_report.txt`.
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
 - `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
-- `npm run test:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
-- `npm run test:e2e:battle`: Runs only the battle-related E2E tests (FSM sync, held items, weather).
-- `npm run test:e2e:gts`: Runs only the GTS transactions E2E tests.
-- `npm run test:e2e:save`: Runs only the Save Shield E2E tests.
-- `npm run test:e2e:breeding`: Runs only the breeding and hatching E2E tests.
-- `npm run test:e2e:missions`: Runs only the daily daycare missions E2E tests.
-- `npm run test:e2e:gyms`: Runs only the gym progression E2E tests.
-- `npm run test:combat:all`: Runs the entire combat test suite, including fuzzer coverages, sync tests, unit tests, and Playwright E2E browser tests in parallel.
-- `npm run test:combat:fuzzer`: Runs the move and ability coverage fuzzer in Vitest.
-- `npm run test:combat:fuzzer:report`: Runs the fuzzer test and saves the verbose report in `scratch/fuzzer_report.txt`.
-- `npm run test:combat:items`: Runs the item coverage fuzzer in Vitest.
-- `npm run test:combat:items:report`: Runs the items fuzzer test and saves the verbose report in `scratch/items_coverage_report.txt`.
-- `npm run test:combat:e2e-fsm`: Runs only the Playwright E2E battle FSM sync test suite.
-  - *Tip*: You can run a single specific battle by its unique hash ID using the `TEST_CASE_ID` environment variable: `$env:TEST_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm`
-  - *Tip*: To skip already verified cases during debugging, you can start execution *from* a specific case ID or index: `$env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm` (or use `$env:TEST_START_FROM_INDEX="15"`)
-- `npm run test:combat:e2e-fsm:report`: Runs the Playwright E2E FSM tests and saves the output in `scratch/e2e_fsm_report.txt`.
+- `npm run sim:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
+- `npm run sim:e2e:battle`: Runs only the battle-related E2E tests (FSM sync, held items, weather).
+- `npm run sim:e2e:gts`: Runs only the GTS transactions E2E tests.
+- `npm run sim:e2e:save`: Runs only the Save Shield E2E tests.
+- `npm run sim:e2e:breeding`: Runs only the breeding and hatching E2E tests.
+- `npm run sim:e2e:missions`: Runs only the daily daycare missions E2E tests.
+- `npm run sim:e2e:gyms`: Runs only the gym progression E2E tests.
+- `npm run sim:combat:all`: Runs the entire combat test suite, including fuzzer coverages, sync tests, unit tests, and Playwright E2E browser tests.
+- `npm run sim:fuzzer`: Runs the move and ability coverage fuzzer in Node.ts.
+- `npm run sim:fuzzer:report`: Runs the fuzzer test and saves the verbose report in `scripts/e2e/results/fuzzer_report.txt`.
+- `npm run sim:e2e:combat`: Runs only the Playwright E2E battle FSM sync test suite.
+  - *Tip*: You can run a single specific battle by its unique hash ID using the `TEST_CASE_ID` environment variable: `$env:TEST_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat`
+  - *Tip*: To skip already verified cases during debugging, you can start execution *from* a specific case ID or index: `$env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat` (or use `$env:TEST_START_FROM_INDEX="15"`)
+- `npm run sim:e2e:combat:report`: Runs the Playwright E2E FSM tests and saves the output in `scripts/e2e/results/e2e_simulation_failures.json`.
 - `npm run test:combat:cleanup`: Runs the unit test suite verifying volatile status and stat stage resets on switch.
 - `npm run test:combat:cleanup:report`: Runs the cleanup test and saves the verbose report in `scratch/cleanup_report.txt`.
 - `npm run test:combat:weather`: Runs the unit test suite verifying weather and terrain effects on speed and status.
 - `npm run test:combat:weather:report`: Runs the weather test and saves the verbose report in `scratch/weather_report.txt`.
 - `npm run test:combat:choice`: Runs the unit test suite verifying Choice item locking and UI disabling behavior.
 - `npm run test:combat:choice:report`: Runs the choice test and saves the verbose report in `scratch/choice_report.txt`.
-- `npm run test:combat:all:report`: Runs the entire combat suite and outputs reports to `scratch/combat_report.txt` and `scratch/playwright_report.txt`.
+- `npm run sim:combat:all:report`: Runs the entire combat suite and outputs reports to `scripts/e2e/results/playwright_report.txt`.
 - `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 
@@ -166,17 +164,17 @@ When diagnosing or fixing failures in the E2E simulation suites, follow this str
 
 1. **Run the E2E Suite**: Execute the tests using the appropriate script:
    ```powershell
-   npm run test:e2e:battle
+   npm run sim:e2e:battle
    ```
 2. **Identify and Isolate the Failure**: If a test fails, the runner will abort immediately and output the exact case hash in the console (e.g., `case-8b5b9aabf776`).
 3. **Debug the Specific Case**: Set the `TEST_CASE_ID` environment variable to run **ONLY** that failing case for near-instant loop times:
    ```powershell
-   $env:TEST_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm
+   $env:TEST_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat
    ```
    Apply fixes to the source code and re-run this command until the case passes in green.
 4. **Resume Remaining Cases**: Resume the remaining simulation queue starting *from* the resolved case onwards using `TEST_START_FROM_CASE_ID`:
    ```powershell
-   $env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run test:combat:e2e-fsm
+   $env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat
    ```
    Repeat this loop for any subsequent failures.
 5. **Final Regression Pass**: Once the queue finishes completely, clear the environment variables and run a full, clean verification of the E2E suite to guarantee no regressions were introduced.

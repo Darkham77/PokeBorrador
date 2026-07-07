@@ -1,5 +1,5 @@
-import type { SBCtx } from './showdownBridgeCtx';
-import { isPokemonStatus } from '@/types/pokemon/pokemon';
+import type { SBCtx } from './showdownBridgeCtx.ts';
+import { isPokemonStatus } from '../../types/pokemon/pokemon.ts';
 
 /**
  * Maneja eventos misceláneos, efectos de combate y mecánicas Gen 6-9:

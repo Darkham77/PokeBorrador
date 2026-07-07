@@ -11,6 +11,26 @@ import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { resolveShowdownSlot } from './showdownAdapter.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
+function resolveMockEnemySwitch(active: any, debugPrefix: string): Pokemon | null {
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : null) as { mockEnemyChoices?: string[]; enemyChoiceIndex?: number } | null;
+  if (debugObj?.mockEnemyChoices && active.enemyTeam) {
+    const idx = debugObj.enemyChoiceIndex ?? 0;
+    const choiceStr = debugObj.mockEnemyChoices[idx];
+    if (choiceStr && choiceStr.startsWith('switch ')) {
+      const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+      const targetRequestPoke = (active.enemyRequest?.side?.pokemon as unknown as Array<{ uid?: string } | null | undefined>)?.[switchSlot - 1];
+      const targetUid = targetRequestPoke?.uid;
+      if (targetUid) {
+        const nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid === targetUid) || null;
+        console.debug(`[${debugPrefix}] Resolved next enemy via fuzzer choice #${idx}: ${choiceStr} -> ${nextEnemy?.name} (${targetUid})`);
+        return nextEnemy;
+      }
+    }
+  }
+  return null;
+}
+
+
 /**
  * Handles the fainting of a Pokémon.
  */
@@ -136,16 +156,22 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     // CHECK_REMAINING
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
     
-    let nextEnemy: Pokemon | null = null
+    let nextEnemy: Pokemon | null = null;
     if (isTr && active.enemyTeam && active.player) {
-      const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid)
-      if (bestIdx !== -1) {
-        nextEnemy = active.enemyTeam[bestIdx] || null
-      } else {
-        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FAINT-SWITCH');
+      if (!nextEnemy) {
+        const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid)
+        if (bestIdx !== -1) {
+          nextEnemy = active.enemyTeam[bestIdx] || null
+        } else {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+        }
       }
     } else if (active.enemyTeam) {
-      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FAINT-SWITCH');
+      if (!nextEnemy) {
+        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+      }
     }
 
     if (nextEnemy) {
@@ -170,7 +196,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       ctx.faintedSides.value.delete('enemy')
       ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
       
-      const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+      const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
         active.switchingToEnemy = nextEnemy
@@ -655,7 +681,10 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
 
     let nextEnemy: Pokemon | null = null
     if (active.enemyTeam) {
-      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
+      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FORCE-SWITCH');
+      if (!nextEnemy) {
+        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
+      }
     }
     if (nextEnemy) {
       const currentEnemy = active.enemy
@@ -670,7 +699,7 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
 
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
       
-      const { showdownWorker, executeTurnInWorker } = await import('./orchestrator.ts')
+      const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
       if (showdownWorker && active.enemyTeam) {
         const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
         const result = await executeTurnInWorker('', `switch ${slot}`)

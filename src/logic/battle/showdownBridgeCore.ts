@@ -1,6 +1,7 @@
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { toID } from '@pkmn/sim';
-import type { SBCtx } from './showdownBridgeCtx';
+import type { SBCtx } from './showdownBridgeCtx.ts';
+import type { Move, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 
 /**
  * Maneja los eventos básicos de combate:
@@ -37,7 +38,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           name: translatedName,
           pp: 0,
           maxPP: 0
-        } as unknown as import('@/types/pokemon/pokemon').Move;
+        } as unknown as Move;
 
         const hasPrepareThisTurn = turnLogs?.some(l => {
           const lp = l.split('|').map(x => x.trim());
@@ -58,7 +59,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           id: toID(moveId),
           name: translatedName,
           cat: moveData?.cat || 'physical'
-        } as unknown as import('@/types/pokemon/pokemon').Move;
+        } as unknown as Move;
 
         if (store.animations?.awaitTween) {
           await store.animations.awaitTween(`attack-${side}`);
@@ -83,7 +84,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           name: translatedName,
           pp: 0,
           maxPP: 0
-        } as unknown as import('@/types/pokemon/pokemon').Move;
+        } as unknown as Move;
       }
       return true;
     }
@@ -139,7 +140,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const target = getPoke(parts[2] || '');
       const statusType = parts[3] || '';
       if (target && statusType) {
-        target.status = statusType as import('@/types/pokemon/pokemon').PokemonStatus;
+        target.status = statusType as PokemonStatus;
         store.addLog(`¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`, 'log-info', target);
       }
       return true;
