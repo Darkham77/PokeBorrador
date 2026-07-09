@@ -1,12 +1,12 @@
 /**
  * tests/node/events.test.ts
  * 
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  * 
  * Migrated from tests/unit/events.spec.ts
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 

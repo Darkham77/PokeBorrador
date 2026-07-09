@@ -1,13 +1,13 @@
 /**
  * tests/node/bush_library.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Verifica la biblioteca de coberturas ambientales (bushLibrary.ts)
  * y la correcta asignación de familias, assets y tintes por bioma.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { getActiveBushesForMap, BIOME_BUSH_CONFIG, BUSH_FAMILIES } from '../../../src/logic/environment/bushLibrary.ts';
 

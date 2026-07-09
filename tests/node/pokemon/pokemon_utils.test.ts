@@ -1,7 +1,7 @@
 /**
  * tests/node/pokemon_utils.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests pure utility functions from src/logic/pokemonUtils.ts.
  * getTypeEffectivenessMsg and getMoveDescription are nearly-pure functions:
@@ -11,7 +11,7 @@
  * Pattern: pass all data inline — zero mocks required.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {

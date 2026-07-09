@@ -1,4 +1,4 @@
-import { test, describe } from 'node:test';
+import { test, describe } from 'vitest';
 import assert from 'node:assert/strict';
 import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
 import { ROUTE_WEATHER_TABLES } from '../../../src/data/world/weather-tables.ts';
@@ -250,5 +250,3 @@ describe('Weather Tables Unique Identity Integrity', () => {
     });
   });
 });
-
-

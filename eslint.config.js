@@ -88,7 +88,7 @@ export default tseslint.config(
       'scratch/**',
       'tmp/**',
       '.agents/**',
-      'pokemon-showdown-code/**',
+      'external/**',
       'test aventura/**',
       'supabase/**',
       'tests/**',

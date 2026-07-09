@@ -17,7 +17,18 @@ export interface ValidationConfig {
   requiredFiles: string[];
 }
 
-export function setupValidation(config: ValidationConfig) {
+export interface ValidationContext {
+  values: {
+    output?: string;
+    summary?: boolean;
+    'errors-only'?: boolean;
+  };
+  checkFiles: () => Promise<void>;
+  finish: (scannedMetrics: Record<string, number>, errors: string[], warnings: string[]) => Promise<void>;
+}
+
+
+export function setupValidation(config: ValidationConfig): ValidationContext {
   const { values } = parseArgs({
     options: {
       output: { type: 'string', short: 'o' },

@@ -106,6 +106,6 @@ export const EXCLUDED_ABILITY_ENTRIES: readonly ExcludedAbilityEntry[] = [
   { id: 'zerotohero',     reason: 'fusion-locked', note: 'Palafin: must switch in as Zero form to trigger Hero transform' },
 ];
 
-export const EXCLUDED_SIMULATOR_NOTE =
+export const EXCLUDED_SIMULATOR_NOTE: string =
   'Estas habilidades requieren un simulador de Dobles, Tera, o son mecánicas de fusión de forma no reproducibles en 1v1. ' +
   'El tester actual solo cubre batallas 1v1 Singles (gen9customgame).';

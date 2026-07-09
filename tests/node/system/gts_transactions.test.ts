@@ -1,7 +1,7 @@
 /**
  * tests/node/gts_transactions.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Simulates high-fidelity GTS transactions using the DBRouter offline logic.
  * Validates:
@@ -10,7 +10,7 @@
  * 3. Claiming assets from the claim_queue and updating the player save.
  */
 
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 
 // Mock DBRouter local logic because initSqlJs requires WASM/Browser

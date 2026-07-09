@@ -1,12 +1,12 @@
 /**
  * tests/node/battle/weather_abilities.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Verifies one-by-one that all weathers affect the implemented abilities and attacks correctly.
  */
 
-import { describe, it, mock } from 'node:test';
+import { describe, it, vi } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {
@@ -21,7 +21,7 @@ import {
 describe('Weather & Abilities Integrations (Gen 2 Ruleset)', () => {
 
   // Fix Math.random for deterministic maximum damage rolls
-  mock.method(Math, 'random', () => 1.0);
+  vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
   const clear:        PureBattleWeather = { type: 'clear', turns: -1 };
   const sun:          PureBattleWeather = { type: 'sun', turns: 5 };

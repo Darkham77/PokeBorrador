@@ -27,3 +27,9 @@ database/temp/
 .fallow/
 scratch/
 .eslintcache
+
+# TS incremental build cache
+.tsbuildinfo/
+
+# Vitest transform cache (both unit and node runners)
+.vitest-cache/

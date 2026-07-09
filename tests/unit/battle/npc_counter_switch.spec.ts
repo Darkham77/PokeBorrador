@@ -18,6 +18,18 @@ vi.mock('@/logic/battle/orchestrator', () => ({
   executeTurnInWorker: mockExecuteTurn
 }))
 
+// resolution.ts uses dynamic import from showdownWorkerClient (not orchestrator)
+vi.mock('@/logic/battle/showdownWorkerClient', () => ({
+  showdownWorker: {}, // Truthy worker
+  executeTurnInWorker: mockExecuteTurn,
+  syncTeamsFromLastWorkerState: vi.fn(async () => {})
+}))
+
+vi.mock('@/logic/battle/showdownBridge', () => ({
+  filterShowdownLogs: vi.fn(() => []),
+  parseShowdownLogLine: vi.fn(async () => {})
+}))
+
 vi.mock('@/logic/battle/showdownAdapter', () => ({
   getShowdownSlot: mockGetShowdownSlot,
   swapActivePokemon: vi.fn((arr) => arr),
@@ -92,7 +104,7 @@ describe('NPC Counter Switching & Showdown Sync', () => {
     await processFaint(mockCtx, 'enemy')
 
     // 1. Should have run the AI picker to choose the best switch index
-    expect(mockFindBestSwitchIndex).toHaveBeenCalledWith(enemyTeam, player, faintedEnemy.uid)
+    expect(mockFindBestSwitchIndex).toHaveBeenCalledWith(enemyTeam, player, faintedEnemy.uid, expect.anything())
 
     // 2. Should have selected index 1 (Alakazam) as the next enemy
     expect(activeBattle.value.enemy?.uid).toBe(nextEnemy2.uid)

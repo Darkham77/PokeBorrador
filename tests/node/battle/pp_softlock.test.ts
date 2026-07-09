@@ -1,7 +1,7 @@
 /**
  * tests/node/battle/pp_softlock.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests the PP soft-lock prevention logic for multi-turn locked moves
  * (Thrash / Outrage / Petal Dance / Thrash-effect moves, and lockedmove volatile).
@@ -29,7 +29,7 @@
  *   if (!isLocked && props.move.pp <= 0) return true  // disable
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 // ── Pure helpers (mirror of battleTurn.ts decision logic) ──────────────────

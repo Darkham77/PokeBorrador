@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, before } from 'node:test';
+import { describe, it, beforeEach, beforeAll, vi } from 'vitest';
 import assert from 'node:assert/strict';
 
 import { Battle } from '@pkmn/sim';
@@ -8,12 +8,12 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
   let battle: Battle;
   let injectUidsIntoRequest: any;
 
-  before(async () => {
+  beforeAll(async () => {
     // Mock self to allow importing the worker file in Node environment
-    (globalThis as any).self = {
+    vi.stubGlobal('self', {
       onmessage: null,
       postMessage: () => {}
-    };
+    });
     const workerModule = await import('../../../src/logic/battle/showdown.worker.ts');
     injectUidsIntoRequest = workerModule.injectUidsIntoRequest;
   });

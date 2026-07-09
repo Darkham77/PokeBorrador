@@ -19,6 +19,19 @@ vi.mock('@/logic/battle/orchestrator', () => ({
   isPlayerTrappedInWorker: vi.fn(async () => false)
 }))
 
+// switchAction uses dynamic import from showdownWorkerClient (not orchestrator)
+vi.mock('@/logic/battle/showdownWorkerClient', () => ({
+  showdownWorker: mockWorker,
+  executeTurnInWorker: vi.fn(async () => ({ logs: [], isOver: false, winner: null })),
+  isPlayerTrappedInWorker: vi.fn(async () => false),
+  syncTeamsFromLastWorkerState: vi.fn(async () => {})
+}))
+
+vi.mock('@/logic/battle/showdownBridge', () => ({
+  filterShowdownLogs: vi.fn(() => []),
+  parseShowdownLogLine: vi.fn(async () => {})
+}))
+
 vi.mock('@/logic/pokemon/typeEngine', () => ({
   getCombinedEffectiveness: vi.fn(() => 1.0)
 }))

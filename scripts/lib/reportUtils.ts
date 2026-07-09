@@ -15,11 +15,11 @@ export interface ValidationSummary {
   warnings: string[];
 }
 
-export function printConsoleHeader(title: string) {
+export function printConsoleHeader(title: string): void {
   console.log(styleText('bold', `\n--- 🛡️  ${title} ---`));
 }
 
-export function printConsoleSummary(summary: ValidationSummary, verbose: boolean = true) {
+export function printConsoleSummary(summary: ValidationSummary, verbose: boolean = true): void {
   console.log(`\n════════════════════════════════════`);
   console.log(`    ${summary.title.toUpperCase()}`);
   console.log(`════════════════════════════════════`);
@@ -55,7 +55,7 @@ export function printConsoleSummary(summary: ValidationSummary, verbose: boolean
   }
 }
 
-export async function writeReportFile(outputPathArg: string, summary: ValidationSummary) {
+export async function writeReportFile(outputPathArg: string, summary: ValidationSummary): Promise<void> {
   const outputPath = path.resolve(process.cwd(), outputPathArg);
   const metricLines = Object.entries(summary.scannedMetrics).map(([key, val]) => `${key}: ${val}`);
 

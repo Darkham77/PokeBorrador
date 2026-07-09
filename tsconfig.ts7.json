@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "isolatedDeclarations": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo/ts7.tsbuildinfo"
+  },
+  "exclude": ["vite.config.ts", "scripts/**", "tests/**"]
+}

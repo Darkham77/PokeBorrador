@@ -1,13 +1,13 @@
 /**
  * tests/node/pokemon_stats.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests pure math from src/logic/pokemon/statsMath.ts.
  * Zero mocks required. All base stats and IVs are passed inline.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {

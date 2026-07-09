@@ -15,6 +15,18 @@ vi.mock('@/logic/battle/orchestrator', () => ({
   executeTurnInWorker: mockExecuteTurn
 }))
 
+// battleTurn.ts uses dynamic import from showdownWorkerClient (not orchestrator)
+vi.mock('@/logic/battle/showdownWorkerClient', () => ({
+  showdownWorker: {}, // Truthy worker
+  executeTurnInWorker: mockExecuteTurn,
+  syncTeamsFromLastWorkerState: vi.fn(async () => {})
+}))
+
+vi.mock('@/logic/battle/showdownBridge', () => ({
+  filterShowdownLogs: vi.fn(() => []),
+  parseShowdownLogLine: vi.fn(async () => {})
+}))
+
 describe('NPC Item Usage & Turn Skipping', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

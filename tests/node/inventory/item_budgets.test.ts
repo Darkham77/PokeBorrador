@@ -1,12 +1,12 @@
 /**
  * tests/node/item_budgets.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests probability budget redistribution math for Fishing Rods, Pickaxes and Brushes.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { calculateArchaeologyWeights } from '../../../src/logic/utils/archaeologyHelpers.ts';
 

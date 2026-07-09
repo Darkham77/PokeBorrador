@@ -1,4 +1,4 @@
-import { test, describe } from 'node:test';
+import { test, describe } from 'vitest';
 import assert from 'node:assert/strict';
 import { updateCastformForm } from '../../../src/logic/battle/battleFlow.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';

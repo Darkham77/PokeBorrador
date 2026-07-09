@@ -1,12 +1,12 @@
 /**
  * tests/node/math_global.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Verifica las herramientas matemáticas globales y el PRNG centralizado en math.ts.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { mulberry32, hashString } from '../../../src/logic/utils/math.ts';
 

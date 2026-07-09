@@ -127,7 +127,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         const p1Choice = `switch ${slot}`
         const isWild = !active.isTrainer && !active.isGym
         console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
-        let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild)
+        let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild, ctx)
         if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
           eMove = active.enemy.lastMove
         }

@@ -26,7 +26,7 @@ enableCompileCache();
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const BASELINE_FILE = path.resolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
 
-export async function updateSupabaseDb() {
+export async function updateSupabaseDb(): Promise<void> {
   console.log(styleText('bold', '\n--- 🛡️ SUPABASE DATABASE MANAGER & MIGRATOR (Node.js 26+) ---'));
 
   const serverConfigs = await readAndParseEnv();

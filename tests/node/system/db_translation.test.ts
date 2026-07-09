@@ -1,12 +1,12 @@
 /**
  * tests/node/db_translation.test.ts
  * 
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  * 
- * Verifies the PostgreSQL to SQLite translation logic using node:test.
+ * Verifies the PostgreSQL to SQLite translation logic.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { translatePostgresToSqlite, splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 

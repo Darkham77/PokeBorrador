@@ -1,13 +1,13 @@
 /**
  * tests/node/market.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests pure global market logic and filters from src/logic/market.ts.
  * Zero mocks, zero Pinia, zero Vue, zero browser dependencies.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {

@@ -77,7 +77,7 @@ export async function executeFlee(ctx: BattleContext) {
 
         const { decideEnemyMove } = await import('./ai/battleAI.ts')
         const isWild = !ctx.activeBattle.value?.isTrainer && !ctx.activeBattle.value?.isGym
-        let enemyMove = decideEnemyMove(e, p, ctx.playerStages.value, isWild)
+        let enemyMove = decideEnemyMove(e, p, ctx.playerStages.value, isWild, ctx)
         if (e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
           enemyMove = e.lastMove
         }

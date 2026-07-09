@@ -22,7 +22,7 @@ import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-export async function adminSupabaseUsers() {
+export async function adminSupabaseUsers(): Promise<void> {
   console.log(styleText('bold', '\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js 26+) ---'));
 
   const serverConfigs = await readAndParseEnv();

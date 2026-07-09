@@ -1,12 +1,12 @@
 /**
  * tests/node/npc_sprite_router.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests the classification and routing rules in src/logic/utils/npcSpriteRouter.ts.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {
@@ -114,4 +114,3 @@ describe('NPC Sprite Catalog and Fallback Errors', () => {
     assert.notStrictEqual(resolved, 'unknown_beauty');
   });
 });
-

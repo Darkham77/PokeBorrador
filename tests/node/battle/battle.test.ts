@@ -1,7 +1,7 @@
 /**
  * tests/node/battle.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Migrated from tests/unit/battle.spec.ts
  *
@@ -9,7 +9,7 @@
  * This avoids the transitive Vue chain: battleFormulas → pokemonDataProvider → vue.
  */
 
-import { describe, it, mock } from 'node:test';
+import { describe, it, vi } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {
@@ -27,7 +27,7 @@ import {
 describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
   // Fix Math.random for deterministic results (max damage roll)
-  mock.method(Math, 'random', () => 1.0);
+  vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
   // ── getMoveCategory ──────────────────────────────────────────────────────────
 

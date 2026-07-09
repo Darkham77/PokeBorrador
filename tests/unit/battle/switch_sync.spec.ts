@@ -23,6 +23,24 @@ vi.mock('@/logic/battle/orchestrator', () => ({
   isPlayerTrappedInWorker: vi.fn(async () => false)
 }))
 
+// switchAction uses dynamic import from showdownWorkerClient (not orchestrator)
+vi.mock('@/logic/battle/showdownWorkerClient', () => ({
+  showdownWorker: mockWorker,
+  executeTurnInWorker: vi.fn(async (p1Choice: string, p2Choice?: string) => {
+    const payload: { p1Choice: string; p2Choice?: string } = { p1Choice };
+    if (p2Choice !== undefined) payload.p2Choice = p2Choice;
+    mockWorker.postMessage({ type: 'EXECUTE_TURN', payload })
+    return { logs: [], isOver: false, winner: null }
+  }),
+  isPlayerTrappedInWorker: vi.fn(async () => false),
+  syncTeamsFromLastWorkerState: vi.fn(async () => {})
+}))
+
+vi.mock('@/logic/battle/showdownBridge', () => ({
+  filterShowdownLogs: vi.fn(() => []),
+  parseShowdownLogLine: vi.fn(async () => {})
+}))
+
 // Mock de typeEngine para getCombinedEffectiveness
 vi.mock('@/logic/pokemon/typeEngine', () => ({
   getCombinedEffectiveness: vi.fn(() => 1.0)
@@ -157,7 +175,7 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
   it('should restore player active pokemon and index if worker throws error during switch', async () => {
     const { ctx, p1 } = createMockContext()
     
-    const { executeTurnInWorker } = await import('@/logic/battle/orchestrator')
+    const { executeTurnInWorker } = await import('@/logic/battle/showdownWorkerClient')
     vi.mocked(executeTurnInWorker).mockRejectedValueOnce(new Error('INVALID_CHOICE'))
 
     await expect(executeSwitch(ctx, 1, false)).rejects.toThrow('INVALID_CHOICE')

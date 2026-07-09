@@ -1,12 +1,12 @@
 /**
  * tests/node/hatch_auras.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests the aura style generation in src/logic/breeding/hatchAuras.ts.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { getAuraStyles } from '../../../src/logic/breeding/hatchAuras.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';

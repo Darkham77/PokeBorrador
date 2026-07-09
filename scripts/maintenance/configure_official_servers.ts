@@ -23,7 +23,7 @@ enableCompileCache();
 const ENV_FILE = path.resolve(process.cwd(), '.env');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/system/official_servers.ts');
 
-export async function configureOfficialServers() {
+export async function configureOfficialServers(): Promise<void> {
   console.log(styleText('bold', '\n--- 🌐 OFFICIAL SERVERS CONFIGURATOR (Node.js 26+) ---'));
   console.log(styleText('cyan', `📄 Leyendo archivo .env maestro: ${ENV_FILE}`));
 

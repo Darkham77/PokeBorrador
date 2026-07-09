@@ -1,12 +1,12 @@
 /**
  * tests/node/system/audit_warnings_diff.test.ts
  * 
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  * 
  * Verifica el filtrado de advertencias (warnings) de audit_warnings_diff.ts.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { filterNewWarnings } from '../../../scripts/maintenance/audit_warnings_diff.ts';
 import type { Violation } from '../../../scripts/maintenance/audit_warnings_diff.ts';

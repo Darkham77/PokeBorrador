@@ -142,6 +142,11 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return false;
   }
 
+  const isUiLocked = await page.locator('.battle-controls-layout.is-ui-locked').count() > 0;
+  if (isUiLocked) {
+    return false;
+  }
+
   const subState = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return 'WAIT_INPUT';

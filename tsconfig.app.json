@@ -14,7 +14,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "composite": true,
+    "composite": false,
     "noEmit": false,
     "jsx": "preserve",
 

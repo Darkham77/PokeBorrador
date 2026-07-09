@@ -1,5 +1,4 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vite'
 import { type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
@@ -357,9 +356,6 @@ export default defineConfig({
           if (id.includes('node_modules/gsap')) {
             return 'vendor-gsap';
           }
-          if (id.includes('node_modules/@js-temporal')) {
-            return 'vendor-temporal';
-          }
           if (id.includes('src/data/')) {
             return 'game-data';
           }
@@ -375,11 +371,4 @@ export default defineConfig({
     drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
     pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
   } as import('vite').ESBuildOptions & { charset?: 'utf8' },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/vitest.setup.ts'],
-    include: ['tests/unit/**/*.{test,spec}.ts', 'tests/integration/**/*.{test,spec}.ts', 'src/**/*.{test,spec}.ts'],
-    testTimeout: 60000,
-  }
 })

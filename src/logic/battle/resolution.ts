@@ -2,7 +2,7 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ShowdownPlayerRequest } from '@/types/battle/battle'
+import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
@@ -11,7 +11,7 @@ import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { resolveShowdownSlot } from './showdownAdapter.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
-function resolveMockEnemySwitch(active: any, debugPrefix: string): Pokemon | null {
+function resolveMockEnemySwitch(active: BattleState, debugPrefix: string): Pokemon | null {
   const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : null) as { mockEnemyChoices?: string[]; enemyChoiceIndex?: number } | null;
   if (debugObj?.mockEnemyChoices && active.enemyTeam) {
     const idx = debugObj.enemyChoiceIndex ?? 0;
@@ -160,7 +160,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     if (isTr && active.enemyTeam && active.player) {
       nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FAINT-SWITCH');
       if (!nextEnemy) {
-        const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid)
+        const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid, ctx)
         if (bestIdx !== -1) {
           nextEnemy = active.enemyTeam[bestIdx] || null
         } else {

@@ -20,13 +20,15 @@ interface AuditTask {
   name: string;
   command: string;
   args: string[];
+  shell?: boolean;
 }
 
 const TASKS: AuditTask[] = [
   { 
-    name: 'Node.js Tests', 
-    command: 'node', 
-    args: ['--experimental-strip-types', '--experimental-test-coverage', '--test', 'tests/node/**/*.test.ts'] 
+    name: 'Node.js Tests (Vitest)', 
+    command: 'npm',
+    args: ['run', 'test:node'],
+    shell: true
   },
   { 
     name: 'Intelligent Project Audit', 
@@ -82,7 +84,8 @@ function runAllAudits() {
     console.log('------------------------------------------------------');
     
     const proc = spawnSync(task.command, task.args, {
-      stdio: 'inherit'
+      stdio: 'inherit',
+      shell: task.shell ?? false
     });
 
     const success = proc.status === 0;

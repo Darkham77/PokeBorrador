@@ -291,7 +291,7 @@ DETECT failure in simulation X
   |
 ANALYZE: read the test carefully. Understand what game behavior it asserts.
   |
-STUDY SHOWDOWN: Consult first the local Showdown source code in pokemon-showdown-code/
+STUDY SHOWDOWN: Consult first the local Showdown source code in external/pokemon-showdown-code/
                 to understand the exact logic and flow Showdown uses for this scenario.
                 CRITICAL: NEVER copy code from Showdown! Use it only to understand
                 how to call the library and manage our state representations.

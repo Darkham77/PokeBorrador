@@ -1,15 +1,15 @@
-import { describe, it, before } from 'node:test';
+import { describe, it, beforeAll, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import { Battle } from '@pkmn/sim';
 import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
 describe('Showdown Custom Stats Injection Unit Tests', () => {
-  before(async () => {
+  beforeAll(async () => {
     // Mock self to allow importing the worker file in Node environment
-    (globalThis as any).self = {
+    vi.stubGlobal('self', {
       onmessage: null,
       postMessage: () => {}
-    };
+    });
     await import('../../../src/logic/battle/showdown.worker.ts');
   });
 

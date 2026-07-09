@@ -1,7 +1,6 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
-import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
+import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex, evaluateAndUseNPCItem } from './ai/battleAI.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 import { updateCastformForm } from './battleFlow.ts'
@@ -73,7 +72,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     }
   }
 
-  let eMove = p2Skip ? null : decideEnemyMove(e, p, store.enemyStages.value, isWild)
+  let eMove = p2Skip ? null : decideEnemyMove(e, p, store.enemyStages.value, isWild, store)
   if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
     eMove = e.lastMove
   }
@@ -211,8 +210,8 @@ export async function runEnemyAction(store: BattleContext) {
     store.activeBattle.value.enemyUsedItem = false;
   }
 
-  if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam)) {
-    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid)
+  if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam, store)) {
+    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid, store)
     if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
       const { executeEnemySwitch } = await import('./actions/switchActions.ts')
       await executeEnemySwitch(store, bestIdx)
@@ -228,7 +227,7 @@ export async function runEnemyAction(store: BattleContext) {
     }
   }
 
-  let enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild)
+  let enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild, store)
   if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
     enemyMove = e.lastMove
   }
@@ -341,173 +340,7 @@ export async function runEnemyAction(store: BattleContext) {
   }
 }
 
-async function evaluateAndUseNPCItem(ctx: BattleContext, e: Pokemon): Promise<boolean> {
-  const battleState = ctx.activeBattle.value;
-  if (!battleState || !battleState.enemyInventory) return false;
 
-  const enemyInventory = battleState.enemyInventory;
-  const hasItems = Object.values(enemyInventory).some(qty => qty > 0);
-  if (!hasItems) return false;
-
-  const npcName = battleState.isGym ? `Líder ${battleState.trainerName || 'de Gimnasio'}` : `${battleState.trainerName || 'Entrenador'}`;
-
-  const triggerFXAndSound = async (onlySound = false) => {
-    if (!onlySound) {
-      if (ctx.animations?.handleHealRequest) {
-        await ctx.animations.handleHealRequest({ side: 'enemy' });
-      } else {
-        const { gameBus } = await import('@/logic/events/gameBus');
-        gameBus.emit('PLAY_HEAL', { side: 'enemy' });
-      }
-    }
-    const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
-    audioStore.play('heal');
-  };
-
-  // 1. Revive Check (HP stable in active pokemon)
-  const fainted = (battleState.enemyTeam || []).filter((poke): poke is Pokemon => !!poke && poke.hp <= 0);
-  if (fainted.length > 0 && e.hp >= e.maxHp * 0.5) {
-    if (enemyInventory['revivemax'] && enemyInventory['revivemax'] > 0) {
-      const target = fainted[0]!;
-      target.hp = target.maxHp;
-      target.status = undefined;
-      enemyInventory['revivemax']--;
-      if (enemyInventory['revivemax'] <= 0) delete enemyInventory['revivemax'];
-
-      ctx.addLog(`¡${npcName} usó Revivir Máximo en ${target.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${target.name} revivió por completo!`, 'log-info', target, 'enemy');
-      await triggerFXAndSound(true);
-      return true;
-    }
-    if (enemyInventory['revive'] && enemyInventory['revive'] > 0) {
-      const target = fainted[0]!;
-      target.hp = Math.floor(target.maxHp * 0.5);
-      target.status = undefined;
-      enemyInventory['revive']--;
-      if (enemyInventory['revive'] <= 0) delete enemyInventory['revive'];
-
-      ctx.addLog(`¡${npcName} usó Revivir en ${target.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${target.name} revivió con la mitad de su salud!`, 'log-info', target, 'enemy');
-      await triggerFXAndSound(true);
-      return true;
-    }
-  }
-
-  // 2. Status Check
-  if (e.status) {
-    let cured = false;
-
-    if (enemyInventory['fullrestore'] && enemyInventory['fullrestore'] > 0) {
-      e.hp = e.maxHp;
-      e.status = undefined;
-      enemyInventory['fullrestore']--;
-      if (enemyInventory['fullrestore'] <= 0) delete enemyInventory['fullrestore'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Restaurar Todo en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó toda su salud y curó sus problemas de estado!`, 'log-info', e, 'enemy');
-    } else if (enemyInventory['fullheal'] && enemyInventory['fullheal'] > 0) {
-      e.status = undefined;
-      enemyInventory['fullheal']--;
-      if (enemyInventory['fullheal'] <= 0) delete enemyInventory['fullheal'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Cura Total en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} curó sus problemas de estado!`, 'log-info', e, 'enemy');
-    } else if ((e.status === 'psn' || e.status === 'tox') && enemyInventory['antidote'] && enemyInventory['antidote'] > 0) {
-      e.status = undefined;
-      enemyInventory['antidote']--;
-      if (enemyInventory['antidote'] <= 0) delete enemyInventory['antidote'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Antídoto en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡El envenenamiento de ${e.name} fue curado!`, 'log-info', e, 'enemy');
-    } else if (e.status === 'brn' && enemyInventory['burnheal'] && enemyInventory['burnheal'] > 0) {
-      e.status = undefined;
-      enemyInventory['burnheal']--;
-      if (enemyInventory['burnheal'] <= 0) delete enemyInventory['burnheal'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Cura Quemadura en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡La quemadura de ${e.name} fue curada!`, 'log-info', e, 'enemy');
-    } else if (e.status === 'par' && enemyInventory['paralyzeheal'] && enemyInventory['paralyzeheal'] > 0) {
-      e.status = undefined;
-      enemyInventory['paralyzeheal']--;
-      if (enemyInventory['paralyzeheal'] <= 0) delete enemyInventory['paralyzeheal'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Antiparaliz en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡La parálisis de ${e.name} fue curada!`, 'log-info', e, 'enemy');
-    } else if (e.status === 'slp' && enemyInventory['awakening'] && enemyInventory['awakening'] > 0) {
-      e.status = undefined;
-      enemyInventory['awakening']--;
-      if (enemyInventory['awakening'] <= 0) delete enemyInventory['awakening'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Despertar en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} se despertó!`, 'log-info', e, 'enemy');
-    } else if (e.status === 'frz' && enemyInventory['iceheal'] && enemyInventory['iceheal'] > 0) {
-      e.status = undefined;
-      enemyInventory['iceheal']--;
-      if (enemyInventory['iceheal'] <= 0) delete enemyInventory['iceheal'];
-      cured = true;
-      ctx.addLog(`¡${npcName} usó Anticongelante en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} se descongeló!`, 'log-info', e, 'enemy');
-    }
-
-    if (cured) {
-      await triggerFXAndSound();
-      return true;
-    }
-  }
-
-  // 3. HP Check (Potions)
-  if (e.hp < e.maxHp * 0.25) {
-    let healed = 0;
-
-    if (enemyInventory['fullrestore'] && enemyInventory['fullrestore'] > 0) {
-      e.hp = e.maxHp;
-      e.status = undefined;
-      enemyInventory['fullrestore']--;
-      if (enemyInventory['fullrestore'] <= 0) delete enemyInventory['fullrestore'];
-      ctx.addLog(`¡${npcName} usó Restaurar Todo en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó toda su salud y curó sus problemas de estado!`, 'log-info', e, 'enemy');
-      healed = e.maxHp;
-    } else if (enemyInventory['maxpotion'] && enemyInventory['maxpotion'] > 0) {
-      e.hp = e.maxHp;
-      enemyInventory['maxpotion']--;
-      if (enemyInventory['maxpotion'] <= 0) delete enemyInventory['maxpotion'];
-      ctx.addLog(`¡${npcName} usó Poción Máxima en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó toda su salud!`, 'log-info', e, 'enemy');
-      healed = e.maxHp;
-    } else if (enemyInventory['hyperpotion'] && enemyInventory['hyperpotion'] > 0) {
-      const prev = e.hp;
-      e.hp = Math.min(e.maxHp, e.hp + 200);
-      enemyInventory['hyperpotion']--;
-      if (enemyInventory['hyperpotion'] <= 0) delete enemyInventory['hyperpotion'];
-      ctx.addLog(`¡${npcName} usó Hiper Poción en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó salud!`, 'log-info', e, 'enemy');
-      healed = e.hp - prev;
-    } else if (enemyInventory['superpotion'] && enemyInventory['superpotion'] > 0) {
-      const prev = e.hp;
-      e.hp = Math.min(e.maxHp, e.hp + 50);
-      enemyInventory['superpotion']--;
-      if (enemyInventory['superpotion'] <= 0) delete enemyInventory['superpotion'];
-      ctx.addLog(`¡${npcName} usó Súper Poción en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó salud!`, 'log-info', e, 'enemy');
-      healed = e.hp - prev;
-    } else if (enemyInventory['potion'] && enemyInventory['potion'] > 0) {
-      const prev = e.hp;
-      e.hp = Math.min(e.maxHp, e.hp + 20);
-      enemyInventory['potion']--;
-      if (enemyInventory['potion'] <= 0) delete enemyInventory['potion'];
-      ctx.addLog(`¡${npcName} usó Poción en ${e.name}!`, 'log-enemy', 'enemy_trainer');
-      ctx.addLog(`¡${e.name} recuperó salud!`, 'log-info', e, 'enemy');
-      healed = e.hp - prev;
-    }
-
-    if (healed > 0) {
-      await triggerFXAndSound();
-      return true;
-    }
-  }
-
-  return false;
-}
 
 async function parseLogsWithSkip(store: BattleContext, logs: string[], p1Skip: boolean, p2Skip: boolean) {
   let skipLogsForP1 = false;

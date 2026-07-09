@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -205,11 +205,11 @@ describe('Real Backup DB Migration Verification', () => {
         box.forEach(p => runPostCheck(p, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
       });
 
-      console.log(`\n[Test: ${filename}] Migrated successfully:`);
-      console.log(` - Legendaries fixed to 0 vigor: ${counters.legendaries}`);
-      console.log(` - Legacy held items mapped: ${counters.items}`);
-      console.log(` - Legacy abilities translated: ${counters.abilities}`);
-      console.log(` - Legacy moves converted: ${counters.moves}\n`);
+      console.debug(`\n[Test: ${filename}] Migrated successfully:`);
+      console.debug(` - Legendaries fixed to 0 vigor: ${counters.legendaries}`);
+      console.debug(` - Legacy held items mapped: ${counters.items}`);
+      console.debug(` - Legacy abilities translated: ${counters.abilities}`);
+      console.debug(` - Legacy moves converted: ${counters.moves}\n`);
     });
   });
 });

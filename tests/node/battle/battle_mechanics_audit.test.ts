@@ -1,7 +1,7 @@
 /**
  * tests/node/battle/battle_mechanics_audit.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Comprehensive audit of new battle mechanics:
  * - Thunderstorm offensive boosts (Electric/Dragon).
@@ -10,7 +10,7 @@
  * - Solar Power ability (SpA boost in Sun).
  */
 
-import { describe, it, mock } from 'node:test';
+import { describe, it, vi } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {
@@ -25,7 +25,7 @@ import {
 describe('Battle Mechanics Audit – New Weather & Abilities', () => {
 
   // Fix Math.random for deterministic results (max damage roll)
-  mock.method(Math, 'random', () => 1.0);
+  vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
   // ── Thunderstorm Mechanics ──────────────────────────────────────────────────
 

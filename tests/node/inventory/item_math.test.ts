@@ -1,13 +1,13 @@
 /**
  * tests/node/item_math.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests pure item effect math from src/logic/items/itemMath.ts.
  * All data is passed inline — zero mocks, zero Pinia, zero Vue.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {

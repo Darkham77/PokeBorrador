@@ -1,8 +1,8 @@
-import { test, describe } from 'node:test';
+import { test, describe } from 'vitest';
 import assert from 'node:assert';
 import { translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 
-describe('SQL Translator Logic (Native Node.js 26+ Test)', () => {
+describe('SQL Translator Logic (Vitest — node environment)', () => {
   test('should translate basic serial to integer primary key autoincrement', () => {
     const input = 'id SERIAL PRIMARY KEY';
     const output = translatePostgresToSqlite(input);
@@ -33,4 +33,3 @@ describe('SQL Translator Logic (Native Node.js 26+ Test)', () => {
     assert.strictEqual(translatePostgresToSqlite('ALTER TABLE public.game_saves FORCE ROW LEVEL SECURITY;'), '');
   });
 });
-

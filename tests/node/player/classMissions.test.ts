@@ -1,12 +1,12 @@
 /**
  * tests/node/player/classMissions.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Verifies player class missions launch/collect parameters and self-healing stuck pokemon recovery.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import { healStuckMissions } from '../../../src/logic/player/missionRecovery.ts';

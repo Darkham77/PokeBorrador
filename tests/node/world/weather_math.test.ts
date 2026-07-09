@@ -1,13 +1,13 @@
 /**
  * tests/node/weather_math.test.ts
  *
- * NATIVE NODE.JS TEST (Node.js 26+)
+ * VITEST (vite-node) — node environment
  *
  * Tests pure weather and day-cycle math from src/logic/weather/weatherMath.ts.
  * Zero mocks required — all data is passed inline.
  */
 
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 
 import {

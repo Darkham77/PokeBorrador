@@ -11,11 +11,14 @@
     "src/logic/render/render.worker.ts",
     "test aventura/**",
     "public/test-aventura-animations.css",
-    "pokemon-showdown-code/**"
+    "external/**"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
-    "src/main.{ts,tsx,js,jsx}"
+    "src/main.{ts,tsx,js,jsx}",
+    "vitest.config.ts",
+    "vitest.node.config.ts",
+    "vitest.workspace.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,
@@ -88,7 +91,7 @@
     },
     {
       "file": "src/logic/battle/ai/battleAI.ts",
-      "exports": ["scoreMove", "getBattleAITools"]
+      "exports": ["scoreMove", "getBattleAITools", "getCombatAI"]
     },
     {
       "file": "src/logic/battle/battleEngine.ts",

@@ -38,7 +38,7 @@ export function sassTrapsFixer() {
     name: 'vite-plugin-sass-traps',
     enforce: 'pre' as const,
     
-    transform(code: string, id: string) {
+    transform(code: string, id: string): { code: string; map: null } | null {
       if (!id.endsWith('.scss') && !id.endsWith('.vue')) return null;
 
       // If it's a .vue file, we only want to fix the <style> blocks
@@ -56,7 +56,7 @@ export function sassTrapsFixer() {
       return null;
     },
 
-    handleHotUpdate({ file, read }: { file: string, read: () => string | Promise<string> }) {
+    handleHotUpdate({ file, read }: { file: string, read: () => string | Promise<string> }): void {
       if (!file.endsWith('.scss') && !file.endsWith('.vue')) return;
       
       Promise.resolve(read()).then((content: string) => {

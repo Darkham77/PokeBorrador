@@ -21,7 +21,7 @@ Consult these global and cross-functional manuals for project-wide standards (do
 | **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
 | **Save & Persistence**   | [save_system_manual.md](./references/technical/save_system_manual.md)                     |
 | **Showdown Bridge Guide**| [BRIDGE-GUIDE.md](./references/battle/showdown/BRIDGE-GUIDE.md)                           |
-| **Showdown Reference**  | [pokemon-showdown-code/](../../../pokemon-showdown-code/) Source code of Pokémon Showdown (Source of Truth)                     |
+| **Showdown Reference**  | [external/pokemon-showdown-code/](../../../external/pokemon-showdown-code/) Source code of Pokémon Showdown (Source of Truth)                     |
 | **Legacy Migration Hub** | [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md)           |
 
 ### 🛠️ Migration & Technical Support
