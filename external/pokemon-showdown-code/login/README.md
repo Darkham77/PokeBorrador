@@ -9,7 +9,7 @@ Logic for authenticating with Pokémon Showdown.
 ## Installation
 
 ```sh
-$ npm install @pkmn/login
+npm install @pkmn/login
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/login` in the browser and want

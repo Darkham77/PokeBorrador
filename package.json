@@ -103,6 +103,7 @@
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {
+    "@smogon/calc": "^0.10.0",
     "@supabase/supabase-js": "^2.103.0",
     "@types/gsap": "^1.20.2",
     "gsap": "^3.15.0",

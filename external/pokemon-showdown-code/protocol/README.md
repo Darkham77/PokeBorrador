@@ -14,7 +14,7 @@ representations for ease of use.
 ## Installation
 
 ```sh
-$ npm install @pkmn/protocol
+npm install @pkmn/protocol
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/protocol` in the browser and

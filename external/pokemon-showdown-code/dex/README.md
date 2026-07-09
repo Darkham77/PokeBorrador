@@ -10,7 +10,7 @@ A unification of [smogon/pokemon-showdown](https://github.com/smogon/pokemon-sho
 ## Installation
 
 ```sh
-$ npm install @pkmn/dex
+npm install @pkmn/dex
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/dex` in the browser and want a

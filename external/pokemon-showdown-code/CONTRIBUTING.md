@@ -30,13 +30,13 @@ the repository simply install `subpkg` and use `subpkg` in place of `npm` when r
 anywhere in the project.
 
 ```sh
-$ npm install -g subpkg
+npm install -g subpkg
 ```
 
 To run scripts for specific subpackages, simply specify the packages after the name of the script:
 
 ```sh
-$ subpkg compile sim dex
+subpkg compile sim dex
 ```
 
 #### `bump`
@@ -62,7 +62,7 @@ publically published versions. `subpkg` provides a '`link`' subcommand that can 
 installation to point the internal packages at local versions instead of the published releases:
 
 ```sh
-$ subpkg link
+subpkg link
 ```
 
 ### `import`
@@ -84,7 +84,7 @@ changes upstream.
 ### `publish`
 
 [`publish`](publish) builds and copies production versions of various examples and UI tests to the
-`gh-pages` branch so that they appear at http://pkmn.github.io/ps. This should generally be run
+`gh-pages` branch so that they appear at <http://pkmn.github.io/ps>. This should generally be run
 whenever new packages are released.
 
 ### `update`
@@ -93,7 +93,7 @@ To simplify keeping dependencies up to date, `pkmn/ps` leverages
 [`npm-check-updates`](https://www.npmjs.com/package/npm-check-updates):
 
 ```sh
-$ npm install -g npm-check-updates
+npm install -g npm-check-updates
 ```
 
 Updating all of the packages' dependencies (which tends to be a good idea before publishing any new

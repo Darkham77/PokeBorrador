@@ -28,7 +28,7 @@ logic required to implement the game mechanics and battle system, **please see
 ## Installation
 
 ```sh
-$ npm install @pkmn/sim
+npm install @pkmn/sim
 ```
 
 ## Usage
@@ -138,7 +138,6 @@ order to configure the formats their simulator supports. **`@pkmn/sim` does not 
 stable, popular formats that require no mods, looking to cut down on bundle size and churn. However,
 users may extend the default formats by providing their own:
 
-
 ```ts
 import {Dex} from '@pkmn/sim';
 import {Formats} from 'myformats.ts';
@@ -150,7 +149,7 @@ You can copy Pokémon Showdown's formats verbatim by simply fetching the latest 
 the file locally.
 
 ```sh
-$ curl -o myformats.ts https://raw.githubusercontent.com/smogon/pokemon-showdown/master/config/formats.ts
+curl -o myformats.ts https://raw.githubusercontent.com/smogon/pokemon-showdown/master/config/formats.ts
 ```
 
 Note that not all of Pokémon Showdown's formats are expected to work out of the box, you may need to
@@ -159,7 +158,6 @@ mod the `Dex` with additional data (including any `Rulesets`). Furthrmore,  form
 that `dex` then must be passed to whichever object (eg. `Battle`, `BattleStream`, `TeamValidator`,
 etc) needs access to the format. `Dex#mod` will automatically call `extend` if the data provided to
 it includes a `Formats` list.
-
 
 ## License
 

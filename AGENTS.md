@@ -217,7 +217,7 @@ Default section order:
 - [CONTEXT.md](./CONTEXT.md): Glossary and domain models for the repository.
 - [external/](./external/): External reference codebases (read-only, excluded from all linting/build/audit/fallow).
   - [external/pokemon-showdown-code/](./external/pokemon-showdown-code/): Source code of Pokémon Showdown used as reference and source of truth.
-  - [external/pokemon-showdown-ai/](./external/pokemon-showdown-ai/): Reference AI implementation from https://github.com/fr33lo/pokemon-showdown-ai.
+  - [external/pokemon-showdown-ai/](./external/pokemon-showdown-ai/): Reference AI implementation from <https://github.com/fr33lo/pokemon-showdown-ai>.
 
 ---
 

@@ -2,14 +2,14 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { CombatAI } from './combatAI.ts'
-import { StandardAI } from './standardAI.ts'
+import { HeuristicAI } from './heuristicAI.ts'
 import { ScriptedAI } from './scriptedAI.ts'
 
 const getCombatAI = (): CombatAI => {
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.mockEnemyChoices) {
     return new ScriptedAI()
   }
-  return new StandardAI()
+  return new HeuristicAI()
 }
 
 export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: BattleStages, isWild = false, store?: BattleContext): Move | null => {
@@ -28,17 +28,8 @@ export const evaluateAndUseNPCItem = (ctx: BattleContext, e: Pokemon): Promise<b
   return getCombatAI().evaluateAndUseItem(ctx, e)
 }
 
-export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defStages: BattleStages, store?: BattleContext): number => {
-  const ai = getCombatAI()
-  if (ai instanceof StandardAI) {
-    return ai.scoreMove(move, attacker, defender, defStages, store)
-  }
-  return 0
-}
-
 export const getBattleAITools = () => {
   return {
-    scoreMove,
     decideEnemyMove,
     shouldEnemySwitch,
     findBestSwitchIndex,

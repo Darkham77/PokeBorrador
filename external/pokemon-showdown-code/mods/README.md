@@ -11,7 +11,7 @@ applied to [`@pkmn/sim`](../sim) and [`@pkmn/dex`](../dex).
 ## Installation
 
 ```sh
-$ npm install @pkmn/mods
+npm install @pkmn/mods
 ```
 
 ## Usage

@@ -1,2 +1,2 @@
-# Ignore Chrome DevTools dumps and reports
-pokemon-showdown-code/**
+# Ignore all external repos — not project code
+external/**

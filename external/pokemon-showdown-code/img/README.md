@@ -9,7 +9,7 @@ Logic for displaying [Pokémon Showdown's sprite and icon resources](https://pkm
 ## Installation
 
 ```sh
-$ npm install @pkmn/img
+npm install @pkmn/img
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/img` in the browser and want a

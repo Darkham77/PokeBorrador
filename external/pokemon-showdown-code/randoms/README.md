@@ -10,7 +10,7 @@ logic for use with [`@pkmn/sim`](../sim).
 ## Installation
 
 ```sh
-$ npm install @pkmn/randoms
+npm install @pkmn/randoms
 ```
 
 ## Usage

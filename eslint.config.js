@@ -89,9 +89,12 @@ export default tseslint.config(
       'tmp/**',
       '.agents/**',
       'external/**',
-      'test aventura/**',
       'supabase/**',
       'tests/**',
+      'test aventura/**',
+      'vitest.config.ts',
+      'vitest.node.config.ts',
+      'vitest.workspace.ts',
     ],
   },
 );

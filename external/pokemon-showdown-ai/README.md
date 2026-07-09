@@ -4,7 +4,7 @@
 
 built this because I wanted to see how far you can push an AI agent in competitive pokemon. no manual input, no handholding — it logs in, queues games, reads the board, and makes decisions using a layered heuristic + LLM pipeline. it plays gen 9 random battles on the official ladder, handles switching, hazards, setup, sacking, and even throws in occasional imperfect plays so it doesn't look like a bot.
 
-## ✨ what you'll get:
+## ✨ what you'll get
 
 - 🧠 **claude-powered decision making** — feeds full battle context, damage calcs, inference data, and strategic evaluation to Claude when heuristics can't resolve
 - 🎯 **9-layer heuristic engine** — handles guaranteed KOs, priority finishes, hazard management, setup opportunities, and bad matchup pivots before ever calling the API
@@ -17,11 +17,12 @@ built this because I wanted to see how far you can push an AI agent in competiti
 - 🔌 **auto-reconnect** — exponential backoff reconnection with up to 5 retry attempts
 - 🆓 **always free** — no subscriptions, no telemetry, no locked features
 
-## 🚀 getting it running:
+## 🚀 getting it running
 
 ### ⚡ quick deploy
 
 **clone and go**
+
 ```powershell
 # clone the repo
 git clone https://github.com/fr33lo/pokemon-showdown-ai.git
@@ -39,6 +40,7 @@ npm run dev
 ```
 
 **production build**
+
 ```powershell
 # compile TypeScript
 npm run build
@@ -50,6 +52,7 @@ npm start
 ### 🔧 requirements
 
 you'll need these to get battling:
+
 - **Node.js 18+** (required for ES2022 features)
 - **Pokemon Showdown account** (register at play.pokemonshowdown.com)
 - **Anthropic API key** (for Claude decision making)
@@ -71,7 +74,7 @@ MAX_BATTLES=0          # 0 = unlimited
 VERBOSE=true           # enables debug logging
 ```
 
-## 💻 local development:
+## 💻 local development
 
 **requirements:** Node.js 18+ and npm
 
@@ -98,11 +101,12 @@ npm start
 
 open your terminal and start battling! 💻
 
-## 🔧 how it's built:
+## 🔧 how it's built
 
 TypeScript because types matter when you're tracking 12 pokemon states simultaneously. WebSocket because that's how Showdown works. Claude because sometimes the board state is too nuanced for hardcoded rules.
 
 every turn runs through a layered decision pipeline:
+
 1. **state engine** parses raw protocol messages into structured battle state
 2. **inference engine** updates probabilistic trackers for all opponent pokemon
 3. **damage calculator** runs @smogon/calc matchups for both sides
@@ -113,6 +117,7 @@ every turn runs through a layered decision pipeline:
 8. **command execution** sends the final move/switch to the Showdown server
 
 **📚 tech stack:**
+
 - **runtime:** Node.js + TypeScript (ES2022)
 - **ai:** Anthropic Claude API (claude-sonnet-4-20250514)
 - **damage calc:** @smogon/calc v0.10
@@ -122,13 +127,14 @@ every turn runs through a layered decision pipeline:
 - **dev tooling:** tsx for hot-reload development
 
 **🎨 design philosophy:**
+
 - heuristics first, LLM second — minimize API calls
 - human-like behavior over mechanical perfection
 - full strategic awareness every turn
 - probabilistic reasoning over assumptions
 - zero external dependencies beyond what's needed
 
-## 🧠 decision pipeline breakdown:
+## 🧠 decision pipeline breakdown
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -152,7 +158,7 @@ every turn runs through a layered decision pipeline:
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 📁 project structure:
+## 📁 project structure
 
 ```
 pokemon-showdown-ai/
@@ -192,7 +198,7 @@ pokemon-showdown-ai/
 └── tsconfig.json
 ```
 
-## 🤝 contributing:
+## 🤝 contributing
 
 found a bug? have an idea? contributions are welcome!
 
@@ -205,7 +211,7 @@ found a bug? have an idea? contributions are welcome!
 
 please keep TypeScript strict, add proper types, and follow the existing module patterns.
 
-## 🗺️ roadmap:
+## 🗺️ roadmap
 
 - [ ] team preview optimization for non-random formats
 - [ ] multi-format support (OU, UU, etc.)

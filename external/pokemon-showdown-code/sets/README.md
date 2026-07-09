@@ -9,7 +9,7 @@ Parsing logic for [Pokémon Showdown](https://pokemonshowdown.com)'s sets export
 ## Installation
 
 ```sh
-$ npm install @pkmn/sets
+npm install @pkmn/sets
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/sets` in the browser and want

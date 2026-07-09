@@ -13,13 +13,14 @@ This directory contains external codebases used **as documentation and reference
 ## Contents
 
 | Directory | Source | Purpose |
-|---|---|---|
-| `pokemon-showdown-code/` | https://github.com/pkmn/ps.git | Official Pokémon Showdown engine — source of truth for battle logic and @pkmn/sim behavior |
-| `pokemon-showdown-ai/` | https://github.com/fr33lo/pokemon-showdown-ai | Reference AI implementation for Pokémon Showdown battles |
+| --- | --- | --- |
+| `pokemon-showdown-code/` | <https://github.com/pkmn/ps.git> | Official Pokémon Showdown engine — source of truth for battle logic and @pkmn/sim behavior |
+| `pokemon-showdown-ai/` | <https://github.com/fr33lo/pokemon-showdown-ai> | Reference AI implementation for Pokémon Showdown battles |
 
 ## Updating
 
 To refresh a snapshot:
+
 ```sh
 # pokemon-showdown-code
 robocopy <cloned-pkmn-ps-repo> external\pokemon-showdown-code /E /NP

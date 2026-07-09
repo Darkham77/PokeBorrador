@@ -19,7 +19,7 @@ explained as desirable to meet one of more of these requirements.
 ## Installation
 
 ```sh
-$ npm install @pkmn/client
+npm install @pkmn/client
 ```
 
 Note that either [`@pkmn/dex`](../dex) or [`@pkmn/sim`](../sim) must also be installed to provide

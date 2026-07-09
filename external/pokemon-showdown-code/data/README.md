@@ -11,7 +11,7 @@ A higher level data API wrapper compatible with [`@pkmn/sim`](../sim) and [`@pkm
 ## Installation
 
 ```sh
-$ npm install @pkmn/data
+npm install @pkmn/data
 ```
 
 Alternatively, as [detailed below](#browser), if you are using `@pkmn/data` in the browser and want
