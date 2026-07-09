@@ -190,3 +190,24 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 > **Remember:** Tests are documentation. If someone can't understand what the code does from the tests, rewrite them.
+
+---
+
+## 11. Required Mocks for `switchAction` Tests
+
+`switchAction.ts` uses multiple dynamic imports. If any of them is missing from the test's
+mock setup, the function crashes before reaching the return statement under test — causing
+the assertion to fail for the wrong reason.
+
+When testing `executeSwitch`, always include **all** of these mocks:
+
+| Module | Exports to mock |
+| :--- | :--- |
+| `@/logic/battle/orchestrator` | `isPlayerTrappedInWorker`, `executeTurnInWorker` |
+| `@/logic/battle/showdownWorkerClient` | `executeTurnInWorker`, `syncTeamsFromLastWorkerState` |
+| `@/logic/battle/showdownBridge` | `filterShowdownLogs`, `parseShowdownLogLine` |
+| `@/stores/ui` | `useUIStore().notify` (required for the trap-abort notification path) |
+| `@/logic/pokemon/typeEngine` | `getCombinedEffectiveness` |
+
+Without the `@/stores/ui` mock, the early return inside the trap check never executes,
+causing the switch to proceed and the trap assertion to fail silently.

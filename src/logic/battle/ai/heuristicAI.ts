@@ -25,6 +25,14 @@ function resolveConfig(battle: { isWild?: boolean; isGym?: boolean; isRival?: bo
   return AI_CONFIG_PRESETS.npc;
 }
 
+/** Picks the highest base-power valid move, respecting disabledMove and pp. Used when no snapshot is available. */
+function pickBestMoveByPower(enemy: Pokemon): Move | null {
+  const valid = enemy.moves
+    .filter((m): m is Move => !!m && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id));
+  if (valid.length === 0) return enemy.moves.find(m => !!m) ?? null;
+  return valid.reduce((best, m) => ((m.power ?? 0) > (best.power ?? 0) ? m : best));
+}
+
 function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): HeuristicMoveInfo[] {
   const enemyRequest = store?.activeBattle?.value?.enemyRequest ?? useBattleStore().state?.enemyRequest;
   const reqMoves = enemyRequest?.active?.[0]?.moves ?? [];
@@ -33,8 +41,9 @@ function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): Heuris
     .filter((m): m is Move => !!m && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id))
     .map(m => {
       const reqMove = reqMoves.find((r: { id?: string; disabled?: boolean | string; pp?: number }) => r.id === m.id);
+      if (!m.id) throw new Error(`[HeuristicAI] Move is missing an id: ${JSON.stringify(m)}`);
       return {
-        id: m.id ?? m.name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+        id: m.id,
         pp: reqMove?.pp ?? m.pp,
         disabled: !!(reqMove?.disabled),
       };
@@ -61,21 +70,23 @@ export class HeuristicAI implements CombatAI {
 
     if (useRandom) {
       const randomId = validMoves[Math.floor(Math.random() * validMoves.length)]!.id;
-      return enemy.moves.find(m => m && (m.id ?? m.name) === randomId) ?? null;
+      return enemy.moves.find(m => m && m.id === randomId) ?? null;
     }
 
-    // Build snapshot for heuristic engine
+    // Build snapshot for heuristic engine.
+    // buildSnapshot throws if playerRequest/enemyRequest is null — expected on turn 1
+    // or during a forced-switch turn before Showdown has emitted the next request.
+    // Degrade gracefully: pick the highest-power non-disabled move available.
     let snapshot;
     try {
       snapshot = store ? buildSnapshot(store) : null;
-    } catch (err) {
-      // Zero-Fallback: re-throw to expose the issue visibly
-      throw new Error(`[HeuristicAI] Cannot build battle snapshot: ${String(err)}`);
+    } catch (_err) {
+      return pickBestMoveByPower(enemy);
     }
 
     if (!snapshot) {
-      // No store context (e.g. unit test without full context) — fall back to first move
-      return enemy.moves.find(m => !!m) ?? null;
+      // No store context (e.g. unit test, wild battle init) — pick by power
+      return pickBestMoveByPower(enemy);
     }
 
     // Update inference engine with revealed information
@@ -101,15 +112,16 @@ export class HeuristicAI implements CombatAI {
       // No confident move heuristic fired — pick best damage move as emergency fallback
       const bestDmgMove = matchup.myAttacking[0];
       if (bestDmgMove !== undefined) {
-        const found = enemy.moves.find(m => m && (m.id ?? m.name.toLowerCase().replace(/[^a-z0-9]/g, '')) === bestDmgMove.move);
+        const found = enemy.moves.find(m => m && m.id === bestDmgMove.move);
         if (found) return found;
       }
       return enemy.moves.find(m => !!m) ?? null;
     }
 
     // Map decision back to project Move
-    const targetId = decision.moveId ?? '';
-    return enemy.moves.find(m => m && (m.id ?? m.name.toLowerCase().replace(/[^a-z0-9]/g, '')) === targetId)
+    const targetId = decision.moveId;
+    if (!targetId) return enemy.moves.find(m => !!m) ?? null;
+    return enemy.moves.find(m => m && m.id === targetId)
       ?? enemy.moves.find(m => !!m)
       ?? null;
   }

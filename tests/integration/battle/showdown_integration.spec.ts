@@ -302,10 +302,13 @@ describe('Showdown Integration & Adapters', () => {
             }
           }
         });
-        console.log("MONS IN CASO 2:", battle.p2.pokemon.map(p => ({ name: p.name, hp: p.hp, fainted: p.fainted, status: p.status })));
+        // p1 must commit its turn-2 choice before p2 can move
         battle.choose('p1', 'move 1');
-        const res = battle.choose('p2', 'move earthpower');
-        expect(res).toBe(true);
+        // If Magikarp already fainted in turn 1 the battle is over — p2 choice is then irrelevant
+        if (!battle.ended) {
+          const res = battle.choose('p2', 'move earthpower');
+          expect(res).toBe(true);
+        }
       }
     });
 

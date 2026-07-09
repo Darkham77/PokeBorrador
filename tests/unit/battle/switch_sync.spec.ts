@@ -46,6 +46,13 @@ vi.mock('@/logic/pokemon/typeEngine', () => ({
   getCombinedEffectiveness: vi.fn(() => 1.0)
 }))
 
+// Mock de @/stores/ui — needed for the trapped-notification path in switchAction
+vi.mock('@/stores/ui', () => ({
+  useUIStore: vi.fn(() => ({
+    notify: vi.fn()
+  }))
+}))
+
 // Mock de provider de pokemon
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
@@ -186,7 +193,8 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
 
   it('should abort switch early and notify player if trapped by Arena Trap/Shadow Tag', async () => {
     const { ctx, p1 } = createMockContext()
-    
+
+    // switchAction imports isPlayerTrappedInWorker from orchestrator.ts (not showdownWorkerClient)
     const { isPlayerTrappedInWorker } = await import('@/logic/battle/orchestrator')
     vi.mocked(isPlayerTrappedInWorker).mockResolvedValueOnce(true)
 

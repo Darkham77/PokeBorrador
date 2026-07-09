@@ -81,7 +81,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
 
   return {
     name: p.nickname || p.name,
-    species: toId(p.id || p.name),
+    species: toId(p.id ?? (() => { throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`); })()),
     level: p.level,
     hp: p.hp,
     maxHp: p.maxHp,

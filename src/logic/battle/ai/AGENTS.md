@@ -37,6 +37,28 @@ Battle Engine Developers.
 | `battleAI.ts` | Public facade — re-exports `decideEnemyMove`, `shouldEnemySwitch`, etc. |
 | `heuristic/` | 9-layer heuristic engine (see child AGENTS.md) |
 
+## HeuristicAI — No-Store Fallback
+
+When `buildSnapshot()` throws (playerRequest/enemyRequest null) or there is no store,
+`HeuristicAI.decideMove()` MUST use `pickBestMoveByPower(enemy)` as its fallback.
+This function:
+- Filters moves with pp = 0 or disabled via `enemy.disabledMove`
+- Returns the highest `power` move via `.reduce()`
+- NEVER returns the first move blindly
+
+This is correct because: in production, the snapshot always exists on normal turns.
+The fallback only applies during initialization edge cases (turn 1, forced switch pre-request).
+
+## Zero-Fallback on ID Lookups
+
+Never use `.id ?? m.name` or `.id || p.name` anywhere in `src/logic/`.
+If a Move or Pokemon is missing `.id`, throw immediately:
+  `if (!m.id) throw new Error(\`[HeuristicAI] Move missing id: ${JSON.stringify(m)}\`);`
+
+The project auditor detects these patterns and blocks the commit gate.
+Moves and Pokemon always have a canonical `.id` in this codebase — a missing id
+is a data integrity bug that must surface loudly, not be silenced with a name fallback.
+
 ## Child DOX Index
 
 - [./heuristic/AGENTS.md](./heuristic/AGENTS.md)
