@@ -5,7 +5,7 @@ import type { CombatAI } from './combatAI.ts'
 import { StandardAI } from './standardAI.ts'
 import { ScriptedAI } from './scriptedAI.ts'
 
-export const getCombatAI = (): CombatAI => {
+const getCombatAI = (): CombatAI => {
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.mockEnemyChoices) {
     return new ScriptedAI()
   }

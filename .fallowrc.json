@@ -91,7 +91,7 @@
     },
     {
       "file": "src/logic/battle/ai/battleAI.ts",
-      "exports": ["scoreMove", "getBattleAITools", "getCombatAI"]
+      "exports": ["scoreMove", "getBattleAITools"]
     },
     {
       "file": "src/logic/battle/battleEngine.ts",
