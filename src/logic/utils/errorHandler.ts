@@ -9,13 +9,20 @@ import { logger } from './logger.ts'
 export function initGlobalErrorHandlers(): void {
   const errorStore = useErrorStore()
 
+  let isUnloading = false
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => {
+      isUnloading = true
+    })
+  }
+
   // Intercept console.error globally to trigger error modals for all console-logged errors
   let isHandlingError = false
   const originalConsoleError = console.error
   // fallow-ignore-next-line complexity
   console.error = function(...args: unknown[]): void {
     originalConsoleError.apply(console, args)
-    if (isHandlingError || (console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__) return
+    if (isUnloading || isHandlingError || (console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__) return
     isHandlingError = true
     try {
       const firstErr = args.find(arg => arg instanceof Error)
@@ -57,6 +64,7 @@ export function initGlobalErrorHandlers(): void {
 
   // Capture synchronous errors
   window.onerror = function(message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error): boolean {
+    if (isUnloading) return false
     errorStore.setError(error || (message as string), {
       source,
       lineno,
@@ -68,6 +76,7 @@ export function initGlobalErrorHandlers(): void {
 
   // Capture unhandled promise rejections
   window.onunhandledrejection = function(event: PromiseRejectionEvent): void {
+    if (isUnloading) return
     errorStore.setError(event.reason, {
       type: 'Unhandled Promise Rejection'
     })

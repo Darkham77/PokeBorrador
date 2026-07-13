@@ -1026,32 +1026,34 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
   test.afterAll(async () => {
     const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
-    if (fs.existsSync(failuresDir)) {
-      const files = fs.readdirSync(failuresDir);
-      const failures = files
-        .filter((f: string) => f.endsWith('.json'))
-        .map((f: string) => {
-          try {
-            return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as unknown;
-          } catch (_e) {
-            return null;
-          }
-        })
-        .filter((x: unknown): x is unknown => x !== null);
+    const reportPath = path.resolve(process.cwd(), 'scripts/e2e/results/e2e_simulation_failures.json');
+    try {
+      if (fs.existsSync(failuresDir)) {
+        const files = fs.readdirSync(failuresDir);
+        const failures = files
+          .filter((f: string) => f.endsWith('.json'))
+          .map((f: string) => {
+            try {
+              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as unknown;
+            } catch (_e) {
+              return null;
+            }
+          })
+          .filter((x: unknown): x is unknown => x !== null);
 
-      const reportPath = path.resolve(process.cwd(), 'scripts/e2e/results/e2e_simulation_failures.json');
-
-      if (failures.length > 0) {
-        fs.writeFileSync(reportPath, JSON.stringify(failures, null, 2), 'utf8');
-        console.log(`\n📝 Se ha generado el reporte consolidado de errores E2E en: ${reportPath}`);
+        if (failures.length > 0) {
+          fs.writeFileSync(reportPath, JSON.stringify(failures, null, 2), 'utf8');
+          console.log(`\n📝 Se ha generado el reporte consolidado de errores E2E en: ${reportPath}`);
+        } else {
+          fs.writeFileSync(reportPath, '[]', 'utf8');
+          console.log('\n✅ Todos los combates pasaron sin errores. Reportes vaciados.');
+        }
       } else {
         fs.writeFileSync(reportPath, '[]', 'utf8');
-        console.log('\n✅ Todos los combates pasaron sin errores. Reportes vaciados.');
+        console.log('\n✅ No hay errores que consolidar. Reportes vaciados.');
       }
-    } else {
-      const reportPath = path.resolve(process.cwd(), 'scripts/e2e/results/e2e_simulation_failures.json');
-      fs.writeFileSync(reportPath, '[]', 'utf8');
-      console.log('\n✅ No hay errores que consolidar. Reportes vaciados.');
+    } catch (e) {
+      console.warn('⚠️ No se pudo escribir el reporte consolidado de errores en afterAll:', e);
     }
   });
 });

@@ -6,6 +6,10 @@ import { useGameStore } from '../../../src/stores/game.ts';
 
 type GameStoreType = ReturnType<typeof useGameStore>;
 
+test.beforeEach(async ({ request }) => {
+  await request.post('/api/dev-import-db-cleanup');
+});
+
 test('Debug ash save switch issue', async ({ page }) => {
   // Incrementar timeout para la rotación completa del equipo
   test.setTimeout(60000);

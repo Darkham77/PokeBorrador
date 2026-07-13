@@ -62,6 +62,19 @@ export async function persistSQLite(): Promise<void> {
     // Shadow Backup for DB
     await setToIDB(_sqliteKey + '_backup', binary)
     logger.success('SQLite', `Persistence successful (Main + Backup)`)
+
+    if (import.meta.env.DEV && typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__) {
+      try {
+        await fetch('/api/dev-export-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: binary
+        })
+        logger.success('SQLite', 'Dev DB synced to Vite server.')
+      } catch (err) {
+        logger.warn('SQLite', 'Failed to sync Dev DB to server:', err)
+      }
+    }
   } catch (e: unknown) { logger.error('SQLite', `Persistence failed: ${(e as Error).message}`) }
 }
 

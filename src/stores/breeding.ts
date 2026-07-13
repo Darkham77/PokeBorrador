@@ -247,7 +247,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       species: eggSpecies,
       motherId: compat.motherId,
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
-      nature: inheritNature(pA, pB, itemA, itemB) || 'Serio',
+      nature: inheritNature(pA, pB, itemA, itemB) || 'serious',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
       abilityIndex: abilityIndex,
       isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),

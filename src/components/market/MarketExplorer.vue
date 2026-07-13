@@ -1,6 +1,5 @@
 <script setup lang="ts">
-
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
@@ -20,6 +19,21 @@ const gtsStore = useGTSStore()
 const auth = useAuthStore()
 
 const listings = computed(() => gtsStore.filteredListings)
+
+const currentPage = ref(1)
+const itemsPerPage = 50
+
+const totalPages = computed(() => Math.ceil(listings.value.length / itemsPerPage))
+
+const paginatedListings = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return listings.value.slice(start, end)
+})
+
+watch(() => listings.value.length, () => {
+  currentPage.value = 1
+})
 
 function handleBuy(listing: MarketListing) {
   gtsStore.buyListing(listing)
@@ -72,78 +86,99 @@ function getTierColor(tier?: string) {
 
     <div
       v-else
-      class="listings-grid-unified custom-scrollbar"
+      class="listings-grid-wrapper"
     >
-      <div 
-        v-for="item in listings" 
-        :key="item.id"
-        class="market-item-wrapper"
-        :class="[
-          item.listing_type,
-          item.listing_type === 'item' ? 'tier-' + (getItemById(item.data.name || '')?.tier || 'common') : ''
-        ]"
-        :style="item.listing_type === 'item' ? { '--tier-color': getTierColor(getItemById(item.data.name || '')?.tier) } : {}"
-      >
-        <div class="seller-tag">
-          <span class="s-name">👤 {{ item.seller_name }}</span>
-          <span class="s-time">{{ formatTime(item.created_at) }}</span>
-        </div>
+      <div class="listings-grid-unified custom-scrollbar">
+        <div 
+          v-for="item in paginatedListings" 
+          :key="item.id"
+          class="market-item-wrapper"
+          :class="[
+            item.listing_type,
+            item.listing_type === 'item' ? 'tier-' + (getItemById(item.data.name || '')?.tier || 'common') : ''
+          ]"
+          :style="item.listing_type === 'item' ? { '--tier-color': getTierColor(getItemById(item.data.name || '')?.tier) } : {}"
+        >
+          <div class="seller-tag">
+            <span class="s-name">👤 {{ item.seller_name }}</span>
+            <span class="s-time">{{ formatTime(item.created_at) }}</span>
+          </div>
 
-        <template v-if="item.listing_type === 'pokemon'">
-          <PokemonSelectionItem
-            :item="{
-              pokemon: item.data as unknown as Pokemon,
-              _source: 'market',
-              index: 0
-            }"
-            :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
-            auto-confirm
-            class="listing-card-override"
-          />
-        </template>
-        <template v-else>
-          <!-- Tier Tag (Retro Style) -->
-          <span
-            class="tier-tag"
-            :class="'tier-' + (getItemById(item.data.name || '')?.tier || 'common')"
-          >
-            {{ getTierLabel(getItemById(item.data.name || '')?.tier) }}
-          </span>
+          <template v-if="item.listing_type === 'pokemon'">
+            <PokemonSelectionItem
+              :item="{
+                pokemon: item.data as unknown as Pokemon,
+                _source: 'market',
+                index: 0
+              }"
+              :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
+              auto-confirm
+              class="listing-card-override"
+            />
+          </template>
+          <template v-else>
+            <!-- Tier Tag (Retro Style) -->
+            <span
+              class="tier-tag"
+              :class="'tier-' + (getItemById(item.data.name || '')?.tier || 'common')"
+            >
+              {{ getTierLabel(getItemById(item.data.name || '')?.tier) }}
+            </span>
 
-          <div class="explorer-item-card">
-            <div class="item-visual">
-              <img 
-                :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
-                class="i-sprite pixelated"
-                @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'Poción')"
-              >
-            </div>
-            <div class="item-details">
-              <span class="i-name">{{ getItemById(item.data.name || '')?.name || item.data.name }}</span>
-              <div class="i-meta">
-                <span class="i-qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
+            <div class="explorer-item-card">
+              <div class="item-visual">
+                <img 
+                  :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
+                  class="i-sprite pixelated"
+                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'Poción')"
+                >
+              </div>
+              <div class="item-details">
+                <span class="i-name">{{ getItemById(item.data.name || '')?.name || item.data.name }}</span>
+                <div class="i-meta">
+                  <span class="i-qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </template>
+          </template>
 
-        <div class="listing-footer">
-          <div class="price-info">
-            <span class="price-label">PRECIO</span>
-            <span class="price-val">₽{{ formatCurrency(item.price) }}</span>
+          <div class="listing-footer">
+            <div class="price-info">
+              <span class="price-label">PRECIO</span>
+              <span class="price-val">₽{{ formatCurrency(item.price) }}</span>
+            </div>
+            <button 
+              class="btn-vicio-primary btn-vicio-sm"
+              :disabled="game.state.money < item.price || item.seller_id === auth.user?.id"
+              @click.stop="handleBuy(item)"
+            >
+              {{ 
+                item.seller_id === auth.user?.id 
+                  ? 'TU OFERTA' 
+                  : (game.state.money < item.price ? 'SIN SALDO' : 'COMPRAR') 
+              }}
+            </button>
           </div>
-          <button 
-            class="btn-vicio-primary btn-vicio-sm"
-            :disabled="game.state.money < item.price || item.seller_id === auth.user?.id"
-            @click.stop="handleBuy(item)"
-          >
-            {{ 
-              item.seller_id === auth.user?.id 
-                ? 'TU OFERTA' 
-                : (game.state.money < item.price ? 'SIN SALDO' : 'COMPRAR') 
-            }}
-          </button>
         </div>
+      </div>
+
+      <!-- Pagination controls -->
+      <div v-if="totalPages > 1" class="gts-pagination">
+        <button 
+          class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
+          :disabled="currentPage === 1" 
+          @click="currentPage--"
+        >
+          ANTERIOR
+        </button>
+        <span class="page-info">PÁGINA {{ currentPage }} DE {{ totalPages }}</span>
+        <button 
+          class="btn-vicio-secondary btn-vicio-xs next-page-btn" 
+          :disabled="currentPage === totalPages" 
+          @click="currentPage++"
+        >
+          SIGUIENTE
+        </button>
       </div>
     </div>
   </div>
@@ -283,4 +318,26 @@ function getTierColor(tier?: string) {
   margin-bottom: 16px;
 }
 
+.gts-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+  padding: 10px 0;
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  @include pixelated;
+  font-size: 10px;
+
+  .page-info {
+    color: var(--yellow);
+  }
+}
+
+.listings-grid-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 </style>

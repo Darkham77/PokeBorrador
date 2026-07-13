@@ -23,6 +23,14 @@ export async function emulatePublishListing(
   const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: 'pokemon' | 'item', p_asset_data: Record<string, unknown>, p_price: number };
   const { userId, username } = context;
 
+  const activeListings = await queryLocal(
+    "SELECT id FROM market_listings WHERE seller_id = ? AND status = 'active'",
+    [userId]
+  );
+  if (activeListings.length >= 10) {
+    return { data: null, error: { message: `Límite de publicaciones alcanzado (10)` } };
+  }
+
   const saves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
   if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;

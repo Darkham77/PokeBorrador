@@ -131,6 +131,38 @@ const filteredAndSortedInventory = computed(() => {
   return list
 })
 
+const itemsPerPage = 50
+
+// Pokémon Pagination
+const pokemonPage = ref(1)
+const totalPokemonPages = computed(() => Math.ceil(filteredAndSortedPokemon.value.length / itemsPerPage))
+const paginatedPokemon = computed(() => {
+  const start = (pokemonPage.value - 1) * itemsPerPage
+  return filteredAndSortedPokemon.value.slice(start, start + itemsPerPage)
+})
+
+watch(() => filteredAndSortedPokemon.value.length, () => {
+  pokemonPage.value = 1
+})
+
+// Item/Inventory Pagination
+const itemPage = ref(1)
+const totalItemPages = computed(() => Math.ceil(filteredAndSortedInventory.value.length / itemsPerPage))
+const paginatedInventory = computed(() => {
+  const start = (itemPage.value - 1) * itemsPerPage
+  return filteredAndSortedInventory.value.slice(start, start + itemsPerPage)
+})
+
+watch(() => filteredAndSortedInventory.value.length, () => {
+  itemPage.value = 1
+})
+
+// Reset pages when changing tabs
+watch(activeMode, () => {
+  pokemonPage.value = 1
+  itemPage.value = 1
+})
+
 const itemQty = ref(1)
 
 async function handlePublish() {
@@ -245,7 +277,7 @@ const net = computed(() => price.value - fee.value)
         <div class="selection-list ps-vertical-list custom-scrollbar">
           <template v-if="activeMode === 'pokemon'">
             <PokemonSelectionItem 
-              v-for="item in filteredAndSortedPokemon"
+              v-for="item in paginatedPokemon"
               :key="item.pokemon.uid"
               :item="item"
               :is-selected="!!(selection && 'uid' in selection && selection.uid === item.pokemon.uid)"
@@ -263,7 +295,7 @@ const net = computed(() => price.value - fee.value)
 
           <template v-else>
             <MarketItemCard
-              v-for="i in filteredAndSortedInventory"
+              v-for="i in paginatedInventory"
               :key="i.id"
               :item="i"
               :is-selected="!!(selection && 'id' in selection && selection.id === i.id)"
@@ -277,6 +309,43 @@ const net = computed(() => price.value - fee.value)
               No tienes objetos que coincidan con la búsqueda.
             </div>
           </template>
+        </div>
+
+        <!-- Pagination controls -->
+        <div v-if="activeMode === 'pokemon' && totalPokemonPages > 1" class="gts-pagination">
+          <button 
+            class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
+            :disabled="pokemonPage === 1" 
+            @click="pokemonPage--"
+          >
+            ANTERIOR
+          </button>
+          <span class="page-info">PÁGINA {{ pokemonPage }} DE {{ totalPokemonPages }}</span>
+          <button 
+            class="btn-vicio-secondary btn-vicio-xs next-page-btn" 
+            :disabled="pokemonPage === totalPokemonPages" 
+            @click="pokemonPage++"
+          >
+            SIGUIENTE
+          </button>
+        </div>
+
+        <div v-if="activeMode === 'item' && totalItemPages > 1" class="gts-pagination">
+          <button 
+            class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
+            :disabled="itemPage === 1" 
+            @click="itemPage--"
+          >
+            ANTERIOR
+          </button>
+          <span class="page-info">PÁGINA {{ itemPage }} DE {{ totalItemPages }}</span>
+          <button 
+            class="btn-vicio-secondary btn-vicio-xs next-page-btn" 
+            :disabled="itemPage === totalItemPages" 
+            @click="itemPage++"
+          >
+            SIGUIENTE
+          </button>
         </div>
       </div>
 
@@ -329,7 +398,7 @@ const net = computed(() => price.value - fee.value)
 
           <button 
             class="btn-vicio-secondary btn-vicio-sm" 
-            :disabled="gtsStore.publishing || gtsStore.activeMyListings.length >= gtsStore.MAX_LISTINGS"
+            :disabled="gtsStore.publishing"
             @click.stop="handlePublish"
           >
             {{ gtsStore.publishing ? 'PROCESANDO...' : 'PUBLICAR OFERTA' }}
@@ -574,6 +643,22 @@ const net = computed(() => price.value - fee.value)
     .ps-search-row {
       flex: 1;
       margin-bottom: 0;
+    }
+  }
+
+  .gts-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    @include pixelated;
+    font-size: 10px;
+
+    .page-info {
+      color: var(--yellow);
     }
   }
 }

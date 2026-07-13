@@ -6,7 +6,8 @@ import { useGameStore } from '../../../src/stores/game.ts';
 test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    await request.post('/api/dev-import-db-cleanup');
     await setupE2ESession(page);
   });
 

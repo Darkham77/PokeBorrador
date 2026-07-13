@@ -79,6 +79,27 @@ function devDbImportPlugin() {
           }
           return;
         }
+        if (req.url?.startsWith('/api/dev-export-db') && req.method === 'POST') {
+          const chunks: Buffer[] = []
+          req.on('data', chunk => chunks.push(chunk as Buffer))
+          req.on('end', async () => {
+            const buffer = Buffer.concat(chunks)
+            const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+            try {
+              await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
+              await fsPromises.writeFile(dbPath, buffer)
+              console.log('📥 [DevDB] Temporary imported.db uploaded and updated.')
+              res.writeHead(200, { 'Content-Type': 'text/plain' })
+              res.end('Saved')
+            } catch (err: unknown) {
+              console.error('❌ [DevDB] Failed to save uploaded database:', err)
+              res.writeHead(500, { 'Content-Type': 'text/plain' })
+              res.end('Failed to save')
+            }
+          })
+          return;
+        }
+
         next()
       })
     }
@@ -320,7 +341,7 @@ export default defineConfig({
     allowedHosts: true,
     host : true,
     watch: {
-      ignored: ['**/_raw-assets/**', '**/sprite_test/**']
+      ignored: ['**/_raw-assets/**', '**/sprite_test/**', '**/database/temp/**', '**/database/backups/**']
     },
     /* hmr: {
       clientPort: 443,
@@ -330,7 +351,7 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         bypass: (req) => {
-          if (req.url?.startsWith('/api/dev-import-db')) {
+          if (req.url?.includes('/api/dev-')) {
             return req.url
           }
           return undefined

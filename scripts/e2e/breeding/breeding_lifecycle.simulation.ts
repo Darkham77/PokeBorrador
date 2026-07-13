@@ -160,14 +160,23 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
     // Cerrar el modal para volver al overworld/mapa
     await page.locator('.modal-close-btn, .modal-close-btn-floating').filter({ visible: true }).first().click();
 
-    // Comprobar que en el HUD o pantalla principal aparezca el botón de eclosionar
-    const hatchBtn = page.locator('button:has-text("ECLOSIONAR"), .egg-hatch-trigger').first();
+    // Hacer click en la tarjeta del huevo que está listo en el HUD inferior para abrir la animación
+    const hatchBtn = page.locator('.egg-hud-card.is-ready').first();
     await hatchBtn.waitFor({ state: 'visible', timeout: 5000 });
     await hatchBtn.click();
-
-    // Confirmar eclosión en el modal de eclosión
-    const confirmHatch = page.locator('button:has-text("¡SÍ!"), button:has-text("ECLOSIONAR")').first();
-    await confirmHatch.waitFor({ state: 'visible', timeout: 5000 });
+ 
+    // Hacer click en el contenedor de eclosión para iniciar la rotura del cascarón (requiere 3 taps)
+    const hatchContainer = page.locator('.hatch-container');
+    await hatchContainer.waitFor({ state: 'visible', timeout: 5000 });
+    await hatchContainer.click();
+    await page.waitForTimeout(200);
+    await hatchContainer.click();
+    await page.waitForTimeout(200);
+    await hatchContainer.click();
+ 
+    // Esperar a que termine la animación de revelación y el botón de confirmar esté disponible
+    const confirmHatch = page.locator('button.btn-confirm:has-text("CONTINUAR"), button:has-text("CONTINUAR")').first();
+    await confirmHatch.waitFor({ state: 'visible', timeout: 15000 }); // Damos más tiempo para la animación GSAP
     await confirmHatch.click();
 
     // Esperar a que la eclosión termine (desaparece el modal de eclosión y vuelve a ser visible el botón de mapa)
@@ -175,21 +184,13 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
     await expect(mapBtn).toBeVisible({ timeout: 15000 });
 
     // 5. Verificar que el Pokémon nacido esté en el box/equipo del jugador
-    const hasNewborn = await page.evaluate(() => {
+    const hasNewborn = await page.evaluate(async () => {
       interface TargetPoke {
         level: number;
         id: string;
       }
-      interface MockGameStore {
-        state: {
-          team: (TargetPoke | null)[];
-          box: (TargetPoke | null)[];
-        };
-      }
-      const win = window as unknown as Record<string, () => MockGameStore>;
-      const getStore = win.useGameStore;
-      if (!getStore) return false;
-      const gameStore = getStore();
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
       const allPokemon = [...gameStore.state.team, ...gameStore.state.box];
       return allPokemon.some((p: TargetPoke | null) => p && p.level === 1 && p.id === 'bulbasaur');
     });

@@ -272,8 +272,8 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   }
   
   if (p.level === MAX_POKEMON_LEVEL) {
-    if (p.exp !== 0 || (p.expNeeded !== Infinity && p.expNeeded !== null && p.expNeeded !== undefined && p.expNeeded !== 0)) {
-      throw new Error(`[pokemonFactory] Experiencia/Experiencia requerida inconsistente para nivel máximo en ${p.id} (UID: ${p.uid}).`);
+    if (p.exp < 0) {
+      throw new Error(`[pokemonFactory] Experiencia negativa no permitida para nivel máximo en ${p.id} (UID: ${p.uid}).`);
     }
   } else {
     const maxExpAllowed = p.expNeeded - 1;

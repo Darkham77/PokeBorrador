@@ -51,7 +51,8 @@ async function openDebugTab(page: Page, category: string) {
 }
 
 test.describe('Admin Debug Panel E2E Simulations', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    await request.post('/api/dev-import-db-cleanup');
     await setupE2ESession(page);
     const testUser = `DEBUG_ADMIN_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     await loginTestUser(page, testUser);

@@ -246,22 +246,24 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     .subscribe()
   }
 
-  watch(() => authStore.user, (user) => {
-    if (user) {
-      gsap.delayedCall(0.5, () => {
+  watch(
+    () => [authStore.user, gameStore.isReady] as const,
+    ([user, isReady]) => {
+      if (user && isReady) {
         if (inboxChannel) {
           inboxChannel.unsubscribe()
           inboxChannel = null
         }
         initPrivateInbox()
-      })
-    } else {
-      if (inboxChannel) {
-        inboxChannel.unsubscribe()
-        inboxChannel = null
+      } else if (!user) {
+        if (inboxChannel) {
+          inboxChannel.unsubscribe()
+          inboxChannel = null
+        }
       }
-    }
-  }, { immediate: true })
+    },
+    { immediate: true }
+  )
 
   function handleIncomingPrivate(payload: ChatMessage, targetChatId?: string) {
     const chatKey = targetChatId || (payload.senderId as string)
@@ -374,6 +376,97 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
     if (activeChatId.value === friendId) {
       activeChatId.value = 'global'
+    }
+  }
+
+  async function loadPrivateHistory() {
+    if (!authStore.user || !gameStore.db) return
+    const myId = authStore.user.id
+    const db = gameStore.db
+
+    const { data, error } = await db
+      .from('chat_messages')
+      .select('*')
+      .or(`senderId.eq.${myId},type.eq.private:${myId}`)
+      .order('created_at', { ascending: true })
+      .limit(100) as { data: Record<string, unknown>[] | null; error: unknown }
+
+    if (error) {
+      logger.error('Chat', 'Private history load error:', error)
+      return
+    }
+
+    if (data) {
+      data.forEach(row => {
+        const senderId = (row.senderId as string) || ''
+        const senderName = (row.senderName as string) || 'Entrenador'
+        const message = (row.message as string) || ''
+        const typeStr = (row.type as string) || ''
+        const createdAt = (row.created_at as string) || Temporal.Now.instant().toString()
+
+        const isIncoming = senderId !== myId
+        const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
+        if (!friendId) return
+
+        const chatKey = friendId
+
+        if (!privateChats[chatKey]) {
+          privateChats[chatKey] = {
+            username: isIncoming ? senderName : 'Entrenador',
+            messages: [],
+            unreadCount: 0,
+            isCollapsed: true,
+            lastInteraction: Temporal.Now.instant().epochMilliseconds
+          }
+        }
+        const chat = privateChats[chatKey]
+        if (chat) {
+          const msgObj: ChatMessage = {
+            senderId,
+            senderName,
+            text: message,
+            timestamp: createdAt
+          }
+          if (!chat.messages.some(m => m.timestamp === msgObj.timestamp && m.text === msgObj.text)) {
+            chat.messages.push(msgObj)
+            try {
+              chat.lastInteraction = Temporal.Instant.from(createdAt).epochMilliseconds
+            } catch {
+              chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
+            }
+            if (isIncoming && chat.isCollapsed) {
+              chat.unreadCount++
+            }
+          }
+        }
+      })
+      gameStore.state.chats = { ...privateChats }
+      pruneOldMessages()
+    }
+  }
+
+  async function pruneOldMessages() {
+    if (!authStore.user || !gameStore.db) return
+    const myId = authStore.user.id
+
+    try {
+      const { data } = await gameStore.db.from('chat_messages')
+        .select('created_at')
+        .eq('senderId', myId)
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      if (data && Array.isArray(data) && data.length === 1000) {
+        const thresholdDate = ((data as unknown[])[999] as Record<string, unknown>)?.created_at as string
+        if (thresholdDate) {
+          await gameStore.db.from('chat_messages')
+            .delete()
+            .eq('senderId', myId)
+            .lt('created_at', thresholdDate)
+        }
+      }
+    } catch (err) {
+      logger.warn('Chat', `Pruning error: ${(err as Error).message}`)
     }
   }
 
