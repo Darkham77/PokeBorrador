@@ -39,7 +39,7 @@ export const WEEKLY_WIN_BONUS_COINS = 50
  * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string}
  */
-export function getWeekId(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
+export function getWeekId(date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
   const zdt = normalizeZonedDateTime(date)
   
   return `${zdt.yearOfWeek}-W${String(zdt.weekOfYear).padStart(2, '0')}`
@@ -61,10 +61,10 @@ export function getReconciledWeekIds(): string[] {
 /**
  * Check if we are in the Dispute Phase (Monday to Friday).
  * Saturday and Sunday are Dominance Phases (bonuses active, no points earned).
- * @param {Date | Temporal.ZonedDateTime} date 
+ * @param {Temporal.ZonedDateTime|Temporal.Instant} date 
  * @returns {boolean}
  */
-export function isDisputePhase(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
+export function isDisputePhase(date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
   const zdt = normalizeZonedDateTime(date)
   
   const day = zdt.dayOfWeek // 1 (Mon) to 7 (Sun)

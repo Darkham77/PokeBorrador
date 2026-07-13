@@ -534,6 +534,7 @@ export type BushFamily = keyof typeof BUSH_FAMILIES;
   const suffixes = ['_dia', '_noche', '_atardecer', '_amanecer'];
 
   for (const [routeId, baseName] of Object.entries(MAP_ROUTE_MAPPING)) {
+    if (baseName.includes('/')) continue;
     const hasBase = battleMaps.includes(baseName);
     const hasAnySuffix = suffixes.some(suffix => battleMaps.includes(`${baseName}${suffix}`));
     if (!hasBase && !hasAnySuffix) {

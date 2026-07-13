@@ -1,95 +1,58 @@
 import { describe, it, expect } from 'vitest';
-import { resolveShowdownSlot } from '@/logic/battle/showdownAdapter';
-import type { ResolveActiveBattleState } from '@/logic/battle/showdownAdapter';
+import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver';
+import type { Pokemon } from '@/types/pokemon/pokemon';
 
-describe('resolveShowdownSlot unit tests', () => {
+describe('ShowdownTeamResolver unit tests', () => {
   const p1Uid = 'charmeleon-uid-123';
   const p2Uid = 'charizard-uid-456';
+  const p3Uid = 'blastoise-uid-789';
 
-  it('debería resolver correctamente el slot en orden estándar (1-based)', () => {
-    const activeState: ResolveActiveBattleState = {
-      playerRequest: {
-        side: {
-          pokemon: [
-            { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '100/100', active: true, uid: p1Uid },
-            { ident: 'p1: Charizard', details: 'Charizard', condition: '100/100', active: false, uid: p2Uid }
-          ]
-        }
-      },
-      enemyRequest: null
-    };
+  const mockTeam: Pokemon[] = [
+    { uid: p1Uid, name: 'Charmeleon', hp: 100, maxHp: 100, status: null } as unknown as Pokemon,
+    { uid: p2Uid, name: 'Charizard', hp: 100, maxHp: 100, status: null } as unknown as Pokemon,
+    { uid: p3Uid, name: 'Blastoise', hp: 80, maxHp: 100, status: null } as unknown as Pokemon,
+  ];
 
-    expect(resolveShowdownSlot(activeState, 'player', p1Uid)).toBe(1);
-    expect(resolveShowdownSlot(activeState, 'player', p2Uid)).toBe(2);
+  const mockRequest = {
+    side: {
+      pokemon: [
+        { ident: 'p1: Charizard', details: 'Charizard', condition: '100/100', active: true, uid: p2Uid },
+        { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '100/100', active: false, uid: p1Uid },
+        { ident: 'p1: Blastoise', details: 'Blastoise', condition: '80/100', active: false, uid: p3Uid }
+      ]
+    }
+  };
+
+  it('debería resolver correctamente el slot a partir del UID (getShowdownSlotForUid)', () => {
+    expect(ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, p2Uid)).toBe(1);
+    expect(ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, p1Uid)).toBe(2);
+    expect(ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, p3Uid)).toBe(3);
   });
 
-  it('debería resolver correctamente el slot cuando Showdown reordena la lista (active pokemon en index 0)', () => {
-    // Si Charizard (p2Uid) entra al combate, Showdown lo moverá al índice 0 del request
-    const activeState: ResolveActiveBattleState = {
-      playerRequest: {
-        side: {
-          pokemon: [
-            { ident: 'p1: Charizard', details: 'Charizard', condition: '100/100', active: true, uid: p2Uid },
-            { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '100/100', active: false, uid: p1Uid }
-          ]
-        }
-      },
-      enemyRequest: null
-    };
-
-    // Ahora Charizard (p2Uid) está en slot 1 para el comando de Showdown, y Charmeleon (p1Uid) está en slot 2
-    expect(resolveShowdownSlot(activeState, 'player', p2Uid)).toBe(1);
-    expect(resolveShowdownSlot(activeState, 'player', p1Uid)).toBe(2);
-  });
-
-  it('debería lanzar un error explícito si el request de Showdown no tiene la lista de Pokémon', () => {
-    const activeState: ResolveActiveBattleState = {
-      playerRequest: null,
-      enemyRequest: null
-    };
-
-    expect(() => resolveShowdownSlot(activeState, 'player', p1Uid)).toThrow(
-      '[resolveShowdownSlot] Missing request Pokemon list for side player'
+  it('debería lanzar un error descriptivo si el UID no se encuentra en el request', () => {
+    expect(() => ShowdownTeamResolver.getShowdownSlotForUid(mockRequest, 'invalid-uid')).toThrow(
+      '[ShowdownTeamResolver] UID "invalid-uid" no encontrado en los UIDs del request'
     );
   });
 
-  it('debería lanzar un error explícito si el UID buscado no existe en la lista de Pokémon', () => {
-    const activeState: ResolveActiveBattleState = {
-      playerRequest: {
-        side: {
-          pokemon: [
-            { ident: 'p1: Charmeleon', details: 'Charmeleon', condition: '100/100', active: true, uid: p1Uid }
-          ]
-        }
-      },
-      enemyRequest: null
-    };
+  it('debería resolver correctamente el Pokémon a partir del slot de Showdown (getPokemonByShowdownSlot)', () => {
+    const poke1 = ShowdownTeamResolver.getPokemonByShowdownSlot(mockTeam, mockRequest, 1);
+    expect(poke1?.uid).toBe(p2Uid);
 
-    expect(() => resolveShowdownSlot(activeState, 'player', 'invalid-uid')).toThrow(
-      'UID invalid-uid not found in player request Pokemon UIDs'
-    );
+    const poke2 = ShowdownTeamResolver.getPokemonByShowdownSlot(mockTeam, mockRequest, 2);
+    expect(poke2?.uid).toBe(p1Uid);
   });
 
-  it('debería resolver correctamente el slot tras debilitaciones y cambios (faint seq)', () => {
-    // Si algunos Pokémon están debilitados (0 fnt), Showdown los reordena en la lista
-    const activeState: ResolveActiveBattleState = {
-      playerRequest: {
-        side: {
-          pokemon: [
-            { ident: 'p1: Mew 3', details: 'Mew', condition: '100/100', active: true, uid: 'mew-3-uid' },
-            { ident: 'p1: Mew 4', details: 'Mew', condition: '100/100', active: false, uid: 'mew-4-uid' },
-            { ident: 'p1: Mew 1', details: 'Mew', condition: '0 fnt', active: false, uid: p1Uid },
-            { ident: 'p1: Mew 2', details: 'Mew', condition: '0 fnt', active: false, uid: p2Uid }
-          ]
-        }
-      },
-      enemyRequest: null
-    };
+  it('debería ordenar correctamente el equipo según Showdown (getShowdownOrder)', () => {
+    const ordered = ShowdownTeamResolver.getShowdownOrder(mockTeam, mockRequest);
+    expect(ordered[0].uid).toBe(p2Uid); // Activo primero
+    expect(ordered[1].uid).toBe(p1Uid);
+    expect(ordered[2].uid).toBe(p3Uid);
+  });
 
-    // Verificar que los slots resueltos (1-based de la lista actual en Showdown) coincidan
-    expect(resolveShowdownSlot(activeState, 'player', 'mew-3-uid')).toBe(1);
-    expect(resolveShowdownSlot(activeState, 'player', 'mew-4-uid')).toBe(2);
-    expect(resolveShowdownSlot(activeState, 'player', p1Uid)).toBe(3);
-    expect(resolveShowdownSlot(activeState, 'player', p2Uid)).toBe(4);
+  it('debería fallar si se busca un slot inexistente o inválido', () => {
+    expect(() => ShowdownTeamResolver.getPokemonByShowdownSlot(mockTeam, mockRequest, 99)).toThrow(
+      '[ShowdownTeamResolver] Slot de Showdown 99 no tiene un Pokémon válido'
+    );
   });
 });

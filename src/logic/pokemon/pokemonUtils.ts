@@ -6,8 +6,29 @@ import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
+import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 
 export { getPokemonTier };
+
+export function isLegendaryOrFossil(pokemonId: string): boolean {
+  if (!pokemonId) return false;
+  const cleanId = toID(pokemonId);
+  const isLegendary = LEGENDARY_POKEMON.includes(cleanId);
+  const isFossil = FOSSIL_POKEMON.includes(cleanId);
+  return isLegendary || isFossil;
+}
+
+export function getVigor(p: Pokemon | null | undefined): number {
+  if (!p) return 0;
+  if (isLegendaryOrFossil(p.id)) return 0;
+  return p.vigor !== undefined ? p.vigor : 10;
+}
+
+export function getMaxVigor(p: Pokemon | null | undefined): number {
+  if (!p) return 0;
+  if (isLegendaryOrFossil(p.id)) return 0;
+  return p.maxVigor !== undefined ? p.maxVigor : 10;
+}
 
 /**
  * Calculates the total power of a pokemon (BST + total IVs).
@@ -44,6 +65,17 @@ export function calculateRocketSellPrice(p: Pokemon): number {
   const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
   // Formula: (Level * 50 + (Total IVs / 186) * 500) * 0.8 (Rocket Cut)
   return Math.floor((p.level * 50 + (totalIvs / 186) * 500) * 0.8);
+}
+
+/**
+ * Determina si un Pokémon está en un estado forzado/bloqueado de ataque (lockedmove, twoturnmove, thrash).
+ */
+export function isPokemonLocked(p: Pokemon | null | undefined): boolean {
+  if (!p) return false;
+  const isLockedMove = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0);
+  const isTwoTurnActive = !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0);
+  const isThrashLocked = !!(p.thrashTurns && p.thrashTurns > 0);
+  return isLockedMove || isTwoTurnActive || isThrashLocked;
 }
 import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
 
@@ -131,10 +163,12 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
     try {
       md = pokemonDataProvider.getMoveData(id);
     } catch {
-      // ignore and keep md as null/undefined
+      // ignore
     }
   }
-  if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
+  if (!md) {
+    throw new Error(`[getMoveDescription] No se encontró el movimiento con ID o nombre: "${id}"`);
+  }
   
   if (md.ohko) return "Fulmina al enemigo de un solo golpe si acierta.";
   if (md.halfHP) return "Reduce a la mitad los PS actuales del oponente.";

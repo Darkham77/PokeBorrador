@@ -69,7 +69,7 @@ describe('Auth Load Service (Migration v2)', () => {
     const legacySave = {
       trainer: 'OldTimer',
       team: [
-        { id: 'pikachu', level: 5 } // Missing gender and UID
+        { id: 'pikachu', level: 5, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] } // Missing gender and UID
       ],
       _last_updated: Temporal.Now.instant().epochMilliseconds
     };
@@ -86,8 +86,8 @@ describe('Auth Load Service (Migration v2)', () => {
     const corruptedSave = {
       trainer: 'CloneMaster',
       team: [
-        { id: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id' },
-        { id: 'squirtle', name: 'Squirtle', uid: 'same_id' }
+        { id: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'squirtle', name: 'Squirtle', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
       ],
       _last_updated: Temporal.Now.instant().epochMilliseconds
     };
@@ -105,13 +105,13 @@ describe('Auth Load Service (Migration v2)', () => {
     const oversizedSave = {
       trainer: 'OversizedTeam',
       team: [
-        { id: 'pikachu', level: 5, uid: 'p1' },
-        { id: 'bulbasaur', level: 5, uid: 'p2' },
-        { id: 'squirtle', level: 5, uid: 'p3' },
-        { id: 'charmander', level: 5, uid: 'p4' },
-        { id: 'pidgey', level: 5, uid: 'p5' },
-        { id: 'rattata', level: 5, uid: 'p6' },
-        { id: 'weedle', level: 5, uid: 'p7' }
+        { id: 'pikachu', level: 5, uid: 'p1', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'bulbasaur', level: 5, uid: 'p2', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'squirtle', level: 5, uid: 'p3', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'charmander', level: 5, uid: 'p4', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'pidgey', level: 5, uid: 'p5', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'rattata', level: 5, uid: 'p6', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
+        { id: 'weedle', level: 5, uid: 'p7', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
       ],
       box: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
@@ -125,4 +125,20 @@ describe('Auth Load Service (Migration v2)', () => {
     expect(result.data!.box.length).toBe(1);
     expect(result.data!.box[0]!.id).toBe('weedle');
   });
+
+  it('should auto-migrate local user with db_version < 3 in offline mode without throwing', async () => {
+    const legacyUser = { id: 'local_ash', email: 'ash@local', db_version: 2, user_metadata: { username: 'ash' } } as unknown as AuthUser;
+    const legacySave = {
+      trainer: 'ash',
+      team: [],
+      _last_updated: Temporal.Now.instant().epochMilliseconds
+    };
+    db.mode = 'offline';
+    localStorageMock.setItem('pokemon_local_save_local_ash', JSON.stringify(legacySave));
+
+    const result = await loadBestSave(legacyUser, db);
+    expect(legacyUser.db_version).toBe(3);
+    expect(result.data).toBeDefined();
+  });
 });
+

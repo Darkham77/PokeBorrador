@@ -307,20 +307,13 @@ test.describe('E2E Held Items Verification', () => {
 
             if (isOverAfterWait) break;
 
-            // Aplicar trampas registradas para el turno actual
             const currentCheats = (batch.cheats || []).filter(c => c.turn === turnCount);
-            for (const cheat of currentCheats) {
-              console.log(`[E2E] Applying cheat at turn ${turnCount}: heal ${cheat.side}`);
-              await page.evaluate((ch) => {
-                const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-                if (resolver) {
-                  const store = resolver();
-                  const pkm = ch.side === 'p1' ? store.state?.player : store.state?.enemy;
-                  if (pkm) {
-                    pkm.hp = pkm.maxHp;
-                  }
-                }
-              }, cheat);
+            if (currentCheats.length > 0) {
+              console.log(`[E2E] Applying cheats at turn ${turnCount}: ${JSON.stringify(currentCheats)}`);
+              await page.evaluate(async (cheatsList) => {
+                const { applyCheatsInWorker } = await import('../../../src/logic/battle/showdownWorkerClient.ts');
+                await applyCheatsInWorker(cheatsList);
+              }, currentCheats);
             }
 
             const currentChoice = choices[turnCount];

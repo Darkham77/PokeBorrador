@@ -23,15 +23,16 @@ async function loginAndSetupUser(page: Page, username: string, initialMoney: num
       game.state.box = [pkmn];
     }
     
+    game.state.starterChosen = true;
     await game.saveGame();
   }, { money: initialMoney, givePkmn: giveTestPokemon });
 
   // Recargar la página para asegurar la correcta lectura de los datos de la base de datos SQLite recién persistida
   await page.reload();
-  await page.locator('button:has-text("MAPA")').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('button.map-btn').first().waitFor({ state: 'visible', timeout: 15000 });
 }
 
-test.describe('GTS Multi-Account E2E Transactions', () => {
+test.describe('GTS Multi-Account Transactions Simulation', () => {
   test('should allow a seller to list a Pokemon and a buyer to purchase it', async ({ browser }) => {
     const sellerContext = await browser.newContext();
     const buyerContext = await browser.newContext();
@@ -39,8 +40,8 @@ test.describe('GTS Multi-Account E2E Transactions', () => {
     const pageSeller = await sellerContext.newPage();
     const pageBuyer = await buyerContext.newPage();
 
-    const sellerName = `SELLER_${Date.now()}`;
-    const buyerName = `BUYER_${Date.now()}`;
+    const sellerName = `SELLER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
+    const buyerName = `BUYER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
 
     // 1. Setup Vendedor (Dinero: 100, con Caterpie en la Banca)
     await loginAndSetupUser(pageSeller, sellerName, 100, true);
@@ -108,7 +109,7 @@ test.describe('GTS Multi-Account E2E Transactions', () => {
     // 7. Verificar que el vendedor haya recibido los fondos (100 iniciales + 5,000 de venta - 5% comisión = 4,850 Pokédólares)
     // Para asegurar que el store de SQLite del vendedor reciba la actualización sincrónica en offline mode, recargamos la página del vendedor
     await pageSeller.reload();
-    const mapBtn = pageSeller.locator('button:has-text("MAPA")').first();
+    const mapBtn = pageSeller.locator('button.map-btn').first();
     await mapBtn.waitFor({ state: 'visible', timeout: 15000 });
 
     const sellerMoney = await pageSeller.evaluate(async () => {

@@ -5,18 +5,21 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+
+import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
-const team = computed<Pokemon[]>(() => gameStore.state.team || [])
+const team = computed<Pokemon[]>(() => {
+  const rawTeam = gameStore.state.team || []
+  return ShowdownTeamResolver.getShowdownOrder(rawTeam, battleStore.state?.playerRequest)
+})
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 
 const canSwitch = computed(() => {
-  const isForced = uiStore.isBattleSwitchForced
-  if (isForced) return true
-  
   if (battleStore.currentSubState === 'SWITCH_MENU') return true // Si la FSM pide cambio, siempre permitir
   
   const p = battleStore.state?.player
@@ -27,12 +30,8 @@ const canSwitch = computed(() => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
   if (p.volatileCounters?.['partiallytrapped'] || p.trapped) return false
   
-  const volatile = p.volatileCounters
-  if (volatile) {
-    if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
-        (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
-      return false
-    }
+  if (isPokemonLocked(p)) {
+    return false
   }
   
   return true
@@ -40,10 +39,18 @@ const canSwitch = computed(() => {
 
 const handleSwitch = (index: number) => {
   const pokemon = team.value[index]
+  if (!pokemon) return
+
+  const originalIndex = (gameStore.state.team || []).findIndex((p) => p && p.uid === pokemon.uid)
+  if (originalIndex === -1) {
+    console.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid)
+    return
+  }
+
   const isForced = uiStore.isBattleSwitchForced || battleStore.currentSubState === 'SWITCH_MENU'
-  console.log(`[BattleQuickTeam] handleSwitch clicked for index: ${index}, pokemon: ${pokemon?.name}, hp: ${pokemon?.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
+  console.log(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
   
-  if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) {
+  if (pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) {
     console.log(`[BattleQuickTeam] handleSwitch early return check failed`);
     return
   }
@@ -52,8 +59,8 @@ const handleSwitch = (index: number) => {
     return
   }
   
-  console.log(`[BattleQuickTeam] Calling battleStore.executeSwitch with index: ${index}, isForced: ${isForced}`);
-  battleStore.executeSwitch(index, isForced)
+  console.log(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`);
+  battleStore.executeSwitch(originalIndex, isForced)
 }
 </script>
 

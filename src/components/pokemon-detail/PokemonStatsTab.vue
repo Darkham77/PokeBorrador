@@ -10,6 +10,7 @@ interface StatDisplay {
   max: number
   color: string
   iv: number
+  ev: number
 }
 
 interface SpeciesData {
@@ -66,6 +67,24 @@ const props = withDefaults(defineProps<Props>(), {
         :value="s.iv"
         :max="31"
         mode="iv"
+      />
+    </div>
+
+    <div
+      v-if="isInstance"
+      class="stats-section mt-32"
+    >
+      <h4 class="vp-section-title">
+        ENTRENAMIENTO (EV)
+      </h4>
+      <PokemonStatBar
+        v-for="s in displayStats"
+        :key="'ev-'+s.id"
+        :label="s.label"
+        :value="s.ev"
+        :max="252"
+        color="Rgba(167, 139, 250, 1)"
+        mode="stat"
       />
     </div>
 

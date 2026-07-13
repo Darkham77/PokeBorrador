@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useBattleStore } from '@/stores/battle/battle'
 import BattleMoveSlot from './BattleMoveSlot.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 import type { Move } from '@/types/pokemon/pokemon'
 
 const battleStore = useBattleStore()
@@ -12,8 +13,7 @@ const player = computed(() => battleStore.player)
 const isStruggleMode = computed(() => {
   const p = player.value
   if (!p || !p.moves) return false
-  const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) ||
-                   !!(p.thrashTurns && p.thrashTurns > 0)
+  const isLocked = isPokemonLocked(p)
   if (isLocked) return false
   return p.moves.every(m => !m || m.pp <= 0)
 })

@@ -233,18 +233,16 @@ export function parseZonedTime(
  * Normalizes Date, ZonedDateTime, or Instant inputs into a Temporal.ZonedDateTime in the game timezone.
  */
 export function normalizeZonedDateTime(
-  date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
+  date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
 ): Temporal.ZonedDateTime {
   return (date instanceof Temporal.ZonedDateTime)
     ? date
-    : (date instanceof Date 
-        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
-        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
+    : (date instanceof Temporal.Instant ? date : Temporal.Now.instant()
       ).toZonedDateTimeISO(GAME_TIMEZONE);
 }
 
 export function getArgDateString(
-  date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
+  date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
 ): string {
   return normalizeZonedDateTime(date).toPlainDate().toString();
 }

@@ -4,8 +4,11 @@ import type { PokemonSet } from '@pkmn/sim';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { TestBatch } from '../generators/fuzzer_team_generator.ts';
-import { getShowdownFormatId } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { getShowdownFormatId, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
+
+// Aplicar el monkey-patch unificado de Showdown
+patchShowdownSpreadModify(() => false);
 
 interface ExtendedPokemon {
   name: string;
@@ -66,6 +69,18 @@ if (caseId) {
 const battleSeed = seed.length === 4
   ? `${seed[0]},${seed[1]},${seed[2]},${seed[3]}` as `${number},${string}`
   : undefined;
+
+// Populate statsMap to preserve stats in spreadModify
+playerTeam.forEach(p => {
+  if (p.name && (p as unknown as { stats?: unknown }).stats) {
+    statsMap.set(p.name, (p as unknown as { stats: Record<string, number> }).stats);
+  }
+});
+enemyTeam.forEach(e => {
+  if (e.name && (e as unknown as { stats?: unknown }).stats) {
+    statsMap.set(e.name, (e as unknown as { stats: Record<string, number> }).stats);
+  }
+});
 
 const battle = new Battle({ formatid: getShowdownFormatId(), seed: battleSeed });
 battle.setPlayer('p1', { name: 'Player', team: playerTeam });

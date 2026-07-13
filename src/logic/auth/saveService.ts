@@ -11,7 +11,7 @@ import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
-import { sanitizePokemon } from '@/logic/pokemon/pokemonFactory';
+import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 
 export let lastLoadedSaveTime = 0;
 export function setLastLoadedSaveTime(time: number) {
@@ -359,17 +359,27 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     uids.add(p.uid);
   };
 
-  if (sanitizedData.team) {
-    sanitizedData.team.forEach((p) => {
-      checkPoke(p, 'equipo');
-      sanitizePokemon(p);
-    });
-  }
-  if (sanitizedData.box) {
-    sanitizedData.box.forEach((p) => {
-      checkPoke(p, 'caja');
-      sanitizePokemon(p);
-    });
+  try {
+    if (sanitizedData.team) {
+      sanitizedData.team.forEach((p) => {
+        checkPoke(p, 'equipo');
+        validatePokemon(p);
+      });
+    }
+    if (sanitizedData.box) {
+      sanitizedData.box.forEach((p) => {
+        checkPoke(p, 'caja');
+        validatePokemon(p);
+      });
+    }
+  } catch (err) {
+    logger.error('SAVE', 'Error crítico en estructura de Pokémon al sanitizar/validar:', err);
+    return {
+      valid: false,
+      data: sanitizedData,
+      issues,
+      error: `Error de estructura de Pokémon: ${(err as Error).message}`
+    };
   }
 
   if (duplicateUids.size > 0) {
@@ -427,7 +437,16 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   _isSaving = true;
   try {
     const raw_data = serializeState(state);
-    const { data: save_data, hadDuplicates, issues } = validateAndSanitize(raw_data);
+    const { data: save_data, valid, hadDuplicates, issues, error: validationError } = validateAndSanitize(raw_data);
+
+    if (!valid) {
+      logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validationError || issues);
+      _isSaving = false;
+      if (showNotif && notifyFn) {
+        notifyFn(`Error al guardar: ${validationError || 'Datos corruptos o inválidos'}`, '🔴');
+      }
+      return { success: false, error: validationError || 'Datos corruptos o inválidos' };
+    }
 
     // VERSIONED SECURITY LOGIC
     const currentVersion = options.userVersion || 1;

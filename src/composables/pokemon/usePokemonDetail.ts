@@ -139,7 +139,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         baseValue: base,
         max: 255,
         color: colors[key] || '#888',
-        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0
+        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0,
+        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0
       }
     })
   })
@@ -151,6 +152,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       const data = pokemonDataProvider.getMoveData(resolvedId)
       const basePP = data?.pp || 35
       return {
+        id: resolvedId,
         level: m.lv,
         name: m.name,
         type: data?.type || 'normal',

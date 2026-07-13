@@ -1,24 +1,73 @@
 import type { Page, Locator } from '@playwright/test';
 
 async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
+  const cleanOptions = { ...options };
+  delete cleanOptions.force; // Prohibición estricta de force-clicks en tests
   for (let i = 0; i < retries; i++) {
     try {
-      await locator.click({ timeout: 2000, ...options });
+      await locator.click({ timeout: 2000, ...cleanOptions });
       return;
     } catch (err: unknown) {
       const msg = err instanceof Error ? (err as Error).message : String(err);
       if (msg.includes('detached') || msg.includes('retrying') || msg.includes('visible') || msg.includes('stable')) {
-        console.log(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
+        console.debug(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
         await new Promise(r => setTimeout(r, 150));
         continue;
       }
       throw err;
     }
   }
-  await locator.click(options);
+  await locator.click(cleanOptions);
 }
 
-export type WindowWithResolver = Window;
+export interface DebugStore {
+  isProcessing: boolean;
+  currentSubState: string;
+  currentFsmState?: string;
+  isIntroAnimating?: boolean;
+  player?: {
+    uid: string;
+    hp: number;
+    maxHp: number;
+    moves?: Array<{ id: string; pp: number; maxpp?: number } | null>;
+  } | null;
+  state: {
+    over: boolean;
+    turnCount: number;
+    player?: {
+      uid: string;
+      hp: number;
+      maxHp: number;
+      moves?: Array<{ id: string; pp: number } | null>;
+    } | null;
+    playerRequest?: {
+      wait?: boolean;
+      active?: Array<{
+        moves?: Array<{ id: string; disabled?: boolean | string } | null> | null;
+      } | null> | null;
+      side?: {
+        pokemon?: Array<{ uid?: string; name: string; condition: string; active?: boolean }>;
+      };
+    } | null;
+    enemyRequest?: {
+      active?: Array<{
+        moves?: Array<{ id: string; disabled?: boolean | string } | null> | null;
+      } | null> | null;
+    } | null;
+    p1SlotOrder?: string[];
+  } | null;
+}
+
+export type WindowWithResolver = Window & {
+  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
+  __VITE_DEBUG__?: {
+    cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+    mockEnemyChoices?: string[];
+    enemyChoiceIndex?: number;
+    getGameStore?: () => { state: { team: unknown[] } };
+  };
+};
+
 
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
@@ -61,26 +110,32 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   }
 
   // Esperar a que cargue la interfaz principal
-  const mapaBtn = page.locator('button:has-text("MAPA")').first();
+  const mapaBtn = page.locator('button.map-btn').first();
   await mapaBtn.waitFor({ state: 'attached', timeout: 45000 });
 }
 
-/**
- * Resuelve el UID de un Pokémon en un slot de Showdown
- */
 export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
   return await page.evaluate(async ({ slotNum, label }) => {
     try {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return null;
-      const battleStore = resolver();
-      const state = battleStore.state as { playerRequest?: { side?: { pokemon?: Array<{ uid?: string } | null> } } } | undefined;
-      const slotOrder = state?.playerRequest?.side?.pokemon || [];
-      const uid = slotOrder[slotNum - 1]?.uid || null;
-      const uids = slotOrder.map(p => p?.uid || 'null');
-      console.log(`[E2E-DEBUG-${label}] slotNum: ${slotNum}, slotOrder UIDs: ${JSON.stringify(uids)}, resolved targetUid: ${uid}`);
-      return uid;
-    } catch (_e) {
+      const store = resolver();
+      const state = store.state;
+      if (!state) return null;
+      
+      const { ShowdownTeamResolver } = (await import('../../../src/logic/battle/showdownTeamResolver.ts')) as unknown as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
+      
+      // Obtener el equipo actual usando getGameStore de window para evitar Pinia duplicado en Playwright
+      const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
+      const team = (gameStore?.state?.team || []) as unknown[];
+      const pokemon = ShowdownTeamResolver.getPokemonByShowdownSlot(team, state.playerRequest, slotNum);
+      if (pokemon && pokemon.uid) {
+        console.log(`[E2E-DEBUG-${label}] Dynamic slotNum: ${slotNum} -> Resolved via ShowdownTeamResolver: ${pokemon.uid}`);
+        return pokemon.uid;
+      }
+      return null;
+    } catch (err: unknown) {
+      console.log(`[E2E-DEBUG-${label}] Error resolving slotNum ${slotNum} via ShowdownTeamResolver:`, (err as Error).message);
       return null;
     }
   }, { slotNum, label });
@@ -95,7 +150,7 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
     await combatirBtn.waitFor({ state: 'visible', timeout: 2000 });
     await combatirBtn.click();
   } catch (_e) {
-    console.log('[confirmAndStartBattle] "¡COMBATIR!" button not found or battle already started. Proceeding...');
+    console.debug('[confirmAndStartBattle] "¡COMBATIR!" button not found or battle already started. Proceeding...');
   }
 }
 
@@ -139,11 +194,13 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   });
 
   if (isProcessing) {
+    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: isProcessing is true`);
     return false;
   }
 
   const isUiLocked = await page.locator('.battle-controls-layout.is-ui-locked').count() > 0;
   if (isUiLocked) {
+    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: .is-ui-locked overlay is present in the DOM`);
     return false;
   }
 
@@ -167,6 +224,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   });
 
   if (isModalOpen && subState === 'WAIT_INPUT') {
+    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: a blocking base modal is open while in WAIT_INPUT`);
     return false;
   }
 
@@ -182,13 +240,13 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
       if (targetUid) {
         const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
         await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await cardBtn.click({ force: true, timeout: 5000 });
+        await cardBtn.click({ timeout: 5000 });
       } else {
         // Fallback posicional si no se pudo resolver el UID
         const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
         const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
         await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-        await allBenchCards.nth(switchIdx).click({ force: true, timeout: 5000 });
+        await allBenchCards.nth(switchIdx).click({ timeout: 5000 });
       }
       return true;
     }
@@ -226,12 +284,57 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         if (moveToken === 'recharge') return true;
 
         const moveIdx = parseInt(moveToken || '1', 10) - 1;
-        const moveBtn = page.locator('.move-card-vicio').nth(moveIdx);
+        const struggleOverlay = page.locator('.struggle-overlay');
+        const isStruggleActive = await struggleOverlay.isVisible().catch(() => false);
+
+        let moveBtn;
+        if (isStruggleActive) {
+          // Click the struggle button inside the overlay
+          moveBtn = struggleOverlay.locator('.move-card-vicio');
+        } else {
+          // Intentar mapear el índice lógico de Showdown al índice físico real del botón en el DOM
+          const resolvedVisualIdx = await page.evaluate((idx: number): number => {
+            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+            if (!resolver) return idx;
+            const store = resolver() as DebugStore;
+            
+            // 1. Obtener el ID del movimiento que espera el simulador en este índice lógico
+            const playerRequest = store.state?.playerRequest;
+            const active = playerRequest?.active;
+            const activeMon = (active && active.length > 0) ? active[0] : null;
+            if (!activeMon) return idx;
+            const movesList = activeMon.moves;
+            if (!movesList) return idx;
+            const reqMove = movesList[idx];
+            const targetMoveId = reqMove ? reqMove.id : null;
+            if (!targetMoveId) return idx;
+
+            let moves: Array<{ id: string } | null> | undefined = undefined;
+            const pStore = store.player;
+            if (pStore && pStore.moves) {
+              moves = pStore.moves;
+            } else {
+              const pState = store.state?.player;
+              if (pState && pState.moves) {
+                moves = pState.moves;
+              }
+            }
+            if (!moves) return idx;
+            const vIdx = moves.findIndex((m) => m && m.id === targetMoveId);
+            return vIdx !== -1 ? vIdx : idx;
+          }, moveIdx);
+
+          moveBtn = page.locator('.move-card-vicio').nth(resolvedVisualIdx);
+        }
+
         await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
-        // Si el botón está deshabilitado, el juego está procesando una secuencia de debilitación.
-        // Retornar false para que el loop externo espere y reintente.
+        const btnHtml = await moveBtn.evaluate((el) => el.outerHTML);
+        console.debug(`[E2E-INPUT-DEBUG] Target move button outerHTML: ${btnHtml}`);
         const isDisabled = await moveBtn.isDisabled().catch(() => true);
-        if (isDisabled) return false;
+        if (isDisabled) {
+          console.debug(`[E2E-INPUT-DEBUG] cannot proceed: move button is disabled`);
+          return false;
+        }
         await clickResilient(moveBtn, { timeout: 5000 });
         return true;
       } else if (cleanChoice.startsWith('switch ')) {
@@ -244,12 +347,12 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         if (targetUid) {
           const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
           await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(cardBtn, { force: true, timeout: 5000 });
+          await clickResilient(cardBtn, { timeout: 5000 });
         } else {
           const switchIdx = switchSlot - 2;
           const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
           await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(allBenchCards.nth(switchIdx), { force: true, timeout: 5000 });
+          await clickResilient(allBenchCards.nth(switchIdx), { timeout: 5000 });
         }
         return true;
       } else if (cleanChoice.startsWith('useitem:')) {
@@ -272,17 +375,17 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         const isQuickVisible = await quickCard.isVisible().catch(() => false);
 
         if (isQuickVisible) {
-          await clickResilient(quickCard, { force: true, timeout: 5000 });
+          await clickResilient(quickCard, { timeout: 5000 });
         } else {
           // Si no está en la bolsa rápida (ej. Revivir), abrir la mochila completa
           const bagBtn = page.locator('.bag-btn');
           await bagBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(bagBtn, { force: true, timeout: 5000 });
+          await clickResilient(bagBtn, { timeout: 5000 });
 
           // Esperar a que aparezca la tarjeta en el modal de la mochila
           const backpackItem = page.locator('.inventory-item-card', { hasText: translatedName }).first();
           await backpackItem.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(backpackItem, { force: true, timeout: 5000 });
+          await clickResilient(backpackItem, { timeout: 5000 });
         }
 
         const targetUid = await page.evaluate((idx) => {
@@ -305,7 +408,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         }
 
         await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await clickResilient(targetBtn, { force: true, timeout: 5000 });
+        await clickResilient(targetBtn, { timeout: 5000 });
         return true;
       } else {
         return true;
@@ -328,31 +431,31 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
       const battleStore = resolver();
       const battle = battleStore.state;
       if (!battle) return false;
+      const req = battle.playerRequest;
 
-      if (battle.playerRequest?.wait) {
+      if (req?.wait) {
         console.log(`[E2E-INVALID-CHECK] wait request is active (wait: true) -> choice "${ch}" is invalid/skipped`);
         return true;
       }
 
       const clean = ch.trim().toLowerCase();
       if (clean.startsWith('move ')) {
-        const idx = parseInt(clean.split(' ')[1] || '1', 10) - 1;
-        const move = battle.player?.moves?.[idx];
-        const activeReq = battle.playerRequest?.active?.[0];
-        const reqMove = activeReq?.moves?.[idx];
+        const moveIdx = parseInt(clean.split(' ')[1] || '1', 10) - 1;
+        const move = battle.player?.moves?.[moveIdx];
+        const reqMove = req?.active?.[0]?.moves?.[moveIdx];
         const isInvalid = !move || (reqMove && reqMove.disabled);
         console.log(`[E2E-INVALID-CHECK] ch: ${ch}, move exists: ${!!move}, reqMove disabled: ${reqMove?.disabled} -> isInvalid: ${isInvalid}`);
         return !!isInvalid;
       } else if (clean.startsWith('switch ')) {
         const slotNum = parseInt(clean.split(' ')[1] || '2', 10);
-        const slotOrder = battle.playerRequest?.side?.pokemon || [];
+        const slotOrder = req?.side?.pokemon || [];
         const targetPoke = slotOrder[slotNum - 1];
         if (!targetPoke) {
           console.log(`[E2E-INVALID-CHECK] ch: ${ch}, no targetPoke at slot ${slotNum} -> isInvalid: true`);
           return true;
         }
         const isFnt = targetPoke.condition.endsWith(' fnt') || targetPoke.condition.startsWith('0/');
-        const isInvalid = targetPoke.active || isFnt;
+        const isInvalid = !!targetPoke.active || isFnt;
         console.log(`[E2E-INVALID-CHECK] ch: ${ch}, targetPoke active: ${targetPoke.active}, condition: ${targetPoke.condition} -> isInvalid: ${isInvalid}`);
         return !!isInvalid;
       }

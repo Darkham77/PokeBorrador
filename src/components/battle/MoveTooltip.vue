@@ -24,6 +24,7 @@ const getKoColorClass = (text?: string) => {
   if (!text) return 'ko-neutral';
   if (text.includes('OHKO') && text.includes('garantizado')) return 'ko-ohko';
   if (text.includes('OHKO')) return 'ko-ohko-possible';
+  if (text.includes('2HKO') && text.includes('garantizado')) return 'ko-2hko';
   if (text.includes('2HKO')) return 'ko-2hko';
   if (text.includes('3HKO')) return 'ko-3hko';
   return 'ko-neutral';
@@ -414,6 +415,51 @@ const getKoColorClass = (text?: string) => {
           </div>
         </div>
       </div>
+      <!-- Recovery Section (drain moves: Absorb, Drain Punch…) -->
+      <div
+        v-if="activeDetails.recovery && activeDetails.recovery.text"
+        class="extra-effect-section recovery-section"
+      >
+        <div class="calc-section-title">
+          RECUPERACIÓN
+        </div>
+        <div class="extra-effect-row">
+          <span class="extra-effect-icon">💚</span>
+          <span class="extra-effect-text boosted">{{ activeDetails.recovery.text }}</span>
+        </div>
+      </div>
+
+      <!-- Recoil Section (flare blitz, take down…) -->
+      <div
+        v-if="activeDetails.recoil && activeDetails.recoil.text"
+        class="extra-effect-section recoil-section"
+      >
+        <div class="calc-section-title">
+          RETROCESO
+        </div>
+        <div class="extra-effect-row">
+          <span class="extra-effect-icon">🔥</span>
+          <span class="extra-effect-text penalized">{{ activeDetails.recoil.text }}</span>
+        </div>
+      </div>
+
+      <!-- Field Conditions Section -->
+      <div
+        v-if="activeDetails.fieldConditions && activeDetails.fieldConditions.length > 0"
+        class="extra-effect-section field-section"
+      >
+        <div class="calc-section-title">
+          CONDICIONES DE CAMPO
+        </div>
+        <div
+          v-for="cond in activeDetails.fieldConditions"
+          :key="cond"
+          class="field-condition-row"
+        >
+          <span class="field-condition-dot">◆</span>
+          <span class="field-condition-text">{{ cond }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -741,5 +787,68 @@ const getKoColorClass = (text?: string) => {
     color: #EF4444;
     text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
   }
+}
+
+// ── New sections: recovery / recoil / field conditions ─────────────────────
+
+.extra-effect-section {
+  border-radius: 6px;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  &.recovery-section {
+    background: Rgba(16, 185, 129, 0.06);
+    border: 1px solid Rgba(16, 185, 129, 0.18);
+  }
+
+  &.recoil-section {
+    background: Rgba(239, 68, 68, 0.06);
+    border: 1px solid Rgba(239, 68, 68, 0.18);
+  }
+
+  &.field-section {
+    background: Rgba(99, 102, 241, 0.06);
+    border: 1px solid Rgba(99, 102, 241, 0.18);
+  }
+}
+
+.extra-effect-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.extra-effect-icon {
+  font-size: 8px;
+  flex-shrink: 0;
+}
+
+.extra-effect-text {
+  font-size: 7.5px;
+  font-weight: bold;
+  line-height: 1.3;
+
+  &.boosted  { color: #10B981; text-shadow: 0 0 3px Rgba(16, 185, 129, 0.3); }
+  &.penalized { color: #EF4444; text-shadow: 0 0 3px Rgba(239, 68, 68, 0.3); }
+}
+
+.field-condition-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-condition-dot {
+  font-size: 5px;
+  color: #818CF8;
+  flex-shrink: 0;
+}
+
+.field-condition-text {
+  font-size: 7px;
+  color: Rgba(199, 210, 254, 0.85);
+  line-height: 1.3;
 }
 </style>

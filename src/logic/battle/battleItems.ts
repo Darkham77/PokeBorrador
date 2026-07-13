@@ -100,8 +100,21 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       }
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       
-      // Guardar el tipo de bola en los tags para persistencia visual
-      e.tags = e.tags || []
+      let capturedPoke: Pokemon
+      const initialEnemy = options.ctx?.activeBattle.value?._initialEnemy
+      if (initialEnemy) {
+        // Deep clone the original pristine enemy Pokémon (e.g. Ditto or Pidgey)
+        capturedPoke = JSON.parse(JSON.stringify(initialEnemy)) as Pokemon
+        // Scale HP based on the captured Pokémon's damage ratio to preserve health state
+        const currentHpRatio = e.maxHp > 0 ? e.hp / e.maxHp : 1
+        capturedPoke.hp = Math.max(1, Math.round(capturedPoke.maxHp * currentHpRatio))
+        capturedPoke.status = e.status
+      } else {
+        capturedPoke = JSON.parse(JSON.stringify(e)) as Pokemon
+      }
+
+      // Guardar el tipo de bola en los tags del pokemon capturado para persistencia visual
+      capturedPoke.tags = capturedPoke.tags || []
       const normalizedBallId = (options.itemId || itemName).toLowerCase()
         .replace(/ /g, '')
         .replace(/[áàäâ]/g, 'a')
@@ -112,45 +125,22 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
         .replace(/bola/g, 'ball')
         .replace(/_/g, '') // Eliminar guiones bajos de IDs técnicos si vienen de itemId
       
-      if (!e.tags.some(t => t.startsWith('ball:'))) {
-        e.tags.push(`ball:${normalizedBallId}`)
-      }
-
-      if (e.isTransformed && e.originalDitto) {
-        const orig = e.originalDitto as Pokemon;
-        e.id = orig.id;
-        e.name = orig.name;
-        e.type = orig.type;
-        e.type2 = orig.type2;
-        e.atk = orig.atk;
-        e.def = orig.def;
-        e.spa = orig.spa;
-        e.spd = orig.spd;
-        e.spe = orig.spe;
-        e.moves = orig.moves;
-        e.ivs = orig.ivs;
-        e.isShiny = orig.isShiny;
-        e.level = orig.level;
-        e.nature = orig.nature;
-        e.ability = orig.ability;
-        e.hp = orig.hp;
-        e.maxHp = orig.maxHp;
-        e.isTransformed = false;
-        e.originalDitto = undefined;
+      if (!capturedPoke.tags.some(t => t.startsWith('ball:'))) {
+        capturedPoke.tags.push(`ball:${normalizedBallId}`)
       }
 
       // Castform: always revert to Normal form on capture (like Ditto)
-      if (e.id === 'castform' && e.form && e.form !== 'normal') {
-        e.form = 'normal';
-        e.type = 'normal';
-        e.type2 = undefined;
+      if (capturedPoke.id === 'castform' && capturedPoke.form && capturedPoke.form !== 'normal') {
+        capturedPoke.form = 'normal';
+        capturedPoke.type = 'normal';
+        capturedPoke.type2 = undefined;
       }
 
       // Captured!
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')
       }
-      return { action: 'capture', pokemon: e }
+      return { action: 'capture', pokemon: capturedPoke }
     } else {
       // El último shake ya terminó (handleShakeRequest es determinístico via GSAP).
       // Transición inmediata a CATCH_BREAK — sin sleep, sin timers.

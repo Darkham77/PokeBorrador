@@ -2,10 +2,17 @@
 import { Dex } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
 import { SHOP_ITEMS } from '../../../../src/data/inventory/items.ts';
+import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
+
+import crypto from 'node:crypto';
+
+export interface FuzzerPokemonSet extends PokemonSet {
+  uid?: string;
+}
 
 export interface ItemTestBatch {
-  playerTeam: PokemonSet[];
-  enemyTeam: PokemonSet[];
+  playerTeam: FuzzerPokemonSet[];
+  enemyTeam: FuzzerPokemonSet[];
   itemsToTest: string[];
 }
 
@@ -24,13 +31,17 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
   });
 
   const itemPool = combatItems.map(i => i.id);
-  const batches: ItemTestBatch[] = [];
+  return generateItemBatches(itemPool, batchSize);
+}
 
+export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTestBatch[] {
+  const batches: ItemTestBatch[] = [];
+  const dexItems = Dex.items;
   let itemIdx = 0;
 
   while (itemIdx < itemPool.length) {
-    const playerTeam: PokemonSet[] = [];
-    const enemyTeam: PokemonSet[] = [];
+    const playerTeam: FuzzerPokemonSet[] = [];
+    const enemyTeam: FuzzerPokemonSet[] = [];
     const batchItems: string[] = [];
 
     // Llenar equipo del jugador con Mew, equipándole los diferentes items a testear
@@ -39,13 +50,16 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
 
       const itemId = itemPool[itemIdx]!;
       const dexItem = dexItems.get(itemId);
-      const itemName = dexItem.name;
+      const itemName = dexItem!.name;
 
       batchItems.push(itemId);
 
+      const pUid = crypto.randomUUID();
+      const pNickname = getShowdownNickname(pUid);
+
       // Le damos un set estándar para ver el efecto del item (ej. Vidasfera daña, Restos cura)
       playerTeam.push({
-        name: `P-Poke${p + 1}`,
+        name: pNickname,
         species: 'Mew',
         level: 100,
         gender: '',
@@ -54,7 +68,8 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
         nature: 'Serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle', 'Substitute', 'Recover', 'Nasty Plot']
+        moves: ['Tackle', 'Substitute', 'Recover', 'Nasty Plot'],
+        uid: pUid,
       });
 
       itemIdx++;
@@ -62,8 +77,11 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
 
     // El equipo enemigo simplemente es un Blissey
     for (let e = 0; e < batchSize; e++) {
+      const eUid = crypto.randomUUID();
+      const eNickname = getShowdownNickname(eUid);
+
       enemyTeam.push({
-        name: `E-Poke${e + 1}`,
+        name: eNickname,
         species: 'Blissey',
         level: 100,
         gender: '',
@@ -72,7 +90,8 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
         nature: 'Serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Soft-Boiled', 'Seismic Toss', 'Tackle', 'Substitute']
+        moves: ['Soft-Boiled', 'Seismic Toss', 'Tackle', 'Substitute'],
+        uid: eUid,
       });
     }
 

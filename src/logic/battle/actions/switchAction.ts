@@ -3,13 +3,39 @@ import { clearVolatileStatus } from '../battleStatus.ts'
 import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { resolveShowdownSlot } from '../showdownAdapter.ts'
+import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
+let isExecutingSwitch = false
+
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
+  if (isExecutingSwitch) {
+    console.warn('[switchAction] executeSwitch already executing. Aborting duplicate call.');
+    return
+  }
+  if (ctx.fsm.currentState?.value === ctx.BATTLE_STATES.REORDER_TEAM) {
+    console.warn('[switchAction] executeSwitch called while already transitioning in REORDER_TEAM. Aborting duplicate call.');
+    return
+  }
+
+  isExecutingSwitch = true
+  try {
+    await runSwitchSequence(ctx, teamIndex, isForced)
+  } finally {
+    isExecutingSwitch = false
+  }
+}
+
+async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced = false) {
   const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, exitingPlayer, animations, playerStages, enemyStages, persistBattle, handleFaint } = ctx
 
-  if (typeof isForced !== 'undefined' && !isForced) {
+  const oldPoke = activeBattle.value?.player
+  const req = activeBattle.value?.playerRequest
+  const hasForceSwitch = !!(req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x))))
+  const isFaintState = (fsm.currentState?.value as unknown as string) === 'PLAYER_FAINT_SEQ' || fsm.currentSubState?.value === 'PLAYER_FAINT_SEQ' || (fsm.currentState?.value as unknown as string) === 'SWITCH_MENU' || fsm.currentSubState?.value === 'SWITCH_MENU'
+  const reallyForced = isForced || hasForceSwitch || isFaintState || (oldPoke && oldPoke.hp <= 0)
+
+  if (!reallyForced) {
     const { isPlayerTrappedInWorker } = await import('../orchestrator.ts')
     const isTrapped = await isPlayerTrappedInWorker()
     if (isTrapped) {
@@ -28,9 +54,8 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
   if (!activeBattle.value) return
-  const oldPoke = activeBattle.value.player
   
-  if (oldPoke && !isForced) {
+  if (oldPoke && !reallyForced) {
     const volatile = oldPoke.volatileCounters
     if (volatile) {
       if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) ||
@@ -103,7 +128,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   }
   persistBattle()
   
-  if (typeof isForced !== 'undefined' && !isForced) {
+  if (!reallyForced) {
     try {
       console.debug('[switchAction] executeSwitch non-forced branch: importing dependencies...');
       const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts')
@@ -123,7 +148,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         }
 
         console.debug('[switchAction] resolving slot...');
-        const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
+        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
         const p1Choice = `switch ${slot}`
         const isWild = !active.isTrainer && !active.isGym
         console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
@@ -131,7 +156,15 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
           eMove = active.enemy.lastMove
         }
-        const p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
+        let p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
+        // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+          p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
+          console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`);
+          window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+        } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+          p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
+        }
 
         console.debug('[switchAction] building hp/status maps...');
         const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
@@ -258,7 +291,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
       const active = activeBattle.value
       try {
         console.debug('[switchAction] executeSwitch forced branch: resolving slot...');
-        const slot = resolveShowdownSlot(active, 'player', newPoke.uid)
+        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
         const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
 
         const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
@@ -305,8 +338,6 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
         throw forcedErr
       }
     }
-
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE)
   }
   
   persistBattle()

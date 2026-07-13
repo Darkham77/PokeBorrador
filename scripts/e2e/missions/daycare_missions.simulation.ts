@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
 
-test.describe('Daycare Daily Missions E2E Flow', () => {
+test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2ESession(page);
-    const testUser = `TEST_MISSIONS_${Date.now()}`;
+    const testUser = `TEST_MISSIONS_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     await loginTestUser(page, testUser);
   });
 
@@ -61,7 +61,7 @@ test.describe('Daycare Daily Missions E2E Flow', () => {
     });
 
     await page.reload();
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
+    const mapaBtn = page.locator('button.map-btn').first();
     await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
 
     // 2. Abrir Guardería (Daycare) -> Misiones

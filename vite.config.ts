@@ -16,12 +16,14 @@ import fs from 'node:fs'
 function migrationsPlugin() {
   return {
     name: 'migrations-generator',
-    configResolved() {
-      generateMigrations()
+    async buildStart() {
+      await generateMigrations()
     },
     handleHotUpdate({ file }: { file: string }) {
       if (file.includes('database/migrations')) {
-        generateMigrations()
+        generateMigrations().catch(err => {
+          console.error('[Migrations Generator] Hot update generation failed:', err)
+        })
       }
     }
   }

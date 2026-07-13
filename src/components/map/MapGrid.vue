@@ -99,6 +99,20 @@ const getDominanceForMap = (mapId: string) => {
     guardian: guardian as { id: string, captured: boolean } | null
   }
 }
+
+const isRocketExtorted = (loc: MapLocation): boolean => {
+  if (!props.classData) return false
+  const now = Temporal.Now.instant().epochMilliseconds
+  if (props.playerClass === 'rocket' && props.classData.extortedRouteId === loc.id) {
+    const timestamp = Number(props.classData.extortedRouteTimestamp || 0)
+    return (now - timestamp) <= 24 * 3600 * 1000
+  }
+  if (props.playerClass === 'entrenador' && props.classData.officialRouteId === loc.id) {
+    const timestamp = Number(props.classData.officialRouteTimestamp || 0)
+    return (now - timestamp) <= 30 * 60 * 1000
+  }
+  return false
+}
 </script>
 
 <template>
@@ -114,19 +128,7 @@ const getDominanceForMap = (mapId: string) => {
       :forced-weather="getMapData(loc).weather"
       :badge-count="badgeCount"
       :dominance="getDominanceForMap(loc.id)"
-      :is-rocket-extorted="(() => {
-        if (!classData) return false;
-        const now = Date.now();
-        if (playerClass === 'rocket' && classData.extortedRouteId === loc.id) {
-          const timestamp = Number(classData.extortedRouteTimestamp || 0);
-          return (now - timestamp) <= 24 * 3600 * 1000;
-        }
-        if (playerClass === 'entrenador' && classData.officialRouteId === loc.id) {
-          const timestamp = Number(classData.officialRouteTimestamp || 0);
-          return (now - timestamp) <= 30 * 60 * 1000;
-        }
-        return false;
-      })()"
+      :is-rocket-extorted="isRocketExtorted(loc)"
       :spawn-pool="getMapData(loc)"
       @navigate="emit('navigate', $event)"
     />

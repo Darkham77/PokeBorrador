@@ -151,6 +151,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team = side === 'player' ? (battle.playerTeam || []) : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
+      console.log('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map(mon => mon ? `${mon.name} (${mon.uid})` : 'null'));
       const found = team.find(mon => mon && mon.uid === targetUid);
       if (!found) return null;
 

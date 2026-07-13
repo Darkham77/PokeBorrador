@@ -342,11 +342,14 @@ watch(() => props.icon, (newIcon) => {
   line-height: 1.6;
   margin-top: 0;
   margin-bottom: 32px;
+  @include pixelated;
 }
 
 .card-body-content {
   margin-bottom: 24px;
   color: Rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  @include pixelated;
 }
 
 .status-indicator {
@@ -366,7 +369,7 @@ watch(() => props.icon, (newIcon) => {
 }
 
 .status-text {
-  font-size: 8px;
+  font-size: 10px;
   @include pixelated;
 }
 

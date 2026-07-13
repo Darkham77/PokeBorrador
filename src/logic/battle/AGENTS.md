@@ -13,9 +13,11 @@ Frontend Developers / Systems Engineers.
 - **showdownBridge Architecture**: The Showdown log parser is split into focused modules. The main `showdownBridge.ts` is a dispatcher (< 100 lines). Add new handlers in the appropriate sub-module:
   - `showdownBridgeCore.ts` — battle start, turn, request, player setup
   - `showdownBridgeStages.ts` — stat stage changes (-boost, +boost)
-  - `showdownBridgeField.ts` — weather, terrain, side conditions
+  - `showdownBridgeField.ts` — weather, terrain, side conditions (reflect, light screen, aurora veil, tailwind, spikes, stealth rock)
   - `showdownBridgeMisc.ts` — misc events (miss, crit, can't, faint, etc.)
   - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.)
+- **smogonAdapter.ts**: Shared `@smogon/calc` wrapper for the move damage tooltip. Injects actual game stats into `rawStats` (bypassing the EV/IV formula) to ensure accuracy with the adventure-mode custom stat system. Exposes `calculateDamageForTooltip()` with a 512-entry LRU cache. Field conditions (terrain, screens) flow from the bridge into `BattleState` and are consumed here to produce accurate damage ranges, KO probabilities, recovery, and recoil.
+- **Tooltip Data Flow**: `showdownBridgeField.ts` → `BattleState.terrain`/`playerSideConditions`/`enemySideConditions` → `smogonAdapter.ts` → `useMoveTooltip.ts` (damageRange, koChance, recovery, recoil, fieldConditions) → `MoveTooltip.vue`.
 - **Zero-Any Policy**: `showdown.worker.ts` uses `PkmnSimSide` interface for internal `@pkmn/sim` types — never use `any`.
 - **HP Snapshot Helper**: Use `collectHpSnapshots(store, active)` (defined in
   `battleTurn.ts`) to collect uid-keyed HP and status maps for both sides before
@@ -24,6 +26,10 @@ Frontend Developers / Systems Engineers.
 - **Struggle Recoil**: Exactly `Math.floor(maxHp / 4)` damage to the attacker. Never use approximations.
 - **GSAP Exclusive**: All battle animations must use GSAP timelines/tweens. `setTimeout` is forbidden.
 - **FSM Validation**: For FSM transitions, run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts`.
+
+- **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).
+  - Use `getShowdownNickname(uid)` to initialize Showdown simulator names.
+  - Use `findPokemonByShowdownName(expectedName, list)` to safely resolve client-side Pokémon instances from Showdown's worker logs and requests.
 
 ## Work Guidance
 
@@ -40,3 +46,4 @@ Frontend Developers / Systems Engineers.
 
 - [actions/](./actions/AGENTS.md): Combat action triggers and move execution steps.
 - [ai/](./ai/AGENTS.md): NPC opponent move priority decision and scoring logic.
+- [showdownUidMapper.ts](./showdownUidMapper.ts): Centralized Showdown UID nickname generator and disambiguation mapper.

@@ -14,6 +14,7 @@ import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex'
+import { getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
@@ -179,7 +180,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
       const p = item.pokemon;
       if (!p.id) return true;
       const idLower = p.id.toLowerCase();
-      const maxVig = p.maxVigor !== undefined ? p.maxVigor : 10;
+      const maxVig = getMaxVigor(p);
       if (maxVig <= 0) return false;
       if (legendaries.has(idLower)) return false;
       if (babyPokemon.has(idLower)) return false;

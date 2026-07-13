@@ -1,9 +1,11 @@
-// scripts/battle-tester/fuzzer-team-generator.ts
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
 import crypto from 'node:crypto';
 import { EXCLUDED_FROM_SINGLES_REPORT } from '../scenarios/fuzzer_excluded_abilities.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
+import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
+import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 
 export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string {
   const data = {
@@ -17,9 +19,14 @@ export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unk
     .substring(0, 12);
 }
 
+export interface FuzzerPokemonSet extends PokemonSet {
+  uid?: string;
+  stats?: Record<string, number>;
+}
+
 export interface TestBatch {
-  playerTeam: PokemonSet[];
-  enemyTeam: PokemonSet[];
+  playerTeam: FuzzerPokemonSet[];
+  enemyTeam: FuzzerPokemonSet[];
   movesToTest: string[];
   abilitiesToTest: string[];
   /** Populated by run-tester: RNG seed for deterministic battle reproduction */
@@ -261,17 +268,26 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // noretreat requiere ser Falinks para poder ejecutarse
       const species = movesToId.includes('noretreat' as ID) ? 'falinks' : 'mew';
 
+      const pUid = crypto.randomUUID();
+      const pNickname = getShowdownNickname(pUid);
+      const pEvs = { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 };
+      const pIvs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
+      const pBaseStats = resolveBaseStats(species);
+      const pStats = calcStatsPure(100, pIvs, pBaseStats, { up: null, down: null }, false, pEvs);
+
       playerTeam.push({
-        name:   `P-Poke${p + 1}`,
+        name:    pNickname,
         species,
         level:   100,
         gender:  'M',
         item,
         ability: abilityName,
         nature:  'serious',
-        evs: { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+        evs: pEvs,
+        ivs: pIvs,
         moves: pMoves.length > 0 ? pMoves : ['tackle'],
+        uid: pUid,
+        stats: pStats,
       });
     }
 
@@ -288,17 +304,26 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         ? ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
         : [...ENEMY_TRIGGER_MOVES];
 
+      const eUid = crypto.randomUUID();
+      const eNickname = getShowdownNickname(eUid);
+      const eEvs = { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 };
+      const eIvs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
+      const eBaseStats = resolveBaseStats('blissey');
+      const eStats = calcStatsPure(100, eIvs, eBaseStats, { up: null, down: null }, false, eEvs);
+
       enemyTeam.push({
-        name:    `E-Poke${e + 1}`,
+        name:    eNickname,
         species: 'blissey',
         level:   100,
         gender:  'M',
         item:    '',
         ability: 'naturalcure',
         nature:  'serious',
-        evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+        evs: eEvs,
+        ivs: eIvs,
         moves: eMoves,
+        uid: eUid,
+        stats: eStats,
       });
     }
 

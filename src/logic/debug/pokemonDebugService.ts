@@ -30,6 +30,7 @@ interface GenerateParams {
   mapId?: string | null
   protocol?: string | null
   name?: string | null
+  uid?: string
 }
 
 interface EggData {
@@ -72,7 +73,8 @@ export const pokemonDebugService = {
       heldItem = null,
       mapId = null,
       protocol = null,
-      name = null
+      name = null,
+      uid
     } = params;
 
     const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
@@ -88,6 +90,10 @@ export const pokemonDebugService = {
       bypassWhitelist: true
     });
     if (!p) return {} as Pokemon
+
+    if (uid) {
+      p.uid = uid;
+    }
 
     if (mapId) {
       (p as DebugPokemon).mapId = mapId

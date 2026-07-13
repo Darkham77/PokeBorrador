@@ -64,10 +64,8 @@ export class InferenceEngine {
   // ──────────────────────────────────────────
 
   private getOrCreate(pokemon: HeuristicPokemonState): PokemonTracker {
-    const id = toId(pokemon.species);
-    if (!this.trackers.has(id)) {
-      this.trackers.set(id, new PokemonTracker(pokemon.species, this.db.getSets(pokemon.species)));
-    }
-    return this.trackers.get(id)!;
+    return this.trackers.getOrInsertComputed(toId(pokemon.species), () => 
+      new PokemonTracker(pokemon.species, this.db.getSets(pokemon.species))
+    );
   }
 }

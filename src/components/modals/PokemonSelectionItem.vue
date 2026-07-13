@@ -15,6 +15,7 @@ import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 const { getHpColor } = useBattleVisuals()
 const uiStore = useUIStore()
@@ -233,11 +234,11 @@ function handleClick() {
           </div>
           
           <div
-            v-if="item.pokemon.vigor !== undefined"
+            v-if="getVigor(item.pokemon) !== undefined"
             class="vigor-status-mini"
           >
             <span class="label">VIGOR: </span>
-            <span :class="['value', { low: item.pokemon.vigor <= 2 }]"><span class="emoji-inline">⚡</span> {{ item.pokemon.vigor }}/{{ item.pokemon.maxVigor !== undefined ? item.pokemon.maxVigor : 10 }}</span>
+            <span :class="['value', { low: getVigor(item.pokemon) <= 2 }]"><span class="emoji-inline">⚡</span> {{ getVigor(item.pokemon) }}/{{ getMaxVigor(item.pokemon) }}</span>
           </div>
         </div>
 

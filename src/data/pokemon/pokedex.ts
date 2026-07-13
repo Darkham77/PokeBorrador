@@ -364,15 +364,41 @@ export const TM_COMPAT = {
 };
 
 export const BABY_POKEMON = [
-  'pichu', 'cleffa', 'igglybuff', 'togepi', 'tyrogue', 'smoochum', 'elekid', 'magby'
+  "azurill", "bonsly", "budew", "chingling", "cleffa", "elekid", "happiny", "igglybuff", "magby", "mantyke", 
+  "mimejr", "munchlax", "pichu", "poipole", "riolu", "smoochum", "togepi", "toxel", "tyrogue", "wynaut"
 ];
 
 export const LEGENDARY_POKEMON = [
-  'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
-  'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
+  "arceus", "arceusbug", "arceusdark", "arceusdragon", "arceuselectric", "arceusfairy", "arceusfighting", 
+  "arceusfire", "arceusflying", "arceusghost", "arceusgrass", "arceusground", "arceusice", "arceuspoison", 
+  "arceuspsychic", "arceusrock", "arceussteel", "arceuswater", "articuno", "articunogalar", "azelf", "calyrex", 
+  "calyrexice", "calyrexshadow", "celebi", "chienpao", "chiyu", "cobalion", "cosmoem", "cosmog", "cresselia", 
+  "darkrai", "darkraimega", "deoxys", "deoxysattack", "deoxysdefense", "deoxysspeed", "dialga", "dialgaorigin", 
+  "diancie", "dianciemega", "enamorus", "enamorustherian", "entei", "eternatus", "eternatuseternamax", "fezandipiti", 
+  "genesect", "genesectburn", "genesectchill", "genesectdouse", "genesectshock", "giratina", "giratinaorigin", 
+  "glastrier", "groudon", "groudonprimal", "heatran", "heatranmega", "hooh", "hoopa", "hoopaunbound", "jirachi", 
+  "keldeo", "keldeoresolute", "koraidon", "kubfu", "kyogre", "kyogreprimal", "kyurem", "kyuremblack", "kyuremwhite", 
+  "landorus", "landorustherian", "latias", "latiasmega", "latios", "latiosmega", "lugia", "lunala", "magearna", 
+  "magearnamega", "magearnaoriginal", "magearnaoriginalmega", "manaphy", "marshadow", "melmetal", "melmetalgmax", 
+  "meloetta", "meloettapirouette", "meltan", "mesprit", "mew", "mewtwo", "mewtwomegax", "mewtwomegay", "miraidon", 
+  "moltres", "moltresgalar", "munkidori", "necrozma", "necrozmadawnwings", "necrozmaduskmane", "necrozmaultra", 
+  "ogerpon", "ogerponcornerstone", "ogerponcornerstonetera", "ogerponhearthflame", "ogerponhearthflametera", 
+  "ogerpontealtera", "ogerponwellspring", "ogerponwellspringtera", "okidogi", "palkia", "palkiaorigin", "pecharunt", 
+  "phione", "raikou", "rayquaza", "rayquazamega", "regice", "regidrago", "regieleki", "regigigas", "regirock", 
+  "registeel", "reshiram", "shaymin", "shayminsky", "silvally", "silvallybug", "silvallydark", "silvallydragon", 
+  "silvallyelectric", "silvallyfairy", "silvallyfighting", "silvallyfire", "silvallyflying", "silvallyghost", 
+  "silvallygrass", "silvallyground", "silvallyice", "silvallypoison", "silvallypsychic", "silvallyrock", 
+  "silvallysteel", "silvallywater", "solgaleo", "spectrier", "suicune", "tapubulu", "tapufini", "tapukoko", 
+  "tapulele", "terapagos", "terapagosstellar", "terapagosterastal", "terrakion", "thundurus", "thundurustherian", 
+  "tinglu", "tornadus", "tornadustherian", "typenull", "urshifu", "urshifugmax", "urshifurapidstrike", 
+  "urshifurapidstrikegmax", "uxie", "victini", "virizion", "volcanion", "wochien", "xerneas", "xerneasneutral", 
+  "yveltal", "zacian", "zaciancrowned", "zamazenta", "zamazentacrowned", "zapdos", "zapdosgalar", "zarude", 
+  "zarudedada", "zekrom", "zeraora", "zeraoramega", "zygarde", "zygarde10", "zygardecomplete", "zygardemega"
 ];
 
 export const FOSSIL_POKEMON = [
-  'omanyte', 'omastar', 'kabuto', 'kabutops', 'aerodactyl'
+  "omanyte", "omastar", "kabuto", "kabutops", "aerodactyl", "lileep", "cradily", "anorith", "armaldo", 
+  "cranidos", "rampardos", "shieldon", "bastiodon", "tirtouga", "carracosta", "archen", "archeops", 
+  "tyrunt", "tyrantrum", "amaura", "aurorus", "dracozolt", "arctozolt", "dracovish", "arctovish"
 ];
 

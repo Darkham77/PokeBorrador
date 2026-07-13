@@ -4,6 +4,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 interface Props {
   pokemon: Pokemon
@@ -105,7 +106,7 @@ const abilityStyle = computed(() => ({
         class="info-card vigor-card"
       >
         <span class="label">Vigor</span>
-        <span class="val vigor-val"><span class="vigor-icon">⚡</span>{{ p.vigor !== undefined ? p.vigor : 0 }}/{{ p.maxVigor !== undefined ? p.maxVigor : 10 }}</span>
+        <span class="val vigor-val"><span class="vigor-icon">⚡</span>{{ getVigor(p) }}/{{ getMaxVigor(p) }}</span>
       </PVTooltip>
     </div>
 

@@ -132,6 +132,11 @@ declare global {
       /** Crea un Pokémon de debug directamente en el equipo */
       createPokemon?: (config: unknown) => Promise<void>;
       getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
+      nextEnemyChoice?: string;
+      getGameStore?: () => { gs?: unknown } & Record<string, unknown>;
+      p1ChoiceIdx?: number;
+      p2ChoiceIdx?: number;
+      isE2eSimulation?: boolean;
       /** Comandos y utilidades de debug registradas en runtime */
       [key: string]: unknown;
     };

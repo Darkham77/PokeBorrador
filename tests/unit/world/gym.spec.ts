@@ -3,6 +3,7 @@ import { processGymVictory } from '@/logic/gym/gymEngine';
 import { GYMS } from '@/data/world/gyms';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
+import { getShowdownNickname } from '@/logic/battle/showdownUidMapper';
 import { Battle } from '@pkmn/sim';
 import { PDEX_ORDER } from '@/data/pokemon/pokedex';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -83,7 +84,7 @@ describe('Gym Engine', () => {
           // Showdown starts with index 0 (first member of team) as the active pokemon
           const firstEnemy = enemyTeam[0];
           if (!firstEnemy) throw new Error('Expected at least one enemy');
-          const expectedActiveName = firstEnemy.name;
+          const expectedActiveName = getShowdownNickname(firstEnemy.uid);
           const actualActiveName = battle.p2.active[0]?.name;
           expect(actualActiveName).toBe(expectedActiveName);
 

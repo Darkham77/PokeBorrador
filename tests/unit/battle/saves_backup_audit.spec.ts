@@ -1,33 +1,69 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { Dex } from '@pkmn/sim';
+import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 
-const BACKUP_FILE = path.resolve(process.cwd(), 'scratch/server_franco_backup_migrated.json');
+const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 
-describe('Migrated Player Saves Compatibility Audit', () => {
-  it('debería verificar que el backup migrado use exclusivamente IDs de Showdown y sea 100% compatible nativamente con @pkmn/sim', () => {
-    // 1. Cargar archivo de backup migrado
+describe('Player Saves Migration & Compatibility Audit', () => {
+  it('debería cargar el backup crudo de test, migrarlo utilizando la base de datos SQLite y las migraciones oficiales del juego, y validar compatibilidad 100% nativa con Showdown Dex', () => {
     if (!fs.existsSync(BACKUP_FILE)) {
-      console.warn(`[SKIP] Backup file not found: ${BACKUP_FILE}`);
-      return;
+      throw new Error(`CRITICAL: Backup fixture file not found at ${BACKUP_FILE}`);
     }
 
+    // 1. Inicializar base de datos SQLite nativa en memoria usando node:sqlite
+    using db = new DatabaseSync(':memory:');
+    
+    // Crear esquema de tablas oficial
+    for (const ddl of TABLES_SCHEMA) {
+      db.exec(`CREATE TABLE IF NOT EXISTS ${ddl}`);
+    }
+
+    // 2. Cargar el backup crudo de producción
     const rawBackup = fs.readFileSync(BACKUP_FILE, 'utf8');
     const backupData = JSON.parse(rawBackup);
     const gameSaves = backupData.data?.game_saves || [];
-    
     expect(gameSaves.length).toBeGreaterThan(0);
+
+    // Insertar los saves crudos en la base de datos temporal
+    const insertSave = db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)');
+    for (const save of gameSaves) {
+      const dataStr = typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
+      insertSave.run(save.user_id, dataStr, save.last_save_id || '', save.updated_at || '');
+    }
+
+    // 3. Ejecutar secuencialmente todas las migraciones SQLite oficiales del juego
+    for (const migration of DATABASE_MIGRATIONS) {
+      if (migration.sqlite_sql) {
+        try {
+          db.exec(migration.sqlite_sql);
+        } catch (e: unknown) {
+          throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`);
+        }
+      }
+    }
+
+    // 4. Leer los saves ya migrados de la base de datos
+    const selectSaves = db.prepare('SELECT user_id, save_data FROM game_saves');
+    const migratedSaves = selectSaves.all() as { user_id: string, save_data: string }[];
+    expect(migratedSaves.length).toBeGreaterThan(0);
 
     const errors: string[] = [];
     const warnings: string[] = [];
-
     const gen = Dex;
 
-    // 2. Auditar cada Pokémon
-    for (const saveEntry of gameSaves) {
-      const userId = saveEntry.user_id;
-      const saveData = saveEntry.save_data;
+    // 5. Validar cada Pokémon contra Showdown Dex
+    for (const row of migratedSaves) {
+      const userId = row.user_id;
+      let saveData;
+      try {
+        saveData = JSON.parse(row.save_data);
+      } catch {
+        continue;
+      }
       if (!saveData) continue;
 
       const team = saveData.team || [];
@@ -35,56 +71,63 @@ describe('Migrated Player Saves Compatibility Audit', () => {
       const allPokes = [...team, ...box].filter(Boolean);
 
       for (const poke of allPokes) {
-        const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.id} (Lvl ${poke.level ?? '?'})`;
+        const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.species || poke.id} (Lvl ${poke.level ?? '?'})`;
 
-        // A. Validar Especie
+        // Validar Especie
         if (!poke.species) {
-          errors.push(`${tag} - Especie (species) indefinida.`);
-          continue;
+          errors.push(`${tag} - Pokémon sin especie definida.`);
+        } else {
+          const species = gen.species.get(poke.species);
+          if (!species.exists) {
+            errors.push(`${tag} - Especie '${poke.species}' no existe en el Dex de Showdown.`);
+          }
         }
 
-        const species = gen.species.get(poke.species);
-        if (!species.exists) {
-          errors.push(`${tag} - Especie '${poke.species}' no existe en el Dex de @pkmn/sim.`);
-        }
-
-        // B. Validar Habilidad
+        // Validar Habilidad
         if (poke.ability) {
           const ability = gen.abilities.get(poke.ability);
           if (!ability.exists) {
-            errors.push(`${tag} - Habilidad '${poke.ability}' no existe en el Dex de @pkmn/sim.`);
+            errors.push(`${tag} - Habilidad '${poke.ability}' no existe en el Dex de Showdown.`);
           }
         }
 
-        // C. Validar Naturaleza
+        // Validar Naturaleza
         if (poke.nature) {
-          const validNatures = ['active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed', 'impish', 'lax', 'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest', 'mild', 'quiet', 'bashful', 'rash', 'calm', 'gentle', 'sassy', 'careful', 'quirky'];
-          if (!validNatures.includes(poke.nature)) {
-            errors.push(`${tag} - Naturaleza '${poke.nature}' no existe en el Dex de @pkmn/sim.`);
+          const nature = gen.natures.get(poke.nature);
+          if (!nature.exists) {
+            errors.push(`${tag} - Naturaleza '${poke.nature}' no existe en el Dex de Showdown.`);
           }
         }
 
-        // D. Validar Movimientos
+        // Validar Objeto Equipado
+        const itemKey = poke.item || poke.heldItem;
+        if (itemKey) {
+          const item = gen.items.get(itemKey);
+          if (!item.exists) {
+            warnings.push(`${tag} - Objeto '${itemKey}' es un ítem casero/personalizado.`);
+          }
+        }
+
+        // Validar Movimientos
         const moves = poke.moves || [];
         for (const m of moves) {
-          if (!m || !m.id) {
+          if (!m || (!m.id && !m.name)) {
             errors.push(`${tag} - Movimiento sin ID de Showdown.`);
             continue;
           }
-
-          const move = gen.moves.get(m.id);
+          const moveId = m.id || m.name || '';
+          const move = gen.moves.get(moveId);
           if (!move.exists) {
-            errors.push(`${tag} - Movimiento '${m.name}' (ID: ${m.id}) no existe en el Dex de @pkmn/sim.`);
+            errors.push(`${tag} - Movimiento ID '${moveId}' no existe en el Dex de Showdown.`);
           }
         }
       }
     }
 
     if (errors.length > 0) {
-      console.warn(`[Save Audit] Encontrados ${errors.length} errores de compatibilidad en el backup migrado:\n` + errors.join('\n'));
+      console.error(`[Save Audit] Encontrados ${errors.length} errores de compatibilidad en el backup migrado:\n` + errors.slice(0, 25).join('\n') + (errors.length > 25 ? `\n... y ${errors.length - 25} errores más.` : ''));
     }
 
     expect(errors.length).toBe(0);
-    expect(warnings.length).toBe(0);
   });
 });

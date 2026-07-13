@@ -1,8 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
-
-
 async function executeAutoBattle(page: Page) {
   let turnCount = 0;
   const maxTurns = 50;
@@ -40,10 +38,10 @@ async function executeAutoBattle(page: Page) {
   }
 }
 
-test.describe('Gym Progression & Badges E2E Flow', () => {
+test.describe('Gym Progression & Badges Challenge Simulation', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2ESession(page);
-    const testUser = `TEST_GYM_${Date.now()}`;
+    const testUser = `TEST_GYM_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     await loginTestUser(page, testUser);
   });
 
@@ -63,11 +61,12 @@ test.describe('Gym Progression & Badges E2E Flow', () => {
       });
 
       gameStore.state.team = [mewtwo];
+      gameStore.state.starterChosen = true;
       await gameStore.saveGame();
     });
 
     await page.reload();
-    const mapaBtn = page.locator('button:has-text("MAPA")').first();
+    const mapaBtn = page.locator('button.map-btn').first();
     await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
 
     // 2. Lanzar combate de gimnasio Pewter en dificultad fácil
@@ -91,7 +90,7 @@ test.describe('Gym Progression & Badges E2E Flow', () => {
       return !store.state || store.state.over;
     }, undefined, { timeout: 15000 });
 
-    await page.locator('button:has-text("MAPA")').first().waitFor({ state: 'visible', timeout: 10000 });
+    await page.locator('button.map-btn').first().waitFor({ state: 'visible', timeout: 10000 });
 
     // 6. Validar que la medalla Roca ('pewter') esté registrada y el HUD muestre 1 medalla
     const progress = await page.evaluate(() => {

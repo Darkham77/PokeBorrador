@@ -116,7 +116,7 @@ const hideClickOutside = (event: Event) => {
 }
 
 const updateTouchTime = () => {
-  lastTouchTime = Date.now()
+  lastTouchTime = Temporal.Now.instant().epochMilliseconds
 }
 
 const handleTouchStart = (e: TouchEvent) => {
@@ -227,7 +227,7 @@ const descriptionLines = computed(() => {
 })
 
 const handleMouseEnter = () => {
-  if (Date.now() - lastTouchTime < 1000) return
+  if (Temporal.Now.instant().epochMilliseconds - lastTouchTime < 1000) return
   if (window.matchMedia('(hover: hover)').matches) {
     show(false)
   }

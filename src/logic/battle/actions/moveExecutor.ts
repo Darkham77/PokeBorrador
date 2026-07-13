@@ -102,8 +102,9 @@ export async function executeMoveAction(
     }
 
     const normalizeCat = (c: string | number | undefined): 'status' | 'special' | 'physical' => {
-      if (c === 'Estado' || c === 'status' || c === 3) return 'status'
-      if (c === 'Especial' || c === 'special' || c === 2) return 'special'
+      const lower = String(c || '').toLowerCase()
+      if (lower === 'estado' || lower === 'status' || c === 3) return 'status'
+      if (lower === 'especial' || lower === 'special' || c === 2) return 'special'
       return 'physical'
     }
 

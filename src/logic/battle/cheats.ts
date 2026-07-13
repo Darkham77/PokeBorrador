@@ -30,13 +30,22 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   side.pokemon.forEach(p => {
     if (p) {
       const maxHpVal = p.maxhp !== undefined ? p.maxhp : (p.maxHp !== undefined ? p.maxHp : 0);
+      
+      // Forzar asignación directa de HP en memoria para evitar que validaciones internas del método .heal() de Showdown restrinjan la curación en la banca
       p.hp = maxHpVal;
       p.status = p.maxhp !== undefined ? '' : null;
-      if ('fainted' in p) {
-        p.fainted = false;
-      }
-      if ('faintQueued' in p) {
-        p.faintQueued = false;
+      
+      // Resucitar explícita e incondicionalmente al Pokémon en el simulador
+      const monObj = p as unknown as { fainted: boolean; faintQueued: boolean };
+      monObj.fainted = false;
+      monObj.faintQueued = false;
+      // Restaurar PP de todos los movimientos del simulador Showdown para evitar el uso forzado de Struggle en combates largos
+      if (Array.isArray((p as unknown as { moveSlots?: Array<{ pp: number; maxpp: number }> }).moveSlots)) {
+        (p as unknown as { moveSlots: Array<{ pp: number; maxpp: number }> }).moveSlots.forEach(slot => {
+          if (slot) {
+            slot.pp = slot.maxpp;
+          }
+        });
       }
     }
   });

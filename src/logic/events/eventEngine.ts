@@ -64,7 +64,7 @@ export { getArgDateString }
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
-export function isEventActiveNow(event: Event, date: Date | InstanceType<typeof Temporal.ZonedDateTime> | InstanceType<typeof Temporal.Instant> = Temporal.Now.instant()): boolean {
+export function isEventActiveNow(event: Event, date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
   if (!event.active) return false
   if (event.manual) return true
 

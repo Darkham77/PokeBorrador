@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-07-12T18:07:01.682447998Z",
+  "summary": {
+    "total": 2301289,
+    "passed": 2301289,
+    "failed": 0,
+    "compatibleCount": 3835,
+    "incompatibleCount": 2297454
+  },
+  "errors": [],
+  "warnings": []
+}

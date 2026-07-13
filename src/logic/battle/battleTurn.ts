@@ -50,7 +50,9 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   }
 
-  const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || !!(p.thrashTurns && p.thrashTurns > 0);
+  const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || 
+                   !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0) || 
+                   !!(p.thrashTurns && p.thrashTurns > 0);
   const isStruggle = moveIndex === -1;
   const move = isStruggle ? null : p.moves[moveIndex];
 
@@ -103,6 +105,14 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       if (validMove) {
         p2Choice = `move ${validMove.id}`;
       }
+    }
+    // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+      p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
+      console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
+      window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
     }
     const result = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
     logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
@@ -273,8 +283,12 @@ export async function runEnemyAction(store: BattleContext) {
     } else if (!p2Skip && enemyMove) {
       p2Choice = `move ${enemyMove.id}`;
     }
-    // Interceptar elección de enemigo si está inyectada en el test determinista
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
+    // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+      p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
+      console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
+      window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
       p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
     }
     

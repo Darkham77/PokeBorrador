@@ -49,7 +49,7 @@ function triggerLock() {
   if (isLocked) return
   isLocked = true
   
-  logger.error('SessionHub', 'WRITE PERMISSIONS REVOKED. Instance is now Read-Only.')
+  logger.warn('SessionHub', 'WRITE PERMISSIONS REVOKED. Instance is now Read-Only.')
   
   // Notify UI via GameBus or Custom Event
   window.dispatchEvent(new CustomEvent('pv-save-lock'))

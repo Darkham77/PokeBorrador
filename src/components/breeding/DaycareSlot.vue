@@ -3,6 +3,7 @@ import { computed, ref, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
@@ -341,14 +342,14 @@ const heldItemSprite = computed(() => {
 
       <div class="vigor-status">
         <div class="label">
-          VIGOR: {{ pokemon.vigor || 0 }}/{{ pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10 }}
+          VIGOR: {{ getVigor(pokemon) }}/{{ getMaxVigor(pokemon) }}
         </div>
         <div class="vigor-bar-bg">
           <div
             class="vigor-fill"
             :style="{ 
-              width: (pokemon.maxVigor !== undefined && pokemon.maxVigor === 0) ? '0%' : (((pokemon.vigor || 0) / (pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10)) * 100) + '%', 
-              background: ((pokemon.vigor || 0) <= 2 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)') 
+              width: getMaxVigor(pokemon) === 0 ? '0%' : ((getVigor(pokemon) / getMaxVigor(pokemon)) * 100) + '%', 
+              background: getVigor(pokemon) <= 2 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)' 
             }"
           />
         </div>

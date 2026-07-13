@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
 
-test.describe('Save Shield Integration & Security E2E', () => {
+test.describe('Save Shield Integration & Security Simulation', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2ESession(page);
-    const testUser = `TEST_SAVE_SHIELD_${Date.now()}`;
+    const testUser = `TEST_SAVE_SHIELD_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     await loginTestUser(page, testUser);
   });
 

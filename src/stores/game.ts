@@ -51,7 +51,7 @@ export const useGameStore = defineStore('game', () => {
   const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)
 
   // 3. Pokemon Actions
-  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
+  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, validateAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
 
   // 4. Trainer Actions
   const { addTrainerExp, checkLevelUp } = useTrainerActions(state, scheduleSave)
@@ -71,8 +71,8 @@ export const useGameStore = defineStore('game', () => {
       isDataLoaded.value = true
       isEngineReady.value = true
       
-      // Sanitize all pokemon to update types/metadata from DB
-      sanitizeAll()
+      // Validate all pokemon structure from DB
+      validateAll()
 
       // Clear expired routes
       checkRouteExpirations()

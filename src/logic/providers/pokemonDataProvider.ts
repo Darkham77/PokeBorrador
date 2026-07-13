@@ -66,7 +66,7 @@ export const pokemonDataProvider = {
             throw new Error(`Especie de Pokémon no encontrada: ${id}`);
         }
 
-        const isDebug = bypassWhitelist || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
+        const isDebug = bypassWhitelist || import.meta.env.DEV || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
         if (!ENABLED_POKEMON_IDS.has(normalizedId) && !isDebug) {
             throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
         }
@@ -105,16 +105,32 @@ export const pokemonDataProvider = {
      */
     getAbilityData(name: string) {
         if (!name) throw new Error("Nombre/ID de habilidad no proporcionado");
-        const cleanId = toID(name);
-        const ability = Dex.abilities.get(cleanId);
+        let cleanId = toID(name);
+        let ability = Dex.abilities.get(cleanId);
+
+        if (!ability || !ability.exists) {
+            // Intenta buscar por nombre en español en las traducciones estáticas
+            const nameLower = name.trim().toLowerCase();
+            const foundEntry = Object.entries(ABILITY_TRANSLATIONS_ES).find(
+                ([_, trans]) => trans.name.toLowerCase() === nameLower
+            );
+            if (foundEntry) {
+                cleanId = toID(foundEntry[0]);
+                ability = Dex.abilities.get(cleanId);
+            }
+        }
+
         if (!ability || !ability.exists) {
             throw new Error(`Habilidad no encontrada: ${name}`);
         }
 
         // Buscar traducción en las traducciones estáticas
-        const translated = (ABILITY_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
-        const espName = translated.name || ability.name;
-        const espDesc = translated.desc || ability.desc || 'Sin descripción disponible.';
+        const translated = ABILITY_TRANSLATIONS_ES[cleanId];
+        if (!translated || !translated.name || !translated.desc) {
+            throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
+        }
+        const espName = translated.name;
+        const espDesc = translated.desc;
 
         return {
             id: ability.id,

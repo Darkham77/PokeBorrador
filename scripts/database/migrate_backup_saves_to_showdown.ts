@@ -183,9 +183,50 @@ const NATURE_TO_SHOWDOWN: Record<string, string> = {
   'rara': 'quirky'
 };
 
-const BACKUP_FILE = path.resolve(process.cwd(), 'database/backups/server_franco/server_franco_backup_2026-06-15T05-25-25-945573975Z.json');
+const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
-const OUTPUT_FILE = path.resolve(process.cwd(), 'scratch/server_franco_backup_migrated.json');
+const OUTPUT_FILE = BACKUP_FILE;
+
+function canLearnMove(speciesId: string, moveId: string): boolean {
+  let currId: string | undefined = Dex.toID(speciesId);
+  const normMoveId = Dex.toID(moveId);
+  while (currId) {
+    const data = Dex.data.Learnsets[currId];
+    if (data && data.learnset && data.learnset[normMoveId]) {
+      return true;
+    }
+    const species = Dex.species.get(currId);
+    currId = species.prevo ? Dex.toID(species.prevo) : undefined;
+  }
+  return false;
+}
+
+function getMovesAtLevel(speciesId: string, level: number): string[] {
+  const moves: Array<{ id: string; lv: number }> = [];
+  let currId: string | undefined = Dex.toID(speciesId);
+  
+  while (currId) {
+    const data = Dex.data.Learnsets[currId];
+    if (data && data.learnset) {
+      for (const [moveId, sources] of Object.entries(data.learnset)) {
+        for (const src of sources) {
+          const match = src.match(/^(\d+)L(\d+)$/);
+          if (match) {
+            const lv = parseInt(match[2]!, 10);
+            if (lv <= level) {
+              moves.push({ id: moveId, lv });
+            }
+          }
+        }
+      }
+    }
+    const species = Dex.species.get(currId);
+    currId = species.prevo ? Dex.toID(species.prevo) : undefined;
+  }
+
+  moves.sort((a, b) => a.lv - b.lv);
+  return [...new Set(moves.map(m => m.id))];
+}
 
 function normalize(str: string): string {
   return str
@@ -198,11 +239,12 @@ function normalize(str: string): string {
 async function main() {
   console.log('Starting player saves migration to official Showdown IDs...');
 
-  // 1. Load Showdown database and translations
-  const rawShowdown = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-  const showdownDB = JSON.parse(rawShowdown) as {
-    abilities: Record<string, { name?: string }>;
-    moves: Record<string, { name?: string }>;
+  // 1. Load local databases for translation mapping
+  const rawAbilities = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/abilities.json'), 'utf8');
+  const rawMoves = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/moves.json'), 'utf8');
+  const showdownDB = {
+    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>,
+    moves: JSON.parse(rawMoves) as Record<string, { name?: string }>
   };
 
   // Build Abilities Map
@@ -390,12 +432,24 @@ async function main() {
         poke.species = resolvedSpecies;
       }
 
-      // B. Migrate Ability
-      if (poke.ability) {
+      // B. Migrate and Heal Ability
+      if (poke.ability && poke.species) {
         const normAbility = normalize(poke.ability);
         const abilityId = abilityMap.get(normAbility) || normAbility;
-        const ability = gen.abilities.get(abilityId);
-        poke.ability = ability.exists ? ability.id : abilityId;
+        const abilityObj = gen.abilities.get(abilityId);
+        
+        const speciesData = gen.species.get(poke.species);
+        const validAbilities = speciesData.exists 
+          ? Object.values(speciesData.abilities).map(a => Dex.toID(a)) 
+          : ['overgrow'];
+
+        if (abilityObj.exists && validAbilities.includes(abilityObj.id)) {
+          poke.ability = abilityObj.id;
+        } else {
+          const fallbackAbility = validAbilities[0] || 'overgrow';
+          console.log(`[Heal Migration] Pokémon: ${poke.name || poke.species} - Replaced illegal ability "${poke.ability}" with "${fallbackAbility}"`);
+          poke.ability = fallbackAbility;
+        }
       }
 
       // C. Migrate Nature
@@ -404,8 +458,9 @@ async function main() {
         poke.nature = natureMap.get(normNature) || normNature;
       }
 
-      // D. Migrate Moves
+      // D. Migrate and Heal Moves
       if (poke.moves && Array.isArray(poke.moves)) {
+        // Step 1: Migrate moves to official Showdown IDs
         for (const m of poke.moves) {
           if (!m) continue;
           migratedMovesCount++;
@@ -414,6 +469,49 @@ async function main() {
           const resolvedId = moveMap.get(normMove) || normMove;
           const move = gen.moves.get(resolvedId);
           m.id = move.exists ? move.id : resolvedId;
+          if (move.exists && move.name) {
+            m.name = move.name;
+          }
+        }
+
+        // Step 2: Healing block for illegal moves (One-time migration patch)
+        if (poke.species) {
+          const legalMoves: Array<{ id: string; name: string }> = [];
+          const currentMoveIds = new Set<string>();
+          let healedAny = false;
+
+          for (const m of poke.moves) {
+            if (m && m.id) {
+              if (canLearnMove(poke.species, m.id)) {
+                legalMoves.push({ id: m.id, name: gen.moves.get(m.id).name || m.id });
+                currentMoveIds.add(m.id);
+              } else {
+                healedAny = true;
+              }
+            }
+          }
+
+          if (healedAny) {
+            const originalCount = poke.moves.length;
+            const level = (poke as { level?: number }).level || 5;
+            const pool = getMovesAtLevel(poke.species, level);
+            
+            for (const poolMoveId of pool) {
+              if (legalMoves.length >= originalCount) break;
+              if (!currentMoveIds.has(poolMoveId)) {
+                legalMoves.push({ id: poolMoveId, name: gen.moves.get(poolMoveId).name || poolMoveId });
+                currentMoveIds.add(poolMoveId);
+              }
+            }
+
+            // Fallback in case of 0 moves
+            if (legalMoves.length === 0 && pool.length > 0) {
+              legalMoves.push({ id: pool[0]!, name: gen.moves.get(pool[0]!).name || pool[0]! });
+            }
+
+            console.log(`[Heal Migration] Pokémon: ${poke.name || poke.species} (Lvl ${level}) - Replaced illegal moves. Result:`, legalMoves.map(m => m.id));
+            poke.moves = legalMoves;
+          }
         }
       }
     }

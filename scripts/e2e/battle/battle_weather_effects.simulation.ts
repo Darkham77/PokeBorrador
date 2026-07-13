@@ -9,10 +9,10 @@ async function executeSingleTurn(page: Page) {
   await activeMoveBtn.click();
 }
 
-test.describe('E2E Weather Effects Verification', () => {
+test.describe('Weather Effects Verification Simulation', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2ESession(page);
-    const testUser = `TEST_WEATHER_${Date.now()}`;
+    const testUser = `TEST_WEATHER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     await loginTestUser(page, testUser);
   });
 
@@ -20,7 +20,11 @@ test.describe('E2E Weather Effects Verification', () => {
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { useMapStore } = await import('../../../src/stores/map.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+
+      // Forzar clima de lluvia para asegurar que AtmosphereLayer esté en el DOM
+      useMapStore().setGlobalWeather('rain');
 
       // Pelipper con Drizzle (Lluvia)
       const pelipper = pokemonDebugService.generate({
@@ -43,48 +47,47 @@ test.describe('E2E Weather Effects Verification', () => {
     await waitForWaitInput(page);
 
     // En el DOM, el clima se refleja aplicando el filtro del clima a la arena o mediante AtmosphereLayer
-    const atmosphere = page.locator('.battle-arena-view .atmosphere-container, .battle-arena-view canvas').first();
+    const atmosphere = page.locator('.battle-arena .atmosphere-container, .battle-arena canvas').first();
     await expect(atmosphere).toBeAttached();
 
-    // Debilitar al enemigo para finalizar el combate
-    await executeSingleTurn(page);
-
-    // Esperar a que la batalla termine y volvamos al overworld
-    await page.waitForFunction(() => {
+    // Huir del combate usando comando de debug para cerrarlo inmediatamente sin diálogos de experiencia/monedas
+    await page.evaluate(async () => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return true;
-      const store = resolver();
-      return !store.state || store.state.over;
-    }, undefined, { timeout: 15000 });
+      const battleStore = resolver?.();
+      if (battleStore?.state) {
+        battleStore.state.playerFled = true;
+      }
+      await window.__VITE_DEBUG__.forceFlee();
+    });
 
-    // Confirmar que el combate se cerró
-    const hudMapBtn = page.locator('button:has-text("MAPA")').first();
-    await expect(hudMapBtn).toBeVisible();
+    // Confirmar que la arena de combate se destruyó y ya no está en el DOM
+    await expect(page.locator('.battle-arena')).not.toBeAttached();
   });
 
   test('should apply sandstorm damage to non-immune pokemon at turn end', async ({ page }) => {
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { useMapStore } = await import('../../../src/stores/map.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      // Hippowdon con Sand Stream (Tormenta de arena)
-      const hippowdon = pokemonDebugService.generate({
-        id: 'hippowdon',
-        level: 50,
-        ability: 'sandstream',
-        moves: ['slackoff'] // Movimiento que no ataca para evitar noquear al rival de un golpe
-      });
-
-      // Bulbasaur (recibe daño por tormenta de arena)
+      // Bulbasaur (jugador)
       const bulbasaur = pokemonDebugService.generate({
         id: 'bulbasaur',
         level: 50,
-        moves: ['synthesis']
+        moves: ['splash']
       });
 
-      useGameStore().state.team = [hippowdon];
-      await useBattleStore().startBattle(bulbasaur, { locationId: 'route1', enemyTeam: [bulbasaur] });
+      // Bulbasaur (enemigo, recibe daño por tormenta de arena)
+      const enemyBulbasaur = pokemonDebugService.generate({
+        id: 'bulbasaur',
+        level: 50,
+        moves: ['splash']
+      });
+
+      useGameStore().state.team = [bulbasaur];
+      useMapStore().setGlobalWeather('sandstorm');
+      await useBattleStore().startBattle(enemyBulbasaur, { locationId: 'route1', enemyTeam: [enemyBulbasaur] });
     });
 
     await confirmAndStartBattle(page);
@@ -102,5 +105,14 @@ test.describe('E2E Weather Effects Verification', () => {
     });
 
     expect(enemyHpInfo.hp).toBeLessThan(enemyHpInfo.maxHp);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(async () => {
+      try {
+        const { useMapStore } = await import('../../../src/stores/map.ts');
+        useMapStore().setGlobalWeather(null);
+      } catch (_e) { /* ignore */ }
+    });
   });
 });

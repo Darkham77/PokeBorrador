@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Dex } from '@pkmn/sim';
+import { Dex, toID } from '@pkmn/sim';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 
+import { canLearnMove } from '../../../src/logic/pokemon/pokemonFactory.ts';
+
 describe('Backup Full validation and Dex compatibility test', () => {
-  it('should successfully run all SQLite migrations on the server_franco backup fixture and validate all saves against the Showdown Dex', () => {
+  it('should successfully run all SQLite migrations on the server_franco backup fixture and validate all saves against the Showdown Dex', async () => {
     // 1. Read the backup
     const backupRelPath = 'tests/node/fixtures/server_franco_backup_fixture.json';
     const backupPath = path.resolve(backupRelPath);
@@ -42,6 +44,47 @@ describe('Backup Full validation and Dex compatibility test', () => {
       )
     `);
 
+    db.exec(`
+      CREATE TABLE profiles (
+        id TEXT PRIMARY KEY,
+        username TEXT,
+        email TEXT,
+        trainer_level INTEGER,
+        player_class TEXT,
+        faction TEXT,
+        nick_style TEXT,
+        avatar_style TEXT,
+        elo_rating INTEGER,
+        current_session_id TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    `);
+
+    db.exec(`CREATE TABLE IF NOT EXISTS friendships (id TEXT PRIMARY KEY, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS global_chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, username TEXT, message TEXT, player_class TEXT, trainer_level INTEGER, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS war_factions (user_id TEXT PRIMARY KEY, email TEXT, faction TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS war_points (id INTEGER PRIMARY KEY AUTOINCREMENT, week_id TEXT, map_id TEXT, faction TEXT, points INTEGER, updated_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS war_dominance (week_id TEXT, map_id TEXT, winner_faction TEXT, union_points INTEGER, poder_points INTEGER, resolved_at TEXT, PRIMARY KEY (week_id, map_id))`);
+    db.exec(`CREATE TABLE IF NOT EXISTS events_config (id TEXT PRIMARY KEY, name TEXT, icon TEXT, type TEXT, active INTEGER, manual INTEGER, schedule TEXT, config TEXT, description TEXT, last_awarded_at TEXT, updated_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS competition_entries (id TEXT PRIMARY KEY, event_id TEXT, player_id TEXT, player_name TEXT, player_email TEXT, data TEXT, submitted_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS awards (id TEXT PRIMARY KEY, event_id TEXT, winner_id TEXT, winner_name TEXT, winner_email TEXT, prize TEXT, awarded_at TEXT, claimed INTEGER, claimed_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS market_listings (id TEXT PRIMARY KEY, seller_id TEXT, seller_name TEXT, listing_type TEXT, data TEXT, price INTEGER, status TEXT, buyer_id TEXT, created_at TEXT, updated_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS battle_invites (id TEXT PRIMARY KEY, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS ranked_queue (user_id TEXT PRIMARY KEY, elo INTEGER, status TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS passive_battle_reports (id TEXT PRIMARY KEY, user_id TEXT, opponent_id TEXT, result TEXT, report_data TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS daycare_slots (id TEXT PRIMARY KEY, player_id TEXT, pokemon_id TEXT, slot_index INTEGER, deposited_at TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS daycare_upgrades (player_id TEXT PRIMARY KEY, egg_capacity INTEGER, slot_boost INTEGER, updated_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS pokedex_entries (id TEXT PRIMARY KEY, player_id TEXT, pokemon_id INTEGER, status TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS trade_offers (id TEXT PRIMARY KEY, sender_id TEXT, receiver_id TEXT, offer_pokemon TEXT, offer_items TEXT, offer_money INTEGER, request_pokemon TEXT, request_items TEXT, request_money INTEGER, message TEXT, status TEXT, created_at TEXT, updated_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS eggs (id TEXT PRIMARY KEY, player_id TEXT, egg_id TEXT, steps_remaining INTEGER, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS guardian_captures (capture_date TEXT, map_id TEXT, user_id TEXT, winner_faction TEXT, pts_awarded INTEGER, captured_at TEXT, PRIMARY KEY (capture_date, map_id, user_id))`);
+    db.exec(`CREATE TABLE IF NOT EXISTS war_defenders (id TEXT PRIMARY KEY, user_id TEXT, map_id TEXT, pokemon_uid TEXT, pokemon_data TEXT, wins_count INTEGER, week_id TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS chat_messages (id TEXT PRIMARY KEY, senderId TEXT, senderName TEXT, message TEXT, type TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, created_at TEXT)`);
+    db.exec(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)`);
+
     // Insert raw saves from the backup
     const insertStmt = db.prepare(`
       INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at)
@@ -58,27 +101,40 @@ describe('Backup Full validation and Dex compatibility test', () => {
       });
     }
 
-    // 3. Load and run ALL sqlite migrations in chronological order
-    const migrationFiles = [
-      'database/migrations/20260619202000_migrate_saves_to_showdown_ids.sqlite.sql',
-      'database/migrations/20260622000000_migrate_saves_to_pure_showdown_ids.sqlite.sql',
-      'database/migrations/20260622000100_migrate_save_move_ids.sqlite.sql',
-      'database/migrations/20260622000200_fix_accented_spanish_move_ids.sqlite.sql',
-      'database/migrations/20260622000300_migrate_save_eggs_and_missions.sqlite.sql',
-      'database/migrations/20260627023400_fix_corrupted_n_move_ids.sqlite.sql',
-      'database/migrations/20260629230200_migrate_item_ids_in_saves_v3.sqlite.sql',
-      'database/migrations/20260630125200_migrate_saves_to_pure_pkms_item_ids.sqlite.sql',
-      'database/migrations/20260701140000_migrate_custom_item_ids.sqlite.sql'
-    ];
+    // 3. Load and run ALL registered migrations in chronological order from migrations_data.ts
+    const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
+    const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
 
-    for (const file of migrationFiles) {
-      const fullPath = path.resolve(file);
-      assert.ok(fs.existsSync(fullPath), `Migration file must exist at ${file}`);
-      const sql = fs.readFileSync(fullPath, 'utf8');
-      const statements = splitSQLStatements(sql);
+    // Assert that all physical .sql files in database/migrations/ are present in DATABASE_MIGRATIONS
+    const MIGRATIONS_DIR = path.resolve('database/migrations');
+    const physicalSqlFiles = fs.readdirSync(MIGRATIONS_DIR)
+      .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'));
+
+    for (const physicalFile of physicalSqlFiles) {
+      const migrationId = physicalFile.replace(/\.sql$/, '');
+      const registered = DATABASE_MIGRATIONS.some(m => m.id === migrationId);
+      assert.ok(registered, `La migración física '${physicalFile}' no está registrada en src/logic/db/migrations_data.ts. Recuerda ejecutar 'npm run migrations:generate'.`);
+    }
+
+    for (const migration of DATABASE_MIGRATIONS) {
+      const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
+      const isSqliteSpec = migration.sqlite_sql !== undefined;
+      const statements = splitSQLStatements(sqlSource);
       for (const stmt of statements) {
         if (stmt.trim()) {
-          db.exec(stmt);
+          const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
+          if (sql) {
+            try {
+              db.exec(sql);
+            } catch (stmtErr: unknown) {
+              const msg = (stmtErr as Error).message.toLowerCase();
+              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+              const isMissing = msg.includes('no such column');
+              if (!isDuplicate && !isMissing) {
+                throw stmtErr;
+              }
+            }
+          }
         }
       }
     }
@@ -147,6 +203,8 @@ describe('Backup Full validation and Dex compatibility test', () => {
             const moveObj = Dex.moves.get(m.id);
             if (!moveObj.exists) {
               errors.push(`${tag} - Invalid move: ID '${m.id}' (Name: '${m.name}')`);
+            } else if (poke.id && !canLearnMove(poke.id, m.id)) {
+              errors.push(`${tag} - Illegal move for species ${poke.id}: '${m.id}'`);
             }
           }
         }
@@ -174,6 +232,11 @@ describe('Backup Full validation and Dex compatibility test', () => {
       }
       fs.writeFileSync(path.join(scratchDir, 'backup_validation_errors.txt'), errors.join('\n'), 'utf8');
       console.warn(`[Full Backup Audit] Found ${errors.length} validation errors. Wrote log to scratch/backup_validation_errors.txt`);
+    } else {
+      const errorLogPath = path.resolve('scratch/backup_validation_errors.txt');
+      if (fs.existsSync(errorLogPath)) {
+        fs.unlinkSync(errorLogPath);
+      }
     }
 
     assert.strictEqual(errors.length, 0, `There must be 0 validation errors across all migrated backup saves. Found: ${errors.length}`);

@@ -1,4 +1,3 @@
-import { defineWorkspace } from 'vitest/config'
 
 /**
  * Vitest workspace — unified runner for all test suites.
@@ -12,9 +11,17 @@ import { defineWorkspace } from 'vitest/config'
  * Run node only:    vitest run --project node
  * Coverage merged:  vitest run --coverage
  */
+import { defineWorkspace } from 'vitest/config'
+import path from 'node:path'
+
 export default defineWorkspace([
   {
     extends: './vite.config.ts',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
     test: {
       name: 'unit',
       environment: 'jsdom',
@@ -30,6 +37,11 @@ export default defineWorkspace([
   },
   {
     extends: './vitest.node.config.ts',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
     test: {
       name: 'node',
       environment: 'node',

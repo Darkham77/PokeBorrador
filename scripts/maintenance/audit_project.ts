@@ -96,6 +96,10 @@ const legacyDates: AuditRule = {
   severity: 'error',
   check: (filePath: string) => {
     const lowerPath = filePath.toLowerCase();
+    // Excluir unit tests reales y mocks, pero auditar rigurosamente simulaciones (.sim.ts) y scripts locales
+    if (lowerPath.endsWith('.sim.ts') || lowerPath.includes('scripts/e2e/')) {
+      return true; // Auditar
+    }
     const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('mock');
     return !isTestOrMock;
   },
@@ -305,8 +309,8 @@ const zIndexAudit: AuditRule = {
   fixable: true
 };
 const forbiddenFallbacks: AuditRule = {
-  regex: /\b(getItemByName|resolveMoveId)\b|\.id\s*(?:\|\||\?\?)\s*\w*\.?name/g,
-  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe.`,
+  regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature)\b\([^)]*\)\s*(?:\|\||\?\?)/g,
+  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe. Queda estrictamente prohibido usar valores por defecto o coalescencia nula en búsquedas de ID.`,
   severity: 'error',
   check: (filePath: string) => {
     const lowerPath = filePath.toLowerCase();
@@ -342,58 +346,111 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
 
   if (isLogic || isVue) {
-    const tag = 'script';
-    const block = isVue ? extractBlock(content, tag) : content;
-    if (block) {
-      const allRules: AuditRule[] = [legacyDates, config.hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot, forbiddenFallbacks];
+    if (isVue) {
+      const scriptBlocks = extractAllBlocks(content, 'script');
+      // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
+      for (let i = scriptBlocks.length - 1; i >= 0; i--) {
+        const block = scriptBlocks[i]!;
+        const allRules: AuditRule[] = [
+          legacyDates, 
+          config.hardcodedTimezone, 
+          nodePrefix, 
+          esmExtensions, 
+          tsIgnore, 
+          timersPromises, 
+          explicitResource, 
+          config.jsonStringifyInWatch, 
+          config.intersectionObserverRoot, 
+          forbiddenFallbacks,
+          config.manualTimersFrontend
+        ];
+        let rules: AuditRule[] = allRules;
+        
+        if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
+          rules = rules.filter(r => r !== config.legacyDates);
+        }
+
+        let newBlock = runRules(filePath, block.content, rules, violations, fix, block.startLine);
+        
+        if (fix && newBlock !== block.content) {
+          for (const rule of rules) {
+            const importer = rule.addImport;
+            if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
+              newBlock = importer + '\n' + newBlock;
+            }
+          }
+          content = content.substring(0, block.startIdx) + newBlock + content.substring(block.endIdx);
+          modified = true;
+        }
+      }
+
+      // También audita el bloque de template para reglas de lógica e integridad
+      const templateBlocks = extractAllBlocks(content, 'template');
+      for (const block of templateBlocks) {
+        const templateRules: AuditRule[] = [
+          config.dbInTemplates, 
+          config.functionCallsInTemplates
+        ];
+        
+        if (!(filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts'))) {
+          templateRules.push(legacyDates);
+        }
+
+        runRules(filePath, block.content, templateRules, violations, false, block.startLine);
+      }
+    } else {
+      // isLogic
+      const allRules: AuditRule[] = [
+        legacyDates, 
+        config.hardcodedTimezone, 
+        nodePrefix, 
+        esmExtensions, 
+        tsIgnore, 
+        timersPromises, 
+        explicitResource, 
+        config.jsonStringifyInWatch, 
+        config.intersectionObserverRoot, 
+        forbiddenFallbacks
+      ];
       let rules: AuditRule[] = allRules;
       
-      // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
       if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
       }
 
-      let newBlock = runRules(filePath, block, rules, violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      let newBlock = runRules(filePath, content, rules, violations, fix, 0);
       
-      // Post-fix: Añadir imports necesarios si se aplicaron correcciones
-      if (fix && newBlock !== block) {
+      if (fix && newBlock !== content) {
         for (const rule of rules) {
           const importer = rule.addImport;
           if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
             newBlock = importer + '\n' + newBlock;
           }
         }
-        content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
+        content = newBlock;
         modified = true;
       }
     }
   }
 
   if (isStyle || isVue) {
-    const tag = 'style';
-    const block = isVue ? extractBlock(content, tag) : content;
-    if (block) {
-      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, fix, isVue ? findBlockStart(content, tag) : 0);
-      if (fix && newBlock !== block) {
-        content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
+    if (isVue) {
+      const styleBlocks = extractAllBlocks(content, 'style');
+      for (let i = styleBlocks.length - 1; i >= 0; i--) {
+        const block = styleBlocks[i]!;
+        const newBlock = runRules(filePath, block.content, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, fix, block.startLine);
+        if (fix && newBlock !== block.content) {
+          content = content.substring(0, block.startIdx) + newBlock + content.substring(block.endIdx);
+          modified = true;
+        }
+      }
+    } else {
+      // isStyle
+      const newBlock = runRules(filePath, content, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, violations.length > 0 ? false : fix, 0);
+      if (fix && newBlock !== content) {
+        content = newBlock;
         modified = true;
       }
-    }
-  }
-
-  if (isVue) {
-    const tag = 'script';
-    const block = extractBlock(content, tag);
-    if (block) {
-      runRules(filePath, block, [config.manualTimersFrontend], violations, fix, findBlockStart(content, tag));
-    }
-  }
-
-  if (isVue) {
-    const tag = 'template';
-    const block = extractBlock(content, tag);
-    if (block) {
-      runRules(filePath, block, [config.dbInTemplates, config.functionCallsInTemplates], violations, fix, findBlockStart(content, tag));
     }
   }
 
@@ -535,6 +592,34 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
 function extractBlock(content: string, tag: string): string | null {
   const match = content.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
   return match ? (match[1] ?? null) : null;
+}
+
+interface VueBlock {
+  content: string;
+  startLine: number;
+  startIdx: number;
+  endIdx: number;
+}
+
+function extractAllBlocks(content: string, tag: string): VueBlock[] {
+  const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'gi');
+  const blocks: VueBlock[] = [];
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const blockContent = match[1] ?? '';
+    const beforeMatch = content.substring(0, match.index);
+    const startLine = beforeMatch.split('\n').length;
+    const openingTagLength = match[0].indexOf(blockContent);
+    const startIdx = match.index + openingTagLength;
+    const endIdx = startIdx + blockContent.length;
+    blocks.push({
+      content: blockContent,
+      startLine,
+      startIdx,
+      endIdx
+    });
+  }
+  return blocks;
 }
 
 function findBlockStart(content: string, tag: string): number {

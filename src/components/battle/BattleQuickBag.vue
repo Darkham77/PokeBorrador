@@ -58,6 +58,8 @@ const battleItems = computed<BattleItem[]>(() => {
   })
 })
 
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+
 const canUseItems = computed(() => {
   const p = battleStore.state?.player
   if (!p) return false
@@ -65,12 +67,8 @@ const canUseItems = computed(() => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return false
   if (battleStore.currentSubState !== 'WAIT_INPUT') return false
   
-  const volatile = p.volatileCounters
-  if (volatile) {
-    if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
-        (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
-      return false
-    }
+  if (isPokemonLocked(p)) {
+    return false
   }
   
   return true

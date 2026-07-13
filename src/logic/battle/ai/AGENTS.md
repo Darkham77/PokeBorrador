@@ -42,6 +42,7 @@ Battle Engine Developers.
 When `buildSnapshot()` throws (playerRequest/enemyRequest null) or there is no store,
 `HeuristicAI.decideMove()` MUST use `pickBestMoveByPower(enemy)` as its fallback.
 This function:
+
 - Filters moves with pp = 0 or disabled via `enemy.disabledMove`
 - Returns the highest `power` move via `.reduce()`
 - NEVER returns the first move blindly

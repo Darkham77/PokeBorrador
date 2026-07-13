@@ -1,6 +1,6 @@
 ---
 name: grill-with-docs
-description: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.
+description: Grilling session that challenges your plan against the DOX indices (AGENTS.md hierarchy), sharpens terminology, and updates local contracts inline as decisions crystallise. Use when the user wants to stress-test a plan against their project's rules, constraints, and documented decisions.
 ---
 
 <what-to-do>
@@ -9,7 +9,7 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 
 Ask the questions one at a time, waiting for feedback on each question before continuing. Asking multiple questions at once is bewildering. When asking a question with discrete options, you MUST call the `ask_question` tool instead of writing options as plain text. This renders an interactive UI the user can click. Use open-ended plain text questions only when the answer space is truly unbounded.
 
-If a *fact* can be found by exploring the codebase, look it up rather than asking me. The *decisions*, though, are mine — put each one to me and wait for my answer.
+If a *fact* can be found by exploring the codebase or reading the DOX hierarchy, look it up rather than asking me. The *decisions*, though, are mine — put each one to me and wait for my answer.
 
 Do not enact the plan until I confirm we have reached a shared understanding.
 
@@ -17,51 +17,25 @@ Do not enact the plan until I confirm we have reached a shared understanding.
 
 <supporting-info>
 
-## Domain awareness
+## DOX Hierarchy and Domain Awareness
 
-During codebase exploration, also look for existing documentation:
+This repository strictly organizes its domains, rules, guidelines, and structural design using the **DOX framework**:
 
-### File structure
+- **Root [AGENTS.md](./AGENTS.md)**: The entry point, defining global rules, project identity, design standards, database rules, and git protocols. It contains the top-level `Child DOX Index`.
+- **Child `AGENTS.md` files**: Each directory branch has its own `AGENTS.md` specifying local contracts, responsibilities, work guidance, verification checks, and lists of its child directories.
+- **Strictly Relative Paths**: All links inside any `AGENTS.md` file MUST use relative paths (e.g. `./subfolder/AGENTS.md` or `../sibling/AGENTS.md`). Absolute paths are strictly forbidden.
 
-Most repos have a single context:
-
-```
-/
-├── CONTEXT.md
-├── docs/
-│   └── adr/
-│       ├── 0001-event-sourced-orders.md
-│       └── 0002-postgres-for-write-model.md
-└── src/
-```
-
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
-
-```
-/
-├── CONTEXT-MAP.md
-├── docs/
-│   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
-```
-
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
+Before starting the session, you must read the DOX chain (from root to target folders) to fully extract the rules and design standards of the systems you will touch.
 
 ## During the session
 
-### Challenge against the glossary
+### Challenge against the DOX Contracts
 
-When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+When the user proposes a change, verify if it violates any global rules in the root `AGENTS.md` or domain rules in the corresponding local `AGENTS.md`. Proactively raise contradictions: "Your local contract for this folder states X, but your plan suggests doing Y — should we adapt the contract, or align the plan?"
 
 ### Sharpen fuzzy language
 
-When the user uses vague or overloaded terms, propose a precise canonical term. "You're saying 'account' — do you mean the Customer or the User? Those are different things."
+When the user uses vague or overloaded terms, verify against the existing codebase and local specifications to propose a precise, canonical term that maintains coherence.
 
 ### Discuss concrete scenarios
 
@@ -69,22 +43,12 @@ When domain relationships are being discussed, stress-test them with specific sc
 
 ### Cross-reference with code
 
-When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
+When the user states how something works, check whether the code agrees. If you find a contradiction, surface it immediately.
 
-### Update CONTEXT.md inline
+### Update AGENTS.md files inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+When a design decision, rule, or contract is resolved, update the nearest owning `AGENTS.md` file immediately (usually in the `Local Contracts` or `Work Guidance` sections). Don't batch these up — capture them as they happen.
 
-`CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
-
-### Offer ADRs sparingly
-
-Only offer to create an ADR when all three are true:
-
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
-2. **Surprising without context** — a future reader will wonder "why did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
-
-If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
+If the decision modifies the layout or purpose of child directories, update the `Child DOX Index` of the corresponding parent `AGENTS.md` file and keep all links relative.
 
 </supporting-info>

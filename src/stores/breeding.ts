@@ -469,3 +469,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     saveWarehouseEggs
   };
 });
+
+if (typeof window !== 'undefined') {
+  (window as unknown as { __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown }).__VITE_DEBUG_BREEDING_STORE_RESOLVER__ = () => useBreedingStore();
+}

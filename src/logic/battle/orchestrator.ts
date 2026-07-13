@@ -5,6 +5,7 @@ import { handleEntryAbilities } from './battleFlow.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
+import { generateRandomSeed } from './battleSeedManager.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState, BattleStages, BattleLog, ShowdownPlayerRequest } from '@/types/battle/battle'
@@ -13,6 +14,7 @@ import { mapToShowdownSet } from './showdownAdapter.ts'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
+import { getShowdownNickname } from './showdownUidMapper.ts'
 import {
   showdownWorker,
   setShowdownWorker,
@@ -90,15 +92,15 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
   logger.info('Orchestrator', `wasSearching evaluated: ${wasSearching} (wasSearchingOpt: ${wasSearchingOpt})`)
   
-  const { sanitizePokemon } = await import('@/logic/pokemon/pokemonFactory')
+  const { validatePokemon } = await import('@/logic/pokemon/pokemonFactory')
   const { useMapStore } = await import('@/stores/map')
   const mapStore = useMapStore() as unknown as MapStore
   const finalEnemyPoke = enemyPoke
   const finalEnemyTeam = enemyTeam && enemyTeam.length > 0 ? enemyTeam : [finalEnemyPoke]
   const startingEnemyPoke = finalEnemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
 
-  sanitizePokemon(playerPoke)
-  finalEnemyTeam.forEach((p: Pokemon) => p && sanitizePokemon(p))
+  validatePokemon(playerPoke)
+  finalEnemyTeam.forEach((p: Pokemon) => p && validatePokemon(p))
 
   // LIMPIEZA DE ESTADOS VOLÁTILES
   ctx.clearVolatileStatus(playerPoke)
@@ -117,8 +119,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   ctx.activeBattle.value = {
     enemy: null, 
     player: null, 
-    _initialEnemy: startingEnemyPoke,
-    _initialPlayer: playerPoke,
+    _initialEnemy: JSON.parse(JSON.stringify(startingEnemyPoke)) as unknown as Pokemon,
+    _initialPlayer: JSON.parse(JSON.stringify(playerPoke)) as unknown as Pokemon,
     _rewardCombatants: [],
     isGym, gymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
     enemyInventory,
@@ -374,14 +376,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
       window.__VITE_DEBUG__.getSimulatorState = getSimulatorState;
     }
-     // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
-     const debugSeed = (typeof window !== 'undefined' && window.__VITE_DEBUG__?.battleSeed);
-     const seedArr = debugSeed || [
-       Math.floor(Math.random() * 0x10000),
-       Math.floor(Math.random() * 0x10000),
-       Math.floor(Math.random() * 0x10000),
-       Math.floor(Math.random() * 0x10000)
-     ];
+      // Generar la semilla (seed) en el cliente y guardarla para reproducibilidad de errores
+      let debugSeed: number[] | null = null;
+      if (typeof window !== 'undefined') {
+        debugSeed = window.__VITE_DEBUG__?.battleSeed ?? null;
+        console.log(`[E2E-SEED-ORCHESTRATOR-DEBUG] Read seed directly from window: ${JSON.stringify(debugSeed)}`);
+      }
+      const seedArr = debugSeed || generateRandomSeed();
      if (ctx.activeBattle.value) {
        ctx.activeBattle.value.seed = seedArr;
        ctx.activeBattle.value.battleHistory = [];
@@ -390,7 +391,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     // Generar el equipo ordenado del jugador para Showdown
     const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
     const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
-    if (initialPlayerIdx > 0) {
+    // Para simulaciones E2E, NO reordenar el equipo físico inicial para mantener el orden exacto del fuzzer offline
+    if (initialPlayerIdx > 0 && !debugSeed) {
       const [p] = playerTeamList.splice(initialPlayerIdx, 1);
       if (p) playerTeamList.unshift(p);
     }
@@ -402,7 +404,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const enemyTeamList = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
     if (initialEnemy) {
       const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
-      if (initialEnemyIdx > 0) {
+      if (initialEnemyIdx > 0 && !debugSeed) {
         const [p] = enemyTeamList.splice(initialEnemyIdx, 1);
         if (p) enemyTeamList.unshift(p);
       }
@@ -412,7 +414,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     enemyTeamList.forEach(p => {
       if (p) p2Hps[p.uid] = p.hp;
     });
-    const initialWeatherOfficial = mapVisualToOfficialWeather(battleState?.weather?.type, ACTIVE_GENERATION);
+    const initialWeatherOfficial = battleState?.weather?.type || 'none';
     
     const p1Statuses: Record<string, string> = {};
     playerTeamList.forEach(p => {
@@ -423,20 +425,21 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       if (p) p2Statuses[p.uid] = p.status || '';
     });
 
-    logger.info('ShowdownWorker', `Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`);
+    console.warn(`[E2E-SEED-DEBUG] Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`);
     
     const worker = showdownWorker!;
     worker.postMessage({
       type: 'INIT_BATTLE',
       payload: {
-        p1: { name: 'Player', team: p1Team.map((p, idx) => ({ ...p, nickname: playerTeamList[idx]?.uid?.split('-')[0], name: playerTeamList[idx]?.uid?.split('-')[0], uid: playerTeamList[idx]?.uid })) },
-        p2: { name: battleState?.trainerName || 'Enemy', team: p2Team.map((p, idx) => ({ ...p, nickname: enemyTeamList[idx]?.uid?.split('-')[0], name: enemyTeamList[idx]?.uid?.split('-')[0], uid: enemyTeamList[idx]?.uid })) },
+        p1: { name: 'Player', team: p1Team.map((p, idx) => ({ ...p, nickname: getShowdownNickname(playerTeamList[idx]?.uid || ''), name: getShowdownNickname(playerTeamList[idx]?.uid || ''), uid: playerTeamList[idx]?.uid })) },
+        p2: { name: battleState?.trainerName || 'Enemy', team: p2Team.map((p, idx) => ({ ...p, nickname: getShowdownNickname(enemyTeamList[idx]?.uid || ''), name: getShowdownNickname(enemyTeamList[idx]?.uid || ''), uid: enemyTeamList[idx]?.uid })) },
         p1Hps,
         p2Hps,
         p1Statuses,
         p2Statuses,
         weather: initialWeatherOfficial,
-        seed: seedArr
+        seed: seedArr,
+        isE2eSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isE2eSimulation)
       }
     });
 
@@ -471,6 +474,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         if (ctx.activeBattle.value && responsePayload) {
           ctx.activeBattle.value.playerRequest = responsePayload.p1Request;
           ctx.activeBattle.value.enemyRequest = responsePayload.p2Request;
+        }
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+          window.__VITE_DEBUG__.p1ChoiceIdx = 0;
+          window.__VITE_DEBUG__.p2ChoiceIdx = 0;
         }
         if (worker.removeEventListener) {
           worker.removeEventListener('message', initHandler);

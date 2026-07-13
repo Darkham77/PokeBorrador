@@ -104,30 +104,64 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
     case '-sidestart': {
       if (line.includes('[silent]')) return true;
       const rawSide = parts[2] || '';
-      const condition = (parts[3] || '').replace('move: ', '');
+      const conditionRaw = (parts[3] || '').replace('move: ', '');
       const sideLabel = rawSide.startsWith('p1') ? 'tu campo' : 'el campo rival';
-      if (condition) store.addLog(`¡${condition} activado en ${sideLabel}!`, 'log-info', '🛡️');
+      if (conditionRaw && store.activeBattle.value) {
+        const key = conditionRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const isPlayer = rawSide.startsWith('p1');
+        const sideObj = isPlayer
+          ? (store.activeBattle.value.playerSideConditions ??= {})
+          : (store.activeBattle.value.enemySideConditions ??= {});
+        // Spikes are stackable (up to 3 layers); others are on/off (turns=1)
+        if (key === 'spikes') {
+          sideObj[key] = { turns: Math.min(3, (sideObj[key]?.turns ?? 0) + 1) };
+        } else {
+          sideObj[key] = { turns: 1 };
+        }
+        store.addLog(`¡${conditionRaw} activado en ${sideLabel}!`, 'log-info', '🛡️');
+      }
       return true;
     }
 
     case '-sideend': {
       if (line.includes('[silent]')) return true;
-      const condition = (parts[3] || '').replace('move: ', '');
-      if (condition) store.addLog(`¡${condition} terminó!`, 'log-info', '🛡️');
+      const rawSideEnd = parts[2] || '';
+      const conditionEndRaw = (parts[3] || '').replace('move: ', '');
+      if (conditionEndRaw && store.activeBattle.value) {
+        const key = conditionEndRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const isPlayer = rawSideEnd.startsWith('p1');
+        const sideObj = isPlayer
+          ? store.activeBattle.value.playerSideConditions
+          : store.activeBattle.value.enemySideConditions;
+        if (sideObj) delete sideObj[key];
+        store.addLog(`¡${conditionEndRaw} terminó!`, 'log-info', '🛡️');
+      }
       return true;
     }
 
     case '-fieldstart': {
       if (line.includes('[silent]')) return true;
-      const condition = (parts[2] || '').replace('move: ', '');
-      if (condition) store.addLog(`¡${condition} activado en el campo!`, 'log-info', '🌀');
+      const fieldCondition = (parts[2] || '').replace('move: ', '');
+      if (fieldCondition && store.activeBattle.value) {
+        const terrains = ['Electric Terrain', 'Grassy Terrain', 'Misty Terrain', 'Psychic Terrain'];
+        if (terrains.includes(fieldCondition)) {
+          store.activeBattle.value.terrain = fieldCondition;
+        }
+        store.addLog(`¡${fieldCondition} activado en el campo!`, 'log-info', '🌀');
+      }
       return true;
     }
 
     case '-fieldend': {
       if (line.includes('[silent]')) return true;
-      const condition = (parts[2] || '').replace('move: ', '');
-      if (condition) store.addLog(`¡${condition} terminó!`, 'log-info', '🌀');
+      const fieldConditionEnd = (parts[2] || '').replace('move: ', '');
+      if (fieldConditionEnd && store.activeBattle.value) {
+        const terrains = ['Electric Terrain', 'Grassy Terrain', 'Misty Terrain', 'Psychic Terrain'];
+        if (terrains.includes(fieldConditionEnd)) {
+          store.activeBattle.value.terrain = null;
+        }
+        store.addLog(`¡${fieldConditionEnd} terminó!`, 'log-info', '🌀');
+      }
       return true;
     }
 

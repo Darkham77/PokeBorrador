@@ -104,10 +104,10 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
   it('TestCase 3: Duplicate identical species mapping', () => {
     // Two identical Bulbasaurs with same moves and stats
     const p1Team = [
-      { name: 'Bulbasaur', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb-1' },
-      { name: 'Bulbasaur', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb-2' }
+      { name: 'bulb1111', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb1111-uid1' },
+      { name: 'bulb2222', species: 'Bulbasaur', moves: ['tackle'], level: 50, uid: 'bulb2222-uid2' }
     ];
-    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['splash'], level: 50, uid: 'rhydon-uid' }];
+    const p2Team = [{ name: 'rhydon11', species: 'Rhydon', moves: ['splash'], level: 50, uid: 'rhydon11-uid' }];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -122,43 +122,43 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
     const request1 = {
       side: {
         pokemon: [
-          { ident: 'p1: Bulbasaur', details: 'Bulbasaur, L50' },
-          { ident: 'p1: Bulbasaur', details: 'Bulbasaur, L50' }
+          { ident: 'p1: bulb1111', details: 'Bulbasaur, L50' },
+          { ident: 'p1: bulb2222', details: 'Bulbasaur, L50' }
         ]
       }
     };
 
     const updated1 = injectUidsIntoRequest(battle, 'p1', request1) as any;
-    assert.strictEqual(updated1.side.pokemon[0].uid, 'bulb-1');
-    assert.strictEqual(updated1.side.pokemon[1].uid, 'bulb-2');
+    assert.strictEqual(updated1.side.pokemon[0].uid, 'bulb1111-uid1');
+    assert.strictEqual(updated1.side.pokemon[1].uid, 'bulb2222-uid2');
 
     // Switch to bulb-2
     battle.choose('p1', 'switch 2');
     battle.choose('p2', 'move splash');
 
     // Now bulb-2 is active (index 0), bulb-1 is benched (index 1)
-    assert.strictEqual((battle.p1.pokemon[0] as unknown as { uid?: string })?.uid, 'bulb-2');
-    assert.strictEqual((battle.p1.pokemon[1] as unknown as { uid?: string })?.uid, 'bulb-1');
+    assert.strictEqual((battle.p1.pokemon[0] as unknown as { uid?: string })?.uid, 'bulb2222-uid2');
+    assert.strictEqual((battle.p1.pokemon[1] as unknown as { uid?: string })?.uid, 'bulb1111-uid1');
 
     const request2 = {
       side: {
         pokemon: [
-          { ident: 'p1: Bulbasaur', details: 'Bulbasaur, L50' },
-          { ident: 'p1: Bulbasaur', details: 'Bulbasaur, L50' }
+          { ident: 'p1: bulb2222', details: 'Bulbasaur, L50' },
+          { ident: 'p1: bulb1111', details: 'Bulbasaur, L50' }
         ]
       }
     };
 
     const updated2 = injectUidsIntoRequest(battle, 'p1', request2) as any;
-    assert.strictEqual(updated2.side.pokemon[0].uid, 'bulb-2');
-    assert.strictEqual(updated2.side.pokemon[1].uid, 'bulb-1');
+    assert.strictEqual(updated2.side.pokemon[0].uid, 'bulb2222-uid2');
+    assert.strictEqual(updated2.side.pokemon[1].uid, 'bulb1111-uid1');
   });
 
   it('TestCase 4: Strict error when UID is missing', () => {
     const p1Team = [
-      { name: 'Vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50, uid: 'vaporeon-uid' }
+      { name: 'vaporeon', species: 'Vaporeon', moves: ['hydropump'], level: 50, uid: 'vaporeon-uid' }
     ];
-    const p2Team = [{ name: 'Rhydon', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }];
+    const p2Team = [{ name: 'rhydon11', species: 'Rhydon', moves: ['stoneedge'], level: 50, uid: 'rhydon-uid' }];
 
     battle.setPlayer('p1', { name: 'Player 1', team: p1Team as any });
     battle.setPlayer('p2', { name: 'Player 2', team: p2Team as any });
@@ -168,7 +168,7 @@ describe('Showdown Direct UID Mapping & Sync Unit Tests', () => {
     const request = {
       side: {
         pokemon: [
-          { ident: 'p1: Vaporeon', details: 'Vaporeon, L50' }
+          { ident: 'p1: vaporeon', details: 'Vaporeon, L50' }
         ]
       }
     };

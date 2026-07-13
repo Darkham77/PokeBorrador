@@ -118,10 +118,16 @@ export const useBattleStore = defineStore('battle', () => {
         return match
       }
       
-      const md = pokemonDataProvider.getMoveData(moveId) || {}
+      const md = pokemonDataProvider.getMoveData(moveId)
+      if (!md) {
+        throw new Error(`[syncActiveMovesFromRequest] Movimiento no encontrado por ID en la base de datos: ${moveId}`)
+      }
+      if (!md.name) {
+        throw new Error(`[syncActiveMovesFromRequest] El movimiento "${moveId}" no tiene traducción al español (name requerido).`)
+      }
       return {
         id: moveId,
-        name: reqMove.move || md.name || moveId,
+        name: md.name,
         type: md.type || 'normal',
         cat: (md.cat || 'physical') as 'physical' | 'special' | 'status',
         power: md.power,

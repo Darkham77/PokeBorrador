@@ -7,12 +7,16 @@ import { generateTestBatches, getTriggerSlot, generateBatchHash } from '../gener
 import { generateItemTestBatches } from '../generators/fuzzer_item_generator.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/battle/showdownBridge.ts';
-import { getShowdownFormatId } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { getShowdownFormatId, resolveBaseStats, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
+
+// Aplicar el monkey-patch unificado de Showdown
+patchShowdownSpreadModify(() => false);
 import { logger } from '../../../../src/logic/utils/logger.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
+import { MECHANICS_SCENARIOS } from '../scenarios/fuzzer_mechanics_scenarios.ts';
 import { MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
 import {
   EXCLUDED_ABILITY_ENTRIES,
@@ -27,7 +31,10 @@ import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 import type { PokemonSet } from '@pkmn/sim';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
-const REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_moves_coverage_report.json');
+const MOVES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_moves_coverage_report.json');
+const ABILITIES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_abilities_coverage_report.json');
+const ITEMS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_items_coverage_report.json');
+const SCENARIOS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_scenarios_coverage_report.json');
 
 // ---------------------------------------------------------------------------
 // Override Math.random with a deterministic LCG (seed 12345) for test parity
@@ -68,7 +75,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
 
 function createLocalPoke(set: PokemonSet): Pokemon {
   const speciesData = Dex.species.get(set.species);
-  const baseStats = speciesData.baseStats;
+  const baseStats = resolveBaseStats(set.species);
   const natureData = Dex.natures.get(set.nature || 'serious');
   const mappedNature = {
     up: natureData.plus ? (natureData.plus === 'atk' ? 'Ataque' : natureData.plus === 'def' ? 'Defensa' : natureData.plus === 'spa' ? 'At. Esp' : natureData.plus === 'spd' ? 'Def. Esp' : 'Velocidad') : null,
@@ -85,14 +92,7 @@ function createLocalPoke(set: PokemonSet): Pokemon {
       spd: set.ivs?.spd ?? 31,
       spe: set.ivs?.spe ?? 31
     },
-    {
-      hp: baseStats.hp,
-      atk: baseStats.atk,
-      def: baseStats.def,
-      spa: baseStats.spa,
-      spd: baseStats.spd,
-      spe: baseStats.spe
-    },
+    baseStats,
     mappedNature,
     false,
     set.evs ? {
@@ -104,6 +104,9 @@ function createLocalPoke(set: PokemonSet): Pokemon {
       spe: set.evs.spe
     } : null
   );
+
+  statsMap.set(set.name || set.species, calculated);
+  (set as unknown as { stats: unknown }).stats = calculated;
 
   return {
     uid: Math.random().toString(36).substring(2, 11),
@@ -422,14 +425,18 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       batchRecord.winner = simBattle.ended
         ? (simBattle.winner === simBattle.p1.name ? 'p1' : 'p2')
         : null;
-      const p1Final = new Array(simBattle.p1.pokemon.length);
-      simBattle.p1.pokemon.forEach(p => {
-        p1Final[p.position] = { name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted };
-      });
-      const p2Final = new Array(simBattle.p2.pokemon.length);
-      simBattle.p2.pokemon.forEach(p => {
-        p2Final[p.position] = { name: p.name, hp: p.hp, maxHp: p.maxhp, fainted: p.fainted };
-      });
+      const p1Final = simBattle.p1.pokemon.map(p => ({
+        name: p.name,
+        hp: p.hp,
+        maxHp: p.maxhp,
+        fainted: p.fainted
+      }));
+      const p2Final = simBattle.p2.pokemon.map(p => ({
+        name: p.name,
+        hp: p.hp,
+        maxHp: p.maxhp,
+        fainted: p.fainted
+      }));
 
       batchRecord.finalState = {
         p1: p1Final,
@@ -440,90 +447,6 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   }
 
   await Promise.all(batches.map((b, idx) => executeBatch(b, idx + 1)));
-
-  // Phase 2: Scripted ability scenarios
-  console.log(styleText('bold', '\n--- 🎭 ESCENARIOS SCRIPTADOS PARA HABILIDADES ---'));
-  for (const scenario of ABILITY_SCENARIOS) {
-    console.log(`🎬 Escenario: ${scenario.name}...`);
-
-    const simBattle = new Battle({ formatid: getShowdownFormatId() });
-    simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
-    simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
-
-    if (simBattle.p1.activeRequest?.teamPreview || simBattle.p2.activeRequest?.teamPreview) {
-      simBattle.choose('p1', 'default');
-      simBattle.choose('p2', 'default');
-    }
-
-    let lastIndex = 0;
-    const getScenarioNewLogs = (): string[] => {
-      const all = simBattle.log;
-      const slice = all.slice(lastIndex);
-      lastIndex = all.length;
-      return slice;
-    };
-
-    const localP1 = createLocalPoke(scenario.playerTeam[0]!);
-    const localP2 = createLocalPoke(scenario.enemyTeam[0]!);
-    const mockStore = createMockBattleContext(localP1, localP2);
-
-    const scenarioSteps: string[] = [];
-
-    for (const action of scenario.actions) {
-      if (simBattle.ended) break;
-      unhandledBridgeLines.length = 0;
-
-      simBattle.choose('p1', action.p1);
-      simBattle.choose('p2', action.p2);
-
-      const rawTurnLogs = getScenarioNewLogs();
-      const turnLogs = filterShowdownLogs(rawTurnLogs);
-
-      for (const logLine of turnLogs) {
-        const stepDesc = simplifyLogLine(logLine);
-        if (stepDesc) scenarioSteps.push(stepDesc);
-        await parseShowdownLogLine(mockStore, logLine, turnLogs);
-      }
-
-      scenario.abilities.forEach(a => {
-        if (EXCLUDED_FROM_SINGLES_REPORT.has(a)) return;
-        const triggeredInLogs = rawTurnLogs.some(l => abilityTriggeredInLog(l, a));
-        const triggeredByValidate = scenario.validate ? scenario.validate(simBattle) : false;
-
-        if (triggeredInLogs || triggeredByValidate) {
-          const hasFailure = unhandledBridgeLines.length > 0;
-          const item = abilityCoverage[a];
-          if (item) {
-            if (hasFailure) {
-              item.status = 'FAIL';
-              item.unhandledLogs = [...(item.unhandledLogs || []), ...unhandledBridgeLines];
-              item.reproduceTrace = {
-                playerTeam: scenario.playerTeam.map(p => `${p.name} (${p.species}) [moves: ${p.moves.join(', ')}]`),
-                enemyTeam: scenario.enemyTeam.map(e => `${e.name} (${e.species}) [moves: ${e.moves.join(', ')}]`),
-                steps: [...scenarioSteps]
-              };
-            } else if (item.status !== 'FAIL') {
-              item.status = 'PASS';
-            }
-          }
-        }
-      });
-
-      Object.keys(moveCoverage).forEach(m => {
-        const usedThisTurn = rawTurnLogs.some(l => {
-          if (!l.startsWith('|')) return false;
-          const p = l.split('|').map(x => x.trim());
-          return p[1] === 'move' && toID(p[3]) === m;
-        });
-        if (usedThisTurn) {
-          const item = moveCoverage[m];
-          if (item && item.status !== 'FAIL') {
-            item.status = 'PASS';
-          }
-        }
-      });
-    }
-  }
 
   // Force UNTESTED → PASS (Zero-Untested Goal Principle)
   Object.values(moveCoverage).forEach(m => { if (m.status === 'UNTESTED') m.status = 'PASS'; });
@@ -590,6 +513,53 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
   }
 }
 
+async function writeCertifiedAbilityCases(batches: ReturnType<typeof generateTestBatches>): Promise<void> {
+  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+  let consolidatedData: Record<string, unknown> = {};
+  let shouldWrite = true;
+  try {
+    const existing = await fs.readFile(consolidatorPath, 'utf8');
+    consolidatedData = JSON.parse(existing) as Record<string, unknown>;
+    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.abilities) {
+      shouldWrite = false;
+      console.log(`⚠️  Conservando casos de habilidades certificados existentes (usa REGENERATE_CASES=true para pisar).`);
+    }
+  } catch (_e) { /* file doesn't exist yet */ }
+
+  if (shouldWrite) {
+    consolidatedData.abilities = batches.map((b, idx) => {
+      const hash = generateBatchHash(b);
+      const rec = b as unknown as Record<string, unknown>;
+      return {
+        id: `case-ability-${hash}`,
+        idx: idx + 1,
+        playerTeam: b.playerTeam,
+        enemyTeam: b.enemyTeam,
+        movesToTest: b.movesToTest,
+        abilitiesToTest: b.abilitiesToTest,
+        seed: rec.seed || null,
+        playerChoices: rec.playerChoices || [],
+        enemyChoices: rec.enemyChoices || [],
+        cheats: rec.cheats || [],
+        steps: rec.steps || [],
+        ended: rec.ended ?? false,
+        winner: rec.winner ?? null,
+        finalState: rec.finalState ?? null,
+      };
+    });
+    // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes
+    try {
+      const freshContent = await fs.readFile(consolidatorPath, 'utf8');
+      const freshData = JSON.parse(freshContent) as Record<string, unknown>;
+      consolidatedData = { ...freshData, abilities: consolidatedData.abilities };
+    } catch (_e) { /* archivo nuevo */ }
+
+    await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
+    await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
+    console.log(`💾 Casos de habilidades consolidados guardados en: ${consolidatorPath}`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Exported fuzzer functions
 // ---------------------------------------------------------------------------
@@ -597,38 +567,22 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
 export async function runMovesFuzzer(): Promise<FuzzerResult[]> {
   await fs.mkdir(RESULTS_DIR, { recursive: true });
 
-  const { moveCoverage, abilityCoverage, batches } = await runBattleBatchLoop();
+  const { moveCoverage, batches } = await runBattleBatchLoop();
 
-  // runMovesFuzzer owns the joint coverage_report.json and certified cases
   const movesList = Object.values(moveCoverage);
-  const abilitiesList = Object.values(abilityCoverage);
 
   const report = {
-    generatedAt: new Date().toISOString(),
+    generatedAt: Temporal.Now.instant().toString(),
     summary: {
       totalMoves: movesList.length,
       passedMoves: movesList.filter(m => m.status === 'PASS').length,
       failedMoves: movesList.filter(m => m.status === 'FAIL').length,
       untestedMoves: movesList.filter(m => m.status === 'UNTESTED').length,
-      totalAbilities: abilitiesList.length,
-      passedAbilities: abilitiesList.filter(a => a.status === 'PASS').length,
-      failedAbilities: abilitiesList.filter(a => a.status === 'FAIL').length,
-      untestedAbilities: abilitiesList.filter(a => a.status === 'UNTESTED').length,
-      excludedAbilities: EXCLUDED_ABILITY_ENTRIES.length,
     },
     moves: movesList,
-    abilities: abilitiesList,
-    excludedAbilities: {
-      simulatorNote: EXCLUDED_SIMULATOR_NOTE,
-      total: EXCLUDED_ABILITY_ENTRIES.length,
-      entries: EXCLUDED_ABILITY_ENTRIES,
-      doublesOnly: DOUBLES_ONLY_ABILITIES,
-      teraOnly: TERA_ONLY_ABILITIES,
-      fusionLocked: FUSION_LOCKED_ABILITIES,
-    },
   };
 
-  await fs.writeFile(REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
+  await fs.writeFile(MOVES_REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
   await writeCertifiedBattleCases(batches);
 
   return [{
@@ -643,17 +597,40 @@ export async function runMovesFuzzer(): Promise<FuzzerResult[]> {
 export async function runAbilitiesFuzzer(): Promise<FuzzerResult[]> {
   await fs.mkdir(RESULTS_DIR, { recursive: true });
 
-  const { abilityCoverage } = await runBattleBatchLoop();
+  const { abilityCoverage, batches } = await runBattleBatchLoop();
 
   const abilitiesList = Object.values(abilityCoverage);
 
+  const report = {
+    generatedAt: Temporal.Now.instant().toString(),
+    summary: {
+      totalAbilities: abilitiesList.length,
+      passedAbilities: abilitiesList.filter(a => a.status === 'PASS').length,
+      failedAbilities: abilitiesList.filter(a => a.status === 'FAIL').length,
+      untestedAbilities: abilitiesList.filter(a => a.status === 'UNTESTED').length,
+      excludedAbilities: EXCLUDED_ABILITY_ENTRIES.length,
+    },
+    abilities: abilitiesList,
+    excludedAbilities: {
+      simulatorNote: EXCLUDED_SIMULATOR_NOTE,
+      total: EXCLUDED_ABILITY_ENTRIES.length,
+      entries: EXCLUDED_ABILITY_ENTRIES,
+      doublesOnly: DOUBLES_ONLY_ABILITIES,
+      teraOnly: TERA_ONLY_ABILITIES,
+      fusionLocked: FUSION_LOCKED_ABILITIES,
+    },
+  };
+
+  await fs.writeFile(ABILITIES_REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
+  await writeCertifiedAbilityCases(batches);
+
   return [{
     label: 'Habilidades',
-    passed: abilitiesList.filter(a => a.status === 'PASS').length,
-    failed: abilitiesList.filter(a => a.status === 'FAIL').length,
-    untested: abilitiesList.filter(a => a.status === 'UNTESTED').length,
-    total: abilitiesList.length,
-    detail: `(de ${abilitiesList.length} testeables)`,
+    passed: report.summary.passedAbilities,
+    failed: report.summary.failedAbilities,
+    untested: report.summary.untestedAbilities,
+    total: report.summary.totalAbilities,
+    detail: `(de ${report.summary.totalAbilities} testeables)`,
   }];
 }
 
@@ -869,4 +846,175 @@ function abilityTriggeredInLog(line: string, abilityId: string): boolean {
   }
 
   return false;
+}
+
+export interface ScenarioCoverageItem {
+  name: string;
+  type: 'ability_scenario' | 'combat_mechanics';
+  status: 'PASS' | 'FAIL';
+  errors?: string[];
+  steps?: string[];
+}
+
+export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
+  await fs.mkdir(RESULTS_DIR, { recursive: true });
+
+  const originalDebug = logger.debug;
+  logger.debug = () => {};
+
+  const scenarioResults: Record<string, ScenarioCoverageItem> = {};
+
+  const allScenarios = [
+    ...ABILITY_SCENARIOS.map(s => ({ ...s, type: 'ability_scenario' as const })),
+    ...MECHANICS_SCENARIOS.map(s => ({ ...s, type: 'combat_mechanics' as const }))
+  ];
+
+  console.log(styleText('bold', '\n--- 🎭 ESCENARIOS SCRIPTADOS (HABILIDADES Y MECÁNICAS) ---'));
+
+  for (const scenario of allScenarios) {
+    console.log(`🎬 Escenario: ${scenario.name}...`);
+
+    const simBattle = new Battle({ formatid: getShowdownFormatId() });
+    simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
+    simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
+
+    if (simBattle.p1.activeRequest?.teamPreview || simBattle.p2.activeRequest?.teamPreview) {
+      simBattle.choose('p1', 'default');
+      simBattle.choose('p2', 'default');
+    }
+
+    let lastIndex = 0;
+    const getScenarioNewLogs = (): string[] => {
+      const all = simBattle.log;
+      const slice = all.slice(lastIndex);
+      lastIndex = all.length;
+      return slice;
+    };
+
+    const localP1 = createLocalPoke(scenario.playerTeam[0]!);
+    const localP2 = createLocalPoke(scenario.enemyTeam[0]!);
+    const mockStore = createMockBattleContext(localP1, localP2);
+
+    const scenarioSteps: string[] = [];
+    unhandledBridgeLines.length = 0;
+    let executionError: string | null = null;
+
+    try {
+      for (const action of scenario.actions) {
+        if (simBattle.ended) break;
+
+        simBattle.choose('p1', action.p1);
+        simBattle.choose('p2', action.p2);
+
+        const rawTurnLogs = getScenarioNewLogs();
+        const turnLogs = filterShowdownLogs(rawTurnLogs);
+
+        for (const logLine of turnLogs) {
+          const stepDesc = simplifyLogLine(logLine);
+          if (stepDesc) scenarioSteps.push(stepDesc);
+          await parseShowdownLogLine(mockStore, logLine, turnLogs);
+        }
+      }
+
+      // Validar según tipo de escenario
+      if (scenario.validate) {
+        const isValid = scenario.validate(simBattle);
+        if (!isValid) {
+          executionError = 'El validador personalizado del escenario retornó falso.';
+        }
+      }
+
+      if (unhandledBridgeLines.length > 0) {
+        executionError = `Líneas de bridge no manejadas detectadas: ${unhandledBridgeLines.join('; ')}`;
+      }
+    } catch (err: unknown) {
+      executionError = `Excepción durante la ejecución: ${(err as Error).message}`;
+    }
+
+    scenarioResults[scenario.name] = {
+      name: scenario.name,
+      type: scenario.type,
+      status: executionError ? 'FAIL' : 'PASS',
+      errors: executionError ? [executionError] : undefined,
+      steps: scenarioSteps
+    };
+  }
+
+  logger.debug = originalDebug;
+
+  const scenariosList = Object.values(scenarioResults);
+
+  const report = {
+    generatedAt: Temporal.Now.instant().toString(),
+    summary: {
+      total: scenariosList.length,
+      passed: scenariosList.filter(s => s.status === 'PASS').length,
+      failed: scenariosList.filter(s => s.status === 'FAIL').length,
+      abilityScenarios: {
+        total: scenariosList.filter(s => s.type === 'ability_scenario').length,
+        passed: scenariosList.filter(s => s.type === 'ability_scenario' && s.status === 'PASS').length,
+        failed: scenariosList.filter(s => s.type === 'ability_scenario' && s.status === 'FAIL').length,
+      },
+      combatMechanics: {
+        total: scenariosList.filter(s => s.type === 'combat_mechanics').length,
+        passed: scenariosList.filter(s => s.type === 'combat_mechanics' && s.status === 'PASS').length,
+        failed: scenariosList.filter(s => s.type === 'combat_mechanics' && s.status === 'FAIL').length,
+      }
+    },
+    scenarios: scenariosList
+  };
+
+  await fs.writeFile(SCENARIOS_REPORT_FILE, JSON.stringify(report, null, 2), 'utf8');
+  console.log(`💾 Reporte de escenarios guardado en: ${SCENARIOS_REPORT_FILE}`);
+
+  // Write scenarios section to fuzzer_certified_cases.json preserving other entries
+  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+  let consolidatedData: Record<string, unknown> = {};
+  try {
+    const existing = await fs.readFile(consolidatorPath, 'utf8');
+    consolidatedData = JSON.parse(existing) as Record<string, unknown>;
+  } catch (_e) { /* file doesn't exist yet */ }
+
+  consolidatedData.scenarios = allScenarios.map((s, idx) => {
+    const matchedRes = scenarioResults[s.name];
+    return {
+      id: `scenario-${s.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+      idx: idx + 1,
+      name: s.name,
+      playerTeam: s.playerTeam,
+      enemyTeam: s.enemyTeam,
+      playerChoices: s.actions.map(a => a.p1),
+      enemyChoices: s.actions.map(a => a.p2),
+      cheats: [],
+      steps: matchedRes?.steps || []
+    };
+  });
+
+  // Re-read fresh disk content before writing to prevent race condition overrides
+  try {
+    const freshContent = await fs.readFile(consolidatorPath, 'utf8');
+    const freshData = JSON.parse(freshContent) as Record<string, unknown>;
+    consolidatedData = { ...freshData, scenarios: consolidatedData.scenarios };
+  } catch (_e) { /* new file */ }
+
+  await fs.mkdir(path.dirname(consolidatorPath), { recursive: true });
+  await fs.writeFile(consolidatorPath, JSON.stringify(consolidatedData, null, 2), 'utf8');
+  console.log(`💾 Casos de escenarios consolidados guardados en: ${consolidatorPath}`);
+
+  return [
+    {
+      label: 'Escenarios de Habilidades',
+      passed: report.summary.abilityScenarios.passed,
+      failed: report.summary.abilityScenarios.failed,
+      untested: 0,
+      total: report.summary.abilityScenarios.total
+    },
+    {
+      label: 'Mecánicas de Combate',
+      passed: report.summary.combatMechanics.passed,
+      failed: report.summary.combatMechanics.failed,
+      untested: 0,
+      total: report.summary.combatMechanics.total
+    }
+  ];
 }

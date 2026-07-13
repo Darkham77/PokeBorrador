@@ -237,7 +237,7 @@ const getCompatText = (label: string) => {
           description="Movimientos especiales que el bebé puede aprender al nacer si alguno de los padres conoce un movimiento compatible en su lista de movimientos huevo."
         >
           <span class="label">Movimientos Huevo:</span>
-          <span class="value">{{ forecast.eggMovesCount > 0 ? 'DETECTADOS ✨' : 'Ninguno' }}</span>
+          <span class="value">{{ forecast.eggMovesCount > 0 ? 'SÍ ✨' : 'Ninguno' }}</span>
         </PVTooltip>
       </div>
 

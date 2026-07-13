@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useBattleStore } from '@/stores/battle/battle'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 import BattleBallPicker from './BattleBallPicker.vue'
 
 interface Props {
@@ -22,12 +23,7 @@ import { computed } from 'vue'
 const battleStore = useBattleStore()
 
 const isLocked = computed(() => {
-  const p = battleStore.player
-  if (!p) return false
-  const volatile = p.volatileCounters
-  if (!volatile) return false
-  return !!((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) || 
-            (volatile['lockedmove'] && volatile['lockedmove'] > 0))
+  return isPokemonLocked(battleStore.player)
 })
 
 // Eliminamos onHoverBtn manual para usar los estados nativos del mixin btn-vicio

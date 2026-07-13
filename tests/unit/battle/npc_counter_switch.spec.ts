@@ -30,11 +30,12 @@ vi.mock('@/logic/battle/showdownBridge', () => ({
   parseShowdownLogLine: vi.fn(async () => {})
 }))
 
-vi.mock('@/logic/battle/showdownAdapter', () => ({
-  getShowdownSlot: mockGetShowdownSlot,
-  swapActivePokemon: vi.fn((arr) => arr),
-  resolveShowdownSlot: mockResolveShowdownSlot,
-  resolveCurrentTeamOrder: vi.fn((_order, team) => team)
+vi.mock('@/logic/battle/showdownTeamResolver', () => ({
+  ShowdownTeamResolver: {
+    getShowdownSlotForUid: mockResolveShowdownSlot,
+    getPokemonByShowdownSlot: vi.fn(),
+    getShowdownOrder: vi.fn((team) => team)
+  }
 }))
 
 vi.mock('@/logic/battle/ai/battleAI', () => ({
@@ -109,7 +110,7 @@ describe('NPC Counter Switching & Showdown Sync', () => {
     // 2. Should have selected index 1 (Alakazam) as the next enemy
     expect(activeBattle.value.enemy?.uid).toBe(nextEnemy2.uid)
 
-    expect(mockResolveShowdownSlot).toHaveBeenCalledWith(activeBattle.value, 'enemy', nextEnemy2.uid)
+    expect(mockResolveShowdownSlot).toHaveBeenCalledWith(activeBattle.value.enemyRequest, nextEnemy2.uid)
 
     // 4. Should have sent the switch command to Showdown worker
     expect(mockExecuteTurn).toHaveBeenCalledWith('', 'switch 3')

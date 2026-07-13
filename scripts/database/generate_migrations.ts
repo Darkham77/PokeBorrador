@@ -33,6 +33,16 @@ export async function generateMigrations() {
 
   // 1. Get all SQL files (excluding .sqlite.sql which are paired as companion sql)
   const list = await fs.readdir(MIGRATIONS_DIR);
+
+  // Verify no orphan .sqlite.sql files exist
+  const sqliteFiles = list.filter(f => f.endsWith('.sqlite.sql'));
+  for (const sqliteFile of sqliteFiles) {
+    const baseSqlFile = sqliteFile.replace(/\.sqlite\.sql$/, '.sql');
+    if (!list.includes(baseSqlFile)) {
+      throw new Error(`[Migrations Generator] ERROR: Archivo SQLite huérfano detectado sin archivo base de PostgreSQL correspondiente: ${sqliteFile}. Todas las migraciones SQLite deben tener una contraparte base .sql`);
+    }
+  }
+
   const files = list
     .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
     .sort((a, b) => a.localeCompare(b));

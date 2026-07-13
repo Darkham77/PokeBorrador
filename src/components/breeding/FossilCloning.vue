@@ -12,23 +12,23 @@ const gameStore = useGameStore()
 
 // Fossil definitions
 const FOSSILS = [
-  { name: 'Fósil Domo', sprite: 'dome_fossil', pokemon: 'Kabuto' },
-  { name: 'Fósil Hélix', sprite: 'helix_fossil', pokemon: 'Omanyte' },
-  { name: 'Ámbar Viejo', sprite: 'old_amber', pokemon: 'Aerodactyl' }
+  { name: 'Fósil Domo', id: 'domefossil', pokemon: 'Kabuto' },
+  { name: 'Fósil Hélix', id: 'helixfossil', pokemon: 'Omanyte' },
+  { name: 'Ámbar Viejo', id: 'oldamber', pokemon: 'Aerodactyl' }
 ]
 
-const defaultFossil = { name: 'Fósil Domo', sprite: 'dome_fossil', pokemon: 'Kabuto' }
+const defaultFossil = { name: 'Fósil Domo', id: 'domefossil', pokemon: 'Kabuto' }
 const selectedFossilIndex = ref(0)
 const extraSacrifices = ref(0)
 
-const activeFossil = computed<{ name: string; sprite: string; pokemon: string }>(() => {
+const activeFossil = computed<{ name: string; id: string; pokemon: string }>(() => {
   const f = FOSSILS[selectedFossilIndex.value]
   return f ? f : defaultFossil
 })
 
 const ownedCount = computed(() => {
   if (!gameStore.state?.inventory) return 0
-  return gameStore.state.inventory[activeFossil.value.sprite] || 0
+  return gameStore.state.inventory[activeFossil.value.id] || 0
 })
 
 const selectFossil = (idx: number) => {
@@ -54,7 +54,7 @@ const showFailureTooltip = ref(false)
 
 const handleClone = () => {
   if (!canClone.value) return
-  const success = breedingStore.cloneFossil(activeFossil.value.sprite, extraSacrifices.value)
+  const success = breedingStore.cloneFossil(activeFossil.value.id, extraSacrifices.value)
   if (!success) {
     showFailureTooltip.value = true
     gsap.killTweensOf(showFailureTooltip)
@@ -178,15 +178,15 @@ watch(extraSacrifices, () => {
           >
             <div class="fossil-icon-wrapper">
               <img
-                :src="getAssetUrl(ASSET_TYPES.ITEM, fossil.sprite)"
+                :src="getAssetUrl(ASSET_TYPES.ITEM, fossil.id)"
                 :alt="fossil.name"
                 class="fossil-sprite"
               >
               <div 
                 class="fossil-count"
-                :class="{ empty: !((gameStore.state?.inventory?.[fossil.sprite] || 0) > 0) }"
+                :class="{ empty: !((gameStore.state?.inventory?.[fossil.id] || 0) > 0) }"
               >
-                {{ gameStore.state?.inventory?.[fossil.sprite] || 0 }}
+                {{ gameStore.state?.inventory?.[fossil.id] || 0 }}
               </div>
             </div>
             <div class="fossil-info">

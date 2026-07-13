@@ -86,6 +86,13 @@ export function isItemProduct(item: { name: string; cat?: string; type?: string;
   const type = item.type;
   const id = item.id;
 
+  if (id) {
+    const lid = id.toLowerCase();
+    if (lid.endsWith('fossil') || lid.includes('fossilized') || lid === 'oldamber') {
+      return true;
+    }
+  }
+
   if (
     cat === 'potions' ||
     cat === 'pokeballs' ||
@@ -110,12 +117,19 @@ export function isItemProduct(item: { name: string; cat?: string; type?: string;
 
 export function getAdjustedProductCategory(item: { name: string; cat?: string; id?: string }): string {
   const cat = item.cat || 'otros';
+  const id = item.id || '';
+
+  if (id) {
+    const lid = id.toLowerCase();
+    if (lid.endsWith('fossil') || lid.includes('fossilized') || lid === 'oldamber') {
+      return 'breeding_held';
+    }
+  }
 
   if (!['raw_material', 'refined_material', 'component'].includes(cat)) {
     return cat;
   }
 
-  const id = item.id || '';
   if (id.includes('stone') || item.name.toLowerCase().includes('piedra')) {
     return 'stones';
   }

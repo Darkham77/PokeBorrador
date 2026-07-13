@@ -428,7 +428,7 @@ onUnmounted(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1;
+      line-height: 1.4;
       display: inline-flex;
       align-items: center;
     }

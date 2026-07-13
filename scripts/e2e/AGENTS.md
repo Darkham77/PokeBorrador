@@ -21,6 +21,7 @@ QA / Automation Engineers.
 - **Complete Combat Lifecycle**: Battle flow simulations (such as using Potions, Pokéballs, or Revives) must never be truncated early. They must automatically run turn-by-turn until the battle is fully completed (victory or defeat), as FSM desynchronizations or state side effects typically manifest in the turns following the action, not in the immediate turn.
 - **Safe Interaction with Quick Inventory**: When clicking items in the battle quick bag, always wait for the card to be active (without the `.is-disabled` class) to ensure that introduction animations have completed and prevent properties like `pointer-events: none` from blocking the click.
 - **Strict Parity Assertions (Showdown vs DOM)**: Validate turn-by-turn that the HP and status effects in the DOM match the logical values in the Pinia store (driven by Showdown). For healing or reviving items, explicitly verify that the HP values increase logically to discard scenarios where the client consumes the item but the Showdown engine silently ignores the action.
+- **Dynamic Switch Slot Mapping**: In Pokémon Showdown, the "switch X" command is dynamic and relative to the active request's Pokémon list (where the active Pokémon goes to slot 1 and the bench rotates). Therefore, the replayer MUST resolve the target UID by dynamically searching within the `playerRequest.side.pokemon` array instead of using the static `p1SlotOrder` array.
 - **Relative Imports for Browser Sandbox**: When importing modules dynamically inside `page.evaluate()` or `page.waitForFunction()`, do not use root-relative paths like `/src/stores/...` (which are browser-only and cause TS2307 compilation errors in `tsc`/`vue-tsc`). Always use relative paths (`../../src/...`) to satisfy both the static TypeScript compiler and the Vite server.
 - **Active Battle Store Typing**: Access the active battle state via `store.state` instead of `store.activeBattle` (which is private to the store setup scope). Check for `!store.state || store.state.over` to verify combat completion.
 - **Fallow Duplicate Code Evasion**: To prevent Fallow from flagging identical boilerplate code blocks (such as dynamic store imports and initializations inside browser sandboxes) as critical duplications, vary local variable names, import aliases, or structural spacing within each sandbox evaluation block.
@@ -28,6 +29,7 @@ QA / Automation Engineers.
   `../e2e_helpers.ts`. Never redefine them locally in individual simulation files.
   If new fields are needed, extend `DebugStore` in `e2e_helpers.ts` and update
   all simulations accordingly.
+- **E2E Simulation Report Preservation & Wiping Awareness**: Running E2E simulations (such as `npm run sim:e2e:combat`) clean-wipes previous test failure reports inside `scratch/e2e_failures`. Agents MUST analyze and record existing failure reports before executing any new simulations. The agent is STRICTLY FORBIDDEN from aborting, killing, or canceling a running simulation autonomously without explicit user confirmation.
 
 ## Verification
 

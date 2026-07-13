@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Bundler mode */
+    "incremental": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,

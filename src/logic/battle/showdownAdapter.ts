@@ -1,8 +1,62 @@
-import { Dex } from '@pkmn/sim';
-import type { PokemonSet, ID } from '@pkmn/sim';
+import { Dex, Battle } from '@pkmn/sim';
+import type { PokemonSet, ID, StatsTable } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { getShowdownNickname } from './showdownUidMapper.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { BaseStats } from '../pokemon/statsMath.ts';
+
+export const statsMap = new Map<string, Record<string, number>>();
+
+/**
+ * Aplica el monkey-patch spreadModify a Battle de Showdown para inyectar estadísticas custom.
+ */
+export function patchShowdownSpreadModify(getIsE2eMode: () => boolean) {
+  const originalSpreadModify = Battle.prototype.spreadModify;
+  Battle.prototype.spreadModify = function (baseStats, set) {
+    if (getIsE2eMode()) {
+      return originalSpreadModify.call(this, baseStats, set);
+    }
+    if (set && set.name) {
+      const stats = statsMap.get(set.name);
+      if (stats) {
+        return { ...(stats as Record<string, number>) } as StatsTable;
+      }
+    }
+    if (set && (set as unknown as { stats?: unknown }).stats) {
+      return { ...(set as unknown as { stats: Record<string, number> }).stats } as StatsTable;
+    }
+    return originalSpreadModify.call(this, baseStats, set);
+  };
+}
+
+/**
+ * Resuelve las estadísticas base de una especie unificando la base de datos del juego y Showdown.
+ */
+export function resolveBaseStats(speciesId: string): BaseStats {
+  try {
+    const data = pokemonDataProvider.getPokemonData(speciesId, true);
+    return {
+      hp: data.hp,
+      atk: data.atk,
+      def: data.def,
+      spa: data.spa ?? data.atk,
+      spd: data.spd ?? data.def,
+      spe: data.spe ?? 45
+    };
+  } catch (_e) {
+    const species = Dex.species.get(speciesId);
+    return {
+      hp: species.baseStats.hp,
+      atk: species.baseStats.atk,
+      def: species.baseStats.def,
+      spa: species.baseStats.spa,
+      spd: species.baseStats.spd,
+      spe: species.baseStats.spe
+    };
+  }
+}
 
 /**
  * Retorna el ID de formato oficial de Pokémon Showdown.
@@ -39,9 +93,10 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   }
 
   const speciesName = resolveShowdownSpecies(poke.id);
+  const showdownName = getShowdownNickname(poke.uid);
 
   return {
-    name: poke.nickname || poke.name,
+    name: showdownName,
     species: speciesName,
     level: poke.level,
     shiny: poke.isShiny || false,
@@ -117,28 +172,15 @@ export interface ResolveActiveBattleState {
   enemyTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
 }
 
-/**
- * Resolves the Showdown slot number for a Pokemon using the canonical slot order
- * provided by the request payload (side.pokemon[].uid).
- */
 export function resolveShowdownSlot(
   active: ResolveActiveBattleState,
   side: 'player' | 'enemy',
-  pokemonUid: string
+  uid: string
 ): number {
-  const req = side === 'player' ? active.playerRequest : active.enemyRequest;
-  const list = req?.side?.pokemon as Array<{ uid?: string } | null | undefined> | undefined;
-  if (!list || !Array.isArray(list)) {
-    throw new Error(`[resolveShowdownSlot] Missing request Pokemon list for side ${side}. Cannot resolve slot for UID: ${pokemonUid}`);
+  const request = side === 'player' ? active.playerRequest : active.enemyRequest;
+  if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
+    throw new Error('Missing request');
   }
-  
-  const idx = list.findIndex((p) => p && p.uid === pokemonUid);
-  if (idx === -1) {
-    const uids = list.map((p) => p?.uid || 'null');
-    throw new Error(`[resolveShowdownSlot] UID ${pokemonUid} not found in ${side} request Pokemon UIDs: ${JSON.stringify(uids)}`);
-  }
-
-  const slot = idx + 1;
-  console.log(`[resolveShowdownSlot] side: ${side}, resolved slot via PKMS request for UID ${pokemonUid}: ${slot}`);
-  return slot;
+  const idx = request.side.pokemon.findIndex((p: { uid?: string } | null) => p && p.uid === uid);
+  return idx !== -1 ? idx + 1 : 1;
 }

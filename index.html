@@ -10,11 +10,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#161a2e">
     <title>Poké Vicio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
     <style>
+      @font-face {
+        font-family: 'Pokemon FireRed LeafGreen';
+        src: url('/fonts/pokemon-firered-leafgreen-font.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        size-adjust: 128%;
+      }
       /* Eliminate FOUC (Flash of Unstyled Content) */
       html, body {
         background-color: #07080e !important;
@@ -42,7 +50,7 @@
         width: 100%;
         height: 100%;
         background: #07080e;
-        font-family: 'Nunito', sans-serif;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
         padding: 20px;
         box-sizing: border-box;
       }
@@ -96,7 +104,7 @@
       }
       
       .press-start {
-        font-family: 'Pokemon FireRed LeafGreen', monospace;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
         letter-spacing: 1px;
         image-rendering: pixelated;
       }
@@ -114,7 +122,8 @@
       
       .msg {
         color: rgba(255, 255, 255, 0.7);
-        font-size: 14px;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
+        font-size: 10px;
         line-height: 1.6;
         margin: 0 0 24px 0;
       }

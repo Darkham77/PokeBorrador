@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 import { useBattleStore } from '@/stores/battle/battle'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 
 const emit = defineEmits<{
   (e: 'use-move', index: number): void
@@ -107,10 +108,7 @@ const isDisabled = computed(() => {
     }
   }
 
-  // 2.3 Validar si no le quedan PP
-  const isLockedMove = !!(p?.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0)
-  const isThrashLocked = !!(p?.thrashTurns && p.thrashTurns > 0)
-  const isLocked = isLockedMove || isThrashLocked
+  const isLocked = isPokemonLocked(p)
 
   if (!isLocked && props.move.pp <= 0) return true
 

@@ -71,7 +71,7 @@ function hashString(str: string): number {
  * @param {Date} date 
  * @returns {string[]} List of map IDs
  */
-export function getConflictZones(allMapIds: string[], date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string[] {
+export function getConflictZones(allMapIds: string[], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string[] {
   if (!allMapIds || allMapIds.length === 0) return []
   
   const dateStr = getArgDateString(date)
@@ -91,10 +91,10 @@ export function getConflictZones(allMapIds: string[], date: Date | Temporal.Zone
  * Generates guardian data for a specific map and date.
  * @param {string} mapId 
  * @param {string[]} allMapIds 
- * @param {Date} date 
+ * @param {Temporal.ZonedDateTime|Temporal.Instant} date 
  * @returns {GuardianData|null}
  */
-export function getGuardianData(mapId: string, allMapIds: string[], date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
+export function getGuardianData(mapId: string, allMapIds: string[], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
   const zones = getConflictZones(allMapIds, date)
   if (!zones.includes(mapId)) return null
 

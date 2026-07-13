@@ -15,7 +15,7 @@ import { setupValidation } from '../lib/validationBase.ts';
 import { Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
-const BACKUP_FILE = path.resolve(process.cwd(), 'database/backups/server_franco/server_franco_backup_2026-06-15T05-25-25-945573975Z.json');
+const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 
 function normalize(str: string): string {

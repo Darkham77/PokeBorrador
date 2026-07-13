@@ -15,6 +15,40 @@ import {
   calculateMoveEffectivenessAndDamage,
   parseStatusEffectInfo
 } from '@/logic/battle/moveTooltipMath';
+import { calculateDamageForTooltip } from '@/logic/battle/smogonAdapter';
+
+/** Format @smogon/calc KO chance as Spanish text for the tooltip badge. */
+function buildKoText(ko: { chance: number | undefined; n: number }): string {
+  if (!ko.n) return '';
+  const { chance, n } = ko;
+  const koLabel = n === 1 ? 'OHKO' : n <= 4 ? `${n}HKO` : `KO en ${n} turnos`;
+  if (chance === 1)            return `${koLabel} garantizado`;
+  if (chance === undefined || chance > 0) {
+    const pct = chance !== undefined ? ` (${Math.round(chance * 100)}%)` : '';
+    return `${koLabel} posible${pct}`;
+  }
+  return '';
+}
+
+type SideConditions = Record<string, { turns: number; [key: string]: unknown }> | undefined;
+
+/** Compile active field conditions for the tooltip's CONDICIONES section. */
+function buildFieldConditionsList(
+  playerSC: SideConditions,
+  enemySC:  SideConditions,
+  terrain:  string | null | undefined
+): string[] {
+  const list: string[] = [];
+  if (playerSC?.['reflect'])     list.push('Reflect (↓ daño físico enemigo)');
+  if (playerSC?.['lightscreen']) list.push('Pantalla de Luz (↓ daño esp. enemigo)');
+  if (playerSC?.['auroraveil'])  list.push('Aurora Velo (↓ todo daño enemigo)');
+  if (playerSC?.['tailwind'])    list.push('Viento Afín (↑ Velocidad)');
+  if (enemySC?.['reflect'])      list.push('Reflect rival (↓ tu daño físico)');
+  if (enemySC?.['lightscreen'])  list.push('Pantalla rival (↓ tu daño esp.)');
+  if (enemySC?.['auroraveil'])   list.push('Aurora Velo rival (↓ todo tu daño)');
+  if (terrain)                   list.push(`Terreno: ${terrain}`);
+  return list;
+}
 
 export function useMoveTooltip(
   moveInput: MaybeRefOrGetter<Move>,
@@ -120,28 +154,58 @@ export function useMoveTooltip(
       defender as unknown as PurePokemon | null
     );
 
-    // 4. Effectiveness and Damage range
+    // 4. Effectiveness (type chart) + Damage range via @smogon/calc
     const category = move.cat || md.cat || 'physical';
     const isPhysical = category === 'physical';
     const isSpecial = category === 'special';
 
-    const playerStages = battleStore.playerStages ? { 
-      atk: isPhysical ? battleStore.playerStages.atk : battleStore.playerStages.spa 
-    } : null;
-    const enemyStages = battleStore.enemyStages ? { 
-      def: isPhysical ? battleStore.enemyStages.def : battleStore.enemyStages.spd 
-    } : null;
+    const playerStageFull = battleStore.playerStages ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+    const enemyStageFull  = battleStore.enemyStages  ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
 
-    const { effectiveness, damageRange } = calculateMoveEffectivenessAndDamage(
-      move,
-      md,
+    // Keep the legacy effectiveness calc (only used for type matchup display, not damage)
+    const playerStagesEff = playerStageFull.atk !== undefined ? { atk: isPhysical ? playerStageFull.atk : playerStageFull.spa } : null;
+    const enemyStagesEff  = enemyStageFull.def  !== undefined ? { def: isPhysical ? enemyStageFull.def  : enemyStageFull.spd  } : null;
+    const { effectiveness } = calculateMoveEffectivenessAndDamage(
+      move, md,
       attacker as unknown as PurePokemon,
       defender as unknown as PurePokemon | null,
       weather ? { type: weather.type, turns: weather.turns } : null,
-      cycle,
-      basePower,
-      playerStages,
-      enemyStages
+      cycle, basePower, playerStagesEff, enemyStagesEff
+    );
+
+    // Build smogon damage result (null if status or no defender or 0-power move)
+    const smogonResult = (!isStatus && defender && basePower > 0)
+      ? calculateDamageForTooltip(
+          attacker, defender, move,
+          {
+            weather: isGym ? null : battleStore.state?.weather ?? null,
+            terrain: battleStore.state?.terrain,
+            playerSideConditions: battleStore.state?.playerSideConditions,
+            enemySideConditions:  battleStore.state?.enemySideConditions,
+            isGym,
+          },
+          playerStageFull,
+          enemyStageFull
+        )
+      : null;
+
+    const damageRange = smogonResult ? {
+      normalMin:    smogonResult.minDmg,
+      normalMax:    smogonResult.maxDmg,
+      normalPctMin: Math.round(smogonResult.minPercent),
+      normalPctMax: Math.round(smogonResult.maxPercent),
+      critMin:      smogonResult.critMinDmg,
+      critMax:      smogonResult.critMaxDmg,
+      critPctMin:   Math.round(smogonResult.critMinPercent),
+      critPctMax:   Math.round(smogonResult.critMaxPercent),
+      koChanceText: buildKoText(smogonResult.koChance),
+    } : null;
+
+    // Field conditions active in this battle (for tooltip display)
+    const fieldConditions = buildFieldConditionsList(
+      battleStore.state?.playerSideConditions,
+      battleStore.state?.enemySideConditions,
+      battleStore.state?.terrain
     );
 
     // Calculate actual attacker and defender stats with stages applied
@@ -202,7 +266,10 @@ export function useMoveTooltip(
       critChance,
       damageRange,
       attackerStat,
-      defenderStat
+      defenderStat,
+      recovery: smogonResult?.recovery ?? null,
+      recoil:   smogonResult?.recoil   ?? null,
+      fieldConditions,
     };
   });
 
@@ -227,7 +294,7 @@ export function useMoveTooltip(
     const move = toValue(moveInput);
     const moveId = move.id || '';
     const moveDataObj = moveId ? pokemonDataProvider.getMoveData(moveId) : null;
-    return getMoveDescription(move.name, moveDataObj);
+    return getMoveDescription(moveId || move.name, moveDataObj);
   });
 
   return {

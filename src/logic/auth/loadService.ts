@@ -40,8 +40,22 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   }
 
   if ((user.db_version || 1) < 3) {
-    logger.error('LOAD', `La cuenta del usuario (versión ${user.db_version || 1}) no está migrada a v3. Abortando carga.`);
-    throw new Error('La partida requiere actualización de seguridad (v3). Contacta al administrador.');
+    if (db.mode === 'offline' || isLocalUser) {
+      logger.info('LOAD', `Auto-migrando usuario offline/local a v3 (actual: ${user.db_version || 1})`);
+      user.db_version = 3;
+      if (isLocalUser && typeof localStorage !== 'undefined') {
+        localStorage.setItem('pokevicio_local_user', JSON.stringify(user));
+      } else if (!isLocalUser) {
+        try {
+          await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
+        } catch (e) {
+          logger.warn('LOAD', `No se pudo actualizar db_version en profiles SQLite: ${(e as Error).message}`);
+        }
+      }
+    } else {
+      logger.error('LOAD', `La cuenta del usuario (versión ${user.db_version || 1}) no está migrada a v3. Abortando carga.`);
+      throw new Error('La partida requiere actualización de seguridad (v3). Contacta al administrador.');
+    }
   }
 
   let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
@@ -157,8 +171,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
             cloudTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
           } catch (_) {
             try {
-              cloudTime = Date.parse(cloudSaveRow.updated_at);
-              if (isNaN(cloudTime)) cloudTime = 0;
+              const ms = Number(cloudSaveRow.updated_at);
+              cloudTime = !isNaN(ms) ? ms : Temporal.Instant.from(cloudSaveRow.updated_at).epochMilliseconds;
             } catch (__e) {
               cloudTime = 0;
             }
@@ -181,7 +195,11 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   if (!finalSaveData) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
   // 3. Sanitize and Normalize
-  const { data: sanitized, issues } = validateAndSanitize(finalSaveData);
+  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(finalSaveData);
+  if (!valid) {
+    logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
+    throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
+  }
   
   // 4. Backfill and Deep Normalization (Legacy Parity)
   const normalized = normalizeData(sanitized as unknown as GameState);
@@ -199,7 +217,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         }
         loadedTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
       } catch (_) {
-        loadedTime = Date.parse(cloudSaveRow.updated_at) || 0;
+        const ms = Number(cloudSaveRow.updated_at);
+        loadedTime = !isNaN(ms) ? ms : 0;
       }
     }
   }

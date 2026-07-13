@@ -8,7 +8,7 @@ import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
 import { clearVolatileStatus } from './battleStatus'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
-import { resolveShowdownSlot } from './showdownAdapter.ts'
+import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 function resolveMockEnemySwitch(active: BattleState, debugPrefix: string): Pokemon | null {
@@ -198,7 +198,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       
       const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
       if (showdownWorker && active.enemyTeam) {
-        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
+        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
         active.switchingToEnemy = nextEnemy
         const result = await executeTurnInWorker('', `switch ${slot}`)
         if (result) {
@@ -701,7 +701,7 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
       
       const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
       if (showdownWorker && active.enemyTeam) {
-        const slot = resolveShowdownSlot(active, 'enemy', nextEnemy.uid)
+        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
         const result = await executeTurnInWorker('', `switch ${slot}`)
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request

@@ -202,8 +202,8 @@ test.describe('HeuristicAI E2E Verification', () => {
       // Leer logs del enemigo: BattleLog usa side: 'enemy' (no el protocolo raw de Showdown)
       const enemyLogs = await page.evaluate(() => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const logs = resolver?.().battleLogs ?? [];
-        return (logs as Array<{ side: string; msg: string }>)
+        const store = resolver?.() as { battleLogs?: Array<{ side: string; msg: string }> } | undefined;
+        return (store?.battleLogs ?? [])
           .filter(l => l.side === 'enemy')
           .map(l => l.msg);
       });

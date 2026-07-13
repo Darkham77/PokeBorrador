@@ -110,20 +110,37 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
     }
   });
 
-  sanitizePokemon(p, bypassWhitelist);
+  validatePokemon(p, bypassWhitelist);
 }
 
+export function canLearnMove(speciesId: string, moveId: string): boolean {
+  let currId: string | undefined = toID(speciesId);
+  const normMoveId = toID(moveId);
+  while (currId) {
+    const data = Dex.data.Learnsets[currId];
+    if (data && data.learnset && data.learnset[normMoveId]) {
+      return true;
+    }
+    const species = Dex.species.get(currId);
+    currId = species.prevo ? toID(species.prevo) : undefined;
+  }
+  return false;
+}
+
+
+
 /**
- * Sanitizes Pokémon data to ensure all mandatory battle fields are present.
+ * Validates Pokémon data to ensure all mandatory fields are present and legal.
+ * Throws explicit descriptive errors on any data corruption instead of patching.
  */
-export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
-  if (!p) return;
+export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
+  if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const isDebug = typeof window !== 'undefined' && !!(window as Window & { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__;
+  const isDebug = (typeof window !== 'undefined' && !!(window as Window & { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__) || import.meta.env.DEV;
   const bypass = bypassWhitelist || isDebug;
 
-  // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
+  // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki (Datos volátiles en memoria)
   const base = pokemonDataProvider.getPokemonData(p.id, bypass);
   if (base) {
     // Si es Castform y tiene una forma activa diferente de normal, no sobreescribir su tipo con el base de la base de datos (que es siempre normal)
@@ -133,6 +150,8 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
       p.type2 = base.type2;
     }
     p.isFloating = base.isFloating;
+  } else {
+    throw new Error(`[pokemonFactory] El Pokémon "${p.id}" (UID: ${p.uid}) no existe en la base de datos de especies.`);
   }
 
   // 1. Validar Habilidad usando pkms Dex
@@ -150,57 +169,45 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
       if (validAbilities.includes(normAbility)) {
         p.ability = normAbility;
       } else {
-        throw new Error(`[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id}.`);
+        throw new Error(`[pokemonFactory] Habilidad inválida o ilegal (${p.ability}) para especie ${p.id} (UID: ${p.uid}).`);
       }
     }
   } else {
-    const speciesData = Dex.species.get(p.id);
-    const validAbilities: string[] = speciesData.exists 
-      ? Object.values(speciesData.abilities).map(a => toID(a)) 
-      : ['overgrow'];
-    p.ability = validAbilities[0];
+    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene habilidad definida.`);
   }
 
   // 1b. Validar Objeto Equipado (heldItem)
   if (p.heldItem) {
-    try {
-      const itemData = getItemById(p.heldItem);
-      p.heldItem = itemData.id;
-    } catch {
-      logger.warn('Self-Healing', `Removiendo objeto equipado inválido (${p.heldItem}) para ${p.id}`);
-      p.heldItem = null;
-    }
+    const itemData = getItemById(p.heldItem);
+    p.heldItem = itemData.id;
   }
 
   // 2. Validar Movimientos
-  if (!p.moves || !Array.isArray(p.moves)) p.moves = [];
+  if (!p.moves || !Array.isArray(p.moves)) {
+    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) no tiene una lista de movimientos válida.`);
+  }
   
-  // Eliminar entradas null/undefined
-  p.moves = p.moves.filter(m => m !== null && m !== undefined);
+  // Si hay entradas null/undefined en la lista de movimientos, lanzar error
+  if (p.moves.some(m => m === null || m === undefined)) {
+    throw new Error(`[pokemonFactory] Movimiento nulo detectado en ${p.id} (UID: ${p.uid}).`);
+  }
 
   p.moves.forEach((m, idx) => {
     if (!m) return;
 
-    // Si el ID es inválido, intentar recuperar o asignar 'tackle'
     if (!m.id || m.id === 'null' || m.id === 'undefined' || m.id === '???') {
-      logger.warn('Self-Healing', `Movimiento ${idx} corrupto detectado en ${p.id}`);
-      let resolvedId = 'tackle';
-      if (m.name) {
-        try {
-          if (typeof pokemonDataProvider.getMoveIdBySpanishName === 'function') {
-            resolvedId = pokemonDataProvider.getMoveIdBySpanishName(m.name);
-          }
-        } catch {
-          // fallback to tackle
-        }
-      }
-      m.id = resolvedId;
+      throw new Error(`[pokemonFactory] Movimiento corrupto o ID inválido ("${m.id}") detectado en la posición ${idx} de ${p.id} (UID: ${p.uid}).`);
     }
 
     const moveData = pokemonDataProvider.getMoveData(m.id);
     if (!moveData) {
-      throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos.`);
+      throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`);
     } else {
+      // Validar legalidad del movimiento para la especie usando el Dex de Showdown
+      if (!bypass && !canLearnMove(p.id, m.id)) {
+        throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name || m.id}) para especie ${p.id} (UID: ${p.uid}).`);
+      }
+
       // Sincronización Mandatoria
       m.id = moveData.id;
       m.name = moveData.name;
@@ -230,78 +237,65 @@ export function sanitizePokemon(p: Pokemon, bypassWhitelist = false): void {
     }
   });
 
-  // Si no tiene movimientos, darle al menos uno
+  // Si no tiene movimientos, lanzar error
   if (p.moves.length === 0) {
-    logger.warn('Self-Healing', `${p.id} no tiene movimientos, asignando tackle`);
-    const fallback = pokemonDataProvider.getMoveData('tackle');
-    if (fallback) {
-      p.moves.push({
-        id: 'tackle',
-        name: fallback.name,
-        power: fallback.power,
-        type: fallback.type,
-        acc: fallback.acc,
-        cat: fallback.cat as 'physical' | 'special' | 'status',
-        pp: fallback.pp,
-        maxPP: fallback.pp
-      });
-    }
+    throw new Error(`[pokemonFactory] El Pokémon ${p.id} (UID: ${p.uid}) tiene 0 movimientos configurados.`);
   }
 
   // 3. Validar consistencia básica
-  if (!p.gender && !GENDERLESS.includes(p.id)) p.gender = assignGender(p.id);
-  if (p.hp === undefined || isNaN(p.hp)) p.hp = p.maxHp;
-  if (p.hp > p.maxHp) p.hp = p.maxHp;
+  if (!p.gender && !GENDERLESS.includes(p.id)) {
+    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
+  }
+  if (p.hp === undefined || isNaN(p.hp)) {
+    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) tiene HP inválido o ausente.`);
+  }
+  if (p.hp > p.maxHp) {
+    throw new Error(`[pokemonFactory] El HP de ${p.id} (UID: ${p.uid}) supera su HP máximo (${p.hp}/${p.maxHp}).`);
+  }
 
-  // Validar y sanear naturaleza usando pkms
+  // Validar naturaleza usando pkms
   if (p.nature) {
     const normNature = toID(p.nature);
     const natureData = Dex.natures.get(normNature);
     if (natureData && natureData.exists) {
       p.nature = normNature;
     } else {
-      logger.warn('Self-Healing', `Naturaleza inválida (${p.nature}) para ${p.id}, reajustando a serious.`);
-      p.nature = 'serious';
+      throw new Error(`[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`);
     }
   } else {
-    p.nature = 'serious';
+    throw new Error(`[pokemonFactory] Naturaleza ausente para ${p.id} (UID: ${p.uid}).`);
   }
 
-  // 4. Validar Nivel y Experiencia límite (Auto-healing de corrupción)
+  // 4. Validar Nivel y Experiencia límite (Evita corrupción)
   if (p.level > MAX_POKEMON_LEVEL) {
-    logger.warn('Self-Healing', `Pokémon ${p.id} con nivel superior al máximo (${p.level}), ajustando a ${MAX_POKEMON_LEVEL}`);
-    p.level = MAX_POKEMON_LEVEL;
+    throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) excede el nivel máximo permitido: ${p.level}/${MAX_POKEMON_LEVEL}.`);
   }
   
   if (p.level === MAX_POKEMON_LEVEL) {
     if (p.exp !== 0 || (p.expNeeded !== Infinity && p.expNeeded !== null && p.expNeeded !== undefined && p.expNeeded !== 0)) {
-      logger.warn('Self-Healing', `Ajustando experiencia de nivel máximo para ${p.id}`);
+      throw new Error(`[pokemonFactory] Experiencia/Experiencia requerida inconsistente para nivel máximo en ${p.id} (UID: ${p.uid}).`);
     }
-    p.exp = 0;
-    p.expNeeded = Infinity;
   } else {
     const maxExpAllowed = p.expNeeded - 1;
     if (p.exp > maxExpAllowed) {
-      logger.warn('Self-Healing', `Experiencia de ${p.id} supera el límite del nivel (${p.exp}/${p.expNeeded}), ajustando a ${maxExpAllowed}`);
-      p.exp = maxExpAllowed;
+      throw new Error(`[pokemonFactory] La experiencia de ${p.id} (UID: ${p.uid}) supera el límite de su nivel (${p.exp}/${p.expNeeded}).`);
     }
   }
 
-  // 5. Validar Vigor
-  const isLegendary = LEGENDARY_POKEMON.includes(p.id.toLowerCase());
-  const isFossil = FOSSIL_POKEMON.includes(p.id.toLowerCase());
+  const cleanIdForCheck = toID(p.id);
+  const isLegendary = LEGENDARY_POKEMON.includes(cleanIdForCheck);
+  const isFossil = FOSSIL_POKEMON.includes(cleanIdForCheck);
   if (isLegendary || isFossil) {
-    p.maxVigor = 0;
-    p.vigor = 0;
+    // No lanzar error, se resolverá a 0/0 dinámicamente en UI/lógica
   } else {
     if (p.maxVigor === undefined || p.maxVigor === null || isNaN(p.maxVigor)) {
-      p.maxVigor = Math.floor(Math.random() * 4) + 3;
+      throw new Error(`[pokemonFactory] Vigor máximo inválido o ausente en ${p.id} (UID: ${p.uid}).`);
     }
     if (p.vigor === undefined || p.vigor === null || isNaN(p.vigor)) {
-      p.vigor = p.maxVigor;
+      throw new Error(`[pokemonFactory] Vigor actual inválido o ausente en ${p.id} (UID: ${p.uid}).`);
     }
     if (p.vigor > p.maxVigor) {
-      p.vigor = p.maxVigor;
+      throw new Error(`[pokemonFactory] El vigor supera el vigor máximo en ${p.id} (UID: ${p.uid}) (${p.vigor}/${p.maxVigor}).`);
     }
   }
 }
@@ -402,8 +396,9 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     }
   }
   
-  const isLegendary = LEGENDARY_POKEMON.includes(id.toLowerCase());
-  const isFossil = FOSSIL_POKEMON.includes(id.toLowerCase());
+  const cleanIdForCheck = toID(id);
+  const isLegendary = LEGENDARY_POKEMON.includes(cleanIdForCheck);
+  const isFossil = FOSSIL_POKEMON.includes(cleanIdForCheck);
   let maxVigor = 0;
   let vigor = 0;
   if (!isLegendary && !isFossil) {
@@ -447,7 +442,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   recalcPokemonStats(p, bypass);
   p.hp = p.maxHp;
-  sanitizePokemon(p, bypass);
+  validatePokemon(p, bypass);
   return p;
 }
 
