@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
-import { useGameStore } from '../../../src/stores/game';
-import { useBreedingStore } from '../../../src/stores/breeding';
+import { useGameStore } from '../../../src/stores/game.ts';
+import { useBreedingStore } from '../../../src/stores/breeding.ts';
 
 type GameStoreType = ReturnType<typeof useGameStore>;
 type BreedingStoreType = ReturnType<typeof useBreedingStore>;

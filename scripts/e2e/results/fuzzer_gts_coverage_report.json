@@ -1,244 +1,858 @@
 {
-  "generatedAt": "2026-07-12T18:07:03.487207031Z",
+  "generatedAt": "2026-07-13T06:16:28.832968018Z",
   "summary": {
     "total": 200,
     "passed": 200,
     "failed": 0,
     "listingsRemaining": 1,
-    "playerFinalMoney": 640,
+    "playerFinalMoney": 327,
     "playerFinalTeamSize": 1
   },
   "results": [
     {
       "type": "sell",
-      "price": 177,
-      "success": true
-    },
-    {
-      "type": "sell",
-      "price": 3086,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 177,
-      "success": true
-    },
-    {
-      "type": "sell",
-      "price": 3502,
-      "success": true
-    },
-    {
-      "type": "sell",
-      "price": 1483,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 1803,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 4042,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 5453,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3502,
-      "success": true
-    },
-    {
-      "type": "sell",
-      "price": 681,
+      "price": 32,
       "success": true
     },
     {
       "type": "buy",
-      "price": 681,
+      "price": 32,
       "success": true
     },
     {
       "type": "sell",
-      "price": 3083,
+      "price": 4641,
       "success": true
     },
     {
       "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
+      "price": 4641,
+      "success": true
     },
     {
       "type": "sell",
-      "price": 6615,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
+      "price": 1881,
+      "success": true
     },
     {
       "type": "sell",
-      "price": 6366,
+      "price": 4872,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 2798,
+      "price": 6888,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": -327,
+      "price": 6879,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 5739,
+      "price": -806,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 4055,
+      "price": 1294,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": -833,
+      "price": 3772,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 1392,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 2398,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 4304,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 5884,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 1606,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 4593,
+      "price": 2174,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 1823,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2040,
+      "price": 5087,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 1231,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 1024,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 3313,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 3706,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6257,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -935,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": -988,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 848,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6165,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -360,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 2562,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -290,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 4786,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 6536,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -271,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 1372,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 1714,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 5635,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 123,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6864,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 3323,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 2146,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 4290,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 5279,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 6806,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6765,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 5542,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 5501,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 1764,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 5693,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 3863,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 4352,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": -849,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 5346,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 209,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 6222,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6344,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 1474,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -965,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 2295,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": -264,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6539,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 3883,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6290,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 242,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 5267,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6543,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 6926,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 5907,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 2360,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "buy",
+      "price": 1881,
+      "success": false,
+      "errorMsg": "Dinero insuficiente"
+    },
+    {
+      "type": "sell",
+      "price": 6260,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 1372,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 3582,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 1118,
+      "success": false,
+      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
+    },
+    {
+      "type": "sell",
+      "price": 5944,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
@@ -250,927 +864,333 @@
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": -297,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 3852,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 2820,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 1527,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 3784,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 5266,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 1131,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": -378,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
       "type": "sell",
-      "price": 4066,
+      "price": 5087,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2111,
+      "price": 5534,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 5149,
+      "price": 1121,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 6188,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 5629,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 3359,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 5874,
+      "price": 5982,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 279,
+      "price": 5953,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 1223,
+      "price": 4398,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 1502,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
       "type": "sell",
-      "price": 342,
+      "price": 5727,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 1510,
+      "price": 5744,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 6312,
+      "price": 5920,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 5639,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 4990,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 6736,
+      "price": -510,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 2580,
+      "price": 5060,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 27,
+      "price": -482,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": -584,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
-      "type": "sell",
-      "price": 728,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2028,
+      "price": 5717,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 261,
+      "price": -907,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 3038,
+      "price": -968,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": -693,
+      "price": 4034,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 5951,
+      "price": 6483,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 3585,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 3820,
+      "price": 2660,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 4756,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 4024,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": -452,
+      "price": -581,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 3256,
+      "price": -10,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 2705,
+      "price": -711,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 910,
+      "price": 13,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 6702,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 1915,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2007,
+      "price": 2015,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 1871,
+      "price": 267,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2355,
+      "price": -352,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 4011,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 6767,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 6214,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 1089,
+      "price": 6712,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": -589,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 4150,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 1433,
+      "price": 4789,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 2570,
+      "price": 5384,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 5148,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 6091,
+      "price": 6673,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 5172,
+      "price": 582,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 4719,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": -394,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "sell",
-      "price": 4005,
+      "price": -562,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "sell",
-      "price": 3941,
+      "price": -129,
       "success": false,
       "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "buy",
-      "price": 3083,
-      "success": false,
-      "errorMsg": "Dinero insuficiente"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": -54,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     },
     {
       "type": "buy",
-      "price": 3083,
+      "price": 1881,
       "success": false,
       "errorMsg": "Dinero insuficiente"
-    },
-    {
-      "type": "sell",
-      "price": 3763,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
-    },
-    {
-      "type": "sell",
-      "price": 4563,
-      "success": false,
-      "errorMsg": "Save Shield: no se puede vender el último Pokémon del equipo"
     }
   ],
   "errors": [],

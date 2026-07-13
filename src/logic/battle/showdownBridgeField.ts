@@ -1,4 +1,3 @@
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherGenerationProvider.ts';
 import { toID } from '@pkmn/sim';
@@ -9,7 +8,7 @@ import type { Move } from '../../types/pokemon/pokemon.ts';
  * Maneja eventos de campo y efectos persistentes:
  * -weather, -start, -end, -sidestart, -sideend, -fieldstart, -fieldend
  */
-export function handleFieldEvents(ctx: SBCtx): boolean {
+export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
   const { store, type, parts, line, getPoke } = ctx;
 
   switch (type) {
@@ -57,6 +56,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
           const moveId = toID(moveName);
+          const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
           target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
@@ -65,6 +65,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
           let isLockedEffect = cleanEffect === 'lockedmove';
           if (!isLockedEffect) {
             try {
+              const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
               const moveData = pokemonDataProvider.getMoveData(effect);
               isLockedEffect = moveData?.effect === 'locked_move';
             } catch (_e) { /* Ignore missing moves */ }
@@ -90,6 +91,7 @@ export function handleFieldEvents(ctx: SBCtx): boolean {
             let isLockedEffect = cleanEffect === 'lockedmove';
             if (!isLockedEffect) {
               try {
+                const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
                 const moveData = pokemonDataProvider.getMoveData(effect);
                 isLockedEffect = moveData?.effect === 'locked_move';
               } catch (_e) { /* Ignore missing moves */ }

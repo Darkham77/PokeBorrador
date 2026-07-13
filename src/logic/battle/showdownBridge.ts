@@ -261,7 +261,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const handled =
       await handleCoreEvents(ctx) ||
       handleStageEvents(ctx) ||
-      handleFieldEvents(ctx) ||
+      await handleFieldEvents(ctx) ||
       handleMiscEvents(ctx);
 
     if (!handled) {

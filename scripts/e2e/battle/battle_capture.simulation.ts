@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
-import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves';
-import { useGameStore } from '../../../src/stores/game';
+import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
+import { useGameStore } from '../../../src/stores/game.ts';
 
 test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test.describe.configure({ mode: 'serial' });

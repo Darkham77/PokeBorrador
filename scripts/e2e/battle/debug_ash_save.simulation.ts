@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { setupE2ESession } from '../e2e_helpers.ts';
-import { useGameStore } from '../../../src/stores/game';
+import { useGameStore } from '../../../src/stores/game.ts';
 
 type GameStoreType = ReturnType<typeof useGameStore>;
 

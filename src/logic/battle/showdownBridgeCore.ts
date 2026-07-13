@@ -1,4 +1,3 @@
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, PokemonStatus } from '../../types/pokemon/pokemon.ts';
@@ -21,6 +20,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const side = getSide(parts[2] || '');
       const attacker = getPoke(parts[2] || '');
       const moveId = parts[3] || 'Movimiento';
+      const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
       const moveData = pokemonDataProvider.getMoveData(moveId);
       const translatedName = moveData?.name || moveId;
 
@@ -72,10 +72,11 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     }
 
     case '-prepare': {
-      const attacker = getPoke(parts[2] || '');
-      const moveId = parts[3] || 'Movimiento';
-      const moveData = pokemonDataProvider.getMoveData(moveId);
-      const translatedName = moveData?.name || moveId;
+       const attacker = getPoke(parts[2] || '');
+       const moveId = parts[3] || 'Movimiento';
+       const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
+       const moveData = pokemonDataProvider.getMoveData(moveId);
+       const translatedName = moveData?.name || moveId;
       if (attacker) {
         if (!attacker.volatileCounters) attacker.volatileCounters = {};
         attacker.volatileCounters['twoturnmove'] = 1;
