@@ -198,13 +198,6 @@ Default section order:
 - **Spanish ID Prohibition (Strict English Mandate)**: It is strictly forbidden to create or use logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, or other elements in Spanish. All IDs in databases, saves, and internal logic (including engine code and configurations) MUST be exclusively in English (using official Showdown format). Writing intermediate translation tables, patches, or adapters to preserve or support Spanish IDs in the backend/engine is strictly prohibited. If a developer or agent encounters any legacy Spanish IDs or translation patches already in the codebase, they MUST fix them immediately and migrate them to English Showdown IDs. Spanish is reserved exclusively for display and user-facing fields (such as descriptions or names shown in the UI).
 - **Showdown ID Format Mandate (Strict Lowercase & Alphanumeric)**: All present and future logical identifiers (`id`) for items, Pokémon, abilities, moves, and other game elements MUST strictly adhere to the official Pokémon Showdown format: all lowercase, alphanumeric characters only (no spaces, no hyphens, and no underscores). If any identifier is found violating this format (e.g., containing uppercase letters, spaces, hyphens, or underscores), it MUST be corrected immediately across all config files, source code, and databases (performing migration scripts for user saves if necessary).
 
-## Save File & Mock Validation Rules
-
-- **Normalization First**: During save loading flows, data normalization and legacy backfilling (`normalizeData`) MUST always run BEFORE strict schema validation (`validateAndSanitize`). This ensures old profile formats receive their required modern properties before validation.
-- **Mock HP Safety**: Mock pokemon instances used in unit/integration tests that trigger stat recalculation (`recalcPokemonStats`) MUST have their current `hp` set to a low value (e.g., `5` or `10`) to guarantee it never exceeds the newly calculated `maxHp`.
-- **Database Migrations Integrity**: Migration SQL scripts updating serialized JSON state must use valid Dex values (e.g., standard lowercase natures like `'hasty'`). Setting or re-introducing pseudo-states like `'active'` in nature columns is strictly prohibited.
-- **Fetch Type Casting**: When passing raw binary exports (`Uint8Array`) as the request body in fetch calls, cast the payload using `binary as unknown as BodyInit` to satisfy compiler signature checks.
-
 ## Child DOX Index
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.

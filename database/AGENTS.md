@@ -19,6 +19,8 @@ Backend / Database Engineers.
 - **SQLite Expression Term Limits**: Avoid deep nested JSON subqueries (e.g., nested `json_set` and `json_group_array` over thousands of rows) in SQLite migration files, as they exceed SQLite's tree term/recursion depth limits. Prefer flat UPDATE operations using `replace()` on the raw text content grouped in batches of 50.
 - **No Runtime Sanitization Patches**: It is strictly forbidden to implement runtime data patches, sanitizers, or adapters in application code (e.g. inside save loading or initialization hooks) to dynamically fix legacy identifiers. All data structure updates and identifier migrations MUST be executed exclusively via proper SQL database migration scripts (PostgreSQL and SQLite companion scripts) to preserve database cleanliness and prevent application bloat.
 - **SQL Parity Validation**: Always run and validate dual-file migrations (`.sql` + `.sqlite.sql`) using native SQLite engines before database commits (e.g., via `npm run validate:sql`).
+- **Database Migrations Integrity**: Migration SQL scripts updating serialized JSON state must use valid Dex values (e.g., standard lowercase natures like `'hasty'`). Setting or re-introducing pseudo-states like `'active'` in nature columns is strictly prohibited.
+- **Fetch Type Casting**: When passing raw binary exports (`Uint8Array`) as the request body in fetch calls (such as in local SQLite sync services), cast the payload using `binary as unknown as BodyInit` to satisfy compiler signature checks.
 
 ## Verification
 

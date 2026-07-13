@@ -29,6 +29,7 @@ QA / Automation Engineers.
 - **CLI-Ready Visuals**: Battle animations must be triggerable via the debug bridge (e.g. `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) for headless CLI verification.
 - **FSM State Sychronization in E2E Tests**: When automating battles with Playwright, do not assume that the FSM will immediately transition to the next turn number if a Pokémon faints. Fainting and mandatory replacement switches occur during the active turn (e.g. `SWITCH_MENU` or `PLAYER_FAINT_SEQ`). The synchronization helper (`waitForWaitInput`) must track progress based on the `(currentTurn, currentSubState)` tuple rather than just turn count, preventing infinite wait timeouts when a turn does not increment.
 - **Vitest Module Isolation per Worker**: Each spec file runs in its own Vitest worker process with a fresh module registry. Module-level mutable state (arrays, interceptors, counters) is automatically isolated between specs — no explicit cleanup or mutex is needed. Exploit this to safely share stateful module singletons across a spec file without worrying about cross-spec contamination.
+- **Mock HP Safety**: Mock pokemon instances used in unit/integration tests that trigger stat recalculation (`recalcPokemonStats`) MUST have their current `hp` set to a low value (e.g., `5` or `10`) to guarantee it never exceeds the newly calculated `maxHp`.
 
 ## Verification
 
