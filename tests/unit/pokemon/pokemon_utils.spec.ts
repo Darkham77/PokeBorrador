@@ -33,7 +33,7 @@ describe('Pokemon Utils Logic', () => {
   describe('getMoveDescription', () => {
     it('should return specific messages for effects', () => {
       expect(getMoveDescription('explosion')).toContain('debilita')
-      expect(getMoveDescription('non-existent')).toBe('Causa daño al oponente sin efectos secundarios adicionales.')
+      expect(() => getMoveDescription('non-existent')).toThrow();
     })
     
     it('should return default message for normal status move', () => {

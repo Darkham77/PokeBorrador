@@ -68,7 +68,7 @@ export async function persistSQLite(): Promise<void> {
         await fetch('/api/dev-export-db', {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
-          body: binary
+          body: binary as unknown as BodyInit
         })
         logger.success('SQLite', 'Dev DB synced to Vite server.')
       } catch (err) {

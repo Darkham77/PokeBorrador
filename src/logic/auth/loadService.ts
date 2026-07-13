@@ -1,6 +1,7 @@
 
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { TRAINER_RANKS } from '@/data/player/trainer';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 import { validateAndSanitize, setLastLoadedSaveTime } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -194,15 +195,15 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 
   if (!finalSaveData) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
-  // 3. Sanitize and Normalize
-  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(finalSaveData);
+  // 3. Backfill and Deep Normalization (Legacy Parity)
+  const normalized = normalizeData(finalSaveData);
+
+  // 4. Sanitize and Validate
+  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(normalized);
   if (!valid) {
     logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
     throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
   }
-  
-  // 4. Backfill and Deep Normalization (Legacy Parity)
-  const normalized = normalizeData(sanitized as unknown as GameState);
 
   // Determinar la fecha de carga exacta de esta sesión para control de precedencia
   let loadedTime = 0;
@@ -225,7 +226,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   setLastLoadedSaveTime(loadedTime);
 
   return {
-    data: normalized,
+    data: sanitized as unknown as GameState,
     issues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
     isNewerThanCloud
@@ -281,6 +282,15 @@ function normalizeData(state: GameState): GameState {
         p.gender = Math.random() < 0.5 ? 'M' : 'F';
       }
     }
+
+    // Legacy ability backfill
+    if (!p.ability) {
+      const speciesAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
+      p.ability = speciesAbilities[0] || 'overgrow';
+    }
+
+    if (p.vigor === undefined) p.vigor = 100;
+    if (p.maxVigor === undefined) p.maxVigor = 100;
 
     // Clean legacy iv fields if corrupted
     if (p.ivs) {

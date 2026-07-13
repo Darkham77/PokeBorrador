@@ -17,9 +17,9 @@ function makeMon(overrides: Partial<Pokemon> = {}): Pokemon {
       { id: 'tailwhip', name: 'Látigo', pp: 0,  maxPP: 30 },
     ],
     atk: 49, def: 49, spa: 65, spd: 65, spe: 45,
-    type: 'grass', nature: 'Fuerte', ability: 'overgrow',
+    type: 'grass', nature: 'hardy', ability: 'overgrow',
     ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-    exp: 0, expNeeded: 1000, friendship: 70, vigor: 5,
+    exp: 0, expNeeded: 1000, friendship: 70, vigor: 5, maxVigor: 10,
     isShiny: false, gender: 'M', nickname: null, heldItem: null,
     obtainedAt: 0,
     ...overrides,
@@ -396,7 +396,7 @@ describe('Elixir Máximo (PP completos)', () => {
 
 describe('Caramelo Raro', () => {
   it('fuerza la siguiente subida de nivel', () => {
-    setup({ hp: 50, maxHp: 100, level: 10, exp: 0, expNeeded: 500 }, { rarecandy: 1 })
+    setup({ hp: 10, maxHp: 100, level: 10, exp: 0, expNeeded: 500 }, { rarecandy: 1 })
     const res = useInventoryStore().useItem('rarecandy', 'team', 0)
     expect(res.success).toBe(true)
     // checkLevelUp resets exp to 0 after leveling — the visible contract is level+1
@@ -404,7 +404,7 @@ describe('Caramelo Raro', () => {
   })
 
   it('falla si el Pokémon ya tiene nivel máximo', () => {
-    setup({ hp: 50, maxHp: 100, level: 100 }, { rarecandy: 1 })
+    setup({ hp: 10, maxHp: 100, level: 100 }, { rarecandy: 1 })
     const res = useInventoryStore().useItem('rarecandy', 'team', 0)
     expect(res.success).toBe(false)
     expect(useGameStore().state.inventory['rarecandy']).toBe(1)

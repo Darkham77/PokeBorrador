@@ -73,8 +73,8 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
       activeBattle: {
         value: {
           _rewardCombatants: [],
-          enemy: { id: 'rattata', level: 10, isGuardian: false, uid: 'e1' },
-          player: { id: 'pikachu', level: 10, uid: 'p1' },
+          enemy: { id: 'rattata', level: 10, isGuardian: false, uid: 'e1', ability: 'runaway', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, hp: 5, maxHp: 50, moves: [{ id: 'tackle', name: 'Tackle' }] },
+          player: { id: 'pikachu', level: 10, uid: 'p1', ability: 'static', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, hp: 10, maxHp: 100, moves: [{ id: 'thunderbolt', name: 'Thunderbolt' }] },
           locationId: 'route1',
           difficulty: 'easy',
           isTrainer: false,
@@ -94,7 +94,7 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
           badges: 0,
           gymProgress: {},
           money: 100,
-          team: [{ id: 'pikachu', uid: 'p1', level: 10, exp: 0, expNeeded: 100, name: 'Pikachu', ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }],
+          team: [{ id: 'pikachu', uid: 'p1', level: 10, exp: 0, expNeeded: 100, name: 'Pikachu', ability: 'static', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, hp: 10, maxHp: 100, moves: [{ id: 'thunderbolt', name: 'Thunderbolt' }], ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }],
           inventory: {}
         },
         save: vi.fn().mockResolvedValue(true),

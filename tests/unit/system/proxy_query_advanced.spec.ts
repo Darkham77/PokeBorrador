@@ -88,7 +88,9 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
       box: [{ uid: 'pk_123', name: 'Pikachu' }],
       team: []
     };
-    vi.mocked(queryLocal).mockResolvedValueOnce([{ save_data: JSON.stringify(mockSave) }]);
+    vi.mocked(queryLocal)
+      .mockResolvedValueOnce([]) // 0 active listings
+      .mockResolvedValueOnce([{ save_data: JSON.stringify(mockSave) }]);
 
     const res = await router.rpc('publish_listing_v2', {
       p_listing_type: 'pokemon',

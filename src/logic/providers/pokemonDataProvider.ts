@@ -66,7 +66,7 @@ export const pokemonDataProvider = {
             throw new Error(`Especie de Pokémon no encontrada: ${id}`);
         }
 
-        const isDebug = bypassWhitelist || import.meta.env.DEV || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
+        const isDebug = bypassWhitelist || (import.meta.env.DEV && process.env.NODE_ENV !== 'test') || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
         if (!ENABLED_POKEMON_IDS.has(normalizedId) && !isDebug) {
             throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
         }

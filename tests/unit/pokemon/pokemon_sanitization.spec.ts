@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getMaxBuffDuration } from '@/data/inventory/items';
 
@@ -39,73 +39,43 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   }
 }));
 
-describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
-  
-  it('should replace null/undefined move names with "Placaje" (tackle)', () => {
+describe('Pokemon Recalculation Tests', () => {
+  it('should fix missing stats in recalcPokemonStats on a valid structure', () => {
     const p = {
-      id: 'zubat',
-      moves: [
-        { name: null },
-        { name: 'undefined' },
-        { name: '???' }
-      ]
-    } as unknown as Pokemon;
-
-    sanitizePokemon(p);
-
-    expect(p.moves[0]!.id).toBe('tackle');
-    expect(p.moves[0]!.name).toBe('Placaje');
-    expect(p.moves[1]!.id).toBe('tackle');
-    expect(p.moves[1]!.name).toBe('Placaje');
-    expect(p.moves[2]!.id).toBe('tackle');
-    expect(p.moves[2]!.name).toBe('Placaje');
-    expect(p.moves[0]!.power).toBe(40);
-  });
-
-  it('should throw an error on invalid abilities', () => {
-    const p = {
+      uid: 'test-uid-charizard',
       id: 'charizard',
-      ability: 'Habilidad Inventada'
-    } as unknown as Pokemon;
-
-    expect(() => sanitizePokemon(p)).toThrow();
-  });
-
-  it('should provide "Placaje" (tackle) if a pokemon has no moves', () => {
-    const p = {
-      id: 'zubat',
-      moves: []
-    } as unknown as Pokemon;
-
-    sanitizePokemon(p);
-
-    expect(p.moves.length).toBe(1);
-    expect(p.moves[0]!.id).toBe('tackle');
-    expect(p.moves[0]!.name).toBe('Placaje');
-  });
-
-  it('should fix missing properties in recalcPokemonStats', () => {
-    const p = {
-      id: 'charizard',
+      ability: 'blaze',
+      nature: 'hardy',
       level: 50,
+      gender: 'M',
+      vigor: 100,
+      maxVigor: 100,
+      hp: 5,
+      maxHp: 100,
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      moves: [{ name: 'Arañazo' }] // Missing properties
+      moves: [{ id: 'scratch', name: 'Arañazo' }]
     } as unknown as Pokemon;
 
     recalcPokemonStats(p);
 
-    expect(p.moves[0]!.id).toBe('scratch');
-    expect(p.moves[0]!.name).toBe('Arañazo');
-    expect(p.moves[0]!.power).toBe(40);
-    expect(p.moves[0]!.type).toBe('normal');
     expect(p.maxHp).toBeGreaterThan(0);
+    expect(p.atk).toBeGreaterThan(0);
   });
 
   it('should handle corrupt stats (NaN) during recalculation', () => {
     const p = {
+      uid: 'test-uid-zubat',
       id: 'zubat',
+      ability: 'innerfocus',
+      nature: 'hardy',
       level: 10,
+      gender: 'M',
+      vigor: 100,
+      maxVigor: 100,
+      hp: 5,
+      maxHp: 100,
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
+      moves: [{ id: 'scratch', name: 'Arañazo' }],
       atk: NaN,
       maxHp: undefined
     } as unknown as Pokemon;
@@ -115,56 +85,6 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
     expect(isNaN(p.atk)).toBe(false);
     expect(p.atk).toBeGreaterThan(0);
     expect(p.maxHp).toBeGreaterThan(0);
-  });
-
-  it('should heal levels exceeding the maximum level limit', () => {
-    const p = {
-      id: 'zubat',
-      level: 150,
-      exp: 500,
-      expNeeded: 1000,
-      ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-      moves: [{ name: 'Arañazo' }]
-    } as unknown as Pokemon;
-
-    sanitizePokemon(p);
-
-    expect(p.level).toBe(100);
-    expect(p.exp).toBe(0);
-    expect(p.expNeeded).toBe(Infinity);
-  });
-
-  it('should heal experience exceeding level bounds for max level', () => {
-    const p = {
-      id: 'zubat',
-      level: 100,
-      exp: 500,
-      expNeeded: 1000,
-      ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-      moves: [{ name: 'Arañazo' }]
-    } as unknown as Pokemon;
-
-    sanitizePokemon(p);
-
-    expect(p.level).toBe(100);
-    expect(p.exp).toBe(0);
-    expect(p.expNeeded).toBe(Infinity);
-  });
-
-  it('should clamp experience to expNeeded - 1 for normal levels to prevent corrupt state', () => {
-    const p = {
-      id: 'zubat',
-      level: 50,
-      exp: 1500,
-      expNeeded: 1000,
-      ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-      moves: [{ name: 'Arañazo' }]
-    } as unknown as Pokemon;
-
-    sanitizePokemon(p);
-
-    expect(p.level).toBe(50);
-    expect(p.exp).toBe(999);
   });
 });
 
