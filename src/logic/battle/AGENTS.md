@@ -30,6 +30,8 @@ Frontend Developers / Systems Engineers.
 - **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).
   - Use `getShowdownNickname(uid)` to initialize Showdown simulator names.
   - Use `findPokemonByShowdownName(expectedName, list)` to safely resolve client-side Pokémon instances from Showdown's worker logs and requests.
+- **ESM Worker Output & Top-Level Await**: Todos los Web Workers que importen o dependan de archivos con *top-level await* deben compilarse en formato ES Module (configurado mediante `worker: { format: 'es' }` en `vite.config.ts`).
+- **Log Bridge Imports**: Para mantener el bundle del worker aislado y evitar errores de empaquetado, los archivos del bridge (`showdownBridgeCore.ts`, `showdownBridgeField.ts`, etc.) deben cargar dinámicamente (`await import(...)`) los providers de datos del cliente como `pokemonDataProvider` en lugar de declararlos en imports estáticos a nivel de raíz.
 
 ## Work Guidance
 
