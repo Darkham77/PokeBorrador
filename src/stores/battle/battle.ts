@@ -500,6 +500,9 @@ export const useBattleStore = defineStore('battle', () => {
         await endBattle(true, false)
         return
       } else if (castRes.action !== 'fail') {
+        if (activeBattle.value) {
+          activeBattle.value.playerUsedItem = true;
+        }
         if (castRes.pokemon) {
           if (targetIndex !== null && gs.state.team[targetIndex]) {
             gs.state.team[targetIndex] = castRes.pokemon;

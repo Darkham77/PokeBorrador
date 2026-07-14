@@ -668,7 +668,15 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     const localP2 = createLocalPoke(p2Active);
     const mockStore = createMockBattleContext(localP1, localP2);
 
-    const simBattle = new Battle({ formatid: getShowdownFormatId() });
+    const seedNums = [
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000),
+      Math.floor(Math.random() * 0x10000)
+    ] as [number, number, number, number];
+    const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
+
+    const simBattle = new Battle({ formatid: getShowdownFormatId(), seed });
     simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
 
@@ -692,6 +700,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     const agent2 = new BattleAgent('p2', new Set(), null, 6);
 
     const batchChoices: string[] = [];
+    const batchEnemyChoices: string[] = [];
     const steps: string[] = [];
     try {
       while (!simBattle.ended && turn < maxTurns) {
@@ -704,6 +713,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
         batchChoices.push(p1Choice);
         const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+        batchEnemyChoices.push(p2Choice);
 
         const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {
           if (choice.startsWith('useitem:')) {
@@ -756,6 +766,8 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       });
 
       (batch as unknown as Record<string, unknown>).playerChoices = batchChoices;
+      (batch as unknown as Record<string, unknown>).enemyChoices = batchEnemyChoices;
+      (batch as unknown as Record<string, unknown>).seed = seedNums;
       (batch as unknown as Record<string, unknown>).steps = steps;
     } catch (_err: unknown) {
       batch.itemsToTest.forEach(itemId => {
@@ -789,15 +801,18 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
   if (shouldWrite) {
     consolidatedData.items_consumption = batches.map((b, idx) => {
       const hash = generateBatchHash(b);
+      const rec = b as unknown as Record<string, unknown>;
       return {
         id: `case-${hash}`,
         idx: idx + 1,
         playerTeam: b.playerTeam,
         enemyTeam: b.enemyTeam,
         itemsToTest: b.itemsToTest,
-        playerChoices: (b as unknown as Record<string, unknown>).playerChoices || [],
+        seed: rec.seed || null,
+        playerChoices: rec.playerChoices || [],
+        enemyChoices: rec.enemyChoices || [],
         cheats: [],
-        steps: (b as unknown as Record<string, unknown>).steps || []
+        steps: rec.steps || []
       };
     });
     // Leer y mezclar el contenido fresco del disco antes de escribir para evitar sobreescribir ejecuciones concurrentes

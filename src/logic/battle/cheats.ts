@@ -66,21 +66,25 @@ export function syncRequestConditionsWithSimulator(side: CheatSide | null | unde
   }
   const reqPokemons = activeRequest.side.pokemon;
   const simPokemons = side.pokemon;
-  for (let i = 0; i < reqPokemons.length; i++) {
-    const simMon = simPokemons[i];
-    const reqMon = reqPokemons[i];
-    if (simMon && reqMon) {
-      const hp = simMon.hp;
-      const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
-      const status = simMon.status || '';
-      
-      let cond = `${hp}/${maxhp}`;
-      if (hp <= 0) {
-        cond = '0 fnt';
-      } else if (status) {
-        cond = `${cond} ${status}`;
+
+  reqPokemons.forEach((reqMon, i) => {
+    if (reqMon) {
+      const simMon = reqMon.uid
+        ? simPokemons.find(p => p && (p as unknown as { uid?: string }).uid === reqMon.uid)
+        : simPokemons[i];
+      if (simMon) {
+        const hp = simMon.hp;
+        const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
+        const status = simMon.status || '';
+        
+        let cond = `${hp}/${maxhp}`;
+        if (hp <= 0) {
+          cond = '0 fnt';
+        } else if (status) {
+          cond = `${cond} ${status}`;
+        }
+        reqMon.condition = cond;
       }
-      reqMon.condition = cond;
     }
-  }
+  });
 }

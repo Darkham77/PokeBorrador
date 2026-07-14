@@ -344,6 +344,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           currentBattle.field.setWeather(payload.weather, 'debug' as const);
         }
 
+        syncRequestConditionsWithSimulator(currentBattle.p1 as ExtendedSide);
+        syncRequestConditionsWithSimulator(currentBattle.p2 as ExtendedSide);
+
         // Enviar logs iniciales de inicio de combate junto con los requests iniciales
         const initLogs = getNewLogs();
         self.postMessage({ 
@@ -443,6 +446,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             }
           });
           (battle.p1 as unknown as { pokemonLeft: number }).pokemonLeft = battle.p1.pokemon.filter(p => p && !p.fainted).length;
+          syncRequestConditionsWithSimulator(battle.p1 as ExtendedSide);
         }
         if (p2Hps && typeof p2Hps === 'object') {
           battle.p2.pokemon.forEach(p => {
@@ -474,6 +478,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             }
           });
           (battle.p2 as unknown as { pokemonLeft: number }).pokemonLeft = battle.p2.pokemon.filter(p => p && !p.fainted).length;
+          syncRequestConditionsWithSimulator(battle.p2 as ExtendedSide);
         }
 
         const p1Side = battle.p1 as unknown as PkmnSimSide;

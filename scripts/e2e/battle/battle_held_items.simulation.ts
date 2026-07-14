@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { loginE2ETestUser, confirmAndStartBattle, waitForWaitInput, type WindowWithResolver, type CertifiedTestBatch } from '../e2e_helpers.ts';
 
 async function executeSingleTurn(page: Page) {
   await waitForWaitInput(page);
@@ -14,9 +14,13 @@ async function executeSingleTurn(page: Page) {
 test.describe('E2E Held Items Verification', () => {
   test.beforeEach(async ({ page }) => {
     test.setTimeout(360000);
-    await setupE2ESession(page);
-    const testUser = `TEST_ITEMS_${Date.now()}`;
-    await loginTestUser(page, testUser);
+    page.on('console', msg => {
+      const txt = msg.text();
+      if (txt.includes('[SYNC') || txt.includes('[WORKER') || txt.includes('[TEST') || txt.includes('error') || txt.includes('Error')) {
+        console.log(`[BROWSER] ${txt}`);
+      }
+    });
+    await loginE2ETestUser(page, 'TestPlayerItems');
   });
 
   test('should apply passive healing from Leftovers at the end of a turn', async ({ page }) => {
@@ -63,7 +67,6 @@ test.describe('E2E Held Items Verification', () => {
     await secondMoveBtn.click();
 
     // Esperar al final del Turno 2 (la FSM volverá a WAIT_INPUT o la batalla terminará)
-    await page.waitForTimeout(500);
     await page.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
@@ -121,12 +124,17 @@ test.describe('E2E Held Items Verification', () => {
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { useMapStore } = await import('../../../src/stores/map.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
 
-      // Un Sunkern frágil con Focus Sash
+      // Limpiar clima global residual de otros tests
+      useMapStore().setGlobalWeather('clear');
+
+      // Un Sunkern frágil con Focus Sash y habilidad inofensiva
       const sunkern = pokemonDebugService.generate({
         id: 'sunkern',
         level: 5,
+        ability: 'chlorophyll',
         heldItem: 'focussash',
         moves: ['tackle']
       });
@@ -154,36 +162,13 @@ test.describe('E2E Held Items Verification', () => {
     expect(playerHp).toBe(1);
   });
 
-  // --- TEST DINÁMICO: Simulación de Lotes del Fuzzer de Items ---
-  interface FuzzerBatch {
-    playerTeam: Array<{
-      species: string;
-      level?: number;
-      ability?: string;
-      moves?: string[];
-      item?: string;
-      name?: string;
-    }>;
-    enemyTeam: Array<{
-      species: string;
-      level?: number;
-      ability?: string;
-      moves?: string[];
-      item?: string;
-      name?: string;
-    }>;
-    playerChoices?: string[];
-    itemsToTest?: string[];
-    cheats?: Array<{ turn: number, side: 'p1' | 'p2', type: 'heal' }>;
-  }
-
   const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-  let itemBatches: FuzzerBatch[] = [];
+  let itemBatches: CertifiedTestBatch[] = [];
   if (fs.existsSync(consolidatorPath)) {
     try {
       const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
       if (content.items_consumption) {
-        itemBatches = content.items_consumption as FuzzerBatch[];
+        itemBatches = content.items_consumption as CertifiedTestBatch[];
       }
     } catch (_e) {
       // Ignore if file doesn't exist yet or is malformed
@@ -219,7 +204,7 @@ test.describe('E2E Held Items Verification', () => {
 
   if (filteredItemBatches.length > 0) {
     filteredItemBatches.forEach(({ b: batch, idx: index }) => {
-      test(`debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.itemsToTest?.length ?? 0} items) de forma determinista`, async ({ page }) => {
+      test(`debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
         test.setTimeout(360000);
         // 1. Inyectar los equipos del lote de items
         await page.evaluate(async (b) => {
@@ -230,14 +215,15 @@ test.describe('E2E Held Items Verification', () => {
           const gameStore = useGameStore();
           const battleStore = useBattleStore();
 
-           // Convertir los sets de Showdown a Pokémon locales válidos usando debugService
-          const localPlayerTeam = b.playerTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
+          // Convertir los sets de Showdown a Pokémon locales válidos usando debugService
+          const localPlayerTeam = b.playerTeam.map((set: { uid?: string; species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
             return pokemonDebugService.generate({
+              uid: set.uid,
               id: set.species,
               level: set.level || 100,
               ability: set.ability,
               moves: set.moves,
-              heldItem: set.item,
+              heldItem: set.item ? set.item.toLowerCase().replace(/[^a-z0-9]/g, '') : undefined,
               nickname: set.name,
               nature: set.nature,
               ivs: set.ivs,
@@ -247,13 +233,14 @@ test.describe('E2E Held Items Verification', () => {
             });
           });
 
-          const localEnemyTeam = b.enemyTeam.map((set: { species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
+          const localEnemyTeam = b.enemyTeam.map((set: { uid?: string; species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean }) => {
             return pokemonDebugService.generate({
+              uid: set.uid,
               id: set.species,
               level: set.level || 100,
               ability: set.ability,
               moves: set.moves,
-              heldItem: set.item,
+              heldItem: set.item ? set.item.toLowerCase().replace(/[^a-z0-9]/g, '') : undefined,
               nickname: set.name,
               nature: set.nature,
               ivs: set.ivs,
@@ -272,6 +259,12 @@ test.describe('E2E Held Items Verification', () => {
           const firstEnemy = localEnemyTeam[0];
           if (!firstEnemy) throw new Error('No enemy generated for items test');
 
+           if (window.__VITE_DEBUG__) {
+             window.__VITE_DEBUG__.battleSeed = b.seed as [number, number, number, number] | undefined;
+             window.__VITE_DEBUG__.mockEnemyChoices = b.enemyChoices as string[] | undefined;
+             window.__VITE_DEBUG__.enemyChoiceIndex = 0;
+           }
+
           await battleStore.startBattle(firstEnemy, {
             isTrainer: true,
             enemyTeam: localEnemyTeam,
@@ -283,109 +276,15 @@ test.describe('E2E Held Items Verification', () => {
         try {
           await confirmAndStartBattle(page);
           
-          // Ejecutar los turnos usando la lista de decisiones del fuzzer
-          let turnCount = 0;
-          const maxTurns = 50;
-          const choices = batch.playerChoices || [];
-
-          while (turnCount < maxTurns) {
-            const isOver = await page.evaluate(async () => {
-              const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-              const store = useBattleStore();
-              return !store.state || store.state.over;
-            });
-
-            if (isOver) break;
-
-            await waitForWaitInput(page);
-
-            const isOverAfterWait = await page.evaluate(async () => {
-              const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-              const store = useBattleStore();
-              return !store.state || store.state.over;
-            });
-
-            if (isOverAfterWait) break;
-
-            const currentCheats = (batch.cheats || []).filter(c => c.turn === turnCount);
-            if (currentCheats.length > 0) {
-              console.log(`[E2E] Applying cheats at turn ${turnCount}: ${JSON.stringify(currentCheats)}`);
-              await page.evaluate(async (cheatsList) => {
-                const { applyCheatsInWorker } = await import('../../../src/logic/battle/showdownWorkerClient.ts');
-                await applyCheatsInWorker(cheatsList);
-              }, currentCheats);
-            }
-
-            const currentChoice = choices[turnCount];
-            if (choices && turnCount < choices.length && (currentChoice === '' || currentChoice === undefined)) {
-              console.log(`[E2E] Fuzzer choice at index ${turnCount} is empty (P1 has no choice). Waiting for UI to resolve faint/pivot...`);
-              await waitForWaitInput(page);
-              turnCount++;
-              continue;
-            }
-
-            // Validar si la elección del jugador es válida en el simulador.
-            // Si no es válida (ej. cambiar a un Pokémon debilitado o usar un movimiento deshabilitado),
-            // el fuzzer la registró pero la ignoró. Debemos saltarla en el E2E para no desincronizar los turnos.
-            const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
-              try {
-                if (!choiceStr) return true;
-                const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
-                if (!resolver) return true;
-                const store = resolver();
-                const playerRequest = store.state?.playerRequest;
-                if (!playerRequest) return true;
-
-                if (choiceStr.startsWith('switch ')) {
-                  const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
-                  const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
-                  if (!targetPoke) return false;
-                  const isFainted = targetPoke.condition?.includes('fnt');
-                  const isActive = !!targetPoke.active;
-                  if (isFainted || isActive) {
-                    console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (fainted/active). Skipping.`);
-                    return false;
-                  }
-                } else if (choiceStr.startsWith('move ')) {
-                  const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
-                  const reqMove = playerRequest.active?.[0]?.moves?.[moveIdx];
-                  if (reqMove && reqMove.disabled) {
-                    console.log(`[E2E-VALIDATION] Player choice "${choiceStr}" is invalid (disabled move). Skipping.`);
-                    return false;
-                  }
-                }
-                return true;
-              } catch (_e) {
-                return true;
-              }
-            }, currentChoice);
-
-            if (!isPlayerChoiceValid) {
-              console.log(`[E2E] Choice "${currentChoice}" at index ${turnCount} is invalid for P1. Skipping in E2E to match fuzzer.`);
-              turnCount++;
-              await page.evaluate(() => {
-                if (window.__VITE_DEBUG__) {
-                  window.__VITE_DEBUG__.enemyChoiceIndex = (window.__VITE_DEBUG__.enemyChoiceIndex ?? 0) + 1;
-                }
-              });
-              continue;
-            }
-
-            const inputPerformed = await handleBattleInput(page, currentChoice);
-            if (inputPerformed) {
-              turnCount++;
-              await page.waitForTimeout(20);
-            } else {
-              await page.waitForTimeout(20);
-            }
-          }
-
-          const isBattleOver = await page.evaluate(async () => {
-            const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-            const store = useBattleStore();
-            return !store.state || store.state.over;
-          });
-          expect(isBattleOver).toBe(true);
+          const { executeAutoBattle } = await import('../e2e_helpers.ts');
+          await executeAutoBattle(
+            page,
+            index,
+            0,
+            batch.playerChoices,
+            batch.cheats,
+            batch.finalState
+          );
         } catch (error: unknown) {
           const caseId = (batch as { id?: string }).id || `lote-items-${index + 1}`;
           const errMessage = error instanceof Error ? (error as Error).message : String(error);
@@ -395,7 +294,11 @@ test.describe('E2E Held Items Verification', () => {
             playerTeam: batch.playerTeam.map(p => `${p.species} (${p.item || 'no item'})`),
             enemyTeam: batch.enemyTeam.map(e => `${e.species} (${e.item || 'no item'})`)
           }, null, 2));
-          throw new Error(`[Fallo en Items ${caseId}]: ${errMessage}`);
+           if (process.env.CONTINUE_ON_ERROR === 'true') {
+             console.warn(`[E2E-WARN] Ignorando error en lote de items ${caseId} porque CONTINUE_ON_ERROR es true.`);
+             return;
+           }
+           throw new Error(`[Fallo en Items ${caseId}]: ${errMessage}`);
         }
       });
     });

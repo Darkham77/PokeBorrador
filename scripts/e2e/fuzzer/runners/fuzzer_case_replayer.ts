@@ -47,12 +47,16 @@ if (caseId) {
     process.exit(1);
   }
   const fileContent = fs.readFileSync(casesPath, 'utf8');
-  const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; items?: TestBatch[] };
+  const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; items?: TestBatch[]; items_consumption?: TestBatch[] };
   const casesList = [
     ...(allCases.battle || []),
-    ...(allCases.items || [])
+    ...(allCases.items || []),
+    ...(allCases.items_consumption || [])
   ];
-  match = casesList.find((c) => c.seed && (c.seed.join(',') === caseId || (c as unknown as { id: string }).id === caseId)) || null;
+  match = casesList.find((c) => 
+    (c.seed && c.seed.join(',') === caseId) || 
+    ((c as unknown as { id: string }).id === caseId)
+  ) || null;
   if (!match) {
     console.error(`Error: Case "${caseId}" not found in certified fuzzer cases.`);
     process.exit(1);

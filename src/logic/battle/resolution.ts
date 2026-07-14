@@ -567,6 +567,11 @@ function parseCondition(cond: string): { hp: number; status: Pokemon['status'] }
 function syncTeamHP(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
+
+  if (active.playerUsedItem) {
+    console.log('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
+    return;
+  }
   
   console.log(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
   

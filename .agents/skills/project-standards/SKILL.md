@@ -42,6 +42,23 @@ Consult these global and cross-functional manuals for project-wide standards (do
 - **Decoupling and SSoT**: Architectural constraints, SSoT declarations, and validation routines reside in their respective child directories' `AGENTS.md`.
 - **Zero-Cloning & Zero-Fallback Mandates**: It is STRICTLY FORBIDDEN to clone, shallow-copy (`{ ... }`), or replace active model instances (like active combatants or team members) to trigger updates. Always use UID-based resolution to refer to the Single Source of Truth (`gameStore.state.team` or `gameStore.state.box`) and perform in-place mutations directly on the references to maintain reactive bindings and prevent desynchronization bugs. Furthermore, it is STRICTLY FORBIDDEN to implement runtime compatibility adapters, silent fallback values, or default reference fallbacks (e.g. returning the active pokemon reference, default fallback objects, or empty strings when a UID resolution or ID lookup/matching fails). Under no circumstances should `sanitizePokemon` or any equivalent mechanism silently auto-heal or patch incorrect/missing stats, items, or moves. Doing so is strictly forbidden. Under no circumstances may a validation failure silently fallback to default values (like empty lists or default objects) and save the corrupted state. The system must fail loudly with descriptive errors to force repairing the underlying data causes. If a load or save validation fails, it must fail loudly, abort the transaction immediately, and the save system/options must remain disabled/blocked to prevent overwriting and data loss. Never use fallbacks when looking up by ID under any circumstances; immediate failure is required to expose bugs.
 
+### 3. Zero-Tolerance Turn Failure Rule (Fail-Fast Mandate)
+
+In any E2E or Playwright simulation, **a single turn failure MUST immediately abort the simulation with a descriptive error**. There are no retries, no silent skips, no spin-loops. This applies to all of the following failure conditions:
+
+- UI does not respond to input (`handleBattleInput` returns `false`)
+- FSM does not advance within the expected timeout after an input
+- State desync detected (e.g., fuzzer choices exhausted while battle is still active)
+- Any invalid choice rejection (`INVALID_CHOICE`) from the Showdown simulator
+- `waitForWaitInput` or any `waitForFunction` timeout
+
+**It is STRICTLY FORBIDDEN** to:
+- Retry the same turn after a failure
+- Skip a choice and continue to the next turn
+- Use a `maxTurns` spin-loop as a substitute for a clean termination condition
+
+Any simulation loop must treat `handleBattleInput` returning `false` as a hard error and `throw` immediately. The `maxTurns` guard exists only to catch runaway battles where the simulator itself never ends — it must never be reached in a healthy battle.
+
 ---
 
 ## 🏗️ Artifact Governance (MANDATORY)

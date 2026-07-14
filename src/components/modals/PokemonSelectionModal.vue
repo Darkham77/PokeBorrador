@@ -42,6 +42,7 @@ interface Props {
   customList?: Pokemon[]
   isDaycareContext?: boolean
   daycareSlotIdx?: number
+  show?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -64,7 +65,8 @@ const props = withDefaults(defineProps<Props>(), {
   isItemContext: false,
   customList: () => [],
   isDaycareContext: false,
-  daycareSlotIdx: 0
+  daycareSlotIdx: 0,
+  show: true
 })
 
 
@@ -267,7 +269,7 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
 
 <template>
   <BaseModal
-    show
+    :show="props.show"
     :title="props.title"
     max-width="480px"
     variant="retro"

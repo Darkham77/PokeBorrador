@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import { type Page, type Locator, expect } from '@playwright/test';
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
   const cleanOptions = { ...options };
@@ -54,6 +54,11 @@ export interface DebugStore {
     maxHp: number;
     moves?: Array<{ id: string; pp: number; maxpp?: number } | null>;
   } | null;
+  enemy?: {
+    uid: string;
+    hp: number;
+    maxHp: number;
+  } | null;
   state: {
     over: boolean;
     turnCount: number;
@@ -61,8 +66,17 @@ export interface DebugStore {
       uid: string;
       hp: number;
       maxHp: number;
+      status?: string | null;
       moves?: Array<{ id: string; pp: number } | null>;
     } | null;
+    enemy?: {
+      uid: string;
+      hp: number;
+      maxHp: number;
+      status?: string | null;
+    } | null;
+    playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
+    enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
     playerRequest?: {
       wait?: boolean;
       active?: Array<{
@@ -108,6 +122,11 @@ export async function setupE2ESession(page: Page): Promise<void> {
   });
 }
 
+export async function loginE2ETestUser(page: Page, username = 'E2ETestUser'): Promise<void> {
+  await setupE2ESession(page);
+  await loginTestUser(page, username);
+}
+
 /**
  * Realiza el login de test en el servidor local
  */
@@ -123,18 +142,26 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
   await page.click('button:has-text("JUGAR LOCAL")');
 
-  // Elegir inicial si aparece
+  // Esperar de forma no bloqueante a que aparezca la pantalla de inicial o la pantalla principal directamente
   const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-  try {
-    await starterCard.waitFor({ state: 'visible', timeout: 30000 });
-    await starterCard.click();
-  } catch (_e) {
-    // Ignorar si ya se eligió o no aparece
-  }
-
-  // Esperar a que cargue la interfaz principal
   const mapaBtn = page.locator('button.map-btn').first();
-  await mapaBtn.waitFor({ state: 'attached', timeout: 45000 });
+
+  await Promise.race([
+    starterCard.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'starter'),
+    mapaBtn.waitFor({ state: 'attached', timeout: 30000 }).then(() => 'map')
+  ]).then(async (resolvedScreen) => {
+    if (resolvedScreen === 'starter') {
+      console.log(`[E2E-LOGIN] Pantalla de inicial detectada. Seleccionando Bulbasaur...`);
+      await starterCard.click();
+    } else {
+      console.log(`[E2E-LOGIN] Interfaz principal detectada directamente (inicial ya seleccionado anteriormente).`);
+    }
+  }).catch((err) => {
+    console.debug(`[E2E-LOGIN] Error en transición de login: ${String(err)}`);
+  });
+
+  // Asegurar que estamos en el mapa para iniciar el test
+  await mapaBtn.waitFor({ state: 'attached', timeout: 15000 });
 }
 
 export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
@@ -489,3 +516,327 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
     }
   }, choice);
 }
+
+export interface CertifiedTestBatch {
+  id?: string;
+  seed?: [number, number, number, number];
+  playerTeam: Array<{ species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean; uid?: string }>;
+  enemyTeam: Array<{ species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean; uid?: string }>;
+  playerChoices: string[];
+  enemyChoices: string[];
+  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+  finalState?: {
+    p1: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
+    p2: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
+  };
+  abilitiesToTest?: string[];
+  movesToTest?: string[];
+  history?: Array<{ p1Choice: string; p2Choice: string }>;
+}
+
+export async function waitForWaitInputFsmSync(page: Page, turnCount: number, batchIndex: number, expectedSimulatorTurn: number, lastSubState: string) {
+  try {
+    let resolved = false;
+    while (!resolved) {
+      await page.waitForFunction(({ expectedTurn, lastSub, isFirst }) => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const store = resolver();
+        const isReady = (store.currentFsmState === 'ACTIVE_BATTLE' && 
+                        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU' || store.currentSubState === 'ENEMY_REPLACEMENT_SEQ' || store.currentSubState === 'POKEMON_CALL') &&
+                        !store.isProcessing && !store.isIntroAnimating) || 
+                        !store.state || store.state.over;
+        
+        console.debug(`[E2E-FSM-Wait] turnCount: ${expectedTurn}, lastSub: "${lastSub}", isFirst: ${isFirst}, currentSubState: "${store.currentSubState}", isProcessing: ${store.isProcessing}, isIntro: ${store.isIntroAnimating}, isReady: ${isReady}`);
+        
+        return isReady;
+      }, { expectedTurn: expectedSimulatorTurn, lastSub: lastSubState, isFirst: turnCount === 0 }, { timeout: 45000 });
+
+      // Esperar al siguiente frame de renderizado para asegurar que Vue actualizó el DOM tras el microtask gap
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+
+      // Re-verificar si seguimos en un estado listo para input (WAIT_INPUT o SWITCH_MENU o ENEMY_REPLACEMENT_SEQ o POKEMON_CALL o batalla terminada)
+      const stillReady = await page.evaluate(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        try {
+          const store = resolver();
+          return (store.currentFsmState === 'ACTIVE_BATTLE' && 
+                  (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU' || store.currentSubState === 'ENEMY_REPLACEMENT_SEQ' || store.currentSubState === 'POKEMON_CALL') &&
+                  !store.isProcessing && !store.isIntroAnimating) || 
+                  !store.state || store.state.over;
+        } catch (_e) {
+          return false;
+        }
+      });
+
+      if (stillReady) {
+        resolved = true;
+      } else {
+        console.debug(`[E2E] Falsa alarma detectada (microtask gap). Re-esperando FSM...`);
+      }
+    }
+  } catch (_e) {
+    await page.screenshot({ path: `scratch/lock-batch-${batchIndex}-turn-${turnCount}.png` });
+    throw new Error(`Bloqueo detectado: La FSM de combate se quedó trabada en el turno ${turnCount}. Captura guardada en scratch/.`);
+  }
+}
+
+export async function verifyHpParity(page: Page) {
+  try {
+    await page.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
+      const playerHp = store.state?.player?.hp ?? 0;
+      const playerMaxHp = store.state?.player?.maxHp ?? 1;
+      const enemyHp = store.state?.enemy?.hp ?? 0;
+      const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
+
+      if (playerHp > 0) {
+        const el = document.querySelector('.player-card .hp-values');
+        const text = el?.textContent ?? '';
+        if (!text.includes(`${playerHp}/${playerMaxHp}`)) return false;
+      }
+      if (enemyHp > 0) {
+        const el = document.querySelector('.enemy-card .hp-values');
+        const text = el?.textContent ?? '';
+        if (!text.includes(`${enemyHp}/${enemyMaxHp}`)) return false;
+      }
+      return true;
+    }, undefined, { timeout: 15000 });
+  } catch (err) {
+    const diagnosis = await page.evaluate(async () => {
+      const { useBattleStore } = await import('@/stores/battle/battle.ts');
+      const store = useBattleStore();
+      const storePlayer = `${store.state?.player?.hp}/${store.state?.player?.maxHp}`;
+      const storeEnemy  = `${store.state?.enemy?.hp}/${store.state?.enemy?.maxHp}`;
+      const domPlayer   = document.querySelector('.player-card .hp-values')?.textContent ?? 'null';
+      const domEnemy    = document.querySelector('.enemy-card .hp-values')?.textContent ?? 'null';
+      return { storePlayer, storeEnemy, domPlayer, domEnemy };
+    });
+    console.error(`[E2E ERROR] HP Mismatch — Store player: ${diagnosis.storePlayer}, DOM player: "${diagnosis.domPlayer}" | Store enemy: ${diagnosis.storeEnemy}, DOM enemy: "${diagnosis.domEnemy}"`);
+    throw err;
+  }
+}
+
+export async function executeAutoBattle(
+  page: Page, 
+  batchIndex: number, 
+  startingTurn = 0, 
+  playerChoices?: string[], 
+  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>, 
+  finalState?: CertifiedTestBatch['finalState']
+) {
+  let p1ChoiceIdx = startingTurn;
+  let p2ChoiceIdx = startingTurn;
+  const appliedCheatsTurns = new Set<number>();
+  const { MAX_E2E_BATTLE_TURNS } = await import('./e2e_constants.ts');
+  const maxIterations = MAX_E2E_BATTLE_TURNS;
+  let iterations = 0;
+  let lastSimulatorTurn = 0;
+  let lastSubState = '';
+
+  while (iterations < maxIterations) {
+    iterations++;
+
+    p1ChoiceIdx = await page.evaluate(() => window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0);
+    p2ChoiceIdx = await page.evaluate(() => window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0);
+
+    const isOver = await page.evaluate(async () => {
+      const { useBattleStore } = await import('@/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return !store.state || store.state.over;
+    }).catch(() => true);
+
+    if (isOver) {
+      break;
+    }
+
+    if (playerChoices && p1ChoiceIdx >= playerChoices.length) {
+      break;
+    }
+
+    await waitForWaitInputFsmSync(page, p1ChoiceIdx, batchIndex, lastSimulatorTurn, lastSubState);
+
+    const isOverAfterWait = await page.evaluate(async () => {
+      const { useBattleStore } = await import('@/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return !store.state || store.state.over;
+    }).catch(() => true);
+
+    if (isOverAfterWait) {
+      break;
+    }
+
+    const subState = await page.evaluate(async () => {
+      const { useBattleStore } = await import('@/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return store.currentSubState;
+    }).catch(() => 'WAIT_INPUT');
+    if (subState === 'WAIT_INPUT') {
+      await verifyHpParity(page);
+    }
+
+    const reqStatus = await page.evaluate(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return { hasChoice: false, turn: 0, subState: '' };
+      const store = resolver();
+      const req = store.state?.playerRequest;
+      return {
+        hasChoice: !!req && !req.wait,
+        turn: store.state?.turnCount ?? 1,
+        subState: store.currentSubState || ''
+      };
+    });
+
+    lastSimulatorTurn = reqStatus.turn;
+    lastSubState = reqStatus.subState;
+
+    if (cheats && cheats.length > 0 && !appliedCheatsTurns.has(lastSimulatorTurn)) {
+      const currentCheats = cheats.filter(c => c.turn === lastSimulatorTurn);
+      if (currentCheats.length > 0) {
+        appliedCheatsTurns.add(lastSimulatorTurn);
+        await page.evaluate(async ({ cheatsList, currentTurn }) => {
+          const currentCheatsInner = cheatsList.filter(c => c.turn === currentTurn);
+          if (currentCheatsInner.length > 0) {
+            console.debug(`[E2E] Applying cheats at turn ${currentTurn}: ${JSON.stringify(currentCheatsInner)}`);
+            const { applyCheatsInWorker } = await import('@/logic/battle/showdownWorkerClient.ts');
+            await applyCheatsInWorker(currentCheatsInner);
+          }
+        }, { cheatsList: cheats, currentTurn: lastSimulatorTurn });
+      }
+    }
+
+    await page.evaluate((idx) => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (resolver) {
+        const store = resolver();
+        const pinia = store._p;
+        const gameStore = pinia?._s?.get('game') as { state: { team: Array<{ name: string; hp: number; maxHp: number; uid: string; moves: Array<{ id: string; pp: number }> }> } } | undefined;
+        const teamInfo = gameStore?.state?.team?.map((p, tIdx: number) => 
+          `[${tIdx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid} Moves:[${p?.moves?.map(m => `${m?.id}(pp:${m?.pp})`).join(',')}]`
+        ).join(' | ');
+        const reqMoves = store.state?.playerRequest?.active?.[0]?.moves?.map((m: { id?: string, pp?: number, maxpp?: number, disabled?: boolean | string }) => `${m?.id}(pp:${m?.pp}/${m?.maxpp},disabled:${m?.disabled})`).join(',');
+        const activePoke = store.state?.player;
+        const volatiles = activePoke?.volatileCounters ? JSON.stringify(activePoke.volatileCounters) : 'none';
+        console.log(`[E2E-TEAM-STATE] ChoiceIndex: ${idx} | FSM: ${store.currentSubState} | ActivePlayer: ${store.state?.player?.name} (UID:${store.state?.player?.uid}) | Volatiles: ${volatiles} | RequestMoves:[${reqMoves || 'none'}] | Team: ${teamInfo}`);
+      }
+    }, p1ChoiceIdx);
+
+    await page.evaluate((idx) => {
+      if (window.__VITE_DEBUG__ && window.__VITE_DEBUG__.enemyChoices) {
+        window.__VITE_DEBUG__.nextEnemyChoice = (window.__VITE_DEBUG__.enemyChoices as string[])[idx];
+        console.log(`[E2E-MOCK-CENTRAL-DEBUG] Inyectada elección del enemigo para el índice de elección P2 ${idx}: ${window.__VITE_DEBUG__.nextEnemyChoice}`);
+      }
+    }, p2ChoiceIdx);
+
+    if (reqStatus.hasChoice) {
+      if (playerChoices && p1ChoiceIdx >= playerChoices.length) {
+        break;
+      }
+
+      const currentChoice = playerChoices ? playerChoices[p1ChoiceIdx] : undefined;
+      
+      if (playerChoices && p1ChoiceIdx < playerChoices.length && (currentChoice === '' || currentChoice === undefined)) {
+        console.log(`[E2E] Fuzzer choice at index ${p1ChoiceIdx} is empty (P1 has no choice in fuzzer). Skipping.`);
+        p1ChoiceIdx++;
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
+        continue;
+      }
+
+      const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
+        try {
+          if (!choiceStr) return true;
+          const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
+          if (!resolver) return true;
+          const store = resolver();
+          const playerRequest = store.state?.playerRequest;
+          if (!playerRequest) return true;
+
+          if (choiceStr.startsWith('switch ')) {
+            const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
+            const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
+            if (!targetPoke) return false;
+            const isFainted = targetPoke.condition?.includes('fnt');
+            const isActive = !!targetPoke.active;
+            if (isFainted || isActive) return false;
+          } else if (choiceStr.startsWith('move ')) {
+            const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
+            const reqMove = playerRequest.active?.[0]?.moves?.[moveIdx];
+            if (reqMove && reqMove.disabled) return false;
+          }
+          return true;
+        } catch (_e) {
+          return true;
+        }
+      }, currentChoice);
+
+      if (!isPlayerChoiceValid) {
+        console.log(`[E2E] Choice "${currentChoice}" at index ${p1ChoiceIdx} is invalid for P1. Skipping to match fuzzer.`);
+        p1ChoiceIdx++;
+        await page.evaluate(() => {
+          if (window.__VITE_DEBUG__) {
+            window.__VITE_DEBUG__.p1ChoiceIdx = (window.__VITE_DEBUG__.p1ChoiceIdx ?? 0) + 1;
+          }
+        });
+        continue;
+      }
+
+      const inputPerformed = await handleBattleInput(page, currentChoice);
+      if (!inputPerformed) {
+        throw new Error(`[E2E-TURN-FAIL] handleBattleInput returned false at choice index ${p1ChoiceIdx} for choice "${currentChoice}". UI is blocked or desynced.`);
+      }
+    }
+  }
+
+  // 7. Validaciones finales al concluir el combate
+  const isBattleOver = await page.evaluate(async () => {
+    const { useBattleStore } = await import('@/stores/battle/battle.ts');
+    const store = useBattleStore();
+    return !store.state || store.state.over;
+  }).catch(() => true);
+
+  expect(isBattleOver).toBe(true);
+
+  if (finalState) {
+    const clientState = await page.evaluate(async () => {
+      const { useBattleStore } = await import('@/stores/battle/battle.ts');
+      const store = useBattleStore();
+      const p1 = store.state?.playerTeam?.map((p) => ({
+        name: p.name,
+        hp: p.hp,
+        maxHp: p.maxHp,
+        fainted: p.hp <= 0
+      })) || [];
+      const p2 = store.state?.enemyTeam?.map((p) => ({
+        name: p.name,
+        hp: p.hp,
+        maxHp: p.maxHp,
+        fainted: p.hp <= 0
+      })) || [];
+      return { p1, p2 };
+    });
+
+    finalState.p1.forEach((expected, i) => {
+      const clientPoke = clientState.p1[i];
+      if (clientPoke) {
+        expect(clientPoke.fainted).toBe(expected.fainted);
+        if (!expected.fainted) {
+          expect(clientPoke.hp).toBe(expected.hp);
+        }
+      }
+    });
+
+    finalState.p2.forEach((expected, i) => {
+      const clientPoke = clientState.p2[i];
+      if (clientPoke) {
+        expect(clientPoke.fainted).toBe(expected.fainted);
+        if (!expected.fainted) {
+          expect(clientPoke.hp).toBe(expected.hp);
+        }
+      }
+    });
+  }
+}
+

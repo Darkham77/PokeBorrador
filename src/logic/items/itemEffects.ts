@@ -210,6 +210,7 @@ function healHp(p: Pokemon, amount: number): ItemEffectResult {
 function revive(p: Pokemon, amount: number): ItemEffectResult {
   if (p.hp > 0) return { success: false, message: 'No tendrá ningún efecto.' };
   p.hp = amount;
+  p.status = null;
   return { success: true, message: `revivió con ${p.hp} HP` };
 }
 
