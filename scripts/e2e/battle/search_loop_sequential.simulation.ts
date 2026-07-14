@@ -86,7 +86,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       const rayquaza = pokemonDebugService.generate({
         id: 'rayquaza',
         level: 100,
-        moves: ['dragonclaw', 'outrage', 'extremespeed', 'tackle']
+        moves: ['flamethrower', 'thunderbolt', 'icebeam', 'surf']
       });
       
       rayquaza.maxHp = 9999;
@@ -107,12 +107,12 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       const originalOpen = modalStore.open;
       modalStore.open = function(name: string, props?: Record<string, unknown>) {
         if (name === 'Fishing') {
-          const p = props as { onWin?: () => void } | undefined;
+          const p = props as unknown as { onWin?: () => void } | undefined;
           p?.onWin?.();
           return null;
         }
         if (name === 'Archaeology') {
-          const p = props as { onWin?: (difficulty: string) => void } | undefined;
+          const p = props as unknown as { onWin?: (difficulty: string) => void } | undefined;
           p?.onWin?.('hard');
           return null;
         }
@@ -139,7 +139,8 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       { num: 10, type: 'wild', label: 'Wild Encounter' }
     ];
 
-    for (const enc of encountersToTest) {
+    for (let i = 0; i < encountersToTest.length; i++) {
+      const enc = encountersToTest[i]!;
       console.debug(`[E2E-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
       
       // Curar al equipo antes de cada encuentro para asegurar HP completo y evitar debilitaciones fortuitas
@@ -147,7 +148,9 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
         (window as unknown as { __VITE_DEBUG__?: { healAll?: () => void } }).__VITE_DEBUG__?.healAll?.();
       });
 
-      // Esperar a que la FSM esté en SEARCH_PHASE / COMBAT_OR_FLEE, sin procesamiento activo
+      // Si el encuentro actual es un minijuego, se inicia automáticamente desde la FSM sin pasar por SEARCH_PHASE.
+      const isMinigame = enc.type === 'fishing' || enc.type === 'archaeology';
+
       if (enc.num === 1) {
         await page.waitForFunction(() => {
           const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -156,46 +159,88 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
           const matches = store.currentFsmState === 'SEARCH_PHASE' && 
                           store.currentSubState === 'COMBAT_OR_FLEE' &&
                           !store.isProcessing;
-          console.log(`[E2E-FSM-DEBUG] enc.num === 1: state=${store.currentFsmState}, subState=${store.currentSubState}, isProcessing=${store.isProcessing} -> matches=${matches}`);
           return matches;
         }, undefined, { timeout: 15000 });
+
+        // Configurar el tipo de encuentro para el SIGUIENTE combate AHORA
+        const nextEnc = encountersToTest[i + 1];
+        if (nextEnc) {
+          await page.evaluate((t) => {
+            const win = window as unknown as WindowWithResolver & {
+              __VITE_DEBUG__?: {
+                forceEncounterType?: string;
+              };
+            };
+            if (win.__VITE_DEBUG__) {
+              win.__VITE_DEBUG__.forceEncounterType = t;
+            }
+          }, nextEnc.type);
+        }
 
         const startBtn = page.locator('.continue-btn-final.fight-btn').first();
         await startBtn.waitFor({ state: 'visible', timeout: 2000 });
         await clickResilient(startBtn);
       } else {
-        await page.waitForFunction(() => {
-          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          if (!resolver) return false;
-          const store = resolver();
-          const matches = store.currentFsmState === 'SEARCH_PHASE' && 
-                          store.currentSubState === 'COMBAT_OR_FLEE' &&
-                          !store.isProcessing;
-          console.log(`[E2E-FSM-DEBUG] enc.num > 1: state=${store.currentFsmState}, subState=${store.currentSubState}, isProcessing=${store.isProcessing} -> matches=${matches}`);
-          return matches;
-        }, undefined, { timeout: 15000 });
+        if (!isMinigame) {
+          // Esperar a SEARCH_PHASE estándar y hacer clic en Combatir
+          await page.waitForFunction(() => {
+            const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+            if (!resolver) return false;
+            const store = resolver();
+            const matches = store.currentFsmState === 'SEARCH_PHASE' && 
+                            store.currentSubState === 'COMBAT_OR_FLEE' &&
+                            !store.isProcessing;
+            console.log(`[E2E-FSM-DEBUG] enc.num > 1 (standard): state=${store.currentFsmState}, subState=${store.currentSubState}, isProcessing=${store.isProcessing} -> matches=${matches}`);
+            return matches;
+          }, undefined, { timeout: 15000 });
 
-        // Configurar el tipo de encuentro
-        await page.evaluate((t) => {
-          const win = window as unknown as WindowWithResolver & {
-            __VITE_DEBUG__?: {
-              forceEncounterType?: string;
-            };
-          };
-          if (win.__VITE_DEBUG__) {
-            win.__VITE_DEBUG__.forceEncounterType = t;
+          // Configurar el tipo de encuentro para el SIGUIENTE combate AHORA
+          const nextEnc = encountersToTest[i + 1];
+          if (nextEnc) {
+            await page.evaluate((t) => {
+              const win = window as unknown as WindowWithResolver & {
+                __VITE_DEBUG__?: {
+                  forceEncounterType?: string;
+                };
+              };
+              if (win.__VITE_DEBUG__) {
+                win.__VITE_DEBUG__.forceEncounterType = t;
+              }
+            }, nextEnc.type);
           }
-        }, enc.type);
 
-        // Hacer clic en combatir en la pantalla de búsqueda
-        const startBtn = page.locator('.continue-btn-final.fight-btn').first();
-        await startBtn.waitFor({ state: 'visible', timeout: 2000 });
-        await clickResilient(startBtn);
+          const startBtn = page.locator('.continue-btn-final.fight-btn').first();
+          await startBtn.waitFor({ state: 'visible', timeout: 2000 });
+          await clickResilient(startBtn);
+        } else {
+          // Si es minijuego y no es el primero, se inicia automáticamente. Solo configuramos la fuerza para el siguiente combate ahora.
+          const nextEnc = encountersToTest[i + 1];
+          if (nextEnc) {
+            await page.evaluate((t) => {
+              const win = window as unknown as WindowWithResolver & {
+                __VITE_DEBUG__?: {
+                  forceEncounterType?: string;
+                };
+              };
+              if (win.__VITE_DEBUG__) {
+                win.__VITE_DEBUG__.forceEncounterType = t;
+              }
+            }, nextEnc.type);
+          }
+        }
       }
 
       if (enc.type !== 'archaeology') {
         // Iniciar el combate real
         await playAllTurnsToWin(page);
+      } else {
+        // Para arqueología, esperamos a que la FSM se limpie y procese el completeBattleFlow
+        await page.waitForFunction(() => {
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+          if (!resolver) return false;
+          const store = resolver();
+          return !store.isProcessing;
+        }, undefined, { timeout: 5000 });
       }
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
