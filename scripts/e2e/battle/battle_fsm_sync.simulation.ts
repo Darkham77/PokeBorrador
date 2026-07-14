@@ -209,11 +209,11 @@ async function executeAutoBattle(page: Page, batchIndex: number, startingTurn = 
       if (resolver) {
         const store = resolver();
         const pinia = store._p;
-        const gameStore = pinia?._s?.get('game');
+        const gameStore = pinia?._s?.get('game') as { state: { team: Array<{ name: string; hp: number; maxHp: number; uid: string; moves: Array<{ id: string; pp: number }> }> } } | undefined;
         const teamInfo = gameStore?.state?.team?.map((p, tIdx: number) => 
-          `[${tIdx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid} Moves:[${p?.moves?.map((m: { id: string, pp: number }) => `${m?.id}(pp:${m?.pp})`).join(',')}]`
+          `[${tIdx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid} Moves:[${p?.moves?.map(m => `${m?.id}(pp:${m?.pp})`).join(',')}]`
         ).join(' | ');
-        const reqMoves = store.state?.playerRequest?.active?.[0]?.moves?.map((m: { id: string, pp?: number, maxpp?: number, disabled?: boolean | string }) => `${m?.id}(pp:${m?.pp}/${m?.maxpp},disabled:${m?.disabled})`).join(',');
+        const reqMoves = store.state?.playerRequest?.active?.[0]?.moves?.map((m: { id?: string, pp?: number, maxpp?: number, disabled?: boolean | string }) => `${m?.id}(pp:${m?.pp}/${m?.maxpp},disabled:${m?.disabled})`).join(',');
         const activePoke = store.state?.player;
         const volatiles = activePoke?.volatileCounters ? JSON.stringify(activePoke.volatileCounters) : 'none';
         console.log(`[E2E-TEAM-STATE] ChoiceIndex: ${idx} | FSM: ${store.currentSubState} | ActivePlayer: ${store.state?.player?.name} (UID:${store.state?.player?.uid}) | Volatiles: ${volatiles} | RequestMoves:[${reqMoves || 'none'}] | Team: ${teamInfo}`);
@@ -689,8 +689,8 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         const gameStore = useGameStore();
 
         battleStore.state = null;
-        battleStore.currentSubState = 'WAIT_INPUT';
-        battleStore.currentFsmState = 'INITIALIZING';
+        battleStore.fsm.currentSubState = 'WAIT_INPUT';
+        battleStore.fsm.currentState = 'INITIALIZING';
         gameStore.state.team = [];
         
         // Generar equipo local para el jugador usando la API de depuración
@@ -750,7 +750,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         // Inyectar la semilla del lote de simulación para garantizar determinismo absoluto usando el manager unificado
         const { injectDebugSeed } = await import('../../../src/logic/battle/battleSeedManager.ts');
         if (b.seed) {
-          injectDebugSeed(b.seed);
+          injectDebugSeed(b.seed as [number, number, number, number]);
         }
 
         // Iniciar la batalla como combate de entrenador usando el primer enemigo y la plantilla completa
@@ -764,9 +764,10 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
           locationId: 'route1'
         });
 
-        if (battleStore.state) {
-          battleStore.state.p1SlotOrder = localPlayerTeam.map(p => p.uid);
-          battleStore.state.p2SlotOrder = localEnemyTeam.map(p => p.uid);
+        const bState = battleStore.state as { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
+        if (bState) {
+          bState.p1SlotOrder = localPlayerTeam.map(p => p.uid);
+          bState.p2SlotOrder = localEnemyTeam.map(p => p.uid);
         }
       }, batch);
 

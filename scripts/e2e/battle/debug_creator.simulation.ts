@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
 
-interface E2EWindow extends Window {
+interface E2EWindow {
   __VITE_DEBUG_STORE_RESOLVER__?: () => {
     state: {
       isTrainer?: boolean;

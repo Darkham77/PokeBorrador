@@ -27,7 +27,6 @@ async function runBreedingFuzzer() {
       uid: `mock-${speciesName}-${customId}`,
       id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
       name: speciesName,
-      species: speciesName,
       level: 50,
       gender,
       ability: `ability-${customId}`,
@@ -36,13 +35,13 @@ async function runBreedingFuzzer() {
         ? { hp: 31, atk: 30, def: 29, spa: 28, spd: 27, spe: 26 }
         : { hp: 5, atk: 6, def: 7, spa: 8, spd: 9, spe: 10 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      moves: [{ id: 'pound', name: 'Destructor' }],
+      moves: [{ id: 'pound', name: 'Destructor', pp: 35, maxPP: 35 }],
       hp: 100,
       maxHp: 100,
       status: null,
       exp: 0,
-      shiny: false,
-    };
+      isShiny: false,
+    } as unknown as Pokemon;
   };
 
   // Matriz completa: cruzamos todas las especies de la base de datos entre sí
@@ -111,7 +110,7 @@ async function runBreedingFuzzer() {
           }
 
           // 2. Power Items
-          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer');
+          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<string, number>;
           if (ivs.hp !== pA.ivs.hp || ivs.atk !== pB.ivs.atk) {
             errors.push(`[Error] Power items fallaron en cruce ${pA.name} x ${pB.name}`);
             failed++;
@@ -119,11 +118,12 @@ async function runBreedingFuzzer() {
           }
 
           // Validar límites numéricos de todos los IVs resultantes [0, 31]
-          const stats: Array<keyof typeof ivs> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
           let ivsRangeValid = true;
           for (const s of stats) {
-            if (ivs[s] < 0 || ivs[s] > 31) {
-              errors.push(`[Error] IV fuera de rango [0-31] en stat '${s}': valor ${ivs[s]} en cruce ${pA.name} x ${pB.name}`);
+            const val = ivs[s];
+            if (val !== undefined && (val < 0 || val > 31)) {
+              errors.push(`[Error] IV fuera de rango [0-31] en stat '${s}': valor ${val} en cruce ${pA.name} x ${pB.name}`);
               ivsRangeValid = false;
               failed++;
               break;

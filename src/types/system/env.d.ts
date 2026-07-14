@@ -80,6 +80,7 @@ declare global {
     status?: string;
     nickname?: string;
     moves?: unknown[];
+    volatileCounters?: Record<string, unknown> | null;
   }
 
   interface DebugGameStore {

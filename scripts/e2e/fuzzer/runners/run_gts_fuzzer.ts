@@ -28,7 +28,6 @@ async function runGTSFuzzer() {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
       id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
       name: speciesName,
-      species: speciesName,
       level: 30,
       gender: 'M',
       ability: 'illuminate',
@@ -40,8 +39,8 @@ async function runGTSFuzzer() {
       maxHp: 100,
       status: null,
       exp: 0,
-      shiny: false,
-    };
+      isShiny: false,
+    } as unknown as Pokemon;
   };
 
   let playerMoney = 5000;

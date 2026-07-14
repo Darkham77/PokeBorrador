@@ -127,12 +127,7 @@ function makeStrategic(): StrategicState {
   };
 }
 
-const MOVES_ATTACKING: HeuristicMoveInfo[] = [
-  { id: 'thunderbolt', pp: 15, disabled: false },
-  { id: 'flamethrower', pp: 15, disabled: false },
-  { id: 'icebeam', pp: 10, disabled: false },
-  { id: 'earthquake', pp: 10, disabled: false },
-];
+
 
 const MOVES_MIXED: HeuristicMoveInfo[] = [
   { id: 'swordsdance', pp: 20, disabled: false },
@@ -380,7 +375,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       const result = heuristicDecision(snap, matchup, makeStrategic(), available, [], calc, inference, false);
 
       if (result?.type === 'move') {
-        assert.ok(['stealthrock', 'earthquake'].includes(result.moveId));
+        assert.ok(['stealthrock', 'earthquake'].includes(result.moveId || ''));
       }
     });
   });

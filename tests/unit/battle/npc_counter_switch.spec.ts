@@ -9,7 +9,6 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
 
 const mockExecuteTurn = vi.hoisted(() => vi.fn())
-const mockGetShowdownSlot = vi.hoisted(() => vi.fn(() => 3))
 const mockFindBestSwitchIndex = vi.hoisted(() => vi.fn(() => 1))
 const mockResolveShowdownSlot = vi.hoisted(() => vi.fn(() => 3))
 
@@ -64,7 +63,8 @@ describe('NPC Counter Switching & Showdown Sync', () => {
       playerTeamIndex: 0,
       isTrainer: true,
       over: false,
-      locationId: 'route1'
+      locationId: 'route1',
+      enemyRequest: null as unknown as Record<string, unknown> | null
     })
 
     const fsm = {

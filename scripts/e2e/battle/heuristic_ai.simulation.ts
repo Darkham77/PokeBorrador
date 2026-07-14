@@ -52,7 +52,7 @@ async function playNTurns(page: Parameters<typeof waitForWaitInput>[0], n: numbe
   for (let i = 0; i < n; i++) {
     const isOver = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return !resolver || !resolver().state || resolver().state.over;
+      return !resolver || !resolver()?.state || !!resolver()?.state?.over;
     });
     if (isOver) break;
 
@@ -60,7 +60,7 @@ async function playNTurns(page: Parameters<typeof waitForWaitInput>[0], n: numbe
 
     const stillOver = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return !resolver || !resolver().state || resolver().state.over;
+      return !resolver || !resolver()?.state || !!resolver()?.state?.over;
     });
     if (stillOver) break;
 
@@ -106,7 +106,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         useGameStore().state.team = [charizard];
 
         const blastoise = pokemonDebugService.generate({ id: 'blastoise', level: 50, moves: ['surf', 'icebeam', 'flashcannon', 'protect'] });
-        await useBattleStore().startBattle(blastoise, { locationId: 'route1', trainerType: 'npc' });
+        await useBattleStore().startBattle(blastoise, { locationId: 'route1', isTrainer: true, trainerName: 'NPC' });
       });
 
       await confirmAndStartBattle(page);
@@ -139,7 +139,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         useGameStore().state.team = [magikarp];
 
         const mewtwo = pokemonDebugService.generate({ id: 'mewtwo', level: 100, moves: ['psychic', 'shadowball', 'icebeam', 'thunderbolt'] });
-        await useBattleStore().startBattle(mewtwo, { locationId: 'route1', trainerType: 'rival' });
+        await useBattleStore().startBattle(mewtwo, { locationId: 'route1', isTrainer: true, trainerName: 'Rival' });
       });
 
       await confirmAndStartBattle(page);
@@ -183,7 +183,7 @@ test.describe('HeuristicAI E2E Verification', () => {
 
         // trainerType wild -> 50% error, no switchea
         const rattata = pokemonDebugService.generate({ id: 'rattata', level: 5, moves: ['tackle', 'tailwhip', 'quickattack', 'bite'] });
-        await useBattleStore().startBattle(rattata, { locationId: 'route1', trainerType: 'wild' });
+        await useBattleStore().startBattle(rattata, { locationId: 'route1', isTrainer: false });
       });
 
       await confirmAndStartBattle(page);
@@ -230,7 +230,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         useGameStore().state.team = [machamp];
 
         const blissey = pokemonDebugService.generate({ id: 'blissey', level: 50, moves: ['softboiled', 'seismictoss', 'thunderwave', 'protect'] });
-        await useBattleStore().startBattle(blissey, { locationId: 'route1', trainerType: 'gym' });
+        await useBattleStore().startBattle(blissey, { locationId: 'route1', isTrainer: true, isGym: true, trainerName: 'Líder Gimnasio' });
       });
 
       await confirmAndStartBattle(page);
@@ -239,7 +239,7 @@ test.describe('HeuristicAI E2E Verification', () => {
       for (let i = 0; i < 20; i++) {
         const isOver = await page.evaluate(() => {
           const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          return !resolver?.().state || resolver?.().state.over;
+          return !resolver || !resolver()?.state || !!resolver()?.state?.over;
         });
         if (isOver) break;
 
@@ -247,7 +247,7 @@ test.describe('HeuristicAI E2E Verification', () => {
 
         const stillOver = await page.evaluate(() => {
           const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          return !resolver?.().state || resolver?.().state.over;
+          return !resolver || !resolver()?.state || !!resolver()?.state?.over;
         });
         if (stillOver) break;
 
@@ -281,7 +281,7 @@ test.describe('HeuristicAI E2E Verification', () => {
 
         const gengar   = pokemonDebugService.generate({ id: 'gengar', level: 50, moves: ['shadowball', 'sludgebomb', 'thunderbolt', 'focusblast'] });
         const clefable = pokemonDebugService.generate({ id: 'clefable', level: 50, moves: ['moonblast', 'softboiled', 'thunderwave', 'fireblast'] });
-        await useBattleStore().startBattle(gengar, { locationId: 'route1', trainerType: 'rival', enemyTeam: [gengar, clefable] });
+        await useBattleStore().startBattle(gengar, { locationId: 'route1', isTrainer: true, trainerName: 'Rival', enemyTeam: [gengar, clefable] });
       });
 
       await confirmAndStartBattle(page);
@@ -311,7 +311,15 @@ test.describe('HeuristicAI E2E Verification', () => {
           useGameStore().state.team = [mew];
 
           const rattata = pokemonDebugService.generate({ id: 'rattata', level: 5, moves: ['tackle', 'tailwhip', 'quickattack', 'bite'] });
-          await useBattleStore().startBattle(rattata, { locationId: 'route1', trainerType: tt });
+          const isTrainer = tt !== 'wild';
+          const isGym = tt === 'gym';
+          const nameMap: Record<string, string> = { rival: 'Rival', gym: 'Líder Gimnasio', npc: 'NPC' };
+          await useBattleStore().startBattle(rattata, {
+            locationId: 'route1',
+            isTrainer,
+            isGym,
+            trainerName: isTrainer ? (nameMap[tt] || 'NPC') : undefined
+          });
         }, trainerType);
 
         await confirmAndStartBattle(page);
@@ -331,7 +339,7 @@ test.describe('HeuristicAI E2E Verification', () => {
 
         await page.evaluate(async () => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-          useBattleStore().endBattle?.();
+          useBattleStore().endBattle?.(false, true);
         });
         await page.waitForTimeout(400);
 

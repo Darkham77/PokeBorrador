@@ -45,9 +45,9 @@ describe('ShowdownTeamResolver unit tests', () => {
 
   it('debería ordenar correctamente el equipo según Showdown (getShowdownOrder)', () => {
     const ordered = ShowdownTeamResolver.getShowdownOrder(mockTeam, mockRequest);
-    expect(ordered[0].uid).toBe(p2Uid); // Activo primero
-    expect(ordered[1].uid).toBe(p1Uid);
-    expect(ordered[2].uid).toBe(p3Uid);
+    expect(ordered[0]?.uid).toBe(p2Uid); // Activo primero
+    expect(ordered[1]?.uid).toBe(p1Uid);
+    expect(ordered[2]?.uid).toBe(p3Uid);
   });
 
   it('debería fallar si se busca un slot inexistente o inválido', () => {

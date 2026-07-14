@@ -54,10 +54,11 @@ test.describe('Weather Effects Verification Simulation', () => {
     await page.evaluate(async () => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const battleStore = resolver?.();
-      if (battleStore?.state) {
-        battleStore.state.playerFled = true;
+      const bState = battleStore?.state as { playerFled?: boolean } | null;
+      if (bState) {
+        bState.playerFled = true;
       }
-      await window.__VITE_DEBUG__.forceFlee();
+      await (window as unknown as Window & { __VITE_DEBUG__: { forceFlee: () => Promise<void> } }).__VITE_DEBUG__.forceFlee();
     });
 
     // Confirmar que la arena de combate se destruyó y ya no está en el DOM

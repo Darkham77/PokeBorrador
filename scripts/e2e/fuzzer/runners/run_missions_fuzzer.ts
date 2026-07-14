@@ -22,7 +22,6 @@ async function runMissionsFuzzer() {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
       id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
       name: speciesName,
-      species: speciesName,
       level,
       gender: 'M',
       ability: 'illuminate',
@@ -34,8 +33,8 @@ async function runMissionsFuzzer() {
       maxHp: 100,
       status: null,
       exp: 0,
-      shiny: false,
-    };
+      isShiny: false,
+    } as unknown as Pokemon;
   };
 
   const dateStr = Temporal.Now.instant().toString().split('T')[0]!;

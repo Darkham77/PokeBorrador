@@ -288,7 +288,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         moves: pMoves.length > 0 ? pMoves : ['tackle'],
         uid: pUid,
         stats: pStats,
-      });
+      } as unknown as PokemonSet);
     }
 
     // Equipo enemigo con al menos 2 Pokémon para permitir switches.
@@ -324,7 +324,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         moves: eMoves,
         uid: eUid,
         stats: eStats,
-      });
+      } as unknown as PokemonSet);
     }
 
     if (playerTeam.length > 0) {

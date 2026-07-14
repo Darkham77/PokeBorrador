@@ -184,7 +184,6 @@ const NATURE_TO_SHOWDOWN: Record<string, string> = {
 };
 
 const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
-const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 const OUTPUT_FILE = BACKUP_FILE;
 
 function canLearnMove(speciesId: string, moveId: string): boolean {

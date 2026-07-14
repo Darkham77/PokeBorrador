@@ -14,22 +14,19 @@ describe('HeuristicAI - PokemonTracker Unit Tests', () => {
         role: 'Physical Sweeper',
         ability: 'Static',
         item: 'Light Ball',
-        moves: ['volttackle', 'extremespeed', 'irontail', 'fakeout'],
-        probability: 0.33
+        moves: ['volttackle', 'extremespeed', 'irontail', 'fakeout']
       },
       {
         role: 'Special Attacker',
         ability: 'Lightning Rod',
         item: 'Life Orb',
-        moves: ['thunderbolt', 'grassknot', 'surf', 'hiddenpower'],
-        probability: 0.33
+        moves: ['thunderbolt', 'grassknot', 'surf', 'hiddenpower']
       },
       {
         role: 'Nasty Plot Utility',
         ability: 'Lightning Rod',
         item: 'Focus Sash',
-        moves: ['nastyplot', 'thunderbolt', 'substitute', 'surf'],
-        probability: 0.33
+        moves: ['nastyplot', 'thunderbolt', 'substitute', 'surf']
       }
     ];
 

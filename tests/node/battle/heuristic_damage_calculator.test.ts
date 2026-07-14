@@ -59,7 +59,7 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
 
   it('should calculate matchup damage correctly prioritizing type effectiveness', () => {
     const validMoves = [{ id: 'thunderbolt', pp: 15, disabled: false }];
-    const inferredMoves = ['watergun'];
+    const inferredMoves = new Map([['watergun', 1]]);
 
     const matchup = calc.calcMatchup(snapshot, validMoves, inferredMoves);
 
@@ -74,11 +74,10 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
 
   it('should correctly handle complete type immunity (e.g. Ground immune to Electric)', () => {
     const opp = snapshot.opponentSide.activePokemon!;
-    opp.types = ['ground']; // Squirtle muta a Tierra
     opp.species = 'diglett';
 
     const validMoves = [{ id: 'thunderbolt', pp: 15, disabled: false }];
-    const inferredMoves = ['mudslap'];
+    const inferredMoves = new Map([['mudslap', 1]]);
 
     const matchup = calc.calcMatchup(snapshot, validMoves, inferredMoves);
     const bestMove = matchup.myAttacking[0]!;

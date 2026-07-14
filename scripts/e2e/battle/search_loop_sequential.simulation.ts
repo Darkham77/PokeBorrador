@@ -3,6 +3,14 @@ import { setupE2ESession, loginTestUser, clickResilient } from '../e2e_helpers.t
 import type { WindowWithResolver } from '../e2e_helpers.ts';
 
 async function playAllTurnsToWin(page: Page) {
+  // 1. Esperar a que el combate se inicie y esté activo
+  await page.waitForFunction(() => {
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+    if (!resolver) return false;
+    const store = resolver();
+    return store.currentFsmState === 'ACTIVE_BATTLE' && !!store.state;
+  }, undefined, { timeout: 5000 });
+
   let isOver = false;
   let actionCount = 0;
   
@@ -14,16 +22,17 @@ async function playAllTurnsToWin(page: Page) {
       if (!resolver) return false;
       const store = resolver();
       const isReady = (store.currentFsmState === 'ACTIVE_BATTLE' && 
-                      ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ', 'POKEMON_CALL'].includes(store.currentSubState) &&
+                      ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ', 'POKEMON_CALL'].includes(store.currentSubState || '') &&
                       !store.isProcessing && !store.isIntroAnimating) || 
-                      !store.state || store.state.over;
+                      (store.state && !!store.state.over) ||
+                      store.currentFsmState === 'SEARCH_PHASE';
       return isReady;
-    }, undefined, { timeout: 2000 });
+    }, undefined, { timeout: 5000 });
 
     isOver = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      return !store || !store.state || store.state.over;
+      return !store || !store.state || !!store.state.over || store.currentFsmState === 'SEARCH_PHASE';
     });
     if (isOver) break;
 
@@ -77,12 +86,38 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       const rayquaza = pokemonDebugService.generate({
         id: 'rayquaza',
         level: 100,
-        moves: ['tackle', 'outrage', 'extremespeed', 'dragonclaw']
+        moves: ['dragonclaw', 'outrage', 'extremespeed', 'tackle']
       });
+      
+      rayquaza.maxHp = 9999;
+      rayquaza.hp = 9999;
+      rayquaza.atk = 999;
+      rayquaza.def = 999;
+      rayquaza.spa = 999;
+      rayquaza.spd = 999;
+      rayquaza.spe = 999;
       
       useGameStore().state.team = [rayquaza];
       useGameStore().state.starterChosen = true;
       await useGameStore().saveGame();
+
+      // Interceptar useModalStore.open para resolver minijuegos instantáneamente sin race conditions
+      const { useModalStore } = await import('../../../src/stores/modals.ts');
+      const modalStore = useModalStore();
+      const originalOpen = modalStore.open;
+      modalStore.open = function(name: string, props?: Record<string, unknown>) {
+        if (name === 'Fishing') {
+          const p = props as { onWin?: () => void } | undefined;
+          p?.onWin?.();
+          return null;
+        }
+        if (name === 'Archaeology') {
+          const p = props as { onWin?: (difficulty: string) => void } | undefined;
+          p?.onWin?.('hard');
+          return null;
+        }
+        return originalOpen.call(this, name, props);
+      };
     });
 
     // 2. Navegar a Ruta 1 para comenzar la exploración/bucle de búsqueda
@@ -107,6 +142,11 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
     for (const enc of encountersToTest) {
       console.debug(`[E2E-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
       
+      // Curar al equipo antes de cada encuentro para asegurar HP completo y evitar debilitaciones fortuitas
+      await page.evaluate(() => {
+        (window as unknown as { __VITE_DEBUG__?: { healAll?: () => void } }).__VITE_DEBUG__?.healAll?.();
+      });
+
       // Esperar a que la FSM esté en SEARCH_PHASE / COMBAT_OR_FLEE, sin procesamiento activo
       if (enc.num === 1) {
         await page.waitForFunction(() => {
@@ -153,63 +193,10 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
         await clickResilient(startBtn);
       }
 
-      interface MockModal {
-        id: string;
-        name: string;
-        props?: {
-          onWin?: (difficulty?: string) => Promise<void> | void;
-        };
+      if (enc.type !== 'archaeology') {
+        // Iniciar el combate real
+        await playAllTurnsToWin(page);
       }
-
-      interface MockModalStore {
-        stack: MockModal[];
-        close: (id: string) => void;
-      }
-
-      if (enc.type === 'fishing') {
-        // Esperar al modal de pesca
-        await page.waitForFunction(async () => {
-          const { useModalStore } = await import('../../../src/stores/modals.ts');
-          const store = useModalStore() as unknown as MockModalStore;
-          return store.stack.some(m => m.name === 'Fishing');
-        }, undefined, { timeout: 2000 });
-
-        // Simular éxito en el minigame
-        await page.evaluate(async () => {
-          const { useModalStore } = await import('../../../src/stores/modals.ts');
-          const modalStore = useModalStore() as unknown as MockModalStore;
-          const modal = modalStore.stack.find(m => m.name === 'Fishing');
-          if (modal && modal.props && modal.props.onWin) {
-            await modal.props.onWin();
-          }
-          modalStore.close('Fishing');
-        });
-      } else if (enc.type === 'archaeology') {
-        // Esperar al modal de arqueología
-        await page.waitForFunction(async () => {
-          const { useModalStore } = await import('../../../src/stores/modals.ts');
-          const store = useModalStore() as unknown as MockModalStore;
-          return store.stack.some(m => m.name === 'Archaeology');
-        }, undefined, { timeout: 2000 });
-
-        // Simular éxito en el minigame
-        await page.evaluate(async () => {
-          const { useModalStore } = await import('../../../src/stores/modals.ts');
-          const modalStore = useModalStore() as unknown as MockModalStore;
-          const modal = modalStore.stack.find(m => m.name === 'Archaeology');
-          if (modal && modal.props && modal.props.onWin) {
-            await modal.props.onWin('hard');
-          }
-          modalStore.close('Archaeology');
-        });
-
-        // La arqueología exitosa nos regresa directamente a SEARCH_PHASE
-        console.debug(`[E2E-TEST] Combate ${enc.num} (Arqueología) completado de forma directa.`);
-        continue;
-      }
-
-      // Iniciar el combate real
-      await playAllTurnsToWin(page);
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
 

@@ -88,7 +88,7 @@ test('Debug ash save switch issue', async ({ page }) => {
     const gameStore = (window as unknown as { __VITE_DEBUG__?: { getGameStore?: () => GameStoreType } }).__VITE_DEBUG__?.getGameStore?.();
     if (!gameStore) return 'Store no disponible';
     return {
-      team: gameStore.state.team.map((p: { name: string; moves?: Array<{ id: string } | null> | null } | null) => p ? { name: p.name, moves: p.moves?.map((m: { id: string } | null) => m ? m.id : 'null') } : null),
+      team: gameStore.state.team.map(p => p ? { name: p.name, moves: p.moves?.map(m => m ? (m.id || 'unknown') : 'null') } : null),
       boxLength: gameStore.state.box?.length || 0,
       boxNames: gameStore.state.box?.map((p: { name: string } | null) => p?.name) || []
     };

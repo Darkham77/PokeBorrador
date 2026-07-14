@@ -73,12 +73,12 @@ describe('Pokemon Recalculation Tests', () => {
       vigor: 100,
       maxVigor: 100,
       hp: 5,
-      maxHp: 100,
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
       moves: [{ id: 'scratch', name: 'Arañazo' }],
-      atk: NaN,
-      maxHp: undefined
+      atk: NaN
     } as unknown as Pokemon;
+
+    p.maxHp = undefined as unknown as number;
 
     recalcPokemonStats(p);
 

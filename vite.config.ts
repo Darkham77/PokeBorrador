@@ -72,7 +72,7 @@ function devDbImportPlugin() {
               'Cache-Control': 'no-store'
             })
             res.end(binary)
-            console.log('📦 [DevDB] Temporary imported.db sent to client.')
+            console.debug('📦 [DevDB] Temporary imported.db sent to client.')
           } catch {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
             res.end('No imported database found')
@@ -88,7 +88,7 @@ function devDbImportPlugin() {
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
               await fsPromises.writeFile(dbPath, buffer)
-              console.log('📥 [DevDB] Temporary imported.db uploaded and updated.')
+              console.debug('📥 [DevDB] Temporary imported.db uploaded and updated.')
               res.writeHead(200, { 'Content-Type': 'text/plain' })
               res.end('Saved')
             } catch (err: unknown) {

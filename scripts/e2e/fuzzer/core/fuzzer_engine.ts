@@ -33,7 +33,6 @@ import type { PokemonSet } from '@pkmn/sim';
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 const MOVES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_moves_coverage_report.json');
 const ABILITIES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_abilities_coverage_report.json');
-const ITEMS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_items_coverage_report.json');
 const SCENARIOS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_scenarios_coverage_report.json');
 
 // ---------------------------------------------------------------------------
@@ -105,7 +104,7 @@ function createLocalPoke(set: PokemonSet): Pokemon {
     } : null
   );
 
-  statsMap.set(set.name || set.species, calculated);
+  statsMap.set(set.name || set.species, calculated as unknown as Record<string, number>);
   (set as unknown as { stats: unknown }).stats = calculated;
 
   return {

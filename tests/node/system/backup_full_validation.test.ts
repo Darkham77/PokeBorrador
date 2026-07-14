@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Dex, toID } from '@pkmn/sim';
+import { Dex } from '@pkmn/sim';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 

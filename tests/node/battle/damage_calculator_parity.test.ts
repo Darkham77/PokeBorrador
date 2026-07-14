@@ -86,10 +86,8 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
 
       // 2. Modificar snapshot para el caso de prueba usando las especies reales
       baseSnapshot.mySide.activePokemon!.species = tc.moveType === 'electric' ? 'pikachu' : tc.moveType === 'fire' ? 'charmander' : tc.moveType === 'water' ? 'squirtle' : tc.moveType === 'fighting' ? 'machop' : 'eevee';
-      baseSnapshot.mySide.activePokemon!.types = [tc.moveType];
       
       baseSnapshot.opponentSide.activePokemon!.species = tc.defSpecies;
-      baseSnapshot.opponentSide.activePokemon!.types = tc.defTypes;
 
       // Un movimiento ficticio con potencia base para medir la efectividad
       const testMove = { id: 'testmove', pp: 10, disabled: false };

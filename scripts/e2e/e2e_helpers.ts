@@ -146,11 +146,11 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, label
       const state = store.state;
       if (!state) return null;
       
-      const { ShowdownTeamResolver } = (await import('../../../src/logic/battle/showdownTeamResolver.ts')) as unknown as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
+      const { ShowdownTeamResolver } = (await import('../../src/logic/battle/showdownTeamResolver.ts')) as unknown as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
       
       // Obtener el equipo actual usando getGameStore de window para evitar Pinia duplicado en Playwright
-      const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const team = (gameStore?.state?.team || []) as unknown[];
+      const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.() as { state: { team: unknown[] } } | undefined;
+      const team = gameStore?.state?.team || [];
       const pokemon = ShowdownTeamResolver.getPokemonByShowdownSlot(team, state.playerRequest, slotNum);
       if (pokemon && pokemon.uid) {
         console.log(`[E2E-DEBUG-${label}] Dynamic slotNum: ${slotNum} -> Resolved via ShowdownTeamResolver: ${pokemon.uid}`);

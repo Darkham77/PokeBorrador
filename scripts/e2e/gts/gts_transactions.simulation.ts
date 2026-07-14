@@ -5,7 +5,7 @@ import path from 'node:path';
 
 function seedMockListings(count: number) {
   const dbPath = path.resolve('database/temp/imported.db');
-  const db = new DatabaseSync(dbPath);
+  using db = new DatabaseSync(dbPath);
   try {
     const insertStmt = db.prepare(`
       INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at)
@@ -64,7 +64,7 @@ async function loginAndSetupUser(page: Page, username: string, initialMoney: num
     game.state.money = money;
 
     // Agregar N Pokémon en la box (el starter ya fue elegido por loginTestUser y está en el team)
-    const box: unknown[] = [];
+    const box: typeof game.state.box = [];
     const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
     for (let k = 0; k < pokemonCount; k++) {
       const sp = species[k % species.length]!;

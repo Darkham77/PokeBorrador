@@ -589,10 +589,6 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
   return result;
 }
 
-function extractBlock(content: string, tag: string): string | null {
-  const match = content.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
-  return match ? (match[1] ?? null) : null;
-}
 
 interface VueBlock {
   content: string;
@@ -620,15 +616,6 @@ function extractAllBlocks(content: string, tag: string): VueBlock[] {
     });
   }
   return blocks;
-}
-
-function findBlockStart(content: string, tag: string): number {
-  const match = content.match(new RegExp(`<${tag}[^>]*>`, 'i'));
-  return match ? content.substring(0, match.index!).split('\n').length : 0;
-}
-
-function injectBlock(content: string, tag: string, block: string): string {
-  return content.replace(new RegExp(`(<${tag}[^>]*>)[\\s\\S]*?(<\\/${tag}>)`, 'i'), `$1${block}$2`);
 }
 
 async function checkZIndexConsistency(fix: boolean): Promise<string[]> {

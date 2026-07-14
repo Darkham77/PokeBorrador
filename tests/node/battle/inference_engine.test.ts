@@ -1,7 +1,7 @@
 import { describe, it, vi, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { InferenceEngine } from '../../../src/logic/battle/ai/heuristic/inferenceEngine.ts';
-import type { HeuristicSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
 
 // Mock de audio y stores de Vue/Pinia antes de importar dependencias de lógica
 vi.mock('@/stores/audio', () => ({
@@ -12,7 +12,7 @@ vi.mock('@/stores/audio', () => ({
 
 describe('HeuristicAI - InferenceEngine Unit Tests', () => {
   let engine: InferenceEngine;
-  let baseSnapshot: HeuristicSnapshot;
+  let baseSnapshot: HeuristicBattleSnapshot;
 
   beforeEach(() => {
     engine = new InferenceEngine();
@@ -28,11 +28,11 @@ describe('HeuristicAI - InferenceEngine Unit Tests', () => {
         activePokemon: { name: 'Toxapex', species: 'toxapex', active: true, fainted: false, hp: 130, maxHp: 130, types: ['poison', 'water'], stats: { atk: 65, def: 152, spa: 53, spd: 142, spe: 35 }, moves: [], volatiles: new Set(), status: '', knownMoves: [] },
         pokemon: []
       }
-    } as unknown as HeuristicSnapshot;
+    } as unknown as HeuristicBattleSnapshot;
 
     // Alinear pokemon arrays para el iterador de update()
-    baseSnapshot.opponentSide.pokemon = [baseSnapshot.opponentSide.activePokemon];
-    baseSnapshot.mySide.pokemon = [baseSnapshot.mySide.activePokemon];
+    baseSnapshot.opponentSide.pokemon = [baseSnapshot.opponentSide.activePokemon!];
+    baseSnapshot.mySide.pokemon = [baseSnapshot.mySide.activePokemon!];
   });
 
   it('should infer default moves database for a known species (Toxapex)', () => {

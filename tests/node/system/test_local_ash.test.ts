@@ -1,7 +1,6 @@
 import { describe, it } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
-import fs from 'fs';
 import assert from 'node:assert/strict';
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validatePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';

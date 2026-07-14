@@ -76,7 +76,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     expect(pidgeyData!.moves.length).toBeGreaterThan(0);
     
     // Verificar que el movimiento se llama "Placaje" y NO "tackle" (inglés)
-    const tackleMove = pidgeyData!.moves.find((m: { id: string } | null) => m && m.id === 'tackle') as { name: string } | undefined;
+    const tackleMove = pidgeyData!.moves.find(m => m && m.id === 'tackle') as { name: string } | undefined;
     expect(tackleMove).toBeDefined();
     expect(tackleMove!.name).toBe('Placaje');
 
@@ -155,8 +155,8 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     
     // Su único movimiento debe ser Transformación en español
     expect(dittoSavedData!.moves.length).toBe(1);
-    expect(dittoSavedData!.moves[0].id).toBe('transform');
-    expect(dittoSavedData!.moves[0].name).toBe('Transformación');
+    expect(dittoSavedData!.moves[0]?.id).toBe('transform');
+    expect(dittoSavedData!.moves[0]?.name).toBe('Transformación');
   });
 
   test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({ page }) => {

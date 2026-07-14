@@ -28,7 +28,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
 
   beforeEach(() => {
     ai = new HeuristicAI();
-    defStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+    defStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as unknown as BattleStages;
 
     attacker = {
       uid: 'att-123',
@@ -79,10 +79,12 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should respect disabledMove during fallback pick', () => {
+      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(1.0);
       attacker.disabledMove = { id: 'thunderbolt' } as Move;
       const move = ai.decideMove(attacker, defender, defStages, false);
       assert.ok(move);
       assert.strictEqual(move.id, 'quickattack'); // Thunderbolt deshabilitado, elige Quick Attack (40 power)
+      randomSpy.mockRestore();
     });
   });
 
@@ -141,7 +143,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should use Revive on a fainted teammate if active pokemon is healthy', async () => {
-      const activePoke = { ...attacker, hp: 90 };
+      const activePoke = { ...attacker, hp: 90 } as Pokemon;
       const faintedPoke = { name: 'Teammate', hp: 0, maxHp: 100, status: 'psn' } as unknown as Pokemon;
       
       mockContext.activeBattle.value!.enemyTeam = [activePoke, faintedPoke];
@@ -156,7 +158,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should cure status conditions (e.g. psn) using specific items', async () => {
-      const activePoke = { ...attacker, hp: 100, maxHp: 100, status: 'psn' };
+      const activePoke = { ...attacker, hp: 100, maxHp: 100, status: 'psn' } as Pokemon;
       mockContext.activeBattle.value!.enemyInventory = { antidote: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
@@ -167,7 +169,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should heal HP with Potion if active HP is below 25%', async () => {
-      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: undefined };
+      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: undefined } as Pokemon;
       mockContext.activeBattle.value!.enemyInventory = { potion: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
@@ -178,7 +180,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should prioritize using Full Restore if HP is low and has a status condition', async () => {
-      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: 'brn' };
+      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: 'brn' } as Pokemon;
       mockContext.activeBattle.value!.enemyInventory = { fullrestore: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
