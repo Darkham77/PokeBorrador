@@ -33,6 +33,8 @@
     "sim:e2e": "playwright test scripts/e2e/",
     "sim:e2e:combat": "playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts",
     "sim:e2e:combat:report": "playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts > scratch/playwright_combat.log",
+    "sim:e2e:search:sequential": "playwright test scripts/e2e/battle/search_loop_sequential.simulation.ts",
+    "sim:e2e:search:sequential:report": "playwright test scripts/e2e/battle/search_loop_sequential.simulation.ts > scratch/playwright_search_sequential.log",
     "sim:e2e:gts": "playwright test scripts/e2e/gts/",
     "sim:e2e:save": "playwright test scripts/e2e/save/",
     "sim:e2e:breeding": "playwright test scripts/e2e/breeding/",

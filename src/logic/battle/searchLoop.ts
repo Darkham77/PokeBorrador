@@ -158,6 +158,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     if (generatedPoke) {
       ctx.activeBattle.value._initialEnemy = generatedPoke
       ctx.activeBattle.value.enemy = generatedPoke
+      if (!ctx.activeBattle.value.enemyTeam || ctx.activeBattle.value.enemyTeam.length === 0) {
+        ctx.activeBattle.value.enemyTeam = [generatedPoke]
+      }
     }
 
     // Si el encuentro generado es un minijuego, lo jugamos de inmediato

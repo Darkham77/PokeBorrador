@@ -111,6 +111,7 @@ export const useBattleStore = defineStore('battle', () => {
     const updatedMoves = reqMoves.map((reqMove) => {
       if (!reqMove) return null
       const moveId = reqMove.id || ''
+      if (!moveId) return null
       const match = currentMoves.find(m => m && m.id === moveId)
       if (match) {
         match.pp = reqMove.pp ?? 0

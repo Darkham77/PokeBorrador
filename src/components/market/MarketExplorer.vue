@@ -163,7 +163,10 @@ function getTierColor(tier?: string) {
       </div>
 
       <!-- Pagination controls -->
-      <div v-if="totalPages > 1" class="gts-pagination">
+      <div
+        v-if="totalPages > 1"
+        class="gts-pagination"
+      >
         <button 
           class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
           :disabled="currentPage === 1" 

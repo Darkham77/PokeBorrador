@@ -1,15 +1,38 @@
 import type { Page, Locator } from '@playwright/test';
 
-async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
+export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
   const cleanOptions = { ...options };
   delete cleanOptions.force; // Prohibición estricta de force-clicks en tests
+  
+  // Capturar el estado/subestado de la FSM antes de intentar el clic
+  const preClickState = await locator.page().evaluate(() => {
+    const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
+    if (!resolver) return null;
+    const store = resolver();
+    return { fsm: store.currentFsmState, sub: store.currentSubState };
+  }).catch(() => null);
+
   for (let i = 0; i < retries; i++) {
     try {
       await locator.click({ timeout: 2000, ...cleanOptions });
       return;
     } catch (err: unknown) {
       const msg = err instanceof Error ? (err as Error).message : String(err);
-      if (msg.includes('detached') || msg.includes('retrying') || msg.includes('visible') || msg.includes('stable')) {
+      
+      // Si el elemento se desmontó pero el clic ya provocó la transición de la FSM, consideramos que el clic fue exitoso.
+      if (msg.includes('detached') || msg.includes('visible') || msg.includes('stable')) {
+        const postClickState = await locator.page().evaluate(() => {
+          const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
+          if (!resolver) return null;
+          const store = resolver();
+          return { fsm: store.currentFsmState, sub: store.currentSubState };
+        }).catch(() => null);
+
+        if (preClickState && postClickState && (preClickState.fsm !== postClickState.fsm || preClickState.sub !== postClickState.sub)) {
+          console.debug('[E2E-CLICK-SUCCESS] Click triggered a state transition successfully despite DOM detachment.');
+          return;
+        }
+
         console.debug(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
         await new Promise(r => setTimeout(r, 150));
         continue;

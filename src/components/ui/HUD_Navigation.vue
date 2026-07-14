@@ -117,22 +117,17 @@ const mochilaTooltipDescription = computed(() => {
   
   // Section 2: Materials second
   lines.push('📦 MATERIALES')
-  const t0 = materialItems.value.filter(i => i.tier === 0)
-  const t1 = materialItems.value.filter(i => i.tier === 1)
-  const t2 = materialItems.value.filter(i => i.tier === 2)
   
   if (materialItems.value.length === 0) {
     lines.push('• Ninguno')
   } else {
-    if (t0.length > 0) {
-      t0.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
-    }
-    if (t1.length > 0) {
-      t1.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
-    }
-    if (t2.length > 0) {
-      t2.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
-    }
+    const sum0 = materialItems.value.filter(i => i.tier === 0).reduce((acc, i) => acc + i.qty, 0)
+    const sum1 = materialItems.value.filter(i => i.tier === 1).reduce((acc, i) => acc + i.qty, 0)
+    const sum2 = materialItems.value.filter(i => i.tier === 2).reduce((acc, i) => acc + i.qty, 0)
+    
+    lines.push(`• 🪵 Materia prima: ${sum0}`)
+    lines.push(`• 🪙 Material refinado: ${sum1}`)
+    lines.push(`• ⚙️ Componentes: ${sum2}`)
   }
   
   lines.push('')

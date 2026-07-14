@@ -312,7 +312,10 @@ const net = computed(() => price.value - fee.value)
         </div>
 
         <!-- Pagination controls -->
-        <div v-if="activeMode === 'pokemon' && totalPokemonPages > 1" class="gts-pagination">
+        <div
+          v-if="activeMode === 'pokemon' && totalPokemonPages > 1"
+          class="gts-pagination"
+        >
           <button 
             class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
             :disabled="pokemonPage === 1" 
@@ -330,7 +333,10 @@ const net = computed(() => price.value - fee.value)
           </button>
         </div>
 
-        <div v-if="activeMode === 'item' && totalItemPages > 1" class="gts-pagination">
+        <div
+          v-if="activeMode === 'item' && totalItemPages > 1"
+          class="gts-pagination"
+        >
           <button 
             class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
             :disabled="itemPage === 1" 
@@ -653,7 +659,7 @@ const net = computed(() => price.value - fee.value)
     gap: 15px;
     margin-top: 15px;
     padding: 10px 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid Rgba(255, 255, 255, 0.05);
     @include pixelated;
     font-size: 10px;
 

@@ -15,6 +15,7 @@ Frontend Developers.
 
 - Ensure that any dynamic coordinate variables returned by positioning composables are exposed as unitless numbers (relying on CSS calc multiplication for unit conversions).
 - Clean up window events, resize hooks, and observers inside composables using `onUnmounted` or correct lifecycle hooks to prevent memory leaks.
+- **Prohibition on Immediate Watchers for Late-Initialized Functions**: It is strictly forbidden to use immediate watchers (`{ immediate: true }`) on state properties inside composables if the watcher callback invokes variables or helper functions (such as `resetAll`) defined lower in the setup scope, as this triggers runtime reference errors (`Cannot access before initialization`) during initial mount. Always place the watcher after the referenced functions are fully defined, or run the watcher without immediate option.
 
 ## Child DOX Index
 

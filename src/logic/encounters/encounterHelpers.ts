@@ -126,9 +126,89 @@ export function checkSpecialEncounters(
   allMapIds: string[]
 ): Encounter | null {
   // 0. Debug: 50% trainer override
-  const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>;
-  const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined;
+  const win = (typeof window !== 'undefined' ? window : null) as (Window & {
+    __VITE_DEBUG__?: {
+      forceEncounterType?: string;
+      forceRival?: boolean;
+    };
+  }) | null;
+  const debug = win?.__VITE_DEBUG__;
   
+  if (debug?.forceEncounterType) {
+    if (debug.forceEncounterType === 'fishing') {
+      return {
+        type: 'fishing',
+        pokemon: {
+          id: 'magikarp',
+          uid: 'magikarp-fishing-1234',
+          name: 'Magikarp',
+          level: 10,
+          hp: 30,
+          maxHp: 30,
+          moves: [{ id: 'splash', name: 'Salpicadura', type: 'water', cat: 'status', pp: 40, maxPP: 40, priority: 0, power: null, acc: null, effect: '', target: 'normal' }],
+          stats: { hp: 30, atk: 10, def: 10, spa: 15, spd: 15, spe: 20 },
+          maxStats: { hp: 30, atk: 10, def: 10, spa: 15, spd: 15, spe: 20 },
+          exp: 0,
+          nextLevelExp: 100,
+          gender: 'M',
+          nature: 'hardy',
+          ability: 'swiftswim',
+          isShiny: false
+        } as unknown as Pokemon
+      };
+    }
+    if (debug.forceEncounterType === 'archaeology') {
+      return {
+        type: 'archaeology',
+        pokemon: {
+          id: 'kabuto',
+          uid: 'kabuto-archaeology-1234',
+          name: 'Kabuto',
+          level: 10,
+          hp: 35,
+          maxHp: 35,
+          moves: [{ id: 'scratch', name: 'Arañazo', type: 'normal', cat: 'physical', pp: 35, maxPP: 35, priority: 0, power: 40, acc: 100, effect: '', target: 'normal' }],
+          stats: { hp: 35, atk: 15, def: 20, spa: 15, spd: 15, spe: 15 },
+          maxStats: { hp: 35, atk: 15, def: 20, spa: 15, spd: 15, spe: 15 },
+          exp: 0,
+          nextLevelExp: 100,
+          gender: 'M',
+          nature: 'hardy',
+          ability: 'battlearmor',
+          isShiny: false
+        } as unknown as Pokemon
+      };
+    }
+    if (debug.forceEncounterType === 'trainer') {
+      return { type: 'trainer' };
+    }
+    if (debug.forceEncounterType === 'rival') {
+      return { type: 'rival' };
+    }
+    if (debug.forceEncounterType === 'wild') {
+      return {
+        type: 'wild',
+        pokemon: {
+          id: 'pidgey',
+          uid: 'pidgey-wild-1234',
+          name: 'Pidgey',
+          level: 5,
+          hp: 20,
+          maxHp: 20,
+          moves: [{ id: 'tackle', name: 'Placaje', type: 'normal', cat: 'physical', pp: 35, maxPP: 35, priority: 0, power: 40, acc: 100, effect: '', target: 'normal' }],
+          stats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
+          maxStats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
+          exp: 0,
+          nextLevelExp: 100,
+          gender: 'M',
+          nature: 'hardy',
+          ability: 'keeneye',
+          isShiny: false
+        } as unknown as Pokemon
+      };
+    }
+  }
+
   if (debug?.forceRival) {
     return { type: 'rival' };
   }

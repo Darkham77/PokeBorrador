@@ -32,6 +32,8 @@ Frontend UI Developers / UI Designers.
 - **Strict DB-to-UI Comparison**: When writing UI conditionals dependent on database models, compare against official database string values in Spanish (e.g., `'poder'` instead of `'power'`).
 - **Form Selectors Localization**: Selector components must store and bind English Showdown IDs internally while presenting and allowing search by their localized Spanish translations in the UI.
 - **Modal Metadata**: Full-screen experiences or overlays that obscure the background must be registered in the `MODAL_METADATA` registry using standard flags (`isFullscreen`, `obscuresBackground`) instead of name comparisons in stores.
+- **Tooltip Layout and Grid Closures**: When adding layout blocks inside tooltips, ensure that CSS grid wrappers (such as `.combat-stats-grid`) are closed immediately before rendering block/flex containers. Mismatched tag closures will force subsequent elements to render as grid columns, compressing the layout.
+- **Text Wrapping & Overlapping Prevention**: For percentage lists, HP ranges, or status descriptions inside compact flex/grid containers, set `white-space: nowrap` and use a `line-height` of at least `1.2` to prevent words from wrapping and overlapping on line heights.
 
 ## Verification
 

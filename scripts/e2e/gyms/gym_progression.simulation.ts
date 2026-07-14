@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, handleBattleInput } from '../e2e_helpers.ts';
 
 async function executeAutoBattle(page: Page) {
   let turnCount = 0;

@@ -117,7 +117,7 @@ export function useMoveTooltip(
     if (!attacker) return null;
 
     const moveIdLookup = move.id || '';
-    const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number; effect?: string };
+    const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number; effect?: string; priority?: number };
     const basePower = move.power !== undefined ? move.power : md.power || 0;
     const isStatus = move.cat === 'status' || md.cat === 'status';
     const moveType = (move.type || md.type || 'normal').toLowerCase();
@@ -270,6 +270,29 @@ export function useMoveTooltip(
       recovery: smogonResult?.recovery ?? null,
       recoil:   smogonResult?.recoil   ?? null,
       fieldConditions,
+      smogonDesc: smogonResult?.smogonDesc ?? '',
+      speedInfo: smogonResult ? {
+        attackerSpeed: smogonResult.attackerSpeed,
+        defenderSpeed: smogonResult.defenderSpeed,
+        outspeeds: smogonResult.outspeeds,
+        priority: move.priority || md.priority || 0,
+      } : null,
+      tacticalInfo: smogonResult ? {
+        hasAssaultVest: smogonResult.hasAssaultVest,
+        hasEviolite: smogonResult.hasEviolite,
+        attackerWeight: smogonResult.attackerWeight,
+        defenderWeight: smogonResult.defenderWeight,
+        overrideOffensiveStat: smogonResult.overrideOffensiveStat,
+        overrideDefensiveStat: smogonResult.overrideDefensiveStat,
+        ignoreDefensive: smogonResult.ignoreDefensive,
+        breaksProtect: smogonResult.breaksProtect,
+        hasCrashDamage: smogonResult.hasCrashDamage,
+        terrainReductions: smogonResult.terrainReductions,
+        isLeechSeedActive: smogonResult.isLeechSeedActive,
+        isForesightActive: smogonResult.isForesightActive,
+        attackerTera: smogonResult.attackerTera,
+        defenderTera: smogonResult.defenderTera,
+      } : null,
     };
   });
 

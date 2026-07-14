@@ -44,6 +44,25 @@ export interface SmogonTooltipResult {
   recovery: { min: number; max: number; text: string };
   /** Recoil (HP lost by attacker) as % of attacker's max HP. */
   recoil: { min: number; max: number; text: string };
+  // Advanced fields
+  smogonDesc: string;
+  attackerSpeed: number;
+  defenderSpeed: number;
+  outspeeds: boolean;
+  hasAssaultVest: boolean;
+  hasEviolite: boolean;
+  attackerWeight: number;
+  defenderWeight: number;
+  overrideOffensiveStat?: string;
+  overrideDefensiveStat?: string;
+  ignoreDefensive: boolean;
+  breaksProtect: boolean;
+  hasCrashDamage: boolean;
+  terrainReductions: string[];
+  isLeechSeedActive: boolean;
+  isForesightActive: boolean;
+  attackerTera?: string;
+  defenderTera?: string;
 }
 
 // ── LRU cache (512 entries) ───────────────────────────────────────────────────
@@ -201,6 +220,53 @@ function buildField(state: TooltipStateCtx): Field {
   return new Field({ weather, terrain, attackerSide, defenderSide });
 }
 
+// ── Helper to calculate speed ───────────────────────────────────────────────
+
+function getEffectiveSpeed(
+  p: SmogonPokemon,
+  side: Side,
+  field: Field
+): number {
+  let spd = p.stats.spe;
+  
+  // 1. Boosts
+  const boost = p.boosts.spe ?? 0;
+  if (boost > 0) {
+    spd = Math.floor(spd * (2 + boost) / 2);
+  } else if (boost < 0) {
+    spd = Math.floor(spd * 2 / (2 - boost));
+  }
+  
+  // 2. Paralysis (drops speed to 50% in Gen 7+)
+  if (p.status === 'par') {
+    spd = Math.floor(spd * 0.5);
+  }
+  
+  // 3. Tailwind
+  if (side.isTailwind) {
+    spd *= 2;
+  }
+  
+  // 4. Weather speed abilities
+  const weather = field.weather;
+  const ability = p.ability?.toLowerCase() || '';
+  if (
+    (weather === 'Rain' && ability === 'swift swim') ||
+    (weather === 'Sun' && ability === 'chlorophyll') ||
+    (weather === 'Sand' && ability === 'sand rush') ||
+    ((weather === 'Snow' || weather === 'Hail') && ability === 'slush rush')
+  ) {
+    spd *= 2;
+  }
+  
+  // 5. Choice Scarf
+  if (p.item === 'Choice Scarf') {
+    spd = Math.floor(spd * 1.5);
+  }
+  
+  return spd;
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export interface TooltipStateCtx {
@@ -275,6 +341,31 @@ export function calculateDamageForTooltip(
     const rclMin = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[0])) / 100 : (atkMaxHp * Number(rcl)) / 100;
     const rclMax = Array.isArray(rcl) ? (atkMaxHp * Number(rcl[1])) / 100 : (atkMaxHp * Number(rcl)) / 100;
 
+    // Advanced speed calculations
+    const attackerSpeed = getEffectiveSpeed(atkPkmn, field.attackerSide, field);
+    const defenderSpeed = getEffectiveSpeed(defPkmn, field.defenderSide, field);
+    const outspeeds = attackerSpeed > defenderSpeed;
+
+    // Items active
+    const hasAssaultVest = defPkmn.item === 'Assault Vest';
+    const hasEviolite = defPkmn.item === 'Eviolite';
+
+    // Terrain interactions
+    const terrainReductions: string[] = [];
+    if (state.terrain) {
+      const normTerrain = state.terrain.toLowerCase();
+      const normMoveType = (move.type ?? '').toLowerCase();
+      if (normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
+        terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');
+      }
+      if (normTerrain.includes('misty') && normMoveType === 'dragon') {
+        terrainReductions.push('Daño Dragón reducido a la mitad por Terreno de Niebla');
+      }
+      if (normTerrain.includes('psychic') && smMove.priority > 0) {
+        terrainReductions.push('Prioridad bloqueada por Terreno Psíquico');
+      }
+    }
+
     const out: SmogonTooltipResult = {
       minDmg,
       maxDmg,
@@ -287,6 +378,25 @@ export function calculateDamageForTooltip(
       koChance: { chance: koChance.chance, n: koChance.n },
       recovery: { min: recMin, max: recMax, text: recovery.text },
       recoil:   { min: rclMin, max: rclMax, text: recoil.text },
+      // Advanced calculations
+      smogonDesc: result.desc(),
+      attackerSpeed,
+      defenderSpeed,
+      outspeeds,
+      hasAssaultVest,
+      hasEviolite,
+      attackerWeight: atkPkmn.weightkg,
+      defenderWeight: defPkmn.weightkg,
+      overrideOffensiveStat: smMove.overrideOffensiveStat,
+      overrideDefensiveStat: smMove.overrideDefensiveStat,
+      ignoreDefensive: !!smMove.ignoreDefensive,
+      breaksProtect: !!smMove.breaksProtect,
+      hasCrashDamage: !!smMove.hasCrashDamage,
+      terrainReductions,
+      isLeechSeedActive: !!state.enemySideConditions?.['leechseed'],
+      isForesightActive: !!state.playerSideConditions?.['foresight'],
+      attackerTera: atkPkmn.teraType,
+      defenderTera: defPkmn.teraType,
     };
 
     addToCache(cacheKey, out);
