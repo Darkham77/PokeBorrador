@@ -10,6 +10,10 @@ QA / Automation Engineers.
 
 - Zero-any policy in mocks and signatures.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`.
+- Keep mock definitions in sync with backend schema updates to prevent validation failures.
+- Use the DBRouter to isolate E2E local database queries from external profiles.
+- **Zero-Timer E2E Interaction**: It is strictly forbidden to use setTimeout, setInterval, or sleep delays inside clickResilient or other interaction helpers to wait for DOM settling or transitions. Sincronization must be FSM/event-driven by waiting on stores state changes.
+- **TypeScript Strict Mocking (No any)**: When testing components with generic wrappers or stubbed properties where props are not fully inferred, do NOT cast variables or properties to "any". Define explicit interfaces local to the spec file and cast via double assertion (e.g. `wrapper.props() as unknown as CustomProps`) to preserve the Zero-Any integrity rule.
 
 ## Work Guidance
 

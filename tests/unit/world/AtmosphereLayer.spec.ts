@@ -6,6 +6,12 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 
+interface AtmosphereLayerProps {
+  weather: 'clear' | 'wind' | 'rain' | 'snow' | 'sunny' | 'sandstorm';
+  isVisible?: boolean;
+  isPerformanceMode?: boolean;
+}
+
 // Mock the logger
 vi.mock('@/logic/utils/logger', () => ({
   logger: {
@@ -81,7 +87,7 @@ describe('AtmosphereLayer', () => {
     expect(wrapper.findAll('.leaf-element').length).toBe(0)
 
     // Set weather to wind
-    await wrapper.setProps({ weather: 'wind' })
+    await wrapper.setProps({ weather: 'wind' } as unknown as AtmosphereLayerProps)
 
     // Wait for the watcher to trigger and nextTicks to settle
     await nextTick()
@@ -107,7 +113,7 @@ describe('AtmosphereLayer', () => {
     expect(wrapper.findAll('.leaf-element').length).toBe(8)
 
     // Set weather to clear
-    await wrapper.setProps({ weather: 'clear' })
+    await wrapper.setProps({ weather: 'clear' } as unknown as AtmosphereLayerProps)
 
     await nextTick()
     await nextTick()

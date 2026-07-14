@@ -34,7 +34,6 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         }
 
         console.debug(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
-        await new Promise(r => setTimeout(r, 150));
         continue;
       }
       throw err;

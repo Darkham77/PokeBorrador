@@ -95,6 +95,10 @@ describe('Pokedex Detail UI Components', () => {
       expect(wrapper.text()).toContain('10 / 100')
     })
 
+interface TooltipProps {
+  description: string;
+}
+
     it('contains Vigor description for breeding', () => {
       const wrapper = mount(PokemonStatusSection, {
         props: { pokemon: mockPokemon as unknown as Pokemon },
@@ -102,8 +106,8 @@ describe('Pokedex Detail UI Components', () => {
       })
       
       const vigorTooltip = wrapper.find('.vigor-card').getComponent(PVTooltip)
-      expect(vigorTooltip.props('description')).toContain('cuántas veces puede reproducirse')
-      expect(vigorTooltip.props('description')).toContain('NO se recupera')
+      expect((vigorTooltip.props() as unknown as TooltipProps).description).toContain('cuántas veces puede reproducirse')
+      expect((vigorTooltip.props() as unknown as TooltipProps).description).toContain('NO se recupera')
     })
 
     it('renders nature and ability tooltips', () => {
@@ -115,8 +119,8 @@ describe('Pokedex Detail UI Components', () => {
       const natureTooltip = wrapper.find('.nature-card').getComponent(PVTooltip)
       const abilityTooltip = wrapper.find('.ability-card').getComponent(PVTooltip)
       
-      expect(natureTooltip.props('description')).toBe('Sin efecto en estadísticas.')
-      expect(abilityTooltip.props('description')).toBe('• Fuerza al rival a consumir el doble de PP por ataque.')
+      expect((natureTooltip.props() as unknown as TooltipProps).description).toBe('Sin efecto en estadísticas.')
+      expect((abilityTooltip.props() as unknown as TooltipProps).description).toBe('• Fuerza al rival a consumir el doble de PP por ataque.')
     })
   })
 })
