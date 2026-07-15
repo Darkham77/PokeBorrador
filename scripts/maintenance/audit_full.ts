@@ -69,6 +69,11 @@ const TASKS: AuditTask[] = [
     name: 'SQL Migrations Integrity', 
     command: 'node', 
     args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/database/validate_sql_migrations.ts'] 
+  },
+  {
+    name: 'Save Migrations Verification',
+    command: 'node',
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/validation/validate_save_migrations.ts']
   }
 ];
 

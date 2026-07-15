@@ -60,15 +60,15 @@ export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTest
       // Le damos un set estándar para ver el efecto del item (ej. Vidasfera daña, Restos cura)
       playerTeam.push({
         name: pNickname,
-        species: 'Mew',
+        species: 'mew',
         level: 100,
         gender: '',
-        item: itemName,
-        ability: 'No Ability',
-        nature: 'Serious',
+        item: itemId,
+        ability: 'noability',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle', 'Substitute', 'Recover', 'Nasty Plot'],
+        moves: ['tackle', 'substitute', 'recover', 'nastyplot'],
         uid: pUid,
       });
 
@@ -82,15 +82,15 @@ export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTest
 
       enemyTeam.push({
         name: eNickname,
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
         gender: '',
         item: '',
-        ability: 'Natural Cure',
-        nature: 'Serious',
+        ability: 'naturalcure',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Soft-Boiled', 'Seismic Toss', 'Tackle', 'Substitute'],
+        moves: ['softboiled', 'seismictoss', 'tackle', 'substitute'],
         uid: eUid,
       });
     }

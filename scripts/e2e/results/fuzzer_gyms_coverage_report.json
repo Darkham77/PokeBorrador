@@ -1,187 +1,117 @@
 {
-  "generatedAt": "2026-07-14T13:39:18.8328479Z",
+  "generatedAt": "2026-07-15T00:28:19.038922119Z",
   "summary": {
     "total": 200,
     "passed": 200,
     "failed": 0,
-    "firstTimeCount": 96,
-    "rematchCount": 104
+    "firstTimeCount": 94,
+    "rematchCount": 106
   },
   "results": [
     {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
       "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "saffron",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
       "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "celadon",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
     },
     {
       "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
     },
     {
-      "gymId": "pewter",
+      "gymId": "fuchsia",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
       "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "celadon",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "viridian",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
     },
     {
       "gymId": "pewter",
@@ -191,8 +121,15 @@
       "isFirst": false
     },
     {
-      "gymId": "saffron",
-      "diff": "normal",
+      "gymId": "cinnabar",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
@@ -200,75 +137,12 @@
     {
       "gymId": "vermilion",
       "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
       "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
       "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
@@ -276,118 +150,6 @@
     },
     {
       "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
@@ -401,174 +163,6 @@
       "isFirst": true
     },
     {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "viridian",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "viridian",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
       "gymId": "pewter",
       "diff": "easy",
       "tmDropped": true,
@@ -576,6 +170,20 @@
       "isFirst": true
     },
     {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
       "gymId": "cerulean",
       "diff": "normal",
       "tmDropped": true,
@@ -583,98 +191,63 @@
       "isFirst": true
     },
     {
-      "gymId": "celadon",
-      "diff": "easy",
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
-      "gymId": "cinnabar",
+      "gymId": "celadon",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
       "diff": "easy",
       "tmDropped": false,
       "extraCoins": 150,
       "isFirst": false
     },
     {
-      "gymId": "cinnabar",
-      "diff": "normal",
+      "gymId": "cerulean",
+      "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
     },
     {
       "gymId": "celadon",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "saffron",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
       "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
@@ -688,56 +261,21 @@
       "isFirst": true
     },
     {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
       "gymId": "vermilion",
       "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
     },
     {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "celadon",
+      "gymId": "saffron",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
       "isFirst": false
     },
     {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
+      "gymId": "viridian",
       "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
@@ -745,42 +283,7 @@
     },
     {
       "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "saffron",
       "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
@@ -788,75 +291,12 @@
     {
       "gymId": "vermilion",
       "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "pewter",
-      "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
       "isFirst": false
     },
     {
       "gymId": "cinnabar",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
@@ -864,30 +304,9 @@
     },
     {
       "gymId": "celadon",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
       "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
       "tmDropped": false,
-      "extraCoins": 450,
+      "extraCoins": 150,
       "isFirst": false
     },
     {
@@ -898,14 +317,14 @@
       "isFirst": false
     },
     {
-      "gymId": "saffron",
+      "gymId": "cinnabar",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
       "isFirst": false
     },
     {
-      "gymId": "pewter",
+      "gymId": "fuchsia",
       "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
@@ -919,37 +338,79 @@
       "isFirst": true
     },
     {
-      "gymId": "cinnabar",
+      "gymId": "cerulean",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
       "isFirst": false
     },
     {
-      "gymId": "cinnabar",
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
       "diff": "easy",
       "tmDropped": false,
       "extraCoins": 150,
       "isFirst": false
     },
     {
-      "gymId": "cerulean",
+      "gymId": "celadon",
       "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
-      "gymId": "pewter",
-      "diff": "easy",
+      "gymId": "celadon",
+      "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
       "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
       "diff": "normal",
-      "tmDropped": true,
+      "tmDropped": false,
       "extraCoins": 300,
       "isFirst": false
     },
@@ -961,14 +422,21 @@
       "isFirst": false
     },
     {
-      "gymId": "cerulean",
+      "gymId": "cinnabar",
       "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
     },
     {
-      "gymId": "viridian",
+      "gymId": "cinnabar",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
@@ -982,6 +450,27 @@
       "isFirst": false
     },
     {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
       "gymId": "viridian",
       "diff": "easy",
       "tmDropped": false,
@@ -989,28 +478,35 @@
       "isFirst": false
     },
     {
-      "gymId": "fuchsia",
-      "diff": "normal",
+      "gymId": "vermilion",
+      "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
     },
     {
       "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
       "isFirst": false
     },
     {
-      "gymId": "fuchsia",
+      "gymId": "cinnabar",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
@@ -1018,9 +514,303 @@
     },
     {
       "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "celadon",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "celadon",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "celadon",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "viridian",
       "diff": "easy",
       "tmDropped": false,
       "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
       "isFirst": false
     },
     {
@@ -1031,21 +821,14 @@
       "isFirst": false
     },
     {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
     },
     {
-      "gymId": "cerulean",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
+      "gymId": "pewter",
       "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
@@ -1057,6 +840,118 @@
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
+    },
+    {
+      "gymId": "viridian",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
     },
     {
       "gymId": "saffron",
@@ -1074,42 +969,21 @@
     },
     {
       "gymId": "cinnabar",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
       "isFirst": false
     },
     {
-      "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
+      "gymId": "cerulean",
       "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "saffron",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "pewter",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
@@ -1122,14 +996,7 @@
       "isFirst": false
     },
     {
-      "gymId": "cinnabar",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
+      "gymId": "fuchsia",
       "diff": "normal",
       "tmDropped": false,
       "extraCoins": 300,
@@ -1137,63 +1004,84 @@
     },
     {
       "gymId": "pewter",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "saffron",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cinnabar",
       "diff": "easy",
       "tmDropped": false,
       "extraCoins": 150,
       "isFirst": false
     },
     {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
       "gymId": "pewter",
-      "diff": "normal",
+      "diff": "easy",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
-      "gymId": "viridian",
-      "diff": "normal",
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
       "tmDropped": false,
-      "extraCoins": 300,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
       "isFirst": false
     },
     {
       "gymId": "fuchsia",
       "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
@@ -1201,72 +1089,72 @@
     {
       "gymId": "saffron",
       "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "pewter",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
       "isFirst": false
     },
     {
       "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
       "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
-    },
-    {
-      "gymId": "viridian",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "normal",
-      "tmDropped": false,
-      "extraCoins": 300,
-      "isFirst": false
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "viridian",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "vermilion",
-      "diff": "easy",
-      "tmDropped": false,
-      "extraCoins": 150,
-      "isFirst": false
     },
     {
       "gymId": "fuchsia",
@@ -1276,24 +1164,17 @@
       "isFirst": false
     },
     {
-      "gymId": "celadon",
-      "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
       "gymId": "fuchsia",
-      "diff": "easy",
+      "diff": "normal",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
     },
     {
       "gymId": "vermilion",
-      "diff": "easy",
+      "diff": "hard",
       "tmDropped": false,
-      "extraCoins": 150,
+      "extraCoins": 450,
       "isFirst": false
     },
     {
@@ -1304,32 +1185,11 @@
       "isFirst": true
     },
     {
-      "gymId": "cinnabar",
-      "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "cerulean",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": false,
-      "extraCoins": 450,
-      "isFirst": false
-    },
-    {
-      "gymId": "cinnabar",
+      "gymId": "saffron",
       "diff": "easy",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
     },
     {
       "gymId": "saffron",
@@ -1339,7 +1199,77 @@
       "isFirst": true
     },
     {
+      "gymId": "fuchsia",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
       "gymId": "cerulean",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "pewter",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "fuchsia",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
       "diff": "easy",
       "tmDropped": false,
       "extraCoins": 150,
@@ -1353,7 +1283,7 @@
       "isFirst": false
     },
     {
-      "gymId": "fuchsia",
+      "gymId": "celadon",
       "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
@@ -1361,9 +1291,30 @@
     },
     {
       "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "easy",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
       "diff": "hard",
       "tmDropped": false,
       "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
       "isFirst": false
     },
     {
@@ -1374,8 +1325,64 @@
       "isFirst": true
     },
     {
+      "gymId": "viridian",
+      "diff": "easy",
+      "tmDropped": false,
+      "extraCoins": 150,
+      "isFirst": false
+    },
+    {
+      "gymId": "viridian",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "normal",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "celadon",
+      "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "vermilion",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
+      "gymId": "cinnabar",
+      "diff": "hard",
+      "tmDropped": true,
+      "extraCoins": 0,
+      "isFirst": true
+    },
+    {
       "gymId": "cinnabar",
       "diff": "normal",
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
+    },
+    {
+      "gymId": "saffron",
+      "diff": "hard",
+      "tmDropped": false,
+      "extraCoins": 450,
+      "isFirst": false
+    },
+    {
+      "gymId": "cerulean",
+      "diff": "hard",
       "tmDropped": true,
       "extraCoins": 0,
       "isFirst": true
@@ -1388,25 +1395,18 @@
       "isFirst": true
     },
     {
-      "gymId": "cinnabar",
-      "diff": "easy",
+      "gymId": "fuchsia",
+      "diff": "hard",
       "tmDropped": false,
-      "extraCoins": 150,
+      "extraCoins": 450,
       "isFirst": false
     },
     {
-      "gymId": "fuchsia",
-      "diff": "hard",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
-    },
-    {
-      "gymId": "fuchsia",
+      "gymId": "cinnabar",
       "diff": "normal",
-      "tmDropped": true,
-      "extraCoins": 0,
-      "isFirst": true
+      "tmDropped": false,
+      "extraCoins": 300,
+      "isFirst": false
     }
   ],
   "errors": [],

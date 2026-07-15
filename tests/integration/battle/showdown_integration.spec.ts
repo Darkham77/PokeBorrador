@@ -336,23 +336,30 @@ describe('Showdown Integration & Adapters', () => {
     });
 
     it('debería ignorar los movimientos desactivados (disabledMove) en la lógica de decisión de la IA del enemigo', () => {
-      const enemy = makePokemon('gengar', 50)!;
-      enemy.moves = [
-        { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
-        { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 120, type: 'poison', cat: 'special' }
-      ] as unknown as import('@/types/pokemon/pokemon').Move[];
+      // Mockear Math.random para evitar la tasa de error aleatoria del 50% de los NPCs comunes
+      const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9);
 
-      const player = makePokemon('vaporeon', 50)!;
-      const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 } as BattleStages;
+      try {
+        const enemy = makePokemon('gengar', 50)!;
+        enemy.moves = [
+          { id: 'shadowball', name: 'Bola Sombra', pp: 15, maxPp: 15, power: 80, type: 'ghost', cat: 'special' },
+          { id: 'sludgebomb', name: 'Bomba Lodo', pp: 10, maxPp: 10, power: 120, type: 'poison', cat: 'special' }
+        ] as unknown as import('@/types/pokemon/pokemon').Move[];
 
-      // Caso 1: Sin desactivar, puede elegir Bomba Lodo (potencia 90 > Bola Sombra 80)
-      const move1 = decideEnemyMove(enemy, player, stages, false);
-      expect(move1?.id).toBe('sludgebomb'); 
+        const player = makePokemon('vaporeon', 50)!;
+        const stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 } as BattleStages;
 
-      // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
-      enemy.disabledMove = { id: 'sludgebomb' } as unknown as import('@/types/pokemon/pokemon').Move;
-      const move2 = decideEnemyMove(enemy, player, stages, false);
-      expect(move2?.id).toBe('shadowball');
+        // Caso 1: Sin desactivar, puede elegir Bomba Lodo (potencia 90 > Bola Sombra 80)
+        const move1 = decideEnemyMove(enemy, player, stages, false);
+        expect(move1?.id).toBe('sludgebomb'); 
+
+        // Caso 2: Bomba Lodo desactivada, debe elegir Bola Sombra
+        enemy.disabledMove = { id: 'sludgebomb' } as unknown as import('@/types/pokemon/pokemon').Move;
+        const move2 = decideEnemyMove(enemy, player, stages, false);
+        expect(move2?.id).toBe('shadowball');
+      } finally {
+        randomSpy.mockRestore();
+      }
     });
   });
 });

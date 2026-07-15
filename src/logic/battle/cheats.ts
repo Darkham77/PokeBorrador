@@ -5,6 +5,7 @@ export interface CheatPokemon {
   status: string | null;
   fainted?: boolean;
   faintQueued?: boolean;
+  active?: boolean;
 }
 
 export interface RequestPokemon {
@@ -19,6 +20,7 @@ export interface CheatSide {
   pokemon: Array<CheatPokemon | null>;
   pokemonLeft?: number;
   activeRequest?: unknown;
+  active?: Array<CheatPokemon | null>;
 }
 
 /**

@@ -605,9 +605,10 @@ export async function verifyHpParity(page: Page) {
       return true;
     }, undefined, { timeout: 15000 });
   } catch (err) {
-    const diagnosis = await page.evaluate(async () => {
-      const { useBattleStore } = await import('@/stores/battle/battle.ts');
-      const store = useBattleStore();
+    const diagnosis = await page.evaluate(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return { storePlayer: 'null', storeEnemy: 'null', domPlayer: 'null', domEnemy: 'null' };
+      const store = resolver();
       const storePlayer = `${store.state?.player?.hp}/${store.state?.player?.maxHp}`;
       const storeEnemy  = `${store.state?.enemy?.hp}/${store.state?.enemy?.maxHp}`;
       const domPlayer   = document.querySelector('.player-card .hp-values')?.textContent ?? 'null';
@@ -636,17 +637,27 @@ export async function executeAutoBattle(
   let lastSimulatorTurn = 0;
   let lastSubState = '';
 
+  // Esperar a que el estado de la batalla esté inicializado en el store
+  await page.waitForFunction(() => {
+    const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+    return !!resolver?.().state;
+  }, undefined, { timeout: 10000 }).catch(() => {});
+
   while (iterations < maxIterations) {
     iterations++;
 
     p1ChoiceIdx = await page.evaluate(() => window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0);
     p2ChoiceIdx = await page.evaluate(() => window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0);
 
-    const isOver = await page.evaluate(async () => {
-      const { useBattleStore } = await import('@/stores/battle/battle.ts');
-      const store = useBattleStore();
+    const isOver = await page.evaluate(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
+      const store = resolver();
       return !store.state || store.state.over;
-    }).catch(() => true);
+    }).catch((err) => {
+      console.log(`[E2E-ERROR-EVAL] isOver check failed: ${String(err)}`);
+      return true;
+    });
 
     if (isOver) {
       break;
@@ -658,9 +669,10 @@ export async function executeAutoBattle(
 
     await waitForWaitInputFsmSync(page, p1ChoiceIdx, batchIndex, lastSimulatorTurn, lastSubState);
 
-    const isOverAfterWait = await page.evaluate(async () => {
-      const { useBattleStore } = await import('@/stores/battle/battle.ts');
-      const store = useBattleStore();
+    const isOverAfterWait = await page.evaluate(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
+      const store = resolver();
       return !store.state || store.state.over;
     }).catch(() => true);
 
@@ -668,9 +680,10 @@ export async function executeAutoBattle(
       break;
     }
 
-    const subState = await page.evaluate(async () => {
-      const { useBattleStore } = await import('@/stores/battle/battle.ts');
-      const store = useBattleStore();
+    const subState = await page.evaluate(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return 'WAIT_INPUT';
+      const store = resolver();
       return store.currentSubState;
     }).catch(() => 'WAIT_INPUT');
     if (subState === 'WAIT_INPUT') {
@@ -789,26 +802,27 @@ export async function executeAutoBattle(
     }
   }
 
-  // 7. Validaciones finales al concluir el combate
-  const isBattleOver = await page.evaluate(async () => {
-    const { useBattleStore } = await import('@/stores/battle/battle.ts');
-    const store = useBattleStore();
+  const isBattleOver = await page.evaluate(() => {
+    const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+    if (!resolver) return true;
+    const store = resolver();
     return !store.state || store.state.over;
   }).catch(() => true);
 
   expect(isBattleOver).toBe(true);
 
   if (finalState) {
-    const clientState = await page.evaluate(async () => {
-      const { useBattleStore } = await import('@/stores/battle/battle.ts');
-      const store = useBattleStore();
-      const p1 = store.state?.playerTeam?.map((p) => ({
+    const clientState = await page.evaluate(() => {
+      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return { p1: [], p2: [] };
+      const store = resolver();
+      const p1 = store.state?.playerTeam?.map((p: any) => ({
         name: p.name,
         hp: p.hp,
         maxHp: p.maxHp,
         fainted: p.hp <= 0
       })) || [];
-      const p2 = store.state?.enemyTeam?.map((p) => ({
+      const p2 = store.state?.enemyTeam?.map((p: any) => ({
         name: p.name,
         hp: p.hp,
         maxHp: p.maxHp,
@@ -839,3 +853,11 @@ export async function executeAutoBattle(
   }
 }
 
+export async function waitForStoreReady(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+    if (!debug || !debug.getGameStore) return false;
+    const store = debug.getGameStore();
+    return !!store && (store.isReady === true || (store as unknown as { isDataLoaded?: boolean }).isDataLoaded === true);
+  }, undefined, { timeout: 30000 });
+}

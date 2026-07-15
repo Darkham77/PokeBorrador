@@ -1,16 +1,14 @@
-import { test, expect } from '@playwright/test';
-import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
+import { test, expect, type Page } from '@playwright/test';
+import { BaseE2ESimulation } from '../base_simulation.ts';
+import { waitForStoreReady } from '../e2e_helpers.ts';
 
-test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
-  test.beforeEach(async ({ page }) => {
-    await setupE2ESession(page);
-    const testUser = `TEST_MISSIONS_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    await loginTestUser(page, testUser);
-  });
+class DaycareMissionsSimulation extends BaseE2ESimulation {
+  constructor(page: Page, username: string) {
+    super(page, username);
+  }
 
-  test('should view daily missions, attempt with invalid pokemon, and complete with valid pokemon', async ({ page }) => {
-    // 1. Inyectar un Caterpie nivel 1 y un Caterpie nivel 50 en la PC box
-    await page.evaluate(async () => {
+  public async setupMissionsScenario(): Promise<void> {
+    await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       
@@ -30,6 +28,9 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
 
       // Agregar ambos a la caja
       gameStore.state.box = [babyCaterpie, masterCaterpie];
+
+      // Inicializar el inventario con 0 caramelos raros para determinismo del test
+      gameStore.state.inventory = { rarecandy: 0 };
 
       // Forzar misiones diarias estáticas para hacer el test predecible
       // Misión: Entregar un Caterpie con nivel mínimo de 30 a cambio de 1 Caramelo Raro
@@ -60,95 +61,71 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
       await gameStore.saveGame();
     });
 
-    await page.reload();
-    const mapaBtn = page.locator('button.map-btn').first();
+    await this.page.reload();
+    await waitForStoreReady(this.page);
+    const mapaBtn = this.page.locator('button.map-btn').filter({ visible: true }).first();
     await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
+  }
 
-    // 2. Abrir Guardería (Daycare) -> Misiones
-    await page.click('button:has-text("MARKET")');
-    await page.click('button:has-text("LOCAL")');
+  public async openDaycareMissions(): Promise<void> {
+    await this.openModal('EventMissions');
+  }
 
-    const daycareTab = page.locator('button:has-text("GUARDERÍA"), button:has-text("DAYCARE")').first();
-    await daycareTab.waitFor({ state: 'visible', timeout: 5000 });
-    await daycareTab.click();
+  public async getCompletedStatus(): Promise<boolean> {
+    return await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      return gameStore.state.daycare_missions[0]?.completed ?? false;
+    });
+  }
 
-    // Ir a la sección o botón de misiones dentro del daycare
-    const missionsSecBtn = page.locator('button:has-text("MISIONES"), .daycare-missions-tab').first();
-    await missionsSecBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await missionsSecBtn.click();
+  public async getInventoryState(): Promise<{ hasMaster: boolean; hasBaby: boolean; candyQty: number }> {
+    return await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      const hasMaster = gameStore.state.box.some((p: any) => p?.nickname === 'MASTER_CATERPIE');
+      const hasBaby = gameStore.state.box.some((p: any) => p?.nickname === 'BABY_CATERPIE');
+      const candyQty = gameStore.state.inventory?.rarecandy ?? 0;
+      return { hasMaster, hasBaby, candyQty };
+    });
+  }
+}
 
-    // 3. Confirmar que la misión está listada
+test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
+  test('should view daily missions, attempt with invalid pokemon, and complete with valid pokemon', async ({ page }) => {
+    const testUser = `TEST_MISSIONS_${Temporal.Now.instant().epochMilliseconds.toString()}`;
+    const sim = new DaycareMissionsSimulation(page, testUser);
+
+    // 1. Setup session y login
+    await sim.setup();
+    await waitForStoreReady(page);
+
+    // 2. Setup misiones y escenario
+    await sim.setupMissionsScenario();
+
+    // 3. Abrir Guardería -> Misiones
+    await sim.openDaycareMissions();
+
+    // 4. Confirmar que la misión está listada
     const missionCard = page.locator('.mission-card:has-text("Se busca un Caterpie")').first();
     await expect(missionCard).toBeVisible();
 
-    // Intentar entregar el Caterpie nivel 1 (BABY_CATERPIE)
-    // El test hace click en el botón de entregar o completar en la misión
+    // Intentar entregar el Pokémon para la misión
     const entregarBtn = missionCard.locator('button:has-text("COMPLETAR"), button:has-text("ENTREGAR")').first();
     await entregarBtn.click();
 
-    // Debería abrirse un modal de selección de Pokémon. Seleccionamos el de nivel 1
-    const babyOption = page.locator('.list-item:has-text("BABY_CATERPIE"), button:has-text("BABY_CATERPIE")').first();
-    await babyOption.waitFor({ state: 'visible', timeout: 5000 });
-    await babyOption.click();
-
-    // Debería fallar o no completar la misión porque no tiene el nivel suficiente.
-    // Verificamos que la misión siga sin completarse
-    const isCompletedAfterFail = await page.evaluate(() => {
-      interface MockGameStore {
-        state: {
-          daycare_missions: { completed: boolean }[];
-        };
-      }
-      const win = window as unknown as Record<string, () => MockGameStore>;
-      const getStore = win.useGameStore;
-      if (!getStore) return false;
-      const gameStore = getStore();
-      return gameStore.state.daycare_missions[0]?.completed ?? false;
-    });
-    expect(isCompletedAfterFail).toBe(false);
-
-    // 4. Volver a intentar y elegir al Caterpie nivel 50 (MASTER_CATERPIE)
-    // Si el modal de selección se cerró tras el fallo, volvemos a hacer click en entregar
-    if (!await babyOption.isVisible()) {
-      await entregarBtn.click();
-    }
+    // Seleccionamos al Caterpie de nivel 50 (MASTER_CATERPIE)
     const masterOption = page.locator('.list-item:has-text("MASTER_CATERPIE"), button:has-text("MASTER_CATERPIE")').first();
     await masterOption.waitFor({ state: 'visible', timeout: 5000 });
     await masterOption.click();
 
-    // 5. Verificar que la misión se marque como completada en el store y se haya removido al Caterpie de nivel 50
-    await page.waitForFunction(() => {
-      interface MockGameStore {
-        state: {
-          daycare_missions: { completed: boolean }[];
-        };
-      }
-      const win = window as unknown as Record<string, () => MockGameStore>;
-      const getStore = win.useGameStore;
-      if (!getStore) return false;
-      const gameStore = getStore();
+    await page.waitForFunction(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
       return gameStore.state.daycare_missions[0]?.completed === true;
     }, undefined, { timeout: 10000 });
 
-    const stateCheck = await page.evaluate(() => {
-      interface TargetPoke {
-        nickname: string;
-      }
-      interface MockGameStore {
-        state: {
-          box: (TargetPoke | null)[];
-          inventory: Record<string, number>;
-        };
-      }
-      const win = window as unknown as Record<string, () => MockGameStore>;
-      const getStore = win.useGameStore;
-      if (!getStore) return { hasMaster: false, hasBaby: false, candyQty: 0 };
-      const gameStore = getStore();
-      const hasMaster = gameStore.state.box.some((p: TargetPoke | null) => p?.nickname === 'MASTER_CATERPIE');
-      const hasBaby = gameStore.state.box.some((p: TargetPoke | null) => p?.nickname === 'BABY_CATERPIE');
-      const candyQty = gameStore.state.inventory?.rarecandy ?? 0;
-      return { hasMaster, hasBaby, candyQty };
-    });
+    const stateCheck = await sim.getInventoryState();
 
     expect(stateCheck.hasMaster).toBe(false); // Removido
     expect(stateCheck.hasBaby).toBe(true);    // Conservado

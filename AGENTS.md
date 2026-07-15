@@ -15,6 +15,7 @@ Before writing any code, stop at the first rung that holds:
 
 Rules:
 
+- **Mandatory Inheritance, Polymorphism, and Zero Duplication**: It is STRICTLY FORBIDDEN to duplicate logic, structures, components, or control flows anywhere in the codebase (tests, frontend, or backend). If implementing functionality similar to an existing one, refactor first to extract a common abstract base class, parameterized composable, or generic extensible component. Stop before writing any new code and ask: _Can I use inheritance and polymorphism to reuse existing logic here?_
 - No abstractions that weren't explicitly requested.
 - No new dependency if it can be avoided.
 - No boilerplate nobody asked for.
@@ -109,18 +110,23 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - **Scratch Directory Mandate**: Whenever generating temporary files, debug outputs, text reports, summaries, or any validation/audit reports (regardless of file extension: `.txt`, `.log`, `.json`, etc.) intended for inspection, review, or later study, they MUST be stored exclusively in the `scratch/` directory at the project root. Dumping these temporary reports or files in the project root, source directories, or any other arbitrary location is strictly prohibited to maintain repository cleanliness.
 
-## 10. DOX framework
+## 10. State Integrity & Reference Safety (Zero-Cloning Mandate)
+
+- **Absolute Prohibition on Pokémon Object Cloning**: It is STRICTLY FORBIDDEN to clone, shallow-copy (`{ ... }`), or replace Pokémon instances representing active combatants or team members to trigger Vue reactivity updates. Doing so breaks object reference parity, creating desynchronized copies where changes to HP, status conditions, experience, or items are not propagated back to the team source of truth.
+- **UID-Based Resolution**: When referencing combatants or passing team elements to components, always pass the unique identifier (`uid`) and resolve the object dynamically using getters from the primary source of truth (`gameStore.state.team` or `gameStore.state.box`).
+- **In-Place Mutations**: If statistical or volatile properties of a Pokémon must be altered, mutate the object properties directly on its reference to maintain reactive bindings across all active views (bag, quick-switch, battle interface).
+
+## 11. User Preferences
+
+- **Spanish ID Prohibition (Strict English Mandate)**: It is strictly forbidden to create or use logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, or other elements in Spanish. All IDs in databases, saves, and internal logic (including engine code and configurations) MUST be exclusively in English (using official Showdown format). Writing intermediate translation tables, patches, or adapters to preserve or support Spanish IDs in the backend/engine is strictly prohibited. If a developer or agent encounters any legacy Spanish IDs or translation patches already in the codebase, they MUST fix them immediately and migrate them to English Showdown IDs. Spanish is reserved exclusively for display and user-facing fields (such as descriptions or names shown in the UI).
+- **Showdown ID Format Mandate (Strict Lowercase & Alphanumeric)**: All present and future logical identifiers (`id`) for items, Pokémon, abilities, moves, and other game elements MUST strictly adhere to the official Pokémon Showdown format: all lowercase, alphanumeric characters only (no spaces, no hyphens, and no underscores). If any identifier is found violating this format (e.g., containing uppercase letters, spaces, hyphens, or underscores), it MUST be corrected immediately across all config files, source code, and databases (performing migration scripts for user saves if necessary).
+
+## 12. DOX framework
 
 - DOX is highly performant AGENTS.md hierarchy installed here
 - Agent must follow DOX instructions across any edits
 - **Relative Paths Mandate**: All links to other files and indices in all `AGENTS.md` files MUST use relative paths (e.g. `./database/AGENTS.md` or `../database/AGENTS.md`). Absolute paths (e.g., `file:///C:/...` or absolute file system URLs) are strictly forbidden to ensure portability across different development environments. If any absolute paths are found in any `AGENTS.md` files, they must be corrected to relative paths immediately.
 - **Gitignored Paths in DOX Indices**: Directories or files that exist locally but are excluded via `.gitignore` (e.g. credential folders, generated local configs) MUST still be referenced in their parent's Child DOX Index if they represent a real domain boundary. Mark them with the suffix `_(gitignored — reason)_` so agents and reviewers understand why they are absent from the repo. The DOX audit engine skips existence checks for gitignored paths automatically, so these entries will never produce CI failures.
-
-## 11. State Integrity & Reference Safety (Zero-Cloning Mandate)
-
-- **Absolute Prohibition on Pokémon Object Cloning**: It is STRICTLY FORBIDDEN to clone, shallow-copy (`{ ... }`), or replace Pokémon instances representing active combatants or team members to trigger Vue reactivity updates. Doing so breaks object reference parity, creating desynchronized copies where changes to HP, status conditions, experience, or items are not propagated back to the team source of truth.
-- **UID-Based Resolution**: When referencing combatants or passing team elements to components, always pass the unique identifier (`uid`) and resolve the object dynamically using getters from the primary source of truth (`gameStore.state.team` or `gameStore.state.box`).
-- **In-Place Mutations**: If statistical or volatile properties of a Pokémon must be altered, mutate the object properties directly on its reference to maintain reactive bindings across all active views (bag, quick-switch, battle interface).
 
 ## Core Contract
 
@@ -193,11 +199,6 @@ Default section order:
 4. Remove stale or contradictory text
 5. Run existing verification when relevant
 6. Report any docs intentionally left unchanged and why
-
-## User Preferences
-
-- **Spanish ID Prohibition (Strict English Mandate)**: It is strictly forbidden to create or use logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, or other elements in Spanish. All IDs in databases, saves, and internal logic (including engine code and configurations) MUST be exclusively in English (using official Showdown format). Writing intermediate translation tables, patches, or adapters to preserve or support Spanish IDs in the backend/engine is strictly prohibited. If a developer or agent encounters any legacy Spanish IDs or translation patches already in the codebase, they MUST fix them immediately and migrate them to English Showdown IDs. Spanish is reserved exclusively for display and user-facing fields (such as descriptions or names shown in the UI).
-- **Showdown ID Format Mandate (Strict Lowercase & Alphanumeric)**: All present and future logical identifiers (`id`) for items, Pokémon, abilities, moves, and other game elements MUST strictly adhere to the official Pokémon Showdown format: all lowercase, alphanumeric characters only (no spaces, no hyphens, and no underscores). If any identifier is found violating this format (e.g., containing uppercase letters, spaces, hyphens, or underscores), it MUST be corrected immediately across all config files, source code, and databases (performing migration scripts for user saves if necessary).
 
 ## Child DOX Index
 

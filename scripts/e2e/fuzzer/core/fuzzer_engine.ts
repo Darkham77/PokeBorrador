@@ -248,15 +248,18 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       // @pkmn/sim espera PRNGSeed como template literal `${number},${string}`
       const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
 
+      const playerTeamCopy = structuredClone(batch.playerTeam);
+      const enemyTeamCopy = structuredClone(batch.enemyTeam);
+
       const simBattle = new Battle({
         formatid: getShowdownFormatId(),
         seed
       });
-      simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: batch.playerTeam });
-      simBattle.setPlayer('p2', { name: `E-${roundNum}`, team: batch.enemyTeam });
+      simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: playerTeamCopy });
+      simBattle.setPlayer('p2', { name: `E-${roundNum}`, team: enemyTeamCopy });
 
-      const p1Active = batch.playerTeam[0]!;
-      const p2Active = batch.enemyTeam[0]!;
+      const p1Active = playerTeamCopy[0]!;
+      const p2Active = enemyTeamCopy[0]!;
       const localP1 = createLocalPoke(p1Active);
       const localP2 = createLocalPoke(p2Active);
       const mockStore = createMockBattleContext(localP1, localP2);
@@ -304,12 +307,18 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
           }
 
+          // Verificar si aún hay movimientos o habilidades pendientes de testear en este lote
+          const hasUntestedItems =
+            batch.movesToTest.some(m => moveCoverage[m]?.status === 'UNTESTED') ||
+            batch.abilitiesToTest.some(a => abilityCoverage[a]?.status === 'UNTESTED');
+          const forceOffensive = !hasUntestedItems;
+
           // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
-          const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+          const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest, forceOffensive);
           if (p1Choice !== 'pass' && !p1Choice.startsWith('team')) {
             batchChoices.push(p1Choice);
           }
-          const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
+          const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest, forceOffensive);
           if (p2Choice !== 'pass' && !p2Choice.startsWith('team')) {
             batchEnemyChoices.push(p2Choice);
           }
@@ -378,9 +387,14 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           });
 
           // Lógica de cheats activada para lotes dinámicos para garantizar combates naturales sin desincronizaciones
+          // Solo se aplica el cheat si aún quedan movimientos o habilidades por testear en este lote
+          const hasUntestedItemsAfterTurn =
+            batch.movesToTest.some(m => moveCoverage[m]?.status === 'UNTESTED') ||
+            batch.abilitiesToTest.some(a => abilityCoverage[a]?.status === 'UNTESTED');
+
           const p1Active = simBattle.p1.active?.[0];
           const batchRec = batch as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> };
-          if (p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
+          if (hasUntestedItemsAfterTurn && p1Active && (p1Active.hp <= p1Active.maxhp * 0.3 || p1Active.fainted)) {
             applyHealCheatToSide(simBattle.p1);
             syncRequestConditionsWithSimulator(simBattle.p1);
             if (!batchRec.cheats) batchRec.cheats = [];
@@ -392,7 +406,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           }
 
           const p2Active = simBattle.p2.active?.[0];
-          if (p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
+          if (hasUntestedItemsAfterTurn && p2Active && (p2Active.hp <= p2Active.maxhp * 0.3 || p2Active.fainted)) {
             applyHealCheatToSide(simBattle.p2);
             syncRequestConditionsWithSimulator(simBattle.p2);
             if (!batchRec.cheats) batchRec.cheats = [];

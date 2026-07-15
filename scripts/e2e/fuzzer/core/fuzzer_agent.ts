@@ -21,6 +21,7 @@ export interface SidePokemon {
 // La regla más importante: NUNCA enviar 'move X' si el request no tiene
 // un bloque 'active' válido, y NUNCA enviar 'switch X' si el request
 // no es forceSwitch ni periódico. Esto elimina el error "invalid action".
+//
 
 export interface ChoiceRequest {
   teamPreview?: boolean;
@@ -79,7 +80,7 @@ export class BattleAgent {
    * Garantiza que el tipo de acción (move/switch/pass) sea siempre coherente
    * con lo que Showdown espera en ese momento.
    */
-  decide(request: ChoiceRequest | null | undefined): string {
+  decide(request: ChoiceRequest | null | undefined, forceOffensive?: boolean): string {
     const kind = classifyRequest(request);
 
     // Si el simulador no espera nada de este lado, no hacer nada.
@@ -121,6 +122,7 @@ export class BattleAgent {
     // Switch periódico voluntario (para probar habilidades de switch-out/in).
     // Solo si el equipo tiene banca disponible, no acabamos de switchear y NO estamos atrapados.
     if (
+      !forceOffensive &&
       !isTrapped &&
       !this.justSwitched &&
       this.periodicSwitchEvery > 0 &&
@@ -179,11 +181,28 @@ export class BattleAgent {
       }
     }
 
+    const DEFENSIVE_MOVES = new Set([
+      'recover', 'substitute', 'protect', 'detect', 'softboiled', 'roost', 'slackoff', 
+      'milkdrink', 'healorder', 'wish', 'rest', 'spikyshield', 'banefulbunker', 
+      'obstruct', 'kingsshield', 'silktrap', 'shoreup', 'lifedew', 'nastyplot', 'calmmind'
+    ]);
+
     // Cualquier movimiento válido disponible.
     const validSlots: number[] = [];
+    const offensiveSlots: number[] = [];
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i]!;
-      if (!m.disabled && m.pp > 0) validSlots.push(i + 1);
+      if (!m.disabled && m.pp > 0) {
+        validSlots.push(i + 1);
+        const cleanId = toCleanId(m.id);
+        if (!DEFENSIVE_MOVES.has(cleanId)) {
+          offensiveSlots.push(i + 1);
+        }
+      }
+    }
+
+    if (forceOffensive && offensiveSlots.length > 0) {
+      return `move ${offensiveSlots[Math.floor(Math.random() * offensiveSlots.length)]}`;
     }
     if (validSlots.length > 0) {
       return `move ${validSlots[Math.floor(Math.random() * validSlots.length)]}`;

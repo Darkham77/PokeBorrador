@@ -1,44 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { setupE2ESession, loginTestUser } from '../e2e_helpers.ts';
-import { useGameStore } from '../../../src/stores/game.ts';
-import { useBreedingStore } from '../../../src/stores/breeding.ts';
+import { BaseE2ESimulation } from '../base_simulation.ts';
+import { waitForStoreReady } from '../e2e_helpers.ts';
 
-type GameStoreType = ReturnType<typeof useGameStore>;
-type BreedingStoreType = ReturnType<typeof useBreedingStore>;
+class BreedingLifecycleSimulation extends BaseE2ESimulation {
+  constructor(page: any, username: string) {
+    super(page, username);
+  }
 
-test.describe('Breeding & Hatching Lifecycle Simulation', () => {
-  test.beforeEach(async ({ page }) => {
-    await setupE2ESession(page);
-    const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    await loginTestUser(page, testUser);
-  });
-
-  test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
-    // 1. Setup inicial de Pokémon compatibles y dinero en el navegador
-    await page.evaluate(async () => {
-      const { useAuthStore } = await import('../../../src/stores/auth.ts');
+  public async setupDittoAndBulbasaur(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      
-      const authStore = useAuthStore();
-      console.warn('DEBUG-TEST-AUTH', 'User in authStore at start:', authStore.user);
- 
-      const resolver = (window as unknown as { __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => GameStoreType }).__VITE_DEBUG_GAME_STORE_RESOLVER__;
-      let gameStore = resolver?.() as GameStoreType | undefined;
-      
-      // Esperar a que el store esté listo y cargado en el navegador
-      for (let i = 0; i < 50; i++) {
-        if (gameStore?.isReady && gameStore?.state) break;
-        await new Promise(r => setTimeout(r, 100));
-        gameStore = resolver?.() as GameStoreType | undefined;
-      }
-      
-      if (!gameStore?.state) throw new Error('gameStore state not ready through resolver');
-      console.warn('DEBUG-TEST-AUTH', 'User in authStore after load:', authStore.user);
-      
-      // Asegurar suficiente dinero
-      gameStore.state.money = 20000;
- 
-      // Crear Ditto y Bulbasaur compatibles
+      const gameStore = useGameStore();
+
       const ditto = pokemonDebugService.generate({ id: 'ditto', level: 50 });
       ditto.vigor = 10;
       ditto.maxVigor = 10;
@@ -46,53 +20,29 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
       const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 50 });
       bulbasaur.vigor = 10;
       bulbasaur.maxVigor = 10;
- 
-      // Inicializar starter de forma oficial en el store para asegurar que starterChosen sea true en el flujo
-      await gameStore.chooseStarter('bulbasaur');
- 
-      // Esperar a que se estabilice el estado y los guardados programados de chooseStarter
-      await new Promise(r => setTimeout(r, 500));
- 
-      // Dejar a ditto en el equipo y a bulbasaur en la banca para el test
+
+      gameStore.state.starterChosen = true;
       gameStore.state.team = [ditto];
       gameStore.state.box = [bulbasaur];
+      gameStore.state.money = 20000;
       
-      const res = await gameStore.saveGame();
-      if (!res.success) {
-        throw new Error(`Guardado de preparación fallido: ${res.error}`);
-      }
+      await gameStore.saveGame();
     });
- 
-    await page.reload();
-    const mapaBtn = page.locator('button.map-btn').filter({ visible: true }).first();
-    await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
- 
-    // 2. Depositar Pokémon en guardería e iniciar ciclo de huevo en el store
-    await page.evaluate(async () => {
+  }
+
+  public async depositInDaycare(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
-      
-      const resolver = (window as unknown as { __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => GameStoreType }).__VITE_DEBUG_GAME_STORE_RESOLVER__;
-      let gameStore = resolver?.() as GameStoreType | undefined;
-      
-      // Esperar a que el store esté listo y tenga los Pokémon cargados desde SQLite tras el reload
-      for (let i = 0; i < 50; i++) {
-        if (gameStore?.isReady && gameStore?.state?.team && gameStore.state.team.length > 0) break;
-        await new Promise(r => setTimeout(r, 100));
-        gameStore = resolver?.() as GameStoreType | undefined;
-      }
- 
-      if (!gameStore?.state) throw new Error('gameStore not resolved post-reload');
-      
+      const gameStore = useGameStore();
       const breedingStore = useBreedingStore();
- 
+
       const p1 = gameStore.state.team[0];
       const p2 = gameStore.state.box[0];
-      if (!p1 || !p2) throw new Error(`Parents not found in state (team size: ${gameStore.state.team.length}, box size: ${gameStore.state.box.length})`);
+      if (!p1 || !p2) throw new Error('Parents not found');
 
-      // Forzar que estén depositados en la guardería
       p1.inDaycare = true;
       p1.daycareSlot = 0;
-      // deposited_at hace 24 horas para que el Huevo esté listo inmediatamente
       const past = Temporal.Now.instant().subtract({ hours: 24 }).toString();
       p1.daycareDepositedAt = past;
 
@@ -103,8 +53,6 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
       breedingStore.slots[0] = { pokemon: p1, slotIndex: 0, deposited_at: past };
       breedingStore.slots[1] = { pokemon: p2, slotIndex: 1, deposited_at: past };
 
-      // Limpiar equipo para que no falle el daycare (necesita al menos 1 Pokémon en el equipo)
-      // Generamos un Caterpie para dejar en el equipo activo
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: 5 });
       gameStore.state.team = [activePoke];
@@ -113,42 +61,37 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
       await gameStore.saveGame();
       await breedingStore.loadDaycare();
     });
+  }
 
-    // 3. Generar y reclamar el huevo en la interfaz del Daycare
-    await page.evaluate(async () => {
-      const breedingStore = (window as unknown as { __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => BreedingStoreType }).__VITE_DEBUG_BREEDING_STORE_RESOLVER__?.();
+  public async generateAndClaimEgg(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
+      const breedingStore = useBreedingStore();
       if (breedingStore?.checkAndGenerateEgg) {
         await breedingStore.checkAndGenerateEgg();
       }
     });
 
-    // Abrir Guardería (Daycare) haciendo click en CRIANZA en el HUD inferior
-    await page.locator('button:has-text("CRIANZA")').filter({ visible: true }).first().click();
- 
-    // Recoger el huevo disponible en el Almacén de Huevos (EggWarehouse)
-    const eggCard = page.locator('div.egg-card').first();
-    await eggCard.waitFor({ state: 'visible', timeout: 5000 });
-    await eggCard.click();
-    
-    // Aceptar la confirmación de recogida
-    const confirmBtn = page.locator('button:has-text("ACEPTAR")').filter({ visible: true }).first();
-    await confirmBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await confirmBtn.click();
+    await this.clickElement('button:has-text("CRIANZA")');
+    await this.clickElement('div.egg-card');
+    await this.clickElement('button:has-text("ACEPTAR")');
+  }
 
-    // 4. Forzar que el Huevo esté listo para eclosionar y eclosionarlo
-    await page.evaluate(async () => {
-      const resolver = (window as unknown as { __VITE_DEBUG_GAME_STORE_RESOLVER__?: () => GameStoreType }).__VITE_DEBUG_GAME_STORE_RESOLVER__;
-      let gameStore = resolver?.() as GameStoreType | undefined;
-      
-      // Esperar a que el huevo sea agregado al estado de la mochila
-      for (let i = 0; i < 50; i++) {
-        if (gameStore?.state?.eggs && gameStore.state.eggs.length > 0) break;
-        await new Promise(r => setTimeout(r, 100));
-        gameStore = resolver?.() as GameStoreType | undefined;
+  public async forceEggReadyToHatch(): Promise<void> {
+    await this.page.waitForFunction(async () => {
+      try {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const store = useGameStore();
+        return !!store?.state?.eggs && store.state.eggs.length > 0;
+      } catch {
+        return false;
       }
-      
-      if (gameStore && gameStore.state.eggs && gameStore.state.eggs.length > 0) {
-        // Poner los pasos a 0 y marcarlo como listo
+    });
+
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      if (gameStore.state.eggs && gameStore.state.eggs.length > 0) {
         const firstEgg = gameStore.state.eggs[0];
         if (firstEgg) {
           firstEgg.steps = 0;
@@ -156,44 +99,66 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
         }
       }
     });
+  }
 
-    // Cerrar el modal para volver al overworld/mapa
-    await page.locator('.modal-close-btn, .modal-close-btn-floating').filter({ visible: true }).first().click();
+  public async performHatchingSequence(): Promise<void> {
+    await this.clickElement('.modal-close-btn, .modal-close-btn-floating');
+    await this.clickElement('.egg-hud-card.is-ready');
 
-    // Hacer click en la tarjeta del huevo que está listo en el HUD inferior para abrir la animación
-    const hatchBtn = page.locator('.egg-hud-card.is-ready').first();
-    await hatchBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await hatchBtn.click();
- 
-    // Hacer click en el contenedor de eclosión para iniciar la rotura del cascarón (requiere 3 taps)
-    const hatchContainer = page.locator('.hatch-container');
+    const hatchContainer = this.page.locator('.hatch-container');
     await hatchContainer.waitFor({ state: 'visible', timeout: 5000 });
     await hatchContainer.click();
-    await page.waitForTimeout(200);
+    await this.page.waitForTimeout(200);
     await hatchContainer.click();
-    await page.waitForTimeout(200);
+    await this.page.waitForTimeout(200);
     await hatchContainer.click();
- 
-    // Esperar a que termine la animación de revelación y el botón de confirmar esté disponible
-    const confirmHatch = page.locator('button.btn-confirm:has-text("CONTINUAR"), button:has-text("CONTINUAR")').first();
-    await confirmHatch.waitFor({ state: 'visible', timeout: 15000 }); // Damos más tiempo para la animación GSAP
-    await confirmHatch.click();
 
-    // Esperar a que la eclosión termine (desaparece el modal de eclosión y vuelve a ser visible el botón de mapa)
-    const mapBtn = page.locator('button.map-btn').filter({ visible: true }).first();
+    await this.clickElement('button.btn-confirm:has-text("CONTINUAR"), button:has-text("CONTINUAR")', 15000);
+    const mapBtn = this.page.locator('button.map-btn').filter({ visible: true }).first();
     await expect(mapBtn).toBeVisible({ timeout: 15000 });
+  }
 
-    // 5. Verificar que el Pokémon nacido esté en el box/equipo del jugador
-    const hasNewborn = await page.evaluate(async () => {
-      interface TargetPoke {
-        level: number;
-        id: string;
-      }
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const gameStore = useGameStore();
-      const allPokemon = [...gameStore.state.team, ...gameStore.state.box];
-      return allPokemon.some((p: TargetPoke | null) => p && p.level === 1 && p.id === 'bulbasaur');
-    });
-    expect(hasNewborn).toBe(true);
+  public async verifyNewbornInBox(): Promise<boolean> {
+    try {
+      await this.page.waitForFunction(async () => {
+        try {
+          const { useGameStore } = await import('../../../src/stores/game.ts');
+          const gameStore = useGameStore();
+          const allPokemon = [...gameStore.state.team, ...gameStore.state.box];
+          return allPokemon.some((p) => p && p.level === 1 && p.id === 'bulbasaur');
+        } catch {
+          return false;
+        }
+      }, undefined, { timeout: 10000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+test.describe('Breeding & Hatching Lifecycle Simulation', () => {
+  test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
+    const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;
+    const sim = new BreedingLifecycleSimulation(page, testUser);
+
+    // 1. Setup session y login
+    await sim.setup();
+    await waitForStoreReady(page);
+
+    // 2. Cargar padres DittoxBulbasaur y depositar en guardería
+    await sim.setupDittoAndBulbasaur();
+    await sim.depositInDaycare();
+
+    // 3. Reclamar el huevo en el almacén
+    await sim.generateAndClaimEgg();
+
+    // 4. Eclosionar el huevo
+    await sim.forceEggReadyToHatch();
+    await sim.performHatchingSequence();
+
+    // 5. Validar que el Bulbasaur nacido esté registrado
+    const success = await sim.verifyNewbornInBox();
+    expect(success).toBe(true);
   });
 });

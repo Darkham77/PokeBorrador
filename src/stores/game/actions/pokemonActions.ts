@@ -159,52 +159,11 @@ export function usePokemonActions(
     state.team.forEach(p => p && validatePokemon(p))
     if (state.box) state.box.forEach(p => p && validatePokemon(p))
 
-    // Inventory Self-Healing: convert legacy Spanish names to current official English IDs
+    // Validate inventory: must strictly match official IDs, no runtime translation fallbacks allowed
     if (state.inventory) {
-      const healedInventory: Record<string, number> = {};
-      for (const [key, qty] of Object.entries(state.inventory)) {
-        let officialId = key;
-        
-        try {
-          getItemById(key);
-        } catch {
-          // Si no existe, revisar si hay que migrar nombres en español de pociones antiguas
-          const lowerKey = key.toLowerCase();
-          if (lowerKey === 'super pocion' || lowerKey === 'superpotion' || lowerKey === 'superpocion') {
-            officialId = 'superpotion';
-          } else if (lowerKey === 'hiperpocion' || lowerKey === 'hiper pocion' || lowerKey === 'hyperpotion') {
-            officialId = 'hyperpotion';
-          } else if (lowerKey === 'restaura todo' || lowerKey === 'restauratodo' || lowerKey === 'maxpotion') {
-            officialId = 'maxpotion';
-          } else if (lowerKey === 'pocion' || lowerKey === 'pocion_vida' || lowerKey === 'potion') {
-            officialId = 'potion';
-          } else if (lowerKey === 'piedra trueno' || lowerKey === 'thunder stone' || lowerKey === 'thunderstone') {
-            officialId = 'thunderstone';
-          } else if (lowerKey === 'piedra agua' || lowerKey === 'water stone' || lowerKey === 'waterstone') {
-            officialId = 'waterstone';
-          } else if (lowerKey === 'piedra fuego' || lowerKey === 'fire stone' || lowerKey === 'firestone') {
-            officialId = 'firestone';
-          } else if (lowerKey === 'piedra hoja' || lowerKey === 'leaf stone' || lowerKey === 'leafstone') {
-            officialId = 'leafstone';
-          } else if (lowerKey === 'piedra lunar' || lowerKey === 'moon stone' || lowerKey === 'moonstone') {
-            officialId = 'moonstone';
-          } else if (lowerKey === 'piedra solar' || lowerKey === 'sun stone' || lowerKey === 'sunstone') {
-            officialId = 'sunstone';
-          } else if (lowerKey === 'caramelo raro' || lowerKey === 'carameloraro' || lowerKey === 'rare candy' || lowerKey === 'rarecandy') {
-            officialId = 'rarecandy';
-          } else if (lowerKey === 'huevo suerte' || lowerKey === 'lucky egg' || lowerKey === 'luckyegg') {
-            officialId = 'luckyegg';
-          } else if (lowerKey === 'ever stone' || lowerKey === 'everstone') {
-            officialId = 'everstone';
-          } else {
-            // Si el objeto no existe en catálogo y no tiene traducción mapeada, no se auto-sanea para forzar depuración
-            logger.warn('SaveMigration', `Objeto no reconocido en inventario: ${key}`);
-          }
-        }
-        
-        healedInventory[officialId] = (healedInventory[officialId] || 0) + qty;
+      for (const key of Object.keys(state.inventory)) {
+        getItemById(key);
       }
-      state.inventory = healedInventory;
     }
     // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, defensa) a la caja PC
     const teamToKeep: Pokemon[] = []
