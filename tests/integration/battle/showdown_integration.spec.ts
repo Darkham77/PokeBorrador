@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mapToShowdownSet, getShowdownSlot, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';

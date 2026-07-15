@@ -127,10 +127,6 @@ class HealingSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Regresión de Curación en Combate (Playwright)', () => {
-  test.beforeEach(async ({ page }) => {
-    // console logger
-  });
-
   test('debería curar HP del activo y de la banca sin revertirse tras el ataque enemigo', async ({ page }) => {
     const sim = new HealingSimWrapper(page, 'HealingUser_Hp');
     await sim.setup();

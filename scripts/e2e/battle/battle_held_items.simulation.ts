@@ -96,7 +96,7 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('E2E Held Items Verification', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     test.setTimeout(360000);
   });
 
@@ -211,7 +211,7 @@ test.describe('E2E Held Items Verification', () => {
 
         try {
           await sim.startBattle();
-          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState, batch.ended);
+          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
         } catch (error: unknown) {
           const caseId = (batch as any).id || `lote-items-${index + 1}`;
           if (process.env.CONTINUE_ON_ERROR === 'true') {

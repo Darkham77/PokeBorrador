@@ -36,7 +36,6 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
 
 export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTestBatch[] {
   const batches: ItemTestBatch[] = [];
-  const dexItems = Dex.items;
   let itemIdx = 0;
 
   while (itemIdx < itemPool.length) {
@@ -49,8 +48,6 @@ export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTest
       if (itemIdx >= itemPool.length) break;
 
       const itemId = itemPool[itemIdx]!;
-      const dexItem = dexItems.get(itemId);
-      const itemName = dexItem!.name;
 
       batchItems.push(itemId);
 

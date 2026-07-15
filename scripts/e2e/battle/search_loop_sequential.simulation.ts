@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { clickResilient, waitForStoreReady } from '../e2e_helpers.ts';
 
@@ -89,9 +89,6 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
-  test.beforeEach(async ({ page }) => {
-    // console logger
-  });
 
   test('should execute 10 sequential battles in the search loop without initialization or UID errors', async ({ page }) => {
     test.setTimeout(240000);

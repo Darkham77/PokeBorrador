@@ -110,10 +110,6 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
 test.describe('HeuristicAI E2E Verification', () => {
   test.setTimeout(300_000);
 
-  test.beforeEach(async ({ page }) => {
-    // console logger
-  });
-
   test.afterAll(() => {
     if (!fs.existsSync(path.dirname(REPORT_PATH))) {
       fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });

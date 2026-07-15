@@ -137,7 +137,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
         try {
           await sim.startBattle();
-          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState, batch.ended);
+          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
           reportProgress(index, false);
         } catch (error: unknown) {
           reportProgress(index, true);

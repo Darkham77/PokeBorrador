@@ -531,6 +531,7 @@ export interface CertifiedTestBatch {
   abilitiesToTest?: string[];
   movesToTest?: string[];
   history?: Array<{ p1Choice: string; p2Choice: string }>;
+  ended?: boolean;
 }
 
 export async function waitForWaitInputFsmSync(page: Page, turnCount: number, batchIndex: number, expectedSimulatorTurn: number, lastSubState: string) {

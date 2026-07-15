@@ -78,9 +78,6 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Weather Effects Verification Simulation', () => {
-  test.beforeEach(async ({ page }) => {
-    // console logger
-  });
 
   test('should trigger rain weather with Drizzle and clean DOM after battle', async ({ page }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherRain');

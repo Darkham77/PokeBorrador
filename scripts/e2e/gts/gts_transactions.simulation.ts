@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
-import { setupE2ESession, loginE2ETestUser, waitForStoreReady } from '../e2e_helpers.ts';
+import { waitForStoreReady } from '../e2e_helpers.ts';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 
@@ -216,12 +216,12 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
 
     // Esperar a procesar compra (saldos actualizados)
     await pageBuyer.waitForFunction(() => {
-      const store = window.__VITE_DEBUG__?.getGameStore?.();
+      const store = (window as any).__VITE_DEBUG__?.getGameStore?.();
       return store?.state?.money === 9000;
     }, undefined, { timeout: 20000 });
 
     const buyerMoney = await pageBuyer.evaluate(() => {
-      return window.__VITE_DEBUG__.getGameStore().state.money;
+      return (window as any).__VITE_DEBUG__.getGameStore().state.money;
     });
     expect(buyerMoney).toBe(9000);
 

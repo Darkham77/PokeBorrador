@@ -79,7 +79,7 @@ class CaptureSimWrapper extends BaseBattleSimulation {
 test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test.beforeEach(async ({ page, request }) => {
+  test.beforeEach(async ({ request }) => {
     await request.post('/api/dev-import-db-cleanup');
   });
 
@@ -152,6 +152,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
+      const battleStore = useBattleStore();
 
       gameStore.state.inventory = { masterball: 5 };
       const pidgeyIdx = gameStore.state.team.findIndex((p: any) => p && p.id === 'pidgey');
@@ -187,6 +188,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const gameStore = useGameStore();
+      const battleStore = useBattleStore();
 
       const rattataIdx = gameStore.state.team.findIndex((p: any) => p && p.id === 'rattata');
       if (rattataIdx !== -1) {

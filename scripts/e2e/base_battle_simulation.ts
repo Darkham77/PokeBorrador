@@ -148,10 +148,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     startingTurn = 0,
     playerChoices?: string[],
     cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>,
-    finalState?: CertifiedTestBatch['finalState'],
-    ended?: boolean
+    finalState?: CertifiedTestBatch['finalState']
   ): Promise<void> {
-    await executeAutoBattle(this.page, batchIndex, startingTurn, playerChoices, cheats, finalState, ended);
+    await executeAutoBattle(this.page, batchIndex as number, startingTurn, playerChoices, cheats, finalState);
   }
 
   /**
