@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://www.dragonflycave.com/evs-natures-and-math/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+<meta name="viewport" content="initial-scale=1,width=device-width">
+
+
+<meta name="flattr:id" content="9ykjj0">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@dragonflycave">
+<meta name="twitter:title" content="Effort Values and Natures: A Mathematical Approach">
+<meta name="twitter:description" content="Come on, if you&#39;re a geek you can&#39;t be without reading a mathematical approach to Pokémon stats.">
+<meta name="twitter:image" content="https://www.dragonflycave.com/butterfreepixelart.png">
+<meta property="og:url" content="https://www.dragonflycave.com/evs-natures-and-math/">
+<meta property="og:title" content="Effort Values and Natures: A Mathematical Approach">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.dragonflycave.com/butterfreepixelart.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="304">
+<meta property="og:image:height" content="304">
+<meta name="fediverse:creator" content="@antialiasis@donphan.social">
+
+<title>Effort Values and Natures: A Mathematical Approach | The Cave of Dragonflies</title>
+<link rel="alternate" type="application/rss+xml" title="The Cave of Dragonflies updates" href="https://www.dragonflycave.com/rss.xml">
+<link rel="me" href="https://donphan.social/@antialiasis">
+
+<script type="text/javascript" src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/global.js"></script>
+<noscript>
+<style type="text/css">
+.footnote-anchor {
+display:none;
+}
+
+.footnote {
+display:inline;
+}
+</style>
+</noscript>
+
+
+<link href="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/global.css" rel="stylesheet" type="text/css">
+<link href="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/butterfree-style.css" rel="stylesheet" type="text/css">
+<link href="https://www.dragonflycave.com/favicon.png" rel="shortcut icon" type="image/png">
+
+
+
+
+
+
+
+<!--[if lt IE 9]>
+<script src="/html5shiv.js"></script>
+<![endif]-->
+
+<!--[if lte IE 7]>
+<style type="text/css">
+html body #contentmenu #menu ul li ul li:hover ul {
+display:none;
+}
+</style>
+<![endif]-->
+</head>
+<body>
+<div id="layout">
+<header id="head">
+<div id="hitcounter">
+<p><strong><a href="https://www.dragonflycave.com/front-page-hits/">12047312</a></strong><br>
+front page hits</p>
+</div>
+
+<div id="banner">
+<h1><a href="https://www.dragonflycave.com/">The Cave of <span>Dragonflies</span></a></h1>
+<p>Where the smallest bugs live alongside the strongest dragons</p>
+</div>
+
+<p id="zodiac"><a href="https://www.dragonflycave.com/zodiac/"><span class="zodiac-images"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/290.png" alt=""><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/291.png" alt=""></span> The Day of Ninjask in the Reign of Marshadow, Season of Fire</a></p>
+
+<div id="styleswitcher">
+<label for="style">Style Switcher: [<a href="https://www.dragonflycave.com/style-switcher/">?</a>]</label>
+<form name="change" id="change" method="post" action="https://www.dragonflycave.com/set-style/">
+<input type="hidden" name="page" value="/evs-natures-and-math/">
+<select name="style" id="style">
+<option value="butterfree">Pick style...</option>
+<option value="butterfree">Butterfree</option>
+<option value="celebi">Celebi</option>
+<option value="roaroftime">Dialga</option>
+<option value="modern">Modern</option>
+<option value="dewgong">Dewgong</option>
+<option value="axe-murderer">Axe-Murderer</option>
+<option value="scyther">Scyther</option>
+<option value="sninetales">Shiny Ninetales</option>
+<option value="nidoking">Nidoking</option>
+<option value="mew">Mew</option>
+<option value="hellfire">Hellfire</option>
+<option value="spectrum">Spectrum</option>
+<option value="articuno">Articuno</option>
+<option value="torkoal">Torkoal</option>
+</select>
+</form>
+</div>
+</header>
+
+<div id="container">
+<div id="not-affys">
+<div id="content">
+
+
+
+
+
+
+
+
+<h1>Effort Values and Natures: A Mathematical Approach</h1>
+
+<p>The Advanced generation added a new dimension of strategy to Pokémon battling by forcing the player to pick and choose which stats to raise and which to lower. No longer do all fully trained perfect-IV Pokémon of the same species invariably have the exact same stats, making for more interesting battling than ever.</p>
+
+<p>I am of course here referring to effort values and natures. At first sight, they appear to be similar things in practice, but here I will discuss a very important difference between them. I will also discuss the fundamental difference between the two types of stats.</p>
+
+<p>Note that I am by no means an expert at competitive battling. This article is not about competitive strategy. It is simply a purely mathematical approach to these concepts.</p>
+
+<p>Note: You do not need to know any advanced mathematics to understand this article. All that is necessary is that you understand the fundamental difference between adding/subtracting on one hand and multiplying/dividing on the other hand, and that you know some basic algebra for the formulas.</p>
+
+<p>In this article, I will speak of "Attack" and "Defense", but of course they will always be interchangeable with Special Attack and Special Defense, respectively. Just assume "Attack" to mean "the offensive stats" and "Defense" to mean "the defensive stats".</p>
+
+
+<h2>Natures</h2>
+
+<p>Let's recount on how natures work. A nature has a stat it <strong>lowers</strong> and a stat it <strong>raises</strong>. (There are, of course, also neutral natures, but we will not be discussing them here as they are, for obvious reasons, not of any mathematical significance when it comes to stats.) To be more precise, a nature will multiply the value of one stat by 1.1, and the value of another stat by 0.9. This basically adds or subtracts 10% to or from the stat.</p>
+
+<p>Now, what does this mean? It means that, because the value which is added or subtracted changes depending on the original value of the stat, a nature will have a more drastic effect on the actual number if the stat is already high. For example, if you have a Deoxys in normal form, which has 50 base Defense and 150 base Attack, its maximum Defense and Attack at level 100 with maximized effort points and neutral natures will be 199 and 399, respectively. If it had a nature that raises Defense, it would have 218 Defense (since the Pokémon games always round down). However, if it had a nature that raises Attack, it would have a whopping 438 Attack. In the first case, the Defense rises by 19, but in the latter case, the Attack rises by 39 - quite a significant difference when you just look at it.</p>
+
+<p>However, although the difference looks more significant with an Attack-boosting nature, it really isn't. This is because in the damage formula, Attack and Defense are applied as a multiplication and a division - it <em>multiplies</em> by the attacker's Attack stat and then <em>divides</em> by the defender's Defense stat. If you have one Deoxys with a nature that raises Attack attack another Deoxys with a nature that raises Defense, it will do essentially the same amount of damage as it would if both of them had neutral natures - the beneficial natures cancel each other out. The reason for this is simple. Look at the following:</p>
+
+<p>(<var>A</var> * 1.1) / (<var>D</var> * 1.1)</p>
+
+<p>A stands for Attack and D for Defense, obviously, but that does not especially matter; what matters is the fact that we can multiply or divide both the numerator and the denominator by the same number if we want without changing the final result, as you should learn in basic algebra. Thus we only need to divide by 1.1 again to see that (<var>A</var> * 1.1) / (<var>D</var> * 1.1) = <var>A</var> / <var>D</var>. Admittedly, the rounding (because again, the Pokémon games always round down) will change it a little bit, but the difference is too small to matter. The point here is that there is no mathematical reason to give your Pokémon a nature that boosts its higher Attack/Defense stats rather than the lower ones, even though the point difference is greater.</p>
+
+<p>But we've only been discussing Attack and Defense (along with their special counterparts) so far. The thing is that while they are applied through multiplication and division during battle, Speed and HP are not - Speed comes into play through direct comparison with the other Pokémon's Speed, and HP gets subtracted from throughout the course of the battle. Natures never affect HP, so that's out of the discussion for now, but indeed, Speed is the one stat where you actually <em>do</em> benefit more from having a +Speed nature if the Pokémon already has high Speed than if it has low Speed - a Pokémon with 100 base Speed and a +Speed nature will outspeed neutral-natured Pokémon with base 114 or less Speed (14 base points higher than itself), but a Pokémon with 50 base Speed and a +Speed nature will only outspeed neutral-natured Pokémon with 59 or less base Speed (9 base points higher than itself). A high-Speed Pokémon gets more out of a +Speed nature than a low-Speed one.</p>
+
+
+<h2>Effort Values</h2>
+
+<p>Let's recount on how those work too, shall we? One Pokémon can have at most 510 effort points in total, and at most 252 in any given stat. For every four effort points in a particular stat, the final stat that your Pokémon will end up with at level 100 is raised by one.</p>
+
+<p>What does this mean? It means that once you have 252 effort points in one stat, that stat will be 63 points (252 / 4) higher than it would have been if you had had no effort points, regardless of what the original value of the stat was. The thing is that unlike natures, effort points factor in through addition, not through multiplication - which makes them an <em>entirely</em> different thing to work with mathematically.</p>
+
+<p>Imagine those two normal form Deoxys again. Both of them have maximum IVs, so their maximum Attack and Defense at level 100 are 399 and 199, respectively, and the minimums (with no effort points put into them) are 336 and 136.</p>
+
+<p>Now let's imagine that one of the trainers of those Deoxys effort trains it in Attack, while the other effort trains his in Defense. For the sake of the example, we'll assume that the other effort points went into irrelevant stats or don't exist at all. At first glance one <em>could</em> think that this will even out and not matter in the end just like with the natures earlier, but look what happens if we calculate the <var>A</var> / <var>D</var> factor of each Deoxys attacking the other...</p>
+
+<p>Defense effort trained Deoxys attacks Attack effort trained Deoxys: 336 / 136 = 2.47</p>
+
+<p>Attack effort trained Deoxys attacks Defense effort trained Deoxys: 399 / 199 = 2.0</p>
+
+<p>The result is clear: the Defense effort trained Deoxys' attack used against the Attack effort trained one does nearly 25% more damage than the Attack effort trained Deoxys' attack against the Defense effort trained one. But why? The reason is simple. The effort points are factored in through addition rather than multiplication, and this means that the 63 stat points are a much greater proportion of 199 than they are of 399 - the Defense effort trained Deoxys had its defensive abilities boosted by 46%, but the Attack effort trained one only had its offensive capabilities boosted by 19%. While the Attack effort trained Deoxys could get a greater boost to its attacking power simply by holding a Plate of the right type than it gets out of all those effort points, the Defense effort trained one nearly gets a free Harden every time it comes into battle - and this is simply because Deoxys started out with low Defense but high Attack. In other words, effort training a Pokémon in an offensive/defensive stat gives you a greater advantage the <em>lower</em> the stat originally was. This obviously works for Pokémon with high Defense stats and low Attack stats too: effort training your Pokémon for the low attacking stats will yield a far greater increase in the damage you deal than effort training it in the already-high defensive stats will decrease the damage dealt to you.</p>
+
+<p>Speed and HP, again, however, are an entirely different matter thanks to factoring in through comparison and subtraction rather than multiplication and division. Speed and HP will benefit exactly as much from effort training if they're already low as if they're already high. To twist things even more, you have to consider that since Speed is a comparison, a <em>greater</em> advantage doesn't help you. If your Speed is higher than the opponent's, you go first, no matter whether it's one or a hundred points higher. This means that you only really need to decide which Pokémon you want to be able to outrun and give your own Speed just enough effort to surpass the Speed that those Pokémon will generally have. Any extra Speed points beyond that are wasted.</p>
+
+<p>Nonetheless, the Attack/Defense thing sounds pretty revolutionizing, doesn't it? Don't people always tell you to effort train your Alakazam in Special Attack and would laugh at you if you started giving it defenses instead? This may make you want to try this sort of EV spread. But...</p>
+
+
+<h2>Why This Does Not Work in Practice</h2>
+
+<p>Why indeed would they tell you to give your Alakazam Special Attack effort points? Because of three fundamental problems, which lie not in the math, but in the other mechanics of Pokémon.</p>
+
+<h4>The Problem of Overkill</h4>
+
+<p>It happens that Pokémon battles are pretty fast. You execute an attack and often deal one heck of a lot of damage, even knocking out the other Pokémon in one hit (called an OHKO in competitive battling lingo) or two (2HKO). Your attacks can also be <em>overkill</em>: they might technically deal, say, 500 damage, but the opponent only has 300 HP at the time. A player is not in any way rewarded for overkill; for all the game cares, you may as well only have dealt exactly 300 damage. This means that there are many Pokémon which can knock out our Defense effort trained normal form Deoxys just as easily with the Defense as without it - many Pokémon are designed to hit fast and hard but have little hope of lasting out for any length of time, and boosting their defenses often won't actually change how many hits common threats will need to defeat them.</p>
+
+<p>If all Pokémon had, say, twenty times the HP they actually do, this kind of EV spread would be a great deal more plausible, because the difference that the defensive boost would make in that case could be a matter of being able to take multiple extra hits. In the real Pokémon games, the problem of overkill will render much of the possible advantages of this kind of EV spread void, at least for sweepers.</p>
+
+<h4>The Problem of Speed</h4>
+
+<p>Pokémon such as Alakazam are sweepers with an extremely high attacking stat but very poor defenses, which would seem to make them ideal candidates for this kind of EV spread in practice - but these are precisely the Pokémon for which it is most important to be fast, so just boosting their defenses and neglecting both the offensive stat <em>and</em> Speed is likely to be a terrible idea. Meanwhile, if you do invest a bunch of your effort points into Speed and want to beef your defenses with the rest, then you only have a much lower number left over to do so, and the defensive advantage you could get out of it wouldn't actually outweigh the offensive advantage you'd get out of investing those points in Attack or Special Attack.</p>
+
+<p>Interestingly enough, if all Pokémon had twenty times their normal HP, the problem of Speed would also largely be eliminated, as this would almost trivialize Speed. (Instead of the opponent being able to dish out one hit while you get in none if you're slower, a faster opponent will merely get, say, twenty hits in and you nineteen.)</p>
+
+<h4>The Problem of Strategy</h4>
+
+<p>Pokémon battles are mostly about strategy, and a player's strategy generally relies on making each of their Pokémon do its particular job well enough. Sweepers are there to sweep, to deal a lot of damage in one stroke, not to survive multiple hits. When you bring out a sweeper like Alakazam, you usually just want it to hit fast and hard. Sacrificing attack power may give the opponent a chance to strike that it otherwise wouldn't have had, and if it's powerful enough, your increased defenses won't even matter (see the problem of overkill).</p>
+
+<p>However, despite these fundamental flaws to the practical use of EV training in the lower offensive/defensive stats, the mathematical approach to EVs and natures is worth keeping in mind, or at the very least a fun thing to think about if you have a geeky mind like me.</p>
+
+
+<p id="lastmodified">Page last modified November 20 2025 at 17:02 UTC</p>
+
+
+<div id="related-pages">
+    <h2>You May Also Enjoy</h2>
+    <div class="related-pages">
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/stats/">
+                <strong>Stat Mechanics</strong>
+                The nitty-gritty details of everything you never wanted to know about your Pokémon's Special Attack or HP.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/stat-stages/">
+                <strong>Stat Stages</strong>
+                All about what's really going on behind the scenes when your game tells you your Pokémon's Attack fell.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/battling-basics/">
+                <strong>Battling Basics</strong>
+                All about the basics of the Pokémon battle system, in the unlikely case you're not already familiar with them.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/battle/">
+                <strong>Battle Mechanics</strong>
+                An explanation of the inner workings of the mainline Pokémon battle system, including turn order, accuracy, critical hits, the damage formula, and secondary effects of moves.
+            </a>
+        </div>
+    
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<h2 id="post">Post comment</h2>
+
+
+<div id="guestbook-rules">
+
+<p>Inflammatory or off-topic comments will be deleted; please go to the <a href="https://www.dragonflycave.com/guestbook/">guestbook</a> for discussion unrelated to this page. You can use <a href="https://www.dragonflycave.com/evs-natures-and-math/#bbcode" id="bbcode-link" title="Click for a list of formatting options.">BBCode</a> (forum code) to format your messages.</p>
+
+<p>Giving an e-mail address is optional; if it is given, you will be notified by e-mail if I respond to your post. If you fill in a website (this should be your own website, blog or social media profile), it will be linked publicly on your post; however, messages obviously posted solely as a pretext for advertising, or advertising shady or inappropriate websites, will be deleted.</p>
+
+<ul id="bbcode" style="display: none;">
+<li>[b]<strong>Bold</strong>[/b]</li>
+<li>[i]<em>Italic</em>[/i]</li>
+<li>[u]<span class="underline">Underlined</span>[/u]</li>
+<li>[s]<span class="strikethrough">Strikethrough</span>[/s]</li>
+<li>[url=http://www.dragonflycave.com]<a href="http://www.dragonflycave.com/">Link</a>[/url]</li>
+<li>[spoiler]<span class="spoiler">Spoiler</span>[/spoiler]</li>
+</ul>
+</div>
+
+
+
+<form action="https://www.dragonflycave.com/guestbook/post" method="post" name="guestbook-form" id="guestbook-form">
+<div class="horizontal-form">
+
+<div class="form-row">
+<label for="name">Name<abbr class="required" title="Required">*</abbr></label>
+<input type="text" name="name" id="name" placeholder="Name or username" value="" required="">
+</div>
+
+<div class="form-row">
+<label for="email">E-mail</label>
+<input type="email" name="email" id="email" placeholder="user@domain.com" value="">
+</div>
+
+<div class="form-row">
+<label for="url">Website address</label>
+<input type="text" name="url" id="url" placeholder="https://your.own.website" value="">
+</div>
+
+<div class="form-row">
+<label for="site">Website name</label>
+<input type="text" name="site" id="site" placeholder="Your own website/blog" value="">
+</div>
+
+<div class="form-row">
+<label for="message">Comments<abbr class="required" title="Required">*</abbr></label>
+<textarea cols="30" rows="5" name="message" required=""></textarea>
+</div>
+</div>
+<div class="form-row form-verification">
+<img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/501.png" alt="501" id="verimg" class="verification-pokemon">
+<label for="ver">Please type the name of the above Pokémon into this box<span id="switchver"> (<a id="refreshver" href="https://www.dragonflycave.com/evs-natures-and-math/#">don't know it?</a>)</span><abbr class="required" title="Required">*</abbr>:</label>
+<small>The above sprite has a 1/8192 chance of being shiny. (Modern browsers will give it a yellow glow if so.)</small>
+<input type="text" name="ver" id="ver" value="" required="">
+<input type="hidden" name="vernumber" value="501">
+<input type="hidden" name="reply_to" value="">
+<input type="hidden" name="route" value="ev_math">
+</div>
+<div class="form-buttons">
+<button type="submit">Submit message</button> <button type="reset">Reset</button>
+</div>
+</form>
+<script type="text/javascript">
+if (window.fetch) {
+   document.getElementById("switchver").innerHTML = " (<a id=\"refreshver\" href=\"#\">don't know it?</a>)";
+   document.getElementById("refreshver").onclick = function() {
+      fetch('/guestbook/new-spam-pokemon')
+         .then(function(response) {
+            if (!response.ok) {
+               throw new Error("Non-OK response");
+            }
+            return response.json();
+         })
+         .then(function(data) {
+            var verification = data.verification;
+            var verimg = document.getElementById("verimg");
+
+            document.forms["guestbook-form"].elements["vernumber"].value = verification;
+            verimg.onload = function() {
+               verimg.className = "verification-pokemon" + (/^shiny\//.test(verification) ? " shiny" : "");
+            };
+            verimg.src = "/sprites/gen8/home-thumb/" + verification + ".png";
+            verimg.alt = verification;
+         });
+      return false;
+   };
+   var bbcode = document.getElementById("bbcode");
+   bbcode.style.display = "none";
+   document.getElementById("bbcode-link").onclick = function() {
+      bbcode.style.display = bbcode.style.display === "none" ? "block" : "none";
+      return false;
+   };
+}
+</script>
+
+
+<h2 id="comments">Comments</h2>
+
+
+<p class="left">My own messages will be signed as Butterfree, with the <span class="guestbook-admin">Admin</span> label below my name. If someone signs as Butterfree without that label, it's probably not me.</p>
+
+<p class="guestbook-links">Pages: 
+    
+        
+            
+                <strong>1</strong>
+            
+        
+   
+</p>
+
+<div id="guestbook-posts">
+
+<blockquote id="post-11117">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/567.png" alt="">
+
+
+<div class="post-username">Zhikse</div>
+
+
+
+
+</div>
+
+<p class="post-message">this might not be useful for a competitive scene, but it's groundbreaking for my current style of play - eyeballing the training and pretending that smogon doesn't exist to throw nonsense teams against my friends' on gen4 </p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11117/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[04/05/2026 16:08:28]</span>
+</div>
+</blockquote>
+
+</div>
+
+<p class="guestbook-links">Pages: 
+    
+        
+            
+                <strong>1</strong>
+            
+        
+   
+</p>
+
+
+
+</div>
+
+<nav id="menu">
+<div id="menu-inner">
+<ul>
+<li id="menu-site"><a href="https://www.dragonflycave.com/site/">Site</a>
+    <ul>
+    <li id="featured"><a href="https://www.dragonflycave.com/link-to-tcod/">Featured Section <span><strong>Link to The Cave of Dragonflies</strong><br>If you have a website and want to link to The Cave of Dragonflies (thank you), here are some buttons you can use, in both old-school standard sizes (88x31 and 88x16).</span></a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/" title="The main page with the updates and Almighty Random Poll.">Newest Updates</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/update-archive/" title="View all the updates since October 2003 here.">Old Updates</a></li>
+    <li class="sitely entertaining"><a href="https://www.dragonflycave.com/mascots/" title="Read about the site mascots.">Mascots</a></li>
+    <li class="sitely interesting"><a href="https://www.dragonflycave.com/site-history/" title="The history of The Cave of Dragonflies.">Site History</a></li>
+    <li class="sitely interesting"><a href="https://www.dragonflycave.com/april-fools/" title="All the April Fools&#39; jokes there have been on the site.">April Fools' Jokes</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/report-errors/" title="Where you can yell at me for making a typo somewhere.">Report Errors</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/faq/" title="Frequently Asked Questions.">FAQ</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/about-me/" title="Just in case you for some reason got curious about just who would be writing all this.">About Me</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/contact-me/" title="Fanmail? Hatemail? Questions? Go ahead.">Contact Me</a></li>
+    <li><a href="https://www.dragonflycave.com/hall-of-fame/" title="The glorious lists of names!">Hall of Fame</a>
+        <ul>
+        <li class="sitely"><a href="https://www.dragonflycave.com/hall-of-fame/rulers-of-the-universe/" title="The mighty Rulers of the Universe.">Rulers of the Universe</a></li>
+        <li class="sitely"><a href="https://www.dragonflycave.com/hall-of-fame/quizzes/" title="Those who have completed the Cave of Dragonflies quizzes.">Quiz Hall</a></li>
+        <li class="sitely interactive"><a href="https://www.dragonflycave.com/hall-of-fame/poll-archive/" title="The previous Almighty Random Polls, still eligible for voting.">Poll Hall</a></li>
+        </ul>
+    </li>
+    <li class="interactive"><a href="https://www.dragonflycave.com/guestbook/" title="The guestbook/chatroom of The Cave of Dragonflies.">Guestbook</a></li>
+    <li class="interactive"><a href="https://forums.dragonflycave.com/" title="Chat at the forums!">Forums</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/style-switcher/" title="Help about the style switcher.">The Style Switcher</a></li>
+    <li class="sitely interesting entertaining"><a href="https://www.dragonflycave.com/zodiac/" title="The Day of Scyther in the Reign of Dialga...">Zodiac</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/affiliate-with-tcod/" title="Become an affiliate.">Affiliate with TCoD</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/link-to-tcod/" title="A selection of link buttons to link to this site with.">Link to TCoD</a></li>
+    </ul>
+</li>
+<li id="menu-pokemon"><a href="https://www.dragonflycave.com/pokemon/">Pokémon</a>
+    <ul>
+    <li class="interesting"><a href="https://www.dragonflycave.com/fun-facts/" title="Some of these really are interesting...">Fun Facts</a></li>
+    <li><a href="https://www.dragonflycave.com/essays-main/" title="Long-form essays about Pokémon-related topics.">Essays</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/my-glitched-jolteon/" title="Part reminiscence, part game mechanics deep-dive about my very special Yellow version Jolteon.">My Glitched Jolteon</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/the-mew-trick/" title="A deep dive on one of the Pokémon games&#39; most amazing glitches, its history and how it works.">The Mew Trick</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/movie-reviews/" title="Overanalytical reviews of the Pokémon movies.">Movie Reviews</a>
+        <ul>
+        <li class="sitely interesting"><a href="https://www.dragonflycave.com/movie-reviews/about/" title="In which I ramble on about why and how I make my reviews.">About the Reviews</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/mewtwo-strikes-back/" title="In which chuckling evilly totally makes perfect psychological sense in character.">Mewtwo Strikes Back</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-power-of-one/" title="In which I manage to pity an underdeveloped villain and Chosen One plots.">The Power of One</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/spell-of-the-unown/" title="In which Team Rocket play such a small role I leave them out of the synopsis.">Spell of the Unown</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/voice-of-the-forest/" title="In which I manage to fangirl a random villain with thirty seconds of screentime.">Voice of the Forest</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-heroes/" title="In which I lengthily complain about the dub.">Pokémon Heroes</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/jirachi-wish-maker/" title="In which I like the movie even though the plot is holier than the Pope.">Jirachi: Wish Maker</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/destiny-deoxys/" title="In which I try to understand why Rayquaza suddenly lives in the Arctic.">Destiny Deoxys</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/lucario-and-the-mystery-of-mew/" title="In which I gush about platonic love in fiction.">The Mystery of Mew</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-ranger-and-the-temple-of-the-sea/" title="In which Ash becomes a glowy yellow thready thing.">The Temple of the Sea</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-rise-of-darkrai/" title="In which Tonio is evil and dies, except he&#39;s not and he doesn&#39;t.">The Rise of Darkrai</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/giratina-and-the-sky-warrior/" title="In which Shaymin is obnoxious.">The Sky Warrior</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/arceus-and-the-jewel-of-life/" title="In which I complain about the writers not understanding Back to the Future.">The Jewel of Life</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/mewtwo-returns/" title="In which I am underwhelmed.">Mewtwo Returns</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-legend-of-thunder/" title="In which I fantasize about a better Pokémon anime.">Legend of Thunder</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-origins/" title="In which I suddenly begin to appreciate the regular anime a lot more.">Pokémon Origins</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/detective-pikachu/" title="In which an American live-action Pokémon film is actually good.">Detective Pikachu</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/opinions-main/" title="Various opinions, thoughts and theories.">Opinions/Theories</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/overrated/" title="A rant about &#39;overrated&#39; Pokémon.">Rant: Overrated</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/english-names/" title="A rant about how people endlessly complain about how horrible the English names of the new Pokémon are.">Rant: English Names</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/obsession-lists/" title="A rant about &#39;You know you&#39;re obsessed with Pokémon when...&#39; lists.">Rant: Obsession Lists</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/genetics/" title="How Pokémon genetics and breeding might make sense.">Pokémon Genetics</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/incense-breeding/" title="A theory on how incense can cause some Pokémon to produce baby Pokémon.">Incense Breeding</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/opinions-theories/history-of-training/" title="How Pokémon training might have started and developed into what it is today.">History of Training</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/aap/" title="Or, &#39;Self-Help for the Insecure Pokémon Fan&#39;.">Anti-Anti-Pokémon</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/animal-cruelty/" title="An article concerning the subject of animal cruelty in Pokémon.">Animal Cruelty?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/why-do-we-like-it/" title="Why do Pokémon fans like Pokémon even after it stopped being cool?">Why Do We Like It?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/is-pokemon-childish/" title="Are teenagers and adults who like Pokémon &#39;immature&#39;?">Is Pokémon Childish?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/religious-objections/" title="About the religious argument against Pokémon.">Religious Objections</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-games"><a href="https://www.dragonflycave.com/the-games/">The Games</a>
+    <ul>
+    <li class="interesting useful"><a href="https://www.dragonflycave.com/fancy-a-challenge/" title="Want to make your game more fun?">Fancy a Challenge?</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/evolution-list/" title="All Pokémon evolutions, by method.">Evolution List</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/espeon-and-umbreon/" title="How to evolve your Eevee quickly and effectively.">Espeon and Umbreon</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/typechart.html" title="An interactive type chart where you can visualize various kinds of data on Pokémon types and even create custom types. Or delete all the existing types and only have your own.">Interactive Type Chart</a></li>
+    <li><a href="https://www.dragonflycave.com/mechanics/" title="The juicy formulas and stuff behind the Pokémon games.">Game Mechanics</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/stats/" title="The mechanics of stats: what factors into them, the formulas, and how it has changed over the years.">Stat Mechanics</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/stat-stages/" title="The mechanics of how your Pokémon&#39;s stats are modified within battle.">Stat Stages</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/mechanics/battling-basics/" title="The basic concepts of the Pokémon battle system, explained for beginners.">Battling Basics</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/battle/" title="The mechanics of Pokémon battles, from turn order to accuracy to critical hits to the damage formula.">Battle Mechanics</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-capturing/" title="The mechanics of Pokémon captures in Red, Blue and Yellow.">Gen I Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-rng/" title="The mechanics of the random number generator in Red, Blue and Yellow, and how it affects capturing.">Gen I Capture RNG</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ii-capturing/" title="The mechanics of Pokémon captures in Gold, Silver and Crystal.">Gen II Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of gen III/IV Pokémon captures.">Gen III/IV Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-v-capturing/" title="The mechanics of fifth-generation Pokémon captures.">Gen V Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth and seventh generations.">Gen VI/VII Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-viii-capturing/" title="How capturing works in the eighth-generation games.">Gen VIII Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ix-capturing/" title="How capturing works in the ninth-generation games.">Gen IX Capturing</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-safari-zone/" title="The mechanics of the R/B/Y Safari Zone, complete with a calculator.">R/B/Y Safari Zone</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-stat-modification/" title="The screwed-up mechanics of how stats get modified in battle in R/B/Y... with a calculator.">R/B/Y Stat Mods</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/mechanics/status-ailments/" title="The workings of status effects, both major and minor.">Status Ailments</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/sinnoh/honey-trees/" title="The mechanics and practicalities of honey trees.">Honey Trees</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/" title="A comprehensive explanation of R/S/E roulette, with interactive simulations.">R/S/E Roulette</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokewalker/" title="A breakdown of how battling and catching Pokémon works in the HG/SS Pokéwalker accessory.">Pokéwalker Battle Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/calculators/" title="Various useful calculators for the Pokémon games.">Calculators</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-i-catch-rate/" title="A calculator to determine the odds of a capture succeeding in R/B/Y.">Gen I Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ii-catch-rate/" title="A calculator for capturing in Gold, Silver and Crystal.">Gen II Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-v-catch-rate/" title="A calculator for Pokémon captures in the fifth generation.">Gen V Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth- and seventh-generation games.">Gen VI/VII Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-viii-catch-rate/" title="A capture calculator for the eighth-generation games.">Gen VIII Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ix-catch-rate/" title="A capture calculator for the ninth-generation games.">Gen IX Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li class="interesting"><a href="https://www.dragonflycave.com/evs-natures-and-math/" title="Okay, I&#39;m crazy, but yes, this is a mathematical approach to EVs and natures.">EVs, Natures and Math</a></li>
+    <li class="interesting"><a href="https://www.dragonflycave.com/experimentation/" title="Crazy experiments about the inner workings of the games.">Experimentation</a></li>
+    <li><a href="https://www.dragonflycave.com/kanto/" title="Stuff specific to Red, Blue, Yellow, and their remakes.">Kanto</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/kanto/rby-tips-and-tricks/" title="All sorts of glitches, hints and tips about Red, Blue and Yellow.">R/B/Y Tips and Tricks</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-capturing/" title="A complete analysis of the R/B/Y capture algorithm.">Gen I Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-rng/" title="The mechanics of the random number generator in Red, Blue and Yellow, and how it affects capturing.">Gen I Capture RNG</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-i-catch-rate/" title="A calculator to determine the odds of a capture succeeding in R/B/Y.">Gen I Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen1" title="Information about the wild Pokémon found in every area in R/B/Y.">Gen I Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-stat-modification/" title="The screwed-up mechanics of how stats get modified in battle in R/B/Y... with a calculator.">R/B/Y Stat Mods</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-safari-zone/" title="An explanation of the R/B/Y Safari Zone, with a calculator for how it is best to catch a given Pokémon.">R/B/Y Safari Zone</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/kanto/frlg-walkthrough/" title="Complete, detailed walkthrough of FireRed and LeafGreen.">FR/LG Walkthrough</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/kanto/frlg-vs-seeker/" title="Everything you ever wanted to know about each and every trainer in FR/LG.">FR/LG VS Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen3" title="Information about the wild Pokémon found in every area in the third-generation games, including FR/LG.">Gen III Locations</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/kanto/lets-go-review/" title="A review of Pokémon Let&#39;s Go, Pikachu and Let&#39;s Go, Eevee.">Let's Go Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/my-glitched-jolteon/" title="Part reminiscence, part game mechanics deep-dive about my very special Yellow version Jolteon.">My Glitched Jolteon</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/the-mew-trick/" title="A deep dive on one of the Pokémon games&#39; most amazing glitches, its history and how it works.">The Mew Trick</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/johto/" title="Specifically for Gold, Silver and Crystal and their remakes.">Johto</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/gold-or-silver/" title="Which game to pick?">Gold or Silver?</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/johto/battle-tower/" title="The most annoying thing ever created, the Crystal Battle Tower.">The Battle Tower</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/mt-silver-guide/" title="How to get through Mount Silver without Flash.">Mt. Silver Guide</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/johto/legendary-whatevers/" title="Tips for how to find the Legendary Dogs/Cats/Beasts/Whatevers.">Legendary Whatevers</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ii-capturing/" title="The mechanics of Pokémon captures in Gold, Silver and Crystal.">Gen II Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ii-catch-rate/" title="A calculator for capturing in Gold, Silver and Crystal.">Gen II Capture Calculator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen2/" title="Full encounter data for locations in Gold, Silver and Crystal.">Gen II Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/johto/hgss-changes/" title="What has changed in HeartGold and SoulSilver.">HG/SS Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/voltorb-flip/" title="How to beat this tricky logic puzzle.">Voltorb Flip Guide</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/places-to-train/" title="The most efficient locations to train in HG/SS, from level 1 up.">Places to Train</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen4/" title="The full encounter data for all locations in D/P/Pt/HG/SS.">Gen IV Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokewalker/" title="A breakdown of how battling and catching Pokémon works in the HG/SS Pokéwalker accessory.">Pokéwalker Battle Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/hoenn/" title="Stuff about Ruby, Sapphire and Emerald and their remakes, Omega Ruby and Alpha Sapphire.">Hoenn</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/hoenn/rse-tips-and-tricks/" title="Tips and tricks for R/S/E.">Tips and Tricks</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/hoenn/rse-rumours/" title="The Cave of Dragonflies: smashing the rumours since 2002.">R/S/E Rumours Debunked</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen3" title="Information about the wild Pokémon found in every area in the third-generation games.">Gen III Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth generation.">Gen VI Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth-generation games.">Gen VI Capture Calculator</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/" title="A comprehensive explanation of R/S/E roulette, with interactive simulations.">R/S/E Roulette</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/sinnoh/" title="Everything concerning Diamond, Pearl and Platinum.">Sinnoh</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/sinnoh/dp-changes/" title="New and changed stuff in D/P and my opinion of it all.">D/P Changes</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/sinnoh/platinum-changes/" title="All the changes between Diamond and Pearl and Platinum.">Platinum Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/dp-vs-seeker/" title="Every trainer in Diamond and Pearl, good training spots and EV trainers.">D/P Vs. Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/platinum-vs-seeker/" title="Details of all the rebattleable trainers in Platinum.">Platinum Vs. Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/places-to-train/" title="The most efficient locations to train your Pokémon, from level 1 up.">Places to Train</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen4/" title="The full encounter data for all locations in D/P/Pt/HG/SS.">Gen IV Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/sinnoh/ribbon-syndicate/" title="The Ribbon Syndicate and how to get into it.">Ribbon Syndicate</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/sinnoh/honey-trees/" title="The mechanics and practicalities of honey trees.">Honey Trees</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/unova/" title="Sections about Pokémon Black and White and their sequels.">Unova</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/unova/bw-changes/" title="A list and review of the changes in Black and White.">B/W Changes</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/unova/b2w2-changes/" title="An overview of the changes made in Black 2 and White 2.">B2/W2 Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen5/" title="Information about the wild Pokémon found in every area in the fifth-generation games.">Gen V Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-v-capturing/" title="The mechanics of fifth-generation Pokémon captures.">Gen V Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-v-catch-rate/" title="A calculator for Pokémon captures in the fifth generation.">Gen V Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/kalos/" title="Stuff about Pokémon X and Y.">Kalos</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen6/" title="Information about the wild Pokémon found in every area in X and Y.">Gen VI Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth generation.">Gen VI/VII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth-generation games.">Gen VI/VII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/alola/" title="Content about Pokémon Sun, Moon, Ultra Sun and Ultra Moon.">Alola</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="How capturing works in the sixth- and seventh-generation games.">Gen VI/VII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A calculator for capturing in the sixth and seventh generation.">Gen VI/VII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/galar/" title="Content about Pokémon Sword and Shield.">Galar</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/galar/weather-encounters/" title="A tool for calculating what Pokémon you&#39;ll find in your Wild Area with the current weather.">Weather Encounter Tool</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-viii-capturing/" title="How capturing works in the eighth-generation games.">Gen VIII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-viii-catch-rate/" title="A capture calculator for the eighth-generation games.">Gen VIII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/paldea/" title="Content relating to Pokémon Scarlet and Violet.">Paldea</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ix-capturing/" title="How capturing works in the ninth-generation games.">Gen IX Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ix-catch-rate/" title="A capture calculator for the ninth-generation games.">Gen IX Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/paldea/subtle-shinies/" title="A list of tricky-to-identify shinies in the Paldea Pokédex.">Subtle Shinies</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/orre-main/" title="Pokémon Colosseum and XD.">Orre</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/orre/colosseum-review/" title="My opinion of Colosseum.">Colosseum Review</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/shadow-pokemon/" title="Explains what Shadow Pokémon are and their role.">Shadow Pokémon</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/purification-guide/" title="Tips about purifying Shadow Pokémon in both Colosseum and XD.">Purification Guide</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/shadow-pokemon-list/" title="The necessary data about all the Shadow Pokémon in Colosseum.">Shadow Pokémon List</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/pokemon-go/" title="The free-to-play mobile app Pokémon Go.">Pokémon Go</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/pokemon-go/review/" title="A rambly review of Pokémon Go.">Review</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokemon-go/guide/" title="A guide on Pokémon Go.">Guide</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokemon-go/stats/" title="A breakdown of stat mechanics in Pokémon Go.">Stat Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/spinoffs/" title="Other spin-off games such as Trozei, Mystery Dungeon and Ranger.">Spin-Offs</a>
+        <ul>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/spinoffs/trozei-review/" title="Review of Pokémon Trozei (or Link) for the Nintendo DS.">Trozei Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pmd-blue-rescue-team-review/" title="A review of Pokémon Mystery Dungeon: Blue Rescue Team as I see it.">MD Blue Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pmd-explorers-of-time-review/" title="A review of Pokémon Mystery Dungeon: Explorers of Time.">MD Time Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pokemon-ranger-review/" title="A review of Pokémon Ranger for the DS.">Ranger Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/shadows-of-almia-review/" title="A review of Pokémon Ranger: Shadows of Almia.">Ranger 2 Review</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/spinoffs/conquest-review/" title="A review of Pokémon Conquest.">Conquest Review</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-fun"><a href="https://www.dragonflycave.com/fun/">Fun</a>
+    <ul>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/the-secret-link/" title="Fancy a game?">The Secret Link</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/the-clue-game/" title="Fancy a ridiculously challenging game?">The Clue Game</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/magikarp-the-gathering/" title="Magikarp: the Gathering, a game of epic proportions.">Magikarp: the Gathering</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/hangman/" title="Play Hangman with Pokémon names and an angry Pikachu.">Pokémon Hangman</a></li>
+    <li class="entertaining interesting"><a href="https://www.dragonflycave.com/number-game/" title="Ever wanted to teach yourself the National Pokédex numbers of all the Pokémon?">The Number Game</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/sutoraiku-high/" title="Sutoraiku High, a visual novel about drama, friendships, prejudice, bullying, total societal upheaval, and high school romance.">Sutoraiku High</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/sutoraiku-legends/" title="Sutoraiku Legends, the sequel to Sutoraiku High, featuring more action, noticeably inflated life-and-death stakes, and being isekaied to the Hisui region to calm the noble Kleavor.">Sutoraiku Legends</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/favorite.html" title="If you&#39;re having a hard time deciding on your favorite Pokémon, this is for you.">Favorite Pokémon</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/marquee-of-doom/" title="How patient are YOU?">The Marquee of Doom</a></li>
+    <li class="entertaining interesting"><a href="https://www.dragonflycave.com/crossword/" title="Quite possibly the world&#39;s hardest Pokémon crossword.">Irregular Crossword</a></li>
+    <li><a href="https://www.dragonflycave.com/quizzes/" title="Test both your personality and your Pokémon knowledge.">Quizzes</a>
+        <ul>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/what-pokemon-are-you/" title="Find out what Pokémon you are in a fun personality test.">What Pokémon Are You?</a></li>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/what-type-are-you/" title="If you were a Pokémon, what would your type be?">What Type Are You?</a></li>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/how-obsessed-are-you/" title="Find out how much of a Pokémon fan - and of what type - you are.">Pokémon Fan Test</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/steel/" title="How well do you know the Steel type?">Steel Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/flying/" title="How well do you know the Flying type?">Flying Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/yellow/" title="How well do you know the Yellow version?">Yellow Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/gsc/" title="How well do you know the second generation games?">G/S/C Quiz</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/humour-main/" title="Laugh your head off!">Humour</a>
+        <ul>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/conspiracy-theories/" title="It&#39;s all one big conspiracy, I tell you! (To be taken seriously only at your own risk.)">Conspiracy Theories</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/babelfished/" title="Who doesn&#39;t love when computerized translations go horribly wrong?">Babelfished</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/in-game-humour/" title="All about why those two guys want to see big Barboach and Shroomish.">In-Game Humour</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/quizzes/what-trainer-class-are-you/" title="A fake personality test that I originally created for April Fools&#39; Day 2014.">What Trainer Class Are You?</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-guides"><a href="https://www.dragonflycave.com/guides/">Guides</a>
+    <ul>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/spriting-guide/" title="How to make sprites.">Spriting</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/proving-sprite-theft/" title="How to prevent and prove sprite theft.">Proving Sprite Theft</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/making-fake-pokemon/" title="How to make a fake Pokémon, step by step.">Making Fake Pokémon</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/making-fan-theories/" title="How to make a fan theory... and how NOT to make a fan theory.">Making Fan Theories</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/reviewing-guide/" title="How to review fanfiction.">Reviewing</a></li>
+    </ul>
+</li>
+<li id="menu-webmasters"><a href="https://www.dragonflycave.com/webmasters/">Webmasters</a>
+    <ul>
+    <li class="useful"><a href="https://www.dragonflycave.com/html-guide/" title="Learn valid HTML and CSS from the ground up.">HTML Guide</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/website-tips/" title="General advice on websites.">Website Tips</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/writing-content/" title="A guide to writing good content for your website.">Writing Content</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/kinds-of-content/" title="The six types of content and how to make the best use of them.">Kinds of Content</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/page-pitfalls/" title="Some common pitfalls that pages on Pokémon websites fall into.">Page Pitfalls</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/site-critique/" title="Get your site ripped apart with criticism.">Site Critique</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/free-layouts/" title="Get a very basic layout template for your site.">Free Layouts</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/free-quiz-scripts/" title="Make your very own personality test!">Free Quiz Scripts</a></li>
+    <li><a href="https://www.dragonflycave.com/resources/" title="Resources for webmasters (and others).">Resources</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/resources/pokemon-list-generator/" title="Generates a list of Pokémon, formatted however you like.">Pokémon List Generator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/resources/sprite-generator/" title="Gives you sprites from any game for either the Pokémon you enter or up to three random ones.">Sprite Generator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/resources/sprites/" title="Download Pokémon sprites with your preferred naming scheme!">Pokémon Sprites</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-creative"><a href="https://www.dragonflycave.com/creative/">Creative</a>
+    <ul>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fan-fiction/" title="Pokémon fiction by yours truly.">Fan Fiction</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fake-pokemon/" title="My own fake Pokémon.">Fake Pokémon</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fake-cheats/" title="Stupid made-up cheats.">Fake Cheats</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/images/" title="A gallery of my own sprites, with long Terms of Use.">My Sprites</a></li>
+    </ul>
+</li>
+</ul>
+</div>
+<span id="menufix">
+</span>
+</nav>
+</div>
+
+<aside id="affys">
+<ul>
+<li id="affys-follow"><a href="https://www.dragonflycave.com/follow-main/">Support/<wbr>Follow</a>
+<ul>
+<li><a href="https://patreon.com/antialiasis" target="_blank" title="My Patreon"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/patreon.png" alt="Patreon"><span>Patreon</span></a></li>
+<li><a href="https://twitter.com/dragonflycave" target="_blank" title="The Cave of Dragonflies on Twitter"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/twitter.png" alt="Twitter"><span>Twitter</span></a></li>
+<li><a href="https://www.facebook.com/dragonflycave/" target="_blank" title="The Cave of Dragonflies on Facebook"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/facebook.png" alt="Facebook"><span>Facebook</span></a></li>
+<li><a href="https://bsky.app/profile/dragonflycave.com" target="_blank" title="The Cave of Dragonflies on Bluesky"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/bluesky.png" alt="Bluesky"><span>Bluesky</span></a></li>
+</ul>
+</li>
+<li id="affys-siblings"><a href="https://www.dragonflycave.com/sister-main/">Sibling Sites</a>
+<ul>
+<li><a href="https://alteredorigin.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/alteredorigin.gif" alt="Altered Origin" title="Altered Origin"><span>Altered Origin</span></a></li>
+</ul>
+</li>
+<li><a href="https://www.dragonflycave.com/affiliates/">Affiliates</a>
+<ul id="affys-affiliates">
+<li><a href="https://autumnsgrace.neocities.org/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/autumnsgrace.png" alt="Autumn&#39;s Grace" title="Autumn&#39;s Grace"><span>Autumn's Grace</span></a></li>
+<li><a href="https://overstrat.pages-perso.free.fr/fiches-en/about.html"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/overstratbutton.png" alt="Overstrat" title="Overstrat"><span>Overstrat</span></a></li>
+<li><a href="https://bluemoonfalls.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/bluemoonfalls.png" alt="Blue Moon Falls" title="Blue Moon Falls"><span>Blue Moon Falls</span></a></li>
+<li><a href="https://neoposttown.neocities.org/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/neoposttownbutton.png" alt="Neo Post Town" title="Neo Post Town"><span>Neo Post Town</span></a></li>
+<li><a href="http://aquabunny.creativeworlds.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/aquabunny.png" alt="Aqua Bunny" title="Aqua Bunny"><span>Aqua Bunny</span></a></li>
+<li><a href="https://hallowedtower.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/hallowed-tower.gif" alt="Hallowed Tower" title="Hallowed Tower"><span>Hallowed Tower</span></a></li>
+<li><a href="http://lycanroc.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/lycanroc-net.png" alt="Lycanroc.net" title="Lycanroc.net"><span>Lycanroc.net</span></a></li>
+<li><a href="http://noseclub.bluwiikoon.art/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/noseclub-button.png" alt="Nose Club" title="Nose Club"><span>Nose Club</span></a></li>
+<li><a href="https://greenfieldcity.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/greenfieldcity.png" alt="Greenfield City" title="Greenfield City"><span>Greenfield City</span></a></li>
+<li><a href="http://sneaselplushie.legends-station.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/sneaselplushielink.gif" alt="Sneasel Plushie!" title="Sneasel Plushie!"><span>Sneasel Plushie!</span></a></li>
+<li><a href="https://johtotimes.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/johtotimes.png" alt="Johto Times" title="Johto Times"><span>Johto Times</span></a></li>
+<li><a href="https://applelyeverafter.thecomicseries.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/applelyeverafter.png" alt="Apple-ly Ever After" title="Apple-ly Ever After"><span>Apple-ly Ever After</span></a></li>
+<li><a href="https://icirr.us/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/master-ball.png" alt="Master Ball" title="Master Ball"><span>Master Ball</span></a></li>
+<li><a href="http://pokemonrebirth.niftihalostudios.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/pkmnrebirth-caley.png" alt="Pokémon Rebirth" title="Pokémon Rebirth"><span>Pokémon Rebirth</span></a></li>
+<li><a href="https://greninlucarizardlupplace.webnode.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/greninsplace.png" alt="Grenin&#39;s Place" title="Grenin&#39;s Place"><span>Grenin's Place</span></a></li>
+<li><a href="https://altissimo1.github.io/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/altissimos-site.png" alt="Altissimo&#39;s Site" title="Altissimo&#39;s Site"><span>Altissimo's Site</span></a></li>
+<li><a href="https://viridianforties.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/viridianforties.png" alt="Viridian Forties" title="Viridian Forties"><span>Viridian Forties</span></a></li>
+<li><a href="http://pokeprint.kimbachu.com/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/pokeprint.png" alt="PokéPrint" title="PokéPrint"><span>PokéPrint</span></a></li>
+<li><a href="https://pkmn.is-great.org/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/pokemonamber.gif" alt="Pokémon Amber" title="Pokémon Amber"><span>Pokémon Amber</span></a></li>
+
+</ul>
+</li>
+<li id="affys-tqftl"><a href="https://www.dragonflycave.com/fan-fiction/">Fanfic</a>
+<ul>
+<li><a href="https://tqftl.dragonflycave.com/blog/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/button.gif" alt="The Quest for the Legends" title="The Quest for the Legends"><span>The Quest for the Legends</span></a></li>
+</ul>
+</li>
+<li id="affys-links"><a href="https://www.dragonflycave.com/links-main/">Links</a>
+<ul>
+<li><a href="http://www.serebii.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/spp.gif" alt="Serebii.net" title="Serebii.net"><span>Serebii.net</span></a></li>
+<li><a href="http://dogasu.bulbagarden.net/"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/dogasulink.gif" alt="Dogasu&#39;s Backpack" title="Dogasu&#39;s Backpack"><span>Dogasu's Backpack</span></a></li>
+</ul>
+</li>
+</ul>
+<span id="last">
+</span>
+</aside>
+</div>
+
+<footer id="disclaimer">
+<hr>
+<div>
+
+<p>I care about the truth, and I strive to keep the information on this website accurate and up-to-date. For instance, where possible, I have taken pains to personally test claims about the video games before making them. However, doing so is not always feasible, occasionally I manage to be wrong even when I think I've confirmed something, and with a website of this size, it's difficult to keep track of every single piece of information anywhere on it that might need to be changed or updated. Thus, if you spot any errors, mistakes or out-of-date tidbits – or even just typos – I'd be thrilled if you would report them via <a href="https://www.dragonflycave.com/report-errors/">this form</a>.</p>
+
+<p>Pokémon, Pikachu and all other Pokémon characters © 1995–2026 Nintendo, GAME FREAK and Creatures, Inc. This is a fan-made website. No infringement is intended.</p>
+
+
+
+<p>All layouts, non-official graphics and content © 2002–2026 Butterfree/Dragonfree/antialiasis unless otherwise stated.</p>
+
+<p><a href="https://www.dragonflycave.com/rss.xml"><img src="./Effort Values and Natures_ A Mathematical Approach _ The Cave of Dragonflies_files/rss-icon.png" alt="" class="rss-icon"> RSS feed</a></p>
+</div>
+</footer>
+</div>
+<script>
+    var style_dropdown = document.getElementById("style");
+    style_dropdown.onchange = function() {
+        document.forms["change"].submit();
+    };
+</script>
+
+<script>
+/*
+Get the menu to behave.
+
+In the CSS, #menu:hover gets height:100% so that it can provide scrolling if the actual menus are taller than the user's screen. However, this means that after the actual menu has closed, #menu still covers the entire page, is still being hovered over, and prevents clicking on anything underneath it.
+
+All we have to do to fix this is ensure that when we exit the #menu-inner element (the menu proper), we momentarily set #menu's height to auto and then remove the height again. This causes the #menu element to just correctly go back to its unhovered state.
+*/
+var menu = document.getElementById("menu");
+var menu_inner = document.getElementById("menu-inner");
+menu_inner.onmouseout = function(e) {
+    // Check whether we've actually hovered out of the #menu-inner onto #menu
+    if (!e) var e = window.event;
+    if (menu.style.position !== "fixed") {
+        return;
+    }
+    var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
+    if (reltg == menu) {
+        menu.style.height = "auto";
+        window.setTimeout(function() { menu.removeAttribute("style"); }, 10);
+    }
+};
+
+menu_inner.onmouseover = function(e) {
+    var menuPos = menu.getBoundingClientRect();
+    if (menuPos.top + window.pageYOffset > 0 || menuPos.left + window.pageXOffset > 0 || menu.style.position === "fixed") {
+        return;
+    }
+
+    if (e.target !== menu_inner) {
+        if (e.target.nodeName === 'LI') {
+            e.target.className = "over";
+        } else if (e.target.nodeName == 'A') {
+            e.target.parentNode.className = "over";
+        }
+    }
+    menu.className = "over";
+};
+
+document.body.onclick = function(e) {
+    var menuPos = menu.getBoundingClientRect();
+    if (menuPos.top + window.pageYOffset > 0 || menuPos.left + window.pageXOffset > 0 || menu.style.position === "fixed") {
+        return;
+    }
+
+    if (e.target === menu_inner || e.target === menu) {
+        menu.className = "over";
+    }
+
+    var curTarget = e.target;
+    // Return if we're within the menu.
+    while (curTarget) {
+        curTarget = curTarget.parentNode;
+        if (curTarget === menu_inner) {
+            if (e.target.nodeName === 'A' && e.target.parentNode.children.length > 1) {
+                e.target.parentNode.className = "over";
+                return false;
+            }
+            return true;
+        }
+    }
+
+    if (menu.className === "over") {
+        menu.className = "";
+    }
+    return true;
+};
+</script>
+
+
+
+</body></html>

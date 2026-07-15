@@ -1,0 +1,2774 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)https://www.dragonflycave.com/mechanics/gen-iii-roulette/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+<meta name="viewport" content="initial-scale=1,width=device-width">
+
+
+<meta name="flattr:id" content="9ykjj0">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@dragonflycave">
+<meta name="twitter:title" content="R/S/E Roulette Mechanics">
+<meta name="twitter:description" content="A friendly explanation of how the roulette minigame in Pokémon Ruby, Sapphire and Emerald works - and how to use it to your advantage.">
+<meta name="twitter:image" content="https://www.dragonflycave.com/screenshots/roulette/roulette-timing.png">
+<meta property="og:url" content="https://www.dragonflycave.com/mechanics/gen-iii-roulette/">
+<meta property="og:title" content="R/S/E Roulette Mechanics">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.dragonflycave.com/screenshots/roulette/roulette-timing.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="304">
+<meta property="og:image:height" content="304">
+<meta name="fediverse:creator" content="@antialiasis@donphan.social">
+
+<title>R/S/E Roulette Mechanics | The Cave of Dragonflies</title>
+<link rel="alternate" type="application/rss+xml" title="The Cave of Dragonflies updates" href="https://www.dragonflycave.com/rss.xml">
+<link rel="me" href="https://donphan.social/@antialiasis">
+
+<script type="text/javascript" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/jquery-1.10.2.min.js"></script>
+<style type="text/css">
+.roulette {
+   height:200px;
+   width:200px;
+   position:relative;
+}
+
+#roulette, #roulette-toggler {
+   margin:40px;
+}
+
+.roulette-wheel {
+   position:absolute;
+   top:0;
+   left:0;
+   right:0;
+   bottom:0;
+   background:url('/screenshots/roulette/roulette-wheel.png') center center no-repeat;
+}
+
+.roulette-wheel span {
+   position:absolute;
+   top:0;
+   left:0;
+   right:0;
+   bottom:0;
+   text-align:center;
+   color:#000;
+   font-size:12px;
+   font-weight:bold;
+   /*text-shadow:0 0 1px #FFF;*/
+}
+
+.roulette-wheel .slot-label {
+   line-height:90px;
+}
+
+.roulette-wheel .slot-odds {
+   line-height:30px;
+}
+
+.roulette-wheel .slot-odds .poll-bar {
+   top:auto;
+   bottom:175px;
+   left:85px;
+   right:85px;
+   z-index:-1;
+   height:0;
+}
+
+.roulette-toggler.toggler-active .roulette-wheel {
+   cursor:pointer;
+}
+
+.roulette-toggler .roulette-ball {
+   z-index:3;
+}
+
+.roulette-wheel-slot-0 {
+   transform:rotate(15deg);
+}
+
+.roulette-wheel-slot-1 {
+   transform:rotate(45deg);
+}
+
+.roulette-wheel-slot-2 {
+   transform:rotate(75deg);
+}
+
+.roulette-wheel-slot-3 {
+   transform:rotate(105deg);
+}
+
+.roulette-wheel-slot-4 {
+   transform:rotate(135deg);
+}
+
+.roulette-wheel-slot-5 {
+   transform:rotate(165deg);
+}
+
+.roulette-wheel-slot-6 {
+   transform:rotate(195deg);
+}
+
+.roulette-wheel-slot-7 {
+   transform:rotate(225deg);
+}
+
+.roulette-wheel-slot-8 {
+   transform:rotate(255deg);
+}
+
+.roulette-wheel-slot-9 {
+   transform:rotate(285deg);
+}
+
+.roulette-wheel-slot-10 {
+   transform:rotate(315deg);
+}
+
+.roulette-wheel-slot-11 {
+   transform:rotate(345deg);
+}
+
+.roulette-ball {
+   position:absolute;
+   height:15px;
+   width:15px;
+   margin:-7px 0 0 -7px;
+   border:1px solid #000;
+   border-radius:100%;
+   background:#F00;
+}
+
+.roulette-ball-no-fuzz {
+   background:#CCC;
+   z-index:2;
+}
+
+.roulette-ball-fixed {
+   background:#888;
+   z-index:1;
+}
+
+.roulette-ball-high-fuzz {
+   opacity:0.5;
+   background:#0F0;
+   z-index:4;
+}
+
+.roulette-ball-low-fuzz {
+   opacity:0.5;
+   background:#F00;
+   z-index:3;
+}
+
+.results-graph {
+   display:flex;
+   flex-wrap:wrap;
+   gap:10px;
+   width:100%;
+   justify-content:flex-start;
+}
+
+.results-graph .slot {
+   display:flex;
+   flex-direction:column;
+   justify-content:flex-end;
+   text-align:center;
+   font-size:smaller;
+   flex:0 0 35px;
+   height:150px;
+}
+
+.results-graph .slot .poll-bar {
+   width:100%;
+}
+
+.roulette-toggler .roulette-bet {
+   position:absolute;
+   top:50px;
+   left:50%;
+   height:15px;
+   width:15px;
+   margin:-11px 0 0 -8px;
+   border:0;
+   border-radius:100%;
+   background:#F8F8A0;
+}
+</style>
+
+<script type="text/javascript" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/global.js"></script>
+<noscript>
+<style type="text/css">
+.footnote-anchor {
+display:none;
+}
+
+.footnote {
+display:inline;
+}
+</style>
+</noscript>
+
+
+<link href="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/global.css" rel="stylesheet" type="text/css">
+<link href="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/butterfree-style.css" rel="stylesheet" type="text/css">
+<link href="https://www.dragonflycave.com/favicon.png" rel="shortcut icon" type="image/png">
+
+
+
+
+
+
+
+<!--[if lt IE 9]>
+<script src="/html5shiv.js"></script>
+<![endif]-->
+
+<!--[if lte IE 7]>
+<style type="text/css">
+html body #contentmenu #menu ul li ul li:hover ul {
+display:none;
+}
+</style>
+<![endif]-->
+</head>
+<body style="">
+<div id="layout">
+<header id="head">
+<div id="hitcounter">
+<p><strong><a href="https://www.dragonflycave.com/front-page-hits/">12047312</a></strong><br>
+front page hits</p>
+</div>
+
+<div id="banner">
+<h1><a href="https://www.dragonflycave.com/">The Cave of <span>Dragonflies</span></a></h1>
+<p>Where the smallest bugs live alongside the strongest dragons</p>
+</div>
+
+<p id="zodiac"><a href="https://www.dragonflycave.com/zodiac/"><span class="zodiac-images"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/290.png" alt=""><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/291.png" alt=""></span> The Day of Ninjask in the Reign of Marshadow, Season of Fire</a></p>
+
+<div id="styleswitcher">
+<label for="style">Style Switcher: [<a href="https://www.dragonflycave.com/style-switcher/">?</a>]</label>
+<form name="change" id="change" method="post" action="https://www.dragonflycave.com/set-style/">
+<input type="hidden" name="page" value="/mechanics/gen-iii-roulette/">
+<select name="style" id="style">
+<option value="butterfree">Pick style...</option>
+<option value="butterfree">Butterfree</option>
+<option value="celebi">Celebi</option>
+<option value="roaroftime">Dialga</option>
+<option value="modern">Modern</option>
+<option value="dewgong">Dewgong</option>
+<option value="axe-murderer">Axe-Murderer</option>
+<option value="scyther">Scyther</option>
+<option value="sninetales">Shiny Ninetales</option>
+<option value="nidoking">Nidoking</option>
+<option value="mew">Mew</option>
+<option value="hellfire">Hellfire</option>
+<option value="spectrum">Spectrum</option>
+<option value="articuno">Articuno</option>
+<option value="torkoal">Torkoal</option>
+</select>
+</form>
+</div>
+</header>
+
+<div id="container">
+<div id="not-affys">
+<div id="content">
+
+
+
+
+
+
+
+
+<h1>R/S/E Roulette Mechanics</h1>
+
+<p>The Game Corner in Pokémon Ruby, Sapphire and Emerald featured the familiar slots minigame, like the previous two generations had - but also a new second minigame, a simple version of roulette, which I remember being more drawn to when I first played the games. It wasn't a game that one gave all too much thought to at the time - but as it turns out, the mechanics of the roulette minigame are pretty fascinating!</p>
+
+<nav class="table-of-contents">
+<h4>Table of Contents</h4>
+
+<ul>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#basics">Roulette Basics</a>
+   <ul>
+   <li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#payouts">Roulette Payouts</a></li>
+   </ul>
+</li>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#persistent-balls">The Significance of Persistent Balls</a>
+   <ul>
+   <li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#stuck">So What About Stuck Balls?</a></li>
+   </ul>
+</li>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#physics">Roulette Physics</a>
+   <ul>
+   <li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#physics-summary">So What Does That Mean?</a></li>
+   </ul>
+</li>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#fuzz">The Fuzz Range</a></li>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#takeaways">The Plain English Takeaways</a></li>
+<li><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#simulator">Roulette Calculator</a></li>
+</ul>
+</nav>
+
+
+<h2 id="basics">Roulette Basics</h2>
+
+<p>R/S/E's Roulette minigame is a variant on the casino standard. The Game Corner has two roulette tables, the 'low-bet' table (closer to the door, red background when playing) where you can only bet one coin at a time, and the 'high-bet' table (further from the door, green background when playing) where you usually bet three coins at a time, with the bet bumped up to six coins on the Game Corner's special Service Day.</p>
+
+<p>Whichever table you play on, the table features a wheel rotating counterclockwise with twelve 'slots' around it, each represented by a combination of one of four designated Pokémon (Wynaut, Azurill, Skitty and Makuhita) and one of three designated colors (yellow, green and purple). You make a bet on either a color, a Pokémon, or a specific slot; then a ball is rolled onto the table, spinning clockwise around the wheel before finally landing in one of the slots. If the slot it lands on matches your bet, you win; otherwise, you lose.</p>
+
+<img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-bet.png" alt=""> <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-ball.png" alt="">
+
+<p>Afterwards, you can do another spin with another ball - but notably, the previous ball will remain in the slot where it landed, blocking that slot, until the table is reset after six rolls. If a ball would have landed in a slot that is currently occupied by a previous ball, it will instead bounce off the ball to one of the <em>adjacent</em> slots at random. If the chosen adjacent slot is <em>also</em> occupied, the ball will get stuck between the two:</p>
+
+<img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-ball-stuck.png" alt="">
+
+<p>And then you will get to witness the Roulette minigame's most curious feature: a Taillow or Shroomish will appear and dislodge your ball. Taillow will outright pick it up and hover with it for a bit before dropping it in an empty slot; Shroomish will just stomp down on the ground, shaking the table and causing the ball to bounce up and then land in an empty slot.</p>
+
+<img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-taillow.png" alt=""> <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-shroomish.png" alt="">
+
+<p>And that's all there is to the game on the surface level. You make a bet; you roll the ball; and it either lands in an empty slot, bounces off a previous ball into an empty slot, or gets stuck between two previous balls only for Taillow or Shroomish to come to the rescue and bump it into an empty slot.</p>
+
+
+<h3 id="payouts">Roulette Payouts</h3>
+
+<p>If you win a roll, then you get a payout equal to your bet multiplied by <strong>12 / the number of empty slots on the wheel that would have won this bet</strong>. In other words, if you bet on one specific slot, then your payout is twelve times the bet. Meanwhile, on an empty table, each color appears four times on the wheel, so if you bet on a color the payout would be three times the bet, or if you bet on a Pokémon (each appearing three times), the payout will be four times the bet. Thus, the payouts for that first roll look like this:</p>
+
+<table class="celltable">
+<tbody><tr>
+   <th>Bet type</th><th>Initial number of winning slots</th><th>Initial payout</th>
+</tr>
+<tr>
+   <th>Color</th><td>4</td><td>3x</td>
+</tr>
+<tr>
+   <th>Pokémon</th><td>3</td><td>4x</td>
+</tr>
+<tr>
+   <th>Slot</th><td>1</td><td>12x</td>
+</tr>
+</tbody></table>
+
+<p>Note that it counts the number of <em>empty</em> slots that match the bet, though - in other words, if there has been one previous ball which landed on the yellow Wynaut, then betting on Wynaut is in fact betting on just <em>two</em> remaining slots (green Wynaut and purple Wynaut), so the payout in that case will be six times your bet, while betting on yellow in the same situation will pay out four times your bet instead of three. And any bet that's in practice a bet on just one specific slot will pay out twelve times, even if it's technically a color or Pokémon bet. So a more comprehensive payout table for the whole game would simply look like this:</p>
+
+<table class="celltable">
+<tbody><tr>
+   <th>Number of empty winning slots</th><th>Payout</th>
+</tr>
+<tr>
+   <th>1</th><td>12x</td>
+</tr>
+<tr>
+   <th>2</th><td>6x</td>
+</tr>
+<tr>
+   <th>3</th><td>4x</td>
+</tr>
+<tr>
+   <th>4</th><td>3x</td>
+</tr>
+</tbody></table>
+
+<p>You may notice that unlike real roulette, there are no zero slots to give the house an advantage - the expected value of the first roll is to exactly break even, since regardless of your bet, the odds of winning times the payout cancel out to 1. Moreover, thanks to the previous balls staying on the table after the roll and blocking those slots altogether, each subsequent roll up through the sixth actually ends up with <em>better</em> odds: if you bet on a single slot while one slot on the wheel is occupied, the payout is still 12x but there are now only eleven slots the ball could land on!</p>
+
+<p>By itself, this would mean the average payout of a completely random bet would be 1x (12/12) on the first roll, ~1.09x (12/11) on the second, 1.2x (12/10) on the third, ~1.33x (12/9) on the fourth, 1.5x (12/8) on the fifth, and ~1.71x (12/7) on the sixth before being reset back to 1x. On average, playing this roulette completely at random, you will thus inevitably keep earning more coins, if slowly (very much unlike in real casinos, which use careful math to ensure that the house always has the advantage and players will always end up losing money the longer they keep playing).</p>
+
+<p>However, thanks to the minigame's mechanics, you can beat those odds by making the correct plays.</p>
+
+
+<h2 id="persistent-balls">The Significance of Persistent Balls</h2>
+
+<p>As I mentioned previously, if the slot the ball <em>would</em> have landed in happens to be already occupied by a previous ball, it will bounce toward the left or right at random (50% chance of each), landing in the adjacent slot in that direction if it's unoccupied, or otherwise getting stuck between the two balls.</p>
+
+<p>Therefore, <strong>the ball is more likely to end up in a slot that's next to an occupied slot</strong>: with equal odds of the ball landing anywhere on the wheel, then in addition to the default 1/12 chance of it just happening to end up on that one, each occupied slot that's next to it adds a 1/24 chance that it lands on <em>that</em> slot and then bounces to this one. A bet on a single slot with an occupied slot on one side of it still pays out at a 12x rate, but the chance of the ball landing there is 3/24 or 1/8; meanwhile, the chance of landing on a slot with <em>both</em> adjacent slots occupied is a full 4/24 or 1/6!</p>
+
+<p>Conversely, that's where those improved odds once you've rolled a few balls are mostly concentrated: if you were to just keep betting on slots that <em>aren't</em> next to occupied slots, you wouldn't be seeing those big gains to your odds with more balls on the screen. As a kid I actually remember mostly betting on slots that weren't next to where the previous balls had landed, out of some vague sense that the occupied slots meant there were fewer ways for the ball to end up on that part of the wheel, but that was unfortunately exactly the wrong strategy!</p>
+
+
+<h3 id="stuck-balls">So What About Stuck Balls?</h3>
+
+<p>So what if the ball <em>does</em> get stuck between two occupied slots? Depending on how the balls currently on the table are distributed, the odds of this happening for a given roll can be up to 33% (if on the sixth roll the previous five balls are all adjacent to each other), and all in all, for each set of six rolls there's also about a one third chance that a ball will get stuck at <em>some</em> point, so this isn't exactly an uncommon occurrence. What exactly happens when Taillow and Shroomish come to the rescue? I figured probably this was just a cute way to animate the ball getting bumped to one of the remaining unoccupied slots at random, but the truth turned out to be a whole lot wilder than that. Strap yourselves in.</p>
+
+<p>When a ball has gotten stuck, the game will do the following:</p>
+
+<ol>
+<li>First, determine <strong>whether the Pokémon to rescue the ball will be Shroomish or Taillow</strong>. Essentially, this is done based on <em>where the ball is located on the screen</em> when it gets stuck, for purposes of sensible animation timing. Shroomish performs the rescue by bouncing the ball up just when it hits the twelve o'clock or six o'clock position on the wheel, while Taillow performs the rescue by flying in from the left or right side of the screen and grabbing the ball just when it's in the three o'clock or nine o'clock position. But the game will also need a moment to show the rescuer appearing on the screen before it can rescue the ball, and the wheel will keep on rotating counterclockwise while that's happening - so if the ball is <em>currently</em> for instance in the three o'clock position, it'll pick Shroomish, because then the timing is about right for it to make it into the twelve o'clock position when Shroomish is ready to bounce it. The images below show the zones where each Pokémon will be chosen - the high-bet table needs a little more wind-up since the wheel goes faster.<br>
+   <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-wheel-rescue-zones-beginner.png" alt="">
+   <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-wheel-rescue-zones-advanced.png" alt=""></li>
+<li>Consider alternative slots the ball could land in, starting from the slot <em>two</em> slots ahead from the latter of the two slots the ball is stuck between, counting clockwise. (In other words, it'll skip the slot right after the two it's stuck between - probably because it'd be awkward to animate the rescuer bumping it that short of a distance.) We will consider the <strong>five</strong> next slots starting with that one, <em>unless</em> we're at the high-bet table and the Pokémon coming to the rescue is <strong>Taillow</strong>, in which case we will consider the <strong>nine</strong> next slots starting with that one. In the screenshot below, where the ball is stuck near the bottom, the green-shaded slots will always be considered, while the blue-shaded slots will be considered additionally by Taillow on the high-bet table.<br><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-ball-stuck-ranges.png" alt=""></li>
+<li>If <strong>we have the Pokémon that's coming to the rescue (Taillow or Shroomish) in our party</strong>, and a winning slot exists among the slots we're considering, then <strong>there is a 75% chance that they will drop the ball in the first such winning slot</strong>.</li>
+<li>Otherwise, the ball will land in one of the <em>unoccupied</em> alternative slots at random. (There will always be at least two unoccupied slots among these alternative slots, since we can have no more than five balls already on the table, and we already know two of them are the ones we got stuck between - that leaves maximum three balls that might be among the 5/9 slots we're considering.)</li>
+</ol>
+
+<p>This has several fascinating implications. First of all, <strong>bringing a Taillow and Shroomish with you when playing roulette will very directly improve your odds</strong>. Every time the ball gets stuck, then provided there's a winning slot within range, there's a 75% chance your Pokémon will just automatically win for you, in addition to the regular chance that they bump it into a winning slot by coincidence!</p>
+
+<p>Furthermore, the fact it doesn't consider <em>all</em> the remaining slots as possibilities has interesting consequences for the odds. While generally you want to bet on a slot that's next to an occupied slot, the slot that comes right after <em>two</em> occupied slots is actually taken out of consideration if the ball gets stuck between them - and conversely, while Taillow on the high-bet table will consider every <em>other</em> empty slot, other stuck cases will only look at the next five slots, meaning <em>those</em> will all have somewhat better odds of being picked than otherwise. All in all, this complicates the odds a bit, making the theoretical optimal strategy a little more interesting than just, "Bet on whichever slots have occupied slots next to them."</p>
+
+<p>The practical upshot of this for the odds is, more or less:</p>
+
+<ul>
+   <li>You're always best off betting on a slot that's sitting between two occupied slots.</li>
+   <li>If you don't have one of those, then you'll want to bet on a slot next to a single occupied slot. Your best bet is if you have Shroomish and/or Taillow in your party and this slot is also one of the next five slots after the slot after a couple of adjacent occupied slots, counting clockwise; all the better if it fits the bill for <em>multiple</em> pairs of adjacent occupied slots. For example, if there are exactly three balls on the table and they're in three adjacent slots, you want the slot that comes clockwise right after that cluster, because the ball might land there both if it lands on the third ball in the cluster and if it gets stuck between the first two balls in the cluster and gets rescued by Taillow/Shroomish. If there are four or five balls on the table and they're all adjacent, each of them improves the odds of the slot right after the cluster.</li>
+   <li>If you're on the <strong>high-bet table</strong> and have <strong>Taillow in your party</strong>, then if there are exactly two adjacent balls on the table, you want the one next to those <em>counterclockwise</em>, because it is both adjacent to an occupied slot <em>and</em> Taillow might carry your ball there if it gets stuck between them, while the one next to them clockwise can't be chosen by Taillow or Shroomish.</li>
+</ul>
+
+<p>If that breakdown's a little confusing, here's an interactive demonstration. Click the <strong>white part</strong> of a slot on the wheel below to place a ball in that slot (remember, you can only place up to five at a time), or click the <strong>colored bit</strong> to set it as a winning slot for your current bet. The colored bars around the wheel will adjust to show the odds that a ball will land there given the configuration of balls you've placed.</p>
+
+<form name="toggler" id="toggler">
+<input type="hidden" name="slots-occupied" value="">
+<input type="hidden" name="slots-bet" value="">
+
+<div class="calcform-row">
+<p>Roulette table: <label><input type="radio" name="table" id="toggle-table-beginner" value="beginner"> Low-bet (red)</label> <label><input type="radio" name="table" id="toggle-table-advanced" value="advanced" checked="checked"> High-bet (green)</label></p>
+</div>
+
+<div class="calcform-row">
+<p>Does your party include...<br>
+<label><input type="checkbox" name="pokemon" value="shroomish"> Shroomish?</label> <label><input type="checkbox" name="pokemon" value="taillow"> Taillow?</label></p>
+</div>
+
+<div id="roulette-toggler" class="roulette roulette-toggler toggler-active">
+   <div class="roulette-wheel">
+      <span class="roulette-wheel-slot-0 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-1 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-2 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-3 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-4 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-5 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-6 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-7 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-8 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-9 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-10 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+      <span class="roulette-wheel-slot-11 slot-odds">8.3%<span class="poll-bar" style="height: 16.6667px;"></span></span>
+
+      <span class="roulette-wheel-slot-0 slot-bet"></span>
+      <span class="roulette-wheel-slot-1 slot-bet"></span>
+      <span class="roulette-wheel-slot-2 slot-bet"></span>
+      <span class="roulette-wheel-slot-3 slot-bet"></span>
+      <span class="roulette-wheel-slot-4 slot-bet"></span>
+      <span class="roulette-wheel-slot-5 slot-bet"></span>
+      <span class="roulette-wheel-slot-6 slot-bet"></span>
+      <span class="roulette-wheel-slot-7 slot-bet"></span>
+      <span class="roulette-wheel-slot-8 slot-bet"></span>
+      <span class="roulette-wheel-slot-9 slot-bet"></span>
+      <span class="roulette-wheel-slot-10 slot-bet"></span>
+      <span class="roulette-wheel-slot-11 slot-bet"></span>
+   </div>
+</div>
+</form>
+
+<p>However, there's even more than this to this innocuous-looking minigame; we've only just gotten started.</p>
+
+
+<h2 id="physics">Roulette Physics</h2>
+
+<p>Prior to looking into how the roulette minigame works, I figured the actual ball-rolling might just as well be 'fake' - that the game might simply decide first with a random number generator which slot the ball will end up in and then show an animation pre-rigged to land it there. This is not the case: the game genuinely uses a bit of a simplified physics simulation for this, with the ball slowly decelerating, falling towards the middle and landing in the slot that happens to be under it when it approaches the center, like in real roulette. Specifically, here's how the roulette physics work (this is quite technical and mostly interesting to nerds like me; feel free to <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#physics-summary">skip this</a> if you just want to get to the implications):</p>
+
+<ol>
+<li>Initialize the relevant variables:
+   <ul>
+   <li>Generate a single two-byte random integer <b>r</b>, with a range from 0 to 65535 inclusive.</li>
+   <li>The ball physics are calculated using <em>polar coordinates</em>. In each of the <em>angular direction</em> (around the wheel) and <em>radial direction</em> (distance from the center of the wheel), the ball has a position coordinate value, a velocity, and an acceleration - six physics values all in all, though the radial acceleration is actually fixed at zero and never used.</li>
+   <li>A <b>fuzz range</b> value is calculated, based on a number of interesting factors that I will get into later. For the moment, it suffices to say that the possible fuzz range values are 1, 3, 7, 15, 30, 60 and 120, and the fuzz range on the high-bet roulette table will generally be half of what the fuzz range would be on the low-bet table, rounded down (3 is only possible on the high-bet table and 120 is only possible on the low-bet table, but 1 is the lowest possible value on both tables).</li>
+   <li>A <b>roll inertia</b> value is calculated:
+      <ul>
+      <li>First, fetch the table's <b>base inertia</b>, which is 360 on the low-bet table and 270 on the high-bet table.</li>
+      <li>Calculate a <em>fuzz value</em>, calculated by taking the random number <b>r</b> and then calculating <code>(r % n) - floor(n / 2)</code> where n is the <b>fuzz range</b> calculated above. This means that if the fuzz range is 30, then the fuzz value can be anywhere from -15 to 14 inclusive - in general, the range of the fuzz value is <code>[-floor(n / 2), ceil(n / 2) - 1]</code>.</li>
+      <li>Add the fuzz value to the base inertia. The result can range from 300-419 on the low-bet table and 240-299 on the high-bet table.</li>
+      <li>Divide this value by five to get the final base roll inertia value, which we will call <b>g</b>.</li>
+      </ul>
+   </li><li>An initial <b>angular coordinate</b> is calculated. The angular coordinate works a bit like degrees in trigonometry - it's a value that can be anywhere from 0 to 359, standing for the angle of where the ball is on the wheel - <em>but</em> instead of 0 being on the far right side, 0 is at the top (twelve o'clock), and it increases in a <em>clockwise</em> instead of counterclockwise direction around the circle, so that 90 is on the far right (three o'clock), 180 is at the bottom (six o'clock), and 270 is on the far left (nine o'clock). <em>Before 1PM</em>, the starting angular coordinate has an 80% chance (determined by checking if <code>r % 100</code> is less than 80) of being picked as either 0 or 180 (that is, a 40% chance of each) and a 20% chance of either 90 or 270 (10% chance of each); <em>after 1PM</em>, it has an 80% chance (if <code>r % 100</code> is less than 80) of being 90 or 270 and a 20% chance of being 0 or 180. In each case, we pick 0 or 90 if <b>r</b> is even, and 180 or 270 if <b>r</b> is odd.</li>
+   <li>The initial <b>angular velocity</b> is set to the starting ball velocity defined for the roulette table (this is 10 on both tables).</li>
+   <li>The <b>angular acceleration</b> is set to negative half the initial angular velocity divided by the roll inertia <b>g</b> times three rounded down - that is, <code>-5 / floor(g * 3)</code>. In other words, the higher the roll inertia value, the slower the ball will decelerate as it goes around the table.</li>
+   <li>The initial <b>radial coordinate</b> (distance from the center of the wheel) is set to 68.</li>
+   <li>The initial <b>radial velocity</b> is set to <code>-8 / floor(g * 3)</code>. Thus, the higher the roll inertia, the slower the ball will fall towards the center of the wheel, and the longer it will continue to roll before the ball falls into a slot.</li>
+   <li>As mentioned earlier, the <b>radial acceleration</b> is unused; it is simply set to zero and remains so throughout the roll.</li>
+   </ul>
+</li>
+<li>On each frame (sixty times a second), simulate the movement of everything:
+   <ul>
+   <li>Calculate the current rotation angle of the roulette wheel. The <b>high-bet table</b>'s wheel will rotate backward (counterclockwise) by one degree every frame; the <b>low-bet table</b>'s wheel will rotate backward by one degree every <em>other</em> frame, so that the high-bet table rotates twice as fast. The roulette wheel sprite will be rotated accordingly.</li>
+   <li>Calculate the next state of the ball's physics values:
+      <ul>
+      <li>Add the <b>angular acceleration</b> value to the <b>angular velocity</b>.</li>
+      <li>Add the <b>angular velocity</b> to the <b>angular coordinate</b>, subtracting 360 if the result is greater than or equal to 360.</li>
+      <li>Add the <b>radial acceleration</b> value to the <b>radial velocity</b> (since the radial acceleration is always zero, this never changes anything).</li>
+      <li>Add the <b>radial velocity</b> to the <b>radial coordinate</b>.</li>
+      </ul>
+   </li>
+   <li>Place the ball sprite where it should be located on the screen according to the angular and radial coordinates.</li>
+   <li>Once the <b>radial coordinate</b> is less than or equal to 60, set the <b>radial velocity</b> to <code>-20 / floor(g)</code> and the <b>angular acceleration</b> to be <code>(1 - angular velocity) / floor(g)</code>, causing it to slow down and fall significantly faster from there (this is where the roulette wheel visually appears to slope a little down toward the center, which makes sense).</li>
+   <li>After that, once the <b>radial coordinate</b> is less than or equal to 40, set the <b>radial velocity</b> to <code>-4 / floor(g)</code> and the <b>angular acceleration</b> to be <code>-angular velocity / floor(g)</code> (slower again, as we've reached the inner circle).</li>
+   <li>Once the radial coordinate is less than or equal to 40, then after that, once the <b>angular velocity</b> has fallen below 0.5, then:
+      <ul>
+      <li>If the ball's integer angle <em>relative to the roulette table</em> does not line up with the center of one of the roulette slots, then if the angular acceleration is not zero and the angular velocity has become <em>negative</em> (i.e. the ball has tipped over to moving clockwise with the roulette table), set the angular acceleration and velocity to 0 and divide the <b>radial velocity</b> by 1.2, causing it to stay at the same angle, slowing toward a halt, until the roulette table rotates underneath it to an angle that lines up.</li>
+      <li>Otherwise, if the ball <em>does</em> line up with the center of one of the roulette slots, then set the angular acceleration to 0 and adjust the angular velocity to subtract 0.5 if we're on the low-bet table or 1 on the high-bet table. Then proceed to step 3.</li>
+      </ul>
+   </li>
+   </ul>
+</li>
+<li>Once the ball has been lined up with the center of one of the roulette slots, process the ball landing on that slot.
+   <ul>
+   <li>If the slot is not occupied, then the ball simply lands there: set the ball's radial coordinate to 30, set its angular coordinate to the current center of the slot, and change the ball's physics so that it simply follows the rotation of the table from here.</li>
+   <li>If the slot <em>is</em> occupied, then choose either the next or previous slot at random (50% chance of each), and the ball will be bounced towards that slot, using its own little separate physics routine. If that slot is unoccupied, then it simply lands there, and we get our payout. If it is also occupied, then the ball will get <b>stuck</b> between the two slots; determine whether Shroomish or Taillow comes to the rescue:
+      <ul>
+      <li>Choose a base angle <b>o</b>. This angle is equal to 33 + (30 if playing on the high-bet table, otherwise 0) + 15; that is, it is 48 on the low-bet table and 78 on the high-bet table.</li>
+      <li>Consider which <em>quadrant</em> the stuck ball is located in, relative to the base angle o: if it is in the <em>first or third</em> quadrant (between o and o+90 degrees, or between o+180 and o+270 degrees), then Shroomish will come to the rescue, while if it is in the <em>second or fourth</em> quadrant (between o+90 and o+180 degrees or between o+270 and o degrees), Taillow will come to the rescue.</li>
+      <li>Starting from the slot two after the latter of the slots the ball is stuck between, consider the next five slots (if Shroomish or on the low-bet table) or the next nine slots (if Taillow on the high-bet table). For each of those slots, if it is unoccupied, add it to a list of available rescue slots. Also note down the first winning slot found (i.e. the first slot checked that matches the current bet), if any.</li>
+      <li>Generate a new two-byte random number <strong>q</strong> (ranging from 0 to 65535) and determine which slot the rescue Pokémon should drop the ball in:
+         <ul>
+         <li>If <strong>the player has the rescue Pokémon in their party</strong>, <strong>at least one winning slot was found</strong> and <strong><code>q % 256</code> is less than 192 (75% chance)</strong>, then the ball will be dropped in the winning slot noted earlier.</li>
+         <li>Otherwise, calculate <code>q % the number of available rescue slots</code>. The ball will be dropped in the slot at that index of the list of available rescue slots: that is, if the outcome is zero, it will be bumped into the first available rescue slot, and so on.</li>
+         </ul>
+      </li>
+      </ul>
+   </li>
+   </ul>
+</li>
+</ol>
+
+<h3 id="physics-summary">So What Does That Mean?</h3>
+
+<p>All in all, the ball really is rolling according to a kind of simulated physics, although it is simplified and not realistic. There are, on the face of it, two sources of randomness in how it plays out:</p>
+
+<ul>
+   <li>Firstly, the <strong>starting position</strong> of the ball can be either at the top, bottom, left or right side of the wheel, with a bias towards the top or bottom if the current time is <em>before 1PM</em> and a bias towards the left or right <em>after 1PM</em>; the favored starting positions have a 40% chance each, while the disfavored starting positions have a 10% chance each.</li>
+   <li>Secondly, the <strong>rate at which the ball decelerates</strong>, determined by the 'roll inertia', depends on <em>which table we're playing on</em> (on the green, high-bet table, the ball will decelerate faster) and on <em>a random number generated for each roll</em>, the <b>fuzz value</b>. The range of the fuzz value, the <b>fuzz range</b>, also varies depending on a number of different factors.</li>
+</ul>
+
+<p>(That framing is ever so slightly misleading: as explained above, the game technically only generates <em>one</em> random number between 0 and 65535 inclusive for the roll, and the starting position and fuzz value are both based on that one number. They're derived from it in different <em>ways</em>, but they are not completely independent: if the random number is even, then that means both that the starting angle is either 0 or 90 and that, so long as the fuzz range is even (30/60/120), the fuzz value itself will be even, and vice versa. This does not matter terribly much for our purposes for now, but please do put a pin in this.)</p>
+
+<p>Exactly <em>what the position of the wheel is when we start the roll</em> also determines which slot the ball actually lands on, of course - but that's technically only as random as we choose to make it, since we can decide exactly when to make our bet and roll the ball! If we wanted the wheel to start in a certain position, all we'd have to do is wait for it to be in that position before we roll. Of course, though, we don't quite start with any information on the face of it to tell us what starting position is better than another; probably you have in fact been playing with the starting position of the wheel being effectively random, which makes where the ball lands ultimately random, too.</p>
+
+<p>If the ball's starting position and fuzz <em>were</em> sufficiently random, in theory the outcome of the roll would also be random even for a fixed initial wheel position. However, there are only four possible starting positions which have different odds, and if you read the full physics explanation, you may have noticed that the fuzz range can be as low as 1, in which case the roll would be completely deterministic once the starting position has been determined! Thus, it's worth taking a closer look at how the fuzz range works. What exactly is this value, how is it determined, and exactly how much does the fuzz range influence the odds?</p>
+
+
+<h2 id="fuzz">The Fuzz Range</h2>
+
+<p>Yeah, this one is also a bit wild.</p>
+
+<p>To recap, the fuzz range determines <em>how much variation</em> there can be in what I call the 'roll inertia' value, which determines the rate at which the ball decelerates as it goes around the table. The higher the fuzz range, the more possible roll inertia values there are, and thus the more differently the ball might roll each time; the lower the fuzz range, however, the more <em>consistent</em> the rolls are, and the more it might be possible to influence where the ball lands based on when you start the ball rolling.</p>
+
+<p>The two roulette tables have two different <em>base fuzz values</em> each, the <b>high fuzz</b> (60 on the low-bet table and 30 on the high-bet table) and the <b>low fuzz</b> (30 on the low-bet table and 15 on the high-bet table); since these values are used as the basis for the returned fuzz range, in general the fuzz ranges for the high-bet table are always half of what they would be on the low-bet table, and thus the high-bet table has significantly more consistent rolls. The only exception is certain cases where the returned fuzz range is 1, in which case it would be 1 on both tables.</p>
+
+<p>How is this fuzz range determined? With a bizarrely complex calculation that I truly couldn't make heads or tails of as I was initially analyzing this. Note that the fuzz range is always an integer, and the divisions shown here like lowFuzz / 2 or lowFuzz / 4 are always rounded down:</p>
+
+<ul>
+<li>If you have <strong>neither Shroomish nor Taillow in your party</strong>, then:
+   <ul>
+      <li>If the current time is between 4:00 AM and 9:59 AM, then:
+         <ul>
+         <li>If <b>r</b> is divisible by four, return 1</li>
+         <li>Otherwise, return lowFuzz / 2</li>
+         </ul>
+      </li>
+      <li>Otherwise, then if <b>r</b> is divisible by four:
+         <ul>
+         <li>If we've made twelve or more rolls in this roulette session already (note that this counter is <em>not</em> reset when the board is), return lowFuzz / 2</li>
+         <li>Otherwise, return lowFuzz</li>
+         </ul>
+      </li>
+      <li>Otherwise, then if <b>r</b> is greater than or equal to 32768 (50% chance):
+         <ul>
+         <li>If we've made twelve or more rolls in this roulette session already, return lowFuzz</li>
+         <li>Otherwise, return highFuzz</li>
+         </ul>
+      </li>
+      <li>Otherwise, return highFuzz * 2</li>
+   </ul>
+</li>
+<li>If you have <strong>a Shroomish or Taillow in your party, but not both</strong>, then:
+   <ul>
+      <li>If the current time is between 4:00 AM and 9:59 AM, then:
+         <ul>
+         <li>If we've made eleven or more rolls in this roulette session already, and <b>r</b> is even, then return 1</li>
+         <li>Otherwise, return lowFuzz / 2</li>
+         </ul>
+      </li>
+      <li>Otherwise:
+         <ul>
+         <li>If <b>r</b> is divisible by four, return lowFuzz / 2</li>
+         <li>Otherwise, return lowFuzz</li>
+      </ul>
+   </li></ul>
+</li>
+<li>If you have <strong>both Shroomish and Taillow in your party</strong>, then:
+   <ul>
+      <li>If the current time is between 4:00 AM and 10:59 AM, then:
+         <ul>
+         <li>If we've made five or more rolls in this roulette session already, and <b>r</b> is even, then return 1</li>
+         <li>Otherwise, return lowFuzz / 2</li>
+         </ul>
+      </li>
+      <li>Otherwise, if we've made six or more rolls in this roulette session already, and <b>r</b> is odd, then return lowFuzz / 4</li>
+      <li>Otherwise, return lowFuzz / 2</li>
+   </ul>
+</li>
+</ul>
+
+<p>This elaborate decision tree feels like arbitrary chaos, but the essential idea of it seems to be about three things:</p>
+
+<ul>
+   <li>The fuzz range will tend to be smaller, and thus the rolls more consistent, if you <strong>have Shroomish and/or Taillow in your party</strong> - ideally both.</li>
+   <li>The fuzz range will tend to be smaller if you're <strong>playing in the morning</strong> than at other times of day; with both Shroomish and Taillow in your party, you get an extra hour of leeway for what counts as morning.</li>
+   <li>The fuzz range will tend to get smaller once you've <strong>done enough rolls in a single session</strong>.</li>
+</ul>
+
+<p>My best guess as to <em>why</em> the fuzz range works like this is that - well, at first I didn't have one, wondered if this was one of those things that are based on some particular Japanese idiom or cultural reference that would make no sense to anyone else. But it started to make a little more sense when I properly grasped that in the physics calculation, the fuzz range essentially represents variation in <em>friction</em>. (I referred to it as ball <em>inertia</em> above to avoid causing confusion when a higher value means <em>less</em> friction, but it's more <em>illuminating</em> to regard it as a measure of friction.)</p>
+
+<p>So for the purposes of what's being simulated here, what would cause variation in friction? Perhaps something like unevenly distributed dirt or grease on the roulette ball. And I can at least hypothetically connect these factors to that. Probably the 'advanced' table with the bigger bets will have nicer equipment generally. Maybe the more often you roll the ball, the dirt gets rubbed off or smoothed out. Maybe, when you arrive at the Game Corner in the morning, everything's freshly cleaned and polished, while over the course of the day the balls or tables will accumulate some dirt and grime. Maybe your Shroomish and Taillow, who as we've discussed are already willing to cheat for you, are just going to help polish your roulette balls before you use them.</p>
+
+<p>Is it a stretch? Maybe, but it's the best I've come up with.</p>
+
+<p>There's one more interesting little thing to the decision tree, which is not flavor-relevant but is relevant to the math: <strong>whether the random number r is even or odd often influences the fuzz range</strong>. This matters because this is the <em>same random number r</em> that we're using to calculate the starting angle and fuzz value: if <b>r</b> is even, that <em>also</em> means the starting angle will be 0 or 90, and if it's odd, the starting angle will be 180 or 270. Thus, while the programmers seem to have <em>generally</em> tried to use the random number in different ways for each randomized part of the calculations here, so that the fact they only randomized it once wouldn't matter too much, they seem to have overlooked that the starting angle and the fuzz <em>range</em> are <strong>highly correlated</strong>: in <em>most</em> cases, the fuzz range will be different if the starting angle is 0 or 90 (top or right side) than if it's 180 or 270 (bottom or left side).</p>
+
+<p>In particular:</p>
+
+<ul>
+<li>In the morning:
+   <ul>
+      <li>If we have neither Taillow nor Shroomish, the fuzz range will be <strong>1 if r is <em>divisible by four</em>, or lowFuzz / 2 otherwise</strong>. r can only be divisible by four if it is even, so this will happen about half the time if the starting angle is 0 or 90, but never if it's 180 or 270.</li>
+      <li>If we have Taillow or Shroomish but not both and we've already played eleven or more rolls, or if we have both Taillow and Shroomish and we've already played five or more rolls, then the fuzz range will <strong>always be 1 if the starting angle is 0 or 90</strong>, but lowFuzz / 2 if it's 180 or 270.</li>
+   </ul>
+</li>
+<li>At other times of day:
+   <ul>
+      <li>If we have neither or only one of Taillow and Shroomish, then the fuzz range will be <strong>lower if it is divisible by four</strong>, which again means that happens half of the time if the starting angle is 0 or 90, but never if it's 180 or 270.</li>
+      <li>If we have both Taillow and Shroomish, and we've made six or more rolls in this session, then the fuzz range will <strong>always be lowFuzz / 2 if the starting angle is 0 or 90, but lowFuzz / 4 if the starting angle is 180 or 270</strong>. (Note that in this one case, the fuzz range is smaller if the starting angle is 180 or 270, but in all the others it's smaller when the starting angle is 0 or 90!)</li>
+   </ul>
+</li>
+</ul>
+
+<p>This is quite significant especially in the morning, when a starting angle of 0 or 90 is either guaranteed to or will half of the time have a fuzz range of 1, which means it will <em>always have the exact same fuzz value, 0</em> - in other words, these rolls will always play out in the exact same way, and thus always land in the exact same slot relative to the starting angle!</p>
+
+<p>All in all, the nature of the fuzz range means that while playing on the low-bet table with neither Taillow nor Shroomish in the not-morning will yield different but relatively low odds for all the slots, you can actually make a <em>very</em> good educated guess as to where the ball might land once you know how to optimize the consistency. Supposing that you maximize your odds by bringing Shroomish and Taillow and playing at the high-bet table in the morning, then your first few rolls will have a fuzz range of 7, but from the sixth onwards the fuzz range will be 1 if the starting angle is 0 or 90 and 7 if it's 180 or 270. That really is very good - a full <strong>40%</strong> of your rolls will start at the top of the wheel and then <em>always</em> roll in the exact same way from there, ending in the slot that was <em>at the very bottom</em> when the ball started rolling.</p>
+
+<p>The ball starts rolling a little after you actually <em>press A to make your bet</em>, so the slot that's at the bottom when the ball starts rolling is roughly the slot that's in the eight o'clock position when you make your bet - in other words, you'll want to wait for approximately the moment the slot that's two slots <em>counterclockwise</em> from your bet first touches the very bottom of the wheel. If that's unclear, the screenshot below shows the approximate timing when you'd want to react to press A to make your bet, assuming the slot you're betting on is in the position of the yellow Wynaut (flashing yellow in the screenshot). If you get the timing right, you should consistently win the jackpot 40% of the time - every time the top starting angle is chosen.</p>
+
+<img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-timing.png" alt="">
+
+<p>This really does work, not just in theory but in practice - when I tried doing it myself for a hundred spins, with only a rough human sense of timing, the ball landed in this slot 35 times, with the remaining five cases that started from the top being clumsy one-off mistakes where I rolled just a little too early or late. (The fact it was <em>exactly 40</em> starting from the top is a coincidence, of course - but the longer you play, it will average out to approximately 40 per one hundred rolls.)</p>
+
+
+<h2 id="takeaways">The Plain English Takeaways</h2>
+
+<p>So, what should you take away from all this? How do you win at roulette?</p>
+
+<p>First of all, based on pure statistics and the assumption the ball will land in a random slot:</p>
+
+<ul>
+   <li><strong>By default, the roulette payouts are designed to exactly break even on an empty table</strong>, but because balls from previous rolls will stay on the table occupying certain slots so the ball can't land there again, on average you would slowly keep earning more coins if you kept playing roulette completely at random.</li>
+   <li><strong>The ball is significantly more likely to land next to an already occupied slot (one where a ball has already landed on the previous rolls), since if the ball would have landed in an occupied slot, it will have a 50% chance of being bounced to each adjacent slot.</strong> If there's a slot with occupied slots on both sides of it, bet on that one; if not, bet on one that's got one occupied slot next to it.</li>
+   <li><strong>If the ball gets stuck, it will be bumped to a different slot by either Shroomish or Taillow.</strong> The range of possible slots where they might drop the ball is shown in the image below; relative to the slots the ball is stuck between, the green-shaded slots will always be in range, while the blue-shaded slots will also be considered if the ball is rescued by Taillow on the high-bet table. Normally, the stuck ball will be dropped in one of these slots at random. This increases the odds the ball will end up in one of these slots, relative to a pair of adjacent occupied slots.<br>
+      <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-ball-stuck-ranges.png" alt=""></li>
+   <li><strong>Taillow or Shroomish is chosen for the rescue based on where the ball is on the screen <em>when it gets stuck</em>.</strong> Shroomish rescues the ball by bouncing it up when it's in the twelve o'clock or six o'clock position, and Taillow rescues it by picking it up from the three o'clock or nine o'clock position; the animation will need to start a bit before the ball reaches the appropriate position, so the Pokémon who does the rescue is going to be whichever one the game can get onto the screen before the ball passes one of its trigger positions. The zones where a given rescue Pokémon will be picked are slightly different depending on whether you're playing on the low-bet (red background) table or the high-bet (green background) table:<br>
+      <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-wheel-rescue-zones-beginner.png" alt=""> <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-wheel-rescue-zones-advanced.png" alt=""></li>
+   <li><strong>Taillow and Shroomish will cheat for you if you have them in your party.</strong> Any time the ball gets stuck between two occupied slots, if you have whichever Pokémon is chosen to rescue the ball in your party, they have a <strong>75%</strong> chance of dropping the ball in the first winning slot within range, provided there is one. (The remaining 25% of the time, they will drop it in a random slot within range as usual - so it might also land on a winning slot by pure chance! This means the real chance of winning when you have the rescue Pokémon in your party and at least one winning slot is in range is <em>more</em> than 75%, depending on how many empty slots are in range and how many of them are winning slots.)</li>
+</ul>
+
+<p>However, under the right conditions, you can also get significantly better odds through timing your bet right:</p>
+
+<ul>
+   <li><strong>Rolls will start in one of four starting positions, twelve o'clock, three o'clock, six o'clock or nine o'clock.</strong> From midnight until 12:59 PM, the twelve o'clock and six o'clock starting positions are more likely to be picked (40% chance each) while the three o'clock and nine o'clock positions are less likely (10% chance each); from 1 PM to midnight, this is reversed, so that three o'clock and nine o'clock have a 40% chance each and twelve o'clock and six o'clock are 10% each.</li>
+   <li><strong>Rolls will broadly be more consistent, and thus more predictable, on the high-bet table than on the low-bet table; in the morning than at other times of day; when you have Shroomish and/or Taillow in your party, ideally both; and when you have played several rolls in the same session.</strong> You can use the simulator below to learn what the odds will look like in any given situation.</li>
+   <li><strong>Under ideal conditions - on the high-bet table, between 4 AM and 11 AM, with both Shroomish and Taillow in your party, after you've played five or more rolls - the ball has a full 40% chance of landing in the slot that was two slots away from the very bottom when you made your bet.</strong> Thus, if you play under those ideal circumstances, you will want to press A to make your bet when the wheel is in roughly this position, where your bet is the yellow Wynaut (flashing bright yellow in the screenshot):<br>
+      <img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/roulette-timing.png" alt""=""></li>
+   <li><strong>Betting on a single slot is the most efficient.</strong> While color bets benefit from some good synergy under ideal conditions with well-timed play, since when the roll itself is very consistent each of the four starting positions will land on the same color (all in all the ball has about a 78.6% chance of landing on the most likely color in the ideal case, compared to a 33.3% chance if it were fully random), the respective payouts make it not worth it - each bet on the ideal color on an empty board on average will net you about 2.36x your bet, while each ideal single-slot bet on an empty board will net you 4.8x your bet on average. (Meanwhile, even the best ideal Pokémon bet will only get you 1.78x your bet on average on an empty board, because the most likely individual slots are always the same color but never the same Pokémon.)</li>
+</ul>
+
+
+<h2 id="simulator">Roulette Calculator</h2>
+
+<p>Use this calculator to simulate the roulette physics, work out the possible fuzz ranges in your situation, and calculate the odds of the ball landing in a given slot (assuming that slot is empty).</p>
+
+<noscript>
+<p>The calculator unfortunately requires Javascript. Enable Javascript in your browser to use it.</p>
+</noscript>
+
+<form name="fuzzcalc" id="fuzzcalc" action="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#">
+<input type="hidden" name="slots-occupied" value="">
+<input type="hidden" name="slots-bet" value="">
+
+<div class="calcform-row">
+<p>Roulette table: <label><input type="radio" name="table" id="table-beginner" value="beginner"> Low-bet (red)</label> <label><input type="radio" name="table" id="table-advanced" value="advanced" checked="checked"> High-bet (green)</label></p>
+</div>
+
+<div class="calcform-row">
+<p>Does your party include...<br>
+<label><input type="checkbox" name="pokemon" value="shroomish"> Shroomish?</label> <label><input type="checkbox" name="pokemon" value="taillow"> Taillow?</label></p>
+</div>
+
+<div class="calcform-row">
+<p><label for="hour">What hour of the day is it, in 24h? (Do not round up; 9:59 means 9)</label><br>
+<input type="number" size="3" name="hour" id="hour" value="12" min="0" max="23"></p>
+</div>
+
+<div class="calcform-row">
+<p><label for="rolls">How many rolls have you made so far in this session?</label><br>
+<input type="number" size="3" name="rolls" id="rolls" value="0" min="0"></p>
+</div>
+
+<div class="calcform-row">
+<p class="results">Your fuzz range has a a 25% chance of being <strong>15</strong>, a 37.5% chance of being <strong>30</strong>, and a 37.5% chance of being <strong>60</strong>. The ball is most likely to land 7 (14.8%), 8 (12%), 1 (9.8%), or 9 (9.5%) slots away from the slot that was at the top when you made your bet.</p>
+
+<div class="results-graph"><div class="slot"><div class="poll-bar" style="height: 14.6606px;"></div><div>0</div><div>7.3%</div></div><div class="slot"><div class="poll-bar" style="height: 19.6747px;"></div><div>1</div><div>9.8%</div></div><div class="slot"><div class="poll-bar" style="height: 14.3402px;"></div><div>2</div><div>7.2%</div></div><div class="slot"><div class="poll-bar" style="height: 13.3331px;"></div><div>3</div><div>6.7%</div></div><div class="slot"><div class="poll-bar" style="height: 11.3281px;"></div><div>4</div><div>5.7%</div></div><div class="slot"><div class="poll-bar" style="height: 13.6536px;"></div><div>5</div><div>6.8%</div></div><div class="slot"><div class="poll-bar" style="height: 14.6667px;"></div><div>6</div><div>7.3%</div></div><div class="slot"><div class="poll-bar" style="height: 29.6722px;"></div><div>7</div><div>14.8%</div></div><div class="slot"><div class="poll-bar" style="height: 24.0143px;"></div><div>8</div><div>12%</div></div><div class="slot"><div class="poll-bar" style="height: 19.0063px;"></div><div>9</div><div>9.5%</div></div><div class="slot"><div class="poll-bar" style="height: 10.9924px;"></div><div>10</div><div>5.5%</div></div><div class="slot"><div class="poll-bar" style="height: 14.6576px;"></div><div>11</div><div>7.3%</div></div></div>
+</div>
+
+<h3>Simulation</h3>
+
+<p>Below, you can simulate possible roulette outcomes according to the parameters above. By default, it will roll a single ball with a random starting position and fuzz like the game would, but you can alter the parameters to play with how the physics work, including simulating multiple outcomes at once.</p>
+
+<div class="calcform-row">
+<p>Starting position: <label><input type="radio" name="starting-position" value="random" checked=""> Random</label> <label><input type="radio" name="starting-position" value="all"> All</label> <label><input type="radio" name="starting-position" value="0">Top</label> <label><input type="radio" name="starting-position" value="90">Right</label> <label><input type="radio" name="starting-position" value="180">Bottom</label> <label><input type="radio" name="starting-position" value="270">Left</label>
+<small class="help-text">"Random" will pick the starting position according to the game's odds at the time specified above. "All" means all four possible starting positions will be simulated.</small></p>
+</div>
+
+<div class="calcform-row">
+<p>Simulate: <label><input type="radio" name="num-simulated" value="one-random" checked=""> one ball, random fuzz</label> <label><input type="radio" name="num-simulated" value="one-specific"> one ball, specific fuzz value</label> <label><input type="radio" name="num-simulated" value="high-low-mid"> highest/lowest/medium fuzz</label> <label><input type="radio" name="num-simulated" value="all"> all possible fuzz values</label>
+<small class="help-text">If simulating one ball, you will see one gray ball for each simulated starting position. "Highest/lowest/medium fuzz" will show a green ball with the highest possible fuzz value, a red ball with the lowest possible fuzz value, and a gray ball with a fuzz value of 0. "All possible fuzz values" will show one red ball for each possible fuzz value, for each simulated starting position. For the latter two, each simulated ball will be shown with opacity corresponding to the likelihood of that outcome. The "All possible fuzz values" option is a bit hard to read if the fuzz range is large (the simulated balls just become a fuzzy blur), so "Highest/lowest/medium fuzz" may be more illustrative in such cases.</small></p>
+</div>
+
+<div class="calcform-row" id="specify-fuzz-value" style="display: none;">
+<p><label>Fuzz value: <input type="number" name="fuzz-value" value="0" size="3" min="-30" max="29"></label></p>
+</div>
+
+<div class="calcform-row">
+<p><button type="button" id="set-toggler-slots">Set bet/occupied slots</button>
+<small class="help-text">This button will reset the wheel and allow you to click the <strong>white part</strong> of a slot to add a ball to that slot or the <strong>colored part</strong> to place a bet on that slot. Click <strong>Animate roll</strong> below afterwards to animate a roll with those parameters. Note that if you set occupied slots, the resulting percentages will differ from the ones given above, which are strictly in reference to where the ball initially tries to land after the physics simulation - the chance of it ultimately landing somewhere, after accounting for bounces and Taillow/Shroomish dislodging, will be shown around the wheel when the animation finishes.</small></p>
+</div>
+
+<div class="calcform-row">
+<p><button type="button" id="replay-animation">Animate roll</button>
+<small class="help-text">Clicking the button will rerandomize the starting position/fuzz if they are set to be random.</small></p>
+</div>
+
+<div id="roulette" class="roulette roulette-toggler">
+   <div class="roulette-wheel" style="transform: rotate(67deg);">
+      <span class="roulette-wheel-slot-0 slot-label">0</span>
+      <span class="roulette-wheel-slot-1 slot-label">1</span>
+      <span class="roulette-wheel-slot-2 slot-label">2</span>
+      <span class="roulette-wheel-slot-3 slot-label">3</span>
+      <span class="roulette-wheel-slot-4 slot-label">4</span>
+      <span class="roulette-wheel-slot-5 slot-label">5</span>
+      <span class="roulette-wheel-slot-6 slot-label">6</span>
+      <span class="roulette-wheel-slot-7 slot-label">7</span>
+      <span class="roulette-wheel-slot-8 slot-label">8</span>
+      <span class="roulette-wheel-slot-9 slot-label">9</span>
+      <span class="roulette-wheel-slot-10 slot-label">10</span>
+      <span class="roulette-wheel-slot-11 slot-label">11</span>
+
+      <span class="roulette-wheel-slot-0 slot-odds" style="display: block; opacity: 0.598829;">7.3%<span class="poll-bar" style="overflow: hidden; height: 2.81897px;"></span></span>
+      <span class="roulette-wheel-slot-1 slot-odds" style="display: block; opacity: 0.598829;">9.8%<span class="poll-bar" style="overflow: hidden; height: 3.78307px;"></span></span>
+      <span class="roulette-wheel-slot-2 slot-odds" style="display: block; opacity: 0.598829;">7.2%<span class="poll-bar" style="overflow: hidden; height: 2.75735px;"></span></span>
+      <span class="roulette-wheel-slot-3 slot-odds" style="display: block; opacity: 0.598829;">6.7%<span class="poll-bar" style="overflow: hidden; height: 2.56371px;"></span></span>
+      <span class="roulette-wheel-slot-4 slot-odds" style="display: block; opacity: 0.598829;">5.7%<span class="poll-bar" style="overflow: hidden; height: 2.17819px;"></span></span>
+      <span class="roulette-wheel-slot-5 slot-odds" style="display: block; opacity: 0.598829;">6.8%<span class="poll-bar" style="overflow: hidden; height: 2.62532px;"></span></span>
+      <span class="roulette-wheel-slot-6 slot-odds" style="display: block; opacity: 0.598829;">7.3%<span class="poll-bar" style="overflow: hidden; height: 2.82014px;"></span></span>
+      <span class="roulette-wheel-slot-7 slot-odds" style="display: block; opacity: 0.598829;">14.8%<span class="poll-bar" style="overflow: hidden; height: 5.70541px;"></span></span>
+      <span class="roulette-wheel-slot-8 slot-odds" style="display: block; opacity: 0.598829;">12%<span class="poll-bar" style="overflow: hidden; height: 4.61749px;"></span></span>
+      <span class="roulette-wheel-slot-9 slot-odds" style="display: block; opacity: 0.598829;">9.5%<span class="poll-bar" style="overflow: hidden; height: 3.65456px;"></span></span>
+      <span class="roulette-wheel-slot-10 slot-odds" style="display: block; opacity: 0.598829;">5.5%<span class="poll-bar" style="overflow: hidden; height: 2.11364px;"></span></span>
+      <span class="roulette-wheel-slot-11 slot-odds" style="display: block; opacity: 0.598829;">7.3%<span class="poll-bar" style="overflow: hidden; height: 2.81838px;"></span></span>
+
+      <span class="roulette-wheel-slot-0 slot-bet"></span>
+      <span class="roulette-wheel-slot-1 slot-bet"></span>
+      <span class="roulette-wheel-slot-2 slot-bet"></span>
+      <span class="roulette-wheel-slot-3 slot-bet"></span>
+      <span class="roulette-wheel-slot-4 slot-bet"></span>
+      <span class="roulette-wheel-slot-5 slot-bet"></span>
+      <span class="roulette-wheel-slot-6 slot-bet"></span>
+      <span class="roulette-wheel-slot-7 slot-bet"></span>
+      <span class="roulette-wheel-slot-8 slot-bet"></span>
+      <span class="roulette-wheel-slot-9 slot-bet"></span>
+      <span class="roulette-wheel-slot-10 slot-bet"></span>
+      <span class="roulette-wheel-slot-11 slot-bet"></span>
+   </div>
+<span class="roulette-ball animated-ball roulette-ball-no-fuzz" style="opacity: 1; left: 123.267px; top: 81.0616px;"></span></div>
+</form>
+
+<script type="text/javascript">
+var tables = {
+   'beginner': {
+      baseInertia: 360,
+      lowFuzz: 30,
+      highFuzz: 60,
+      tableShift: 0.5
+   },
+   'advanced': {
+      baseInertia: 270,
+      lowFuzz: 15,
+      highFuzz: 30,
+      tableShift: 1
+   }
+};
+
+// fround polyfill.
+var fround = Math.fround;
+if (!Math.fround) {
+   if ((typeof Float32Array) !== "undefined") {
+      fround = (function(v) {
+        var array = new Float32Array(1);
+        array[0] = v;
+        return array[0];
+      });
+   } else {
+      fround = (function(v) {
+        if (((v !== v) || (v === 0))) {
+          return v
+        };
+        var isNegative = (v < 0);
+        var av = (isNegative ? (-v) : v);
+        var absResult;
+        if ((av >= 3.4028235677973366E38)) {
+          absResult = Infinity
+        } else if ((av >= 1.1754943508222875E-38)) {
+          var e = Math.floor((Math.log(av) / 0.6931471805599453));
+          var twoPowE = Math.pow(2, e);
+          var significand = (av / twoPowE);
+          if ((significand < 1)) {
+            twoPowE = (twoPowE / 2);
+            significand = (significand * 2)
+          } else if ((significand >= 2)) {
+            twoPowE = (twoPowE * 2);
+            significand = (significand / 2)
+          };
+          absResult = (((significand * 4.144523E-317) / 4.144523E-317) * twoPowE)
+        } else {
+          absResult = ((av * 3.5257702653609953E-279) / 3.5257702653609953E-279)
+        };
+        return (isNegative ? (-absResult) : absResult);
+      });
+   }
+}
+
+// Utility functions.
+function humanJoin(array, word) {
+   if (!word) {
+      word = "and";
+   }
+   if (array.length <= 2) {
+      return array.join(" " + word + " ");
+   }
+   return array.slice(0, array.length - 1).join(", ") + ", " + word + " " + array[array.length - 1];
+}
+
+function addObject(obj, key) {
+   if (!obj.hasOwnProperty(key)) {
+      obj[key] = {};
+   }
+}
+
+function incrementObject(obj, key) {
+   if (!obj.hasOwnProperty(key)) {
+      obj[key] = 0;
+   }
+   obj[key]++;
+}
+
+function getStartingAngle(rand, hour) {
+   return ((rand & 1 ? 2 : 0) + ((rand % 100) < 80 !== hour < 13 ? 1 : 0)) * 90;
+}
+
+function getFuzz(fuzzRange, rand) {
+   return (rand % fuzzRange) - Math.floor(fuzzRange / 2);
+}
+
+function lastTwoBits(val) {
+   return !!(val & 3);
+}
+
+function lastBit(val) {
+   return !!(val & 1);
+}
+
+function firstBit(val) {
+   return !!(val & (1 << 15));
+}
+
+function latterSlot(slot1, slot2) {
+   var ar = [slot1, slot2].sort();
+   if (ar[0] === 0 && ar[1] === 11) {
+      return 0;
+   }
+   return ar[1];
+}
+
+function normalize(num, mod) {
+   while (num < 0) {
+      num += mod;
+   }
+   while (num >= mod) {
+      num -= mod;
+   }
+   return num;
+}
+
+function RouletteTable($elem, $form, isToggler) {
+   this.$elem = $elem;
+   this.$form = $form;
+   this.tableAngle = 0;
+
+   this.isToggler = isToggler;
+   this.togglerSlots = {};
+   this.togglerBet = {};
+   this.togglerActive = isToggler;
+
+   this.animationInterval = null;
+   this.animateBalls = [];
+
+   this.setFormData(this.getFormData());
+
+   var self = this;
+   this.form.occupiedSlots.forEach(function(slot) {
+      self.addToggleBall(slot);
+   });
+   this.form.betSlots.forEach(function(slot) {
+      self.addBet(slot);
+   });
+
+   this.$elem.click(this.togglerClick.bind(this));
+}
+
+RouletteTable.prototype.getFormData = function() {
+   return getFormData(this.$form);
+};
+
+RouletteTable.prototype.setFormData = function(form) {
+   this.table = form.table;
+   this.mon = form.mon;
+   this.rolls = form.rolls;
+   this.hour = form.hour;
+   this.form = form;
+};
+
+RouletteTable.prototype.setTogglerActive = function(active) {
+   this.togglerActive = active;
+
+   this.$elem.toggleClass("toggler-active", active);
+};
+
+RouletteTable.prototype.isBet = function(slot) {
+   return !!this.togglerBet[slot];
+};
+
+RouletteTable.prototype.addBet = function(slot) {
+   this.togglerBet[slot] = $('<span class="roulette-bet"></span>').appendTo(this.$elem.find(".slot-bet.roulette-wheel-slot-" + slot));
+};
+
+RouletteTable.prototype.removeBet = function(slot) {
+   this.togglerBet[slot].remove();
+   delete this.togglerBet[slot];
+};
+
+RouletteTable.prototype.updateSlotsOccupied = function() {
+   this.$form.find("[name=slots-occupied]").val(Object.keys(this.togglerSlots).join(","));
+};
+
+RouletteTable.prototype.updateSlotsBet = function() {
+   this.$form.find("[name=slots-bet]").val(Object.keys(this.togglerBet).join(","));
+};
+
+RouletteTable.prototype.addToggleBall = function(slot) {
+   var angleRad = (slot * 30 + 15) / 180 * Math.PI;
+   var ballX = Math.sin(angleRad) * 30 + 100;
+   var ballY = -Math.cos(angleRad) * 30 + 100;
+   this.togglerSlots[slot] = $('<span class="roulette-ball roulette-ball-fixed"></span>').css({ top: ballY + 'px', left: ballX + 'px' }).appendTo(this.$elem.find(".roulette-wheel"));
+};
+
+RouletteTable.prototype.removeToggleBall = function(slot) {
+   this.togglerSlots[slot].remove();
+   delete this.togglerSlots[slot];
+};
+
+RouletteTable.prototype.togglerClick = function(e) {
+   e.preventDefault();
+
+   // Ignore clicks when we aren't in toggler mode.
+   if (!this.togglerActive) {
+      return;
+   }
+
+   var x = e.pageX - this.$elem.offset().left - 100;
+   var y = e.pageY - this.$elem.offset().top - 100;
+
+   var len = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+   var angle = (Math.atan2(x, -y) * 180 / Math.PI);
+
+   // Compensate for rotation.
+   if (this.tableAngle) {
+      console.log("Table rotation:", this.tableAngle);
+      angle -= this.tableAngle;
+   }
+
+   if (angle < 0) {
+      angle += 360;
+   }
+   if (angle >= 360) {
+      angle -= 360;
+   }
+
+   if (len > 68) {
+      return;
+   }
+
+   var slot = Math.floor(angle / 30);
+   console.log("Clicked within the wheel! Len: %s, angle: %s, slot: %s", len, angle, slot);
+
+   if (len > 40) {
+      if (this.isBet(slot)) {
+         this.removeBet(slot);
+      } else {
+         this.addBet(slot);
+      }
+      this.updateSlotsBet();
+   } else {
+      if (this.togglerSlots[slot]) {
+         this.removeToggleBall(slot);
+      } else {
+         if (Object.keys(this.togglerSlots).length >= 5) {
+            return;
+         }
+         this.addToggleBall(slot);
+      }
+      this.updateSlotsOccupied();
+   }
+
+   if (this.isToggler) {
+      this.showTheoreticalOdds();
+   }
+};
+
+RouletteTable.prototype.showTheoreticalOdds = function() {
+   var slotOdds = {};
+   for (var i = 0; i < 12; i++) {
+      slotOdds[i] = 1 / 12;
+   }
+
+   function redistributeSlotOdds(slotResults, chance) {
+      for (var i = 0; i < slotResults.length; i++) {
+         slotOdds[slotResults[i].slot] += chance * slotResults[i].chance;
+      }
+   }
+
+   for (i = 0; i < 12; i++) {
+      if (this.togglerSlots[i]) {
+         // console.log("Setting slot odds based on redistributing slot " + i);
+         // Redistribute with Taillow chance 0.5, since we don't know where the ball will be located on the screen.
+         redistributeSlotOdds(this.redistribute(i, 'taillow'), 0.5 * slotOdds[i]);
+         redistributeSlotOdds(this.redistribute(i, 'shroomish'), 0.5 * slotOdds[i]);
+
+         slotOdds[i] = 0;
+         // console.log("slotOdds:", slotOdds);
+      }
+   }
+
+   this.showOdds(slotOdds, false);
+};
+
+RouletteTable.prototype.showOdds = function(oddsObj, animate) {
+   for (var i = 0; i < 12; i++) {
+      var chance = oddsObj[i] || 0;
+      var $bar = $('<span class="poll-bar"></span>').appendTo(this.$elem.find(".slot-odds.roulette-wheel-slot-" + i).text(Math.round(chance * 1000) / 10 + "%").fadeIn(300));
+      if (animate) {
+         $bar.animate({ height: chance * 150 }, 500);
+      } else {
+         $bar.css("height", chance * 200);
+      }
+   }
+};
+
+RouletteTable.prototype.setTableAngle = function() {
+   this.$elem.find(".roulette-wheel").css("transform", "rotate(" + this.tableAngle + "deg)");
+};
+
+RouletteTable.prototype.getTableShift = function() {
+   return tables[this.table].tableShift;
+}
+
+RouletteTable.prototype.doTableShift = function() {
+   this.tableAngle -= this.getTableShift();
+   if (this.tableAngle < 0) {
+      this.tableAngle += 360;
+   }
+};
+
+RouletteTable.prototype.addBall = function(startingAngle, fuzz, cls, opacity) {
+   var $ball = $('<span class="roulette-ball animated-ball"></span>').hide();
+   if (cls) {
+      $ball.addClass(cls);
+   }
+   if (opacity) {
+      $ball.css("opacity", opacity);
+   }
+   this.$elem.append($ball);
+   var newBall = new RouletteBall(this, startingAngle, fuzz, null, $ball);
+   this.animateBalls.push(newBall);
+
+   return newBall;
+};
+
+RouletteTable.prototype.getFuzzRange = function(rand) {
+   var lowFuzz = tables[this.table].lowFuzz;
+   var highFuzz = tables[this.table].highFuzz;
+   var ballNum = this.rolls + 1;
+   if (this.mon.length === 0) {
+      // Neither is in party
+      if (this.hour >= 4 && this.hour < 10) {
+         if (!lastTwoBits(rand)) {
+            return 1;
+         } else {
+            return Math.floor(lowFuzz / 2);
+         }
+      } else if (!lastTwoBits(rand)) {
+         if (ballNum > 12) {
+            return Math.floor(lowFuzz / 2);
+         } else {
+            return lowFuzz;
+         }
+      } else if (firstBit(rand)) {
+         if (ballNum > 12) {
+            return lowFuzz;
+         } else {
+            return highFuzz;
+         }
+      } else {
+         return highFuzz * 2;
+      }
+   } else if (this.mon.length === 1) {
+      // One is in party
+      if (this.hour >= 4 && this.hour < 10) {
+         if (ballNum < 12 || lastBit(rand)) {
+            return Math.floor(lowFuzz / 2);
+         } else {
+            return 1;
+         }
+      } else if (!lastTwoBits(rand)) {
+         return Math.floor(lowFuzz / 2);
+      } else {
+         return lowFuzz;
+      }
+   } else {
+      // Both are in party
+      if (this.hour >= 4 && this.hour < 11) {
+         if (ballNum < 6 || lastBit(rand)) {
+            return Math.floor(lowFuzz / 2);
+         } else {
+            return 1;
+         }
+      } else if (lastBit(rand) && ballNum > 6) {
+         return Math.floor(lowFuzz / 4);
+      } else {
+         return Math.floor(lowFuzz / 2);
+      }
+   }
+};
+
+RouletteTable.prototype.getConditions = function() {
+   var randOutcomes = {};
+   var fuzzRanges = {};
+   var startingAngles = {};
+
+   for (var rand = 0; rand < 65536; rand++) {
+      var fuzzRange = this.getFuzzRange(rand);
+      var fuzz = getFuzz(fuzzRange, rand);
+      var startingAngle = getStartingAngle(rand, this.hour);
+
+      addObject(randOutcomes, startingAngle);
+      incrementObject(randOutcomes[startingAngle], fuzz);
+      incrementObject(fuzzRanges, fuzzRange);
+      incrementObject(startingAngles, startingAngle);
+   }
+
+   console.log("randOutcomes:", randOutcomes);
+   console.log("fuzzRanges:", fuzzRanges);
+   console.log("startingAngles:", startingAngles);
+
+   return {
+      randOutcomes: randOutcomes,
+      fuzzRanges: fuzzRanges,
+      startingAngles: startingAngles
+   };
+};
+
+RouletteTable.prototype.calcResult = function(randOutcomes, redistribute) {
+   var possibleOutcomes = [];
+   var outcomeSlots = {}
+   var self = this;
+
+   function addResult(startingAngle, fuzz, result, chance) {
+      possibleOutcomes.push({
+         startingAngle: startingAngle * 1,
+         fuzz: fuzz * 1,
+         originalSlot: result.originalSlot,
+         slot: result.slot,
+         rescueMon: result.rescueMon,
+         chance: chance
+      });
+      if (result.slot in outcomeSlots) {
+         outcomeSlots[result.slot] += chance;
+      } else {
+         outcomeSlots[result.slot] = chance;
+      }
+   }
+
+   function addRedistributedResults(startingAngle, fuzz, result, chance) {
+      var redistributedOutcomes = self.redistributeTo(result.originalSlot, result.slot, chance, result.rescueMon);
+      redistributedOutcomes.forEach(function(outcome) {
+         addResult(startingAngle, fuzz, {
+            slot: outcome.slot,
+            originalSlot: result.originalSlot,
+            rescueMon: result.rescueMon
+         }, outcome.chance);
+      });
+   }
+
+   Object.keys(randOutcomes).forEach(function(startingAngle) {
+      Object.keys(randOutcomes[startingAngle]).forEach(function(fuzz) {
+         var ball = new RouletteBall(self, startingAngle * 1, fuzz * 1, true);
+         var result = ball.calcResult(redistribute);
+         var chance = randOutcomes[startingAngle][fuzz] / 65536;
+
+         if (result.bounced) {
+            // Bounced - there's a 50% chance it would bounce the other way.
+            addRedistributedResults(startingAngle, fuzz, result, chance / 2);
+            var otherBall = new RouletteBall(self, startingAngle * 1, fuzz * 1, false);
+            addRedistributedResults(startingAngle, fuzz, otherBall.calcResult(redistribute), chance / 2);
+         } else {
+            // The ball always ends up like this.
+            addResult(startingAngle, fuzz, result, chance);
+         }
+      });
+   });
+
+   console.log("Possible outcomes:", possibleOutcomes);
+   console.log("Outcome slots:", outcomeSlots);
+
+   return outcomeSlots;
+};
+
+RouletteTable.prototype.findBet = function(slots) {
+   var self = this;
+   return slots.findIndex(function(slot) { return self.togglerBet[slot]; });
+}
+
+RouletteTable.prototype.redistribute = function(slot, rescueMon) {
+   return this.redistributeTo(slot, normalize(slot - 1, 12), 0.5, rescueMon).concat(this.redistributeTo(slot, normalize(slot + 1, 12), 0.5, rescueMon));
+};
+
+RouletteTable.prototype.redistributeTo = function(originalSlot, slot, chance, rescueMon) {
+   console.log("Running redistributeTo:", slot, rescueMon);
+   if (this.togglerSlots[slot]) {
+      var availableSlots = [];
+      var latter = latterSlot(originalSlot, slot);
+      var numSlotsConsidered = this.table === 'advanced' && rescueMon === 'taillow' ? 9 : 5;
+      for (var j = latter + 2; j < latter + numSlotsConsidered + 2; j++) {
+         if (!this.togglerSlots[normalize(j, 12)]) {
+            availableSlots.push(normalize(j, 12));
+         }
+      }
+      // console.log(availableSlots);
+
+      var hasMon = this.mon.indexOf(rescueMon) !== -1;
+
+      // console.log("Has mon:", hasMon, this.mon);
+
+      var firstBet = this.findBet(availableSlots);
+
+      var randSlots = {};
+
+      for (var rand = 0; rand < 65536; rand++) {
+         if (hasMon && firstBet !== -1 && (rand % 256) < 192) {
+            // We pick the first winning slot.
+            incrementObject(randSlots, availableSlots[firstBet]); 
+         } else {
+            // We pick a random slot.
+            incrementObject(randSlots, availableSlots[rand % availableSlots.length])
+         }
+      }
+
+      var returnSlots = [];
+      Object.keys(randSlots).forEach(function(slot) {
+         returnSlots.push({ slot: slot * 1, rescueMon: rescueMon, chance: chance * randSlots[slot] / 65536 });
+      });
+
+      return returnSlots;
+   } else {
+      return [{ slot: slot, rescueMon: null, chance: chance }];
+   }
+}
+
+RouletteTable.prototype.animate = function() {
+   this.tableAngle = 0;
+   this.animationInterval = setInterval(this.animationFrame(), framerate);
+};
+
+RouletteTable.prototype.finishAnimation = function() {
+   // We're done with the animation!
+   clearInterval(this.animationInterval);
+
+   var conditions = this.getConditions();
+
+   var outcomeSlots = this.calcResult(conditions.randOutcomes, true);
+
+   this.showOdds(outcomeSlots, true);
+};
+
+RouletteTable.prototype.animationFrame = function() {
+   var self = this;
+   return function() {
+      var done = true;
+      self.doTableShift();
+      self.setTableAngle();
+      self.animateBalls.forEach(function(ball) {
+         ball.curCallback();
+         if (ball.bouncingFromSlot != null) {
+            // By default, we handle the bounce at random.
+            // However, if we're simulating multiple balls,
+            // we should split it into two instead.
+            if (self.form.numSimulated === 'all' || self.form.numSimulated === 'high-low-mid') {
+               // Always bounce this ball forward.
+               ball.setBounceParameters(ball.bouncingFromSlot, true);
+               // Halve the opacity of this ball.
+               var opacity = ball.$elem.css("opacity") * 0.75;
+               ball.$elem.css("opacity", opacity);
+               // Create a second ball that's a copy of the first.
+               var newBall = self.addBall(0, 0, ball.$elem.attr("class"), opacity);
+               newBall.copyProperties(ball);
+               // Make that ball bounce backward.
+               newBall.setBounceParameters(ball.bouncingFromSlot, false);
+               newBall.setBallPosition();
+               newBall.$elem.show();
+            }
+         }
+         ball.setBallPosition();
+         if (!ball.done) {
+            done = false;
+         }
+      });
+      if (done) {
+         self.finishAnimation();
+      }
+   }
+};
+
+RouletteTable.prototype.clear = function() {
+   clearInterval(this.animationInterval);
+
+   this.$elem.find(".roulette-ball.animated-ball").remove();
+   this.$elem.find(".slot-odds").empty().hide();
+   this.animateBalls = [];
+
+   this.tableAngle = 0;
+   this.setTableAngle();
+}
+
+function RouletteBall(table, startingAngle, fuzz, bounceDirection, $elem) {
+   this.$elem = $elem;
+   this.table = table;
+
+   var g = Math.fround((tables[table.table].baseInertia + fuzz) / 5);
+   this.inertiaDivisorHighDistance = Math.floor(g * 3);
+   this.inertiaDivisorMediumDistance = Math.floor(g)
+   this.inertiaDivisorNearDistance = Math.floor(g);
+
+   this.angularCoordinate = startingAngle;
+   this.angularVelocity = 10;
+   this.angularAcceleration = Math.fround((this.angularVelocity * 0.5 - this.angularVelocity) / this.inertiaDivisorHighDistance);
+   this.radialCoordinate = 68;
+   this.radialVelocity = -Math.fround(8 / this.inertiaDivisorHighDistance);
+   this.radialAcceleration = 0;
+
+   this.tableAngle = 0;
+   this.totalRelativeAngle = 0;
+   this.animationDelay = 38; // After A press, the ball starts rolling on the 38th frame
+   this.done = false;
+   this.rescueMon = null;
+   this.bouncingFromSlot = null;
+   this.stuckSlot = null;
+   this.bounceDirection = bounceDirection;
+
+   this.curCallback = this.handleBallDelay;
+}
+
+RouletteBall.prototype.copyProperties = function(other) {
+   for (var key in other) {
+      if (other.hasOwnProperty(key) && key !== '$elem') {
+         this[key] = other[key];
+      }
+   }
+};
+
+RouletteBall.prototype.calcResult = function(redistribute) {
+   var bounced = false;
+   var originalSlot = null;
+   while (this.curCallback && !this.done) {
+      this.curCallback();
+
+      if (this.bouncingFromSlot != null) {
+         if (!redistribute) {
+            // We're done!
+            this.done = true;
+            break;
+         }
+         bounced = true;
+         originalSlot = this.bouncingFromSlot;
+      }
+   }
+
+   // Now we're landing!
+
+   var wheelIndex = Math.floor(this.getRelativeAngle() / 30);
+   var fullCircles = Math.floor(this.totalRelativeAngle / 360);
+
+   // console.log("The ball should go " + fullCircles + " full circles and then end up at " + this.angularCoordinate + "° from its starting position, with the table angle at " + this.tableAngle + "°, which is slot " + wheelIndex);
+
+   return {
+      angle: this.angularCoordinate,
+      tableAngle: this.tableAngle,
+      totalRelativeAngle: this.totalRelativeAngle,
+      originalSlot: originalSlot,
+      slot: redistribute && this.stuckSlot != null ? this.stuckSlot : wheelIndex,
+      rescueMon: this.rescueMon,
+      bounced: bounced
+   };
+}
+
+RouletteBall.prototype.setBallPosition = function() {
+   var radians = this.angularCoordinate / 180 * Math.PI;
+   var x = Math.sin(radians) * this.radialCoordinate + 100;
+   var y = -Math.cos(radians) * this.radialCoordinate + 100;
+   this.$elem.css("left", x).css("top", y);
+};
+
+RouletteBall.prototype.doTableShift = function() {
+   this.tableAngle -= this.table.getTableShift();
+   if (this.tableAngle < 0) {
+      this.tableAngle += 360;
+   }
+};
+
+RouletteBall.prototype.addTableShift = function() {
+   this.totalRelativeAngle += Math.floor(this.table.getTableShift());
+};
+
+RouletteBall.prototype.doBallPhysics = function() {
+   this.angularVelocity = Math.fround(this.angularVelocity + this.angularAcceleration);
+   this.angularCoordinate = Math.fround(this.angularCoordinate + this.angularVelocity);
+   if (this.angularCoordinate >= 360) {
+      this.angularCoordinate -= 360;
+   } else if (this.angularCoordinate < 0) {
+      this.angularCoordinate += 360;
+   }
+   this.radialVelocity = Math.fround(this.radialVelocity + this.radialAcceleration);
+   this.radialCoordinate = Math.fround(this.radialCoordinate + this.radialVelocity);
+   this.totalRelativeAngle += this.angularVelocity;
+   this.doTableShift();
+   this.addTableShift();
+};
+
+RouletteBall.prototype.doStaticBallPhysics = function() {
+   this.doTableShift();
+
+   this.angularCoordinate -= this.table.getTableShift();
+   if (this.angularCoordinate >= 360) {
+      this.angularCoordinate -= 360;
+   } else if (this.angularCoordinate < 0) {
+      this.angularCoordinate += 360;
+   }
+};
+
+RouletteBall.prototype.handleBallDelay = function() {
+   // Delay the actual ball rolling for 37 frames.
+   this.doTableShift();
+   this.addTableShift();
+   if (this.animationDelay > 0) {
+      this.animationDelay--;
+   } else {
+      this.doBallPhysics();
+
+      if (this.$elem) {
+         this.$elem.show();
+      }
+
+      this.curCallback = this.handleHighDistance;
+   }
+};
+
+RouletteBall.prototype.handleHighDistance = function() {
+   this.doBallPhysics();
+
+   if (this.radialCoordinate <= 60) {
+      this.radialVelocity = -Math.fround(20 / this.inertiaDivisorMediumDistance);
+      this.angularAcceleration = Math.fround((1 - this.angularVelocity) / this.inertiaDivisorMediumDistance);
+
+      this.curCallback = this.handleMidDistance;
+   }
+};
+
+RouletteBall.prototype.handleMidDistance = function() {
+   this.doBallPhysics();
+
+   if (this.radialCoordinate <= 40) {
+      this.radialVelocity = -Math.fround(4 / this.inertiaDivisorNearDistance);
+      this.angularAcceleration = -Math.fround(this.angularVelocity / this.inertiaDivisorNearDistance);
+
+      this.curCallback = this.handleNearDistance;
+   }
+};
+
+RouletteBall.prototype.handleNearDistance = function() {
+   this.doBallPhysics();
+
+   if (this.angularVelocity <= 0.5) {
+      if (this.distanceFromSlotMiddle()) {
+         if (this.angularAcceleration != 0) {
+            if (this.angularVelocity < 0) {
+               this.angularAcceleration = 0;
+               this.angularVelocity = 0;
+               this.radialVelocity = Math.fround(this.radialVelocity / 1.2);
+            }
+         }
+      } else {
+         this.angularAcceleration = 0;
+         this.angularVelocity -= 1 / (this.table.table === 'beginner' ? 2 : 1);
+         this.curCallback = this.handleLand;
+      }
+   }
+};
+
+RouletteBall.prototype.handleLand = function() {
+   this.doBallPhysics();
+
+   var slot = Math.floor(this.getRelativeAngle() / 30);
+
+   if (!this.table.togglerSlots[slot]) {
+      // This slot is unoccupied - land there and then do static physics from there.
+      this.angularAcceleration = 0;
+      this.angularVelocity -= (this.table.table === 'beginner' ? 0.5 : 1);
+      this.radialCoordinate = 30;
+      this.curCallback = this.handleStatic;
+   } else {
+      // Slot is occupied! Bounce.
+      console.log("Bounce off slot " + slot + "!");
+      // Occupied slot!
+      this.bouncingFromSlot = slot;
+      this.setBounceParameters(slot, this.bounceDirection != null ? this.bounceDirection : Math.random() < 0.5);
+   }
+};
+
+RouletteBall.prototype.setBounceParameters = function(slot, bounceForward) {
+   this.angularVelocity = bounceForward ? 0 : (this.table.table === 'beginner' ? -1 : -2);
+   // If the slot we want to bounce to is also occupied
+   if (this.table.togglerSlots[normalize(slot + (bounceForward ? 1 : -1), 12)]) {
+      this.animationDelay = tables[this.table.table].lowFuzz;
+      // The stuck slot is the latter of the two slots we're getting stuck between.
+      this.stuckSlot = bounceForward ? normalize(slot + 1, 12) : slot;
+   } else {
+      // If the slot is not occupied
+      this.animationDelay = tables[this.table.table].highFuzz;
+      if (this.table.table === 'beginner') {
+         this.animationDelay = tables[this.table.table].lowFuzz;
+         this.angularVelocity = bounceForward ? 0.5 : -1.5;
+      }
+      this.stuckSlot = null;
+   }
+   this.radialVelocity = Math.fround(0.085);
+   this.curCallback = this.handleBounce;
+};
+
+RouletteBall.prototype.handleBounce = function() {
+   if (this.$elem) {
+      console.log(
+         "handleBounce: angularVelocity:", this.angularVelocity,
+         "radialVelocity:", this.radialVelocity,
+         "animationDelay:", this.animationDelay,
+      );
+   }
+
+   this.bouncingFromSlot = null;
+   this.doBallPhysics();
+
+   if (this.$elem) {
+      console.log(
+         "Post-physics handleBounce: angularVelocity:", this.angularVelocity,
+         "radialVelocity:", this.radialVelocity,
+         "animationDelay:", this.animationDelay,
+      );
+   }
+
+   if (this.animationDelay-- === 16) {
+      this.radialVelocity *= -1;
+   }
+   if (this.animationDelay === 0) {
+      // console.log("Ball is stuck:", this.stuckSlot);
+      if (this.stuckSlot != null) {
+         this.rescueMon = this.shouldTaillowRescue() ? 'taillow' : 'shroomish';
+         this.curCallback = this.handleStatic;
+      } else {
+         this.radialCoordinate = 30;
+         this.angularCoordinate = Math.floor(this.getRelativeAngle() / 30) * 30 + 15 + Math.floor(this.tableAngle);
+         this.curCallback = this.handleStatic;
+      }
+   }
+};
+
+RouletteBall.prototype.handleStatic = function() {
+   this.doStaticBallPhysics();
+   this.done = true;
+};
+
+RouletteBall.prototype.getRelativeAngle = function() {
+   var relativeAngle = Math.floor(this.angularCoordinate - Math.floor(this.tableAngle)) % 360;
+   if (relativeAngle < 0) {
+      relativeAngle += 360;
+   }
+   return relativeAngle;
+};
+
+RouletteBall.prototype.distanceFromSlotMiddle = function() {
+   var relativeAngle = this.getRelativeAngle();
+   var fractionAngle = relativeAngle % 30;
+
+   if (fractionAngle == 14) {
+      return 0;
+   } else if (fractionAngle > 13) {
+      return 43 - fractionAngle;
+   } else {
+      return 14 - fractionAngle;
+   }
+};
+
+RouletteBall.prototype.shouldTaillowRescue = function() {
+   var o = (this.table.table === 'beginner' ? 0 : 30) + 33 + 15;
+
+   for (var i = 0; i < 4; i++) {
+      if (o < this.angularCoordinate && this.angularCoordinate <= o + 90) {
+         return !!(i % 2);
+      }
+      if (i === 3) {
+         return true;
+      }
+      o += 90;
+   }
+   return false;
+};
+
+var framerate = 1000 / 60;
+
+var toggler = new RouletteTable($("#roulette-toggler"), $("#toggler"), true);
+var simulator = new RouletteTable($("#roulette"), $("#fuzzcalc"), false);
+
+setSimulator();
+
+changeToggler();
+
+function mapSlotField($form, name) {
+   var val = $form.find("[name=" + name + "]").val();
+   if (!val) {
+      return [];
+   }
+   return val.split(",").map(function(slot) {
+      return slot * 1;
+   }).filter(function(slot) {
+      return !isNaN(slot);
+   });
+}
+
+function getFormData($form) {
+   return {
+      table: $form.find("[name=table]:checked").val(),
+      mon: $.map($form.find("[name=pokemon]:checked"), function(elem) { return $(elem).val(); }),
+      hour: $form.find("[name=hour]").val() * 1,
+      rolls: $form.find("[name=rolls]").val() * 1,
+      numSimulated: $form.find("[name=num-simulated]:checked").val(),
+      fixedFuzz: $form.find("[name=fuzz-value]").val() * 1,
+      startingPosition: $form.find("[name=starting-position]:checked").val(),
+      occupiedSlots: mapSlotField($form, "slots-occupied"),
+      betSlots: mapSlotField($form, "slots-bet")
+   };
+}
+
+$("#fuzzcalc input[type=text], #fuzzcalc input[type=number]").keyup(changeSimulator);
+$("#fuzzcalc input").change(changeSimulator);
+
+$("#replay-animation").on('click.play', function() {
+   simulator.clear();
+
+   setSimulator();
+});
+
+$("#set-toggler-slots").on('click', function() {
+   simulator.clear();
+
+   simulator.setTogglerActive(true);
+});
+
+$("#toggler input").change(changeToggler);
+
+function changeToggler() {
+   toggler.setFormData(toggler.getFormData());
+
+   toggler.showTheoreticalOdds();
+}
+
+function changeSimulator() {
+   var formData = simulator.getFormData();
+   var isChanged = false;
+   Object.keys(formData).forEach(function(key) {
+      if (formData[key] !== simulator.form[key]) {
+         isChanged = true;
+      }
+   });
+
+   if (!isChanged) return;
+
+   simulator.clear();
+   simulator.setFormData(formData);
+
+   setSimulator();
+}
+
+function setSimulator() {
+   if (simulator.form.numSimulated === 'one-specific') {
+      $("#specify-fuzz-value").show();
+   } else {
+      $("#specify-fuzz-value").hide();
+   }
+
+   var conditions = simulator.getConditions();
+   // console.log("Fuzz ranges:", conditions.fuzzRanges);
+
+   function getMinFuzz(startingAngle) {
+      return Math.min.apply(null, Object.keys(conditions.randOutcomes[startingAngle]));
+   }
+
+   function getMaxFuzz(startingAngle) {
+      return Math.max.apply(null, Object.keys(conditions.randOutcomes[startingAngle]));
+   }
+
+   var fuzzRangeTexts = [];
+   var maxFuzzRange = 0;
+
+   Object.keys(conditions.fuzzRanges).forEach(function(fuzzRange) {
+      var fuzzRangeChance = conditions.fuzzRanges[fuzzRange] / 65536;
+      fuzzRangeTexts.push("a " + (fuzzRangeChance * 100) + "% chance of being <strong>" + fuzzRange + "</strong>");
+      if (fuzzRange * 1 > maxFuzzRange) {
+         maxFuzzRange = fuzzRange * 1;
+      }
+   });
+
+   var startingPosition = simulator.form.startingPosition;
+   var lowFuzz = isNaN(startingPosition) ? -Math.floor(maxFuzzRange / 2) : getMinFuzz(startingPosition);
+   var highFuzz = isNaN(startingPosition) ? -Math.floor(maxFuzzRange / 2) + maxFuzzRange - 1 : getMaxFuzz(startingPosition);
+
+   $("#fuzzcalc [name=fuzz-value]").attr({
+      min: lowFuzz,
+      max: highFuzz
+   });
+
+   var outcomeSlots = simulator.calcResult(conditions.randOutcomes, false);
+
+   var sortedOutcomes = Object.keys(outcomeSlots).sort(function(a, b) {
+      return outcomeSlots[b] - outcomeSlots[a];
+   });
+
+   var slotTexts = sortedOutcomes.slice(0, 4).map(function(slot) {
+      return slot + " (" + Math.round(outcomeSlots[slot] * 1000) / 10 + "%)";
+   });
+
+   // If the difference between the total number of degrees the ball goes around the table is more than 330, then we might land in any slot.
+   // if (Math.abs(highFuzzOutcome.totalRelativeAngle - lowFuzzOutcome.totalRelativeAngle) >= 330) {
+   //    outcomeText = "The ball might end up anywhere on the wheel regardless of its starting position, though on average it will end up at " + medFuzzOutcome.slot + " slots clockwise from the one that started at its starting position.";
+   // } else {
+   //    outcomeText = "The ball should end up at " + Math.round(lowFuzzOutcome.angle) + "°-" + Math.round(highFuzzOutcome.angle) + "° of its starting position on the screen, which by the time it stops puts it at " + lowFuzzOutcome.slot + "-" + highFuzzOutcome.slot + " slots clockwise on the wheel from the one that started at its starting position.";
+   // }
+
+   var outcomeText = "The ball is most likely to land " + humanJoin(slotTexts, "or") + " slots away from the slot that was at the top when you made your bet.";
+
+   $("#fuzzcalc .results").html("Your fuzz range has a " + humanJoin(fuzzRangeTexts) + ". " + outcomeText);
+
+   var $graph = $("#fuzzcalc .results-graph");
+   $graph.empty();
+   for (var slot = 0; slot < 12; slot++) {
+      var chance = outcomeSlots[slot] || 0;
+      var $slot = $('<div class="slot"><div class="poll-bar"></div><div>' + slot + '</div><div>' + Math.round(chance * 1000) / 10 + '%</div></div>');
+      $slot.children(".poll-bar").css("height", chance * 200);
+      $graph.append($slot);
+   }
+
+   simulator.setTogglerActive(false);
+
+   var rand = Math.floor(Math.random() * 65536);
+
+   simulator.clear();
+
+   var simulateStartingAngles = {};
+   if (simulator.form.startingPosition === 'random') {
+      simulateStartingAngles[getStartingAngle(rand)] = 65536;
+   } else if (simulator.form.startingPosition === 'all') {
+      simulateStartingAngles = conditions.startingAngles;
+   } else {
+      simulateStartingAngles[simulator.form.startingPosition * 1 || 0] = 65536;
+   }
+
+   // console.log("Starting angles to be simulated:", simulateStartingAngles);
+
+   if (simulator.form.numSimulated === 'one-random') {
+      var chancesTotal = 0;
+      var fuzzRange = simulator.getFuzzRange(rand);
+      var fuzz = getFuzz(fuzzRange, rand);
+      Object.keys(simulateStartingAngles).forEach(function(startingAngle) {
+         simulator.addBall(startingAngle * 1, fuzz * 1, "roulette-ball-no-fuzz", 1);
+      });
+   } else if (simulator.form.numSimulated === 'one-specific') {
+      Object.keys(simulateStartingAngles).forEach(function(startingAngle) {
+         simulator.addBall(startingAngle * 1, simulator.form.fixedFuzz * 1, "roulette-ball-no-fuzz", 1);
+      })
+   } else if (simulator.form.numSimulated === 'all') {
+      Object.keys(simulateStartingAngles).forEach(function(startingAngle) {
+         // Calculate the total chances for all fuzz values for this starting angle.
+         var randTotalForStartingAngle = 0;
+         Object.keys(conditions.randOutcomes[startingAngle]).forEach(function(fuzz) {
+            randTotalForStartingAngle += conditions.randOutcomes[startingAngle][fuzz];
+         });
+
+         // console.log("Rand total for starting angle %d:", startingAngle, randTotalForStartingAngle);
+
+         Object.keys(conditions.randOutcomes[startingAngle]).forEach(function(fuzz) {
+            var chance = conditions.randOutcomes[startingAngle][fuzz] / randTotalForStartingAngle;
+            simulator.addBall(startingAngle * 1, fuzz * 1, null, Math.sqrt(chance));
+         });
+      });
+   } else {
+      // Low/medium/high fuzz.
+      Object.keys(simulateStartingAngles).forEach(function(startingAngle) {
+         var opacity = Math.sqrt(simulateStartingAngles[startingAngle] / 65536);
+         simulator.addBall(startingAngle * 1, 0, "roulette-ball-no-fuzz", opacity);
+         simulator.addBall(startingAngle * 1, getMinFuzz(startingAngle), "roulette-ball-low-fuzz", opacity);
+         simulator.addBall(startingAngle * 1, getMaxFuzz(startingAngle), "roulette-ball-high-fuzz", opacity);
+      });
+   }
+   simulator.animate();
+}
+
+function testRandom() {
+   var randFuzzRanges = {};
+   var fuzzRanges = [3, 7, 15, 30, 60, 120];
+   var isLt80;
+   var totalLt80 = 0;
+   for (var i = 0; i < 65536; i++) {
+      isLt80 = (i % 100) < 80;
+      if (isLt80) {
+         totalLt80++;
+      }
+      if (!randFuzzRanges[isLt80]) {
+         randFuzzRanges[isLt80] = {};
+      }
+      fuzzRanges.forEach(range => {
+         if (!randFuzzRanges[isLt80][range]) {
+            randFuzzRanges[isLt80][range] = {};
+         }
+         randFuzzRanges[isLt80][range][i % range] = (randFuzzRanges[isLt80][range][i % range] || 0) + 1;
+      });
+   }
+
+   console.log("Less than 80: %d (%f%)", totalLt80, totalLt80 / 65536 * 100);
+   console.log("TESTRANDOM", randFuzzRanges);
+}
+</script>
+
+
+
+<p id="lastmodified">Page last modified November 20 2025 at 17:02 UTC</p>
+
+
+<div id="related-pages">
+    <h2>You May Also Enjoy</h2>
+    <div class="related-pages">
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/">
+                <strong>Gen III/IV Capture Mechanics</strong>
+                Learn all about the nitty-gritty mechanics behind the capture formula used in the third- and fourth-generation games.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/">
+                <strong>Gen III/IV Catch Rate Calculator</strong>
+                A calculator to find your chances of capturing a Pokémon in the third- and fourth-generation games.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/johto/voltorb-flip/">
+                <strong>Voltorb Flip Guide</strong>
+                A guide to success in this neat little game that replaced the slots in HG/SS outside of Japan.
+            </a>
+        </div>
+    
+        <div class="related-page">
+            <a href="https://www.dragonflycave.com/mechanics/gen-i-safari-zone/">
+                <strong>R/B/Y Safari Zone Mechanics</strong>
+                An in-depth explanation and calculator for how R/B/Y's Safari Zone trolled everyone.
+            </a>
+        </div>
+    
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<h2 id="post">Post comment</h2>
+
+
+<div id="guestbook-rules">
+
+<p>Inflammatory or off-topic comments will be deleted; please go to the <a href="https://www.dragonflycave.com/guestbook/">guestbook</a> for discussion unrelated to this page. You can use <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#bbcode" id="bbcode-link" title="Click for a list of formatting options.">BBCode</a> (forum code) to format your messages.</p>
+
+<p>Giving an e-mail address is optional; if it is given, you will be notified by e-mail if I respond to your post. If you fill in a website (this should be your own website, blog or social media profile), it will be linked publicly on your post; however, messages obviously posted solely as a pretext for advertising, or advertising shady or inappropriate websites, will be deleted.</p>
+
+<ul id="bbcode" style="display: none;">
+<li>[b]<strong>Bold</strong>[/b]</li>
+<li>[i]<em>Italic</em>[/i]</li>
+<li>[u]<span class="underline">Underlined</span>[/u]</li>
+<li>[s]<span class="strikethrough">Strikethrough</span>[/s]</li>
+<li>[url=http://www.dragonflycave.com]<a href="http://www.dragonflycave.com/">Link</a>[/url]</li>
+<li>[spoiler]<span class="spoiler">Spoiler</span>[/spoiler]</li>
+</ul>
+</div>
+
+
+
+<form action="https://www.dragonflycave.com/guestbook/post" method="post" name="guestbook-form" id="guestbook-form">
+<div class="horizontal-form">
+
+<div class="form-row">
+<label for="name">Name<abbr class="required" title="Required">*</abbr></label>
+<input type="text" name="name" id="name" placeholder="Name or username" value="" required="">
+</div>
+
+<div class="form-row">
+<label for="email">E-mail</label>
+<input type="email" name="email" id="email" placeholder="user@domain.com" value="">
+</div>
+
+<div class="form-row">
+<label for="url">Website address</label>
+<input type="text" name="url" id="url" placeholder="https://your.own.website" value="">
+</div>
+
+<div class="form-row">
+<label for="site">Website name</label>
+<input type="text" name="site" id="site" placeholder="Your own website/blog" value="">
+</div>
+
+<div class="form-row">
+<label for="message">Comments<abbr class="required" title="Required">*</abbr></label>
+<textarea cols="30" rows="5" name="message" required=""></textarea>
+</div>
+</div>
+<div class="form-row form-verification">
+<img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/501.png" alt="501" id="verimg" class="verification-pokemon">
+<label for="ver">Please type the name of the above Pokémon into this box<span id="switchver"> (<a id="refreshver" href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#">don't know it?</a>)</span><abbr class="required" title="Required">*</abbr>:</label>
+<small>The above sprite has a 1/8192 chance of being shiny. (Modern browsers will give it a yellow glow if so.)</small>
+<input type="text" name="ver" id="ver" value="" required="">
+<input type="hidden" name="vernumber" value="501">
+<input type="hidden" name="reply_to" value="">
+<input type="hidden" name="route" value="roulette">
+</div>
+<div class="form-buttons">
+<button type="submit">Submit message</button> <button type="reset">Reset</button>
+</div>
+</form>
+<script type="text/javascript">
+if (window.fetch) {
+   document.getElementById("switchver").innerHTML = " (<a id=\"refreshver\" href=\"#\">don't know it?</a>)";
+   document.getElementById("refreshver").onclick = function() {
+      fetch('/guestbook/new-spam-pokemon')
+         .then(function(response) {
+            if (!response.ok) {
+               throw new Error("Non-OK response");
+            }
+            return response.json();
+         })
+         .then(function(data) {
+            var verification = data.verification;
+            var verimg = document.getElementById("verimg");
+
+            document.forms["guestbook-form"].elements["vernumber"].value = verification;
+            verimg.onload = function() {
+               verimg.className = "verification-pokemon" + (/^shiny\//.test(verification) ? " shiny" : "");
+            };
+            verimg.src = "/sprites/gen8/home-thumb/" + verification + ".png";
+            verimg.alt = verification;
+         });
+      return false;
+   };
+   var bbcode = document.getElementById("bbcode");
+   bbcode.style.display = "none";
+   document.getElementById("bbcode-link").onclick = function() {
+      bbcode.style.display = bbcode.style.display === "none" ? "block" : "none";
+      return false;
+   };
+}
+</script>
+
+
+<h2 id="comments">Comments</h2>
+
+
+<p class="left">My own messages will be signed as Butterfree, with the <span class="guestbook-admin">Admin</span> label below my name. If someone signs as Butterfree without that label, it's probably not me.</p>
+
+<p class="guestbook-links">Pages: 
+    
+        
+            
+                <strong>1</strong>
+            
+        
+   
+</p>
+
+<div id="guestbook-posts">
+
+<blockquote id="post-11157">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/823.png" alt="">
+
+
+<div class="post-username">Skaidus</div>
+
+
+
+
+</div>
+
+<p class="post-message">tl;dr: <a rel="nofollow" href="https://imgur.com/a/o1cJYLd">https://imgur.com/a/o1cJYLd</a></p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11157/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[22/05/2026 09:09:53]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-11027">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/594.png" alt="">
+
+
+<div class="post-username">Butterfree</div>
+
+<div class="guestbook-admin">Admin</div>
+
+
+<div class="guestbook-website">
+    Website: <a href="https://www.dragonflycave.com/" rel="nofollow">The Cave of Dragonflies</a>
+</div>
+
+
+
+<div class="guestbook-responding-to">
+    In response to: <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#post-11026">post by pokeknight</a>
+</div>
+
+</div>
+
+<p class="post-message">I think it looks pretty intentional; it defines both the Service Day and non-Service Day values right there together, and elsewhere in the code it uses checking that the minimum bet is 1 as a way to check if we're on the low-bet table. I guess they just thought of the low-bet table as a practice table and the high-bet one as where you actually go to win coins. But of course, I can't divine the developers' intent for sure.</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11027/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[28/03/2026 19:57:20]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-11026">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/318.png" alt="">
+
+
+<div class="post-username">pokeknight</div>
+
+
+
+
+<div class="guestbook-responding-to">
+    In response to: <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#post-11025">post by Butterfree</a>
+</div>
+
+</div>
+
+<p class="post-message">Ah, I missed that looking at the scripts and constants. Do you think this was intentional or a simple oversight? I really appreciated your article, and agree with the other commenter that this is far too complicated for a sidegame of a sidegame.</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11026/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[28/03/2026 14:52:31]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-11025">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/734.png" alt="">
+
+
+<div class="post-username">Butterfree</div>
+
+<div class="guestbook-admin">Admin</div>
+
+
+<div class="guestbook-website">
+    Website: <a href="https://www.dragonflycave.com/" rel="nofollow">The Cave of Dragonflies</a>
+</div>
+
+
+
+<div class="guestbook-responding-to">
+    In response to: <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#post-11024">post by pokeknight</a>
+</div>
+
+</div>
+
+<p class="post-message">In the pokeemerald decomp, it's defined in the <a rel="nofollow" href="https://github.com/pret/pokeemerald/blob/master/src/roulette.c#L810">sTableMinBets</a> array. In the InitRouletteTableData function, it picks out the value at index [tableId + isSpecialRate*2], i.e. 1 for the first table and 3 for the second if isSpecialRate is 0, and 1 for the first and 6 for the second if isSpecialRate is 1. sRoulette-&gt;minBet is set to this value, and in Task_PlaceBet, we subtract sRoulette-&gt;minBet from the player's number of coins. Am I missing something?</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11025/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[28/03/2026 07:05:49]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-11024">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/431.png" alt="">
+
+
+<div class="post-username">pokeknight</div>
+
+
+
+
+</div>
+
+<p class="post-message">Looking through the decompiled code, there doesn't seem to be a reason that the Service Day increased wager should only apply to the rightmost Table 2? </p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/11024/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[28/03/2026 03:29:16]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-10856">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/107.png" alt="">
+
+
+<div class="post-username">betelplouf</div>
+
+
+
+
+</div>
+
+<p class="post-message">OMG thank you so much that's so useful!</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/10856/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[26/12/2025 02:08:14]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-10784">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/493.png" alt="">
+
+
+<div class="post-username">ZoranaDragon</div>
+
+
+
+
+</div>
+
+<p class="post-message">The fact that cheating is technically something programed into RSE is very funny to me. </p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/10784/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[15/11/2025 12:00:09]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-10722">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/678.png" alt="">
+
+
+<div class="post-username">Eevote</div>
+
+
+
+
+</div>
+
+<p class="post-message">This is the most complicated thing I have seen in my entire life.</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/10722/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[09/10/2025 20:48:15]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-10427">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/396.png" alt="">
+
+
+<div class="post-username">Butterfree</div>
+
+<div class="guestbook-admin">Admin</div>
+
+
+<div class="guestbook-website">
+    Website: <a href="https://www.dragonflycave.com/" rel="nofollow">The Cave of Dragonflies</a>
+</div>
+
+
+
+<div class="guestbook-responding-to">
+    In response to: <a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/#post-10426">post by Steeler</a>
+</div>
+
+</div>
+
+<p class="post-message">It only affects the amount you can bet, but since your gains are a multiplier on your bet, and the roulette has a positive expected value (i.e. the more you play, even if you play at random, the more you win), you'll earn more coins faster by playing on service day!</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/10427/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[23/04/2025 07:59:13]</span>
+</div>
+</blockquote>
+
+<blockquote id="post-10426">
+<div class="guestbook-post-header">
+<img class="verification-pokemon post-verification-pokemon" src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/228.png" alt="">
+
+
+<div class="post-username">Steeler</div>
+
+
+<div class="guestbook-website">
+    Website: <a href="https://bsky.app/profile/elsteeler.bsky.social" rel="nofollow">Click here</a>
+</div>
+
+
+
+</div>
+
+<p class="post-message">So service day only affects the amount you can bet but not the odds? Just triggered it in my game and was wondering if it was worth playing!</p>
+
+<div class="guestbook-footer">
+<a href="https://www.dragonflycave.com/guestbook/reply/10426/#responding-to" class="reply-to-link">» Reply to this</a>
+<span class="guestbook-date">[22/04/2025 22:30:56]</span>
+</div>
+</blockquote>
+
+</div>
+
+<p class="guestbook-links">Pages: 
+    
+        
+            
+                <strong>1</strong>
+            
+        
+   
+</p>
+
+
+
+</div>
+
+<nav id="menu">
+<div id="menu-inner">
+<ul>
+<li id="menu-site"><a href="https://www.dragonflycave.com/site/">Site</a>
+    <ul>
+    <li id="featured"><a href="https://www.dragonflycave.com/about-me/">Featured Section <span><strong>About Me</strong><br>Because I'm sure you're just burning to find out what sort of person would make the page you're looking at.</span></a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/" title="The main page with the updates and Almighty Random Poll.">Newest Updates</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/update-archive/" title="View all the updates since October 2003 here.">Old Updates</a></li>
+    <li class="sitely entertaining"><a href="https://www.dragonflycave.com/mascots/" title="Read about the site mascots.">Mascots</a></li>
+    <li class="sitely interesting"><a href="https://www.dragonflycave.com/site-history/" title="The history of The Cave of Dragonflies.">Site History</a></li>
+    <li class="sitely interesting"><a href="https://www.dragonflycave.com/april-fools/" title="All the April Fools&#39; jokes there have been on the site.">April Fools' Jokes</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/report-errors/" title="Where you can yell at me for making a typo somewhere.">Report Errors</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/faq/" title="Frequently Asked Questions.">FAQ</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/about-me/" title="Just in case you for some reason got curious about just who would be writing all this.">About Me</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/contact-me/" title="Fanmail? Hatemail? Questions? Go ahead.">Contact Me</a></li>
+    <li><a href="https://www.dragonflycave.com/hall-of-fame/" title="The glorious lists of names!">Hall of Fame</a>
+        <ul>
+        <li class="sitely"><a href="https://www.dragonflycave.com/hall-of-fame/rulers-of-the-universe/" title="The mighty Rulers of the Universe.">Rulers of the Universe</a></li>
+        <li class="sitely"><a href="https://www.dragonflycave.com/hall-of-fame/quizzes/" title="Those who have completed the Cave of Dragonflies quizzes.">Quiz Hall</a></li>
+        <li class="sitely interactive"><a href="https://www.dragonflycave.com/hall-of-fame/poll-archive/" title="The previous Almighty Random Polls, still eligible for voting.">Poll Hall</a></li>
+        </ul>
+    </li>
+    <li class="interactive"><a href="https://www.dragonflycave.com/guestbook/" title="The guestbook/chatroom of The Cave of Dragonflies.">Guestbook</a></li>
+    <li class="interactive"><a href="https://forums.dragonflycave.com/" title="Chat at the forums!">Forums</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/style-switcher/" title="Help about the style switcher.">The Style Switcher</a></li>
+    <li class="sitely interesting entertaining"><a href="https://www.dragonflycave.com/zodiac/" title="The Day of Scyther in the Reign of Dialga...">Zodiac</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/affiliate-with-tcod/" title="Become an affiliate.">Affiliate with TCoD</a></li>
+    <li class="sitely"><a href="https://www.dragonflycave.com/link-to-tcod/" title="A selection of link buttons to link to this site with.">Link to TCoD</a></li>
+    </ul>
+</li>
+<li id="menu-pokemon"><a href="https://www.dragonflycave.com/pokemon/">Pokémon</a>
+    <ul>
+    <li class="interesting"><a href="https://www.dragonflycave.com/fun-facts/" title="Some of these really are interesting...">Fun Facts</a></li>
+    <li><a href="https://www.dragonflycave.com/essays-main/" title="Long-form essays about Pokémon-related topics.">Essays</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/my-glitched-jolteon/" title="Part reminiscence, part game mechanics deep-dive about my very special Yellow version Jolteon.">My Glitched Jolteon</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/the-mew-trick/" title="A deep dive on one of the Pokémon games&#39; most amazing glitches, its history and how it works.">The Mew Trick</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/movie-reviews/" title="Overanalytical reviews of the Pokémon movies.">Movie Reviews</a>
+        <ul>
+        <li class="sitely interesting"><a href="https://www.dragonflycave.com/movie-reviews/about/" title="In which I ramble on about why and how I make my reviews.">About the Reviews</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/mewtwo-strikes-back/" title="In which chuckling evilly totally makes perfect psychological sense in character.">Mewtwo Strikes Back</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-power-of-one/" title="In which I manage to pity an underdeveloped villain and Chosen One plots.">The Power of One</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/spell-of-the-unown/" title="In which Team Rocket play such a small role I leave them out of the synopsis.">Spell of the Unown</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/voice-of-the-forest/" title="In which I manage to fangirl a random villain with thirty seconds of screentime.">Voice of the Forest</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-heroes/" title="In which I lengthily complain about the dub.">Pokémon Heroes</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/jirachi-wish-maker/" title="In which I like the movie even though the plot is holier than the Pope.">Jirachi: Wish Maker</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/destiny-deoxys/" title="In which I try to understand why Rayquaza suddenly lives in the Arctic.">Destiny Deoxys</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/lucario-and-the-mystery-of-mew/" title="In which I gush about platonic love in fiction.">The Mystery of Mew</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-ranger-and-the-temple-of-the-sea/" title="In which Ash becomes a glowy yellow thready thing.">The Temple of the Sea</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-rise-of-darkrai/" title="In which Tonio is evil and dies, except he&#39;s not and he doesn&#39;t.">The Rise of Darkrai</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/giratina-and-the-sky-warrior/" title="In which Shaymin is obnoxious.">The Sky Warrior</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/arceus-and-the-jewel-of-life/" title="In which I complain about the writers not understanding Back to the Future.">The Jewel of Life</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/mewtwo-returns/" title="In which I am underwhelmed.">Mewtwo Returns</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/the-legend-of-thunder/" title="In which I fantasize about a better Pokémon anime.">Legend of Thunder</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/pokemon-origins/" title="In which I suddenly begin to appreciate the regular anime a lot more.">Pokémon Origins</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/movie-reviews/detective-pikachu/" title="In which an American live-action Pokémon film is actually good.">Detective Pikachu</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/opinions-main/" title="Various opinions, thoughts and theories.">Opinions/Theories</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/overrated/" title="A rant about &#39;overrated&#39; Pokémon.">Rant: Overrated</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/english-names/" title="A rant about how people endlessly complain about how horrible the English names of the new Pokémon are.">Rant: English Names</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/obsession-lists/" title="A rant about &#39;You know you&#39;re obsessed with Pokémon when...&#39; lists.">Rant: Obsession Lists</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/genetics/" title="How Pokémon genetics and breeding might make sense.">Pokémon Genetics</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/opinions-theories/incense-breeding/" title="A theory on how incense can cause some Pokémon to produce baby Pokémon.">Incense Breeding</a></li>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/opinions-theories/history-of-training/" title="How Pokémon training might have started and developed into what it is today.">History of Training</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/aap/" title="Or, &#39;Self-Help for the Insecure Pokémon Fan&#39;.">Anti-Anti-Pokémon</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/animal-cruelty/" title="An article concerning the subject of animal cruelty in Pokémon.">Animal Cruelty?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/why-do-we-like-it/" title="Why do Pokémon fans like Pokémon even after it stopped being cool?">Why Do We Like It?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/is-pokemon-childish/" title="Are teenagers and adults who like Pokémon &#39;immature&#39;?">Is Pokémon Childish?</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/aap/religious-objections/" title="About the religious argument against Pokémon.">Religious Objections</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-games"><a href="https://www.dragonflycave.com/the-games/">The Games</a>
+    <ul>
+    <li class="interesting useful"><a href="https://www.dragonflycave.com/fancy-a-challenge/" title="Want to make your game more fun?">Fancy a Challenge?</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/evolution-list/" title="All Pokémon evolutions, by method.">Evolution List</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/espeon-and-umbreon/" title="How to evolve your Eevee quickly and effectively.">Espeon and Umbreon</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/typechart.html" title="An interactive type chart where you can visualize various kinds of data on Pokémon types and even create custom types. Or delete all the existing types and only have your own.">Interactive Type Chart</a></li>
+    <li><a href="https://www.dragonflycave.com/mechanics/" title="The juicy formulas and stuff behind the Pokémon games.">Game Mechanics</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/stats/" title="The mechanics of stats: what factors into them, the formulas, and how it has changed over the years.">Stat Mechanics</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/stat-stages/" title="The mechanics of how your Pokémon&#39;s stats are modified within battle.">Stat Stages</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/mechanics/battling-basics/" title="The basic concepts of the Pokémon battle system, explained for beginners.">Battling Basics</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/battle/" title="The mechanics of Pokémon battles, from turn order to accuracy to critical hits to the damage formula.">Battle Mechanics</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-capturing/" title="The mechanics of Pokémon captures in Red, Blue and Yellow.">Gen I Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-rng/" title="The mechanics of the random number generator in Red, Blue and Yellow, and how it affects capturing.">Gen I Capture RNG</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ii-capturing/" title="The mechanics of Pokémon captures in Gold, Silver and Crystal.">Gen II Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of gen III/IV Pokémon captures.">Gen III/IV Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-v-capturing/" title="The mechanics of fifth-generation Pokémon captures.">Gen V Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth and seventh generations.">Gen VI/VII Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-viii-capturing/" title="How capturing works in the eighth-generation games.">Gen VIII Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ix-capturing/" title="How capturing works in the ninth-generation games.">Gen IX Capturing</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-safari-zone/" title="The mechanics of the R/B/Y Safari Zone, complete with a calculator.">R/B/Y Safari Zone</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-stat-modification/" title="The screwed-up mechanics of how stats get modified in battle in R/B/Y... with a calculator.">R/B/Y Stat Mods</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/mechanics/status-ailments/" title="The workings of status effects, both major and minor.">Status Ailments</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/sinnoh/honey-trees/" title="The mechanics and practicalities of honey trees.">Honey Trees</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/" title="A comprehensive explanation of R/S/E roulette, with interactive simulations.">R/S/E Roulette</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokewalker/" title="A breakdown of how battling and catching Pokémon works in the HG/SS Pokéwalker accessory.">Pokéwalker Battle Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/calculators/" title="Various useful calculators for the Pokémon games.">Calculators</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-i-catch-rate/" title="A calculator to determine the odds of a capture succeeding in R/B/Y.">Gen I Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ii-catch-rate/" title="A calculator for capturing in Gold, Silver and Crystal.">Gen II Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-v-catch-rate/" title="A calculator for Pokémon captures in the fifth generation.">Gen V Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth- and seventh-generation games.">Gen VI/VII Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-viii-catch-rate/" title="A capture calculator for the eighth-generation games.">Gen VIII Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ix-catch-rate/" title="A capture calculator for the ninth-generation games.">Gen IX Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li class="interesting"><a href="https://www.dragonflycave.com/evs-natures-and-math/" title="Okay, I&#39;m crazy, but yes, this is a mathematical approach to EVs and natures.">EVs, Natures and Math</a></li>
+    <li class="interesting"><a href="https://www.dragonflycave.com/experimentation/" title="Crazy experiments about the inner workings of the games.">Experimentation</a></li>
+    <li><a href="https://www.dragonflycave.com/kanto/" title="Stuff specific to Red, Blue, Yellow, and their remakes.">Kanto</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/kanto/rby-tips-and-tricks/" title="All sorts of glitches, hints and tips about Red, Blue and Yellow.">R/B/Y Tips and Tricks</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-capturing/" title="A complete analysis of the R/B/Y capture algorithm.">Gen I Capturing</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-i-rng/" title="The mechanics of the random number generator in Red, Blue and Yellow, and how it affects capturing.">Gen I Capture RNG</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-i-catch-rate/" title="A calculator to determine the odds of a capture succeeding in R/B/Y.">Gen I Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen1" title="Information about the wild Pokémon found in every area in R/B/Y.">Gen I Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-stat-modification/" title="The screwed-up mechanics of how stats get modified in battle in R/B/Y... with a calculator.">R/B/Y Stat Mods</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-i-safari-zone/" title="An explanation of the R/B/Y Safari Zone, with a calculator for how it is best to catch a given Pokémon.">R/B/Y Safari Zone</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/kanto/frlg-walkthrough/" title="Complete, detailed walkthrough of FireRed and LeafGreen.">FR/LG Walkthrough</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/kanto/frlg-vs-seeker/" title="Everything you ever wanted to know about each and every trainer in FR/LG.">FR/LG VS Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen3" title="Information about the wild Pokémon found in every area in the third-generation games, including FR/LG.">Gen III Locations</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/kanto/lets-go-review/" title="A review of Pokémon Let&#39;s Go, Pikachu and Let&#39;s Go, Eevee.">Let's Go Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/my-glitched-jolteon/" title="Part reminiscence, part game mechanics deep-dive about my very special Yellow version Jolteon.">My Glitched Jolteon</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/essays/the-mew-trick/" title="A deep dive on one of the Pokémon games&#39; most amazing glitches, its history and how it works.">The Mew Trick</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/johto/" title="Specifically for Gold, Silver and Crystal and their remakes.">Johto</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/gold-or-silver/" title="Which game to pick?">Gold or Silver?</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/johto/battle-tower/" title="The most annoying thing ever created, the Crystal Battle Tower.">The Battle Tower</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/mt-silver-guide/" title="How to get through Mount Silver without Flash.">Mt. Silver Guide</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/johto/legendary-whatevers/" title="Tips for how to find the Legendary Dogs/Cats/Beasts/Whatevers.">Legendary Whatevers</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ii-capturing/" title="The mechanics of Pokémon captures in Gold, Silver and Crystal.">Gen II Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ii-catch-rate/" title="A calculator for capturing in Gold, Silver and Crystal.">Gen II Capture Calculator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen2/" title="Full encounter data for locations in Gold, Silver and Crystal.">Gen II Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/johto/hgss-changes/" title="What has changed in HeartGold and SoulSilver.">HG/SS Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/voltorb-flip/" title="How to beat this tricky logic puzzle.">Voltorb Flip Guide</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/johto/places-to-train/" title="The most efficient locations to train in HG/SS, from level 1 up.">Places to Train</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen4/" title="The full encounter data for all locations in D/P/Pt/HG/SS.">Gen IV Locations</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokewalker/" title="A breakdown of how battling and catching Pokémon works in the HG/SS Pokéwalker accessory.">Pokéwalker Battle Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/hoenn/" title="Stuff about Ruby, Sapphire and Emerald and their remakes, Omega Ruby and Alpha Sapphire.">Hoenn</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/hoenn/rse-tips-and-tricks/" title="Tips and tricks for R/S/E.">Tips and Tricks</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/hoenn/rse-rumours/" title="The Cave of Dragonflies: smashing the rumours since 2002.">R/S/E Rumours Debunked</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen3" title="Information about the wild Pokémon found in every area in the third-generation games.">Gen III Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth generation.">Gen VI Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth-generation games.">Gen VI Capture Calculator</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/mechanics/gen-iii-roulette/" title="A comprehensive explanation of R/S/E roulette, with interactive simulations.">R/S/E Roulette</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/sinnoh/" title="Everything concerning Diamond, Pearl and Platinum.">Sinnoh</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/sinnoh/dp-changes/" title="New and changed stuff in D/P and my opinion of it all.">D/P Changes</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/sinnoh/platinum-changes/" title="All the changes between Diamond and Pearl and Platinum.">Platinum Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/dp-vs-seeker/" title="Every trainer in Diamond and Pearl, good training spots and EV trainers.">D/P Vs. Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/platinum-vs-seeker/" title="Details of all the rebattleable trainers in Platinum.">Platinum Vs. Seeker</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/sinnoh/places-to-train/" title="The most efficient locations to train your Pokémon, from level 1 up.">Places to Train</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/locations/gen4/" title="The full encounter data for all locations in D/P/Pt/HG/SS.">Gen IV Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-iii-iv-capturing/" title="The mechanics of capturing in the third- and fourth-generation games.">Gen III/IV Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-iii-iv-catch-rate/" title="A calculator for capturing in the third- and fourth-generation games.">Gen III/IV Capture Calculator</a></li>
+        <li class="useful entertaining"><a href="https://www.dragonflycave.com/sinnoh/ribbon-syndicate/" title="The Ribbon Syndicate and how to get into it.">Ribbon Syndicate</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/sinnoh/honey-trees/" title="The mechanics and practicalities of honey trees.">Honey Trees</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/unova/" title="Sections about Pokémon Black and White and their sequels.">Unova</a>
+        <ul>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/unova/bw-changes/" title="A list and review of the changes in Black and White.">B/W Changes</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/unova/b2w2-changes/" title="An overview of the changes made in Black 2 and White 2.">B2/W2 Changes</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen5/" title="Information about the wild Pokémon found in every area in the fifth-generation games.">Gen V Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-v-capturing/" title="The mechanics of fifth-generation Pokémon captures.">Gen V Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-v-catch-rate/" title="A calculator for Pokémon captures in the fifth generation.">Gen V Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/kalos/" title="Stuff about Pokémon X and Y.">Kalos</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/locations/gen6/" title="Information about the wild Pokémon found in every area in X and Y.">Gen VI Locations</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="The mechanics of capturing in the sixth generation.">Gen VI/VII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A capture calculator for the sixth-generation games.">Gen VI/VII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/alola/" title="Content about Pokémon Sun, Moon, Ultra Sun and Ultra Moon.">Alola</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-vi-vii-capturing/" title="How capturing works in the sixth- and seventh-generation games.">Gen VI/VII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-vi-vii-catch-rate/" title="A calculator for capturing in the sixth and seventh generation.">Gen VI/VII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/galar/" title="Content about Pokémon Sword and Shield.">Galar</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/galar/weather-encounters/" title="A tool for calculating what Pokémon you&#39;ll find in your Wild Area with the current weather.">Weather Encounter Tool</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-viii-capturing/" title="How capturing works in the eighth-generation games.">Gen VIII Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-viii-catch-rate/" title="A capture calculator for the eighth-generation games.">Gen VIII Capture Calculator</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/paldea/" title="Content relating to Pokémon Scarlet and Violet.">Paldea</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/mechanics/gen-ix-capturing/" title="How capturing works in the ninth-generation games.">Gen IX Capturing</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/calculators/gen-ix-catch-rate/" title="A capture calculator for the ninth-generation games.">Gen IX Capture Calculator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/paldea/subtle-shinies/" title="A list of tricky-to-identify shinies in the Paldea Pokédex.">Subtle Shinies</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/orre-main/" title="Pokémon Colosseum and XD.">Orre</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/orre/colosseum-review/" title="My opinion of Colosseum.">Colosseum Review</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/shadow-pokemon/" title="Explains what Shadow Pokémon are and their role.">Shadow Pokémon</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/purification-guide/" title="Tips about purifying Shadow Pokémon in both Colosseum and XD.">Purification Guide</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/orre/shadow-pokemon-list/" title="The necessary data about all the Shadow Pokémon in Colosseum.">Shadow Pokémon List</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/pokemon-go/" title="The free-to-play mobile app Pokémon Go.">Pokémon Go</a>
+        <ul>
+        <li class="interesting"><a href="https://www.dragonflycave.com/pokemon-go/review/" title="A rambly review of Pokémon Go.">Review</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokemon-go/guide/" title="A guide on Pokémon Go.">Guide</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/pokemon-go/stats/" title="A breakdown of stat mechanics in Pokémon Go.">Stat Mechanics</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/spinoffs/" title="Other spin-off games such as Trozei, Mystery Dungeon and Ranger.">Spin-Offs</a>
+        <ul>
+        <li class="interesting entertaining"><a href="https://www.dragonflycave.com/spinoffs/trozei-review/" title="Review of Pokémon Trozei (or Link) for the Nintendo DS.">Trozei Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pmd-blue-rescue-team-review/" title="A review of Pokémon Mystery Dungeon: Blue Rescue Team as I see it.">MD Blue Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pmd-explorers-of-time-review/" title="A review of Pokémon Mystery Dungeon: Explorers of Time.">MD Time Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/pokemon-ranger-review/" title="A review of Pokémon Ranger for the DS.">Ranger Review</a></li>
+        <li class="interesting"><a href="https://www.dragonflycave.com/spinoffs/shadows-of-almia-review/" title="A review of Pokémon Ranger: Shadows of Almia.">Ranger 2 Review</a></li>
+        <li class="interesting useful"><a href="https://www.dragonflycave.com/spinoffs/conquest-review/" title="A review of Pokémon Conquest.">Conquest Review</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-fun"><a href="https://www.dragonflycave.com/fun/">Fun</a>
+    <ul>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/the-secret-link/" title="Fancy a game?">The Secret Link</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/the-clue-game/" title="Fancy a ridiculously challenging game?">The Clue Game</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/magikarp-the-gathering/" title="Magikarp: the Gathering, a game of epic proportions.">Magikarp: the Gathering</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/hangman/" title="Play Hangman with Pokémon names and an angry Pikachu.">Pokémon Hangman</a></li>
+    <li class="entertaining interesting"><a href="https://www.dragonflycave.com/number-game/" title="Ever wanted to teach yourself the National Pokédex numbers of all the Pokémon?">The Number Game</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/sutoraiku-high/" title="Sutoraiku High, a visual novel about drama, friendships, prejudice, bullying, total societal upheaval, and high school romance.">Sutoraiku High</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/sutoraiku-legends/" title="Sutoraiku Legends, the sequel to Sutoraiku High, featuring more action, noticeably inflated life-and-death stakes, and being isekaied to the Hisui region to calm the noble Kleavor.">Sutoraiku Legends</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/favorite.html" title="If you&#39;re having a hard time deciding on your favorite Pokémon, this is for you.">Favorite Pokémon</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/marquee-of-doom/" title="How patient are YOU?">The Marquee of Doom</a></li>
+    <li class="entertaining interesting"><a href="https://www.dragonflycave.com/crossword/" title="Quite possibly the world&#39;s hardest Pokémon crossword.">Irregular Crossword</a></li>
+    <li><a href="https://www.dragonflycave.com/quizzes/" title="Test both your personality and your Pokémon knowledge.">Quizzes</a>
+        <ul>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/what-pokemon-are-you/" title="Find out what Pokémon you are in a fun personality test.">What Pokémon Are You?</a></li>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/what-type-are-you/" title="If you were a Pokémon, what would your type be?">What Type Are You?</a></li>
+        <li class="entertaining interesting"><a href="https://www.dragonflycave.com/quizzes/how-obsessed-are-you/" title="Find out how much of a Pokémon fan - and of what type - you are.">Pokémon Fan Test</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/steel/" title="How well do you know the Steel type?">Steel Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/flying/" title="How well do you know the Flying type?">Flying Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/yellow/" title="How well do you know the Yellow version?">Yellow Quiz</a></li>
+        <li class="entertaining interesting interactive"><a href="https://www.dragonflycave.com/quizzes/gsc/" title="How well do you know the second generation games?">G/S/C Quiz</a></li>
+        </ul>
+    </li>
+    <li><a href="https://www.dragonflycave.com/humour-main/" title="Laugh your head off!">Humour</a>
+        <ul>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/conspiracy-theories/" title="It&#39;s all one big conspiracy, I tell you! (To be taken seriously only at your own risk.)">Conspiracy Theories</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/babelfished/" title="Who doesn&#39;t love when computerized translations go horribly wrong?">Babelfished</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/humour/in-game-humour/" title="All about why those two guys want to see big Barboach and Shroomish.">In-Game Humour</a></li>
+        <li class="entertaining"><a href="https://www.dragonflycave.com/quizzes/what-trainer-class-are-you/" title="A fake personality test that I originally created for April Fools&#39; Day 2014.">What Trainer Class Are You?</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-guides"><a href="https://www.dragonflycave.com/guides/">Guides</a>
+    <ul>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/spriting-guide/" title="How to make sprites.">Spriting</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/proving-sprite-theft/" title="How to prevent and prove sprite theft.">Proving Sprite Theft</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/making-fake-pokemon/" title="How to make a fake Pokémon, step by step.">Making Fake Pokémon</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/making-fan-theories/" title="How to make a fan theory... and how NOT to make a fan theory.">Making Fan Theories</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/reviewing-guide/" title="How to review fanfiction.">Reviewing</a></li>
+    </ul>
+</li>
+<li id="menu-webmasters"><a href="https://www.dragonflycave.com/webmasters/">Webmasters</a>
+    <ul>
+    <li class="useful"><a href="https://www.dragonflycave.com/html-guide/" title="Learn valid HTML and CSS from the ground up.">HTML Guide</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/website-tips/" title="General advice on websites.">Website Tips</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/writing-content/" title="A guide to writing good content for your website.">Writing Content</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/kinds-of-content/" title="The six types of content and how to make the best use of them.">Kinds of Content</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/page-pitfalls/" title="Some common pitfalls that pages on Pokémon websites fall into.">Page Pitfalls</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/site-critique/" title="Get your site ripped apart with criticism.">Site Critique</a></li>
+    <li class="useful"><a href="https://www.dragonflycave.com/free-layouts/" title="Get a very basic layout template for your site.">Free Layouts</a></li>
+    <li class="useful interesting"><a href="https://www.dragonflycave.com/free-quiz-scripts/" title="Make your very own personality test!">Free Quiz Scripts</a></li>
+    <li><a href="https://www.dragonflycave.com/resources/" title="Resources for webmasters (and others).">Resources</a>
+        <ul>
+        <li class="useful"><a href="https://www.dragonflycave.com/resources/pokemon-list-generator/" title="Generates a list of Pokémon, formatted however you like.">Pokémon List Generator</a></li>
+        <li class="useful interesting"><a href="https://www.dragonflycave.com/resources/sprite-generator/" title="Gives you sprites from any game for either the Pokémon you enter or up to three random ones.">Sprite Generator</a></li>
+        <li class="useful"><a href="https://www.dragonflycave.com/resources/sprites/" title="Download Pokémon sprites with your preferred naming scheme!">Pokémon Sprites</a></li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li id="menu-creative"><a href="https://www.dragonflycave.com/creative/">Creative</a>
+    <ul>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fan-fiction/" title="Pokémon fiction by yours truly.">Fan Fiction</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fake-pokemon/" title="My own fake Pokémon.">Fake Pokémon</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/fake-cheats/" title="Stupid made-up cheats.">Fake Cheats</a></li>
+    <li class="entertaining"><a href="https://www.dragonflycave.com/images/" title="A gallery of my own sprites, with long Terms of Use.">My Sprites</a></li>
+    </ul>
+</li>
+</ul>
+</div>
+<span id="menufix">
+</span>
+</nav>
+</div>
+
+<aside id="affys">
+<ul>
+<li id="affys-follow"><a href="https://www.dragonflycave.com/follow-main/">Support/<wbr>Follow</a>
+<ul>
+<li><a href="https://patreon.com/antialiasis" target="_blank" title="My Patreon"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/patreon.png" alt="Patreon"><span>Patreon</span></a></li>
+<li><a href="https://twitter.com/dragonflycave" target="_blank" title="The Cave of Dragonflies on Twitter"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/twitter.png" alt="Twitter"><span>Twitter</span></a></li>
+<li><a href="https://www.facebook.com/dragonflycave/" target="_blank" title="The Cave of Dragonflies on Facebook"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/facebook.png" alt="Facebook"><span>Facebook</span></a></li>
+<li><a href="https://bsky.app/profile/dragonflycave.com" target="_blank" title="The Cave of Dragonflies on Bluesky"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/bluesky.png" alt="Bluesky"><span>Bluesky</span></a></li>
+</ul>
+</li>
+<li id="affys-siblings"><a href="https://www.dragonflycave.com/sister-main/">Sibling Sites</a>
+<ul>
+<li><a href="https://alteredorigin.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/alteredorigin.gif" alt="Altered Origin" title="Altered Origin"><span>Altered Origin</span></a></li>
+</ul>
+</li>
+<li><a href="https://www.dragonflycave.com/affiliates/">Affiliates</a>
+<ul id="affys-affiliates">
+<li><a href="https://greninlucarizardlupplace.webnode.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/greninsplace.png" alt="Grenin&#39;s Place" title="Grenin&#39;s Place"><span>Grenin's Place</span></a></li>
+<li><a href="https://altissimo1.github.io/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/altissimos-site.png" alt="Altissimo&#39;s Site" title="Altissimo&#39;s Site"><span>Altissimo's Site</span></a></li>
+<li><a href="http://lycanroc.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/lycanroc-net.png" alt="Lycanroc.net" title="Lycanroc.net"><span>Lycanroc.net</span></a></li>
+<li><a href="http://pokeprint.kimbachu.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/pokeprint.png" alt="PokéPrint" title="PokéPrint"><span>PokéPrint</span></a></li>
+<li><a href="https://greenfieldcity.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/greenfieldcity.png" alt="Greenfield City" title="Greenfield City"><span>Greenfield City</span></a></li>
+<li><a href="http://noseclub.bluwiikoon.art/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/noseclub-button.png" alt="Nose Club" title="Nose Club"><span>Nose Club</span></a></li>
+<li><a href="https://viridianforties.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/viridianforties.png" alt="Viridian Forties" title="Viridian Forties"><span>Viridian Forties</span></a></li>
+<li><a href="https://bluemoonfalls.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/bluemoonfalls.png" alt="Blue Moon Falls" title="Blue Moon Falls"><span>Blue Moon Falls</span></a></li>
+<li><a href="http://pokemonrebirth.niftihalostudios.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/pkmnrebirth-caley.png" alt="Pokémon Rebirth" title="Pokémon Rebirth"><span>Pokémon Rebirth</span></a></li>
+<li><a href="https://applelyeverafter.thecomicseries.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/applelyeverafter.png" alt="Apple-ly Ever After" title="Apple-ly Ever After"><span>Apple-ly Ever After</span></a></li>
+<li><a href="https://neoposttown.neocities.org/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/neoposttownbutton.png" alt="Neo Post Town" title="Neo Post Town"><span>Neo Post Town</span></a></li>
+<li><a href="https://overstrat.pages-perso.free.fr/fiches-en/about.html"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/overstratbutton.png" alt="Overstrat" title="Overstrat"><span>Overstrat</span></a></li>
+<li><a href="http://aquabunny.creativeworlds.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/aquabunny.png" alt="Aqua Bunny" title="Aqua Bunny"><span>Aqua Bunny</span></a></li>
+<li><a href="http://sneaselplushie.legends-station.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/sneaselplushielink.gif" alt="Sneasel Plushie!" title="Sneasel Plushie!"><span>Sneasel Plushie!</span></a></li>
+<li><a href="https://pkmn.is-great.org/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/pokemonamber.gif" alt="Pokémon Amber" title="Pokémon Amber"><span>Pokémon Amber</span></a></li>
+<li><a href="https://hallowedtower.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/hallowed-tower.gif" alt="Hallowed Tower" title="Hallowed Tower"><span>Hallowed Tower</span></a></li>
+<li><a href="https://autumnsgrace.neocities.org/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/autumnsgrace.png" alt="Autumn&#39;s Grace" title="Autumn&#39;s Grace"><span>Autumn's Grace</span></a></li>
+<li><a href="https://icirr.us/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/master-ball.png" alt="Master Ball" title="Master Ball"><span>Master Ball</span></a></li>
+<li><a href="https://johtotimes.com/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/johtotimes.png" alt="Johto Times" title="Johto Times"><span>Johto Times</span></a></li>
+
+</ul>
+</li>
+<li id="affys-tqftl"><a href="https://www.dragonflycave.com/fan-fiction/">Fanfic</a>
+<ul>
+<li><a href="https://tqftl.dragonflycave.com/blog/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/button.gif" alt="The Quest for the Legends" title="The Quest for the Legends"><span>The Quest for the Legends</span></a></li>
+</ul>
+</li>
+<li id="affys-links"><a href="https://www.dragonflycave.com/links-main/">Links</a>
+<ul>
+<li><a href="http://www.serebii.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/spp.gif" alt="Serebii.net" title="Serebii.net"><span>Serebii.net</span></a></li>
+<li><a href="http://dogasu.bulbagarden.net/"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/dogasulink.gif" alt="Dogasu&#39;s Backpack" title="Dogasu&#39;s Backpack"><span>Dogasu's Backpack</span></a></li>
+</ul>
+</li>
+</ul>
+<span id="last">
+</span>
+</aside>
+</div>
+
+<footer id="disclaimer">
+<hr>
+<div>
+
+<p>I care about the truth, and I strive to keep the information on this website accurate and up-to-date. For instance, where possible, I have taken pains to personally test claims about the video games before making them. However, doing so is not always feasible, occasionally I manage to be wrong even when I think I've confirmed something, and with a website of this size, it's difficult to keep track of every single piece of information anywhere on it that might need to be changed or updated. Thus, if you spot any errors, mistakes or out-of-date tidbits – or even just typos – I'd be thrilled if you would report them via <a href="https://www.dragonflycave.com/report-errors/">this form</a>.</p>
+
+<p>Pokémon, Pikachu and all other Pokémon characters © 1995–2026 Nintendo, GAME FREAK and Creatures, Inc. This is a fan-made website. No infringement is intended.</p>
+
+
+
+<p>All layouts, non-official graphics and content © 2002–2026 Butterfree/Dragonfree/antialiasis unless otherwise stated.</p>
+
+<p><a href="https://www.dragonflycave.com/rss.xml"><img src="./R_S_E Roulette Mechanics _ The Cave of Dragonflies_files/rss-icon.png" alt="" class="rss-icon"> RSS feed</a></p>
+</div>
+</footer>
+</div>
+<script>
+    var style_dropdown = document.getElementById("style");
+    style_dropdown.onchange = function() {
+        document.forms["change"].submit();
+    };
+</script>
+
+<script>
+/*
+Get the menu to behave.
+
+In the CSS, #menu:hover gets height:100% so that it can provide scrolling if the actual menus are taller than the user's screen. However, this means that after the actual menu has closed, #menu still covers the entire page, is still being hovered over, and prevents clicking on anything underneath it.
+
+All we have to do to fix this is ensure that when we exit the #menu-inner element (the menu proper), we momentarily set #menu's height to auto and then remove the height again. This causes the #menu element to just correctly go back to its unhovered state.
+*/
+var menu = document.getElementById("menu");
+var menu_inner = document.getElementById("menu-inner");
+menu_inner.onmouseout = function(e) {
+    // Check whether we've actually hovered out of the #menu-inner onto #menu
+    if (!e) var e = window.event;
+    if (menu.style.position !== "fixed") {
+        return;
+    }
+    var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
+    if (reltg == menu) {
+        menu.style.height = "auto";
+        window.setTimeout(function() { menu.removeAttribute("style"); }, 10);
+    }
+};
+
+menu_inner.onmouseover = function(e) {
+    var menuPos = menu.getBoundingClientRect();
+    if (menuPos.top + window.pageYOffset > 0 || menuPos.left + window.pageXOffset > 0 || menu.style.position === "fixed") {
+        return;
+    }
+
+    if (e.target !== menu_inner) {
+        if (e.target.nodeName === 'LI') {
+            e.target.className = "over";
+        } else if (e.target.nodeName == 'A') {
+            e.target.parentNode.className = "over";
+        }
+    }
+    menu.className = "over";
+};
+
+document.body.onclick = function(e) {
+    var menuPos = menu.getBoundingClientRect();
+    if (menuPos.top + window.pageYOffset > 0 || menuPos.left + window.pageXOffset > 0 || menu.style.position === "fixed") {
+        return;
+    }
+
+    if (e.target === menu_inner || e.target === menu) {
+        menu.className = "over";
+    }
+
+    var curTarget = e.target;
+    // Return if we're within the menu.
+    while (curTarget) {
+        curTarget = curTarget.parentNode;
+        if (curTarget === menu_inner) {
+            if (e.target.nodeName === 'A' && e.target.parentNode.children.length > 1) {
+                e.target.parentNode.className = "over";
+                return false;
+            }
+            return true;
+        }
+    }
+
+    if (menu.className === "over") {
+        menu.className = "";
+    }
+    return true;
+};
+</script>
+
+
+
+</body></html>

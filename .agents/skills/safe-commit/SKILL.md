@@ -197,10 +197,7 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 ### 8. Lessons Extraction (LOCAL) 🛑
 
-Trigger the official **/learn** workflow directly. When generating the mandatory `learning_proposal.md` artifact (with `request_feedback = true` in metadata) outlining the classification, rationale, and precise text additions/diffs:
-1. **Target File Language**: You MUST write the proposed updates or additions using the native/dominant language of each target file or skill being updated.
-2. **User Explanations**: All descriptions, justifications, and explanations in the artifact and communication directed to the user MUST be written in Spanish.
-3. **Precise Location Targeting (DOX Compliance)**: Do NOT place lessons, rules, or guidelines in the root `AGENTS.md` file unless they are project-wide behavioral preferences. You MUST carefully analyze the project's DOX structure (the multiple `AGENTS.md` files in subdirectories, such as `database/AGENTS.md` for migrations/schemas, `tests/AGENTS.md` for mocks/tests/runners, and `src/logic/AGENTS.md` for core calculations/services). You MUST target the most specific and logical child `AGENTS.md` file that matches the folder tree of the modified code files, mapping each proposed rule to its proper domain boundary. Dumping specific rules in root files or arbitrary locations is considered a critical DOX violation.
+Trigger the official **/learn** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
 
 This is a **local documentation task** and MUST NOT involve a browser subagent.
 

@@ -19,7 +19,7 @@ Do not enact the plan until I confirm we have reached a shared understanding.
 
 ## DOX Hierarchy and Domain Awareness
 
-This repository strictly organizes its domains, rules, guidelines, and structural design using the **DOX framework**:
+This repository strictly organizes its domains, rules, guidelines, and structural design using the **DOX framework** (managed and navigated using the [dox-navigator](../dox-navigator/SKILL.md) skill):
 
 - **Root [AGENTS.md](./AGENTS.md)**: The entry point, defining global rules, project identity, design standards, database rules, and git protocols. It contains the top-level `Child DOX Index`.
 - **Child `AGENTS.md` files**: Each directory branch has its own `AGENTS.md` specifying local contracts, responsibilities, work guidance, verification checks, and lists of its child directories.

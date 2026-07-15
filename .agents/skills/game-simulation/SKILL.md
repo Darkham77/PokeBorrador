@@ -19,10 +19,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 ## Mandatory Progress Artifact
 
-**Every simulation run MUST maintain a live artifact at
-`scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` (create it before the first command runs,
-update it after each meaningful step). This artifact is the single source of truth
-for the current run and allows resuming at any point without losing context.
+**Every simulation run MUST maintain a live internal artifact named `simulation_progress.md` (located in the brain directory) as the single source of truth for the current run, allowing resumption at any point without losing context. Simultaneously, a copy of this artifact MUST be mirrored in the repository at `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` (create both before the first command runs, and update/mirror after each meaningful step).**
 
 ### Artifact structure
 
@@ -74,19 +71,11 @@ Status: FIXING | PENDING_RERUN | PASS
 
 ### Rules for the Progress Artifact
 
-1. **Create before the first simulation command.** The artifact must exist before
-   any `sim:*` or `sim:e2e:*` command is issued. Other `npm run` commands (lint, build, validate:types, etc.) do not
-   count as simulation commands and do not require the artifact to exist first.
-2. **Update after every step.** After each simulation pass/fail, after each fix
-   applied, after each file touched — update the artifact.
-3. **Mark resumption point.** On any interruption (user message, context limit,
-   error), ensure the artifact reflects exactly where execution stopped and what
-   is next, so a fresh agent can pick up without duplicating work.
-4. **One artifact per session.** If the user resumes a previous run, look for the
-    existing `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` artifact first and continue from it.
-   Only create a new one if none exists or the user explicitly starts fresh.
-5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge
-   the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
+1. **Create before the first simulation command.** The internal `simulation_progress.md` artifact and its mirrored copy at `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` must exist before any `sim:*` or `sim:e2e:*` command is issued. Other `npm run` commands (lint, build, validate:types, etc.) do not count as simulation commands and do not require the artifact to exist first.
+2. **Update and mirror after every step.** After each simulation pass/fail, after each fix applied, after each file touched — update the internal `simulation_progress.md` artifact (setting `UserFacing: true` and appropriate metadata) and immediately overwrite/mirror it to `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md`.
+3. **Mark resumption point.** On any interruption (user message, context limit, error), ensure the progress artifact reflects exactly where execution stopped and what is next, so a fresh agent can pick up without duplicating work.
+4. **Resuming a run.** If the user resumes a previous run, search for the existing internal `simulation_progress.md` artifact in the brain first. If missing, look for the mirrored `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` file in the repo to restore the state, then rebuild/continue from it.
+5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
 6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
 
 ---
@@ -408,7 +397,7 @@ For new Playwright specs (breeding, GTS, missions, save, gyms):
 
 Look for these signals:
 1. New `src/` features with no corresponding simulation (check `scripts/e2e/` domain folders).
-2. Untested abilities or items in `fuzzer_moves_coverage_report.json` or `fuzzer_report.txt`.
+2. Untested moves, abilities, items, or mechanics in all fuzzer coverage and simulation report files (such as fuzzer_moves_coverage_report.json, fuzzer_abilities_coverage_report.json, fuzzer_items_coverage_report.json, or fuzzer_report.txt).
 3. `// TODO` / `// test this` comments in `src/`.
 4. Features covered only by unit tests but never exercised in a real browser session.
 5. New npm scripts in `package.json` not linked to any simulation workflow.
