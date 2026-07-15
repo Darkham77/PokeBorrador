@@ -184,15 +184,3 @@ export const CLASS_MISSIONS = [
   { id: 'mission_12h', durationHs: 12, reqLv: 15, name: 'Misión Avanzada (12h)',  color: '#3b82f6' },
   { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)',   color: '#a855f7' }
 ];
-
-/**
- * REPUTATION_SHOP_ITEMS: Ítems canjeables por puntos de reputación (solo Entrenador).
- */
-export const REPUTATION_SHOP_ITEMS = [
-  { id: 'rep_ultra_ball', name: 'Ultra Ball x3', cost: 20, icon: '🔵', desc: 'Tres Ultra Balls de la tienda oficial del Gimnasio.' },
-  { id: 'rep_tm_earthquake', name: 'MT26 Terremoto', cost: 80, icon: '🌋', desc: 'El poderoso movimiento Terremoto en formato MT.' },
-  { id: 'rep_revive', name: 'Revivir x5', cost: 30, icon: '💊', desc: 'Cinco Revivires del botiquín de los Gimnasios.' },
-  { id: 'rep_full_heal', name: 'Cura Total x3', cost: 25, icon: '✨', desc: 'Tres Cura Total para sanar cualquier estado alterado.' },
-  { id: 'rep_iv_scanner', name: 'Escáner de IVs', cost: 100, icon: '🔍', desc: 'Radar avanzado: Revela los IVs totales de los rivales salvajes durante 1 hora.' },
-  { id: 'rep_star_piece', name: 'Trozo Estrella x3', cost: 60, icon: '⭐', desc: 'Tres trozos de estrella de valor extraordinario.' },
-];

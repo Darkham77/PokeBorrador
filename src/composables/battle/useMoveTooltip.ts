@@ -2,6 +2,7 @@ import { computed, toValue } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import type { Move, Pokemon } from '@/types/pokemon/pokemon';
 import { useBattleStore } from '@/stores/battle/battle';
+import { getItemName } from '@/data/inventory/items';
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
@@ -68,7 +69,7 @@ export function useMoveTooltip(
 
     if (attacker && attacker.heldItem && (attacker.heldItem === 'choiceband' || attacker.heldItem === 'choicespecs' || attacker.heldItem === 'choicescarf')) {
       const itemKey = attacker.heldItem;
-      const itemName = itemKey === 'choiceband' ? 'Cinta Elegida' : itemKey === 'choicespecs' ? 'Gafas Elegidas' : 'Pañuelo Elegido';
+      const itemName = getItemName(itemKey);
       
       const moveIdLookup = move.id || '';
       const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };

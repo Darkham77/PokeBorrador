@@ -1631,63 +1631,63 @@
   },
   "STONE_EVOLUTIONS": {
     "pikachu": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "raichu"
     },
     "pikachu_alola": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "raichualola"
     },
     "sandshrewalola": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "sandslashalola"
     },
     "nidorina": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "nidoqueen"
     },
     "nidorino": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "nidoking"
     },
     "clefairy": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "clefable"
     },
     "vulpix": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "ninetales"
     },
     "vulpixalola": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "ninetalesalola"
     },
     "jigglypuff": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "wigglytuff"
     },
     "gloom_vileplume": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "vileplume"
     },
     "gloom_bellossom": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "bellossom"
     },
     "growlithe": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "arcanine"
     },
     "growlithehisui": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "arcaninehisui"
     },
     "poliwhirl_poliwrath": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "poliwrath"
     },
     "weepinbell": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "victreebel"
     },
     "slowpokegalar_slowbrogalar": {
@@ -1699,63 +1699,63 @@
       "to": "slowkinggalar"
     },
     "magneton": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "magnezone"
     },
     "shellder": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "cloyster"
     },
     "voltorbhisui": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "electrodehisui"
     },
     "exeggcute_exeggutor": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "exeggutor"
     },
     "exeggcute_exeggutoralola": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "exeggutoralola"
     },
     "staryu": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "starmie"
     },
     "eevee_water": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "vaporeon"
     },
     "eevee_thunder": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "jolteon"
     },
     "eevee_fire": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "flareon"
     },
     "eevee_leaf": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "leafeon"
     },
     "eevee_ice": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "glaceon"
     },
     "togetic": {
-      "stone": "Piedra Día",
+      "stone": "shinystone",
       "to": "togekiss"
     },
     "sunkern": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "sunflora"
     },
     "murkrow": {
-      "stone": "Piedra Noche",
+      "stone": "duskstone",
       "to": "honchkrow"
     },
     "misdreavus": {
-      "stone": "Piedra Noche",
+      "stone": "duskstone",
       "to": "mismagius"
     },
     "gligar": {
@@ -1771,27 +1771,27 @@
       "to": "sneasler"
     },
     "lombre": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "ludicolo"
     },
     "nuzleaf": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "shiftry"
     },
     "kirlia_gallade": {
-      "stone": "Piedra Alba",
+      "stone": "dawnstone",
       "to": "gallade"
     },
     "skitty": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "delcatty"
     },
     "roselia": {
-      "stone": "Piedra Día",
+      "stone": "shinystone",
       "to": "roserade"
     },
     "snorunt_froslass": {
-      "stone": "Piedra Alba",
+      "stone": "dawnstone",
       "to": "froslass"
     },
     "happiny": {
@@ -1799,67 +1799,67 @@
       "to": "chansey"
     },
     "pansage": {
-      "stone": "Piedra Hoja",
+      "stone": "leafstone",
       "to": "simisage"
     },
     "pansear": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "simisear"
     },
     "panpour": {
-      "stone": "Piedra Agua",
+      "stone": "waterstone",
       "to": "simipour"
     },
     "munna": {
-      "stone": "Piedra Lunar",
+      "stone": "moonstone",
       "to": "musharna"
     },
     "cottonee": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "whimsicott"
     },
     "petilil_lilligant": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "lilligant"
     },
     "petilil_lilliganthisui": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "lilliganthisui"
     },
     "darumakagalar": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "darmanitangalar"
     },
     "minccino": {
-      "stone": "Piedra Día",
+      "stone": "shinystone",
       "to": "cinccino"
     },
     "eelektrik": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "eelektross"
     },
     "lampent": {
-      "stone": "Piedra Noche",
+      "stone": "duskstone",
       "to": "chandelure"
     },
     "floette": {
-      "stone": "Piedra Día",
+      "stone": "shinystone",
       "to": "florges"
     },
     "doublade": {
-      "stone": "Piedra Noche",
+      "stone": "duskstone",
       "to": "aegislash"
     },
     "helioptile": {
-      "stone": "Piedra Solar",
+      "stone": "sunstone",
       "to": "heliolisk"
     },
     "charjabug": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "vikavolt"
     },
     "crabrawler": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "crabominable"
     },
     "applin_flapple": {
@@ -1895,15 +1895,15 @@
       "to": "ceruledge"
     },
     "tadbulb": {
-      "stone": "Piedra Trueno",
+      "stone": "thunderstone",
       "to": "bellibolt"
     },
     "capsakid": {
-      "stone": "Piedra Fuego",
+      "stone": "firestone",
       "to": "scovillain"
     },
     "cetoddle": {
-      "stone": "Piedra Hielo",
+      "stone": "icestone",
       "to": "cetitan"
     },
     "poltchageist": {

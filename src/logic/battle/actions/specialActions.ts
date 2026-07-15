@@ -51,8 +51,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     const b = battleCtx?.activeBattle.value;
     if (!b) return;
     
-    if (tgt.ability === 'Succión' || tgt.ability === 'Ventosa') {
-      addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info', tgt);
+    if (tgt.ability === 'suctioncups') {
+      addLogFn(`¡La habilidad Ventosa de ${tgt.name} impidió ser arrastrado!`, 'log-info', tgt);
       return;
     }
 

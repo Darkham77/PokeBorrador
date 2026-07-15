@@ -6,8 +6,8 @@ This manual documents the mathematical formulas and balance constants that gover
 
 To support multi-generation mechanics and maintain the historical integrity of earlier games while supporting retro-modern environments, the engine uses a centralized formulas module (`battleFormulas.ts`) driven by two global constants:
 
-- **`CURRENT_GENERATION`**: `2` (Default base for the database of species and moves).
-- **`ACTIVE_RULE_SET`**: `2` (Determines the active battle calculations, critical hit calculations, and STAB modifiers).
+- **`CURRENT_GENERATION`**: `9` (Default base for the database of species and moves).
+- **`ACTIVE_RULE_SET`**: `9` (Determines the active battle calculations, critical hit calculations, and STAB modifiers).
 
 The formulas module returns the specific formula based on the `ACTIVE_RULE_SET` as documented below.
 
@@ -22,142 +22,24 @@ The bridge between the UI and the math core (`battleFormulas.ts`) MUST pass all 
 
 ## ⚔️ Combat Formulas
 
-### Centralized Math Core (`battleMath.ts`)
+Standard combat calculations, category-by-type rules (Gen 2 vs Gen 4+), critical hit multipliers, and formula parameters are detailed in the standard battle manuals:
+- **Battle Math & Core Rules**: See [Battle Mechanics](./../battle/battle.md) and [Battling Basics](./../battle/battling-basics.md).
+- **Status Ailments**: See [Status Ailments](./../battle/status-ailments.md).
 
-All mathematical formulas related to combat, including stats calculation, damage range estimation, type effectiveness, catch rates, and wild flee chances, MUST be centralized in `src/logic/battle/battleMath.ts`.
-- **Pure Functions**: These functions must be pure, synchronous, and have no dependencies on Vue reactivity, Pinia stores, or Supabase.
-- **Dex Integration**: Type effectiveness and base Gen 3 stats/learnsets are resolved directly using `@pkmn/sim` Dex (`Dex.forGen(3)`) in memory to ensure consistency with canonical battle mechanics and prevent manual mapping drift.
-- **Spanish ID Prohibition**: All ability, move, nature, and item logical identifiers passed to the math core MUST conform strictly to English Showdown IDs (e.g., `blaze`, `torrent`, `overgrow`, `intimidate`). Spanish is reserved exclusively for the localized presentation layer.
-
-### 1. Common Base Damage Formula
-
-Inspired by Gen 4 with modifications for web game balance. Regardless of generation, the foundational formula used is:
-
-```text
-Damage = Math.floor(((2 * Level / 5 + 2) * Power * (A / D)) / 50) + 2
-```
-
-_Where:_
-
-- **A (Attack)**: Includes burn (x0.5) and Nature/Ability multipliers.
-- **D (Defense)**: Includes Nature/Ability multipliers.
-- **Final Modifiers**: `Damage * STAB * Effectiveness * Random_Factor (0.85-1.0) * Critical * Weather * Items`.
-
-### 2. Generation 2 Rule Set
-
-Used when `ACTIVE_RULE_SET === 2`. The calculations must apply the following specific canonical rules:
-
-#### A. Category by Type
-
-The category of a move (Physical or Special) is determined strictly by its **Type**, ignoring any individual move category metadata:
-
-- **Physical Types**: `normal`, `fighting`, `flying`, `poison`, `ground`, `rock`, `bug`, `ghost`, `steel`.
-- **Special Types**: `fire`, `water`, `grass`, `electric`, `psychic`, `ice`, `dragon`, `dark`.
-
-#### B. Gen 2 Stat Modifiers (A & D)
-
-- **A**: Attacker's Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
-- **D**: Defender's Defense or Sp. Defense.
-
-#### C. Gen 2 Critical Hits
-
-- **Multiplier**: `2.0x`.
-- **Stat Reset Rule**: If a critical hit is triggered, any stat drops on the attacker (`A`) are ignored, and any stat boosts on the defender (`D`) are ignored.
-- **Base Probability**: 6.25% (`1/16`).
-
-#### D. Gen 2 Final Multipliers
-
-`Final Damage = floor(Damage * STAB * Effectiveness * Random)`
-
-- **STAB**: `1.5x` if the move type matches the user's type.
-- **Effectiveness**: `0x`, `0.25x`, `0.5x`, `1x`, `2x`, `4x` (Based on the Gen 2 type effectiveness chart).
-- **Random**: Variation between `0.85` and `1.0` (inclusive).
-
-### 3. Generation 4+ Rule Set
-
-Used when `ACTIVE_RULE_SET === 4` or higher. Applies the following rules:
-
-#### A. Direct Category
-
-The category of a move is determined exclusively by the move's individual metadata: `physical`, `special`, or `status`.
-
-#### B. Gen 4+ Stat Modifiers (A & D)
-
-- **A**: Attacker's Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
-- **D**: Defender's Defense or Sp. Defense.
-
-#### C. Gen 4+ Critical Hits
-
-- **Multiplier**:
-  - Gen 4-5: `2.0x`.
-  - Gen 6+: `1.5x`.
-- **Rule**: Ignores any stat drops on the attacker and any stat boosts on the defender unconditionally.
-- **Immunity**: Attacks against Pokémon with the `Shell Armor` or `Battle Armor` abilities cannot trigger a critical hit.
-
-#### D. Gen 4+ Final Multipliers
-
-`Final Damage = floor(Damage * STAB * Ability * Effectiveness * Random * Critical * Weather * Item)`
-
-- **STAB**: `1.5x` (`2.0x` with the **Adaptability** ability).
-- **Effectiveness**: Modern type effectiveness chart.
-- **Random**: Variation between `0.85` and `1.0` (inclusive).
+---
 
 ### 4. Stage Multipliers (-6 to +6)
 
-| Stage       | -6   | -5   | -4   | -3   | -2   | -1   | 0   | +1   | +2   | +3  | +4   | +5   | +6  |
-| :---------- | :--- | :--- | :--- | :--- | :--- | :--- | :-- | :--- | :--- | :-- | :--- | :--- | :-- |
-| **Stat**    | 0.25 | 0.28 | 0.33 | 0.40 | 0.50 | 0.66 | 1.0 | 1.5  | 2.0  | 2.5 | 3.0  | 3.5  | 4.0 |
-| **Acc/Eva** | 0.33 | 0.37 | 0.43 | 0.50 | 0.60 | 0.75 | 1.0 | 1.33 | 1.66 | 2.0 | 2.33 | 2.66 | 3.0 |
+Stat and Accuracy/Evasion stage multipliers have been moved to the canonical reference:
+- **Stat Stage Details**: See [Stat Stages](./../systems/stat-stages.md) for the exact multipliers, mechanics, and generation changes.
 
 ---
 
 ## 🏃 Escape & Capture Math
 
-### 1. Escape Chance Formula (Gen 2)
-
-In wild battles, if the player chooses to run:
-
-```text
-F = ((A * 32) / (B / 4)) + 30 * C
-```
-
-- **A**: Player active Pokémon's current Speed.
-- **B**: Wild Pokémon's current Speed.
-- **C**: Number of times the player has attempted to escape in the same battle (starts at 0 on the first attempt).
-- **Success Criteria**: If `F > 255`, the player successfully escapes. Otherwise, a random check between 0 and 255 is evaluated; if it is less than `F`, escape succeeds.
-
-### 2. Escape Chance Formula (Gen 4+)
-
-In wild battles, if the player chooses to run:
-
-```text
-F = ((A * 128) / B) + 30 * C
-```
-
-- **A**: Player active Pokémon's current Speed.
-- **B**: Wild Pokémon's current Speed.
-- **C**: Number of times the player has attempted to escape in the same battle (starts at 0 on the first attempt).
-- **Success Criteria**: A random number between 0 and 255 is evaluated; if it is less than `F`, escape succeeds.
-
-### 3. Capture Formula (Gen 3/4 Algorithm)
-
-```text
-HP_Factor = (3 * HP_Max - 2 * HP_Actual) / (3 * HP_Max)
-a = Math.min(255, Math.floor(Base_Ratio * Ball_Multiplier * HP_Factor * Status_Multiplier))
-b = Math.floor(65535 * (a / 255)^0.25)
-Capture = 4 consecutive checks where Random(0-65535) < b
-```
-
-_Multipliers:_
-
-- **Base_Ratio**: Species-specific `catchRate` from `pokemonDB.ts` (e.g., 255 for Rattata, 3 for Mewtwo).
-- **Ball Multipliers**:
-  - **Standard**: Poké (1.0x), Great (1.5x), Ultra (2.0x), Master (Guaranteed).
-  - **Dusk Ball**: **3.0x** if the environment is `Night`, `Cave`, or `Fog`.
-  - **Net Ball**: **3.5x** against Water/Bug types, or if the weather is `Rain` or `Storm`.
-  - **Timer Ball**: Scales from **1.0x** to **4.0x** based on `turnCount` (Maxes at 10 turns).
-- **Status**: Sleep/Freeze (2.0x), Other status conditions (1.5x).
-- **Stacking**: Ball multipliers and event bonuses stack additively.
+All equations and rules regarding escaping wild battles and capturing wild Pokémon are detailed in the corresponding generation-specific references:
+- **Escape Chance**: Calculated dynamically based on generation speed checks (Gen 2 vs Gen 4+).
+- **Capture Formulas**: Documented in [Gen I Capturing](./../systems/gen-i-capturing.md) through [Gen IX Capturing](./../systems/gen-ix-capturing.md), including specialized zones like [Gen I Safari Zone](./../systems/gen-i-safari-zone.md) and custom ball multipliers.
 
 ---
 
@@ -218,12 +100,10 @@ Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
 - **`MAX_POKEMON_LEVEL`**: `100` (centralized in `constants.ts`).
 - **Cap Behavior**: When a Pokémon reaches level 100, its current experience (`exp`) is set to `0`, and its experience needed (`expNeeded`) becomes `Infinity`. No additional experience can be gained.
 
----
-
 ## 🧬 Statistics (Stats)
 
-- **Health Points (HP)**: `HP = floor((Base * 2 + IV) * Level / 100 + Level + 10)`
-- **Combat Stats (Atk, Def, etc)**: `Stat = floor(floor((Base * 2 + IV) * Level / 100 + 5) * Nature)` _Nature_: Favorable (1.1), Unfavorable (0.9), Neutral (1.0).
+Standard calculations for HP and combat stats (including EVs, IVs, and Nature effects) have been moved to the canonical reference:
+- **Stat Formulas**: See [Stat Mechanics](../systems/stats.md) for full details, examples, and generation history.
 
 ---
 

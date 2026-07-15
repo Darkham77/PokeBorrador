@@ -7,6 +7,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { getItemName } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MoveBaseData } from '@/types/system/database'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
@@ -107,7 +108,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     Object.keys(stoneTable).forEach(key => {
       if (key === id || key.startsWith(`${id}_`)) {
         const ev = stoneTable[key]!
-        list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
+        list.push(enrichEvo({ type: 'stone', requirement: getItemName(ev.stone), to: ev.to }))
       }
     })
 

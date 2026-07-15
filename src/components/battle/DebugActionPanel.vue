@@ -4,6 +4,7 @@ import { sleep } from '@/logic/utils/timeUtils'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
+import { getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex'
 import { gameBus } from '@/logic/events/gameBus'
@@ -155,8 +156,8 @@ const debugCapture = async () => {
   
   battleStore.isProcessing = true
   const e = battleStore.state.enemy
-  const itemName = 'Ultra Ball'
-  const ballId = 'ultra_ball'
+  const ballId = 'ultraball'
+  const itemName = getItemName(ballId)
   
   battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch', itemName)
   

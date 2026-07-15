@@ -74,8 +74,8 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 - **Mandatory Hatched Tag**: All Pokémon born from eggs MUST automatically receive the `hatched` tag in their data records upon hatching. This tag represents born/bred ancestry, is read-only, and is displayed as `CRÍA` (🥚) in the user interface.
 
 ### 2. Vigor on Hatching
-- **Regular Bred Eggs**: Pokémon hatched from player-bred eggs consume half of their maximum vigor immediately, starting with a vigor value of `5/10`.
-- **NPC Gift Eggs**: Pokémon hatched from NPC event eggs (i.e. eggs marked as `isNpcEgg` or similar event statuses) start with full vigor (`10/10`) to reflect their special or premium origin.
+- **Regular Bred Eggs**: Pokémon hatched from player-bred eggs consume half of their maximum vigor immediately, starting with a vigor value of `Math.max(1, Math.floor(maxVigor / 2))`.
+- **NPC Gift Eggs**: Pokémon hatched from NPC event eggs (i.e. eggs marked as `isNpcEgg` or similar event statuses) start with full vigor (`maxVigor`) to reflect their special or premium origin.
 - **Ancestral/Cloned Pokémon**: Recreated fossil or ancestral Pokémon hatch/revive with both `maxVigor` and `vigor` set to `0`, reflecting their unique status.
 
 

@@ -26,7 +26,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   
   'paralyze': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
-    if (tgt.ability === 'Flexibilidad') {
+    if (tgt.ability === 'limber') {
       addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info', tgt);
       return;
     }
@@ -40,7 +40,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info', tgt);
       return;
     }
-    if (tgt.ability === 'Inmunidad') {
+    if (tgt.ability === 'immunity') {
       addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info', tgt);
       return;
     }
@@ -54,7 +54,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info', tgt);
       return;
     }
-    if (tgt.ability === 'Inmunidad') {
+    if (tgt.ability === 'immunity') {
       addLogFn(`¡La Inmunidad de ${tgt.name} evitó el envenenamiento!`, 'log-info', tgt);
       return;
     }
@@ -65,8 +65,8 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   
   'sleep': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
-    if (tgt.ability === 'Insomnio' || tgt.ability === 'Espíritu Vital') {
-      addLogFn(`¡${tgt.name} tiene ${tgt.ability} y no puede dormir!`, 'log-info', tgt);
+    if (tgt.ability === 'insomnia' || tgt.ability === 'vitalspirit') {
+      addLogFn(`¡${tgt.name} tiene una habilidad que le impide dormir!`, 'log-info', tgt);
       return;
     }
     tgt.status = 'slp';
@@ -86,7 +86,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   
   'confuse': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.confused) return;
-    if (tgt.ability === 'Ritmo Propio') {
+    if (tgt.ability === 'owntempo') {
       addLogFn(`¡El Ritmo Propio de ${tgt.name} evitó la confusión!`, 'log-info', tgt);
       return;
     }
@@ -96,7 +96,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   
   'attract': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.attracted) return;
-    if (tgt.ability === 'Despiste') {
+    if (tgt.ability === 'oblivious') {
       addLogFn(`¡El Despiste de ${tgt.name} evitó la atracción!`, 'log-info', tgt);
       return;
     }

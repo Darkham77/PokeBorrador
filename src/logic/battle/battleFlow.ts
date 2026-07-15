@@ -10,7 +10,7 @@ import { gameBus } from '../events/gameBus.ts'
 export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn) {
   if (!pokemon) return;
   if (pokemon.id !== 'castform') return;
-  if (pokemon.ability !== 'Predicción') return;
+  if (pokemon.ability !== 'forecast') return;
 
   const family = weatherType ? getWeatherFamily(weatherType) : null;
   let targetForm = 'normal';
@@ -54,16 +54,16 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
 
   // Actualizar forma de Castform al entrar
-  const isAclimatacion = playerPoke.ability === 'cloudnine' || enemyPoke.ability === 'cloudnine' || playerPoke.ability === 'Aclimatación' || enemyPoke.ability === 'Aclimatación';
+  const isAclimatacion = playerPoke.ability === 'cloudnine' || enemyPoke.ability === 'cloudnine';
   const effectiveWeather = isAclimatacion ? undefined : weatherType;
   updateCastformForm(playerPoke, effectiveWeather, addLog);
   updateCastformForm(enemyPoke, effectiveWeather, addLog);
 
-  if (playerPoke.ability === 'intimidate' || playerPoke.ability === 'Intimidación') {
+  if (playerPoke.ability === 'intimidate') {
     enemyStages.atk = Math.max(-6, enemyStages.atk - 1)
     addLog(`¡La Intimidación de ${playerPoke.name} bajó el ataque de ${enemyPoke.name}!`, 'log-info', playerPoke)
   }
-  if (enemyPoke.ability === 'intimidate' || enemyPoke.ability === 'Intimidación') {
+  if (enemyPoke.ability === 'intimidate') {
     playerStages.atk = Math.max(-6, playerStages.atk - 1)
     addLog(`¡La Intimidación de ${enemyPoke.name} bajó el ataque de ${playerPoke.name}!`, 'log-info', enemyPoke)
   }
@@ -136,7 +136,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
 }
 
 async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
-  if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine' || p?.ability === 'Aclimatación' || e?.ability === 'Aclimatación') {
+  if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine') {
     return;
   }
   const mechWeather = getMechanicalWeather(weather?.type);
@@ -187,7 +187,7 @@ async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeathe
   // Poder Solar (Solar Power) Recoil
   if (mechWeather === WEATHER_MECHANICAL.SUN) {
     [p, e].forEach(poke => {
-      if (poke.ability === 'Poder solar' && poke.hp > 0) {
+      if (poke.ability === 'solarpower' && poke.hp > 0) {
         const dmg = Math.max(1, Math.floor(poke.maxHp / 8));
         poke.hp = Math.max(0, poke.hp - dmg);
         ctx.addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke);
@@ -283,7 +283,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
 export function applyEntryHazards(pokemon: Pokemon, stages: BattleStages, addLog: LogFn) {
   if (!pokemon || pokemon.hp <= 0) return;
 
-  const isGrounded = pokemon.type !== 'flying' && pokemon.type2 !== 'flying' && pokemon.ability !== 'Levitación';
+  const isGrounded = pokemon.type !== 'flying' && pokemon.type2 !== 'flying' && pokemon.ability !== 'levitate';
 
   // 1. Spikes
   if (stages.spikes && stages.spikes > 0 && isGrounded) {
@@ -301,7 +301,7 @@ export function applyEntryHazards(pokemon: Pokemon, stages: BattleStages, addLog
     if (isPoisonType && isGrounded) {
       stages.toxicSpikes = 0;
       addLog(`¡${pokemon.name} absorbió las púas tóxicas!`, 'log-info', pokemon);
-    } else if (isGrounded && !pokemon.status && !isPoisonType && !isSteelType && pokemon.ability !== 'Inmunidad') {
+    } else if (isGrounded && !pokemon.status && !isPoisonType && !isSteelType && pokemon.ability !== 'immunity') {
       if (stages.toxicSpikes === 1) {
         pokemon.status = 'psn';
         addLog(`¡${pokemon.name} fue envenenado por las púas tóxicas!`, 'log-info', pokemon);

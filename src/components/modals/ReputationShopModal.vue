@@ -7,6 +7,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
+import { getItemName, getItemById } from '@/data/inventory/items'
 
 interface Props {
   show?: boolean
@@ -27,9 +28,9 @@ const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
 interface ReputationShopItem {
   id: string
-  name: string
+  name?: string
   repCost: number
-  desc: string
+  desc?: string
   sprite: string
   givesId: string
   givesQty: number
@@ -37,23 +38,32 @@ interface ReputationShopItem {
   cat: string
 }
 
+function resolveItemName(item: ReputationShopItem): string {
+  const catalogName = getItemName(item.givesId)
+  return catalogName !== item.givesId ? catalogName : (item.name ?? item.givesId)
+}
+
+function resolveItemDesc(item: ReputationShopItem): string {
+  try {
+    return getItemById(item.givesId).desc ?? item.desc ?? ''
+  } catch {
+    return item.desc ?? ''
+  }
+}
+
 const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
-    id: 'rep_ultra_ball',
-    name: 'Ultra Ball x3',
+    id: 'repultraball',
     repCost: 15,
-    desc: 'Otorga 3x Ultra Ball. Excelente ratio de captura.',
     sprite: 'crafting/tier3/ultra_ball',
-    givesId: 'ultra_ball',
+    givesId: 'ultraball',
     givesQty: 3,
     tier: 'rare',
     cat: 'pokeballs'
   },
   {
-    id: 'rep_tm_earthquake',
-    name: 'MT26 Terremoto',
+    id: 'reptmearthquake',
     repCost: 50,
-    desc: 'Otorga el movimiento Terremoto (MT26). Tipo Tierra devastador.',
     sprite: 'crafting/tier3/tm_ground',
     givesId: 'tm26',
     givesQty: 1,
@@ -61,10 +71,8 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
     cat: 'tms'
   },
   {
-    id: 'rep_revive',
-    name: 'Revivir x5',
+    id: 'reprevive',
     repCost: 20,
-    desc: 'Otorga 5x Revivir. Revive y cura un 50% de los PS máximos.',
     sprite: 'crafting/tier3/revive',
     givesId: 'revive',
     givesQty: 5,
@@ -72,10 +80,8 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
     cat: 'potions'
   },
   {
-    id: 'rep_full_heal',
-    name: 'Cura Total x3',
+    id: 'repfullheal',
     repCost: 15,
-    desc: 'Otorga 3x Cura Total. Cura cualquier problema de estado.',
     sprite: 'crafting/tier3/full_heal',
     givesId: 'fullheal',
     givesQty: 3,
@@ -83,23 +89,19 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
     cat: 'potions'
   },
   {
-    id: 'rep_iv_scanner',
-    name: 'Escáner de IVs',
+    id: 'repivscanner',
     repCost: 40,
-    desc: 'Consumible (1 hora). Muestra el IV total del Pokémon enemigo salvaje en combate.',
     sprite: 'crafting/tier3/poke_radar',
-    givesId: 'iv_scanner',
+    givesId: 'ivscanner',
     givesQty: 1,
     tier: 'epic',
     cat: 'tools'
   },
   {
-    id: 'rep_star_piece',
-    name: 'Trozo Estrella x3',
+    id: 'repstarpiece',
     repCost: 30,
-    desc: 'Otorga 3x Trozo Estrella. Valioso mineral que se vende caro en la tienda.',
     sprite: 'crafting/tier0/star_piece',
-    givesId: 'star_piece',
+    givesId: 'starpiece',
     givesQty: 3,
     tier: 'rare',
     cat: 'otros'
@@ -115,12 +117,16 @@ const search = ref('')
 const sortKey = ref<'name' | 'price' | 'rarity'>('name')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 
-const filteredItems = computed<ReputationShopItem[]>(() => {
+const filteredItems = computed<(ReputationShopItem & { name: string; desc: string })[]>(() => {
   const items = REPUTATION_SHOP_ITEMS.filter(item => {
     if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
-    if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
+    if (search.value && !resolveItemName(item).toLowerCase().includes(search.value.toLowerCase())) return false
     return true
-  })
+  }).map(item => ({
+    ...item,
+    name: resolveItemName(item),
+    desc: resolveItemDesc(item),
+  }))
 
   return [...items].sort((a, b) => {
     let comp = 0

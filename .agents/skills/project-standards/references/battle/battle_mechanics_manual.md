@@ -153,38 +153,10 @@ All animation triggers MUST be accessible via the `window.__VITE_DEBUG__.battle.
 
 ## 🩺 Status Conditions (Primary & Secondary)
 
-The engine implements two layers of conditions that affect the Pokémon's performance and health.
+All non-volatile (primary) and volatile (secondary/stackable) status conditions, along with their generation-specific modifiers, chances, and behaviors, are detailed in the standard reference:
+- **Status Ailments & Effects**: See [Status Ailments](./status-ailments.md) for a comprehensive list (Sleep, Paralysis, Burn, Freeze, Poison, Confusion, etc.) and formulas.
 
-### 1. Primary Status (Volatile/Non-Volatile)
-
-Only ONE primary status can affect a Pokémon at a time (except in special modes):
-
-- **Poison (PSN)**: Inflicts 1/8 of max HP damage at the end of each turn.
-- **Badly Poisoned (TOX)**: Inflicts damage that increases each turn: starts at 1/16 of max HP on the first turn, and increases by 1/16 of max HP each subsequent turn (up to 15/16). When the Pokémon is withdrawn, it reverts to standard Poison.
-- **Burn (BRN)**: Inflicts 1/8 of max HP damage at the end of each turn AND reduces Physical Attack (A) to 50%.
-- **Paralysis (PAR)**: Reduces Speed to 25% AND has a **25% probability** of causing "Fully Paralyzed," skipping the turn.
-- **Sleep (SLP)**: Prevents the Pokémon from attacking for 1 to 3 turns. Turn count is managed via `pokemon.sleepTurns`.
-- **Freeze (FRZ)**: Prevents the Pokémon from attacking. At the start of each turn, there is a **20% probability** of thawing out.
-- **Type Immunity (Status Moves)**: Unlike older generations, status moves (category `status`) MUST respect type immunities. A Normal-type status move (e.g., _Gruñido_) will have NO EFFECT on a Ghost-type Pokémon. This logic is handled in `calculateDamage` by evaluating effectiveness before returning the result.
-
-### 2. Secondary Conditions (Stackable)
-
-These can coexist with primary status and other secondary effects:
-
-- **Confusion**: Lasts 2 to 5 turns. **FX**: 💫 floating particle + sprite wobble.
-- **Attraction**: Activated by moves like _Attract_. **FX**: ❤️ floating hearts.
-- **Leech Seed**: Drains HP each turn. **FX**: 🌱 growing plants.
-- **Curse (Ghost)**: Drains 1/4 HP each turn. **FX**: 👻 floating ghost + dark aura.
-- **Trapped**: Cannot escape. **FX**: ⛓️ chains + jitter.
-- **Protection**: Avoids damage. **FX**: 🛡️ pulsing shield aura.
-- **Endure**: Survives lethal hit. **FX**: 👊 pop-in fist.
-- **Focus Energy**: Crit boost. **FX**: 🎯 spinning target + red aura.
-- **Lock-On**: No miss. **FX**: 👁️ blinking eye.
-- **Mist**: Prevents stat drops. **FX**: 🌫️ drifting white-blue aura. Rendered with high opacity (0.8) and Normal blend mode to ensure visibility on light backgrounds.
-- **Curse**: This move has a **Dual Effect** based on the user's type.
-  - **Ghost-type**: User sacrifices 50% max HP to curse the target (1/4 max HP damage per turn).
-  - **Non-Ghost**: User gains +1 Atk, +1 Def, and -1 Speed.
-- **Weather Debugging**: Debug menus MUST include all visual variants (Mist, Storm, Heatwave, Blizzard) to facilitate aesthetic testing of atmosphere layers, even if they map to the same mechanical weather.
+---
 
 ### 3. Combat Loop Integration
 
@@ -1163,7 +1135,7 @@ To ensure capture difficulty aligns with official game standards and species ide
 
 ### 2. Capture Probability Formula
 
-Refer to the [Capture Formula section in the Game Formulas Manual](../core/game_formulas_manual.md) for technical details on Gen 3/4 Math.
+Refer to the [Gen IX Capturing](./../systems/gen-ix-capturing.md) (and other generation-specific manuals under systems) for technical capture equations.
 
 ### 3. Visual & Interface Definitions
 

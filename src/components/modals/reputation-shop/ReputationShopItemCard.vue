@@ -60,7 +60,7 @@ const buy = async () => {
   gameStore.state.inventory[props.item.givesId] = (gameStore.state.inventory[props.item.givesId] || 0) + props.item.givesQty
 
   // Extra handling for Poke Balls
-  if (props.item.givesId === 'ultra_ball') {
+  if (props.item.givesId === 'ultraball') {
     gameStore.state.balls = (gameStore.state.balls || 0) + props.item.givesQty
   }
 

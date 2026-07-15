@@ -44,7 +44,7 @@ Register in `EVOLUTION_TABLE`, `STONE_EVOLUTIONS`, or `TRADE_EVOLUTIONS`.
 
 - Register the **National ID** in `POKEMON_SPRITE_IDS`.
 - Insert in the `PDEX_ORDER` array.
-- Add TM compatibility in `TM_COMPAT` (according to Gen 3).
+- Add TM compatibility in `TM_COMPAT` (according to Gen 9).
 
 ---
 
@@ -78,7 +78,7 @@ To maintain absolute stability in the high-fidelity combat arena, all entity ren
 
 ## ✅ Final Verification Checklist
 
-- [ ] Entry in `POKEMON_DB` with stats and Gen 3 learnset.
+- [ ] Entry in `POKEMON_DB` with stats and Gen 9 learnset.
 - [ ] Secondary type and Abilities registered.
 - [ ] Evolution and Pokédex IDs configured.
 - [ ] TM compatibility verified.

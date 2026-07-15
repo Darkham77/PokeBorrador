@@ -451,6 +451,7 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
     'master': { guaranteed: true },
     '100': { guaranteed: true },
     'ultra': { mult: 2.0 },
+    'great': { mult: 1.5 },
     'super': { mult: 1.5 },
     'súper': { mult: 1.5 },
     'net': { 
@@ -490,7 +491,7 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
   const hpFactor = (3 * maxHp - 2 * curHp) / (3 * maxHp);
   const catchRate = pokemon.catchRate ?? 45;
 
-  const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
+  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.0 : 
                      (pokemon.status ? 1.5 : 1.0);
 
   const eventBonus = eventCatchMult - 1;

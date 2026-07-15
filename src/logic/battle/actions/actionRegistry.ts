@@ -68,7 +68,7 @@ export async function dispatchMoveEffect(
   if (roll > chance) return; // No se activó el efecto secundario
 
   // 2. Comprobar inmunidades generales (Shield Dust / Polvo Escudo)
-  if (tgt.ability === 'Polvo escudo' && chance < 100) {
+  if (tgt.ability === 'shielddust' && chance < 100) {
     if (effectBase !== 'leech_seed' && effectBase !== 'metronome') {
       addLogFn(`¡El Polvo escudo de ${tgt.name} evitó los efectos secundarios!`, 'log-info', tgt);
       return;

@@ -6,24 +6,40 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath'
 import EggSprite from '@/components/common/EggSprite.vue'
 import { gsap } from 'gsap'
+import { getItemName } from '@/data/inventory/items'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const breedingStore = useBreedingStore()
 const gameStore = useGameStore()
 
 // Fossil definitions
 const FOSSILS = [
-  { name: 'Fósil Domo', id: 'domefossil', pokemon: 'Kabuto' },
-  { name: 'Fósil Hélix', id: 'helixfossil', pokemon: 'Omanyte' },
-  { name: 'Ámbar Viejo', id: 'oldamber', pokemon: 'Aerodactyl' }
+  { id: 'domefossil', pokemonId: 'kabuto' },
+  { id: 'helixfossil', pokemonId: 'omanyte' },
+  { id: 'oldamber', pokemonId: 'aerodactyl' }
 ]
 
-const defaultFossil = { name: 'Fósil Domo', id: 'domefossil', pokemon: 'Kabuto' }
+const defaultFossil = { id: 'domefossil', pokemonId: 'kabuto' }
 const selectedFossilIndex = ref(0)
 const extraSacrifices = ref(0)
 
+const renderedFossils = computed(() => {
+  return FOSSILS.map(f => ({
+    id: f.id,
+    name: getItemName(f.id),
+    pokemon: pokemonDataProvider.getPokemonData(f.pokemonId)?.name || f.pokemonId
+  }))
+})
+
 const activeFossil = computed<{ name: string; id: string; pokemon: string }>(() => {
-  const f = FOSSILS[selectedFossilIndex.value]
-  return f ? f : defaultFossil
+  const f = renderedFossils.value[selectedFossilIndex.value]
+  if (f) return f
+  const base = defaultFossil
+  return {
+    id: base.id,
+    name: getItemName(base.id),
+    pokemon: pokemonDataProvider.getPokemonData(base.pokemonId)?.name || base.pokemonId
+  }
 })
 
 const ownedCount = computed(() => {
@@ -168,8 +184,8 @@ watch(extraSacrifices, () => {
         <span class="section-label">1. SELECCIONAR FÓSIL BASE</span>
         <div class="fossil-cards">
           <div
-            v-for="(fossil, idx) in FOSSILS"
-            :key="fossil.name"
+            v-for="(fossil, idx) in renderedFossils"
+            :key="fossil.id"
             class="fossil-card"
             :class="{ active: selectedFossilIndex === idx }"
             @click="selectFossil(idx)"

@@ -384,18 +384,19 @@ const handleArchaeologySuccess = async (difficulty: string) => {
 const handleArchaeologyFail = async () => {
   logger.warn('BattleArenaView', 'Archaeology FAIL')
   
-  let fossilName = 'Ámbar Viejo'
+  let fossilId = 'oldamber'
   let emoji = '💎'
   if (enemy.value?.id === 'kabuto') {
-    fossilName = 'Fósil Domo'
+    fossilId = 'domefossil'
     emoji = '🛡'
   } else if (enemy.value?.id === 'omanyte') {
-    fossilName = 'Fósil Hélix'
+    fossilId = 'helixfossil'
     emoji = '🐚'
   }
   
-  const { SHOP_ITEMS } = await import('@/data/inventory/items')
-  const itemData = SHOP_ITEMS.find(i => i.id === fossilName || i.name === fossilName)
+  const { getItemName, SHOP_ITEMS } = await import('@/data/inventory/items')
+  const fossilName = getItemName(fossilId)
+  const itemData = SHOP_ITEMS.find(i => i.id === fossilId)
   const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 
   const uiStore = useUIStore()

@@ -37,9 +37,9 @@ const options = computed(() => {
   const p = pokemon.value;
   if (p.id === 'eevee') {
     return [
-      { stone: 'Piedra Agua',   to: 'vaporeon' },
-      { stone: 'Piedra Trueno', to: 'jolteon' },
-      { stone: 'Piedra Fuego',  to: 'flareon' },
+      { stone: 'waterstone',   to: 'vaporeon' },
+      { stone: 'thunderstone', to: 'jolteon' },
+      { stone: 'firestone',    to: 'flareon' },
     ];
   }
   
@@ -52,9 +52,8 @@ const close = () => {
   emit('close');
 };
 
-const useStone = (stoneName: string, toId: string) => {
+const useStone = (stoneId: string, toId: string) => {
   if (!pokemon.value) return;
-  const stoneId = getStoneInfo(stoneName).id || stoneName;
   const currentQty = gameStore.state.inventory[stoneId];
   if (!currentQty || currentQty <= 0) return;
 
@@ -66,7 +65,7 @@ const useStone = (stoneName: string, toId: string) => {
 
   close();
   // Start evolution scene
-  evolutionStore.startEvolution(pokemon.value, toId, stoneName);
+  evolutionStore.startEvolution(pokemon.value, toId, stoneId);
   gameStore.save(false);
 };
 
@@ -83,7 +82,7 @@ watch(options, () => {
 });
 
 const getStoneInfo = (name: string) => {
-  return SHOP_ITEMS.find(i => i.id === name || i.name === name) || { icon: '💎', sprite: '', id: name };
+  return SHOP_ITEMS.find(i => i.id === name || i.name === name) || { icon: '💎', sprite: '', id: name, name };
 };
 
 const getPokemonName = (id: string) => {
@@ -128,7 +127,7 @@ const getPokemonName = (id: string) => {
 
           <div class="stone-details">
             <div class="stone-name">
-              {{ opt.stone }}
+              {{ getStoneInfo(opt.stone).name }}
             </div>
             <div class="evo-target">
               → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0 }}

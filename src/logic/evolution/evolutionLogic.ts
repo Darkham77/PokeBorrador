@@ -53,8 +53,7 @@ export function checkLevelUpEvolution(pokemon: Pokemon): string | null {
   // Tyrogue special case
   if (pokemon.id === 'tyrogue' && pokemon.level >= 20) {
     const toId = pokemon.atk > pokemon.def ? 'hitmonlee' : 
-                 (pokemon.def > pokemon.atk ? 'hitmonchan' : 
-                 (Math.random() < 0.5 ? 'hitmonlee' : 'hitmonchan'));
+                 (pokemon.def > pokemon.atk ? 'hitmonchan' : 'hitmontop');
     return toId;
   }
 
@@ -143,19 +142,18 @@ export function getEvolvedForm(id: string, level: number): string {
 
 /**
  * Comprueba si un Pokémon puede evolucionar con una piedra específica.
+ * @param stoneId - Official Showdown item ID (e.g. 'waterstone', 'thunderstone')
  */
-export function checkStoneEvolution(pokemon: Pokemon, stoneName: string): string | null {
-  const evo = (STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)[pokemon.id];
-  if (!evo) {
-    // Eevee special handling in evolutionData keys?
-    // eevee_water, eevee_thunder, eevee_fire
-    if (pokemon.id === 'eevee') {
-      if (stoneName === 'Piedra Agua') return 'vaporeon';
-      if (stoneName === 'Piedra Trueno') return 'jolteon';
-      if (stoneName === 'Piedra Fuego') return 'flareon';
-    }
+export function checkStoneEvolution(pokemon: Pokemon, stoneId: string): string | null {
+  if (pokemon.id === 'eevee') {
+    if (stoneId === 'waterstone') return 'vaporeon';
+    if (stoneId === 'thunderstone') return 'jolteon';
+    if (stoneId === 'firestone') return 'flareon';
     return null;
   }
 
-  return (evo.stone === stoneName) ? evo.to : null;
+  const evo = (STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)[pokemon.id];
+  if (!evo) return null;
+
+  return (evo.stone === stoneId) ? evo.to : null;
 }

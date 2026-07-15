@@ -47,13 +47,13 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
     exp: 0,
     expNeeded: 1000,
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    nature: 'Fuerte',
-    ability: 'Presión',
+    nature: 'hardy',
+    ability: 'pressure',
     gender: 'M',
     isShiny,
     moves: [
-      { name: 'Placaje', pp: 35, maxPP: 35 },
-      { name: 'Destructor', pp: 35, maxPP: 35 }
+      { id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 },
+      { id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }
     ],
     status: null,
     sleepTurns: 0,
@@ -75,12 +75,12 @@ function createMockPokemon(id: string, name: string, type: string, type2: string
 
 // Generate team & box for ASH
 const ashTeam = [
-  createMockPokemon('pikachu', 'Pikachu', 'electric', null, 50, true, 'Bola Luminosa'),
-  createMockPokemon('charizard', 'Charizard', 'fire', 'flying', 50, false, 'Carbón'),
-  createMockPokemon('blastoise', 'Blastoise', 'water', null, 50, false, 'Agua Mística'),
-  createMockPokemon('venusaur', 'Venusaur', 'grass', 'poison', 50, false, 'Semilla Milagro'),
-  createMockPokemon('mewtwo', 'Mewtwo', 'psychic', null, 55, false, 'Cuchara Torcida'),
-  createMockPokemon('dragonite', 'Dragonite', 'dragon', 'flying', 50, false, 'Colmillodragón')
+  createMockPokemon('pikachu', 'Pikachu', 'electric', null, 50, true, 'lightball'),
+  createMockPokemon('charizard', 'Charizard', 'fire', 'flying', 50, false, 'charcoal'),
+  createMockPokemon('blastoise', 'Blastoise', 'water', null, 50, false, 'mysticwater'),
+  createMockPokemon('venusaur', 'Venusaur', 'grass', 'poison', 50, false, 'miracleseed'),
+  createMockPokemon('mewtwo', 'Mewtwo', 'psychic', null, 55, false, 'twistedspoon'),
+  createMockPokemon('dragonite', 'Dragonite', 'dragon', 'flying', 50, false, 'dragonfang')
 ];
 
 const ashBox = [
@@ -95,7 +95,7 @@ const entrenadorTeam = [
   createMockPokemon('alakazam', 'Alakazam', 'psychic', null, 50),
   createMockPokemon('machamp', 'Machamp', 'fighting', null, 50),
   createMockPokemon('gengar', 'Gengar', 'ghost', 'poison', 50),
-  createMockPokemon('snorlax', 'Snorlax', 'normal', null, 50, false, 'Restos'),
+  createMockPokemon('snorlax', 'Snorlax', 'normal', null, 50, false, 'leftovers'),
   createMockPokemon('lapras', 'Lapras', 'water', 'ice', 50)
 ];
 
@@ -105,20 +105,20 @@ const entrenadorBox = [
   createMockPokemon('abra', 'Abra', 'psychic', null, 5)
 ];
 
-const mockInventory = {
-  'Poké Ball': 99,
-  'Super Ball': 50,
-  'Ultra Ball': 30,
-  'Master Ball': 10,
-  'Poción': 99,
-  'Hiper Poción': 99,
-  'Revivir': 50,
-  'Revivir Máximo': 10,
-  'Caramelo Raro': 99,
-  'Piedra Trueno': 5,
-  'Piedra Fuego': 5,
-  'Piedra Agua': 5,
-  'Piedra Lunar': 5
+const mockInventory: Record<string, number> = {
+  'pokeball': 99,
+  'greatball': 50,
+  'ultraball': 30,
+  'masterball': 10,
+  'potion': 99,
+  'hyperpotion': 99,
+  'revive': 50,
+  'maxrevive': 10,
+  'rarecandy': 99,
+  'thunderstone': 5,
+  'firestone': 5,
+  'waterstone': 5,
+  'moonstone': 5
 };
 
 const ashSaveData = {

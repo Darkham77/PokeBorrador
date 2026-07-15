@@ -70,6 +70,7 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   
   const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
   const isDittoMetalPowder = p.heldItem === 'metalpowder' && p.id === 'ditto';
+  const isDittoQuickPowder = p.heldItem === 'quickpowder' && p.id === 'ditto';
 
   const calculated = calcStatsPure(
     p.level,
@@ -91,7 +92,8 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
     },
     natureData,
     isDittoMetalPowder,
-    p.evs
+    p.evs,
+    isDittoQuickPowder
   );
 
   p.maxHp = calculated.maxHp;

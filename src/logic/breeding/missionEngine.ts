@@ -8,6 +8,7 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import { NATURE_DATA, NATURES } from '@/data/battle/natures';
 
 export interface MissionRequirement {
   type: string;
@@ -138,8 +139,6 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
 };
 
 
-const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
-
 /**
  * Generates a new mission object.
  */
@@ -167,9 +166,10 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     requirement.minIvTotal = minIvTotal;
     reqText = `${minIvTotal}+ IVs totales`;
   } else if (type === 'nature') {
-    const targetNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'Serio';
+    const targetNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
     requirement.nature = targetNature;
-    reqText = `naturaleza ${targetNature}`;
+    const espName = NATURE_DATA[targetNature]?.name || targetNature;
+    reqText = `naturaleza ${espName}`;
   } else if (type === 'iv_31') {
     const stats: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     const statLabels: Record<string, string> = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad' };

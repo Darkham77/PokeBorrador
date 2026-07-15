@@ -86,7 +86,7 @@ export function calculateMovePower(
   if (basePower > 0) {
     // STAB
     if (moveType === attacker.type?.toLowerCase() || moveType === attacker.type2?.toLowerCase()) {
-      const stab = attacker.ability === 'Adaptable' ? 2.0 : 1.5;
+      const stab = attacker.ability === 'adaptability' ? 2.0 : 1.5;
       powerList.push({ label: `STAB (${move.type})`, mult: stab });
       currentPower *= stab;
     }
@@ -224,15 +224,15 @@ export function calculateMoveAccuracy(
       accList.push({ label: `Niebla/Bruma`, mult: factor });
     }
 
-    if (accStage !== 0) {
-      const factor = 1 + (0.33 * accStage);
-      accList.push({ label: `Rango Prec. (${accStage > 0 ? '+' : ''}${accStage})`, mult: factor });
-      currentAcc *= factor;
-    }
-
-    if (evaStage !== 0) {
-      const factor = 1 - (0.33 * evaStage);
-      accList.push({ label: `Rango Eva. Rival (${evaStage > 0 ? '+' : ''}${evaStage})`, mult: factor });
+    const netStage = Math.max(-6, Math.min(6, accStage - evaStage));
+    if (netStage !== 0) {
+      let factor = 1;
+      if (netStage >= 0) {
+        factor = (3 + netStage) / 3;
+      } else {
+        factor = 3 / (3 - netStage);
+      }
+      accList.push({ label: `Modificador Rango (${netStage > 0 ? '+' : ''}${netStage})`, mult: Number(factor.toFixed(3)) });
       currentAcc *= factor;
     }
   }
@@ -256,7 +256,7 @@ export function calculateCritChance(
   let critRate = 0.0625;
   if (attacker.heldItem === 'scopelens') critRate = 0.12;
   if (attacker.focusEnergy) critRate = 0.25;
-  if (defender && (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla')) {
+  if (defender && (defender.ability === 'shellarmor' || defender.ability === 'battlearmor')) {
     critRate = 0;
   }
 

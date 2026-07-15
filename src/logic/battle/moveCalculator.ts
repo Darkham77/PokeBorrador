@@ -22,7 +22,7 @@ export function getCombatEnvState(
   weatherState: { type?: string; visual?: string; turns?: number } | null | undefined,
   isGym: boolean
 ): CombatEnvState {
-  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine' || attacker?.ability === 'Aclimatación' || defender?.ability === 'Aclimatación'
+  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
   const activeWeather = isGym || isAclimatacion ? null : weatherState
   const wType = activeWeather?.type
   const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(wType)
@@ -64,7 +64,7 @@ export function calculateFinalPower(
   let power = md.power
   if (!attacker) return power
 
-  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine' || attacker?.ability === 'Aclimatación' || defender?.ability === 'Aclimatación'
+  const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
   const weather = isGym || isAclimatacion ? null : weatherState
   const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
   const cycle = getDayCycle()
@@ -72,7 +72,7 @@ export function calculateFinalPower(
   // 1. STAB
   const moveType = md.type.toLowerCase()
   let stab = (moveType === attacker.type?.toLowerCase() || moveType === attacker.type2?.toLowerCase()) ? 1.5 : 1
-  if (attacker.ability === 'Adaptable' && stab > 1) stab = 2
+  if (attacker.ability === 'adaptability' && stab > 1) stab = 2
   power *= stab
 
   // 2. Weather
@@ -188,7 +188,14 @@ export function calculateFinalAccuracy(
     acc = Math.floor(md.acc * (isMist ? 0.8 : 0.6))
   }
 
-  acc = acc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage))
+  const netStage = Math.max(-6, Math.min(6, accStage - evaStage))
+  let multiplier = 1
+  if (netStage >= 0) {
+    multiplier = (3 + netStage) / 3
+  } else {
+    multiplier = 3 / (3 - netStage)
+  }
+  acc = acc * multiplier
   return Math.max(0, Math.min(100, Math.round(acc)))
 }
 

@@ -4,7 +4,7 @@
 
 - **Standard**: Activated upon reaching the level defined in `evolutionData.ts`.
 - **Trigger**: The check triggers synchronously when a Pokémon *levels up* (via battle rewards, debug, or rare candies). If cancelled, it will not prompt again until the next level-up event occurs.
-- **Tyrogue**: Evolves at level 20 based on its stats: Atk > Def (**Hitmonlee**), Def > Atk (**Hitmonchan**), Tie (50/50).
+- **Tyrogue**: Evolves at level 20 based on its stats: Atk > Def (**Hitmonlee**), Def > Atk (**Hitmonchan**), Tie (**Hitmontop**).
 
 ## 2. Wild Evolution (Auto-Evo)
 

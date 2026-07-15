@@ -130,7 +130,7 @@ function getTierColor(tier?: string) {
                 <img 
                   :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
                   class="i-sprite pixelated"
-                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'Poción')"
+                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'potion')"
                 >
               </div>
               <div class="item-details">

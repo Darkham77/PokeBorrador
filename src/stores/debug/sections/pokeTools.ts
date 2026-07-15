@@ -219,7 +219,7 @@ export function registerPokeTools(debug: DebugSystem) {
       // Fallback si no tiene evolución alguna
       if (!target) {
         target = 'vaporeon'
-        item = 'Piedra Agua'
+        item = 'waterstone'
       }
 
       ui.notify(`Iniciando evolución de ${pokemon.name} a ${target}...`, '✨')

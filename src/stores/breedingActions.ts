@@ -53,12 +53,16 @@ export function executeCloneFossil(
   const FOSSIL_SPECIES_MAP: Record<string, string> = {
     'domefossil': 'kabuto',
     'helixfossil': 'omanyte',
-    'oldamber': 'aerodactyl',
-    'Fósil Domo': 'kabuto',
-    'Fósil Hélix': 'omanyte',
-    'Ámbar Viejo': 'aerodactyl'
+    'oldamber': 'aerodactyl'
   };
-  const speciesId = FOSSIL_SPECIES_MAP[fossilId];
+  
+  const cleanFossilId = fossilId.toLowerCase().trim();
+  const normalizedId = cleanFossilId === 'fósil domo' || cleanFossilId === 'fosil domo' ? 'domefossil' :
+                       cleanFossilId === 'fósil hélix' || cleanFossilId === 'fosil helix' ? 'helixfossil' :
+                       cleanFossilId === 'ámbar viejo' || cleanFossilId === 'ambar viejo' ? 'oldamber' :
+                       fossilId;
+
+  const speciesId = FOSSIL_SPECIES_MAP[normalizedId];
   if (!speciesId) {
     uiStore.notify('Fósil no reconocido para clonar.', '❌');
     return false;

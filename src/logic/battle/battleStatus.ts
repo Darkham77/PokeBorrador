@@ -49,7 +49,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
           if (key === 'yawn') {
             delete pokemon.volatileCounters[key];
             if (!pokemon.status) {
-              if (pokemon.ability === 'Insomnio' || pokemon.ability === 'Espíritu Vital') {
+              if (pokemon.ability === 'insomnia' || pokemon.ability === 'vitalspirit') {
                 addLogFn(`¡La habilidad de ${pokemon.name} evitó quedarse dormido!`, 'log-info', pokemon);
               } else {
                 pokemon.status = 'slp';
@@ -63,7 +63,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
           } else if (key === 'lockedmove') {
             delete pokemon.volatileCounters[key];
             if (!pokemon.confused) {
-              if (pokemon.ability === 'Ritmo Propio') {
+              if (pokemon.ability === 'owntempo') {
                 addLogFn(`¡El Ritmo Propio de ${pokemon.name} evitó la confusión!`, 'log-info', pokemon);
               } else {
                 pokemon.confused = 2 + Math.floor(Math.random() * 3);

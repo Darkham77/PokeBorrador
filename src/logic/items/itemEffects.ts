@@ -70,17 +70,17 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'lemonade': pokeEffect((p) => healHp(p, 80)),
 
   // --- Evolutions ---
-  'firestone': pokeEffect((p) => handleStone(p, 'Piedra Fuego')),
-  'thunderstone': pokeEffect((p) => handleStone(p, 'Piedra Trueno')),
-  'waterstone': pokeEffect((p) => handleStone(p, 'Piedra Agua')),
-  'leafstone': pokeEffect((p) => handleStone(p, 'Piedra Hoja')),
-  'moonstone': pokeEffect((p) => handleStone(p, 'Piedra Lunar')),
-  'sunstone': pokeEffect((p) => handleStone(p, 'Piedra Solar')),
-  'dawnstone': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
-  'duskstone': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
-  'icestone': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
-  'shinystone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
-  'ovalstone': pokeEffect((p) => handleStone(p, 'Piedra Oval')),
+  'firestone': pokeEffect((p) => handleStone(p, 'firestone')),
+  'thunderstone': pokeEffect((p) => handleStone(p, 'thunderstone')),
+  'waterstone': pokeEffect((p) => handleStone(p, 'waterstone')),
+  'leafstone': pokeEffect((p) => handleStone(p, 'leafstone')),
+  'moonstone': pokeEffect((p) => handleStone(p, 'moonstone')),
+  'sunstone': pokeEffect((p) => handleStone(p, 'sunstone')),
+  'dawnstone': pokeEffect((p) => handleStone(p, 'dawnstone')),
+  'duskstone': pokeEffect((p) => handleStone(p, 'duskstone')),
+  'icestone': pokeEffect((p) => handleStone(p, 'icestone')),
+  'shinystone': pokeEffect((p) => handleStone(p, 'shinystone')),
+  'ovalstone': pokeEffect((p) => handleStone(p, 'ovalstone')),
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, 10)),

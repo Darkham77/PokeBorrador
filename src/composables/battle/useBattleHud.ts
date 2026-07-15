@@ -208,7 +208,7 @@ export function useBattleHud(
     if (data.isFloating !== undefined) return data.isFloating
     
     const isFlying = data.type === 'flying' || data.type2 === 'flying'
-    const isLevitating = p.ability === 'Levitación'
+    const isLevitating = p.ability === 'levitate'
     if (isFlying || isLevitating) return true
 
     return false

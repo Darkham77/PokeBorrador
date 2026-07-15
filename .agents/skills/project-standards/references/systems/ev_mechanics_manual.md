@@ -1,68 +1,18 @@
 # EV Mechanics Manual
 
 > **Scope**: Reference for AI agents implementing or verifying stat calculations, team generators, fuzzer setups, and any code that touches Pokémon stats.
-> **Source of Truth**: `docs/mechanincs/` (Cave of Dragonflies references) + Pokémon Showdown source at `external/pokemon-showdown-code/`.
+> **Source of Truth**: 
+> - [Stat Mechanics](./stats.md) (Standard stat calculations, pre/post-Advance history)
+> - [EVs & Natures](./evs-natures-and-math.md) (Mathematical approach to effort values)
+> - Pokémon Showdown source at `external/pokemon-showdown-code/`.
 
 ---
 
-## 1. EV Limits
+## 🏛️ Standard Stat Formulas & Limits
 
-| Constraint | Value |
-|---|---|
-| Maximum EVs **per stat** | **252** (from Gen VI onward; technically 255 in Gen III–V but 252 is the effective max) |
-| Maximum **total EVs** per Pokémon | **510** |
-| EVs needed for +1 point at Lv 100 | **4** |
-| Max bonus from 252 EVs at Lv 100 | **+63 points** |
-
-Classic competitive distribution: **252 / 252 / 4** (uses 508 of 510, gains +1 in the third stat).
-
-> **Agent Rule**: When generating test teams or validating sets, always verify `sum(evs) <= 510` and `each stat <= 252`.
-
----
-
-## 2. Official Stat Formulas (Gen III+)
-
-### HP
-
-$$HP = \left\lfloor \frac{(2 \times Base + IV + \lfloor EV / 4 \rfloor) \times Level}{100} \right\rfloor + Level + 10$$
-
-> Exception: **Shedinja** always has HP = 1, regardless of this formula.
-
-### All Other Stats (Atk, Def, SpA, SpD, Spe)
-
-$$Stat = \left( \left\lfloor \frac{(2 \times Base + IV + \lfloor EV / 4 \rfloor) \times Level}{100} \right\rfloor + 5 \right) \times Nature$$
-
-Where `Nature` is:
-- `1.1` if the nature boosts this stat
-- `0.9` if the nature reduces this stat
-- `1.0` if neutral
-
-All divisions use **floor** (round down).
-
----
-
-## 3. EV Impact by Level
-
-$$\text{Points gained from EVs} = \left\lfloor \frac{\lfloor EV / 4 \rfloor \times Level}{100} \right\rfloor$$
-
-| Level | 252 EVs bonus | 4 EVs bonus |
-|---|---|---|
-| 100 | **+63** | **+1** |
-| 50 | **+31** | ~+0.5 (rounds down to 0 for some values) |
-| 1 | 0 | 0 |
-
-At **Level 100** the math is clean: every 4 EVs = exactly +1 point.
-
----
-
-## 4. Example — Garchomp Atk (Adamant nature, 31 IV, Lv 100, Base 130)
-
-| EVs | Calculation | Final Atk |
-|---|---|---|
-| 0 EVs | `(floor((260+31+0)*100/100) + 5) × 1.1 = 296 × 1.1` | **325** |
-| 252 EVs | `(floor((260+31+63)*100/100) + 5) × 1.1 = 359 × 1.1` | **394** |
-
-Net gain: **+69 points** (+63 flat from EVs × 1.1 nature modifier).
+Standard formulas, limits (e.g. 252 EV limit per stat, 510 total EV cap), and level-scaling mechanics have been migrated to the canonical references:
+- **EV limits, Nature effects, and Stat Formulas** are detailed in [Stat Mechanics](./stats.md).
+- **Mathematical details** are in [EVs & Natures](./evs-natures-and-math.md).
 
 ---
 
