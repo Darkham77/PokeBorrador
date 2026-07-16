@@ -13,11 +13,6 @@ import type { DBRouter } from '@/logic/db/dbRouter';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 
-export let lastLoadedSaveTime = 0;
-export function setLastLoadedSaveTime(time: number) {
-  lastLoadedSaveTime = time;
-}
-
 export interface SaveResult {
   success?: boolean;
   remote?: boolean;
@@ -499,8 +494,6 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
         notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
       }
-      
-      lastLoadedSaveTime = save_data._last_updated || 0;
       return { success: true, remote: false };
     }
 
@@ -518,8 +511,6 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         _isRollingBack = true;
         return { rollback: true, outOfSync: true };
       }
-
-      lastLoadedSaveTime = save_data._last_updated || 0;
 
       // Sincronizar campos principales en la tabla profiles para mantener consistencia
       try {

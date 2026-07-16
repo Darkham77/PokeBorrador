@@ -160,7 +160,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
         // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
           p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-          console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`);
+          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`);
           window.__VITE_DEBUG__.nextEnemyChoice = undefined;
         } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
           p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;

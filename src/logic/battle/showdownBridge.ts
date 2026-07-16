@@ -112,7 +112,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
   // Ignorar por completo si ignoreEnemyLogs está activo
   if ((store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
-    console.log(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
+    console.debug(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
     return;
   }
 
@@ -132,11 +132,11 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
     const battle = store.activeBattle.value;
     if (!battle) {
-      console.log(`[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`);
+      console.debug(`[E2E-GETPOKE] No active battle. rawId: "${rawId}", side: "${side}". Returning default.`);
       return side === 'player' ? p : e;
     }
 
-    console.log(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
+    console.debug(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
 
     interface RequestPokemon {
       active?: boolean;
@@ -151,7 +151,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team = side === 'player' ? (battle.playerTeam || []) : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
-      console.log('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map(mon => mon ? `${mon.name} (${mon.uid})` : 'null'));
+      console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map(mon => mon ? `${mon.name} (${mon.uid})` : 'null'));
       const found = team.find(mon => mon && mon.uid === targetUid);
       if (!found) return null;
 
@@ -189,10 +189,10 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       const res = findPokemonInBattle(foundUid);
       if (res) {
         if (res.val) {
-          console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
+          console.debug(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
           return res.val;
         }
-        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
+        console.debug(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
         return res.found;
       }
       throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
@@ -210,10 +210,10 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     // Si es del enemigo y se refiere al slot activo en pista (p2a)
     if (side === 'enemy' && (rawId.startsWith('p2a:') || rawId === 'p2a')) {
       if ((battle as unknown as Record<string, unknown>).switchingToEnemy) {
-        console.log(`[E2E-GETPOKE-ACTIVE-SWITCH] Enemy active switch rawId "${rawId}". Returning switchingToEnemy: "${((battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon)?.uid}"`);
+        console.debug(`[E2E-GETPOKE-ACTIVE-SWITCH] Enemy active switch rawId "${rawId}". Returning switchingToEnemy: "${((battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon)?.uid}"`);
         return (battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon;
       } else if (battle.enemy) {
-        console.log(`[E2E-GETPOKE-ACTIVE] Enemy active slot rawId "${rawId}". Returning active battle.enemy: "${battle.enemy.name}" (UID: ${battle.enemy.uid})`);
+        console.debug(`[E2E-GETPOKE-ACTIVE] Enemy active slot rawId "${rawId}". Returning active battle.enemy: "${battle.enemy.name}" (UID: ${battle.enemy.uid})`);
         return battle.enemy;
       }
     }
@@ -243,10 +243,10 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       const res = findPokemonInBattle(foundUid);
       if (res) {
         if (res.val) {
-          console.log(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
+          console.debug(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
           return res.val;
         }
-        console.log(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
+        console.debug(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
         return res.found;
       }
       throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);

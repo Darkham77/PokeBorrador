@@ -27,6 +27,14 @@ export interface ArchaeologyRewardItem {
   percentage: number
   basePercentage: number
 }
+export interface NpcSpawnItem {
+  type: string
+  name: string
+  active: boolean
+  details?: string
+  chance: number
+}
+
 
 interface Props {
   title: string
@@ -249,7 +257,7 @@ defineEmits<{
         <!-- NPC Mode -->
         <template v-else-if="mode === 'npc'">
           <div
-            v-for="npc in (items as any[])"
+            v-for="npc in (items as unknown as NpcSpawnItem[])"
             :key="npc.type"
             class="report-row"
             :class="{ 'gray-text': !npc.active }"

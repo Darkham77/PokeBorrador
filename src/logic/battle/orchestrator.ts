@@ -380,7 +380,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       let debugSeed: number[] | null = null;
       if (typeof window !== 'undefined') {
         debugSeed = window.__VITE_DEBUG__?.battleSeed ?? null;
-        console.log(`[E2E-SEED-ORCHESTRATOR-DEBUG] Read seed directly from window: ${JSON.stringify(debugSeed)}`);
+        console.debug(`[E2E-SEED-ORCHESTRATOR-DEBUG] Read seed directly from window: ${JSON.stringify(debugSeed)}`);
       }
       const seedArr = debugSeed || generateRandomSeed();
      if (ctx.activeBattle.value) {
@@ -455,19 +455,19 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       };
       const { type: responseType, payload: responsePayload } = data;
       if (responseType === 'WORKER_LOG') {
-        console.log(`[WORKER] ${responsePayload}`);
+        console.debug(`[WORKER] ${responsePayload}`);
         return;
       }
       const worker = showdownWorker!
       if (responseType === 'INIT_BATTLE_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.');
-        console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}));
+        console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}));
         if (responsePayload) {
-          console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs));
+          console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs));
           if (responsePayload.debugLogs) {
-            console.log('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length);
+            console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length);
             responsePayload.debugLogs.forEach((l: string) => {
-              console.log(`[E2E-WORKER-BUFFERED] ${l}`);
+              console.debug(`[E2E-WORKER-BUFFERED] ${l}`);
             });
           }
         }

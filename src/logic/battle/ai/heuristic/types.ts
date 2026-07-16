@@ -144,10 +144,6 @@ export interface RandomBattleSetEntry {
   role: string;
 }
 
-export interface RandomBattleData {
-  pokemon: string;
-  sets: RandomBattleSetEntry[];
-}
 
 export interface InferredSet extends RandomBattleSetEntry {
   probability: number;

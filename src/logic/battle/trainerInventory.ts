@@ -1,4 +1,3 @@
-import type { BattleState } from '../../types/battle/battle.ts';
 
 interface PurchaseCandidate {
   id: string;
@@ -124,19 +123,6 @@ export function generateNPCInventory(
   return { inventory, remainingMoney: budget - currentSpent - spentPokeball };
 }
 
-/**
- * Remueve un objeto del inventario del NPC. Retorna true si tuvo éxito.
- */
-export function removeNPCItem(battleState: BattleState, itemId: string): boolean {
-  if (!battleState.enemyInventory || !battleState.enemyInventory[itemId]) {
-    return false;
-  }
-  battleState.enemyInventory[itemId]--;
-  if (battleState.enemyInventory[itemId] <= 0) {
-    delete battleState.enemyInventory[itemId];
-  }
-  return true;
-}
 
 /**
  * Calcula el presupuesto base de un NPC según su tipo y nivel.

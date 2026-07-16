@@ -6,7 +6,6 @@
 import dbJson from './items.json' with { type: 'json' };
 import type { Item } from '@/types/inventory/items';
 
-export const ITEM_CATEGORIES = dbJson.ITEM_CATEGORIES as string[];
 export const CATEGORY_LABELS = dbJson.CATEGORY_LABELS as Record<string, string>;
 export const MARKET_CAT_ORDER = dbJson.MARKET_CAT_ORDER as Record<string, number>;
 export const MARKET_UNLOCKS = dbJson.MARKET_UNLOCKS as Record<string, string[]>;

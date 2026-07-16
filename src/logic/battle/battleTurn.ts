@@ -15,7 +15,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
   if (p) {
-    console.log(`[E2E-DEBUG-TURN] executeTurn started. moveIndex: ${moveIndex}, active player: "${p.nickname || p.name}" (UID: ${p.uid}), moves: ${JSON.stringify(p.moves.map(m => m?.id))}`);
+    console.debug(`[E2E-DEBUG-TURN] executeTurn started. moveIndex: ${moveIndex}, active player: "${p.nickname || p.name}" (UID: ${p.uid}), moves: ${JSON.stringify(p.moves.map(m => m?.id))}`);
   }
   
   if (!p || !e) {
@@ -109,7 +109,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-      console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
+      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
       window.__VITE_DEBUG__.nextEnemyChoice = undefined;
     } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
       p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
@@ -193,7 +193,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     return
   }
   
-  console.log(`[BattleTurn] executeTurn finished. calling store.persistBattle`);
+  console.debug(`[BattleTurn] executeTurn finished. calling store.persistBattle`);
   if (store.persistBattle) store.persistBattle()
 }
 
@@ -286,15 +286,15 @@ export async function runEnemyAction(store: BattleContext) {
     // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-      console.log(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
+      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
       window.__VITE_DEBUG__.nextEnemyChoice = undefined;
     } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
       p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
     }
     
-    console.log(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
-    console.log(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
-    console.log(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
+    console.debug(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
+    console.debug(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
+    console.debug(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip)
     if (active) {

@@ -3,7 +3,7 @@ import type { DBRouter } from '@/logic/db/dbRouter';
 import { TRAINER_RANKS } from '@/data/player/trainer';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-import { validateAndSanitize, setLastLoadedSaveTime } from './saveService.ts';
+import { validateAndSanitize } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
@@ -205,25 +205,6 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
   }
 
-  // Determinar la fecha de carga exacta de esta sesión para control de precedencia
-  let loadedTime = 0;
-  if (finalSaveData === localData) {
-    loadedTime = (localData as unknown as { _last_updated?: number })._last_updated || 0;
-  } else if (cloudSaveRow) {
-    if (cloudSaveRow.updated_at) {
-      try {
-        let dateStr = cloudSaveRow.updated_at;
-        if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
-          dateStr = dateStr.replace(' ', 'T') + 'Z';
-        }
-        loadedTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
-      } catch (_) {
-        const ms = Number(cloudSaveRow.updated_at);
-        loadedTime = !isNaN(ms) ? ms : 0;
-      }
-    }
-  }
-  setLastLoadedSaveTime(loadedTime);
 
   return {
     data: sanitized as unknown as GameState,

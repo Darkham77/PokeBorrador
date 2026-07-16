@@ -63,7 +63,7 @@ if (typeof window !== 'undefined') {
   if ((window as unknown as Record<string, unknown>).__E2E__ || window.location.search.includes('e2e=true')) {
     import('gsap').then(({ gsap }) => {
       gsap.globalTimeline.timeScale(100);
-      console.log('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
+      console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
     });
   }
 }

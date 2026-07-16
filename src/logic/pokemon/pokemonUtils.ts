@@ -10,7 +10,7 @@ import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
 
 export { getPokemonTier };
 
-export function isLegendaryOrFossil(pokemonId: string): boolean {
+function isLegendaryOrFossil(pokemonId: string): boolean {
   if (!pokemonId) return false;
   const cleanId = toID(pokemonId);
   const isLegendary = LEGENDARY_POKEMON.includes(cleanId);

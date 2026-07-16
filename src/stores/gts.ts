@@ -243,7 +243,7 @@ export const useGTSStore = defineStore('gts', () => {
 
   async function cancelListing(listingId: string) {
     try {
-      console.log('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId)
+      console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId)
       ui.setLoading(true)
       ui.notify('Retirando publicación...', '🔄')
       

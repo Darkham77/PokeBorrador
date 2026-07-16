@@ -58,7 +58,7 @@ export function registerMapTools(debug: DebugSystem) {
     action: (w: string) => {
       const weatherId = w === 'none' ? null : w
       map.setGlobalWeather(weatherId)
-      console.log(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`)
+      console.debug(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`)
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅')
       return `Clima forzado a ${w}`
     },

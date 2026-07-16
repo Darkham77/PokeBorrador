@@ -198,7 +198,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
     case 'switch':
     case 'drag': {
-      console.log(`[E2E-DEBUG-BRIDGE-SWITCH] Entering switch/drag parser. type: ${type}, rawId: "${parts[2]}", hpString: "${parts[4]}"`);
+      console.debug(`[E2E-DEBUG-BRIDGE-SWITCH] Entering switch/drag parser. type: ${type}, rawId: "${parts[2]}", hpString: "${parts[4]}"`);
       const target = getPoke(parts[2] || '');
       const hpString = parts[4] || '';
       if (target && hpString) {

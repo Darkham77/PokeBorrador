@@ -36,7 +36,7 @@ export interface CustomPokemonSet extends PokemonSet {
 const debugLogs: string[] = [];
 function logDebug(msg: string) {
   debugLogs.push(msg);
-  console.log(msg);
+  console.debug(msg);
 }
 
 let isE2eSimulation = false;
@@ -71,7 +71,7 @@ export function injectUidsIntoRequest(
   }
 
   if (req && req.side && Array.isArray(req.side.pokemon)) {
-    console.log(`[E2E-WORKER-INJECT] Processing request directly from simulator for side ${player}. reqMon length: ${req.side.pokemon.length}`);
+    console.debug(`[E2E-WORKER-INJECT] Processing request directly from simulator for side ${player}. reqMon length: ${req.side.pokemon.length}`);
     
     const simulatorPokemon = (battle?.[player] as ExtendedSide | undefined)?.pokemon || [];
     const assignedUids = new Set<string>();
@@ -84,7 +84,7 @@ export function injectUidsIntoRequest(
         if (matched && matched.uid) {
           reqMon.uid = matched.uid;
           assignedUids.add(reqMon.uid);
-          console.log(`  -> [E2E-WORKER-INJECT] Matched "${reqMon.ident}" to simulator UID: ${reqMon.uid}`);
+          console.debug(`  -> [E2E-WORKER-INJECT] Matched "${reqMon.ident}" to simulator UID: ${reqMon.uid}`);
         } else {
           throw new Error(`[Worker-injectUidsIntoRequest] No UID found on simulator Pokemon instance: ${reqMon.ident}`);
         }
@@ -192,7 +192,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
         const seedVal = parseToNumericSeed(payload.seed);
         const seedStr = formatToShowdownSeed(seedVal);
-        console.log(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
+        console.debug(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
 
         const battleInstance = new Battle({ 
           formatid: getShowdownFormatId(),
@@ -219,7 +219,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             });
             if (uidMappings.length > 0) {
               battleInstance.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-              console.log(`[WORKER-ADD-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
+              console.debug(`[WORKER-ADD-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
             }
           }
         };
@@ -242,7 +242,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             });
             if (uidMappings.length > 0) {
               battleInstance.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-              console.log(`[WORKER-ADDMOVE-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
+              console.debug(`[WORKER-ADDMOVE-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
             }
           }
         };
@@ -288,7 +288,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
               if (uid && !line.includes('|[uids]')) {
                 const cleanIdent = rawId.replace(/\s+/g, '');
                 const enriched = `${line}|[uids]${cleanIdent}=${uid}`;
-                console.log(`[WORKER-RETRO-ENRICH] enriched initial lead line: "${enriched}"`);
+                console.debug(`[WORKER-RETRO-ENRICH] enriched initial lead line: "${enriched}"`);
                 return enriched;
               }
             }
@@ -414,7 +414,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
         // Si se reciben HPs/estados de la UI, sincronizarlos (omitir en simulación E2E para evitar desincronizaciones de estados y fin de turno nativos de Showdown)
         if (p1Hps && typeof p1Hps === 'object') {
-          console.log(`[WORKER-SYNC] Received p1Hps:`, JSON.stringify(p1Hps));
+          console.debug(`[WORKER-SYNC] Received p1Hps:`, JSON.stringify(p1Hps));
           battle.p1.pokemon.forEach(p => {
             if (p) {
               const uid = (p as unknown as { uid?: string }).uid;
@@ -423,10 +423,10 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
                 const maxHpVal = p.maxhp || 0;
                 
                 if (p1Hps[uid] < p.hp && p.hp === maxHpVal) {
-                  console.log(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p1Hps[uid]} vs Sim=${p.hp}`);
+                  console.debug(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p1Hps[uid]} vs Sim=${p.hp}`);
                 } else {
                   p.hp = p1Hps[uid];
-                  console.log(`[WORKER-SYNC] P1 Pokémon ${p.name} (uid: ${uid}): HP ${oldHp} -> ${p.hp}`);
+                  console.debug(`[WORKER-SYNC] P1 Pokémon ${p.name} (uid: ${uid}): HP ${oldHp} -> ${p.hp}`);
                 }
                 
                 if (p.hp <= 0) {
@@ -456,7 +456,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
                 const maxHpVal = p.maxhp || 0;
                 
                 if (p2Hps[uid] < p.hp && p.hp === maxHpVal) {
-                  console.log(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p2Hps[uid]} vs Sim=${p.hp}`);
+                  console.debug(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p2Hps[uid]} vs Sim=${p.hp}`);
                 } else {
                   p.hp = p2Hps[uid];
                 }

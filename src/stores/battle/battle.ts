@@ -142,7 +142,7 @@ export const useBattleStore = defineStore('battle', () => {
     })
     
     poke.moves = updatedMoves.filter((m): m is Move => m !== null)
-    console.log(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? m.id : '')))
+    console.debug(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? m.id : '')))
   }
 
   watch(
@@ -402,7 +402,7 @@ export const useBattleStore = defineStore('battle', () => {
     const isFaintSeq = sub === BATTLE_SUBSTATES.SWITCH_MENU || 
                        sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ || 
                        sub === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
-    console.log(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
+    console.debug(`[E2E-FSM-Safeguard] sub: "${sub}", SWITCH_MENU: "${BATTLE_SUBSTATES.SWITCH_MENU}", PLAYER_FAINT_SEQ: "${BATTLE_SUBSTATES.PLAYER_FAINT_SEQ}", ENEMY_REPLACEMENT_SEQ: "${BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ}", isFaintSeq: ${isFaintSeq}`);
     if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE && !isFaintSeq) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)

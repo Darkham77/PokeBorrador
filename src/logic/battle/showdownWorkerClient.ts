@@ -325,10 +325,10 @@ export async function executeTurnInWorker(
               } else if (inUpkeep) {
                 if (line.startsWith('|switch|p1a:') || line.startsWith('|drag|p1a:')) {
                   p1ChoiceIdx++;
-                  console.log(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P1 en log -> p1ChoiceIdx incrementado a ${p1ChoiceIdx}`);
+                  console.debug(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P1 en log -> p1ChoiceIdx incrementado a ${p1ChoiceIdx}`);
                 } else if (line.startsWith('|switch|p2a:') || line.startsWith('|drag|p2a:')) {
                   p2ChoiceIdx++;
-                  console.log(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P2 en log -> p2ChoiceIdx incrementado a ${p2ChoiceIdx}`);
+                  console.debug(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P2 en log -> p2ChoiceIdx incrementado a ${p2ChoiceIdx}`);
                 }
               }
             });
@@ -336,7 +336,7 @@ export async function executeTurnInWorker(
 
           window.__VITE_DEBUG__.p1ChoiceIdx = p1ChoiceIdx;
           window.__VITE_DEBUG__.p2ChoiceIdx = p2ChoiceIdx;
-          console.log(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${p1ChoiceIdx}, P2: ${p2ChoiceIdx}`);
+          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${p1ChoiceIdx}, P2: ${p2ChoiceIdx}`);
         }
 
         // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot
@@ -472,6 +472,7 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
   })
 }
 
+
 export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; type: 'heal' }>): Promise<void> {
   const worker = showdownWorker;
   if (!worker) return;
@@ -488,17 +489,14 @@ export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; typ
         } else {
           worker.onmessage = null;
         }
-        
         lastSyncP1TeamState = data.payload.p1TeamState || null;
         lastSyncP2TeamState = data.payload.p2TeamState || null;
-        
         const { useBattleStore } = await import('@/stores/battle/battle');
         const battleStore = useBattleStore();
         if (battleStore.state) {
           battleStore.state.playerRequest = data.payload.p1Request;
           battleStore.state.enemyRequest = data.payload.p2Request;
         }
-        
         await syncTeamsFromLastWorkerState();
         resolve();
       }

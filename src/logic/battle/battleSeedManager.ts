@@ -54,19 +54,6 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
   return generateRandomSeed();
 }
 
-/**
- * Obtiene la semilla de depuración inyectada en el entorno global de forma segura.
- */
-export function getDebugSeed(): NumericSeed | null {
-  if (typeof window !== 'undefined') {
-    const debugSeed = (window as { __VITE_DEBUG__?: { battleSeed?: unknown } }).__VITE_DEBUG__?.battleSeed;
-    console.warn(`[E2E-DEBUG-SEED] Reading debugSeed from window: ${JSON.stringify(debugSeed)}`);
-    if (debugSeed) {
-      return parseToNumericSeed(debugSeed);
-    }
-  }
-  return null;
-}
 
 /**
  * Inyecta una semilla en el entorno de depuración global de forma segura.

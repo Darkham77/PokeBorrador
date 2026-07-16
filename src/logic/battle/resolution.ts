@@ -569,11 +569,11 @@ function syncTeamHP(ctx: BattleContext) {
   if (!active) return;
 
   if (active.playerUsedItem) {
-    console.log('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
+    console.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
     return;
   }
   
-  console.log(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
+  console.debug(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
   
   if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
     active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
@@ -587,14 +587,14 @@ function syncTeamHP(ctx: BattleContext) {
           const old = teamPoke.hp;
           teamPoke.hp = hp;
           teamPoke.status = status;
-          console.log(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+          console.debug(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
         }
 
         if (battlePoke) {
           const old = battlePoke.hp;
           battlePoke.hp = hp;
           battlePoke.status = status;
-          console.log(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+          console.debug(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
         }
       }
     });
@@ -612,7 +612,7 @@ function syncTeamHP(ctx: BattleContext) {
           const old = battlePoke.hp;
           battlePoke.hp = hp;
           battlePoke.status = status;
-          console.log(`[SYNC-TEAM-HP] Enemy Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
+          console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
         }
       }
     });

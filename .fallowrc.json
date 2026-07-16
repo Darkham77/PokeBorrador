@@ -2,7 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "ignorePatterns": [
     "scratch/**",
-    "scripts/**",
+    "scripts/assets/**",
+    "scripts/database/**",
+    "scripts/lib/**",
+    "scripts/validation/**",
+    "scripts/e2e/fuzzer/**",
+    "scripts/e2e/battle/**",
+    "scripts/maintenance/**",
     "supabase/**",
     ".agents/**",
     "src/data/pokemon/pokemonDB.ts",
@@ -18,7 +24,9 @@
     "src/main.{ts,tsx,js,jsx}",
     "vitest.config.ts",
     "vitest.node.config.ts",
-    "vitest.workspace.ts"
+    "vitest.workspace.ts",
+    "scripts/e2e/**/*.ts",
+    "scripts/maintenance/**/*.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,

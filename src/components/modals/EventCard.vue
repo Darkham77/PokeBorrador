@@ -151,7 +151,7 @@ onUnmounted(() => {
     >
       <img
         :src="getAssetUrl(ASSET_TYPES.BANNER, event.config.banner)"
-        @error="(e: any) => (e.target as HTMLImageElement).style.display='none'"
+        @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
       >
     </div>
     

@@ -19,7 +19,7 @@ const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
 
 function handleCancel(listingId: string) {
-  console.log('[GTS] UI: handleCancel disparado para ID:', listingId)
+  console.debug('[GTS] UI: handleCancel disparado para ID:', listingId)
   uiStore.openConfirm({
     title: '¿CANCELAR PUBLICACIÓN?',
     message: '¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.',
@@ -27,12 +27,12 @@ function handleCancel(listingId: string) {
     cancelText: 'CANCELAR',
     type: 'danger',
     onConfirm: async () => {
-      console.log('[GTS] UI: Confirmación aceptada, llamando al store...')
+      console.debug('[GTS] UI: Confirmación aceptada, llamando al store...')
       const success = await gtsStore.cancelListing(listingId)
-      console.log('[GTS] UI: Resultado cancelación en store:', success)
+      console.debug('[GTS] UI: Resultado cancelación en store:', success)
     },
     onCancel: () => {
-      console.log('[GTS] UI: Cancelación abortada por el usuario.')
+      console.debug('[GTS] UI: Cancelación abortada por el usuario.')
     }
   })
 }

@@ -27,11 +27,6 @@ export const WEEKLY_REWARD_MILESTONES = [
   { pt: 1501, coins: 150 }
 ]
 
-export const WEEKLY_WIN_BONUS_COINS = 50
-
-
-
-
 
 /**
  * Calculates the current week ID based on the ISO 8601 standard.

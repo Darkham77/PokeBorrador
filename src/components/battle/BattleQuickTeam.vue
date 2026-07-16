@@ -48,18 +48,18 @@ const handleSwitch = (index: number) => {
   }
 
   const isForced = uiStore.isBattleSwitchForced || battleStore.currentSubState === 'SWITCH_MENU'
-  console.log(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
+  console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
   
   if (pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) {
-    console.log(`[BattleQuickTeam] handleSwitch early return check failed`);
+    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`);
     return
   }
   if (!canSwitch.value) {
-    console.log(`[BattleQuickTeam] handleSwitch canSwitch is false`);
+    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`);
     return
   }
   
-  console.log(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`);
+  console.debug(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`);
   battleStore.executeSwitch(originalIndex, isForced)
 }
 </script>

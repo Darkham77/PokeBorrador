@@ -300,7 +300,7 @@ const formatMoveName = (name: string) => {
         <template #content>
           <MoveTooltip 
             v-if="moveData"
-            :move="moveData as any" 
+            :move="moveData as Move" 
             :player-info="props.playerInfo"
           />
         </template>
