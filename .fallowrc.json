@@ -66,10 +66,6 @@
       "exports": ["DaycareMission"]
     },
     {
-      "file": "src/data/system/constants.ts",
-      "exports": ["STAGE_MULT", "ACC_STAGE_MULT"]
-    },
-    {
       "file": "src/data/player/playerClasses.ts",
       "exports": ["REPUTATION_SHOP_ITEMS"]
     },
@@ -308,6 +304,26 @@
     {
       "file": "src/types/system/database.ts",
       "exports": ["AbilityBaseData"]
+    },
+    {
+      "file": "src/logic/battle/showdownAdapter.ts",
+      "exports": ["statsMap", "patchShowdownSpreadModify", "resolveBaseStats"]
+    },
+    {
+      "file": "src/logic/battle/battleSeedManager.ts",
+      "exports": ["formatToShowdownSeed", "parseToNumericSeed", "injectDebugSeed"]
+    },
+    {
+      "file": "src/data/system/constants.ts",
+      "exports": ["MAX_BATTLE_TURNS", "STAGE_MULT", "ACC_STAGE_MULT"]
+    },
+    {
+      "file": "src/logic/battle/cheats.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/components/modals/RouteSpawnsTable.vue",
+      "exports": ["NpcSpawnItem", "SpawnItem", "ArchaeologyRewardItem"]
     }
   ]
 }

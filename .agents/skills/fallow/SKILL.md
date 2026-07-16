@@ -148,3 +148,30 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 
 - **Programmatic Sandbox Spawning**: When running Fallow programmatically from scripts under Node.js 26+ restricted permission flags (`--permission`), execute Fallow via the local binary `node ./node_modules/fallow/bin/fallow --format json` instead of `npx` to prevent access errors to global directories. Always configure a large buffer size (`maxBuffer: 10 * 1024 * 1024` or more) when capturing the stdout to avoid `ENOBUFS` buffer overflow errors on large codebases.
 - **Dependency & Export Ignores**: Backend/test libraries (like `postgres` or `@pkmn/sim`) not imported in client bundles but declared in `package.json` must be added to `"ignoreDependencies"` in `.fallowrc.json`. Legitimate unused exports (for public APIs, dynamic loading, or shared data structures) MUST be added surgically one by one in `.fallowrc.json` under `"ignoreExports"`. **The use of wildcards (`*`) to ignore entire files is strictly prohibited** to ensure Fallow continues auditing code health in those modules.
+
+---
+
+## ignorePatterns vs entry — Critical Distinction (LESSON LEARNED)
+
+These two fields in `.fallowrc.json` serve different purposes and MUST NOT be confused:
+
+- **`ignorePatterns`**: Suppresses **file-level analysis** (CWE security warnings, complexity, duplication). Use for internal Node tooling scripts (e.g., `scripts/e2e/fuzzer/**`, `scripts/e2e/battle/**`) that produce false positive security warnings (CWE-22 path traversal, CWE-532 log taint) because they are trusted internal tools, not user-facing code.
+
+- **`entry`**: Defines the **import graph roots** for dead export detection. Add `scripts/e2e/**/*.ts` and `scripts/maintenance/**/*.ts` here so that imports FROM those scripts are recognized as live consumers of `src/` exports.
+
+**A file can be in:**
+- `entry` only → analyzed for dead exports (its imports count as consumers), subject to file-level audit
+- `ignorePatterns` only → excluded entirely from all analysis
+- Both `ignorePatterns` AND implicitly in `entry` via a parent glob → **THIS IS THE TRAP**: file-level analysis is suppressed, but its imports are still counted as consumers
+
+**NEVER put all `scripts/**` in `ignorePatterns`** — it blinds dead export detection for any `src/` export consumed only by scripts, causing Fallow to falsely flag them as unused and potentially leading to their incorrect removal.
+
+**Correct pattern for scripts:**
+```json
+{
+  "ignorePatterns": ["scripts/e2e/fuzzer/**", "scripts/e2e/battle/**", "scripts/maintenance/**"],
+  "entry": ["scripts/e2e/**/*.ts", "scripts/maintenance/**/*.ts"]
+}
+```
+This way: `scripts/e2e/e2e_helpers.ts` is a graph root (its imports from `src/` count), but `scripts/e2e/fuzzer/core/fuzzer_engine.ts` is excluded from file-level CWE/duplication analysis.
+

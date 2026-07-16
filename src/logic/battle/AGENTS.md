@@ -32,6 +32,7 @@ Frontend Developers / Systems Engineers.
   - Use `findPokemonByShowdownName(expectedName, list)` to safely resolve client-side Pokémon instances from Showdown's worker logs and requests.
 - **ESM Worker Output & Top-Level Await**: Todos los Web Workers que importen o dependan de archivos con *top-level await* deben compilarse en formato ES Module (configurado mediante `worker: { format: 'es' }` en `vite.config.ts`).
 - **Log Bridge Imports**: Para mantener el bundle del worker aislado y evitar errores de empaquetado, los archivos del bridge (`showdownBridgeCore.ts`, `showdownBridgeField.ts`, etc.) deben cargar dinámicamente (`await import(...)`) los providers de datos del cliente como `pokemonDataProvider` en lugar de declararlos en imports estáticos a nivel de raíz.
+- **Fallow Dead Export Scope (CRITICAL)**: Before removing any export flagged by Fallow as unused, you MUST `grep scripts/` for its usage. `.fallowrc.json` includes `scripts/e2e/**/*.ts` as entry points for import-graph tracking, but sub-directories like `scripts/e2e/fuzzer/**` and `scripts/e2e/battle/**` are in `ignorePatterns` for file-level analysis. This means Fallow WILL NOT detect imports from those sub-directories, making their consumed exports appear dead. If the export is used in any script, add it to `ignoreExports` in `.fallowrc.json` instead of removing it.
 
 ## Work Guidance
 
