@@ -154,6 +154,7 @@ const availableCategories = computed<string[]>(() => {
 
 const animateGrid = () => {
   nextTick(() => {
+    // [PureVue-Ignore] — direct DOM query required by GSAP to animate dynamic card list
     const cards = document.querySelectorAll('.rep-shop-item-card')
     if (cards.length > 0) {
       gsap.killTweensOf(cards)

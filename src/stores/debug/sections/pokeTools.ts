@@ -259,18 +259,18 @@ export function registerPokeTools(debug: DebugSystem) {
       }))
 
       console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS')
-      console.log('--- EN ALMACÉN DE GUARDERÍA ---')
+      console.debug('--- EN ALMACÉN DE GUARDERÍA ---')
       if (warehouse.length > 0) {
         console.table(warehouse)
       } else {
-        console.log('No hay huevos en el almacén de la guardería.')
+        console.debug('No hay huevos en el almacén de la guardería.')
       }
 
-      console.log('--- EN LA MOCHILA ---')
+      console.debug('--- EN LA MOCHILA ---')
       if (backpack.length > 0) {
         console.table(backpack)
       } else {
-        console.log('No hay huevos en la mochila.')
+        console.debug('No hay huevos en la mochila.')
       }
       console.groupEnd()
 

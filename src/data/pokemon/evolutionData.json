@@ -1690,12 +1690,12 @@
       "stone": "leafstone",
       "to": "victreebel"
     },
-    "slowpokegalar_slowbrogalar": {
-      "stone": "Galarica Cuff",
+    "slowpokegalarslowebrogalar": {
+      "stone": "galaricacuff",
       "to": "slowbrogalar"
     },
-    "slowpokegalar_slowkinggalar": {
-      "stone": "Galarica Wreath",
+    "slowpokegalarslowkinggalar": {
+      "stone": "galaricawreath",
       "to": "slowkinggalar"
     },
     "magneton": {
@@ -1759,15 +1759,15 @@
       "to": "mismagius"
     },
     "gligar": {
-      "stone": "Razor Fang",
+      "stone": "razorfang",
       "to": "gliscor"
     },
     "sneasel": {
-      "stone": "Razor Claw",
+      "stone": "razorclaw",
       "to": "weavile"
     },
     "sneaselhisui": {
-      "stone": "Razor Claw",
+      "stone": "razorclaw",
       "to": "sneasler"
     },
     "lombre": {
@@ -1795,7 +1795,7 @@
       "to": "froslass"
     },
     "happiny": {
-      "stone": "Oval Stone",
+      "stone": "ovalstone",
       "to": "chansey"
     },
     "pansage": {
@@ -1863,35 +1863,35 @@
       "to": "crabominable"
     },
     "applin_flapple": {
-      "stone": "Tart Apple",
+      "stone": "tartapple",
       "to": "flapple"
     },
     "applin_appletun": {
-      "stone": "Sweet Apple",
+      "stone": "sweetapple",
       "to": "appletun"
     },
     "applin_dipplin": {
-      "stone": "Syrupy Apple",
+      "stone": "syrupyapple",
       "to": "dipplin"
     },
     "sinistea": {
-      "stone": "Cracked Pot",
+      "stone": "crackedpot",
       "to": "polteageist"
     },
     "sinisteaantique": {
-      "stone": "Chipped Pot",
+      "stone": "chippedpot",
       "to": "polteageistantique"
     },
     "duraludon": {
-      "stone": "Metal Alloy",
+      "stone": "metalalloy",
       "to": "archaludon"
     },
     "charcadet_armarouge": {
-      "stone": "Auspicious Armor",
+      "stone": "auspiciousarmor",
       "to": "armarouge"
     },
     "charcadet_ceruledge": {
-      "stone": "Malicious Armor",
+      "stone": "maliciousarmor",
       "to": "ceruledge"
     },
     "tadbulb": {
@@ -1907,11 +1907,11 @@
       "to": "cetitan"
     },
     "poltchageist": {
-      "stone": "Unremarkable Teacup",
+      "stone": "unremarkableteacup",
       "to": "sinistcha"
     },
     "poltchageistartisan": {
-      "stone": "Masterpiece Teacup",
+      "stone": "masterpieceteacup",
       "to": "sinistchamasterpiece"
     }
   },
