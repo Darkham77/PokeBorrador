@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput } from '../e2e_helpers.ts';
+import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class WeatherSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -59,19 +59,19 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
   public async forceFleeDebugger(): Promise<void> {
     await this.page.evaluate(async () => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const battleStore = resolver?.();
-      const bState = battleStore?.state as any;
+      const bState = (battleStore?.state ?? null) as ({ playerFled?: boolean; over: boolean; turnCount: number } | null);
       if (bState) {
         bState.playerFled = true;
       }
-      await (window as any).__VITE_DEBUG__.forceFlee();
+      await (window as WindowWithResolver).__VITE_DEBUG__?.forceFlee?.();
     });
   }
 
   public async getEnemyHpInfo(): Promise<{ hp: number; maxHp: number }> {
     return await this.page.evaluate(() => {
-      const enemy = (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.enemy;
+      const enemy = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.enemy;
       return { hp: enemy?.hp ?? 0, maxHp: enemy?.maxHp ?? 1 };
     });
   }
@@ -116,7 +116,7 @@ test.describe('Weather Effects Verification Simulation', () => {
       try {
         const { useMapStore } = await import('../../../src/stores/map.ts');
         useMapStore().setGlobalWeather(null);
-      } catch (_e) {}
+      } catch (_e: unknown) { /* expected */ }
     });
   });
 });

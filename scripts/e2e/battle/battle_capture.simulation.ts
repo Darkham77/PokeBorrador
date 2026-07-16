@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, handleBattleInput } from '../e2e_helpers.ts';
+import { waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
 
 class CaptureSimWrapper extends BaseBattleSimulation {
@@ -61,17 +61,15 @@ class CaptureSimWrapper extends BaseBattleSimulation {
 
   public async throwMasterBall(): Promise<void> {
     await this.page.evaluate(async () => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
-      if (resolver) {
-        await resolver().useItemInBattle('masterball');
-      }
+      await (window as WindowWithResolver).__VITE_DEBUG__?.useItemInBattle?.('masterball', '');
     });
   }
 
   public async awaitCaptureSequence(): Promise<void> {
     await this.page.waitForFunction(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
-      return !resolver?.()?.state || resolver().state.over || resolver().currentFsmState === 'REWARDS_PHASE';
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      return !store?.state || store.state.over || store.currentFsmState === 'REWARDS_PHASE';
     }, undefined, { timeout: 15000 });
   }
 }
@@ -96,14 +94,15 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await sim.awaitCaptureSequence();
 
     const pidgeyData = await page.evaluate(() => {
-      const store = (window as any).__VITE_DEBUG__?.getGameStore?.();
-      const p = store?.state?.team?.find((mon: any) => mon && mon.id === 'pidgey');
+      const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
+      const p = (store?.state?.team as Array<{ id?: string; level?: number; moves?: { id: string; name?: string }[]; maxHp?: number; atk?: number } | null> | undefined)
+        ?.find((mon: { id?: string } | null) => mon?.id === 'pidgey');
       return p ? { id: p.id, level: p.level, moves: p.moves, maxHp: p.maxHp, atk: p.atk } : null;
     });
 
     expect(pidgeyData).not.toBeNull();
     expect(pidgeyData!.level).toBe(2);
-    expect(pidgeyData!.moves.find((m: any) => m?.id === 'tackle')?.name).toBe('Placaje');
+    expect((pidgeyData!.moves as Array<{ id: string; name?: string } | null | undefined>).find((m: { id: string; name?: string } | null | undefined) => m?.id === 'tackle')?.name).toBe('Placaje');
   });
 
   test('debería capturar un Ditto transformado y revertir correctamente a la forma Ditto original con sus movimientos originales', async ({ page }) => {
@@ -123,15 +122,16 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await sim.awaitCaptureSequence();
 
     const dittoData = await page.evaluate(() => {
-      const store = (window as any).__VITE_DEBUG__?.getGameStore?.();
-      const p = store?.state?.team?.find((mon: any) => mon && mon.id === 'ditto');
+      const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
+      const p = (store?.state?.team as Array<{ id?: string; moves?: { id: string; name?: string }[] } | null> | undefined)
+        ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
       return p ? { id: p.id, moves: p.moves } : null;
     });
 
     expect(dittoData).not.toBeNull();
     expect(dittoData!.id).toBe('ditto');
-    expect(dittoData!.moves.length).toBe(1);
-    expect(dittoData!.moves[0]?.id).toBe('transform');
+    expect(dittoData!.moves?.length).toBe(1);
+    expect(dittoData!.moves?.[0]?.id).toBe('transform');
   });
 
   test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({ page }) => {
@@ -155,7 +155,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       const battleStore = useBattleStore();
 
       gameStore.state.inventory = { masterball: 5 };
-      const pidgeyIdx = gameStore.state.team.findIndex((p: any) => p && p.id === 'pidgey');
+      const pidgeyIdx = gameStore.state.team.findIndex((p: { id?: string } | null | undefined) => p?.id === 'pidgey');
       if (pidgeyIdx !== -1) {
         const pidgey = gameStore.state.team[pidgeyIdx];
         if (pidgey) {
@@ -172,8 +172,8 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await waitForWaitInput(page);
 
     const activeMoves = await page.evaluate(() => {
-      const moves = (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves || [];
-      return moves.map((m: any) => m ? { id: m.id, name: m.name } : null).filter(Boolean);
+      const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
+      return (moves as Array<{ id: string; name?: string } | null | undefined>).map((m: { id: string; name?: string } | null | undefined) => m ? { id: m.id, name: m.name ?? '' } : null).filter(Boolean);
     });
     expect(activeMoves).toContainEqual({ id: 'tackle', name: 'Placaje' });
 
@@ -190,7 +190,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
 
-      const rattataIdx = gameStore.state.team.findIndex((p: any) => p && p.id === 'rattata');
+      const rattataIdx = gameStore.state.team.findIndex((p: { id?: string } | null | undefined) => p?.id === 'rattata');
       if (rattataIdx !== -1) {
         const rattata = gameStore.state.team[rattataIdx];
         if (rattata) {
@@ -207,8 +207,8 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await waitForWaitInput(page);
 
     const rattataMoves = await page.evaluate(() => {
-      const moves = (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves || [];
-      return moves.map((m: any) => m ? { id: m.id, name: m.name } : null).filter(Boolean);
+      const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
+      return (moves as Array<{ id: string; name?: string } | null | undefined>).map((m: { id: string; name?: string } | null | undefined) => m ? { id: m.id, name: m.name ?? '' } : null).filter(Boolean);
     });
     expect(rattataMoves).toContainEqual({ id: 'tackle', name: 'Placaje' });
   });
@@ -234,8 +234,8 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
           if (cat !== 'physical' && cat !== 'special' && cat !== 'status') {
             missing.push(`${id}: invalid category "${cat}"`);
           }
-        } catch (e: any) {
-          missing.push(`${id}: error ${e.message}`);
+        } catch (e: unknown) {
+          missing.push(`${id}: error ${(e as Error).message}`);
         }
       });
       return missing;

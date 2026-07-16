@@ -72,7 +72,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function createLocalPoke(set: PokemonSet): Pokemon {
+export function createLocalPoke(set: PokemonSet): Pokemon {
   const speciesData = Dex.species.get(set.species);
   const baseStats = resolveBaseStats(set.species);
   const natureData = Dex.natures.get(set.nature || 'serious');

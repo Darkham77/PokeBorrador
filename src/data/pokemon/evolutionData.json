@@ -1690,14 +1690,6 @@
       "stone": "leafstone",
       "to": "victreebel"
     },
-    "slowpokegalarslowebrogalar": {
-      "stone": "galaricacuff",
-      "to": "slowbrogalar"
-    },
-    "slowpokegalarslowkinggalar": {
-      "stone": "galaricawreath",
-      "to": "slowkinggalar"
-    },
     "magneton": {
       "stone": "thunderstone",
       "to": "magnezone"
@@ -1913,6 +1905,14 @@
     "poltchageistartisan": {
       "stone": "masterpieceteacup",
       "to": "sinistchamasterpiece"
+    },
+    "slowpokegalar_cuff": {
+      "stone": "galaricacuff",
+      "to": "slowbrogalar"
+    },
+    "slowpokegalar_wreath": {
+      "stone": "galaricawreath",
+      "to": "slowkinggalar"
     }
   },
   "TRADE_EVOLUTIONS": {

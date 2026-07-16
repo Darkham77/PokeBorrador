@@ -35,6 +35,7 @@ QA / Automation Engineers.
 - **Extension-First Imports**: Internal imports in `tests/node/` tests may include the `.ts` extension — vite-node handles it transparently.
 - **Mandatory Audit Pipeline**: Running `npm run audit:full` is mandatory before any commit. It runs: ① `test:node`, ② `audit` (SASS, GPU, Node 26+), ③ `validate:fsm` (parity), ④ `validate:items/abilities/moves`, and ⑤ `validate:sql`. **`--allow-addons` is required** in the `audit:full` launch flags because Vitest 3+ uses Rolldown, which loads a platform-specific native addon (`rolldown-binding.*.node`). Without it, child processes spawned under the `--permission` model receive `ERR_DLOPEN_DISABLED` and Vitest fails to start. **`audit_full.ts` Runner Constraint**: The `Node.js Tests` task in `audit_full.ts` MUST invoke Vitest via `npm run test:node` (with `shell: true`). Never use `npx vitest` directly — `npx` may download a fresh Vitest copy without the platform-specific Rolldown native bindings (npm optional dependency bug), causing startup failures.
 - **CLI-Ready Visuals**: Battle animations must be triggerable via the debug bridge (e.g. `window.__VITE_DEBUG__.battle.animations.awaitTween('attack-player')`) for headless CLI verification.
+
 - ## 1. Immutable Synchronization and Simulation (E2E) Directive
 
 - **Absolute Prohibition on Artificial Timers**: It is strictly forbidden to use `setTimeout`, `page.waitForTimeout` (except for controlled micro-delay retry cycles on click failures) or any numeric wait to synchronize battle FSM transitions or scene changes in E2E simulations.

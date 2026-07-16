@@ -42,67 +42,17 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
   await locator.click(cleanOptions);
 }
 
-export interface DebugStore {
-  isProcessing: boolean;
-  currentSubState: string;
-  currentFsmState?: string;
-  isIntroAnimating?: boolean;
-  player?: {
-    uid: string;
-    hp: number;
-    maxHp: number;
-    moves?: Array<{ id: string; pp: number; maxpp?: number } | null>;
-  } | null;
-  enemy?: {
-    uid: string;
-    hp: number;
-    maxHp: number;
-  } | null;
-  state: {
-    over: boolean;
-    turnCount: number;
-    player?: {
-      uid: string;
-      hp: number;
-      maxHp: number;
-      status?: string | null;
-      moves?: Array<{ id: string; pp: number } | null>;
-    } | null;
-    enemy?: {
-      uid: string;
-      hp: number;
-      maxHp: number;
-      status?: string | null;
-    } | null;
-    playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
-    enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
-    playerRequest?: {
-      wait?: boolean;
-      active?: Array<{
-        moves?: Array<{ id: string; disabled?: boolean | string } | null> | null;
-      } | null> | null;
-      side?: {
-        pokemon?: Array<{ uid?: string; name: string; condition: string; active?: boolean }>;
-      };
-    } | null;
-    enemyRequest?: {
-      active?: Array<{
-        moves?: Array<{ id: string; disabled?: boolean | string } | null> | null;
-      } | null> | null;
-    } | null;
-    p1SlotOrder?: string[];
-  } | null;
+export interface BattleLogEntry {
+  side: 'player' | 'enemy';
+  msg: string;
 }
 
-export type WindowWithResolver = Window & {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-  __VITE_DEBUG__?: {
-    cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
-    mockEnemyChoices?: string[];
-    enemyChoiceIndex?: number;
-    getGameStore?: () => { state: { team: unknown[] } };
-  };
-};
+/**
+ * Typed window cast for E2E Playwright evaluates.
+ * All fields are declared in src/types/system/env.d.ts and available globally.
+ * This alias exists purely for the `(window as WindowWithResolver)` cast pattern.
+ */
+export type WindowWithResolver = Window;
 
 
 /**
@@ -607,7 +557,7 @@ export async function verifyHpParity(page: Page) {
     }, undefined, { timeout: 15000 });
   } catch (err) {
     const diagnosis = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return { storePlayer: 'null', storeEnemy: 'null', domPlayer: 'null', domEnemy: 'null' };
       const store = resolver();
       const storePlayer = `${store.state?.player?.hp}/${store.state?.player?.maxHp}`;
@@ -640,7 +590,7 @@ export async function executeAutoBattle(
 
   // Esperar a que el estado de la batalla esté inicializado en el store
   await page.waitForFunction(() => {
-    const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     return !!resolver?.().state;
   }, undefined, { timeout: 10000 }).catch(() => {});
 
@@ -651,7 +601,7 @@ export async function executeAutoBattle(
     p2ChoiceIdx = await page.evaluate(() => window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0);
 
     const isOver = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return true;
       const store = resolver();
       return !store.state || store.state.over;
@@ -671,7 +621,7 @@ export async function executeAutoBattle(
     await waitForWaitInputFsmSync(page, p1ChoiceIdx, batchIndex, lastSimulatorTurn, lastSubState);
 
     const isOverAfterWait = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return true;
       const store = resolver();
       return !store.state || store.state.over;
@@ -682,7 +632,7 @@ export async function executeAutoBattle(
     }
 
     const subState = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return 'WAIT_INPUT';
       const store = resolver();
       return store.currentSubState;
@@ -804,7 +754,7 @@ export async function executeAutoBattle(
   }
 
   const isBattleOver = await page.evaluate(() => {
-    const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
     return !store.state || store.state.over;
@@ -814,16 +764,16 @@ export async function executeAutoBattle(
 
   if (finalState) {
     const clientState = await page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return { p1: [], p2: [] };
       const store = resolver();
-      const p1 = store.state?.playerTeam?.map((p: any) => ({
+      const p1 = (store.state?.playerTeam ?? []).map((p) => ({
         name: p.name,
         hp: p.hp,
         maxHp: p.maxHp,
         fainted: p.hp <= 0
-      })) || [];
-      const p2 = store.state?.enemyTeam?.map((p: any) => ({
+      }));
+      const p2 = (store.state?.enemyTeam ?? []).map((p) => ({
         name: p.name,
         hp: p.hp,
         maxHp: p.maxHp,

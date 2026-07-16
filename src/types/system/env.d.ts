@@ -79,8 +79,13 @@ declare global {
     maxHp?: number;
     status?: string;
     nickname?: string;
-    moves?: unknown[];
+    moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
     volatileCounters?: Record<string, unknown> | null;
+  }
+
+  interface BattleLogEntry {
+    side: 'player' | 'enemy';
+    msg: string;
   }
 
   interface DebugGameStore {
@@ -98,6 +103,9 @@ declare global {
     currentSubState?: string;
     isProcessing?: boolean;
     isIntroAnimating?: boolean;
+    battleLogs?: BattleLogEntry[];
+    player?: DebugPokemon | null;
+    enemy?: DebugPokemon | null;
     _p?: DebugPinia;
     fsm?: {
       currentState?: { value?: string };
@@ -110,7 +118,9 @@ declare global {
       enemyRequest?: ShowdownPlayerRequest;
       player?: DebugPokemon | null;
       enemy?: DebugPokemon | null;
-      enemyTeam?: Array<DebugPokemon | null>;
+      playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
+      enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
+      p1SlotOrder?: string[];
       activeBattle?: {
         player?: DebugPokemon | null;
         enemy?: DebugPokemon | null;
@@ -134,10 +144,14 @@ declare global {
       createPokemon?: (config: unknown) => Promise<void>;
       getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
       nextEnemyChoice?: string;
-      getGameStore?: () => { gs?: unknown } & Record<string, unknown>;
+      getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>;
       p1ChoiceIdx?: number;
       p2ChoiceIdx?: number;
       isE2eSimulation?: boolean;
+      useItemInBattle?: (itemId: string, targetUid: string) => void;
+      healAll?: () => void;
+      forceFlee?: () => void | Promise<void>;
+      forceEncounterType?: string;
       /** Comandos y utilidades de debug registradas en runtime */
       [key: string]: unknown;
     };

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput } from '../e2e_helpers.ts';
+import { waitForWaitInput, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
 
 interface FailureRecord {
   scenario: string;
@@ -101,7 +101,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
 
   public async checkBattleOver(): Promise<boolean> {
     return await this.page.evaluate(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return resolver?.().state?.over ?? false;
     });
   }
@@ -147,14 +147,14 @@ test.describe('HeuristicAI E2E Verification', () => {
 
       // Esperar a que el jugador caiga debilitado
       await page.waitForFunction(() => {
-        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         if (!resolver) return false;
         const store = resolver();
         return !!store.state?.over || store.state?.player?.hp === 0 || store.currentSubState === 'PLAYER_FAINT_SEQ';
       }, undefined, { timeout: 15000 });
 
       const fainted = await page.evaluate(() => {
-        const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         const store = resolver?.();
         return (store?.state?.player?.hp ?? 1) === 0 || !!store?.state?.over;
       });
@@ -174,7 +174,7 @@ test.describe('HeuristicAI E2E Verification', () => {
       await sim.startBattle();
       await waitForWaitInput(page);
 
-      const subState = await page.evaluate(() => (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().currentSubState ?? '');
+      const subState = await page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().currentSubState ?? '');
       expect(subState).toBe('WAIT_INPUT');
 
       // Jugar 3 turnos
@@ -187,8 +187,8 @@ test.describe('HeuristicAI E2E Verification', () => {
       }
 
       const enemyLogs = await page.evaluate(() => {
-        const store = (window as any).__VITE_DEBUG_STORE_RESOLVER__?.();
-        return (store?.battleLogs ?? []).filter((l: any) => l.side === 'enemy').map((l: any) => l.msg);
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        return (store?.battleLogs ?? []).filter((l: BattleLogEntry) => l.side === 'enemy').map((l: BattleLogEntry) => l.msg);
       });
       expect(enemyLogs.length).toBeGreaterThanOrEqual(1);
     } catch (e) {
@@ -266,12 +266,12 @@ test.describe('HeuristicAI E2E Verification', () => {
         if (visible) await btn.click();
 
         await page.waitForFunction(() => {
-          const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
           const store = resolver?.();
           return !store?.state || store.state.over ||
             store.currentSubState === 'WAIT_INPUT' ||
             store.currentSubState === 'PLAYER_FAINT_SEQ';
-        }, undefined, { timeout: 10000 }).catch(() => {});
+        }, undefined, { timeout: 10000 }).catch(() => { /* expected */ });
 
         await page.evaluate(async () => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');

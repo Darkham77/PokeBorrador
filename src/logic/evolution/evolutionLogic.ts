@@ -1,5 +1,5 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/system/database';
@@ -118,7 +118,7 @@ export function getEvolvedForm(id: string, level: number): string {
         evolved = options[Math.floor(Math.random() * options.length)] || evolved;
         changed = true;
       } else {
-        const stoneEvo = (STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)[evolved];
+        const stoneEvo = getStoneEvolution(evolved);
         if (stoneEvo) {
           evolved = stoneEvo.to;
           changed = true;
@@ -152,7 +152,7 @@ export function checkStoneEvolution(pokemon: Pokemon, stoneId: string): string |
     return null;
   }
 
-  const evo = (STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)[pokemon.id];
+  const evo = getStoneEvolution(pokemon.id);
   if (!evo) return null;
 
   return (evo.stone === stoneId) ? evo.to : null;

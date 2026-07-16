@@ -1,6 +1,6 @@
 import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { clickResilient, waitForStoreReady } from '../e2e_helpers.ts';
+import { clickResilient, waitForStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -34,13 +34,15 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       const modalStore = useModalStore();
       const originalOpen = modalStore.open;
-      modalStore.open = function(name: string, props?: Record<string, any>) {
+      modalStore.open = function(name: string, props?: Record<string, unknown>) {
         if (name === 'Fishing') {
-          props?.onWin?.();
+          const p = props as { onWin?: () => void } | undefined;
+          p?.onWin?.();
           return null;
         }
         if (name === 'Archaeology') {
-          props?.onWin?.('hard');
+          const p = props as { onWin?: (difficulty: string) => void } | undefined;
+          p?.onWin?.('hard');
           return null;
         }
         return originalOpen.call(this, name, props);
@@ -57,21 +59,21 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public async forceHealAll(): Promise<void> {
     await this.page.evaluate(() => {
-      (window as any).__VITE_DEBUG__?.healAll?.();
+      (window as WindowWithResolver).__VITE_DEBUG__?.healAll?.();
     });
   }
 
   public async forceEncounterType(type: string): Promise<void> {
     await this.page.evaluate((t) => {
-      if ((window as any).__VITE_DEBUG__) {
-        (window as any).__VITE_DEBUG__.forceEncounterType = t;
+      if ((window as WindowWithResolver).__VITE_DEBUG__) {
+        (window as WindowWithResolver).__VITE_DEBUG__!.forceEncounterType = t;
       }
     }, type);
   }
 
   public async awaitSearchPhaseCombatOrFlee(): Promise<void> {
     await this.page.waitForFunction(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const store = resolver();
       return store.currentFsmState === 'SEARCH_PHASE' && 
@@ -82,7 +84,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public async awaitNotProcessing(): Promise<void> {
     await this.page.waitForFunction(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return !resolver?.()?.isProcessing;
     }, undefined, { timeout: 5000 });
   }

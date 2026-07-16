@@ -4,6 +4,25 @@ import * as path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { splitSQLStatements } from '../../src/logic/db/sqlTranslator.ts';
 
+interface SavePokemon {
+  heldItem?: string;
+}
+
+interface SaveData {
+  inventory?: Record<string, number>;
+  team?: Array<SavePokemon | null>;
+  box?: Array<SavePokemon | null>;
+}
+
+interface GameSaveRow {
+  user_id: string;
+  save_data: string;
+}
+
+interface ItemsCatalog {
+  SHOP_ITEMS: Array<{ id: string }>;
+}
+
 async function main() {
   const backupRelPath = 'tests/node/fixtures/server_franco_backup_fixture.json';
   const backupPath = path.resolve(backupRelPath);
@@ -13,20 +32,20 @@ async function main() {
   }
 
   console.log('Loading items catalog...');
-  const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
-  const validItemIds = new Set(itemsDict.SHOP_ITEMS.map((item: { id: string }) => item.id));
+  const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8')) as ItemsCatalog;
+  const validItemIds = new Set(itemsDict.SHOP_ITEMS.map((item) => item.id));
 
   console.log('Loading backup saves fixture...');
   const backupContent = fs.readFileSync(backupPath, 'utf8');
-  const backupData = JSON.parse(backupContent);
-  const gameSaves = backupData.data.game_saves || [];
+  const backupData = JSON.parse(backupContent) as { data: { game_saves?: GameSaveRow[] } };
+  const gameSaves: GameSaveRow[] = backupData.data.game_saves ?? [];
 
   console.log(`Found ${gameSaves.length} saves in backup.`);
 
   // Collect all unique item IDs present in the backup BEFORE migrations
   const originalItems = new Set<string>();
   for (const row of gameSaves) {
-    const saveData = typeof row.save_data === 'string' ? JSON.parse(row.save_data) : row.save_data;
+    const saveData = (typeof row.save_data === 'string' ? JSON.parse(row.save_data) : row.save_data) as SaveData | null;
     if (!saveData) continue;
 
     // Inventory keys
@@ -37,10 +56,10 @@ async function main() {
     }
 
     // Held items
-    const team = saveData.team || [];
-    const box = saveData.box || [];
+    const team: Array<SavePokemon | null> = saveData.team ?? [];
+    const box: Array<SavePokemon | null> = saveData.box ?? [];
     for (const poke of [...team, ...box]) {
-      if (poke && poke.heldItem) {
+      if (poke?.heldItem) {
         originalItems.add(poke.heldItem);
       }
     }
@@ -160,7 +179,7 @@ async function main() {
 
   const unmigratedItems = new Set<string>();
   for (const row of rows) {
-    const saveData = JSON.parse(row.save_data);
+    const saveData = JSON.parse(row.save_data) as SaveData | null;
     if (!saveData) continue;
 
     // Check inventory
@@ -173,10 +192,10 @@ async function main() {
     }
 
     // Check held items
-    const team = saveData.team || [];
-    const box = saveData.box || [];
+    const team: Array<SavePokemon | null> = saveData.team ?? [];
+    const box: Array<SavePokemon | null> = saveData.box ?? [];
     for (const poke of [...team, ...box]) {
-      if (poke && poke.heldItem) {
+      if (poke?.heldItem) {
         if (!checkItemValidity(poke.heldItem)) {
           unmigratedItems.add(poke.heldItem);
         }

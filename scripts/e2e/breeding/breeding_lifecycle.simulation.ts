@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
 
 class BreedingLifecycleSimulation extends BaseE2ESimulation {
-  constructor(page: any, username: string) {
+  constructor(page: Page, username: string) {
     super(page, username);
   }
 

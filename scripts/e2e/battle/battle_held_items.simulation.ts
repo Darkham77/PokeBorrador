@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
+import { waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class HeldItemsSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -84,12 +84,12 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
   }
 
   public async getPlayerHp(): Promise<number> {
-    return await this.page.evaluate(() => (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.hp ?? 0);
+    return await this.page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.hp ?? 0);
   }
 
   public async getPlayerHpInfo(): Promise<{ hp: number; maxHp: number }> {
     return await this.page.evaluate(() => {
-      const player = (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player;
+      const player = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player;
       return { hp: player?.hp ?? 0, maxHp: player?.maxHp ?? 1 };
     });
   }
@@ -121,9 +121,9 @@ test.describe('E2E Held Items Verification', () => {
 
     // Esperar al final
     await page.waitForFunction(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return resolver?.().currentSubState === 'WAIT_INPUT' || resolver?.().state?.over;
-    }, undefined, { timeout: 10000 }).catch(() => {});
+    }, undefined, { timeout: 10000 }).catch(() => { /* expected */ });
 
     const finalHp = (await sim.getPlayerHpInfo()).hp;
     expect(finalHp).toBeGreaterThan(midHp);
@@ -171,7 +171,7 @@ test.describe('E2E Held Items Verification', () => {
       if (content.items_consumption) {
         itemBatches = content.items_consumption as CertifiedTestBatch[];
       }
-    } catch (_e) {}
+    } catch (_e: unknown) { /* expected */ }
   }
 
   const caseFilter = process.env.TEST_CASE;
@@ -181,14 +181,14 @@ test.describe('E2E Held Items Verification', () => {
 
   let startIdx = 0;
   if (startFromCaseId) {
-    const foundIdx = itemBatches.findIndex((b) => (b as any).id === startFromCaseId.trim());
+    const foundIdx = itemBatches.findIndex((b) => b.id === startFromCaseId.trim());
     if (foundIdx !== -1) startIdx = foundIdx;
   } else if (startFromIndex) {
     startIdx = Number(startFromIndex.trim()) - 1;
   }
 
   const filteredItemBatches = itemBatches.map((b, idx) => ({ b, idx })).filter(({ b, idx }) => {
-    if (caseIdFilter) return (b as any).id === caseIdFilter.trim();
+    if (caseIdFilter) return b.id === caseIdFilter.trim();
     if (caseFilter) return (idx + 1) === Number(caseFilter.trim());
     return idx >= startIdx;
   });
@@ -213,7 +213,7 @@ test.describe('E2E Held Items Verification', () => {
           await sim.startBattle();
           await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
         } catch (error: unknown) {
-          const caseId = (batch as any).id || `lote-items-${index + 1}`;
+          const caseId = batch.id || `lote-items-${index + 1}`;
           if (process.env.CONTINUE_ON_ERROR === 'true') {
             console.warn(`[E2E-WARN] Ignorando error en lote de items ${caseId}`);
             return;

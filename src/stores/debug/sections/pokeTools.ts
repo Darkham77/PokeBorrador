@@ -6,7 +6,7 @@ import { useMapStore } from '@/stores/map'
 import { useBreedingStore } from '@/stores/breeding'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
+import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
 
 export function registerPokeTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -200,9 +200,8 @@ export function registerPokeTools(debug: DebugSystem) {
         if (levelEvo) {
           target = levelEvo.to
         } else {
-          // 2. Buscar en tabla de piedras (eevee tiene caso especial)
-          const pokemonIdKey = pokemon.id === 'eevee' ? 'eevee_water' : pokemon.id
-          const stoneEvo = (STONE_EVOLUTIONS as Record<string, { stone: string, to: string }>)[pokemonIdKey]
+          // 2. Buscar en tabla de piedras (eevee y formas con múltiples variantes usan patrón {species}_{disambiguator})
+          const stoneEvo = getStoneEvolution(pokemon.id)
           if (stoneEvo) {
             target = stoneEvo.to
             item = stoneEvo.stone

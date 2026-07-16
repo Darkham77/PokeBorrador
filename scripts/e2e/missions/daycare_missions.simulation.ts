@@ -83,8 +83,8 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gameStore = useGameStore();
-      const hasMaster = gameStore.state.box.some((p: any) => p?.nickname === 'MASTER_CATERPIE');
-      const hasBaby = gameStore.state.box.some((p: any) => p?.nickname === 'BABY_CATERPIE');
+      const hasMaster = gameStore.state.box.some((p) => p && p.nickname === 'MASTER_CATERPIE');
+      const hasBaby = gameStore.state.box.some((p) => p && p.nickname === 'BABY_CATERPIE');
       const candyQty = gameStore.state.inventory?.rarecandy ?? 0;
       return { hasMaster, hasBaby, candyQty };
     });

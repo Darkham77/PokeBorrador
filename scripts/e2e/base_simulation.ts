@@ -16,6 +16,10 @@ export abstract class BaseE2ESimulation {
   public async setup(): Promise<void> {
     await setupE2ESession(this.page);
     await loginE2ETestUser(this.page, this.username);
+    // Wait for Pinia stores to be fully ready before any page.evaluate() call.
+    // loginE2ETestUser only waits for mapaBtn to be attached — the Vue router
+    // may still be mid-transition, causing "Execution context was destroyed".
+    await waitForStoreReady(this.page);
   }
 
   /**

@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Load translation names
-const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8'));
-const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8'));
-const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8'));
+const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>;
+const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>;
+const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as { SHOP_ITEMS?: Array<{ name?: string }> };
 
 const spanishNames = new Set<string>();
 
@@ -15,10 +15,10 @@ const addName = (name?: string) => {
   }
 };
 
-Object.values(abilitiesJson).forEach((a: any) => addName(a.name));
-Object.values(movesJson).forEach((m: any) => addName(m.name));
+Object.values(abilitiesJson).forEach((a) => addName(a.name));
+Object.values(movesJson).forEach((m) => addName(m.name));
 if (itemsJson.SHOP_ITEMS) {
-  itemsJson.SHOP_ITEMS.forEach((i: any) => addName(i.name));
+  itemsJson.SHOP_ITEMS.forEach((i) => addName(i.name));
 }
 
 // Add natures manually since it's a small TS file
@@ -72,7 +72,7 @@ for (const file of filesToScan) {
   lines.forEach((lineText, index) => {
     // Basic regex to find strings in quotes matching the Spanish names
     spanishNames.forEach(word => {
-      const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const escaped = word.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
       const regex = new RegExp(`(['"\`])${escaped}\\1`, 'g');
       if (regex.test(lineText)) {
         matches.push({

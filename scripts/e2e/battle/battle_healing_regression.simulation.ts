@@ -1,30 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput } from '../e2e_helpers.ts';
+import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class HealingSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
-  }
-
-  public async getBattleStoreState() {
-    return await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const store = useBattleStore();
-      if (!store.state) return null;
-      return {
-        playerHp: store.state.player?.hp ?? 0,
-        playerMaxHp: store.state.player?.maxHp ?? 0,
-        playerStatus: store.state.player?.status ?? null,
-        playerTeam: store.state.playerTeam?.map((p) => ({
-          uid: p?.uid ?? '',
-          name: p?.name ?? '',
-          hp: p?.hp ?? 0,
-          maxHp: p?.maxHp ?? 0,
-          status: p?.status ?? null
-        })) ?? []
-      };
-    });
   }
 
   public async setupHpScenario(): Promise<void> {
@@ -49,9 +29,7 @@ class HealingSimWrapper extends BaseBattleSimulation {
       await gameStore.saveGame();
 
       const rattata = debugService.generate({ id: 'rattata', level: 5 });
-      const win = window as any;
-      win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || { battleSeed: [] };
-      win.__VITE_DEBUG__.battleSeed = [1, 2, 3, 4];
+      (window as WindowWithResolver).__VITE_DEBUG__ = { ...(window as WindowWithResolver).__VITE_DEBUG__, battleSeed: [1, 2, 3, 4] };
       await battleStore.startBattle(rattata, { locationId: 'route1' });
     });
   }
@@ -94,6 +72,9 @@ class HealingSimWrapper extends BaseBattleSimulation {
       gameStore.state.inventory = { revive: 2 };
 
       const bulbasaur = debugService.generate({ id: 'bulbasaur', level: 5 });
+      // Keep Bulbasaur HP high so it cannot faint from a single Rattata lv5 hit,
+      // ensuring the post-revive switch is always voluntary (not forced by a faint).
+      bulbasaur.hp = bulbasaur.maxHp;
       const charmander = debugService.generate({ id: 'charmander', level: 5 });
       charmander.hp = 0;
 
@@ -102,17 +83,14 @@ class HealingSimWrapper extends BaseBattleSimulation {
       await gameStore.saveGame();
 
       const rattata = debugService.generate({ id: 'rattata', level: 5 });
+      // Pin seed for determinism (same pattern as the other two scenarios).
+      const win = window as { __VITE_DEBUG__?: { battleSeed?: number[] } };
+      win.__VITE_DEBUG__ = win.__VITE_DEBUG__ ?? {};
+      win.__VITE_DEBUG__.battleSeed = [1, 2, 3, 4];
       await battleStore.startBattle(rattata, { locationId: 'route1' });
     });
   }
 
-  public async forceEnemyChoice(choice: string): Promise<void> {
-    await this.page.evaluate((c) => {
-      if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__.nextEnemyChoice = c;
-      }
-    }, choice);
-  }
 
   public async useItemOnPokemon(itemId: string, name: string): Promise<void> {
     const card = this.page.locator(`.quick-item-card[data-item-id="${itemId}"]:not(.is-disabled)`).first();
@@ -120,6 +98,25 @@ class HealingSimWrapper extends BaseBattleSimulation {
     await card.click();
 
     const targetBtn = this.page.locator(`.list-item:has(.name:has-text("${name}")), button:has-text("${name}")`).first();
+    await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await targetBtn.click();
+    await waitForWaitInput(this.page);
+  }
+
+  public async voluntarySwitch(pokemonName: string, pokemonUid?: string): Promise<void> {
+    // Wait until the CAMBIAR button is enabled (not disabled by isProcessing / animations).
+    const cambiarBtn = this.page.locator('button.switch-btn:not([disabled])');
+    await cambiarBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await cambiarBtn.click();
+
+    // Wait for the PokemonSelectionModal to open (any list-item becomes visible).
+    // Then target the specific Pokémon: prefer data-pokemon-uid (exact) over text matching
+    // (text can be affected by CSS transforms, special chars, font rendering, etc.).
+    await this.page.locator('.list-item').first().waitFor({ state: 'visible', timeout: 10000 });
+    const selector = pokemonUid
+      ? `.list-item[data-pokemon-uid="${pokemonUid}"]`
+      : `.list-item:has(.name:has-text("${pokemonName}"))`;
+    const targetBtn = this.page.locator(selector).first();
     await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
     await targetBtn.click();
     await waitForWaitInput(this.page);
@@ -202,14 +199,14 @@ test.describe('Regresión de Curación en Combate (Playwright)', () => {
     const charmanderAfter = stateAfterRevive?.playerTeam.find(p => p.name === 'Charmander');
     expect(charmanderAfter?.hp).toBeGreaterThan(0);
 
-    // Cambiar
-    await page.click('button:has-text("CAMBIAR"), .pokemon-tab-btn');
-    const switchCharmanderBtn = page.locator('.list-item:has-text("Charmander"), button:has-text("Charmander")').first();
-    await switchCharmanderBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await switchCharmanderBtn.click();
-    await waitForWaitInput(page);
+    // Cambiar al Charmander revivido usando el modal PokemonSelection.
+    // Usamos el UID del estado post-revivir para una selección exacta (data-pokemon-uid),
+    // evitando problemas de text matching con fuentes pixeladas / caracteres especiales.
+    // Forzamos Tail Whip (sin daño) para que Charmander no caiga en el mismo turno del switch.
+    await sim.forceEnemyChoice('move tailwhip');
+    await sim.voluntarySwitch('Charmander', charmanderAfter?.uid);
 
-    const activeName = await page.evaluate(() => (window as any).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.name ?? '');
-    expect(activeName.toLowerCase()).toContain('charmander');
+    const stateAfterSwitch = await sim.getBattleStoreState();
+    expect(stateAfterSwitch?.activePlayerUid).toBe(charmanderAfter?.uid);
   });
 });

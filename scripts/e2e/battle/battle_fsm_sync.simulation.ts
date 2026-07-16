@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
+import type { WindowWithResolver } from '../e2e_helpers.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -47,7 +48,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         fs.rmSync(failuresDir, { recursive: true, force: true });
       }
       fs.writeFileSync(reportPath, '[]', 'utf8');
-    } catch (_e) {}
+    } catch (_e: unknown) { /* expected empty */ }
   });
 
   let allBatches: CertifiedTestBatch[] = [];
@@ -58,7 +59,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
       if (content.battle) {
         allBatches = content.battle;
       }
-    } catch (_e) {}
+    } catch (_e: unknown) { /* expected empty */ }
   }
   if (allBatches.length === 0) {
     allBatches = generateTestBatches(6) as CertifiedTestBatch[];
@@ -88,7 +89,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         try {
           const progressData = JSON.parse(fs.readFileSync(batchFile, 'utf8')) as { isFailed?: boolean };
           if (!progressData.isFailed) return false;
-        } catch (_e) {}
+        } catch (_e: unknown) { /* expected empty */ }
       }
     }
     if (caseIdFilter) return b.id && caseIdFilter.split(',').map(id => id.trim()).includes(b.id);
@@ -108,7 +109,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
   function reportProgress(batchIndex: number, isFailed: boolean) {
     if (!fs.existsSync(progressDir)) {
-      try { fs.mkdirSync(progressDir, { recursive: true }); } catch (_e) {}
+      try { fs.mkdirSync(progressDir, { recursive: true }); } catch (_e: unknown) { /* expected empty */ }
     }
     const startTime = startTimesMap[batchIndex];
     const elapsed = startTime ? Number(Temporal.Now.instant().epochMilliseconds) - startTime : 0;
@@ -152,7 +153,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
           const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
           if (!fs.existsSync(failuresDir)) fs.mkdirSync(failuresDir, { recursive: true });
-          const cleanError = errMessage.replace(/\u001b\[[0-9;]*m/g, '');
+          const cleanError = errMessage.replace(new RegExp(String.fromCharCode(27) + '\\[[0-9;]*m', 'g'), '');
           fs.writeFileSync(
             path.join(failuresDir, `fail-${caseId}.json`),
             JSON.stringify({ id: caseId, error: cleanError, timestamp: new Date().toISOString() }, null, 2),
@@ -186,10 +187,10 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
     await targetBtn.click();
 
     await page.waitForFunction(() => {
-      const resolver = (window as any).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const store = resolver();
-      return store.currentSubState === 'WAIT_INPUT' || (store.state && store.state.player && store.state.player.hp === 0);
+      return store.currentSubState === 'WAIT_INPUT' || !!(store.state && store.state.player && store.state.player.hp === 0);
     }, undefined, { timeout: 10000 });
 
     expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
@@ -207,14 +208,18 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         const failuresList = files
           .filter((f) => f.endsWith('.json'))
           .map((f) => {
-            try { return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')); } catch (_e) { return null; }
+            try {
+              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as Record<string, unknown>;
+            } catch (_e: unknown) {
+              return null;
+            }
           })
-          .filter((x) => x !== null);
+          .filter((x): x is Record<string, unknown> => x !== null);
 
         fs.writeFileSync(reportPath, JSON.stringify(failuresList, null, 2), 'utf8');
       } else {
         fs.writeFileSync(reportPath, '[]', 'utf8');
       }
-    } catch (_e) {}
+    } catch (_e: unknown) { /* expected empty */ }
   });
 });

@@ -34,7 +34,7 @@ npm run sim:fuzzer
 
 ## Child DOX Index
 
-- [core/](./core/): Main simulation engine, native fuzzer runner, agent decider, and mock stores.
-- [generators/](./generators/): Random team and item generators for simulation batches.
+- [core/](./core/): Main simulation engine, native fuzzer runner, agent decider, mock stores, and AI fuzzer engine (`fuzzer_ai_engine.ts`).
+- [generators/](./generators/): Random team and item generators for simulation batches, including the AI battle generator (`fuzzer_ai_team_generator.ts`).
 - [scenarios/](./scenarios/): Combat setup scenarios for complex abilities and exclusion filters.
-- [runners/](./runners/): Native Node.js execution scripts and diagnostic replayers.
+- [runners/](./runners/): Native Node.js execution scripts and diagnostic replayers. Includes `run_ai_fuzzer.ts` (AI vs AI category).
