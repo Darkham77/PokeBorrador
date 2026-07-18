@@ -92,7 +92,7 @@ export interface RivalEncounter {
 }
 
 export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalEncounter> {
-  const { makePokemon, recalcPokemonStats, validatePokemon } = await import('@/logic/pokemon/pokemonFactory');
+  const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
   const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
   const { TeamGenerators } = await import('@pkmn/randoms');
@@ -127,50 +127,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   // 2. Init randombattle generator based on active generation setting
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
 
-  // Helper: apply a competitive set's moves/ability/item onto a Pokemon instance
-  function applyCompetitiveSet(
-    p: Pokemon,
-    set: { moves: string[]; ability: string; item: string }
-  ): void {
-    const moveEntries = set.moves
-      .map(id => pokemonDataProvider.getMoveData(toID(id)))
-      .filter((m): m is NonNullable<typeof m> => m !== null && m !== undefined);
-
-    if (moveEntries.length === 0) {
-      throw new Error(
-        `[buildRivalEncounter] Ningún movimiento del set competitivo existe en pokemonDataProvider para ${p.id}: [${set.moves.join(', ')}]`
-      );
-    }
-
-    p.moves = moveEntries.slice(0, 4).map(m => ({
-      id: m.id,
-      name: m.name,
-      pp: m.pp,
-      maxPP: m.pp,
-      type: m.type || 'normal',
-      power: m.power || 0,
-      acc: m.acc || 100,
-      cat: (m.cat as 'physical' | 'special' | 'status') || 'physical',
-      priority: m.priority,
-      effect: m.effect,
-      recoil: m.recoil,
-      selfKO: m.selfKO,
-      drain: m.drain,
-      hits: m.hits,
-      fixedDmg: m.fixedDmg,
-      ohko: m.ohko,
-      halfHP: m.halfHP,
-      endeavor: m.endeavor,
-      levelDmg: m.levelDmg,
-      counter: m.counter,
-      turns: m.turns,
-      sound: m.sound,
-    }));
-
-    p.heldItem = toID(set.item) || null;
-    recalcPokemonStats(p, true);
-    validatePokemon(p, true);
-  }
+  const { applyCompetitiveSet } = await import('./trainerFactory');
 
   // 3. Build ace: 1 random Pokémon from rival pool + its competitive randomSet
   // Cast needed: TeamGenerator interface is minimal; underlying RandomTeams class exposes randomSet
@@ -181,7 +138,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   if (!acePokemon) {
     throw new Error(`[buildRivalEncounter] No se pudo crear el Pokémon as: ${aceBase}`);
   }
-  applyCompetitiveSet(acePokemon, aceSet);
+  await applyCompetitiveSet(acePokemon, aceSet);
   (acePokemon as Pokemon & { _revealed?: boolean })._revealed = true;
 
   // 4. Fill remaining slots from getTeam() — only species that exist in our DB
@@ -199,7 +156,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
     if (!p) continue;
 
     try {
-      applyCompetitiveSet(p, set);
+      await applyCompetitiveSet(p, set);
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
       usedSpecies.add(speciesId);
       enemyTeam.push(p);
@@ -218,7 +175,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
 
     try {
       const fallbackSet = generatorWithRandomSet.randomSet(speciesId);
-      applyCompetitiveSet(p, fallbackSet);
+      await applyCompetitiveSet(p, fallbackSet);
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
       usedSpecies.add(speciesId);
       enemyTeam.push(p);

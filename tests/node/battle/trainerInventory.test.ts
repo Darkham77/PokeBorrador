@@ -12,17 +12,17 @@ describe('NPC Trainer Inventory Logic and Budget Formulas', () => {
   describe('calculateNPCBaseBudget', () => {
     it('calculates the correct base budget for Gym Leaders', () => {
       const budget = calculateNPCBaseBudget(50, true, false);
-      assert.strictEqual(budget, 50 * 100 + 1000);
+      assert.strictEqual(budget, (50 * 100 + 1000) * 2);
     });
 
     it('calculates the correct base budget for special NPCs (Rivals/Rockets/Police)', () => {
       const budget = calculateNPCBaseBudget(30, false, true);
-      assert.strictEqual(budget, 30 * 60 + 500);
+      assert.strictEqual(budget, (30 * 60 + 500) * 2);
     });
 
     it('calculates the correct base budget for normal Route NPCs', () => {
       const budget = calculateNPCBaseBudget(20, false, false);
-      assert.strictEqual(budget, 20 * 25 + 200);
+      assert.strictEqual(budget, (20 * 25 + 200) * 2);
     });
   });
 
