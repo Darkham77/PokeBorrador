@@ -664,6 +664,31 @@ export function syncAndPersist(ctx: BattleContext) {
 }
 
 /**
+ * Intercepts fainted player active Pokemon or forceSwitch requests
+ * to trigger faint animations or replacement menus, preventing simulator invalid choice crashes.
+ */
+export async function validateAndInterceptFaintedPlayer(ctx: BattleContext): Promise<boolean> {
+  const active = ctx.activeBattle.value
+  if (!active) return false
+
+  const p = active.player
+  if (!p) return false
+
+  const isP1Forced = active.playerRequest?.forceSwitch?.some((x: unknown) => !!x);
+  if (p.hp <= 0 || isP1Forced) {
+    if (p.hp <= 0) {
+      console.warn(`[validateAndIntercept] Player Pokemon ${p.name} is fainted. Triggering processFaint sequence.`);
+      await processFaint(ctx, 'player');
+    } else {
+      console.warn(`[validateAndIntercept] forceSwitch requested for active player. Transiting to replacements menu.`);
+      await handleForceSwitch(ctx, 'player');
+    }
+    return true
+  }
+  return false
+}
+
+/**
  * Handles forced switch request (e.g. from Dragon Tail or Whirlwind).
  */
 export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'enemy') {
@@ -675,6 +700,15 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
 
   if (side === 'player') {
     ctx.uiStore.isBattleSwitchForced = true
+    const p = active.player
+    if (p) {
+      ctx.addLog(`¡${p.name} es forzado a retirarse!`, 'log-info', p)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'flee' })
+      if (ctx.animations?.awaitTween) {
+        await ctx.animations.awaitTween(`player-${p.uid}`)
+      }
+    }
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
   } else {
     // Determine which Pokémon is currently active according to Showdown's request (source of truth).
