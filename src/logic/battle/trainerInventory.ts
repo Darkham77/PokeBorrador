@@ -129,12 +129,12 @@ export function generateNPCInventory(
  */
 export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpecial: boolean): number {
   if (isGym) {
-    return maxLevel * 100 + 1000;
+    return (maxLevel * 100 + 1000) * 2;
   }
   if (isSpecial) {
-    return maxLevel * 60 + 500;
+    return (maxLevel * 60 + 500) * 2;
   }
-  return maxLevel * 25 + 200;
+  return (maxLevel * 25 + 200) * 2;
 }
 
 /**

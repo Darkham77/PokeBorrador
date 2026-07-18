@@ -218,7 +218,20 @@ export function useCombatantStatus(
       }
 
       const level = battleStore.state.enemyMaxLevel ?? target.level;
-      const invText = `INVENTARIO DEL NPC (Lv. ${level}):\nPresupuesto restante: ₽${money}\n\nObjetos:\n${itemsListText}`;
+      
+      // Get all held items on active or team Pokemon if any
+      const enemyTeam = battleStore.state.enemyTeam || [];
+      const heldItemsText = enemyTeam
+        .map(p => {
+          if (!p.heldItem) return null;
+          const name = getItemName(p.heldItem);
+          return `• ${p.name}: ${name}`;
+        })
+        .filter(Boolean)
+        .join('\n');
+
+      const heldSection = heldItemsText ? `\n\nObjetos Equipados (Equipados en combate):\n${heldItemsText}` : '';
+      const invText = `INVENTARIO DEL NPC (Lv. ${level}):\nPresupuesto restante: ₽${money}\n\nObjetos consumibles:\n${itemsListText}${heldSection}`;
 
       list.push({
         icon: '🎒',

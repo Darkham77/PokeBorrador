@@ -2,6 +2,8 @@ import { PDEX_ORDER } from '../pokemon/pokedex.ts';
 
 export const ACTIVE_GENERATION = 9;
 export const IMPLEMENTED_GENERATION = 9;
+export const ACTIVE_AI_TEAM_GENERATION_GEN = 1;
+
 
 export const ENABLED_POKEMON_IDS = new Set<string>([
   ...PDEX_ORDER,

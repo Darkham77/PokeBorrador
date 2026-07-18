@@ -41,6 +41,15 @@ export async function executeFlee(ctx: BattleContext) {
       const p = ctx.activeBattle.value.player
       const e = ctx.activeBattle.value.enemy
       if (!p || !e) { ctx.isProcessing.value = false; return }
+
+      const isP1Forced = ctx.activeBattle.value.playerRequest?.forceSwitch?.some((x: unknown) => !!x);
+      if (p.hp <= 0 || isP1Forced) {
+        console.warn('[executeFlee] Player Pokemon is fainted or forceSwitch is requested. Aborting flee and transiting to replacements.');
+        const { handleForceSwitch } = await import('./resolution.ts');
+        await handleForceSwitch(ctx, 'player');
+        ctx.isProcessing.value = false;
+        return;
+      }
       
       const { calculateEscapeChance } = await import('./battleEngine.ts')
       const canEscape = calculateEscapeChance(
