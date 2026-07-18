@@ -44,9 +44,15 @@ export async function executeFlee(ctx: BattleContext) {
 
       const isP1Forced = ctx.activeBattle.value.playerRequest?.forceSwitch?.some((x: unknown) => !!x);
       if (p.hp <= 0 || isP1Forced) {
-        console.warn('[executeFlee] Player Pokemon is fainted or forceSwitch is requested. Aborting flee and transiting to replacements.');
-        const { handleForceSwitch } = await import('./resolution.ts');
-        await handleForceSwitch(ctx, 'player');
+        if (p.hp <= 0) {
+          console.warn('[executeFlee] Player Pokemon is fainted. Triggering processFaint sequence.');
+          const { processFaint } = await import('./resolution.ts');
+          await processFaint(ctx, 'player');
+        } else {
+          console.warn('[executeFlee] forceSwitch requested for active player. Transiting to replacements menu.');
+          const { handleForceSwitch } = await import('./resolution.ts');
+          await handleForceSwitch(ctx, 'player');
+        }
         ctx.isProcessing.value = false;
         return;
       }

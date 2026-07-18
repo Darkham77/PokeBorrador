@@ -94,9 +94,15 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const active = store.activeBattle.value;
     const isP1Forced = active?.playerRequest?.forceSwitch?.some((x: unknown) => !!x);
     if ((p.hp <= 0 || isP1Forced) && active) {
-      console.warn(`[executeTurn] Player Pokemon ${p.name} is fainted or forceSwitch is requested. Transiting to replacements sequence.`);
-      const { handleForceSwitch } = await import('./resolution.ts');
-      await handleForceSwitch(store, 'player');
+      if (p.hp <= 0) {
+        console.warn(`[executeTurn] Player Pokemon ${p.name} is fainted. Triggering processFaint sequence.`);
+        const { processFaint } = await import('./resolution.ts');
+        await processFaint(store, 'player');
+      } else {
+        console.warn(`[executeTurn] forceSwitch requested for active player. Transiting to replacements menu.`);
+        const { handleForceSwitch } = await import('./resolution.ts');
+        await handleForceSwitch(store, 'player');
+      }
       return;
     }
 
