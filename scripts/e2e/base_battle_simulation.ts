@@ -115,8 +115,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       battleStore.fsm.currentState = 'INITIALIZING';
       gameStore.state.team = [];
 
-      // Esperar a que Vue procese la reactividad y desmonte el componente de batalla previo
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Esperar reactivamente a que Vue procese el desmontado del componente de batalla previo usando ciclos de animación nativos
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
       // Forzar el clima a despejado ('clear') en el MapStore para coincidir 1:1 con el fuzzer
       useMapStore().setGlobalWeather('clear');

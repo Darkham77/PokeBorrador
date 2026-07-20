@@ -12,6 +12,7 @@ Systems Engineers / Backend Developers.
 - **Unified Factory**: Always instantiate new Showdown simulator instances using `createShowdownBattle` to guarantee identical rules, formatting, and patches across headless fuzzers and browser contexts.
 - **Deterministic Choices**: Use `choiceIndexer` and its `advanceChoiceIndices` function to progress choices identically across all environments.
 - **ScriptedAI Integrity**: Never bypass or manually override simulator decisions directly in the worker client. All replayed decisions during simulations must be resolved cleanly via the `ScriptedAI` interface.
+- **E2E Arena Unmount Safety**: When transitioning between battles or initializing a new fuzzer E2E scenario, always await native browser `requestAnimationFrame` cycles after clearing the battle store state. This ensures Vue reactively unmounts the previous battle arena component completely before the new battle starts, preventing cross-battle choice contamination.
 - **Pre-Turn Cheat Evaluation**: Apply status and HP cheats at pre-turn using `applyPreTurnCheats` to ensure simulator states are fully synchronized before input choices are registered, preventing invalid fainted state rejections.
 
 ## Work Guidance

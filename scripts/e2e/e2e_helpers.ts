@@ -578,7 +578,7 @@ export async function executeAutoBattle(
         return await window.__VITE_DEBUG__.waitForBattleReady();
       }
       throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
-    })) as { subState: string; over: boolean };
+    })) as { subState: string; over: boolean; p1ChoiceIdx: number; p2ChoiceIdx: number };
 
     if (eventDetail.over) {
       break;
@@ -612,7 +612,7 @@ export async function executeAutoBattle(
 
     // Esperar reactivamente a que la elección sea procesada e incrementada
     await page.waitForFunction((prevIdx) => {
-      const debug = (window as any).__VITE_DEBUG__;
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       const isOver = !store?.state || store.state.over;
@@ -625,15 +625,15 @@ export async function executeAutoBattle(
                       !store.isProcessing &&
                       !store.isIntroAnimating;
 
-      return isReady && (debug.p1ChoiceIdx > prevIdx || debug.p2ChoiceIdx > prevIdx);
+      return isReady && ((debug.p1ChoiceIdx ?? 0) > prevIdx || (debug.p2ChoiceIdx ?? 0) > prevIdx);
     }, currentP1Idx, { timeout: 30000 });
 
-    const nextDetail = await page.evaluate(async () => {
+    const nextDetail = (await page.evaluate(async () => {
       if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
         return await window.__VITE_DEBUG__.waitForBattleReady();
       }
       throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
-    });
+    })) as { subState: string; over: boolean; p1ChoiceIdx: number; p2ChoiceIdx: number };
     over = nextDetail.over;
   }
 
