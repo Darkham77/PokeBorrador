@@ -11,6 +11,8 @@ Systems Engineers / Backend Developers.
 - **No Window / Client Dependencies**: Helpers inside this directory must remain completely decoupled from window objects, client stores, or Vue dependencies to ensure they can run safely within Web Workers.
 - **Unified Factory**: Always instantiate new Showdown simulator instances using `createShowdownBattle` to guarantee identical rules, formatting, and patches across headless fuzzers and browser contexts.
 - **Deterministic Choices**: Use `choiceIndexer` and its `advanceChoiceIndices` function to progress choices identically across all environments.
+- **ScriptedAI Integrity**: Never bypass or manually override simulator decisions directly in the worker client. All replayed decisions during simulations must be resolved cleanly via the `ScriptedAI` interface.
+- **Pre-Turn Cheat Evaluation**: Apply status and HP cheats at pre-turn using `applyPreTurnCheats` to ensure simulator states are fully synchronized before input choices are registered, preventing invalid fainted state rejections.
 
 ## Work Guidance
 
