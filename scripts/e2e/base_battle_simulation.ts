@@ -119,7 +119,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       useMapStore().setGlobalWeather('clear');
 
       // Generar equipo local para el jugador usando la API de depuración con el formato de nicknames correcto
-      const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet, idx: number) => {
+      const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
         return pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
@@ -127,7 +127,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           ability: set.ability,
           moves: set.moves,
           heldItem: set.item,
-          nickname: `${set.name}-${idx + 1}`,
+          nickname: set.name,
           nature: set.nature,
           ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
@@ -137,7 +137,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       });
 
       // Generar equipo local para el enemigo (NPC)
-      const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet, idx: number) => {
+      const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet) => {
         return pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
@@ -145,7 +145,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           ability: set.ability,
           moves: set.moves,
           heldItem: set.item,
-          nickname: `${set.name}-${idx + 1}`,
+          nickname: set.name,
           nature: set.nature,
           ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
@@ -177,6 +177,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         ?? (batchData.history as Array<{ p2Choice: string }> | undefined)?.map(h => h.p2Choice)
         ?? [];
       debugObj.enemyChoices = [...enemyChoices];
+      debugObj.mockEnemyChoices = [...enemyChoices];
       debugObj.cheats = batchData.cheats ?? [];
       debugObj.enemyChoiceIndex = 0;
 
@@ -194,6 +195,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         trainerName: 'Simulador E2E',
         locationId: 'route1'
       });
+
+      // Speed up GSAP animations to 30x to run tests extremely fast
+      if (w.gsap) {
+        w.gsap.globalTimeline.timeScale(30);
+      }
 
       const bState = battleStore.state as { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
       if (bState) {

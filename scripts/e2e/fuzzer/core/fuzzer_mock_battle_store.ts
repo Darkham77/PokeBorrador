@@ -4,13 +4,20 @@ import type { BattleContext } from '../../../../src/types/battle/battleContext.t
 import type { BattleState, BattleStages, BattleLog } from '../../../../src/types/battle/battle.ts';
 import type { Pokemon, Move } from '../../../../src/types/pokemon/pokemon.ts';
 
-export function createMockBattleContext(playerPoke: Pokemon, enemyPoke: Pokemon): BattleContext {
+export function createMockBattleContext(
+  playerPoke: Pokemon,
+  enemyPoke: Pokemon,
+  playerTeam?: Pokemon[],
+  enemyTeam?: Pokemon[]
+): BattleContext {
   const activeBattle = ref<BattleState | null>({
     id: 'mock-battle',
     mode: 'offline',
     type: 'wild',
     player: playerPoke,
     enemy: enemyPoke,
+    playerTeam: playerTeam || [playerPoke],
+    enemyTeam: enemyTeam || [enemyPoke],
     turn: 'player',
     turns: 1,
     weather: { type: 'clear', turns: 0 },

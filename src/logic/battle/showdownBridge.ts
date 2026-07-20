@@ -198,6 +198,15 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
     }
 
+    const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
+    if (namePart) {
+      const matchMon = team.find(mon => mon && mon.uid && mon.uid.startsWith(namePart));
+      if (matchMon) {
+        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via suffix`);
+        return matchMon;
+      }
+    }
+
     // Si es del jugador y se refiere al slot activo en pista (p1a)
     if (side === 'player' && (rawId.startsWith('p1a:') || rawId === 'p1a')) {
       if ((battle as unknown as Record<string, unknown>).switchingToPlayer) {
@@ -219,13 +228,6 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
 
     if (!foundUid && request && request.side && Array.isArray(request.side.pokemon)) {
-      if (line && (line.startsWith('|switch|') || line.startsWith('|drag|')) && (rawId === 'p1a' || rawId.startsWith('p1a:') || rawId === 'p2a' || rawId.startsWith('p2a:'))) {
-        const list = request.side.pokemon as Array<{ active?: boolean; uid?: string } | null | undefined>;
-        const activeReqPoke = list.find((rp) => rp && rp.active);
-        if (activeReqPoke && activeReqPoke.uid) {
-          foundUid = activeReqPoke.uid;
-        }
-      }
       if (!foundUid) {
         // Resolver por ident (e.g. p1a: P-Poke2-2 -> p1: P-Poke2-2)
         const identToMatch = rawId.replace(/^(p1|p2)[a-d]:/, '$1:').trim();

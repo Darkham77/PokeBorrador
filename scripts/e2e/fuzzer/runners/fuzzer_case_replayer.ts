@@ -1,11 +1,14 @@
-// scripts/battle-tester/fuzzer-run-tester.ts
-import { Battle } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { TestBatch } from '../generators/fuzzer_team_generator.ts';
-import { getShowdownFormatId, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
+import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
+import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
+import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 
 // Aplicar el monkey-patch unificado de Showdown
 patchShowdownSpreadModify(() => false);
@@ -69,24 +72,14 @@ if (caseId) {
   seed = seedStr.split(',').map(Number);
   console.log(`Running with custom seed: ${JSON.stringify(seed)}`);
 }
-
-const battleSeed = seed.length === 4
-  ? `${seed[0]},${seed[1]},${seed[2]},${seed[3]}` as `${number},${string}`
-  : undefined;
-
 // Populate statsMap to preserve stats in spreadModify
-playerTeam.forEach(p => {
-  if (p.name && (p as unknown as { stats?: unknown }).stats) {
-    statsMap.set(p.name, (p as unknown as { stats: Record<string, number> }).stats);
-  }
-});
-enemyTeam.forEach(e => {
-  if (e.name && (e as unknown as { stats?: unknown }).stats) {
-    statsMap.set(e.name, (e as unknown as { stats: Record<string, number> }).stats);
-  }
-});
+statsMap.clear();
+ShowdownTeamMapper.populateStatsMap(playerTeam as unknown as CustomPokemonSet[]);
+ShowdownTeamMapper.populateStatsMap(enemyTeam as unknown as CustomPokemonSet[]);
 
-const battle = new Battle({ formatid: getShowdownFormatId(), seed: battleSeed });
+const battle = createShowdownBattle('gen5customgame', seed);
+ShowdownLogEnricher.setupRealtimeEnrichment(battle);
+
 battle.setPlayer('p1', { name: 'Player', team: playerTeam });
 battle.setPlayer('p2', { name: 'NPC-Enemy', team: enemyTeam });
 
@@ -106,6 +99,8 @@ enemyTeam.forEach((e, idx: number) => {
   }
 });
 
+ShowdownLogEnricher.enrichRetroactiveLeads(battle);
+
 if (!match || !match.playerChoices || !match.enemyChoices) {
   console.error('Error: Replay mode requires a certified fuzzer case with playerChoices and enemyChoices.');
   process.exit(1);
@@ -118,28 +113,20 @@ let p2ChoiceIdx = 0;
 console.log('--- STARTING EXACT CERTIFIED CHOICES REPLAY ---');
 
 let turn = 0;
-while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx < match.enemyChoices.length)) {
+const runner = new ShowdownBattleRunner(match.playerChoices, match.enemyChoices);
+
+while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runner.p2ChoiceIdx < match.enemyChoices.length)) {
   turn++;
+  p1ChoiceIdx = runner.p1ChoiceIdx;
+  p2ChoiceIdx = runner.p2ChoiceIdx;
   const p1Req = battle.p1.activeRequest;
   const p2Req = battle.p2.activeRequest;
 
-  let p1Choice = 'pass';
-  let p2Choice = 'pass';
+  const p1NeedsAction = requiresAction(p1Req);
+  const p2NeedsAction = requiresAction(p2Req);
 
-  if (p1Req && !p1Req.wait) {
-    if (p1Req.teamPreview) {
-      p1Choice = 'team 1';
-    } else {
-      p1Choice = match.playerChoices[p1ChoiceIdx++] ?? 'pass';
-    }
-  }
-  if (p2Req && !p2Req.wait) {
-    if (p2Req.teamPreview) {
-      p2Choice = 'team 1';
-    } else {
-      p2Choice = match.enemyChoices[p2ChoiceIdx++] ?? 'pass';
-    }
-  }
+  const p1Choice = runner.resolveAndConsumeNextChoice('p1', p1Req);
+  const p2Choice = runner.resolveAndConsumeNextChoice('p2', p2Req);
 
   const prevLogLen = battle.log.length;
   
@@ -149,8 +136,11 @@ while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx
     console.log(`\n[Turn ${turn}] P1 side.pokemon:`, JSON.stringify(mons));
   }
 
-  const p1Ok = battle.choose('p1', p1Choice);
-  const p2Ok = battle.choose('p2', p2Choice);
+  const p1Ok = p1NeedsAction ? battle.choose('p1', p1Choice) : true;
+  const p2Ok = p2NeedsAction ? battle.choose('p2', p2Choice) : true;
+
+  p1ChoiceIdx = runner.p1ChoiceIdx;
+  p2ChoiceIdx = runner.p2ChoiceIdx;
 
   const newLogs = battle.log.slice(prevLogLen);
 
@@ -166,12 +156,16 @@ while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx
   newLogs.forEach(line => console.log(`    ${line}`));
 
   // Check and apply HP restoration (Infinite Punching Bag) matching the fuzzer's engine behavior
-  if (p1ActiveMon && (p1ActiveMon.hp <= p1ActiveMon.maxhp * 0.3 || p1ActiveMon.fainted)) {
+  const cheats = (match as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> }).cheats || [];
+  const hasP1HealCheat = cheats.some(c => c.turn === turn && c.side === 'p1' && c.type === 'heal');
+  const hasP2HealCheat = cheats.some(c => c.turn === turn && c.side === 'p2' && c.type === 'heal');
+
+  if (hasP1HealCheat && p1ActiveMon) {
     applyHealCheatToSide(battle.p1);
     syncRequestConditionsWithSimulator(battle.p1);
     console.log(`  [IPB CHEAT] Restored P1 Active HP to max (${p1ActiveMon.name})`);
   }
-  if (p2ActiveMon && (p2ActiveMon.hp <= p2ActiveMon.maxhp * 0.3 || p2ActiveMon.fainted)) {
+  if (hasP2HealCheat && p2ActiveMon) {
     applyHealCheatToSide(battle.p2);
     syncRequestConditionsWithSimulator(battle.p2);
     console.log(`  [IPB CHEAT] Restored P2 Active HP to max (${p2ActiveMon.name})`);
@@ -188,17 +182,17 @@ while (!battle.ended && (p1ChoiceIdx < match.playerChoices.length || p2ChoiceIdx
       console.log(`  [Upkeep] P1 side.pokemon:`, JSON.stringify(mons));
     }
 
-    let upChoice1 = 'pass';
-    let upChoice2 = 'pass';
-    if (upReq1 && upReq1.forceSwitch) {
-      upChoice1 = match.playerChoices[p1ChoiceIdx++] ?? 'pass';
-    }
-    if (upReq2 && upReq2.forceSwitch) {
-      upChoice2 = match.enemyChoices[p2ChoiceIdx++] ?? 'pass';
-    }
+    const upChoice1 = runner.resolveAndConsumeNextChoice('p1', upReq1);
+    const upChoice2 = runner.resolveAndConsumeNextChoice('p2', upReq2);
     
-    const upP1Ok = battle.choose('p1', upChoice1);
-    const upP2Ok = battle.choose('p2', upChoice2);
+    const upReq1Needs = requiresAction(upReq1);
+    const upReq2Needs = requiresAction(upReq2);
+
+    const upP1Ok = upReq1Needs ? battle.choose('p1', upChoice1) : true;
+    const upP2Ok = upReq2Needs ? battle.choose('p2', upChoice2) : true;
+
+    p1ChoiceIdx = runner.p1ChoiceIdx;
+    p2ChoiceIdx = runner.p2ChoiceIdx;
     
     console.log(`  [Upkeep] P1 Choice Index: ${p1ChoiceIdx - 1} | Choice: "${upChoice1}" (Valid: ${upP1Ok})`);
     console.log(`  [Upkeep] P2 Choice Index: ${p2ChoiceIdx - 1} | Choice: "${upChoice2}" (Valid: ${upP2Ok})`);

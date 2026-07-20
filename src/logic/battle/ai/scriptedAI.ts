@@ -7,10 +7,9 @@ export class ScriptedAI implements CombatAI {
   private getDebugChoices(): { mockChoices: string[]; idx: number } | null {
     if (typeof window === 'undefined' || !window.__VITE_DEBUG__?.mockEnemyChoices) return null
     const debugObj = window.__VITE_DEBUG__
-    if (debugObj.enemyChoiceIndex === undefined) debugObj.enemyChoiceIndex = 0
     const mockChoices = debugObj.mockEnemyChoices
-    const idx = debugObj.enemyChoiceIndex
-    if (!mockChoices || idx === undefined) return null
+    const idx = debugObj.p2ChoiceIdx !== undefined ? debugObj.p2ChoiceIdx : (debugObj.enemyChoiceIndex ?? 0)
+    if (!mockChoices) return null
     return { mockChoices, idx }
   }
   decideMove(enemy: Pokemon, _player: Pokemon, _playerStages: BattleStages, _isWild = false, _store?: BattleContext): Move | null {
@@ -59,6 +58,9 @@ export class ScriptedAI implements CombatAI {
         if (p2SlotOrder && p2SlotOrder[switchSlot]) {
           targetUid = p2SlotOrder[switchSlot]
         }
+      }
+      if (!targetUid && enemyTeam[switchSlot]) {
+        targetUid = enemyTeam[switchSlot]?.uid || null;
       }
       if (targetUid) {
         const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid)

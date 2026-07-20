@@ -2,19 +2,25 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { Battle, toID, ID, Dex } from '@pkmn/sim';
+import { toID, ID, Dex } from '@pkmn/sim';
 import { generateTestBatches, getTriggerSlot, generateBatchHash } from '../generators/fuzzer_team_generator.ts';
 import { generateItemTestBatches } from '../generators/fuzzer_item_generator.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/battle/showdownBridge.ts';
-import { getShowdownFormatId, resolveBaseStats, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
+// Aplicar el monkey-patch unificado de Showdown
+import { resolveBaseStats, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
 
-// Aplicar el monkey-patch unificado de Showdown
 patchShowdownSpreadModify(() => false);
 import { logger } from '../../../../src/logic/utils/logger.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
+import { parseShowdownSeedForBattle } from '../../../../src/logic/battle/helpers/seedInitializer.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
+import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import { isActionConsumed } from '../../../../src/logic/battle/helpers/choiceIndexer.ts';
+
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
 import { MECHANICS_SCENARIOS } from '../scenarios/fuzzer_mechanics_scenarios.ts';
 import { MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
@@ -108,7 +114,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
   (set as unknown as { stats: unknown }).stats = calculated;
 
   return {
-    uid: Math.random().toString(36).substring(2, 11),
+    uid: (set as unknown as { uid?: string }).uid || Math.random().toString(36).substring(2, 11),
     id: toID(set.species),
     name: set.name || set.species,
     level: set.level,
@@ -245,24 +251,36 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
         Math.floor(Math.random() * 0x10000),
         Math.floor(Math.random() * 0x10000)
       ] as [number, number, number, number];
-      // @pkmn/sim espera PRNGSeed como template literal `${number},${string}`
-      const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
+      const seed = parseShowdownSeedForBattle(seedNums);
 
       const playerTeamCopy = structuredClone(batch.playerTeam);
       const enemyTeamCopy = structuredClone(batch.enemyTeam);
 
-      const simBattle = new Battle({
-        formatid: getShowdownFormatId(),
-        seed
-      });
+      const simBattle = createShowdownBattle('gen5customgame', seed);
+      ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
+
       simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: playerTeamCopy });
       simBattle.setPlayer('p2', { name: `E-${roundNum}`, team: enemyTeamCopy });
 
-      const p1Active = playerTeamCopy[0]!;
-      const p2Active = enemyTeamCopy[0]!;
-      const localP1 = createLocalPoke(p1Active);
-      const localP2 = createLocalPoke(p2Active);
-      const mockStore = createMockBattleContext(localP1, localP2);
+      // Associate UIDs of sets to the simulator instances using direct slot index
+      playerTeamCopy.forEach((set, idx) => {
+        if (set && set.uid && simBattle.p1.pokemon[idx]) {
+          (simBattle.p1.pokemon[idx] as unknown as { uid?: string }).uid = set.uid;
+        }
+      });
+      enemyTeamCopy.forEach((set, idx) => {
+        if (set && set.uid && simBattle.p2.pokemon[idx]) {
+          (simBattle.p2.pokemon[idx] as unknown as { uid?: string }).uid = set.uid;
+        }
+      });
+
+      ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
+
+      const fullPlayerTeam = playerTeamCopy.map(createLocalPoke);
+      const fullEnemyTeam = enemyTeamCopy.map(createLocalPoke);
+      const localP1 = fullPlayerTeam[0]!;
+      const localP2 = fullEnemyTeam[0]!;
+      const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
 
       let lastLogIndex = 0;
       const getNewLogs = (): string[] => {
@@ -315,16 +333,22 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 
           // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
           const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest, forceOffensive);
-          if (p1Choice !== 'pass' && !p1Choice.startsWith('team')) {
+          const p1NeedsAction = requiresAction(p1Req);
+          if (isActionConsumed(p1NeedsAction, p1Choice, p1Choice === 'pass') && !p1Choice.startsWith('team')) {
             batchChoices.push(p1Choice);
           }
           const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest, forceOffensive);
-          if (p2Choice !== 'pass' && !p2Choice.startsWith('team')) {
+          const p2NeedsAction = requiresAction(p2Req);
+          if (isActionConsumed(p2NeedsAction, p2Choice, p2Choice === 'pass') && !p2Choice.startsWith('team')) {
             batchEnemyChoices.push(p2Choice);
           }
 
-          simBattle.choose('p1', p1Choice);
-          simBattle.choose('p2', p2Choice);
+          if (p1NeedsAction) {
+            simBattle.choose('p1', p1Choice);
+          }
+          if (p2NeedsAction) {
+            simBattle.choose('p2', p2Choice);
+          }
 
           const rawTurnLogs = getNewLogs();
           const turnLogs = filterShowdownLogs(rawTurnLogs);
@@ -480,9 +504,9 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
     consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.battle) {
+    if ((process.env.SKIP_REGENERATE === 'true' || process.env.REGENERATE_CASES === 'false') && consolidatedData.battle) {
       shouldWrite = false;
-      console.log(`⚠️  Conservando casos de combate certificados existentes (usa REGENERATE_CASES=true para pisar).`);
+      console.log(`⚠️  Conservando casos de combate certificados existentes (usa SKIP_REGENERATE=false o REGENERATE_CASES=true para forzar regeneración).`);
     }
   } catch (_e) { /* file doesn't exist yet */ }
 
@@ -533,9 +557,9 @@ async function writeCertifiedAbilityCases(batches: ReturnType<typeof generateTes
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
     consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.abilities) {
+    if ((process.env.SKIP_REGENERATE === 'true' || process.env.REGENERATE_CASES === 'false') && consolidatedData.abilities) {
       shouldWrite = false;
-      console.log(`⚠️  Conservando casos de habilidades certificados existentes (usa REGENERATE_CASES=true para pisar).`);
+      console.log(`⚠️  Conservando casos de habilidades certificados existentes (usa SKIP_REGENERATE=false o REGENERATE_CASES=true para forzar regeneración).`);
     }
   } catch (_e) { /* file doesn't exist yet */ }
 
@@ -675,12 +699,11 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     currentRound++;
     console.log(`\n⚔️ Ronda de ítems ${currentRound}/${totalRounds}...`);
 
-    const p1Active = batch.playerTeam[0]!;
-    const p2Active = batch.enemyTeam[0]!;
-
-    const localP1 = createLocalPoke(p1Active);
-    const localP2 = createLocalPoke(p2Active);
-    const mockStore = createMockBattleContext(localP1, localP2);
+    const fullPlayerTeam = batch.playerTeam.map(createLocalPoke);
+    const fullEnemyTeam = batch.enemyTeam.map(createLocalPoke);
+    const localP1 = fullPlayerTeam[0]!;
+    const localP2 = fullEnemyTeam[0]!;
+    const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
 
     const seedNums = [
       Math.floor(Math.random() * 0x10000),
@@ -688,11 +711,24 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       Math.floor(Math.random() * 0x10000),
       Math.floor(Math.random() * 0x10000)
     ] as [number, number, number, number];
-    const seed = `${seedNums[0]},${seedNums[1]},${seedNums[2]},${seedNums[3]}` as `${number},${string}`;
+    const seed = parseShowdownSeedForBattle(seedNums);
 
-    const simBattle = new Battle({ formatid: getShowdownFormatId(), seed });
+    const simBattle = createShowdownBattle('gen5customgame', seed);
+    ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
     simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
+
+    batch.playerTeam.forEach((set, idx) => {
+      if (set && set.uid && simBattle.p1.pokemon[idx]) {
+        (simBattle.p1.pokemon[idx] as unknown as { uid?: string }).uid = set.uid;
+      }
+    });
+    batch.enemyTeam.forEach((set, idx) => {
+      if (set && set.uid && simBattle.p2.pokemon[idx]) {
+        (simBattle.p2.pokemon[idx] as unknown as { uid?: string }).uid = set.uid;
+      }
+    });
+    ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
 
     let lastLogIndex = 0;
     const getNewLogs = (): string[] => {
@@ -725,9 +761,15 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         const p2Req = simBattle.p2.activeRequest;
 
         const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
-        batchChoices.push(p1Choice);
+        const p1NeedsAction = requiresAction(p1Req);
+        if (isActionConsumed(p1NeedsAction, p1Choice, p1Choice === 'pass') && !p1Choice.startsWith('team')) {
+          batchChoices.push(p1Choice);
+        }
         const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
-        batchEnemyChoices.push(p2Choice);
+        const p2NeedsAction = requiresAction(p2Req);
+        if (isActionConsumed(p2NeedsAction, p2Choice, p2Choice === 'pass') && !p2Choice.startsWith('team')) {
+          batchEnemyChoices.push(p2Choice);
+        }
 
         const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {
           if (choice.startsWith('useitem:')) {
@@ -760,8 +802,12 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         const finalP1Choice = applyItemUsage('p1', p1Choice);
         const finalP2Choice = applyItemUsage('p2', p2Choice);
 
-        simBattle.choose('p1', finalP1Choice);
-        simBattle.choose('p2', finalP2Choice);
+        if (p1NeedsAction) {
+          simBattle.choose('p1', finalP1Choice);
+        }
+        if (p2NeedsAction) {
+          simBattle.choose('p2', finalP2Choice);
+        }
 
         const rawTurnLogs = getNewLogs();
         const turnLogs = filterShowdownLogs(rawTurnLogs);
@@ -783,6 +829,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       (batch as unknown as Record<string, unknown>).enemyChoices = batchEnemyChoices;
       (batch as unknown as Record<string, unknown>).seed = seedNums;
       (batch as unknown as Record<string, unknown>).steps = steps;
+      (batch as unknown as Record<string, unknown>).ended = simBattle.ended;
     } catch (_err: unknown) {
       batch.itemsToTest.forEach(itemId => {
         if (itemCoverage[itemId]) {
@@ -806,9 +853,9 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
   try {
     const existing = await fs.readFile(consolidatorPath, 'utf8');
     consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.items_consumption) {
+    if ((process.env.SKIP_REGENERATE === 'true' || process.env.REGENERATE_CASES === 'false') && consolidatedData.items_consumption) {
       shouldWrite = false;
-      console.log(`⚠️  Conservando casos de ítems certificados existentes (usa REGENERATE_CASES=true para pisar).`);
+      console.log(`⚠️  Conservando casos de ítems certificados existentes (usa SKIP_REGENERATE=false o REGENERATE_CASES=true para forzar regeneración).`);
     }
   } catch (_e) { /* file doesn't exist yet */ }
 
@@ -825,6 +872,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         seed: rec.seed || null,
         playerChoices: rec.playerChoices || [],
         enemyChoices: rec.enemyChoices || [],
+        ended: rec.ended ?? false,
         cheats: [],
         steps: rec.steps || []
       };
@@ -902,9 +950,24 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
   for (const scenario of allScenarios) {
     console.log(`🎬 Escenario: ${scenario.name}...`);
 
-    const simBattle = new Battle({ formatid: getShowdownFormatId() });
+    const simBattle = createShowdownBattle('gen5customgame', null, false);
+    ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
     simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
+
+    scenario.playerTeam.forEach((set, idx) => {
+      const setWithUid = set as unknown as { uid?: string };
+      if (setWithUid && setWithUid.uid && simBattle.p1.pokemon[idx]) {
+        (simBattle.p1.pokemon[idx] as unknown as { uid?: string }).uid = setWithUid.uid;
+      }
+    });
+    scenario.enemyTeam.forEach((set, idx) => {
+      const setWithUid = set as unknown as { uid?: string };
+      if (setWithUid && setWithUid.uid && simBattle.p2.pokemon[idx]) {
+        (simBattle.p2.pokemon[idx] as unknown as { uid?: string }).uid = setWithUid.uid;
+      }
+    });
+    ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
 
     if (simBattle.p1.activeRequest?.teamPreview || simBattle.p2.activeRequest?.teamPreview) {
       simBattle.choose('p1', 'default');
@@ -919,9 +982,11 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
       return slice;
     };
 
-    const localP1 = createLocalPoke(scenario.playerTeam[0]!);
-    const localP2 = createLocalPoke(scenario.enemyTeam[0]!);
-    const mockStore = createMockBattleContext(localP1, localP2);
+    const fullPlayerTeam = scenario.playerTeam.map(createLocalPoke);
+    const fullEnemyTeam = scenario.enemyTeam.map(createLocalPoke);
+    const localP1 = fullPlayerTeam[0]!;
+    const localP2 = fullEnemyTeam[0]!;
+    const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
 
     const scenarioSteps: string[] = [];
     unhandledBridgeLines.length = 0;
@@ -931,8 +996,12 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
       for (const action of scenario.actions) {
         if (simBattle.ended) break;
 
-        simBattle.choose('p1', action.p1);
-        simBattle.choose('p2', action.p2);
+        if (requiresAction(simBattle.p1.activeRequest) && action.p1 !== '') {
+          simBattle.choose('p1', action.p1);
+        }
+        if (requiresAction(simBattle.p2.activeRequest) && action.p2 !== '') {
+          simBattle.choose('p2', action.p2);
+        }
 
         const rawTurnLogs = getScenarioNewLogs();
         const turnLogs = filterShowdownLogs(rawTurnLogs);

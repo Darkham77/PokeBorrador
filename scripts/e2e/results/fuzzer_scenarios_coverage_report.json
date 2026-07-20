@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T22:08:01.291362061Z",
+  "generatedAt": "2026-07-20T04:10:43.201110107Z",
   "summary": {
     "total": 86,
     "passed": 86,
@@ -23,8 +23,8 @@
       "steps": [
         "ataca E-Attacker con False Swipe a P-Pinch",
         "ataca P-Pinch con Ember a E-Attacker",
-        "ataca P-Pinch con Ember a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Pinch"
+        "ataca E-Attacker con Tackle a P-Pinch",
+        "ataca P-Pinch con Ember a E-Attacker"
       ]
     },
     {
@@ -42,8 +42,8 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Electric con Tackle a E-Electrician",
-        "ataca E-Electrician con Thunderbolt a P-Electric"
+        "ataca E-Electrician con Thunderbolt a P-Electric",
+        "ataca P-Electric con Tackle a E-Electrician"
       ]
     },
     {
@@ -79,9 +79,9 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
+        "ataca P-Bouncer con Tackle a E-Setter",
         "ataca E-Setter con Stealth Rock a P-Bouncer",
-        "ataca P-Bouncer con Stealth Rock a E-Setter",
-        "ataca P-Bouncer con Tackle a E-Setter"
+        "ataca P-Bouncer con Stealth Rock a E-Setter"
       ]
     },
     {
@@ -90,7 +90,9 @@
       "status": "PASS",
       "steps": [
         "ataca E-Attacker con Tackle a P-Static",
-        "E-Attacker se debilitó"
+        "ataca P-Static con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Static",
+        "ataca P-Static con Tackle a E-Attacker"
       ]
     },
     {
@@ -100,7 +102,10 @@
       "steps": [
         "ataca P-Sun con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Sun con Flamethrower a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló"
       ]
     },
     {
@@ -109,9 +114,10 @@
       "status": "PASS",
       "steps": [
         "ataca P-Rain con Surf a E-Dummy",
-        "P-Rain pero falló",
         "ataca E-Dummy con Seismic Toss a P-Rain",
-        "E-Dummy se debilitó"
+        "ataca P-Rain con Tackle a E-Dummy",
+        "ataca E-Dummy con Toxic a P-Rain",
+        "ataca E-Dummy con Toxic a P-Swift"
       ]
     },
     {
@@ -120,9 +126,10 @@
       "status": "PASS",
       "steps": [
         "ataca P-Sand con Rock Slide a E-Dummy",
-        "P-Sand pero falló",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Sand con Tackle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -131,9 +138,10 @@
       "status": "PASS",
       "steps": [
         "ataca P-Snow con Blizzard a E-Dummy",
-        "P-Snow pero falló",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Snow con Tackle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -142,8 +150,11 @@
       "status": "PASS",
       "steps": [
         "ataca P-ESurge con Thunderbolt a E-Dummy",
-        "ataca E-Dummy con Grassy Terrain a P-ESurge",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Grassy Terrain a E-Dummy",
+        "ataca E-Dummy con Grassy Terrain",
+        "E-Dummy pero falló",
+        "ataca P-Surfer con Tackle a E-Dummy",
+        "ataca E-Dummy con Misty Terrain a E-Dummy"
       ]
     },
     {
@@ -167,9 +178,7 @@
         "ataca P-ToughClaws con Double-Edge a E-Tank",
         "ataca E-Tank con Soft-Boiled a E-Tank",
         "ataca P-ToughClaws con Water Pulse a E-Tank",
-        "ataca E-Tank con Soft-Boiled a E-Tank",
-        "ataca P-ToughClaws con Mach Punch a E-Tank",
-        "ataca E-Tank con Soft-Boiled a E-Tank"
+        "ataca P-ToughClaws con Mach Punch a E-Tank"
       ]
     },
     {
@@ -177,9 +186,15 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Filter con Tackle a E-Attacker",
         "ataca E-Attacker con Earthquake a P-Filter",
-        "E-Attacker se debilitó"
+        "ataca P-Filter con Tackle a E-Attacker",
+        "ataca P-Filter con Tackle a E-Attacker",
+        "ataca E-Attacker con Flamethrower a P-Filter",
+        "ataca E-Attacker con Ice Beam a P-Filter",
+        "ataca P-Filter con Tackle a E-Attacker",
+        "ataca P-Filter con Tackle a E-Attacker",
+        "ataca E-Attacker con Close Combat a P-Filter",
+        "P-Filter se debilitó"
       ]
     },
     {
@@ -203,7 +218,11 @@
       "steps": [
         "ataca P-Harvest con Substitute a P-Harvest",
         "ataca E-Attacker con Tackle a P-Harvest",
-        "E-Attacker se debilitó"
+        "ataca P-Harvest con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca P-Harvest con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca E-Attacker con Tackle a P-SpeedBoost"
       ]
     },
     {
@@ -213,7 +232,10 @@
       "steps": [
         "ataca P-Aegislash con King's Shield a P-Aegislash",
         "ataca E-Tank con Tackle a P-Aegislash",
-        "E-Tank se debilitó"
+        "ataca P-Aegislash con Aerial Ace a E-Tank",
+        "ataca E-Tank con Tackle a P-Aegislash",
+        "ataca P-Aegislash con King's Shield a P-Aegislash",
+        "ataca E-Tank con Tackle a P-Aegislash"
       ]
     },
     {
@@ -226,7 +248,8 @@
         "ataca E-Striker con False Swipe a P-Darm",
         "ataca P-Darm con Flare Blitz a E-Striker",
         "ataca E-Striker con False Swipe a P-Darm",
-        "ataca P-Darm con Tackle a E-Striker"
+        "ataca P-Darm con Tackle a E-Striker",
+        "E-Striker se debilitó"
       ]
     },
     {
@@ -235,9 +258,15 @@
       "status": "PASS",
       "steps": [
         "ataca P-Pixilate con Hyper Voice a E-Tank",
-        "P-Pixilate pero falló",
         "ataca E-Tank con Soft-Boiled a E-Tank",
-        "E-Tank se debilitó"
+        "ataca P-Pixilate con Return a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank",
+        "ataca E-Tank con Soft-Boiled",
+        "E-Tank pero falló",
+        "ataca P-Galvanize con Tackle a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank",
+        "ataca P-Galvanize con Body Slam a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank"
       ]
     },
     {
@@ -247,7 +276,12 @@
       "steps": [
         "ataca P-Bond con Tackle a E-Tank",
         "ataca E-Tank con Soft-Boiled a E-Tank",
-        "E-Tank se debilitó"
+        "ataca P-Bond con Thunderbolt a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank",
+        "ataca P-Bond con Hyper Voice a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank",
+        "ataca P-Bond con Flamethrower a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank"
       ]
     },
     {
@@ -255,8 +289,11 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló",
+        "ataca P-Focus con Focus Punch a E-Dummy",
+        "ataca P-Focus con Noble Roar a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -266,7 +303,8 @@
       "steps": [
         "ataca P-Puncher con Nuzzle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Puncher con Ice Punch a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -276,7 +314,8 @@
       "steps": [
         "ataca P-Slasher con Night Slash a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Slasher con Incinerate a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -285,8 +324,8 @@
       "status": "PASS",
       "steps": [
         "ataca P-Falinks con No Retreat a P-Falinks",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló"
       ]
     },
     {
@@ -309,7 +348,8 @@
       "steps": [
         "ataca P-Contact con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-Contact",
-        "E-Attacker se debilitó"
+        "ataca P-Contact con Tackle a E-Attacker",
+        "ataca E-Attacker con Double-Edge a P-Contact"
       ]
     },
     {
@@ -424,7 +464,7 @@
       "steps": [
         "ataca P-Mimikyu con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-Mimikyu",
-        "E-Attacker se debilitó"
+        "ataca E-Attacker con Tackle a P-Eiscue"
       ]
     },
     {
@@ -446,8 +486,10 @@
       "status": "PASS",
       "steps": [
         "ataca P-Chlo con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Sunny Day a P-Chlo",
-        "E-WeatherMaker se debilitó"
+        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
+        "ataca P-Chlo con Hurricane a E-WeatherMaker",
+        "P-Chlo falló el ataque",
+        "ataca E-WeatherMaker con Soft-Boiled a E-WeatherMaker"
       ]
     },
     {
@@ -474,7 +516,8 @@
       "steps": [
         "ataca P-Corvi con Tackle a E-Intimidator",
         "ataca E-Intimidator con Tackle a P-Corvi",
-        "E-Intimidator se debilitó"
+        "ataca E-Intimidator con Growl a P-Corvi",
+        "P-Corvi activa su habilidad Mirror Armor"
       ]
     },
     {
@@ -483,8 +526,9 @@
       "status": "PASS",
       "steps": [
         "ataca P-PoisonHeal con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Rain Dance a P-PoisonHeal",
-        "E-WeatherMaker se debilitó"
+        "ataca E-WeatherMaker con Rain Dance a E-WeatherMaker",
+        "ataca P-PoisonHeal con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Soft-Boiled a E-WeatherMaker"
       ]
     },
     {
@@ -493,8 +537,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Power con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -535,7 +578,8 @@
       "status": "PASS",
       "steps": [
         "ataca P-Magician con Hyper Voice a E-Target",
-        "ataca E-Target con Toxic a P-Magician"
+        "ataca E-Target con Toxic a P-Magician",
+        "E-Target falló el ataque"
       ]
     },
     {
@@ -562,7 +606,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Pinch con Grass Knot a E-Damager",
-        "P-Pinch se debilitó"
+        "ataca E-Damager con Double-Edge a P-Pinch"
       ]
     },
     {
@@ -580,9 +624,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Pastel con Tackle a E-Spellcaster",
-        "ataca E-Spellcaster con Toxic a P-Pastel",
-        "E-Spellcaster falló el ataque",
-        "E-Spellcaster se debilitó"
+        "ataca E-Spellcaster con Toxic a P-Pastel"
       ]
     },
     {
@@ -591,8 +633,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Prankster con Toxic a E-Target",
-        "ataca E-Target con Tackle a P-Prankster",
-        "E-Target se debilitó"
+        "ataca E-Target con Tackle a P-Prankster"
       ]
     },
     {
@@ -610,8 +651,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Thief con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Thief",
-        "E-Attacker se debilitó"
+        "ataca E-Attacker con Tackle a P-Thief"
       ]
     },
     {
@@ -620,8 +660,9 @@
       "status": "PASS",
       "steps": [
         "ataca P-Ancient con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Sunny Day a P-Ancient",
-        "E-WeatherMaker se debilitó"
+        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
+        "ataca P-Ancient con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Electric Terrain a E-WeatherMaker"
       ]
     },
     {
@@ -651,9 +692,8 @@
       "status": "PASS",
       "steps": [
         "ataca P-Regen con Tackle a E-Damager",
-        "P-Regen se debilitó",
         "ataca E-Damager con Double-Edge a P-Regen",
-        "E-Damager pero falló"
+        "ataca E-Damager con Soft-Boiled a E-Damager"
       ]
     },
     {
@@ -662,8 +702,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-NoRecoil con Double-Edge a E-Target",
-        "ataca E-Target con Soft-Boiled a E-Target",
-        "E-Target se debilitó"
+        "ataca E-Target con Soft-Boiled a E-Target"
       ]
     },
     {
@@ -691,7 +730,7 @@
       "steps": [
         "ataca P-Slicer con Air Slash a E-Screener",
         "ataca E-Screener con Light Screen a E-Screener",
-        "E-Screener se debilitó"
+        "ataca E-Screener con Soft-Boiled a E-Screener"
       ]
     },
     {
@@ -700,8 +739,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Sower con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Sower",
-        "E-Attacker se debilitó"
+        "ataca E-Attacker con Tackle a P-Sower"
       ]
     },
     {
@@ -710,8 +748,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-SlowStart con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -720,8 +757,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Simple con Bullet Seed a E-Statter",
-        "ataca E-Statter con Growl a P-Simple",
-        "E-Statter se debilitó"
+        "ataca E-Statter con Growl a P-Simple"
       ]
     },
     {
@@ -731,7 +767,7 @@
       "steps": [
         "ataca P-Speeder con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "P-Speeder activa su habilidad Speed Boost"
       ]
     },
     {
@@ -759,8 +795,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Wishiwashi con Tackle a E-Attacker",
-        "ataca E-Attacker con Double-Edge a P-Wishiwashi",
-        "E-Attacker se debilitó"
+        "ataca E-Attacker con Double-Edge a P-Wishiwashi"
       ]
     },
     {
@@ -781,8 +816,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-SwiftSwim con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Rain Dance a P-SwiftSwim",
-        "E-WeatherMaker se debilitó"
+        "ataca E-WeatherMaker con Rain Dance a E-WeatherMaker"
       ]
     },
     {
@@ -791,9 +825,8 @@
       "status": "PASS",
       "steps": [
         "ataca P-Fainter con Tackle a E-Sweeper",
-        "P-Fainter se debilitó",
         "ataca E-Sweeper con Double-Edge a P-Fainter",
-        "E-Sweeper pero falló"
+        "ataca E-Sweeper con Soft-Boiled a E-Sweeper"
       ]
     },
     {
@@ -802,8 +835,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Transmuter con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -813,7 +845,9 @@
       "steps": [
         "ataca P-Shedinja con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-Shedinja",
-        "E-Attacker se debilitó"
+        "ataca P-Shedinja con Tackle a E-Attacker",
+        "ataca E-Attacker con Flamethrower a P-Shedinja",
+        "P-Shedinja se debilitó"
       ]
     },
     {
@@ -833,8 +867,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-CudChewer con Tackle a E-Damager",
-        "ataca E-Damager con Double-Edge a P-CudChewer",
-        "E-Damager se debilitó"
+        "ataca E-Damager con Double-Edge a P-CudChewer"
       ]
     },
     {
@@ -844,8 +877,7 @@
       "steps": [
         "ataca P-Victory con Soft-Boiled",
         "P-Victory pero falló",
-        "ataca E-Attacker con Tackle a P-Victory",
-        "E-Attacker se debilitó"
+        "ataca E-Attacker con Tackle a P-Victory"
       ]
     },
     {
@@ -864,9 +896,7 @@
       "status": "PASS",
       "steps": [
         "ataca P-Exploder con Explosion a E-Fragile",
-        "P-Exploder pero falló",
         "P-Exploder se debilitó",
-        "ataca E-Fragile con Splash a E-Fragile",
         "E-Fragile se debilitó",
         "ataca P-Bench1 con Tackle a E-Bench1",
         "ataca E-Bench1 con Soft-Boiled a E-Bench1"
@@ -879,7 +909,8 @@
       "steps": [
         "ataca P-Uturner con U-turn a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "E-Dummy se debilitó"
+        "ataca P-Bench1 con Tackle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -888,9 +919,9 @@
       "status": "PASS",
       "steps": [
         "ataca E-Target con Splash a E-Target",
-        "E-Target se debilitó",
         "ataca P-Tailer con Dragon Tail a E-Target",
-        "P-Tailer pero falló"
+        "ataca P-Tailer con Tackle a E-Bench1",
+        "ataca E-Bench1 con Splash a E-Bench1"
       ]
     },
     {
@@ -900,8 +931,11 @@
       "steps": [
         "ataca P-Ditto con Soft-Boiled",
         "P-Ditto pero falló",
-        "ataca E-Target con Sunny Day a P-Ditto",
-        "E-Target se debilitó"
+        "ataca E-Target con Sunny Day a E-Target",
+        "ataca P-Ditto con Sunny Day",
+        "P-Ditto pero falló",
+        "ataca E-Target con Soft-Boiled",
+        "E-Target pero falló"
       ]
     },
     {
@@ -911,7 +945,8 @@
       "steps": [
         "ataca E-Attacker con Tackle a P-Fragile",
         "P-Fragile se debilitó",
-        "E-Attacker se debilitó"
+        "ataca P-Bench1 con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Bench1"
       ]
     }
   ]

@@ -61,7 +61,9 @@ class CaptureSimWrapper extends BaseBattleSimulation {
 
   public async throwMasterBall(): Promise<void> {
     await this.page.evaluate(async () => {
-      await (window as WindowWithResolver).__VITE_DEBUG__?.useItemInBattle?.('masterball', '');
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.() as { useItemInBattle: (itemId: string) => Promise<void> } | undefined;
+      await store?.useItemInBattle('masterball');
     });
   }
 

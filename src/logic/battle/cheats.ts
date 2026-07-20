@@ -1,3 +1,5 @@
+import { clearPokemonFromFaintQueue } from './helpers/showdownSyncHelper.ts';
+
 export interface CheatPokemon {
   hp: number;
   maxhp?: number;
@@ -41,6 +43,9 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
       const monObj = p as unknown as { fainted: boolean; faintQueued: boolean };
       monObj.fainted = false;
       monObj.faintQueued = false;
+
+      clearPokemonFromFaintQueue(side, p);
+
       // Restaurar PP de todos los movimientos del simulador Showdown para evitar el uso forzado de Struggle en combates largos
       if (Array.isArray((p as unknown as { moveSlots?: Array<{ pp: number; maxpp: number }> }).moveSlots)) {
         (p as unknown as { moveSlots: Array<{ pp: number; maxpp: number }> }).moveSlots.forEach(slot => {

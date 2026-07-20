@@ -82,6 +82,13 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'shinystone': pokeEffect((p) => handleStone(p, 'shinystone')),
   'ovalstone': pokeEffect((p) => handleStone(p, 'ovalstone')),
 
+  // --- New Stones & Evolutionary Usables ---
+  'linkcable': pokeEffect((p) => handleStone(p, 'linkcable')),
+  'whippeddream': pokeEffect((p) => handleStone(p, 'whippeddream')),
+  'sachet': pokeEffect((p) => handleStone(p, 'sachet')),
+  'deepseascale': pokeEffect((p) => handleStone(p, 'deepseascale')),
+  'deepseatooth': pokeEffect((p) => handleStone(p, 'deepseatooth')),
+
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, 10)),
   'elixir': pokeEffect((p) => restorePP(p, 10)),

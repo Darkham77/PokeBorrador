@@ -3,6 +3,8 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
+import { advanceChoiceIndices } from './helpers/choiceIndexer.ts';
+import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
 
 type GameStoreType = ReturnType<typeof useGameStore>;
 type BattleStoreType = ReturnType<typeof useBattleStore>;
@@ -160,75 +162,8 @@ export async function executeTurnInWorker(
     }
   }
 
-  if (p2Choice && p2Choice !== '' && !p2Skip && !p2Choice.startsWith('switch ')) {
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-      const debugObj = window.__VITE_DEBUG__;
-      const mockChoices = debugObj.mockEnemyChoices;
-      if (mockChoices) {
-        const { useBattleStore } = await import('@/stores/battle/battle');
-        const battleStore = useBattleStore();
-        const enemyRequest = battleStore.state?.enemyRequest;
-        const forceSwitch = enemyRequest?.forceSwitch;
-        const isForceSwitch = (forceSwitch as unknown) === true || (Array.isArray(forceSwitch) && forceSwitch.some(x => !!x));
+  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isSimulationMode;
 
-        let idx = debugObj.enemyChoiceIndex ?? 0;
-        while (idx < mockChoices.length) {
-          const choiceStr = mockChoices[idx];
-          if (choiceStr === undefined) break;
-
-           let isValid = true;
-          if (isForceSwitch) {
-            // ForceSwitch: only switch commands are valid
-            if (!choiceStr.startsWith('switch ')) {
-              isValid = false;
-            } else {
-              const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
-              const targetPoke = enemyRequest?.side?.pokemon?.[switchSlot - 1];
-              if (!targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
-                isValid = false;
-              }
-            }
-          } else {
-            // Normal move: skip disabled moves and invalid switch choices
-            if (choiceStr.startsWith('move ')) {
-              const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
-              const reqMove = enemyRequest?.active?.[0]?.moves?.[moveIdx];
-              if (reqMove && reqMove.disabled) {
-                isValid = false;
-              }
-            } else if (choiceStr.startsWith('switch ')) {
-              const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
-              const targetPoke = enemyRequest?.side?.pokemon?.[switchSlot - 1];
-              const isTrapped = !!enemyRequest?.active?.[0]?.trapped;
-              if (isTrapped || !targetPoke || targetPoke.condition?.includes('fnt') || !!targetPoke.active) {
-                isValid = false;
-              }
-            }
-          }
-
-          if (isValid) {
-            finalP2Choice = choiceStr;
-            debugObj.enemyChoiceIndex = idx + 1;
-            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice at index ${idx}: ${p2Choice} -> ${finalP2Choice}`);
-            break;
-          } else {
-            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Choice "${choiceStr}" at index ${idx} is invalid for P2 (isForceSwitch: ${isForceSwitch}). Skipping.`);
-            idx++;
-            debugObj.enemyChoiceIndex = idx;
-          }
-        }
-      }
-    }
-  } else if (p2Choice && p2Choice.startsWith('switch ') && typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    // The game resolved a switch internally (forceSwitch from faint/pivot).
-    // Consume that slot so the index stays aligned with the fuzzer's choices queue.
-    const debugObj = window.__VITE_DEBUG__;
-    if (debugObj.mockEnemyChoices) {
-      const idx = debugObj.enemyChoiceIndex ?? 0;
-      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Game-resolved switch "${p2Choice}" at index ${idx} — consuming slot without replacing.`);
-      debugObj.enemyChoiceIndex = idx + 1;
-    }
-  }
 
 
   // Registrar elección en el historial local del combate y extraer HPs/estados reactivos para sincronizar cheats con el simulador
@@ -256,25 +191,15 @@ export async function executeTurnInWorker(
     const { useGameStore } = await import('@/stores/game');
     const gameStore = useGameStore();
     if (gameStore?.state?.team) {
-      p1Hps = {};
-      p1Statuses = {};
-      gameStore.state.team.forEach((p: Pokemon | null) => {
-        if (p && p.uid) {
-          p1Hps![p.uid] = p.hp ?? 0;
-          p1Statuses![p.uid] = p.status ?? '';
-        }
-      });
+      const p1Data = extractTeamHpAndStatus(gameStore.state.team);
+      p1Hps = p1Data.hps;
+      p1Statuses = p1Data.statuses;
       console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
     }
     if (battleStore.state?.enemyTeam) {
-      p2Hps = {};
-      p2Statuses = {};
-      battleStore.state.enemyTeam.forEach((p: Pokemon | null) => {
-        if (p && p.uid) {
-          p2Hps![p.uid] = p.hp ?? 0;
-          p2Statuses![p.uid] = p.status ?? '';
-        }
-      });
+      const p2Data = extractTeamHpAndStatus(battleStore.state.enemyTeam);
+      p2Hps = p2Data.hps;
+      p2Statuses = p2Data.statuses;
     }
   } catch (_e) {
     // Ignorar si se ejecuta fuera de contexto de tienda
@@ -282,7 +207,7 @@ export async function executeTurnInWorker(
 
   showdownWorker.postMessage({
     type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats: turnCheats, weather: weatherVal }
+    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats: turnCheats, weather: weatherVal, isFuzzerSimulation: isSimulation }
   })
   return new Promise((resolve, reject) => {
     const handler = async (event: MessageEvent) => {
@@ -305,38 +230,21 @@ export async function executeTurnInWorker(
         lastSyncP2TeamState = payload.p2TeamState || null;
 
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-          let p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
-          let p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0;
+          const p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
+          const p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0;
 
-          // Incrementos normales del turno usando las banderas de consumo real del simulador
-          if ((payload as unknown as Record<string, unknown>).p1ActionConsumed) {
-            p1ChoiceIdx++;
-          }
-          if ((payload as unknown as Record<string, unknown>).p2ActionConsumed) {
-            p2ChoiceIdx++;
-          }
+          const nextIndices = advanceChoiceIndices({
+            p1ChoiceIdx,
+            p2ChoiceIdx,
+            p1ActionConsumed: !!(payload as unknown as Record<string, unknown>).p1ActionConsumed,
+            p2ActionConsumed: !!(payload as unknown as Record<string, unknown>).p2ActionConsumed,
+            logs: payload.logs,
+            isSimulation
+          });
 
-          // Procesar relevos de upkeep en los logs de Showdown
-          let inUpkeep = false;
-          if (payload.logs && Array.isArray(payload.logs)) {
-            payload.logs.forEach((line: string) => {
-              if (line === '|upkeep') {
-                inUpkeep = true;
-              } else if (inUpkeep) {
-                if (line.startsWith('|switch|p1a:') || line.startsWith('|drag|p1a:')) {
-                  p1ChoiceIdx++;
-                  console.debug(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P1 en log -> p1ChoiceIdx incrementado a ${p1ChoiceIdx}`);
-                } else if (line.startsWith('|switch|p2a:') || line.startsWith('|drag|p2a:')) {
-                  p2ChoiceIdx++;
-                  console.debug(`[E2E-SYNC-LOGS-DEBUG] Detectado relevo de upkeep de P2 en log -> p2ChoiceIdx incrementado a ${p2ChoiceIdx}`);
-                }
-              }
-            });
-          }
-
-          window.__VITE_DEBUG__.p1ChoiceIdx = p1ChoiceIdx;
-          window.__VITE_DEBUG__.p2ChoiceIdx = p2ChoiceIdx;
-          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${p1ChoiceIdx}, P2: ${p2ChoiceIdx}`);
+          window.__VITE_DEBUG__.p1ChoiceIdx = nextIndices.p1ChoiceIdx;
+          window.__VITE_DEBUG__.p2ChoiceIdx = nextIndices.p2ChoiceIdx;
+          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${nextIndices.p1ChoiceIdx}, P2: ${nextIndices.p2ChoiceIdx}`);
         }
 
         // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot

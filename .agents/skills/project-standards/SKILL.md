@@ -24,6 +24,8 @@ Consult these global and cross-functional manuals for project-wide standards (do
 | **Showdown Reference**  | [external/pokemon-showdown-code/](../../../external/pokemon-showdown-code/) Source code of Pokémon Showdown (Source of Truth)                     |
 | **EV & Stat Mechanics**  | [ev_mechanics_manual.md](./references/systems/ev_mechanics_manual.md)                     |
 | **Legacy Migration Hub** | [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md)           |
+| **Weather Mechanics**    | [weather_mechanics_standards.md](./references/battle/weather_mechanics_standards.md)       |
+| **Dungeon Equipment**    | [mystery_dungeon_equipment_standards.md](./references/systems/mystery_dungeon_equipment_standards.md) |
 
 ### 📚 Core Game Mechanics References
 

@@ -103,22 +103,52 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
         p1Choice = 'move recharge';
       }
     }
-    let p2Choice = eMove ? `move ${eMove.id}` : 'struggle';
-    if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
-      const validMove = active.enemyRequest.active[0].moves.find((m: { id?: string; disabled?: boolean | string }) => !m.disabled);
-      if (validMove) {
-        p2Choice = `move ${validMove.id}`;
+    let p2Choice = 'struggle';
+    const enemyTeam = store.activeBattle.value?.enemyTeam;
+    const wantSwitch = !isWild && shouldEnemySwitch(e, p, enemyTeam, store);
+    if (wantSwitch) {
+      const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store);
+      if (bestIdx !== -1) {
+        const { ShowdownTeamResolver } = await import('./showdownTeamResolver.ts');
+        const targetMon = enemyTeam?.[bestIdx];
+        if (targetMon && targetMon.uid) {
+          const slot = ShowdownTeamResolver.getShowdownSlotForUid(active?.enemyRequest, targetMon.uid);
+          p2Choice = `switch ${slot}`;
+        }
+      }
+    } else {
+      if (eMove) {
+        p2Choice = `move ${eMove.id}`;
+      }
+      if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
+        const validMove = active.enemyRequest.active[0].moves.find((m: { id?: string; disabled?: boolean | string }) => !m.disabled);
+        if (validMove) {
+          p2Choice = `move ${validMove.id}`;
+        }
       }
     }
     // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
-      p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
-      window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+      if (!p2Skip) {
+        p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
+        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
+        window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+      } else {
+        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in executeTurn because P2 is in wait state.`);
+      }
     } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
       p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
     }
-    const result = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
+    let p1Skip = false;
+    if (p1Choice === 'pass') {
+      p1Choice = '';
+      p1Skip = true;
+    }
+    if (p2Choice === 'pass') {
+      p2Choice = '';
+      p2Skip = true;
+    }
+    const result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip)
     logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
 
     if (active) {

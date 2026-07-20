@@ -615,6 +615,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const checkAndAutoRecharge = async () => {
+    if (typeof window !== 'undefined' && (window as unknown as { __VITE_DEBUG__?: { isE2eSimulation?: boolean } }).__VITE_DEBUG__?.isE2eSimulation) return
     if (!activeBattle.value || activeBattle.value.over) return
     const req = activeBattle.value.playerRequest
     if (req && req.active?.[0]?.moves) {
@@ -638,6 +639,51 @@ export const useBattleStore = defineStore('battle', () => {
       await checkAndAutoRecharge()
     }
   })
+
+  watch(
+    [fsm.currentSubState, isProcessing, isIntroAnimating],
+    ([subState, processing, intro]) => {
+      if (
+        fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
+        [BATTLE_SUBSTATES.WAIT_INPUT, BATTLE_SUBSTATES.SWITCH_MENU, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ].includes(subState) &&
+        !processing &&
+        !intro
+      ) {
+        if (typeof window !== 'undefined') {
+          console.debug(`[BATTLE-EVENT] Emitting battle-ready-for-input. SubState: ${subState}`);
+          window.dispatchEvent(
+            new CustomEvent('battle-ready-for-input', {
+              detail: {
+                subState,
+                p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+                p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+                over: false
+              }
+            })
+          );
+        }
+      }
+    }
+  );
+
+  watch(
+    () => activeBattle.value?.over,
+    (isOver) => {
+      if (isOver && typeof window !== 'undefined') {
+        console.debug('[BATTLE-EVENT] Emitting battle-ready-for-input due to battle over.');
+        window.dispatchEvent(
+          new CustomEvent('battle-ready-for-input', {
+            detail: {
+              subState: '',
+              p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+              p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+              over: true
+            }
+          })
+        );
+      }
+    }
+  );
 
   if (typeof window !== 'undefined') {
     const win = window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => unknown }

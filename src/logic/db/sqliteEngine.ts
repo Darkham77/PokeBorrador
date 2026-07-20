@@ -86,8 +86,9 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
 
     const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
     
-    // Check if we are in development mode and if there is a pending import
-    if (import.meta.env.DEV) {
+    // Check if we are in development mode and if there is a pending import (skip if already imported in this browser context)
+    const alreadyImported = typeof localStorage !== 'undefined' && localStorage.getItem('pokevicio_db_imported') === 'true';
+    if (import.meta.env.DEV && !alreadyImported) {
       try {
         const checkRes = await fetch('/api/dev-import-db-check', { cache: 'no-store' })
         if (checkRes.ok) {
@@ -126,6 +127,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               // Set import reload flag to preserve session during reload
               try {
                 sessionStorage.setItem('pokevicio_import_reload', 'true')
+                localStorage.setItem('pokevicio_db_imported', 'true')
                 sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
               } catch (_) {
                 // Ignore if sessionStorage is not available

@@ -112,6 +112,10 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
     }
   });
 
+  if (p.hp !== undefined && p.hp !== null) {
+    p.hp = Math.min(p.hp, p.maxHp);
+  }
+
   validatePokemon(p, bypassWhitelist);
 }
 

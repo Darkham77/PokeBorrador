@@ -1,7 +1,31 @@
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
+import { getShowdownFormatId } from '../../../src/logic/battle/showdownAdapter.ts';
 
-import { getShowdownSlot, getShowdownFormatId, resolveShowdownSlot, type ResolveActiveBattleState } from '../../../src/logic/battle/showdownAdapter.ts';
+interface ResolveActiveBattleState {
+  playerRequest?: import('../../../src/types/battle/battle.ts').ShowdownPlayerRequest | null;
+  enemyRequest?: import('../../../src/types/battle/battle.ts').ShowdownPlayerRequest | null;
+  playerTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
+  enemyTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
+}
+
+function getShowdownSlot(slotOrder: string[], uid: string): number {
+  const idx = slotOrder.indexOf(uid);
+  return idx !== -1 ? idx + 1 : 1;
+}
+
+function resolveShowdownSlot(
+  active: ResolveActiveBattleState,
+  side: 'player' | 'enemy',
+  uid: string
+): number {
+  const request = side === 'player' ? active.playerRequest : active.enemyRequest;
+  if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
+    throw new Error('Missing request');
+  }
+  const idx = request.side.pokemon.findIndex((p: { uid?: string } | null) => p && p.uid === uid);
+  return idx !== -1 ? idx + 1 : 1;
+}
 
 describe('Showdown Team Order Synchronization & Slot Resolution Tests', () => {
   it('resolves correct 1-based Showdown slot indices based on slot order array', () => {

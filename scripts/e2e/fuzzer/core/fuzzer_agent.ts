@@ -23,37 +23,9 @@ export interface SidePokemon {
 // no es forceSwitch ni periódico. Esto elimina el error "invalid action".
 //
 
-export interface ChoiceRequest {
-  teamPreview?: boolean;
-  forceSwitch?: boolean[];
-  wait?: boolean;
-  active?: Array<{
-    moves: Array<{
-      id: string;
-      move: string;
-      pp: number;
-      disabled?: boolean;
-      maxMove?: { id: string };
-    }>;
-    canMegaEvo?: boolean;
-    trapped?: boolean;
-  }> | null;
-  side?: {
-    pokemon: SidePokemon[];
-  };
-}
-
-/** Tipo discriminado del request de Showdown para evitar acciones inválidas. */
-type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'move' | 'wait';
-
-function classifyRequest(req: ChoiceRequest | null | undefined): RequestKind {
-  if (!req) return 'none';
-  if (req.wait) return 'wait';
-  if (req.teamPreview) return 'team-preview';
-  if (req.forceSwitch?.length) return 'force-switch';
-  if (req.active?.length) return 'move';
-  return 'none';
-}
+import { ChoiceRequest, RequestKind, classifyRequest } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+export type { ChoiceRequest, RequestKind };
+export { classifyRequest };
 
 export class BattleAgent {
   private turnCount = 0;
@@ -158,13 +130,13 @@ export class BattleAgent {
     const activeSlot = request!.active![0];
     if (!activeSlot) return 'pass';
 
-    const moves = activeSlot.moves;
+    const moves = activeSlot.moves ?? [];
 
     // Slot trigger de habilidad (agente NPC: provoca la habilidad del jugador).
     if (this.abilityTriggerMoveSlot !== null) {
       const triggerIdx = this.abilityTriggerMoveSlot - 1;
       const trigger = moves[triggerIdx];
-      if (trigger && !trigger.disabled && trigger.pp > 0) {
+      if (trigger && !trigger.disabled && (trigger.pp ?? 0) > 0) {
         return `move ${this.abilityTriggerMoveSlot}`;
       }
     }
@@ -172,7 +144,7 @@ export class BattleAgent {
     // Priorizar movimientos pendientes de testear.
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i]!;
-      if (!m.disabled && m.pp > 0) {
+      if (!m.disabled && (m.pp ?? 0) > 0) {
         const id = toCleanId(m.id);
         if (this.movesToTest.has(id)) {
           this.movesToTest.delete(id);
@@ -192,7 +164,7 @@ export class BattleAgent {
     const offensiveSlots: number[] = [];
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i]!;
-      if (!m.disabled && m.pp > 0) {
+      if (!m.disabled && (m.pp ?? 0) > 0) {
         validSlots.push(i + 1);
         const cleanId = toCleanId(m.id);
         if (!DEFENSIVE_MOVES.has(cleanId)) {

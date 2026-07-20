@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { mapToShowdownSet, getShowdownSlot, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
+import { mapToShowdownSet, getShowdownFormatId } from '@/logic/battle/showdownAdapter';
 import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
@@ -57,18 +57,6 @@ describe('Showdown Integration & Adapters', () => {
 
       const set = mapToShowdownSet(mockPoke);
       expect(set.moves).toContain('stoneedge');
-    });
-  });
-
-  describe('getShowdownSlot', () => {
-    it('debería retornar 1 para el pokemon activo', () => {
-      const slotOrder = ['a', 'b'];
-      expect(getShowdownSlot(slotOrder, 'a')).toBe(1);
-    });
-
-    it('debería retornar el slot correcto para pokemon en reserva', () => {
-      const slotOrder = ['a', 'b', 'c'];
-      expect(getShowdownSlot(slotOrder, 'b')).toBe(2);
     });
   });
 

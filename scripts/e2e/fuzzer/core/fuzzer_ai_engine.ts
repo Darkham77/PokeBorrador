@@ -95,7 +95,7 @@ class HeuristicAgent extends BattleAgent {
 
     if (chosen) {
       const moves = request.active[0]?.moves ?? [];
-      const slot = moves.findIndex(m => m.id === chosen.id && !m.disabled && m.pp > 0);
+      const slot = moves.findIndex(m => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0);
       if (slot !== -1) return `move ${slot + 1}`;
     }
 
@@ -246,9 +246,9 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
   try {
     const existing = await fs.readFile(CERTIFIED_CASES_FILE, 'utf8');
     consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if (process.env.REGENERATE_CASES !== 'true' && consolidatedData.ai_vs_ai) {
+    if ((process.env.SKIP_REGENERATE === 'true' || process.env.REGENERATE_CASES === 'false') && consolidatedData.ai_vs_ai) {
       shouldWrite = false;
-      console.log('⚠️  Conservando casos IA vs. IA certificados (usa REGENERATE_CASES=true para pisar).');
+      console.log('⚠️  Conservando casos IA vs. IA certificados (usa SKIP_REGENERATE=false o REGENERATE_CASES=true para forzar regeneración).');
     }
   } catch (_e) { /* file doesn't exist yet */ }
 

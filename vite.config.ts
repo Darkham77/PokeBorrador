@@ -341,7 +341,7 @@ export default defineConfig({
     allowedHosts: true,
     host : true,
     watch: {
-      ignored: ['**/_raw-assets/**', '**/sprite_test/**', '**/database/temp/**', '**/database/backups/**']
+      ignored: ['**/_raw-assets/**', '**/sprite_test/**', '**/database/temp/**', '**/database/backups/**', '**/scratch/**']
     },
     /* hmr: {
       clientPort: 443,

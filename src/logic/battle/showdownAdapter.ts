@@ -12,20 +12,26 @@ export const statsMap = new Map<string, Record<string, number>>();
 /**
  * Aplica el monkey-patch spreadModify a Battle de Showdown para inyectar estadísticas custom.
  */
-export function patchShowdownSpreadModify(getIsE2eMode: () => boolean) {
+export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
   const originalSpreadModify = Battle.prototype.spreadModify;
   Battle.prototype.spreadModify = function (baseStats, set) {
-    if (getIsE2eMode()) {
-      return originalSpreadModify.call(this, baseStats, set);
-    }
+
     if (set && set.name) {
       const stats = statsMap.get(set.name);
       if (stats) {
-        return { ...(stats as Record<string, number>) } as StatsTable;
+        const mapped = { ...(stats as Record<string, number>) };
+        if (mapped.maxHp !== undefined && mapped.hp === undefined) {
+          mapped.hp = mapped.maxHp;
+        }
+        return mapped as unknown as StatsTable;
       }
     }
     if (set && (set as unknown as { stats?: unknown }).stats) {
-      return { ...(set as unknown as { stats: Record<string, number> }).stats } as StatsTable;
+      const stats = { ...((set as unknown as { stats: Record<string, number> }).stats) };
+      if (stats.maxHp !== undefined && stats.hp === undefined) {
+        stats.hp = stats.maxHp;
+      }
+      return stats as unknown as StatsTable;
     }
     return originalSpreadModify.call(this, baseStats, set);
   };
@@ -61,11 +67,12 @@ export function resolveBaseStats(speciesId: string): BaseStats {
 /**
  * Retorna el ID de formato oficial de Pokémon Showdown.
  */
-export function getShowdownFormatId(gen: number = ACTIVE_GENERATION): ID {
-  if (gen < 5) {
-    return `gen${gen}customgame` as ID;
+export function getShowdownFormatId(gen?: number): ID {
+  const finalGen = gen !== undefined ? gen : ACTIVE_GENERATION;
+  if (finalGen < 5) {
+    return `gen${finalGen}customgame` as ID;
   }
-  return `gen${gen}customgame@@@!Team Preview` as ID;
+  return `gen${finalGen}customgame@@@!Team Preview` as ID;
 }
 
 /**
@@ -151,36 +158,4 @@ function resolveShowdownSpecies(raw: string | undefined): string {
   if (/^\d+$/.test(raw)) return _numericToSpecies[raw] ?? raw;
   // Si ya es nombre Showdown, devolverlo tal cual
   return raw;
-}
-
-
-/**
- * Returns the Showdown slot number (1-indexed) for a Pokemon UID within a slot order array.
- * The slot order array must be in @pkmn/sim's internal order (active = index 0).
- */
-export function getShowdownSlot(slotOrder: string[], uid: string): number {
-  const idx = slotOrder.indexOf(uid)
-  return idx !== -1 ? idx + 1 : 1
-}
-
-import type { ShowdownPlayerRequest } from '../../types/battle/battle.ts'
-
-export interface ResolveActiveBattleState {
-  playerRequest?: ShowdownPlayerRequest | null;
-  enemyRequest?: ShowdownPlayerRequest | null;
-  playerTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
-  enemyTeam?: { uid: string; name: string; nickname?: string | null }[] | null;
-}
-
-export function resolveShowdownSlot(
-  active: ResolveActiveBattleState,
-  side: 'player' | 'enemy',
-  uid: string
-): number {
-  const request = side === 'player' ? active.playerRequest : active.enemyRequest;
-  if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
-    throw new Error('Missing request');
-  }
-  const idx = request.side.pokemon.findIndex((p: { uid?: string } | null) => p && p.uid === uid);
-  return idx !== -1 ? idx + 1 : 1;
 }

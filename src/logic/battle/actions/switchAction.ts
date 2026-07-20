@@ -4,7 +4,6 @@ import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 import { runEnemyAction } from '../battleTurn.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 
 let isExecutingSwitch = false
 
@@ -149,7 +148,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
 
         console.debug('[switchAction] resolving slot...');
         const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
-        const p1Choice = `switch ${slot}`
+        let p1Choice = `switch ${slot}`
         const isWild = !active.isTrainer && !active.isGym
         console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
         let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild, ctx)
@@ -157,36 +156,40 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
           eMove = active.enemy.lastMove
         }
         let p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
+        let p2Skip = false;
+        if (active?.enemyRequest?.wait) {
+          p2Skip = true;
+        }
+
         // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
-          p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`);
-          window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+          if (!p2Skip) {
+            p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
+            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`);
+            window.__VITE_DEBUG__.nextEnemyChoice = undefined;
+          } else {
+            console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in switchAction because P2 is in wait state.`);
+          }
         } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
           p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
         }
 
         console.debug('[switchAction] building hp/status maps...');
-        const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
-        const p1Hps: Record<string, number> = {};
-        const p1Statuses: Record<string, string> = {};
-        for (const p of team) {
-          p1Hps[p.uid] = p.hp;
-          p1Statuses[p.uid] = p.status ?? '';
-        }
 
-        const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-        const p2Hps: Record<string, number> = {};
-        const p2Statuses: Record<string, string> = {};
-        for (const p of enemyTeam) {
-          p2Hps[p.uid] = p.hp;
-          p2Statuses[p.uid] = p.status ?? '';
-        }
 
         let result;
+        let p1Skip = false;
+        if (p1Choice === 'pass') {
+          p1Choice = '';
+          p1Skip = true;
+        }
+        if (p2Choice === 'pass') {
+          p2Choice = '';
+          p2Skip = true;
+        }
         try {
-          console.debug('[switchAction] calling executeTurnInWorker...', { p1Choice, p2Choice });
-          result = await executeTurnInWorker(p1Choice, p2Choice)
+          console.debug('[switchAction] calling executeTurnInWorker...', { p1Choice, p2Choice, p1Skip, p2Skip });
+          result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip)
           console.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`);
         } catch (error) {
           console.error('[switchAction] executeTurnInWorker thrown:', error);
@@ -294,21 +297,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
         const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
         const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
 
-        const team = (gs.state.team || []).filter((p): p is Pokemon => !!p);
-        const p1Hps: Record<string, number> = {};
-        const p1Statuses: Record<string, string> = {};
-        for (const p of team) {
-          p1Hps[p.uid] = p.hp;
-          p1Statuses[p.uid] = p.status ?? '';
-        }
 
-        const enemyTeam = (active.enemyTeam || (active._initialEnemy ? [active._initialEnemy] : [])).filter((p): p is Pokemon => !!p);
-        const p2Hps: Record<string, number> = {};
-        const p2Statuses: Record<string, string> = {};
-        for (const p of enemyTeam) {
-          p2Hps[p.uid] = p.hp;
-          p2Statuses[p.uid] = p.status ?? '';
-        }
 
         console.debug('[switchAction] calling executeTurnInWorker for forced switch...', { slot });
         const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined)

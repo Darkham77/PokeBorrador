@@ -172,6 +172,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
     seedMockListings(50);
 
+
+
     // 6. Setup Comprador (Logear e inyectar inventario inicial, lo cual descargará la DB con los mocks)
     const buyerContext = await browser.newContext();
     const pageBuyer = await buyerContext.newPage();

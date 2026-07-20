@@ -1,14 +1,22 @@
 // fallow-ignore-file security-sink
-import { Battle, type ID, Pokemon, Side, type PokemonSet } from '@pkmn/sim';
-import { getShowdownFormatId, statsMap, patchShowdownSpreadModify } from './showdownAdapter.ts';
+import { Battle, Pokemon, Side, type PokemonSet } from '@pkmn/sim';
+import { statsMap, patchShowdownSpreadModify } from './showdownAdapter.ts';
+import { isActionConsumed } from './helpers/choiceIndexer.ts';
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
-import { findPokemonByShowdownName } from './showdownUidMapper.ts';
+import { BattleCheatManager } from './helpers/battleCheatManager.ts';
+import { requiresAction } from './helpers/requestHelper.ts';
+import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
+import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
+import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
+import { executeBattleTurn } from './helpers/showdownExecutor.ts';
+import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
 
 export interface ExtendedPokemon extends Pokemon {
   uid?: string;
   faintQueued: boolean;
 }
+
 
 export type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
   pokemon: ExtendedPokemon[];
@@ -45,7 +53,7 @@ let isE2eSimulation = false;
 patchShowdownSpreadModify(() => isE2eSimulation);
 
 let currentBattle: Battle | null = null;
-const appliedCheats = new Set<string>();
+let cheatManager: BattleCheatManager | null = null;
 
 export function setTestingBattle(battle: Battle | null): void {
   currentBattle = battle;
@@ -70,28 +78,7 @@ export function injectUidsIntoRequest(
     req = requestOrPlayer as ShowdownRequest;
   }
 
-  if (req && req.side && Array.isArray(req.side.pokemon)) {
-    console.debug(`[E2E-WORKER-INJECT] Processing request directly from simulator for side ${player}. reqMon length: ${req.side.pokemon.length}`);
-    
-    const simulatorPokemon = (battle?.[player] as ExtendedSide | undefined)?.pokemon || [];
-    const assignedUids = new Set<string>();
-
-    req.side.pokemon.forEach((reqMon) => {
-      if (reqMon && reqMon.ident) {
-        const cleanIdent = reqMon.ident.replace(/^(p1a|p2a|p1|p2):\s*/, '').trim().toLowerCase();
-        const availableMons = simulatorPokemon.filter(p => p && p.uid && !assignedUids.has(p.uid));
-        const matched = findPokemonByShowdownName(cleanIdent, availableMons);
-        if (matched && matched.uid) {
-          reqMon.uid = matched.uid;
-          assignedUids.add(reqMon.uid);
-          console.debug(`  -> [E2E-WORKER-INJECT] Matched "${reqMon.ident}" to simulator UID: ${reqMon.uid}`);
-        } else {
-          throw new Error(`[Worker-injectUidsIntoRequest] No UID found on simulator Pokemon instance: ${reqMon.ident}`);
-        }
-      }
-    });
-  }
-  return req;
+  return ShowdownTeamMapper.injectUidsIntoRequest(battle, player, req);
 }
 
 interface SynchronizedPokemonState {
@@ -135,23 +122,12 @@ interface WorkerEventPayload {
   type?: 'heal';
   cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
   isE2eSimulation?: boolean;
+  format?: string;
 }
 
 interface WorkerEventData {
   type: string;
   payload: WorkerEventPayload;
-}
-
-interface PkmnSimActivePokemon {
-  name: string;
-  moves: string[];
-  moveSlots: Array<{ id: string; pp: number; disabled?: boolean | string } | null>;
-  addVolatile(status: string): void;
-}
-
-interface PkmnSimSide {
-  active: Array<PkmnSimActivePokemon | null>;
-  pokemon: ExtendedPokemon[];
 }
 
 self.onmessage = (event: MessageEvent<WorkerEventData>) => {
@@ -162,98 +138,42 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
       case 'INIT_BATTLE': {
         isE2eSimulation = !!payload.isE2eSimulation;
         logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isE2eSimulation: ${payload.isE2eSimulation}, module isE2eSimulation set to: ${isE2eSimulation}`);
-        appliedCheats.clear();
+        cheatManager = new BattleCheatManager(payload.cheats);
         const { p1, p2 } = payload;
         if (!p1 || !p2) {
           throw new Error('INIT_BATTLE payload must contain p1 and p2');
         }
+
+        logDebug(`[E2E-WORKER-DEBUG] P1 Team moves: ${JSON.stringify(p1.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`);
+        logDebug(`[E2E-WORKER-DEBUG] P2 Team moves: ${JSON.stringify(p2.team.map((p: CustomPokemonSet) => ({ name: p.name, moves: p.moves })))}`);
         
         logDebug(`[E2E-WORKER-DEBUG] init Battle.prototype.spreadModify type is: ${typeof Battle.prototype.spreadModify}`);
+        logDebug(`[E2E-WORKER-DEBUG] spreadModify code: ${Battle.prototype.spreadModify.toString()}`);
         logDebug(`[E2E-WORKER-DEBUG] init statsMap size is: ${statsMap.size}`);
         
-        // Cache stats by nickname/short-uid prefix to survive Showdown's set parsing
+                // Cache stats by nickname/short-uid prefix to survive Showdown's set parsing
         statsMap.clear();
-        if (p1 && Array.isArray(p1.team)) {
-          p1.team.forEach((set: CustomPokemonSet) => {
-            if (set && set.name && set.stats) {
-              statsMap.set(set.name, set.stats);
-            }
-          });
-        }
-        if (p2 && Array.isArray(p2.team)) {
-          p2.team.forEach((set: CustomPokemonSet) => {
-            if (set && set.name && set.stats) {
-              statsMap.set(set.name, set.stats);
-            }
-          });
-        }
+        ShowdownTeamMapper.populateStatsMap(p1.team);
+        ShowdownTeamMapper.populateStatsMap(p2.team);
         
+        logDebug(`[E2E-WORKER-DEBUG] statsMap populated. Size: ${statsMap.size}, Keys: ${JSON.stringify(Array.from(statsMap.keys()))}`);
         lastLogIndex = 0;
 
         const seedVal = parseToNumericSeed(payload.seed);
         const seedStr = formatToShowdownSeed(seedVal);
         console.debug(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
 
-        const battleInstance = new Battle({ 
-          formatid: getShowdownFormatId(),
-          seed: seedStr
-        });
+        const battleInstance = createShowdownBattle(payload.format || 'gen5customgame', seedStr);
         currentBattle = battleInstance;
 
-        // Interceptar y enriquecer el array de logs en tiempo real capturando los UIDs de los Pokémon involucrados en cada llamada a add y addMove
-        const originalAdd = battleInstance.add;
-        battleInstance.add = function (...parts: unknown[]) {
-          originalAdd.apply(this, parts as unknown as Parameters<typeof originalAdd>);
-          const lastIndex = battleInstance.log.length - 1;
-          if (lastIndex >= 0) {
-            const line = battleInstance.log[lastIndex];
-            const uidMappings: string[] = [];
-            parts.forEach(part => {
-              if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-                const ident = part.toString();
-                if (ident) {
-                  const cleanIdent = ident.replace(/\s+/g, '');
-                  uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
-                }
-              }
-            });
-            if (uidMappings.length > 0) {
-              battleInstance.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-              console.debug(`[WORKER-ADD-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
-            }
-          }
-        };
+        // Intercept and enrich logs in real-time
+        ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
 
-        const originalAddMove = battleInstance.addMove;
-        battleInstance.addMove = function (...parts: unknown[]) {
-          originalAddMove.apply(this, parts as unknown as Parameters<typeof originalAddMove>);
-          const lastIndex = battleInstance.log.length - 1;
-          if (lastIndex >= 0) {
-            const line = battleInstance.log[lastIndex];
-            const uidMappings: string[] = [];
-            parts.forEach(part => {
-              if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
-                const ident = part.toString();
-                if (ident) {
-                  const cleanIdent = ident.replace(/\s+/g, '');
-                  uidMappings.push(`${cleanIdent}=${(part as { uid: string }).uid}`);
-                }
-              }
-            });
-            if (uidMappings.length > 0) {
-              battleInstance.log[lastIndex] = `${line}|[uids]${uidMappings.join(',')}`;
-              console.debug(`[WORKER-ADDMOVE-ENRICH] enriched log line: "${battleInstance.log[lastIndex]}"`);
-            }
-          }
-        };
-
-
-
-        // Configurar los dos jugadores (esto inicia automáticamente la batalla en pkmn/sim)
+        // Configure players (this automatically triggers the battle in pkmn/sim)
         battleInstance.setPlayer('p1', { name: p1.name || 'Player 1', team: p1.team });
         battleInstance.setPlayer('p2', { name: p2.name || 'Player 2', team: p2.team });
 
-        // Asociar UIDs del set a las instancias en el simulador usando índice de slot directo
+        // Associate UIDs of sets to the simulator instances using direct slot index
         if (Array.isArray(p1.team)) {
           battleInstance.p1.pokemon.forEach((pokemon, idx) => {
             if (pokemon) {
@@ -265,7 +185,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           });
         }
         if (Array.isArray(p2.team)) {
-          currentBattle.p2.pokemon.forEach((pokemon, idx) => {
+          battleInstance.p2.pokemon.forEach((pokemon, idx) => {
             if (pokemon) {
               const set = p2.team[idx];
               if (set && set.uid) {
@@ -275,69 +195,15 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           });
         }
 
-        // Enriquecer retrospectivamente las líneas de switch/drag iniciales de los leads que se registraron en setPlayer
-        if (currentBattle) {
-          (currentBattle as unknown as { log: string[] }).log = currentBattle.log.map(line => {
-            if (line.startsWith('|switch|') || line.startsWith('|drag|')) {
-              const parts = line.split('|');
-              const rawId = parts[2] || '';
-              const isPlayer = rawId.startsWith('p1a:') || rawId === 'p1a';
-              const sideObj = isPlayer ? currentBattle?.p1 : currentBattle?.p2;
-              const activeMon = sideObj?.active?.[0];
-              const uid = activeMon ? (activeMon as unknown as { uid?: string }).uid : null;
-              if (uid && !line.includes('|[uids]')) {
-                const cleanIdent = rawId.replace(/\s+/g, '');
-                const enriched = `${line}|[uids]${cleanIdent}=${uid}`;
-                console.debug(`[WORKER-RETRO-ENRICH] enriched initial lead line: "${enriched}"`);
-                return enriched;
-              }
-            }
-            return line;
-          });
-        }
+        // Enrich initial lead switches retrospectively
+        ShowdownLogEnricher.enrichRetroactiveLeads(battleInstance);
 
         // Sincronizar HP iniciales de todo el equipo
         if (payload.p1Hps && typeof payload.p1Hps === 'object') {
-          const p1Hps = payload.p1Hps as Record<string, number>;
-          const p1Statuses = (payload.p1Statuses || {}) as Record<string, string>;
-          currentBattle.p1.pokemon.forEach(p => {
-            if (p) {
-              const uid = (p as unknown as { uid?: string }).uid;
-              if (uid && p1Hps[uid] !== undefined) {
-                p.hp = p1Hps[uid];
-                if (p.hp <= 0) {
-                  p.fainted = true;
-                  p.status = 'fnt' as ID;
-                } else {
-                  p.fainted = false;
-                  (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  p.status = (p1Statuses[uid] || '') as ID;
-                }
-              }
-            }
-          });
-          (currentBattle.p1 as unknown as { pokemonLeft: number }).pokemonLeft = currentBattle.p1.pokemon.filter(p => p && !p.fainted).length;
+          syncSidePokemon(currentBattle.p1, payload.p1Hps, payload.p1Statuses);
         }
         if (payload.p2Hps && typeof payload.p2Hps === 'object') {
-          const p2Hps = payload.p2Hps as Record<string, number>;
-          const p2Statuses = (payload.p2Statuses || {}) as Record<string, string>;
-          currentBattle.p2.pokemon.forEach(p => {
-            if (p) {
-              const uid = (p as unknown as { uid?: string }).uid;
-              if (uid && p2Hps[uid] !== undefined) {
-                p.hp = p2Hps[uid];
-                if (p.hp <= 0) {
-                  p.fainted = true;
-                  p.status = 'fnt' as ID;
-                } else {
-                  p.fainted = false;
-                  (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  p.status = (p2Statuses[uid] || '') as ID;
-                }
-              }
-            }
-          });
-          (currentBattle.p2 as unknown as { pokemonLeft: number }).pokemonLeft = currentBattle.p2.pokemon.filter(p => p && !p.fainted).length;
+          syncSidePokemon(currentBattle.p2, payload.p2Hps, payload.p2Statuses);
         }
 
         if (payload.weather && payload.weather !== 'none') {
@@ -375,7 +241,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             // Emitir logs de curación oficiales en Showdown para que la UI se entere y actualice visualmente
             side.pokemon.forEach(p => {
               if (p) {
-                battle.add('-heal', p, p.getHealth() as unknown as string);
+                battle.add('-heal', p, `${p.hp}/${p.maxhp}`);
               }
             });
 
@@ -398,189 +264,27 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
 
-        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, weather } = payload;
+        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, weather, isFuzzerSimulation } = payload;
 
-        // Sincronizar clima
-        if (weather) {
-          const targetWeather = (weather === 'none' || weather === 'clear') ? '' : weather;
-          if (battle.field.weather !== targetWeather) {
-            if (!targetWeather) {
-              battle.field.clearWeather();
-            } else {
-              battle.field.setWeather(targetWeather as import('@pkmn/sim').ID, 'debug' as const);
-            }
-          }
-        }
+        const p1NeedsAction = !isFuzzerSimulation || requiresAction(battle.p1.activeRequest);
+        const p2NeedsAction = !isFuzzerSimulation || requiresAction(battle.p2.activeRequest);
+        const p1ActionConsumed = isActionConsumed(p1NeedsAction, p1Choice, !!p1Skip);
+        const p2ActionConsumed = isActionConsumed(p2NeedsAction, p2Choice, !!p2Skip);
 
-        // Si se reciben HPs/estados de la UI, sincronizarlos (omitir en simulación E2E para evitar desincronizaciones de estados y fin de turno nativos de Showdown)
-        if (p1Hps && typeof p1Hps === 'object') {
-          console.debug(`[WORKER-SYNC] Received p1Hps:`, JSON.stringify(p1Hps));
-          battle.p1.pokemon.forEach(p => {
-            if (p) {
-              const uid = (p as unknown as { uid?: string }).uid;
-              if (uid && p1Hps[uid] !== undefined) {
-                const oldHp = p.hp;
-                const maxHpVal = p.maxhp || 0;
-                
-                if (p1Hps[uid] < p.hp && p.hp === maxHpVal) {
-                  console.debug(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p1Hps[uid]} vs Sim=${p.hp}`);
-                } else {
-                  p.hp = p1Hps[uid];
-                  console.debug(`[WORKER-SYNC] P1 Pokémon ${p.name} (uid: ${uid}): HP ${oldHp} -> ${p.hp}`);
-                }
-                
-                if (p.hp <= 0) {
-                  if (!p.fainted) {
-                    p.faint();
-                  }
-                } else {
-                  p.fainted = false;
-                  (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  if (p1Statuses && p1Statuses[uid] !== undefined) {
-                    p.status = (p1Statuses[uid] || '') as ID;
-                  } else if (p.status === 'fnt') {
-                    p.status = '' as ID;
-                  }
-                }
-              }
-            }
-          });
-          (battle.p1 as unknown as { pokemonLeft: number }).pokemonLeft = battle.p1.pokemon.filter(p => p && !p.fainted).length;
-          syncRequestConditionsWithSimulator(battle.p1 as ExtendedSide);
-        }
-        if (p2Hps && typeof p2Hps === 'object') {
-          battle.p2.pokemon.forEach(p => {
-            if (p) {
-              const uid = (p as unknown as { uid?: string }).uid;
-              if (uid && p2Hps[uid] !== undefined) {
-                const maxHpVal = p.maxhp || 0;
-                
-                if (p2Hps[uid] < p.hp && p.hp === maxHpVal) {
-                  console.debug(`[WORKER-SYNC-PROTECT] Omitiendo sobrescritura de HP de Mew ${p.name} (${uid}): UI=${p2Hps[uid]} vs Sim=${p.hp}`);
-                } else {
-                  p.hp = p2Hps[uid];
-                }
-                
-                if (p.hp <= 0) {
-                  if (!p.fainted) {
-                    p.faint();
-                  }
-                } else {
-                  p.fainted = false;
-                  (p as unknown as { faintQueued: boolean }).faintQueued = false;
-                  if (p2Statuses && p2Statuses[uid] !== undefined) {
-                    p.status = (p2Statuses[uid] || '') as ID;
-                  } else if (p.status === 'fnt') {
-                    p.status = '' as ID;
-                  }
-                }
-              }
-            }
-          });
-          (battle.p2 as unknown as { pokemonLeft: number }).pokemonLeft = battle.p2.pokemon.filter(p => p && !p.fainted).length;
-          syncRequestConditionsWithSimulator(battle.p2 as ExtendedSide);
-        }
-
-        const p1Side = battle.p1 as unknown as PkmnSimSide;
-        const p2Side = battle.p2 as unknown as PkmnSimSide;
-
-        // Si se indicó saltar turno (por uso de objeto), aplicar volatile flinch para omitir ataque (sólo fuera de simulación de fuzzer para mantener determinismo puro)
-        const isFuzzerSimulation = payload.cheats && Array.isArray(payload.cheats);
-        if (!isFuzzerSimulation) {
-          if (p1Skip && p1Side.active?.[0]) {
-            const activeMon = p1Side.active[0] as unknown as { addVolatile: (status: string) => void };
-            if (typeof activeMon?.addVolatile === 'function') {
-              activeMon.addVolatile('flinch');
-            }
-          }
-          if (p2Skip && p2Side.active?.[0]) {
-            const activeMon = p2Side.active[0] as unknown as { addVolatile: (status: string) => void };
-            if (typeof activeMon?.addVolatile === 'function') {
-              activeMon.addVolatile('flinch');
-            }
-          }
-        }
-
-        // Registrar las elecciones de ambos jugadores.
-        // Caso especial: 'struggle' = drenar PP del activo en el sim y enviar 'move 1'
-        // para que @pkmn/sim lo procese como Struggle correctamente.
-        // NOTA: en @pkmn/sim, .moves es string[], .moveSlots contiene los objetos {id, pp, maxpp}.
-        const resolveChoice = (side: PkmnSimSide, choice: string, isSkip: boolean): string => {
-          if (choice.includes('struggle') && !isSkip && side?.active?.[0]) {
-            const activeMon = side.active[0]
-            if (activeMon?.moveSlots) {
-              activeMon.moveSlots.forEach((m: { id: string; pp: number; disabled?: boolean | string } | null) => { if (m) m.pp = 0 })
-            }
-            return 'default'
-          }
-          return choice
-        };
-
-        const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
-          const side = battle[player] as unknown as PkmnSimSide;
-          const activeMon = side.active?.[0];
-          const resolved = resolveChoice(side, choice, player === 'p1' ? !!p1Skip : !!p2Skip);
-          const ok = battle.choose(player, resolved);
-          if (!ok) {
-            const activeName = activeMon ? activeMon.name : 'none';
-            const activeMoves = activeMon ? JSON.stringify(activeMon.moves) : 'none';
-            const requestStr = JSON.stringify((battle[player] as unknown as { activeRequest?: unknown }).activeRequest || {});
-            throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}. ActiveMon: ${activeName}, Simulator Moves: ${activeMoves}, Request: ${requestStr}`);
-          }
-        };
-
-        console.debug(`[WORKER-EXECUTE-DEBUG] payload keys: ${JSON.stringify(Object.keys(payload))}, cheats: ${JSON.stringify(payload.cheats || null)}`);
-        console.debug(`[WORKER-EXECUTE-DEBUG] cheats typeof: ${typeof payload.cheats}, isArray: ${Array.isArray(payload.cheats)}, length: ${payload.cheats ? payload.cheats.length : 'null'}`);
-
-        // Aplicar cheats del fuzzer/IPB al simulator ANTES de procesar las elecciones del turno
-        if (payload.cheats && Array.isArray(payload.cheats)) {
-          const chList = payload.cheats;
-          for (let i = 0; i < chList.length; i++) {
-            const ch = chList[i];
-            if (!ch) continue;
-            const key = `${ch.turn}-${ch.side}-${ch.type}`;
-            try {
-              // Si el turno de Showdown alcanzó o superó (o está a punto de procesar) el turno asignado al cheat, lo aplicamos
-              if (ch.turn <= battle.turn + 1 && ch.type === 'heal' && !appliedCheats.has(key)) {
-                const sideObj = ch.side === 'p1' ? battle.p1 : battle.p2;
-                applyHealCheatToSide(sideObj);
-                
-                // Agregar líneas de log de Showdown para cada Pokémon curado para que la UI de Vue y el bridge se enteren
-                sideObj.pokemon.forEach(p => {
-                  if (p) {
-                    battle.add('-heal', p, p.getHealth() as unknown as string);
-                  }
-                });
-                
-                syncRequestConditionsWithSimulator(sideObj as ExtendedSide);
-                appliedCheats.add(key);
-                console.debug(`[WORKER-CHEAT-PRE-DEBUG] Robustly healed side ${ch.side} for turn ${ch.turn} (current battle.turn: ${battle.turn}) and synced request conditions`);
-              }
-            } catch (err: unknown) {
-              const errMsg = err instanceof Error ? err.message : String(err);
-              console.error(`[WORKER-CHEAT-ERROR] Failed to apply pre-turn cheat for ${key} at index ${i}: ${errMsg}`);
-            }
-          }
-        }
-
-        console.debug(`[WORKER-EXECUTE-CHOICES-DEBUG] p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${p1Skip}, p2Skip: ${p2Skip}`);
-
-        const turnBeforeP1 = battle.turn;
-        
-        // En simulación del fuzzer, sólo llamamos a choose si el simulador espera acción de ese jugador
-        const p1NeedsAction = !isFuzzerSimulation || !!battle.p1.activeRequest;
-        const p2NeedsAction = !isFuzzerSimulation || !!battle.p2.activeRequest;
-
-        if (p1Choice && p1NeedsAction) {
-          chooseOrThrow('p1', p1Choice);
-        }
-        // After p1 chooses, Showdown may auto-process the turn if p2 already had a committed
-        // choice queued (common when p1 voluntary-switches in gen5customgame).
-        // Detect this by checking if the battle turn advanced.
-        const turnAlreadyProcessed = battle.turn > turnBeforeP1;
-        if (p2Choice && p2NeedsAction && !turnAlreadyProcessed) {
-          chooseOrThrow('p2', p2Choice);
-        }
+        executeBattleTurn({
+          battle,
+          p1Choice: p1Choice || '',
+          p2Choice: p2Choice || '',
+          p1Skip,
+          p2Skip,
+          p1Hps,
+          p2Hps,
+          p1Statuses,
+          p2Statuses,
+          weather,
+          cheatManager,
+          isFuzzerSimulation
+        });
 
         const turnLogs = getNewLogs();
         if (p2Skip) {
@@ -592,9 +296,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         const winner = battle.winner;
         const p1ForceSwitch = !!(battle.p1.activeRequest?.forceSwitch?.[0]);
         const p2ForceSwitch = !!(battle.p2.activeRequest?.forceSwitch?.[0]);
-
-        const p1ActionConsumed = p1NeedsAction && p1Choice && p1Choice !== '' && !p1Skip;
-        const p2ActionConsumed = p2NeedsAction && p2Choice && p2Choice !== '' && !p2Skip;
 
         self.postMessage({ 
           type: 'TURN_SUCCESS', 

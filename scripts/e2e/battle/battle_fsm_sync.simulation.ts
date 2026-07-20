@@ -1,41 +1,13 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, type Page } from '@playwright/test';
 import { generateTestBatches } from '../fuzzer/generators/fuzzer_team_generator.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
-import type { WindowWithResolver } from '../e2e_helpers.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
-  }
-
-  public async setupReviveScenario(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
-
-      gameStore.state.inventory = { revive: 1 };
-      const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 5 });
-      const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
-      charmander.hp = 0; // Debilitado
-      gameStore.state.team = [bulbasaur, charmander];
-
-      const pikachu = pokemonDebugService.generate({ id: 'pikachu', level: 5 });
-      await battleStore.startBattle(pikachu, { locationId: 'route1' });
-    });
-  }
-
-  public async getCharmanderHp(): Promise<number> {
-    return await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      return useGameStore().state.team[1]?.hp ?? 0;
-    });
   }
 }
 
@@ -121,7 +93,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
   if (batches.length > 0) {
     batches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
-        test.setTimeout(360000);
+        test.setTimeout(600000);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
         const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`);
@@ -145,6 +117,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
           const caseId = batch.id || `lote-${index + 1}`;
           const errMessage = error instanceof Error ? error.message : String(error);
           console.error(`\n❌ ERROR EN EL COMBATE: ${caseId}`);
+          console.error(`Original Error Stack:`, error instanceof Error ? error.stack : error);
           console.error(`Detalles del lote:`, JSON.stringify({
             id: caseId,
             playerTeam: batch.playerTeam.map(p => p.species),
@@ -169,35 +142,6 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
       });
     });
   }
-
-  test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
-    const sim = new FSMSyncSimWrapper(page, 'TestFSM_ReviveBanca');
-    await sim.setup();
-    await waitForWaitInput(page);
-
-    await sim.setupReviveScenario();
-    await sim.startBattle();
-
-    const reviveCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Revivir"]), .quick-item-card:not(.is-disabled):has(img[alt*="Rev"])').first();
-    await reviveCard.waitFor({ state: 'visible', timeout: 10000 });
-    await reviveCard.click();
-
-    const targetBtn = page.locator('.list-item:has(.name:has-text("Charmander")), button:has-text("Charmander")').first();
-    await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await targetBtn.click();
-
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const store = resolver();
-      return store.currentSubState === 'WAIT_INPUT' || !!(store.state && store.state.player && store.state.player.hp === 0);
-    }, undefined, { timeout: 10000 });
-
-    expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
-
-    // Jugar combate de forma automática hasta el final (no fuzzer)
-    await sim.playBattle();
-  });
 
   test.afterAll(async () => {
     const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');

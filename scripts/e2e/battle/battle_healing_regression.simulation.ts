@@ -206,6 +206,12 @@ test.describe('Regresión de Curación en Combate (Playwright)', () => {
     await sim.forceEnemyChoice('move tailwhip');
     await sim.voluntarySwitch('Charmander', charmanderAfter?.uid);
 
+    // Wait until the active player's UID actually updates to Charmander's UID
+    await page.waitForFunction((uid) => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      return resolver?.()?.state?.player?.uid === uid;
+    }, charmanderAfter?.uid, { timeout: 10000 });
+
     const stateAfterSwitch = await sim.getBattleStoreState();
     expect(stateAfterSwitch?.activePlayerUid).toBe(charmanderAfter?.uid);
   });

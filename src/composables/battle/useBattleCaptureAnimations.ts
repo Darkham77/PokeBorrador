@@ -52,12 +52,16 @@ export function useBattleCaptureAnimations(
   const enemyIsShaking = computed(() => seats.value.seat2.entry.isShaking)
   const enemyIsBlinking = computed(() => seats.value.seat2.entry.isBlinking)
 
-  const isCaptureSequenceActive = computed(() => 
-    Object.values(seats.value).some(seat => 
-      seat.entry.isCaptureActive || seat.entry.isAnimatingCapture ||
-      seat.exit.isCaptureActive || seat.exit.isAnimatingCapture
-    )
-  )
+  const isCaptureSequenceActive = computed(() => {
+    for (const [key, seat] of Object.entries(seats.value)) {
+      if (seat.entry.isCaptureActive || seat.entry.isAnimatingCapture ||
+          seat.exit.isCaptureActive || seat.exit.isAnimatingCapture) {
+        console.debug(`[E2E-CAPTURE-ACTIVE] seat: ${key}, entry.isCaptureActive: ${seat.entry.isCaptureActive}, entry.isAnimatingCapture: ${seat.entry.isAnimatingCapture}, exit.isCaptureActive: ${seat.exit.isCaptureActive}, exit.isAnimatingCapture: ${seat.exit.isAnimatingCapture}`);
+        return true;
+      }
+    }
+    return false;
+  })
 
   // fallow-ignore-next-line complexity
   const fixPokemonBallTagInSave = (pokemonUid: string) => {
@@ -208,15 +212,29 @@ export function useBattleCaptureAnimations(
 
     const targetUid = pokemon?.uid || target?.uid || null
     slot.pokemonUid = targetUid
+
+    const isFainted = target ? target.hp === 0 : false
+    if (isFainted) {
+      slot.animState = 'trapped'
+      slot.isCaptureActive = false
+      slot.isAnimatingCapture = false
+      return
+    }
+
     slot.animState = 'catching'
     slot.isCaptureActive = false
     slot.isAnimatingCapture = true
+    console.log(`[E2E-CATCH-REQUEST-START] side: ${side}, pokemon: ${pokemon?.name || 'unknown'} (uid: ${pokemon?.uid || 'none'}), isAnimatingCapture before: ${slot.isAnimatingCapture}`);
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
+    console.log(`[E2E-CATCH-REQUEST-AWAIT-START] animKey: ${animKey}`);
     await awaitTween(animKey)
+    console.log(`[E2E-CATCH-REQUEST-AWAIT-END] animKey: ${animKey}`);
 
     slot.animState = 'trapped'
+    slot.isAnimatingCapture = false
+    console.log(`[E2E-CATCH-REQUEST-END] isAnimatingCapture after: ${slot.isAnimatingCapture}`);
   }
 
   const handleShakeRequest = (detail: string | { side?: string }): Promise<void> => {

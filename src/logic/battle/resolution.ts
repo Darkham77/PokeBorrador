@@ -12,9 +12,9 @@ import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 function resolveMockEnemySwitch(active: BattleState, debugPrefix: string): Pokemon | null {
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : null) as { mockEnemyChoices?: string[]; enemyChoiceIndex?: number } | null;
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : null) as { mockEnemyChoices?: string[]; enemyChoiceIndex?: number; p2ChoiceIdx?: number } | null;
   if (debugObj?.mockEnemyChoices && active.enemyTeam) {
-    const idx = debugObj.enemyChoiceIndex ?? 0;
+    const idx = debugObj.p2ChoiceIdx !== undefined ? debugObj.p2ChoiceIdx : (debugObj.enemyChoiceIndex ?? 0);
     const choiceStr = debugObj.mockEnemyChoices[idx];
     if (choiceStr && choiceStr.startsWith('switch ')) {
       const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);

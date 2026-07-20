@@ -74,7 +74,7 @@ Status: FIXING | PENDING_RERUN | PASS
 1. **Create before the first simulation command.** The internal `simulation_progress.md` artifact and its mirrored copy at `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` must exist before any `sim:*` or `sim:e2e:*` command is issued. Other `npm run` commands (lint, build, validate:types, etc.) do not count as simulation commands and do not require the artifact to exist first.
 2. **Update and mirror after every step.** After each simulation pass/fail, after each fix applied, after each file touched — update the internal `simulation_progress.md` artifact (setting `UserFacing: true` and appropriate metadata) and immediately overwrite/mirror it to `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md`.
 3. **Mark resumption point.** On any interruption (user message, context limit, error), ensure the progress artifact reflects exactly where execution stopped and what is next, so a fresh agent can pick up without duplicating work.
-4. **Resuming a run.** If the user resumes a previous run, search for the existing internal `simulation_progress.md` artifact in the brain first. If missing, look for the mirrored `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` file in the repo to restore the state, then rebuild/continue from it.
+4. **Resuming a run (Physical File Synchronization First).** Whenever starting, resuming, or continuing a simulation workflow, the agent MUST first look for the latest mirrored physical file `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` in the repository (sorting by date to find the most recent one). Even if an internal `simulation_progress.md` exists in the brain, the agent MUST prioritize the physical mirrored file's content to restore the execution state, simulation queue, and pending tasks. This prevents desynchronization when changing branches, repositories, or active agents. The agent MUST recreate/synchronize the brain's internal `simulation_progress.md` artifact from this physical repository file before executing any simulation command, ensuring both representations are in perfect parity.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
 6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
 
@@ -197,6 +197,10 @@ TEST_BATCH=<n>                      # Correr solo el lote N (ej: 1, 9, 17, 25)
 TEST_CASE_ID=<case-id>              # Correr el replayer headless de un caso (o lista separada por comas)
 ```
 
+> [!CAUTION]
+> **PROHIBITION OF -g / --grep IN PLAYWRIGHT:**
+> It is strictly forbidden to use Playwright's `-g` or `--grep` flag to filter individual test cases (e.g., `npx playwright test -g "lote de fuzzer #10"`). Using `-g` can spawn misconfigured parallel test threads without properly initializing the batch's state variables. Always use the project's official environment variables (`TEST_BATCH`, `TEST_CASE_ID`, etc.) for isolated and controlled executions.
+
 > [!IMPORTANT]
 > **REGLA DE ORO DE RENDIMIENTO EN PRUEBAS:**
 > 1. **SIEMPRE PREFERIR EL REPLAY HEADLESS:** Si vas a verificar, depurar o testear la paridad de lógica, HP, FSM o estados de combate, **NUNCA** levantes el navegador con Playwright (`npm run sim:e2e:combat`). Usa siempre el replayer headless oficial:
@@ -243,6 +247,9 @@ This command installs the required browsers along with all system dependencies (
 > [!IMPORTANT]
 > **Strict Sequential Execution Mandate:** NEVER run multiple simulation commands or test suites concurrently or in parallel. Each simulation command already utilizes multicore resources internally. Running two or more simulation commands at the same time will saturate the CPU and generate execution errors. Always wait for one simulation run to completely finish before starting another.
 
+> [!IMPORTANT]
+> **Mandatory State Synchronization:** Before running any scope determination or executing commands, the agent MUST inspect the repository's `scripts/e2e/results/` folder for the most recent `simulation_progress_log_<YYYYMMDD>.md` file. The agent MUST parse this physical file, recreate the internal `simulation_progress.md` artifact in the brain, and resume exactly from the last pending or in-progress simulation queue item. This synchronization is critical to preserve the simulation state across agent swaps or active branches.
+
 ### Step 1 — Determine scope
 
 | User intent | Command |
@@ -252,12 +259,7 @@ This command installs the required browsers along with all system dependencies (
 | Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
 | Single failing simulation | env var filter or `npm run sim:e2e -- -g "<name>"` |
 
-**Fuzzer rule:** Only run `sim:fuzzer` if:
-1. `scripts/e2e/results/fuzzer_certified_cases.json` does not exist, OR
-2. The user explicitly requests `REGENERATE_CASES=true` (or `FORCE_FUZZER=true`)
-
-Otherwise reuse the existing JSON. `ensure_fuzzer_cases.ts` handles this
-automatically when using `sim:e2e:combat`.
+**Fuzzer rule:** The fuzzer (`sim:fuzzer`) always regenerates and writes certified cases to disk by default. To preserve the existing cached cases for quick iterative testing, the user must explicitly set `SKIP_REGENERATE=true` or `REGENERATE_CASES=false`. `ensure_fuzzer_cases.ts` handles this check automatically.
 
 **Important Fuzzer Regeneration Rule:** If the fuzzer is executed again and regenerates the certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated (deleted) inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all regenerated cases to identify any new regressions or bugs.
 

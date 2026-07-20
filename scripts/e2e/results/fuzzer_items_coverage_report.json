@@ -4,6 +4,14 @@
     "status": "PASS"
   },
   {
+    "id": "shedshell",
+    "status": "PASS"
+  },
+  {
+    "id": "luminousmoss",
+    "status": "PASS"
+  },
+  {
     "id": "absorbbulb",
     "status": "PASS"
   },
@@ -396,10 +404,6 @@
     "status": "PASS"
   },
   {
-    "id": "luminousmoss",
-    "status": "PASS"
-  },
-  {
     "id": "lureball",
     "status": "PASS"
   },
@@ -633,10 +637,6 @@
   },
   {
     "id": "sharpbeak",
-    "status": "PASS"
-  },
-  {
-    "id": "shedshell",
     "status": "PASS"
   },
   {

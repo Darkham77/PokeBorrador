@@ -439,7 +439,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         p2Statuses,
         weather: initialWeatherOfficial,
         seed: seedArr,
-        isE2eSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isE2eSimulation)
+        isE2eSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isE2eSimulation),
+        cheats: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.cheats) || []
       }
     });
 
