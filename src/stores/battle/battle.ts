@@ -615,7 +615,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const checkAndAutoRecharge = async () => {
-    if (typeof window !== 'undefined' && (window as unknown as { __VITE_DEBUG__?: { isE2eSimulation?: boolean } }).__VITE_DEBUG__?.isE2eSimulation) return
+    if (typeof window !== 'undefined' && (window as unknown as { __VITE_DEBUG__?: { isDeterministicSimulation?: boolean } }).__VITE_DEBUG__?.isDeterministicSimulation) return
     if (!activeBattle.value || activeBattle.value.over) return
     const req = activeBattle.value.playerRequest
     if (req && req.active?.[0]?.moves) {
@@ -645,7 +645,7 @@ export const useBattleStore = defineStore('battle', () => {
     ([subState, processing, intro]) => {
       if (
         fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
-        [BATTLE_SUBSTATES.WAIT_INPUT, BATTLE_SUBSTATES.SWITCH_MENU, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ].includes(subState) &&
+        (subState === BATTLE_SUBSTATES.WAIT_INPUT || subState === BATTLE_SUBSTATES.SWITCH_MENU || subState === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ) &&
         !processing &&
         !intro
       ) {

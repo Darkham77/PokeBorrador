@@ -56,7 +56,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const isStruggle = moveIndex === -1;
   const move = isStruggle ? null : p.moves[moveIndex];
 
-  if (!isStruggle && !isLocked) {
+  if (!isStruggle && !isLocked && move?.id !== 'recharge' && move?.id !== 'struggle') {
     if (!move || move.pp <= 0) {
       store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
       return

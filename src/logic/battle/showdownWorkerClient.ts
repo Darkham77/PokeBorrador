@@ -151,7 +151,7 @@ export async function executeTurnInWorker(
     throw new Error('showdownWorker is null')
   }
 
-  let finalP2Choice = p2Choice;
+  const finalP2Choice = p2Choice;
   let turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.cheats) {
@@ -162,7 +162,7 @@ export async function executeTurnInWorker(
     }
   }
 
-  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isSimulationMode;
+  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
 
 
 

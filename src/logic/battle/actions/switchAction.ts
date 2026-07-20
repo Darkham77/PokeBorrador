@@ -133,7 +133,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
       const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts')
       if (showdownWorker) {
         const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
-        const { decideEnemyMove } = await import('../ai/battleAI.ts')
+        const { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } = await import('../ai/battleAI.ts')
 
         console.debug('[switchAction] transitioning FSM to BUILD_QUEUE...');
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
@@ -150,12 +150,29 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
         const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
         let p1Choice = `switch ${slot}`
         const isWild = !active.isTrainer && !active.isGym
-        console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
-        let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild, ctx)
-        if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
-          eMove = active.enemy.lastMove
+        
+        let p2Choice = 'struggle';
+        const enemyTeam = active.enemyTeam;
+        const wantSwitch = !isWild && shouldEnemySwitch(active.enemy, active.player, enemyTeam, ctx);
+        if (wantSwitch) {
+          const bestIdx = findBestSwitchIndex(enemyTeam || [], active.player, active.enemy.uid, ctx);
+          if (bestIdx !== -1) {
+            const targetMon = enemyTeam?.[bestIdx];
+            if (targetMon && targetMon.uid) {
+              const p2Slot = ShowdownTeamResolver.getShowdownSlotForUid(active?.enemyRequest, targetMon.uid);
+              p2Choice = `switch ${p2Slot}`;
+            }
+          }
+        } else {
+          console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name });
+          let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild, ctx)
+          if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
+            eMove = active.enemy.lastMove
+          }
+          if (eMove) {
+            p2Choice = `move ${eMove.id}`;
+          }
         }
-        let p2Choice = eMove ? `move ${eMove.id}` : 'struggle'
         let p2Skip = false;
         if (active?.enemyRequest?.wait) {
           p2Skip = true;

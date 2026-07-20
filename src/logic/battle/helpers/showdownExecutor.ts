@@ -1,4 +1,5 @@
 // src/logic/battle/helpers/showdownExecutor.ts
+import { mapVisualToOfficialWeather } from '../../weather/weatherGenerationProvider.ts';
 import type { Battle } from '@pkmn/sim';
 import type { BattleCheatManager } from './battleCheatManager.ts';
 import { syncRequestConditionsWithSimulator } from '../cheats.ts';
@@ -43,7 +44,8 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
 
   // 1. Synchronize Weather
   if (weather) {
-    const targetWeather = (weather === 'none' || weather === 'clear') ? '' : weather;
+    const mappedWeather = mapVisualToOfficialWeather(weather, battle.gen || 5);
+    const targetWeather = (mappedWeather === 'none' || mappedWeather === 'clear') ? '' : mappedWeather;
     if (battle.field.weather !== targetWeather) {
       if (!targetWeather) {
         battle.field.clearWeather();

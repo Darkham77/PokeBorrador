@@ -73,7 +73,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   public async enableE2EWorkerFlag(): Promise<void> {
     await this.page.evaluate(() => {
       window.__VITE_DEBUG__ = window.__VITE_DEBUG__ || {};
-      window.__VITE_DEBUG__.isE2eSimulation = true;
+      window.__VITE_DEBUG__.isDeterministicSimulation = true;
     });
   }
 
@@ -114,6 +114,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       battleStore.fsm.currentSubState = 'WAIT_INPUT';
       battleStore.fsm.currentState = 'INITIALIZING';
       gameStore.state.team = [];
+
+      // Esperar a que Vue procese la reactividad y desmonte el componente de batalla previo
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       // Forzar el clima a despejado ('clear') en el MapStore para coincidir 1:1 con el fuzzer
       useMapStore().setGlobalWeather('clear');
@@ -172,14 +175,23 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       w.__VITE_DEBUG__ = w.__VITE_DEBUG__ ?? {};
       const debugObj = w.__VITE_DEBUG__;
       debugObj.battleSeed = (batchData.seed ?? undefined) as [number, number, number, number] | undefined;
-      debugObj.isE2eSimulation = true;
+      debugObj.isDeterministicSimulation = true;
+      debugObj.isScriptedReplayMode = true;
       const enemyChoices: string[] = batchData.enemyChoices
         ?? (batchData.history as Array<{ p2Choice: string }> | undefined)?.map(h => h.p2Choice)
         ?? [];
       debugObj.enemyChoices = [...enemyChoices];
       debugObj.mockEnemyChoices = [...enemyChoices];
-      debugObj.cheats = batchData.cheats ?? [];
+      
+      const playerChoices: string[] = batchData.playerChoices
+        ?? (batchData.history as Array<{ p1Choice: string }> | undefined)?.map(h => h.p1Choice)
+        ?? [];
+      debugObj.playerChoices = [...playerChoices];
+      
+      debugObj.p1ChoiceIdx = 0;
+      debugObj.p2ChoiceIdx = 0;
       debugObj.enemyChoiceIndex = 0;
+      debugObj.cheats = batchData.cheats ?? [];
 
       if (batchData.seed) {
         injectDebugSeed(batchData.seed as [number, number, number, number]);
@@ -197,8 +209,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       });
 
       // Speed up GSAP animations to 30x to run tests extremely fast
-      if (w.gsap) {
-        w.gsap.globalTimeline.timeScale(30);
+      const winWithGsap = w as unknown as { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
+      if (winWithGsap.gsap) {
+        winWithGsap.gsap.globalTimeline.timeScale(30);
       }
 
       const bState = battleStore.state as { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;

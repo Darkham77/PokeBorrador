@@ -78,6 +78,15 @@ Status: FIXING | PENDING_RERUN | PASS
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
 6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
 
+## Event-Driven Core Simulation Mandate
+
+The simulation infrastructure (Playwright, replayers, and deciders) must operate strictly under an **Event-Driven Architecture**. Timers, sleep/timeout polling loops, and turn-counting structures in the test automation files are strictly prohibited.
+
+1. **Reactive Event Waiting**: The simulation runner must only react to events dispatched by the application (specifically the `battle-ready-for-input` CustomEvent). It must not poll states or use arbitrary delays (`sleep`, `setTimeout`, or `page.waitForTimeout`) to guess when a player action can be sent.
+2. **Scripted Choice Separation**: The Playwright test script must not parse the fuzzer script or read player choices to execute clicks manually. All logic regarding reading fuzzer choice logs, track of choice indices, and executing the corresponding store actions must reside strictly inside the application code within `ScriptedAI`.
+3. **Execution Delegate**: Upon receiving the action-ready event, the simulation script must simply invoke the browser-side delegate `window.__VITE_DEBUG__.executeScriptedAction()`, letting `ScriptedAI` resolve and dispatch the turn choices.
+4. **Mandatory Event Timeout**: After the `battle-ready-for-input` event is dispatched, the simulation must consume it within 5 seconds by invoking the browser-side delegate. If 5 seconds pass without consumption (meaning the simulation runner hung or failed to respond), the application must throw a fatal simulation error to fail fast and prevent silent freezes.
+
 ---
 
 ## Test System Architecture

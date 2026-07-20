@@ -47,10 +47,10 @@ function logDebug(msg: string) {
   console.debug(msg);
 }
 
-let isE2eSimulation = false;
+let isDeterministicSimulation = false;
 
 // Aplicar el monkey-patch unificado de spreadModify
-patchShowdownSpreadModify(() => isE2eSimulation);
+patchShowdownSpreadModify(() => isDeterministicSimulation);
 
 let currentBattle: Battle | null = null;
 let cheatManager: BattleCheatManager | null = null;
@@ -121,7 +121,8 @@ interface WorkerEventPayload {
   side?: 'p1' | 'p2';
   type?: 'heal';
   cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
-  isE2eSimulation?: boolean;
+  isDeterministicSimulation?: boolean;
+  isFuzzerSimulation?: boolean;
   format?: string;
 }
 
@@ -136,8 +137,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
   try {
     switch (type) {
       case 'INIT_BATTLE': {
-        isE2eSimulation = !!payload.isE2eSimulation;
-        logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isE2eSimulation: ${payload.isE2eSimulation}, module isE2eSimulation set to: ${isE2eSimulation}`);
+        isDeterministicSimulation = !!payload.isDeterministicSimulation;
+        logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`);
         cheatManager = new BattleCheatManager(payload.cheats);
         const { p1, p2 } = payload;
         if (!p1 || !p2) {
@@ -270,6 +271,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         const p2NeedsAction = !isFuzzerSimulation || requiresAction(battle.p2.activeRequest);
         const p1ActionConsumed = isActionConsumed(p1NeedsAction, p1Choice, !!p1Skip);
         const p2ActionConsumed = isActionConsumed(p2NeedsAction, p2Choice, !!p2Skip);
+
+        console.debug(`[WORKER-EXECUTE-DEBUG] isFuzzerSim: ${isFuzzerSimulation}, p1NeedsAction: ${p1NeedsAction}, p2NeedsAction: ${p2NeedsAction}, p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${!!p1Skip}, p2Skip: ${!!p2Skip}, p1ActionConsumed: ${p1ActionConsumed}, p2ActionConsumed: ${p2ActionConsumed}`);
 
         executeBattleTurn({
           battle,

@@ -147,7 +147,11 @@ declare global {
       getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>;
       p1ChoiceIdx?: number;
       p2ChoiceIdx?: number;
-      isE2eSimulation?: boolean;
+      isDeterministicSimulation?: boolean;
+      isScriptedReplayMode?: boolean;
+      playerChoices?: string[];
+      executeScriptedAction?: () => Promise<boolean>;
+      waitForBattleReady?: () => Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }>;
       useItemInBattle?: (itemId: string, targetUid: string) => void;
       healAll?: () => void;
       forceFlee?: () => void | Promise<void>;

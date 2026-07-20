@@ -1,7 +1,7 @@
 [
   {
-    "id": "case-b0f53b10d1a3",
-    "error": "page.evaluate: Test timeout of 600000ms exceeded.",
-    "timestamp": "2026-07-20T03:56:00.654Z"
+    "id": "case-0813b34c9258",
+    "error": "page.waitForFunction: Timeout 30000ms exceeded.",
+    "timestamp": "2026-07-20T13:26:52.562Z"
   }
 ]

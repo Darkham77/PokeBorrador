@@ -2,7 +2,7 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
+import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
@@ -11,24 +11,7 @@ import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
-function resolveMockEnemySwitch(active: BattleState, debugPrefix: string): Pokemon | null {
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : null) as { mockEnemyChoices?: string[]; enemyChoiceIndex?: number; p2ChoiceIdx?: number } | null;
-  if (debugObj?.mockEnemyChoices && active.enemyTeam) {
-    const idx = debugObj.p2ChoiceIdx !== undefined ? debugObj.p2ChoiceIdx : (debugObj.enemyChoiceIndex ?? 0);
-    const choiceStr = debugObj.mockEnemyChoices[idx];
-    if (choiceStr && choiceStr.startsWith('switch ')) {
-      const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
-      const targetRequestPoke = (active.enemyRequest?.side?.pokemon as unknown as Array<{ uid?: string } | null | undefined>)?.[switchSlot - 1];
-      const targetUid = targetRequestPoke?.uid;
-      if (targetUid) {
-        const nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid === targetUid) || null;
-        console.debug(`[${debugPrefix}] Resolved next enemy via fuzzer choice #${idx}: ${choiceStr} -> ${nextEnemy?.name} (${targetUid})`);
-        return nextEnemy;
-      }
-    }
-  }
-  return null;
-}
+
 
 
 /**
@@ -157,19 +140,21 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
     
     let nextEnemy: Pokemon | null = null;
-    if (isTr && active.enemyTeam && active.player) {
-      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FAINT-SWITCH');
-      if (!nextEnemy) {
-        const bestIdx = findBestSwitchIndex(active.enemyTeam, active.player, pokemon.uid, ctx)
+    if (active.enemyTeam) {
+      const activePlayer = active.player || active.enemyTeam[0]
+      if (activePlayer) {
+        const bestIdx = findBestSwitchIndex(
+          active.enemyTeam,
+          activePlayer,
+          pokemon.uid,
+          ctx
+        )
         if (bestIdx !== -1) {
           nextEnemy = active.enemyTeam[bestIdx] || null
         } else {
           nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
         }
-      }
-    } else if (active.enemyTeam) {
-      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FAINT-SWITCH');
-      if (!nextEnemy) {
+      } else {
         nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
       }
     }
@@ -533,6 +518,38 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     }
   }
 
+  interface LocalDebugObject {
+    [key: string]: unknown;
+    isScriptedReplayMode?: boolean;
+    lastFinalState?: {
+      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+    };
+  }
+
+  interface WindowWithDebug extends Window {
+    __VITE_DEBUG__?: LocalDebugObject;
+  }
+
+  const winObj = (typeof window !== 'undefined' ? window : undefined) as WindowWithDebug | undefined;
+  if (winObj && winObj.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const p1 = (ctx.gs.state?.team ?? []).map((p: Pokemon) => ({
+      uid: p.uid,
+      name: p.name,
+      hp: p.hp,
+      maxHp: p.maxHp,
+      fainted: p.hp <= 0
+    }));
+    const p2 = (active.enemyTeam ?? []).map((p: Pokemon) => ({
+      uid: p.uid,
+      name: p.name,
+      hp: p.hp,
+      maxHp: p.maxHp,
+      fainted: p.hp <= 0
+    }));
+    winObj.__VITE_DEBUG__.lastFinalState = { p1, p2 };
+  }
+
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
   if (active.wasSearching !== false) {
@@ -720,8 +737,20 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
 
     let nextEnemy: Pokemon | null = null
     if (active.enemyTeam) {
-      nextEnemy = resolveMockEnemySwitch(active, 'E2E-MOCK-FORCE-SWITCH');
-      if (!nextEnemy) {
+      const activePlayer = active.player || active.enemyTeam[0]
+      if (activePlayer) {
+        const bestIdx = findBestSwitchIndex(
+          active.enemyTeam,
+          activePlayer,
+          activeUidToExclude ?? '',
+          ctx
+        )
+        if (bestIdx !== -1) {
+          nextEnemy = active.enemyTeam[bestIdx] || null
+        } else {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
+        }
+      } else {
         nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
       }
     }

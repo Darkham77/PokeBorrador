@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T04:10:47.91138501Z",
+  "generatedAt": "2026-07-20T12:10:08.425417969Z",
   "summary": {
     "total": 200,
     "passed": 200,
@@ -7,1203 +7,1203 @@
   },
   "results": [
     {
-      "level": 45,
-      "target": "voltorb",
-      "text": "155+ IVs totales",
+      "level": 40,
+      "target": "jolteon",
+      "text": "IV 31 en At. Esp",
       "matched": true
     },
     {
-      "level": 47,
-      "target": "dodrio",
-      "text": "IV 31 en Def. Esp",
+      "level": 3,
+      "target": "nidoranm",
+      "text": "naturaleza Ingenua",
+      "matched": true
+    },
+    {
+      "level": 38,
+      "target": "abra",
+      "text": "Nv. 34+",
       "matched": true
     },
     {
       "level": 12,
-      "target": "nidoranm",
+      "target": "oddish",
       "text": "Nv. 16+",
       "matched": true
     },
     {
-      "level": 10,
-      "target": "machop",
-      "text": "114+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 16,
-      "target": "pidgeotto",
-      "text": "122+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 27,
-      "target": "golbat",
-      "text": "Nv. 22+",
-      "matched": true
-    },
-    {
-      "level": 19,
-      "target": "psyduck",
-      "text": "Nv. 22+",
-      "matched": true
-    },
-    {
-      "level": 40,
-      "target": "doduo",
-      "text": "naturaleza Rara",
-      "matched": true
-    },
-    {
-      "level": 18,
-      "target": "paras",
-      "text": "108+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 46,
-      "target": "spearow",
-      "text": "naturaleza Alocada",
-      "matched": true
-    },
-    {
-      "level": 32,
-      "target": "caterpie",
-      "text": "Nv. 30+",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "golbat",
-      "text": "137+ IVs totales",
+      "level": 38,
+      "target": "gastly",
+      "text": "naturaleza Modesta",
       "matched": true
     },
     {
       "level": 30,
-      "target": "zubat",
-      "text": "121+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 44,
-      "target": "caterpie",
-      "text": "naturaleza Mansa",
-      "matched": true
-    },
-    {
-      "level": 45,
-      "target": "grimer",
-      "text": "IV 31 en At. Esp",
-      "matched": true
-    },
-    {
-      "level": 27,
-      "target": "psyduck",
-      "text": "126+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 28,
-      "target": "kadabra",
-      "text": "naturaleza Audaz",
-      "matched": true
-    },
-    {
-      "level": 50,
-      "target": "goldeen",
-      "text": "naturaleza Agitada",
-      "matched": true
-    },
-    {
-      "level": 21,
-      "target": "spearow",
-      "text": "naturaleza Mansa",
-      "matched": true
-    },
-    {
-      "level": 12,
-      "target": "metapod",
-      "text": "Nv. 13+",
-      "matched": true
-    },
-    {
-      "level": 6,
-      "target": "weedle",
-      "text": "100+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 37,
-      "target": "poliwhirl",
-      "text": "naturaleza Fuerte",
-      "matched": true
-    },
-    {
-      "level": 5,
-      "target": "nidoranm",
-      "text": "naturaleza Amable",
-      "matched": true
-    },
-    {
-      "level": 49,
-      "target": "sandshrew",
-      "text": "naturaleza Mansa",
-      "matched": true
-    },
-    {
-      "level": 49,
-      "target": "poliwag",
-      "text": "141+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 47,
-      "target": "pidgeotto",
-      "text": "Nv. 53+",
-      "matched": true
-    },
-    {
-      "level": 22,
-      "target": "vulpix",
-      "text": "IV 31 en Velocidad",
-      "matched": true
-    },
-    {
-      "level": 9,
-      "target": "weedle",
-      "text": "99+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 13,
-      "target": "clefairy",
-      "text": "Nv. 8+",
-      "matched": true
-    },
-    {
-      "level": 43,
-      "target": "dodrio",
-      "text": "133+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 48,
-      "target": "goldeen",
-      "text": "Nv. 56+",
-      "matched": true
-    },
-    {
-      "level": 35,
-      "target": "voltorb",
-      "text": "IV 31 en Ataque",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "psyduck",
-      "text": "naturaleza Huraña",
-      "matched": true
-    },
-    {
-      "level": 3,
-      "target": "ekans",
-      "text": "101+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 26,
-      "target": "weedle",
-      "text": "133+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 34,
-      "target": "golbat",
-      "text": "Nv. 35+",
-      "matched": true
-    },
-    {
-      "level": 26,
-      "target": "exeggcute",
-      "text": "125+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 40,
-      "target": "drowzee",
-      "text": "131+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 5,
-      "target": "rattata",
-      "text": "naturaleza Amable",
-      "matched": true
-    },
-    {
-      "level": 27,
-      "target": "slowpoke",
-      "text": "127+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 19,
-      "target": "poliwag",
-      "text": "naturaleza Pícara",
-      "matched": true
-    },
-    {
-      "level": 11,
-      "target": "paras",
-      "text": "108+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 17,
-      "target": "abra",
-      "text": "114+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 8,
-      "target": "rattata",
-      "text": "98+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 11,
-      "target": "sandshrew",
-      "text": "Nv. 13+",
-      "matched": true
-    },
-    {
-      "level": 20,
-      "target": "geodude",
-      "text": "Nv. 27+",
-      "matched": true
-    },
-    {
-      "level": 1,
-      "target": "magikarp",
-      "text": "Nv. 10+",
-      "matched": true
-    },
-    {
-      "level": 49,
-      "target": "marowak",
-      "text": "150+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 32,
-      "target": "weedle",
-      "text": "Nv. 38+",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "mankey",
-      "text": "107+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 1,
-      "target": "pidgey",
-      "text": "Nv. 11+",
-      "matched": true
-    },
-    {
-      "level": 16,
-      "target": "caterpie",
-      "text": "Nv. 26+",
-      "matched": true
-    },
-    {
-      "level": 16,
-      "target": "oddish",
+      "target": "jigglypuff",
       "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 40,
-      "target": "weepinbell",
-      "text": "naturaleza Sereno",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "oddish",
-      "text": "naturaleza Huraña",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "growlithe",
-      "text": "134+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 12,
-      "target": "abra",
-      "text": "Nv. 10+",
       "matched": true
     },
     {
       "level": 39,
-      "target": "poliwag",
-      "text": "IV 31 en Velocidad",
+      "target": "nidoranm",
+      "text": "Nv. 47+",
       "matched": true
     },
     {
-      "level": 37,
-      "target": "machop",
-      "text": "IV 31 en At. Esp",
-      "matched": true
-    },
-    {
-      "level": 14,
-      "target": "pidgey",
-      "text": "107+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 30,
-      "target": "rattata",
-      "text": "127+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "poliwag",
-      "text": "Nv. 8+",
-      "matched": true
-    },
-    {
-      "level": 28,
-      "target": "pidgeotto",
-      "text": "naturaleza Floja",
-      "matched": true
-    },
-    {
-      "level": 11,
-      "target": "bellsprout",
-      "text": "naturaleza Sereno",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "magikarp",
-      "text": "117+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 25,
-      "target": "pidgey",
-      "text": "IV 31 en Defensa",
-      "matched": true
-    },
-    {
-      "level": 43,
-      "target": "poliwhirl",
+      "level": 38,
+      "target": "abra",
       "text": "IV 31 en PS",
       "matched": true
     },
     {
-      "level": 43,
-      "target": "gyarados",
-      "text": "Nv. 38+",
-      "matched": true
-    },
-    {
-      "level": 3,
-      "target": "paras",
-      "text": "111+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "pidgey",
-      "text": "Nv. 41+",
-      "matched": true
-    },
-    {
-      "level": 5,
-      "target": "weedle",
-      "text": "Nv. 6+",
-      "matched": true
-    },
-    {
-      "level": 9,
-      "target": "weedle",
-      "text": "naturaleza Afable",
-      "matched": true
-    },
-    {
-      "level": 2,
-      "target": "rattata",
-      "text": "112+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 50,
-      "target": "poliwag",
-      "text": "naturaleza Rara",
-      "matched": true
-    },
-    {
-      "level": 27,
-      "target": "sandshrew",
-      "text": "Nv. 36+",
-      "matched": true
-    },
-    {
-      "level": 13,
-      "target": "drowzee",
-      "text": "Nv. 14+",
-      "matched": true
-    },
-    {
-      "level": 12,
+      "level": 35,
       "target": "caterpie",
-      "text": "122+ IVs totales",
+      "text": "133+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 30,
+      "target": "magnemite",
+      "text": "naturaleza Mansa",
+      "matched": true
+    },
+    {
+      "level": 34,
+      "target": "slowpoke",
+      "text": "naturaleza Osado",
       "matched": true
     },
     {
       "level": 26,
-      "target": "machoke",
-      "text": "IV 31 en Def. Esp",
+      "target": "krabby",
+      "text": "naturaleza Firme",
       "matched": true
     },
     {
-      "level": 15,
-      "target": "psyduck",
-      "text": "IV 31 en Ataque",
-      "matched": true
-    },
-    {
-      "level": 15,
-      "target": "metapod",
-      "text": "naturaleza Plácida",
-      "matched": true
-    },
-    {
-      "level": 36,
-      "target": "pidgeotto",
-      "text": "Nv. 41+",
-      "matched": true
-    },
-    {
-      "level": 1,
-      "target": "zubat",
-      "text": "Nv. 5+",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "venonat",
-      "text": "110+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "magikarp",
-      "text": "136+ IVs totales",
+      "level": 6,
+      "target": "sandshrew",
+      "text": "113+ IVs totales",
       "matched": true
     },
     {
       "level": 22,
       "target": "jigglypuff",
-      "text": "naturaleza Activa",
+      "text": "Nv. 24+",
+      "matched": true
+    },
+    {
+      "level": 12,
+      "target": "mankey",
+      "text": "naturaleza Osado",
+      "matched": true
+    },
+    {
+      "level": 23,
+      "target": "pidgey",
+      "text": "Nv. 30+",
+      "matched": true
+    },
+    {
+      "level": 13,
+      "target": "psyduck",
+      "text": "122+ IVs totales",
       "matched": true
     },
     {
       "level": 3,
+      "target": "zubat",
+      "text": "108+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 41,
+      "target": "weezing",
+      "text": "133+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 17,
+      "target": "jigglypuff",
+      "text": "111+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 10,
+      "target": "clefairy",
+      "text": "116+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 45,
+      "target": "caterpie",
+      "text": "naturaleza Floja",
+      "matched": true
+    },
+    {
+      "level": 27,
+      "target": "machop",
+      "text": "naturaleza Afable",
+      "matched": true
+    },
+    {
+      "level": 4,
+      "target": "nidoranf",
+      "text": "106+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 42,
+      "target": "magnemite",
+      "text": "naturaleza Amable",
+      "matched": true
+    },
+    {
+      "level": 27,
+      "target": "bellsprout",
+      "text": "IV 31 en Ataque",
+      "matched": true
+    },
+    {
+      "level": 50,
+      "target": "abra",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 46,
+      "target": "grimer",
+      "text": "naturaleza Agitada",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "paras",
+      "text": "naturaleza Dócil",
+      "matched": true
+    },
+    {
+      "level": 41,
+      "target": "gastly",
+      "text": "naturaleza Alocada",
+      "matched": true
+    },
+    {
+      "level": 2,
       "target": "rattata",
       "text": "96+ IVs totales",
       "matched": true
     },
     {
-      "level": 41,
-      "target": "cloyster",
-      "text": "151+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 14,
-      "target": "meowth",
-      "text": "109+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 49,
-      "target": "lapras",
-      "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 16,
-      "target": "vulpix",
-      "text": "Nv. 16+",
-      "matched": true
-    },
-    {
-      "level": 6,
-      "target": "rattata",
-      "text": "108+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 36,
-      "target": "magikarp",
-      "text": "145+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 48,
-      "target": "exeggcute",
+      "level": 42,
+      "target": "haunter",
       "text": "naturaleza Miedosa",
       "matched": true
     },
     {
-      "level": 16,
-      "target": "psyduck",
-      "text": "naturaleza Dócil",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "machop",
-      "text": "IV 31 en Velocidad",
-      "matched": true
-    },
-    {
-      "level": 25,
-      "target": "goldeen",
-      "text": "Nv. 34+",
-      "matched": true
-    },
-    {
-      "level": 6,
-      "target": "rattata",
-      "text": "naturaleza Pícara",
-      "matched": true
-    },
-    {
-      "level": 25,
-      "target": "geodude",
-      "text": "Nv. 34+",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "pidgeotto",
-      "text": "naturaleza Alocada",
-      "matched": true
-    },
-    {
-      "level": 30,
-      "target": "geodude",
-      "text": "naturaleza Sereno",
-      "matched": true
-    },
-    {
-      "level": 40,
-      "target": "poliwag",
-      "text": "IV 31 en Velocidad",
-      "matched": true
-    },
-    {
-      "level": 2,
-      "target": "spearow",
-      "text": "Nv. 12+",
-      "matched": true
-    },
-    {
-      "level": 35,
-      "target": "ekans",
-      "text": "IV 31 en Ataque",
-      "matched": true
-    },
-    {
-      "level": 17,
-      "target": "machop",
-      "text": "119+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 39,
-      "target": "growlithe",
-      "text": "naturaleza Osado",
-      "matched": true
-    },
-    {
-      "level": 28,
-      "target": "machoke",
-      "text": "IV 31 en Ataque",
-      "matched": true
-    },
-    {
-      "level": 4,
-      "target": "nidoranf",
-      "text": "111+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 23,
-      "target": "nidoranm",
-      "text": "Nv. 25+",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "haunter",
-      "text": "Nv. 31+",
-      "matched": true
-    },
-    {
-      "level": 4,
-      "target": "ekans",
-      "text": "97+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "jigglypuff",
-      "text": "Nv. 35+",
-      "matched": true
-    },
-    {
-      "level": 38,
-      "target": "kakuna",
-      "text": "Nv. 35+",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "arcanine",
+      "level": 26,
+      "target": "caterpie",
       "text": "IV 31 en Def. Esp",
       "matched": true
     },
     {
-      "level": 44,
-      "target": "weezing",
-      "text": "Nv. 43+",
-      "matched": true
-    },
-    {
-      "level": 20,
+      "level": 8,
       "target": "sandshrew",
-      "text": "Nv. 17+",
+      "text": "113+ IVs totales",
       "matched": true
     },
     {
-      "level": 12,
-      "target": "raticate",
-      "text": "naturaleza Alegre",
+      "level": 29,
+      "target": "psyduck",
+      "text": "IV 31 en Defensa",
       "matched": true
     },
     {
-      "level": 1,
-      "target": "weedle",
-      "text": "Nv. 8+",
+      "level": 42,
+      "target": "rapidash",
+      "text": "naturaleza Activa",
       "matched": true
     },
     {
-      "level": 28,
+      "level": 39,
+      "target": "paras",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 10,
+      "target": "magikarp",
+      "text": "102+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 40,
+      "target": "rhydon",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 18,
       "target": "zubat",
       "text": "126+ IVs totales",
       "matched": true
     },
     {
-      "level": 43,
-      "target": "gyarados",
-      "text": "naturaleza Fuerte",
+      "level": 46,
+      "target": "dodrio",
+      "text": "IV 31 en At. Esp",
       "matched": true
     },
     {
-      "level": 29,
-      "target": "golbat",
-      "text": "Nv. 36+",
+      "level": 11,
+      "target": "weedle",
+      "text": "108+ IVs totales",
       "matched": true
     },
     {
-      "level": 36,
-      "target": "graveler",
-      "text": "135+ IVs totales",
+      "level": 45,
+      "target": "poliwhirl",
+      "text": "Nv. 54+",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "nidoranf",
+      "text": "naturaleza Osado",
+      "matched": true
+    },
+    {
+      "level": 45,
+      "target": "cloyster",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 1,
+      "target": "pidgey",
+      "text": "105+ IVs totales",
       "matched": true
     },
     {
       "level": 27,
-      "target": "abra",
-      "text": "naturaleza Dócil",
+      "target": "poliwhirl",
+      "text": "Nv. 26+",
       "matched": true
     },
     {
-      "level": 46,
-      "target": "dewgong",
-      "text": "142+ IVs totales",
+      "level": 6,
+      "target": "pidgey",
+      "text": "Nv. 15+",
       "matched": true
     },
     {
-      "level": 3,
-      "target": "spearow",
-      "text": "naturaleza Tímido",
-      "matched": true
-    },
-    {
-      "level": 3,
+      "level": 29,
       "target": "sandshrew",
+      "text": "122+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 40,
+      "target": "magikarp",
+      "text": "IV 31 en Defensa",
+      "matched": true
+    },
+    {
+      "level": 17,
+      "target": "rattata",
+      "text": "Nv. 23+",
+      "matched": true
+    },
+    {
+      "level": 16,
+      "target": "raticate",
+      "text": "Nv. 20+",
+      "matched": true
+    },
+    {
+      "level": 35,
+      "target": "raticate",
+      "text": "naturaleza Fuerte",
+      "matched": true
+    },
+    {
+      "level": 5,
+      "target": "spearow",
+      "text": "Nv. 12+",
+      "matched": true
+    },
+    {
+      "level": 49,
+      "target": "weezing",
+      "text": "naturaleza Ingenua",
+      "matched": true
+    },
+    {
+      "level": 39,
+      "target": "exeggcute",
+      "text": "IV 31 en Velocidad",
+      "matched": true
+    },
+    {
+      "level": 14,
+      "target": "sandshrew",
+      "text": "106+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 38,
+      "target": "slowpoke",
+      "text": "naturaleza Modesta",
+      "matched": true
+    },
+    {
+      "level": 37,
+      "target": "fearow",
+      "text": "IV 31 en Defensa",
+      "matched": true
+    },
+    {
+      "level": 2,
+      "target": "zubat",
       "text": "Nv. 5+",
       "matched": true
     },
     {
-      "level": 5,
-      "target": "caterpie",
-      "text": "naturaleza Huraña",
+      "level": 46,
+      "target": "goldeen",
+      "text": "IV 31 en Ataque",
       "matched": true
     },
     {
-      "level": 5,
+      "level": 28,
+      "target": "bellsprout",
+      "text": "Nv. 32+",
+      "matched": true
+    },
+    {
+      "level": 41,
+      "target": "nidoranf",
+      "text": "naturaleza Seria",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "nidoranf",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 17,
+      "target": "nidoranf",
+      "text": "Nv. 27+",
+      "matched": true
+    },
+    {
+      "level": 35,
+      "target": "seel",
+      "text": "naturaleza Rara",
+      "matched": true
+    },
+    {
+      "level": 23,
       "target": "rattata",
       "text": "naturaleza Afable",
       "matched": true
     },
     {
-      "level": 43,
-      "target": "gloom",
-      "text": "IV 31 en Velocidad",
+      "level": 45,
+      "target": "caterpie",
+      "text": "Nv. 55+",
       "matched": true
     },
     {
-      "level": 39,
+      "level": 22,
       "target": "fearow",
-      "text": "Nv. 38+",
-      "matched": true
-    },
-    {
-      "level": 47,
-      "target": "kangaskhan",
-      "text": "naturaleza Dócil",
-      "matched": true
-    },
-    {
-      "level": 40,
-      "target": "abra",
-      "text": "IV 31 en Velocidad",
-      "matched": true
-    },
-    {
-      "level": 49,
-      "target": "rapidash",
-      "text": "Nv. 58+",
-      "matched": true
-    },
-    {
-      "level": 31,
-      "target": "weepinbell",
-      "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 7,
-      "target": "spearow",
-      "text": "Nv. 17+",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "seel",
-      "text": "Nv. 35+",
-      "matched": true
-    },
-    {
-      "level": 31,
-      "target": "geodude",
-      "text": "naturaleza Amable",
-      "matched": true
-    },
-    {
-      "level": 5,
-      "target": "ekans",
-      "text": "102+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 31,
-      "target": "graveler",
-      "text": "IV 31 en Defensa",
-      "matched": true
-    },
-    {
-      "level": 24,
-      "target": "nidoranm",
-      "text": "125+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "poliwag",
-      "text": "naturaleza Audaz",
-      "matched": true
-    },
-    {
-      "level": 48,
-      "target": "marowak",
-      "text": "144+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 21,
-      "target": "geodude",
-      "text": "IV 31 en At. Esp",
-      "matched": true
-    },
-    {
-      "level": 17,
-      "target": "drowzee",
-      "text": "112+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 13,
-      "target": "metapod",
-      "text": "115+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 34,
-      "target": "vulpix",
-      "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 29,
-      "target": "geodude",
-      "text": "Nv. 29+",
-      "matched": true
-    },
-    {
-      "level": 35,
-      "target": "growlithe",
-      "text": "134+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 24,
-      "target": "mankey",
-      "text": "Nv. 24+",
-      "matched": true
-    },
-    {
-      "level": 14,
-      "target": "abra",
-      "text": "Nv. 21+",
-      "matched": true
-    },
-    {
-      "level": 22,
-      "target": "graveler",
-      "text": "naturaleza Firme",
-      "matched": true
-    },
-    {
-      "level": 5,
-      "target": "weedle",
-      "text": "Nv. 5+",
-      "matched": true
-    },
-    {
-      "level": 10,
-      "target": "bellsprout",
-      "text": "115+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 36,
-      "target": "weedle",
-      "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 35,
-      "target": "mankey",
-      "text": "naturaleza Seria",
-      "matched": true
-    },
-    {
-      "level": 17,
-      "target": "caterpie",
-      "text": "113+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 7,
-      "target": "spearow",
-      "text": "107+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 25,
-      "target": "psyduck",
-      "text": "IV 31 en PS",
-      "matched": true
-    },
-    {
-      "level": 14,
-      "target": "bellsprout",
-      "text": "naturaleza Rara",
-      "matched": true
-    },
-    {
-      "level": 36,
-      "target": "caterpie",
-      "text": "Nv. 44+",
-      "matched": true
-    },
-    {
-      "level": 32,
-      "target": "sandshrew",
-      "text": "naturaleza Ingenua",
-      "matched": true
-    },
-    {
-      "level": 22,
-      "target": "oddish",
-      "text": "Nv. 32+",
-      "matched": true
-    },
-    {
-      "level": 9,
-      "target": "ekans",
-      "text": "117+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 47,
-      "target": "bellsprout",
-      "text": "Nv. 52+",
+      "text": "131+ IVs totales",
       "matched": true
     },
     {
       "level": 44,
-      "target": "pidgeotto",
-      "text": "139+ IVs totales",
+      "target": "lapras",
+      "text": "Nv. 49+",
       "matched": true
     },
     {
-      "level": 48,
-      "target": "jigglypuff",
-      "text": "IV 31 en Ataque",
+      "level": 35,
+      "target": "pidgey",
+      "text": "IV 31 en Velocidad",
       "matched": true
     },
     {
-      "level": 25,
-      "target": "geodude",
-      "text": "122+ IVs totales",
+      "level": 20,
+      "target": "caterpie",
+      "text": "naturaleza Firme",
       "matched": true
     },
     {
-      "level": 32,
-      "target": "weedle",
-      "text": "132+ IVs totales",
+      "level": 3,
+      "target": "sandshrew",
+      "text": "109+ IVs totales",
       "matched": true
     },
     {
-      "level": 38,
-      "target": "weedle",
-      "text": "Nv. 47+",
+      "level": 21,
+      "target": "gastly",
+      "text": "naturaleza Alocada",
       "matched": true
     },
     {
       "level": 33,
-      "target": "raticate",
-      "text": "Nv. 33+",
+      "target": "exeggcute",
+      "text": "naturaleza Rara",
       "matched": true
     },
     {
-      "level": 24,
+      "level": 48,
+      "target": "hypno",
+      "text": "IV 31 en Velocidad",
+      "matched": true
+    },
+    {
+      "level": 17,
+      "target": "pidgey",
+      "text": "naturaleza Ingenua",
+      "matched": true
+    },
+    {
+      "level": 23,
       "target": "drowzee",
-      "text": "121+ IVs totales",
+      "text": "naturaleza Audaz",
       "matched": true
     },
     {
       "level": 12,
-      "target": "vulpix",
-      "text": "111+ IVs totales",
+      "target": "raticate",
+      "text": "naturaleza Grosera",
+      "matched": true
+    },
+    {
+      "level": 40,
+      "target": "golbat",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 4,
+      "target": "geodude",
+      "text": "naturaleza Rara",
+      "matched": true
+    },
+    {
+      "level": 21,
+      "target": "oddish",
+      "text": "123+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 18,
+      "target": "ekans",
+      "text": "naturaleza Dócil",
+      "matched": true
+    },
+    {
+      "level": 44,
+      "target": "slowpoke",
+      "text": "naturaleza Grosera",
+      "matched": true
+    },
+    {
+      "level": 2,
+      "target": "nidoranm",
+      "text": "Nv. 5+",
+      "matched": true
+    },
+    {
+      "level": 27,
+      "target": "slowpoke",
+      "text": "naturaleza Seria",
+      "matched": true
+    },
+    {
+      "level": 36,
+      "target": "exeggcute",
+      "text": "Nv. 42+",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "bellsprout",
+      "text": "IV 31 en Defensa",
+      "matched": true
+    },
+    {
+      "level": 19,
+      "target": "poliwag",
+      "text": "123+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 43,
+      "target": "pikachu",
+      "text": "IV 31 en Def. Esp",
       "matched": true
     },
     {
       "level": 12,
+      "target": "fearow",
+      "text": "120+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 23,
+      "target": "spearow",
+      "text": "125+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 30,
+      "target": "pidgey",
+      "text": "naturaleza Seria",
+      "matched": true
+    },
+    {
+      "level": 37,
+      "target": "spearow",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 39,
+      "target": "seel",
+      "text": "IV 31 en Velocidad",
+      "matched": true
+    },
+    {
+      "level": 10,
+      "target": "mankey",
+      "text": "104+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 38,
+      "target": "metapod",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 3,
+      "target": "pidgey",
+      "text": "113+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 30,
+      "target": "golbat",
+      "text": "naturaleza Rara",
+      "matched": true
+    },
+    {
+      "level": 3,
+      "target": "sandshrew",
+      "text": "naturaleza Agitada",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "pidgey",
+      "text": "naturaleza Alegre",
+      "matched": true
+    },
+    {
+      "level": 35,
+      "target": "zubat",
+      "text": "IV 31 en Ataque",
+      "matched": true
+    },
+    {
+      "level": 30,
+      "target": "doduo",
+      "text": "naturaleza Grosera",
+      "matched": true
+    },
+    {
+      "level": 9,
       "target": "caterpie",
       "text": "119+ IVs totales",
       "matched": true
     },
     {
-      "level": 50,
-      "target": "rattata",
-      "text": "Nv. 48+",
+      "level": 17,
+      "target": "nidoranf",
+      "text": "IV 31 en Ataque",
       "matched": true
     },
     {
-      "level": 24,
-      "target": "magikarp",
-      "text": "Nv. 20+",
-      "matched": true
-    },
-    {
-      "level": 9,
-      "target": "weedle",
-      "text": "99+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 42,
-      "target": "weepinbell",
-      "text": "IV 31 en Def. Esp",
-      "matched": true
-    },
-    {
-      "level": 8,
+      "level": 10,
       "target": "sandshrew",
-      "text": "108+ IVs totales",
+      "text": "Nv. 14+",
+      "matched": true
+    },
+    {
+      "level": 43,
+      "target": "onix",
+      "text": "Nv. 50+",
+      "matched": true
+    },
+    {
+      "level": 43,
+      "target": "scyther",
+      "text": "IV 31 en Ataque",
+      "matched": true
+    },
+    {
+      "level": 25,
+      "target": "meowth",
+      "text": "naturaleza Miedosa",
       "matched": true
     },
     {
       "level": 22,
+      "target": "nidoranf",
+      "text": "Nv. 25+",
+      "matched": true
+    },
+    {
+      "level": 15,
+      "target": "drowzee",
+      "text": "Nv. 19+",
+      "matched": true
+    },
+    {
+      "level": 40,
+      "target": "meowth",
+      "text": "naturaleza Agitada",
+      "matched": true
+    },
+    {
+      "level": 49,
+      "target": "doduo",
+      "text": "IV 31 en Defensa",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "oddish",
+      "text": "naturaleza Huraña",
+      "matched": true
+    },
+    {
+      "level": 8,
+      "target": "pidgey",
+      "text": "117+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 12,
+      "target": "pidgeotto",
+      "text": "116+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 16,
+      "target": "abra",
+      "text": "Nv. 25+",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "sandshrew",
+      "text": "110+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 3,
+      "target": "weedle",
+      "text": "naturaleza Plácida",
+      "matched": true
+    },
+    {
+      "level": 26,
+      "target": "caterpie",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 36,
+      "target": "weedle",
+      "text": "naturaleza Cauto",
+      "matched": true
+    },
+    {
+      "level": 50,
+      "target": "gastly",
+      "text": "160+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 36,
       "target": "venonat",
       "text": "naturaleza Tímido",
       "matched": true
     },
     {
-      "level": 6,
-      "target": "spearow",
-      "text": "113+ IVs totales",
+      "level": 40,
+      "target": "sandshrew",
+      "text": "IV 31 en PS",
       "matched": true
     },
     {
-      "level": 37,
-      "target": "grimer",
-      "text": "IV 31 en Ataque",
-      "matched": true
-    },
-    {
-      "level": 12,
-      "target": "nidoranm",
-      "text": "119+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 4,
-      "target": "paras",
-      "text": "naturaleza Dócil",
-      "matched": true
-    },
-    {
-      "level": 24,
-      "target": "nidoranf",
-      "text": "IV 31 en Velocidad",
-      "matched": true
-    },
-    {
-      "level": 18,
-      "target": "oddish",
-      "text": "IV 31 en At. Esp",
-      "matched": true
-    },
-    {
-      "level": 34,
-      "target": "goldeen",
-      "text": "IV 31 en At. Esp",
-      "matched": true
-    },
-    {
-      "level": 27,
-      "target": "clefairy",
-      "text": "Nv. 29+",
-      "matched": true
-    },
-    {
-      "level": 8,
-      "target": "spearow",
-      "text": "naturaleza Mansa",
+      "level": 1,
+      "target": "weedle",
+      "text": "104+ IVs totales",
       "matched": true
     },
     {
       "level": 23,
-      "target": "abra",
-      "text": "naturaleza Modesta",
-      "matched": true
-    },
-    {
-      "level": 18,
-      "target": "fearow",
-      "text": "Nv. 23+",
-      "matched": true
-    },
-    {
-      "level": 7,
-      "target": "nidoranf",
-      "text": "Nv. 8+",
-      "matched": true
-    },
-    {
-      "level": 8,
-      "target": "spearow",
-      "text": "108+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 14,
       "target": "magikarp",
-      "text": "114+ IVs totales",
+      "text": "124+ IVs totales",
       "matched": true
     },
     {
-      "level": 36,
+      "level": 28,
+      "target": "mankey",
+      "text": "133+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 37,
+      "target": "staryu",
+      "text": "naturaleza Seria",
+      "matched": true
+    },
+    {
+      "level": 21,
+      "target": "nidoranm",
+      "text": "naturaleza Miedosa",
+      "matched": true
+    },
+    {
+      "level": 1,
       "target": "spearow",
-      "text": "Nv. 33+",
-      "matched": true
-    },
-    {
-      "level": 33,
-      "target": "venonat",
-      "text": "134+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 38,
-      "target": "magnemite",
-      "text": "136+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 39,
-      "target": "graveler",
-      "text": "naturaleza Cauto",
-      "matched": true
-    },
-    {
-      "level": 17,
-      "target": "metapod",
-      "text": "123+ IVs totales",
-      "matched": true
-    },
-    {
-      "level": 16,
-      "target": "ekans",
-      "text": "Nv. 21+",
-      "matched": true
-    },
-    {
-      "level": 50,
-      "target": "metapod",
-      "text": "IV 31 en Ataque",
+      "text": "Nv. 6+",
       "matched": true
     },
     {
       "level": 1,
       "target": "geodude",
+      "text": "98+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 4,
+      "target": "nidoranm",
+      "text": "111+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 34,
+      "target": "fearow",
+      "text": "130+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 42,
+      "target": "metapod",
+      "text": "naturaleza Mansa",
+      "matched": true
+    },
+    {
+      "level": 14,
+      "target": "venonat",
+      "text": "124+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "fearow",
+      "text": "IV 31 en Velocidad",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "spearow",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "kakuna",
+      "text": "128+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 5,
+      "target": "rattata",
+      "text": "naturaleza Tímido",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "oddish",
+      "text": "Nv. 10+",
+      "matched": true
+    },
+    {
+      "level": 12,
+      "target": "metapod",
+      "text": "Nv. 16+",
+      "matched": true
+    },
+    {
+      "level": 46,
+      "target": "poliwhirl",
+      "text": "naturaleza Tímido",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "weedle",
+      "text": "105+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "nidoranm",
+      "text": "123+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "spearow",
+      "text": "Nv. 9+",
+      "matched": true
+    },
+    {
+      "level": 25,
+      "target": "drowzee",
+      "text": "133+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 30,
+      "target": "caterpie",
+      "text": "Nv. 40+",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "pidgey",
+      "text": "IV 31 en PS",
+      "matched": true
+    },
+    {
+      "level": 21,
+      "target": "magikarp",
+      "text": "Nv. 24+",
+      "matched": true
+    },
+    {
+      "level": 47,
+      "target": "rattata",
+      "text": "naturaleza Fuerte",
+      "matched": true
+    },
+    {
+      "level": 39,
+      "target": "geodude",
+      "text": "Nv. 39+",
+      "matched": true
+    },
+    {
+      "level": 13,
+      "target": "oddish",
+      "text": "117+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 39,
+      "target": "venonat",
+      "text": "Nv. 38+",
+      "matched": true
+    },
+    {
+      "level": 50,
+      "target": "pidgeotto",
+      "text": "naturaleza Amable",
+      "matched": true
+    },
+    {
+      "level": 16,
+      "target": "ekans",
+      "text": "Nv. 12+",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "caterpie",
+      "text": "Nv. 40+",
+      "matched": true
+    },
+    {
+      "level": 18,
+      "target": "spearow",
+      "text": "109+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 42,
+      "target": "ponyta",
+      "text": "naturaleza Dócil",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "nidoranm",
+      "text": "Nv. 13+",
+      "matched": true
+    },
+    {
+      "level": 28,
+      "target": "mankey",
+      "text": "Nv. 37+",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "paras",
+      "text": "102+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 29,
+      "target": "vulpix",
+      "text": "IV 31 en At. Esp",
+      "matched": true
+    },
+    {
+      "level": 47,
+      "target": "snorlax",
+      "text": "153+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 15,
+      "target": "paras",
+      "text": "125+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 40,
+      "target": "goldeen",
+      "text": "Nv. 47+",
+      "matched": true
+    },
+    {
+      "level": 18,
+      "target": "raticate",
+      "text": "naturaleza Alocada",
+      "matched": true
+    },
+    {
+      "level": 38,
+      "target": "nidoranf",
+      "text": "Nv. 43+",
+      "matched": true
+    },
+    {
+      "level": 38,
+      "target": "pidgeotto",
+      "text": "IV 31 en Ataque",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "psyduck",
+      "text": "naturaleza Grosera",
+      "matched": true
+    },
+    {
+      "level": 12,
+      "target": "meowth",
+      "text": "Nv. 21+",
+      "matched": true
+    },
+    {
+      "level": 25,
+      "target": "ponyta",
+      "text": "Nv. 23+",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "magikarp",
       "text": "104+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 46,
+      "target": "weedle",
+      "text": "Nv. 41+",
+      "matched": true
+    },
+    {
+      "level": 32,
+      "target": "weepinbell",
+      "text": "naturaleza Cauto",
+      "matched": true
+    },
+    {
+      "level": 25,
+      "target": "growlithe",
+      "text": "Nv. 29+",
+      "matched": true
+    },
+    {
+      "level": 28,
+      "target": "graveler",
+      "text": "naturaleza Osado",
+      "matched": true
+    },
+    {
+      "level": 15,
+      "target": "raticate",
+      "text": "Nv. 24+",
+      "matched": true
+    },
+    {
+      "level": 16,
+      "target": "caterpie",
+      "text": "Nv. 17+",
+      "matched": true
+    },
+    {
+      "level": 47,
+      "target": "vulpix",
+      "text": "IV 31 en Ataque",
+      "matched": true
+    },
+    {
+      "level": 22,
+      "target": "metapod",
+      "text": "Nv. 28+",
+      "matched": true
+    },
+    {
+      "level": 13,
+      "target": "magikarp",
+      "text": "naturaleza Alocada",
+      "matched": true
+    },
+    {
+      "level": 34,
+      "target": "krabby",
+      "text": "142+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 12,
+      "target": "golbat",
+      "text": "120+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 31,
+      "target": "nidoranf",
+      "text": "126+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 7,
+      "target": "pidgey",
+      "text": "110+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 36,
+      "target": "drowzee",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 33,
+      "target": "venonat",
+      "text": "IV 31 en Def. Esp",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "caterpie",
+      "text": "Nv. 15+",
+      "matched": true
+    },
+    {
+      "level": 11,
+      "target": "venonat",
+      "text": "naturaleza Seria",
+      "matched": true
+    },
+    {
+      "level": 21,
+      "target": "rattata",
+      "text": "Nv. 18+",
+      "matched": true
+    },
+    {
+      "level": 45,
+      "target": "scyther",
+      "text": "155+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 9,
+      "target": "nidoranm",
+      "text": "102+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 19,
+      "target": "machop",
+      "text": "Nv. 19+",
+      "matched": true
+    },
+    {
+      "level": 15,
+      "target": "nidoranm",
+      "text": "119+ IVs totales",
+      "matched": true
+    },
+    {
+      "level": 1,
+      "target": "rattata",
+      "text": "naturaleza Rara",
+      "matched": true
+    },
+    {
+      "level": 42,
+      "target": "seaking",
+      "text": "naturaleza Huraña",
+      "matched": true
+    },
+    {
+      "level": 36,
+      "target": "machoke",
+      "text": "naturaleza Sereno",
+      "matched": true
+    },
+    {
+      "level": 18,
+      "target": "poliwag",
+      "text": "IV 31 en Defensa",
+      "matched": true
+    },
+    {
+      "level": 45,
+      "target": "arcanine",
+      "text": "naturaleza Tímido",
+      "matched": true
+    },
+    {
+      "level": 39,
+      "target": "vulpix",
+      "text": "IV 31 en Velocidad",
       "matched": true
     }
   ],

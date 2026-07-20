@@ -134,10 +134,27 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
     const p1Pokemon = p1Req.side.pokemon as RequestPokemon[];
     const mons = p1Pokemon.map((p) => `${p.ident.split(': ')[1]} (HP: ${p.condition}, Active: ${p.active})`);
     console.log(`\n[Turn ${turn}] P1 side.pokemon:`, JSON.stringify(mons));
+    console.log(`[Turn ${turn}] P1 simulator pokemon:`, JSON.stringify(battle.p1.pokemon.map(p => ({ name: p.name, hp: p.hp, maxhp: p.maxhp, fainted: p.fainted }))));
   }
 
-  const p1Ok = p1NeedsAction ? battle.choose('p1', p1Choice) : true;
-  const p2Ok = p2NeedsAction ? battle.choose('p2', p2Choice) : true;
+  let p1Ok = true;
+  let p2Ok = true;
+  try {
+    p1Ok = p1NeedsAction ? battle.choose('p1', p1Choice) : true;
+  } catch (err) {
+    console.error(`CRASH p1 choice: "${p1Choice}" (needsAction: ${p1NeedsAction}, choiceIdx: ${p1ChoiceIdx})`);
+    console.error(`P1 active request:`, JSON.stringify(p1Req));
+    console.error(`P1 pokemon details:`, JSON.stringify(battle.p1.pokemon.map((p, i) => `${i}: name=${p.name}, hp=${p.hp}/${p.maxhp}, fainted=${p.fainted}`)));
+    throw err;
+  }
+  try {
+    p2Ok = p2NeedsAction ? battle.choose('p2', p2Choice) : true;
+  } catch (err) {
+    console.error(`CRASH p2 choice: "${p2Choice}" (needsAction: ${p2NeedsAction}, choiceIdx: ${p2ChoiceIdx})`);
+    console.error(`P2 active request:`, JSON.stringify(p2Req));
+    console.error(`P2 pokemon details:`, JSON.stringify(battle.p2.pokemon.map((p, i) => `${i}: name=${p.name}, hp=${p.hp}/${p.maxhp}, fainted=${p.fainted}`)));
+    throw err;
+  }
 
   p1ChoiceIdx = runner.p1ChoiceIdx;
   p2ChoiceIdx = runner.p2ChoiceIdx;

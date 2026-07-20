@@ -28,6 +28,7 @@ export interface ChoiceIndexerInput {
  * This logic MUST be identical in E2E simulation, frontend game store, and fuzzer replayer.
  */
 export function advanceChoiceIndices(input: ChoiceIndexerInput): { p1ChoiceIdx: number; p2ChoiceIdx: number } {
+
   let p1ChoiceIdx = input.p1ChoiceIdx;
   let p2ChoiceIdx = input.p2ChoiceIdx;
 

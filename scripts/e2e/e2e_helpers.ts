@@ -500,41 +500,11 @@ export interface CertifiedTestBatch {
 
 export async function waitForBattleReadyEvent(page: Page, batchIndex: number, turnCount: number): Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }> {
   try {
-    return await page.evaluate(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (resolver) {
-        const store = resolver();
-        if (!store.state || store.state.over) {
-          return { subState: '', p1ChoiceIdx: 0, p2ChoiceIdx: 0, over: true };
-        }
-
-        const isReady = store.currentFsmState === 'ACTIVE_BATTLE' && 
-                        ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(store.currentSubState) &&
-                        !store.isProcessing && 
-                        !store.isIntroAnimating;
-        if (isReady) {
-          return {
-            subState: store.currentSubState,
-            p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-            p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
-            over: false
-          };
-        }
+    return await page.evaluate(async () => {
+      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
+        return await window.__VITE_DEBUG__.waitForBattleReady();
       }
-
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-          window.removeEventListener('battle-ready-for-input', handler);
-          reject(new Error('Timeout waiting for battle-ready-for-input event (max 5s exceeded)'));
-        }, 5000);
-
-        const handler = (e: Event) => {
-          clearTimeout(timer);
-          window.removeEventListener('battle-ready-for-input', handler);
-          resolve({ ...(e as CustomEvent).detail });
-        };
-        window.addEventListener('battle-ready-for-input', handler, { once: true });
-      });
+      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
     });
   } catch (err) {
     await page.screenshot({ path: `scratch/lock-batch-${batchIndex}-turn-${turnCount}.png` });
@@ -583,24 +553,15 @@ export async function verifyHpParity(page: Page) {
 
 export async function executeAutoBattle(
   page: Page, 
-  batchIndex: number, 
-  startingTurn = 0, 
-  playerChoices?: string[], 
+  _batchIndex: number, 
+  _startingTurn = 0, 
+  _playerChoices?: string[], 
   _cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>, 
   finalState?: CertifiedTestBatch['finalState']
 ) {
-  let p1ChoiceIdx = startingTurn;
-  let p2ChoiceIdx = startingTurn;
-  const { MAX_E2E_BATTLE_TURNS } = await import('./e2e_constants.ts');
-  const maxIterations = Math.max(MAX_E2E_BATTLE_TURNS, (playerChoices?.length || 0) + 100);
-  let iterations = 0;
-  let lastSimulatorTurn = 0;
-  let lastSubState = '';
-
-
   await page.evaluate(() => {
     if (window.__VITE_DEBUG__) {
-      window.__VITE_DEBUG__.isSimulationMode = true;
+      window.__VITE_DEBUG__.isScriptedReplayMode = true;
     }
   });
 
@@ -610,20 +571,16 @@ export async function executeAutoBattle(
     return !!resolver?.().state;
   }, undefined, { timeout: 10000 }).catch(() => {});
 
-  let eventDetail = await waitForBattleReadyEvent(page, batchIndex, p1ChoiceIdx);
-
-  while (iterations < maxIterations) {
-    iterations++;
+  let over = false;
+  while (!over) {
+    const eventDetail = (await page.evaluate(async () => {
+      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
+        return await window.__VITE_DEBUG__.waitForBattleReady();
+      }
+      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
+    })) as { subState: string; over: boolean };
 
     if (eventDetail.over) {
-      break;
-    }
-
-    // Update indexes from event detail
-    p1ChoiceIdx = eventDetail.p1ChoiceIdx;
-    p2ChoiceIdx = eventDetail.p2ChoiceIdx;
-
-    if (playerChoices && p1ChoiceIdx >= playerChoices.length) {
       break;
     }
 
@@ -631,124 +588,56 @@ export async function executeAutoBattle(
       await verifyHpParity(page);
     }
 
-    await page.evaluate((idx) => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (resolver) {
-        const store = resolver();
-        const pinia = store._p;
-        const gameStore = pinia?._s?.get('game') as { state: { team: Array<{ name: string; hp: number; maxHp: number; uid: string; moves: Array<{ id: string; pp: number }> }> } } | undefined;
-        const teamInfo = gameStore?.state?.team?.map((p, tIdx: number) => 
-          `[${tIdx}] ${p?.name} HP:${p?.hp}/${p?.maxHp} UID:${p?.uid} Moves:[${p?.moves?.map(m => `${m?.id}(pp:${m?.pp})`).join(',')}]`
-        ).join(' | ');
-        const reqMoves = store.state?.playerRequest?.active?.[0]?.moves?.map((m: { id?: string, pp?: number, maxpp?: number, disabled?: boolean | string }) => `${m?.id}(pp:${m?.pp}/${m?.maxpp},disabled:${m?.disabled})`).join(',');
-        const activePoke = store.state?.player;
-        const volatiles = activePoke?.volatileCounters ? JSON.stringify(activePoke.volatileCounters) : 'none';
-        console.log(`[E2E-TEAM-STATE] ChoiceIndex: ${idx} | FSM: ${store.currentSubState} | ActivePlayer: ${store.state?.player?.name} (UID:${store.state?.player?.uid}) | Volatiles: ${volatiles} | RequestMoves:[${reqMoves || 'none'}] | Team: ${teamInfo}`);
-      }
-    }, p1ChoiceIdx);
+    const currentP1Idx = eventDetail.p1ChoiceIdx;
 
-    await page.evaluate((idx) => {
-      if (window.__VITE_DEBUG__ && window.__VITE_DEBUG__.enemyChoices) {
-        window.__VITE_DEBUG__.nextEnemyChoice = (window.__VITE_DEBUG__.enemyChoices as string[])[idx];
-        console.log(`[E2E-MOCK-CENTRAL-DEBUG] Inyectada elección del enemigo para el índice de elección P2 ${idx}: ${window.__VITE_DEBUG__.nextEnemyChoice}`);
+    // Mandar a ejecutar la acción correspondiente
+    const success = await page.evaluate(async () => {
+      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
+        return await window.__VITE_DEBUG__.executeScriptedAction();
       }
-    }, p2ChoiceIdx);
-
-    const reqStatus = await page.evaluate(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return { hasChoice: false };
-      const store = resolver();
-      const req = store.state?.playerRequest;
-      return {
-        hasChoice: !!req && !req.wait
-      };
+      return false;
     });
 
-    if (reqStatus.hasChoice) {
-      if (playerChoices && p1ChoiceIdx >= playerChoices.length) {
+    if (!success) {
+      const isOver = await page.evaluate(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const res = resolver?.();
+        return !res?.state || res.state.over;
+      });
+      if (isOver) {
         break;
       }
-
-      const currentChoice = playerChoices ? playerChoices[p1ChoiceIdx] : undefined;
-      
-      if (playerChoices && p1ChoiceIdx < playerChoices.length && (currentChoice === '' || currentChoice === undefined)) {
-        console.log(`[E2E] Fuzzer choice at index ${p1ChoiceIdx} is empty (P1 has no choice in fuzzer). Skipping.`);
-        await page.evaluate(() => {
-          if (window.__VITE_DEBUG__) {
-            window.__VITE_DEBUG__.p1ChoiceIdx = (window.__VITE_DEBUG__.p1ChoiceIdx ?? 0) + 1;
-          }
-        });
-        eventDetail = await waitForBattleReadyEvent(page, batchIndex, p1ChoiceIdx + 1);
-        continue;
-      }
-
-      const isPlayerChoiceValid = await page.evaluate((choiceStr) => {
-        try {
-          if (!choiceStr) return true;
-          const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
-          if (!resolver) return true;
-          const store = resolver();
-          const playerRequest = store.state?.playerRequest;
-          if (!playerRequest) return true;
-
-          if (choiceStr.startsWith('switch ')) {
-            const switchSlot = parseInt(choiceStr.split(' ')[1] || '2', 10);
-            const targetPoke = playerRequest.side?.pokemon?.[switchSlot - 1];
-            if (!targetPoke) return false;
-            const isFainted = targetPoke.condition?.includes('fnt');
-            const isActive = !!targetPoke.active;
-            if (isFainted || isActive) return false;
-          } else if (choiceStr.startsWith('move ')) {
-            if (playerRequest.forceSwitch && playerRequest.forceSwitch.some((x: boolean) => x)) {
-              return false; // Force switch is active, cannot choose a move!
-            }
-            const moveIdx = parseInt(choiceStr.split(' ')[1] || '1', 10) - 1;
-            const activeMon = playerRequest.active?.[0];
-            if (!activeMon || !activeMon.moves || !activeMon.moves[moveIdx]) {
-              return false; // Move is not available or out of bounds!
-            }
-            const reqMove = activeMon.moves[moveIdx];
-            if (reqMove && reqMove.disabled) return false;
-          }
-          return true;
-        } catch (_e) {
-          return true;
-        }
-      }, currentChoice);
-
-      if (!isPlayerChoiceValid) {
-        console.log(`[E2E] Choice "${currentChoice}" at index ${p1ChoiceIdx} is invalid for P1. Skipping to match fuzzer.`);
-        await page.evaluate(() => {
-          if (window.__VITE_DEBUG__) {
-            window.__VITE_DEBUG__.p1ChoiceIdx = (window.__VITE_DEBUG__.p1ChoiceIdx ?? 0) + 1;
-          }
-        });
-        eventDetail = await waitForBattleReadyEvent(page, batchIndex, p1ChoiceIdx + 1);
-        continue;
-      }
-
-      // Pre-register next turn event listener BEFORE performing the input action
-      const nextTurnReadyPromise = page.evaluate(() => {
-        return new Promise((resolve) => {
-          const handler = (e: Event) => {
-            window.removeEventListener('battle-ready-for-input', handler);
-            resolve((e as CustomEvent).detail);
-          };
-          window.addEventListener('battle-ready-for-input', handler, { once: true });
-        });
-      }) as Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }>;
-
-      const inputPerformed = await handleBattleInput(page, currentChoice);
-      if (!inputPerformed) {
-        throw new Error(`[E2E-TURN-FAIL] handleBattleInput returned false at choice index ${p1ChoiceIdx} for choice "${currentChoice}". UI is blocked or desynced.`);
-      }
-
-      // Wait reactively for the pre-registered promise to resolve
-      eventDetail = await nextTurnReadyPromise;
+      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction falló al ejecutar la acción y la batalla sigue activa.`);
     }
+
+    // Esperar reactivamente a que la elección sea procesada e incrementada
+    await page.waitForFunction((prevIdx) => {
+      const debug = (window as any).__VITE_DEBUG__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      const isOver = !store?.state || store.state.over;
+      if (isOver) return true;
+      if (!debug) return false;
+
+      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
+      const isReady = store.currentFsmState === 'ACTIVE_BATTLE' &&
+                      ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
+                      !store.isProcessing &&
+                      !store.isIntroAnimating;
+
+      return isReady && (debug.p1ChoiceIdx > prevIdx || debug.p2ChoiceIdx > prevIdx);
+    }, currentP1Idx, { timeout: 30000 });
+
+    const nextDetail = await page.evaluate(async () => {
+      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
+        return await window.__VITE_DEBUG__.waitForBattleReady();
+      }
+      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
+    });
+    over = nextDetail.over;
   }
 
-  // Esperar a que la batalla sea declarada como finalizada en el store (hasta 10s)
+  // Esperar a que la batalla sea declarada como finalizada en el store (hasta 30s)
   await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
@@ -767,6 +656,23 @@ export async function executeAutoBattle(
 
   if (finalState) {
     const clientState = await page.evaluate(() => {
+      interface LocalDebugObject {
+        [key: string]: unknown;
+        isScriptedReplayMode?: boolean;
+        lastFinalState?: {
+          p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+          p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+        };
+      }
+
+      interface WindowWithDebug extends Window {
+        __VITE_DEBUG__?: LocalDebugObject;
+      }
+
+      const win = window as WindowWithDebug;
+      if (win.__VITE_DEBUG__ && win.__VITE_DEBUG__.lastFinalState) {
+        return win.__VITE_DEBUG__.lastFinalState;
+      }
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return { p1: [], p2: [] };
       const store = resolver();
@@ -785,7 +691,10 @@ export async function executeAutoBattle(
         fainted: p.hp <= 0
       })) || [];
       return { p1, p2 };
-    });
+    }) as {
+      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+    };
 
     finalState.p1.forEach((expected) => {
       const clientPoke = clientState.p1.find(p => p.uid && p.uid.startsWith(expected.name));

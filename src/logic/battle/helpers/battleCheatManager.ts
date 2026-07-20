@@ -46,7 +46,7 @@ export class BattleCheatManager {
   /**
    * Evaluates and applies pre-turn cheats.
    */
-  public applyPreTurnCheats(battle: Battle, isFuzzerSimulation?: boolean): void {
+  public applyPreTurnCheats(battle: Battle, isFuzzerSimulation = true): void {
     if (!isFuzzerSimulation) return;
     for (let i = 0; i < this.cheats.length; i++) {
       const ch = this.cheats[i];
@@ -55,7 +55,10 @@ export class BattleCheatManager {
       const key = `${ch.turn}-${ch.side}-${ch.type}`;
       if (ch.turn === battle.turn && ch.type === 'heal' && !this.appliedCheats.has(key)) {
         const sideObj = ch.side === 'p1' ? battle.p1 : battle.p2;
-        this.executeHealCheat(battle, sideObj, key, 'PRE');
+        const hasFainted = sideObj.pokemon.some(p => p.fainted || p.hp <= 0);
+        if (hasFainted) {
+          this.executeHealCheat(battle, sideObj, key, 'PRE');
+        }
       }
     }
   }

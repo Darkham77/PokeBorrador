@@ -422,7 +422,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             applyHealCheatToSide(simBattle.p1);
             syncRequestConditionsWithSimulator(simBattle.p1);
             if (!batchRec.cheats) batchRec.cheats = [];
-            batchRec.cheats.push({ turn: simBattle.turn, side: 'p1', type: 'heal' });
+            batchRec.cheats.push({ turn: turn, side: 'p1', type: 'heal' });
             if (mockStore.player?.value) {
               mockStore.player.value.hp = mockStore.player.value.maxHp;
               mockStore.player.value.status = null;
@@ -434,7 +434,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             applyHealCheatToSide(simBattle.p2);
             syncRequestConditionsWithSimulator(simBattle.p2);
             if (!batchRec.cheats) batchRec.cheats = [];
-            batchRec.cheats.push({ turn: simBattle.turn, side: 'p2', type: 'heal' });
+            batchRec.cheats.push({ turn: turn, side: 'p2', type: 'heal' });
             if (mockStore.enemy?.value) {
               mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
               mockStore.enemy.value.status = null;
