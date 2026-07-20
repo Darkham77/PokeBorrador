@@ -52,4 +52,5 @@ Frontend Developers / Systems Engineers.
 
 - [actions/](./actions/AGENTS.md): Combat action triggers and move execution steps.
 - [ai/](./ai/AGENTS.md): NPC opponent move priority decision and scoring logic.
+- [helpers/](./helpers/AGENTS.md): Standardized helpers and execution wrappers for the Showdown simulator.
 - [showdownUidMapper.ts](./showdownUidMapper.ts): Centralized Showdown UID nickname generator and disambiguation mapper.
