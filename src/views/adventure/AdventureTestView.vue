@@ -35,9 +35,7 @@ const {
   markerX,
   markerY,
   showMarker,
-  glowMarkerRef,
   viewportRef,
-  canvasRef,
   zoomIn,
   zoomOut,
   cameraX,
@@ -111,10 +109,6 @@ const centerOnActiveNode = () => {
     jumpToPoint(originPos.x + CARD_W / 2, originPos.y + CARD_H / 2)
   }
 }
-
-// Binds template refs for TypeScript / compiler safety
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-viewportRef; canvasRef; glowMarkerRef;
 
 onMounted(() => {
   const originPos = nodePositions.value[originMap.value]

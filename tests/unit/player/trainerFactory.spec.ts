@@ -11,6 +11,8 @@ vi.mock('@/logic/pokemon/pokemonFactory', () => ({
     level: lv,
     name: id.toUpperCase(),
   })),
+  recalcPokemonStats: vi.fn(),
+  validatePokemon: vi.fn(),
 }))
 
 describe('trainerFactory - buildTrainerTeam', () => {

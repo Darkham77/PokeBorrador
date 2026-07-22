@@ -34,63 +34,10 @@ export async function configureOfficialServers(): Promise<void> {
     process.exit(1);
   }
 
-  let content = '';
-  try {
-    // Uso de Explicit Resource Management (await using) para el manejo del archivo
-    await using fileHandle = await fsPromises.open(ENV_FILE, 'r');
-    content = await fileHandle.readFile({ encoding: 'utf-8' });
-  } catch (e: unknown) {
-    console.error(styleText('red', `❌ Error al leer el archivo .env: ${(e as Error).message}`));
-    process.exit(1);
-  }
 
-  const lines = content.split('\n');
-  const serverConfigs: Record<string, Record<string, string>> = {};
 
-  // Known key suffixes in order of length (longest first) to ensure greedy matching.
-  // When a new SERVER_<PROFILE>_<SUFFIX> key is added to .env, add its suffix here.
-  const KNOWN_SUFFIXES = [
-    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
-    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
-    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
-    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
-    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
-    'LOGFLARE_PRIVATE_ACCESS_TOKEN', 'LOGFLARE_PUBLIC_ACCESS_TOKEN',
-    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
-  ];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-
-    const match = trimmed.match(/^([^=]+)=(.*)$/);
-    if (match && match[1] !== undefined && match[2] !== undefined) {
-      const fullKey = match[1].trim();
-      let value = match[2].trim();
-
-      // Eliminar comillas iniciales y finales si están presentes
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-
-      if (fullKey.startsWith('SERVER_')) {
-        const withoutPrefix = fullKey.slice('SERVER_'.length); // e.g. "nas_franco_ANON_KEY"
-
-        // Find which known suffix this key ends with
-        const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
-        if (matchedSuffix === undefined) continue;
-
-        // Profile is everything before _<SUFFIX>
-        const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
-        if (!profile) continue;
-
-        const cleanKey = matchedSuffix;
-        if (!serverConfigs[profile]) serverConfigs[profile] = {};
-        const targetConf = serverConfigs[profile];
-        if (targetConf) targetConf[cleanKey] = value;
-      }
-    }
-  }
+  const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
+  const serverConfigs = await readAndParseEnv();
 
   const profiles = Object.keys(serverConfigs);
   if (profiles.length === 0) {

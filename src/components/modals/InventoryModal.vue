@@ -8,7 +8,7 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { formatCurrency } from '@/logic/utils/formatters'
+
 import { getItemById } from '@/data/inventory/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
@@ -20,6 +20,7 @@ import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import { useGridTransitions } from '@/composables/ui/useGridTransitions'
 import InventoryControls from './inventory/InventoryControls.vue'
+import InventoryModalHeader from './InventoryModalHeader.vue'
 import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 import InventoryActionMenu from './inventory/InventoryActionMenu.vue'
 
@@ -422,31 +423,11 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
     @close="close"
   >
     <template #header>
-      <div class="inventory-modal-header">
-        <div class="inv-title-group">
-          <div class="title-icon">
-            🎒
-          </div>
-          <div class="title-text-wrap">
-            <span class="main-title">MOCHILA</span>
-            <span class="sub-title">GESTIÓN DE INVENTARIO</span>
-          </div>
-        </div>
-        
-        <div class="header-stats">
-          <div class="stat-node">
-            <span class="inv-stat-label">OBJETOS TOTALES</span>
-            <span class="value">{{ totalObjectsCount }}</span>
-          </div>
-          <div 
-            v-if="!battleMode"
-            class="stat-node money"
-          >
-            <span class="inv-stat-label">MIS CRÉDITOS</span>
-            <span class="value">₱{{ formatCurrency(gameStore.state.money) }}</span>
-          </div>
-        </div>
-      </div>
+      <InventoryModalHeader
+        :total-objects-count="totalObjectsCount"
+        :battle-mode="battleMode"
+        :money="gameStore.state.money"
+      />
     </template>
 
     <div 

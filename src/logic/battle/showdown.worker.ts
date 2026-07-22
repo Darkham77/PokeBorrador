@@ -359,6 +359,23 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         break;
       }
 
+      case 'WIN_BATTLE': {
+        if (currentBattle && !currentBattle.ended) {
+          const side = payload.side || 'p1';
+          currentBattle.win(side);
+          console.debug(`[Showdown Worker] Batalla declarada terminada por comando de victoria (${side}).`);
+        }
+        break;
+      }
+
+      case 'FORCED_END_BATTLE': {
+        if (currentBattle) {
+          currentBattle.ended = true;
+          console.debug(`[Showdown Worker] Batalla forzosamente finalizada por debug/huida.`);
+        }
+        break;
+      }
+
       default:
         console.warn(`[Showdown Worker] Evento desconocido: ${type}`);
     }

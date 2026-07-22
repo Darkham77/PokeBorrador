@@ -3,6 +3,7 @@ import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex, evaluateAndUse
 import type { BattleContext } from '@/types/battle/battleContext'
 import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
+import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
 
 
@@ -102,55 +103,11 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const intercepted = await validateAndInterceptFaintedPlayer(store)
     if (intercepted) return
 
-    const active = store.activeBattle.value;
-    let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`;
-    if (active?.playerRequest?.active?.[0]?.moves) {
-      const activeMoves = active.playerRequest.active[0].moves;
-      if (activeMoves && activeMoves.length === 1 && activeMoves[0] && activeMoves[0].id === 'recharge') {
-        p1Choice = 'move recharge';
-      }
-    }
-    let p2Choice = 'struggle';
-    const enemyTeam = store.activeBattle.value?.enemyTeam;
-    const wantSwitch = !isWild && shouldEnemySwitch(e, p, enemyTeam, store);
-    if (wantSwitch) {
-      const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store);
-      if (bestIdx !== -1) {
-        const { ShowdownTeamResolver } = await import('./showdownTeamResolver.ts');
-        const targetMon = enemyTeam?.[bestIdx];
-        if (targetMon && targetMon.uid) {
-          const slot = ShowdownTeamResolver.getShowdownSlotForUid(active?.enemyRequest, targetMon.uid);
-          p2Choice = `switch ${slot}`;
-        }
-      }
-    } else {
-      if (eMove) {
-        p2Choice = `move ${eMove.id}`;
-      }
-      if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
-        const validMove = active.enemyRequest.active[0].moves.find((m: { id?: string; disabled?: boolean | string }) => !m.disabled);
-        if (validMove) {
-          p2Choice = `move ${validMove.id}`;
-        }
-      }
-    }
-    // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
-      if (!p2Skip) {
-        p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`);
-        window.__VITE_DEBUG__.nextEnemyChoice = undefined;
-      } else {
-        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in executeTurn because P2 is in wait state.`);
-      }
-    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
-      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
-    }
-    let p1Skip = false;
-    if (p1Choice === 'pass') {
-      p1Choice = '';
-      p1Skip = true;
-    }
+    const active = store.activeBattle.value
+    const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove)
+    const p1Choice = choices.p1Choice
+    let p2Choice = choices.p2Choice
+    const p1Skip = choices.p1Skip
     if (p2Choice === 'pass') {
       p2Choice = '';
       p2Skip = true;

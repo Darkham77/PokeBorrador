@@ -6,7 +6,6 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/player/profile'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { useModalStore } from '@/stores/modals'
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile'
@@ -14,13 +13,15 @@ import { useStatHover } from '@/composables/ui/useStatHover'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
-import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import ProfileFactionWarCard from '@/components/profile/ProfileFactionWarCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
+import ProfileStatsSection from './ProfileStatsSection.vue'
+import ProfileIdentityCard from './ProfileIdentityCard.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
@@ -103,23 +104,6 @@ const classStats = computed(() => {
   return stats
 })
 
-const factionLabel = computed(() => {
-  const f = gs.value.faction
-  if (!f) return 'Sin Bando'
-  if (f === 'union') return 'Equipo Unión'
-  if (f === 'poder') return 'Equipo Poder'
-  if (f === 'rocket') return 'Equipo Rocket'
-  return f.toUpperCase()
-})
-
-const factionColor = computed(() => {
-  const f = gs.value.faction
-  if (f === 'union') return '#3b82f6'
-  if (f === 'poder') return '#ef4444'
-  if (f === 'rocket') return '#94a3b8'
-  return '#94a3b8'
-})
-
 const trainerName = computed(() => {
   return gs.value.trainer || authStore.user?.user_metadata?.username || 'Entrenador'
 })
@@ -170,10 +154,6 @@ const handleAvatarLeave = (e: MouseEvent) => {
 const handleFactionChoice = () => {
   uiStore.open('FactionChoice')
 }
-
-// Expose to template
-const getAssetUrlLocal = getAssetUrl
-const ASSET_TYPES_LOCAL = ASSET_TYPES
 </script>
 
 <template>
@@ -194,113 +174,19 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     <section class="profile-panel-content custom-scrollbar">
       <div class="profile-body-premium">
         <!-- Identity Section -->
-        <div class="profile-identity-card">
-          <div 
-            class="avatar-wrap"
-            @click.stop="handleEditProfile"
-            @mouseenter="handleAvatarEnter"
-            @mouseleave="handleAvatarLeave"
-          >
-            <TrainerAvatar
-              :player-class="gs.playerClass"
-              :level="gs.trainerLevel"
-              :avatar-style="gs.avatar_style || undefined"
-              :size="120"
-              :gender="gs.gender || 'h'"
-            />
-          </div>
-          <div class="identity-details-card">
-            <!-- Nombre -->
-            <div class="detail-row name-row">
-              <span class="label">NOMBRE:</span>
-              <div class="value-wrap">
-                <span
-                  v-gsap-nick="gs.nick_style || 'normal'"
-                  :class="gs.nick_style || 'normal'"
-                  class="value name-val"
-                >
-                  {{ displayUsername }}
-                  <span
-                    class="gender-symbol"
-                    :class="gs.gender === 'm' ? 'female' : 'male'"
-                  >
-                    {{ gs.gender === 'm' ? '♀' : '♂' }}
-                  </span>
-                </span>
-              </div>
-              <button
-                class="row-action-btn"
-                @click.prevent.stop="openRename"
-              >
-                CAMBIAR
-              </button>
-            </div>
-
-            <!-- Email -->
-            <div class="detail-row">
-              <span class="label">EMAIL:</span>
-              <span class="value email-val">{{ authStore.user?.email || profileData.email }}</span>
-              <div class="row-spacer" />
-            </div>
-
-            <!-- Clase -->
-            <div class="detail-row">
-              <span class="label">CLASE:</span>
-              <span 
-                class="value class-val"
-                :style="{ color: classStore.currentClassDef?.color }"
-              >
-                {{ classStore.currentClassDef?.name || 'SIN CLASE' }}
-              </span>
-              <button
-                class="row-action-btn"
-                @click.prevent.stop="modalStore.open(classStore.playerClass ? 'ClassMissions' : 'ClassSelection')"
-              >
-                {{ classStore.playerClass ? 'GESTIONAR' : 'ELEGIR' }}
-              </button>
-            </div>
-
-            <!-- Bando -->
-            <div class="detail-row">
-              <span class="label">BANDO:</span>
-              <div class="value-wrap">
-                <img
-                  v-if="gs.faction"
-                  :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
-                  class="faction-img-mini"
-                  @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
-                >
-                <span 
-                  class="value class-val"
-                  :style="{ color: factionColor }"
-                >
-                  {{ factionLabel }}
-                </span>
-              </div>
-              <button
-                class="row-action-btn"
-                @click.prevent.stop="handleFactionChoice"
-              >
-                {{ gs.faction ? 'CAMBIAR' : 'ELEGIR' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="identity-actions-row">
-            <button
-              class="cosmetics-btn"
-              @click.stop="handleEditProfile"
-            >
-              <i class="fas fa-paint-brush" /> CAMBIAR COSMETICOS
-            </button>
-            <button
-              class="class-mgmt-btn"
-              @click.stop="modalStore.open(classStore.playerClass ? 'ClassMissions' : 'ClassSelection')"
-            >
-              <i class="fas fa-graduation-cap" /> GESTIÓN DE CLASE
-            </button>
-          </div>
-        </div>
+        <ProfileIdentityCard
+          :gs="gs"
+          :display-username="displayUsername"
+          :email="authStore.user?.email || profileData.email"
+          :class-store="classStore"
+          :faction="faction"
+          @edit-profile="handleEditProfile"
+          @avatar-enter="handleAvatarEnter"
+          @avatar-leave="handleAvatarLeave"
+          @open-rename="openRename"
+          @open-class-modal="modalStore.open(classStore.playerClass ? 'ClassMissions' : 'ClassSelection')"
+          @faction-choice="handleFactionChoice"
+        />
 
         <!-- Experiencia -->
         <ProfileXpCard
@@ -336,79 +222,23 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         />
 
         <!-- Faction War Contribution -->
-        <div
-          v-if="faction"
-          class="profile-section-card war-card"
-        >
-          <div class="section-label">
-            GUERRA DE BANDOS
-          </div>
-          <div class="stats-grid">
-            <div
-              class="stat-item highlight-war-points"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">
-                <i class="fas fa-shield-alt icon-war" />
-                {{ formatNum(totalWarPoints) }}
-              </span>
-              <span class="stat-lbl">Puntos de Guerra</span>
-            </div>
-            <div
-              class="stat-item highlight-war-coins"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">
-                <i class="fas fa-coins icon-war-coin" />
-                {{ formatNum(warCoins) }}
-              </span>
-              <span class="stat-lbl">Monedas de Guerra</span>
-            </div>
-          </div>
-        </div>
+        <ProfileFactionWarCard
+          :faction="faction"
+          :total-war-points="totalWarPoints"
+          :war-coins="warCoins"
+          :format-num="formatNum"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
+        />
 
-        <!-- Class Custom Details -->
-        <div
-          v-if="playerClass"
-          class="profile-section-card class-details-card"
-        >
-          <div class="section-label">
-            ESPECIALIZACIÓN DE CLASE
-          </div>
-          <div class="stats-grid">
-            <div
-              v-for="stat in classStats"
-              :key="stat.label"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
-              <span class="stat-lbl">{{ stat.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Historial de Actividad -->
-        <div class="profile-section-card activity-card">
-          <div class="section-label">
-            HISTORIAL DE ACTIVIDAD
-          </div>
-          <div class="stats-grid">
-            <div
-              v-for="stat in activityStats"
-              :key="stat.label"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
-              <span class="stat-lbl">{{ stat.label }}</span>
-            </div>
-          </div>
-        </div>
+        <!-- Class & Activity Extra Stats -->
+        <ProfileStatsSection
+          :player-class="playerClass"
+          :class-stats="classStats"
+          :activity-stats="activityStats"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
+        />
 
         <!-- Logros de Entrenador -->
         <ProfileAchievementsGrid

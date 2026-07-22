@@ -494,8 +494,8 @@ watch(trainerAnimState, async (newState) => {
       gsap.fromTo(el, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
     }
   } else if (newState === 'retreating') {
-    // Mover al entrenador a su lugar designado (300, -10) en unidades virtuales
-    gsap.to(el, { x: 300, y: -10, scale: 0.8, opacity: 0.85, duration: 0.8, ease: 'power2.inOut' })
+    // 1. Transición de Intro -> Posición fija de combate (manteniendo opacidad 1)
+    gsap.to(el, { x: 300, y: -10, scale: 0.8, opacity: 1, duration: 0.8, ease: 'power2.inOut' })
   }
 })
 

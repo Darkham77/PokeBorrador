@@ -219,15 +219,27 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
         const side = getSide(parts[2] || '');
         if (store.activeBattle.value) {
+          const sub = store.fsm?.currentSubState;
+          const subName = String(sub?.value || sub || '');
+          const isFsmAnimActive = store.isIntroAnimating.value || ['POKEMON_RECALL', 'POKEMON_CALL', 'ENEMY_REPLACEMENT_SEQ', 'ENTRY_ANIM', 'PARALLEL_JUMP'].includes(subName);
+          const bState = store.activeBattle.value as unknown as Record<string, unknown>;
           if (side === 'player') {
-            store.activeBattle.value.player = target;
+            if (!isFsmAnimActive) {
+              store.activeBattle.value.player = target;
+            } else {
+              bState.switchingToPlayer = target;
+            }
             const team = store.activeBattle.value.playerTeam || [];
             const idx = team.findIndex(p => p && p.uid === target.uid);
             if (idx !== -1) {
               store.activeBattle.value.playerTeamIndex = idx;
             }
           } else if (side === 'enemy') {
-            store.activeBattle.value.enemy = target;
+            if (!isFsmAnimActive) {
+              store.activeBattle.value.enemy = target;
+            } else {
+              bState.switchingToEnemy = target;
+            }
             const team = store.activeBattle.value.enemyTeam || [];
             const idx = team.findIndex(p => p && p.uid === target.uid);
             if (idx !== -1) {

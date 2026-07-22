@@ -11,16 +11,7 @@ const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standard
 const FSM_PATH = path.join(SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 
 // ─── Descubrimiento Dinámico de Archivos ──────────────────────────────────────
-async function walk(dir: string): Promise<string[]> {
-  try {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    const files = await Promise.all(entries.map((res) => {
-      const resPath = path.resolve(dir, res.name);
-      return res.isDirectory() ? walk(resPath) : (['.ts', '.vue'].includes(path.extname(res.name)) ? [resPath] : []);
-    }));
-    return files.flat();
-  } catch { return []; }
-}
+import { walkSourceFiles as walk } from './fsmParityParser.ts';
 
 async function discoverFsmRelatedFiles() {
   const allFiles = await walk(SRC_ROOT);

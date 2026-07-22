@@ -2,14 +2,13 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ShowdownPlayerRequest } from '@/types/battle/battle'
-import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
-import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
 import { clearVolatileStatus } from './battleStatus'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
+import { registerRewardCombatant } from './rewardsDistributor.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
+export { syncAndPersist } from './battleStateSync.ts'
 
 
 
@@ -92,140 +91,8 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       }
     }
   } else if (pokemon) {
-    const isTr = active.isTrainer || active.isGym || active.isPvP
-    const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
-    ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
-    
-    // ENEMY_REPLACEMENT_SEQ Starts
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TYPE_CHECK)
-
-    if (!isTr) {
-      // isWild: Defeat animation
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT)
-      if (ctx.animations?.handleFaintAnim) {
-        await ctx.animations.handleFaintAnim({ side: 'enemy' })
-      } else {
-        await sleep(1300)
-      }
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
-    } else {
-      // isTrainer / isNpc: Recall animation
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-      if (ctx.animations?.handleCatchRequest) {
-        await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon })
-      } else {
-        gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-        await sleep(800)
-      }
-    }
-
-    // CLEANUP_MEMORY
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    if (active) {
-      registerRewardCombatant(active)
-      syncTeamHP(ctx)
-      if (isTr && ctx.animations?.playBallFadeOut) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
-        await ctx.animations.playBallFadeOut('enemy')
-      }
-      active.enemy = null
-      if (!isTr || !active.enemyTeam || !active.enemyTeam.some(p => p.hp > 0)) {
-        active._initialEnemy = null
-      }
-    }
-
-    // CHECK_REMAINING
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
-    
-    let nextEnemy: Pokemon | null = null;
-    if (active.enemyTeam) {
-      const activePlayer = active.player || active.enemyTeam[0]
-      if (activePlayer) {
-        const bestIdx = findBestSwitchIndex(
-          active.enemyTeam,
-          activePlayer,
-          pokemon.uid,
-          ctx
-        )
-        if (bestIdx !== -1) {
-          nextEnemy = active.enemyTeam[bestIdx] || null
-        } else {
-          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
-        }
-      } else {
-        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
-      }
-    }
-
-    if (nextEnemy) {
-      // STABILIZE_STAGE
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EMPTY_WAIT)
-      await sleep(200) // organic sleep
-      
-      const s = ctx.enemyStages.value
-      ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
-        reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
-      
-      // AI_NEXT_PICK
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.AI_NEXT_PICK)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SELECT_COUNTER)
-      
-      // NEXT_PICK_TYPE -> POKEMON_CALL
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.NEXT_PICK_TYPE)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
-      
-      ctx.faintedSides.value.delete('enemy')
-      ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
-      
-      const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
-      if (showdownWorker && active.enemyTeam) {
-        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
-        active.switchingToEnemy = nextEnemy
-        const result = await executeTurnInWorker('', `switch ${slot}`)
-        if (result) {
-          active.playerRequest = result.p1Request
-          active.enemyRequest = result.p2Request
-
-          // Parsear logs para aplicar el daño/debilitación por hazards
-          const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
-          const filteredLogs = filterShowdownLogs(result.logs)
-          for (const logLine of filteredLogs) {
-            await parseShowdownLogLine(ctx, logLine, filteredLogs)
-          }
-        }
-        delete active.switchingToEnemy
-      }
-
-      if (nextEnemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        await processFaint(ctx, 'enemy')
-        return
-      }
-
-      active.enemy = nextEnemy
-      if (ctx.animations?.handleReleaseRequest) {
-        await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
-      } else {
-        gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-      }
-
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-      return
-    }
-
-    // No remaining / isWild -> End battle
-    if (active) {
-      active.over = true;
-      registerRewardCombatant(active)
-      active.enemy = null;
-      active._initialEnemy = null;
-    }
-    ctx.faintedSides.value.add('enemy')
-    await terminateBattle(ctx, true)
+    const { processEnemyFaintSequence } = await import('./battleFaintSequence.ts')
+    await processEnemyFaintSequence(ctx, pokemon)
   }
 }
 
@@ -374,59 +241,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   }
 
   // 3. Procesar recompensas (Transición a REWARDS_PHASE)
-  if (win && !fled && !active.rewardsProcessed) {
-    active.rewardsProcessed = true
-    const isWild = !active.isTrainer && !active.isGym && !active.isPvP
-    if (!isWild) {
-      ctx.audio.play('victoryTrainer')
-    }
-    await calculateBattleRewards(ctx)
-    
-    // Recuperar recursos robados por el Team Rocket
-    if (active.stolenResources) {
-      const stolen = active.stolenResources;
-      if (stolen.money && stolen.money > 0) {
-        ctx.gs.state.money = (ctx.gs.state.money || 0) + stolen.money;
-        ctx.addLog(`¡Recuperaste tu dinero robado! +₽${stolen.money}`, 'log-success', 'player');
-        uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰');
-      }
-      if (stolen.items) {
-        const { getItemById } = await import('@/data/inventory/items');
-        for (const [itemId, qty] of Object.entries(stolen.items)) {
-          if (qty && (qty as number) > 0) {
-            if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
-            ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + (qty as number);
-            
-            let itemDef = null;
-            try {
-              itemDef = getItemById(itemId);
-            } catch {
-              // usar ID
-            }
-            const displayName = itemDef?.name || itemId;
-            ctx.addLog(`¡Recuperaste tu objeto robado: ${displayName}!`, 'log-success', 'player');
-            uiStore.notify(`¡Recuperaste ${qty}x ${displayName}!`, '🎒');
-          }
-        }
-      }
-      delete active.stolenResources;
-    }
-
-    try {
-      const breedingStore = useBreedingStore()
-      if (active.isGym) {
-        breedingStore.reduceHatchTimers('gym')
-      } else if (active.isCapture) {
-        breedingStore.reduceHatchTimers('capture')
-      } else {
-        breedingStore.reduceHatchTimers('battle')
-      }
-    } catch (e) {
-      console.error('Failed to reduce hatch timers:', e)
-    }
-  }
-
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
+  const { processBattleRewardsPhase } = await import('./battleRewardsPhase.ts')
+  await processBattleRewardsPhase(ctx, win, fled)
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
@@ -562,123 +378,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
 
 
-function parseCondition(cond: string): { hp: number; status: Pokemon['status'] } {
-  let hp = 0;
-  let status: Pokemon['status'] = undefined;
-  if (!cond.includes('fnt')) {
-    const slashIdx = cond.indexOf('/');
-    if (slashIdx !== -1) {
-      hp = parseInt(cond.substring(0, slashIdx), 10) || 0;
-    }
-    const spaceIdx = cond.indexOf(' ');
-    if (spaceIdx !== -1) {
-      status = (cond.substring(spaceIdx + 1).trim() || undefined) as Pokemon['status'];
-    }
-  }
-  return { hp, status };
-}
-
-/**
- * Syncs team HP to GameStore.
- */
-function syncTeamHP(ctx: BattleContext) {
-  const active = ctx.activeBattle.value;
-  if (!active) return;
-
-  if (active.playerUsedItem) {
-    console.debug('[SYNC-TEAM-HP] Player used an item. Skipping sync from outdated playerRequest.');
-    return;
-  }
-  
-  console.debug(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`);
-  
-  if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
-    active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
-      if (reqPoke && reqPoke.uid) {
-        const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.uid === reqPoke.uid);
-        const battlePoke = active.playerTeam?.find((p: Pokemon) => p && p.uid === reqPoke.uid);
-
-        const { hp, status } = parseCondition(reqPoke.condition || '');
-
-        if (teamPoke) {
-          const old = teamPoke.hp;
-          teamPoke.hp = hp;
-          teamPoke.status = status;
-          console.debug(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
-        }
-
-        if (battlePoke) {
-          const old = battlePoke.hp;
-          battlePoke.hp = hp;
-          battlePoke.status = status;
-          console.debug(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
-        }
-      }
-    });
-  }
-
-  const enemyTeam = active.enemyTeam;
-  if (active.enemyRequest?.side?.pokemon && enemyTeam) {
-    active.enemyRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
-      if (reqPoke && reqPoke.uid) {
-        const battlePoke = enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid);
-
-        const { hp, status } = parseCondition(reqPoke.condition || '');
-
-        if (battlePoke) {
-          const old = battlePoke.hp;
-          battlePoke.hp = hp;
-          battlePoke.status = status;
-          console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`);
-        }
-      }
-    });
-  }
-
-  if (active.player && active.playerRequest?.side?.pokemon) {
-    const activeReqPoke = active.playerRequest.side.pokemon.find((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => p && p.uid === active.player?.uid);
-    if (activeReqPoke) {
-      const { hp, status } = parseCondition(activeReqPoke.condition || '');
-      active.player.hp = hp;
-      active.player.status = status;
-    }
-  }
-
-  // Sincronizar el HP/estado del enemigo activo con su equipo (Entrenador/Gimnasio/PvP)
-  if (active.isTrainer || active.isGym || active.isPvP) {
-    if (active.enemy && active.enemyTeam) {
-      const enemyIdx = active.enemyTeam.findIndex((p: Pokemon) => p && p.uid === active.enemy?.uid);
-      if (enemyIdx !== -1) {
-        const teamPoke = active.enemyTeam[enemyIdx];
-        if (teamPoke) {
-          teamPoke.hp = active.enemy.hp;
-          teamPoke.status = active.enemy.status;
-        }
-      }
-      // Reasignar el array para forzar reactividad en el computed de Vue
-      active.enemyTeam = [...active.enemyTeam];
-    }
-  }
-}
-
-/**
- * Persists battle state to GameStore.
- */
-export function syncAndPersist(ctx: BattleContext) {
-  const active = ctx.activeBattle.value;
-  if (!active || active.over) {
-    ctx.gs.state.activeBattle = null
-    return
-  }
-  syncTeamHP(ctx)
-  ctx.gs.state.activeBattle = {
-    ...active,
-    playerStages: ctx.playerStages.value,
-    enemyStages: ctx.enemyStages.value,
-    battleLogs: ctx.battleLogs.value.slice(-10)
-  }
-  ctx.gs.save(false)
-}
+import { syncTeamHP, syncAndPersist } from './battleStateSync.ts'
 
 /**
  * Intercepts fainted player active Pokemon or forceSwitch requests

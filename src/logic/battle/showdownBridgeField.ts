@@ -33,7 +33,9 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           };
           const emoji = weatherEmojis[weatherType] || '🌤️';
           const localizedName = getLocalizedWeatherName(weatherType, ACTIVE_GENERATION);
-          store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
+          if (weatherType !== 'none' || nextWeatherType !== 'clear') {
+            store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
+          }
         }
       }
       return true;

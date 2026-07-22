@@ -417,6 +417,24 @@ export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; typ
   });
 }
 
+export function notifyWorkerBattleWin(side: 'p1' | 'p2' = 'p1'): void {
+  if (showdownWorker) {
+    showdownWorker.postMessage({
+      type: 'WIN_BATTLE',
+      payload: { side }
+    });
+  }
+}
+
+export function notifyWorkerBattleEnd(): void {
+  if (showdownWorker) {
+    showdownWorker.postMessage({
+      type: 'FORCED_END_BATTLE',
+      payload: {}
+    });
+  }
+}
+
 export function testResetShowdownWorker(): void {
   if (showdownWorker) {
     showdownWorker.terminate();

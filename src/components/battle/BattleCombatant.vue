@@ -276,6 +276,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
     :y="position.y"
     :w="baseSize"
     :h="baseSize"
+    :z-index="zIndex"
   >
     <div
       v-if="hasSeat"

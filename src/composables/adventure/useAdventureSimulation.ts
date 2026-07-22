@@ -15,6 +15,8 @@ import { useAdventureMinigames } from './useAdventureMinigames'
 import { useAdventureEvents } from './useAdventureEvents'
 import { useAdventureRouting } from './useAdventureRouting'
 import { useAdventureLayout } from './useAdventureLayout'
+import { useAdventurePassives } from './useAdventurePassives'
+import { useAdventureModalAnims } from './useAdventureModalAnims'
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 
 
@@ -35,13 +37,6 @@ const CANVAS_W = 6400
 const CANVAS_H = 4400
 const CARD_W = 320
 const CARD_H = 220
-
-const ADVENTURE_PASSIVES = {
-  flame_body: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: '+15% Vel. Viaje', value: 0.15 },
-  magma_armor: { id: 'speed_bonus', label: 'Escudo Magma', desc: '+15% Vel. Viaje', value: 0.15 },
-  pickup: { id: 'loot_bonus', label: 'Recogida', desc: '+20% Prob. Botín', value: 0.20 },
-  synchronize: { id: 'nature_sync', label: 'Sincronía', desc: 'Sincronizar Naturaleza', value: 0.50 }
-}
 
 export function useAdventureSimulation() {
   const mapStore = useMapStore()
@@ -243,47 +238,10 @@ export function useAdventureSimulation() {
     }
   })
 
-  const activeTeamPassives = computed(() => {
-    const team = gameStore.state.team || []
-    let speedBonus = 0
-    let lootBonus = 0
-    let natureSync = false
-    const activePassivesList: { label: string; desc: string }[] = []
-
-    team.forEach(pkmn => {
-      if (pkmn && pkmn.hp > 0 && pkmn.ability) {
-        const abilityKey = pkmn.ability.toLowerCase().replace(/[\s-]/g, '_')
-        const passive = ADVENTURE_PASSIVES[abilityKey as keyof typeof ADVENTURE_PASSIVES]
-        if (passive) {
-          if (passive.id === 'speed_bonus') {
-            speedBonus = Math.max(speedBonus, passive.value)
-          } else if (passive.id === 'loot_bonus') {
-            lootBonus = Math.max(lootBonus, passive.value)
-          } else if (passive.id === 'nature_sync') {
-            natureSync = true
-          }
-          if (!activePassivesList.some(p => p.label === passive.label)) {
-            activePassivesList.push({ label: passive.label, desc: passive.desc })
-          }
-        }
-      }
-    })
-
-    return {
-      speedBonus,
-      lootBonus,
-      natureSync,
-      list: activePassivesList
-    }
-  })
+  const { activeTeamPassives, triggerExtraLoot: triggerExtraLootFn } = useAdventurePassives(gameStore)
 
   function triggerExtraLoot(itemId: string, defaultQty: number = 1) {
-    const lootBonus = activeTeamPassives.value.lootBonus
-    if (lootBonus > 0 && Math.random() < lootBonus) {
-      inventoryStore.addItem(itemId, defaultQty)
-      injectedItems.value.add(itemId)
-      travelLog.value.push(`🌟 ¡Pasiva Recogida activa! Tu Pokémon ha encontrado un objeto extra: +${defaultQty}x ${itemId} obtenido en tu mochila real.`)
-    }
+    triggerExtraLootFn(itemId, defaultQty, inventoryStore, injectedItems, travelLog)
   }
 
   function getWeatherForMap(mapId: string): string {
@@ -528,31 +486,7 @@ export function useAdventureSimulation() {
     fly: '🕊️ Vuelo',
   }
 
-  const onModalEnter = (el: Element, done: () => void) => {
-    const backdrop = el as HTMLElement
-    const card = backdrop.querySelector('.adv-event-modal-card')
-    if (!card) {
-      done()
-      return
-    }
-    gsap.set(backdrop, { opacity: 0 })
-    gsap.set(card, { scale: 0.8, opacity: 0 })
-    const tl = gsap.timeline({ onComplete: done })
-    tl.to(backdrop, { opacity: 1, duration: 0.25, ease: 'power2.out' })
-      .to(card, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.5)' }, '-=0.1')
-  }
-
-  const onModalLeave = (el: Element, done: () => void) => {
-    const backdrop = el as HTMLElement
-    const card = backdrop.querySelector('.adv-event-modal-card')
-    if (!card) {
-      done()
-      return
-    }
-    const tl = gsap.timeline({ onComplete: done })
-    tl.to(card, { scale: 0.8, opacity: 0, duration: 0.25, ease: 'power2.in' })
-      .to(backdrop, { opacity: 0, duration: 0.15, ease: 'power2.in' }, '-=0.1')
-  }
+  const { onModalEnter, onModalLeave } = useAdventureModalAnims()
 
   onUnmounted(() => {
     if (typeof gameStore.exitSandboxMode === 'function') {

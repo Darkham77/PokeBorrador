@@ -231,6 +231,46 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
   return { feetY: 0.9, feetX: 0.5 };
 }
 
+function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, channels: number) {
+  let minX = size, maxX = 0, minY = size, maxY = 0, lowestY = -1, hasOpaque = false
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const idx = (y * size + x) * channels
+      const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
+      if (alpha > 50) {
+        hasOpaque = true
+        if (x < minX) minX = x
+        if (x > maxX) maxX = x
+        if (y < minY) minY = y
+        if (y > maxY) maxY = y
+      }
+    }
+  }
+  if (hasOpaque) {
+    for (let y = size - 1; y >= 0; y--) {
+      let rowHasOpaque = false
+      for (let x = 0; x < size; x++) {
+        const idx = (y * size + x) * channels
+        const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
+        if (alpha > 50) { rowHasOpaque = true; break }
+      }
+      if (rowHasOpaque) { lowestY = y; break }
+    }
+  }
+
+  let feetY = 0.9, feetX = 0.5, bodyH = 0.8, bodyW = 0.8
+  if (hasOpaque && lowestY !== -1) {
+    const centerX = (minX + maxX) / 2
+    feetY = Number((lowestY / size).toFixed(4))
+    feetX = Number((centerX / size).toFixed(4))
+    bodyH = Number(((maxY - minY + 1) / size).toFixed(4))
+    bodyW = Number(((maxX - minX + 1) / size).toFixed(4))
+  }
+  const bodyRadius = Number((bodyH / 2).toFixed(4))
+
+  return { feetY, feetX, bodyH, bodyW, bodyRadius }
+}
+
 async function handleAnalyzeAnimated(filePath: string) {
   try {
     const spriteKey = path.parse(filePath).name;
@@ -248,63 +288,7 @@ async function handleAnalyzeAnimated(filePath: string) {
       .raw()
       .toBuffer({ resolveWithObject: true });
 
-    const data = firstFrameBuffer.data;
-    const channels = firstFrameBuffer.info.channels;
-
-    let minX = size;
-    let maxX = 0;
-    let minY = size;
-    let maxY = 0;
-    let lowestY = -1;
-    let hasOpaque = false;
-
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const idx = (y * size + x) * channels;
-        const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255;
-        if (alpha > 50) {
-          hasOpaque = true;
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-
-    if (hasOpaque) {
-      // Scan from bottom to top to find the first non-empty pixel row (lowestY)
-      for (let y = size - 1; y >= 0; y--) {
-        let rowHasOpaque = false;
-        for (let x = 0; x < size; x++) {
-          const idx = (y * size + x) * channels;
-          const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255;
-          if (alpha > 50) {
-            rowHasOpaque = true;
-            break;
-          }
-        }
-        if (rowHasOpaque) {
-          lowestY = y;
-          break;
-        }
-      }
-    }
-
-    let feetY = 0.9;
-    let feetX = 0.5;
-    let bodyH = 0.8;
-    let bodyW = 0.8;
-
-    if (hasOpaque && lowestY !== -1) {
-      const centerX = (minX + maxX) / 2;
-      feetY = Number((lowestY / size).toFixed(4));
-      feetX = Number((centerX / size).toFixed(4));
-      bodyH = Number(((maxY - minY + 1) / size).toFixed(4));
-      bodyW = Number(((maxX - minX + 1) / size).toFixed(4));
-    }
-
-    const bodyRadius = Number((bodyH / 2).toFixed(4));
+    const { feetX, feetY, bodyH, bodyW, bodyRadius } = analyzeImageBufferBounds(firstFrameBuffer.data, size, firstFrameBuffer.info.channels)
 
     return {
       success: true,
@@ -740,27 +724,8 @@ export const POKEMON_CRIES_DATABASE = (PACKED_DATA.c || {}) as Readonly<Record<s
   console.log(styleText('yellow', `\n   📦 Generando catálogo de sprites de NPCs en src/data/npcSpriteCatalog.ts...`));
   const npcCatalogPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'npcSpriteCatalog.ts');
   
-  const ARCHETYPE_KEYWORDS_LOCAL = {
-    rival: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
-    caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos', 'aaron', 'katy', 'bugsy', 'burgh'],
-    ornitologo: ['birdkeeper', 'ornitologo', 'pajaro', 'falkner', 'kahili', 'skyla', 'skytrainer', 'winona', 'pilot'],
-    cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor', 'blaine', 'briar', 'clemont', 'colress', 'elm', 'juniper', 'kukui', 'laventon', 'magnolia', 'miriam', 'molayne', 'nurse', 'oak', 'raifort', 'rowan', 'sada', 'salvatore', 'samsonoak', 'sonia', 'sophocles', 'sycamore', 'thorton', 'turo'],
-    luchador: ['blackbelt', 'battlegirl', 'crushgirl', 'luchador', 'fight', 'crasherwake', 'bea', 'bruno', 'chuck', 'atticus', 'brawly', 'dendra', 'eri', 'greta', 'hala', 'korrina', 'marshal', 'mustard', 'securitycorps', 'theroyal', 'wikstrom', 'zisu'],
-    pescador: ['fisherman', 'fisher', 'pescador', 'marlon', 'sailor', 'lana'],
-    nadador: ['swimmer', 'nadador', 'diver', 'freediver', 'candice', 'juan', 'lorelei', 'misty', 'nessa', 'surfer', 'wallace'],
-    domador: ['tamer', 'domador', 'roughneck', 'tamer-gen3', 'clair', 'drasna', 'drayden', 'drayton', 'hassel', 'lucy', 'ryuki', 'zinnia'],
-    medium: ['psychic', 'medium', 'channeler', 'hexmaniac', 'sabrina', 'morty', 'ghost', 'furisodegirl', 'avery', 'bede', 'caitlin', 'liza', 'lucian', 'olympia', 'shauntal', 'tate', 'will'],
-    motorista: ['biker', 'cueball', 'delinquent', 'punk', 'motorista', 'hooligan', 'cyclist', 'giacomo', 'mela', 'piers', 'roxie', 'ruffian', 'streetthug'],
-    montanero: ['hiker', 'ruinmaniac', 'montanero', 'brock', 'roark', 'clay', 'bertha', 'gordie', 'grant', 'olivia', 'peonia', 'peony', 'roxanne', 'worker', 'rika'],
-    rocket: ['rocket', 'grunt', 'giovanni', 'petrel', 'proton', 'ariana', 'archer', 'rainbowrocket', 'archie', 'cliff', 'courtney', 'cyrus', 'faba', 'ghetsis', 'guzma', 'jupiter', 'lusamine', 'lysandre', 'mable', 'malva', 'mars', 'matt', 'maxie', 'oleana', 'plumeria', 'rood', 'saturn', 'shadowtriad', 'shelly', 'sierra', 'tabitha', 'xerosic', 'zinzolin'],
-    criador: ['breeder', 'criador', 'nursery', 'nurseryaide', 'caretaker', 'cheryl', 'cilan', 'milo', 'ramos', 'rancher'],
-    aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler', 'darach', 'officeworker', 'ortega', 'rose', 'siebold'],
-    ranger: ['ranger', 'pokemonranger'],
-    pokefan: ['pokefan', 'pokekid'],
-    policeman: ['policeman', 'police', 'policia'],
-    artista: ['beauty', 'artist', 'dancer', 'model', 'elesa', 'lisia', 'mina', 'painter', 'perrin', 'risingstar', 'rollerskater', 'tierno', 'tucker', 'tuli', 'tulip', 'valerie', 'viola'],
-    default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
-  };
+  const { ARCHETYPE_KEYWORDS } = await import('../../src/logic/utils/npcSpriteRouter');
+  const ARCHETYPE_KEYWORDS_LOCAL = ARCHETYPE_KEYWORDS;
 
   // Las claves se derivan de TRAINER_TYPES para mantener sincronía automática
   const catalogLists: Record<string, string[]> = Object.fromEntries(

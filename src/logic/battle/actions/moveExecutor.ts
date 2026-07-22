@@ -4,12 +4,12 @@ import { canAttack, updateCastformForm } from '@/logic/battle/battleFlow'
 import { dispatchMoveEffect } from './actionRegistry.ts'
 import { gameBus } from '@/logic/events/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
-import { getDayCycle } from '@/logic/utils/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Move } from '@/types/pokemon/pokemon'
+import { checkMoveAccuracy } from './moveAccuracyHelper.ts'
 import { logger } from '@/logic/utils/logger'
 
 export async function executeMoveAction(
@@ -125,34 +125,9 @@ export async function executeMoveAction(
     }
 
     // Precision Check
-    const moveAcc = executableMove.acc || 100
-    if (moveAcc < 100 && !attacker.lockOn) {
-      const accStage = attackerStages.acc || 0
-      const evaStage = defenderStages.eva || 0
-      const weather = store.activeBattle.value?.weather?.type
-      const mechWeather = getMechanicalWeather(weather)
-      const cycle = store.activeBattle.value?.isGym ? 'day' : getDayCycle()
-      const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
-      const isSunnyActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
-      const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
-      let finalAcc = moveAcc
-
-      const isThunderstorm = weather === 'thunderstorm'
-      if ((isRainActive || isThunderstorm) && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100
-      else if (isSunnyActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50
-      else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100
-      else if (mechWeather === WEATHER_MECHANICAL.FOG) {
-        const isMist = weather === "mist" || weather === "mist_visual"
-        finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6))
-      }
-
-      finalAcc = finalAcc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage))
-      if (Math.random() * 100 > finalAcc) {
-        store.addLog(`¡El ataque de ${attacker.name} falló!`, 'log-info', attacker)
-        return
-      }
+    if (!checkMoveAccuracy(store, attacker, defender, attackerStages, defenderStages, executableMove)) {
+      return
     }
-    if (attacker.lockOn) attacker.lockOn = false
 
     if (executableMove && (executableMove.effect === undefined || executableMove.effect === null)) {
       if (!executableMove.id) throw new Error('[moveExecutor] El movimiento ejecutable no tiene un ID válido.');

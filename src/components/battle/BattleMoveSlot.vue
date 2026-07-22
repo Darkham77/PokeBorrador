@@ -5,6 +5,7 @@ import { gsap } from 'gsap'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
+import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
@@ -337,71 +338,12 @@ const formatMoveName = (name: string) => {
           />
         </div>
         
-        <div class="move-details-row">
-          <div class="detail-item">
-            <span class="d-label pixelated">POT:</span>
-            <span 
-              class="d-val pixelated"
-              :class="{
-                'stat-boosted': finalPower > (moveData!.power || 0),
-                'stat-penalized': finalPower < (moveData!.power || 0)
-              }"
-            >
-              {{ finalPower || '-' }}
-              <span
-                v-if="finalPower > (moveData!.power || 0)"
-                class="arrow up"
-              >▲</span>
-              <span
-                v-if="finalPower < (moveData!.power || 0)"
-                class="arrow down"
-              >▼</span>
-            </span>
-          </div>
-          <div class="detail-item">
-            <span class="d-label pixelated">PREC:</span>
-            <span 
-              class="d-val pixelated"
-              :class="{
-                'stat-boosted': moveData!.acc !== 1000 && finalAccuracy > (moveData!.acc || 0),
-                'stat-penalized': moveData!.acc !== 1000 && finalAccuracy < (moveData!.acc || 0)
-              }"
-            >
-              <span
-                v-if="moveData!.acc === 1000"
-                class="infinity-emoji"
-              >♾️</span>
-              <template v-else>
-                {{ finalAccuracy || '-' }}
-                <span
-                  v-if="finalAccuracy > (moveData!.acc || 0)"
-                  class="arrow up"
-                >▲</span>
-                <span
-                  v-if="finalAccuracy < (moveData!.acc || 0)"
-                  class="arrow down"
-                >▼</span>
-              </template>
-            </span>
-          </div>
-          <div class="detail-item">
-            <span class="d-label pixelated">CAT:</span>
-            <span class="d-val pixelated">
-              <span class="cat-full">{{ ({ physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' } as Record<string, string>)[moveData!.cat] || '🔮 Estado' }}</span>
-              <span class="cat-short">{{ ({ physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' } as Record<string, string>)[moveData!.cat] || '🔮 EST' }}</span>
-            </span>
-          </div>
-          <div class="mv-pp-wrap">
-            <span class="mv-pp-label pixelated">PP</span>
-            <span class="mv-pp-val pixelated">
-              <span
-                v-if="move.id === 'struggle'"
-                class="infinity-emoji"
-              >♾️</span>
-              <template v-else>{{ move.pp }}/{{ move.maxPP }}</template>
-            </span>
-          </div>
-        </div>
+        <BattleMoveDetails
+          :move="move"
+          :move-data="moveData as Move"
+          :final-power="finalPower"
+          :final-accuracy="finalAccuracy"
+        />
       </template>
       <div
         v-else

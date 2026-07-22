@@ -26,3 +26,6 @@ Frontend Developers / Systems Engineers.
 - [reputation-shop/](./reputation-shop/AGENTS.md): Sub-cards and components for reputation shop.
 - [shop/](./shop/AGENTS.md): Sub-cards, search tools, and cart panels for standard shops.
 - [war-shop/](./war-shop/AGENTS.md): Sub-cards, item grids, and purchase validations for war shop.
+- [ProfileFactionWarCard.vue](./ProfileFactionWarCard.vue): Subcomponent for faction war contribution points and coins display.
+- [ProfileIdentityCard.vue](./ProfileIdentityCard.vue): Subcomponent for trainer avatar, class, faction, and user details.
+- [ProfileStatsSection.vue](./ProfileStatsSection.vue): Subcomponent for trainer class specialization and activity history stats.

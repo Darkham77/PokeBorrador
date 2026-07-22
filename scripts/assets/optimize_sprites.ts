@@ -54,27 +54,27 @@ if (!isMainThread) {
       frames.push(frameBuffer);
     }
 
-    const areBuffersSimilar = (buf1: Buffer, buf2: Buffer, maxDiffPerPixel = 12, maxMismatchedPixelsPercent = 0.04): boolean => {
-      if (buf1.length !== buf2.length) return false;
-      let mismatches = 0;
-      const numPixels = buf1.length / 4;
-      const maxAllowedMismatches = numPixels * maxMismatchedPixelsPercent;
+  const areBuffersSimilar = (buf1: Buffer, buf2: Buffer, maxDiffPerPixel = 12, maxMismatchedPixelsPercent = 0.04): boolean => {
+    if (buf1.length !== buf2.length) return false;
+    let mismatches = 0;
+    const numPixels = buf1.length / 4;
+    const maxAllowedMismatches = numPixels * maxMismatchedPixelsPercent;
 
-      for (let i = 0; i < buf1.length; i += 4) {
-        const dr = Math.abs(buf1[i]! - buf2[i]!);
-        const dg = Math.abs(buf1[i + 1]! - buf2[i + 1]!);
-        const db = Math.abs(buf1[i + 2]! - buf2[i + 2]!);
-        const da = Math.abs(buf1[i + 3]! - buf2[i + 3]!);
+    for (let i = 0; i < buf1.length; i += 4) {
+      const dr = Math.abs(buf1[i]! - buf2[i]!);
+      const dg = Math.abs(buf1[i + 1]! - buf2[i + 1]!);
+      const db = Math.abs(buf1[i + 2]! - buf2[i + 2]!);
+      const da = Math.abs(buf1[i + 3]! - buf2[i + 3]!);
 
-        if (dr > maxDiffPerPixel || dg > maxDiffPerPixel || db > maxDiffPerPixel || da > maxDiffPerPixel) {
-          mismatches++;
-          if (mismatches > maxAllowedMismatches) {
-            return false;
-          }
+      if (dr > maxDiffPerPixel || dg > maxDiffPerPixel || db > maxDiffPerPixel || da > maxDiffPerPixel) {
+        mismatches++;
+        if (mismatches > maxAllowedMismatches) {
+          return false;
         }
       }
-      return true;
-    };
+    }
+    return true;
+  };
 
     // Calcular IDs únicos de frames
     const uniqueFrames: Buffer[] = [];

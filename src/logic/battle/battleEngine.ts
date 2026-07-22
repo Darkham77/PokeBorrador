@@ -5,7 +5,7 @@
  * in accordance with the Zero-Hardcoding and Single Source of Truth mandates.
  */
 
-export { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine.ts';
+export { getTypeEffectiveness } from '../pokemon/typeEngine.ts';
 export { getStatMultiplier } from '../pokemon/statEngine.ts';
 
 import { 

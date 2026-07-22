@@ -34,8 +34,10 @@ export async function adminSupabaseUsers(): Promise<void> {
 
   const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
 
-  // Parsear argumentos de la línea de comandos
   const args = process.argv.slice(2);
+  const { parseServerArguments } = await import('../database/backup_supabase_db.ts');
+  const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
+  const serverArg = targetProfiles[0];
   const getArg = (flag: string): string | undefined => {
     const idx = args.findIndex(a => a === flag);
     if (idx !== -1 && args[idx + 1] !== undefined) {
@@ -44,7 +46,6 @@ export async function adminSupabaseUsers(): Promise<void> {
     return args.find(a => a.startsWith(`${flag}=`))?.split('=')[1];
   };
 
-  const serverArg = getArg('--server');
   const actionArg = getArg('--action');
   const emailArg = getArg('--email');
   const passwordArg = getArg('--password');

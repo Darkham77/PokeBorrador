@@ -167,6 +167,7 @@ export interface BattleCombatantProps {
   hidden?: boolean;
   hasSeat?: boolean;
   stages?: Partial<BattleStages>;
+  zIndex?: number | string;
 }
 
 export interface ShowdownPlayerRequest {

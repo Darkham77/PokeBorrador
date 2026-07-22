@@ -38,15 +38,10 @@ export async function updateSupabaseDb(): Promise<void> {
 
   const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
 
-  // Parsear argumentos de la línea de comandos
   const args = process.argv.slice(2);
-  let serverArg: string | undefined;
-  const serverFlagIdx = args.findIndex(a => a === '--server');
-  if (serverFlagIdx !== -1 && args[serverFlagIdx + 1] !== undefined) {
-    serverArg = args[serverFlagIdx + 1];
-  } else {
-    serverArg = args.find(a => a.startsWith('--server='))?.split('=')[1];
-  }
+  const { parseServerArguments } = await import('./backup_supabase_db.ts');
+  const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
+  const serverArg = targetProfiles[0];
   const isAll = args.includes('--all');
 
   if (!serverArg && !isAll) {
@@ -58,7 +53,7 @@ export async function updateSupabaseDb(): Promise<void> {
     process.exit(1);
   }
 
-  const targetProfiles = serverArg ? [serverArg] : baseProfiles;
+
 
   for (const profile of targetProfiles) {
     let conf = serverConfigs[profile];

@@ -36,6 +36,7 @@ Battle Engine Developers.
 | `scriptedAI.ts` | E2E mock AI that replays choices from `window.__VITE_DEBUG__` |
 | `battleAI.ts` | Public facade — re-exports `decideEnemyMove`, `shouldEnemySwitch`, etc. |
 | `heuristic/` | 9-layer heuristic engine (see child AGENTS.md) |
+| `heuristic/aiItemEvaluator.ts` | Evaluator for NPC trainer item usage during battle (revives, status cures, potions) |
 
 ## HeuristicAI — No-Store Fallback
 

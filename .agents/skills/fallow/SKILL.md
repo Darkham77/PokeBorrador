@@ -92,6 +92,14 @@ Key flags:
 - `--hotspots`: Highlight riskiest files based on git churn and complexity.
 - `--coverage <path>`: Integrate static test coverage gaps from files like `coverage-final.json`.
 
+> [!IMPORTANT]
+> **Minimum Health Score Mandate (85/100)**:
+> The minimum acceptable codebase health score is **85/100**. Any score below 85 is strictly non-compliant.
+> If `npx fallow health --score` yields a score lower than 85, you MUST:
+> 1. Run `npx fallow health --targets --hotspots` to get Fallow's ranked refactoring recommendations and risky hotspots.
+> 2. Follow Fallow's specific recommendations to reduce cognitive and cyclomatic complexity, break up large modules, and eliminate dead code or duplication.
+> 3. Re-run `npx fallow health --score` iteratively until the score is strictly 85 or higher.
+
 ### 6. Automatic Fixes
 
 Fallow supports safe automatic cleanup of unused exports or dead code:
@@ -125,10 +133,10 @@ npx fallow explain unused-export
 
 When modifying codebase logic or completing tasks:
 
-1. **Analyze Pre-existing State**: Run `npx fallow` or `npx fallow audit` to establish a baseline.
+1. **Analyze Pre-existing State**: Run `npx fallow` or `npx fallow audit` and `npx fallow health --score` to establish a baseline.
 2. **Apply Changes**: Perform refactoring, write new features, or clean up unused code.
-3. **Verify Compliance**: Run `npx fallow audit --format json` or `npx fallow --format json` to detect regressions.
-4. **Auto-correct Issues**: Use `npx fallow fix` to resolve safe findings automatically before submitting code for human review.
+3. **Verify Compliance**: Run `npx fallow health --score` to verify the codebase health score is **>= 85**. If the score is below 85, inspect `npx fallow health --targets --hotspots`, follow Fallow's advice, and refactor until score is **>= 85**.
+4. **Detect Regressions & Clean Up**: Run `npx fallow audit --format json` or `npx fallow --format json` to detect new issues, and use `npx fallow fix` to resolve safe findings automatically before submitting code for review.
 
 ---
 

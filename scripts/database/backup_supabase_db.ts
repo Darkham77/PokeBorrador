@@ -25,39 +25,37 @@ enableCompileCache();
 
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 
-export async function backupSupabaseDb() {
-  console.log(styleText('bold', '\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js 26+) ---'));
-
-  const serverConfigs = await readAndParseEnv();
-  const baseProfiles = Object.keys(serverConfigs);
-  if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
-    process.exit(1);
-  }
-
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
-
-  // Parsear argumentos de la línea de comandos
-  const args = process.argv.slice(2);
-  let serverArg: string | undefined;
-  const serverFlagIdx = args.findIndex(a => a === '--server');
+export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
+  let serverArg: string | undefined
+  const serverFlagIdx = args.findIndex(a => a === '--server')
   if (serverFlagIdx !== -1 && args[serverFlagIdx + 1] !== undefined) {
-    serverArg = args[serverFlagIdx + 1];
+    serverArg = args[serverFlagIdx + 1]
   } else {
-    serverArg = args.find(a => a.startsWith('--server='))?.split('=')[1];
+    serverArg = args.find(a => a.startsWith('--server='))?.split('=')[1]
   }
-  const isAll = args.includes('--all');
+  const isAll = args.includes('--all')
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar usando la bandera --server=<perfil> o --all.'));
-    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --server=cloud'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --all'));
-    process.exit(1);
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar usando la bandera --server=<perfil> o --all.'))
+    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`))
+    process.exit(1)
   }
 
-  const targetProfiles = serverArg ? [serverArg] : baseProfiles;
+  return serverArg ? [serverArg] : baseProfiles
+}
+
+export async function backupSupabaseDb() {
+  console.log(styleText('bold', '\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js 26+) ---'))
+
+  const serverConfigs = await readAndParseEnv()
+  const baseProfiles = Object.keys(serverConfigs)
+  if (baseProfiles.length === 0) {
+    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor en el .env.'))
+    process.exit(1)
+  }
+
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])))
+  const targetProfiles = parseServerArguments(process.argv.slice(2), baseProfiles, allAvailable)
 
   // Asegurar que el directorio de respaldos exista
   await fsPromises.mkdir(BACKUPS_DIR, { recursive: true });

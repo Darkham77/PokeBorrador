@@ -152,7 +152,7 @@ Only under these conditions may the AI request user intervention.
    - `npm run test`
    - `npm run build` (enforces audit:full internally and compiles the application)
    - Re-run `npm run audit:warnings-diff` to verify that everything is 100% clean (0 errors, 0 new warnings).
-   - **Health Regression Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. If regressed, identify the complexity hotspots introduced by your changes, refactor them, and re-run until the score is equal to or greater than the baseline.
+   - **Health Regression & Minimum Threshold Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. The final score MUST be equal to or greater than the baseline AND strictly **85/100 or higher**. If regressed or under 85, inspect Fallow's recommendations (`npx fallow health --targets --hotspots`), refactor the complexity hotspots, and re-run until the score is strictly **>= 85**.
 
 ### 4. Database Triple Parity Sync
 

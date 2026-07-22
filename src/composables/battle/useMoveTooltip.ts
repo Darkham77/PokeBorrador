@@ -328,3 +328,5 @@ export function useMoveTooltip(
     moveDescriptionText
   };
 }
+
+export type ActiveMoveDetails = NonNullable<ReturnType<typeof useMoveTooltip>['activeDetails']['value']>

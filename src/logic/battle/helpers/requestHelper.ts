@@ -1,4 +1,4 @@
-export interface ChoiceRequestPokemon {
+interface ChoiceRequestPokemon {
   ident: string;
   details: string;
   condition: string;
@@ -15,14 +15,17 @@ export interface ChoiceRequest {
   active?: Array<{
     trapped?: boolean;
     moves?: Array<{
-      id: string;
       move?: string;
+      id: string;
       disabled?: boolean | string;
       pp?: number;
       maxpp?: number;
+      target?: string;
     }>;
   }> | null;
   side?: {
+    name?: string;
+    id?: string;
     pokemon: ChoiceRequestPokemon[];
   };
 }

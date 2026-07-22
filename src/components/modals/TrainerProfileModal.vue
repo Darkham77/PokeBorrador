@@ -11,6 +11,7 @@ import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
+import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import { useTrainerProfile } from './useTrainerProfile'
 import { useStatHover } from '@/composables/ui/useStatHover'
 
@@ -316,38 +317,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         />
 
         <!-- Faction War Contribution -->
-        <div
-          v-if="faction"
-          class="profile-section-card war-card"
-        >
-          <div class="section-label">
-            GUERRA DE BANDOS
-          </div>
-          <div class="stats-grid">
-            <div
-              class="stat-item highlight-war-points"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">
-                <i class="fas fa-shield-alt icon-war" />
-                {{ formatNum(totalWarPoints) }}
-              </span>
-              <span class="stat-lbl">Puntos de Guerra</span>
-            </div>
-            <div
-              class="stat-item highlight-war-coins"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">
-                <i class="fas fa-coins icon-war-coin" />
-                {{ formatNum(warCoins) }}
-              </span>
-              <span class="stat-lbl">Monedas de Guerra</span>
-            </div>
-          </div>
-        </div>
+        <ProfileFactionWarCard
+          :faction="faction"
+          :total-war-points="totalWarPoints"
+          :war-coins="warCoins"
+          :format-num="formatNum"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
+        />
 
         <!-- Class Custom Details -->
         <div

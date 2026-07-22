@@ -184,7 +184,7 @@ export function useBattleHud(
     }
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
-    return animations.isEmerging.value && ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
+    return ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE', 'ENTRY_ANIM', 'PARALLEL_ENTRY', 'PARALLEL_PREP'].includes(sub)
   })
 
   const enemyIsJumping = computed(() => {

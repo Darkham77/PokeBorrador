@@ -21,50 +21,8 @@ for (const arg of args) {
 let serverName = serverNameInput;
 const envPath = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const lines = envContent.split('\n');
-  const serverConfigs: Record<string, Record<string, string>> = {};
-
-  const KNOWN_SUFFIXES = [
-    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
-    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
-    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
-    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
-    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
-    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
-  ];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-
-    const match = trimmed.match(/^([^=]+)=(.*)$/);
-    if (match && match[1] !== undefined && match[2] !== undefined) {
-      const fullKey = match[1].trim();
-      let value = match[2].trim();
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-
-      if (fullKey.startsWith('SERVER_')) {
-        const withoutPrefix = fullKey.slice('SERVER_'.length);
-        const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
-        if (matchedSuffix === undefined) continue;
-
-        const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
-        if (!profile) continue;
-
-        const cleanKey = matchedSuffix;
-        if (!serverConfigs[profile]) {
-          serverConfigs[profile] = {};
-        }
-        const targetConf = serverConfigs[profile];
-        if (targetConf) {
-          targetConf[cleanKey] = value;
-        }
-      }
-    }
-  }
+  const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
+  const serverConfigs = await readAndParseEnv();
 
   // Buscar coincidencia por nombre de perfil o por ID
   let conf = serverConfigs[serverNameInput];

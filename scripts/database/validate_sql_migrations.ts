@@ -25,6 +25,51 @@ enableCompileCache();
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 
+function executeMigrationFile(
+  content: string,
+  db: DatabaseSync,
+  translationCache: Map<string, string>
+) {
+  const statements = splitSQLStatements(content)
+  for (const stmt of statements) {
+    let translated = translationCache.get(stmt)
+    if (translated === undefined) {
+      translated = translatePostgresToSqlite(stmt)
+      translationCache.set(stmt, translated)
+    }
+    if (translated) {
+      try {
+        db.exec(translated)
+      } catch (sqlErr: unknown) {
+        const msg = (sqlErr as Error).message.toLowerCase()
+        const isDuplicate = msg.includes('already exists') || msg.includes('duplicate column')
+        if (!isDuplicate) throw sqlErr
+      }
+    }
+  }
+}
+
+async function writeMigrationReport(
+  outputPath: string,
+  totalFiles: number,
+  achievements: string[],
+  errors: string[]
+) {
+  const resolvedPath = path.resolve(process.cwd(), outputPath)
+  const lines = [
+    `--- SQL MIGRATIONS REPORT ---`,
+    `Archivos detectados:  ${totalFiles}`,
+    `Migraciones válidas:  ${achievements.length}`,
+    `Migraciones fallidas: ${errors.length}`,
+    `\nLogros (${achievements.length}):`,
+    ...achievements.map(a => `  - ${a}`),
+    `\nErrors (${errors.length}):`,
+    ...errors.map(e => `  - ${e}`)
+  ]
+  await fs.writeFile(resolvedPath, lines.join('\n'), 'utf-8')
+  console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${outputPath}`))
+}
+
 async function validateMigrations() {
   const { values } = parseArgs({
     options: {
@@ -42,12 +87,10 @@ async function validateMigrations() {
     process.exit(1);
   }
 
-  // 1. Crear DB en memoria para validación (Explicit Resource Management)
   using db = new DatabaseSync(':memory:');
   db.exec("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))");
   console.log(styleText('green', '✅ Base de datos temporal creada con tabla de migraciones.'));
 
-  // 2. Obtener y ordenar archivos
   const allFiles = await fs.readdir(MIGRATIONS_DIR);
   const files = allFiles
     .filter(f => f.endsWith('.sql'))
@@ -64,28 +107,7 @@ async function validateMigrations() {
     const content = await fs.readFile(filePath, 'utf-8');
     
     try {
-      const statements = splitSQLStatements(content);
-      
-      for (const stmt of statements) {
-        let translated = translationCache.get(stmt);
-        if (translated === undefined) {
-          translated = translatePostgresToSqlite(stmt);
-          translationCache.set(stmt, translated);
-        }
-        
-        if (translated) {
-          try {
-            db.exec(translated);
-          } catch (sqlErr: unknown) {
-            const msg = (sqlErr as Error).message.toLowerCase();
-            const isDuplicate = msg.includes('already exists') || msg.includes('duplicate column');
-            
-            if (!isDuplicate) {
-              throw sqlErr;
-            }
-          }
-        }
-      }
+      executeMigrationFile(content, db, translationCache);
       achievements.push(`[Migración] ${filename}: VÁLIDA`);
     } catch (e: unknown) {
       errors.push(`[Migración] ${filename}: FALLÓ: ${(e as Error).message}`);
@@ -101,51 +123,23 @@ async function validateMigrations() {
   console.log(`════════════════════════════════════\n`);
 
   if (values.output) {
-    const outputPath = path.resolve(process.cwd(), values.output as string);
-    const lines = [
-      `--- SQL MIGRATIONS REPORT ---`,
-      `Archivos detectados:  ${files.length}`,
-      `Migraciones válidas:  ${achievements.length}`,
-      `Migraciones fallidas: ${errors.length}`,
-      `\nLogros (${achievements.length}):`,
-      ...achievements.map(a => `  - ${a}`),
-      `\nErrors (${errors.length}):`,
-      ...errors.map(e => `  - ${e}`)
-    ];
-    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
-    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+    await writeMigrationReport(values.output as string, files.length, achievements, errors);
   }
 
-  if (values.summary) {
-    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores.`));
-  } else {
+  if (!values.summary) {
     if (achievements.length > 0) {
       console.log(styleText('green', `🌟 MIGRACIONES VÁLIDAS (${achievements.length}):`));
-      const limit = 30;
-      achievements.slice(0, limit).forEach(a => console.log(`   ✅ ${a}`));
-      if (achievements.length > limit) {
-        console.log(styleText('cyan', `   ... y ${achievements.length - limit} migraciones más (usa -o para ver todas)`));
-      }
-      console.log('');
+      achievements.slice(0, 30).forEach(a => console.log(`   ✅ ${a}`));
     }
-
     if (errors.length > 0) {
       console.log(styleText('red', `❌ ERRORES DE INTEGRIDAD DETECTADOS (${errors.length}):`));
-      const limit = 30;
-      errors.slice(0, limit).forEach(e => console.log(`   🚨 ${e}`));
-      if (errors.length > limit) {
-        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
-      }
+      errors.slice(0, 30).forEach(e => console.log(`   🚨 ${e}`));
     } else {
       console.log(styleText('green', '✨ TODAS LAS MIGRACIONES SON VÁLIDAS PARA SQLITE.'));
     }
   }
 
-  if (errors.length > 0) {
-    process.exit(1);
-  } else {
-    process.exit(0);
-  }
+  process.exit(errors.length > 0 ? 1 : 0);
 }
 
 validateMigrations();

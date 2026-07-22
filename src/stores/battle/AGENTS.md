@@ -19,3 +19,8 @@ Battle Engine Team / Visual FX Programmers.
 ## Verification
 
 - Run `validate_fsm_implementation.ts` and `npm run test:node`.
+
+## Child DOX Index
+
+- [battle.ts](./battle.ts): Central battle store defining state machines, active combat context, and turn control.
+- [battleMoveSync.ts](./battleMoveSync.ts): Helper for synchronizing move PPs and definitions from simulator requests into active Pokémon.

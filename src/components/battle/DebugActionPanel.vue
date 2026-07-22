@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
 import { getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex'
 import { gameBus } from '@/logic/events/gameBus'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -108,48 +109,6 @@ watch(activeEnemyId, (newId) => {
   }
 }, { immediate: true })
 
-const defeatEnemy = async () => {
-  const e = battleStore.enemy
-  if (!e) return
-  battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info', e)
-  e.hp = 0
-  await battleStore.handleFaint('enemy')
-}
-
-const defeatPlayer = async () => {
-  const p = battleStore.player
-  if (!p) return
-  battleStore.addLog('DEBUG: Ejecutando Suicidio...', 'log-info', p)
-  p.hp = 0
-  await battleStore.handleFaint('player')
-}
-
-const healPlayer = () => {
-  const p = battleStore.player
-  if (!p) return
-  p.hp = p.maxHp
-  p.status = null
-  battleStore.addLog('DEBUG: Jugador curado.', 'log-info', p)
-}
-
-const healEnemy = () => {
-  const e = battleStore.enemy
-  if (!e) return
-  e.hp = e.maxHp
-  e.status = null
-  battleStore.addLog('DEBUG: Enemigo curado.', 'log-info', e)
-}
-
-const addExpForNextLevel = async () => {
-  await battleStore.awardDebugExp()
-}
-
-const drainPP = () => {
-  const p = battleStore.player
-  if (!p) return
-  p.moves.forEach(m => { if (m) m.pp = 1 })
-  battleStore.addLog('DEBUG: PP de todos los movimientos seteados a 1.', 'log-info', p)
-}
 
 const debugCapture = async () => {
   if (!battleStore.state?.enemy || battleStore.isProcessing) return
@@ -355,54 +314,8 @@ const toggleStatus = (side: string, type: string) => {
 
 <template>
   <div class="debug-menu custom-scrollbar-vicio">
-    <div class="debug-row">
-      <button
-        class="debug-btn kill-btn"
-        @click.stop="defeatEnemy"
-      >
-        KILL ENEMY
-      </button>
-      <button
-        class="debug-btn kill-btn"
-        @click.stop="defeatPlayer"
-      >
-        KILL ME
-      </button>
-      <button
-        class="debug-btn heal-btn"
-        @click.stop="healPlayer"
-      >
-        HEAL ME
-      </button>
-      <button
-        class="debug-btn heal-btn"
-        @click.stop="healEnemy"
-      >
-        HEAL ENEMY
-      </button>
-    </div>
-    <div
-      class="debug-row"
-      style="margin-top: 2px;"
-    >
-      <button
-        class="debug-btn exp-btn"
-        @click.stop="addExpForNextLevel"
-      >
-        ⚡ EXP AL SIGUIENTE NIVEL
-      </button>
-    </div>
-    <div
-      class="debug-row"
-      style="margin-top: 2px;"
-    >
-      <button
-        class="debug-btn pp-drain-btn"
-        @click.stop="drainPP"
-      >
-        🧪 PP → 1 (SOFTLOCK TEST)
-      </button>
-    </div>
+    <!-- Quick Actions -->
+    <DebugActionPanelQuickButtons />
 
     <div class="debug-section">
       <div class="section-label">

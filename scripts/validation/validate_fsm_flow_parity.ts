@@ -17,16 +17,7 @@ interface TransitionStep {
 }
 
 // ─── Utilidades de Descubrimiento ───────────────────────────────────────────
-async function walk(dir: string): Promise<string[]> {
-  try {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    const files = await Promise.all(entries.map((res) => {
-      const resPath = path.resolve(dir, res.name);
-      return res.isDirectory() ? walk(resPath) : (['.ts', '.vue'].includes(path.extname(res.name)) ? [resPath] : []);
-    }));
-    return files.flat();
-  } catch { return []; }
-}
+import { walkSourceFiles as walk } from './fsmParityParser.ts';
 
 async function getExecutionSequence(): Promise<string[]> {
   const allFiles = await walk(SRC_ROOT);

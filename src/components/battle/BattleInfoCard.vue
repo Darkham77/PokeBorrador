@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import BattleInfoCardStatusContainer from './BattleInfoCardStatusContainer.vue'
+import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue'
+import PartyPreviewGrid from './PartyPreviewGrid.vue'
 import HPBar from './HPBar.vue'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useProfileStore } from '@/stores/player/profile'
@@ -64,6 +66,8 @@ const showStatsTable = computed(() => {
 
 const cardRef = ref<HTMLElement | null>(null)
 
+import BattleInfoCardHeader from './BattleInfoCardHeader.vue'
+
 // --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
 const isLevelingUp = ref(false)
 
@@ -90,9 +94,6 @@ watch(() => p.value.level, (newLevel, oldLevel) => {
     isLevelingUp.value = true
   }
 }, { immediate: false })
-
-const getGenderText = (g: string) => (({ M: '♂', F: '♀' } as Record<string, string>)[g] || '')
-const getGenderCls = (g: string) => (({ M: 'gender-male', F: 'gender-female' } as Record<string, string>)[g] || 'gender-none')
 
 // Hook de orquestación de estados y etapas de combate
 const { unifiedStatuses, volatileStatuses } = useCombatantStatus(p, battleStore, computed(() => props.isPlayer))
@@ -163,26 +164,11 @@ const teamBallsStatus = computed(() => {
     ]"
   >
     <div class="card-content-wrapper">
-      <div class="card-header">
-        <span 
-          class="poke-name"
-        >
-          {{ isScrambled ? '???' : (p.name === 'Nidoran-M' || p.name === 'Nidoran-F' ? 'Nidoran' : p.name) }}
-        </span>
-        <div
-          v-if="p.gender && !isScrambled && !p.name.includes(getGenderText(p.gender))"
-          class="m-badge-gender"
-          :class="getGenderCls(p.gender)"
-        >
-          {{ getGenderText(p.gender) }}
-        </div>
-        <img
-          v-if="!isPlayer && p.caught"
-          :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
-          class="caught-icon"
-          @error="e => (e.target as HTMLImageElement).style.display = 'none'"
-        >
-      </div>
+      <BattleInfoCardHeader
+        :pokemon="p"
+        :is-player="isPlayer"
+        :is-scrambled="isScrambled"
+      />
         
       <div class="level-row">
         <div class="poke-level m-badge-level">
@@ -229,17 +215,10 @@ const teamBallsStatus = computed(() => {
       </div>
 
       <!-- Poké Balls Status Row for Trainers/NPCs/PvP -->
-      <div
+      <PartyPreviewGrid
         v-if="showTeamBalls"
-        class="team-balls-row"
-      >
-        <div 
-          v-for="(status, idx) in teamBallsStatus" 
-          :key="idx"
-          class="ball-slot"
-          :class="status"
-        />
-      </div>
+        :team-balls-status="teamBallsStatus"
+      />
 
       <HPBar
         :hp="p.hp"
@@ -252,112 +231,26 @@ const teamBallsStatus = computed(() => {
         :pokemon-uid="p.uid"
       />
 
-      <!-- Contenedor de Estados Unificado -->
-      <div 
+      <BattleInfoCardStatusContainer
         v-if="!isScrambled && unifiedStatuses.length > 0"
-        class="status-container"
-      >
-        <PVTooltip
-          v-for="status in unifiedStatuses"
-          :key="status.id"
-          :title="status.title"
-          position="bottom"
-        >
-          <div
-            class="m-status-tag"
-            :class="[status.class, { 'is-boosted': status.isBoosted }]"
-          >
-            {{ status.emoji }}<span 
-              v-if="status.stageValue !== undefined" 
-              class="stage-arrow"
-              :class="status.stageValue > 0 ? 'up' : 'down'"
-            >{{ status.stageValue > 0 ? '▲' : '▼' }}{{ Math.abs(status.stageValue) }}</span>
-            <span
-              v-if="status.count"
-              class="status-counter"
-            >
-              {{ status.count }}t
-            </span>
-          </div>
-
-          <template #content>
-            <div class="status-pro-tooltip">
-              <div 
-                v-if="status.isAdminOnly"
-                class="admin-only-disclaimer"
-              >
-                ⚠️ esto es visible solo para administradores
-              </div>
-              <p class="status-desc-text">
-                {{ status.description }}
-              </p>
-              
-              <template v-if="showStatsTable && status.emoji !== '🎒'">
-                <div class="tooltip-divider" />
-                
-                <div class="stats-comparison-grid">
-                  <div class="grid-header-row">
-                    <span class="grid-header">STAT</span>
-                    <span class="grid-header">BASE</span>
-                    <span class="grid-header">MULT</span>
-                    <span class="grid-header">REAL</span>
-                  </div>
-                  
-                  <div 
-                    v-for="statKey in ['atk', 'def', 'spa', 'spd', 'spe']" 
-                    :key="statKey"
-                    class="grid-stat-row"
-                    :class="{
-                      'is-up': getStatModifier(statKey) > 0 || getBreakdown(statKey).weatherMult > 1 || getBreakdown(statKey).abilityMult > 1,
-                      'is-down': getStatModifier(statKey) < 0 || getBreakdown(statKey).statusMult < 1 || getBreakdown(statKey).weatherMult < 1
-                    }"
-                  >
-                    <span class="stat-name-col">
-                      {{ adminStatConfig.find(s => s.key === statKey)?.label }}
-                    </span>
-                    <span class="stat-val-col">{{ getBreakdown(statKey).base }}</span>
-                    <span class="stat-mult-col">
-                      x{{ (getBreakdown(statKey).stageMult * getBreakdown(statKey).weatherMult * getBreakdown(statKey).abilityMult * getBreakdown(statKey).statusMult).toFixed(2) }}
-                    </span>
-                    <span class="stat-final-col highlight-val">
-                      {{ Math.round(getBreakdown(statKey).final) }}
-                    </span>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </template>
-        </PVTooltip>
-      </div>
+        :unified-statuses="unifiedStatuses"
+        :show-stats-table="showStatsTable"
+        :admin-stat-config="adminStatConfig"
+        :get-stat-modifier="getStatModifier"
+        :get-breakdown="getBreakdown"
+        :pokemon="p"
+      />
 
       <!-- Escáner de IVs Activo (debajo de estados, solo para Pokémon salvaje rival) -->
-      <div 
-        v-if="isIvScannerActive && !isPlayer && !isScrambled && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP"
-        class="iv-scanner-radar-hud"
-      >
-        <div class="hud-main-info">
-          <span class="hud-label">RADAR IV</span>
-          <span class="hud-value">{{ ivTotal }}/186</span>
-          <span 
-            v-if="pokemonTierInfo" 
-            class="hud-grade-badge" 
-            :style="{ '--tier-color': pokemonTierInfo.color, '--tier-bg': pokemonTierInfo.bg }"
-          >
-            GRADO {{ pokemonTierInfo.tier }}
-          </span>
-        </div>
-        <div
-          v-if="p.ivs"
-          class="hud-ivs-grid"
-        >
-          <span>HP:{{ p.ivs.hp }}</span>
-          <span>ATK:{{ p.ivs.atk }}</span>
-          <span>DEF:{{ p.ivs.def }}</span>
-          <span>SPA:{{ p.ivs.spa }}</span>
-          <span>SPD:{{ p.ivs.spd }}</span>
-          <span>SPE:{{ p.ivs.spe }}</span>
-        </div>
-      </div>
+      <BattleInfoCardIvRadar
+        :is-iv-scanner-active="isIvScannerActive"
+        :is-player="isPlayer"
+        :is-scrambled="isScrambled"
+        :is-trainer-or-gym-or-pv-p="!!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)"
+        :iv-total="ivTotal"
+        :pokemon-tier-info="pokemonTierInfo"
+        :p="p"
+      />
     </div>
   </div>
 </template>

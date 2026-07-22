@@ -1,5 +1,4 @@
 // fallow-ignore-file circular-dependencies
-// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { sleep } from '@/logic/utils/timeUtils'
 import { ref, computed, watch, nextTick } from 'vue'
@@ -19,20 +18,19 @@ import { clearVolatileStatus } from '@/logic/battle/battleStatus.ts'
 import { startBattleSequence, initBattleSequence, restoreBattleState } from '@/logic/battle/orchestrator.ts'
 import { processFaint, terminateBattle, syncAndPersist } from '@/logic/battle/resolution.ts'
 import { handleBattleFlowCompletion, triggerNextEncounter, startEncounter } from '@/logic/battle/searchLoop.ts'
-import { formatBattleLog } from '@/logic/battle/battleLogger.ts'
 import { executeTurn, runEnemyAction } from '@/logic/battle/battleTurn.ts'
 import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/battleFlow.ts'
-import { handleItemUsage } from '@/logic/battle/battleItems.ts'
 import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
+import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '@/data/system/constants.ts'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleState, BattleStages, BattleLog, BattleSource } from '@/types/battle/battle'
+import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
 import type { Move } from '@/types/pokemon/pokemon'
 
 const INITIAL_STAGES: BattleStages = { 
@@ -96,53 +94,9 @@ export const useBattleStore = defineStore('battle', () => {
     safeStorage.setItem('pvs_combat_zoom', String(newZoom))
   })
 
-  const syncActiveMovesFromRequest = (side: 'player' | 'enemy') => {
-    const active = activeBattle.value
-    if (!active) return
-    
-    const request = side === 'player' ? active.playerRequest : active.enemyRequest
-    const poke = side === 'player' ? active.player : active.enemy
-    
-    if (!poke || !request?.active?.[0]?.moves) return
-    
-    const reqMoves = request.active[0].moves
-    const currentMoves = poke.moves || []
-    
-    const updatedMoves = reqMoves.map((reqMove) => {
-      if (!reqMove) return null
-      const moveId = reqMove.id || ''
-      if (!moveId) return null
-      const match = currentMoves.find(m => m && m.id === moveId)
-      if (match) {
-        match.pp = reqMove.pp ?? 0
-        match.maxPP = reqMove.maxpp ?? 0
-        return match
-      }
-      
-      const md = pokemonDataProvider.getMoveData(moveId)
-      if (!md) {
-        throw new Error(`[syncActiveMovesFromRequest] Movimiento no encontrado por ID en la base de datos: ${moveId}`)
-      }
-      if (!md.name) {
-        throw new Error(`[syncActiveMovesFromRequest] El movimiento "${moveId}" no tiene traducción al español (name requerido).`)
-      }
-      return {
-        id: moveId,
-        name: md.name,
-        type: md.type || 'normal',
-        cat: (md.cat || 'physical') as 'physical' | 'special' | 'status',
-        power: md.power,
-        acc: md.acc,
-        pp: reqMove.pp ?? 0,
-        maxPP: reqMove.maxpp ?? 0,
-        priority: md.priority || 0,
-        effect: md.effect || '',
-        target: (md as { target?: string }).target || 'normal'
-      }
-    })
-    
-    poke.moves = updatedMoves.filter((m): m is Move => m !== null)
-    console.debug(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? m.id : '')))
+  const syncActiveMovesFromRequest = async (side: 'player' | 'enemy') => {
+    const { syncActiveMovesFromRequest: syncMoves } = await import('./battleMoveSync.ts')
+    syncMoves(activeBattle.value, side)
   }
 
   watch(
@@ -292,64 +246,18 @@ export const useBattleStore = defineStore('battle', () => {
       initialPlayer: (gs.state.team as Pokemon[]).find(p => p && p.hp > 0) || null
     })
 
-  const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: 'player' | 'enemy' | null = null) => {
-    const ctx = {
-      gs,
-      activeBattle: activeBattle.value,
-      attackerSide: attackerSide.value
-    }
-    
-    const logItem = formatBattleLog(msg, type, source as BattleSource, ctx)
-    if (sideOverride) logItem.side = sideOverride
-
-    logQueue.value.push(logItem)
-    if (!isProcessingLogs.value) processNextLog()
-  }
-
-
-  const processNextLog = async () => {
-    if (isProcessingLogs.value) return 
-    isProcessingLogs.value = true
-
-    while (true) {
-      if (logQueue.value.length === 0) {
-        isProcessingLogs.value = false
-        if (logQueue.value.length > 0) {
-          isProcessingLogs.value = true
-          continue
-        }
-        break
-      }
-
-      const batchSize = logQueue.value.length > 6 ? 3 : (logQueue.value.length > 3 ? 2 : 1)
-      
-      for (let i = 0; i < batchSize; i++) {
-        if (logQueue.value.length === 0) break
-        const nextItem = logQueue.value.shift()
-        if (nextItem) {
-          battleLogs.value.push(nextItem)
-          if (battleLogs.value.length > 30) battleLogs.value.shift()
-        }
-      }
-
-      const delay = logQueue.value.length > 0 ? 100 : 350
-      await sleep(delay)
-    }
-  }
-
-  const clearLogs = () => {
-    battleLogs.value = []; logQueue.value = []; isProcessingLogs.value = false;
-    playerStages.value = { ...INITIAL_STAGES }
-    enemyStages.value = { ...INITIAL_STAGES }
-    activeMove.value = null
-    attackerSide.value = null
-  }
-
-  const waitForLogs = async () => {
-    while (isProcessingLogs.value || logQueue.value.length > 0) {
-      await sleep(100)
-    }
-  }
+  const { addLog, clearLogs, waitForLogs } = createBattleLoggerHelper(
+    gs,
+    activeBattle,
+    attackerSide,
+    battleLogs,
+    logQueue,
+    isProcessingLogs,
+    playerStages,
+    enemyStages,
+    activeMove,
+    INITIAL_STAGES
+  )
 
   const executeMove = async (moveIndex: number) => {
     if (isProcessing.value || !isBattleActive.value) return
@@ -435,122 +343,24 @@ export const useBattleStore = defineStore('battle', () => {
 
   const useItemInBattle = async (itemId: string, targetIndex: number | null = null) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
-    
-    const activePoke = activeBattle.value.player
-    if (activePoke) {
-      const volatile = activePoke.volatileCounters
-      if (volatile) {
-        if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) ||
-            (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
-          return
-        }
-      }
-    }
 
     isProcessing.value = true
-    
     try {
-      const targetPoke = (targetIndex !== null) ? gs.state.team[targetIndex] : activeBattle.value.player
-      if (!targetPoke) { isProcessing.value = false; return }
-
-      attackerSide.value = 'player'
-      if (!activeBattle.value || !activeBattle.value.enemy) { isProcessing.value = false; return }
-      
-      const res = await handleItemUsage(itemId, targetPoke, activeBattle.value.enemy, { 
-        eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm, itemId
+      const { processUseItemInBattle } = await import('./battleItemUseHelper.ts')
+      await processUseItemInBattle(getContext(), itemId, targetIndex, {
+        eventStore,
+        addLog,
+        audio,
+        consumeItem,
+        fsm,
+        gs,
+        uiStore,
+        endBattle,
+        handleFaint,
+        runEnemyAction,
+        persistBattle,
+        syncTeamHP
       })
-
-      // Sincronizar de vuelta si el Pokémon modificado es el activo en el combate
-      if (activeBattle.value.player && targetPoke.uid === activeBattle.value.player.uid) {
-        activeBattle.value.player.hp = targetPoke.hp
-        activeBattle.value.player.status = targetPoke.status
-        activeBattle.value.player.moves = targetPoke.moves
-      }
-
-      attackerSide.value = null
-      activeMove.value = null
-      
-      const castRes = res as { action: string, pokemon?: Pokemon }
-      if (castRes.action === 'capture') {
-        activeBattle.value.isCapture = true
-        activeBattle.value.over = true 
-        
-        // Cazabichos: Red Maestra (20% chance to duplicate captured bug Pokemon)
-        if (gs.state.playerClass === 'cazabichos' && castRes.pokemon) {
-          const cap = castRes.pokemon;
-          const t1 = String(cap.type || '').toLowerCase();
-          const t2 = String(cap.type2 || '').toLowerCase();
-          const isBug = t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
-          
-          if (isBug && Math.random() < 0.20) {
-            const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-            const clone = makePokemon(cap.id, cap.level || 5);
-            if (clone) {
-              clone.caught = true;
-              clone.nickname = cap.nickname;
-              gs.state.box.push(clone);
-              addLog(`¡Red Maestra duplicó la captura! Se envió una copia de ${clone.name} a la caja.`, 'log-success', 'player');
-              uiStore.notify(`¡Captura duplicada! Copia de ${clone.name} en la caja`, '🕸️');
-            }
-          }
-        }
-
-        gs.addPokemon(castRes.pokemon || null, { notify: true })
-        isProcessing.value = false
-        await endBattle(true, false)
-        return
-      } else if (castRes.action !== 'fail') {
-        if (activeBattle.value) {
-          activeBattle.value.playerUsedItem = true;
-        }
-        if (castRes.pokemon) {
-          if (targetIndex !== null && gs.state.team[targetIndex]) {
-            gs.state.team[targetIndex] = castRes.pokemon;
-          }
-          const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex);
-          if (isTargetActive && activeBattle.value?.player) {
-            activeBattle.value.player = castRes.pokemon;
-          }
-          syncTeamHP();
-        }
-        persistBattle()
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-        await runEnemyAction(getContext())
-        
-        if (activeBattle.value?.over) {
-          if (activeBattle.value.fled) {
-            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-            const ctx = getContext()
-            if (ctx.animations?.awaitTween) {
-              await ctx.animations.awaitTween('escape-enemy')
-            } else {
-              await sleep(800)
-            }
-            await endBattle(false, true)
-          }
-          isProcessing.value = false
-          return
-        }
-
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
-
-        if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-          await handleFaint('player')
-          isProcessing.value = false
-          return
-        }
-        if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-          await handleFaint('enemy')
-          isProcessing.value = false
-          return
-        }
-      }
-      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-        isProcessing.value = false
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-      }
     } catch (error) {
       logger.error('BattleStore', `Error using item in battle: ${(error as Error).message}`, error)
       addLog('¡Ocurrió un error al usar el objeto!', 'log-error')

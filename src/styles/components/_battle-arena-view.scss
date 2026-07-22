@@ -91,7 +91,7 @@
   &.enemy-trainer {
     z-index: calc(var(--z-map-spawns) + 1) !important;
     transform: Scale(0.8);
-    opacity: 0.85;
+    opacity: 1;
   }
 
   &.player-trainer {
