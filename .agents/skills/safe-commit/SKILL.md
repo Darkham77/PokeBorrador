@@ -79,9 +79,17 @@ graph TD
 > - **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
 > - **Incremental Update & Visual Proof**: Keep the **task** and **scratchpad** updated **phase by phase**. After updating the **task**, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
 
-### 0. Initial Snapshot Commit (CRITICAL)
+### 0. Mandatory Artifact Creation (FIRST STEP BEFORE ANY COMMIT)
 
-BEFORE touching any files or starting the verification cycle, you MUST perform an initial commit to safeguard the current state.
+BEFORE executing any git commit or touching repository code, you MUST physically create and register the required workspace artifacts using `write_to_file` with `ArtifactMetadata`.
+
+1. **Mandatory `task.md` File Creation**: You MUST call `write_to_file` (with `ArtifactMetadata`) to physically write `<appDataDir>\brain\<conversation-id>/task.md`. This is the **absolute source of truth**; it must record every granular step from scratch (Steps 0 through 10). Writing task lists solely as inline chat text without writing the artifact file is STRICTLY FORBIDDEN.
+2. **Mandatory `implementation_plan.md` File Creation**: You MUST call `write_to_file` (with `ArtifactMetadata`) to physically write `<appDataDir>\brain\<conversation-id>/implementation_plan.md` if it does not already exist. It must document the proposed commit scope, audit verification pipeline, and risk mitigation strategy.
+3. **Scratchpad Setup**: Prepare any temporary log files inside `<appDataDir>\brain\<conversation-id>/scratch/`.
+
+### 1. Initial Snapshot Commit (CRITICAL)
+
+AFTER creating the physical `task.md` and `implementation_plan.md` artifacts, you MUST perform an initial commit to safeguard the current state.
 
 1. **Analyze Diff and Status**: Run `git status` and `git diff` to analyze ALL modified and untracked files in the workspace since the last commit. You MUST NOT rely solely on the current conversation context.
 2. **AGENTS.md Chain Review**: Identify every file you modified. For each one, walk the path from the repo root and read every `AGENTS.md` found along the route. Confirm that the changes do not contradict any local contract (the closest `AGENTS.md` controls). If a contradiction is found, resolve it before committing.
@@ -90,15 +98,6 @@ BEFORE touching any files or starting the verification cycle, you MUST perform a
 5. `git add .`
 6. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
 7. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
-
-### 1. Task & Scratchpad Tracking (MANDATORY)
-
-Before making any significant changes or finalizing tasks, maximum traceability of the process MUST be guaranteed using only the **task** and **scratchpad** artifacts.
-
-- **Rigor in Tracking**: Create a **NEW task** artifact. This is the **absolute source of truth**; it must record every granular step from scratch, avoiding inheriting tasks from previous sessions.
-- **Scratchpad Usage**: Use the **scratchpad** artifact for temporary notes, log captures, and intermediate data processing.
-- **Documented Closure**: Create or update `walkthrough.md` at Step 7 with evidence to close the technical rigor cycle.
-- Verify that every change aligns with the **Hybrid Retro-Modern** identity.
 
 ### 2. Test Gap Analysis
 
@@ -182,7 +181,7 @@ Before extracting lessons or committing, clean up all temporary artifacts.
 
 ### 7. Walkthrough Generation (MANDATORY)
 
-Create or update the `walkthrough.md` artifact.
+You MUST call `write_to_file` to physically create or update the `<appDataDir>\brain\<conversation-id>/walkthrough.md` artifact (including `ArtifactMetadata`).
 
 - **Content**: Summarize the changes made, the files affected, and the verification results.
 - **Evidence**: Embed any relevant screenshots or recordings produced during the task.

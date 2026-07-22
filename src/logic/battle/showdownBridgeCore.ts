@@ -95,7 +95,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const hpString = parts[3] || '';
       if (victim && hpString) {
         const hpParts = hpString.split('/');
-        const oldHp = victim.hp;
         victim.hp = parseInt(hpParts[0] || '0');
         if (hpParts[1]) {
           const parsedMax = parseInt(hpParts[1]);
