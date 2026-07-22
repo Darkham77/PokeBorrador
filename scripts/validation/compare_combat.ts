@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';

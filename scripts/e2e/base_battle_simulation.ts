@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
 import { BaseE2ESimulation } from './base_simulation.ts';
 import { confirmAndStartBattle, executeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';

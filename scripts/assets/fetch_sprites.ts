@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 

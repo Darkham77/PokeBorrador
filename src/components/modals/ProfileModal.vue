@@ -18,7 +18,7 @@ import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
-import ProfileFactionWarCard from '@/components/profile/ProfileFactionWarCard.vue'
+import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
 import ProfileIdentityCard from './ProfileIdentityCard.vue'
@@ -286,7 +286,7 @@ const handleFactionChoice = () => {
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 @use "@/styles/components/cosmetics" as *;
-@use "@/styles/components/_profile-shared.scss";
+@use "@/styles/components/_profile-shared.scss" as *;
 
 
 

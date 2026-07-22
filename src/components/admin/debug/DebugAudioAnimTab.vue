@@ -85,6 +85,11 @@ const isEffectActive = (type: string, category: string) => {
   if (category === 'secondary') {
     const p = poke as (Pokemon & Record<string, unknown>) | undefined
     if (type === 'confused') return (p?.confused || 0) > 0
+    if (type === 'disabledTurns') return (p?.disabledTurns || 0) > 0
+    if (type === 'tauntTurns') return (p?.tauntTurns || 0) > 0
+    if (type === 'encoreTurns') return (p?.encoreTurns || 0) > 0
+    if (type === 'perishSongCount') return (p?.perishSongCount || 0) > 0
+    if (type === 'bound') return (p?.bound || 0) > 0
     if (type === 'focus_energy') return !!p?.focusEnergy
     if (type === 'lock_on') return !!p?.lockOn
     if (type === 'seeded') return !!p?.seeded

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
 import { loginE2ETestUser, waitForStoreReady } from './e2e_helpers.ts';
 

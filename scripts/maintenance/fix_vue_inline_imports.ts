@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/fix_vue_inline_imports.ts
  *

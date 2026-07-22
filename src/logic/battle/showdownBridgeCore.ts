@@ -101,8 +101,14 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           const parsedMax = parseInt(hpParts[1]);
           if (!isNaN(parsedMax)) victim.maxHp = parsedMax;
         }
-        console.debug(`[BRIDGE -damage] Victim: ${victim.name} (uid: ${victim.uid}) HP: ${oldHp} -> ${victim.hp}. Active Player: ${store.activeBattle.value?.player?.name} (uid: ${store.activeBattle.value?.player?.uid}) HP: ${store.activeBattle.value?.player?.hp}`);
-        store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
+        const fromClause = parts.find(p => p.startsWith('[from]'));
+        if (fromClause && fromClause.toLowerCase().includes('recoil')) {
+          store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
+        } else if (fromClause && fromClause.toLowerCase().includes('item: life orb')) {
+          store.addLog(`¡${victim.name} recibió daño de Vidasfera!`, 'log-info', victim);
+        } else {
+          store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
+        }
         const side = victim === p ? 'player' : 'enemy';
         if (store.animations?.handleShakeRequest) {
           await store.animations.handleShakeRequest({ side });

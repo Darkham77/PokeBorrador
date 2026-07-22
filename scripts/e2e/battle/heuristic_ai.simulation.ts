@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';

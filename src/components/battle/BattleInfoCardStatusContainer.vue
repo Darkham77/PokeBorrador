@@ -67,3 +67,46 @@ defineProps<{
     </PVTooltip>
   </div>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
+.status-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  position: relative;
+
+  @media (max-width: 600px) {
+    gap: 4px;
+    margin-top: 6px;
+  }
+}
+
+.status-pro-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-only-disclaimer {
+  @include pixelated;
+  font-size: 7px;
+  color: #ffd60a;
+  background: Rgba(255, 214, 10, 0.15);
+  border: 1px dashed Rgba(255, 214, 10, 0.4);
+  padding: 4px;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tooltip-divider {
+  height: 1px;
+  background: Rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+</style>

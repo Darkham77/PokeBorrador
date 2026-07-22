@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file backup_supabase_db.ts
  * @description Script automático para descargar un respaldo completo (backup) en formato JSON

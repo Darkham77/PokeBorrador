@@ -203,6 +203,11 @@ export function registerBattleTools(debug: DebugSystem) {
 
         if (poke) {
           if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
+          if (type === 'disabledTurns') poke.disabledTurns = (poke.disabledTurns || 0) > 0 ? 0 : 4
+          if (type === 'tauntTurns') poke.tauntTurns = (poke.tauntTurns || 0) > 0 ? 0 : 3
+          if (type === 'encoreTurns') poke.encoreTurns = (poke.encoreTurns || 0) > 0 ? 0 : 3
+          if (type === 'perishSongCount') poke.perishSongCount = (poke.perishSongCount || 0) > 0 ? 0 : 3
+          if (type === 'bound') poke.bound = (poke.bound || 0) > 0 ? 0 : 4
           if (type === 'attracted') poke.attracted = !poke.attracted
           if (type === 'cursed') poke.cursed = !poke.cursed
           if (type === 'seeded') poke.seeded = !poke.seeded

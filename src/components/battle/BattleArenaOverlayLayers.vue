@@ -1,11 +1,25 @@
 <script setup lang="ts">
+import gsap from 'gsap'
+
 defineProps<{
   isGlobalFadeActive: boolean
 }>()
+
+function onEnter(el: Element, done: () => void) {
+  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power1.out', onComplete: done })
+}
+
+function onLeave(el: Element, done: () => void) {
+  gsap.to(el, { opacity: 0, duration: 0.4, ease: 'power1.out', onComplete: done })
+}
 </script>
 
 <template>
-  <Transition name="fade-overlay">
+  <Transition
+    :css="false"
+    @enter="onEnter"
+    @leave="onLeave"
+  >
     <div
       v-if="isGlobalFadeActive"
       class="global-transition-overlay"
@@ -18,15 +32,7 @@ defineProps<{
   position: absolute;
   inset: 0;
   background: #000;
-  z-index: 9999;
+  z-index: calc(var(--z-overlay) - 1);
   pointer-events: none;
-}
-.fade-overlay-enter-active,
-.fade-overlay-leave-active {
-  transition: opacity 0.4s ease;
-}
-.fade-overlay-enter-from,
-.fade-overlay-leave-to {
-  opacity: 0;
 }
 </style>

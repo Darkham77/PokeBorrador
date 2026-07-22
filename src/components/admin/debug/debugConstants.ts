@@ -41,11 +41,16 @@ export const DEBUG_STATUS_CONDITIONS: DebugItem[] = [
 ]
 
 export const DEBUG_SECONDARY_EFFECTS: DebugItem[] = [
-  { id: 'confused', label: 'CONFUSIÓN', icon: '💫' },
-  { id: 'attracted', label: 'ATRACCIÓN', icon: '💖' },
+  { id: 'confused', label: 'CONFUSIÓN (4t)', icon: '🌀' },
+  { id: 'disabledTurns', label: 'ANULADO (4t)', icon: '🔒' },
+  { id: 'tauntTurns', label: 'MOFA (3t)', icon: '🤐' },
+  { id: 'encoreTurns', label: 'OTRA VEZ (3t)', icon: '🔁' },
+  { id: 'perishSongCount', label: 'CANTO MORTAL (3t)', icon: '⏳' },
+  { id: 'bound', label: 'ATADURA (4t)', icon: '⛓️' },
+  { id: 'attracted', label: 'ATRACCIÓN', icon: '❤️' },
   { id: 'cursed', label: 'MALDICIÓN', icon: '👻' },
   { id: 'seeded', label: 'DRENADORAS', icon: '🌱' },
-  { id: 'trapped', label: 'ATRAPADO', icon: '🕸️' },
+  { id: 'trapped', label: 'ATRAPADO', icon: '🪤' },
   { id: 'ingrain', label: 'ARRAIGADO', icon: '🌳' },
   { id: 'protect', label: 'PROTECCIÓN', icon: '🛡️' },
   { id: 'endure', label: 'AGUANTE', icon: '✊' },

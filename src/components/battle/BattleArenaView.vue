@@ -25,6 +25,7 @@ import { useBattleShadows } from '@/composables/battle/useBattleShadows'
 import { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
 import { useBattleHud } from '@/composables/battle/useBattleHud'
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals'
+import { useBattleMinigames } from '@/composables/battle/useBattleMinigames'
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
@@ -174,6 +175,22 @@ const {
   silhouetteOpacity
 } = animations
 
+// Reactive z-index for front bush via VirtualEntity :z-index prop.
+// Behind pokemon (+1) when emerging or in encounter intro phase; in front (+3) otherwise.
+const frontBushZIndex = computed(() => {
+  return bushIsBehind.value
+    ? 'calc(var(--z-map-spawns) + 1)'
+    : 'calc(var(--z-map-spawns) + 3)'
+})
+
+const {
+  handleMinigameCancel,
+  handleFishingSuccess,
+  handleFishingFail,
+  handleArchaeologySuccess,
+  handleArchaeologyFail
+} = useBattleMinigames(battleStore, mapStore, uiStore, enemy, resetAll)
+
 const playerCombatants = computed(() => {
   const list: Pokemon[] = []
   if (battleStore.exitingPlayer) {
@@ -317,105 +334,6 @@ watch(
   },
   { immediate: true }
 )
-
-const handleMinigameCancel = async () => {
-  logger.warn('BattleArenaView', 'Minigame CANCELLED by user')
-  if (battleStore.state) {
-    battleStore.state.isFishing = false
-    battleStore.state.isArchaeology = false
-  }
-  resetAll()
-  battleStore.attackerSide = null
-  battleStore.activeMove = null
-  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-  await battleStore.completeBattleFlow('search')
-}
-
-const handleFishingSuccess = async () => {
-  logger.success('BattleArenaView', 'Fishing SUCCESS')
-  if (battleStore.state) {
-    battleStore.state.isFishing = false
-    battleStore.state.isArchaeology = false
-  }
-  resetAll()
-  await battleStore.startEncounter()
-}
-
-const handleFishingFail = async () => {
-  logger.warn('BattleArenaView', 'Fishing FAIL')
-  const uiStore = useUIStore()
-  uiStore.notify('El Pokémon escapó...', '💨')
-  battleStore.addLog('El Pokémon escapó...', 'log-info', '💨')
-
-  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
-  if (battleStore.state) {
-    battleStore.state.isFishing = false
-    battleStore.state.isArchaeology = false
-  }
-  resetAll()
-  battleStore.attackerSide = null
-  battleStore.activeMove = null
-  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-
-  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
-  await battleStore.completeBattleFlow('search')
-}
-
-const handleArchaeologySuccess = async (difficulty: string) => {
-  logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`)
-  
-  const locId = battleStore.state?.locationId || 'route1'
-  await mapStore.triggerArchaeologyRewards(locId, difficulty)
-  
-  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
-  if (battleStore.state) {
-    battleStore.state.isArchaeology = false
-    battleStore.state.isFishing = false
-  }
-  resetAll()
-  battleStore.attackerSide = null
-  battleStore.activeMove = null
-  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-
-  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
-  await battleStore.completeBattleFlow('search')
-}
-
-const handleArchaeologyFail = async () => {
-  logger.warn('BattleArenaView', 'Archaeology FAIL')
-  
-  let fossilId = 'oldamber'
-  let emoji = '💎'
-  if (enemy.value?.id === 'kabuto') {
-    fossilId = 'domefossil'
-    emoji = '🛡'
-  } else if (enemy.value?.id === 'omanyte') {
-    fossilId = 'helixfossil'
-    emoji = '🐚'
-  }
-  
-  const { getItemName, SHOP_ITEMS } = await import('@/data/inventory/items')
-  const fossilName = getItemName(fossilId)
-  const itemData = SHOP_ITEMS.find(i => i.id === fossilId)
-  const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
-
-  const uiStore = useUIStore()
-  uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite)
-  battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilName)
-
-  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
-  if (battleStore.state) {
-    battleStore.state.isArchaeology = false
-    battleStore.state.isFishing = false
-  }
-  resetAll()
-  battleStore.attackerSide = null
-  battleStore.activeMove = null
-  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-
-  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
-  await battleStore.completeBattleFlow('search')
-}
 
 
 watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { immediate: true })
@@ -595,6 +513,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
         <div class="battle-sprites">
           <!-- Arbustos Atrás -->
           <VirtualEntity
+            class="back-bush-entity"
             :x="p2Pos.x"
             :y="p2Pos.y"
             :w="BASE_ENTITY_SIZE_ENEMY"
@@ -727,6 +646,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
             :shadow-key="currentEnemyShadowKey"
+            :z-index="'calc(var(--z-map-spawns) + 2)'"
             :anim-state="getPokemonAnimState('enemy', p)"
             :ball-id="getPokemonBallId('enemy', p)"
             :is-shaking="getPokemonIsShaking('enemy', p)"
@@ -747,11 +667,10 @@ const onDialogLeave = (el: Element, done: () => void) => {
             :style="{ opacity: activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid ? silhouetteOpacity : 1 }"
           />
 
-          <!-- Arbustos Adelante --
-          Paso BUSHES_BACK del manual: cuando isEmerging=true, los arbustos frontales
-          se mueven detrás del Pokémon (force-behind) pero siguen siendo visibles.
-          Esto permite que el sprite salte POR ENCIMA de los arbustos. -->
+          <!-- Arbustos Adelante -->
           <VirtualEntity
+            class="front-bush-entity"
+            :z-index="frontBushZIndex"
             :x="p2Pos.x"
             :y="p2Pos.y"
             :w="BASE_ENTITY_SIZE_ENEMY"
@@ -764,7 +683,6 @@ const onDialogLeave = (el: Element, done: () => void) => {
               :seed="grassSeed"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
-              :force-behind="bushIsBehind"
               :hide-instant="enemyIsFloating"
             />
           </VirtualEntity>
@@ -780,6 +698,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             :base-size="BASE_ENTITY_SIZE_PLAYER"
             :ground-y="playerGroundY"
             :shadow-key="currentPlayerShadowKey"
+            :z-index="'calc(var(--z-map-spawns) + 4)'"
             :anim-state="getPokemonAnimState('player', p)"
             :ball-id="getPokemonBallId('player', p)"
             :is-shaking="getPokemonIsShaking('player', p)"

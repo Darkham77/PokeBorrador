@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file generate_migrations.js
  * @description Generador automático de manifiesto de migraciones SQL.

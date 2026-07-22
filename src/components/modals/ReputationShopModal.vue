@@ -7,7 +7,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
-import { getItemName, getItemById } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 
 interface Props {
   show?: boolean
@@ -28,10 +28,7 @@ const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
 interface ReputationShopItem {
   id: string
-  name?: string
   repCost: number
-  desc?: string
-  sprite: string
   givesId: string
   givesQty: number
   tier: 'common' | 'rare' | 'epic' | 'legend'
@@ -39,23 +36,30 @@ interface ReputationShopItem {
 }
 
 function resolveItemName(item: ReputationShopItem): string {
-  const catalogName = getItemName(item.givesId)
-  return catalogName !== item.givesId ? catalogName : (item.name ?? item.givesId)
+  const catalogItem = getItemById(item.givesId)
+  return catalogItem.name
 }
 
 function resolveItemDesc(item: ReputationShopItem): string {
-  try {
-    return getItemById(item.givesId).desc ?? item.desc ?? ''
-  } catch {
-    return item.desc ?? ''
+  const catalogItem = getItemById(item.givesId)
+  if (!catalogItem.desc) {
+    throw new Error(`El objeto '${item.givesId}' de la Tienda de Reputación no tiene descripción configurada en el catálogo.`)
   }
+  return catalogItem.desc
+}
+
+function resolveItemSprite(item: ReputationShopItem): string {
+  const catalogItem = getItemById(item.givesId)
+  if (!catalogItem.sprite) {
+    throw new Error(`El objeto '${item.givesId}' de la Tienda de Reputación no tiene sprite configurado en el catálogo.`)
+  }
+  return catalogItem.sprite
 }
 
 const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'repultraball',
     repCost: 15,
-    sprite: 'crafting/tier3/ultra_ball',
     givesId: 'ultraball',
     givesQty: 3,
     tier: 'rare',
@@ -64,7 +68,6 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'reptmearthquake',
     repCost: 50,
-    sprite: 'crafting/tier3/tm_ground',
     givesId: 'tm26',
     givesQty: 1,
     tier: 'legend',
@@ -73,7 +76,6 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'reprevive',
     repCost: 20,
-    sprite: 'crafting/tier3/revive',
     givesId: 'revive',
     givesQty: 5,
     tier: 'epic',
@@ -82,7 +84,6 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'repfullheal',
     repCost: 15,
-    sprite: 'crafting/tier3/full_heal',
     givesId: 'fullheal',
     givesQty: 3,
     tier: 'rare',
@@ -91,7 +92,6 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'repivscanner',
     repCost: 40,
-    sprite: 'crafting/tier3/poke_radar',
     givesId: 'ivscanner',
     givesQty: 1,
     tier: 'epic',
@@ -100,7 +100,6 @@ const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
   {
     id: 'repstarpiece',
     repCost: 30,
-    sprite: 'crafting/tier0/star_piece',
     givesId: 'starpiece',
     givesQty: 3,
     tier: 'rare',
@@ -117,7 +116,7 @@ const search = ref('')
 const sortKey = ref<'name' | 'price' | 'rarity'>('name')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 
-const filteredItems = computed<(ReputationShopItem & { name: string; desc: string })[]>(() => {
+const filteredItems = computed<(ReputationShopItem & { name: string; desc: string; sprite: string })[]>(() => {
   const items = REPUTATION_SHOP_ITEMS.filter(item => {
     if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
     if (search.value && !resolveItemName(item).toLowerCase().includes(search.value.toLowerCase())) return false
@@ -126,6 +125,7 @@ const filteredItems = computed<(ReputationShopItem & { name: string; desc: strin
     ...item,
     name: resolveItemName(item),
     desc: resolveItemDesc(item),
+    sprite: resolveItemSprite(item),
   }))
 
   return [...items].sort((a, b) => {

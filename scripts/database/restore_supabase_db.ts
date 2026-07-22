@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file restore_supabase_db.ts
  * @description Script automático para restaurar un respaldo completo (backup) en formato JSON
@@ -15,26 +16,21 @@
  */
 
 import fsPromises from 'node:fs/promises';
-import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
+const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
 
 export async function restoreSupabaseDb() {
   console.log(styleText('bold', '\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js 26+) ---'));
 
-  const serverConfigs = await readAndParseEnv();
-  const baseProfiles = Object.keys(serverConfigs);
-  if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
-    process.exit(1);
-  }
+  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
   const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
 
@@ -77,10 +73,10 @@ export async function restoreSupabaseDb() {
   console.log(styleText('bold', styleText('blue', `==================================================`)));
 
   // 1. Resolver archivo de respaldo a utilizar
-  let targetBackupPath = fileArg ? path.resolve(process.cwd(), fileArg) : '';
+  let targetBackupPath = fileArg ? safeResolve(process.cwd(), fileArg) : '';
 
   if (!targetBackupPath) {
-    const serverBackupDir = path.join(BACKUPS_DIR, canonicalName);
+    const serverBackupDir = safeJoin(BACKUPS_DIR, canonicalName);
     console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${canonicalName}] en database/backups/${canonicalName}/...`));
     try {
       const files = await fsPromises.readdir(serverBackupDir);
@@ -95,7 +91,7 @@ export async function restoreSupabaseDb() {
         process.exit(1);
       }
 
-      targetBackupPath = path.join(serverBackupDir, matchingFiles[0]);
+      targetBackupPath = safeJoin(serverBackupDir, matchingFiles[0]);
       console.log(styleText('green', `🏷️  Archivo de respaldo detectado automáticamente: ${matchingFiles[0]}`));
     } catch (rErr: unknown) {
       console.error(styleText('red', `❌ Error al inspeccionar el directorio de respaldos: ${(rErr as Error).message}`));

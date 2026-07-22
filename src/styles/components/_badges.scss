@@ -176,6 +176,7 @@
   line-height: 1;
   position: relative;
   top: -2.5px;
+  margin-right: 8px;
   @include pixelated;
   will-change: transform, filter;
 
@@ -191,26 +192,61 @@
   }
 
   .stage-arrow {
+    position: absolute;
+    top: 1px;
+    right: -6px;
     font-size: 8px;
-    margin-left: 2px;
-    margin-right: 1px;
-    font-weight: bold;
+    line-height: 1;
+    background: Rgba(0, 0, 0, 0.85);
+    padding: 1px 3px;
+    border-radius: 4px;
+    font-weight: 900;
     font-family: var(--font-pixel);
     @include pixelated;
-    
+    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+
     &.up {
       color: #10B981;
-      text-shadow: 1px 1px 0 #000;
+      border: 1px solid Rgba(16, 185, 129, 0.4);
+      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
     }
     &.down {
       color: #EF4444;
-      text-shadow: 1px 1px 0 #000;
+      border: 1px solid Rgba(239, 68, 68, 0.4);
+      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
     }
 
     @media (max-width: 600px) {
       font-size: 6px;
-      margin-left: 1px;
-      margin-right: 0px;
+      top: 1px;
+      right: -5px;
+      padding: 0 2px;
+    }
+  }
+
+  .status-counter {
+    position: absolute;
+    top: 1px;
+    right: -6px;
+    font-size: 8px;
+    line-height: 1;
+    background: Rgba(0, 0, 0, 0.85);
+    padding: 1px 3px;
+    border-radius: 4px;
+    color: #ffd60a;
+    font-weight: 900;
+    font-family: var(--font-pixel);
+    @include pixelated;
+    border: 1px solid Rgba(255, 255, 255, 0.25);
+    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+
+    @media (max-width: 600px) {
+      font-size: 6px;
+      top: 1px;
+      right: -5px;
+      padding: 0 2px;
     }
   }
 

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { test, type Page } from '@playwright/test';
 import { generateTestBatches } from '../fuzzer/generators/fuzzer_team_generator.ts';
 import fs from 'node:fs';

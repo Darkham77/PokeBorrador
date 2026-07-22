@@ -65,6 +65,7 @@ function getKoColorClass(koText: string) {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/_move-tooltip-shared.scss" as *;
 
 .calc-section-title {
   font-size: 7.5px;
@@ -76,52 +77,7 @@ function getKoColorClass(koText: string) {
 }
 
 .damage-section {
-  border-top: 1px dotted Rgba(255, 255, 255, 0.15);
-  padding-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.damage-grid {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  gap: 4px 8px;
-  align-items: center;
-}
-
-.dmg-label {
-  font-size: 7.5px;
-  color: Rgba(255, 255, 255, 0.6);
-  font-weight: bold;
-}
-
-.dmg-value-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-
-  .hp-range {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-  }
-
-  .pct-range {
-    font-size: 6.5px;
-    color: Rgba(255, 255, 255, 0.5);
-    line-height: 1.2;
-    margin-top: 1px;
-    white-space: nowrap;
-  }
-
-  &.crit {
-    .hp-range {
-      color: #FBBF24;
-      text-shadow: 0 0 3px Rgba(251, 191, 36, 0.3);
-    }
-  }
+  @include damage-section-mixin;
 }
 
 .ko-chance-badge {

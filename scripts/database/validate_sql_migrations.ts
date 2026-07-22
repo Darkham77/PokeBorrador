@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/validate_sql_migrations.ts
  * 

@@ -84,7 +84,8 @@ function getSpeciesBaseStat(key: string): number {
 
   .grid-header-row {
     display: grid;
-    grid-template-columns: 32px 24px 20px 22px 26px 26px 1fr;
+    grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
+    column-gap: 6px;
     text-align: right;
     color: Rgba(255, 255, 255, 0.4);
     font-weight: bold;
@@ -98,7 +99,8 @@ function getSpeciesBaseStat(key: string): number {
 
   .grid-stat-row {
     display: grid;
-    grid-template-columns: 32px 24px 20px 22px 26px 26px 1fr;
+    grid-template-columns: 28px 22px 14px 18px 26px 20px 1fr;
+    column-gap: 6px;
     text-align: right;
     align-items: center;
     padding: 1px 0;

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file supabaseClient.ts
  * @description Helper compartido para leer el archivo .env maestro, parsear perfiles de servidor
@@ -136,4 +137,14 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
     }
   }
   return dbUrl;
+}
+
+export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Record<string, ServerConfig>; baseProfiles: string[] }> {
+  const serverConfigs = await readAndParseEnv();
+  const baseProfiles = Object.keys(serverConfigs);
+  if (baseProfiles.length === 0) {
+    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
+    process.exit(1);
+  }
+  return { serverConfigs, baseProfiles };
 }

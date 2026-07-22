@@ -178,17 +178,20 @@ export function useBattleHud(
   })
 
   const bushIsBehind = computed(() => {
-    const state = toValue(battleStore.fsm?.currentState)
-    if (state && ['ACTIVE_BATTLE', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(state)) {
+    if (animations.isEmerging.value || animations.isWildEntryAnimation.value) {
       return true
     }
-    const sub = toValue(battleStore.fsm?.currentSubState)
-    if (!sub) return false
-    return ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE', 'ENTRY_ANIM', 'PARALLEL_ENTRY', 'PARALLEL_PREP'].includes(sub)
+    const state = toValue(battleStore.currentFsmState) || (battleStore.fsm?.currentState ? toValue(battleStore.fsm.currentState) : null)
+    if (state && ['ACTIVE_BATTLE', 'REORDER_TEAM', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(state)) {
+      return true
+    }
+    const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null)
+    const result = sub !== null && ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE'].includes(String(sub))
+    return result
   })
 
   const enemyIsJumping = computed(() => {
-    const sub = toValue(battleStore.fsm?.currentSubState)
+    const sub = toValue(battleStore.currentSubState) || (battleStore.fsm?.currentSubState ? toValue(battleStore.fsm.currentSubState) : null)
     if (!sub) return false
     return animations.isEmerging.value && (sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP' || sub === 'JUMP_SHADOW')
   })

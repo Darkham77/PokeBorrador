@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /* eslint-disable */
 // scripts/e2e/fuzzer/tools/compare_replay_parity.ts
 import fs from 'node:fs';

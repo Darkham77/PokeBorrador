@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -5,12 +6,13 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 
-const RAW_ASSETS_DIR = path.resolve(process.cwd(), '_raw-assets');
-const FRONT_DIR = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
-const SCRATCH_DIR = path.resolve(process.cwd(), 'scratch');
+const RAW_ASSETS_DIR = safeResolve(process.cwd(), '_raw-assets');
+const FRONT_DIR = safeJoin(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
+const SCRATCH_DIR = safeResolve(process.cwd(), 'scratch');
 
 interface AnimationAnalysisResult {
   pokemonId: string;

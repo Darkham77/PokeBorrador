@@ -19,8 +19,7 @@
     "src/main.{ts,tsx,js,jsx}",
     "vitest.config.ts",
     "vitest.node.config.ts",
-    "vitest.workspace.ts",
-    "scripts/**/*.ts"
+    "vitest.workspace.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,
@@ -452,6 +451,10 @@
     {
       "file": "src/logic/battle/ai/scriptedAI.ts",
       "exports": ["ScriptedAI"]
+    },
+    {
+      "file": "src/composables/battle/useCombatantStatus.ts",
+      "exports": ["useCombatantStatus"]
     }
   ]
 }

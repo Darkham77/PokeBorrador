@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';

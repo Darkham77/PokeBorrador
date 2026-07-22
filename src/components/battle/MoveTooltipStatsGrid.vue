@@ -148,45 +148,10 @@ defineProps<{
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/_move-tooltip-shared.scss" as *;
 
 .combat-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-
-.stat-box {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  .stat-lbl {
-    font-size: 6px;
-    color: Rgba(255, 255, 255, 0.5);
-    font-weight: bold;
-    letter-spacing: 0.3px;
-  }
-
-  .stat-val {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-    white-space: nowrap;
-
-    &.boosted {
-      color: #10B981;
-      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-    }
-
-    &.penalized {
-      color: #EF4444;
-      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-    }
-  }
+  @include combat-stats-grid-mixin;
 }
 
 .arrow {

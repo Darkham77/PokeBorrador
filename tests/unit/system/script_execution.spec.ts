@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { generateMigrations } from '../../../scripts/database/generate_migrations'
-import { restoreSupabaseDb } from '../../../scripts/database/restore_supabase_db'
-import { updateSupabaseDb } from '../../../scripts/database/update_supabase_db'
+import { generateMigrations } from '../../../scripts/database/generate_migrations.ts'
+import { restoreSupabaseDb } from '../../../scripts/database/restore_supabase_db.ts'
+import { updateSupabaseDb } from '../../../scripts/database/update_supabase_db.ts'
 
 describe('Utility Scripts Exports Coverage', () => {
   it('should export database utility functions', () => {

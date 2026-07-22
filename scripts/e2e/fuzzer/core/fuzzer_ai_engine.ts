@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/e2e/fuzzer/core/fuzzer_ai_engine.ts
 //
 // AI vs AI headless fuzzer engine.

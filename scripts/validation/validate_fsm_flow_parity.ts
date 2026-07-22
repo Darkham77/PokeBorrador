@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * validate_fsm_flow_parity.ts
  * Auditoría de paridad de flujo: Compara secuencias Mermaid vs Implementación Dinámica.

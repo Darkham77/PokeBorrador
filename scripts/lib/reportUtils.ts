@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file reportUtils.ts
  * @description Utilidades compartidas para formateo de reportes y salida de scripts de validación

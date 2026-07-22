@@ -10,7 +10,7 @@ interface ReputationShopItem {
   name: string
   repCost: number
   desc: string
-  sprite: string
+  sprite?: string
   givesId: string
   givesQty: number
   tier: 'common' | 'rare' | 'epic' | 'legend'
@@ -79,11 +79,8 @@ const buy = async () => {
 const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 const tierColor = computed(() => getItemTierColor(props.item.tier))
 
-const handleImageError = (ev: Event) => {
-  const el = ev.target as HTMLImageElement
-  if (el) {
-    el.style.display = 'none'
-  }
+const handleImageError = () => {
+  console.error(`Error al cargar sprite del objeto '${props.item.givesId}': ${props.item.sprite}`)
 }
 </script>
 
@@ -105,7 +102,7 @@ const handleImageError = (ev: Event) => {
     <div class="item-card-top">
       <div class="item-visual-box">
         <img
-          :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
+          :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite || item.givesId)"
           :alt="item.name"
           @error="handleImageError"
         >

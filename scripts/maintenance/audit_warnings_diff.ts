@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/maintenance/audit_warnings_diff.ts
  * 

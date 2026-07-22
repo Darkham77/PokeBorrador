@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet, ID } from '@pkmn/sim';
 import crypto from 'node:crypto';

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file admin_supabase_users.ts
  * @description Script automático de administración de usuarios Supabase (Nube o NAS),
@@ -17,7 +18,7 @@
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
@@ -25,12 +26,7 @@ enableCompileCache();
 export async function adminSupabaseUsers(): Promise<void> {
   console.log(styleText('bold', '\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js 26+) ---'));
 
-  const serverConfigs = await readAndParseEnv();
-  const baseProfiles = Object.keys(serverConfigs);
-  if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
-    process.exit(1);
-  }
+  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
   const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
 

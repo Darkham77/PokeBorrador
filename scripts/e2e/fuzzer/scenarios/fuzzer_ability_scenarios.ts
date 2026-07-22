@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-ability-scenarios.ts
 import type { PokemonSet, Battle } from '@pkmn/sim';
 

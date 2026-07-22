@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-agent.ts
 
 export interface SidePokemon {

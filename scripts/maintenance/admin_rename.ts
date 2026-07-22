@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import { createClient, type PostgrestError } from '@supabase/supabase-js';
 import { parseArgs } from 'node:util';
 

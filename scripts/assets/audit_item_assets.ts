@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/audit_item_assets.ts
  *

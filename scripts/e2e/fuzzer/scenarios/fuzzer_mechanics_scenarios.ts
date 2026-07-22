@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/e2e/fuzzer/scenarios/fuzzer_mechanics_scenarios.ts
 import type { ScriptedScenario } from './fuzzer_ability_scenarios.ts';
 

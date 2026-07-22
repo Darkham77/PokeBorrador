@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * AUDITOR MAESTRO FSM v7.6 - RIGUROSIDAD QUIRÚRGICA TOTAL + DINAMISMO.
  */

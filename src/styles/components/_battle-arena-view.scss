@@ -100,14 +100,20 @@
   }
 }
 
-// Z-Index hierarchy for Pokémon combatants
+// Z-Index hierarchy for Pokémon combatants (no !important - inline style from VirtualEntity :z-index prop takes precedence for bush)
 :deep(.combatant-sprite.enemy-side-sprite) {
-  z-index: calc(var(--z-map-spawns) + 2) !important;
+  z-index: calc(var(--z-map-spawns) + 2);
 }
 
 :deep(.combatant-sprite.player-side-sprite) {
-  z-index: calc(var(--z-map-spawns) + 3) !important;
+  z-index: calc(var(--z-map-spawns) + 3);
 }
+
+// Back bush: always behind everything
+:deep(.back-bush-entity) {
+  z-index: calc(var(--z-map-spawns) - 5);
+}
+
 
 .retro-battle-dialog {
   position: absolute;

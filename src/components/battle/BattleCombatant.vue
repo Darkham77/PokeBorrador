@@ -38,6 +38,7 @@ const props = withDefaults(defineProps<BattleCombatantProps>(), {
   hidden: false,
   hasSeat: false,
   stages: () => ({}),
+  zIndex: undefined,
   targetPosition: null
 })
 

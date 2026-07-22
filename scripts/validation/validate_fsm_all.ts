@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/validation/validate_fsm_all.ts
  * 

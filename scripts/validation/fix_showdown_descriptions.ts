@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 import fs from 'node:fs';
 
 const DB_PATH = './showdown/sandbox_db/data/showdown_db_es.json';

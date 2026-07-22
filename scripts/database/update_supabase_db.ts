@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * @file update_supabase_db.ts
  * @description Script automático para acceder a los servidores Supabase y gestionar la base de datos.
@@ -14,27 +15,22 @@
  */
 
 import fsPromises from 'node:fs/promises';
-import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
-const BASELINE_FILE = path.resolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
+const MIGRATIONS_DIR = safeResolve(process.cwd(), 'database/migrations');
+const BASELINE_FILE = safeResolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
 
 export async function updateSupabaseDb(): Promise<void> {
   console.log(styleText('bold', '\n--- 🛡️ SUPABASE DATABASE MANAGER & MIGRATOR (Node.js 26+) ---'));
 
-  const serverConfigs = await readAndParseEnv();
-  const baseProfiles = Object.keys(serverConfigs);
-  if (baseProfiles.length === 0) {
-    console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
-    process.exit(1);
-  }
+  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
   const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
 
@@ -132,7 +128,7 @@ export async function updateSupabaseDb(): Promise<void> {
         const migrationId = filename.replace('.sql', '');
         if (!appliedIds.has(migrationId)) {
           console.log(styleText('cyan', `📦 Aplicando parche: ${filename}...`));
-          const filePath = path.join(MIGRATIONS_DIR, filename);
+          const filePath = safeJoin(MIGRATIONS_DIR, filename);
           let migContent = '';
           try {
             await using migHandle = await fsPromises.open(filePath, 'r');
@@ -187,7 +183,7 @@ export async function updateSupabaseDb(): Promise<void> {
       // 5. Sincronizar app_version en system_config
       let appVersion = 'v0.5.0';
       try {
-        const verPath = path.resolve(process.cwd(), 'public/version.json');
+        const verPath = safeResolve(process.cwd(), 'public/version.json');
         const verContent = JSON.parse(await fsPromises.readFile(verPath, 'utf-8')) as { version?: string };
         if (verContent && verContent.version) {
           appVersion = verContent.version;

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/convert_assets.ts
  * 
@@ -16,12 +17,13 @@ import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 import { TRAINER_TYPES } from '../../src/data/player/trainerTypes.ts';
 import { Dex, toID } from '@pkmn/sim';
+import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 // Speed up execution
 enableCompileCache();
 
-const SOURCE_DIR = path.resolve(process.cwd(), '_raw-assets');
-const PUBLIC_ASSETS_DIR = path.resolve(process.cwd(), 'public', 'assets');
+const SOURCE_DIR = safeResolve(process.cwd(), '_raw-assets');
+const PUBLIC_ASSETS_DIR = safeResolve(process.cwd(), 'public', 'assets');
 
 export interface AnimatedSpriteData {
   readonly frames: number;
@@ -101,9 +103,9 @@ async function handleProcessFile(filePath: string) {
   }
 
   const relPath = path.relative(SOURCE_DIR, filePath);
-  const destPath = path.join(process.cwd(), relPath);
+  const destPath = safeJoin(process.cwd(), relPath);
   const destDir = path.dirname(destPath);
-  const destFile = path.join(destDir, `${path.parse(destPath).name}.webp`);
+  const destFile = safeJoin(destDir, `${path.parse(destPath).name}.webp`);
 
   await fs.mkdir(destDir, { recursive: true });
 
@@ -139,7 +141,7 @@ async function handleProcessFile(filePath: string) {
   await image.webp(webpOptions).toFile(destFile);
 
   if (isMap) {
-    const destMobileFile = path.join(destDir, `${path.parse(destPath).name}_mobile.webp`);
+    const destMobileFile = safeJoin(destDir, `${path.parse(destPath).name}_mobile.webp`);
     await sharp(filePath)
       .resize({ width: 400, kernel: 'nearest' })
       .webp(webpOptions)

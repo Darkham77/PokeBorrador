@@ -12,6 +12,7 @@ import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGri
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
+import ProfileStatsSection from './ProfileStatsSection.vue'
 import { useTrainerProfile } from './useTrainerProfile'
 import { useStatHover } from '@/composables/ui/useStatHover'
 
@@ -326,46 +327,13 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           :handle-stat-leave="handleStatLeave"
         />
 
-        <!-- Class Custom Details -->
-        <div
-          v-if="playerClass"
-          class="profile-section-card class-details-card"
-        >
-          <div class="section-label">
-            ESPECIALIZACIÓN DE CLASE
-          </div>
-          <div class="stats-grid">
-            <div
-              v-for="stat in classStats"
-              :key="stat.label"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
-              <span class="stat-lbl">{{ stat.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Historial de Actividad -->
-        <div class="profile-section-card activity-card">
-          <div class="section-label">
-            HISTORIAL DE ACTIVIDAD
-          </div>
-          <div class="stats-grid">
-            <div
-              v-for="stat in activityStats"
-              :key="stat.label"
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span :class="['stat-val', stat.class]">{{ stat.value }}</span>
-              <span class="stat-lbl">{{ stat.label }}</span>
-            </div>
-          </div>
-        </div>
+        <ProfileStatsSection
+          :player-class="playerClass"
+          :class-stats="classStats"
+          :activity-stats="activityStats"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
+        />
 
         <!-- Logros de Entrenador -->
         <ProfileAchievementsGrid

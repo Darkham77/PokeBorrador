@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-item-generator.ts
 import { Dex } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';

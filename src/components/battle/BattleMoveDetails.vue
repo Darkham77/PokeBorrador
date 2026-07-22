@@ -70,6 +70,7 @@ defineProps<Props>()
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 @use "@/styles/tokens/colors" as *;
+@use "@/styles/components/_move-detail-item.scss" as *;
 
 .move-details-row {
   display: flex;
@@ -81,33 +82,7 @@ defineProps<Props>()
   padding-top: 6px;
   
   .detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    @media (max-width: 560px) {
-      align-items: flex-start;
-      flex-direction: row;
-      gap: 4px;
-      border: none;
-      padding: 0;
-    }
-
-    .d-label { 
-      font-size: 6px; 
-      color: $white; 
-      opacity: 0.4; 
-      @media (max-width: 560px) { font-size: 5px; opacity: 0.6; min-width: 25px; }
-    }
-    .d-val { 
-      font-size: 7px; 
-      color: $white; 
-      font-weight: 900; 
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      @media (max-width: 560px) { font-size: 6px; }
-    }
+    @include move-detail-item;
   }
 }
 

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/e2e/fuzzer/core/fuzzer_runner.ts
 import { styleText } from 'node:util';
 

@@ -116,7 +116,8 @@ For each modified file, ask: **"Does this file contain non-trivial logic?"** —
 You MUST run the warnings-diff gatekeeper tool and fix EVERY issue until a clean pass is achieved.
 
 > [!IMPORTANT] **NO VALIDATION EXEMPTIONS**: Every single step of the validation pipeline is STRICTLY MANDATORY. Under no circumstances (including "trivial" or minor single-token changes) may the agent skip any step, especially the production build (`npm run build`), type check, linting, tests, or audit.
-> [!IMPORTANT] **Zero-Error Mandate for the Entire Project**: The final repository state MUST have exactly ZERO errors (including typescript, compilation, linting, build, SASS, GPU, items, database, etc.) across the entire project. The agent is STRICTLY REQUIRED to autonomously diagnose, fix, and repair ALL project-wide errors before committing.
+> [!IMPORTANT] **Zero-Error Mandate for the Entire Project**: The final repository state MUST have exactly ZERO errors (including typescript, compilation, linting, build, SASS, GPU, items, database, security, audit, etc.) across the ENTIRE project. NO ERRORS ARE ALLOWED TO EXIST, REGARDLESS OF WHETHER THEY ARE NEW OR PRE-EXISTING. The agent is STRICTLY REQUIRED to autonomously diagnose, fix, and repair ALL project-wide errors before committing.
+> [!IMPORTANT] **Build Fail Mandate on Audit Errors**: `npm run build` MUST fail if there is even 1 audit error. Under NO circumstances may a build or commit proceed if any audit error remains in the codebase. Every audit error must be resolved at the source before any commit can be created.
 > [!IMPORTANT] **Zero-Warning Mandate for Files Modified Since last Push (`origin/main`)**: Every single file containing local changes compared to GitHub's `origin/main` MUST have all its warnings resolved. You may ONLY ignore a warning in a modified file if that exact warning already existed in the version of the file on `origin/main`.
 
 **THE MANDATORY AUDIT PIPELINE:**

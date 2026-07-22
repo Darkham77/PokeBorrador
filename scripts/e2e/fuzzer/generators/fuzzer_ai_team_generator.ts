@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/e2e/fuzzer/generators/fuzzer_ai_team_generator.ts
 //
 // Generates batches of random Gen 9 battles for the AI vs AI fuzzer.

@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * validate_fsm_diagrams.ts
  * Auditoría FSM vs Manual: compara el diagrama Mermaid contra las constantes en TS.

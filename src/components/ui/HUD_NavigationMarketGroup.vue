@@ -99,3 +99,5 @@ defineProps<{
     </Transition>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_hud-navigation.scss"></style>

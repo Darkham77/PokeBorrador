@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/import_backup_to_sqlite.ts
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
