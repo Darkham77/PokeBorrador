@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T23:55:11.374889893Z",
+  "generatedAt": "2026-07-22T16:00:20.267241943Z",
   "summary": {
     "total": 100,
     "passed": 100,
@@ -9,700 +9,700 @@
   },
   "battles": [
     {
-      "id": "ai-2e4b28dfbf2f",
+      "id": "ai-2c1c218e5be5",
       "ended": true,
       "winner": "p2",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-e2e2b8d6aa98",
+      "id": "ai-94fc49add542",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-3b0644c57e22",
+      "id": "ai-bff43748a44f",
       "ended": true,
       "winner": "p2",
       "turns": 32,
       "error": null
     },
     {
-      "id": "ai-dc4b6b8ef7b7",
+      "id": "ai-4088de7540b6",
       "ended": true,
       "winner": "p2",
       "turns": 20,
       "error": null
     },
     {
-      "id": "ai-880709f687e1",
+      "id": "ai-f2ceaa54a73b",
       "ended": true,
       "winner": "p2",
       "turns": 27,
       "error": null
     },
     {
-      "id": "ai-5504300c41da",
+      "id": "ai-1753a1c019f0",
       "ended": true,
       "winner": "p1",
       "turns": 47,
       "error": null
     },
     {
-      "id": "ai-2d8c3f5027a2",
+      "id": "ai-030784f075f6",
       "ended": true,
       "winner": "p2",
       "turns": 23,
       "error": null
     },
     {
-      "id": "ai-3ab3a3a8a1df",
+      "id": "ai-b1eac1b47b5a",
       "ended": true,
       "winner": "p2",
       "turns": 20,
       "error": null
     },
     {
-      "id": "ai-00f4085c3717",
+      "id": "ai-92e4efe30a15",
       "ended": true,
       "winner": "p1",
       "turns": 28,
       "error": null
     },
     {
-      "id": "ai-e6245ed290ae",
+      "id": "ai-31736140e128",
       "ended": true,
       "winner": "p1",
       "turns": 20,
       "error": null
     },
     {
-      "id": "ai-bbf849a9dd08",
+      "id": "ai-9e8752a9864e",
       "ended": true,
       "winner": "p1",
       "turns": 43,
       "error": null
     },
     {
-      "id": "ai-065e64bc935c",
+      "id": "ai-31984619671e",
       "ended": true,
       "winner": "p2",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-453c0435625b",
+      "id": "ai-ed557ca9c46f",
       "ended": true,
       "winner": "p1",
       "turns": 39,
       "error": null
     },
     {
-      "id": "ai-1c05e2dc51b3",
+      "id": "ai-3b9fae76f8ff",
       "ended": true,
       "winner": "p2",
       "turns": 38,
       "error": null
     },
     {
-      "id": "ai-08b6e22d7478",
+      "id": "ai-2318e4d29e22",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-99b4aa93f7d0",
+      "id": "ai-b6f258a5e091",
       "ended": true,
       "winner": "p2",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-8742fc3ee2dc",
+      "id": "ai-530fa275eb66",
       "ended": true,
       "winner": "p2",
       "turns": 36,
       "error": null
     },
     {
-      "id": "ai-d3c9f220b95d",
+      "id": "ai-bd67df7ab28f",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-1ba685a2bc95",
+      "id": "ai-a7c779fa10ce",
       "ended": true,
       "winner": "p1",
       "turns": 29,
       "error": null
     },
     {
-      "id": "ai-86ebdbc4d92c",
+      "id": "ai-e442abdcc623",
       "ended": true,
       "winner": "p2",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-d25d9de52192",
+      "id": "ai-c619c6445a81",
       "ended": true,
       "winner": "p1",
       "turns": 59,
       "error": null
     },
     {
-      "id": "ai-6f2b70f849fc",
+      "id": "ai-96544d63c216",
       "ended": true,
       "winner": "p1",
       "turns": 55,
       "error": null
     },
     {
-      "id": "ai-b0c1c555bfe3",
+      "id": "ai-c95dfff50ef9",
       "ended": true,
       "winner": "p2",
       "turns": 80,
       "error": null
     },
     {
-      "id": "ai-fa6f59df32cc",
+      "id": "ai-58fc2b2015f6",
       "ended": true,
       "winner": "p1",
       "turns": 43,
       "error": null
     },
     {
-      "id": "ai-b18fc2aeef73",
+      "id": "ai-17d9cdb376ce",
       "ended": true,
       "winner": "p2",
       "turns": 38,
       "error": null
     },
     {
-      "id": "ai-a251ba0fa5a1",
+      "id": "ai-e8db766c94e2",
       "ended": true,
       "winner": "p1",
       "turns": 23,
       "error": null
     },
     {
-      "id": "ai-19f9c78246a9",
+      "id": "ai-a069afa0fe98",
       "ended": true,
       "winner": "p2",
       "turns": 30,
       "error": null
     },
     {
-      "id": "ai-ae167833d75e",
+      "id": "ai-74afd8f9bde0",
       "ended": true,
       "winner": "p2",
       "turns": 27,
       "error": null
     },
     {
-      "id": "ai-97f6a4f9ebf2",
+      "id": "ai-10b1f74e81bc",
       "ended": true,
       "winner": "p2",
       "turns": 30,
       "error": null
     },
     {
-      "id": "ai-cf6086e2c047",
+      "id": "ai-a6f2b2fc0198",
       "ended": true,
       "winner": "p2",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-e6821dff8357",
+      "id": "ai-32505bba60e5",
       "ended": true,
       "winner": "p1",
       "turns": 29,
       "error": null
     },
     {
-      "id": "ai-8eabf89c44d8",
+      "id": "ai-76f0065ac7e2",
       "ended": true,
       "winner": "p1",
       "turns": 21,
       "error": null
     },
     {
-      "id": "ai-91e79f3d825c",
+      "id": "ai-6eee5c09c5d7",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-be415677babd",
+      "id": "ai-efc1fe112af5",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-bc6a0b60c096",
+      "id": "ai-b792b6b5928c",
       "ended": true,
       "winner": "p2",
       "turns": 39,
       "error": null
     },
     {
-      "id": "ai-a41979bf3bca",
+      "id": "ai-9cbd236c35e4",
       "ended": true,
       "winner": "p1",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-d3513e86be65",
+      "id": "ai-1e9793250f7e",
       "ended": true,
       "winner": "p1",
       "turns": 43,
       "error": null
     },
     {
-      "id": "ai-ce6cdc3d3d55",
+      "id": "ai-bdaa6d3bacec",
       "ended": true,
       "winner": "p1",
       "turns": 23,
       "error": null
     },
     {
-      "id": "ai-d554554881f8",
+      "id": "ai-63247efc69a1",
       "ended": true,
       "winner": "p2",
       "turns": 24,
       "error": null
     },
     {
-      "id": "ai-a5953be93f72",
+      "id": "ai-d83287518b14",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-1aa2d9dff429",
+      "id": "ai-a5955a191f3e",
       "ended": true,
       "winner": "p2",
       "turns": 29,
       "error": null
     },
     {
-      "id": "ai-46a288cb23cd",
+      "id": "ai-a36f0859bdc2",
       "ended": true,
       "winner": "p1",
       "turns": 56,
       "error": null
     },
     {
-      "id": "ai-de58136412dd",
+      "id": "ai-ed990ae663e5",
       "ended": true,
       "winner": "p1",
       "turns": 42,
       "error": null
     },
     {
-      "id": "ai-a8f286d4dc40",
+      "id": "ai-3bdaadd5ba18",
       "ended": true,
       "winner": "p2",
       "turns": 26,
       "error": null
     },
     {
-      "id": "ai-c40bd9ba1964",
+      "id": "ai-cd77768333a9",
       "ended": true,
       "winner": "p2",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-cfb60439a2ba",
+      "id": "ai-73c4a21529d5",
       "ended": true,
       "winner": "p2",
       "turns": 24,
       "error": null
     },
     {
-      "id": "ai-33f448dc8c71",
+      "id": "ai-86bf430618f5",
       "ended": true,
       "winner": "p1",
       "turns": 28,
       "error": null
     },
     {
-      "id": "ai-38a857dcb14f",
+      "id": "ai-90a6fe95adff",
       "ended": true,
       "winner": "p1",
       "turns": 60,
       "error": null
     },
     {
-      "id": "ai-ff8d0e66d422",
+      "id": "ai-c6f6c2379221",
       "ended": true,
       "winner": "p1",
       "turns": 30,
       "error": null
     },
     {
-      "id": "ai-ed469d9506a9",
+      "id": "ai-bffa993f88a7",
       "ended": true,
       "winner": "p2",
       "turns": 54,
       "error": null
     },
     {
-      "id": "ai-ff3d2c19c593",
+      "id": "ai-6d4f33f22344",
       "ended": true,
       "winner": "p1",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-a60bd7ac0b27",
+      "id": "ai-a9f83a88b2d4",
       "ended": true,
       "winner": "p2",
       "turns": 41,
       "error": null
     },
     {
-      "id": "ai-91857a97b51c",
+      "id": "ai-dcc8d48e6f57",
       "ended": true,
       "winner": "p1",
       "turns": 30,
       "error": null
     },
     {
-      "id": "ai-084c0a61f1db",
+      "id": "ai-d6461746183c",
       "ended": true,
       "winner": "p1",
       "turns": 36,
       "error": null
     },
     {
-      "id": "ai-3abf73591a0e",
+      "id": "ai-5f60551b55ad",
       "ended": true,
       "winner": "p2",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-e5c8bb64c9d2",
+      "id": "ai-6467f8957c3e",
       "ended": true,
       "winner": "p2",
       "turns": 38,
       "error": null
     },
     {
-      "id": "ai-5dd6339fa98a",
+      "id": "ai-3e5174c3eb3a",
       "ended": true,
       "winner": "p2",
       "turns": 20,
       "error": null
     },
     {
-      "id": "ai-0e76fc3ace6a",
+      "id": "ai-bfb72bb42600",
       "ended": true,
       "winner": "p1",
       "turns": 19,
       "error": null
     },
     {
-      "id": "ai-fe8498a39cd8",
+      "id": "ai-446e960554db",
       "ended": true,
       "winner": "p2",
       "turns": 29,
       "error": null
     },
     {
-      "id": "ai-7739102d0f87",
+      "id": "ai-aebdb354cdd9",
       "ended": true,
       "winner": "p2",
       "turns": 27,
       "error": null
     },
     {
-      "id": "ai-5f2177d1cb0f",
+      "id": "ai-faa5070df53a",
       "ended": true,
       "winner": "p1",
       "turns": 35,
       "error": null
     },
     {
-      "id": "ai-e2366333936c",
+      "id": "ai-d8f66707554b",
       "ended": true,
       "winner": "p1",
       "turns": 26,
       "error": null
     },
     {
-      "id": "ai-d6edcc298fc7",
+      "id": "ai-351d8b254f0b",
       "ended": true,
       "winner": "p1",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-ae31d1faa58f",
+      "id": "ai-d2873c7607c2",
       "ended": true,
       "winner": "p2",
       "turns": 30,
       "error": null
     },
     {
-      "id": "ai-fd26509b9043",
+      "id": "ai-b71948745724",
       "ended": true,
       "winner": "p2",
       "turns": 19,
       "error": null
     },
     {
-      "id": "ai-43877abea9c5",
+      "id": "ai-77280406bec1",
       "ended": true,
       "winner": "p2",
       "turns": 39,
       "error": null
     },
     {
-      "id": "ai-3b4ab0412043",
+      "id": "ai-380ff0c674be",
       "ended": true,
       "winner": "p1",
       "turns": 44,
       "error": null
     },
     {
-      "id": "ai-999e375bc8c9",
+      "id": "ai-a03393c11e59",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-3ee7fe76983b",
+      "id": "ai-3a76e528b031",
       "ended": true,
       "winner": "p2",
       "turns": 40,
       "error": null
     },
     {
-      "id": "ai-4e93d27364f0",
+      "id": "ai-9a52cba10c81",
       "ended": true,
       "winner": "p1",
       "turns": 32,
       "error": null
     },
     {
-      "id": "ai-b88b1c24d9b7",
+      "id": "ai-09521a267d87",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-7c96337943d8",
+      "id": "ai-782b87c269a5",
       "ended": true,
       "winner": "p1",
       "turns": 45,
       "error": null
     },
     {
-      "id": "ai-4eff8e997340",
+      "id": "ai-335a0da4a892",
       "ended": true,
       "winner": "p1",
       "turns": 44,
       "error": null
     },
     {
-      "id": "ai-51fdc3728fa4",
+      "id": "ai-af8c6ed79bab",
       "ended": true,
       "winner": "p1",
       "turns": 38,
       "error": null
     },
     {
-      "id": "ai-bea4dc3d949c",
+      "id": "ai-e09cc4baa655",
       "ended": true,
       "winner": "p1",
       "turns": 36,
       "error": null
     },
     {
-      "id": "ai-b98014d305b0",
+      "id": "ai-c25d37dc97ce",
       "ended": true,
       "winner": "p2",
       "turns": 44,
       "error": null
     },
     {
-      "id": "ai-ec7fabca1009",
+      "id": "ai-eb0cf7451911",
       "ended": true,
       "winner": "p1",
       "turns": 27,
       "error": null
     },
     {
-      "id": "ai-ce53a70762dc",
+      "id": "ai-4a48a7a614bc",
       "ended": true,
       "winner": "p2",
       "turns": 21,
       "error": null
     },
     {
-      "id": "ai-7e05ecc21d35",
+      "id": "ai-ef4a38357613",
       "ended": true,
       "winner": "p2",
       "turns": 40,
       "error": null
     },
     {
-      "id": "ai-2700df93fc87",
+      "id": "ai-38325bfa97db",
       "ended": true,
       "winner": "p2",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-d5fac1249eb6",
+      "id": "ai-e3eea121ec46",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-9294d02401e8",
+      "id": "ai-7972712c3a44",
       "ended": true,
       "winner": "p1",
       "turns": 25,
       "error": null
     },
     {
-      "id": "ai-e20de5029a94",
+      "id": "ai-be2ff29ae2ae",
       "ended": true,
       "winner": "p2",
       "turns": 24,
       "error": null
     },
     {
-      "id": "ai-a0bbb234dba2",
+      "id": "ai-7e22b068b4cb",
       "ended": true,
       "winner": "p1",
       "turns": 33,
       "error": null
     },
     {
-      "id": "ai-ced27af54528",
+      "id": "ai-97c3d14497b9",
       "ended": true,
       "winner": "p1",
       "turns": 35,
       "error": null
     },
     {
-      "id": "ai-92376483d97e",
+      "id": "ai-cd9e77dd770a",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-bbc8ad632ed4",
+      "id": "ai-8c395db13356",
       "ended": true,
       "winner": "p1",
       "turns": 39,
       "error": null
     },
     {
-      "id": "ai-9ce8de692835",
+      "id": "ai-f01311c0cf44",
       "ended": true,
       "winner": "p1",
       "turns": 19,
       "error": null
     },
     {
-      "id": "ai-c90013e9b683",
+      "id": "ai-12d628382c3c",
       "ended": true,
       "winner": "p2",
       "turns": 42,
       "error": null
     },
     {
-      "id": "ai-966f20940c59",
+      "id": "ai-eac0c1576295",
       "ended": true,
       "winner": "p1",
       "turns": 34,
       "error": null
     },
     {
-      "id": "ai-3c386a663a0e",
+      "id": "ai-1699748066e6",
       "ended": true,
       "winner": "p2",
       "turns": 61,
       "error": null
     },
     {
-      "id": "ai-d0375bcfc516",
+      "id": "ai-ec9a98d076bd",
       "ended": true,
       "winner": "p2",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-b01dcda24f02",
+      "id": "ai-13917463f39b",
       "ended": true,
       "winner": "p1",
       "turns": 45,
       "error": null
     },
     {
-      "id": "ai-59721c8bcf4e",
+      "id": "ai-d7950e62b461",
       "ended": true,
       "winner": "p1",
       "turns": 43,
       "error": null
     },
     {
-      "id": "ai-faaf2cecb559",
+      "id": "ai-3a2bc15d5d56",
       "ended": true,
       "winner": "p1",
       "turns": 27,
       "error": null
     },
     {
-      "id": "ai-3886ff015dbc",
+      "id": "ai-922327731669",
       "ended": true,
       "winner": "p2",
       "turns": 41,
       "error": null
     },
     {
-      "id": "ai-3988f11f98ac",
+      "id": "ai-fd5d005cc41f",
       "ended": true,
       "winner": "p2",
       "turns": 35,
       "error": null
     },
     {
-      "id": "ai-8fae939d38bf",
+      "id": "ai-87f677866cf7",
       "ended": true,
       "winner": "p2",
       "turns": 29,
       "error": null
     },
     {
-      "id": "ai-a5bafe3a21a1",
+      "id": "ai-e40161c8869c",
       "ended": true,
       "winner": "p1",
       "turns": 31,
       "error": null
     },
     {
-      "id": "ai-150052fca60e",
+      "id": "ai-b2ac56dff14b",
       "ended": true,
       "winner": "p2",
       "turns": 22,

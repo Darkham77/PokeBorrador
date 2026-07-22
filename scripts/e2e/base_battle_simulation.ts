@@ -156,18 +156,14 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         return x - Math.floor(x);
       };
 
-      const { pokemonDebugService } = await import('../../src/logic/debug/pokemonDebugService.ts');
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../src/stores/game.ts');
-      const { useMapStore } = await import('../../src/stores/map.ts');
-      const { testResetShowdownWorker } = await import('../../src/logic/battle/showdownWorkerClient.ts');
-      const { injectDebugSeed } = await import('../../src/logic/battle/battleSeedManager.ts');
+      // Inyectar contexto a través de la API debug global expuesta en window
+      const debug = (window as unknown as { __VITE_DEBUG__: any }).__VITE_DEBUG__;
+      if (debug && debug.testResetShowdownWorker) {
+        debug.testResetShowdownWorker();
+      }
 
-      // Matar worker previo y limpiar estados colgados de la prueba anterior
-      testResetShowdownWorker();
-
-      const battleStore = useBattleStore();
-      const gameStore = useGameStore();
+      const battleStore = debug.useBattleStore();
+      const gameStore = debug.useGameStore();
 
       battleStore.state = null;
       battleStore.fsm.currentSubState = 'WAIT_INPUT';
@@ -178,11 +174,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
       // Forzar el clima a despejado ('clear') en el MapStore para coincidir 1:1 con el fuzzer
-      useMapStore().setGlobalWeather('clear');
+      debug.useMapStore().setGlobalWeather('clear');
 
       // Generar equipo local para el jugador usando la API de depuración con el formato de nicknames correcto
       const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
-        return pokemonDebugService.generate({
+        return debug.pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
           level: set.level ?? 100,
@@ -200,7 +196,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       // Generar equipo local para el enemigo (NPC)
       const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet) => {
-        return pokemonDebugService.generate({
+        return debug.pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
           level: set.level ?? 100,
@@ -252,8 +248,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.enemyChoiceIndex = 0;
       debugObj.cheats = batchData.cheats ?? [];
 
-      if (batchData.seed) {
-        injectDebugSeed(batchData.seed as [number, number, number, number]);
+      if (batchData.seed && debug.injectDebugSeed) {
+        debug.injectDebugSeed(batchData.seed as [number, number, number, number]);
       }
 
       // Iniciar la batalla

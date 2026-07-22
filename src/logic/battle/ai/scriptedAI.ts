@@ -131,6 +131,8 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
   runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0
 
   const choiceStr = runner.resolveAndConsumeNextChoice('p1', active.playerRequest)
+  debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
+  debugObj.p2ChoiceIdx = runner.p2ChoiceIdx
 
   console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx} -> next index #${runner.p1ChoiceIdx}: "${choiceStr}"`)
 

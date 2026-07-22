@@ -1,5 +1,5 @@
 // src/logic/battle/helpers/showdownBattleRunner.ts
-import { requiresAction } from './requestHelper.ts';
+import { requiresAction, classifyRequest } from './requestHelper.ts';
 import { isActionConsumed } from './choiceIndexer.ts';
 
 /**
@@ -38,15 +38,25 @@ export class ShowdownBattleRunner {
       return 'team 1';
     }
 
-    const rawChoice = list[idx] ?? 'pass';
+    let targetIdx = idx;
+    const kind = classifyRequest(activeRequest);
+
+    if (kind === 'force-switch') {
+      // Buscar la siguiente decisión de tipo 'switch' en la lista a partir del índice actual
+      while (targetIdx < list.length && !list[targetIdx]?.trim().toLowerCase().startsWith('switch ')) {
+        targetIdx++;
+      }
+    }
+
+    const rawChoice = list[targetIdx] ?? (kind === 'force-switch' ? 'switch 2' : 'pass');
     const skip = rawChoice.trim().toLowerCase() === 'pass';
     const consumed = isActionConsumed(needsAction, rawChoice, skip);
 
     if (consumed) {
       if (player === 'p1') {
-        this.p1ChoiceIdx++;
+        this.p1ChoiceIdx = targetIdx + 1;
       } else {
-        this.p2ChoiceIdx++;
+        this.p2ChoiceIdx = targetIdx + 1;
       }
     }
 

@@ -118,12 +118,14 @@ export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', log
  */
 export async function loginTestUser(page: Page, testUser: string): Promise<void> {
   // Navegar al Login
-  await page.goto('/login');
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
   // Seleccionar servidor local
   const localTab = page.locator('#server-tab-local').first();
-  await localTab.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-  await clickResilient(localTab);
+  await localTab.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+  if (await localTab.isVisible().catch(() => false)) {
+    await clickResilient(localTab);
+  }
 
   // Iniciar sesión
   const userInput = page.locator('#local-username-input').first();

@@ -3,6 +3,9 @@ import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
+import { useBattleStore } from './battle/battle.ts'
+import { useMapStore } from './map.ts'
+import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 
 // Section Registrations
 import { registerStatsTools } from './debug/sections/statsTools.ts'
@@ -104,6 +107,15 @@ export const useDebugStore = defineStore('debug', () => {
     debugObj.forceGuardian80 = forceGuardian80.value
     debugObj.forceShiny100 = forceShiny100.value
     debugObj.multipliers = debugMultipliers.value
+
+    // Exponer stores y utilidades de depuración requeridas por las simulaciones E2E
+    debugObj.useBattleStore = useBattleStore
+    debugObj.useGameStore = useGameStore
+    debugObj.useMapStore = useMapStore
+    debugObj.testResetShowdownWorker = () => {
+      import('@/logic/battle/showdownWorkerClient').then(m => m.testResetShowdownWorker?.())
+    }
+    debugObj.pokemonDebugService = pokemonDebugService
 
     tools.value.forEach(tool => {
       window.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {
