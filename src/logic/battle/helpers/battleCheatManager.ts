@@ -46,14 +46,15 @@ export class BattleCheatManager {
   /**
    * Evaluates and applies pre-turn cheats.
    */
-  public applyPreTurnCheats(battle: Battle, isFuzzerSimulation = true): void {
+  public applyPreTurnCheats(battle: Battle, isFuzzerSimulation = true, currentStep?: number): void {
     if (!isFuzzerSimulation) return;
+    const targetTurn = currentStep !== undefined ? currentStep : battle.turn;
     for (let i = 0; i < this.cheats.length; i++) {
       const ch = this.cheats[i];
       if (!ch) continue;
 
       const key = `${ch.turn}-${ch.side}-${ch.type}`;
-      if (ch.turn === battle.turn && ch.type === 'heal' && !this.appliedCheats.has(key)) {
+      if (ch.turn === targetTurn && ch.type === 'heal' && !this.appliedCheats.has(key)) {
         const sideObj = ch.side === 'p1' ? battle.p1 : battle.p2;
         const hasFainted = sideObj.pokemon.some(p => p.fainted || p.hp <= 0);
         if (hasFainted) {
@@ -67,15 +68,16 @@ export class BattleCheatManager {
    * Evaluates and applies post-turn cheats.
    * Post-turn cheats are checked after choices resolve, comparing against turnBeforeP1 (the turn number before choices were executed).
    */
-  public applyPostTurnCheats(battle: Battle, turnBeforeP1: number): void {
+  public applyPostTurnCheats(battle: Battle, turnBeforeP1: number, currentStep?: number): void {
+    const targetTurnBefore = currentStep !== undefined ? currentStep : turnBeforeP1;
     for (let i = 0; i < this.cheats.length; i++) {
       const ch = this.cheats[i];
       if (!ch) continue;
 
       const key = `${ch.turn}-${ch.side}-${ch.type}`;
-      console.debug(`[CheatManager-POST-DEBUG] Evaluating post-turn cheat ${key}: ch.turn=${ch.turn}, turnBeforeP1=${turnBeforeP1}, battle.turn=${battle.turn}, applied=${this.appliedCheats.has(key)}`);
+      console.debug(`[CheatManager-POST-DEBUG] Evaluating post-turn cheat ${key}: ch.turn=${ch.turn}, targetTurnBefore=${targetTurnBefore}, battle.turn=${battle.turn}, applied=${this.appliedCheats.has(key)}`);
       
-      if (ch.turn === turnBeforeP1 && ch.type === 'heal' && !this.appliedCheats.has(key)) {
+      if (ch.turn === targetTurnBefore && ch.type === 'heal' && !this.appliedCheats.has(key)) {
         const sideObj = ch.side === 'p1' ? battle.p1 : battle.p2;
         this.executeHealCheat(battle, sideObj, key, 'POST');
       }

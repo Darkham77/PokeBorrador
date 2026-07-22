@@ -155,6 +155,7 @@ const close = () => {
       <aside class="gts-sidebar">
         <button
           v-for="tab in TABS"
+          :id="'gts-tab-' + tab.id"
           :key="tab.id"
           class="cat-btn"
           :class="{ active: activeTab === tab.id }"

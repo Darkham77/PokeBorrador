@@ -241,6 +241,7 @@ const onEnter = (el: Element, done: () => void) => {
       <div class="finish-actions-group">
         <button
           v-if="battleStore.isSearching && (battleStore.state?.wasSearching !== false)"
+          id="start-encounter-btn"
           class="continue-btn-final fight-btn"
           @click.stop="battleStore.startEncounter()"
         >

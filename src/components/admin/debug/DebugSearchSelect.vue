@@ -61,6 +61,7 @@ onUnmounted(() => {
 
 <template>
   <div 
+    :id="id || ('debug-select-' + label.toLowerCase().replace(/[^a-z0-9]/g, ''))"
     ref="selectRef"
     class="debug-input-group search-select-container"
   >
@@ -76,6 +77,7 @@ onUnmounted(() => {
       :description="tooltipDesc"
     >
       <input 
+        :id="id ? (id + '-input') : ('debug-input-' + label.toLowerCase().replace(/[^a-z0-9]/g, ''))"
         v-model="search" 
         type="text" 
         :placeholder="placeholder || 'BUSCAR...'"

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
+import { waitForWaitInput, clickResilient, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
 
 interface FailureRecord {
   scenario: string;
@@ -102,7 +102,9 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
   public async checkBattleOver(): Promise<boolean> {
     return await this.page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return resolver?.().state?.over ?? false;
+      const store = resolver?.();
+      if (!store) return false;
+      return store.state?.over || store.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE';
     });
   }
 }
@@ -142,8 +144,7 @@ test.describe('HeuristicAI E2E Verification', () => {
       await waitForWaitInput(page);
 
       // Clickeamos splash
-      const activeMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-      await activeMoveBtn.click();
+      await sim.selectMove(0);
 
       // Esperar a que el jugador caiga debilitado
       await page.waitForFunction(() => {
@@ -178,12 +179,11 @@ test.describe('HeuristicAI E2E Verification', () => {
       expect(subState).toBe('WAIT_INPUT');
 
       // Jugar 3 turnos
-      const moveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
       for (let i = 0; i < 3; i++) {
+        await waitForWaitInput(page);
         const over = await sim.checkBattleOver();
         if (over) break;
-        await waitForWaitInput(page);
-        await moveBtn.click();
+        await sim.selectMove(0);
       }
 
       const enemyLogs = await page.evaluate(() => {
@@ -261,9 +261,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         await sim.startBattle();
         await waitForWaitInput(page);
 
-        const btn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-        const visible = await btn.isVisible().catch(() => false);
-        if (visible) await btn.click();
+        await sim.selectMove(0).catch(() => {});
 
         await page.waitForFunction(() => {
           const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;

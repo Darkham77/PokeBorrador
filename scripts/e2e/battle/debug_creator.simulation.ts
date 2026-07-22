@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
+import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, openDebugTab } from '../e2e_helpers.ts';
 
 interface E2EWindow {
   __VITE_DEBUG_STORE_RESOLVER__?: () => {
@@ -37,18 +37,7 @@ interface E2EWindow {
   };
 }
 
-// Helper to open debug panel and navigate to a category
-async function openDebugTab(page: Page, category: string) {
-  // Wait for the trigger button and click it
-  const trigger = page.locator('.debug-trigger .trigger-btn');
-  await trigger.waitFor({ state: 'visible', timeout: 5000 });
-  await trigger.click();
 
-  // Wait for debug navigation
-  const navBtn = page.locator('.debug-nav button').filter({ hasText: category });
-  await navBtn.waitFor({ state: 'visible', timeout: 5000 });
-  await navBtn.click();
-}
 
 test.describe('Admin Debug Panel E2E Simulations', () => {
   test.beforeEach(async ({ page, request }) => {
@@ -63,7 +52,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'POKES');
 
     // 2. Select Species: Charmander
-    const speciesContainer = page.locator('.search-select-container:has-text("ESPECIE")');
+    const speciesContainer = page.locator('#debug-select-especie');
     await speciesContainer.locator('.search-input').fill('charmander');
     const charmanderOption = speciesContainer.locator('.option-item').filter({ hasText: 'CHARMANDER' }).first();
     await charmanderOption.waitFor({ state: 'visible', timeout: 5000 });
@@ -74,14 +63,14 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await levelInput.fill('42');
 
     // 4. Set Nature: Modest
-    const natureContainer = page.locator('.search-select-container:has-text("NATURALEZA")');
+    const natureContainer = page.locator('#debug-select-naturaleza');
     await natureContainer.locator('.search-input').fill('modest');
     const modestOption = natureContainer.locator('.option-item').filter({ hasText: 'MODEST' }).first();
     await modestOption.waitFor({ state: 'visible', timeout: 5000 });
     await modestOption.click();
 
     // 5. Set Ability: Blaze
-    const abilityContainer = page.locator('.search-select-container:has-text("HABILIDAD")');
+    const abilityContainer = page.locator('#debug-select-habilidad');
     await abilityContainer.locator('.search-input').fill('blaze');
     const blazeOption = abilityContainer.locator('.option-item').filter({ hasText: 'BLAZE' }).first();
     await blazeOption.waitFor({ state: 'visible', timeout: 5000 });

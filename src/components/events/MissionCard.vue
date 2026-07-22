@@ -111,6 +111,7 @@ const handleImgError = (e: Event) => {
 
 <template>
   <div 
+    :id="'mission-card-' + (id || 'default')"
     ref="cardRef"
     class="mission-card"
     :class="{ completed: isCompleted }"
@@ -167,6 +168,7 @@ const handleImgError = (e: Event) => {
         </div>
       </PVTooltip>
       <button 
+        :id="'deliver-btn-' + (id || 'default')"
         class="btn-deliver"
         :disabled="btnDisabled"
         @click.stop="$emit('action')"

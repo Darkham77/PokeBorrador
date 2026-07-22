@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T12:10:05.0074729Z",
+  "generatedAt": "2026-07-20T23:55:01.668615967Z",
   "summary": {
     "total": 86,
     "passed": 86,
@@ -23,8 +23,8 @@
       "steps": [
         "ataca E-Attacker con False Swipe a P-Pinch",
         "ataca P-Pinch con Ember a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Pinch",
-        "ataca P-Pinch con Ember a E-Attacker"
+        "ataca P-Pinch con Ember a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Pinch"
       ]
     },
     {
@@ -42,8 +42,8 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca E-Electrician con Thunderbolt a P-Electric",
-        "ataca P-Electric con Tackle a E-Electrician"
+        "ataca P-Electric con Tackle a E-Electrician",
+        "ataca E-Electrician con Thunderbolt a P-Electric"
       ]
     },
     {
@@ -51,8 +51,8 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca E-Swimmer con Surf a P-Water",
-        "ataca P-Water con Tackle a E-Swimmer"
+        "ataca P-Water con Tackle a E-Swimmer",
+        "ataca E-Swimmer con Surf a P-Water"
       ]
     },
     {
@@ -69,9 +69,9 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
+        "ataca P-Grass con Tackle a E-Gardener",
         "ataca E-Gardener con Giga Drain a P-Grass",
-        "P-Grass activa su habilidad Sap Sipper",
-        "ataca P-Grass con Tackle a E-Gardener"
+        "P-Grass activa su habilidad Sap Sipper"
       ]
     },
     {
@@ -141,7 +141,8 @@
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
         "ataca P-Snow con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló"
       ]
     },
     {
@@ -178,6 +179,7 @@
         "ataca P-ToughClaws con Double-Edge a E-Tank",
         "ataca E-Tank con Soft-Boiled a E-Tank",
         "ataca P-ToughClaws con Water Pulse a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank",
         "ataca P-ToughClaws con Mach Punch a E-Tank"
       ]
     },
@@ -188,13 +190,12 @@
       "steps": [
         "ataca E-Attacker con Earthquake a P-Filter",
         "ataca P-Filter con Tackle a E-Attacker",
-        "ataca P-Filter con Tackle a E-Attacker",
         "ataca E-Attacker con Flamethrower a P-Filter",
+        "ataca P-Filter con Tackle a E-Attacker",
+        "ataca P-Filter con Tackle a E-Attacker",
         "ataca E-Attacker con Ice Beam a P-Filter",
         "ataca P-Filter con Tackle a E-Attacker",
-        "ataca P-Filter con Tackle a E-Attacker",
-        "ataca E-Attacker con Close Combat a P-Filter",
-        "P-Filter se debilitó"
+        "ataca E-Attacker con Close Combat a P-Filter"
       ]
     },
     {
@@ -207,8 +208,8 @@
         "ataca E-Priority con Mach Punch",
         "ataca P-Dazzling con Tackle a E-Priority",
         "ataca E-Priority con Quick Attack a P-Prankster",
-        "ataca E-Priority con Quick Attack a P-Prankster",
-        "ataca P-Prankster con Thunder Wave a E-Priority"
+        "ataca P-Prankster con Thunder Wave a E-Priority",
+        "ataca E-Priority con Quick Attack a P-Prankster"
       ]
     },
     {
@@ -218,10 +219,10 @@
       "steps": [
         "ataca P-Harvest con Substitute a P-Harvest",
         "ataca E-Attacker con Tackle a P-Harvest",
-        "ataca P-Harvest con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-Harvest",
         "ataca P-Harvest con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca P-Harvest con Tackle a E-Attacker",
         "ataca E-Attacker con Tackle a P-SpeedBoost"
       ]
     },
@@ -248,8 +249,7 @@
         "ataca E-Striker con False Swipe a P-Darm",
         "ataca P-Darm con Flare Blitz a E-Striker",
         "ataca E-Striker con False Swipe a P-Darm",
-        "ataca P-Darm con Tackle a E-Striker",
-        "E-Striker se debilitó"
+        "ataca P-Darm con Tackle a E-Striker"
       ]
     },
     {
@@ -359,6 +359,7 @@
       "steps": [
         "ataca P-Immunities con Tackle a E-Troublemaker",
         "ataca E-Troublemaker con Thunder Wave a P-Immunities",
+        "E-Troublemaker falló el ataque",
         "ataca P-Immunities con Tackle a E-Troublemaker",
         "ataca E-Troublemaker con Toxic a P-Immunities",
         "ataca P-Immunities con Tackle a E-Troublemaker",
@@ -929,13 +930,13 @@
       "type": "combat_mechanics",
       "status": "PASS",
       "steps": [
+        "ataca E-Target con Sunny Day a E-Target",
         "ataca P-Ditto con Soft-Boiled",
         "P-Ditto pero falló",
-        "ataca E-Target con Sunny Day a E-Target",
-        "ataca P-Ditto con Sunny Day",
-        "P-Ditto pero falló",
         "ataca E-Target con Soft-Boiled",
-        "E-Target pero falló"
+        "E-Target pero falló",
+        "ataca P-Ditto con Sunny Day",
+        "P-Ditto pero falló"
       ]
     },
     {

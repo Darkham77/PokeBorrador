@@ -36,11 +36,15 @@
 .base-modal-teleport-wrapper {
   position: fixed;
   inset: 0;
-  z-index: var(--z-base);
+  z-index: calc(var(--z-base) + 1);
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
 
   &.type-side, &.type-side-right, &.type-right {
     justify-content: flex-end;

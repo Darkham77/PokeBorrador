@@ -6,8 +6,8 @@ import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
-  constructor(page: Page, username: string) {
-    super(page, username);
+  constructor(page: Page, username: string, logBuffer?: string[]) {
+    super(page, username, logBuffer);
   }
 }
 
@@ -96,7 +96,8 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         test.setTimeout(600000);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
-        const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`);
+        const logBuffer: string[] = [];
+        const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`, logBuffer);
         await sim.setup();
         await waitForWaitInput(page);
 
@@ -138,6 +139,19 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
             return;
           }
           throw new Error(`[Fallo en Lote ${caseId}]: ${errMessage}`);
+        } finally {
+          // Output the entire buffered trace sequentially
+          console.log(`\n==================================================`);
+          console.log(`📋 CONCURRENT LOGS FOR TEST BATCH #${index + 1} (${batch.id})`);
+          console.log(`==================================================`);
+          console.log(logBuffer.join('\n'));
+          console.log(`==================================================\n`);
+          
+          try {
+            const logsDir = path.resolve(process.cwd(), 'scratch/e2e_logs');
+            if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+            fs.writeFileSync(path.join(logsDir, `lote-${index + 1}.log`), logBuffer.join('\n'), 'utf8');
+          } catch (_e: unknown) { /* expected empty */ }
         }
       });
     });

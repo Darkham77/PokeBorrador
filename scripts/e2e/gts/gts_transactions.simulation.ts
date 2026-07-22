@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
-import { waitForStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 
@@ -134,33 +134,42 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // 3. Publicar los primeros 9 Pokémon en background
     await seller.publishNineDirectly();
 
+    // Sincronización basada en eventos: Esperar a que finalicen las operaciones de red/RPC y el store
+    await pageSeller.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      return store && !store.isProcessing && !store.loadingStore?.isLoading;
+    }, undefined, { timeout: 5000 }).catch(() => {});
+
     // Esperar a que el loading overlay desaparezca
-    await pageSeller.locator('.loading-overlay-fixed').waitFor({ state: 'detached', timeout: 15000 }).catch(() => {});
+    await pageSeller.locator('.loading-overlay-fixed').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Cambiar a pestaña PUBLICAR
-    const publicarBtn = pageSeller.locator('.cat-btn:has-text("PUBLICAR")').filter({ visible: true }).first();
+    const publicarBtn = pageSeller.locator('#gts-tab-publish').filter({ visible: true }).first();
     await publicarBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await publicarBtn.click();
+    await clickResilient(publicarBtn);
 
     // Publicar el 10º Pokémon por UI para alcanzar el límite
     const selectionItem = pageSeller.locator('.selection-list .list-item').first();
     await selectionItem.waitFor({ state: 'visible', timeout: 5000 });
-    await selectionItem.click();
+    await clickResilient(selectionItem);
 
     const priceInput = pageSeller.locator('input.price-input[type="number"]').first();
     await priceInput.waitFor({ state: 'visible', timeout: 5000 });
     await priceInput.fill('1000');
 
-    const publishBtn = pageSeller.locator('button:has-text("PUBLICAR OFERTA")').first();
-    await publishBtn.click();
+    const publishBtn = pageSeller.locator('#gts-publish-offer-btn').first();
+    await clickResilient(publishBtn);
 
     // Esperar que se limpie la selección (10/10 alcanzados)
-    await expect(pageSeller.locator('.selection-hint')).toBeVisible({ timeout: 10000 });
+    await expect(pageSeller.locator('.selection-hint')).toBeVisible({ timeout: 5000 });
 
     // 4. Intentar publicar el 11º y verificar Toast de rechazo
-    await selectionItem.click();
+    const nextSelectionItem = pageSeller.locator('.selection-list .list-item').first();
+    await nextSelectionItem.waitFor({ state: 'visible', timeout: 5000 });
+    await clickResilient(nextSelectionItem);
     await priceInput.fill('1000');
-    await publishBtn.click();
+    await clickResilient(publishBtn);
 
     const toast = pageSeller.locator('.toast-item').first();
     await toast.waitFor({ state: 'visible', timeout: 5000 });
@@ -171,8 +180,6 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
 
     // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
     seedMockListings(50);
-
-
 
     // 6. Setup Comprador (Logear e inyectar inventario inicial, lo cual descargará la DB con los mocks)
     const buyerContext = await browser.newContext();
@@ -188,9 +195,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await buyer.openGTS();
 
     // Cambiar a Explorar
-    const explorarBtn = pageBuyer.locator('.cat-btn:has-text("EXPLORAR")').filter({ visible: true }).first();
+    const explorarBtn = pageBuyer.locator('#gts-tab-explore').filter({ visible: true }).first();
     await explorarBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await explorarBtn.click();
+    await clickResilient(explorarBtn);
 
     // Verificar paginación
     const pagination = pageBuyer.locator('.gts-pagination').first();
@@ -203,18 +210,18 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     const prevBtn = pagination.locator('.prev-page-btn');
     await expect(prevBtn).toBeDisabled();
 
-    await nextBtn.click();
+    await clickResilient(nextBtn);
     await expect(pagination).toContainText('PÁGINA 2 DE 2');
     await expect(nextBtn).toBeDisabled();
     await expect(prevBtn).toBeEnabled();
 
-    await prevBtn.click();
+    await clickResilient(prevBtn);
     await expect(pagination).toContainText('PÁGINA 1 DE 2');
 
     // Comprar el primer Pokémon disponible
     const targetListing = pageBuyer.locator('.market-item-wrapper').first();
-    const buyBtn = targetListing.locator('button:has-text("COMPRAR")');
-    await buyBtn.click();
+    const buyBtn = targetListing.locator('.gts-buy-btn, [id^="gts-buy-btn-"]').first();
+    await clickResilient(buyBtn);
 
     // Esperar a procesar compra (saldos actualizados)
     await pageBuyer.waitForFunction(() => {

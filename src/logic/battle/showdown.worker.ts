@@ -11,6 +11,7 @@ import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
 import { executeBattleTurn } from './helpers/showdownExecutor.ts';
 import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
 
 export interface ExtendedPokemon extends Pokemon {
   uid?: string;
@@ -53,6 +54,7 @@ let isDeterministicSimulation = false;
 patchShowdownSpreadModify(() => isDeterministicSimulation);
 
 let currentBattle: Battle | null = null;
+let currentBattleExecuteTurnCount = 0;
 let cheatManager: BattleCheatManager | null = null;
 
 export function setTestingBattle(battle: Battle | null): void {
@@ -164,8 +166,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         const seedStr = formatToShowdownSeed(seedVal);
         console.debug(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
 
-        const battleInstance = createShowdownBattle(payload.format || 'gen5customgame', seedStr);
+        const battleInstance = createShowdownBattle(payload.format || ACTIVE_SHOWDOWN_FORMAT, seedStr);
         currentBattle = battleInstance;
+        currentBattleExecuteTurnCount = 0;
 
         // Intercept and enrich logs in real-time
         ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
@@ -272,7 +275,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         const p1ActionConsumed = isActionConsumed(p1NeedsAction, p1Choice, !!p1Skip);
         const p2ActionConsumed = isActionConsumed(p2NeedsAction, p2Choice, !!p2Skip);
 
-        console.debug(`[WORKER-EXECUTE-DEBUG] isFuzzerSim: ${isFuzzerSimulation}, p1NeedsAction: ${p1NeedsAction}, p2NeedsAction: ${p2NeedsAction}, p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${!!p1Skip}, p2Skip: ${!!p2Skip}, p1ActionConsumed: ${p1ActionConsumed}, p2ActionConsumed: ${p2ActionConsumed}`);
+        currentBattleExecuteTurnCount++;
+
+        console.debug(`[WORKER-EXECUTE-DEBUG] isFuzzerSim: ${isFuzzerSimulation}, p1NeedsAction: ${p1NeedsAction}, p2NeedsAction: ${p2NeedsAction}, p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${!!p1Skip}, p2Skip: ${!!p2Skip}, p1ActionConsumed: ${p1ActionConsumed}, p2ActionConsumed: ${p2ActionConsumed}, executeTurnCount: ${currentBattleExecuteTurnCount}`);
 
         executeBattleTurn({
           battle,
@@ -286,7 +291,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           p2Statuses,
           weather,
           cheatManager,
-          isFuzzerSimulation
+          isFuzzerSimulation,
+          currentStep: currentBattleExecuteTurnCount
         });
 
         const turnLogs = getNewLogs();

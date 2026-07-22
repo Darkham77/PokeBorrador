@@ -9,6 +9,7 @@ import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showd
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 
 // Aplicar el monkey-patch unificado de Showdown
 patchShowdownSpreadModify(() => false);
@@ -77,7 +78,7 @@ statsMap.clear();
 ShowdownTeamMapper.populateStatsMap(playerTeam as unknown as CustomPokemonSet[]);
 ShowdownTeamMapper.populateStatsMap(enemyTeam as unknown as CustomPokemonSet[]);
 
-const battle = createShowdownBattle('gen5customgame', seed);
+const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
 ShowdownLogEnricher.setupRealtimeEnrichment(battle);
 
 battle.setPlayer('p1', { name: 'Player', team: playerTeam });
@@ -119,6 +120,7 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   turn++;
   p1ChoiceIdx = runner.p1ChoiceIdx;
   p2ChoiceIdx = runner.p2ChoiceIdx;
+  
   const p1Req = battle.p1.activeRequest;
   const p2Req = battle.p2.activeRequest;
 
@@ -129,7 +131,7 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   const p2Choice = runner.resolveAndConsumeNextChoice('p2', p2Req);
 
   const prevLogLen = battle.log.length;
-  
+
   if (p1Req && p1Req.side) {
     const p1Pokemon = p1Req.side.pokemon as RequestPokemon[];
     const mons = p1Pokemon.map((p) => `${p.ident.split(': ')[1]} (HP: ${p.condition}, Active: ${p.active})`);
@@ -187,31 +189,5 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
     syncRequestConditionsWithSimulator(battle.p2);
     console.log(`  [IPB CHEAT] Restored P2 Active HP to max (${p2ActiveMon.name})`);
   }
-
-  // Handle upkeep force switches
-  if (battle.p1.activeRequest?.forceSwitch || battle.p2.activeRequest?.forceSwitch) {
-    const upReq1 = battle.p1.activeRequest;
-    const upReq2 = battle.p2.activeRequest;
-    
-    if (upReq1 && upReq1.side) {
-      const upPokemon = upReq1.side.pokemon as RequestPokemon[];
-      const mons = upPokemon.map((p) => `${p.ident.split(': ')[1]} (HP: ${p.condition}, Active: ${p.active})`);
-      console.log(`  [Upkeep] P1 side.pokemon:`, JSON.stringify(mons));
-    }
-
-    const upChoice1 = runner.resolveAndConsumeNextChoice('p1', upReq1);
-    const upChoice2 = runner.resolveAndConsumeNextChoice('p2', upReq2);
-    
-    const upReq1Needs = requiresAction(upReq1);
-    const upReq2Needs = requiresAction(upReq2);
-
-    const upP1Ok = upReq1Needs ? battle.choose('p1', upChoice1) : true;
-    const upP2Ok = upReq2Needs ? battle.choose('p2', upChoice2) : true;
-
-    p1ChoiceIdx = runner.p1ChoiceIdx;
-    p2ChoiceIdx = runner.p2ChoiceIdx;
-    
-    console.log(`  [Upkeep] P1 Choice Index: ${p1ChoiceIdx - 1} | Choice: "${upChoice1}" (Valid: ${upP1Ok})`);
-    console.log(`  [Upkeep] P2 Choice Index: ${p2ChoiceIdx - 1} | Choice: "${upChoice2}" (Valid: ${upP2Ok})`);
-  }
 }
+

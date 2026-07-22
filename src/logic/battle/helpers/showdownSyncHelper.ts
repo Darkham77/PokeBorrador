@@ -39,6 +39,8 @@ export function extractTeamHpAndStatus(team: Array<MinimalPokemonState | null>):
   return { hps, statuses };
 }
 
+import { findMatchingValue } from '../showdownUidMapper.ts';
+
 /**
  * Helper to synchronize HP, statuses, fainted states, and active counts for a battle side.
  * Shared between showdownExecutor.ts and showdown.worker.ts to guarantee 100% algorithm parity.
@@ -52,13 +54,13 @@ export function syncSidePokemon(
   side.pokemon.forEach(p => {
     if (p) {
       const uid = (p as unknown as { uid?: string }).uid;
-      if (uid && hps[uid] !== undefined) {
+      const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
+      if (clientHp !== undefined) {
         const maxHpVal = p.maxhp || 0;
-        const clientHp = hps[uid];
 
         if (clientHp <= 0) {
           p.hp = 0;
-        } else if (!(clientHp < p.hp && p.hp === maxHpVal)) {
+        } else {
           p.hp = clientHp;
         }
 
@@ -70,10 +72,28 @@ export function syncSidePokemon(
           p.fainted = false;
           (p as unknown as { faintQueued: boolean }).faintQueued = false;
           clearPokemonFromFaintQueue(side, p);
-          if (statuses && statuses[uid] !== undefined) {
-            p.status = (statuses[uid] || '') as ID;
+          const rawStatus = uid && statuses ? findMatchingValue(uid, statuses) : undefined;
+          if (rawStatus !== undefined) {
+            const targetStatus = (rawStatus || '') as ID;
+            console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
+            const pAny = p as unknown as { cureStatus?: (silent?: boolean) => boolean; setStatus?: (s: string) => boolean };
+            if (targetStatus === '' && typeof pAny.cureStatus === 'function') {
+              pAny.cureStatus(true);
+            } else if (typeof pAny.setStatus === 'function') {
+              pAny.setStatus(targetStatus);
+            } else {
+              p.status = targetStatus;
+            }
+            console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
           } else if (p.status === 'fnt') {
-            p.status = '' as ID;
+            const pAny = p as unknown as { cureStatus?: (silent?: boolean) => boolean; setStatus?: (s: string) => boolean };
+            if (typeof pAny.cureStatus === 'function') {
+              pAny.cureStatus(true);
+            } else if (typeof pAny.setStatus === 'function') {
+              pAny.setStatus('');
+            } else {
+              p.status = '' as ID;
+            }
           }
         }
       }

@@ -403,6 +403,7 @@ const net = computed(() => price.value - fee.value)
 
 
           <button 
+            id="gts-publish-offer-btn"
             class="btn-vicio-secondary btn-vicio-sm" 
             :disabled="gtsStore.publishing"
             @click.stop="handlePublish"

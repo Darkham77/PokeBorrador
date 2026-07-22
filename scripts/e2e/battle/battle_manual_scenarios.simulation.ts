@@ -45,13 +45,12 @@ test.describe('Battle Manual E2E Scenarios', () => {
     await sim.setupReviveScenario();
     await sim.startBattle();
 
-    const reviveCard = page.locator('.quick-item-card:not(.is-disabled):has(img[alt="Revivir"]), .quick-item-card:not(.is-disabled):has(img[alt*="Rev"])').first();
-    await reviveCard.waitFor({ state: 'visible', timeout: 10000 });
-    await reviveCard.click();
+    const charmanderUid = await page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      return useGameStore().state.team[1]?.uid || '';
+    });
 
-    const targetBtn = page.locator('.list-item:has(.name:has-text("Charmander")), button:has-text("Charmander")').first();
-    await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await targetBtn.click();
+    await sim.useItemOnPokemon('revive', charmanderUid);
 
     await page.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;

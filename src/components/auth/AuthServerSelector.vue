@@ -49,6 +49,7 @@ async function selectTab(value: string) {
     </div>
     <div class="server-tabs">
       <button 
+        id="server-tab-online"
         class="login-server-tab" 
         :class="{ active: modelValue === 'online' }"
         @click.stop="selectTab('online')"
@@ -58,6 +59,7 @@ async function selectTab(value: string) {
         🌐 Online
       </button>
       <button 
+        id="server-tab-local"
         class="login-server-tab" 
         :class="{ active: modelValue === 'local' }"
         @click.stop="selectTab('local')"

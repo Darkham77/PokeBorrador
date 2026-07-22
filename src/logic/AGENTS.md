@@ -21,6 +21,17 @@ Logic Developers / Game Designers.
 - **Showdown Team Order Synchronization**: The simulator's internal side state (`side.pokemon`) dynamically shifts the active Pokémon to index 0. Therefore, all pre-turn state synchronization (HP and statuses) MUST map values using `resolveCurrentTeamOrder` (active-swapped order) to match the simulator's active-first slot, while choice actions (like forced replacement switches) MUST resolve simulator slot numbers using the static original team order.
 - **Normalization First**: During save loading flows (managed under `auth/` and `db/`), data normalization and legacy backfilling (`normalizeData`) MUST always run BEFORE strict schema validation (`validateAndSanitize`). This ensures old profile formats receive their required modern properties (like abilities, genders, and vigor) before validation.
 
+## Domain Concepts & Glossary
+
+- **Route Guardian**: A powerful alpha Pokémon that protects a specific route. Defeating or capturing it allows a player's faction to accumulate dominance points for that route.
+- **Guardian Lockout**: A daily restriction applied to a player's account. A player is allowed to defeat or capture at most one Guardian per route per calendar day. Once locked out, the Guardian will no longer appear on the route map card or trigger combat encounters for the rest of the day.
+- **Battle Cry**: A distinct audio clip associated with each Pokémon species. It is played when the Pokémon enters the battlefield, faints in combat (slowed and pitch-lowered), or executes voice-based status moves.
+- **Volatile Counter**: A temporary turn-based counter attached to a Pokémon that ticks down at the end of each round and triggers an effect (such as sleep or self-inflicted damage) when it reaches zero. It is completely cleared when the Pokémon is withdrawn from the active combat seat.
+- **Side Condition**: A status or delayed effect tied directly to a side of the field (player/enemy side) rather than a specific Pokémon. It persists across switches and affects whichever Pokémon occupies the active seat when it triggers (such as Wish).
+- **Entity Lookup**: The process of retrieving a game entity (Pokémon, Move, Ability, Item, or Nature) from the database. It must be performed exclusively using the canonical English identifier (ID) to ensure data integrity and avoid silent fallbacks.
+- **Identity Resolution**: The mechanism by which the application verifies that an entity ID exists in the database. If the ID is invalid or cannot be resolved, the engine must immediately halt and throw an explicit error to prevent corrupt state propagation.
+- **Species Whitelist**: A global subset of Pokémon species identifiers (IDs) that are permitted across all game systems (such as combat, daycare/breeding, eggs, and enemy trainer teams). If any system requests a species whose ID is not present in this list, the data provider must prevent its generation by throwing an explicit identity resolution error.
+
 ## Work Guidance
 
 - Core mathematical calculations (battle stats, catch rates, damage, time cycles) must be extracted into pure TS files (*Math.ts) with zero dependency on Vue, Pinia, or Supabase.

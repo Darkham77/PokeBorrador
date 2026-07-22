@@ -1,7 +1,7 @@
 [
   {
-    "scenario": "wild-crash-free",
-    "error": "locator.click: Test timeout of 300000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first()\u001b[22m\n",
-    "timestamp": "2026-07-18T18:22:26.359Z"
+    "scenario": "fuzzer-npc",
+    "error": "locator.waitFor: Target page, context or browser has been closed",
+    "timestamp": "2026-07-22T02:30:26.372Z"
   }
 ]

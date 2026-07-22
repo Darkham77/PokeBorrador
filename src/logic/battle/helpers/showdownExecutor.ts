@@ -19,6 +19,7 @@ export interface ShowdownExecutorOptions {
   weather?: string;
   cheatManager: BattleCheatManager | null;
   isFuzzerSimulation?: boolean;
+  currentStep?: number;
 }
 
 /**
@@ -39,7 +40,8 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
     p2Statuses,
     weather,
     cheatManager,
-    isFuzzerSimulation
+    isFuzzerSimulation,
+    currentStep
   } = options;
 
   // 1. Synchronize Weather
@@ -70,7 +72,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
 
   // 3. Apply Pre-Turn Cheats
   if (cheatManager) {
-    cheatManager.applyPreTurnCheats(battle, isFuzzerSimulation);
+    cheatManager.applyPreTurnCheats(battle, isFuzzerSimulation, currentStep);
   }
 
   // 4. Handle turn skip flinch bypass
@@ -91,7 +93,8 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
 
   // 5. Register and Execute Choices
   const resolveChoice = (side: import('@pkmn/sim').Side, choice: string, isSkip: boolean): string => {
-    if (choice.includes('struggle') && !isSkip && side?.active?.[0]) {
+    const cleanChoice = choice.trim().toLowerCase();
+    if ((cleanChoice === 'struggle' || cleanChoice === 'move struggle') && !isSkip && side?.active?.[0]) {
       const activeMon = side.active[0];
       if (activeMon?.moveSlots) {
         activeMon.moveSlots.forEach((m: { id: string; pp: number } | null) => { if (m) m.pp = 0; });
@@ -128,6 +131,6 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
 
   // 6. Apply Post-Turn Cheats
   if (cheatManager) {
-    cheatManager.applyPostTurnCheats(battle, turnBeforeP1);
+    cheatManager.applyPostTurnCheats(battle, turnBeforeP1, currentStep);
   }
 }

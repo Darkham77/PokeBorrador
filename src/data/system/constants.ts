@@ -1,6 +1,9 @@
 import { PDEX_ORDER } from '../pokemon/pokedex.ts';
 
 export const ACTIVE_GENERATION = 9;
+export const ACTIVE_SHOWDOWN_FORMAT = ACTIVE_GENERATION < 5
+  ? `gen${ACTIVE_GENERATION}customgame`
+  : `gen${ACTIVE_GENERATION}customgame@@@!Team Preview`;
 export const IMPLEMENTED_GENERATION = 9;
 export const ACTIVE_AI_TEAM_GENERATION_GEN = 1;
 

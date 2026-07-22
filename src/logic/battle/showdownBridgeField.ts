@@ -18,16 +18,12 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       const isFromDebug = line.includes('[from] debug');
 
       if (store.activeBattle.value) {
-        const weatherMap: Record<string, string> = {
-          'Sandstorm': 'sandstorm', 'RainDance': 'rain',
-          'SunnyDay': 'sun', 'Hail': 'hail', 'none': 'clear'
-        };
-        const nextWeatherType = weatherMap[weatherType] || 'clear';
+        const nextWeatherType = mapOfficialToVisualWeather(weatherType, ACTIVE_GENERATION);
         const currentWeatherType = store.activeBattle.value.weather?.type || 'clear';
 
         store.activeBattle.value.weather = {
           type: nextWeatherType,
-          visual: mapOfficialToVisualWeather(weatherType, ACTIVE_GENERATION),
+          visual: nextWeatherType,
           turns: -1
         };
 

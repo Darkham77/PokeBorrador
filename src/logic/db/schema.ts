@@ -6,10 +6,10 @@
  */
 
 export const TABLES_SCHEMA: string[] = [
-  "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, gender TEXT DEFAULT 'h', role TEXT DEFAULT 'user', elo_rating INTEGER DEFAULT 1000, pvp_wins INTEGER DEFAULT 0, pvp_losses INTEGER DEFAULT 0, pvp_draws INTEGER DEFAULT 0, badges INTEGER DEFAULT 0, current_session_id TEXT, db_version INTEGER DEFAULT 1, last_renamed_at TEXT, created_at TEXT, updated_at TEXT)",
+  "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, gender TEXT DEFAULT 'h', role TEXT DEFAULT 'user', elo_rating INTEGER DEFAULT 1000, pvp_wins INTEGER DEFAULT 0, pvp_losses INTEGER DEFAULT 0, pvp_draws INTEGER DEFAULT 0, badges INTEGER DEFAULT 0, current_session_id TEXT, db_version INTEGER DEFAULT 1, last_renamed_at TEXT, created_at TEXT, updated_at TEXT, is_banned BOOLEAN DEFAULT FALSE, ban_reason TEXT, playtime INTEGER DEFAULT 0, last_played_at TEXT, ranked_max_elo INTEGER DEFAULT 1000, class_level INTEGER DEFAULT 1, box_count INTEGER DEFAULT 0, longest_streak INTEGER DEFAULT 0, shiny_count INTEGER DEFAULT 0, max_damage INTEGER DEFAULT 0, total_battles INTEGER DEFAULT 0, trade_volume INTEGER DEFAULT 0, capture_attempts INTEGER DEFAULT 0, capture_successes INTEGER DEFAULT 0)",
   "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, last_save_id TEXT, updated_at TEXT)",
   "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
-  "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
+  "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, challenger_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "ranked_queue (user_id TEXT PRIMARY KEY, elo INTEGER DEFAULT 1000, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "global_chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, username TEXT, message TEXT, player_class TEXT, trainer_level INTEGER, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "passive_teams (user_id TEXT PRIMARY KEY, team_data TEXT, updated_at TEXT)",

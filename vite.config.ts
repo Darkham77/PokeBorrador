@@ -18,12 +18,26 @@ function migrationsPlugin() {
     name: 'migrations-generator',
     async buildStart() {
       await generateMigrations()
+      try {
+        const templatePath = path.resolve(__dirname, 'database/temp/clean_template.db')
+        if (fs.existsSync(templatePath)) {
+          fs.unlinkSync(templatePath)
+          console.log('🗑️ [DevDB] clean_template.db cleaned up at build start.')
+        }
+      } catch (_e) { /* ignore */ }
     },
     handleHotUpdate({ file }: { file: string }) {
       if (file.includes('database/migrations')) {
         generateMigrations().catch(err => {
           console.error('[Migrations Generator] Hot update generation failed:', err)
         })
+        try {
+          const templatePath = path.resolve(__dirname, 'database/temp/clean_template.db')
+          if (fs.existsSync(templatePath)) {
+            fs.unlinkSync(templatePath)
+            console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.')
+          }
+        } catch (_e) { /* ignore */ }
       }
     }
   }
@@ -93,6 +107,45 @@ function devDbImportPlugin() {
               res.end('Saved')
             } catch (err: unknown) {
               console.error('❌ [DevDB] Failed to save uploaded database:', err)
+              res.writeHead(500, { 'Content-Type': 'text/plain' })
+              res.end('Failed to save')
+            }
+          })
+          return;
+        }
+
+        if (req.url?.startsWith('/api/dev-clean-db')) {
+          const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
+          try {
+            await fsPromises.access(dbPath)
+            const binary = await fsPromises.readFile(dbPath)
+            res.writeHead(200, {
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-store'
+            })
+            res.end(binary)
+            console.debug('📦 [DevDB] Temporary clean_template.db sent to client.')
+          } catch {
+            res.writeHead(404, { 'Content-Type': 'text/plain' })
+            res.end('No clean template database found')
+          }
+          return;
+        }
+
+        if (req.url?.startsWith('/api/dev-export-clean-db') && req.method === 'POST') {
+          const chunks: Buffer[] = []
+          req.on('data', chunk => chunks.push(chunk as Buffer))
+          req.on('end', async () => {
+            const buffer = Buffer.concat(chunks)
+            const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
+            try {
+              await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
+              await fsPromises.writeFile(dbPath, buffer)
+              console.debug('📥 [DevDB] clean_template.db uploaded and updated.')
+              res.writeHead(200, { 'Content-Type': 'text/plain' })
+              res.end('Saved')
+            } catch (err: unknown) {
+              console.error('❌ [DevDB] Failed to save uploaded clean database template:', err)
               res.writeHead(500, { 'Content-Type': 'text/plain' })
               res.end('Failed to save')
             }

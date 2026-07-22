@@ -1,6 +1,6 @@
 import { type Page } from '@playwright/test';
 import { BaseE2ESimulation } from './base_simulation.ts';
-import { confirmAndStartBattle, executeAutoBattle, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
+import { confirmAndStartBattle, executeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
 
 /** Shape of a single Pokémon entry inside a fuzzer-certified batch team list. */
 interface FuzzerTeamSet {
@@ -29,8 +29,55 @@ export interface BattleStoreSnapshot {
 }
 
 export abstract class BaseBattleSimulation extends BaseE2ESimulation {
-  constructor(page: Page, username: string) {
-    super(page, username);
+  constructor(page: Page, username: string, logBuffer?: string[]) {
+    super(page, username, logBuffer);
+  }
+
+  /**
+   * Selects an item from the battle quick bag and uses it on a specific target Pokémon by its UID.
+   * Inherited by all battle simulation wrappers to eliminate duplication.
+   */
+  public async useItemOnPokemon(itemId: string, pokemonUid: string): Promise<void> {
+    await waitForWaitInput(this.page);
+
+    const card = this.page.locator(`.quick-item-card[data-item-id="${itemId}"]:not(.is-disabled)`).first();
+    await card.waitFor({ state: 'visible', timeout: 5000 });
+    await clickResilient(card);
+
+    const targetBtn = this.page.locator(`.selection-container [data-pokemon-uid="${pokemonUid}"]`).first();
+    await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await clickResilient(targetBtn);
+    await this.page.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      return resolver?.()?.isProcessing || resolver?.()?.currentSubState === 'APPLY_MOVE';
+    }, undefined, { timeout: 5000 }).catch(() => {});
+    await this.page.locator('.modal-overlay').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await waitForWaitInput(this.page);
+  }
+
+  /**
+   * Opens the battle switch modal and switches to a specific target Pokémon by its UID.
+   * Inherited by all battle simulation wrappers to eliminate duplication.
+   */
+  public async voluntarySwitch(pokemonUid: string): Promise<void> {
+    await waitForWaitInput(this.page);
+    const activeUid = await this.page.evaluate(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      return store?.player?.uid || store?.activeBattle?.player?.uid;
+    });
+
+    if (activeUid === pokemonUid) {
+      return;
+    }
+
+    const cambiarBtn = this.page.locator('button.switch-btn:not([disabled])').first();
+    await clickResilient(cambiarBtn);
+
+    const targetBtn = this.page.locator(`.selection-container [data-pokemon-uid="${pokemonUid}"]`).first();
+    await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await clickResilient(targetBtn);
+    await waitForWaitInput(this.page);
   }
 
   /**
@@ -82,6 +129,17 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async startBattle(): Promise<void> {
     await confirmAndStartBattle(this.page);
+  }
+
+  /**
+   * Selects a move by index on the battle UI using resilient clicking.
+   * Inherited by all battle simulations to eliminate duplication.
+   */
+  public async selectMove(moveIndex = 0): Promise<void> {
+    await waitForWaitInput(this.page);
+    const moveBtn = this.page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').nth(moveIndex);
+    await clickResilient(moveBtn);
+    await waitForWaitInput(this.page);
   }
 
   /**

@@ -29,6 +29,7 @@ class WeatherSimWrapper extends BaseBattleSimulation {
       });
 
       useGameStore().state.team = [pelipper];
+      useGameStore().state.starterChosen = true;
       await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
     });
   }
@@ -103,9 +104,7 @@ test.describe('Weather Effects Verification Simulation', () => {
     await waitForWaitInput(page);
 
     // Execute single turn
-    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-    await activeMoveBtn.click();
-    await waitForWaitInput(page);
+    await sim.selectMove(0);
 
     const hpInfo = await sim.getEnemyHpInfo();
     expect(hpInfo.hp).toBeLessThan(hpInfo.maxHp);

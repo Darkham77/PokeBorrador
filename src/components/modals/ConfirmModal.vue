@@ -63,12 +63,14 @@ const handleCancel = () => {
     <template #footer>
       <div class="confirm-footer">
         <button 
+          id="cancel-modal-btn"
           class="btn-cancel" 
           @click.stop="handleCancel"
         >
           {{ cancelText }}
         </button>
         <button 
+          id="confirm-modal-btn"
           class="btn-confirm" 
           :class="{ 'is-danger': type === 'danger' }"
           :disabled="clicked"

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForWaitInput, clickResilient, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class HeldItemsSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -109,21 +109,12 @@ test.describe('E2E Held Items Verification', () => {
     await waitForWaitInput(page);
 
     // Turno 1: Substitute
-    const firstMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-    await firstMoveBtn.click();
-    await waitForWaitInput(page);
+    await sim.selectMove(0);
 
     const midHp = (await sim.getPlayerHpInfo()).hp;
 
     // Turno 2: Growl
-    const secondMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').nth(1);
-    await secondMoveBtn.click();
-
-    // Esperar al final
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return resolver?.().currentSubState === 'WAIT_INPUT' || resolver?.().state?.over;
-    }, undefined, { timeout: 10000 }).catch(() => { /* expected */ });
+    await sim.selectMove(1);
 
     const finalHp = (await sim.getPlayerHpInfo()).hp;
     expect(finalHp).toBeGreaterThan(midHp);
@@ -137,10 +128,7 @@ test.describe('E2E Held Items Verification', () => {
     await sim.startBattle();
     
     // Execute turn
-    await waitForWaitInput(page);
-    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-    await activeMoveBtn.click();
-    await waitForWaitInput(page);
+    await sim.selectMove(0);
 
     const hpInfo = await sim.getPlayerHpInfo();
     expect(hpInfo.hp).toBeLessThan(hpInfo.maxHp);
@@ -154,10 +142,7 @@ test.describe('E2E Held Items Verification', () => {
     await sim.startBattle();
 
     // Execute turn
-    await waitForWaitInput(page);
-    const activeMoveBtn = page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').first();
-    await activeMoveBtn.click();
-    await waitForWaitInput(page);
+    await sim.selectMove(0);
 
     expect(await sim.getPlayerHp()).toBe(1);
   });

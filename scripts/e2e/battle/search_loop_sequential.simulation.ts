@@ -1,6 +1,6 @@
 import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { clickResilient, waitForStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
+import { clickResilient, waitForStoreReady, confirmAndStartBattle, playFishingMinigameNaturally, playArchaeologyMinigameNaturally, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -29,6 +29,10 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       useGameStore().state.team = [rayquaza];
       useGameStore().state.starterChosen = true;
       await useGameStore().saveGame();
+
+      const w = window as WindowWithResolver;
+      w.__VITE_DEBUG__ = w.__VITE_DEBUG__ || {};
+      w.__VITE_DEBUG__.isDeterministicSimulation = true;
 
       // Interceptar minijuegos para eclosión/win rápido
       const { useModalStore } = await import('../../../src/stores/modals.ts');
@@ -121,38 +125,19 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       console.debug(`[E2E-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
       
       await sim.forceHealAll();
-      const isMinigame = enc.type === 'fishing' || enc.type === 'archaeology';
+      await sim.awaitSearchPhaseCombatOrFlee();
+      await sim.forceEncounterType(enc.type);
+      await confirmAndStartBattle(page);
 
-      if (enc.num === 1) {
-        await sim.awaitSearchPhaseCombatOrFlee();
-
-        const nextEnc = encountersToTest[i + 1];
-        if (nextEnc) await sim.forceEncounterType(nextEnc.type);
-
-        const startBtn = page.locator('.continue-btn-final.fight-btn').first();
-        await startBtn.waitFor({ state: 'visible', timeout: 2000 });
-        await clickResilient(startBtn);
-      } else {
-        if (!isMinigame) {
-          await sim.awaitSearchPhaseCombatOrFlee();
-
-          const nextEnc = encountersToTest[i + 1];
-          if (nextEnc) await sim.forceEncounterType(nextEnc.type);
-
-          const startBtn = page.locator('.continue-btn-final.fight-btn').first();
-          await startBtn.waitFor({ state: 'visible', timeout: 2000 });
-          await clickResilient(startBtn);
-        } else {
-          const nextEnc = encountersToTest[i + 1];
-          if (nextEnc) await sim.forceEncounterType(nextEnc.type);
-        }
-      }
-
-      if (enc.type !== 'archaeology') {
-        // Ejecutamos el combate completo de forma automatizada heredado de BaseBattleSimulation
-        await sim.playBattle();
-      } else {
+      if (enc.type === 'archaeology') {
+        await playArchaeologyMinigameNaturally(page);
         await sim.awaitNotProcessing();
+      } else if (enc.type === 'fishing') {
+        await playFishingMinigameNaturally(page);
+        await sim.awaitNotProcessing();
+      } else {
+        await sim.playBattle();
+        await sim.closeBattleModal(5000).catch(() => {});
       }
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }

@@ -137,7 +137,7 @@ export function mapOfficialToVisualWeather(officialWeather: string | null | unde
   if (lower === 'sunnyday' || lower === 'sun') return 'sun';
   if (lower === 'sandstorm') return 'sandstorm';
   if (lower === 'hail') return gen >= 9 ? 'snow' : 'hail';
-  if (lower === 'snow') return 'snow';
+  if (lower === 'snowscape' || lower === 'snow') return 'snow';
   if (lower === 'desolateland' || lower === 'intensesun') return 'intense_sun';
   if (lower === 'primordialsea' || lower === 'heavyrain') return 'heavy_rain';
   if (lower === 'deltastream' || lower === 'strongwinds') return 'strong_winds';

@@ -328,7 +328,7 @@ const handleMinigameCancel = async () => {
   battleStore.attackerSide = null
   battleStore.activeMove = null
   battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-  await battleStore.completeBattleFlow('map')
+  await battleStore.completeBattleFlow('search')
 }
 
 const handleFishingSuccess = async () => {

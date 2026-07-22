@@ -20,6 +20,7 @@ import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showd
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { isActionConsumed } from '../../../../src/logic/battle/helpers/choiceIndexer.ts';
+import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
 import { MECHANICS_SCENARIOS } from '../scenarios/fuzzer_mechanics_scenarios.ts';
@@ -256,7 +257,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const playerTeamCopy = structuredClone(batch.playerTeam);
       const enemyTeamCopy = structuredClone(batch.enemyTeam);
 
-      const simBattle = createShowdownBattle('gen5customgame', seed);
+      const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
       ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
 
       simBattle.setPlayer('p1', { name: `P-${roundNum}`, team: playerTeamCopy });
@@ -713,7 +714,7 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     ] as [number, number, number, number];
     const seed = parseShowdownSeedForBattle(seedNums);
 
-    const simBattle = createShowdownBattle('gen5customgame', seed);
+    const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
     ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
     simBattle.setPlayer('p1', { name: 'Player', team: batch.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: batch.enemyTeam });
@@ -950,7 +951,7 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
   for (const scenario of allScenarios) {
     console.log(`🎬 Escenario: ${scenario.name}...`);
 
-    const simBattle = createShowdownBattle('gen5customgame', null, false);
+    const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, null, false);
     ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
     simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
     simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });

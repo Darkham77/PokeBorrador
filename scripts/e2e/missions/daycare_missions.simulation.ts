@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
-import { waitForStoreReady } from '../e2e_helpers.ts';
+import { waitForStoreReady, clickResilient } from '../e2e_helpers.ts';
 
 class DaycareMissionsSimulation extends BaseE2ESimulation {
   constructor(page: Page, username: string) {
@@ -107,17 +107,25 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
     await sim.openDaycareMissions();
 
     // 4. Confirmar que la misión está listada
-    const missionCard = page.locator('.mission-card:has-text("Se busca un Caterpie")').first();
+    const missionCard = page.locator('.mission-card, [id^="mission-card-"]').first();
     await expect(missionCard).toBeVisible();
 
     // Intentar entregar el Pokémon para la misión
-    const entregarBtn = missionCard.locator('button:has-text("COMPLETAR"), button:has-text("ENTREGAR")').first();
-    await entregarBtn.click();
+    const entregarBtn = missionCard.locator('button.btn-deliver, [id^="deliver-btn-"]').first();
+    await clickResilient(entregarBtn);
 
-    // Seleccionamos al Caterpie de nivel 50 (MASTER_CATERPIE)
-    const masterOption = page.locator('.list-item:has-text("MASTER_CATERPIE"), button:has-text("MASTER_CATERPIE")').first();
-    await masterOption.waitFor({ state: 'visible', timeout: 5000 });
-    await masterOption.click();
+    // Seleccionamos al Caterpie de nivel 50 (MASTER_CATERPIE) mediante su UID
+    const caterpieUid = await page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const store = useGameStore().state;
+      const allPkmn = [...(store.team || []), ...(store.box || [])];
+      const caterpie = allPkmn.find((p: { name?: string; nickname?: string; level?: number }) => p?.nickname === 'MASTER_CATERPIE' || (p?.name === 'Caterpie' && (p?.level || 0) >= 30));
+      return caterpie?.uid || '';
+    });
+
+    await page.locator('.list-item').first().waitFor({ state: 'attached', timeout: 5000 });
+    const masterOption = page.locator(`.list-item[data-pokemon-uid="${caterpieUid}"]`).first();
+    await clickResilient(masterOption);
 
     await page.waitForFunction(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');

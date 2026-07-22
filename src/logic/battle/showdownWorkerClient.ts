@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { advanceChoiceIndices } from './helpers/choiceIndexer.ts';
 import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
+import { findMatchingPokemon } from './showdownUidMapper.ts';
 
 type GameStoreType = ReturnType<typeof useGameStore>;
 type BattleStoreType = ReturnType<typeof useBattleStore>;
@@ -14,17 +15,29 @@ export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
 }
 
-let lastSyncP1TeamState: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null> | null = null;
-let lastSyncP2TeamState: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null> | null = null;
+export interface SynchronizedPokemonState {
+  uid: string;
+  hp: number;
+  maxHp?: number;
+  status: string;
+  fainted: boolean;
+}
+
+const lastSyncTeamStates: Record<string, Array<SynchronizedPokemonState | null> | null> = {
+  p1: null,
+  p2: null,
+  p3: null,
+  p4: null
+};
 
 function syncPokemonState(
-  teamState: Array<{ uid: string; hp: number; status: string; fainted: boolean } | null> | null,
+  teamState: Array<SynchronizedPokemonState | null> | null,
   targetList: Array<Pokemon | null> | undefined
 ) {
   if (!teamState || !targetList) return;
   teamState.forEach(monState => {
     if (monState && monState.uid) {
-      const match = targetList.find(p => p && p.uid === monState.uid);
+      const match = findMatchingPokemon(monState.uid, targetList);
       if (match) {
         match.hp = monState.hp;
         match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? null : monState.status as Pokemon['status'];
@@ -34,6 +47,19 @@ function syncPokemonState(
       }
     }
   });
+}
+
+function syncActiveCombatant(
+  activeMon: Pokemon | null | undefined,
+  teamState: Array<SynchronizedPokemonState | null> | null
+) {
+  if (!activeMon || !teamState) return;
+  const activeState = findMatchingPokemon(activeMon.uid, teamState);
+  if (activeState) {
+    console.debug(`[E2E-SYNC-DEBUG] Syncing active combatant (${activeMon.name}) HP: ${activeMon.hp} -> ${activeState.hp}`);
+    activeMon.hp = activeState.fainted || activeState.hp <= 0 ? 0 : activeState.hp;
+    activeMon.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
+  }
 }
 
 export async function syncTeamsFromLastWorkerState(): Promise<void> {
@@ -54,50 +80,23 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
     battleStore = useBattleStore();
   }
 
-  console.debug(`[E2E-SYNC-DEBUG] lastSyncP1TeamState:`, JSON.stringify(lastSyncP1TeamState));
-  console.debug(`[E2E-SYNC-DEBUG] gameStore.state.team before:`, JSON.stringify(gameStore.state?.team?.map((p: Pokemon | null) => p ? { uid: p.uid, name: p.name, hp: p.hp } : null)));
-
-  if (lastSyncP1TeamState) {
+  const p1State = lastSyncTeamStates.p1;
+  if (p1State) {
     if (gameStore.state?.team) {
-      syncPokemonState(lastSyncP1TeamState, gameStore.state.team);
+      syncPokemonState(p1State, gameStore.state.team);
     }
     if (battleStore?.state?.playerTeam) {
-      syncPokemonState(lastSyncP1TeamState, battleStore.state.playerTeam);
+      syncPokemonState(p1State, battleStore.state.playerTeam);
     }
+    syncActiveCombatant(battleStore.state?.player, p1State);
   }
 
-  if (battleStore.state?.player && lastSyncP1TeamState) {
-    const activeUid = battleStore.state.player.uid;
-    const activeState = lastSyncP1TeamState.find(p => p && p.uid === activeUid);
-    if (activeState) {
-      console.debug(`[E2E-SYNC-DEBUG] Syncing active player HP: ${battleStore.state.player.hp} -> ${activeState.hp}`);
-      battleStore.state.player.hp = activeState.hp;
-      battleStore.state.player.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
-      if (activeState.fainted || activeState.hp <= 0) {
-        battleStore.state.player.hp = 0;
-      }
+  const p2State = lastSyncTeamStates.p2;
+  if (p2State) {
+    if (battleStore.state?.enemyTeam) {
+      syncPokemonState(p2State, battleStore.state.enemyTeam);
     }
-  }
-
-  const enemyTeam = battleStore.state?.enemyTeam;
-  console.debug(`[E2E-SYNC-DEBUG] lastSyncP2TeamState:`, JSON.stringify(lastSyncP2TeamState));
-  console.debug(`[E2E-SYNC-DEBUG] enemyTeam before:`, JSON.stringify(enemyTeam?.map((p: Pokemon | null) => p ? { uid: p.uid, name: p.name, hp: p.hp } : null)));
-
-  if (lastSyncP2TeamState && enemyTeam) {
-    syncPokemonState(lastSyncP2TeamState, enemyTeam);
-  }
-
-  if (battleStore.state?.enemy && lastSyncP2TeamState) {
-    const activeUid = battleStore.state.enemy.uid;
-    const activeState = lastSyncP2TeamState.find(p => p && p.uid === activeUid);
-    if (activeState) {
-      console.debug(`[E2E-SYNC-DEBUG] Syncing active enemy HP: ${battleStore.state.enemy.hp} -> ${activeState.hp}`);
-      battleStore.state.enemy.hp = activeState.hp;
-      battleStore.state.enemy.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
-      if (activeState.fainted || activeState.hp <= 0) {
-        battleStore.state.enemy.hp = 0;
-      }
-    }
+    syncActiveCombatant(battleStore.state?.enemy, p2State);
   }
 }
 
@@ -226,8 +225,11 @@ export async function executeTurnInWorker(
           worker.onmessage = null
         }
 
-        lastSyncP1TeamState = payload.p1TeamState || null;
-        lastSyncP2TeamState = payload.p2TeamState || null;
+        ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
+          const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
+          const seatState = payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
+          lastSyncTeamStates[seatId] = seatState || null;
+        });
 
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
           const p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
@@ -270,19 +272,14 @@ export async function executeTurnInWorker(
             battleStore.state.playerRequest = payload.p1Request;
             battleStore.state.enemyRequest = payload.p2Request;
           }
-          if (payload.p1TeamState) {
-            if (gameStore.state?.team) {
-              syncPokemonState(payload.p1TeamState, gameStore.state.team);
+          ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
+            const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
+            const seatState = payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
+            if (seatState) {
+              lastSyncTeamStates[seatId] = seatState;
             }
-            if (battleStore?.state?.playerTeam) {
-              syncPokemonState(payload.p1TeamState, battleStore.state.playerTeam);
-            }
-          }
-          
-          const enemyTeam = battleStore.state?.enemyTeam;
-          if (payload.p2TeamState && enemyTeam) {
-            syncPokemonState(payload.p2TeamState, enemyTeam);
-          }
+          });
+          await syncTeamsFromLastWorkerState();
         } catch (_e) {
           // Ignorar errores de sincronización
         }
@@ -397,8 +394,11 @@ export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; typ
         } else {
           worker.onmessage = null;
         }
-        lastSyncP1TeamState = data.payload.p1TeamState || null;
-        lastSyncP2TeamState = data.payload.p2TeamState || null;
+        ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
+          const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;
+          const seatState = data.payload[seatStateKey] as Array<SynchronizedPokemonState | null> | undefined;
+          lastSyncTeamStates[seatId] = seatState || null;
+        });
         const { useBattleStore } = await import('@/stores/battle/battle');
         const battleStore = useBattleStore();
         if (battleStore.state) {

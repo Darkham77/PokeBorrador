@@ -514,9 +514,6 @@ export const useBattleStore = defineStore('battle', () => {
           syncTeamHP();
         }
         persistBattle()
-        if (castRes.action === 'heal') {
-          await sleep(800)
-        }
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
         await runEnemyAction(getContext())
         
@@ -647,7 +644,8 @@ export const useBattleStore = defineStore('battle', () => {
         fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
         (subState === BATTLE_SUBSTATES.WAIT_INPUT || subState === BATTLE_SUBSTATES.SWITCH_MENU || subState === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ) &&
         !processing &&
-        !intro
+        !intro &&
+        activeBattle.value?.playerRequest
       ) {
         if (typeof window !== 'undefined') {
           console.debug(`[BATTLE-EVENT] Emitting battle-ready-for-input. SubState: ${subState}`);

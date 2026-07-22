@@ -50,9 +50,16 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   }
 
+  // If there is only 1 move available (e.g. Rollout, Recharge, Struggle, locked move),
+  // fallback moveIndex to 0 if the requested moveIndex is out of range.
+  if (p.moves.length === 1 && p.moves[0]) {
+    moveIndex = 0;
+  }
+
   const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || 
                    !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0) || 
-                   !!(p.thrashTurns && p.thrashTurns > 0);
+                   !!(p.thrashTurns && p.thrashTurns > 0) ||
+                   p.moves.length === 1;
   const isStruggle = moveIndex === -1;
   const move = isStruggle ? null : p.moves[moveIndex];
 

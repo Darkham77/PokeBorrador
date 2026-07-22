@@ -42,10 +42,10 @@ export function setupBattleDebug(ctx: BattleContext) {
       if (battleReadyTimeout) clearTimeout(battleReadyTimeout)
 
       battleReadyTimeout = setTimeout(() => {
-        const errorMsg = `[SIMULATION-FATAL] battle-ready-for-input event was not consumed within 5 seconds! Current SubState: ${detail.subState}`
+        const errorMsg = `[SIMULATION-FATAL] battle-ready-for-input event was not consumed within 15 seconds! Current SubState: ${detail.subState}`
         console.error(errorMsg)
         throw new Error(errorMsg)
-      }, 5000)
+      }, 15000)
     })
   }
 

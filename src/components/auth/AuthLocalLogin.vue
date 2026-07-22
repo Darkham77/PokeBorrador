@@ -24,6 +24,7 @@ const {
 <template>
   <div class="local-login-form">
     <input
+      id="local-username-input"
       :value="usernameValue"
       class="auth-input"
       type="text"
@@ -38,6 +39,7 @@ const {
     >
 
     <button
+      id="local-login-btn"
       class="auth-btn"
       :disabled="loading"
       @click.stop="emit('localLogin')"

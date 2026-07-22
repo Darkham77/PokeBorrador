@@ -36,6 +36,34 @@ let _sqliteDb: SQLiteDatabase | null = null
 let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
+let _dbKey: string | null = null
+
+function getDbKey(): string {
+  if (_dbKey) return _dbKey
+  if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search)
+    const key = urlParams.get('dbKey')
+    if (key) {
+      _dbKey = key
+      localStorage.setItem('pokevicio_db_key', key)
+      return key
+    }
+    const stored = localStorage.getItem('pokevicio_db_key')
+    if (stored) {
+      _dbKey = stored
+      return stored
+    }
+  }
+  return ''
+}
+
+function getApiUrl(endpoint: string): string {
+  const key = getDbKey()
+  if (key) {
+    return `${endpoint}?dbKey=${encodeURIComponent(key)}`
+  }
+  return endpoint
+}
 
 
 
@@ -55,17 +83,19 @@ export async function queryLocal(sql: string, params: unknown[] = []): Promise<R
 }
 
 export async function persistSQLite(): Promise<void> {
-  if (!_sqliteDb || _isInMemory) return
+  if (!_sqliteDb) return
   try {
     const binary = _sqliteDb.export()
-    await setToIDB(_sqliteKey, binary)
-    // Shadow Backup for DB
-    await setToIDB(_sqliteKey + '_backup', binary)
-    logger.success('SQLite', `Persistence successful (Main + Backup)`)
+    if (!_isInMemory) {
+      await setToIDB(_sqliteKey, binary)
+      // Shadow Backup for DB
+      await setToIDB(_sqliteKey + '_backup', binary)
+      logger.success('SQLite', `Persistence successful (Main + Backup)`)
+    }
 
     if (import.meta.env.DEV && typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__) {
       try {
-        await fetch('/api/dev-export-db', {
+        await fetch(getApiUrl('/api/dev-export-db'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: binary as unknown as BodyInit
@@ -79,12 +109,67 @@ export async function persistSQLite(): Promise<void> {
 }
 
 export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean } = {}): Promise<SQLiteDatabase | null> {
+  const isE2E = typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__ === true;
+  if (options.inMemory === true || isE2E) {
+    _isInMemory = true;
+  }
   if (_initPromise) return _initPromise
   _initPromise = (async () => {
     if (options.sqliteKey) _sqliteKey = options.sqliteKey
-    if (options.inMemory !== undefined) _isInMemory = options.inMemory
 
     const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
+
+    if (_isInMemory) {
+      if (import.meta.env.DEV) {
+        try {
+          const importCheck = await fetch('/api/dev-import-db-check', { cache: 'no-store' })
+          if (importCheck.ok) {
+            const { exists } = await importCheck.json() as { exists: boolean }
+            if (exists) {
+              const response = await fetch('/api/dev-import-db', { cache: 'no-store' })
+              if (response.ok) {
+                logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
+                const arrayBuffer = await response.arrayBuffer()
+                _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as unknown as SQLiteDatabase
+                return _sqliteDb
+              }
+            }
+          }
+        } catch (err) {
+          logger.debug('SQLite', `Failed to fetch imported db: ${(err as Error).message}`)
+        }
+      }
+
+      try {
+        const checkRes = await fetch('/api/dev-clean-db', { cache: 'no-store' })
+        if (checkRes.ok) {
+          logger.info('SQLite', 'Clean DB template found. Initializing database instantly from template...')
+          const arrayBuffer = await checkRes.arrayBuffer()
+          _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as unknown as SQLiteDatabase
+          return _sqliteDb
+        }
+      } catch (err) {
+        logger.debug('SQLite', `Failed to fetch clean db template: ${(err as Error).message}`)
+      }
+
+      logger.info('SQLite', 'No clean DB template found. Initializing clean database and running schemas/migrations...')
+      _sqliteDb = new SQL.Database() as unknown as SQLiteDatabase
+      TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
+      await runMigrations()
+
+      try {
+        const binary = _sqliteDb.export()
+        await fetch('/api/dev-export-clean-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: binary as unknown as BodyInit
+        })
+        logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
+      } catch (err) {
+        logger.warn('SQLite', 'Failed to upload generated clean DB template:', err)
+      }
+      return _sqliteDb
+    }
     
     // Check if we are in development mode and if there is a pending import (skip if already imported in this browser context)
     const alreadyImported = typeof localStorage !== 'undefined' && localStorage.getItem('pokevicio_db_imported') === 'true';

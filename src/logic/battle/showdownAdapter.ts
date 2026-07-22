@@ -111,6 +111,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     item: poke.heldItem || '',
     ability: poke.ability,
     nature: poke.nature,
+    status: poke.status || '',
     ivs: {
       hp: poke.ivs?.hp ?? 31,
       atk: poke.ivs?.atk ?? 31,

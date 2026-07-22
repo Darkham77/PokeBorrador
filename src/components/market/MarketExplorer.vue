@@ -148,7 +148,8 @@ function getTierColor(tier?: string) {
               <span class="price-val">₽{{ formatCurrency(item.price) }}</span>
             </div>
             <button 
-              class="btn-vicio-primary btn-vicio-sm"
+              :id="'gts-buy-btn-' + item.id"
+              class="btn-vicio-primary btn-vicio-sm gts-buy-btn"
               :disabled="game.state.money < item.price || item.seller_id === auth.user?.id"
               @click.stop="handleBuy(item)"
             >

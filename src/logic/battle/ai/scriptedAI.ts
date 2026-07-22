@@ -117,12 +117,25 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
     return true;
   }
 
-  const choiceStr = playerChoices[p1ChoiceIdx]
-  console.debug(`[E2E-SCRIPTED-AI] Executing scripted player choice #${p1ChoiceIdx}: "${choiceStr}"`)
+  const { useBattleStore } = await import('../../../stores/battle/battle')
+  const battleStore = useBattleStore()
+  const active = battleStore.state
+  if (!active) {
+    console.warn(`[E2E-SCRIPTED-AI] activeBattle state is null`)
+    return false
+  }
 
-  if (choiceStr === '' || choiceStr === undefined || choiceStr.trim() === '') {
-    console.debug(`[E2E-SCRIPTED-AI] Empty choice. Skipping.`)
-    debugObj.p1ChoiceIdx = p1ChoiceIdx + 1
+  const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+  const runner = new ShowdownBattleRunner(playerChoices, (debugObj.enemyChoices as string[]) || [])
+  runner.p1ChoiceIdx = p1ChoiceIdx
+  runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0
+
+  const choiceStr = runner.resolveAndConsumeNextChoice('p1', active.playerRequest)
+
+  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx} -> next index #${runner.p1ChoiceIdx}: "${choiceStr}"`)
+
+  if (choiceStr === 'pass') {
+    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Skipping player execution.`)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
         new CustomEvent('battle-ready-for-input', {
@@ -136,14 +149,6 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
       )
     }
     return true
-  }
-
-  const { useBattleStore } = await import('../../../stores/battle/battle')
-  const battleStore = useBattleStore()
-  const active = battleStore.state
-  if (!active) {
-    console.warn(`[E2E-SCRIPTED-AI] activeBattle state is null`)
-    return false
   }
 
   const clean = choiceStr.trim().toLowerCase()

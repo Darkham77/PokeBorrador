@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getShowdownNickname, findPokemonByShowdownName } from '../../../src/logic/battle/showdownUidMapper.ts';
+import { getShowdownNickname, findPokemonByShowdownName, isMatchingUid, findMatchingValue } from '../../../src/logic/battle/showdownUidMapper.ts';
 
 describe('Showdown UID Mapper - Unit Tests', () => {
   
@@ -108,6 +108,35 @@ describe('Showdown UID Mapper - Unit Tests', () => {
     it('debería retornar undefined si el prefijo es de otro Pokémon homónimo no incluido en el equipo', () => {
       const matched = findPokemonByShowdownName('ffffffaa', list);
       expect(matched).toBeUndefined();
+    });
+  });
+
+  describe('isMatchingUid', () => {
+    it('debería retornar true cuando ambos UIDs son idénticos', () => {
+      expect(isMatchingUid('abb25813-9207-400a-af96-b665584cd717', 'abb25813-9207-400a-af96-b665584cd717')).toBe(true);
+    });
+
+    it('debería retornar true cuando uno es el prefijo de 8 caracteres del otro', () => {
+      expect(isMatchingUid('abb25813-9207-400a-af96-b665584cd717', 'abb25813')).toBe(true);
+      expect(isMatchingUid('abb25813', 'abb25813-9207-400a-af96-b665584cd717')).toBe(true);
+    });
+
+    it('debería retornar false cuando los UIDs no coinciden', () => {
+      expect(isMatchingUid('abb25813-9207-400a-af96-b665584cd717', '30e4cc72')).toBe(false);
+      expect(isMatchingUid('', 'abb25813')).toBe(false);
+      expect(isMatchingUid(null, 'abb25813')).toBe(false);
+    });
+  });
+
+  describe('findMatchingValue', () => {
+    it('debería encontrar un valor en un Record mapeando por prefijo de 8 caracteres de Showdown', () => {
+      const map = {
+        'abb25813-9207-400a-af96-b665584cd717': 20,
+        '30e4cc72-36e6-4bc9-bcc1-0cd55ff304c6': 18
+      };
+      expect(findMatchingValue('abb25813', map)).toBe(20);
+      expect(findMatchingValue('30e4cc72-36e6-4bc9-bcc1-0cd55ff304c6', map)).toBe(18);
+      expect(findMatchingValue('nonexistent', map)).toBeUndefined();
     });
   });
 });

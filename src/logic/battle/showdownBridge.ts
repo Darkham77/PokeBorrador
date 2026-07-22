@@ -7,6 +7,7 @@ import { handleCoreEvents } from './showdownBridgeCore.ts';
 import { handleStageEvents } from './showdownBridgeStages.ts';
 import { handleFieldEvents } from './showdownBridgeField.ts';
 import { handleMiscEvents } from './showdownBridgeMisc.ts';
+import { findMatchingPokemon } from './showdownUidMapper.ts';
 
 /**
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
@@ -200,7 +201,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     if (namePart) {
-      const matchMon = team.find(mon => mon && mon.uid && mon.uid.startsWith(namePart));
+      const matchMon = findMatchingPokemon(namePart, team);
       if (matchMon) {
         console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via suffix`);
         return matchMon;

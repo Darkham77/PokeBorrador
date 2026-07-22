@@ -1,21 +1,22 @@
 import { type Page } from '@playwright/test';
-import { setupE2ESession, loginE2ETestUser, waitForStoreReady } from './e2e_helpers.ts';
+import { loginE2ETestUser, waitForStoreReady } from './e2e_helpers.ts';
 
 export abstract class BaseE2ESimulation {
   protected page: Page;
   protected username: string;
+  protected logBuffer?: string[];
 
-  constructor(page: Page, username: string) {
+  constructor(page: Page, username: string, logBuffer?: string[]) {
     this.page = page;
     this.username = username;
+    this.logBuffer = logBuffer;
   }
 
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
-    await setupE2ESession(this.page);
-    await loginE2ETestUser(this.page, this.username);
+    await loginE2ETestUser(this.page, this.username, this.logBuffer);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
     // loginE2ETestUser only waits for mapaBtn to be attached — the Vue router
     // may still be mid-transition, causing "Execution context was destroyed".

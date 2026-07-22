@@ -100,7 +100,8 @@ const handleUseItem = (item: BattleItem) => {
     title: `USAR ${dbItem.name?.toUpperCase()}`,
     isBattleSwitch: false, 
     includeTeam: true,
-    allowDead: dbItem.name?.toLowerCase().includes('revivir'),
+    autoConfirm: true,
+    allowDead: dbItem.id.toLowerCase().includes('revive'),
     allowedIds: validTargets.map(p => p.uid),
     activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
     onConfirm: (selected: unknown) => {
@@ -108,12 +109,7 @@ const handleUseItem = (item: BattleItem) => {
       if (selectedPokes && selectedPokes.length > 0) {
         const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0]!.uid)
         if (index !== -1) {
-          const res = inventoryStore.useItem(dbItem.id, 'team', index)
-          if (res.success) {
-            uiStore.notify(res.message, '✨')
-          } else {
-            uiStore.notify(res.message, '⚠️')
-          }
+          battleStore.useItemInBattle(dbItem.id, index)
         }
       }
     }

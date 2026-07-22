@@ -388,42 +388,56 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
        ctx.activeBattle.value.battleHistory = [];
      }
 
-    // Generar el equipo ordenado del jugador para Showdown
-    const playerTeamList = [...(ctx.gs.state.team || [])].filter((p): p is Pokemon => !!p);
-    const initialPlayerIdx = playerTeamList.findIndex(p => p.uid === initialPlayer.uid);
-    // Para simulaciones E2E, NO reordenar el equipo físico inicial para mantener el orden exacto del fuzzer offline
-    if (initialPlayerIdx > 0 && !debugSeed) {
-      const [p] = playerTeamList.splice(initialPlayerIdx, 1);
-      if (p) playerTeamList.unshift(p);
+function prepareSeatPayload(
+  rawTeam: Pokemon[],
+  initialMon?: Pokemon,
+  debugSeed?: unknown,
+  trainerName: string = 'Player'
+) {
+  const teamList = [...(rawTeam || [])].filter((p): p is Pokemon => !!p);
+  if (initialMon) {
+    const idx = teamList.findIndex(p => p.uid === initialMon.uid);
+    if (idx > 0 && !debugSeed) {
+      const [p] = teamList.splice(idx, 1);
+      if (p) teamList.unshift(p);
     }
-    const p1Team = playerTeamList.map(p => mapToShowdownSet(p));
-    const p1Hps: Record<string, number> = {};
-    playerTeamList.forEach(p => {
-      if (p) p1Hps[p.uid] = p.hp;
-    });
-    const enemyTeamList = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))].filter((p): p is Pokemon => !!p);
-    if (initialEnemy) {
-      const initialEnemyIdx = enemyTeamList.findIndex(p => p.uid === initialEnemy.uid);
-      if (initialEnemyIdx > 0 && !debugSeed) {
-        const [p] = enemyTeamList.splice(initialEnemyIdx, 1);
-        if (p) enemyTeamList.unshift(p);
-      }
+  }
+
+  const showdownSets = teamList.map(p => mapToShowdownSet(p));
+  const hps: Record<string, number> = {};
+  const statuses: Record<string, string> = {};
+
+  teamList.forEach(p => {
+    if (p) {
+      hps[p.uid] = p.hp;
+      statuses[p.uid] = p.status || '';
     }
-    const p2Team = enemyTeamList.map(p => mapToShowdownSet(p));
-    const p2Hps: Record<string, number> = {};
-    enemyTeamList.forEach(p => {
-      if (p) p2Hps[p.uid] = p.hp;
-    });
+  });
+
+  const formattedTeam = showdownSets.map((p, idx) => ({
+    ...p,
+    nickname: getShowdownNickname(teamList[idx]?.uid || ''),
+    name: getShowdownNickname(teamList[idx]?.uid || ''),
+    uid: teamList[idx]?.uid
+  }));
+
+  return {
+    name: trainerName,
+    team: formattedTeam,
+    teamList,
+    hps,
+    statuses
+  };
+}
+
+    // Generar payloads reutilizables por asiento (p1, p2, N jugadores)
+    const rawPlayerTeam = [...(ctx.gs.state.team || [])];
+    const p1Data = prepareSeatPayload(rawPlayerTeam, initialPlayer, debugSeed, 'Player');
+
+    const rawEnemyTeam = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))];
+    const p2Data = prepareSeatPayload(rawEnemyTeam, initialEnemy, debugSeed, battleState?.trainerName || 'Enemy');
+
     const initialWeatherOfficial = battleState?.weather?.type || 'none';
-    
-    const p1Statuses: Record<string, string> = {};
-    playerTeamList.forEach(p => {
-      if (p) p1Statuses[p.uid] = p.status || '';
-    });
-    const p2Statuses: Record<string, string> = {};
-    enemyTeamList.forEach(p => {
-      if (p) p2Statuses[p.uid] = p.status || '';
-    });
 
     console.warn(`[E2E-SEED-DEBUG] Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`);
     
@@ -431,12 +445,12 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     worker.postMessage({
       type: 'INIT_BATTLE',
       payload: {
-        p1: { name: 'Player', team: p1Team.map((p, idx) => ({ ...p, nickname: getShowdownNickname(playerTeamList[idx]?.uid || ''), name: getShowdownNickname(playerTeamList[idx]?.uid || ''), uid: playerTeamList[idx]?.uid })) },
-        p2: { name: battleState?.trainerName || 'Enemy', team: p2Team.map((p, idx) => ({ ...p, nickname: getShowdownNickname(enemyTeamList[idx]?.uid || ''), name: getShowdownNickname(enemyTeamList[idx]?.uid || ''), uid: enemyTeamList[idx]?.uid })) },
-        p1Hps,
-        p2Hps,
-        p1Statuses,
-        p2Statuses,
+        p1: { name: p1Data.name, team: p1Data.team },
+        p2: { name: p2Data.name, team: p2Data.team },
+        p1Hps: p1Data.hps,
+        p2Hps: p2Data.hps,
+        p1Statuses: p1Data.statuses,
+        p2Statuses: p2Data.statuses,
         weather: initialWeatherOfficial,
         seed: seedArr,
         isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),

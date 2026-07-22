@@ -38,7 +38,12 @@ export class DBRouter {
     this.userSubscription = null;
     this._timeOffset = 0; // ms
     
-    logger.info('DBRouter', `Initialized in STRICT ${mode.toUpperCase()} mode.`);
+    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__) {
+      this.mode = 'offline';
+      this.options.inMemory = true;
+    }
+    
+    logger.info('DBRouter', `Initialized in STRICT ${this.mode.toUpperCase()} mode. (inMemory: ${!!this.options.inMemory})`);
   }
 
   /**

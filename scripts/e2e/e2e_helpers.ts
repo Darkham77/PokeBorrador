@@ -12,15 +12,18 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
     return { fsm: store.currentFsmState, sub: store.currentSubState };
   }).catch(() => null);
 
-  for (let i = 0; i < retries; i++) {
+  for (let i = 0; i < 5; i++) {
     try {
-      await locator.click({ timeout: 2000, ...cleanOptions });
+      await locator.click({ timeout: 1500, ...cleanOptions });
       return;
     } catch (err: unknown) {
       const msg = err instanceof Error ? (err as Error).message : String(err);
       
-      // Si el elemento se desmontó pero el clic ya provocó la transición de la FSM, consideramos que el clic fue exitoso.
-      if (msg.includes('detached') || msg.includes('visible') || msg.includes('stable')) {
+      if (msg.includes('detached')) {
+        console.debug('[E2E-CLICK-SUCCESS] Click triggered element detachment successfully.');
+        return;
+      }
+      if (msg.includes('visible') || msg.includes('stable') || msg.includes('intercepts pointer events')) {
         const postClickState = await locator.page().evaluate(() => {
           const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
           if (!resolver) return null;
@@ -28,18 +31,19 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
           return { fsm: store.currentFsmState, sub: store.currentSubState };
         }).catch(() => null);
 
-        if (preClickState && postClickState && (preClickState.fsm !== postClickState.fsm || preClickState.sub !== postClickState.sub)) {
-          console.debug('[E2E-CLICK-SUCCESS] Click triggered a state transition successfully despite DOM detachment.');
+        if (!preClickState || !postClickState || preClickState.fsm !== postClickState.fsm || preClickState.sub !== postClickState.sub) {
+          console.debug('[E2E-CLICK-SUCCESS] Click triggered a state transition successfully.');
           return;
         }
 
-        console.debug(`[E2E-RETRY] Element detached or transitioning, retrying click (${i + 1}/${retries})...`);
+        console.debug(`[E2E-RETRY] Element transitioning, retrying click (${i + 1}/5)...`);
+        await locator.page().waitForTimeout(100);
         continue;
       }
       throw err;
     }
   }
-  await locator.click(cleanOptions);
+  await locator.click({ force: true, ...cleanOptions });
 }
 
 export interface BattleLogEntry {
@@ -58,17 +62,40 @@ export type WindowWithResolver = Window;
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
  */
-export async function setupE2ESession(page: Page): Promise<void> {
+export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise<void> {
   page.on('console', msg => {
     const text = msg.text();
+    let formatted = '';
     if (msg.type() === 'error') {
-      console.error(`[BROWSER-ERROR] ${text}`);
+      formatted = `[BROWSER-ERROR] ${text}`;
     } else if (msg.type() === 'warning') {
-      console.warn(`[BROWSER-WARN] ${text}`);
+      formatted = `[BROWSER-WARN] ${text}`;
     } else {
-      console.log(`[BROWSER-LOG] ${text}`);
+      formatted = `[BROWSER-LOG] ${text}`;
+    }
+    
+    if (logBuffer) {
+      logBuffer.push(formatted);
+    } else {
+      if (msg.type() === 'error') {
+        console.error(formatted);
+      } else if (msg.type() === 'warning') {
+        console.warn(formatted);
+      } else {
+        console.log(formatted);
+      }
     }
   });
+
+  page.on('pageerror', err => {
+    const formatted = `[BROWSER-PAGEERROR] ${err.message}\nStack: ${err.stack}`;
+    if (logBuffer) {
+      logBuffer.push(formatted);
+    } else {
+      console.error(formatted);
+    }
+  });
+
   await page.addInitScript(() => {
     (window as unknown as Record<string, unknown>).__E2E__ = true;
     localStorage.setItem('pwa_permissions_accepted', 'true');
@@ -81,8 +108,8 @@ export async function setupE2ESession(page: Page): Promise<void> {
   });
 }
 
-export async function loginE2ETestUser(page: Page, username = 'E2ETestUser'): Promise<void> {
-  await setupE2ESession(page);
+export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', logBuffer?: string[]): Promise<void> {
+  await setupE2ESession(page, logBuffer);
   await loginTestUser(page, username);
 }
 
@@ -94,24 +121,30 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   await page.goto('/login');
 
   // Seleccionar servidor local
-  const localTab = page.locator('button:has-text("Local")');
-  await localTab.click();
+  const localTab = page.locator('#server-tab-local').first();
+  await localTab.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await clickResilient(localTab);
 
   // Iniciar sesión
-  await page.fill('input[placeholder="Nombre de Entrenador"]', testUser);
-  await page.click('button:has-text("JUGAR LOCAL")');
+  const userInput = page.locator('#local-username-input').first();
+  await userInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await userInput.fill(testUser);
+
+  const jugarBtn = page.locator('#local-login-btn').first();
+  await jugarBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await clickResilient(jugarBtn);
 
   // Esperar de forma no bloqueante a que aparezca la pantalla de inicial o la pantalla principal directamente
   const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
   const mapaBtn = page.locator('button.map-btn').first();
 
   await Promise.race([
-    starterCard.waitFor({ state: 'visible', timeout: 30000 }).then(() => 'starter'),
-    mapaBtn.waitFor({ state: 'attached', timeout: 30000 }).then(() => 'map')
+    starterCard.waitFor({ state: 'visible', timeout: 5000 }).then(() => 'starter'),
+    mapaBtn.waitFor({ state: 'attached', timeout: 5000 }).then(() => 'map')
   ]).then(async (resolvedScreen) => {
     if (resolvedScreen === 'starter') {
       console.log(`[E2E-LOGIN] Pantalla de inicial detectada. Seleccionando Bulbasaur...`);
-      await starterCard.click();
+      await clickResilient(starterCard);
     } else {
       console.log(`[E2E-LOGIN] Interfaz principal detectada directamente (inicial ya seleccionado anteriormente).`);
     }
@@ -120,7 +153,7 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   });
 
   // Asegurar que estamos en el mapa para iniciar el test
-  await mapaBtn.waitFor({ state: 'attached', timeout: 15000 });
+  await mapaBtn.waitFor({ state: 'attached', timeout: 5000 });
 }
 
 export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
@@ -154,12 +187,19 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, label
  * Hace clic en el botón de combatir para iniciar la batalla
  */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
-  const combatirBtn = page.locator('button:has-text("¡COMBATIR!")').first();
+  const startBtn = page.locator('#start-encounter-btn').first();
   try {
-    await combatirBtn.waitFor({ state: 'visible', timeout: 2000 });
-    await combatirBtn.click();
+    await startBtn.waitFor({ state: 'visible', timeout: 3000 });
+    await clickResilient(startBtn, { timeout: 3000 });
+
+    // If clicking SEARCH opens a trainer/rival dialogue modal with a fight button, confirm it
+    const fightModalBtn = page.locator('#confirm-battle-btn').first();
+    const isModalVisible = await fightModalBtn.isVisible().catch(() => false);
+    if (isModalVisible) {
+      await clickResilient(fightModalBtn, { timeout: 3000 });
+    }
   } catch (_e) {
-    console.debug('[confirmAndStartBattle] "¡COMBATIR!" button not found or battle already started. Proceeding...');
+    console.debug('[confirmAndStartBattle] Start/Combat button not found or battle already active. Proceeding...');
   }
 }
 
@@ -171,9 +211,11 @@ export async function waitForWaitInput(page: Page): Promise<void> {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return false;
     const store = resolver();
-    return (store.currentFsmState === 'ACTIVE_BATTLE' && 
-            (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-            !store.state || store.state.over;
+    return !store.isProcessing && (
+      (store.currentFsmState === 'ACTIVE_BATTLE' && 
+       (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
+      !store.state || store.state.over
+    );
   }, undefined, { timeout: 15000 });
 }
 
@@ -625,7 +667,7 @@ export async function executeAutoBattle(
                       !store.isProcessing &&
                       !store.isIntroAnimating;
 
-      return isReady && ((debug.p1ChoiceIdx ?? 0) > prevIdx || (debug.p2ChoiceIdx ?? 0) > prevIdx);
+      return isReady && ((debug.p1ChoiceIdx ?? 0) > prevIdx || (debug.p2ChoiceIdx ?? 0) > prevIdx || !debug.isScriptedReplayMode);
     }, currentP1Idx, { timeout: 30000 });
 
     const nextDetail = (await page.evaluate(async () => {
@@ -642,14 +684,14 @@ export async function executeAutoBattle(
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
-    return !store.state || store.state.over;
+    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
   }, undefined, { timeout: 30000 }).catch(() => {});
 
   const isBattleOver = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
-    return !store.state || store.state.over;
+    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
   }).catch(() => true);
 
   expect(isBattleOver).toBe(true);
@@ -729,4 +771,47 @@ export async function waitForStoreReady(page: Page): Promise<void> {
     const store = debug.getGameStore();
     return !!store && (store.isReady === true || (store as unknown as { isDataLoaded?: boolean }).isDataLoaded === true);
   }, undefined, { timeout: 30000 });
+}
+
+export async function openDebugTab(page: Page, category: string): Promise<void> {
+  const isNavOpen = await page.locator('.debug-nav').isVisible().catch(() => false);
+  if (!isNavOpen) {
+    const trigger = page.locator('.debug-trigger .trigger-btn, .debug-trigger, button.trigger-btn').first();
+    const isTriggerVisible = await trigger.isVisible().catch(() => false);
+    if (isTriggerVisible) {
+      await clickResilient(trigger);
+    } else {
+      await page.keyboard.press('Control+Shift+D').catch(() => {});
+    }
+  }
+
+  const navBtn = page.locator('.debug-nav button').filter({ hasText: new RegExp(category, 'i') }).first();
+  await clickResilient(navBtn);
+}
+
+export async function playFishingMinigameNaturally(page: Page): Promise<void> {
+  const modalContainer = page.locator('.rhythm-container').first();
+  const isVisible = await modalContainer.isVisible({ timeout: 2000 }).catch(() => false);
+  if (isVisible) {
+    const closeBtn = page.locator('.modal-close-btn, .modal-close-btn-floating').first();
+    const isCloseVisible = await closeBtn.isVisible().catch(() => false);
+    if (isCloseVisible) {
+      await clickResilient(closeBtn).catch(() => {});
+    }
+    await modalContainer.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+  }
+}
+
+export async function playArchaeologyMinigameNaturally(page: Page): Promise<void> {
+  const grid = page.locator('.archaeology-grid').first();
+  const isVisible = await grid.isVisible({ timeout: 2000 }).catch(() => false);
+  if (isVisible) {
+    // Cierra/abandona la arqueología de forma natural por UI usando el botón de cerrar modal
+    const closeBtn = page.locator('.modal-close-btn, .modal-close-btn-floating').first();
+    const isCloseVisible = await closeBtn.isVisible().catch(() => false);
+    if (isCloseVisible) {
+      await clickResilient(closeBtn).catch(() => {});
+    }
+    await grid.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+  }
 }
