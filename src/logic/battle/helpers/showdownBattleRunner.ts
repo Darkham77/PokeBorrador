@@ -48,7 +48,11 @@ export class ShowdownBattleRunner {
       }
     }
 
-    const rawChoice = list[targetIdx] ?? (kind === 'force-switch' ? 'switch 2' : 'pass');
+    if (targetIdx >= list.length || !list[targetIdx]) {
+      throw new Error(`[ShowdownBattleRunner] Choices exhausted for ${player}: requested choice index ${targetIdx}, but total choices count is ${list.length}.`);
+    }
+
+    const rawChoice = list[targetIdx] as string;
     const skip = rawChoice.trim().toLowerCase() === 'pass';
     const consumed = isActionConsumed(needsAction, rawChoice, skip);
 

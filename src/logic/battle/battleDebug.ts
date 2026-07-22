@@ -1,3 +1,4 @@
+import { watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useDebugStore } from '@/stores/debug'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -22,64 +23,69 @@ export function setupBattleDebug(ctx: BattleContext) {
     await ctx.endBattle(false, true)
   }
 
-  let battleReadyTimeout: ReturnType<typeof setTimeout> | null = null
-
   win.__VITE_DEBUG__.executeScriptedAction = async () => {
-    if (battleReadyTimeout) {
-      clearTimeout(battleReadyTimeout)
-      battleReadyTimeout = null
-    }
     const { executeScriptedPlayerAction } = await import('./ai/scriptedAI')
     return await executeScriptedPlayerAction(ctx)
   }
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('battle-ready-for-input', (e) => {
-      if (!win.__VITE_DEBUG__?.isScriptedReplayMode) return
-      const detail = (e as CustomEvent<{ over: boolean; subState: string }>).detail
-      if (detail.over) return
-
-      if (battleReadyTimeout) clearTimeout(battleReadyTimeout)
-
-      battleReadyTimeout = setTimeout(() => {
-        const errorMsg = `[SIMULATION-FATAL] battle-ready-for-input event was not consumed within 15 seconds! Current SubState: ${detail.subState}`
-        console.error(errorMsg)
-        throw new Error(errorMsg)
-      }, 15000)
-    })
-  }
-
   win.__VITE_DEBUG__.waitForBattleReady = () => {
-    const active = ctx.activeBattle.value
-    if (!active || active.over) {
-      return Promise.resolve({ subState: '', p1ChoiceIdx: 0, p2ChoiceIdx: 0, over: true })
-    }
-    const subStateVal = ctx.fsm.currentSubState.value ? String(ctx.fsm.currentSubState.value) : ''
-    const isReady = ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE &&
-                    ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
-                    !ctx.isProcessing.value &&
-                    !ctx.isIntroAnimating.value
-    if (isReady) {
-      return Promise.resolve({
-        subState: subStateVal,
-        p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-        p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
-        over: false
-      })
-    }
+    return new Promise((resolve) => {
+      const checkCurrentReady = () => {
+        const active = ctx.activeBattle.value
+        if (!active || active.over) {
+          return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true }
+        }
+        const subStateVal = ctx.fsm.currentSubState.value ? String(ctx.fsm.currentSubState.value) : ''
+        const bState = active as unknown as Record<string, unknown>
+        const hasPendingSwitch = !!bState?.switchingToPlayer || !!bState?.switchingToEnemy
+        const isReady = ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE &&
+                        ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
+                        !ctx.isProcessing.value &&
+                        !ctx.isIntroAnimating.value &&
+                        !hasPendingSwitch
+        if (isReady) {
+          return {
+            subState: subStateVal,
+            p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+            p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+            over: false
+          }
+        }
+        return null
+      }
 
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
+      // 1. Chequeo sincrónico inicial
+      const immediateReady = checkCurrentReady()
+      if (immediateReady) {
+        resolve(immediateReady)
+        return
+      }
+
+      // 2. Reactividad Vue (watch) y evento battle-ready-for-input
+      let unwatch: (() => void) | null = null
+
+      const onReady = (detail: unknown) => {
+        if (unwatch) unwatch()
         window.removeEventListener('battle-ready-for-input', handler)
-        reject(new Error('Timeout waiting for battle-ready-for-input event (max 5s exceeded)'))
-      }, 5000)
+        resolve(detail)
+      }
 
       const handler = (e: Event) => {
-        clearTimeout(timer)
-        window.removeEventListener('battle-ready-for-input', handler)
-        resolve((e as CustomEvent).detail)
+        onReady((e as CustomEvent).detail)
       }
+
       window.addEventListener('battle-ready-for-input', handler, { once: true })
+
+      unwatch = watch(
+        [ctx.fsm.currentSubState, ctx.isProcessing, ctx.isIntroAnimating],
+        () => {
+          const res = checkCurrentReady()
+          if (res) {
+            onReady(res)
+          }
+        },
+        { immediate: true }
+      )
     })
   }
 

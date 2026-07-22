@@ -50,21 +50,6 @@ export async function initWorkerForBattle(
   console.warn(`[E2E-SEED-DEBUG] Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`)
 
   const worker = showdownWorker!
-  worker.postMessage({
-    type: 'INIT_BATTLE',
-    payload: {
-      p1: { name: p1Data.name, team: p1Data.team },
-      p2: { name: p2Data.name, team: p2Data.team },
-      p1Hps: p1Data.hps,
-      p2Hps: p2Data.hps,
-      p1Statuses: p1Data.statuses,
-      p2Statuses: p2Data.statuses,
-      weather: initialWeatherOfficial,
-      seed: seedArr,
-      isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
-      cheats: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.cheats) || []
-    }
-  })
 
   const initHandler = async (e: MessageEvent) => {
     const data = e.data as {
@@ -122,9 +107,26 @@ export async function initWorkerForBattle(
       })
     }
   }
+
   if (worker.addEventListener) {
     worker.addEventListener('message', initHandler)
   } else {
     worker.onmessage = initHandler
   }
+
+  worker.postMessage({
+    type: 'INIT_BATTLE',
+    payload: {
+      p1: { name: p1Data.name, team: p1Data.team },
+      p2: { name: p2Data.name, team: p2Data.team },
+      p1Hps: p1Data.hps,
+      p2Hps: p2Data.hps,
+      p1Statuses: p1Data.statuses,
+      p2Statuses: p2Data.statuses,
+      weather: initialWeatherOfficial,
+      seed: seedArr,
+      isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
+      cheats: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.cheats) || []
+    }
+  })
 }

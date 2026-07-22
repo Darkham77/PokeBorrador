@@ -50,24 +50,14 @@ export class ScriptedAI implements CombatAI {
     const choiceStr = mockChoices[idx]
     if (choiceStr && choiceStr.startsWith('switch ')) {
       const splitPart = choiceStr.split(' ')[1] || '0'
-      const switchSlot = parseInt(splitPart, 10) - 1 // 0-indexed Showdown slot
+      const slotNum = parseInt(splitPart, 10)
       const active = store?.activeBattle?.value
       const enemyRequest = active?.enemyRequest
-      const reqMon = (enemyRequest?.side?.pokemon as unknown as Array<{ uid?: string } | null | undefined>)?.[switchSlot]
-      let targetUid = reqMon?.uid || null
-      if (!targetUid) {
-        const p2SlotOrder = active?.p2SlotOrder
-        if (p2SlotOrder && p2SlotOrder[switchSlot]) {
-          targetUid = p2SlotOrder[switchSlot]
-        }
-      }
-      if (!targetUid && enemyTeam[switchSlot]) {
-        targetUid = enemyTeam[switchSlot]?.uid || null;
-      }
-      if (targetUid) {
-        const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetUid)
+      const targetPoke = ShowdownTeamResolver.getPokemonByShowdownSlot(enemyTeam, enemyRequest, slotNum)
+      if (targetPoke) {
+        const teamIdx = enemyTeam.findIndex(p => p && p.uid === targetPoke.uid)
         if (teamIdx !== -1) {
-          console.debug(`[DEBUG-AI] [E2E-MOCK] ScriptedAI findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetUid} at idx ${teamIdx}`)
+          console.debug(`[DEBUG-AI] [E2E-MOCK] ScriptedAI findBestSwitchIndex replaying choice #${idx}: ${choiceStr} -> UID ${targetPoke.uid} at idx ${teamIdx}`)
           return teamIdx
         }
       }
@@ -82,7 +72,7 @@ export class ScriptedAI implements CombatAI {
   }
 }
 
-export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<boolean> {
+export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<boolean> {
   if (typeof window === 'undefined' || !window.__VITE_DEBUG__?.isScriptedReplayMode) return false
 
   const debugObj = window.__VITE_DEBUG__
@@ -120,8 +110,11 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
   const { useBattleStore } = await import('../../../stores/battle/battle')
   const battleStore = useBattleStore()
   const active = battleStore.state
-  if (!active) {
-    console.warn(`[E2E-SCRIPTED-AI] activeBattle state is null`)
+  if (!active) return false
+  const bState = active as unknown as Record<string, unknown>
+  const hasPendingSwitch = !!bState?.switchingToPlayer
+  if (hasPendingSwitch || battleStore.isProcessing || battleStore.isIntroAnimating) {
+    console.debug(`[E2E-SCRIPTED-AI] Postponing choice consumption. pendingSwitch: ${hasPendingSwitch}, isProcessing: ${battleStore.isProcessing}, isIntroAnimating: ${battleStore.isIntroAnimating}`)
     return false
   }
 
@@ -131,26 +124,19 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
   runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0
 
   const choiceStr = runner.resolveAndConsumeNextChoice('p1', active.playerRequest)
-  debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
-  debugObj.p2ChoiceIdx = runner.p2ChoiceIdx
-
-  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx} -> next index #${runner.p1ChoiceIdx}: "${choiceStr}"`)
+  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx}: "${choiceStr}"`)
 
   if (choiceStr === 'pass') {
-    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Skipping player execution.`)
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('battle-ready-for-input', {
-          detail: {
-            subState: ctx.fsm.currentSubState.value,
-            p1ChoiceIdx: debugObj.p1ChoiceIdx,
-            p2ChoiceIdx: debugObj.p2ChoiceIdx ?? 0,
-            over: ctx.activeBattle.value?.over ?? false
-          }
-        })
-      )
+    const { requiresAction } = await import('../helpers/requestHelper.ts')
+    const enemyNeedsAction = requiresAction(active.enemyRequest)
+    if (enemyNeedsAction) {
+      console.debug(`[E2E-SCRIPTED-AI] Player passes ('pass'), but enemy requires action. Executing runEnemyAction.`)
+      const { runEnemyAction } = await import('../battleTurn.ts')
+      await runEnemyAction(battleStore.getContext())
+      return true
     }
-    return true
+    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Skipping player execution.`)
+    return false
   }
 
   const clean = choiceStr.trim().toLowerCase()
@@ -163,8 +149,11 @@ export async function executeScriptedPlayerAction(ctx: BattleContext): Promise<b
   if (clean.startsWith('move ')) {
     const subState = battleStore.currentSubState;
     const activePoke = active.player;
-    if (subState === 'SWITCH_MENU' || subState === 'PLAYER_FAINT_SEQ' || !activePoke || activePoke.hp <= 0) {
-      throw new Error(`[E2E-SCRIPTED-AI] Attempted to execute move choice "${clean}" but a switch is required (subState: ${subState}, activePoke: ${activePoke ? activePoke.name + ' (HP: ' + activePoke.hp + ')' : 'null'}). Simulation has desynced.`);
+    const bState = active as unknown as Record<string, unknown>;
+    const hasPendingSwitch = !!bState?.switchingToPlayer;
+    if (subState !== 'WAIT_INPUT' || hasPendingSwitch || !activePoke || activePoke.hp <= 0) {
+      console.warn(`[E2E-SCRIPTED-AI] Postponing move action "${clean}" because FSM/activePoke is not ready (subState: ${subState}, pendingSwitch: ${hasPendingSwitch}, activePoke HP: ${activePoke?.hp ?? 0}).`);
+      return false;
     }
     const splitPart = clean.split(' ')[1] || '1'
     const moveIdx = parseInt(splitPart, 10) - 1

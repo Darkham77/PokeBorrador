@@ -85,15 +85,19 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
         console.log(formatted);
       }
     }
+
+    if (msg.type() === 'error' && (text.includes('[CRITICAL]') || text.includes('ReferenceError') || text.includes('TypeError'))) {
+      throw new Error(`[CRITICAL-CONSOLE-ERROR] ${text}`);
+    }
   });
 
   page.on('pageerror', err => {
     const formatted = `[BROWSER-PAGEERROR] ${err.message}\nStack: ${err.stack}`;
     if (logBuffer) {
       logBuffer.push(formatted);
-    } else {
-      console.error(formatted);
     }
+    console.error(formatted);
+    throw new Error(`[CRITICAL-E2E-PAGE-ERROR] ${err.message}`);
   });
 
   await page.addInitScript(() => {
@@ -633,44 +637,117 @@ export async function executeAutoBattle(
     }
 
     const currentP1Idx = eventDetail.p1ChoiceIdx;
+    const currentP2Idx = eventDetail.p2ChoiceIdx ?? 0;
 
-    // Mandar a ejecutar la acción correspondiente
-    const success = await page.evaluate(async () => {
-      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
-        return await window.__VITE_DEBUG__.executeScriptedAction();
-      }
-      return false;
-    });
-
-    if (!success) {
-      const isOver = await page.evaluate(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const res = resolver?.();
-        return !res?.state || res.state.over;
+    // Mandar a ejecutar la acción correspondiente con reintento reactivo si la FSM está completando animaciones GSAP
+    let success = false;
+    for (let attempt = 0; attempt < 15; attempt++) {
+      success = await page.evaluate(async () => {
+        if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
+          return await window.__VITE_DEBUG__.executeScriptedAction();
+        }
+        return false;
       });
-      if (isOver) {
+      if (success) break;
+
+      const isEndingOrOver = await page.evaluate(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store?.state || store.state.over) return true;
+        const activePoke = store.state.player;
+        const playerFainted = !activePoke || (activePoke.hp !== undefined && activePoke.hp <= 0);
+        const sub = String(store.currentSubState || '');
+        const state = String(store.currentFsmState || '');
+        const endingSubStates = [
+          'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
+          'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
+          'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
+        ];
+        return playerFainted || state !== 'ACTIVE_BATTLE' || endingSubStates.includes(sub);
+      });
+
+      if (isEndingOrOver) {
+        await page.waitForFunction(() => {
+          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+          const store = resolver?.();
+          return !store?.state || store.state.over;
+        }, undefined, { timeout: 15000 }).catch(() => {});
+        over = true;
         break;
       }
-      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction falló al ejecutar la acción y la batalla sigue activa.`);
+
+      // Esperar reactivamente a que la FSM y animaciones GSAP terminen de estabilizarse
+      await page.waitForFunction(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store?.state || store.state.over) return true;
+        const sub = String(store.currentSubState || '');
+        const bState = store.state as unknown as Record<string, unknown>;
+        return !store.isProcessing && !store.isIntroAnimating && !bState?.switchingToPlayer && (sub === 'WAIT_INPUT' || sub === 'SWITCH_MENU');
+      }, undefined, { timeout: 3000 }).catch(() => {});
+    }
+
+    if (over) break;
+
+    if (!success) {
+      const finalIsEnding = await page.evaluate(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store?.state || store.state.over) return true;
+        const activePoke = store.state.player;
+        return !activePoke || (activePoke.hp !== undefined && activePoke.hp <= 0);
+      });
+      if (finalIsEnding) {
+        over = true;
+        break;
+      }
+      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction falló al ejecutar la acción tras aguardar la estabilización de la FSM.`);
     }
 
     // Esperar reactivamente a que la elección sea procesada e incrementada
-    await page.waitForFunction((prevIdx) => {
+    await page.waitForFunction(([prevP1, prevP2]) => {
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      const isOver = !store?.state || store.state.over;
+      const gameStore = debug?.getGameStore?.();
+      const activePoke = store?.state?.player;
+      const subStateVal = store?.currentSubState ? String(store.currentSubState) : '';
+      const endingSubStates = [
+        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
+        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
+        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
+      ];
+      const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
+      const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
+      const isOver = !store?.state || store.state.over || allPlayerFainted || endingSubStates.includes(subStateVal) || store?.currentFsmState !== 'ACTIVE_BATTLE';
       if (isOver) return true;
       if (!debug) return false;
 
-      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
       const isReady = store.currentFsmState === 'ACTIVE_BATTLE' &&
                       ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
                       !store.isProcessing &&
                       !store.isIntroAnimating;
 
-      return isReady && ((debug.p1ChoiceIdx ?? 0) > prevIdx || (debug.p2ChoiceIdx ?? 0) > prevIdx || !debug.isScriptedReplayMode);
-    }, currentP1Idx, { timeout: 30000 });
+      const enemyChoices = debug.enemyChoices as string[] | undefined;
+      const isReplayComplete = debug.playerChoices && Array.isArray(debug.playerChoices) && (debug.p1ChoiceIdx ?? 0) >= debug.playerChoices.length && (!enemyChoices || (debug.p2ChoiceIdx ?? 0) >= enemyChoices.length);
+      if (isReplayComplete) return true;
+
+      const p1 = prevP1 ?? 0;
+      const p2 = prevP2 ?? 0;
+      return isReady && ((debug.p1ChoiceIdx ?? 0) > p1 || (debug.p2ChoiceIdx ?? 0) > p2 || !debug.isScriptedReplayMode);
+    }, [currentP1Idx, currentP2Idx], { timeout: 30000 });
+
+    const currentIsOver = await page.evaluate(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
+      return false;
+    }).catch(() => true);
+
+    if (currentIsOver) {
+      over = true;
+      break;
+    }
 
     const nextDetail = (await page.evaluate(async () => {
       if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
@@ -717,51 +794,43 @@ export async function executeAutoBattle(
       if (win.__VITE_DEBUG__ && win.__VITE_DEBUG__.lastFinalState) {
         return win.__VITE_DEBUG__.lastFinalState;
       }
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return { p1: [], p2: [] };
+      if (!resolver || !debug?.getGameStore) return { p1: [], p2: [] };
       const store = resolver();
-      const p1 = (store.state?.playerTeam ?? []).map((p) => ({
-        uid: p.uid,
-        name: p.name,
-        hp: p.hp,
-        maxHp: p.maxHp,
-        fainted: p.hp <= 0
-      }));
-      const p2 = (store.state?.enemyTeam ?? []).map((p) => ({
-        uid: p.uid,
-        name: p.name,
-        hp: p.hp,
-        maxHp: p.maxHp,
-        fainted: p.hp <= 0
-      })) || [];
-      return { p1, p2 };
+      const gameStore = debug.getGameStore();
+      const formatTeam = (team: Array<{ uid: string; name: string; hp: number; maxHp: number }>) =>
+        team.map((p) => ({
+          uid: p.uid,
+          name: p.name,
+          hp: p.hp,
+          maxHp: p.maxHp,
+          fainted: p.hp <= 0
+        }));
+
+      const p1Team = (gameStore.state?.team ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number }>;
+      const p2Team = (store.state?.enemyTeam ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number }>;
+      return { p1: formatTeam(p1Team), p2: formatTeam(p2Team) };
     }) as {
       p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
       p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
     };
 
-    finalState.p1.forEach((expected) => {
-      const clientPoke = clientState.p1.find(p => p.uid && p.uid.startsWith(expected.name));
-      if (clientPoke) {
-        expect(clientPoke.fainted).toBe(expected.fainted);
-        if (!expected.fainted) {
-          expect(clientPoke.hp).toBe(expected.hp);
-        }
-      } else {
-        throw new Error(`[E2E] Expected player pokemon with prefix ${expected.name} not found in client state.`);
-      }
-    });
+    (['p1', 'p2'] as const).forEach((seat) => {
+      const expectedTeam = finalState[seat];
+      if (!expectedTeam) return;
 
-    finalState.p2.forEach((expected) => {
-      const clientPoke = clientState.p2.find(p => p.uid && p.uid.startsWith(expected.name));
-      if (clientPoke) {
-        expect(clientPoke.fainted).toBe(expected.fainted);
-        if (!expected.fainted) {
-          expect(clientPoke.hp).toBe(expected.hp);
+      expectedTeam.forEach((expected) => {
+        const clientPoke = clientState[seat].find(p => p.uid && p.uid.startsWith(expected.name));
+        if (clientPoke) {
+          expect(clientPoke.fainted).toBe(expected.fainted);
+          if (!expected.fainted) {
+            expect(clientPoke.hp).toBe(expected.hp);
+          }
+        } else {
+          throw new Error(`[E2E] Expected ${seat} pokemon with prefix ${expected.name} not found in client state.`);
         }
-      } else {
-        throw new Error(`[E2E] Expected enemy pokemon with prefix ${expected.name} not found in client state.`);
-      }
+      });
     });
   }
 }

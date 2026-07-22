@@ -127,19 +127,14 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
   const turnAlreadyProcessed = battle.turn > turnBeforeP1;
   const p2CanAct = requiresAction(battle.p2.activeRequest);
   if (p2Choice && p2NeedsAction && p2CanAct && !turnAlreadyProcessed && !battle.ended) {
-    // Si la IA enemiga intentaba cambiar pero el activo ya se debilitó o no requiere acción, capturar el error de elección obsoleta limpiamente
-    if (battle.p2.active?.[0]?.fainted || battle.p2.pokemonLeft === 0) {
-      console.warn(`[showdownExecutor] Ignorando p2Choice "${p2Choice}" porque el Pokémon enemigo ya no está activo o se ha debilitado.`);
-    } else {
-      try {
-        chooseOrThrow('p2', p2Choice);
-      } catch (err: unknown) {
-        const msg = String((err as Error)?.message || err);
-        if (msg.includes("It's not your turn") || msg.includes('Can\'t do anything')) {
-          console.warn(`[showdownExecutor] Ignorando p2Choice obsoleto "${p2Choice}": ${msg}`);
-        } else {
-          throw err;
-        }
+    try {
+      chooseOrThrow('p2', p2Choice);
+    } catch (err: unknown) {
+      const msg = String((err as Error)?.message || err);
+      if (msg.includes("It's not your turn") || msg.includes('Can\'t do anything')) {
+        console.warn(`[showdownExecutor] Ignorando p2Choice obsoleto "${p2Choice}": ${msg}`);
+      } else {
+        throw err;
       }
     }
   }

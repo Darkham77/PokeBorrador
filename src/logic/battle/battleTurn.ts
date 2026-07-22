@@ -133,10 +133,13 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     const { handleForceSwitch } = await import('./resolution.ts')
     
-    // Las sustituciones forzadas por movimientos pivot (U-turn, Chilly Reception, etc.)
-    // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
-    const p1Force = !!result.p1Request?.forceSwitch?.length
-    const p2Force = !!result.p2Request?.forceSwitch?.length
+    const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
+    const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
+
+    // Las sustituciones forzadas por movimientos pivot (U-turn, Flip Turn, etc.)
+    // solo ocurren si el Pokémon NO se debilitó en ese mismo turno.
+    const p1Force = !!result.p1Request?.forceSwitch?.length && !playerFainted
+    const p2Force = !!result.p2Request?.forceSwitch?.length && !enemyFainted
     if (p1Force && p2Force) {
       await handleForceSwitch(store, 'enemy')
       await handleForceSwitch(store, 'player')
@@ -150,9 +153,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       await handleForceSwitch(store, 'enemy')
       return
     }
-
-    const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
-    const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
 
     if (playerFainted || enemyFainted) {
       if (playerFainted && enemyFainted) {
@@ -281,8 +281,18 @@ export async function runEnemyAction(store: BattleContext) {
     } else if (!p2Skip && enemyMove) {
       p2Choice = `move ${enemyMove.id}`;
     }
-    // Interceptar elección de enemigo si está inyectada dinámicamente en el test determinista
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+    // Interceptar elección de enemigo si está en modo de reproducción de test determinista
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const debugObj = window.__VITE_DEBUG__;
+      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
+      const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
+      runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
+      runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
+      p2Choice = runner.resolveAndConsumeNextChoice('p2', enemyRequest);
+      debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
+      debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
+      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice via ShowdownBattleRunner: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
       console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
       window.__VITE_DEBUG__.nextEnemyChoice = undefined;

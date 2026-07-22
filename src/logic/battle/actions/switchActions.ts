@@ -40,6 +40,7 @@ export async function executeEnemySwitch(store: BattleContext, newPokeIndex: num
   };
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL);
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
   store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke);
   

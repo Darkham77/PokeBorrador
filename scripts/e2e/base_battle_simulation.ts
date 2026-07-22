@@ -156,8 +156,27 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         return x - Math.floor(x);
       };
 
+      interface ViteDebugApi {
+        testResetShowdownWorker?: () => void;
+        useBattleStore: () => {
+          state: { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
+          fsm: { currentSubState: string | null; currentState: string };
+          startBattle: (enemy: unknown, opts: unknown) => Promise<void>;
+        };
+        useGameStore: () => {
+          state: { team: unknown[]; inventory: Record<string, number> };
+        };
+        useMapStore: () => {
+          setGlobalWeather: (weather: string) => void;
+        };
+        pokemonDebugService: {
+          generate: (opts: Record<string, unknown>) => { uid: string };
+        };
+        injectDebugSeed?: (seed: [number, number, number, number]) => void;
+      }
+
       // Inyectar contexto a través de la API debug global expuesta en window
-      const debug = (window as unknown as { __VITE_DEBUG__: any }).__VITE_DEBUG__;
+      const debug = (window as unknown as { __VITE_DEBUG__: ViteDebugApi }).__VITE_DEBUG__;
       if (debug && debug.testResetShowdownWorker) {
         debug.testResetShowdownWorker();
       }
@@ -271,8 +290,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       const bState = battleStore.state as { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
       if (bState) {
-        bState.p1SlotOrder = localPlayerTeam.map(p => p.uid);
-        bState.p2SlotOrder = localEnemyTeam.map(p => p.uid);
+        bState.p1SlotOrder = localPlayerTeam.map((p: { uid: string }) => p.uid);
+        bState.p2SlotOrder = localEnemyTeam.map((p: { uid: string }) => p.uid);
       }
     }, b);
   }

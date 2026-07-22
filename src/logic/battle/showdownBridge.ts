@@ -37,6 +37,7 @@ export function filterShowdownLogs(logs: string[]): string[] {
   return filtered;
 }
 
+import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
 
 // Monkey-patch Worker.prototype.postMessage to inject weather into EXECUTE_TURN (browser only)
@@ -151,9 +152,11 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       side?: RequestSide;
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
-    const team = side === 'player' ? (battle.playerTeam || []) : (battle.enemyTeam || []);    const findPokemonInBattle = (targetUid: string) => {
-      console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map(mon => mon ? `${mon.name} (${mon.uid})` : 'null'));
-      const found = team.find(mon => mon && mon.uid === targetUid);
+    const gameStore = useGameStore();
+    const team: Pokemon[] = side === 'player' ? (gameStore.state?.team || []) : (battle.enemyTeam || []);
+    const findPokemonInBattle = (targetUid: string) => {
+      console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map((mon: Pokemon | null | undefined) => mon ? `${mon.name} (${mon.uid})` : 'null'));
+      const found = team.find((mon: Pokemon | null | undefined) => mon && mon.uid === targetUid);
       if (!found) return null;
 
       const keys = Object.keys(battle);

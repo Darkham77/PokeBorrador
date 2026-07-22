@@ -23,6 +23,7 @@ import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/bat
 import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
+import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts'
 import { ACTIVE_GENERATION } from '@/data/system/constants.ts'
@@ -443,28 +444,68 @@ export const useBattleStore = defineStore('battle', () => {
 
   watch(fsm.currentSubState, async (newVal) => {
     if (newVal === BATTLE_SUBSTATES.WAIT_INPUT) {
+      if (activeBattle.value) {
+        const bState = activeBattle.value as unknown as Record<string, unknown>;
+        if (bState.switchingToPlayer) {
+          activeBattle.value.player = bState.switchingToPlayer as Pokemon;
+          delete bState.switchingToPlayer;
+        }
+        if (bState.switchingToEnemy) {
+          activeBattle.value.enemy = bState.switchingToEnemy as Pokemon;
+          delete bState.switchingToEnemy;
+        }
+      }
       await checkAndAutoRecharge()
     }
   })
 
+  let lastEmittedStateKey = '';
+
   watch(
     [fsm.currentSubState, isProcessing, isIntroAnimating],
     ([subState, processing, intro]) => {
+      const req = activeBattle.value?.playerRequest;
+      const enemyReq = activeBattle.value?.enemyRequest;
       if (
         fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
-        (subState === BATTLE_SUBSTATES.WAIT_INPUT || subState === BATTLE_SUBSTATES.SWITCH_MENU || subState === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ) &&
         !processing &&
         !intro &&
-        activeBattle.value?.playerRequest
+        (req || enemyReq)
       ) {
-        if (typeof window !== 'undefined') {
-          console.debug(`[BATTLE-EVENT] Emitting battle-ready-for-input. SubState: ${subState}`);
+        const p1NeedsAction = requiresAction(req);
+        const p2NeedsAction = requiresAction(enemyReq);
+        if (!p1NeedsAction && !p2NeedsAction) return;
+
+        const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
+        const bState = activeBattle.value as unknown as Record<string, unknown>;
+        const hasPendingSwitch = !!bState?.switchingToPlayer || !!bState?.switchingToEnemy;
+
+        if (activeBattle.value?.over) return;
+
+        let isReady = false;
+        if (kind === 'move') {
+          const activePoke = activeBattle.value?.player;
+          isReady = subState === BATTLE_SUBSTATES.WAIT_INPUT && !hasPendingSwitch && (!p1NeedsAction || (!!activePoke && activePoke.hp > 0));
+        } else if (kind === 'force-switch') {
+          isReady = (subState === BATTLE_SUBSTATES.SWITCH_MENU || subState === BATTLE_SUBSTATES.WAIT_INPUT) && !hasPendingSwitch;
+        } else if (kind === 'team-preview') {
+          isReady = true;
+        }
+
+        if (isReady && typeof window !== 'undefined') {
+          const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
+          const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
+          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${(req as unknown as { rqid?: number })?.rqid ?? 0}`;
+          if (lastEmittedStateKey === emitKey) return;
+          lastEmittedStateKey = emitKey;
+
+          console.debug(`[BATTLE-EVENT] Emitting battle-ready-for-input. SubState: ${subState}, kind: ${kind}, key: ${emitKey}`);
           window.dispatchEvent(
             new CustomEvent('battle-ready-for-input', {
               detail: {
                 subState,
-                p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-                p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+                p1ChoiceIdx: p1Idx,
+                p2ChoiceIdx: p2Idx,
                 over: false
               }
             })
@@ -520,6 +561,7 @@ export const useBattleStore = defineStore('battle', () => {
     completeBattleFlow: (option?: string) => completeBattleFlow(option),
     triggerSearchEncounter,
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
-    startEncounter: async () => await startEncounter(getContext())
+    startEncounter: async () => await startEncounter(getContext()),
+    getContext
   }
 })

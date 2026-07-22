@@ -416,6 +416,15 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
   const fsm = ctx.fsm
 
   if (side === 'player') {
+    const hasHealthyPlayer = ctx.gs.state.team.some((mon: Pokemon) => mon && mon.hp > 0);
+    if (!hasHealthyPlayer) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED);
+      active.over = true;
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN);
+      await terminateBattle(ctx, false);
+      return;
+    }
+
     ctx.uiStore.isBattleSwitchForced = true
     const p = active.player
     if (p) {
