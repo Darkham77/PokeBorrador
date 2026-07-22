@@ -9,6 +9,7 @@ interface Option {
 }
 
 const props = defineProps<{
+  id?: string
   label: string
   modelValue: string
   options: Option[]

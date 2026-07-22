@@ -138,7 +138,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await pageSeller.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      return store && !store.isProcessing && !store.loadingStore?.isLoading;
+      const storeObj = store as unknown as Record<string, { isLoading?: boolean }>;
+      return store && !store.isProcessing && !storeObj.loadingStore?.isLoading;
     }, undefined, { timeout: 5000 }).catch(() => {});
 
     // Esperar a que el loading overlay desaparezca

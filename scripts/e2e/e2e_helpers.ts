@@ -1,6 +1,6 @@
 import { type Page, type Locator, expect } from '@playwright/test';
 
-export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}, retries = 3): Promise<void> {
+export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
   const cleanOptions = { ...options };
   delete cleanOptions.force; // Prohibición estricta de force-clicks en tests
   
@@ -785,7 +785,8 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
     }
   }
 
-  const navBtn = page.locator('.debug-nav button').filter({ hasText: new RegExp(category, 'i') }).first();
+  const categoryId = category.toLowerCase();
+  const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
   await clickResilient(navBtn);
 }
 

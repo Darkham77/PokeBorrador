@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, clickResilient, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
+import { waitForWaitInput, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
 
 interface FailureRecord {
   scenario: string;
@@ -104,7 +104,8 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       if (!store) return false;
-      return store.state?.over || store.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE';
+      const storeObj = store as unknown as Record<string, unknown>;
+      return !!(store.state?.over || storeObj.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE');
     });
   }
 }

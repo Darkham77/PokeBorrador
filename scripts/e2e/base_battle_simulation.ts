@@ -64,7 +64,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     const activeUid = await this.page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      return store?.player?.uid || store?.activeBattle?.player?.uid;
+      const storeObj = store as unknown as Record<string, Record<string, { uid?: string }>>;
+      return store?.player?.uid || storeObj?.activeBattle?.player?.uid;
     });
 
     if (activeUid === pokemonUid) {

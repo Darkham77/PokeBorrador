@@ -119,7 +119,7 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
       const allPkmn = [...(store.team || []), ...(store.box || [])];
-      const caterpie = allPkmn.find((p: { name?: string; nickname?: string; level?: number }) => p?.nickname === 'MASTER_CATERPIE' || (p?.name === 'Caterpie' && (p?.level || 0) >= 30));
+      const caterpie = allPkmn.find((p: { name?: string; nickname?: string | null; level?: number }) => (p?.nickname as string) === 'MASTER_CATERPIE' || (p?.name === 'Caterpie' && ((p?.level as number) || 0) >= 30));
       return caterpie?.uid || '';
     });
 

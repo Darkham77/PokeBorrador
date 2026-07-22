@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class HealingSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {

@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
-import { useInventoryStore } from '@/stores/inventory/inventory'
+
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
@@ -15,7 +15,7 @@ const gameStore = useGameStore()
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
-const inventoryStore = useInventoryStore()
+
 
 interface BattleItem {
   id: string

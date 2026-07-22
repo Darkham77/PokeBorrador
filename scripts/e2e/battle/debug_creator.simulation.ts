@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, openDebugTab } from '../e2e_helpers.ts';
 
 interface E2EWindow {

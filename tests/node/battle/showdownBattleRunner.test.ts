@@ -1,7 +1,6 @@
-// src/logic/battle/helpers/__tests__/showdownBattleRunner.test.ts
-import test from 'node:test';
-import assert from 'node:assert';
-import { ShowdownBattleRunner } from '../showdownBattleRunner.ts';
+// tests/node/battle/showdownBattleRunner.test.ts
+import { test, expect } from 'vitest';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 
 test('ShowdownBattleRunner normal turn choice and index increment', () => {
   const runner = new ShowdownBattleRunner(['move 1', 'switch 2'], ['move 3']);
@@ -10,8 +9,8 @@ test('ShowdownBattleRunner normal turn choice and index increment', () => {
   const reqP1 = { active: [{ moves: [{ id: 'tackle' }] }] };
   const choice = runner.resolveAndConsumeNextChoice('p1', reqP1);
   
-  assert.strictEqual(choice, 'move 1');
-  assert.strictEqual(runner.p1ChoiceIdx, 1);
+  expect(choice).toBe('move 1');
+  expect(runner.p1ChoiceIdx).toBe(1);
 });
 
 test('ShowdownBattleRunner wait request bypasses choice increment', () => {
@@ -21,8 +20,8 @@ test('ShowdownBattleRunner wait request bypasses choice increment', () => {
   const reqP1Wait = { wait: true };
   const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Wait);
   
-  assert.strictEqual(choice, 'pass');
-  assert.strictEqual(runner.p1ChoiceIdx, 0); // index should not advance
+  expect(choice).toBe('pass');
+  expect(runner.p1ChoiceIdx).toBe(0); // index should not advance
 });
 
 test('ShowdownBattleRunner force switch request increments index', () => {
@@ -32,8 +31,8 @@ test('ShowdownBattleRunner force switch request increments index', () => {
   const reqP1Force = { forceSwitch: [true] };
   const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Force);
   
-  assert.strictEqual(choice, 'switch 3');
-  assert.strictEqual(runner.p1ChoiceIdx, 1);
+  expect(choice).toBe('switch 3');
+  expect(runner.p1ChoiceIdx).toBe(1);
 });
 
 test('ShowdownBattleRunner team preview resolves to team 1', () => {
@@ -43,6 +42,6 @@ test('ShowdownBattleRunner team preview resolves to team 1', () => {
   const reqP1Team = { teamPreview: true };
   const choice = runner.resolveAndConsumeNextChoice('p1', reqP1Team);
   
-  assert.strictEqual(choice, 'team 1');
-  assert.strictEqual(runner.p1ChoiceIdx, 0); // index does not advance for team preview
+  expect(choice).toBe('team 1');
+  expect(runner.p1ChoiceIdx).toBe(0); // index does not advance for team preview
 });

@@ -1,8 +1,7 @@
-// src/logic/battle/helpers/__tests__/showdownTeamMapper.test.ts
-import test from 'node:test';
-import assert from 'node:assert';
+// tests/node/battle/showdownTeamMapper.test.ts
+import { test, expect } from 'vitest';
 import type { Battle } from '@pkmn/sim';
-import { ShowdownTeamMapper } from '../showdownTeamMapper.ts';
+import { ShowdownTeamMapper } from '../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 
 test('ShowdownTeamMapper.injectUidsIntoRequest correctly maps and injects UIDs', () => {
   // Mock Battle instance
@@ -29,10 +28,12 @@ test('ShowdownTeamMapper.injectUidsIntoRequest correctly maps and injects UIDs',
   const result = ShowdownTeamMapper.injectUidsIntoRequest(mockBattle as unknown as Battle, 'p1', mockRequest);
 
   // Assert
-  assert.ok(result);
-  assert.ok(result.side);
-  assert.strictEqual(result.side!.pokemon[0]!.uid, '80be8f0b-85e6-4893-b550-2c6e8d63bc11');
-  assert.strictEqual(result.side!.pokemon[1]!.uid, '7507a15a-778c-4a16-8859-98c29c829b03');
+  expect(result).toBeTruthy();
+  if (result) {
+    expect(result.side).toBeTruthy();
+    expect(result.side!.pokemon[0]!.uid).toBe('80be8f0b-85e6-4893-b550-2c6e8d63bc11');
+    expect(result.side!.pokemon[1]!.uid).toBe('7507a15a-778c-4a16-8859-98c29c829b03');
+  }
 });
 
 test('ShowdownTeamMapper.injectUidsIntoRequest throws error on missing matching UID', () => {
@@ -52,7 +53,7 @@ test('ShowdownTeamMapper.injectUidsIntoRequest throws error on missing matching 
     }
   };
 
-  assert.throws(() => {
+  expect(() => {
     ShowdownTeamMapper.injectUidsIntoRequest(mockBattle as unknown as Battle, 'p1', mockRequest);
-  }, /No UID found on simulator Pokemon instance/);
+  }).toThrow(/No UID found on simulator Pokemon instance/);
 });

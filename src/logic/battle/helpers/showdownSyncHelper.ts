@@ -56,7 +56,7 @@ export function syncSidePokemon(
       const uid = (p as unknown as { uid?: string }).uid;
       const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
       if (clientHp !== undefined) {
-        const maxHpVal = p.maxhp || 0;
+
 
         if (clientHp <= 0) {
           p.hp = 0;

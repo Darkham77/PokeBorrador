@@ -36,34 +36,9 @@ let _sqliteDb: SQLiteDatabase | null = null
 let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
-let _dbKey: string | null = null
 
-function getDbKey(): string {
-  if (_dbKey) return _dbKey
-  if (typeof window !== 'undefined') {
-    const urlParams = new URLSearchParams(window.location.search)
-    const key = urlParams.get('dbKey')
-    if (key) {
-      _dbKey = key
-      localStorage.setItem('pokevicio_db_key', key)
-      return key
-    }
-    const stored = localStorage.getItem('pokevicio_db_key')
-    if (stored) {
-      _dbKey = stored
-      return stored
-    }
-  }
-  return ''
-}
 
-function getApiUrl(endpoint: string): string {
-  const key = getDbKey()
-  if (key) {
-    return `${endpoint}?dbKey=${encodeURIComponent(key)}`
-  }
-  return endpoint
-}
+
 
 
 
@@ -95,7 +70,7 @@ export async function persistSQLite(): Promise<void> {
 
     if (import.meta.env.DEV && typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__) {
       try {
-        await fetch(getApiUrl('/api/dev-export-db'), {
+        await fetch('/api/dev-export-db', {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: binary as unknown as BodyInit

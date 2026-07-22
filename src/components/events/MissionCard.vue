@@ -5,6 +5,7 @@ import { SHOP_ITEMS } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const props = defineProps<{
+  id?: string
   avatar: string
   isAvatarUrl?: boolean
   title: string

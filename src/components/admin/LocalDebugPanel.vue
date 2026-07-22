@@ -95,6 +95,7 @@ const selectedCategory = ref('stats')
             :title="cat.desc"
           >
             <button 
+              :id="'debug-tab-' + cat.id"
               :class="{ active: selectedCategory === cat.id }"
               @click.stop="selectedCategory = cat.id"
             >
