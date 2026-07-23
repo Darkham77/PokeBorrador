@@ -34,7 +34,12 @@ const TASKS: AuditTask[] = [
   { 
     name: 'Intelligent Project Audit', 
     command: 'node', 
-    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', '--allow-child-process', 'scripts/maintenance/audit_project.ts'] 
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=*', '--allow-fs-write=*', '--allow-child-process', 'scripts/maintenance/audit_project.ts'] 
+  },
+  { 
+    name: 'CSS/SCSS Duplicates Audit (css-checker)', 
+    command: 'node', 
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=*', '--allow-fs-write=*', '--allow-child-process', 'scripts/maintenance/audit_project.ts', '--css-only', '--errors-only'] 
   },
   { 
     name: 'FSM Diagrams', 

@@ -16,9 +16,7 @@ This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages 
 ```mermaid
 graph TD
     Start((START)) --> Artifacts[0. Mandatory Artifact Creation]
-    Artifacts --> AskSnapshot{Snapshot Approved?}
-    AskSnapshot -->|No| AskSnapshot
-    AskSnapshot -->|Yes| Snapshot[1. Initial Snapshot Commit]
+    Artifacts --> Snapshot[1. Initial Snapshot Commit]
 
     Snapshot --> Tracking[1.1 Task & Scratchpad Tracking]
     Tracking --> |"Dynamic task update"| Tracking
@@ -99,10 +97,9 @@ AFTER creating the physical `task.md` and `implementation_plan.md` artifacts, yo
 2. **AGENTS.md Chain Review**: Identify every file you modified. For each one, walk the path from the repo root and read every `AGENTS.md` found along the route. Confirm that the changes do not contradict any local contract (the closest `AGENTS.md` controls). If a contradiction is found, resolve it before committing.
 3. **Initial Project Health**: Run `npx fallow health --score` to capture and record the starting health score of the project before any modifications, to compare with the final score at Step 3.5.
 4. **Comprehensive Message**: Review every modified file's diff to understand the changes made, including those from previous sessions or manual edits.
-5. **Interactive Confirmation Gate**: Call the `ask_question` tool to request explicit user approval before executing `git commit`. Display the commit summary and exact message to be used.
-6. `git add .`
-7. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
-8. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
+5. `git add .`
+6. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
+7. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
 
 ### 2. Test Gap Analysis
 
