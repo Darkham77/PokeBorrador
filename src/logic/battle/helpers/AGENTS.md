@@ -14,6 +14,10 @@ Systems Engineers / Backend Developers.
 - **ScriptedAI Integrity**: Never bypass or manually override simulator decisions directly in the worker client. All replayed decisions during simulations must be resolved cleanly via the `ScriptedAI` interface.
 - **E2E Arena Unmount Safety**: When transitioning between battles or initializing a new fuzzer E2E scenario, always await native browser `requestAnimationFrame` cycles after clearing the battle store state. This ensures Vue reactively unmounts the previous battle arena component completely before the new battle starts, preventing cross-battle choice contamination.
 - **Pre-Turn Cheat Evaluation**: Apply status and HP cheats at pre-turn using `applyPreTurnCheats` to ensure simulator states are fully synchronized before input choices are registered, preventing invalid fainted state rejections.
+- **p2Skip Default False**: In `switchWorkerTurn`, `p2Skip` MUST default to `false`. It is only set to `true` when the worker explicitly signals a faint-forced switch. A voluntary player switch MUST NOT skip the AI's turn.
+- **Showdown Move Format**: The correct format for sending moves to the Showdown simulator is `'move 1'` (with a space), NOT `'move1'`. The scripted AI and any choice builders MUST use the spaced format or the simulator will reject the command.
+- **Faction Null Guard in Bridge**: When constructing a trainer payload for the Showdown bridge, always default `faction` to `'neutral'` when `trainer.faction === null` to prevent serialization crashes.
+
 
 ## Work Guidance
 
