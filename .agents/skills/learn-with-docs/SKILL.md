@@ -25,8 +25,8 @@ When saving a new behavior, constraint, or success pattern:
 1. **Identify Learnings**: Analyze recent interactions to identify what to learn (Rules vs. Skills) and determine the correct target scope.
 2. **Locate Target**: Use the [dox-navigator](../dox-navigator/SKILL.md) skill to identify the correct `AGENTS.md` file(s) corresponding to the learned domain.
 3. **Mandatory Proposal Workflow**: Do NOT modify files immediately. You MUST create/update the `learning_proposal.md` artifact outlining the classification, rationale, and precise text additions/diffs:
-   - Save the artifact to the conversation root directory.
-   - Set `RequestFeedback: true` and `UserFacing: true` in the `ArtifactMetadata`.
+   - Save the artifact strictly to the Artifact Directory `<appDataDir>/brain/<conversation-id>/learning_proposal.md`. NEVER save it inside `scratch/` or the project repository workspace.
+   - Pass complete `ArtifactMetadata` containing `UserFacing: true`, `RequestFeedback: true`, and a detailed multi-line `Summary` describing the proposed rules/lessons.
 4. **Language Integrity Check**: Ensure the proposed rules or additions inside the `learning_proposal.md` diff blocks are written in English (matching the target files), while all descriptions, justifications, and chat explanations are in Spanish.
 5. **Get User Approval**: Stop and wait for the user's explicit approval on the proposal before applying any changes to the files.
 

@@ -203,16 +203,19 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 ### 8. Lessons Extraction & HARD STOP (LOCAL) 🛑
 
-Trigger the **/learn-with-docs** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
+Trigger the **/learn-with-docs** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal automatically.
+
+> [!IMPORTANT] **AUTOMATIC EXECUTION MANDATE**: Do NOT ask the user whether they want to run `/learn-with-docs`. Running lesson extraction is a mandatory part of Step 8. Execute it automatically to extract lessons and write `learning_proposal.md`.
 
 This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 > [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — ABSOLUTE HARD STOP**:
-> 1. Call `write_to_file` to create the `learning_proposal.md` artifact (with `RequestFeedback: true` and `UserFacing: true`).
-> 2. Call the `ask_question` tool to present the proposed lessons interactively to the user with options to Approve or Reject/Modify.
+> 1. Call `write_to_file` to create the `<appDataDir>/brain/<conversation-id>/learning_proposal.md` artifact with complete `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: true`, and a detailed multi-line `Summary`). NEVER save `learning_proposal.md` in `scratch/` or inside the project repository workspace.
+> 2. Call the `ask_question` tool to present the **extracted lessons proposal** interactively to the user with options to Approve or Reject/Modify the lesson content.
 > 3. **IMMEDIATELY STOP calling any further tools** in the current turn until the user responds to the `ask_question` modal.
 > 4. Do NOT execute `git commit`, `git add`, or any file edits for Step 9 in the same turn.
 
+- **NEVER ASK TO RUN THE STEP**: The `ask_question` tool is reserved strictly for requesting approval on the *content* of the extracted lessons, never for asking whether to run `/learn-with-docs`.
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal via `ask_question`.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item up to Step 8 is marked as `[x]`.
 
