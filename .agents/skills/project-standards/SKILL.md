@@ -117,3 +117,7 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 All validation, testing, and multi-server setup scripts (`validate:*`, `audit:*`, `supabase:manage`) have been consolidated. Refer to [validation_manual.md](./references/qa/validation_manual.md) for the complete command reference table.
 
+### 6. `css-checker` Domain Bundling & Process Safety Rule
+When auditing SCSS files or Vue `<style>` blocks with external AST analyzers like `css-checker-kit`, aggregate extracted style code into domain bundle files (`bundle_styles.css`, `bundle_components.css`, `bundle_views.css`) before passing them to the analyzer binary. This reduces processing time from ~40s (hundreds of individual files) to under 200ms by eliminating file handle I/O and $O(N^2)$ cross-file AST overhead in Go binaries. All child process calls (`execSync`, `spawnSync`) running external binaries MUST set explicit execution timeouts (e.g. `timeout: 15000`) and hard termination signals (`killSignal: 'SIGKILL'`) to prevent orphaned background processes and CPU saturation.
+
+

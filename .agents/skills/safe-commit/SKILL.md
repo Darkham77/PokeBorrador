@@ -203,7 +203,7 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 ### 8. Lessons Extraction & HARD STOP (LOCAL) 🛑
 
-Trigger the official **/learn** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
+Trigger the **/learn-with-docs** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
 
 This is a **local documentation task** and MUST NOT involve a browser subagent.
 
