@@ -198,25 +198,30 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 
 > [!IMPORTANT] **Production Build Mandatory Completion Gate**: The background command `npm run build` MUST be awaited and confirmed to finish with exit code 0 before proceeding to Step 4, Step 6, or any commit operation. Proceeding while `npm run build` is running in the background or after it fails is STRICTLY FORBIDDEN.
 
-### 8. Lessons Extraction (LOCAL) 🛑
+### 8. Lessons Extraction & HARD STOP (LOCAL) 🛑
 
 Trigger the official **/learn** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
 
 This is a **local documentation task** and MUST NOT involve a browser subagent.
 
-> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — HARD STOP & TOOL CALL HALT**: Once the `learning_proposal.md` artifact is created, you MUST **STOP calling tools immediately** and yield execution to the user. You are STRICTLY FORBIDDEN from executing any tool calls (especially `git commit`, `git add`, or file modifications) in the same turn or before receiving explicit user approval of the proposed lessons in chat. This stop is an absolute gatekeeper.
+> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — ABSOLUTE HARD STOP**:
+> 1. Call `write_to_file` to create the `learning_proposal.md` artifact (with `RequestFeedback: true` and `UserFacing: true`).
+> 2. **IMMEDIATELY STOP calling any further tools** in the current turn.
+> 3. Do NOT execute `git commit`, `git add`, or any file edits for Step 9 in the same turn.
+> 4. Present the proposed lessons to the user in chat (in Spanish) and wait for explicit user approval before proceeding.
 
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal.
-- **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal in a separate conversation turn.
+- **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item up to Step 8 is marked as `[x]`.
 
-### 9. Final Optimization Commit
+### 9. Lesson Approval & Final Commit
 
-After the user approves the learning proposal in Step 8, perform a second and final commit.
+AFTER (and ONLY after) the user explicitly approves the learning proposal in a separate turn:
 
-1. `git status` to verify staged changes (only audit-related diffs should remain).
-2. `git add .`
-3. **Commit Message (The Optimization Log)**: Use `refactor(audit):` or `fix(lint):` as header. The body MUST focus **ONLY** on the technical optimizations, linting fixes, and SASS repairs performed during Step 3.
-4. **Example**: `refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD`.
+1. Persist the approved lessons into their respective `AGENTS.md` files as proposed.
+2. Run `git status` to verify staged changes (only DOX documentation updates and final build artifacts should remain).
+3. Run `git add .`
+4. **Commit Message**: Perform the final commit using the standard header `docs(agents):` or `refactor(audit):`.
+   - **Example**: `docs(agents): persist battle animation bridge mapping and seat property resolution rules`.
 
 ### 10. Final Status & Instructions
 
