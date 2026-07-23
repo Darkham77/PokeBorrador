@@ -154,7 +154,6 @@ export function useBattleCaptureAnimations(
 
     slot.ballId = resolveBallId(pokemon)
 
-
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
     const targetUid = pokemon?.uid || target?.uid || null
 
@@ -168,6 +167,28 @@ export function useBattleCaptureAnimations(
     slot.pokemonUid = targetUid
     slot.isCaptureActive = false
     slot.animState = 'releasing'
+    gameBus.emit('PLAY_SOUND', 'ballHit')
+
+    const animKey = `${side}-${targetUid || 'active'}`
+    await awaitTween(animKey)
+
+    slot.animState = null
+    slot.pokemonUid = null
+  }
+
+  const handleWithdrawRequest = async (detail: string | { side?: string, pokemon?: Pokemon }) => {
+    const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
+    const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null
+    const slot = getSeat(side).exit
+
+    slot.ballId = resolveBallId(pokemon)
+
+    const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
+    const targetUid = pokemon?.uid || target?.uid || null
+
+    slot.pokemonUid = targetUid
+    slot.isCaptureActive = false
+    slot.animState = 'catching'
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
@@ -206,7 +227,7 @@ export function useBattleCaptureAnimations(
       slot.ballId = 'pokeball'
       if (pokemon?.uid) fixPokemonBallTagInSave(pokemon.uid)
     }
-    
+
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
     caughtPokemonSnapshot.value = target ? { ...target } : null
 
@@ -224,17 +245,13 @@ export function useBattleCaptureAnimations(
     slot.animState = 'catching'
     slot.isCaptureActive = false
     slot.isAnimatingCapture = true
-    console.log(`[E2E-CATCH-REQUEST-START] side: ${side}, pokemon: ${pokemon?.name || 'unknown'} (uid: ${pokemon?.uid || 'none'}), isAnimatingCapture before: ${slot.isAnimatingCapture}`);
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
     const animKey = `${side}-${targetUid || 'active'}`
-    console.log(`[E2E-CATCH-REQUEST-AWAIT-START] animKey: ${animKey}`);
     await awaitTween(animKey)
-    console.log(`[E2E-CATCH-REQUEST-AWAIT-END] animKey: ${animKey}`);
 
     slot.animState = 'trapped'
     slot.isAnimatingCapture = false
-    console.log(`[E2E-CATCH-REQUEST-END] isAnimatingCapture after: ${slot.isAnimatingCapture}`);
   }
 
   const handleShakeRequest = (detail: string | { side?: string }): Promise<void> => {
@@ -448,6 +465,7 @@ export function useBattleCaptureAnimations(
     isCaptureSequenceActive,
     triggerCatchSparkles,
     handleReleaseRequest,
+    handleWithdrawRequest,
     handleCatchRequest,
     handleShakeRequest,
     handleBlinkRequest,

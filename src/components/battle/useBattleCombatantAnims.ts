@@ -102,11 +102,18 @@ export function useBattleCombatantAnims(
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: "none" })
       }
+      if (spriteRotationRef.value) {
+        gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: "transform,rotation" })
+      }
       
       gsap.killTweensOf(spriteRef.value)
       
       gsap.set(spriteRef.value, { 
         transformOrigin: origin,
+        x: 0,
+        y: 0,
+        scale: 1,
+        opacity: 1,
         filter: "url(#pixel-energy-optimized)" 
       })
       
@@ -134,6 +141,9 @@ export function useBattleCombatantAnims(
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: "none" })
       }
+      if (spriteRotationRef.value) {
+        gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: "transform,rotation" })
+      }
       
       gsap.killTweensOf(spriteRef.value)
       
@@ -157,6 +167,9 @@ export function useBattleCombatantAnims(
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: "transform,filter,transformOrigin,opacity" })
           }
+          if (spriteRotationRef.value) {
+            gsap.set(spriteRotationRef.value, { clearProps: "transform,rotation,filter" })
+          }
           if (shadowWrapperRef.value) {
             gsap.set(shadowWrapperRef.value, { clearProps: "display" })
           }
@@ -172,23 +185,37 @@ export function useBattleCombatantAnims(
   }
 
   watch(() => props.animState, (val) => {
-    // For 'releasing': set invisible immediately (same tick) to prevent the
+    // For 'releasing' or 'catching': set energy state immediately (same tick) to prevent the
     // 1-frame flash that occurs when the sprite renders before nextTick fires.
-    if (val === 'releasing' && spriteRef.value) {
+    if ((val === 'releasing' || val === 'catching') && spriteRef.value) {
       const origin = getSpriteFeetOrigin()
       const cachedRaw = rawCoordsCache.get(cacheKey.value)
       const coords = cachedRaw || getBallTargetCoords()
       gsap.killTweensOf(spriteRef.value)
-      gsap.set(spriteRef.value, {
-        transformOrigin: origin,
-        x: coords.x,
-        y: coords.y,
-        scale: 0,
-        opacity: 0,
-        filter: 'url(#pixel-energy-optimized)'
-      })
+      if (spriteRotationRef.value) {
+        gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: 'transform,rotation' })
+      }
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: 'none' })
+      }
+      if (val === 'releasing') {
+        gsap.set(spriteRef.value, {
+          transformOrigin: origin,
+          x: coords.x,
+          y: coords.y,
+          scale: 0,
+          opacity: 0,
+          filter: 'url(#pixel-energy-optimized)'
+        })
+      } else if (val === 'catching') {
+        gsap.set(spriteRef.value, {
+          transformOrigin: origin,
+          x: 0,
+          y: 0,
+          scale: 1,
+          opacity: 1,
+          filter: 'url(#pixel-energy-optimized)'
+        })
       }
     }
     nextTick(() => triggerBallAnimation(val || null))

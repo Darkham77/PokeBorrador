@@ -131,51 +131,8 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
-    const { handleForceSwitch } = await import('./resolution.ts')
-    
-    const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
-    const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
-
-    // Las sustituciones forzadas por movimientos pivot (U-turn, Flip Turn, etc.)
-    // solo ocurren si el Pokémon NO se debilitó en ese mismo turno.
-    const p1Force = !!result.p1Request?.forceSwitch?.length && !playerFainted
-    const p2Force = !!result.p2Request?.forceSwitch?.length && !enemyFainted
-    if (p1Force && p2Force) {
-      await handleForceSwitch(store, 'enemy')
-      await handleForceSwitch(store, 'player')
-      return
-    }
-    if (p1Force) {
-      await handleForceSwitch(store, 'player')
-      return
-    }
-    if (p2Force) {
-      await handleForceSwitch(store, 'enemy')
-      return
-    }
-
-    if (playerFainted || enemyFainted) {
-      if (playerFainted && enemyFainted) {
-        // En un Doble KO por daño de retroceso (recoil de Struggle), el enemigo siempre se debilita primero
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        await store.handleFaint('enemy')
-        if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
-        
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await store.handleFaint('player')
-      } else if (playerFainted) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await store.handleFaint('player')
-      } else {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        await store.handleFaint('enemy')
-      }
-      if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
-    }
-
-    if (result.isOver && store.activeBattle.value) {
-      store.activeBattle.value.over = true;
-    }
+    const shouldReturn = await resolvePostTurnSwitchesAndFaints(store, result)
+    if (shouldReturn) return
   }
 
   if (store.activeBattle.value?.over) {
@@ -406,5 +363,57 @@ async function parseLogsWithSkip(store: BattleContext, logs: string[], p1Skip: b
     
     await parseShowdownLogLine(store, logLine, logs);
   }
+}
+
+async function resolvePostTurnSwitchesAndFaints(
+  store: BattleContext,
+  result: { p1Request?: { forceSwitch?: unknown[] }; p2Request?: { forceSwitch?: unknown[] }; isOver?: boolean }
+) {
+  const { handleForceSwitch } = await import('./resolution.ts')
+  const fsm = store.fsm
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = store
+
+  const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
+  const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
+
+  const p1Force = !!result.p1Request?.forceSwitch?.length && !playerFainted
+  const p2Force = !!result.p2Request?.forceSwitch?.length && !enemyFainted
+
+  if (p1Force && p2Force) {
+    await handleForceSwitch(store, 'enemy')
+    await handleForceSwitch(store, 'player')
+    return true
+  }
+  if (p1Force) {
+    await handleForceSwitch(store, 'player')
+    return true
+  }
+  if (p2Force) {
+    await handleForceSwitch(store, 'enemy')
+    return true
+  }
+
+  if (playerFainted || enemyFainted) {
+    if (playerFainted && enemyFainted) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+      await store.handleFaint('enemy')
+      if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return true
+      
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+      await store.handleFaint('player')
+    } else if (playerFainted) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+      await store.handleFaint('player')
+    } else {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+      await store.handleFaint('enemy')
+    }
+    if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return true
+  }
+
+  if (result.isOver && store.activeBattle.value) {
+    store.activeBattle.value.over = true;
+  }
+  return false
 }
 

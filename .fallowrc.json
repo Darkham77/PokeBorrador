@@ -19,7 +19,8 @@
     "src/main.{ts,tsx,js,jsx}",
     "vitest.config.ts",
     "vitest.node.config.ts",
-    "vitest.workspace.ts"
+    "vitest.workspace.ts",
+    "scripts/**/*.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,
@@ -373,6 +374,14 @@
       "exports": ["default"]
     },
     {
+      "file": "src/composables/battle/useBattleHudHelpers.ts",
+      "exports": ["checkEnemyHudSuppressed", "checkPlayerHudSuppressed"]
+    },
+    {
+      "file": "src/components/battle/combatantAnimHelpers.ts",
+      "exports": ["resolveBallId"]
+    },
+    {
       "file": "src/components/battle/BattleArenaBushes.vue",
       "exports": ["default"]
     },
@@ -451,10 +460,6 @@
     {
       "file": "src/logic/battle/ai/scriptedAI.ts",
       "exports": ["ScriptedAI"]
-    },
-    {
-      "file": "src/composables/battle/useCombatantStatus.ts",
-      "exports": ["useCombatantStatus"]
     }
   ]
 }

@@ -100,43 +100,43 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     const { processNonForcedSwitchWorkerTurn } = await import('./switchWorkerTurn.ts')
     await processNonForcedSwitchWorkerTurn(ctx, newPoke, oldPoke || null)
   } else {
-    // Si es un cambio forzado (por debilitación)
-    if (activeBattle.value) {
-      const active = activeBattle.value
-      try {
-        console.debug('[switchAction] executeSwitch forced branch: resolving slot...')
-        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
-        const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
-
-        console.debug('[switchAction] calling executeTurnInWorker for forced switch...', { slot })
-        const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined)
-        if (switchResult) {
-          active.playerRequest = switchResult.p1Request
-          active.enemyRequest = switchResult.p2Request
-
-          const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
-          const filteredLogs = filterShowdownLogs(switchResult.logs)
-          for (const logLine of filteredLogs) {
-            await parseShowdownLogLine(ctx, logLine, filteredLogs)
-          }
-
-          const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
-          await syncTeamsFromLastWorkerState()
-        }
-
-        if (newPoke.hp <= 0) {
-          const { processFaint } = await import('../resolution.ts')
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-          await processFaint(ctx, 'player')
-          return
-        }
-      } catch (forcedErr) {
-        console.error('[switchAction] CRITICAL error in forced executeSwitch:', forcedErr)
-        throw forcedErr
-      }
-    }
+    await processForcedSwitchWorkerTurn(ctx, newPoke)
   }
 
   persistBattle()
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+}
+
+async function processForcedSwitchWorkerTurn(ctx: BattleContext, newPoke: NonNullable<BattleContext['activeBattle']['value']>['player']) {
+  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  if (!activeBattle.value || !newPoke) return
+  const active = activeBattle.value
+  try {
+    const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
+    const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
+
+    const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined)
+    if (switchResult) {
+      active.playerRequest = switchResult.p1Request
+      active.enemyRequest = switchResult.p2Request
+
+      const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
+      const filteredLogs = filterShowdownLogs(switchResult.logs)
+      for (const logLine of filteredLogs) {
+        await parseShowdownLogLine(ctx, logLine, filteredLogs)
+      }
+
+      const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+      await syncTeamsFromLastWorkerState()
+    }
+
+    if (newPoke.hp <= 0) {
+      const { processFaint } = await import('../resolution.ts')
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+      await processFaint(ctx, 'player')
+    }
+  } catch (forcedErr) {
+    console.error('[switchAction] CRITICAL error in forced executeSwitch:', forcedErr)
+    throw forcedErr
+  }
 }

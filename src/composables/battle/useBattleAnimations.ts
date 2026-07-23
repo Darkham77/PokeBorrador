@@ -256,8 +256,9 @@ export function useBattleAnimations(
       captureAnims.initListeners()
     }
 
+    const handleWithdrawRequest = captureAnims.handleWithdrawRequest
     addBusListener('PLAY_CATCH_ENERGY', ((e: Event) => handleCatchRequest((e as CustomEvent).detail as Parameters<typeof handleCatchRequest>[0])) as EventListener)
-    addBusListener('PLAY_WITHDRAW', ((e: Event) => handleCatchRequest((e as CustomEvent).detail as Parameters<typeof handleCatchRequest>[0])) as EventListener)
+    addBusListener('PLAY_WITHDRAW', ((e: Event) => handleWithdrawRequest((e as CustomEvent).detail as Parameters<typeof handleWithdrawRequest>[0])) as EventListener)
     addBusListener('PLAY_RELEASE_ENERGY', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0])) as EventListener)
     addBusListener('PLAY_SEND_OUT', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail as Parameters<typeof handleReleaseRequest>[0])) as EventListener)
     
@@ -357,6 +358,7 @@ export function useBattleAnimations(
     handleFaintAnim,
     handleCatchRequest,
     handleReleaseRequest,
+    handleWithdrawRequest: captureAnims.handleWithdrawRequest,
     handleShakeRequest,
     playCatchCelebration,
     playBallFadeOut,

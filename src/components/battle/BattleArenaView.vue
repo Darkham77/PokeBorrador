@@ -142,6 +142,7 @@ const localAnimations = {
   triggerCatchSparkles: animations.triggerCatchSparkles,
   handleCatchRequest: animations.handleCatchRequest,
   handleReleaseRequest: animations.handleReleaseRequest,
+  handleWithdrawRequest: animations.handleWithdrawRequest,
   handleShakeRequest: animations.handleShakeRequest,
   handleFaintAnim: animations.handleFaintAnim,
   playCatchCelebration: animations.playCatchCelebration,
@@ -196,7 +197,7 @@ const playerCombatants = computed(() => {
   if (battleStore.exitingPlayer) {
     list.push(battleStore.exitingPlayer)
   }
-  if (player.value) {
+  if (player.value && player.value.uid !== battleStore.exitingPlayer?.uid) {
     list.push(player.value)
   }
   return list
@@ -413,7 +414,7 @@ watch(trainerAnimState, async (newState) => {
     }
   } else if (newState === 'retreating') {
     // 1. Transición de Intro -> Posición fija de combate (manteniendo opacidad 1)
-    gsap.to(el, { x: 300, y: -10, scale: 0.8, opacity: 1, duration: 0.8, ease: 'power2.inOut' })
+    gsap.to(el, { x: 340, y: -25, scale: 0.8, opacity: 1, duration: 0.8, ease: 'power2.inOut' })
   }
 })
 
@@ -569,8 +570,8 @@ const onDialogLeave = (el: Element, done: () => void) => {
           <!-- Standing Enemy Trainer (During active combat) -->
           <VirtualEntity
             v-if="showStandingTrainers && (battle?.isTrainer || battle?.isGym || battle?.isPvP)"
-            :x="p2Pos.x + 300"
-            :y="p2Pos.y - 10"
+            :x="p2Pos.x + 340"
+            :y="p2Pos.y - 25"
             :w="BASE_ENTITY_SIZE_ENEMY * 0.8"
             :h="BASE_ENTITY_SIZE_ENEMY * 0.8"
             class="standing-trainer enemy-trainer"

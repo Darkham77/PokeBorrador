@@ -22,8 +22,8 @@ export async function executeEnemySwitch(store: BattleContext, newPokeIndex: num
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
   
-  const withdrawPromise = store.animations?.handleCatchRequest
-    ? store.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy })
+  const withdrawPromise = store.animations?.handleWithdrawRequest
+    ? store.animations.handleWithdrawRequest({ side: 'enemy', pokemon: currentEnemy })
     : Promise.resolve();
   
   await withdrawPromise;

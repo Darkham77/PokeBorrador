@@ -1,4 +1,4 @@
-// fallow-ignore-file security-sink
+// fallow-ignore-file security-sink unit-size
 import { type Page, type Locator, expect } from '@playwright/test';
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {

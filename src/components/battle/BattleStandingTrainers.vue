@@ -25,8 +25,8 @@ defineProps<{
   <!-- Standing Enemy Trainer (During active combat) -->
   <VirtualEntity
     v-if="showStandingTrainers && (battle?.isTrainer || battle?.isGym || battle?.isPvP)"
-    :x="p2Pos.x + 300"
-    :y="p2Pos.y - 10"
+    :x="p2Pos.x + 340"
+    :y="p2Pos.y - 25"
     :w="baseEntitySizeEnemy * 0.8"
     :h="baseEntitySizeEnemy * 0.8"
     class="standing-trainer enemy-trainer"
