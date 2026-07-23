@@ -12,12 +12,13 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 /**
  * Pure calculation helpers for HUD states to keep cyclomatic complexity low.
  */
-function isSeatCapturing(seat: Record<string, any> | undefined): boolean {
-  if (!seat) return false
+function isSeatCapturing(seat: unknown): boolean {
+  if (!seat || typeof seat !== 'object') return false
+  const s = seat as { entry?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string }; exit?: { isCaptureActive?: boolean; isAnimatingCapture?: boolean; animState?: string } }
   return !!(
-    seat.entry?.isCaptureActive || seat.entry?.isAnimatingCapture || 
-    seat.exit?.isCaptureActive || seat.exit?.isAnimatingCapture ||
-    seat.entry?.animState === 'catching' || seat.exit?.animState === 'catching'
+    s.entry?.isCaptureActive || s.entry?.isAnimatingCapture || 
+    s.exit?.isCaptureActive || s.exit?.isAnimatingCapture ||
+    s.entry?.animState === 'catching' || s.exit?.animState === 'catching'
   )
 }
 
@@ -47,9 +48,9 @@ function checkEnemyTechnicalHidden(subState: string | null | undefined, state: s
   return isTrainer && !!subState && trainerVisibleStates.includes(subState)
 }
 
-function checkFloatingState(p: any): boolean {
-  if (!p || !p.id) return false
-  const data = pokemonDataProvider.getPokemonData(p.id)
+function checkFloatingState(p: { id?: string | number; ability?: string } | Pokemon | undefined | null): boolean {
+  if (!p || p.id === undefined || p.id === null) return false
+  const data = pokemonDataProvider.getPokemonData(String(p.id))
   if (!data) return false
   if (data.isFloating !== undefined) return data.isFloating
   
