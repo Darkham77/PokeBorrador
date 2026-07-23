@@ -15,8 +15,12 @@ This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages 
 
 ```mermaid
 graph TD
-    Start((START)) --> Snapshot[0. Initial Snapshot Commit]
-    Snapshot --> Tracking[1. Task & Scratchpad Tracking]
+    Start((START)) --> Artifacts[0. Mandatory Artifact Creation]
+    Artifacts --> AskSnapshot{Snapshot Approved?}
+    AskSnapshot -->|No| AskSnapshot
+    AskSnapshot -->|Yes| Snapshot[1. Initial Snapshot Commit]
+
+    Snapshot --> Tracking[1.1 Task & Scratchpad Tracking]
     Tracking --> |"Dynamic task update"| Tracking
     Tracking --> GapAnalysis[2. Test Gap Analysis]
     GapAnalysis --> MissingTests{Missing Tests?}
@@ -39,13 +43,13 @@ graph TD
         UnitTests --> HealthScore[Health Score Check]
     end
 
-    HealthScore --> ValidationGate{Validation Successful?}
+    HealthScore --> ValidationGate{Validation & Build Successful?}
 
-    ValidationGate -->|No| Verification
+    ValidationGate -->|No (Build/Test Fail)| ManualFix
 
     ValidationGate -->|Yes| HealthCompare{Health Score Regressed?}
 
-    HealthCompare -->|Yes| Verification
+    HealthCompare -->|Yes| ManualFix
 
     HealthCompare -->|No| DBCheck{DB Changes?}
 
@@ -58,13 +62,13 @@ graph TD
     Cleanup --> Walkthrough[7. Walkthrough Generation]
     Walkthrough --> DoxPass[7.1 DOX Update & Pass]
     DoxPass --> Lessons[8. Lessons Extraction]
-    Lessons --> LessonApproval[8.1 Lesson Approval]
+    Lessons --> AskLessonApproval{Modal Lesson Approved?}
 
-    LessonApproval -->|Rejected| Lessons
-    LessonApproval -->|Approved| SkillVerification[8.2 Skill Verification]
+    AskLessonApproval -->|No / Modify| Lessons
+    AskLessonApproval -->|Approved| AskFinalCommit{Final Commit Approved?}
 
-    SkillVerification -->|Rejected| Lessons
-    SkillVerification -->|Approved| Commit[9. Final Optimization Commit]
+    AskFinalCommit -->|No| AskFinalCommit
+    AskFinalCommit -->|Yes| Commit[9. Lesson Persist & Final Commit]
     Commit --> Notify[10. Final Status & Instructions]
     Notify --> End((END))
 
@@ -95,9 +99,10 @@ AFTER creating the physical `task.md` and `implementation_plan.md` artifacts, yo
 2. **AGENTS.md Chain Review**: Identify every file you modified. For each one, walk the path from the repo root and read every `AGENTS.md` found along the route. Confirm that the changes do not contradict any local contract (the closest `AGENTS.md` controls). If a contradiction is found, resolve it before committing.
 3. **Initial Project Health**: Run `npx fallow health --score` to capture and record the starting health score of the project before any modifications, to compare with the final score at Step 3.5.
 4. **Comprehensive Message**: Review every modified file's diff to understand the changes made, including those from previous sessions or manual edits.
-5. `git add .`
-6. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
-7. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
+5. **Interactive Confirmation Gate**: Call the `ask_question` tool to request explicit user approval before executing `git commit`. Display the commit summary and exact message to be used.
+6. `git add .`
+7. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
+8. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
 
 ### 2. Test Gap Analysis
 
@@ -151,7 +156,8 @@ Only under these conditions may the AI request user intervention.
 5. **Final Validation Pass**:
    - `npm run validate:types`
    - `npm run test`
-   - `npm run build` (enforces audit:full internally and compiles the application). **CRITICAL**: You MUST wait for `npm run build` to complete and verify that it finished with exit code 0. It is STRICTLY FORBIDDEN to proceed to subsequent steps while `npm run build` is running in the background.
+   - `npm run build` (enforces audit:full internally and compiles the application). **CRITICAL**: You MUST wait for `npm run build` to complete and verify that it finished with exit code 0.
+   - **AUTOMATIC RECOVERY LOOP**: If `npm run build` or `npm run test` fails or exits with non-zero status, you MUST immediately loop back to Step 3.4 (Manual Repair Phase) to diagnose and fix the failure. You are STRICTLY FORBIDDEN from proceeding to Step 4, Step 6, or any commit if any test or build fails.
    - Re-run `npm run audit:warnings-diff` to verify that everything is 100% clean (0 errors, 0 new warnings).
    - **Health Regression & Minimum Threshold Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. The final score MUST be equal to or greater than the baseline AND strictly **85/100 or higher**. If regressed or under 85, inspect Fallow's recommendations (`npx fallow health --targets --hotspots`), refactor the complexity hotspots, and re-run until the score is strictly **>= 85**.
 
@@ -206,21 +212,22 @@ This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 > [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — ABSOLUTE HARD STOP**:
 > 1. Call `write_to_file` to create the `learning_proposal.md` artifact (with `RequestFeedback: true` and `UserFacing: true`).
-> 2. **IMMEDIATELY STOP calling any further tools** in the current turn.
-> 3. Do NOT execute `git commit`, `git add`, or any file edits for Step 9 in the same turn.
-> 4. Present the proposed lessons to the user in chat (in Spanish) and wait for explicit user approval before proceeding.
+> 2. Call the `ask_question` tool to present the proposed lessons interactively to the user with options to Approve or Reject/Modify.
+> 3. **IMMEDIATELY STOP calling any further tools** in the current turn until the user responds to the `ask_question` modal.
+> 4. Do NOT execute `git commit`, `git add`, or any file edits for Step 9 in the same turn.
 
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal in a separate conversation turn.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal via `ask_question`.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item up to Step 8 is marked as `[x]`.
 
 ### 9. Lesson Approval & Final Commit
 
-AFTER (and ONLY after) the user explicitly approves the learning proposal in a separate turn:
+AFTER (and ONLY after) the user explicitly approves the learning proposal via `ask_question`:
 
 1. Persist the approved lessons into their respective `AGENTS.md` files as proposed.
-2. Run `git status` to verify staged changes (only DOX documentation updates and final build artifacts should remain).
-3. Run `git add .`
-4. **Commit Message**: Perform the final commit using the standard header `docs(agents):` or `refactor(audit):`.
+2. Call the `ask_question` tool to request explicit user approval before performing the final optimization commit.
+3. Run `git status` to verify staged changes (only DOX documentation updates and final build artifacts should remain).
+4. Run `git add .`
+5. **Commit Message**: Perform the final commit using the standard header `docs(agents):` or `refactor(audit):`.
    - **Example**: `docs(agents): persist battle animation bridge mapping and seat property resolution rules`.
 
 ### 10. Final Status & Instructions
