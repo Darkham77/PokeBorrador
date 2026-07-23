@@ -5,7 +5,8 @@ import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 export async function processNonForcedSwitchWorkerTurn(
   ctx: BattleContext,
   newPoke: { uid: string },
-  oldPoke: { uid: string } | null
+  oldPoke: { uid: string } | null,
+  side: 'player' | 'enemy' = 'player'
 ) {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle, animations } = ctx
   console.debug('[switchAction] executeSwitch non-forced branch: importing dependencies...')
@@ -13,7 +14,7 @@ export async function processNonForcedSwitchWorkerTurn(
   if (!showdownWorker) return
 
   const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
-  const { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } = await import('../ai/battleAI.ts')
+  const { decideEnemyMove } = await import('../ai/battleAI.ts')
 
   console.debug('[switchAction] transitioning FSM to BUILD_QUEUE...')
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
@@ -27,36 +28,25 @@ export async function processNonForcedSwitchWorkerTurn(
   }
 
   console.debug('[switchAction] resolving slot...')
-  const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
-  let p1Choice = `switch ${slot}`
+  const req = side === 'player' ? active.playerRequest : active.enemyRequest
+  const slot = ShowdownTeamResolver.getShowdownSlotForUid(req, newPoke.uid)
+  let p1Choice = side === 'player' ? `switch ${slot}` : ''
   const isWild = !active.isTrainer && !active.isGym
 
-  let p2Choice = 'struggle'
-  const enemyTeam = active.enemyTeam
-  const wantSwitch = !isWild && shouldEnemySwitch(active.enemy, active.player, enemyTeam, ctx)
-  if (wantSwitch) {
-    const bestIdx = findBestSwitchIndex(enemyTeam || [], active.player, active.enemy.uid, ctx)
-    if (bestIdx !== -1) {
-      const targetMon = enemyTeam?.[bestIdx]
-      if (targetMon && targetMon.uid) {
-        const p2Slot = ShowdownTeamResolver.getShowdownSlotForUid(active?.enemyRequest, targetMon.uid)
-        p2Choice = `switch ${p2Slot}`
-      }
-    }
-  } else {
-    console.debug('[switchAction] deciding enemy move...', { enemy: active.enemy.name, player: active.player.name })
-    let eMove = decideEnemyMove(active.enemy, active.player, ctx.enemyStages.value, isWild, ctx)
+  const { computeP2Choice } = await import('../battleTurnChoiceHelper.ts')
+  let p2Choice = ''
+  if (side === 'player') {
+    let eMove = decideEnemyMove(active.enemy, active.player, ctx.playerStages?.value ?? {}, isWild, ctx)
     if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {
       eMove = active.enemy.lastMove
     }
-    if (eMove) {
-      p2Choice = `move ${eMove.id}`
-    }
+    p2Choice = await computeP2Choice(ctx, active.player, active.enemy, isWild, false, eMove)
+  } else {
+    p2Choice = `switch ${slot}`
   }
+
+  let p1Skip = side !== 'player'
   let p2Skip = false
-  if (active?.enemyRequest?.wait) {
-    p2Skip = true
-  }
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
@@ -68,10 +58,10 @@ export async function processNonForcedSwitchWorkerTurn(
     }
   } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
     p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice
+    console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via queue in switchAction: ${p2Choice}`)
   }
 
   let result
-  let p1Skip = false
   if (p1Choice === 'pass') {
     p1Choice = ''
     p1Skip = true
@@ -87,10 +77,14 @@ export async function processNonForcedSwitchWorkerTurn(
   } catch (error) {
     console.error('[switchAction] executeTurnInWorker thrown:', error)
     if (oldPoke && activeBattle.value) {
-      activeBattle.value.player = oldPoke as Pokemon
-      const oldIndex = (ctx.gs.state.team || []).findIndex(p => p?.uid === oldPoke.uid)
-      if (oldIndex !== -1 && activeBattle.value) {
-        activeBattle.value.playerTeamIndex = oldIndex
+      if (side === 'player') {
+        activeBattle.value.player = oldPoke as Pokemon
+        const oldIndex = (ctx.gs.state.team || []).findIndex(p => p?.uid === oldPoke.uid)
+        if (oldIndex !== -1 && activeBattle.value) {
+          activeBattle.value.playerTeamIndex = oldIndex
+        }
+      } else {
+        activeBattle.value.enemy = oldPoke as Pokemon
       }
     }
     persistBattle()
@@ -102,16 +96,24 @@ export async function processNonForcedSwitchWorkerTurn(
   active.playerRequest = result.p1Request
   active.enemyRequest = result.p2Request
 
-  ;(active as unknown as Record<string, unknown>).switchingToPlayer = newPoke
+  ;(active as unknown as Record<string, unknown>)[side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy'] = newPoke
   const filteredLogs = filterShowdownLogs(result.logs)
   for (const logLine of filteredLogs) {
     await parseShowdownLogLine(ctx, logLine, filteredLogs)
   }
 
   await syncTeamsFromLastWorkerState()
-  delete (active as unknown as Record<string, unknown>).switchingToPlayer
+  delete (active as unknown as Record<string, unknown>)[side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy']
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+  const activeCombatant = side === 'player' ? activeBattle.value?.player : activeBattle.value?.enemy
+  if (activeCombatant && activeCombatant.hp <= 0) {
+    const { processFaint } = await import('../resolution.ts')
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+    await processFaint(ctx, side)
+    return
+  }
 
   if (activeBattle.value?.over) {
     if (activeBattle.value.fled) {

@@ -27,4 +27,4 @@ Systems Engineers / Backend Developers.
 
 ## Child DOX Index
 
-- [__tests__/](./__tests__/AGENTS.md): Domain module documentation for __tests__.
+- [**tests**/](./__tests__/AGENTS.md): Domain module documentation for **tests**.

@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 
-defineProps<{
+const props = defineProps<{
   gs: {
     playerClass?: string | null
     trainerLevel?: number
@@ -20,6 +21,19 @@ defineProps<{
   }
   faction: string | null
 }>()
+
+const displayFaction = computed(() => {
+  if (!props.faction) return 'SIN FACCIÓN'
+  const clean = props.faction.trim().toLowerCase()
+  if (!clean || clean === 'null' || clean === 'undefined') return 'SIN FACCIÓN'
+  if (clean === 'union') return 'EQUIPO UNIÓN'
+  if (clean === 'poder') return 'EQUIPO PODER'
+  return clean.toUpperCase()
+})
+
+const isFemale = computed(() => props.gs.gender === 'f' || props.gs.gender === 'mujer' || props.gs.gender === 'm')
+const genderSymbol = computed(() => (isFemale.value ? '♀️' : '♂️'))
+const genderClass = computed(() => (isFemale.value ? 'female' : 'male'))
 
 const emit = defineEmits<{
   (e: 'edit-profile'): void
@@ -60,9 +74,9 @@ const emit = defineEmits<{
             {{ displayUsername }}
             <span
               class="gender-symbol"
-              :class="gs.gender === 'm' ? 'female' : 'male'"
+              :class="genderClass"
             >
-              {{ gs.gender === 'm' ? '♀' : '♂' }}
+              {{ genderSymbol }}
             </span>
           </span>
         </div>
@@ -104,16 +118,16 @@ const emit = defineEmits<{
         <div class="value-wrap">
           <span
             class="value faction-val"
-            :class="faction || 'none'"
+            :class="displayFaction !== 'SIN FACCIÓN' ? faction : 'none'"
           >
-            {{ faction ? faction.toUpperCase() : 'SIN FACCIÓN' }}
+            {{ displayFaction }}
           </span>
         </div>
         <button
           class="row-action-btn"
           @click.prevent.stop="emit('faction-choice')"
         >
-          {{ faction ? 'CAMBIAR' : 'UNIRSE' }}
+          {{ displayFaction !== 'SIN FACCIÓN' ? 'CAMBIAR' : 'UNIRSE' }}
         </button>
       </div>
 
@@ -165,13 +179,13 @@ const emit = defineEmits<{
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.03);
+    background: Rgba(255, 255, 255, 0.03);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
 
     .label {
       font-size: 8px;
-      color: rgba(255, 255, 255, 0.4);
+      color: Rgba(255, 255, 255, 0.4);
       @include pixelated;
     }
 
@@ -201,15 +215,15 @@ const emit = defineEmits<{
     .row-action-btn {
       font-size: 8px;
       padding: 4px 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 4px;
       color: var(--yellow);
       cursor: pointer;
       @include pixelated;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: Rgba(255, 255, 255, 0.1);
         border-color: var(--yellow);
       }
     }

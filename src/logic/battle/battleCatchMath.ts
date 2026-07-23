@@ -1,4 +1,4 @@
-import type { PurePokemon, PureCatchOptions, PureBattleWeather } from './battleMathTypes.ts'
+import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import { getEffectiveStatPure } from './battleMath.ts'
 
 function getMechWeather(type: string | null | undefined): string {
@@ -79,10 +79,51 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
   return { caught: shakes === 4, shakes: Math.min(3, shakes) }
 }
 
-export function calculateEscapeChancePure(playerPoke: PurePokemon, wildPoke: PurePokemon, attempts: number, weather: PureBattleWeather | null) {
-  const pSpe = getEffectiveStatPure(playerPoke, 'spe', {}, weather)
-  const eSpe = getEffectiveStatPure(wildPoke, 'spe', {}, weather)
+export function calculateEscapeChancePure(
+  playerPoke: PurePokemon,
+  wildPoke: PurePokemon,
+  attempts: number,
+  weather: PureBattleWeather | null,
+  playerStages: PureBattleStages = {},
+  enemyStages: PureBattleStages = {}
+): boolean {
+  const pAb = (playerPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const pItem = (playerPoke.heldItem || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  const isGhost = playerPoke.type === 'ghost' || playerPoke.type2 === 'ghost'
+
+  // Habilidades, objetos o tipos que garantizan escapar e ignoran atrapado
+  if (pAb === 'runaway' || pItem === 'smokeball' || pItem === 'shedshell' || isGhost) {
+    return true
+  }
+
+  // Habilidades de atrapado del Pokémon salvaje
+  const eAb = (wildPoke.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  if (eAb === 'shadowtag' && pAb !== 'shadowtag') {
+    return false
+  }
+  if (eAb === 'arenatrap') {
+    const isFloating = playerPoke.type === 'flying' || playerPoke.type2 === 'flying' || pAb === 'levitate'
+    if (!isFloating) return false
+  }
+  if (eAb === 'magnetpull') {
+    const isSteel = playerPoke.type === 'steel' || playerPoke.type2 === 'steel'
+    if (isSteel) return false
+  }
+
+  // Cálculo de velocidad efectiva con stages y clima
+  const pSpe = getEffectiveStatPure(playerPoke, 'spe', playerStages, weather)
+  const eSpe = getEffectiveStatPure(wildPoke, 'spe', enemyStages, weather)
   const safeESpe = Math.max(1, eSpe)
+
+  if (pSpe >= safeESpe) {
+    return true
+  }
+
   const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts
+  if (f >= 256) {
+    return true
+  }
+
   return Math.floor(Math.random() * 256) < f
 }
+

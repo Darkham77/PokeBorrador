@@ -96,14 +96,15 @@ export async function executeFlee(ctx: BattleContext) {
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.BUILD_QUEUE)
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POP_ACTION)
 
-          const result = await executeTurnInWorker('move struggle', `move ${enemyMove.id}`)
+          const result = await executeTurnInWorker('move 1', `move ${enemyMove.id}`, true, false)
 
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
 
-          // Playback only enemy actions, filter out player struggle to simulate player doing nothing/fleeing
+          // Playback only enemy actions, filter out player skipped turn/struggle to simulate player doing nothing/fleeing
           const cleanLogs = filterShowdownLogs(result.logs);
           const filteredLogs = cleanLogs.filter(line => {
             if (line.startsWith('|move|p1a:')) return false;
+            if (line.startsWith('|cant|p1a:')) return false;
             if (line.startsWith('|-damage|p1a:') && line.includes('[from] recoil')) return false;
             return true;
           });

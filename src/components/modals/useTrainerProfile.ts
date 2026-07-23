@@ -83,6 +83,30 @@ interface SaveStateData {
   warMyPtsLocal?: Record<string, number>
 }
 
+const FACTION_LABELS: Record<string, string> = {
+  union: 'Equipo Unión',
+  poder: 'Equipo Poder'
+}
+
+const FACTION_COLORS: Record<string, string> = {
+  union: 'rgba(59, 130, 246, 1)',
+  poder: 'rgba(239, 68, 68, 1)'
+}
+
+function resolveFactionLabel(f: string | null | undefined): string {
+  if (!f) return 'Sin Bando'
+  const clean = f.trim().toLowerCase()
+  if (!clean || clean === 'null' || clean === 'undefined') return 'Sin Bando'
+  return FACTION_LABELS[clean] || clean.toUpperCase()
+}
+
+function resolveFactionColor(f: string | null | undefined): string {
+  if (!f) return 'rgba(148, 163, 184, 0.5)'
+  const clean = f.trim().toLowerCase()
+  if (!clean || clean === 'null' || clean === 'undefined') return 'rgba(148, 163, 184, 0.5)'
+  return FACTION_COLORS[clean] || 'rgba(148, 163, 184, 1)'
+}
+
 export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const gameStore = useGameStore()
   const authStore = useAuthStore()
@@ -293,23 +317,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     return list.includes(gymId)
   }
 
-  const factionLabel = computed(() => {
-    const f = faction.value
-    if (!f || f === 'null' || f === 'undefined' || f.trim() === '') return 'Sin Bando'
-    if (f === 'union') return 'Equipo Unión'
-    if (f === 'poder') return 'Equipo Poder'
-    if (f === 'rocket') return 'Equipo Rocket'
-    return f.toUpperCase()
-  })
+  const factionLabel = computed(() => resolveFactionLabel(faction.value))
 
-  const factionColor = computed(() => {
-    const f = faction.value
-    if (!f || f === 'null' || f === 'undefined' || f.trim() === '') return 'rgba(148, 163, 184, 0.5)'
-    if (f === 'union') return 'rgba(59, 130, 246, 1)'
-    if (f === 'poder') return 'rgba(239, 68, 68, 1)'
-    if (f === 'rocket') return 'rgba(148, 163, 184, 1)'
-    return 'rgba(148, 163, 184, 1)'
-  })
+  const factionColor = computed(() => resolveFactionColor(faction.value))
 
   const playtimeHours = computed(() => {
     const secs = profile.value?.playtime ?? saveState.value?.playtime ?? 0

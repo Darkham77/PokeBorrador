@@ -32,6 +32,47 @@ interface SmokeParticle {
 const pokeballCoordsCache = new Map<string, { top: string; left: string }>();
 const rawCoordsCache = new Map<string, { x: number; y: number }>();
 
+function checkPokemonFloating(pokemon: Pokemon | null | undefined): boolean {
+  if (!pokemon) return false;
+  const data = pokemonDataProvider.getPokemonData(pokemon.id);
+  if (!data) return false;
+  if (data.isFloating !== undefined) return data.isFloating;
+  const types: string[] = [];
+  if (data.type) types.push(data.type.toLowerCase());
+  if (data.type2) types.push(data.type2.toLowerCase());
+  return types.includes('flying');
+}
+
+function resolveSpriteKey(pokemon: Pokemon | null | undefined): string {
+  if (!pokemon) return '';
+  const formSuffix = pokemon.form && pokemon.form !== 'normal' ? `-${pokemon.form}` : '';
+  const id = `${pokemon.id}${formSuffix}`;
+  const stringId = String(id).toLowerCase();
+  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] || id;
+  return String(num);
+}
+
+function resolveIdleKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): string | null {
+  if (!spriteKeyVal) return null;
+  const match = spriteKeyVal.match(/^(\d+)(.*)$/);
+  if (!match) return null;
+  const numId = match[1]!;
+  const suffix = match[2]!;
+  const isFemale = gender === 'F';
+
+  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`];
+  for (const cand of candidates) {
+    if (isPlayerSide) {
+      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) return `${cand}_f_back`;
+      if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) return `${cand}_back`;
+    } else {
+      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) return `${cand}_f`;
+      if (ANIMATED_SPRITE_DATABASE[cand]) return cand;
+    }
+  }
+  return null;
+}
+
 export function useBattleCombatantState(
   props: BattleCombatantProps,
   emit: (e: 'load', size: { w: number; h: number }) => void,
@@ -46,57 +87,11 @@ export function useBattleCombatantState(
     return seatKey.value;
   });
 
-  const isFloating = computed(() => {
-    if (!props.pokemon) return false;
-    const data = pokemonDataProvider.getPokemonData(props.pokemon.id);
-    if (!data) return false;
-    if (data.isFloating !== undefined) return data.isFloating;
-    const types: string[] = [];
-    if (data.type) types.push(data.type.toLowerCase());
-    if (data.type2) types.push(data.type2.toLowerCase());
-    return types.includes('flying');
-  });
-
+  const isFloating = computed(() => checkPokemonFloating(props.pokemon));
   const isPlayer = computed(() => props.side === 'player');
   const isEnemy = computed(() => props.side === 'enemy');
-
-  const spriteKey = computed(() => {
-    if (!props.pokemon) return '';
-    const formSuffix = props.pokemon.form && props.pokemon.form !== 'normal' ? `-${props.pokemon.form}` : '';
-    const id = `${props.pokemon.id}${formSuffix}`;
-    const stringId = String(id).toLowerCase();
-    const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] || id;
-    return String(num);
-  });
-
-  const idleKey = computed(() => {
-    if (!spriteKey.value) return null;
-    const match = spriteKey.value.match(/^(\d+)(.*)$/);
-    if (!match) return null;
-    const numId = match[1]!;
-    const suffix = match[2]!;
-    const isFemale = props.pokemon?.gender === 'F';
-
-    const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`];
-    for (const cand of candidates) {
-      if (isPlayer.value) {
-        if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) {
-          return `${cand}_f_back`;
-        }
-        if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) {
-          return `${cand}_back`;
-        }
-      } else {
-        if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) {
-          return `${cand}_f`;
-        }
-        if (ANIMATED_SPRITE_DATABASE[cand]) {
-          return cand;
-        }
-      }
-    }
-    return null;
-  });
+  const spriteKey = computed(() => resolveSpriteKey(props.pokemon));
+  const idleKey = computed(() => resolveIdleKey(spriteKey.value, isPlayer.value, props.pokemon?.gender));
 
   const variationKey = computed(() => {
     if (!spriteKey.value) return null;

@@ -6,6 +6,7 @@
  */
 
 import path from 'node:path';
+import { statSync, existsSync, readdirSync } from 'node:fs';
 import { Z_LAYERS } from '../../src/logic/constants/visuals.ts';
 
 export interface AuditRule {
@@ -338,7 +339,6 @@ export const doxIndexIntegrity: AuditRule = {
 
       // STRICT MANDATE: Entry MUST be an AGENTS.md file or a directory containing an AGENTS.md file
       try {
-        const { statSync, existsSync } = require('node:fs');
         const stat = statSync(resolved);
         if (stat.isDirectory()) {
           const targetAgents = path.join(resolved, 'AGENTS.md');
@@ -358,7 +358,6 @@ export const doxIndexIntegrity: AuditRule = {
 
     // 3. Verify that all child subdirectories containing an AGENTS.md are indexed by parent
     try {
-      const { readdirSync, existsSync } = require('node:fs');
       const dirEntries = readdirSync(dir, { withFileTypes: true });
       for (const entry of dirEntries) {
         if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
@@ -369,7 +368,9 @@ export const doxIndexIntegrity: AuditRule = {
           }
         }
       }
-    } catch (_err) {}
+    } catch (err) {
+      void err;
+    }
 
     return false;
   },

@@ -84,20 +84,20 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
   return types.includes('flying')
 }
 
+function getEffectiveSpriteId(pokemon: { id: string | number; form?: string }): string {
+  return pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
+}
+
+function getShadowWidth(pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string {
+  const spriteId = getEffectiveSpriteId(pokemon)
+  const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
+  const meta = animKey ? ANIMATED_SPRITE_DATABASE[animKey] : null
+  const bodyRadius = meta?.bodyRadius ?? 0.4
+  return `${bodyRadius * 250}%`
+}
+
 export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
-
-  /** Devuelve el sprite ID efectivo considerando la forma activa del Pokémon */
-  const getEffectiveSpriteId = (pokemon: { id: string | number; form?: string }): string =>
-    pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
-
-  const getShadowWidth = (pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string => {
-    const spriteId = getEffectiveSpriteId(pokemon)
-    const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
-    const meta = animKey ? ANIMATED_SPRITE_DATABASE[animKey] : null
-    const bodyRadius = meta?.bodyRadius ?? 0.4
-    return `${bodyRadius * 250}%` // bodyRadius * 2.5 (representing radius + 25%)
-  }
 
 
   // Claves únicas para las sombras en el store

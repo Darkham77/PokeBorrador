@@ -3,6 +3,8 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 
+import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
+
 let isExecutingSwitch = false
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
@@ -52,17 +54,11 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
   if (!activeBattle.value) return
   
-  if (oldPoke && !reallyForced) {
-    const volatile = oldPoke.volatileCounters
-    if (volatile) {
-      if ((volatile['twoturnmove'] && volatile['twoturnmove'] > 0) ||
-          (volatile['lockedmove'] && volatile['lockedmove'] > 0)) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-        return
-      }
-    }
+  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke)) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+    return
   }
-  
+
   if (oldPoke && oldPoke.uid === newPoke.uid) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
@@ -80,11 +76,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     activeBattle.value.participants.push(newPoke.uid)
   }
   
-  const s = playerStages.value
-  playerStages.value = { 
-    ...s,
-    atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
-  }
+  playerStages.value = resetPlayerStages(playerStages.value)
   
   addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
   await sleep(400)

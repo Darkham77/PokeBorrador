@@ -1,6 +1,11 @@
 import gsap from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 
+interface RegisterTweenDetail {
+  key: string
+  tween: gsap.core.Tween | gsap.core.Timeline
+}
+
 export function useBattleTweenRegistry() {
   const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()
   // Pending resolvers: set when awaitTween is called before the component has mounted.
@@ -8,8 +13,8 @@ export function useBattleTweenRegistry() {
   const pendingTweenResolvers = new Map<string, () => void>()
 
   const onRegisterTween = (e: Event) => {
-    const data = (e as CustomEvent).detail
-    if (data && data.key && data.tween) {
+    const data = (e as CustomEvent<RegisterTweenDetail>).detail
+    if (data && typeof data.key === 'string' && data.tween) {
       activeTweens.set(data.key, data.tween)
       // Unblock any awaitTween call that was already waiting for this key
       const resolver = pendingTweenResolvers.get(data.key)

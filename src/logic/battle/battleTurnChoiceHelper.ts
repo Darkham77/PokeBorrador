@@ -17,7 +17,7 @@ function computeP1Choice(active: BattleState | null, move: Move | null, isStrugg
   return p1Choice
 }
 
-async function computeP2Choice(
+export async function computeP2Choice(
   store: BattleContext,
   p: Pokemon,
   e: Pokemon,
@@ -41,13 +41,20 @@ async function computeP2Choice(
       }
     }
   } else {
-    if (eMove) {
+    const reqMoves = active?.enemyRequest?.active?.[0]?.moves
+    if (eMove && reqMoves) {
+      const idx = reqMoves.findIndex((m: { id?: string }) => m.id === eMove.id)
+      if (idx !== -1) {
+        p2Choice = `move ${idx + 1}`
+      } else {
+        p2Choice = `move ${eMove.id}`
+      }
+    } else if (eMove) {
       p2Choice = `move ${eMove.id}`
-    }
-    if (p2Skip && active?.enemyRequest?.active?.[0]?.moves) {
-      const validMove = active.enemyRequest.active[0].moves.find((m: { id?: string; disabled?: boolean | string }) => !m.disabled)
-      if (validMove) {
-        p2Choice = `move ${validMove.id}`
+    } else if (reqMoves) {
+      const idx = reqMoves.findIndex((m: { disabled?: boolean | string }) => !m.disabled)
+      if (idx !== -1) {
+        p2Choice = `move ${idx + 1}`
       }
     }
   }

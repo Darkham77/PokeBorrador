@@ -366,26 +366,6 @@
       "exports": ["CheatPokemon", "RequestPokemon", "CheatSide", "applyHealCheatToSide", "syncRequestConditionsWithSimulator"]
     },
     {
-      "file": "src/components/battle/BattleArenaOverlayLayers.vue",
-      "exports": ["default"]
-    },
-    {
-      "file": "src/components/battle/BattleArenaEnvironment.vue",
-      "exports": ["default"]
-    },
-    {
-      "file": "src/composables/battle/useBattleHudHelpers.ts",
-      "exports": ["checkEnemyHudSuppressed", "checkPlayerHudSuppressed"]
-    },
-    {
-      "file": "src/components/battle/combatantAnimHelpers.ts",
-      "exports": ["resolveBallId"]
-    },
-    {
-      "file": "src/components/battle/BattleArenaBushes.vue",
-      "exports": ["default"]
-    },
-    {
       "file": "src/components/battle/MoveTooltipTactical.vue",
       "exports": ["default"]
     },

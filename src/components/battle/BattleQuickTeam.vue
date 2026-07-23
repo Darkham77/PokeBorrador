@@ -7,15 +7,13 @@ import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 
-import { ShowdownTeamResolver } from '@/logic/battle/showdownTeamResolver'
-
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
 const team = computed<Pokemon[]>(() => {
-  const rawTeam = gameStore.state.team || []
-  return ShowdownTeamResolver.getShowdownOrder(rawTeam, battleStore.state?.playerRequest)
+  const rawTeam = (gameStore.state.team || []).filter(Boolean) as Pokemon[]
+  return rawTeam
 })
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 

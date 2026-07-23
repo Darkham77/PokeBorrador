@@ -11,8 +11,40 @@ const VOICE_MOVE_IDS = new Set([
   'disarmingvoice', 'boomburst', 'confide'
 ])
 
+function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
+  const status = statusRaw?.toLowerCase() || ''
+  const isFrozen = status === 'freeze' || status === '🧊'
+  const isPara = status.includes('paraly') || status.includes('para') || status === '⚡'
+  const isConfused = (confusedCount || 0) > 0
+  const isTrapped = animStateRaw === 'trapped'
+  const isCatching = animStateRaw === 'catching'
+  return isFrozen || isPara || isConfused || isTrapped || isCatching
+}
 
+function getIdleFloatingConfig(): gsap.TweenVars {
+  return {
+    y: () => `-${10 + Math.random() * 6}%`,
+    rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
+    duration: () => 2 + Math.random() * 1,
+    repeat: -1,
+    yoyo: true,
+    repeatRefresh: true,
+    ease: 'sine.inOut'
+  }
+}
 
+function getIdleGroundedConfig(): gsap.TweenVars {
+  return {
+    scaleX: () => 1.01 + Math.random() * 0.02,
+    scaleY: () => 0.97 + Math.random() * 0.02,
+    rotation: () => (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1),
+    duration: () => 1.5 + Math.random() * 0.5,
+    repeat: -1,
+    yoyo: true,
+    repeatRefresh: true,
+    ease: 'sine.inOut'
+  }
+}
 
 export function useBattleCombatantAnims(
   props: BattleCombatantProps,
@@ -42,44 +74,19 @@ export function useBattleCombatantAnims(
       idleTween = null
     }
 
-    const status = props.pokemon.status?.toLowerCase() || ''
-    const isFrozen = status === 'freeze' || status === '🧊'
-    const isPara = status.includes('paraly') || status.includes('para') || status === '⚡'
-    const isConfused = (props.pokemon.confused || 0) > 0
-    const isTrapped = (props.animState as string) === 'trapped'
-    const isCatching = props.animState === 'catching'
-    
-    // Reset existing transforms before starting new tweens to prevent properties persisting between states
     gsap.killTweensOf(idleWrapperRef.value)
 
-    if (isFrozen || isPara || isConfused || isTrapped || isCatching) {
+    if (isIdleSuppressed(props.pokemon.status, props.pokemon.confused, props.animState)) {
       gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 })
       return
     }
 
     if (isFloating.value) {
       gsap.set(idleWrapperRef.value, { scaleX: 1, scaleY: 1 })
-      idleTween = gsap.to(idleWrapperRef.value, {
-        y: () => `-${10 + Math.random() * 6}%`,
-        rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
-        duration: () => 2 + Math.random() * 1,
-        repeat: -1,
-        yoyo: true,
-        repeatRefresh: true,
-        ease: 'sine.inOut'
-      })
+      idleTween = gsap.to(idleWrapperRef.value, getIdleFloatingConfig())
     } else {
       gsap.set(idleWrapperRef.value, { y: 0 })
-      idleTween = gsap.to(idleWrapperRef.value, {
-        scaleX: () => 1.01 + Math.random() * 0.02,
-        scaleY: () => 0.97 + Math.random() * 0.02,
-        rotation: () => (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1),
-        duration: () => 1.5 + Math.random() * 0.5,
-        repeat: -1,
-        yoyo: true,
-        repeatRefresh: true,
-        ease: 'sine.inOut'
-      })
+      idleTween = gsap.to(idleWrapperRef.value, getIdleGroundedConfig())
     }
   }
 

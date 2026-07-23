@@ -136,8 +136,11 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case 'faint': {
       const target = getPoke(parts[2] || '');
       if (target) {
+        const remainedAlive = target.hp > 0;
         target.hp = 0;
-        store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
+        if (remainedAlive) {
+          store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
+        }
       }
       return true;
     }

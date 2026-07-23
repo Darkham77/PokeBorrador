@@ -651,7 +651,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   try {
     const args = ['--format', 'json', ...extraArgs];
     const cmd = `node ./node_modules/fallow/bin/fallow ${command} ${args.join(' ')}`;
-    const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024 });
+    const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024, timeout: 30000, killSignal: 'SIGKILL' });
     const jsonStart = stdout.indexOf('{');
     if (jsonStart !== -1) {
       const data = JSON.parse(stdout.substring(jsonStart)) as FallowAuditData;
@@ -906,11 +906,13 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
     const dirName = path.basename(dir);
     if (IGNORE_DIRS.has(dirName) || (dirName.startsWith('.') && dirName !== '.')) return;
 
-    const agentsPath = path.join(dir, 'AGENTS.md');
     try {
+      const agentsPath = path.join(dir, 'AGENTS.md');
       const content = await fs.readFile(agentsPath, 'utf-8');
       doxFilesMap.set(dir, content);
-    } catch {}
+    } catch (err) {
+      void err;
+    }
 
     for (const entry of entries) {
       if (entry.isDirectory()) {

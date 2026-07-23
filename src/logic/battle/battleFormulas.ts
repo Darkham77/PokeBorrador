@@ -265,7 +265,9 @@ export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, at
     toPurePoke(playerPoke),
     toPurePoke(wildPoke),
     attempts,
-    toPureWeather(activeWeather)
+    toPureWeather(activeWeather),
+    ctx.playerStages || {},
+    ctx.enemyStages || {}
   );
 }
 
