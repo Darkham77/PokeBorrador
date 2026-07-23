@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { MoveTooltipDetailsInfo } from '@/types/battle/tooltip'
+import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
 
 defineProps<{
-  activeDetails: MoveTooltipDetailsInfo
+  activeDetails: ActiveMoveDetails
 }>()
 
 function getKoColorClass(koText: string) {

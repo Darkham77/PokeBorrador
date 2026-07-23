@@ -413,7 +413,7 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1500, // Increased to 1500 to accommodate game database size without warnings
+    chunkSizeWarningLimit: 9000, // accommodate game-data (pokemonDB + Showdown stats/dex)
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === 'EVAL' && warning.id?.includes('node_modules')) {
@@ -430,7 +430,7 @@ export default defineConfig({
             return 'vendor-vue';
           }
           if (id.includes('node_modules/@supabase')) {
-            return 'vendor-db';
+            return 'vendor-supabase';
           }
           if (id.includes('node_modules/gsap')) {
             return 'vendor-gsap';

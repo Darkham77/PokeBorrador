@@ -5,7 +5,6 @@
  * Centralized audit rules and checkers for the Poke Vicio audit engine.
  */
 
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { Z_LAYERS } from '../../src/logic/constants/visuals.ts';
 

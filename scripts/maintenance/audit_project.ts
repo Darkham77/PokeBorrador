@@ -51,7 +51,6 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   const isVue = filePath.endsWith('.vue');
   const isLogic = filePath.endsWith('.ts') || filePath.endsWith('.js');
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
-  const isMd = filePath.endsWith('.md');
 
 
   if (isLogic || isVue) {

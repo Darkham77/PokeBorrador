@@ -16,19 +16,29 @@ export interface MoveTooltipModifierInfo {
 }
 
 export interface MoveTooltipDetailsInfo {
-  effectiveness: number | { class?: string; value?: number };
+  effectiveness: { class?: string; value?: number } | number;
   effectivenessLabel: string;
   effectivenessClass: string;
   stabApplied: boolean;
   statModifiersList: string[];
-  damageRange: string | null;
+  damageRange: {
+    normalMin?: number;
+    normalMax?: number;
+    normalPctMin?: number;
+    normalPctMax?: number;
+    critMin?: number;
+    critMax?: number;
+    critPctMin?: number;
+    critPctMax?: number;
+    koChanceText?: string;
+  } | string | null;
   minDamagePct: number;
   maxDamagePct: number;
   koText: string;
   koColorClass: string;
   fieldConditions: string[];
   tacticalNotes: string[];
-  power?: { base: number; final: number; list: unknown[]; class: string };
+  power?: { base: number; final: number | string; list: unknown[]; class: string };
   accuracy?: { base: number; final: number; list: unknown[]; class: string };
   isStatus?: boolean;
   critChance?: { value: number; class: string };
@@ -45,18 +55,18 @@ export interface MoveTooltipDetailsInfo {
 
 export interface ParsedStatusEffectInfo {
   label: string;
-  chancePct: number | null;
-  targetLabel: string;
-  isGuaranteed: boolean;
+  chancePct?: number | null;
+  targetLabel?: string;
+  isGuaranteed?: boolean;
   isCondition?: boolean;
   isSelf?: boolean;
   targetName?: string;
-  direction?: 'up' | 'down';
+  direction?: 'up' | 'down' | string;
   details?: string;
   statName?: string;
   stat?: string;
   currentStage?: number;
   finalStage?: number;
-  initialStatVal?: number;
-  finalStatVal?: number;
+  initialStatVal?: number | string;
+  finalStatVal?: number | string;
 }

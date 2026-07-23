@@ -10,7 +10,7 @@ defineProps<{
   showStatsTable: boolean
   adminStatConfig: AdminStatConfigItem[]
   getStatModifier: (key: string) => number
-  getBreakdown: (key: string) => { text: string } | null
+  getBreakdown: (key: string) => { base: number; final: number }
   pokemon?: Pokemon | null
 }>()
 </script>

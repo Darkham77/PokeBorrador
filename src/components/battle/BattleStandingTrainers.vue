@@ -9,6 +9,10 @@ defineProps<{
   p1Pos: { x: number; y: number }
   p2Pos: { x: number; y: number }
   baseEntitySizeEnemy: number
+  baseEntitySizePlayer: number
+  worldConstants: { SAFE_ZONE_X: number; SAFE_ZONE_Y: number; SAFE_ZONE_HEIGHT: number }
+  playerBackSpriteUrl: string
+  gameStore: { state: { gender?: string } }
   objectScale: number
   showGuides: boolean
   getAssetUrl: (type: typeof ASSET_TYPES[keyof typeof ASSET_TYPES], name: string, opts?: Record<string, unknown>) => string
