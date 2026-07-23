@@ -10,3 +10,7 @@ Core Logic Developers.
 
 - Strictly use English IDs for evolution items.
 - Ensure all evolution checks leave a determinable result state.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

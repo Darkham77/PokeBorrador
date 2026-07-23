@@ -15,4 +15,4 @@ This directory contains reusable composition state logic and lifecycle helpers f
 
 ## Child DOX Index
 
-(None)
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

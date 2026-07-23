@@ -12,6 +12,4 @@ Battle Engine Developers.
 
 ## Child DOX Index
 
-- [specialActions.ts](./specialActions.ts): Dictionary of unique combat moves.
-- [specialActionsHelper.ts](./specialActionsHelper.ts): Transition helper for sending combatants into battle.
-- [specialActionsRoarHelper.ts](./specialActionsRoarHelper.ts): Handler for forced switch/flee moves (Roar, Whirlwind).
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

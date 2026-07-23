@@ -4,6 +4,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES, POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
 import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
 import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const {
   trainerName,
@@ -120,21 +121,20 @@ onMounted(() => {
 
         <div class="input-group vertical">
           <span class="field-label">Nivel Mínimo</span>
-          <input 
-            v-model.number="genMinLevel" 
-            type="number" 
-            min="1" 
-            max="100"
+          <input
+            v-model.number="genMinLevel"
+            type="number"
+            min="1"
+            :max="MAX_POKEMON_LEVEL"
           >
         </div>
-
-        <div class="input-group vertical">
-          <span class="field-label">Nivel Máximo</span>
-          <input 
-            v-model.number="genMaxLevel" 
-            type="number" 
-            min="1" 
-            max="100"
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: #a78bfa;">Nivel Máx</label>
+          <input
+            v-model.number="genMaxLevel"
+            type="number"
+            min="1"
+            :max="MAX_POKEMON_LEVEL"
           >
         </div>
 

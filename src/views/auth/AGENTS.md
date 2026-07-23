@@ -4,4 +4,4 @@ User authentication, login, and registration views.
 
 ## Child DOX Index
 
-- [LoginView.vue](./LoginView.vue): User login and signup interface.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

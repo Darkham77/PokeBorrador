@@ -253,10 +253,8 @@ export function useSaveActions(
             } catch (e) {
               logger.warn('SAVE', 'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:', e);
             } finally {
-              // Recargar la página para limpiar estados obsoletos de otros stores (batallas, etc.)
-              setTimeout(() => {
-                if (typeof window !== 'undefined') window.location.reload();
-              }, 1000);
+              await Promise.resolve();
+              if (typeof window !== 'undefined') window.location.reload();
             }
           })();
         }

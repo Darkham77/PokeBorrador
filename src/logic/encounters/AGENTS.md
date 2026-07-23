@@ -14,6 +14,4 @@ Game Designers / Encounter Logic Developers.
 
 ## Child DOX Index
 
-- [encounters.ts](./encounters.ts): Main entry point for ground, fishing, and archaeology encounter rolls.
-- [fishingEncounterHelper.ts](./fishingEncounterHelper.ts): Fishing pool, rod budget, and weather visitor calculations.
-- [encounterHelpers.ts](./encounterHelpers.ts): Base rate calculations, atmospheric status, and pool selection utilities.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

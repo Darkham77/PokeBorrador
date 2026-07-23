@@ -23,9 +23,9 @@ Core Frontend.
 
 ## Child DOX Index
 
-- [adventure/](./adventure/): Overworld adventure, map exploration, and pathfinding views.
-- [auth/](./auth/): User authentication, login, and registration views.
-- [game/](./game/): Core game dashboard, map, and progression views.
-- [inventory/](./inventory/): Inventory and item management views.
-- [pokemon/](./pokemon/): Pokémon catalog and details views.
-- [social/](./social/): Social interaction, chat rooms, and multiplayer networking views.
+- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth.
+- [game/](./game/AGENTS.md): Domain module documentation for game.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [social/](./social/AGENTS.md): Domain module documentation for social.

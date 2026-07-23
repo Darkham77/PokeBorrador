@@ -18,3 +18,7 @@ Systems Engineers / Backend Developers.
 ## Verification
 
 - Run `npm run test` to execute these test suites.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

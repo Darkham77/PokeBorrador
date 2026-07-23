@@ -27,4 +27,4 @@ Systems Engineers / Backend Developers.
 
 ## Child DOX Index
 
-- [**tests**/](./__tests__/AGENTS.md): Unit tests for battle simulator helpers.
+- [__tests__/](./__tests__/AGENTS.md): Domain module documentation for __tests__.

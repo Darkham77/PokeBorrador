@@ -8,6 +8,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
 import { useDebugPokemonCreator } from './useDebugPokemonCreator'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const {
   config,
@@ -115,10 +116,10 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             class="label-row"
             style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
           >
-            <label>NIVEL (1-100)</label>
+            <label>NIVEL (1-{{ MAX_POKEMON_LEVEL }})</label>
             <PVTooltip
               title="Nivel al azar"
-              description="Asigna un nivel aleatorio entre 1 y 100."
+              :description="`Asigna un nivel aleatorio entre 1 y ${MAX_POKEMON_LEVEL}.`"
             >
               <button
                 class="btn-magic-fill btn-random-fill"
@@ -130,13 +131,13 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           </div>
           <PVTooltip
             title="Nivel del Pokémon"
-            description="Ajusta el nivel del Pokémon (entre 1 y 100)."
+            :description="`Ajusta el nivel del Pokémon (entre 1 y ${MAX_POKEMON_LEVEL}).`"
           >
             <input
               v-model.number="config.level"
               type="number"
               min="1"
-              max="100"
+              :max="MAX_POKEMON_LEVEL"
             >
           </PVTooltip>
         </div>

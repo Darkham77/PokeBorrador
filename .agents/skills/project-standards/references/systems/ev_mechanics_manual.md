@@ -66,11 +66,14 @@ Moves filtered from fuzzer movesets (cause instant or near-instant self-faint):
 
 ## 6. `calcStatsPure()` — Project Helper
 
-The project's `src/logic/pokemon/statsMath.ts` exports `calcStatsPure()` which implements the formulas above. It returns `{ atk, def, spa, spd, spe }` — **HP is intentionally excluded** because in the game store, HP is tracked separately as a mutable value (current HP can differ from max HP).
+The project's `src/logic/pokemon/statsMath.ts` exports `calcStatsPure()` which implements the deterministic stat calculation formulas. It returns `CalculatedStats` containing `{ maxHp, atk, def, spa, spd, spe }`.
+
+- `maxHp` is the calculated maximum HP derived from base stats, IVs, EVs, and level.
+- Combat runtime `hp` (current health) is tracked separately on the Pokémon instance as a mutable state.
 
 Use `calcStatsPure()` for:
-- Displaying stats in the UI
-- Save file stat calculation
+- Displaying base/max stats in the UI
+- Save file stat calculation and hydration
 - Damage formula implementations
 
-**Do NOT** use it to pre-populate `PokemonSet.stats` for Showdown simulations.
+**Do NOT** use it to pre-populate `PokemonSet.stats` for `@pkmn/sim` Showdown simulations (let Showdown calculate stats natively from `evs`/`ivs`/`level`).

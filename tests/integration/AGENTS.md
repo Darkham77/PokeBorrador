@@ -12,4 +12,4 @@ Quality Assurance / Systems Developers.
 
 ## Child DOX Index
 
-- [battle/](./battle/AGENTS.md): Battle engine simulations and Showdown integration tests.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.

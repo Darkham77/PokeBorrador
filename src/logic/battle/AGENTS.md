@@ -50,15 +50,6 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [actions/](./actions/AGENTS.md): Combat action triggers and move execution steps.
-- [ai/](./ai/AGENTS.md): NPC opponent move priority decision and scoring logic.
-- [helpers/](./helpers/AGENTS.md): Standardized helpers and execution wrappers for the Showdown simulator.
-- [battleFaintSequence.ts](./battleFaintSequence.ts): Helper for wild defeat, trainer recall, and opponent replacement animation sequences.
-- [battleFlowHazardsHelper.ts](./battleFlowHazardsHelper.ts): Entry hazards (Stealth Rock, Spikes) calculation helper.
-- [battleRewardsPhase.ts](./battleRewardsPhase.ts): Battle rewards calculations and outcome processing phase.
-- [battleStateSync.ts](./battleStateSync.ts): Battle HP state synchronization, condition parser, and GameStore persistence.
-- [orchestratorCallSequence.ts](./orchestratorCallSequence.ts): Helper for active team member recall and release visual call sequences.
-- [orchestratorPayloadHelper.ts](./orchestratorPayloadHelper.ts): Seat payload generator for Showdown simulator team formatting.
-- [orchestratorSearchPhaseHelper.ts](./orchestratorSearchPhaseHelper.ts): Orchestration handler for minigame check, auto-battle, and search phase entry.
-- [orchestratorWorkerInitHelper.ts](./orchestratorWorkerInitHelper.ts): Web Worker initialization, seed generation, and battle message handler setup.
-- [showdownUidMapper.ts](./showdownUidMapper.ts): Centralized Showdown UID nickname generator and disambiguation mapper.
+- [actions/](./actions/AGENTS.md): Domain module documentation for actions.
+- [ai/](./ai/AGENTS.md): Domain module documentation for ai.
+- [helpers/](./helpers/AGENTS.md): Domain module documentation for helpers.

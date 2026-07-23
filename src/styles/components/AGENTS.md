@@ -20,7 +20,7 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [arena/](./arena/AGENTS.md): Arena component layouts and styles.
-- [pokemon-detail/](./pokemon-detail/AGENTS.md): Detail view presentation styles.
-- [pokemon-selection/](./pokemon-selection/AGENTS.md): Pokemon select cards styles.
-- [weather/](./weather/AGENTS.md): Background atmospheric weather visuals.
+- [arena/](./arena/AGENTS.md): Domain module documentation for arena.
+- [pokemon-detail/](./pokemon-detail/AGENTS.md): Domain module documentation for pokemon-detail.
+- [pokemon-selection/](./pokemon-selection/AGENTS.md): Domain module documentation for pokemon-selection.
+- [weather/](./weather/AGENTS.md): Domain module documentation for weather.

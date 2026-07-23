@@ -4,7 +4,7 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth.ts'
-import { setupLocalStorageMock } from './localStorageMock'
+import { setupLocalStorageMock } from './localStorageMock.ts'
 import { supabase } from '@/logic/db/supabase'
 import type { User } from '@supabase/supabase-js'
 

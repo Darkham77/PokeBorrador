@@ -3,8 +3,8 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/sack-order.ts
 // ============================================================
 
-import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
+import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

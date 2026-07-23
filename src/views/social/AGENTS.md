@@ -4,4 +4,4 @@ Social interaction, chat rooms, and multiplayer networking views.
 
 ## Child DOX Index
 
-- [SocialView.vue](./SocialView.vue): Chat logs, active players list, and private messaging view.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

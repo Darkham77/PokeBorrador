@@ -3,7 +3,7 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/tracker.ts
 // ============================================================
 
-import type { InferredSet, InferredInfo, RandomBattleSetEntry } from './types';
+import type { InferredSet, InferredInfo, RandomBattleSetEntry } from './types.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

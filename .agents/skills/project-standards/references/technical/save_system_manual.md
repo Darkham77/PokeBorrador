@@ -243,15 +243,14 @@ When validating the savefile structure using Valibot:
 
 ---
 
-## 🏥 Data Self-Healing
+## 🛡️ Data Validation & Loud Failure Protocol
 
-Pokémon created by debug tools or legacy systems may lack critical properties (`power`, `type`, `pp`).
+Pokémon and game state loaded from database profiles or local storage must strictly conform to modern schema contracts.
 
-- **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.ts`) to fill in missing data from `MOVE_DATA`.
-- **Level & Experience Cap**: Sanitization must enforce `MAX_POKEMON_LEVEL = 100`. If a Pokémon's level exceeds 100, it must be adjusted to 100. If it is exactly 100, its `exp` must be reset to `0` and `expNeeded` set to `Infinity`. If it is below 100 but `exp` is equal to or greater than `expNeeded`, `exp` must be clamped to `expNeeded - 1` to prevent corrupted states.
-- **Infinity JSON Serialization**: Because `JSON.stringify(Infinity)` serializes to `null`, `expNeeded` values mapped to `Infinity` for level 100 Pokémon will load as `null` or `0` from databases. The self-healing checker MUST silently restore these to `Infinity` without emitting warnings or triggering self-healing logs.
-- **Legacy Egg Schema Fallback**: When loading eggs from older saves (where `egg.id` contains a numeric timestamp and species is stored in `egg.pokemonId`), apply a fallback: prioritize `egg.pokemonId || egg.id` when looking up species data. During `sanitizeAll()`, automatically migrate these records by assigning the species name to `id` and ensuring a unique `uid` to prevent simultaneous deletion of multiple legacy eggs during hatching.
-- **Global Entity ID Migration & Self-Healing**: When migrating entity IDs (e.g., move IDs, item IDs) to standardized schemas (official English Showdown names/IDs), ensure UI display names remain unchanged (keep Spanish translations) and implement on-the-fly self-healing conversions (inventory keys, `pokemon.heldItem`, learnsets) during `sanitizeAll()` to ensure absolute backward compatibility and prevent loss of user progress.
+- **Strict Fail-Fast Mandate**: Silent "Self-Healing" or dynamic patching of missing/corrupted data (stats, items, moves) at runtime is **STRICTLY FORBIDDEN**. If a save or Pokémon structure fails validation during load or save, the engine MUST throw an explicit, descriptive `Error` immediately, abort the save/load operation, and prevent overwriting valid data.
+- **Level & Experience Cap**: Validation must verify against `MAX_POKEMON_LEVEL` (centralized in `src/data/system/constants.ts`). If a Pokémon's level exceeds `MAX_POKEMON_LEVEL` or contains corrupted negative experience, validation MUST fail loudly.
+- **Infinity JSON Serialization**: Because `JSON.stringify(Infinity)` serializes to `null`, `expNeeded` values mapped to `Infinity` for `MAX_POKEMON_LEVEL` Pokémon load as `null` or `0` from databases. The validation layer acknowledges `null`/`0` on `MAX_POKEMON_LEVEL` Pokémon as `Infinity` without treating it as data corruption.
+- **Legacy Schema Migrations**: Schema structural updates (e.g. migrating legacy egg properties or entity ID formats) MUST be handled exclusively via versioned migration pipelines during data load (`normalizeData`), prior to strict schema validation.
 
 ---
 

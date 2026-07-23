@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setupLocalStorageMock } from './localStorageMock'
+import { setupLocalStorageMock } from './localStorageMock.ts'
 
 import { loadBestSave } from '@/logic/auth/loadService'
 import { saveGame } from '@/logic/auth/saveService'

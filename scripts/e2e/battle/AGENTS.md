@@ -25,3 +25,7 @@ QA / Automation Engineers.
   - Filtrar por casos específicos: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:e2e:combat`
   - Filtrar por lote del fuzzer: `npm run sim:e2e:combat -- -g "lote #21"`
   - Filtrar por rango o lista de lotes: `$env:TEST_BATCH="1,3,5"; npm run sim:e2e:combat` (formatos soportados: `"3"`, `"1-5"`, o `"1,3,5"`)
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

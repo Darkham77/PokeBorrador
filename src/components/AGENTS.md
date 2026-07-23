@@ -42,30 +42,28 @@ Frontend UI Developers / UI Designers.
 
 ## Child DOX Index
 
-This folder contains:
-
-- [admin/](./admin/): Administrative debugging HUD controls.
-- [adventure/](./adventure/): Exploration, map grids, and movement.
-- [auth/](./auth/): Separate login and signup views (no gender selector in login).
-- [battle/](./battle/): Phaser canvases, arena controls, and FSM HUD layers.
-- [box/](./box/): Box grids and storage management.
-- [breeding/](./breeding/): Daycare, eggs, and dynamic visual matrices.
-- [common/](./common/): Reusable UI base elements (modals, buttons, cards).
-- [events/](./events/): Event visual notifications and animations.
-- [evolution/](./evolution/): Evolution visual sequences and modals.
-- [game/](./game/): Core canvas, overlays, and game-loop interfaces.
-- [gyms/](./gyms/): Gym status, badge grid, and rematches.
-- [inventory/](./inventory/): Inventory item slots and description cards.
-- [map/](./map/): Overworld map visuals.
-- [market/](./market/): Shop grids and GTS trade interface.
-- [modals/](./modals/): Teleported modals extending `BaseModal`.
-- [overlays/](./overlays/): Screen-wide overlays (loading gates).
-- [pokedex/](./pokedex/): Pokedex list, filters, and detail sheets.
-- [pokemon/](./pokemon/): Sibling sprite overlap arrays.
-- [pokemon-detail/](./pokemon-detail/): Pokemon stats, movesets, and grade frames.
-- [profile/](./profile/): Trainer profiles and customizing skins.
-- [shared/](./shared/): Shared layouts and layout shells.
-- [social/](./social/): Friends, private messages, and chat lists.
-- [team/](./team/): Team builder, drag-and-drop slots, and grid lists.
-- [ui/](./ui/): Layout panels, menus, and navigation tabs.
-- [war/](./war/): Faction control grids and war status cards.
+- [admin/](./admin/AGENTS.md): Domain module documentation for admin.
+- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [box/](./box/AGENTS.md): Domain module documentation for box.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [common/](./common/AGENTS.md): Domain module documentation for common.
+- [events/](./events/AGENTS.md): Domain module documentation for events.
+- [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
+- [game/](./game/AGENTS.md): Domain module documentation for game.
+- [gyms/](./gyms/AGENTS.md): Domain module documentation for gyms.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [map/](./map/AGENTS.md): Domain module documentation for map.
+- [market/](./market/AGENTS.md): Domain module documentation for market.
+- [modals/](./modals/AGENTS.md): Domain module documentation for modals.
+- [overlays/](./overlays/AGENTS.md): Domain module documentation for overlays.
+- [pokedex/](./pokedex/AGENTS.md): Domain module documentation for pokedex.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [pokemon-detail/](./pokemon-detail/AGENTS.md): Domain module documentation for pokemon-detail.
+- [profile/](./profile/AGENTS.md): Domain module documentation for profile.
+- [shared/](./shared/AGENTS.md): Domain module documentation for shared.
+- [social/](./social/AGENTS.md): Domain module documentation for social.
+- [team/](./team/AGENTS.md): Domain module documentation for team.
+- [ui/](./ui/AGENTS.md): Domain module documentation for ui.
+- [war/](./war/AGENTS.md): Domain module documentation for war.

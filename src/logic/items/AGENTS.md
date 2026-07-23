@@ -22,5 +22,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [itemEffects.ts](./itemEffects.ts): Main registry mapping item IDs to consumable handlers.
-- [itemEffectHandlers.ts](./itemEffectHandlers.ts): Stateless helper functions for healing, status clearance, and evolution stone triggers.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -20,4 +20,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [actions/](./actions/): Partitioned action scripts for updating game state attributes.
+- [actions/](./actions/AGENTS.md): Domain module documentation for actions.

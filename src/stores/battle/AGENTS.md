@@ -22,5 +22,4 @@ Battle Engine Team / Visual FX Programmers.
 
 ## Child DOX Index
 
-- [battle.ts](./battle.ts): Central battle store defining state machines, active combat context, and turn control.
-- [battleMoveSync.ts](./battleMoveSync.ts): Helper for synchronizing move PPs and definitions from simulator requests into active Pokémon.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

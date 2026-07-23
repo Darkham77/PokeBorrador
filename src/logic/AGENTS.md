@@ -74,37 +74,33 @@ Logic Developers / Game Designers.
 
 ## Child DOX Index
 
-- [hover/AGENTS.md](./hover/AGENTS.md): Auto-indexed sub-module.
-
-- [evolution/AGENTS.md](./evolution/AGENTS.md): Auto-indexed sub-module.
-
-- [encounters/AGENTS.md](./encounters/AGENTS.md): Auto-indexed sub-module.
-
-- [audio/AGENTS.md](./audio/AGENTS.md): Auto-indexed sub-module.
-
-- [auth/](./auth/): Local and online authentication routers.
-- [battle/](./battle/): FSM orchestrators, combat engine, moves database.
-- [breeding/](./breeding/): Breeding formulas, daycare constraints.
-- [combat/](./combat/): Active combat math and status handlers.
-- [constants/](./constants/): System constants and registries.
-- [db/](./db/): DBRouter database adapter.
-- [debug/](./debug/): Offline console state injector.
-- [economy/](./economy/): Shops, prices, and balance formulas.
-- [environment/](./environment/): Weather cycles, map settings.
-- [events/](./events/): In-game events triggers.
-- [gym/](./gym/): Gym requirements and rematch mechanics.
-- [inventory/](./inventory/): Inventory logic and usage validation.
-- [items/](./items/): Item behavior databases.
-- [map/](./map/): Spawn systems, grid cells mapping.
-- [minigames/](./minigames/): Casino/minigame math.
-- [modals/](./modals/): Modal orchestration queues.
-- [player/](./player/): Trainer metadata and class handlers.
-- [pokemon/](./pokemon/): Pokemon stats growth, factories, and sanitization.
-- [providers/](./providers/): Showdown move translation providers.
-- [pvp/](./pvp/): Matchmaking routers, network sync.
-- [render/](./render/): Graphic animation workers and canvas rendering.
-- [services/](./services/): External assets and network API managers.
-- [utils/](./utils/): Shared formatting libraries.
-- [validation/](./validation/): Input validators and data schema checking.
-- [war/](./war/): Factions point calculators.
-- [weather/](./weather/): Weather effects multipliers.
+- [audio/](./audio/AGENTS.md): Domain module documentation for audio.
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [combat/](./combat/AGENTS.md): Domain module documentation for combat.
+- [constants/](./constants/AGENTS.md): Domain module documentation for constants.
+- [db/](./db/AGENTS.md): Domain module documentation for db.
+- [debug/](./debug/AGENTS.md): Domain module documentation for debug.
+- [economy/](./economy/AGENTS.md): Domain module documentation for economy.
+- [encounters/](./encounters/AGENTS.md): Domain module documentation for encounters.
+- [environment/](./environment/AGENTS.md): Domain module documentation for environment.
+- [events/](./events/AGENTS.md): Domain module documentation for events.
+- [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
+- [gym/](./gym/AGENTS.md): Domain module documentation for gym.
+- [hover/](./hover/AGENTS.md): Domain module documentation for hover.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [items/](./items/AGENTS.md): Domain module documentation for items.
+- [map/](./map/AGENTS.md): Domain module documentation for map.
+- [minigames/](./minigames/AGENTS.md): Domain module documentation for minigames.
+- [modals/](./modals/AGENTS.md): Domain module documentation for modals.
+- [player/](./player/AGENTS.md): Domain module documentation for player.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [providers/](./providers/AGENTS.md): Domain module documentation for providers.
+- [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
+- [render/](./render/AGENTS.md): Domain module documentation for render.
+- [services/](./services/AGENTS.md): Domain module documentation for services.
+- [utils/](./utils/AGENTS.md): Domain module documentation for utils.
+- [validation/](./validation/AGENTS.md): Domain module documentation for validation.
+- [war/](./war/AGENTS.md): Domain module documentation for war.
+- [weather/](./weather/AGENTS.md): Domain module documentation for weather.

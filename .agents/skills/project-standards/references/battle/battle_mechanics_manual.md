@@ -697,7 +697,7 @@ stateDiagram-v2
 
 To maintain combat mechanics integrity, experience distribution during the `DISTRIBUTE_XP` phase is strictly capped:
 
-- If a Pokémon has reached `MAX_POKEMON_LEVEL` (100), its `exp` is fixed to `0` and `expNeeded` is `Infinity`.
+- If a Pokémon has reached `MAX_POKEMON_LEVEL` (centralized in `src/data/system/constants.ts`), its `exp` is fixed to `0` and `expNeeded` is `Infinity`.
 - The engine blocks any experience gain (`gained = 0`) for this Pokémon, preventing level-up notifications, triggers, or UI modal locks associated with level changes.
 
 ### 6. Search Phase (Persistent Mode)

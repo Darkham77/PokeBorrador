@@ -11,9 +11,9 @@ import type {
   HeuristicDecision,
   DamageMatchup,
   StrategicState,
-} from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
-import type { InferenceEngine } from './inferenceEngine';
+} from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

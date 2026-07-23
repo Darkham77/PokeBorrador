@@ -80,7 +80,8 @@ export const legacyDates: AuditRule = {
   regex: /new Date\(|Date\.now\(\)/g,
   message: "Uso de 'Date' detectado. Usa 'Temporal'.",
   severity: 'error',
-  check: (filePath: string) => {
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
     const lowerPath = filePath.toLowerCase();
     if (lowerPath.endsWith('.sim.ts') || lowerPath.includes('scripts/e2e/')) {
       return true;
@@ -95,7 +96,8 @@ export const hardcodedTimezone: AuditRule = {
   regex: /toZonedDateTimeISO\(\s*['"]([^'"]+)['"]\s*\)|toPlainDateTime\(\s*['"]([^'"]+)['"]\s*\)|Temporal\.TimeZone\.from\(\s*['"]([^'"]+)['"]\s*\)/g,
   message: (match: string) => `Timezone hardcodeado detectado: '${match}'. Usa la variable global 'GAME_TIMEZONE' importada desde '@/logic/utils/timeUtils' para respetar la configuración del servidor.`,
   severity: 'error',
-  check: (filePath: string) => {
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
     if (filePath.endsWith('timeUtils.ts')) return false;
     const lowerPath = filePath.toLowerCase();
     const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('mock');
@@ -111,11 +113,16 @@ export const nodePrefix: AuditRule = {
 };
 
 export const esmExtensions: AuditRule = {
-  regex: /import .* from ['"](\.\.[^'"]*(?<!\.[jt]s)(?<!\.vue)(?<!\.json))['"]|import .* from ['"](\.[^/][^'"]*(?<!\.[jt]s)(?<!\.vue)(?<!\.json))['"]/g,
+  regex: /import\s+[\s\S]*?\s+from\s+['"](\.\.?[^'"]+)['"]/g,
   message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js 26+ nativo las extensiones son obligatorias.`,
   severity: 'error',
   fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(?<!\.json)(['"])/g, '$1$2.ts$3'),
-  check: (filePath: string) => !filePath.endsWith('.vue')
+  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || filePath.endsWith('.vue')) return false;
+    const importPath = match[1] || '';
+    if (/\.(ts|js|vue|json|scss|css|svg|png|jpg|jpeg|webp|ogg|mp3|wasm)$/i.test(importPath)) return false;
+    return true;
+  }
 };
 
 export const tsIgnore: AuditRule = {
@@ -129,7 +136,7 @@ export const tsIgnore: AuditRule = {
 export const timersPromises: AuditRule = {
   regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
   message: "Uso de setTimeout manual en script Node. Considera 'import { setTimeout } from \"node:timers/promises\"'.",
-  check: (filePath: string) => filePath.includes('scripts' + path.sep) && !filePath.includes('node_modules'),
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => !!filePath && filePath.includes('scripts' + path.sep) && !filePath.includes('node_modules'),
   fixable: false
 };
 
@@ -137,7 +144,7 @@ export const explicitResource: AuditRule = {
   regex: /const (\w+) = (new DatabaseSync|fs\.openSync)/g,
   message: "Recurso detectado sin 'using'. Usa Explicit Resource Management (Node 26+).",
   fix: (match: string) => match.replace('const', 'using'),
-  check: (filePath: string) => filePath.includes('scripts' + path.sep)
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => !!filePath && filePath.includes('scripts' + path.sep)
 };
 
 export const manualAnimations: AuditRule = {
@@ -181,10 +188,10 @@ export const dbInTemplates: AuditRule = {
 };
 
 export const functionCallsInTemplates: AuditRule = {
-  regex: /(?::[a-zA-Z0-9-]+|v-bind:[a-zA-Z0-9-]+)="([a-zA-Z0-9_$]+)\([^"]*\)"|\{\{\s*([a-zA-Z0-9_$]+)\([^}]*\)\s*\}\}/g,
+  regex: /(?::[a-z0-9-]+|v-bind:[a-z0-9-]+)="([a-zA-Z0-9_$]+)\([^"]*\)"|\{\{\s*([a-zA-Z0-9_$]+)\([^}]*\)\}/gi,
   message: (match: string) => `Llamada a función/método '${match}' detectada en plantilla Vue. Está PROHIBIDO llamar a funciones que realicen consultas a bases de datos, transformaciones de array (.map/.filter) o lógica pesada en el render loop. Cachea los datos con 'computed'.`,
   severity: 'error',
-  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const funcName = match[1] || match[2];
     if (!funcName) return false;
@@ -193,11 +200,10 @@ export const functionCallsInTemplates: AuditRule = {
     if (safeFunctions.test(funcName)) return false;
     
     try {
-      const fullFileContent = readFileSync(filePath, 'utf-8');
-      const scriptStart = fullFileContent.indexOf('<script');
-      const scriptEnd = fullFileContent.indexOf('</script>');
+      const scriptStart = content.indexOf('<script');
+      const scriptEnd = content.indexOf('</script>');
       if (scriptStart === -1 || scriptEnd === -1) return false;
-      const scriptContent = fullFileContent.substring(scriptStart, scriptEnd);
+      const scriptContent = content.substring(scriptStart, scriptEnd);
       
       const funcDefRegex = new RegExp(`(?:const|let|var|function)\\s+${funcName}\\b[^;]*`, 'g');
       const defMatch = funcDefRegex.exec(scriptContent);
@@ -290,7 +296,8 @@ export const forbiddenFallbacks: AuditRule = {
   regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature)\b\([^)]*\)\s*(?:\|\||\?\?)/g,
   message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe. Queda estrictamente prohibido usar valores por defecto o coalescencia nula en búsquedas de ID.`,
   severity: 'error',
-  check: (filePath: string) => {
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
     const lowerPath = filePath.toLowerCase();
     const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('spec');
     if (isTestOrMock) return false;
@@ -300,6 +307,76 @@ export const forbiddenFallbacks: AuditRule = {
   fixable: false
 };
 
+export const doxIndexIntegrity: AuditRule = {
+  regex: /^# Purpose/gm,
+  message: 'Inconsistencia en jerarquía de documentación DOX Index (AGENTS.md)',
+  severity: 'error',
+  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || !filePath.endsWith('AGENTS.md')) return false;
+
+    // 1. Verify presence of Child DOX Index section
+    if (!content.includes('## Child DOX Index')) {
+      return true; // Missing mandatory DOX Index header
+    }
+
+    const dir = path.dirname(filePath);
+
+    // 2. Extract and validate linked entries strictly inside Child DOX Index section
+    const childIndexPos = content.indexOf('## Child DOX Index');
+    const childSectionContent = childIndexPos !== -1 ? content.slice(childIndexPos) : '';
+
+    const linkRegex = /-\s*\[([^\]]+)\]\(([^)]+)\)/g;
+    let linkMatch;
+    const indexedSubdirs = new Set<string>();
+
+    while ((linkMatch = linkRegex.exec(childSectionContent)) !== null) {
+      const linkPath = linkMatch[2];
+      if (!linkPath || linkPath.startsWith('http') || linkPath.startsWith('#')) continue;
+      if (linkPath.includes('(gitignored')) continue;
+
+      const cleanPath = linkPath.split('#')[0]!;
+      const resolved = path.resolve(dir, cleanPath);
+
+      // STRICT MANDATE: Entry MUST be an AGENTS.md file or a directory containing an AGENTS.md file
+      try {
+        const { statSync, existsSync } = require('node:fs');
+        const stat = statSync(resolved);
+        if (stat.isDirectory()) {
+          const targetAgents = path.join(resolved, 'AGENTS.md');
+          if (!existsSync(targetAgents)) {
+            return true; // Directory in Child DOX Index lacks an AGENTS.md file
+          }
+          indexedSubdirs.add(path.basename(resolved));
+        } else if (cleanPath.endsWith('AGENTS.md')) {
+          indexedSubdirs.add(path.basename(path.dirname(resolved)));
+        } else {
+          return true; // Only AGENTS.md files or directories containing AGENTS.md allowed
+        }
+      } catch (_e) {
+        return true; // Broken link
+      }
+    }
+
+    // 3. Verify that all child subdirectories containing an AGENTS.md are indexed by parent
+    try {
+      const { readdirSync, existsSync } = require('node:fs');
+      const dirEntries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of dirEntries) {
+        if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+        const childAgentsPath = path.join(dir, entry.name, 'AGENTS.md');
+        if (existsSync(childAgentsPath)) {
+          if (!indexedSubdirs.has(entry.name)) {
+            return true; // Parent AGENTS.md omitted child AGENTS.md in its Child DOX Index
+          }
+        }
+      }
+    } catch (_err) {}
+
+    return false;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, doxIndexIntegrity
 };

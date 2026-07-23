@@ -14,3 +14,7 @@ Core Engine Team / QA Engineers.
 ## Verification
 
 - Run `npm run test` or target specific specs (e.g. `npx vitest run tests/integration/battle/showdown_integration.spec.ts`).
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

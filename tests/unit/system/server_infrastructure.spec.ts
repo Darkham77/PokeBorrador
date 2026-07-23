@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers';
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors';
 import { switchServer, supabase } from '@/logic/db/supabase';
-import { setupLocalStorageMock } from './localStorageMock'
+import { setupLocalStorageMock } from './localStorageMock.ts'
 
 setupLocalStorageMock()
 

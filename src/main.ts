@@ -3,7 +3,7 @@ import { createApp } from 'vue'
 
 import { createPinia, type Pinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
+import router from './router/index.ts'
 import '@/styles/_index.scss'
 import { useErrorStore } from '@/stores/errorStore'
 

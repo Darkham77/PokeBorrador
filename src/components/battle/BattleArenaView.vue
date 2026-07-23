@@ -782,42 +782,34 @@ const onDialogLeave = (el: Element, done: () => void) => {
       :is-visible="true"
     />
 
-    <!-- HUD -->
+    <!-- HUD Genérico (4-Seat Compatible) -->
     <div class="battle-info-container">
-      <Transition
-        :css="false"
-        @before-enter="onHudEnemyBeforeEnter"
-        @enter="onHudEnemyEnter"
-        @leave="onHudEnemyLeave"
+      <template
+        v-for="seat in [
+          { id: 'p2', data: activeEnemyData, isSuppressed: isEnemyHudSuppressed, isPlayer: false, isScrambled: shouldScrambleEnemyData, beforeEnter: onHudEnemyBeforeEnter, enter: onHudEnemyEnter, leave: onHudEnemyLeave },
+          { id: 'p1', data: activePlayerData, isSuppressed: isPlayerHudSuppressed, isPlayer: true, isScrambled: false, beforeEnter: onHudPlayerBeforeEnter, enter: onHudPlayerEnter, leave: onHudPlayerLeave }
+        ]"
+        :key="seat.id"
       >
-        <div
-          v-if="!isEnemyHudSuppressed && activeEnemyData"
-          :key="`hud-enemy-seat`"
-          class="combatant-info-wrap enemy-side"
+        <Transition
+          :css="false"
+          @before-enter="seat.beforeEnter"
+          @enter="seat.enter"
+          @leave="seat.leave"
         >
-          <BattleInfoCard 
-            :pokemon="activeEnemyData as Pokemon" 
-            :is-scrambled="shouldScrambleEnemyData"
-          />
-        </div>
-      </Transition>
-      <Transition
-        :css="false"
-        @before-enter="onHudPlayerBeforeEnter"
-        @enter="onHudPlayerEnter"
-        @leave="onHudPlayerLeave"
-      >
-        <div
-          v-if="!isPlayerHudSuppressed && activePlayerData"
-          :key="`hud-player-seat`"
-          class="combatant-info-wrap player-side"
-        >
-          <BattleInfoCard
-            :pokemon="activePlayerData as Pokemon"
-            :is-player="true"
-          />
-        </div>
-      </Transition>
+          <div
+            v-if="!seat.isSuppressed && seat.data"
+            :key="`hud-seat-${seat.id}`"
+            :class="['combatant-info-wrap', seat.isPlayer ? 'player-side' : 'enemy-side']"
+          >
+            <BattleInfoCard
+              :pokemon="seat.data as Pokemon"
+              :is-player="seat.isPlayer"
+              :is-scrambled="seat.isScrambled"
+            />
+          </div>
+        </Transition>
+      </template>
     </div>
 
     <!-- Los minijuegos de Pesca y Arqueología se disparan como modales tradicionales mediante ModalRegistry en el watcher FSM -->

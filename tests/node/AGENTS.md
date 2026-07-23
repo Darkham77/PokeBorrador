@@ -16,9 +16,10 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [battle/](./battle/): Node tests for combat simulations and status mappings.
-- [inventory/](./inventory/): Node tests for item configurations and calculations.
-- [player/](./player/): Node tests for class calculations and trainer sprites mapping.
-- [pokemon/](./pokemon/): Node tests for breeding hatch ratings, stats, and pokedex migration.
-- [system/](./system/): Node tests for db transactions, backup restorations, and translators.
-- [world/](./world/): Node tests for weather formulas and overworld integrity.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [player/](./player/AGENTS.md): Domain module documentation for player.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [system/](./system/AGENTS.md): Domain module documentation for system.
+- [world/](./world/AGENTS.md): Domain module documentation for world.

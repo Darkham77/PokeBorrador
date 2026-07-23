@@ -43,11 +43,11 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
-- [battle/](./battle/AGENTS.md): Battle-related scenario simulations including FSM synchronization, held items, and weather.
-- [breeding/](./breeding/AGENTS.md): Scenario simulations for daycare breeding, egg generation, and hatching.
-- [fuzzer/](./fuzzer/AGENTS.md): Headless Gen 9 moves, items, and abilities coverage fuzzer logic and runners.
-- [gts/](./gts/AGENTS.md): Global Trade Station (GTS) multi-account transaction simulations.
-- [gyms/](./gyms/AGENTS.md): Simulations for gym progression and badge verification.
-- [missions/](./missions/AGENTS.md): Simulations for daily daycare missions.
-- [results/](./results/AGENTS.md): Database of certified fuzzer cases, coverage reports, and simulation progress logs.
-- [save/](./save/AGENTS.md): Save Shield scenario simulations.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [fuzzer/](./fuzzer/AGENTS.md): Domain module documentation for fuzzer.
+- [gts/](./gts/AGENTS.md): Domain module documentation for gts.
+- [gyms/](./gyms/AGENTS.md): Domain module documentation for gyms.
+- [missions/](./missions/AGENTS.md): Domain module documentation for missions.
+- [results/](./results/AGENTS.md): Domain module documentation for results.
+- [save/](./save/AGENTS.md): Domain module documentation for save.

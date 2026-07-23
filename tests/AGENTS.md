@@ -60,7 +60,7 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
-- [helpers/](./helpers/AGENTS.md): Seed helper functions and setup configurations.
-- [integration/](./integration/AGENTS.md): Multi-module flow validation test suites.
-- [node/](./node/AGENTS.md): Pure logic tests running under Vitest with `environment: 'node'`.
-- [unit/](./unit/AGENTS.md): Unit tests for Vue components and stores.
+- [helpers/](./helpers/AGENTS.md): Domain module documentation for helpers.
+- [integration/](./integration/AGENTS.md): Domain module documentation for integration.
+- [node/](./node/AGENTS.md): Domain module documentation for node.
+- [unit/](./unit/AGENTS.md): Domain module documentation for unit.

@@ -63,4 +63,4 @@ is a data integrity bug that must surface loudly, not be silenced with a name fa
 
 ## Child DOX Index
 
-- [./heuristic/AGENTS.md](./heuristic/AGENTS.md)
+- [heuristic/](./heuristic/AGENTS.md): Domain module documentation for heuristic.

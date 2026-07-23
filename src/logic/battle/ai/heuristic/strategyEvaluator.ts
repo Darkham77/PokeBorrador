@@ -3,13 +3,13 @@
 // position score and sack order into a StrategicState
 // ============================================================
 
-import type { HeuristicBattleSnapshot, StrategicState } from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
-import type { InferenceEngine } from './inferenceEngine';
-import { evaluateWinConditions } from './winConditions';
-import { evaluateThreats } from './threats';
-import { evaluatePosition } from './position';
-import { calculateSackOrder } from './sackOrder';
+import type { HeuristicBattleSnapshot, StrategicState } from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
+import { evaluateWinConditions } from './winConditions.ts';
+import { evaluateThreats } from './threats.ts';
+import { evaluatePosition } from './position.ts';
+import { calculateSackOrder } from './sackOrder.ts';
 
 export function evaluateStrategicState(
   snapshot: HeuristicBattleSnapshot,

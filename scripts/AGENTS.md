@@ -40,8 +40,8 @@ DevOps / Tooling Engineers.
 
 ## Child DOX Index
 
-- [assets/](./assets/): Conversion, optimization, downloading, and consistency auditing of sprites and images.
-- [database/](./database/): Database schemas backup, restoration, migrations compilation, and seeding.
-- [e2e/](./e2e/AGENTS.md): Playwright-based scenario simulations and test case builders.
-- [maintenance/](./maintenance/): Code quality audit pipelines, local server configurators, temporal migrations, and HMR traps.
-- [validation/](./validation/): Integrity validators for combat FSMs, ability learnsets, translation sheets, and game rules.
+- [assets/](./assets/AGENTS.md): Domain module documentation for assets.
+- [database/](./database/AGENTS.md): Domain module documentation for database.
+- [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
+- [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
+- [validation/](./validation/AGENTS.md): Domain module documentation for validation.

@@ -10,3 +10,7 @@ QA / Core Engine Team.
 
 - Modules must remain decoupled from Vitest.
 - Must only use reactive Vue store mocks to execute the battle state.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

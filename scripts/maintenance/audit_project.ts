@@ -31,7 +31,7 @@ import {
 enableCompileCache();
 
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external']);
-const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js']);
+const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']);
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -51,6 +51,8 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   const isVue = filePath.endsWith('.vue');
   const isLogic = filePath.endsWith('.ts') || filePath.endsWith('.js');
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
+  const isMd = filePath.endsWith('.md');
+
 
   if (isLogic || isVue) {
     if (isVue) {
@@ -162,7 +164,8 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   }
 
   // MODULARITY AUDIT: 300/500/1000 Rule
-  const isDatabaseOrMetadata = filePath.includes('src' + path.sep + 'data' + path.sep) || 
+  const isDatabaseOrMetadata = filePath.endsWith('.md') ||
+                               filePath.includes('src' + path.sep + 'data' + path.sep) || 
                                filePath.includes('scripts' + path.sep) ||
                                filePath.includes('supabase' + path.sep) ||
                                filePath.endsWith('DB.ts') || 
@@ -262,11 +265,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
 
       // 1. Specialized checks
       if (rule.check) {
-        if (rule === config.gpuGaps || rule === config.manualTimersFrontend) {
-          if (!rule.check(content, match, filePath)) continue;
-        } else {
-          if (!rule.check(filePath, match)) continue;
-        }
+        if (!rule.check(content, match, filePath)) continue;
       }
       
       const lineNo = content.substring(0, match.index).split('\n').length + offset;
@@ -900,13 +899,32 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   await traverse(rootDir);
   
   const doxFilesMap = new Map<string, string>();
-  
-  for (const dir of doxDirs) {
+
+  // Cargar todos los AGENTS.md existentes en el proyecto en doxFilesMap
+  async function loadAllDoxFiles(dir: string) {
+
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    const dirName = path.basename(dir);
+    if (IGNORE_DIRS.has(dirName) || (dirName.startsWith('.') && dirName !== '.')) return;
+
     const agentsPath = path.join(dir, 'AGENTS.md');
     try {
       const content = await fs.readFile(agentsPath, 'utf-8');
       doxFilesMap.set(dir, content);
-    } catch (_e) {
+    } catch {}
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        await loadAllDoxFiles(path.join(dir, entry.name));
+      }
+    }
+  }
+
+  await loadAllDoxFiles(rootDir);
+
+  for (const dir of doxDirs) {
+    const agentsPath = path.join(dir, 'AGENTS.md');
+    if (!doxFilesMap.has(dir)) {
       violations.push({
         file: agentsPath,
         line: 1,
@@ -919,11 +937,9 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   }
   
   const rootAgentsPath = path.join(rootDir, 'AGENTS.md');
-  let rootContent = '';
-  try {
-    rootContent = await fs.readFile(rootAgentsPath, 'utf-8');
-    doxFilesMap.set(rootDir, rootContent);
-  } catch (_e) {
+  console.log(styleText('cyan', '📘 Escaneando jerarquía e integridad de índices AGENTS.md / DOX...'));
+
+  if (!doxFilesMap.has(rootDir)) {
     violations.push({
       file: rootAgentsPath,
       line: 1,
@@ -934,11 +950,11 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
     });
   }
 
+
   function findNearestAncestorDoxDir(dir: string): string | null {
     let current = path.dirname(dir);
     while (current !== rootDir) {
-      const rel = path.relative(rootDir, current);
-      if (rel !== 'src' && !IGNORE_DIRS.has(path.basename(current))) {
+      if (doxFilesMap.has(current)) {
         return current;
       }
       current = path.dirname(current);
@@ -957,7 +973,12 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
           const relativeChildPath = path.relative(parentDoxDir, agentsPath);
           const posixPath = relativeChildPath.split(path.sep).join(path.posix.sep);
           const cleanPath = posixPath.startsWith('./') ? posixPath.slice(2) : posixPath;
-          const hasLink = parentContent.includes(cleanPath) || parentContent.includes('./' + cleanPath);
+          const dirOnlyPath = path.dirname(posixPath);
+          const hasLink = parentContent.includes(cleanPath) || 
+                          parentContent.includes('./' + cleanPath) || 
+                          parentContent.includes('[' + dirOnlyPath + '/]') || 
+                          parentContent.includes('(' + dirOnlyPath + '/') || 
+                          parentContent.includes('./' + dirOnlyPath + '/');
           
           if (!hasLink) {
             const parentFile = path.join(parentDoxDir, 'AGENTS.md');
@@ -1049,7 +1070,8 @@ async function main() {
       'css-only': { type: 'boolean' }
     }
   });
-  console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
+  console.log(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
+  console.log(styleText('cyan', '💡 Nota: Para ejecutar la suite completa de todos los módulos (tests, FSM, ítems, migraciones SQL), ejecuta: npm run audit:full'));
   console.log(styleText('cyan', '💡 Info: Se puede usar "--errors-only" en todos los scripts de validación y auditoría para filtrar advertencias.'));
   console.log(styleText('cyan', '💡 Recomendación: Se aconseja utilizar "--summary" para obtener un resumen estructurado.'));
   
@@ -1060,6 +1082,7 @@ async function main() {
     all = await runCssChecker(values.path as string);
   } else {
     // Consistency Check
+    console.log(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
     const syncErrors = await checkZIndexConsistency(!!values.fix);
     const syncViolations: Violation[] = [];
     if (syncErrors.length > 0) {
@@ -1094,9 +1117,17 @@ async function main() {
     }
 
     all = [...syncViolations, ...doxErrors];
+    console.log(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
+    let processed = 0;
+    const total = files.length;
     for (const f of files) {
+      processed++;
+      if (processed % 100 === 0 || processed === total) {
+        console.log(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+      }
       all = all.concat(await auditFile(f, !!values.fix));
     }
+    console.log('');
 
     // SASS Module Migration (solo en --fix)
     if (values.fix) {
@@ -1133,13 +1164,18 @@ async function main() {
     // Integración de Fallow
     console.log(styleText('cyan', '\nEjecutando análisis de Fallow...'));
     if (changedSince) {
+      console.log(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
       all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
       all = all.concat(runFallow('security', ['--changed-since', changedSince]));
     } else {
+      console.log(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
       all = all.concat(runFallow('dupes'));
       all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60']));
+      console.log(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
       all = all.concat(runFallow('security'));
+      console.log(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
       all = all.concat(runFallow('dead-code'));
+      console.log(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
       all = all.concat(runFallow('health'));
     }
 

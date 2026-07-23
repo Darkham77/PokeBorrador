@@ -17,3 +17,7 @@ Frontend Developers / Systems Engineers.
 ## Verification
 
 - Run standard validation scripts.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

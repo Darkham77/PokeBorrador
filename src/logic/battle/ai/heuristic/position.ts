@@ -4,8 +4,8 @@
 // Note: BattleState.isTrapped() removed — use snapshot data only
 // ============================================================
 
-import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition } from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
+import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition } from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 
 const POSITION_WEIGHTS = {
   pokemonAdvantage: 0.20,

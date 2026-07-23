@@ -3,6 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonIVs } from '@/types/pokemon/pokemon'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 interface PokemonConfig {
   id: string
@@ -156,7 +157,7 @@ export function useDebugPokemonCreator() {
   }
 
   function randomizeLevel() {
-    config.value.level = Math.floor(Math.random() * 100) + 1
+    config.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1
   }
 
   function randomizeIVs() {

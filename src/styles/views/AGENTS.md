@@ -20,4 +20,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [box/](./box/AGENTS.md): PC storage box screen layout styles.
+- [box/](./box/AGENTS.md): Domain module documentation for box.

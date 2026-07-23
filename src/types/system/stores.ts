@@ -201,8 +201,10 @@ export interface CompetitionResult {
   ended_at: string;
 }
 
+import type { FactionId } from '../../data/system/constants.ts';
+
 export interface WarStore {
-  faction: 'union' | 'poder' | null;
+  faction: FactionId | null;
   warCoins: number;
   weeklyPoints: number;
   mapDominance: Record<string, DominanceInfo>;

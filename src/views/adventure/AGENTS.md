@@ -4,4 +4,4 @@ Overworld adventure, map exploration, and pathfinding views.
 
 ## Child DOX Index
 
-- [AdventureTestView.vue](./AdventureTestView.vue): Overworld grid rendering and tile-based movement view.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

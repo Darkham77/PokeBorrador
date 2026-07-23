@@ -19,13 +19,13 @@ Frontend Developers.
 
 ## Child DOX Index
 
-- [adventure/](./adventure/AGENTS.md): World movement, simulations, camera coordinates tracking, and layout scales.
-- [battle/](./battle/AGENTS.md): Visual sequences, Phaser canvases coordinate managers, combat cameras, and active status tracking hooks.
-- [effects/](./effects/AGENTS.md): Particle engines and weather visuals multipliers.
-- [map/](./map/AGENTS.md): Map card animations and sprite observers.
-- [modals/](./modals/AGENTS.md): Interactive modal triggers and queue handlers.
-- [inventory/](./inventory/AGENTS.md): Shop layout, filtering, and animation composables.
-- [pokemon/](./pokemon/AGENTS.md): Pokedex search filters and details view logic.
-- [pvp/](./pvp/AGENTS.md): Ranked queue checkers and queue animations triggers.
-- [system/](./system/AGENTS.md): Native back navigation helpers and PWA service updates.
-- [ui/](./ui/AGENTS.md): Application responsive panels, layouts, inputs animations, and dynamic tooltips positioning.
+- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [effects/](./effects/AGENTS.md): Domain module documentation for effects.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [map/](./map/AGENTS.md): Domain module documentation for map.
+- [modals/](./modals/AGENTS.md): Domain module documentation for modals.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
+- [system/](./system/AGENTS.md): Domain module documentation for system.
+- [ui/](./ui/AGENTS.md): Domain module documentation for ui.

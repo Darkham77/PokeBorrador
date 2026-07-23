@@ -33,7 +33,6 @@ Backend / Database Engineers.
 
 ## Child DOX Index
 
-- [backups/](./backups/): Database backups.
-- [migrations/](./migrations/): Schema versioning migrations.
-- [schemas/](./schemas/): Full schema definitions.
-- [temp/](./temp/): Work temporary cache.
+- [backups/](./backups/AGENTS.md): Domain module documentation for backups.
+- [migrations/](./migrations/AGENTS.md): Domain module documentation for migrations.
+- [schemas/](./schemas/AGENTS.md): Domain module documentation for schemas.

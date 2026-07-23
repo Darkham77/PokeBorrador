@@ -18,3 +18,7 @@ QA / Automation Engineers.
 ## Verification
 
 - Run `npm run sim:e2e:breeding` to verify breeding simulations.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

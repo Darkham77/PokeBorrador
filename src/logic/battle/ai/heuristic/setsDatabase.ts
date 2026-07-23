@@ -4,7 +4,7 @@
 // Zero runtime dependency on external/ reference folder.
 // ============================================================
 
-import type { RandomBattleSetEntry } from './types';
+import type { RandomBattleSetEntry } from './types.ts';
 
 interface RawEntry {
   pokemon: string;

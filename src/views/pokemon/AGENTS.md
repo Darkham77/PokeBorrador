@@ -4,4 +4,4 @@ Pokémon catalog and details views.
 
 ## Child DOX Index
 
-- [PokedexView.vue](./PokedexView.vue): Pokemon catalog and details view.
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

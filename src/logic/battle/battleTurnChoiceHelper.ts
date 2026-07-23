@@ -3,7 +3,7 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 
 import type { BattleState } from '@/types/battle/battle'
-import type { ChoiceRequest } from './helpers/requestHelper'
+import type { ChoiceRequest } from './helpers/requestHelper.ts'
 
 function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean): string {
   let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`

@@ -1,7 +1,7 @@
 import { ref, watch, computed, type Ref } from 'vue'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { InventoryItem } from './useMarketPublishInventory'
+import type { InventoryItem } from './useMarketPublishInventory.ts'
 import type { useGTSStore } from '@/stores/gts'
 
 export function useMarketPublishActions(

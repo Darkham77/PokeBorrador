@@ -1,4 +1,4 @@
-import type { MapNode, DijkstraPath } from './mapData'
+import type { MapNode, DijkstraPath } from './mapData.ts'
 
 export function getAdjacentNodes(nodeId: string, connections: string[][]): string[] {
   const adj: string[] = []

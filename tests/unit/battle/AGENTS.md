@@ -18,3 +18,7 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
   const payload: { p1Choice: string; p2Choice?: string } = { p1Choice };
   if (p2Choice !== undefined) payload.p2Choice = p2Choice;
   ```
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

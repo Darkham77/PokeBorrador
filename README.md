@@ -120,7 +120,7 @@ El servidor estará disponible en `http://localhost:5173`.
 
 Para inicializar las tablas necesarias la primera vez:
 
-1. Ejecutá el script [database/schemas/supabase_migration.sql](file:///home/franco/Trabajos/PokeBorrador/database/schemas/supabase_migration.sql) en el SQL Editor de Supabase.
+1. Ejecutá el script [database/schemas/supabase_migration.sql](./database/schemas/supabase_migration.sql) en el SQL Editor de Supabase.
 
 ### Actualizaciones y Migraciones
 
@@ -240,7 +240,7 @@ npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas-fr
 
 #### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)
 
-Si experimentas problemas de conectividad externa o timeouts al conectarte al Supabase del NAS desde fuera de tu red local, consulta el manual detallado en [supabase_infrastructure_manual.md](file:///.agents/skills/project-standards/references/technical/supabase_infrastructure_manual.md).
+Si experimentas problemas de conectividad externa o timeouts al conectarte al Supabase del NAS desde fuera de tu red local, consulta el manual detallado en [supabase_infrastructure_manual.md](./.agents/skills/project-standards/references/technical/supabase_infrastructure_manual.md).
 
 Resumen de comandos MikroTik (Winbox / SSH) para resolver caídas de ruteo asimétrico:
 

@@ -3,9 +3,9 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/win-conditions.ts
 // ============================================================
 
-import type { HeuristicBattleSnapshot, WinCondition } from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
-import type { InferenceEngine } from './inferenceEngine';
+import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

@@ -20,4 +20,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [rpcEmulations/](./rpcEmulations/AGENTS.md): Offline emulation logic for server RPC functions.
+- [rpcEmulations/](./rpcEmulations/AGENTS.md): Domain module documentation for rpcEmulations.

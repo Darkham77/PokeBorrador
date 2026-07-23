@@ -7,6 +7,12 @@ export const ACTIVE_SHOWDOWN_FORMAT = ACTIVE_GENERATION < 5
 export const IMPLEMENTED_GENERATION = 9;
 export const ACTIVE_AI_TEAM_GENERATION_GEN = 1;
 
+export const FACTIONS = {
+  UNION: 'union',
+  POWER: 'poder'
+} as const;
+export type FactionId = typeof FACTIONS[keyof typeof FACTIONS];
+
 
 export const ENABLED_POKEMON_IDS = new Set<string>([
   ...PDEX_ORDER,

@@ -3,7 +3,6 @@ import VirtualEntity from '@/components/battle/VirtualEntity.vue'
 import { ASSET_TYPES } from '@/logic/services/assetService'
 import type { BattleState } from '@/types/battle/battle'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 defineProps<{
   isTrainerVisible: boolean
   battle: BattleState | null
@@ -11,10 +10,9 @@ defineProps<{
   baseEntitySizeEnemy: number
   objectScale: number
   showGuides: boolean
-  getAssetUrl: (type: any, name: string, opts?: Record<string, unknown>) => string
+  getAssetUrl: (type: typeof ASSET_TYPES[keyof typeof ASSET_TYPES], name: string, opts?: Record<string, unknown>) => string
   getTrainerShadowStyle: (url: string, width: number) => Record<string, any>
 }>()
-/* eslint-enable @typescript-eslint/no-explicit-any */
 </script>
 
 <template>

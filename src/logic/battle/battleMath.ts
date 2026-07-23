@@ -150,9 +150,9 @@ export function getEffectiveStatPure(
   const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
   let val = Math.floor(baseVal * stageMult);
 
-  const ab = pokemon.ability;
-  const isSun  = (!isGym || isMoveWeather) && (mechWeather === WEATHER_KEYS.SUN || (mechWeather === WEATHER_KEYS.CLEAR && !isGym && (_dayCycle === 'day' || _dayCycle === 'morning')));
-  const isRain  = (!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.RAIN;
+  const isSun  = ((!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.SUN) || (_dayCycle === 'day' && (!weather || weather.type === 'clear' || weather.type === 'none'));
+  const isRain = (!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.RAIN;
+  const ab = (pokemon.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 
   if (statKey === 'atk') {

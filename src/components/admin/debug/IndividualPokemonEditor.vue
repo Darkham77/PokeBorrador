@@ -112,7 +112,7 @@ function randomizeActiveSpecies() {
 }
 
 function randomizeActiveLevel() {
-  activePoke.value.level = Math.floor(Math.random() * 100) + 1
+  activePoke.value.level = Math.floor(Math.random() * MAX_POKEMON_LEVEL) + 1
 }
 
 function randomizeActiveNature() {
@@ -255,7 +255,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             <span
               class="field-label"
               style="margin-bottom: 0;"
-            >Nivel (1-100)</span>
+            >Nivel (1-{{ MAX_POKEMON_LEVEL }})</span>
             <button
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveLevel"
@@ -267,7 +267,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             v-model.number="activePoke.level"
             type="number"
             min="1"
-            max="100"
+            :max="MAX_POKEMON_LEVEL"
           >
         </div>
 

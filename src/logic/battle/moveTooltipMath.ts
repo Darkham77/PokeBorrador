@@ -10,7 +10,7 @@ import type { Move } from '@/types/pokemon/pokemon';
 export function calculateMoveModifierInfo(
   move: Move,
   weather: string | undefined,
-  cycle: string
+  _cycle: string
 ): { type: string; text: string } | null {
   const m = move;
   const mechWeather = getMechanicalWeather(weather);
@@ -18,9 +18,6 @@ export function calculateMoveModifierInfo(
   const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
   const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
   const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
-  const isDayTime = cycle === 'day' || cycle === 'morning';
-
-  const isSunActive = isSunny || (mechWeather === WEATHER_MECHANICAL.CLEAR && isDayTime);
 
   const moveId = m.id || '';
 
@@ -31,13 +28,13 @@ export function calculateMoveModifierInfo(
   }
 
   if (moveId === 'blizzard') {
-    if (isSnowing) return { type: 'boosted', text: 'Potenciado por Granizo/Ventisca (¡No falla!)' };
+    if (isSnowing) return { type: 'boosted', text: 'Potenciado por Granizo/Nieve (¡No falla!)' };
   }
 
   // Charging Moves
   if (moveId === 'solar_beam' || moveId === 'solar_blade') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x y requiere carga)' };
-    if (isSunActive) return { type: 'boosted', text: 'Carga instantánea por Sol/Horario.' };
+    if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x y requiere carga)' };
   }
 
   // Weather Ball
@@ -195,7 +192,7 @@ export function calculateMoveAccuracy(
   move: Move,
   weather: { type: string; turns: number } | null,
   mechWeather: string,
-  cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
+  _cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
   baseAcc: number,
   accStage: number,
   evaStage: number
@@ -204,8 +201,8 @@ export function calculateMoveAccuracy(
   const accList: { label: string; mult: number | string }[] = [];
 
   if (baseAcc > 0 && baseAcc < 1000) {
-    const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
-    const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'));
+    const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN;
+    const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN;
     const isThunderstorm = weather?.type === 'thunderstorm';
 
     if ((isRainActive || isThunderstorm) && (move.id === 'thunder' || move.id === 'hurricane')) {

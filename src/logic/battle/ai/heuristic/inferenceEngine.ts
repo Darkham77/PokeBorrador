@@ -3,9 +3,9 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/engine.ts
 // ============================================================
 
-import { SetsDatabase } from './setsDatabase';
-import { PokemonTracker } from './pokemonTracker';
-import type { HeuristicBattleSnapshot, HeuristicPokemonState, InferredInfo } from './types';
+import { SetsDatabase } from './setsDatabase.ts';
+import { PokemonTracker } from './pokemonTracker.ts';
+import type { HeuristicBattleSnapshot, HeuristicPokemonState, InferredInfo } from './types.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

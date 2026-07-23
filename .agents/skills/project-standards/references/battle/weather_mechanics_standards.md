@@ -4,6 +4,17 @@ This technical manual unifies advanced combat weather rules (from Core Series, P
 
 ---
 
+## 🏛️ Official Weather Precedence Hierarchy
+
+In full accordance with official Pokémon Showdown rules, combat damage, stat boosts, and move accuracies are governed strictly by active battle weather:
+
+1. **Primal / Extreme Weather** (Desolate Land, Primordial Sea, Delta Stream): Overrides all weather conditions.
+2. **Move & Ability Weather** (Sun, Rain, Sandstorm, Snow/Hail summoned in battle): Standard 5-8 turn weather effects.
+3. **Gym Neutrality**: Gym battles disable environmental map weather (defaulting to `'clear'`), unless a combatant explicitly summons weather during battle.
+4. **Day/Night Cycle Isolation**: The day and night cycle is strictly non-combat (affecting only map spawns, evolutions, and visual UI filters). It does NOT modify move damage or accuracy in combat.
+
+---
+
 ## 🌪️ Advanced Combat Weather Rules
 
 ### 1. Masters EX Passive Weather Skills

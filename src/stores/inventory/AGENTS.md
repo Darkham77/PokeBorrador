@@ -19,3 +19,7 @@ Systems Designers / Inventory Programmers.
 ## Verification
 
 - Run `npm run test:node` and standard lint checks.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

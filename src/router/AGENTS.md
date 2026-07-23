@@ -20,3 +20,7 @@ Frontend Architecture Team.
 ## Verification
 
 - Run standard lint and types checks.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

@@ -3,9 +3,9 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/threats.ts
 // ============================================================
 
-import type { HeuristicBattleSnapshot, ThreatAssessment } from './types';
-import type { HeuristicDamageCalculator } from './damageCalculator';
-import type { InferenceEngine } from './inferenceEngine';
+import type { HeuristicBattleSnapshot, ThreatAssessment } from './types.ts';
+import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { InferenceEngine } from './inferenceEngine.ts';
 
 const SETUP_MOVES = new Set([
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',

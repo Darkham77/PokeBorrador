@@ -34,8 +34,8 @@ These reference manuals (imported from canonical sources) document standard game
 
 | Domain | Reference Documents |
 | :--- | :--- |
-| **Battle Systems** | - [Battle Mechanics](./references/battle/battle.md)<br>- [Battling Basics](./references/battle/battling-basics.md)<br>- [Status Ailments](./references/battle/status-ailments.md) |
-| **Stats & Growth** | - [Stat Mechanics](./references/systems/stats.md)<br>- [Stat Stages](./references/systems/stat-stages.md)<br>- [EVs & Natures](./references/systems/evs-natures-and-math.md)<br>- [Gen I Stat Modification](./references/systems/gen-i-stat-modification.md) |
+| **Battle Systems** | - [Battle Mechanics](./references/battle/battle.md)<br>- [Battling Basics](./references/battle/battling-basics.md)<br>- [Status Ailments](./references/core/status-ailments.md) |
+| **Stats & Growth** | - [Stat Mechanics](./references/systems/stats.md)<br>- [Stat Stages](./references/core/stat-stages.md)<br>- [EVs & Natures](./references/systems/evs-natures-and-math.md)<br>- [Gen I Stat Modification](./references/systems/gen-i-stat-modification.md) |
 | **Evolutions** | - [Evolution List](./references/systems/evolution-list.md) |
 | **Capturing Mechanics** | - [Gen I Capturing](./references/systems/gen-i-capturing.md)<br>- [Gen I Safari Zone](./references/systems/gen-i-safari-zone.md)<br>- [Gen II Capturing](./references/systems/gen-ii-capturing.md)<br>- [Gen III & IV Capturing](./references/systems/gen-iii-iv-capturing.md)<br>- [Gen V Capturing](./references/systems/gen-v-capturing.md)<br>- [Gen VI & VII Capturing](./references/systems/gen-vi-vii-capturing.md)<br>- [Gen VIII Capturing](./references/systems/gen-viii-capturing.md)<br>- [Gen IX Capturing](./references/systems/gen-ix-capturing.md) |
 | **Special Systems** | - [Gen III Roulette](./references/systems/gen-iii-roulette.md)<br>- [Sinnoh Honey Trees](./references/systems/sinnoh_honey-trees.md)<br>- [Pokéwalker](./references/systems/pokewalker.md) |

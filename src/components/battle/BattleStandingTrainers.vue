@@ -3,22 +3,17 @@ import VirtualEntity from '@/components/battle/VirtualEntity.vue'
 import { ASSET_TYPES } from '@/logic/services/assetService'
 import type { BattleState } from '@/types/battle/battle'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 defineProps<{
   showStandingTrainers: boolean
   battle: BattleState | null
+  p1Pos: { x: number; y: number }
   p2Pos: { x: number; y: number }
   baseEntitySizeEnemy: number
   objectScale: number
   showGuides: boolean
-  worldConstants: { SAFE_ZONE_X: number; SAFE_ZONE_Y: number; SAFE_ZONE_HEIGHT: number }
-  baseEntitySizePlayer: number
-  playerBackSpriteUrl: string
-  gameStore: { state: { gender?: string } }
-  getAssetUrl: (type: any, name: string, opts?: Record<string, unknown>) => string
-  getTrainerShadowStyle: (url: string, width: number) => Record<string, any>
+  getAssetUrl: (type: typeof ASSET_TYPES[keyof typeof ASSET_TYPES], name: string, opts?: Record<string, unknown>) => string
+  getTrainerShadowStyle: (url: string, width: number) => Record<string, string>
 }>()
-/* eslint-enable @typescript-eslint/no-explicit-any */
 </script>
 
 <template>

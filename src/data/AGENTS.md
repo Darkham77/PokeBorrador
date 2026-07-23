@@ -22,11 +22,11 @@ Game Designers / Data Maintainers.
 
 ## Child DOX Index
 
-- [battle/](./battle/): Static battle datasets, move definitions, abilities, natures, and type matchups.
-- [breeding/](./breeding/): Static daycare match rates and egg groups mapping.
-- [inventory/](./inventory/): Static inventory item database.
-- [player/](./player/): Trainer settings, custom player classes, cosmetics config, and trainer dialogue databases.
-- [pokemon/](./pokemon/): Static Pokémon data, species database, sprites mappings, evolution triggers, and footprints database.
-- [system/](./system/): General configuration constants, servers configuration, encyclopedic library information, and ranked reward tables.
-- [weather/](./weather/): Environmental spawn rates and cycles configuration.
-- [world/](./world/): Map coordinates, routes assets mapping, gyms/badges configuration, and weather-tables.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [player/](./player/AGENTS.md): Domain module documentation for player.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [system/](./system/AGENTS.md): Domain module documentation for system.
+- [weather/](./weather/AGENTS.md): Domain module documentation for weather.
+- [world/](./world/AGENTS.md): Domain module documentation for world.

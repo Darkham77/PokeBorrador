@@ -16,9 +16,9 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [battle/](./battle/): Unit tests for battle logic, damage formulas, and state machines.
-- [inventory/](./inventory/): Unit tests for bag items, shop, and items actions.
-- [player/](./player/): Unit tests for player classes, levels, and trainer properties.
-- [pokemon/](./pokemon/): Unit tests for breeding, evolution, and pokemon stats/factory.
-- [system/](./system/): Unit tests for authentication, GTS, saving, and DB router query emulations.
-- [world/](./world/): Unit tests for overworld maps, weather Layer, and spawning.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [player/](./player/AGENTS.md): Domain module documentation for player.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [system/](./system/AGENTS.md): Domain module documentation for system.
+- [world/](./world/AGENTS.md): Domain module documentation for world.

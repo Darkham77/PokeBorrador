@@ -10,9 +10,9 @@ import { useEventStore } from '@/stores/events'
 import { getNpcEncounterChances } from '@/logic/weather/weatherUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-import { useRouteSpawnsWild } from './useRouteSpawnsWild'
-import { useRouteSpawnsFishing } from './useRouteSpawnsFishing'
-import { useRouteSpawnsArchaeology } from './useRouteSpawnsArchaeology'
+import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts'
+import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts'
+import { useRouteSpawnsArchaeology } from './useRouteSpawnsArchaeology.ts'
 
 interface ExtendedMapLocation extends MapLocation {
   isVolcanic?: boolean

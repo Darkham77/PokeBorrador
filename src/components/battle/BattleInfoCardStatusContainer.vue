@@ -3,16 +3,16 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import BattleInfoStats from './BattleInfoStats.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { UnifiedStatusItem, AdminStatConfigItem } from '@/types/battle/status'
+
 defineProps<{
-  unifiedStatuses: any[]
+  unifiedStatuses: UnifiedStatusItem[]
   showStatsTable: boolean
-  adminStatConfig: any[]
+  adminStatConfig: AdminStatConfigItem[]
   getStatModifier: (key: string) => number
-  getBreakdown: (key: string) => any
+  getBreakdown: (key: string) => { text: string } | null
   pokemon?: Pokemon | null
 }>()
-/* eslint-enable @typescript-eslint/no-explicit-any */
 </script>
 
 <template>

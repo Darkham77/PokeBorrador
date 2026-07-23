@@ -7,7 +7,7 @@
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
 import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
-import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState } from './types';
+import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState } from './types.ts';
 
 function toId(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '');

@@ -31,10 +31,10 @@ State & Type Architects.
 
 ## Child DOX Index
 
-- [auth/](./auth/AGENTS.md): Authentication type definitions.
-- [battle/](./battle/AGENTS.md): Battle engine data structures and configurations.
-- [breeding/](./breeding/AGENTS.md): Daycare and cloning formulas parameters.
-- [gym/](./gym/AGENTS.md): Gym metrics and rematch types.
-- [inventory/](./inventory/AGENTS.md): Item structures.
-- [pokemon/](./pokemon/AGENTS.md): Pokemon factory objects.
-- [system/](./system/AGENTS.md): Database, environment config, and application store mappings.
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth.
+- [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [gym/](./gym/AGENTS.md): Domain module documentation for gym.
+- [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [system/](./system/AGENTS.md): Domain module documentation for system.

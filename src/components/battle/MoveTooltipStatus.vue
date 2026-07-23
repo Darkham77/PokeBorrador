@@ -1,9 +1,9 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { ParsedStatusEffectInfo } from '@/types/battle/tooltip'
+
 defineProps<{
-  parsedStatusEffect: any
+  parsedStatusEffect: ParsedStatusEffectInfo
 }>()
-/* eslint-enable @typescript-eslint/no-explicit-any */
 </script>
 
 <template>

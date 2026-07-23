@@ -2,7 +2,8 @@
 
 > Este documento describe cómo este proyecto consume `@pkmn/sim` y cómo extender `showdownBridge.ts`.  
 > Para el protocolo oficial completo, ver [`SIM-PROTOCOL.md`](./SIM-PROTOCOL.md).  
-> Para el inventario de cobertura del bridge, ver [`../showdown_bridge_protocol_audit.md`](../showdown_bridge_protocol_audit.md).
+> Para el protocolo oficial completo, ver [`SIM-PROTOCOL.md`](./SIM-PROTOCOL.md).  
+> Para el inventario de cobertura del bridge, ver [`./PROTOCOL-AUDIT.md`](./PROTOCOL-AUDIT.md).
 
 ---
 
@@ -17,7 +18,7 @@ Vue Component
                                     └─► parseShowdownLogLine()  ◄── showdownBridge.ts
 ```
 
-El worker vive en `src/logic/battle/showdown.worker.ts`. Inicializa un `Battle` de `@pkmn/sim` con `gen3customgame@@@!Team Preview` y delega todas las decisiones al orchestrator.
+El worker vive en `src/logic/battle/showdown.worker.ts`. Inicializa un `Battle` de `@pkmn/sim` dinámicamente con `ACTIVE_SHOWDOWN_FORMAT` (`gen${ACTIVE_GENERATION}customgame@@@!Team Preview`) y delega todas las decisiones al orchestrator.
 
 ---
 

@@ -69,11 +69,9 @@ To ensure cross-compatibility and easy navigation within development environment
 
 ### Clickable File Links
 
-- Always use standard markdown link syntax with the `file://` scheme and absolute paths: `[link text](file:///absolute/path/to/file)`.
-- For specific line ranges, append the line anchor: `[link text](file:///absolute/path/to/file#L123-L145)`.
-- **Rigor**: Never surround the link text with backticks. That breaks the rendering and formatting of clickable links in many IDE previews.
-  - ❌ Incorrect: `[`utils.py`](file:///path/to/utils.py)`
-  - 👍 Correct: `[utils.py](file:///path/to/utils.py)`
+- Always use standard markdown link syntax with relative paths: `[link text](./relative/path/to/file)` or `[link text](../path/to/file)`.
+- For specific line ranges, append the line anchor: `[link text](./relative/path/to/file#L123-L145)`.
+- **Absolute Paths Prohibited**: Do NOT use absolute file paths or `file:///` URLs in documentation files (`.md` / `AGENTS.md`) to maintain portability across platforms.
 
 ### Embedding Media
 

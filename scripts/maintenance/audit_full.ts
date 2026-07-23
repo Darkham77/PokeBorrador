@@ -84,15 +84,21 @@ const TASKS: AuditTask[] = [
 ];
 
 function runAllAudits() {
-  console.log(styleText('bold', '\n======================================================'));
-  console.log(styleText('bold', '🚀 INICIANDO AUDITORÍA COMPLETA Y CONSOLIDADA'));
-  console.log(styleText('bold', '======================================================\n'));
+  console.log(styleText('bold', '\n======================================================================'));
+  console.log(styleText('bold', '🚀 SUITE DE AUDITORÍA COMPLETA Y VALIDACIÓN GLOBAL (audit_full.ts)'));
+  console.log(styleText('cyan', 'ℹ️  Ejecuta secuencialmente: Tests Node + Reglas DOX/Código + FSM + Ítems + Habilidades + Moves + Migraciones SQL/Saves'));
+  console.log(styleText('bold', '======================================================================\n'));
 
   const results: { name: string; success: boolean; exitCode: number | null }[] = [];
+  const totalTasks = TASKS.length;
 
-  for (const task of TASKS) {
-    console.log(styleText('bold', `\n--- 📦 Ejecutando: ${task.name} ---`));
-    console.log('------------------------------------------------------');
+  for (let i = 0; i < totalTasks; i++) {
+    const task = TASKS[i]!;
+    const stepNum = i + 1;
+    const pct = Math.round((stepNum / totalTasks) * 100);
+
+    console.log(styleText('bold', `\n--- 📦 [Paso ${stepNum}/${totalTasks} - ${pct}%] Ejecutando: ${task.name} ---`));
+    console.log('----------------------------------------------------------------------');
     
     const proc = spawnSync(task.command, task.args, {
       stdio: 'inherit',

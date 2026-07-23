@@ -10,3 +10,7 @@ QA / Core Engine Team.
 
 - All files here are generated results or tracking databases and should not be modified manually except for setup tasks.
 - `fuzzer_certified_cases.json` is a vital fixture database for browser simulations.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

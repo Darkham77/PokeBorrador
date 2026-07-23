@@ -1,9 +1,9 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { MoveTooltipDetailsInfo } from '@/types/battle/tooltip'
+
 defineProps<{
-  activeDetails: any
+  activeDetails: MoveTooltipDetailsInfo
 }>()
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 function getKoColorClass(koText: string) {
   if (koText.includes('Garantizado (100%)')) return 'ko-guaranteed'

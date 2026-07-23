@@ -65,15 +65,6 @@ These variants apply the same core mechanics but with extreme multipliers for th
 - **Heatwave** (Sun variant): Water damage is reduced to **0x** (evaporated).
 - **Storm** (Rain variant): Fire damage is reduced to **0x** (extinguished).
 
-### 2. Day Cycle (Implicit Weather)
-
-In the absence of active weather (or if it is "Clear"), the game cycle applies an implicit boost to specific types. This multiplier **does NOT stack** with standard Weather (Sun/Rain). Weather always takes precedence.
-
-- **Morning/Day**: Fire-type moves receive a **1.2x boost**. **Thunder/Hurricane** accuracy is reduced to **50%**.
-- **Dusk/Night**: Water-type moves receive a **1.2x boost**. **Thunder/Hurricane** accuracy is increased to **100%**.
-
----
-
 ---
 
 ## 🆙 Experience and Level Curve
@@ -97,8 +88,8 @@ Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
 
 ### 3. Level Limit & Experience Cap
 
-- **`MAX_POKEMON_LEVEL`**: `100` (centralized in `constants.ts`).
-- **Cap Behavior**: When a Pokémon reaches level 100, its current experience (`exp`) is set to `0`, and its experience needed (`expNeeded`) becomes `Infinity`. No additional experience can be gained.
+- **`MAX_POKEMON_LEVEL`**: Single Source of Truth centralized in `src/data/system/constants.ts` (currently `100`).
+- **Cap Behavior**: When a Pokémon reaches `MAX_POKEMON_LEVEL`, its current experience (`exp`) is set to `0`, and its experience needed (`expNeeded`) becomes `Infinity`. No additional experience can be gained.
 
 ## 🧬 Statistics (Stats)
 
@@ -222,10 +213,10 @@ Total_Notes = Math.min(22, 5 + Math.floor(Difficulty_Factor / 7))
 Calculates the base duration (in milliseconds) for the ring to collapse from its outer bound to the perfect target:
 
 ```text
-Speed_Base = Math.max(380, 1100 - (Difficulty_Factor * 7.5))
+Speed_Base = Math.round(Math.max(380, 1100 - (Difficulty_Factor * 7.5)) * 1.1)
 ```
 
-- **Bounds**: Always returns a duration between `380ms` (for rarity 1%, making it collapse extremely fast) and `1092.5ms` (for rarity 100%).
+- **Bounds**: Always returns a duration between `418ms` (for rarity 1%, making it collapse extremely fast) and `1202ms` (for rarity 100%).
 
 ### 3. Fishing Hit Window
 

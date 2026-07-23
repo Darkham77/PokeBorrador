@@ -20,4 +20,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- [hud/](./hud/AGENTS.md): Head-up display (HUD) styling layouts.
+- [hud/](./hud/AGENTS.md): Domain module documentation for hud.
