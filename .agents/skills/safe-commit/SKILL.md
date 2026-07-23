@@ -151,7 +151,7 @@ Only under these conditions may the AI request user intervention.
 5. **Final Validation Pass**:
    - `npm run validate:types`
    - `npm run test`
-   - `npm run build` (enforces audit:full internally and compiles the application)
+   - `npm run build` (enforces audit:full internally and compiles the application). **CRITICAL**: You MUST wait for `npm run build` to complete and verify that it finished with exit code 0. It is STRICTLY FORBIDDEN to proceed to subsequent steps while `npm run build` is running in the background.
    - Re-run `npm run audit:warnings-diff` to verify that everything is 100% clean (0 errors, 0 new warnings).
    - **Health Regression & Minimum Threshold Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. The final score MUST be equal to or greater than the baseline AND strictly **85/100 or higher**. If regressed or under 85, inspect Fallow's recommendations (`npx fallow health --targets --hotspots`), refactor the complexity hotspots, and re-run until the score is strictly **>= 85**.
 
@@ -196,13 +196,15 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 3. **Index Refresh**: If any new directory with an `AGENTS.md` file was created, add it to its parent's `Child DOX Index`.
 4. **Run DOX Audit**: Verify that `npm run audit` runs successfully and reports 0 errors in the `DOX (AGENTS.md) Integrity` category. Any DOX errors must be fixed before proceeding.
 
+> [!IMPORTANT] **Production Build Mandatory Completion Gate**: The background command `npm run build` MUST be awaited and confirmed to finish with exit code 0 before proceeding to Step 4, Step 6, or any commit operation. Proceeding while `npm run build` is running in the background or after it fails is STRICTLY FORBIDDEN.
+
 ### 8. Lessons Extraction (LOCAL) 🛑
 
 Trigger the official **/learn** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal.
 
 This is a **local documentation task** and MUST NOT involve a browser subagent.
 
-> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — HARD STOP**: Once the `learning_proposal.md` artifact is created, you MUST **STOP** immediately. You are FORBIDDEN from calling any other tool (especially `git` or making further file edits) until the user provides explicit approval of the proposed lessons. This stop is about validating *what knowledge to persist*, not about the code itself.
+> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — HARD STOP & TOOL CALL HALT**: Once the `learning_proposal.md` artifact is created, you MUST **STOP calling tools immediately** and yield execution to the user. You are STRICTLY FORBIDDEN from executing any tool calls (especially `git commit`, `git add`, or file modifications) in the same turn or before receiving explicit user approval of the proposed lessons in chat. This stop is an absolute gatekeeper.
 
 - **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
