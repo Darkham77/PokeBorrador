@@ -3,7 +3,7 @@ import { mapVisualToOfficialWeather } from '../../weather/weatherGenerationProvi
 import type { Battle } from '@pkmn/sim';
 import type { BattleCheatManager } from './battleCheatManager.ts';
 import { syncRequestConditionsWithSimulator } from '../cheats.ts';
-import { requiresAction, classifyRequest } from './requestHelper.ts';
+import { classifyRequest } from './requestHelper.ts';
 import { syncSidePokemon } from './showdownSyncHelper.ts';
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
@@ -148,7 +148,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     if (!choiceToExecute && !seat.skip) {
       if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
         const debugObj = window.__VITE_DEBUG__;
-        const runner = new ShowdownBattleRunner(debugObj?.playerChoices || [], debugObj?.enemyChoices || []);
+        const runner = new ShowdownBattleRunner((debugObj?.playerChoices as string[]) || [], (debugObj?.enemyChoices as string[]) || []);
         runner.p1ChoiceIdx = debugObj?.p1ChoiceIdx || 0;
         runner.p2ChoiceIdx = debugObj?.p2ChoiceIdx || 0;
         choiceToExecute = runner.resolveAndConsumeNextChoice(seat.id, battle[seat.id].activeRequest);

@@ -19,7 +19,7 @@ import { parseShowdownSeedForBattle } from '../../../../src/logic/battle/helpers
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { requiresAction, classifyRequest } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { isActionConsumed } from '../../../../src/logic/battle/helpers/choiceIndexer.ts';
 import { executeBattleTurn } from '../../../../src/logic/battle/helpers/showdownExecutor.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
@@ -463,7 +463,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? (err as Error).message : String(err);
-        console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batch.id}: ${errMsg}`, err);
+        const batchIdStr = (batch as unknown as { name?: string; id?: string }).name || (batch as unknown as { name?: string; id?: string }).id || 'unknown';
+        console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batchIdStr}: ${errMsg}`, err);
         batch.movesToTest.forEach(m => {
           if (moveCoverage[m]) {
             moveCoverage[m]!.status = 'FAIL';

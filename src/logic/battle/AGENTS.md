@@ -42,6 +42,9 @@ Frontend Developers / Systems Engineers.
   - Damage residual causes (`[from] psn`, `[from] Sandstorm`, `[from] Leech Seed`, etc.), statuses/cures, volatile start/end (`confusion`, `disable`, `substitute`, etc.), charge moves (`-prepare`), single-turn protection (`Protect`), and field effects MUST produce localized Spanish messages in the combat log.
   - Verification tests (`showdown_protocol_exhaustive_parity.spec.ts`) must dynamically validate that 100% of Showdown's battle protocol commands are handled by the bridge without unhandled fall-throughs.
 
+- **Request State Snapshotting Rule**: When evaluating player choice eligibility in multi-seat battle loops (`executeBattleTurn`), initial request states (`p1KindBefore`, `p2KindBefore`) MUST be snapshotted BEFORE executing any choices. Mid-loop state mutations resulting from a `force-switch` resolution MUST NOT alter the acting eligibility of other seats during the same turn step.
+- **Symmetric Seat Resolution**: Missing or unprovided choices for any seat (`p1`, `p2`, `p3`, `p4`) in `isScriptedReplayMode` MUST be resolved generically inside `showdownExecutor.ts` using `ShowdownBattleRunner`, guaranteeing 1:1 seat parity.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.

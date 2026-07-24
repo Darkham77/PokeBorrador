@@ -2,7 +2,7 @@ import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokemon/
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
-export const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
+const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
   const parts = fullId.split('_')
   const spriteIds = POKEMON_SPRITE_IDS as Record<string, number | string>
 

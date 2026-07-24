@@ -5,7 +5,6 @@ import path from 'node:path';
 import type { TestBatch } from '../generators/fuzzer_team_generator.ts';
 import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
-import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
@@ -124,9 +123,6 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   
   const p1Req = battle.p1.activeRequest;
   const p2Req = battle.p2.activeRequest;
-
-  const p1NeedsAction = requiresAction(p1Req);
-  const p2NeedsAction = requiresAction(p2Req);
 
   const p1Choice = runner.resolveAndConsumeNextChoice('p1', p1Req);
   const p2Choice = runner.resolveAndConsumeNextChoice('p2', p2Req);

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseShowdownLogLine } from '@/logic/battle/showdownBridge';
 import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
 import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';

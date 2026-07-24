@@ -41,9 +41,9 @@ graph TD
         UnitTests --> HealthScore[Health Score Check]
     end
 
-    HealthScore --> ValidationGate{Validation & Build Successful?}
+    HealthScore --> ValidationGate{Zero Audit Errors & Build Successful?}
 
-    ValidationGate -->|No (Build/Test Fail)| ManualFix
+    ValidationGate -->|No (Errors > 0 / Build/Test Fail)| ManualFix
 
     ValidationGate -->|Yes| HealthCompare{Health Score Regressed?}
 
@@ -59,7 +59,11 @@ graph TD
     Recovery --> Cleanup[6. Workspace Cleanup]
     Cleanup --> Walkthrough[7. Walkthrough Generation]
     Walkthrough --> DoxPass[7.1 DOX Update & Pass]
-    DoxPass --> Lessons[8. Lessons Extraction]
+    
+    DoxPass --> PreLessonCheck{Zero Audit Errors Gate Passed?}
+    PreLessonCheck -->|No (Errors Exist)| ManualFix
+    PreLessonCheck -->|Yes (0 Errors)| Lessons[8. Lessons Extraction & Proposal]
+
     Lessons --> AskLessonApproval{Modal Lesson Approved?}
 
     AskLessonApproval -->|No / Modify| Lessons
@@ -74,6 +78,8 @@ graph TD
     style End fill:#f9f,stroke:#333,stroke-width:4px
     style Recovery fill:#ff9,stroke:#333,stroke-width:2px
     style Verification fill:#dfd,stroke:#333,stroke-width:2px
+    style PreLessonCheck fill:#f96,stroke:#333,stroke-width:3px
+    style ValidationGate fill:#f96,stroke:#333,stroke-width:3px
 ```
 
 > [!IMPORTANT]
@@ -117,6 +123,7 @@ For each modified file, ask: **"Does this file contain non-trivial logic?"** —
 You MUST run the warnings-diff gatekeeper tool and fix EVERY issue until a clean pass is achieved.
 
 > [!IMPORTANT] **NO VALIDATION EXEMPTIONS**: Every single step of the validation pipeline is STRICTLY MANDATORY. Under no circumstances (including "trivial" or minor single-token changes) may the agent skip any step, especially the production build (`npm run build`), type check, linting, tests, or audit.
+> [!CAUTION] **STRICT AUDIT & BUILD ERROR BLOCKING GATE**: If `npm run audit`, `npm run audit:warnings-diff`, `npm run validate:types`, `npm run test`, or `npm run build` reports EVEN A SINGLE ERROR (`Errores: > 0` or non-zero exit code), IT IS STRICTLY FORBIDDEN to proceed to Step 4, Step 6, Step 7, or Step 8 (Lessons Extraction / `learning_proposal.md` / `ask_question`). You MUST IMMEDIATELY STOP advancing through the steps, loop back to Step 3.4 (Manual Repair Phase), autonomously fix every single error in the source code, and re-run validation until 0 errors are achieved.
 > [!IMPORTANT] **Zero-Error Mandate for the Entire Project**: The final repository state MUST have exactly ZERO errors (including typescript, compilation, linting, build, SASS, GPU, items, database, security, audit, etc.) across the ENTIRE project. NO ERRORS ARE ALLOWED TO EXIST, REGARDLESS OF WHETHER THEY ARE NEW OR PRE-EXISTING. The agent is STRICTLY REQUIRED to autonomously diagnose, fix, and repair ALL project-wide errors before committing.
 > [!IMPORTANT] **Build Fail Mandate on Audit Errors**: `npm run build` MUST fail if there is even 1 audit error. Under NO circumstances may a build or commit proceed if any audit error remains in the codebase. Every audit error must be resolved at the source before any commit can be created.
 > [!IMPORTANT] **Zero-Warning Mandate for Files Modified Since last Push (`origin/main`)**: Every single file containing local changes compared to GitHub's `origin/main` MUST have all its warnings resolved. You may ONLY ignore a warning in a modified file if that exact warning already existed in the version of the file on `origin/main`.
@@ -202,6 +209,8 @@ Before proceeding to lessons extraction, you MUST perform a complete DOX check:
 > [!IMPORTANT] **Production Build Mandatory Completion Gate**: The background command `npm run build` MUST be awaited and confirmed to finish with exit code 0 before proceeding to Step 4, Step 6, or any commit operation. Proceeding while `npm run build` is running in the background or after it fails is STRICTLY FORBIDDEN.
 
 ### 8. Lessons Extraction & HARD STOP (LOCAL) 🛑
+
+> [!CAUTION] **PRE-LESSON VALIDATION COMPLETION GATE**: BEFORE triggering `/learn-with-docs`, writing `learning_proposal.md`, or calling `ask_question`, you MUST verify that Step 3 completed with EXACTLY ZERO ERRORS (`Errores: 0`). Generating `learning_proposal.md` or asking for lesson approval while project audit/build/test errors exist is a CRITICAL VIOLATION OF SAFE-COMMIT. If any error was logged during Step 3, you MUST ABORT Step 8, return to Step 3.4 (Manual Repair Phase), and fix all errors first.
 
 Trigger the **/learn-with-docs** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal automatically.
 

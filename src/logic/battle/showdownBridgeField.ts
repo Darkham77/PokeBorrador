@@ -3,6 +3,7 @@ import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move } from '../../types/pokemon/pokemon.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /**
  * Maneja eventos de campo y efectos persistentes:
@@ -60,7 +61,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           const translatedName = moveData?.name || moveName;
           target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
           target.disabledTurns = 4;
-          if (!line.includes('[silent]')) store.addLog(`¡El movimiento ${translatedName} de ${target.name} fue desactivado!`, 'log-info', target);
+          if (!line.includes('[silent]')) store.addLog(`¡El ataque ${translatedName} de ${target.name} ha sido desactivado temporalmente!`, 'log-info', target);
         } else if (cleanEffect === 'leechseed') {
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} fue infectado con Drenadoras!`, 'log-info', target);
         } else if (cleanEffect === 'substitute') {
@@ -72,14 +73,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         } else if (cleanEffect === 'encore') {
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} recibió un Bis!`, 'log-info', target);
         } else {
-          let isLockedEffect = cleanEffect === 'lockedmove';
-          if (!isLockedEffect) {
-            try {
-              const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
-              const moveData = pokemonDataProvider.getMoveData(effect);
-              isLockedEffect = moveData?.effect === 'locked_move';
-            } catch (_e) { /* Ignore missing moves */ }
-          }
+          const isLockedEffect = cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move');
           if (isLockedEffect) target.volatileCounters['lockedmove'] = 1;
         }
       }
@@ -98,7 +92,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           } else if (cleanEffect === 'disable') {
             target.disabledMove = null;
             target.disabledTurns = 0;
-            if (!line.includes('[silent]')) store.addLog(`¡El movimiento de ${target.name} ya no está desactivado!`, 'log-info', target);
+            if (!line.includes('[silent]')) store.addLog(`¡El movimiento de ${target.name} volvió a estar disponible!`, 'log-info', target);
           } else if (cleanEffect === 'leechseed') {
             if (!line.includes('[silent]')) store.addLog(`¡${target.name} se liberó de las Drenadoras!`, 'log-info', target);
           } else if (cleanEffect === 'substitute') {
@@ -108,14 +102,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           } else if (cleanEffect === 'taunt') {
             if (!line.includes('[silent]')) store.addLog(`¡El efecto de Mofa sobre ${target.name} terminó!`, 'log-info', target);
           } else {
-            let isLockedEffect = cleanEffect === 'lockedmove';
-            if (!isLockedEffect) {
-              try {
-                const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
-                const moveData = pokemonDataProvider.getMoveData(effect);
-                isLockedEffect = moveData?.effect === 'locked_move';
-              } catch (_e) { /* Ignore missing moves */ }
-            }
+            const isLockedEffect = cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move');
             if (isLockedEffect) delete target.volatileCounters['lockedmove'];
           }
         }

@@ -67,7 +67,8 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
       const { isMatchingUid } = await import('./showdownUidMapper.ts')
       const debugObj = window.__VITE_DEBUG__
-      const runner = new ShowdownBattleRunner(debugObj.playerChoices || [], debugObj.enemyChoices || [])
+      const enemyChoices = (debugObj?.enemyChoices as string[]) || [];
+      const runner = new ShowdownBattleRunner(debugObj.playerChoices || [], enemyChoices)
       runner.p1ChoiceIdx = debugObj.p1ChoiceIdx || 0
       runner.p2ChoiceIdx = debugObj.p2ChoiceIdx || 0
       const rawChoice = runner.resolveAndConsumeNextChoice('p2', active.enemyRequest)
