@@ -12,7 +12,7 @@ import { findMatchingPokemon } from './showdownUidMapper.ts';
 /**
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
  */
-export function filterShowdownLogs(logs: string[]): string[] {
+export function filterShowdownLogs(logs: string[], playerSide: string = 'p1'): string[] {
   const filtered: string[] = [];
   for (let i = 0; i < logs.length; i++) {
     const line = logs[i] || '';
@@ -21,7 +21,7 @@ export function filterShowdownLogs(logs: string[]): string[] {
       const side = parts[2]; // 'p1' o 'p2'
       const secretLine = logs[i + 1] || '';
       const publicLine = logs[i + 2] || '';
-      if (side === 'p1') {
+      if (side === playerSide) {
         if (secretLine) filtered.push(secretLine);
       } else {
         if (publicLine) filtered.push(publicLine);
@@ -128,8 +128,8 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
   if (!p || !e) return;
 
   const getSide = (rawId: string): 'player' | 'enemy' | null => {
-    if (rawId.startsWith('p1a:') || rawId.startsWith('p1:')) return 'player';
-    if (rawId.startsWith('p2a:') || rawId.startsWith('p2:')) return 'enemy';
+    if (/^p1[a-d]?:/.test(rawId)) return 'player';
+    if (/^p2[a-d]?:/.test(rawId)) return 'enemy';
     return null;
   };
 
@@ -158,7 +158,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const gameStore = useGameStore();
-    const team: Pokemon[] = side === 'player' ? (gameStore.state?.team || battle.playerTeam || []) : (battle.enemyTeam || []);
+    const team: Pokemon[] = side === 'player' ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (gameStore.state?.team || [])) : (battle.enemyTeam || []);
     const findPokemonInBattle = (targetUid: string) => {
       console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map((mon: Pokemon | null | undefined) => mon ? `${mon.name} (${mon.uid})` : 'null'));
       const found = team.find((mon: Pokemon | null | undefined) => mon && mon.uid === targetUid);
@@ -208,32 +208,29 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
 
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
+    let matchMon: Pokemon | null = null;
     if (namePart) {
-      const matchMon = findMatchingPokemon(namePart, team);
+      matchMon = findMatchingPokemon(namePart, team) ?? null;
       if (matchMon) {
         console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via suffix`);
         return matchMon;
       }
     }
 
-    // Si es del jugador y se refiere al slot activo en pista (p1a)
-    if (side === 'player' && (rawId.startsWith('p1a:') || rawId === 'p1a')) {
-      if ((battle as unknown as Record<string, unknown>).switchingToPlayer) {
-        return (battle as unknown as Record<string, unknown>).switchingToPlayer as Pokemon;
-      } else if (battle.player) {
-        return battle.player;
-      }
+    // Mapeo unificado basado en UID
+    matchMon = findMatchingPokemon(rawId, team) ?? null;
+
+    if (matchMon) {
+      console.debug(`[E2E-GETPOKE-MATCHMON] Resolved rawId "${rawId}" to team UID "${matchMon.uid}" name "${matchMon.name}"`);
+      return matchMon;
     }
 
-    // Si es del enemigo y se refiere al slot activo en pista (p2a)
-    if (side === 'enemy' && (rawId.startsWith('p2a:') || rawId === 'p2a')) {
-      if ((battle as unknown as Record<string, unknown>).switchingToEnemy) {
-        console.debug(`[E2E-GETPOKE-ACTIVE-SWITCH] Enemy active switch rawId "${rawId}". Returning switchingToEnemy: "${((battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon)?.uid}"`);
-        return (battle as unknown as Record<string, unknown>).switchingToEnemy as Pokemon;
-      } else if (battle.enemy) {
-        console.debug(`[E2E-GETPOKE-ACTIVE] Enemy active slot rawId "${rawId}". Returning active battle.enemy: "${battle.enemy.name}" (UID: ${battle.enemy.uid})`);
-        return battle.enemy;
-      }
+    if (!matchMon) {
+      throw new Error(
+        `[ShowdownBridge] UID resolution failed for "${rawId}". ` +
+        `This indicates a synchronization bug — UID must be present in the tracked team. ` +
+        `Aborting to expose the desync at its source.`
+      );
     }
 
     if (!foundUid && request && request.side && Array.isArray(request.side.pokemon)) {

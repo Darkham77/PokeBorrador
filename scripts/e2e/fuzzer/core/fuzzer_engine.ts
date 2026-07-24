@@ -86,8 +86,8 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
   const baseStats = resolveBaseStats(set.species);
   const natureData = Dex.natures.get(set.nature || 'serious');
   const mappedNature = {
-    up: natureData.plus ? (natureData.plus === 'atk' ? 'Ataque' : natureData.plus === 'def' ? 'Defensa' : natureData.plus === 'spa' ? 'At. Esp' : natureData.plus === 'spd' ? 'Def. Esp' : 'Velocidad') : null,
-    down: natureData.minus ? (natureData.minus === 'atk' ? 'Ataque' : natureData.minus === 'def' ? 'Defensa' : natureData.minus === 'spa' ? 'At. Esp' : natureData.minus === 'spd' ? 'Def. Esp' : 'Velocidad') : null,
+    up: natureData.plus ?? null,
+    down: natureData.minus ?? null,
   };
   
   const calculated = calcStatsPure(
@@ -331,7 +331,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           const p1Req = simBattle.p1.activeRequest;
           const p2Req = simBattle.p2.activeRequest;
 
-          const activeSidePoke = (p1Req as unknown as ChoiceRequest)?.side?.pokemon?.find(p => p.active);
+          const activeSidePoke = (p1Req as unknown as ChoiceRequest)?.side?.pokemon?.find((p: { active: boolean }) => p.active);
           const activeAbilityId = activeSidePoke?.ability ?? '';
           const dynamicTriggerSlot = getTriggerSlot(activeAbilityId.toLowerCase().replace(/[^a-z0-9]/g, ''));
           if (dynamicTriggerSlot !== null) {
@@ -339,14 +339,9 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           }
 
           // Verificar si aún hay movimientos o habilidades pendientes de testear en este lote
-          const hasUntestedItems =
-            batch.movesToTest.some(m => moveCoverage[m]?.status === 'UNTESTED') ||
-            batch.abilitiesToTest.some(a => abilityCoverage[a]?.status === 'UNTESTED');
-          const forceOffensive = !hasUntestedItems;
-
           // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
-          const rawP1Choice = agent1.decide(p1Req as unknown as ChoiceRequest, forceOffensive);
-          const rawP2Choice = agent2.decide(p2Req as unknown as ChoiceRequest, forceOffensive);
+          const rawP1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
+          const rawP2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
           const p1NeedsAction = requiresAction(p1Req);
           const p2NeedsAction = requiresAction(p2Req);
 
@@ -498,6 +493,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       }));
 
       batchRecord.finalState = {
+        isOver: simBattle.ended,
+        winner: simBattle.winner || null,
         p1: p1Final,
         p2: p2Final,
       };

@@ -178,6 +178,15 @@ export const pokemonDataProvider = {
             move = Dex.moves.get(cleanId);
         }
         if (!move || !move.exists) {
+            // Reverse lookup: attempt to map Spanish name (e.g. "Últimapalabra") to English ID ("partingshot")
+            for (const [canonicalId, trans] of Object.entries(MOVE_TRANSLATIONS_ES)) {
+                if (toID(trans.name) === cleanId || trans.name.toLowerCase() === id.trim().toLowerCase()) {
+                    move = Dex.moves.get(canonicalId);
+                    if (move && move.exists) break;
+                }
+            }
+        }
+        if (!move || !move.exists) {
             throw new Error(`Movimiento no encontrado por ID: ${id}`);
         }
 
@@ -374,23 +383,10 @@ export const pokemonDataProvider = {
 
         const sdNature = Dex.natures.get(cleanId);
         
-        // Mapear los nombres de stats de pkms a los locales si existen
-        const statMap: Record<string, string> = {
-            hp: 'HP',
-            atk: 'Ataque',
-            def: 'Defensa',
-            spa: 'At. Esp',
-            spd: 'Def. Esp',
-            spe: 'Velocidad'
-        };
-
-        const upStat = sdNature.plus ? statMap[sdNature.plus] || sdNature.plus : null;
-        const downStat = sdNature.minus ? statMap[sdNature.minus] || sdNature.minus : null;
-
         return {
             name: staticData.name,
-            up: upStat,
-            down: downStat,
+            up: sdNature?.plus ?? staticData.up ?? null,
+            down: sdNature?.minus ?? staticData.down ?? null,
             desc: staticData.desc
         } as NatureBaseData;
     },

@@ -36,9 +36,11 @@ export interface IVs {
   spe: number;
 }
 
+export type StatId = 'atk' | 'def' | 'spa' | 'spd' | 'spe';
+
 export interface NatureData {
-  up: string | null;
-  down: string | null;
+  up: StatId | string | null;
+  down: StatId | string | null;
 }
 
 export interface CalculatedStats {
@@ -51,15 +53,7 @@ export interface CalculatedStats {
 }
 
 /**
- * Deterministically calculates a Pokémon's stats from its base values, IVs, level, and nature.
- *
- * @param level - The Pokémon's level.
- * @param ivs - The individual values (0-31).
- * @param base - The species base stats.
- * @param natureData - Which stat goes up (+10%) and down (-10%).
- * @param isDittoMetalPowder - Special case: Ditto with Metal Powder gets 1.5x Defense and Special Defense.
- * @param evs - The effort values (0-252).
- * @param isDittoQuickPowder - Special case: Ditto with Quick Powder gets 2x Speed.
+ * Calculates stats stat-by-stat according to standard Gen 3+ formulas.
  */
 export function calcStatsPure(
   level: number,
@@ -70,36 +64,38 @@ export function calcStatsPure(
   evs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number } | null,
   isDittoQuickPowder: boolean = false
 ): CalculatedStats {
-  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statName: string) => {
+  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: StatId | string) => {
     let val = Math.floor(((baseVal * 2) + iv + Math.floor(ev / 4)) * lvl / 100 + 5);
-    if (natureData.up === statName) val = Math.floor(val * 1.1);
-    if (natureData.down === statName) val = Math.floor(val * 0.9);
+    if (natureData.up === statId) val = Math.floor(val * 1.1);
+    if (natureData.down === statId) val = Math.floor(val * 0.9);
     return val;
   };
 
-  const hpEv = evs?.hp ?? 0;
-  const atkEv = evs?.atk ?? 0;
-  const defEv = evs?.def ?? 0;
-  const spaEv = evs?.spa ?? 0;
-  const spdEv = evs?.spd ?? 0;
-  const speEv = evs?.spe ?? 0;
+  const clampEv = (val: number) => Math.min(252, Math.max(0, val));
+
+  const hpEv = clampEv(evs?.hp ?? 0);
+  const atkEv = clampEv(evs?.atk ?? 0);
+  const defEv = clampEv(evs?.def ?? 0);
+  const spaEv = clampEv(evs?.spa ?? 0);
+  const spdEv = clampEv(evs?.spd ?? 0);
+  const speEv = clampEv(evs?.spe ?? 0);
 
   const maxHp = base.hp === 1 ? 1 : Math.floor(((base.hp * 2) + ivs.hp + Math.floor(hpEv / 4)) * level / 100 + level + 10);
-  const atk = getStat(base.atk, ivs.atk, atkEv, level, 'Ataque');
-  let def = getStat(base.def, ivs.def, defEv, level, 'Defensa');
+  const atk = getStat(base.atk, ivs.atk, atkEv, level, 'atk');
+  let def = getStat(base.def, ivs.def, defEv, level, 'def');
   
   if (isDittoMetalPowder) {
     def = Math.floor(def * 1.5);
   }
 
-  const spa = getStat(base.spa ?? base.atk, ivs.spa, spaEv, level, 'At. Esp');
-  let spd = getStat(base.spd ?? base.def, ivs.spd, spdEv, level, 'Def. Esp');
+  const spa = getStat(base.spa ?? base.atk, ivs.spa, spaEv, level, 'spa');
+  let spd = getStat(base.spd ?? base.def, ivs.spd, spdEv, level, 'spd');
   
   if (isDittoMetalPowder) {
     spd = Math.floor(spd * 1.5);
   }
 
-  let spe = getStat(base.spe ?? 45, ivs.spe, speEv, level, 'Velocidad');
+  let spe = getStat(base.spe ?? 45, ivs.spe, speEv, level, 'spe');
   if (isDittoQuickPowder) {
     spe = Math.floor(spe * 2);
   }

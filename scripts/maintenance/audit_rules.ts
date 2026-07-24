@@ -293,8 +293,8 @@ export const zIndexAudit: AuditRule = {
 };
 
 export const forbiddenFallbacks: AuditRule = {
-  regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature)\b\([^)]*\)\s*(?:\|\||\?\?)/g,
-  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe. Queda estrictamente prohibido usar valores por defecto o coalescencia nula en búsquedas de ID.`,
+  regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature)\b\([^)]*\)\s*(?:\|\||\?\?)|\b([a-zA-Z0-9_$]+)\.id\s*(?:\|\||\?\?)\s*\3\.name\b/g,
+  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe. Queda strictly PROHIBIDO caer a .name cuando falta un ID.`,
   severity: 'error',
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;

@@ -457,6 +457,7 @@ onUnmounted(() => {
 
             <!-- Botón de Confirmación -->
             <button
+              id="hatch-continue-btn"
               class="btn-confirm"
               @click.stop="handleClose"
             >

@@ -38,6 +38,8 @@ export interface TestBatch {
   enemyChoices?: string[];
   /** Populated by run-tester: per-turn damage/HP snapshots */
   steps?: string[];
+  /** Final state snapshot for validation */
+  finalState?: { isOver?: boolean; winner?: string; turns?: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -200,8 +202,10 @@ export function getTriggerSlot(abilityId: string): number | null {
   return idx !== -1 ? idx + 1 : null;
 }
 
+import { ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
+
 export function generateTestBatches(batchSize: number = 6): TestBatch[] {
-  const dexGen = Dex.forGen(9);
+  const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
   const allMoves = dexGen.moves.all()
     .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle' && m.id !== 'nobleroar' && m.id !== 'orderup');
@@ -283,7 +287,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         gender:  'M',
         item,
         ability: abilityName,
-        nature:  'serious',
+        nature:  'Serious',
         evs: pEvs,
         ivs: pIvs,
         moves: pMoves.length > 0 ? pMoves : ['tackle'],

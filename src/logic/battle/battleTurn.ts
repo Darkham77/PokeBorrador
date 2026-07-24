@@ -276,8 +276,8 @@ export async function runEnemyAction(store: BattleContext) {
     
     // Las sustituciones forzadas por movimientos pivot (U-turn, Chilly Reception, etc.)
     // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
-    const p1Force = !!result.p1Request?.forceSwitch?.length
-    const p2Force = !!result.p2Request?.forceSwitch?.length
+    const p1Force = !!result.p1Request?.forceSwitch?.some((x: boolean) => !!x)
+    const p2Force = !!result.p2Request?.forceSwitch?.some((x: boolean) => !!x)
     if (p1Force && p2Force) {
       await handleForceSwitch(store, 'enemy')
       await handleForceSwitch(store, 'player')
@@ -376,8 +376,8 @@ async function resolvePostTurnSwitchesAndFaints(
   const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
   const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
 
-  const p1Force = !!result.p1Request?.forceSwitch?.length && !playerFainted
-  const p2Force = !!result.p2Request?.forceSwitch?.length && !enemyFainted
+  const p1Force = !!result.p1Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !playerFainted
+  const p2Force = !!result.p2Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !enemyFainted
 
   if (p1Force && p2Force) {
     await handleForceSwitch(store, 'enemy')

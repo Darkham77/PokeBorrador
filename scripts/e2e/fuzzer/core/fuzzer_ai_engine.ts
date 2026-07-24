@@ -14,6 +14,7 @@ import type { PokemonSet } from '@pkmn/sim';
 
 import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
+import { ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { createLocalPoke } from './fuzzer_engine.ts';
 import { getShowdownFormatId, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';
@@ -35,23 +36,20 @@ class HeuristicAgent extends BattleAgent {
   private readonly ai = new HeuristicAI();
 
   constructor(sideId: 'p1' | 'p2') {
-    // Disable periodic switching (0) to force them to fight to the end rather than cycling
     super(sideId, new Set(), null, 0, false);
   }
 
-  override decide(request: ChoiceRequest | null | undefined): string {
-    // Delegate all protocol handling to the parent.
-    // For move requests: use HeuristicAI to pick the best slot.
-    if (!request?.active?.length) return super.decide(request);
+  protected override decideSingleSlot(
+    slotReq: ActiveSlotRequest,
+    slotIdx: number,
+    fullRequest: ChoiceRequest,
+    targetLocation?: number
+  ): string {
+    const team = fullRequest.side?.pokemon ?? [];
+    const activePokemonList = team.filter((p: { active: boolean }) => p.active);
+    const activePoke = activePokemonList[slotIdx] ?? team[slotIdx];
+    if (!activePoke) return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
 
-    const team = request.side?.pokemon ?? [];
-    const activePoke = team.find(p => p.active) ?? team[0];
-    if (!activePoke) return super.decide(request);
-
-    // Build a minimal mock context from the request data for HeuristicAI.
-    // We only need the active Pokémon refs — HeuristicAI.decideMove() uses
-    // them to score moves; the full snapshot is built internally.
-    // If snapshotBuilder throws (missing request data), it degrades gracefully.
     const projectPoke = createLocalPoke({
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
@@ -65,14 +63,16 @@ class HeuristicAgent extends BattleAgent {
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     } as PokemonSet);
 
-    const opponentPoke = team.find(p => !p.active && !p.condition.endsWith('fnt')) ?? team[0];
+    // Extract opponent active pokemon properly instead of using player's benched team
+    const oppTeam = (fullRequest as { oppSide?: { pokemon?: Array<{ active?: boolean; condition?: string; details?: string; ident?: string; moves?: string[]; ability?: string }> } }).oppSide?.pokemon ?? [];
+    const opponentPoke = oppTeam.find((p) => p.active && !p.condition?.endsWith('fnt')) ?? oppTeam[0];
     const oppProject = opponentPoke ? createLocalPoke({
-      species: opponentPoke.details.split(',')[0] ?? opponentPoke.ident,
+      species: opponentPoke.details?.split(',')[0] ?? opponentPoke.ident ?? 'Pikachu',
       level: MAX_POKEMON_LEVEL,
-      moves: opponentPoke.moves,
-      ability: opponentPoke.ability,
+      moves: opponentPoke.moves ?? [],
+      ability: opponentPoke.ability ?? '',
       item: '',
-      name: opponentPoke.ident.split(': ')[1] ?? opponentPoke.ident,
+      name: opponentPoke.ident?.split(': ')[1] ?? opponentPoke.ident ?? 'Opponent',
       gender: 'M',
       nature: 'serious',
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -81,27 +81,28 @@ class HeuristicAgent extends BattleAgent {
 
     const mockCtx = createMockBattleContext(projectPoke, oppProject);
     const battleState = mockCtx.activeBattle.value!;
-    // Provide request data so snapshotBuilder can build a valid context
-    battleState.playerRequest = request as unknown as never;
-    battleState.enemyRequest = request as unknown as never;
-    battleState.playerTeam = [oppProject];
-    battleState.enemyTeam = [projectPoke];
+    battleState.playerRequest = fullRequest as unknown as never;
+    battleState.enemyRequest = fullRequest as unknown as never;
+    battleState.playerTeam = [projectPoke];
+    battleState.enemyTeam = [oppProject];
 
     const chosen = this.ai.decideMove(
       projectPoke, oppProject,
-      { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+      { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
       false,
       mockCtx,
     );
 
+    const mega = Boolean(slotReq.canMegaEvo) && Math.random() < 0.5 ? ' mega' : '';
+    const tera = Boolean(slotReq.canTerastallize) && Math.random() < 0.5 ? ' terastallize' : '';
+
     if (chosen) {
-      const moves = request.active[0]?.moves ?? [];
-      const slot = moves.findIndex(m => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0);
-      if (slot !== -1) return `move ${slot + 1}`;
+      const moves = slotReq.moves ?? [];
+      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0);
+      if (slot !== -1) return `move ${slot + 1}${mega}${tera}`;
     }
 
-    // HeuristicAI couldn't decide or move not available — delegate to parent
-    return super.decide(request);
+    return super.decideSingleSlot(slotReq, slotIdx, fullRequest);
   }
 }
 
@@ -168,8 +169,11 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
         if (p1Choice !== 'pass') p1Choices.push(p1Choice);
         if (p2Choice !== 'pass') p2Choices.push(p2Choice);
 
-        simBattle.choose('p1', p1Choice);
-        simBattle.choose('p2', p2Choice);
+        const p1Ok = simBattle.choose('p1', p1Choice);
+        const p2Ok = simBattle.choose('p2', p2Choice);
+
+        if (!p1Ok) simBattle.choose('p1', 'move 1');
+        if (!p2Ok) simBattle.choose('p2', 'move 1');
 
         // Collect readable step logs (only new ones)
         const newLogs = simBattle.log.slice(lastLogCount);
@@ -190,7 +194,7 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
         const turnAdvanced = simBattle.turn > prevTurn;
         if (!turnAdvanced && p1Choice === 'pass' && p2Choice === 'pass') {
           stallGuard++;
-          if (stallGuard >= 8) break; // genuinely stuck — no more requests available
+          if (stallGuard >= 50) break; // genuinely stuck — no more requests available
         } else if (turnAdvanced) {
           stallGuard = 0; // reset on real progress
         }

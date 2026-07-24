@@ -134,6 +134,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             :description="`Ajusta el nivel del Pokémon (entre 1 y ${MAX_POKEMON_LEVEL}).`"
           >
             <input
+              id="debug-input-level"
               v-model.number="config.level"
               type="number"
               min="1"
@@ -301,6 +302,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             description="Asigna un nombre personalizado al Pokémon."
           >
             <input
+              id="debug-input-nickname"
               v-model="config.nickname"
               type="text"
               placeholder="SIN APODO"
@@ -377,6 +379,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Añade el Pokémon directamente a tu equipo o PC."
         >
           <button
+            id="debug-btn-catch"
             class="btn-vicio-primary"
             @click.stop="executeAction('catch')"
           >
@@ -437,6 +440,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Genera un encuentro salvaje con este Pokémon."
         >
           <button
+            id="debug-btn-encounter"
             class="btn-vicio-danger"
             @click.stop="executeAction('encounter')"
           >

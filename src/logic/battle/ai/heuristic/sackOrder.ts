@@ -3,12 +3,9 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/sack-order.ts
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 const HAZARD_REMOVAL_MOVES = new Set([
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
@@ -34,7 +31,7 @@ export function calculateSackOrder(
   const entries: SackOrderEntry[] = [];
 
   for (const pokemon of myAlive) {
-    const moveIds = pokemon.moves.map(toId);
+    const moveIds = pokemon.moves.map(m => toID(m));
 
     // Win condition potential
     const winScore = (winCondMap.get(pokemon.name) ?? 0) * 0.35;
@@ -58,10 +55,10 @@ export function calculateSackOrder(
     const oppFirstSpeed = oppFirstPoke !== undefined && oppAlive.length > 0
       ? calc.getEffectiveSpeed(oppFirstPoke, snapshot.field, oppSide) : 0;
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
-    const speedControl = (mySpeed > oppFirstSpeed ? 0.10 : 0) + (moveIds.some(m => SPEED_CONTROL_MOVES.has(m)) ? 0.05 : 0);
+    const speedControl = (mySpeed > oppFirstSpeed ? 0.10 : 0) + (moveIds.some((m: string) => SPEED_CONTROL_MOVES.has(m)) ? 0.05 : 0);
 
     // Hazard removal value
-    const hasHazardRemoval = moveIds.some(m => HAZARD_REMOVAL_MOVES.has(m));
+    const hasHazardRemoval = moveIds.some((m: string) => HAZARD_REMOVAL_MOVES.has(m));
     const hazardValue = hasHazardRemoval && snapshot.mySide.sideConditions.size > 0 ? 0.15 : hasHazardRemoval ? 0.05 : 0;
 
     // Matchup usefulness

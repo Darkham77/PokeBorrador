@@ -61,7 +61,7 @@ export function syncSidePokemon(
         if (clientHp <= 0) {
           p.hp = 0;
         } else {
-          p.hp = clientHp;
+          p.hp = Math.min(clientHp, p.maxhp);
         }
 
         if (p.hp <= 0) {

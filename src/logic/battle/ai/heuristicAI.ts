@@ -51,8 +51,11 @@ function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): Heuris
     .filter(m => !m.disabled && m.pp > 0);
 }
 
+import { ACTIVE_GENERATION } from '../../../data/system/constants.ts';
+import type { GenerationNum } from '@smogon/calc';
+
 export class HeuristicAI implements CombatAI {
-  private readonly calc = new HeuristicDamageCalculator();
+  private readonly calc = new HeuristicDamageCalculator(ACTIVE_GENERATION as GenerationNum);
   private readonly inference = new InferenceEngine();
 
   // ──────────────────────────────────────────
@@ -102,7 +105,7 @@ export class HeuristicAI implements CombatAI {
       : { winConditions: [], threats: [], position: { score: 0, factors: { pokemonAdvantage: 0, hpAdvantage: 0, hazardAdvantage: 0, speedAdvantage: 0, typeMatchupAdvantage: 0, statusAdvantage: 0, winConditionViability: 0 } }, sackOrder: [] };
 
     // Alive non-active team members (switch candidates)
-    const switchOptions = snapshot.mySide.pokemon.filter(p => !p.active && !p.fainted);
+    const switchOptions = snapshot.mySide.pokemon.filter((p: { active: boolean; fainted: boolean }) => !p.active && !p.fainted);
     const isTrapped = !!(snapshot.mySide.activePokemon?.volatiles.has('trapped') || snapshot.mySide.activePokemon?.volatiles.has('ingrain'));
 
     // Run heuristic engine
@@ -112,17 +115,17 @@ export class HeuristicAI implements CombatAI {
       // No confident move heuristic fired — pick best damage move as emergency fallback
       const bestDmgMove = matchup.myAttacking[0];
       if (bestDmgMove !== undefined) {
-        const found = enemy.moves.find(m => m && m.id === bestDmgMove.move);
+        const found = enemy.moves.find((m: Move | null) => m && m.id === bestDmgMove.move);
         if (found) return found;
       }
-      return enemy.moves.find(m => !!m) ?? null;
+      return enemy.moves.find((m: Move | null) => !!m) ?? null;
     }
 
     // Map decision back to project Move
     const targetId = decision.moveId;
-    if (!targetId) return enemy.moves.find(m => !!m) ?? null;
-    return enemy.moves.find(m => m && m.id === targetId)
-      ?? enemy.moves.find(m => !!m)
+    if (!targetId) return enemy.moves.find((m: Move | null) => !!m) ?? null;
+    return enemy.moves.find((m: Move | null) => m && m.id === targetId)
+      ?? enemy.moves.find((m: Move | null) => !!m)
       ?? null;
   }
 
@@ -144,7 +147,7 @@ export class HeuristicAI implements CombatAI {
 
     if (!snapshot) return false;
 
-    const activeMoves = snapshot.mySide.activePokemon?.moves.map(id => ({ id, pp: 1, disabled: false })) ?? [];
+    const activeMoves = snapshot.mySide.activePokemon?.moves.map((id: string) => ({ id, pp: 1, disabled: false })) ?? [];
     const matchup = this.calc.calcMatchup(snapshot, activeMoves);
     const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
     const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
@@ -167,7 +170,7 @@ export class HeuristicAI implements CombatAI {
     const oppActive = snapshot.opponentSide.activePokemon;
     if (!oppActive) return this.fallbackSwitchIndex(enemyTeam, currentEnemyUid);
 
-    const candidates = snapshot.mySide.pokemon.filter(p => !p.active && !p.fainted);
+    const candidates = snapshot.mySide.pokemon.filter((p: { active: boolean; fainted: boolean }) => !p.active && !p.fainted);
     const strategic = evaluateStrategicState(snapshot, this.calc, this.inference);
     const decision = pickBestSwitch(snapshot, candidates, strategic, this.calc, this.inference, oppActive);
 

@@ -1,4 +1,4 @@
-import { Dex, Battle } from '@pkmn/sim';
+import { Dex, Battle, toID } from '@pkmn/sim';
 import type { PokemonSet, ID, StatsTable } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';
@@ -19,17 +19,25 @@ export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
     if (set && set.name) {
       const stats = statsMap.get(set.name);
       if (stats) {
+        const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
         const mapped = { ...(stats as Record<string, number>) };
         if (mapped.maxHp !== undefined && mapped.hp === undefined) {
           mapped.hp = mapped.maxHp;
+        }
+        for (const k of Object.keys(mapped)) {
+          if (typeof mapped[k] === 'number') mapped[k] = clampStat(mapped[k]);
         }
         return mapped as unknown as StatsTable;
       }
     }
     if (set && (set as unknown as { stats?: unknown }).stats) {
+      const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
       const stats = { ...((set as unknown as { stats: Record<string, number> }).stats) };
       if (stats.maxHp !== undefined && stats.hp === undefined) {
         stats.hp = stats.maxHp;
+      }
+      for (const k of Object.keys(stats)) {
+        if (typeof stats[k] === 'number') stats[k] = clampStat(stats[k]);
       }
       return stats as unknown as StatsTable;
     }
@@ -67,12 +75,13 @@ export function resolveBaseStats(speciesId: string): BaseStats {
 /**
  * Retorna el ID de formato oficial de Pokémon Showdown.
  */
-export function getShowdownFormatId(gen?: number): ID {
+export function getShowdownFormatId(gen?: number, gameType?: 'singles' | 'doubles'): ID {
   const finalGen = gen !== undefined ? gen : ACTIVE_GENERATION;
+  const prefix = gameType === 'doubles' ? 'doubles' : '';
   if (finalGen < 5) {
-    return `gen${finalGen}customgame` as ID;
+    return `gen${finalGen}${prefix}customgame` as ID;
   }
-  return `gen${finalGen}customgame@@@!Team Preview` as ID;
+  return `gen${finalGen}${prefix}customgame@@@!Team Preview` as ID;
 }
 
 /**
@@ -89,7 +98,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   // Filtrar movimientos no nulos, mapear IDs y permitir cualquier movimiento existente en el Dex global
   const moves = poke.moves
     .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
-    .map(m => m.id as string)
+    .map(m => toID(m.id as string))
     .filter(id => {
       const mData = Dex.moves.get(id);
       return mData.exists;
@@ -101,6 +110,8 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
 
   const speciesName = resolveShowdownSpecies(poke.id);
   const showdownName = getShowdownNickname(poke.uid);
+  const rawNature = (poke.nature || 'serious').trim();
+  const capitalizedNature = rawNature.charAt(0).toUpperCase() + rawNature.slice(1).toLowerCase();
 
   return {
     name: showdownName,
@@ -108,9 +119,13 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     level: poke.level,
     shiny: poke.isShiny || false,
     gender: (poke.gender === 'M' || poke.gender === 'F') ? poke.gender : '',
-    item: poke.heldItem || '',
-    ability: poke.ability,
-    nature: poke.nature,
+    item: poke.heldItem ? toID(poke.heldItem) : '',
+    ability: poke.ability ? toID(poke.ability) : '',
+    nature: capitalizedNature,
+    happiness: poke.friendship ?? 255,
+    pokeball: 'pokeball',
+    hpType: '',
+    gigantamax: false,
     status: poke.status || '',
     ivs: {
       hp: poke.ivs?.hp ?? 31,

@@ -72,6 +72,7 @@ export interface Move {
   counter?: boolean;
   turns?: number;
   sound?: boolean;
+  disabled?: boolean;
 }
 
 export type PokemonMove = Move;
@@ -80,6 +81,8 @@ export interface Pokemon {
   uid: string;
   id: string;
   name: string;
+  species?: string;
+  details?: string;
   nickname?: string | null;
   level: number;
   exp: number;
@@ -98,6 +101,7 @@ export interface Pokemon {
   isFloating?: boolean;
   gender?: 'M' | 'F' | 'N' | null;
   status?: PokemonStatus;
+  fainted?: boolean;
   volatileCounters?: Record<string, number>;
   sleepTurns?: number;
   confused?: number;

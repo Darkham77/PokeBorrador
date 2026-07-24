@@ -123,6 +123,7 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
       const { parseShowdownLogLine } = await import('@/logic/battle/showdownBridge')
       const player = {
         uid: 'p-active',
+        id: 'rayquaza',
         name: 'Rayquaza-Mega',
         hp: 100,
         volatileCounters: {}
@@ -130,7 +131,9 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
       
       const activeBattle = ref({
         player,
-        enemy: { uid: 'e-active', hp: 100 } as unknown as Pokemon
+        enemy: { uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 } as unknown as Pokemon,
+        playerTeam: [player],
+        enemyTeam: [{ uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 }]
       })
       
       const mockCtx = {
@@ -140,7 +143,7 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
         activeMove: ref(null)
       } as unknown as BattleContext
       
-      await parseShowdownLogLine(mockCtx, '|-prepare|p1a: Rayquaza-Mega|Fly')
+      await parseShowdownLogLine(mockCtx, '|-prepare|p1a: Rayquaza-Mega|Fly|[uids]p1a:Rayquaza-Mega=p-active')
       
       expect(player.volatileCounters?.['twoturnmove']).toBe(1)
       expect(player.lastMove?.id).toBe('fly')
@@ -150,6 +153,7 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
       const { parseShowdownLogLine } = await import('@/logic/battle/showdownBridge')
       const player = {
         uid: 'p-active',
+        id: 'rayquaza',
         name: 'Rayquaza-Mega',
         hp: 100,
         volatileCounters: {}
@@ -157,7 +161,9 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
       
       const activeBattle = ref({
         player,
-        enemy: { uid: 'e-active', hp: 100 } as unknown as Pokemon
+        enemy: { uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 } as unknown as Pokemon,
+        playerTeam: [player],
+        enemyTeam: [{ uid: 'e-active', id: 'pikachu', name: 'Pikachu', hp: 100 }]
       })
       
       const mockCtx = {
@@ -168,7 +174,7 @@ describe('Volatile Status & Two-Turn Move Blocking', () => {
       } as unknown as BattleContext
       
       // Simular uso de Enfado (Outrage)
-      await parseShowdownLogLine(mockCtx, '|move|p1a: Rayquaza-Mega|Outrage|p2a: Pikachu')
+      await parseShowdownLogLine(mockCtx, '|move|p1a: Rayquaza-Mega|Outrage|p2a: Pikachu|[uids]p1a:Rayquaza-Mega=p-active,p2a:Pikachu=e-active')
       
       expect(player.volatileCounters?.['lockedmove']).toBe(1)
       expect(player.lastMove?.id).toBe('outrage')

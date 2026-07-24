@@ -1,6 +1,6 @@
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import type { Move, PokemonStatus } from '../../types/pokemon/pokemon.ts';
+import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
@@ -24,15 +24,13 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const moveId = parts[3] || 'Movimiento';
       const moveData = pokemonDataProvider.getMoveData(moveId);
       const translatedName = moveData?.name || moveId;
+      const isFromEffect = line.includes('[from]');
+      const isMissed = line.includes('[miss]') || line.includes('[notarget]');
 
       if (attacker && side) {
         const style = attacker === p ? 'log-player' : 'log-enemy';
-        store.addLog(`¡${attacker.name} usó ${translatedName}!`, style, attacker);
-
+        store.addLog(`¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`, style, attacker);
         const cleanMoveId = toID(moveId);
-        if (cleanMoveId === 'batonpass' && store.activeBattle.value) {
-          store.activeBattle.value.isBatonPass = true;
-        }
 
         attacker.lastMove = {
           id: cleanMoveId,
@@ -55,19 +53,29 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           attacker.volatileCounters['lockedmove'] = 1;
         }
 
-        store.attackerSide.value = side;
-        store.activeMove.value = {
-          id: toID(moveId),
-          name: translatedName,
-          cat: moveData?.cat || 'physical'
-        } as unknown as Move;
+        if (!isFromEffect && !isMissed) {
+          store.attackerSide.value = side;
+          store.activeMove.value = {
+            id: toID(moveId),
+            name: translatedName,
+            type: moveData?.type || 'normal',
+            cat: (moveData?.cat || 'physical') as 'physical' | 'special' | 'status',
+            power: moveData?.power,
+            acc: moveData?.acc,
+            pp: 0,
+            maxPP: 0,
+            priority: moveData?.priority || 0,
+            effect: moveData?.effect || '',
+            target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
+          };
 
-        if (store.animations?.awaitTween) {
-          await store.animations.awaitTween(`attack-${side}`);
+          if (store.animations?.awaitTween) {
+            await store.animations.awaitTween(`attack-${side}`);
+          }
+
+          store.attackerSide.value = null;
+          store.activeMove.value = null;
         }
-
-        store.attackerSide.value = null;
-        store.activeMove.value = null;
       }
       return true;
     }
@@ -97,11 +105,25 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const victim = getPoke(parts[2] || '');
       const hpString = parts[3] || '';
       if (victim && hpString) {
-        const hpParts = hpString.split('/');
-        victim.hp = parseInt(hpParts[0] || '0');
-        if (hpParts[1]) {
-          const parsedMax = parseInt(hpParts[1]);
-          if (!isNaN(parsedMax)) victim.maxHp = parsedMax;
+        // Showdown condition format: "100/200 brn" or "0 fnt" or "100/200"
+        const [hpRatio, statusAppended] = hpString.trim().split(' ');
+        if (hpRatio) {
+          const hpParts = hpRatio.split('/');
+          const parsedHp = parseInt(hpParts[0] || '0', 10);
+          if (hpParts[1]) {
+            const parsedMax = parseInt(hpParts[1], 10);
+            if (!isNaN(parsedMax) && parsedMax > 0) {
+              const realMax = victim.maxHp || parsedMax;
+              victim.hp = Math.round((parsedHp / parsedMax) * realMax);
+            } else {
+              victim.hp = parsedHp;
+            }
+          } else {
+            victim.hp = parsedHp;
+          }
+        }
+        if (statusAppended && statusAppended !== 'fnt' && !victim.status) {
+          victim.status = statusAppended as unknown as Pokemon['status'];
         }
         const fromClause = parts.find(p => p.startsWith('[from]'));
         if (fromClause) {
@@ -141,11 +163,25 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const target = getPoke(parts[2] || '');
       const hpString = parts[3] || '';
       if (target && hpString) {
-        const hpParts = hpString.split('/');
-        target.hp = parseInt(hpParts[0] || '0');
-        if (hpParts[1]) {
-          const parsedMax = parseInt(hpParts[1]);
-          if (!isNaN(parsedMax)) target.maxHp = parsedMax;
+        // Showdown condition format: "100/200 brn" or "100/200"
+        const [hpRatio, statusAppended] = hpString.trim().split(' ');
+        if (hpRatio) {
+          const hpParts = hpRatio.split('/');
+          const parsedHp = parseInt(hpParts[0] || '0', 10);
+          if (hpParts[1]) {
+            const parsedMax = parseInt(hpParts[1], 10);
+            if (!isNaN(parsedMax) && parsedMax > 0) {
+              const realMax = target.maxHp || parsedMax;
+              target.hp = Math.round((parsedHp / parsedMax) * realMax);
+            } else {
+              target.hp = parsedHp;
+            }
+          } else {
+            target.hp = parsedHp;
+          }
+        }
+        if (statusAppended && statusAppended !== 'fnt' && !target.status) {
+          target.status = statusAppended as unknown as Pokemon['status'];
         }
         store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
       }
@@ -157,6 +193,8 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       if (target) {
         const remainedAlive = target.hp > 0;
         target.hp = 0;
+        target.fainted = true;
+        target.status = 'fnt' as unknown as Pokemon['status'];
         if (remainedAlive) {
           store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
         }
@@ -202,6 +240,18 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
+    case '-curestatusall': {
+      if (store.activeBattle.value) {
+        const battle = store.activeBattle.value;
+        if (battle.player) battle.player.status = null;
+        if (battle.enemy) battle.enemy.status = null;
+        if (battle.playerTeam) battle.playerTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
+        if (battle.enemyTeam) battle.enemyTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
+      }
+      store.addLog('¡Todos los Pokémon del equipo fueron curados de sus problemas de estado!', 'log-info');
+      return true;
+    }
+
     case '-sethp': {
       const target = getPoke(parts[2] || '');
       const hpString = parts[3] || '';
@@ -231,15 +281,27 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case 'tie': {
       const winnerName = parts[2] || 'Entrenador';
       let source: 'player' | 'enemy_trainer' = 'enemy_trainer';
-      if (store.activeBattle.value?.playerNames && store.activeBattle.value.playerNames[winnerName] === 'player') {
+      let winnerResult: 'player' | 'enemy' | 'tie' = 'enemy';
+      if (type === 'tie') {
+        winnerResult = 'tie';
+      } else if ((store.activeBattle.value?.playerNames && store.activeBattle.value.playerNames[winnerName] === 'player') || winnerName === 'Player') {
         source = 'player';
-      } else if (winnerName === 'Player') {
-        source = 'player';
+        winnerResult = 'player';
+      }
+      if (store.activeBattle.value) {
+        store.activeBattle.value.over = true;
+        store.activeBattle.value.winnerResult = winnerResult;
       }
       const msg = type === 'tie' ? '¡El combate ha terminado en empate!' : `¡El combate ha terminado! Ganador: ${winnerName}`;
       store.addLog(msg, 'log-info', source);
       return true;
     }
+
+    case 'teampreview':
+    case 'start':
+    case 'poke':
+    case 'clearpoke':
+      return true;
 
     default:
       return false;

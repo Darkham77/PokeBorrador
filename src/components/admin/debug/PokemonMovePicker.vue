@@ -70,6 +70,7 @@ function removeMove(slotIndex: number) {
           description="Asigna automáticamente los últimos 4 ataques aprendidos por nivel."
         >
           <button
+            id="debug-btn-auto-moves"
             class="btn-magic-fill"
             @click.stop="$emit('autoFill')"
           >

@@ -1,4 +1,4 @@
-import { Dex } from '@pkmn/sim';
+import { Dex, toID } from '@pkmn/sim';
 import type {
   PurePokemon,
   PureMove,
@@ -175,7 +175,10 @@ export function getEffectiveStatPure(
     if (ab === 'sandrush' && mechWeather === WEATHER_KEYS.SANDSTORM) abilMult *= 2;
     if (ab === 'slushrush'  && (mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL)) abilMult *= 2;
     val = Math.floor(val * abilMult);
-    if (pokemon.status === 'par') val = Math.floor(val * 0.5);
+    if (pokemon.status === 'par') {
+      const mult = ACTIVE_GENERATION <= 6 ? 0.25 : 0.5;
+      val = Math.floor(val * mult);
+    }
   }
 
   return Math.max(1, val);
@@ -216,8 +219,25 @@ export function calculateDamagePure(
   const aStages: PureBattleStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
   const dStages: PureBattleStages = { [isPhysical ? 'def' : 'spd']: defStages };
 
-  let critRate = (ACTIVE_RULE_SET as number) === 2 ? 0.0625 : (attacker.heldItem === 'scopelens' ? 0.12 : 0.06);
-  if (attacker.focusEnergy) critRate = 0.25;
+  // Crit chance: stage-based per generation (Showdown sim/data/conditions.ts)
+  // Gen 6+: stage 0 = 1/24, 1 = 1/8, 2 = 1/2, 3+ = always
+  // Gen 5:  stage 0 = 1/16, 1 = 1/8, 2 = 1/4, 3 = 1/3, 4+ = always
+  // Gen 1-4: simplified approximation (stage 0 = 1/16)
+  let critStage = 0;
+  if (attacker.heldItem === 'scopelens' || attacker.heldItem === 'razorclaw') critStage += 1;
+  if (attacker.focusEnergy) critStage += 2;
+  const gen = ACTIVE_RULE_SET as number;
+  let critRate: number;
+  if (gen >= 6) {
+    const rates = [1/24, 1/8, 1/2, 1, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1/24;
+  } else if (gen === 5) {
+    const rates = [1/16, 1/8, 1/4, 1/3, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1/16;
+  } else {
+    // Gen 1-4: 1/16 base, doubles per stage up to always
+    critRate = Math.min(1, (1/16) * Math.pow(2, critStage));
+  }
   let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
   if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
 
@@ -228,13 +248,15 @@ export function calculateDamagePure(
     if ((dStages[dKey as keyof PureBattleStages] ?? 0) > 0) dStages[dKey as keyof PureBattleStages] = 0;
   }
 
-  const critMult = isCrit ? ((ACTIVE_RULE_SET as number) === 2 ? 2.0 : 1.5) : 1;
+  // Crit multiplier: Gen 1-5 = 2.0x, Gen 6+ = 1.5x (Showdown sim/battle-actions.ts)
+  const critMult = isCrit ? (gen <= 5 ? 2.0 : 1.5) : 1;
 
   const isGym = ctx.isGym || false;
   const A = getEffectiveStatPure(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
   const D = getEffectiveStatPure(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
 
-  const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
+  // Damage formula matching Showdown's exact integer arithmetic (floor at each step)
+  const baseDamage = Math.floor(Math.floor(Math.floor(2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
   let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplierPure(attacker, { ...move, type: moveType, power, cat: moveCat }, weather);
 
@@ -320,9 +342,9 @@ export function calculateDamagePure(
     }
   }
 
-  const isSolarBeam = move.id === 'solar_beam' || move.id === 'solarbeam' || move.id === 'rayo_solar' ||
-                      move.name?.toLowerCase() === 'rayo solar' || move.name?.toLowerCase() === 'solarbeam' || move.name?.toLowerCase() === 'solar beam';
-  if (isSolarBeam && weather && weather.turns !== 0) {
+  const cleanMoveId = toID(move.id || '');
+  const isSolarMove = cleanMoveId === 'solarbeam' || cleanMoveId === 'solarblade';
+  if (isSolarMove && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_KEYS.SUN;
     const isClear = mechWeather === WEATHER_KEYS.CLEAR;
     if ((!isGym || isMoveWeather) && !isSun && !isClear) {
@@ -331,10 +353,22 @@ export function calculateDamagePure(
   }
 
 
-  const random = randomFactor ?? (0.85 + Math.random() * 0.15);
+  // Random damage roll: Showdown uses integer 85-100 divided by 100 with floor (not a float multiply)
+  const randomInt = randomFactor !== undefined
+    ? Math.round(randomFactor * 100)
+    : (85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
 
+  // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
   const finalDmg = (finalEff > 0 && weatherMult > 0)
-    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * finalEff * random * critMult * weatherMult * itemMult))
+    ? Math.max(1, Math.floor(
+        Math.floor(
+          Math.floor(
+            Math.floor(
+              Math.floor(baseDamage * critMult) * randomInt
+            ) / 100
+          ) * stab
+        ) * finalEff * finalAbilityMult * weatherMult * itemMult
+      ))
     : 0;
 
   return {

@@ -55,43 +55,43 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     // 2. Select Species: Charmander
     const speciesContainer = page.locator('#debug-select-especie');
     await speciesContainer.locator('.search-input').fill('charmander');
-    const charmanderOption = speciesContainer.locator('.option-item').filter({ hasText: 'CHARMANDER' }).first();
+    const charmanderOption = speciesContainer.locator('#option-charmander').first();
     await charmanderOption.waitFor({ state: 'visible', timeout: 5000 });
     await charmanderOption.click();
 
     // 3. Set Level: 42
-    const levelInput = page.locator('.debug-input-group:has-text("NIVEL") input[type="number"]');
+    const levelInput = page.locator('#debug-input-level');
     await levelInput.fill('42');
 
     // 4. Set Nature: Modest
     const natureContainer = page.locator('#debug-select-naturaleza');
     await natureContainer.locator('.search-input').fill('modest');
-    const modestOption = natureContainer.locator('.option-item').filter({ hasText: 'MODEST' }).first();
+    const modestOption = natureContainer.locator('#option-modest').first();
     await modestOption.waitFor({ state: 'visible', timeout: 5000 });
     await modestOption.click();
 
     // 5. Set Ability: Blaze
     const abilityContainer = page.locator('#debug-select-habilidad');
     await abilityContainer.locator('.search-input').fill('blaze');
-    const blazeOption = abilityContainer.locator('.option-item').filter({ hasText: 'BLAZE' }).first();
+    const blazeOption = abilityContainer.locator('#option-blaze').first();
     await blazeOption.waitFor({ state: 'visible', timeout: 5000 });
     await blazeOption.click();
 
     // 6. Set IVs: HP 31, ATK 10, DEF 15, SPA 31, SPD 20, SPE 31
     const ivs = { hp: '31', atk: '10', def: '15', spa: '31', spd: '20', spe: '31' };
     for (const [stat, val] of Object.entries(ivs)) {
-      await page.locator(`.iv-item:has-text("${stat.toUpperCase()}") input`).fill(val);
+      await page.locator(`#debug-iv-${stat}`).fill(val);
     }
 
     // 7. Set Nickname: FUEGUITO
-    const nickInput = page.locator('.debug-input-group:has-text("APODO") input[type="text"]');
+    const nickInput = page.locator('#debug-input-nickname');
     await nickInput.fill('FUEGUITO');
 
     // 8. Auto Fill Moves
-    await page.locator('.moves-section button').filter({ hasText: '🪄' }).click();
+    await page.locator('#debug-btn-auto-moves').click();
 
     // 9. Click "ATRAPAR" (protocol 'catch')
-    await page.locator('.creator-footer button').filter({ hasText: 'ATRAPAR' }).click();
+    await page.locator('#debug-btn-catch').click();
 
     // 10. Close debug modal
     const closeBtn = page.locator('.modal-close-btn').first();
@@ -167,18 +167,18 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'POKES');
 
     // 2. Select Species: Bulbasaur
-    const speciesContainer = page.locator('.search-select-container:has-text("ESPECIE")');
+    const speciesContainer = page.locator('#debug-select-especie');
     await speciesContainer.locator('.search-input').fill('bulbasaur');
-    const bulbasaurOption = speciesContainer.locator('.option-item').filter({ hasText: 'BULBASAUR' }).first();
+    const bulbasaurOption = speciesContainer.locator('#option-bulbasaur').first();
     await bulbasaurOption.waitFor({ state: 'visible', timeout: 5000 });
     await bulbasaurOption.click();
 
     // 3. Set Level: 33
-    const levelInput = page.locator('.debug-input-group:has-text("NIVEL") input[type="number"]');
+    const levelInput = page.locator('#debug-input-level');
     await levelInput.fill('33');
 
     // 4. Click "ENCONTRAR"
-    await page.locator('.creator-footer button').filter({ hasText: 'ENCONTRAR' }).click();
+    await page.locator('#debug-btn-encounter').click();
 
     // 5. Wait for combat to prompt and start it
     await confirmAndStartBattle(page);
@@ -204,14 +204,14 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'ENTREN');
 
     // 2. Preset select
-    const presetSelect = page.locator('.input-group:has(.field-label:has-text("Tema / Arquetipo")) select');
+    const presetSelect = page.locator('#debug-trainer-preset-select');
     await presetSelect.selectOption('luchador');
 
     // 3. Generate random team for trainer (this overwrites trainer name)
-    await page.locator('button:has-text("GENERAR NUEVO EQUIPO AL AZAR")').click();
+    await page.locator('#debug-btn-gen-random-team').click();
 
     // 4. Fill trainer properties (do this after generation to override)
-    const nameInput = page.locator('.input-group:has(.field-label:has-text("Nombre del Entrenador")) input');
+    const nameInput = page.locator('#debug-input-trainer-name');
     await nameInput.waitFor({ state: 'visible', timeout: 5000 });
     await nameInput.fill('BROCK_TEST');
 
@@ -241,7 +241,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'TIEMPO');
 
     // 2. Set sandstorm weather
-    const sandstormBtn = page.locator('.weather-grid button').filter({ hasText: 'T. ARENA' }).first();
+    const sandstormBtn = page.locator('#debug-weather-btn-sandstorm').first();
     await sandstormBtn.waitFor({ state: 'visible', timeout: 5000 });
     await sandstormBtn.click();
 

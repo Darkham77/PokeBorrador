@@ -3,13 +3,10 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/win-conditions.ts
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 const SETUP_MOVES = new Set([
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
@@ -36,8 +33,8 @@ export function evaluateWinConditions(
   const conditions: WinCondition[] = [];
 
   for (const pokemon of myAlive) {
-    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.has(toId(m)));
-    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.has(toId(m)));
+    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.has(toID(m)));
+    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.has(toID(m)));
     let speedAdvantageCount = 0, canKOCount = 0, coverageScore = 0, defensiveScore = 0;
     const threats: string[] = [];
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);

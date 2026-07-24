@@ -3,11 +3,8 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/tracker.ts
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import type { InferredSet, InferredInfo, RandomBattleSetEntry } from './types.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 export class PokemonTracker {
   readonly species: string;
@@ -21,7 +18,7 @@ export class PokemonTracker {
   private tookRecoil = false;
 
   constructor(species: string, baseSets: RandomBattleSetEntry[]) {
-    this.species = toId(species);
+    this.species = toID(species);
     if (baseSets.length === 0) {
       this.sets = [{ moves: [], ability: 'unknown', item: 'unknown', role: 'unknown', probability: 1.0 }];
     } else {
@@ -31,7 +28,7 @@ export class PokemonTracker {
   }
 
   observeMove(moveId: string): void {
-    const mv = toId(moveId);
+    const mv = toID(moveId);
     this.revealedMoves.add(mv);
     if (this.lastMove === mv) this.repeatedMove = mv;
     this.lastMove = mv;
@@ -39,13 +36,13 @@ export class PokemonTracker {
   }
 
   observeAbility(ability: string): void {
-    this.revealedAbility = toId(ability);
-    this.eliminateSetsWithout('ability', this.revealedAbility);
+    this.revealedAbility = toID(ability);
+    if (this.revealedAbility) this.eliminateSetsWithout('ability', this.revealedAbility);
   }
 
   observeItem(item: string): void {
-    this.revealedItem = toId(item);
-    this.eliminateSetsWithout('item', this.revealedItem);
+    this.revealedItem = toID(item);
+    if (this.revealedItem) this.eliminateSetsWithout('item', this.revealedItem);
   }
 
   observeItemConsumed(): void { this.itemConsumed = true; }
@@ -65,7 +62,7 @@ export class PokemonTracker {
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
       for (const move of set.moves) {
-        const mid = toId(move);
+        const mid = toID(move);
         if (!this.revealedMoves.has(mid)) {
           probs.set(mid, Math.min(1.0, (probs.get(mid) ?? 0) + set.probability));
         }
@@ -94,7 +91,7 @@ export class PokemonTracker {
   }
 
   isMoveLikely(moveId: string, threshold = 0.5): boolean {
-    return (this.computeMoveProbabilities().get(toId(moveId)) ?? 0) >= threshold;
+    return (this.computeMoveProbabilities().get(toID(moveId)) ?? 0) >= threshold;
   }
 
   // ──────────────────────────────────────────
@@ -106,9 +103,9 @@ export class PokemonTracker {
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
       const matches = field === 'move'
-        ? set.moves.some(m => toId(m) === value)
-        : field === 'ability' ? toId(set.ability) === value
-        : toId(set.item) === value;
+        ? set.moves.some(m => toID(m) === value)
+        : field === 'ability' ? toID(set.ability) === value
+        : toID(set.item) === value;
       if (!matches) { set.probability = 0; changed = true; }
     }
     if (changed) this.renormalize();
@@ -117,7 +114,7 @@ export class PokemonTracker {
   private adjustItemProbability(itemId: string, multiplier: number): void {
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
-      if (toId(set.item) === itemId) set.probability *= multiplier;
+      if (toID(set.item) === itemId) set.probability *= multiplier;
     }
     this.renormalize();
   }
@@ -137,20 +134,20 @@ export class PokemonTracker {
     const probs = new Map<string, number>();
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
-      const aid = toId(set.ability);
+      const aid = toID(set.ability);
       probs.set(aid, (probs.get(aid) ?? 0) + set.probability);
     }
     return probs;
   }
 
   private computeItemProbabilities(): Map<string, number> {
-    if (this.revealedItem) return new Map([[toId(this.revealedItem), 1.0]]);
+    if (this.revealedItem) return new Map([[toID(this.revealedItem), 1.0]]);
     const probs = new Map<string, number>();
     if (this.repeatedMove) {
       const choice = ['choiceband', 'choicescarf', 'choicespecs'];
       for (const set of this.sets) {
         if (set.probability <= 0) continue;
-        const iid = toId(set.item);
+        const iid = toID(set.item);
         probs.set(iid, (probs.get(iid) ?? 0) + set.probability * (choice.includes(iid) ? 3.0 : 1.0));
       }
       const total = [...probs.values()].reduce((a, b) => a + b, 0);
@@ -159,7 +156,7 @@ export class PokemonTracker {
     }
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
-      const iid = toId(set.item);
+      const iid = toID(set.item);
       probs.set(iid, (probs.get(iid) ?? 0) + set.probability);
     }
     return probs;

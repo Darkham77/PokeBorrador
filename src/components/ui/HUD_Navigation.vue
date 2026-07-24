@@ -477,6 +477,7 @@ onUnmounted(() => {
       position="top"
     >
       <PVHUDButton
+        id="nav-crianza-btn"
         :active="activeTab === 'daycare'"
         :badge-value="crianzaBadgeValue"
         @click.stop="handleTabChange('daycare')"

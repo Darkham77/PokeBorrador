@@ -34,7 +34,8 @@ export class ShowdownTeamMapper {
     if (!team) return;
     team.forEach(set => {
       if (set && set.stats) {
-        statsMap.set(set.name || set.species, set.stats);
+        const baseKey = set.species ? set.species.split('-')[0] : '';
+        statsMap.set(set.name || baseKey || set.species, set.stats);
       }
     });
   }
@@ -55,7 +56,7 @@ export class ShowdownTeamMapper {
 
       req.side.pokemon.forEach((reqMon) => {
         if (reqMon && reqMon.ident) {
-          const cleanIdent = reqMon.ident.replace(/^(p1a|p2a|p1|p2):\s*/, '').trim().toLowerCase();
+          const cleanIdent = reqMon.ident.replace(/^p[1-4][a-d]?:?\s*/, '').trim().toLowerCase();
           const availableMons = simulatorPokemon.filter(p => p && p.uid && !assignedUids.has(p.uid));
           const matched = findPokemonByShowdownName(cleanIdent, availableMons);
           if (matched && matched.uid) {

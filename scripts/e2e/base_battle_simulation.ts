@@ -51,8 +51,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await this.page.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return resolver?.()?.isProcessing || resolver?.()?.currentSubState === 'APPLY_MOVE';
-    }, undefined, { timeout: 5000 }).catch(() => {});
-    await this.page.locator('.modal-overlay').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    }, undefined, { timeout: 5000 });
+    await this.page.locator('.modal-overlay').waitFor({ state: 'detached', timeout: 5000 });
     await waitForWaitInput(this.page);
   }
 
@@ -139,7 +139,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async selectMove(moveIndex = 0): Promise<void> {
     await waitForWaitInput(this.page);
-    const moveBtn = this.page.locator('.move-card-vicio:not([disabled]):not(.is-disabled)').nth(moveIndex);
+    const moveBtn = this.page.locator(`#move-btn-${moveIndex}`).first();
     await clickResilient(moveBtn);
     await waitForWaitInput(this.page);
   }
@@ -186,8 +186,6 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const gameStore = debug.useGameStore();
 
       battleStore.state = null;
-      battleStore.fsm.currentSubState = 'WAIT_INPUT';
-      battleStore.fsm.currentState = 'INITIALIZING';
       gameStore.state.team = [];
 
       // Esperar reactivamente a que Vue procese el desmontado del componente de batalla previo usando ciclos de animación nativos

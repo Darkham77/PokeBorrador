@@ -15,7 +15,7 @@ export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
 }
 
-export interface SynchronizedPokemonState {
+interface SynchronizedPokemonState {
   uid: string;
   hp: number;
   maxHp?: number;
@@ -39,7 +39,11 @@ function syncPokemonState(
     if (monState && monState.uid) {
       const match = findMatchingPokemon(monState.uid, targetList);
       if (match) {
-        match.hp = monState.hp;
+        if (monState.maxHp && match.maxHp && monState.maxHp !== match.maxHp) {
+          match.hp = Math.min(match.maxHp, Math.round((monState.hp / monState.maxHp) * match.maxHp));
+        } else {
+          match.hp = monState.hp;
+        }
         match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? null : monState.status as Pokemon['status'];
         if (monState.fainted || monState.hp <= 0) {
           match.hp = 0;
@@ -152,7 +156,7 @@ export async function executeTurnInWorker(
 
   const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
-  let turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
+  const turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
 
 
 
@@ -208,6 +212,15 @@ export async function executeTurnInWorker(
         return;
       }
       const worker = showdownWorker!
+      if (type === 'ERROR' || type === 'TURN_ERROR') {
+        if (worker.removeEventListener) {
+          worker.removeEventListener('message', handler)
+        } else {
+          worker.onmessage = null
+        }
+        reject(new Error(String(payload || 'Showdown Worker Error')))
+        return
+      }
       if (type === 'TURN_SUCCESS') {
         console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Received TURN_SUCCESS. p1Request pokemon condition:`, JSON.stringify(payload.p1Request?.side?.pokemon?.map((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => ({ uid: p.uid, cond: p.condition }))));
         if (worker.removeEventListener) {
@@ -417,7 +430,7 @@ export function notifyWorkerBattleWin(side: 'p1' | 'p2' = 'p1'): void {
   }
 }
 
-export function notifyWorkerBattleEnd(): void {
+function notifyWorkerBattleEnd(): void {
   if (showdownWorker) {
     showdownWorker.postMessage({
       type: 'FORCED_END_BATTLE',

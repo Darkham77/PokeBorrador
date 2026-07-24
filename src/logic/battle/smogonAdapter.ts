@@ -291,8 +291,8 @@ export function calculateDamageForTooltip(
   playerStages: Partial<BattleStages>,
   enemyStages:  Partial<BattleStages>
 ): SmogonTooltipResult | null {
-  const moveId = toID(move.id ?? move.name ?? '');
-  if (!moveId) return null;
+  if (!move.id) throw new Error(`[smogonAdapter] Move missing immutable ID for move '${move.name}' on ${attacker.name}`);
+  const moveId = toID(move.id);
 
   const cacheKey = [
     attacker.uid, attacker.hp, attacker.status ?? '',
@@ -355,13 +355,18 @@ export function calculateDamageForTooltip(
     if (state.terrain) {
       const normTerrain = state.terrain.toLowerCase();
       const normMoveType = (move.type ?? '').toLowerCase();
-      if (normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
+      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase());
+      const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'Air Balloon';
+      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase());
+      const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'Air Balloon';
+
+      if (isDefGrounded && normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
         terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');
       }
-      if (normTerrain.includes('misty') && normMoveType === 'dragon') {
+      if (isDefGrounded && normTerrain.includes('misty') && normMoveType === 'dragon') {
         terrainReductions.push('Daño Dragón reducido a la mitad por Terreno de Niebla');
       }
-      if (normTerrain.includes('psychic') && smMove.priority > 0) {
+      if (isAtkGrounded && normTerrain.includes('psychic') && smMove.priority > 0) {
         terrainReductions.push('Prioridad bloqueada por Terreno Psíquico');
       }
     }

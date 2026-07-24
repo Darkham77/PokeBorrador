@@ -4,6 +4,7 @@
 // BattleState dependency removed — uses snapshot + isTrapped flag
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,
@@ -14,10 +15,6 @@ import type {
 } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 const HAZARD_REMOVAL_MOVES = new Set(['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin']);
 const SETUP_MOVES = new Set([
@@ -53,7 +50,10 @@ export function heuristicDecision(
   const priorityKO = matchup.myAttacking.find(d => d.isOHKO && d.priority > 0);
   if (priorityKO) {
     const oppPriorityKO = matchup.oppAttacking.find(d => d.isOHKO && d.priority > 0);
-    const oppOutprioritizes = oppPriorityKO !== undefined && oppPriorityKO.priority > priorityKO.priority;
+    const oppOutprioritizes = oppPriorityKO !== undefined && (
+      oppPriorityKO.priority > priorityKO.priority ||
+      (oppPriorityKO.priority === priorityKO.priority && oppSpeed > mySpeed)
+    );
     if (!oppOutprioritizes) {
       const moveIdx = findMoveIndex(availableMoves, priorityKO.move);
       if (moveIdx !== -1) {
@@ -121,7 +121,7 @@ export function heuristicDecision(
   // 6a. Hazard removal — only when hazards threaten win conditions
   // ═══════════════════════════════════════
   if (snapshot.mySide.sideConditions.size > 0) {
-    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.has(toId(m.id)));
+    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.has(toID(m.id)));
     if (removalMove && myActive.hpPercent > 40 && !guaranteedKO) {
       if (hazardsThreatenTeam(snapshot, strategic)) {
         const moveIdx = findMoveIndex(availableMoves, removalMove.id);
@@ -140,7 +140,7 @@ export function heuristicDecision(
   // 6b. Set up hazards when safe
   // ═══════════════════════════════════════
   if (!snapshot.opponentSide.sideConditions.has('stealthrock') && myActive.hpPercent > 60) {
-    const hazardMove = availableMoves.find(m => HAZARD_MOVES.has(toId(m.id)));
+    const hazardMove = availableMoves.find(m => HAZARD_MOVES.has(toID(m.id)));
     if (hazardMove) {
       const worstOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
       if (worstOppDmg < 50) {
@@ -159,12 +159,12 @@ export function heuristicDecision(
   // ═══════════════════════════════════════
   // 7. Setup opportunity
   // ═══════════════════════════════════════
-  const setupMove = availableMoves.find(m => SETUP_MOVES.has(toId(m.id)));
+  const setupMove = availableMoves.find(m => SETUP_MOVES.has(toID(m.id)));
   if (setupMove && myActive.hpPercent > 60) {
     const worstOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
     const isWinCond = strategic.winConditions.length > 0 &&
       strategic.winConditions[0]?.pokemon === myActive.name;
-    const oppLocked = myActive.volatiles.has('choicelock') || myActive.volatiles.has('mustrecharge');
+    const oppLocked = oppActive.volatiles.has('choicelock') || oppActive.volatiles.has('mustrecharge');
     const oppCantThreaten = worstOppDmg < 45;
     const oppLowHp = oppActive.hpPercent < 25;
     const isSafe = oppCantThreaten || oppLocked || (iOutspeed && oppLowHp);
@@ -185,7 +185,7 @@ export function heuristicDecision(
   // 8a. Pivot — U-turn / Volt Switch when matchup is unfavorable
   // ═══════════════════════════════════════
   if (!isTrapped && switchOptions.length > 0) {
-    const pivotMove = availableMoves.find(m => PIVOT_MOVES.has(toId(m.id)));
+    const pivotMove = availableMoves.find(m => PIVOT_MOVES.has(toID(m.id)));
     if (pivotMove) {
       const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
       const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
@@ -294,7 +294,7 @@ export function pickBestSwitch(
 // ────────────────────────────────────────
 
 function findMoveIndex(moves: HeuristicMoveInfo[], moveId: string): number {
-  return moves.findIndex(m => toId(m.id) === toId(moveId) && !m.disabled && m.pp > 0);
+  return moves.findIndex(m => toID(m.id) === toID(moveId) && !m.disabled && m.pp > 0);
 }
 
 function hazardsThreatenTeam(snapshot: HeuristicBattleSnapshot, strategic: StrategicState): boolean {

@@ -50,8 +50,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     opponentId: null, opponentName: 'Rival', opponentElo: 1000,
     phase: 'sync', myTeam: [], enemyTeam: [],
     myActiveIdx: 0, enemyActiveIdx: 0, myHp: [], enemyHp: [],
-    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
-    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
     myPick: null, enemyPick: null, logs: [], deadline: null,
   })
 

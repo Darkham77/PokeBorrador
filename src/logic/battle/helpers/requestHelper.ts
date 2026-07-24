@@ -11,9 +11,14 @@ interface ChoiceRequestPokemon {
 export interface ChoiceRequest {
   wait?: boolean;
   teamPreview?: boolean;
-  forceSwitch?: Array<unknown> | null;
+  forceSwitch?: Array<boolean | null> | null;
   active?: Array<{
     trapped?: boolean;
+    maybeTrapped?: boolean;
+    canMegaEvo?: boolean;
+    canZMove?: Array<{ move: string; target: string } | false> | null;
+    canDynamax?: boolean;
+    canTerastallize?: string | null;
     moves?: Array<{
       move?: string;
       id: string;
@@ -28,6 +33,8 @@ export interface ChoiceRequest {
     id?: string;
     pokemon: ChoiceRequestPokemon[];
   };
+  requestType?: 'move' | 'switch' | 'team' | 'wait';
+  noCancel?: boolean;
 }
 
 export type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'move' | 'wait';

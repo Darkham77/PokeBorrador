@@ -1,5 +1,6 @@
 // fallow-ignore-file security-sink unit-size
 import { type Page, type Locator, expect } from '@playwright/test';
+import { toID } from '@pkmn/sim';
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
   const cleanOptions = { ...options };
@@ -38,13 +39,12 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         }
 
         console.debug(`[E2E-RETRY] Element transitioning, retrying click (${i + 1}/5)...`);
-        await locator.page().waitForTimeout(100);
+        await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: 1000 }).catch(() => null);
         continue;
       }
-      throw err;
     }
   }
-  await locator.click({ force: true, ...cleanOptions });
+  throw new Error(`[E2E-CLICK-FAILED] Click failed after 5 retries on locator without force bypass.`);
 }
 
 export interface BattleLogEntry {
@@ -239,7 +239,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     return !resolver().isProcessing;
-  }, undefined, { timeout: 2000 }).catch(() => {});
+  }, undefined, { timeout: 2000 });
 
   const isProcessing = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -444,8 +444,8 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           await bagBtn.waitFor({ state: 'visible', timeout: 5000 });
           await clickResilient(bagBtn, { timeout: 5000 });
 
-          // Esperar a que aparezca la tarjeta en el modal de la mochila
-          const backpackItem = page.locator('.inventory-item-card', { hasText: translatedName }).first();
+          // Esperar a que aparezca la tarjeta en el modal de la mochila mediante ID estricto de ítem
+          const backpackItem = page.locator(`#inventory-item-${toID(translatedName)}, .inventory-item-card`).first();
           await backpackItem.waitFor({ state: 'visible', timeout: 5000 });
           await clickResilient(backpackItem, { timeout: 5000 });
         }
@@ -480,7 +480,6 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
        throw e;
      }
    }
-   await page.waitForTimeout(30);
    return false;
  }
 
@@ -572,6 +571,15 @@ export async function verifyHpParity(page: Page) {
       const enemyHp = store.state?.enemy?.hp ?? 0;
       const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
 
+      // Check backend Showdown engine HP parity if activeBattle runner is present
+      const simBattle = (window as unknown as { __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } } }).__SIMULATOR_BATTLE__;
+      if (simBattle) {
+        const simP1Hp = simBattle.p1?.active?.[0]?.hp;
+        const simP2Hp = simBattle.p2?.active?.[0]?.hp;
+        if (simP1Hp !== undefined && simP1Hp !== playerHp) return false;
+        if (simP2Hp !== undefined && simP2Hp !== enemyHp) return false;
+      }
+
       if (playerHp > 0) {
         const el = document.querySelector('.player-card .hp-values');
         const text = el?.textContent ?? '';
@@ -618,7 +626,7 @@ export async function executeAutoBattle(
   await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     return !!resolver?.().state;
-  }, undefined, { timeout: 10000 }).catch(() => {});
+  }, undefined, { timeout: 10000 });
 
   let over = false;
   while (!over) {
@@ -672,7 +680,7 @@ export async function executeAutoBattle(
           const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
           const store = resolver?.();
           return !store?.state || store.state.over;
-        }, undefined, { timeout: 15000 }).catch(() => {});
+        }, undefined, { timeout: 15000 });
         over = true;
         break;
       }
@@ -685,7 +693,7 @@ export async function executeAutoBattle(
         const sub = String(store.currentSubState || '');
         const bState = store.state as unknown as Record<string, unknown>;
         return !store.isProcessing && !store.isIntroAnimating && !bState?.switchingToPlayer && (sub === 'WAIT_INPUT' || sub === 'SWITCH_MENU');
-      }, undefined, { timeout: 3000 }).catch(() => {});
+      }, undefined, { timeout: 3000 });
     }
 
     if (over) break;

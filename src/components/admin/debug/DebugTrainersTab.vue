@@ -143,7 +143,10 @@ onMounted(() => {
           style="grid-column: span 2;"
         >
           <span class="field-label">Tema / Arquetipo (Preset)</span>
-          <select v-model="selectedPreset">
+          <select
+            id="debug-trainer-preset-select"
+            v-model="selectedPreset"
+          >
             <option 
               v-for="p in ARCHETYPE_PRESETS" 
               :key="p.id" 
@@ -160,6 +163,7 @@ onMounted(() => {
         style="margin-top: 12px;"
       >
         <button 
+          id="debug-btn-gen-random-team"
           class="btn-vicio-success sm"
           style="width: 100%; height: 32px;"
           @click.stop="generateRandomTeam"
@@ -209,6 +213,7 @@ onMounted(() => {
               </button>
             </div>
             <input 
+              id="debug-input-trainer-name"
               v-model="trainerName" 
               type="text" 
               placeholder="Nombre..."

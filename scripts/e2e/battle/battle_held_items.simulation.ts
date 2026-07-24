@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForWaitInput, verifyHpParity, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class HeldItemsSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -111,6 +111,7 @@ test.describe('E2E Held Items Verification', () => {
 
     // Turno 1: Substitute
     await sim.selectMove(0);
+    await verifyHpParity(page);
 
     const midHp = (await sim.getPlayerHpInfo()).hp;
 

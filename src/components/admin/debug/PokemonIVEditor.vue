@@ -24,6 +24,7 @@ const emit = defineEmits<{
         >
           <label>{{ stat.toUpperCase() }}</label>
           <input
+            :id="`debug-iv-${stat}`"
             :value="val"
             type="number"
             min="0"

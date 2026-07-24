@@ -5,7 +5,7 @@
 // Both teams are fully random: 6 Pokémon at MAX_POKEMON_LEVEL with valid
 // learnset-based movesets, calculated stats, and UIDs.
 //
-import { Dex } from '@pkmn/sim';
+import { Dex, toID } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
 import crypto from 'node:crypto';
 import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
@@ -24,7 +24,7 @@ const dexGen = Dex.forGen(ACTIVE_GENERATION);
 // ---------------------------------------------------------------------------
 const SPECIES_POOL: string[] = dexGen.species
   .all()
-  .filter(s => s.exists && !s.isNonstandard && !s.forme?.includes('Totem'))
+  .filter(s => s.exists && !s.isNonstandard && !s.forme?.includes('Totem') && !s.battleOnly)
   .map(s => s.id);
 
 // ---------------------------------------------------------------------------
@@ -60,8 +60,8 @@ async function buildValidMoveset(speciesId: string): Promise<string[]> {
 
   if (learnsetData?.learnset) {
     for (const [moveId, sources] of Object.entries(learnsetData.learnset)) {
-      const isGen9 = sources.some(src => src.startsWith('9'));
-      if (!isGen9) continue;
+      const isCurrentGen = sources.some(src => src.startsWith(String(ACTIVE_GENERATION)));
+      if (!isCurrentGen) continue;
       const move = dexGen.moves.get(moveId);
       if (!move.exists || move.isNonstandard || move.id === 'struggle') continue;
       if (!isSafeMove(move.id)) continue;
@@ -114,7 +114,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
   const speciesData = dexGen.species.get(speciesId);
 
   const moveset = await buildValidMoveset(speciesId);
-  const ability = speciesData.abilities[0] ?? 'pressure';
+  const ability = toID(speciesData.abilities[0] ?? 'pressure');
 
   const uid = crypto.randomUUID();
   const nickname = getShowdownNickname(uid);
@@ -130,7 +130,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
 
   return {
     name: nickname,
-    species: speciesData.name,
+    species: toID(speciesData.name),
     level: MAX_POKEMON_LEVEL,
     gender: 'M',
     item: '',

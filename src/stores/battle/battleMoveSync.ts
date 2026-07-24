@@ -21,9 +21,27 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: 'pl
     if (match) {
       match.pp = reqMove.pp ?? 0
       match.maxPP = reqMove.maxpp ?? 0
+      match.disabled = reqMove.disabled === true
       return match
     }
     
+    // Struggle has no database entry — build a minimal descriptor inline
+    if (moveId === 'struggle') {
+      return {
+        id: 'struggle',
+        name: 'Forcejeo',
+        type: 'normal',
+        cat: 'physical' as const,
+        power: 50,
+        acc: undefined,
+        pp: 1,
+        maxPP: 1,
+        priority: 0,
+        effect: 'recoil',
+        target: 'normal',
+        disabled: false
+      }
+    }
     const md = pokemonDataProvider.getMoveData(moveId)
     if (!md) {
       throw new Error(`[syncActiveMovesFromRequest] Movimiento no encontrado por ID en la base de datos: ${moveId}`)
@@ -42,7 +60,8 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: 'pl
       maxPP: reqMove.maxpp ?? 0,
       priority: md.priority || 0,
       effect: md.effect || '',
-      target: (md as { target?: string }).target || 'normal'
+      target: (md as { target?: string }).target || 'normal',
+      disabled: reqMove.disabled === true
     }
   })
   

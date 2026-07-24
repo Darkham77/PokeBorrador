@@ -40,9 +40,10 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
       p.status = p.maxhp !== undefined ? '' : null;
       
       // Resucitar explícita e incondicionalmente al Pokémon en el simulador
-      const monObj = p as unknown as { fainted: boolean; faintQueued: boolean };
+      const monObj = p as unknown as { fainted: boolean; faintQueued: boolean; switchFlag: boolean };
       monObj.fainted = false;
       monObj.faintQueued = false;
+      monObj.switchFlag = false;
 
       clearPokemonFromFaintQueue(side, p);
 
@@ -58,6 +59,9 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   });
   if (side.pokemonLeft !== undefined) {
     side.pokemonLeft = side.pokemon.filter(p => p && !p.fainted).length;
+  }
+  if (side.activeRequest) {
+    delete (side.activeRequest as unknown as { forceSwitch?: boolean[] }).forceSwitch;
   }
 }
 

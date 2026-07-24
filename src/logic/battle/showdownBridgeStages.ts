@@ -1,5 +1,12 @@
 import type { SBCtx } from './showdownBridgeCtx';
 
+/** 
+ * NATIVE SHOWDOWN STAT STAGE KEYS
+ * Showdown natively emits: atk, def, spa, spd, spe, accuracy, evasion
+ */
+export const SHOWDOWN_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
+type ShowdownStatKey = typeof SHOWDOWN_STAT_KEYS[number];
+
 /**
  * Maneja eventos de cambio de stats (stages):
  * -boost, -setboost, -unboost, -swapboost, -invertboost,
@@ -15,19 +22,19 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const stat = parts[3] || '';
       const amount = parseInt(parts[4] || '1');
-      if (target) {
+      if (target && SHOWDOWN_STAT_KEYS.includes(stat as ShowdownStatKey)) {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
-        if (stages && stat in stages) {
-          const key = stat as keyof typeof stages;
+        if (stages) {
+          const key = stat as ShowdownStatKey;
           if (type === '-setboost') {
             stages[key] = amount;
           } else {
             stages[key] = Math.min(6, (stages[key] || 0) + amount);
           }
           const msg = amount === 6
-            ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!`
-            : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`;
+            ? `¡El ${key.toUpperCase()} de ${target.name} se maximizó!`
+            : `¡El ${key.toUpperCase()} de ${target.name} aumentó!`;
           store.addLog(msg, 'log-info', target);
         }
       }
@@ -38,13 +45,13 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const stat = parts[3] || '';
       const amount = parseInt(parts[4] || '1');
-      if (target) {
+      if (target && SHOWDOWN_STAT_KEYS.includes(stat as ShowdownStatKey)) {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
-        if (stages && stat in stages) {
-          const key = stat as keyof typeof stages;
+        if (stages) {
+          const key = stat as ShowdownStatKey;
           stages[key] = Math.max(-6, (stages[key] || 0) - amount);
-          store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target);
+          store.addLog(`¡El ${key.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target);
         }
       }
       return true;
@@ -55,6 +62,17 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       const src = getPoke(parts[2] || '');
       const tgt = getPoke(parts[3] || '');
       if (src && tgt) {
+        const srcSide = src === p ? 'player' : 'enemy';
+        const tgtSide = tgt === p ? 'player' : 'enemy';
+        const srcStages = srcSide === 'player' ? store.playerStages.value : store.enemyStages.value;
+        const tgtStages = tgtSide === 'player' ? store.playerStages.value : store.enemyStages.value;
+        if (srcStages && tgtStages) {
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            const srcVal = srcStages[key] || 0;
+            srcStages[key] = tgtStages[key] || 0;
+            tgtStages[key] = srcVal;
+          }
+        }
         store.addLog(`¡${src.name} e ${tgt.name} intercambiaron sus stats!`, 'log-info', src);
       }
       return true;
@@ -67,9 +85,9 @@ export function handleStageEvents(ctx: SBCtx): boolean {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
-          (Object.keys(stages) as Array<keyof typeof stages>).forEach(k => {
-            stages[k] = -(stages[k] || 0);
-          });
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            stages[key] = -(stages[key] || 0);
+          }
         }
         store.addLog(`¡Los stats de ${target.name} se invirtieron!`, 'log-info', target);
       }
@@ -83,7 +101,9 @@ export function handleStageEvents(ctx: SBCtx): boolean {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
-          (Object.keys(stages) as Array<keyof typeof stages>).forEach(k => { stages[k] = 0; });
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            stages[key] = 0;
+          }
         }
         store.addLog(`¡Los stats de ${target.name} volvieron a la normalidad!`, 'log-info', target);
       }
@@ -93,12 +113,14 @@ export function handleStageEvents(ctx: SBCtx): boolean {
     case '-clearallboost': {
       if (line.includes('[silent]')) return true;
       if (store.playerStages.value) {
-        (Object.keys(store.playerStages.value) as Array<keyof typeof store.playerStages.value>)
-          .forEach(k => { store.playerStages.value[k] = 0; });
+        for (const key of SHOWDOWN_STAT_KEYS) {
+          store.playerStages.value[key] = 0;
+        }
       }
       if (store.enemyStages.value) {
-        (Object.keys(store.enemyStages.value) as Array<keyof typeof store.enemyStages.value>)
-          .forEach(k => { store.enemyStages.value[k] = 0; });
+        for (const key of SHOWDOWN_STAT_KEYS) {
+          store.enemyStages.value[key] = 0;
+        }
       }
       store.addLog('¡Todos los cambios de stats se eliminaron!', 'log-info', '💨');
       return true;
@@ -106,19 +128,19 @@ export function handleStageEvents(ctx: SBCtx): boolean {
 
     case '-copyboost': {
       if (line.includes('[silent]')) return true;
-      const src = getPoke(parts[2] || '');
-      const tgt = getPoke(parts[3] || '');
-      if (src && tgt) {
-        const srcSide = src === p ? 'player' : 'enemy';
-        const tgtSide = tgt === p ? 'player' : 'enemy';
+      const recipient = getPoke(parts[2] || '');
+      const source = getPoke(parts[3] || '');
+      if (recipient && source) {
+        const recSide = recipient === p ? 'player' : 'enemy';
+        const srcSide = source === p ? 'player' : 'enemy';
+        const recStages = recSide === 'player' ? store.playerStages.value : store.enemyStages.value;
         const srcStages = srcSide === 'player' ? store.playerStages.value : store.enemyStages.value;
-        const tgtStages = tgtSide === 'player' ? store.playerStages.value : store.enemyStages.value;
-        if (srcStages && tgtStages) {
-          (Object.keys(srcStages) as Array<keyof typeof srcStages>).forEach(k => {
-            tgtStages[k] = srcStages[k];
-          });
+        if (recStages && srcStages) {
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            recStages[key] = srcStages[key] || 0;
+          }
         }
-        store.addLog(`¡${tgt.name} copió los cambios de stats de ${src.name}!`, 'log-info', tgt);
+        store.addLog(`¡${recipient.name} copió los cambios de stats de ${source.name}!`, 'log-info', recipient);
       }
       return true;
     }
@@ -130,9 +152,9 @@ export function handleStageEvents(ctx: SBCtx): boolean {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
-          (Object.keys(stages) as Array<keyof typeof stages>).forEach(k => {
-            if ((stages[k] || 0) > 0) stages[k] = 0;
-          });
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            if ((stages[key] || 0) > 0) stages[key] = 0;
+          }
         }
         store.addLog(`¡Los aumentos de ${target.name} fueron robados!`, 'log-info', target);
       }
@@ -146,9 +168,9 @@ export function handleStageEvents(ctx: SBCtx): boolean {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
-          (Object.keys(stages) as Array<keyof typeof stages>).forEach(k => {
-            if ((stages[k] || 0) < 0) stages[k] = 0;
-          });
+          for (const key of SHOWDOWN_STAT_KEYS) {
+            if ((stages[key] || 0) < 0) stages[key] = 0;
+          }
         }
         store.addLog(`¡Las bajadas de stats de ${target.name} fueron eliminadas!`, 'log-info', target);
       }

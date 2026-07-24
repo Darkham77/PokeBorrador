@@ -246,6 +246,7 @@ function toggleSeason(s: string | null) {
           :title="w.desc || WEATHER_VISUAL_METADATA[w.id]?.description || WEATHER_UI_METADATA[getMechanicalWeather(w.id)]?.description"
         >
           <button
+            :id="`debug-weather-btn-${w.id}`"
             :class="{ active: mapStore.globalWeather === w.id }"
             @click.stop="toggleWeather(w.id)"
           >

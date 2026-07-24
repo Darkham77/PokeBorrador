@@ -3,13 +3,10 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/engine.ts
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import { SetsDatabase } from './setsDatabase.ts';
 import { PokemonTracker } from './pokemonTracker.ts';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, InferredInfo } from './types.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 export class InferenceEngine {
   private readonly db: SetsDatabase;
@@ -32,11 +29,11 @@ export class InferenceEngine {
 
   /** Inference hints from events outside the snapshot (e.g. Life Orb recoil) */
   observeNoHazardDamage(species: string): void {
-    this.trackers.get(toId(species))?.observeNoHazardDamage();
+    this.trackers.get(toID(species))?.observeNoHazardDamage();
   }
 
   observeRecoil(species: string): void {
-    this.trackers.get(toId(species))?.observeRecoil();
+    this.trackers.get(toID(species))?.observeRecoil();
   }
 
   /** Probabilistic move map for the opponent's active Pokémon */
@@ -47,11 +44,11 @@ export class InferenceEngine {
   }
 
   getLikelyUnrevealed(species: string, threshold = 0.3): Array<{ move: string; probability: number }> {
-    return this.trackers.get(toId(species))?.getLikelyUnrevealedMoves(threshold) ?? [];
+    return this.trackers.get(toID(species))?.getLikelyUnrevealedMoves(threshold) ?? [];
   }
 
   getInferredInfo(species: string): InferredInfo | null {
-    return this.trackers.get(toId(species))?.getInferredInfo() ?? null;
+    return this.trackers.get(toID(species))?.getInferredInfo() ?? null;
   }
 
   /** Reset between battles */
@@ -64,7 +61,7 @@ export class InferenceEngine {
   // ──────────────────────────────────────────
 
   private getOrCreate(pokemon: HeuristicPokemonState): PokemonTracker {
-    return this.trackers.getOrInsertComputed(toId(pokemon.species), () => 
+    return this.trackers.getOrInsertComputed(toID(pokemon.species), () => 
       new PokemonTracker(pokemon.species, this.db.getSets(pokemon.species))
     );
   }

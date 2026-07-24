@@ -17,7 +17,10 @@ Systems Engineers / Backend Developers.
 - **p2Skip Default False**: In `switchWorkerTurn`, `p2Skip` MUST default to `false`. It is only set to `true` when the worker explicitly signals a faint-forced switch. A voluntary player switch MUST NOT skip the AI's turn.
 - **Showdown Move Format**: The correct format for sending moves to the Showdown simulator is `'move 1'` (with a space), NOT `'move1'`. The scripted AI and any choice builders MUST use the spaced format or the simulator will reject the command.
 - **Faction Null Guard in Bridge**: When constructing a trainer payload for the Showdown bridge, always default `faction` to `'neutral'` when `trainer.faction === null` to prevent serialization crashes.
-
+- **ShowdownBattleAgent as Single Protocol Source**: All battle agent implementations (fuzzer agents, AI agents) MUST extend `ShowdownBattleAgent`. Reimplementing Showdown protocol logic (forceSwitch handling, trapped checks, multi-slot iteration) outside this base class is strictly forbidden.
+- **Multi-Slot Choice Format**: `decide()` MUST always return a single comma-separated string per turn (e.g. `"move 1"` for singles, `"switch 3, pass"` for doubles). Both `p1Choices[]` and `enemyChoices[]` arrays store one entry per turn using this format.
+- **Canonical Stat IDs in NatureData**: `NatureData.up` and `NatureData.down` MUST use Showdown canonical stat IDs (`'atk'`, `'def'`, `'spa'`, `'spd'`, `'spe'`). Use `getStatLabel(statId)` from `statsMath.ts` for UI display. Passing localized Spanish strings to stat calculation functions is strictly forbidden.
+- **choose() Return Check Mandate**: Every call to `simBattle.choose(side, choice)` MUST check the boolean return value. A `false` return indicates a rejected choice. The caller MUST handle this case (e.g. fallback to `'move 1'`) rather than ignoring it, which causes infinite stall loops.
 
 ## Work Guidance
 

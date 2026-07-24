@@ -179,3 +179,35 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   }
 }
 
+console.log(`\n========================================`);
+console.log(`[REPLAY COMPLETE] Battle ended: ${battle.ended}`);
+console.log(`[REPLAY COMPLETE] Total turns executed: ${turn}`);
+console.log(`========================================\n`);
+
+if (match.finalState) {
+  const finalState = match.finalState as Record<string, unknown>;
+  const actualEnded = battle.ended;
+  if (finalState.isOver !== undefined && actualEnded !== finalState.isOver) {
+    throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle end state! Expected isOver=${finalState.isOver}, but replay actual ended=${actualEnded}`);
+  }
+  if (finalState.winner !== undefined && finalState.winner !== null && battle.winner !== finalState.winner) {
+    throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle winner! Expected winner=${finalState.winner}, but replay actual winner=${battle.winner}`);
+  }
+  if (Array.isArray(finalState.p1)) {
+    (finalState.p1 as Array<{ hp: number; fainted: boolean }>).forEach((expectedMon, idx) => {
+      const actualMon = battle.p1.pokemon[idx];
+      if (actualMon && (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)) {
+        throw new Error(`[REPLAY-PARITY-FAILURE] P1 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`);
+      }
+    });
+  }
+  if (Array.isArray(finalState.p2)) {
+    (finalState.p2 as Array<{ hp: number; fainted: boolean }>).forEach((expectedMon, idx) => {
+      const actualMon = battle.p2.pokemon[idx];
+      if (actualMon && (actualMon.hp !== expectedMon.hp || actualMon.fainted !== expectedMon.fainted)) {
+        throw new Error(`[REPLAY-PARITY-FAILURE] P2 Slot ${idx} mismatch! Expected HP=${expectedMon.hp}/fnt=${expectedMon.fainted}, Actual HP=${actualMon.hp}/fnt=${actualMon.fainted}`);
+      }
+    });
+  }
+  console.log(`[REPLAY PARITY CHECK] Passed successfully for both teams!`);
+}

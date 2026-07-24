@@ -111,7 +111,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     await sleep(200) // organic sleep
     
     const s = ctx.enemyStages.value
-    ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
+    ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, 
       reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
     
     // AI_NEXT_PICK

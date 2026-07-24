@@ -7,8 +7,8 @@ export interface BattleStages {
   spa: number;
   spd: number;
   spe: number;
-  acc: number;
-  eva: number;
+  accuracy: number;
+  evasion: number;
   reflect: number;
   lightScreen: number;
   safeguard: number;
@@ -52,6 +52,7 @@ export interface BattleState {
   futureSightTurns?: number;
   futureSightTarget?: Pokemon | null;
   terrain?: string | null;
+  fieldConditions?: Record<string, { turns: number; [key: string]: unknown }>;
   playerSideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
   enemySideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
   playerTeam?: Pokemon[];
@@ -76,6 +77,7 @@ export interface BattleState {
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';
+  winnerResult?: 'player' | 'enemy' | 'tie';
   learnQueue?: unknown[];
   isPvP?: boolean;
   difficulty?: 'easy' | 'normal' | 'hard';
@@ -92,7 +94,6 @@ export interface BattleState {
   quote?: string;
   wasSearching?: boolean;
   cannotEscape?: boolean;
-  isBatonPass?: boolean;
   stolenResources?: {
     money: number;
     items: Record<string, number>;

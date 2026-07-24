@@ -4,14 +4,11 @@
 // Zero-Fallback: throws if critical state is unavailable
 // ============================================================
 
+import { toID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleState, BattleStages } from '@/types/battle/battle';
-import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonStatus, PokemonMove } from '@/types/pokemon/pokemon';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState } from './types.ts';
-
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
 
 /**
  * Builds a HeuristicBattleSnapshot from the live BattleContext.
@@ -68,24 +65,31 @@ function buildSideConditions(
   const map = new Map<string, number>();
   if (!raw) return map;
   for (const [key, val] of Object.entries(raw)) {
-    map.set(toId(key), typeof val === 'object' && val !== null ? (val.turns ?? 1) : 1);
+    map.set(toID(key), typeof val === 'object' && val !== null ? (val.turns ?? 1) : 1);
   }
   return map;
 }
 
 function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): HeuristicPokemonState {
-  const fainted = p.hp <= 0;
+  // AI-1 Fix: Check explicit fainted flag or hp === 0 when maxHp > 0.
+  // Unrevealed enemy Pokemon with maxHp === 0 should NOT be marked as fainted!
+  const fainted = p.fainted || (p.maxHp > 0 && p.hp <= 0);
 
   // heldItem is the canonical field — never read the deprecated `item`
   const heldItem = p.heldItem ?? '';
+  const validMoves = (p.moves || []).filter((m): m is PokemonMove => Boolean(m));
+  const moveIds = validMoves.map(m => {
+    if (!m.id) throw new Error(`[snapshotBuilder] PokemonMove missing immutable ID for move '${m.name}' on ${p.name}`);
+    return toID(m.id);
+  });
 
   return {
     name: p.nickname || p.name,
-    species: toId(p.id ?? (() => { throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`); })()),
+    species: toID(p.id ?? (() => { throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`); })()),
     level: p.level,
     hp: p.hp,
     maxHp: p.maxHp,
-    hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * 100 : 0,
+    hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * 100 : 100, // AI-1 Fix: default 100% for unrevealed
     status: p.status as PokemonStatus,
     active,
     fainted,
@@ -97,16 +101,17 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
       spd: p.spd,
       spe: p.spe,
     },
-    moves: p.moves.filter(Boolean).map(m => toId(m!.id || m!.name)),
+    moves: moveIds,
     // For the enemy, all moves are "revealed" in our game (trainer has fixed team)
     // knownMoves tracks what the engine has seen — start with all known moves
-    knownMoves: p.moves.filter(Boolean).map(m => toId(m!.id || m!.name)),
-    ability: toId(p.ability ?? ''),
-    knownAbility: p.ability ? toId(p.ability) : null,
-    item: heldItem ? toId(heldItem) : '',
-    knownItem: heldItem ? toId(heldItem) : null,
-    // If item field is empty and not fainted, the item may have been consumed (e.g., berry)
-    itemConsumed: !heldItem && !fainted && active,
+    knownMoves: moveIds,
+    // AI-12 Fix: prefer current ability over baseAbility if present
+    ability: toID(p.ability ?? ''),
+    knownAbility: p.ability ? toID(p.ability) : null,
+    item: heldItem ? toID(heldItem) : '',
+    knownItem: heldItem ? toID(heldItem) : null,
+    // AI-11 Fix: itemConsumed should only be true if explicitly lost via volatile/log
+    itemConsumed: Boolean(p.volatileCounters?.['itemconsumed'] || p.volatileCounters?.['enditem']),
     boosts: {
       atk: active ? (stages.atk ?? 0) : 0,
       def: active ? (stages.def ?? 0) : 0,
@@ -131,16 +136,17 @@ function buildVolatiles(p: Pokemon): Set<string> {
   if (p.mustRecharge) v.add('mustrecharge');
   if (p.tauntTurns) v.add('taunt');
   if (p.encoreTurns) v.add('encore');
-  if (p.trapped) v.add('trapped');
-  // Choice lock detection: if heldItem is a choice item, treat as choicelock when active
-  if (p.heldItem && ['choiceband', 'choicescarf', 'choicespecs'].includes(toId(p.heldItem))) {
+  // AI-4 Fix: check trapped and maybeTrapped
+  if (p.trapped || p.volatileCounters?.['maybetrapped'] || p.volatileCounters?.['trapped']) v.add('trapped');
+  // AI-9 Fix: only mark choicelock if explicitly tracked in volatileCounters from move execution
+  if (p.volatileCounters?.['choicelock']) {
     v.add('choicelock');
   }
   return v;
 }
 
 function buildField(battle: BattleState): HeuristicFieldState {
-  const weather = battle.weather?.type ? toId(battle.weather.type) : null;
+  const weather = battle.weather?.type ? toID(battle.weather.type) : null;
   return {
     weather: weather || null,
     terrain: null, // The project does not currently model terrain — extend when added

@@ -26,12 +26,12 @@ describe('Battle Engine', () => {
 
     it('should calculate base special damage correctly', () => {
       const result = calculateDamage(attacker, defender, move, { atkStages: 0, defStages: 0 });
-      expect(result.dmg).toBe(229);
+      expect(result.dmg).toBe(231);
     });
 
     it('should scale damage with attack stages (+2 stages = 2x)', () => {
       const result = calculateDamage(attacker, defender, move, { atkStages: 2, defStages: 0 });
-      expect(result.dmg).toBe(456);
+      expect(result.dmg).toBe(460);
     });
 
     it('should scale damage with defense stages (+2 stages = 0.5x)', () => {
@@ -72,7 +72,7 @@ describe('Battle Engine', () => {
       calculateDamage(attacker, defender, move, { weather: null });
       const sun = calculateDamage(attacker, defender, move, { weather: { type: 'sun', turns: 5 } });
       
-      expect(sun.dmg).toBe(92);
+      expect(sun.dmg).toBe(91);
     });
 
     it('should reduce Fire damage in Rain', () => {

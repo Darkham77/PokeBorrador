@@ -4,28 +4,37 @@
 // ============================================================
 
 import { Generations, Pokemon, Move, Field, calculate, type Result, type GenerationNum } from '@smogon/calc';
+import { toID } from '@pkmn/sim';
 import type { HeuristicPokemonState, HeuristicFieldState, DamageResult, DamageMatchup, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
 
-function toId(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-// Priority moves (positive = priority)
+// Priority moves (positive = priority, negative = delayed, protection = high positive)
 const PRIORITY_MAP: Record<string, number> = {
-  extremespeed: 2, fakeout: 3, firstimpression: 2,
+  // High Priority Status / Protection
+  protect: 4, detect: 4, spikyshield: 4, kingsshield: 4, banefulbunker: 4, obstruct: 4,
+  fakeout: 3, upperhand: 3,
+  extremespeed: 2, firstimpression: 2, feint: 2, allyswitch: 2,
   accelerock: 1, aquajet: 1, bulletpunch: 1, iceshard: 1,
-  machpunch: 1, quickattack: 1, shadowsneak: 1,
-  suckerpunch: 1, grassyglide: 1, jetpunch: 1,
+  machpunch: 1, quickattack: 1, shadowsneak: 1, suckerpunch: 1,
+  jetpunch: 1, thunderclap: 1, watershuriken: 1, vacuumwave: 1,
+  bide: 1,
+  // Negative Priority
+  vitalthrow: -1, trick: -1,
+  focuspunch: -3,
+  avalanche: -4, revenge: -4,
+  roar: -6, whirlwind: -6, dragontail: -6, circlethrow: -6,
+  trickroom: -7,
 };
 
 const CACHE_MAX_SIZE = 2048;
+
+import { ACTIVE_GENERATION } from '../../../../data/system/constants.ts';
 
 export class HeuristicDamageCalculator {
   private readonly gen;
   private readonly cache = new Map<string, DamageResult>();
   private readonly cacheOrder: string[] = [];
 
-  constructor(generation: GenerationNum = 9) {
+  constructor(generation: GenerationNum = ACTIVE_GENERATION as GenerationNum) {
     this.gen = Generations.get(generation);
   }
 
@@ -162,7 +171,7 @@ export class HeuristicDamageCalculator {
       farfetchd: "Farfetch'd", mrmime: 'Mr. Mime',
       hooh: 'Ho-Oh', jangmoo: 'Jangmo-o',
     };
-    return map[toId(species)] ?? (species.charAt(0).toUpperCase() + species.slice(1));
+    return map[toID(species)] ?? (species.charAt(0).toUpperCase() + species.slice(1));
   }
 
   private parseResult(result: Result, moveId: string, attacker: string, defender: string): DamageResult {
@@ -196,12 +205,12 @@ export class HeuristicDamageCalculator {
       maxPercent: maxPct,
       isOHKO: minPct >= curPct,
       is2HKO: minPct * 2 >= curPct,
-      priority: PRIORITY_MAP[toId(moveId)] ?? 0,
+      priority: PRIORITY_MAP[toID(moveId)] ?? 0,
     };
   }
 
   private fallback(moveId: string, attacker: string, defender: string): DamageResult {
-    return { move: moveId, attacker, defender, minPercent: 0, maxPercent: 0, isOHKO: false, is2HKO: false, priority: PRIORITY_MAP[toId(moveId)] ?? 0 };
+    return { move: moveId, attacker, defender, minPercent: 0, maxPercent: 0, isOHKO: false, is2HKO: false, priority: PRIORITY_MAP[toID(moveId)] ?? 0 };
   }
 
   private cacheKey(a: HeuristicPokemonState, d: HeuristicPokemonState, mv: string, f: HeuristicFieldState): string {

@@ -1,0 +1,48 @@
+// src/logic/battle/helpers/__tests__/showdownBattleAgent.test.ts
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { ShowdownBattleAgent } from '../showdownBattleAgent.ts';
+import { ChoiceRequest } from '../requestHelper.ts';
+
+class TestAgent extends ShowdownBattleAgent {
+  public testDecide(request: ChoiceRequest): string {
+    return this.decide(request);
+  }
+}
+
+describe('ShowdownBattleAgent & Bridge integrity tests', () => {
+  it('prevents duplicate switch target slots in forced switch (NEW-1)', () => {
+    const agent = new TestAgent('p1');
+    const request: ChoiceRequest = {
+      forceSwitch: [true, true],
+      side: {
+        pokemon: [
+          { ident: 'p1a: Mon1', details: 'Charizard', condition: '0 fnt', active: true, stats: { hp: 100 }, moves: [], ability: '' },
+          { ident: 'p1b: Mon2', details: 'Blastoise', condition: '0 fnt', active: true, stats: { hp: 100 }, moves: [], ability: '' },
+          { ident: 'p1: Mon3', details: 'Venusaur', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
+          { ident: 'p1: Mon4', details: 'Pikachu', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
+        ],
+      },
+    };
+
+    const choice = agent.testDecide(request);
+    assert.equal(choice, 'switch 3, switch 4');
+  });
+
+  it('avoids "undefined" modifier string coercion when canMegaEvo is not defined (NEW-2)', () => {
+    const agent = new TestAgent('p1');
+    const request: ChoiceRequest = {
+      active: [
+        {
+          moves: [
+            { id: 'flamethrower', disabled: false, pp: 15 },
+          ],
+        },
+      ],
+    };
+
+    const choice = agent.testDecide(request);
+    assert.doesNotMatch(choice, /undefined/);
+    assert.match(choice, /^move 1/);
+  });
+});

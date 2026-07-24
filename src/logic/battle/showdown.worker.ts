@@ -89,6 +89,8 @@ interface SynchronizedPokemonState {
   maxHp: number;
   status: string;
   fainted: boolean;
+  boosts?: Record<string, number>;
+  volatiles?: string[];
 }
 
 function getSideTeamState(side: ExtendedSide | null | undefined): Array<SynchronizedPokemonState | null> {
@@ -96,12 +98,15 @@ function getSideTeamState(side: ExtendedSide | null | undefined): Array<Synchron
   return side.pokemon.map((p: ExtendedPokemon | null) => {
     if (!p) return null;
     const status = p.status || '';
+    const volatiles = p.volatiles ? Object.keys(p.volatiles) : [];
     return {
       uid: p.uid || '',
       hp: p.hp,
       maxHp: p.maxhp,
       status: status.toLowerCase() === 'fnt' ? '' : status,
-      fainted: !!p.fainted
+      fainted: !!p.fainted,
+      boosts: p.boosts ? { ...p.boosts } : undefined,
+      volatiles: volatiles.length > 0 ? volatiles : undefined
     };
   });
 }
@@ -139,6 +144,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
   try {
     switch (type) {
       case 'INIT_BATTLE': {
+        debugLogs.length = 0;
         isDeterministicSimulation = !!payload.isDeterministicSimulation;
         logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`);
         cheatManager = new BattleCheatManager(payload.cheats);
@@ -365,6 +371,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           currentBattle.win(side);
           console.debug(`[Showdown Worker] Batalla declarada terminada por comando de victoria (${side}).`);
         }
+        currentBattle = null;
+        statsMap.clear();
+        cheatManager = null;
         break;
       }
 
@@ -373,6 +382,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           currentBattle.ended = true;
           console.debug(`[Showdown Worker] Batalla forzosamente finalizada por debug/huida.`);
         }
+        currentBattle = null;
+        statsMap.clear();
+        cheatManager = null;
         break;
       }
 

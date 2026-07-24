@@ -128,16 +128,19 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
   let p1AcceptedChoice = '';
   let p2AcceptedChoice = '';
 
-  const p1KindBefore = classifyRequest(battle.p1.activeRequest);
-  const p2KindBefore = classifyRequest(battle.p2.activeRequest);
+  const choiceMap: Record<string, { choice: string; skip?: boolean }> = {
+    p1: { choice: p1Choice, skip: p1Skip },
+    p2: { choice: p2Choice, skip: p2Skip }
+  };
 
-  const p1MustAct = p1KindBefore !== 'none' && p1KindBefore !== 'wait' && (p2KindBefore !== 'force-switch' || p1KindBefore === 'force-switch');
-  const p2MustAct = p2KindBefore !== 'none' && p2KindBefore !== 'wait' && (p1KindBefore !== 'force-switch' || p2KindBefore === 'force-switch');
-
-  const seats: Array<{ id: 'p1' | 'p2'; choice: string; skip?: boolean; mustAct: boolean }> = [
-    { id: 'p1', choice: p1Choice, skip: p1Skip, mustAct: p1MustAct },
-    { id: 'p2', choice: p2Choice, skip: p2Skip, mustAct: p2MustAct }
-  ];
+  const seats = battle.sides.map(side => {
+    const seatId = side.id as 'p1' | 'p2' | 'p3' | 'p4';
+    const kindBefore = classifyRequest(side.activeRequest);
+    const hasOtherForceSwitch = battle.sides.some(s => s.id !== seatId && classifyRequest(s.activeRequest) === 'force-switch');
+    const mustAct = kindBefore !== 'none' && kindBefore !== 'wait' && (!hasOtherForceSwitch || kindBefore === 'force-switch');
+    const choiceData = choiceMap[seatId] || { choice: '', skip: false };
+    return { id: seatId, side, choice: choiceData.choice, skip: choiceData.skip, mustAct };
+  });
 
   for (const seat of seats) {
     if (battle.ended) break;
@@ -151,7 +154,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
         const runner = new ShowdownBattleRunner((debugObj?.playerChoices as string[]) || [], (debugObj?.enemyChoices as string[]) || []);
         runner.p1ChoiceIdx = debugObj?.p1ChoiceIdx || 0;
         runner.p2ChoiceIdx = debugObj?.p2ChoiceIdx || 0;
-        choiceToExecute = runner.resolveAndConsumeNextChoice(seat.id, battle[seat.id].activeRequest);
+        choiceToExecute = runner.resolveAndConsumeNextChoice(seat.id, seat.side.activeRequest);
         if (debugObj) {
           debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
           debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
@@ -160,19 +163,32 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     }
 
     if (!choiceToExecute && !seat.skip) {
-      throw new Error(`MISSING_CHOICE: ${seat.id} requiere acción (request: ${JSON.stringify(battle[seat.id].activeRequest)}) pero se recibió una elección vacía o undefined.`);
+      if (seat.side.activeRequest?.teamPreview) {
+        choiceToExecute = 'default';
+      } else {
+        throw new Error(`MISSING_CHOICE: ${seat.id} requiere acción (request: ${JSON.stringify(seat.side.activeRequest)}) pero se recibió una elección vacía o undefined.`);
+      }
     }
 
     if (choiceToExecute) {
-      const accepted = chooseOrThrow(seat.id, choiceToExecute);
+      const accepted = chooseOrThrow(seat.id as 'p1' | 'p2', choiceToExecute);
       if (seat.id === 'p1') p1AcceptedChoice = accepted;
-      else p2AcceptedChoice = accepted;
+      else if (seat.id === 'p2') p2AcceptedChoice = accepted;
     }
   }
 
   // 6. Apply Post-Turn Cheats
+  // EXEC-12 Fix: If post-turn cheats modify HP/status of fainted/active Pokemon,
+  // clear active requests so Showdown doesn't keep a stale force-switch request.
   if (cheatManager) {
     cheatManager.applyPostTurnCheats(battle, turnBeforeP1, currentStep);
+    // Refresh active requests if hp was restored from 0
+    if (battle.p1 && battle.p1.activeRequest?.forceSwitch && battle.p1.active[0] && !battle.p1.active[0].fainted) {
+      delete (battle.p1.activeRequest as unknown as Record<string, unknown>).forceSwitch;
+    }
+    if (battle.p2 && battle.p2.activeRequest?.forceSwitch && battle.p2.active[0] && !battle.p2.active[0].fainted) {
+      delete (battle.p2.activeRequest as unknown as Record<string, unknown>).forceSwitch;
+    }
   }
 
   return { p1AcceptedChoice, p2AcceptedChoice };

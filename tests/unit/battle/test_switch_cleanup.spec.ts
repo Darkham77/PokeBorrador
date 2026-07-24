@@ -132,12 +132,12 @@ describe('Battle Switch Out State Cleanup Tests', () => {
     })
 
     const playerStages = ref<BattleStages>({
-      atk: 2, def: -1, spa: 0, spd: 0, spe: 1, acc: 0, eva: 0,
+      atk: 2, def: -1, spa: 0, spd: 0, spe: 1, accuracy: 0, evasion: 0,
       reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
     })
 
     const enemyStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
+      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
       reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
     })
 

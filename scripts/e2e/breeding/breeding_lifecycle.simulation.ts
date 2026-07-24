@@ -73,9 +73,9 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
       }
     });
 
-    await this.clickElement('button:has-text("CRIANZA")');
+    await this.clickElement('#nav-crianza-btn');
     await this.clickElement('div.egg-card');
-    await this.clickElement('button:has-text("ACEPTAR")');
+    await this.clickElement('#confirm-modal-btn');
   }
 
   public async forceEggReadyToHatch(): Promise<void> {
@@ -109,12 +109,13 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     const hatchContainer = this.page.locator('.hatch-container');
     await hatchContainer.waitFor({ state: 'visible', timeout: 5000 });
     await hatchContainer.click();
-    await this.page.waitForTimeout(200);
     await hatchContainer.click();
-    await this.page.waitForTimeout(200);
+    await this.page.waitForFunction(() => document.querySelector('.hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
+    await hatchContainer.click();
+    await this.page.waitForFunction(() => document.querySelector('.hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
     await hatchContainer.click();
 
-    await this.clickElement('button.btn-confirm:has-text("CONTINUAR"), button:has-text("CONTINUAR")', 15000);
+    await this.clickElement('#hatch-continue-btn', 15000);
     const mapBtn = this.page.locator('button.map-btn').filter({ visible: true }).first();
     await expect(mapBtn).toBeVisible({ timeout: 15000 });
   }

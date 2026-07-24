@@ -1,5 +1,5 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import { isPokemonStatus } from '../../types/pokemon/pokemon.ts';
+import { isPokemonStatus, type Move } from '../../types/pokemon/pokemon.ts';
 
 /**
  * Maneja eventos misceláneos, efectos de combate y mecánicas Gen 6-9:
@@ -80,6 +80,9 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       }
       
       if (target) {
+        if (target.volatileCounters) {
+          delete target.volatileCounters['twoturnmove'];
+        }
         const style = target === p ? 'log-player' : 'log-enemy';
         const cantMessages: Record<string, string> = {
           'par': 'está paralizado y no puede moverse',
@@ -87,18 +90,23 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           'frz': 'está congelado',
           'attract': 'está enamorado y no puede atacar',
           'recharge': 'debe recargar',
-          'Disable': 'tiene el movimiento desactivado',
+          'disable': 'tiene el movimiento desactivado',
           'flinch': 'retrocedió',
         };
-        const hint = cantMessages[reason] ?? 'no puede moverse';
+        const hint = cantMessages[reason.toLowerCase()] ?? 'no puede moverse';
         store.addLog(`¡${target.name} ${hint}!`, style, target);
       }
       return true;
     }
 
-    case '-crit':
-      if (!line.includes('[silent]')) store.addLog('¡Golpe crítico!', 'log-info', '⚡');
+    case '-crit': {
+      if (!line.includes('[silent]')) {
+        const target = getPoke(parts[2] || '');
+        const msg = target ? `¡Golpe crítico contra ${target.name}!` : '¡Golpe crítico!';
+        store.addLog(msg, 'log-info', target || '⚡');
+      }
       return true;
+    }
 
     case '-supereffective':
       if (!line.includes('[silent]')) store.addLog('¡Es súper efectivo!', 'log-info', '🔥');
@@ -128,10 +136,22 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
 
     case '-activate': {
       if (line.includes('[silent]')) return true;
-      const effect = (parts[3] || parts[2] || '').toLowerCase();
-      if (effect.includes('confusion')) {
-        const target = getPoke(parts[2] || '');
-        if (target) store.addLog(`¡${target.name} está confundido y se lastimó!`, 'log-info', target);
+      const target = getPoke(parts[2] || '');
+      const effect = (parts[3] || parts[2] || '').replace('move: ', '').replace('ability: ', '');
+      if (target) {
+        if (!target.volatileCounters) target.volatileCounters = {};
+        const cleanEff = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+        target.volatileCounters[cleanEff] = 1;
+
+        if (cleanEff.includes('confusion')) {
+          store.addLog(`¡${target.name} está confundido y se lastimó!`, 'log-info', target);
+        } else if (cleanEff.includes('mist')) {
+          store.addLog(`¡El Velo Sagrado protegió a ${target.name}!`, 'log-info', target);
+        } else if (cleanEff.includes('substitute')) {
+          store.addLog(`¡El Sustituto de ${target.name} recibió el golpe!`, 'log-info', target);
+        } else if (effect) {
+          store.addLog(`¡${effect} se activó en ${target.name}!`, 'log-info', target);
+        }
       }
       return true;
     }
@@ -140,7 +160,10 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const ability = parts[3] || '';
-      if (target && ability) store.addLog(`¡Habilidad: ${ability} de ${target.name}!`, 'log-info', target);
+      if (target && ability) {
+        target.ability = ability;
+        store.addLog(`¡Habilidad: ${ability} de ${target.name}!`, 'log-info', target);
+      }
       return true;
     }
 
@@ -148,9 +171,11 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const item = parts[3] || '';
-      if (target && item) {
+      if (target) {
+        target.heldItem = '';
+        target.item = '';
         const verb = line.includes('[eat]') ? 'comió su' : 'perdió su';
-        store.addLog(`¡${target.name} ${verb} ${item}!`, 'log-info', target);
+        store.addLog(`¡${target.name} ${verb} ${item || 'objeto'}!`, 'log-info', target);
       }
       return true;
     }
@@ -159,7 +184,21 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const item = parts[3] || '';
-      if (target && item) store.addLog(`¡${target.name} tiene ${item}!`, 'log-info', target);
+      if (target && item) {
+        target.heldItem = item;
+        target.item = item;
+        store.addLog(`¡${target.name} tiene ${item}!`, 'log-info', target);
+      }
+      return true;
+    }
+
+    case 'swap': {
+      if (line.includes('[silent]')) return true;
+      // Showdown format: |swap|POKEMON|POSITION
+      const target = getPoke(parts[2] || '');
+      if (target) {
+        store.addLog(`¡${target.name} cambió de posición!`, 'log-info', target);
+      }
       return true;
     }
 
@@ -180,16 +219,37 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-formechange': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const species = parts[3] || '';
-      if (target && species) store.addLog(`¡${target.name} cambió de forma!`, 'log-info', target);
+      const rawSpecies = parts[3] || '';
+      if (target && rawSpecies) {
+        const cleanSpecies = rawSpecies.split(',')[0]?.trim() || rawSpecies;
+        target.species = cleanSpecies;
+        target.details = rawSpecies;
+        store.addLog(`¡${target.name} cambió de forma a ${cleanSpecies}!`, 'log-info', target);
+      }
       return true;
     }
 
     case '-transform': {
       if (line.includes('[silent]')) return true;
       const user = getPoke(parts[2] || '');
-      const species = parts[3] || '';
-      if (user && species) store.addLog(`¡${user.name} se transformó en ${species}!`, 'log-info', user);
+      const targetPoke = getPoke(parts[3] || '');
+      if (user && targetPoke) {
+        user.isTransformed = true;
+        user.species = targetPoke.species || targetPoke.name;
+        user.type = targetPoke.type;
+        user.type2 = targetPoke.type2;
+        if (targetPoke.moves) {
+          user.moves = targetPoke.moves.map(m => (m ? ({
+            ...m,
+            name: m.name || m.id,
+            pp: 5,
+            maxPP: 5
+          } as Move) : null));
+        }
+        store.addLog(`¡${user.name} se transformó en ${targetPoke.name}!`, 'log-info', user);
+      } else if (user && parts[3]) {
+        store.addLog(`¡${user.name} se transformó en ${parts[3]}!`, 'log-info', user);
+      }
       return true;
     }
 
@@ -200,14 +260,16 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const moveOrEffect = parts[3] || '';
       const cleanEffect = (moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect).toLowerCase().replace(/[^a-z0-9]/g, '');
       if (target) {
+        if (!target.volatileCounters) target.volatileCounters = {};
+        target.volatileCounters[cleanEffect] = 1;
         if (cleanEffect === 'protect' || cleanEffect === 'detect' || cleanEffect === 'endure') {
           store.addLog(`¡${target.name} se protegió!`, 'log-info', target);
         }
       }
       return true;
     }
+
     case '-candynamax':
-    case 'swap':
     case '-center':
     case '-combine':
     case '-waiting':
@@ -217,7 +279,10 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-endability': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      if (target) store.addLog(`¡La habilidad de ${target.name} fue suprimida!`, 'log-info', target);
+      if (target) {
+        target.ability = '';
+        store.addLog(`¡La habilidad de ${target.name} fue suprimida!`, 'log-info', target);
+      }
       return true;
     }
 
@@ -225,10 +290,33 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case 'replace': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      if (target) {
+      const rawDetails = parts[3] || parts[2] || '';
+      if (target && rawDetails) {
+        const newSpecies = rawDetails.split(',')[0]?.trim();
+        if (newSpecies) {
+          const targetRec = target as unknown as Record<string, unknown>;
+          targetRec.species = newSpecies;
+          targetRec.details = rawDetails;
+          // Update types, ability, and base stats if pokemonDataProvider has data for the new species
+          import('../providers/pokemonDataProvider.ts').then(({ pokemonDataProvider }) => {
+            const data = pokemonDataProvider.getPokemonData(newSpecies.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (data) {
+              const dRec = data as unknown as Record<string, unknown>;
+              if (data.type) target.type = data.type;
+              if (data.type2 !== undefined) target.type2 = data.type2;
+              if (dRec.ability) target.ability = String(dRec.ability);
+              if (data.hp) target.maxHp = data.hp;
+              if (data.atk) target.atk = data.atk;
+              if (data.def) target.def = data.def;
+              if (data.spa) target.spa = data.spa;
+              if (data.spd) target.spd = data.spd;
+              if (data.spe) target.spe = data.spe;
+            }
+          }).catch(() => {});
+        }
         const msg = type === 'replace'
           ? `¡Era ${target.name} disfrazado!`
-          : `¡${target.name} cambió de forma permanentemente!`;
+          : `¡${target.name} cambió de forma!`;
         store.addLog(msg, 'log-info', target);
       }
       return true;
@@ -310,15 +398,29 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-mega': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const stone = parts[3] || '';
-      if (target) store.addLog(`¡${target.name} megaevolucionó${stone ? ` con ${stone}` : ''}!`, 'log-info', '✨');
+      const megaSpecies = parts[3] || '';
+      if (target) {
+        const curSpecies = target.species || target.name || '';
+        if (megaSpecies && megaSpecies !== 'Mega Stone') {
+          target.species = megaSpecies;
+        } else if (!curSpecies.toLowerCase().includes('mega')) {
+          target.species = `${curSpecies}-Mega`;
+        }
+        store.addLog(`¡${target.name} megaevolucionó${megaSpecies ? ` en ${megaSpecies}` : ''}!`, 'log-info', '✨');
+      }
       return true;
     }
 
     case '-primal': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      if (target) store.addLog(`¡${target.name} regresó a su forma Primigenia!`, 'log-info', '🌋');
+      if (target) {
+        const curSpecies = target.species || target.name || '';
+        if (!curSpecies.toLowerCase().includes('primal')) {
+          target.species = `${curSpecies}-Primal`;
+        }
+        store.addLog(`¡${target.name} regresó a su forma Primigenia!`, 'log-info', '🌋');
+      }
       return true;
     }
 
@@ -339,7 +441,13 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-burst': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      if (target) store.addLog(`¡${target.name} ha Ultra Estallado!`, 'log-info', '🌟');
+      if (target) {
+        const curSpecies = target.species || target.name || '';
+        if (!curSpecies.toLowerCase().includes('ultra')) {
+          target.species = `${curSpecies}-Ultra`;
+        }
+        store.addLog(`¡${target.name} ha Ultra Estallado!`, 'log-info', '🌟');
+      }
       return true;
     }
 
@@ -352,6 +460,31 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const turnNum = parseInt(parts[2] || '1', 10);
       if (store.activeBattle.value) {
         store.activeBattle.value.turnCount = turnNum;
+        // Clean single-turn volatile flags on active combatants at end of turn
+        const clearTurnVolatiles = (mon: { volatileCounters?: Record<string, number> } | null | undefined) => {
+          if (mon && mon.volatileCounters) {
+            delete mon.volatileCounters['protect'];
+            delete mon.volatileCounters['flinch'];
+            delete mon.volatileCounters['endure'];
+          }
+        };
+        clearTurnVolatiles(store.activeBattle.value.player as unknown as { volatileCounters?: Record<string, number> });
+        clearTurnVolatiles(store.activeBattle.value.enemy as unknown as { volatileCounters?: Record<string, number> });
+      }
+      return true;
+    }
+
+    case 'upkeep': {
+      if (store.activeBattle.value) {
+        const clearTurnVolatiles = (mon: { volatileCounters?: Record<string, number> } | null | undefined) => {
+          if (mon && mon.volatileCounters) {
+            delete mon.volatileCounters['protect'];
+            delete mon.volatileCounters['flinch'];
+            delete mon.volatileCounters['endure'];
+          }
+        };
+        clearTurnVolatiles(store.activeBattle.value.player as unknown as { volatileCounters?: Record<string, number> });
+        clearTurnVolatiles(store.activeBattle.value.enemy as unknown as { volatileCounters?: Record<string, number> });
       }
       return true;
     }

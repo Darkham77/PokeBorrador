@@ -108,11 +108,11 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
     })
 
     const playerStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
+      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
       reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
     })
     const enemyStages = ref<BattleStages>({
-      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0,
+      atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0,
       reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0
     })
 

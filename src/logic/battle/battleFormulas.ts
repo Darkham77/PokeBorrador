@@ -132,7 +132,8 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
 
   let weatherMult = 1;
   if (statKey === 'def') {
-    if ((mechWeather === 'snow' || mechWeather === 'hail') && pTypes.includes('ice')) {
+    const isSnowBoost = mechWeather === 'snow' || (mechWeather === 'hail' && ACTIVE_GENERATION >= 9);
+    if (isSnowBoost && pTypes.includes('ice')) {
       weatherMult = 1.5;
     }
   }

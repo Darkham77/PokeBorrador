@@ -92,7 +92,8 @@ onUnmounted(() => {
     >
       <div 
         v-for="o in filteredOptions" 
-        :key="o.id" 
+        :id="`option-${o.id}`" 
+        :key="o.id"
         class="option-item"
         :class="{ active: modelValue === o.id }"
         @click.stop="handleSelect(o)"

@@ -256,6 +256,7 @@ const formatMoveName = (name: string) => {
 
 <template>
   <div
+    :id="'move-btn-' + index"
     ref="rootEl"
     class="move-slot-wrapper"
     :class="[

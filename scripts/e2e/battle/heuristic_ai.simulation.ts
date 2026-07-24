@@ -277,7 +277,10 @@ test.describe('HeuristicAI E2E Verification', () => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
           useBattleStore().endBattle?.(false, true);
         });
-        await page.waitForTimeout(400);
+        await page.waitForFunction(async () => {
+          const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+          return !useBattleStore().state;
+        }, undefined, { timeout: 2000 }).catch(() => { /* expected */ });
 
         console.debug(`[AI Fuzzer] trainerType="${trainerType}" OK`);
       } catch (e) {

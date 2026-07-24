@@ -18,7 +18,7 @@ export { syncAndPersist } from './battleStateSync.ts'
  */
 export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy') {
   const active = ctx.activeBattle.value;
-  if (!active || active.over || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
+  if (!active || active.rewardsProcessed || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
 
   const isPlayer = side === 'player'
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
@@ -99,7 +99,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
 /**
  * Terminates the battle and processes results.
  */
-export async function terminateBattle(ctx: BattleContext, win: boolean, fled = false) {
+export async function terminateBattle(ctx: BattleContext, winParam: boolean, fled = false) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   const active = ctx.activeBattle.value;
@@ -109,6 +109,9 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     return
   }
 
+  // If Showdown's protocol provided an explicit winnerResult, rely on it over local heuristics
+  const win = active.winnerResult ? (active.winnerResult === 'player') : winParam;
+
   active.over = true
   ctx.faintedSides.value.clear()
 
@@ -116,6 +119,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   import('./orchestrator.ts').then(({ showdownWorker }) => {
     if (showdownWorker) {
       showdownWorker.terminate();
+      // Null out the reference to prevent dangling postMessage to terminated worker
+      import('./showdownWorkerClient.ts').then(({ setShowdownWorker }) => setShowdownWorker(null));
     }
   });
 

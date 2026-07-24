@@ -12,4 +12,5 @@ export interface SBCtx {
   turnLogs?: string[];
   getSide: (rawId: string) => 'player' | 'enemy' | null;
   getPoke: (rawId: string) => Pokemon | null;
+  playerSide?: string;
 }
