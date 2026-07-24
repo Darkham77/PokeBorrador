@@ -111,7 +111,6 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   const speciesName = resolveShowdownSpecies(poke.id);
   const showdownName = getShowdownNickname(poke.uid);
   const rawNature = (poke.nature || 'serious').trim();
-  const capitalizedNature = rawNature.charAt(0).toUpperCase() + rawNature.slice(1).toLowerCase();
 
   return {
     name: showdownName,

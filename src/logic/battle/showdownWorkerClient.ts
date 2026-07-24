@@ -430,15 +430,6 @@ export function notifyWorkerBattleWin(side: 'p1' | 'p2' = 'p1'): void {
   }
 }
 
-function notifyWorkerBattleEnd(): void {
-  if (showdownWorker) {
-    showdownWorker.postMessage({
-      type: 'FORCED_END_BATTLE',
-      payload: {}
-    });
-  }
-}
-
 export function testResetShowdownWorker(): void {
   if (showdownWorker) {
     showdownWorker.terminate();

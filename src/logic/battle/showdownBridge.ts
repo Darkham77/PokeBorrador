@@ -7,7 +7,8 @@ import { handleCoreEvents } from './showdownBridgeCore.ts';
 import { handleStageEvents } from './showdownBridgeStages.ts';
 import { handleFieldEvents } from './showdownBridgeField.ts';
 import { handleMiscEvents } from './showdownBridgeMisc.ts';
-import { findMatchingPokemon } from './showdownUidMapper.ts';
+import { findMatchingPokemon, isMatchingUid } from './showdownUidMapper.ts';
+import { useGameStore } from '@/stores/game';
 
 /**
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
@@ -37,7 +38,6 @@ export function filterShowdownLogs(logs: string[], playerSide: string = 'p1'): s
   return filtered;
 }
 
-import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
 import { createPinia, setActivePinia, getActivePinia } from 'pinia';
 
@@ -158,7 +158,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team: Pokemon[] = side === 'player'
-      ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (gameStore.state?.team || (battle.player ? [battle.player] : [])))
+      ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (useGameStore().state?.team || (battle.player ? [battle.player] : [])))
       : ((battle.enemyTeam && battle.enemyTeam.length > 0) ? battle.enemyTeam : (battle.enemy ? [battle.enemy] : []));
     const findPokemonInBattle = (targetUid: string) => {
       console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map((mon: Pokemon | null | undefined) => mon ? `${mon.name} (${mon.uid})` : 'null'));
