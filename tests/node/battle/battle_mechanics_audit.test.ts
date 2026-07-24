@@ -41,8 +41,8 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
       // Damage Calculation: 
       // Base: Math.floor((42 * 90 * 2) / 50) + 2 = 153
       // STAB: 1.5x -> 229.5
-      // Weather: 1.5x -> 153 * 1.5 * 1.5 = 344.25 -> 344
-      assert.strictEqual(withWeather.dmg, 344);
+      // Weather: 1.5x -> floor(floor(153 * 1.5) * 1.5) = floor(229 * 1.5) = 343
+      assert.strictEqual(withWeather.dmg, 343);
     });
 
     it('should boost Dragon moves by 1.5x', () => {

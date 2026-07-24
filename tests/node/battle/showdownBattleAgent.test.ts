@@ -1,8 +1,14 @@
-// src/logic/battle/helpers/__tests__/showdownBattleAgent.test.ts
-import { describe, it } from 'node:test';
+/**
+ * tests/node/battle/showdownBattleAgent.test.ts
+ *
+ * Unit tests for ShowdownBattleAgent:
+ * - No duplicate switch target slots in forced switch
+ * - No "undefined" modifier string coercion when canMegaEvo is undefined
+ */
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { ShowdownBattleAgent } from '../showdownBattleAgent.ts';
-import { ChoiceRequest } from '../requestHelper.ts';
+import { ShowdownBattleAgent } from '../../../src/logic/battle/helpers/showdownBattleAgent.ts';
+import type { ChoiceRequest } from '../../../src/logic/battle/helpers/requestHelper.ts';
 
 class TestAgent extends ShowdownBattleAgent {
   public testDecide(request: ChoiceRequest): string {
@@ -11,7 +17,7 @@ class TestAgent extends ShowdownBattleAgent {
 }
 
 describe('ShowdownBattleAgent & Bridge integrity tests', () => {
-  it('prevents duplicate switch target slots in forced switch (NEW-1)', () => {
+  it('prevents duplicate switch target slots in forced switch', () => {
     const agent = new TestAgent('p1');
     const request: ChoiceRequest = {
       forceSwitch: [true, true],
@@ -29,7 +35,7 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
     assert.equal(choice, 'switch 3, switch 4');
   });
 
-  it('avoids "undefined" modifier string coercion when canMegaEvo is not defined (NEW-2)', () => {
+  it('avoids "undefined" modifier string coercion when canMegaEvo is not defined', () => {
     const agent = new TestAgent('p1');
     const request: ChoiceRequest = {
       active: [

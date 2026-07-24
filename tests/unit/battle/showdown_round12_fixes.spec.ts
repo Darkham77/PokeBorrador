@@ -28,6 +28,7 @@ describe('Showdown Round 12 Native Parity Fixes', () => {
       line: '|-boost|p1a: Pikachu|accuracy|2',
       p: mockPoke as unknown as SBCtx['p'],
       getPoke: () => mockPoke as unknown as SBCtx['p'],
+      getSide: () => 'player',
     };
 
     const handled = handleStageEvents(mockCtx as SBCtx);
@@ -56,6 +57,7 @@ describe('Showdown Round 12 Native Parity Fixes', () => {
       line: '|-clearboost|p1a: Pikachu',
       p: mockPoke as unknown as SBCtx['p'],
       getPoke: () => mockPoke as unknown as SBCtx['p'],
+      getSide: () => 'player',
     };
 
     handleStageEvents(mockCtx as SBCtx);

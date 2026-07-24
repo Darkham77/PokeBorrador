@@ -121,7 +121,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     gender: (poke.gender === 'M' || poke.gender === 'F') ? poke.gender : '',
     item: poke.heldItem ? toID(poke.heldItem) : '',
     ability: poke.ability ? toID(poke.ability) : '',
-    nature: capitalizedNature,
+    nature: rawNature,
     happiness: poke.friendship ?? 255,
     pokeball: 'pokeball',
     hpType: '',

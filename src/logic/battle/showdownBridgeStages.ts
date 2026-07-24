@@ -14,7 +14,7 @@ type ShowdownStatKey = typeof SHOWDOWN_STAT_KEYS[number];
  * -clearpositiveboost, -clearnegativeboost
  */
 export function handleStageEvents(ctx: SBCtx): boolean {
-  const { store, type, parts, line, p, getPoke } = ctx;
+  const { store, type, parts, line, p, getPoke, getSide } = ctx;
 
   switch (type) {
     case '-boost':
@@ -23,8 +23,8 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       const stat = parts[3] || '';
       const amount = parseInt(parts[4] || '1');
       if (target && SHOWDOWN_STAT_KEYS.includes(stat as ShowdownStatKey)) {
-        const side = target === p ? 'player' : 'enemy';
-        const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+        const targetSide = getSide(parts[2] || '');
+        const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
           const key = stat as ShowdownStatKey;
           if (type === '-setboost') {
@@ -46,8 +46,8 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       const stat = parts[3] || '';
       const amount = parseInt(parts[4] || '1');
       if (target && SHOWDOWN_STAT_KEYS.includes(stat as ShowdownStatKey)) {
-        const side = target === p ? 'player' : 'enemy';
-        const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+        const targetSide = getSide(parts[2] || '');
+        const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
           const key = stat as ShowdownStatKey;
           stages[key] = Math.max(-6, (stages[key] || 0) - amount);

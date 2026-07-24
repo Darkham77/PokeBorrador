@@ -157,8 +157,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       side?: RequestSide;
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
-    const gameStore = useGameStore();
-    const team: Pokemon[] = side === 'player' ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (gameStore.state?.team || [])) : (battle.enemyTeam || []);
+    const team: Pokemon[] = side === 'player'
+      ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (gameStore.state?.team || (battle.player ? [battle.player] : [])))
+      : ((battle.enemyTeam && battle.enemyTeam.length > 0) ? battle.enemyTeam : (battle.enemy ? [battle.enemy] : []));
     const findPokemonInBattle = (targetUid: string) => {
       console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map((mon: Pokemon | null | undefined) => mon ? `${mon.name} (${mon.uid})` : 'null'));
       const found = team.find((mon: Pokemon | null | undefined) => mon && mon.uid === targetUid);
@@ -210,9 +211,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = findMatchingPokemon(namePart, team) ?? null;
+      matchMon = (team.find(mon => mon && (mon.name.toLowerCase() === namePart.toLowerCase() || isMatchingUid(mon.uid, namePart))) ?? null) as Pokemon | null;
       if (matchMon) {
-        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via suffix`);
+        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/suffix`);
         return matchMon;
       }
     }

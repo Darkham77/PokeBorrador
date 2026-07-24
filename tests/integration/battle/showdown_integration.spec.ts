@@ -63,13 +63,15 @@ describe('Showdown Integration & Adapters', () => {
   describe('parseShowdownLogLine', () => {
     it('debería actualizar la vida del Pokémon al parsear -damage', async () => {
       const playerPoke = { uid: 'p1', name: 'Bulbasaur', hp: 100, maxHp: 100 } as Pokemon;
-      const enemyPoke = { uid: 'e1', name: 'Pikachu', hp: 80, maxHp: 80 } as Pokemon;
+      const enemyPoke = { uid: 'e1-pikachu', name: 'Pikachu', hp: 80, maxHp: 80 } as Pokemon;
 
       const logs: string[] = [];
       const mockContext = {
         activeBattle: ref({
           player: playerPoke,
           enemy: enemyPoke,
+          playerTeam: [playerPoke],
+          enemyTeam: [enemyPoke],
           weather: { type: 'clear', visual: 'clear', turns: -1 }
         }),
         playerStages: ref({ atk: 0 } as unknown as BattleStages),
@@ -89,7 +91,7 @@ describe('Showdown Integration & Adapters', () => {
 
     it('debería actualizar los aumentos de estadísticas al parsear -boost y -unboost', async () => {
       const playerPoke = { uid: 'p1', name: 'Bulbasaur' } as Pokemon;
-      const enemyPoke = { uid: 'e1', name: 'Pikachu' } as Pokemon;
+      const enemyPoke = { uid: 'e1-pikachu', name: 'Pikachu' } as Pokemon;
 
       const playerStages = ref({ atk: 0 } as unknown as BattleStages);
       const enemyStages = ref({ atk: 0 } as unknown as BattleStages);
@@ -98,6 +100,8 @@ describe('Showdown Integration & Adapters', () => {
         activeBattle: ref({
           player: playerPoke,
           enemy: enemyPoke,
+          playerTeam: [playerPoke],
+          enemyTeam: [enemyPoke],
           weather: { type: 'clear', visual: 'clear', turns: -1 }
         }),
         playerStages,
@@ -120,6 +124,8 @@ describe('Showdown Integration & Adapters', () => {
         activeBattle: ref({
           player: playerPoke,
           enemy: enemyPoke,
+          playerTeam: [playerPoke],
+          enemyTeam: [enemyPoke],
           weather: { type: 'clear', visual: 'clear', turns: -1 }
         }),
         attackerSide: ref(null),
@@ -148,6 +154,8 @@ describe('Showdown Integration & Adapters', () => {
         activeBattle: ref({
           player: playerPoke,
           enemy: enemyPoke,
+          playerTeam: [playerPoke],
+          enemyTeam: [enemyPoke],
           weather: { type: 'clear', visual: 'clear', turns: -1 }
         }),
         attackerSide: ref(null),

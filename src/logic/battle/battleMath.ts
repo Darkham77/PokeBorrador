@@ -354,9 +354,10 @@ export function calculateDamagePure(
 
 
   // Random damage roll: Showdown uses integer 85-100 divided by 100 with floor (not a float multiply)
+  // Clamp to 100 to guard against mocked Math.random() === 1.0 producing 101
   const randomInt = randomFactor !== undefined
-    ? Math.round(randomFactor * 100)
-    : (85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
+    ? Math.min(100, Math.round(randomFactor * 100))
+    : Math.min(100, 85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
 
   // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
   const finalDmg = (finalEff > 0 && weatherMult > 0)

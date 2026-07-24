@@ -1,14 +1,20 @@
-// src/logic/battle/helpers/__tests__/showdownBridgeV3Fixes.test.ts
-import { describe, it } from 'node:test';
+/**
+ * tests/node/battle/showdownBridgeV3Fixes.test.ts
+ *
+ * Unit tests for Round 3 Showdown audit fixes:
+ * - EV clamping in calcStatsPure
+ * - filterShowdownLogs parameterization
+ */
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { calcStatsPure } from '../../../pokemon/statsMath.ts';
-import { filterShowdownLogs } from '../../showdownBridge.ts';
+import { calcStatsPure } from '../../../src/logic/pokemon/statsMath.ts';
+import { filterShowdownLogs } from '../../../src/logic/battle/showdownBridge.ts';
 
 describe('Showdown Audit v3 Fixes Unit Tests', () => {
-  it('enforces EV clamping (0-252) in calcStatsPure (NEW-11)', () => {
+  it('enforces EV clamping (0-252) in calcStatsPure', () => {
     const base = { hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 };
     const ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
-    const natureData = { name: 'serious', up: null, down: null };
+    const natureData = { up: null, down: null };
 
     // Pass illegal EV 500 — should clamp to 252 (giving identical result to ev = 252)
     const statsClamped = calcStatsPure(100, ivs, base, natureData, false, { atk: 252 });
@@ -17,7 +23,7 @@ describe('Showdown Audit v3 Fixes Unit Tests', () => {
     assert.equal(statsOverflown.atk, statsClamped.atk);
   });
 
-  it('parameterizes filterShowdownLogs with custom playerSide (NEW-10)', () => {
+  it('parameterizes filterShowdownLogs with custom playerSide', () => {
     const logs = [
       '|split|p2',
       '|-secret|p2 secret log',

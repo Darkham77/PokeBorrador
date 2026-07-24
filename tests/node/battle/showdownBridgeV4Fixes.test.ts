@@ -1,10 +1,15 @@
-// src/logic/battle/helpers/__tests__/showdownBridgeV4Fixes.test.ts
-import { describe, it } from 'node:test';
+/**
+ * tests/node/battle/showdownBridgeV4Fixes.test.ts
+ *
+ * Unit tests for Round 4 Showdown audit fixes:
+ * - ShowdownBattleRunner supports 4 seats dynamically (p1–p4)
+ */
+import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { ShowdownBattleRunner } from '../showdownBattleRunner.ts';
+import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 
 describe('Showdown Audit v4 Fixes Unit Tests', () => {
-  it('supports 4 seats dynamically in ShowdownBattleRunner (NEW-19)', () => {
+  it('supports 4 seats dynamically in ShowdownBattleRunner', () => {
     const runner = new ShowdownBattleRunner(['move 1'], ['move 2']);
     runner.setSeatChoices('p3', ['move 3']);
     runner.setSeatChoices('p4', ['move 4']);

@@ -179,7 +179,7 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
 
     it('should boost Fire damage in Sun (1.5x)', () => {
       const result = calculateDamagePure(attacker, defender, move, { weather: sun });
-      assert.strictEqual(result.dmg, 92);
+      assert.strictEqual(result.dmg, 91);
     });
 
     it('should reduce Fire damage in Rain (0.5x)', () => {

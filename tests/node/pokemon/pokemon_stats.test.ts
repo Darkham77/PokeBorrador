@@ -67,7 +67,7 @@ describe('calcStatsPure', () => {
 
   it('applies nature multipliers correctly (Firme/Adamant: +Atk, -Spa)', () => {
     const ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
-    const nature = { up: 'Ataque', down: 'At. Esp' };
+    const nature = { up: 'atk', down: 'spa' };
     
     const stats = calcStatsPure(100, ivs, charmanderBase, nature);
     

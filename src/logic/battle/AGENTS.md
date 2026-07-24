@@ -28,6 +28,7 @@ Frontend Developers / Systems Engineers.
 - **FSM Validation**: For FSM transitions, run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts`.
 
 - **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).
+- **Showdown Nature Casing Constraint**: Showdown Dex methods return `Nature.name` capitalized (e.g. `'Adamant'`), but internal simulator representations, `PokemonSet` objects, and local `GamePokemon` stores strictly require lowercase strings (e.g. `'adamant'`). Converting natures to capitalized strings in adapters or client stores is strictly prohibited.
   - Use `getShowdownNickname(uid)` to initialize Showdown simulator names.
   - Use `findPokemonByShowdownName(expectedName, list)` to safely resolve client-side Pokémon instances from Showdown's worker logs and requests.
 - **ESM Worker Output & Top-Level Await**: Todos los Web Workers que importen o dependan de archivos con *top-level await* deben compilarse en formato ES Module (configurado mediante `worker: { format: 'es' }` en `vite.config.ts`).
