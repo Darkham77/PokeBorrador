@@ -1,297 +1,410 @@
 ---
 name: safe-commit
-description: MANDATORY safeguard for repository operations. You MUST trigger and follow this skill whenever the user asks to commit, push, git commit, push changes, save changes, or safe-commit (including variations like "commit seguro", "safe commit", "subir cambios", "guardar cambios", "guardar seguro"). Standard commits or pushes are strictly forbidden without running this validation pipeline first. Do NOT trigger for automatic agent-internal saves.
+description: MANDATORY safeguard for repository operations. You MUST trigger and follow this skill whenever the user asks to commit, push, git commit, push changes, save changes, or safe-commit (including variations like "commit seguro", "safe commit", "subir cambios", "guardar cambios", "guardar seguro", "commit this", "push this"). Standard commits or pushes are STRICTLY FORBIDDEN without running this validation pipeline first — doing so would push broken or unvalidated code into history, which is irreversible. Do NOT trigger for automatic agent-internal saves.
 ---
 
 # Safe Commit Workflow: Poké Vicio Edition
 
-> [!IMPORTANT] **PROMPT-DRIVEN TRIGGER ONLY**: Activate when the user explicitly requests a commit or push. Do NOT activate for automatic agent-internal saves or background operations.
+> [!IMPORTANT]
+> **PROMPT-DRIVEN TRIGGER ONLY**: Activate when the user explicitly requests a commit or push. Do NOT activate for automatic agent-internal saves or background operations.
 
-This skill ensures that NO BROKEN OR MESSY CODE is ever committed. It leverages the project's internal validation scripts (SASS Traps, Hybrid Detection) and standard linting/testing to guarantee a production-ready state.
+---
 
-## Execution Steps
+## ⚡ Sequential Execution Contract
 
-### Workflow Overview
+This workflow is a **strict state machine**, not a checklist. Each step produces output that the next step consumes. Before making any tool call, internalize these rules:
+
+| Rule | What it means |
+|------|---------------|
+| **One command per turn** | Issue one tool call, read its output, then decide the next step. Never batch. |
+| **Read before continuing** | "I ran it" ≠ "I verified the result." Read every output before proceeding. |
+| **No optional steps** | Every step in the sequence is mandatory unless it has an explicit skip condition. |
+| **Update `task.md` after every tool call** | Not after every phase — after every single command. |
+| **Errors halt immediately** | Non-zero exit code or unexpected output = STOP, fix, re-run. Never continue past a failure. |
+
+> [!CAUTION]
+> The most common failure mode is batching commands or skipping output verification. The cost is committing broken code into **permanent, irreversible** git history.
+
+---
+
+## Workflow Overview
 
 ```mermaid
 graph TD
-    Start((START)) --> Artifacts[0. Mandatory Artifact Creation]
-    Artifacts --> Snapshot[1. Initial Snapshot Commit]
+    A0[⛔ Phase 0\nCreate task.md] --> A1
 
-    Snapshot --> Tracking[1.1 Task & Scratchpad Tracking]
-    Tracking --> |"Dynamic task update"| Tracking
-    Tracking --> GapAnalysis[2. Test Gap Analysis]
-    GapAnalysis --> MissingTests{Missing Tests?}
+    A1[Phase 1\nSnapshot Commit] --> A2
+    A2[Phase 2\nTest Gap Analysis] --> A2b{Missing tests?}
+    A2b -->|Yes| A2c[2.1 Implement tests]
+    A2b -->|No| A3
+    A2c --> A3
 
-    MissingTests -->|Yes| CreateTests[2.1 Create Unit Tests SUB-TASK]
-    MissingTests -->|No| Verification
-
-    CreateTests --> Verification
-
-    subgraph "The Zero-Warning Audit"
-        Verification[3. Active Verification Cycle] --> DiffAudit[3.1 Warnings & Errors Diff Audit]
-        DiffAudit --> AutoFix[3.2 Automatic Repair Pass]
-        AutoFix --> Discovery[3.3 Autonomous Repair Discovery]
-        Discovery --> ManualFix[3.4 Manual Repair Phase]
-        ManualFix --> FinalAudit[3.5 Final Validation Pass]
-
-        FinalAudit --> Types[Type-Safety]
-        Types --> Build[Production Build]
-        Build --> UnitTests[Unit Tests]
-        UnitTests --> HealthScore[Health Score Check]
+    subgraph LOOP ["🔁 Phase 3 — Repair Loop (exits ONLY on build exit code 0)"]
+        A3[3.1 audit:warnings-diff] -->|Errors| A34[3.4 Manual Repair]
+        A3 -->|Clean| A32[3.2 audit:fix]
+        A32 --> A33[3.3 Discovery Report]
+        A33 --> A34
+        A34 --> A35a[3.5a validate:types]
+        A35a -->|Fail| A34
+        A35a -->|Pass| A35b[3.5b test]
+        A35b -->|Fail| A34
+        A35b -->|Pass| A35c[3.5c npm run build ✅ THE GATE]
+        A35c -->|Fail| A34
+        A35c -->|Exit 0| A35d[3.5d audit:warnings-diff again]
+        A35d -->|New issues| A34
+        A35d -->|Clean| A35e[3.5e fallow health ≥ 85]
+        A35e -->|Below 85| A34
+        A35e -->|Pass| EXIT
     end
 
-    HealthScore --> ValidationGate{Zero Audit Errors & Build Successful?}
+    EXIT[✅ Exit Loop] --> A4
+    A4[Phase 4\nDB Parity Sync] --> A6
+    A6[Phase 6\nWorkspace Cleanup] --> A7
+    A7[Phase 7\nWalkthrough] --> A71
+    A71[Phase 7.1\nDOX Pass] --> A8
 
-    ValidationGate -->|No (Errors > 0 / Build/Test Fail)| ManualFix
+    A8[Phase 8\nLesson Extraction] --> STOP1
+    STOP1{🛑 USER APPROVES\nlearning_proposal.md?} -->|No/Modify| A8
+    STOP1 -->|Approved| A9
 
-    ValidationGate -->|Yes| HealthCompare{Health Score Regressed?}
+    A9[Phase 9\nFinal Commit] --> STOP2
+    STOP2{✅ USER APPROVES\nfinal commit?} -->|No| STOP2
+    STOP2 -->|Yes| A10
+    A10[Phase 10\nFinal Status]
 
-    HealthCompare -->|Yes| ManualFix
-
-    HealthCompare -->|No| DBCheck{DB Changes?}
-
-    DBCheck -->|Yes| DBSync[4. Database Parity Sync]
-    DBCheck -->|No| Recovery[5. Failure Recovery]
-
-    DBSync --> Recovery
-
-    Recovery --> Cleanup[6. Workspace Cleanup]
-    Cleanup --> Walkthrough[7. Walkthrough Generation]
-    Walkthrough --> DoxPass[7.1 DOX Update & Pass]
-    
-    DoxPass --> PreLessonCheck{Zero Audit Errors Gate Passed?}
-    PreLessonCheck -->|No (Errors Exist)| ManualFix
-    PreLessonCheck -->|Yes (0 Errors)| Lessons[8. Lessons Extraction & Proposal]
-
-    Lessons --> AskLessonApproval{Modal Lesson Approved?}
-
-    AskLessonApproval -->|No / Modify| Lessons
-    AskLessonApproval -->|Approved| AskFinalCommit{Final Commit Approved?}
-
-    AskFinalCommit -->|No| AskFinalCommit
-    AskFinalCommit -->|Yes| Commit[9. Lesson Persist & Final Commit]
-    Commit --> Notify[10. Final Status & Instructions]
-    Notify --> End((END))
-
-    style Start fill:#f9f,stroke:#333,stroke-width:4px
-    style End fill:#f9f,stroke:#333,stroke-width:4px
-    style Recovery fill:#ff9,stroke:#333,stroke-width:2px
-    style Verification fill:#dfd,stroke:#333,stroke-width:2px
-    style PreLessonCheck fill:#f96,stroke:#333,stroke-width:3px
-    style ValidationGate fill:#f96,stroke:#333,stroke-width:3px
+    style LOOP fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
+    style A35c fill:#e94560,stroke:#fff,stroke-width:2px,color:#fff
+    style EXIT fill:#0f3460,stroke:#e94560,stroke-width:2px,color:#fff
+    style STOP1 fill:#533483,stroke:#fff,stroke-width:2px,color:#fff
+    style STOP2 fill:#533483,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
 > [!IMPORTANT]
+> **IMMUTABLE STEPS**: Every node in this diagram is mandatory. You may add sub-tasks for complex features, but deleting or skipping original phases is FORBIDDEN.
 >
-> - **IMMUTABLE STEPS**: You MUST follow every step in this diagram. You are allowed to add intermediate sub-tasks for complex features, but you are FORBIDDEN from deleting or skipping any original design steps.
-> - **Incremental Update & Visual Proof**: Keep the **task** and **scratchpad** updated **phase by phase**. After updating the **task**, you MUST include a small snippet of the updated checklist in your response to the USER as visual proof of progress. **Advancing without updating the source of truth is a violation of project standards.**
+> **Living Proof of Progress**: After completing each phase, mark it `[x]` in `task.md` AND include a checklist snippet in your response as visual proof.
 
-### 0. Mandatory Artifact Creation (FIRST STEP BEFORE ANY COMMIT)
+---
 
-BEFORE executing any git commit or touching repository code, you MUST physically create and register the required workspace artifacts using `write_to_file` with `ArtifactMetadata`.
+## Phase 0: Mandatory Artifact Creation
 
-1. **Mandatory `task.md` File Creation**: You MUST call `write_to_file` (with `ArtifactMetadata`) to physically write `<appDataDir>\brain\<conversation-id>/task.md`. This is the **absolute source of truth**; it must record every granular step from scratch (Steps 0 through 10). Writing task lists solely as inline chat text without writing the artifact file is STRICTLY FORBIDDEN.
-2. **Mandatory `implementation_plan.md` File Creation**: You MUST call `write_to_file` (with `ArtifactMetadata`) to physically write `<appDataDir>\brain\<conversation-id>/implementation_plan.md` if it does not already exist. It must document the proposed commit scope, audit verification pipeline, and risk mitigation strategy.
-3. **Scratchpad Setup**: Prepare any temporary log files inside `<appDataDir>\brain\<conversation-id>/scratch/`.
+> [!CAUTION]
+> This is the absolute first thing you do — before `git status`, before any npm command, before anything.
 
-### 1. Initial Snapshot Commit (CRITICAL)
+**Step 0.1** — Create `task.md`
 
-AFTER creating the physical `task.md` and `implementation_plan.md` artifacts, you MUST perform an initial commit to safeguard the current state.
+Call `write_to_file` with `ArtifactMetadata` to write `<appDataDir>/brain/<conversation-id>/task.md`.
 
-1. **Analyze Diff and Status**: Run `git status` and `git diff` to analyze ALL modified and untracked files in the workspace since the last commit. You MUST NOT rely solely on the current conversation context.
-2. **AGENTS.md Chain Review**: Identify every file you modified. For each one, walk the path from the repo root and read every `AGENTS.md` found along the route. Confirm that the changes do not contradict any local contract (the closest `AGENTS.md` controls). If a contradiction is found, resolve it before committing.
-3. **Initial Project Health**: Run `npx fallow health --score` to capture and record the starting health score of the project before any modifications, to compare with the final score at Step 3.5.
-4. **Comprehensive Message**: Review every modified file's diff to understand the changes made, including those from previous sessions or manual edits.
-5. `git add .`
-6. **Commit Message**: Use the "Elegant Protocol" (see [commit-standards.md](./references/commit-standards.md)) to describe the work performed. The message MUST capture all changes across all modified files since the last commit, not just those from the current conversation.
-7. **Why**: This ensures that even if an automated repair tool modifies files, your original logic is preserved in history and can be easily diffed.
+Write the full checklist for Phases 0–10 with all sub-items, all marked `[ ]`. This is the single source of truth — without it there is no way to verify which steps actually ran.
 
-### 2. Test Gap Analysis
+**Step 0.2** — Note the scratch path
 
-For each modified file, ask: **"Does this file contain non-trivial logic?"** — functions with conditionals, computations, or state mutations. If yes, it needs test coverage.
+The scratch directory is `<appDataDir>/brain/<conversation-id>/scratch/`. All temporary report files go here.
 
-**In-scope** (almost always): `src/logic/`, `src/stores/`, `src/composables/` with embedded logic, `src/utils/` and `src/helpers/` with pure functions.
+**✓ Completion gate**: Mark Phase 0 `[x]` in `task.md`. Include the updated checklist snippet in your response. Only then proceed to Phase 1.
 
-**Out-of-scope** (unit tests don't apply): `src/components/` declarative templates, `src/views/` (E2E territory), `src/data/` static databases, `src/types/` TypeScript-only files.
+---
 
-- **ABSOLUTE MANDATORY SUB-TASK**: If any in-scope modified file contains new non-trivial logic without a corresponding test in `tests/unit/` or `tests/node/`, you **MUST** implement those tests immediately. There are no exceptions. Add this as a high-priority **SUB-TASK** in the **task**.
-- **NEVER FORGET**: While adding tests, the general objective of committing clean, verified code must remain the priority.
+## Phase 1: Initial Snapshot Commit
 
-### 3. Active Verification Cycle (The "Zero-Warning" Audit)
+This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a file, `git diff HEAD~1` shows exactly what changed. Without this commit, an auto-fix could silently overwrite your creative logic.
 
-You MUST run the warnings-diff gatekeeper tool and fix EVERY issue until a clean pass is achieved.
+**Step 1.1** — `git status`
+- Identify all modified, untracked, and deleted files.
+- Record the file list in `task.md`.
 
-> [!IMPORTANT] **NO VALIDATION EXEMPTIONS**: Every single step of the validation pipeline is STRICTLY MANDATORY. Under no circumstances (including "trivial" or minor single-token changes) may the agent skip any step, especially the production build (`npm run build`), type check, linting, tests, or audit.
-> [!CAUTION] **STRICT AUDIT & BUILD ERROR BLOCKING GATE**: If `npm run audit`, `npm run audit:warnings-diff`, `npm run validate:types`, `npm run test`, or `npm run build` reports EVEN A SINGLE ERROR (`Errores: > 0` or non-zero exit code), IT IS STRICTLY FORBIDDEN to proceed to Step 4, Step 6, Step 7, or Step 8 (Lessons Extraction / `learning_proposal.md` / `ask_question`). You MUST IMMEDIATELY STOP advancing through the steps, loop back to Step 3.4 (Manual Repair Phase), autonomously fix every single error in the source code, and re-run validation until 0 errors are achieved.
-> [!IMPORTANT] **Zero-Error Mandate for the Entire Project**: The final repository state MUST have exactly ZERO errors (including typescript, compilation, linting, build, SASS, GPU, items, database, security, audit, etc.) across the ENTIRE project. NO ERRORS ARE ALLOWED TO EXIST, REGARDLESS OF WHETHER THEY ARE NEW OR PRE-EXISTING. The agent is STRICTLY REQUIRED to autonomously diagnose, fix, and repair ALL project-wide errors before committing.
-> [!IMPORTANT] **Build Fail Mandate on Audit Errors**: `npm run build` MUST fail if there is even 1 audit error. Under NO circumstances may a build or commit proceed if any audit error remains in the codebase. Every audit error must be resolved at the source before any commit can be created.
-> [!IMPORTANT] **Zero-Warning Mandate for Files Modified Since last Push (`origin/main`)**: Every single file containing local changes compared to GitHub's `origin/main` MUST have all its warnings resolved. You may ONLY ignore a warning in a modified file if that exact warning already existed in the version of the file on `origin/main`.
-> [!IMPORTANT] **Strict Fallow Health Threshold Mandate (Minimum 85/100)**: The overall codebase health score computed by `npx fallow health --score` MUST be strictly **85/100 or higher** (and >= baseline). If the score is below 85, COMMITTING IS STRICTLY FORBIDDEN. The agent MUST run `npx fallow health --targets --hotspots`, record a refactoring sub-plan in `task.md` and `implementation_plan.md`, and execute code refactorings (reducing module complexity, eliminating dead exports, splitting oversized functions) until the health score is strictly **>= 85**.
+**Step 1.2** — `git diff`
+- Read the full diff output.
+- Confirm you understand what changed in every file before proceeding.
 
-**THE MANDATORY AUDIT PIPELINE:**
+**Step 1.3** — AGENTS.md chain review
+- For each modified file, walk from the repo root and `view_file` every `AGENTS.md` along the path.
+- If any local contract is contradicted, resolve it before committing.
 
-1. **Warnings & Errors Diff Audit**: `npm run audit:warnings-diff`
-   - **CRITICAL**: This is the primary gatekeeper. It checks for all project errors and new warnings in modified files compared to `origin/main`.
-   - **MUST RETURN ZERO ISSUES**: You are strictly forbidden from committing if `npm run audit:warnings-diff` reports any errors or new warnings.
+**Step 1.4** — `npx fallow health --score`
+- Read and record the score as `BASELINE_HEALTH = <score>` in `task.md`.
+- This number is required for the Phase 3.5e comparison. Do not proceed without recording it.
 
-2. **Automatic Repair**: `npm run audit:fix`
-   - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
+**Step 1.5** — Compose the commit message
+- Use the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
+- Derive the message from the actual `git diff` read in Step 1.2, not from memory.
 
-3. **Autonomous Repair Discovery (THE REPORT)**:
-   - Use `view_file` on `scratch/warnings_diff_report.txt` or `scratch/warnings_diff_report.json` to analyze the warnings/errors.
-   - Run `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt` and use `view_file` to analyze the report. Ensure no new dead code, unused exports, duplication, or excessive complexity is introduced.
-   - **MANDATORY**: List all issues, new warnings, project errors, and Fallow recommendations in your response as a "Technical Debt Report" before proceeding to repair them.
+**Step 1.6** — `git add .` → verify staged files match expectation
 
-4. **Manual Repair Phase**:
-   - Fix each identified issue autonomously in the code.
-   - All project-wide errors and all new warnings in modified files MUST be fixed.
+**Step 1.7** — `git commit -m "<message>"` → verify commit was created successfully
 
-### Escalation Policy
+**✓ Completion gate**: Mark Phase 1 `[x]` in `task.md`. Show snippet. Only then proceed to Phase 2.
 
-The AI MUST continue autonomously unless one of the following conditions occurs:
-- Multiple valid architectural solutions exist.
-- Business requirements are unclear.
-- Gameplay behaviour is ambiguous.
-- Product direction requires explicit approval.
+---
 
-Only under these conditions may the AI request user intervention.
+## Phase 2: Test Gap Analysis
 
-5. **Final Validation Pass**:
-   - `npm run validate:types`
-   - `npm run test`
-   - `npm run build` (enforces audit:full internally and compiles the application). **CRITICAL**: You MUST wait for `npm run build` to complete and verify that it finished with exit code 0.
-   - **AUTOMATIC RECOVERY LOOP**: If `npm run build` or `npm run test` fails or exits with non-zero status, you MUST immediately loop back to Step 3.4 (Manual Repair Phase) to diagnose and fix the failure. You are STRICTLY FORBIDDEN from proceeding to Step 4, Step 6, or any commit if any test or build fails.
-   - Re-run `npm run audit:warnings-diff` to verify that everything is 100% clean (0 errors, 0 new warnings).
-   - **Health Regression & Minimum Threshold Check**: Run `npx fallow health --score` and compare with the starting score from Step 0.3. The final score MUST be equal to or greater than the baseline AND strictly **85/100 or higher**. If regressed or under 85, inspect Fallow's recommendations (`npx fallow health --targets --hotspots`), refactor the complexity hotspots, and re-run until the score is strictly **>= 85**.
+For each file from Step 1.1, ask: **"Does this file contain non-trivial logic?"** (conditionals, computations, or state mutations).
 
-### 4. Database Triple Parity Sync
+| In-scope (needs tests) | Out-of-scope (tests don't apply) |
+|---|---|
+| `src/logic/` | `src/components/` declarative templates |
+| `src/stores/` | `src/views/` (E2E territory) |
+| `src/composables/` with embedded logic | `src/data/` static databases |
+| `src/utils/`, `src/helpers/` | `src/types/` TypeScript-only files |
 
-If the database schema has changed:
+**Step 2.1** — For each in-scope file, check if a corresponding test exists in `tests/unit/` or `tests/node/`.
 
-1. Verify the SQL migration exists in `database/migrations/`.
-2. Verify the Vite plugin has regenerated `src/logic/db/migrations_data.ts`.
-3. Verify the absolute schema in `database/schemas/` is updated.
-4. **Local Sync**: Ensure the WASM SQLite engine is initialized correctly with the new delta.
+- If new non-trivial logic has no test: add a mandatory **SUB-TASK** in `task.md` and implement the test before Phase 3.
 
-### 5. Failure Recovery & Workflow Projection
+**✓ Completion gate**: Mark Phase 2 `[x]` in `task.md`. Show snippet. Only then proceed to Phase 3.
 
-- If any check fails, fix the issue and **RE-START Step 3**. A fix for a lint error might break a build or introduce a SASS trap.
+---
 
-> [!CAUTION] **STOP ON FAILURE**: If something does not work or a test fails, you MUST fix it immediately. It is forbidden to proceed to the next step or attempt the commit if the verification cycle is not perfect.
-> [!IMPORTANT] **WORKFLOW PROJECTION & PROGRESS UPDATE**: After any correction, test creation, or upon finalizing a logical phase, you MUST explicitly update the **task** and list the REMAINING steps. Do not stop until the verification cycle returns 100% success and all tasks are completed.
+## Phase 3: Active Verification Cycle — The Repair Loop
 
-### 6. Workspace Cleanup (MANDATORY)
+> [!CAUTION]
+> **THE BUILD GATE IS THE ONLY EXIT FROM THIS PHASE.**
+>
+> `npm run build` returning **exit code 0** is the sole exit condition. Passing type-checks alone, tests alone, or lint alone is NOT sufficient. If the build fails for any reason — even after types and tests pass — you remain inside the loop. Return to Step 3.4, fix the build failure, and restart from Step 3.5a.
 
-Before extracting lessons or committing, clean up all temporary artifacts.
+> [!IMPORTANT]
+> **NO VALIDATION EXEMPTIONS**: Every sub-step is mandatory for every commit, including trivial single-token changes.
 
-- **Scratch Mandate Adherence**: Verify that any temporary files, debug outputs, text reports, or summaries were written exclusively to the `scratch/` directory.
-- Delete all files and content in the **scratchpad** that are no longer needed.
-- Delete all generated report files from `scratch/` (e.g., `scratch/audit_report.txt`, `scratch/fallow_report.txt`, etc.). **CRITICAL: NEVER delete `requirements.txt` in the root.**
-- Ensure `git status` does not show untracked temporary files, logs, or report files in the project root or source directories.
+### Step 3.1 — `npm run audit:warnings-diff`
 
-### 7. Walkthrough Generation (MANDATORY)
+This is the primary gatekeeper. It reports all project-wide errors and new warnings in modified files vs `origin/main`.
 
-You MUST call `write_to_file` to physically create or update the `<appDataDir>\brain\<conversation-id>/walkthrough.md` artifact (including `ArtifactMetadata`).
+1. Run the command and wait for it to complete.
+2. Read the full output.
+3. Record the result in `task.md`.
 
-- **Content**: Summarize the changes made, the files affected, and the verification results.
-- **Evidence**: Embed any relevant screenshots or recordings produced during the task.
+**If errors found** → skip 3.2 and 3.3, go directly to Step 3.4.
+**If clean** → proceed to Step 3.2.
 
-### 7.1 DOX Maintenance (The DOX Pass) (MANDATORY)
+### Step 3.2 — `npm run audit:fix`
 
-Before proceeding to lessons extraction, you MUST perform a complete DOX check:
+Auto-repairs easy fixes (viewport tags, `node:` prefixes, ESM extensions).
 
-1. **Verify Changed Paths**: Review all modified files against their corresponding `AGENTS.md` files in their folder tree.
-2. **Update Contracts and Content**: If the changes modified any purpose, rules, contracts, parameters, or configurations, update the nearest owning `AGENTS.md` to reflect these updates.
-3. **Index Refresh**: If any new directory with an `AGENTS.md` file was created, add it to its parent's `Child DOX Index`.
-4. **Run DOX Audit**: Verify that `npm run audit` runs successfully and reports 0 errors in the `DOX (AGENTS.md) Integrity` category. Any DOX errors must be fixed before proceeding.
+1. Run the command and wait for it to complete.
+2. Read the output and note which fixes were applied.
+3. Update `task.md` with applied repairs.
 
-> [!IMPORTANT] **Production Build Mandatory Completion Gate**: The background command `npm run build` MUST be awaited and confirmed to finish with exit code 0 before proceeding to Step 4, Step 6, or any commit operation. Proceeding while `npm run build` is running in the background or after it fails is STRICTLY FORBIDDEN.
+Proceed to Step 3.3.
 
-### 8. Lessons Extraction & HARD STOP (LOCAL) 🛑
+### Step 3.3 — Autonomous Repair Discovery
 
-> [!CAUTION] **PRE-LESSON VALIDATION COMPLETION GATE**: BEFORE triggering `/learn-with-docs`, writing `learning_proposal.md`, or calling `ask_question`, you MUST verify that Step 3 completed with EXACTLY ZERO ERRORS (`Errores: 0`). Generating `learning_proposal.md` or asking for lesson approval while project audit/build/test errors exist is a CRITICAL VIOLATION OF SAFE-COMMIT. If any error was logged during Step 3, you MUST ABORT Step 8, return to Step 3.4 (Manual Repair Phase), and fix all errors first.
+> [!NOTE]
+> This step's output is the mandatory work order for Step 3.4. Unread issues become unrepaired issues.
 
-Trigger the **/learn-with-docs** workflow directly by loading and following the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons and format the proposal automatically.
+**Step 3.3a** — Read the warnings report
 
-> [!IMPORTANT] **AUTOMATIC EXECUTION MANDATE**: Do NOT ask the user whether they want to run `/learn-with-docs`. Running lesson extraction is a mandatory part of Step 8. Execute it automatically to extract lessons and write `learning_proposal.md`.
+Use `view_file` on `scratch/warnings_diff_report.txt` (or `.json`). Extract every listed issue.
 
-This is a **local documentation task** and MUST NOT involve a browser subagent.
+**Step 3.3b** — Run and read the Fallow report
 
-> [!CAUTION] **🛑 LESSON PROPOSAL APPROVAL — ABSOLUTE HARD STOP**:
-> 1. Call `write_to_file` to create the `<appDataDir>/brain/<conversation-id>/learning_proposal.md` artifact with complete `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: true`, and a detailed multi-line `Summary`). NEVER save `learning_proposal.md` in `scratch/` or inside the project repository workspace.
-> 2. Call the `ask_question` tool to present the **extracted lessons proposal** interactively to the user with options to Approve or Reject/Modify the lesson content.
-> 3. **IMMEDIATELY STOP calling any further tools** in the current turn until the user responds to the `ask_question` modal.
-> 4. Do NOT execute `git commit`, `git add`, or any file edits for Step 9 in the same turn.
+```bash
+npx fallow audit --changed-since origin/main > scratch/fallow_report.txt
+```
 
-- **NEVER ASK TO RUN THE STEP**: The `ask_question` tool is reserved strictly for requesting approval on the *content* of the extracted lessons, never for asking whether to run `/learn-with-docs`.
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the learning proposal via `ask_question`.
-- **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item up to Step 8 is marked as `[x]`.
+Then `view_file` on `scratch/fallow_report.txt`. Extract all dead code, unused exports, duplication, and complexity findings.
 
-### 9. Lesson Approval & Final Commit
+**Step 3.3c** — Write the Technical Debt Report
 
-AFTER (and ONLY after) the user explicitly approves the learning proposal via `ask_question`:
+Write a section in your response titled **"Technical Debt Report"** enumerating ALL issues from 3.3a and 3.3b. If there are zero issues, write "Technical Debt Report: 0 issues found." Either way, the report must appear before proceeding.
 
-1. Persist the approved lessons into their respective `AGENTS.md` files as proposed.
-2. Call the `ask_question` tool to request explicit user approval before performing the final optimization commit.
-3. Run `git status` to verify staged changes (only DOX documentation updates and final build artifacts should remain).
-4. Run `git add .`
-5. **Commit Message**: Perform the final commit using the standard header `docs(agents):` or `refactor(audit):`.
-   - **Example**: `docs(agents): persist battle animation bridge mapping and seat property resolution rules`.
+Update `task.md` with the total issue count.
 
-### 10. Final Status & Instructions
+### Step 3.4 — Manual Repair Phase
 
-Notify the user that both commits (Snapshot and Optimization) have been successfully created.
+Fix each issue from the Technical Debt Report one at a time:
 
-- **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. Inform the user that the local repository is clean and they should push manually when ready.
-- **Zero Audit Failures**: Under NO circumstances are audit failures (SASS, Aesthetics, Length, FSM, Types, Lint) allowed in any commit.
-- **DATABASE & REMOTE SYNCHRONIZATION ALERT**: Display a prominent warning at the very end of your response informing the user they must push and update the database schemas on the servers. Provide these commands:
+1. Edit the source file.
+2. Append the fix description to `task.md` under "Repairs applied".
+3. After completing all fixes in this batch, proceed to Step 3.5a — do NOT skip it even if you believe the build is already clean.
 
-  ```bash
-  # Push changes to remote
-  git push origin main
+> **Escalation** — pause and ask the user only if:
+> - Multiple valid architectural solutions exist with non-obvious tradeoffs
+> - Business or gameplay requirements are ambiguous
+> - Product direction requires explicit approval
+>
+> Otherwise continue autonomously.
 
-  # Update database on a specific server
-  npm run servers:db:update -- --server=<profile>
+### Step 3.5a — `npm run validate:types`
 
-  # Update database on all configured servers
-  npm run servers:db:update -- --all
-  ```
+1. Run the command and wait for completion.
+2. Read the full output.
+
+**If TypeScript errors exist** → record them in `task.md`, return to Step 3.4. Do NOT proceed to 3.5b.
+**If clean** → update `task.md` with `types: ✅`. Proceed to Step 3.5b.
+
+### Step 3.5b — `npm run test`
+
+1. Run the command and wait for completion.
+2. Read the full output.
+
+**If any test fails** → record the failing tests in `task.md`, return to Step 3.4. Do NOT proceed to 3.5c.
+**If all pass** → update `task.md` with `tests: ✅`. Proceed to Step 3.5c.
+
+### Step 3.5c — `npm run build` ← THE BUILD GATE 🔒
+
+> [!CAUTION]
+> Do not issue any other tool call while the build is running. Wait for it to fully complete. This is the only gate that unlocks Phase 4.
+
+1. Run the command.
+2. Wait for it to fully complete — do NOT issue any other tool call in the meantime.
+3. Read the exit code and full output.
+
+**If exit code ≠ 0 or build errors exist** → record under "Build failures" in `task.md`, return to Step 3.4. You are still inside the loop. Do NOT proceed to 3.5d.
+**If exit code = 0 and no errors** → update `task.md` with `build: ✅ (exit 0)`. Proceed to Step 3.5d.
+
+### Step 3.5d — `npm run audit:warnings-diff` (re-validation)
+
+Repairs can introduce new warnings. This re-run confirms the loop's output is clean.
+
+1. Run the command and wait for completion.
+2. Read the full output.
+
+**If any errors or new warnings** → the repair cycle introduced regressions. Record them in `task.md`, return to Step 3.4.
+**If 0 errors, 0 new warnings** → update `task.md` with `post-repair audit: ✅`. Proceed to Step 3.5e.
+
+### Step 3.5e — `npx fallow health --score`
+
+1. Run the command and wait for completion.
+2. Read the score.
+
+The score MUST be **≥ `BASELINE_HEALTH`** (recorded in Step 1.4) AND **≥ 85**.
+
+**If below 85 or regressed** → run `npx fallow health --targets --hotspots`, record a refactoring sub-plan in `task.md`, perform the refactors, restart from Step 3.5a.
+**If valid** → update `task.md` with `health: ✅ score=<N>`.
+
+**✅ Loop exited.** Mark Phase 3 `[x]` in `task.md` with all sub-scores recorded. Show snippet. Only then proceed to Phase 4.
+
+---
+
+## Phase 4: Database Triple Parity Sync
+
+> **Skip condition**: no database schema changes were made (verify from Step 1.2 diff output).
+
+If the schema changed:
+
+1. Verify SQL migration exists in `database/migrations/`.
+2. Verify `src/logic/db/migrations_data.ts` was regenerated by the Vite plugin.
+3. Verify `database/schemas/` is updated.
+4. Verify the WASM SQLite engine is initialized with the new delta.
+
+**✓ Completion gate**: Mark Phase 4 `[x]` in `task.md` (or note "skipped — no DB changes"). Only then proceed to Phase 6.
+
+---
+
+## Phase 5: Failure Recovery
+
+If any phase check failed and you fixed the cause, restart Phase 3 entirely — a lint repair might break a build or introduce a SASS trap.
+
+> [!IMPORTANT]
+> After any correction, update `task.md` with the remaining steps. Do not stop until Phase 3 returns 100% success on all sub-steps.
+
+---
+
+## Phase 6: Workspace Cleanup
+
+1. Run `git status` — verify no untracked temp files, logs, or reports appear in the project root or source directories.
+2. Delete all generated report files from `scratch/` (audit reports, fallow reports, etc.).
+
+> **NEVER delete `requirements.txt` in the root.**
+
+**✓ Completion gate**: Mark Phase 6 `[x]` in `task.md`. Only then proceed to Phase 7.
+
+---
+
+## Phase 7: Walkthrough Generation
+
+Call `write_to_file` to create or update `<appDataDir>/brain/<conversation-id>/walkthrough.md` with `ArtifactMetadata` (`UserFacing: true`).
+
+- **Content**: changes made, files affected, verification results (build ✅, tests ✅, health score).
+- **Evidence**: embed any screenshots or recordings produced during the session.
+
+**✓ Completion gate**: Mark Phase 7 `[x]` in `task.md`. Only then proceed to Phase 7.1.
+
+---
+
+## Phase 7.1: DOX Maintenance (The DOX Pass)
+
+1. For each modified file (list from Step 1.1), `view_file` the nearest `AGENTS.md` in its folder tree.
+2. If changes modified any purpose, rules, contracts, or configurations, update that `AGENTS.md`.
+3. If any new directory with an `AGENTS.md` was created, add it to its parent's Child DOX Index.
+4. Run `npm run audit` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
+
+**✓ Completion gate**: Mark Phase 7.1 `[x]` in `task.md`. Only then proceed to Phase 8.
+
+---
+
+## Phase 8: Lessons Extraction & 🛑 Hard Stop
+
+> [!CAUTION]
+> **PRE-LESSON GATE**: Before anything in this phase, call `view_file` on `task.md` and confirm Phases 0, 1, 2, 3, 4, 6, 7, and 7.1 are ALL marked `[x]`. If even one phase has an unresolved item, abort Phase 8, return to that phase, and resolve it. Generating a lesson proposal while phases are incomplete is a CRITICAL VIOLATION.
+
+**Step 8.1** — Load and follow the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons. This is mandatory — do NOT ask the user whether to run it.
+
+**Step 8.2** — Call `write_to_file` to create `<appDataDir>/brain/<conversation-id>/learning_proposal.md` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: true`, detailed multi-line `Summary`). Never save it in `scratch/` or inside the repo.
+
+**Step 8.3** — Call `ask_question` to present the lesson proposal with Approve / Reject-Modify options.
+
+> [!CAUTION]
+> **🛑 ABSOLUTE HARD STOP AFTER STEP 8.3**: Stop calling tools immediately after `ask_question`. Do not execute `git commit`, `git add`, or any file edits in the same turn. Do not proceed to Phase 9. Wait for the user's response.
+
+---
+
+## Phase 9: Lesson Approval & Final Commit
+
+This phase begins **only after** the user explicitly approves the lesson proposal from Phase 8.
+
+1. Persist approved lessons into their respective `AGENTS.md` files as proposed.
+2. Call `ask_question` to request explicit user approval for the final optimization commit.
+3. Run `git status` — only DOX documentation updates and final build artifacts should remain.
+4. `git add .`
+5. Commit with header `docs(agents):` or `refactor(audit):`.
+
+**✓ Completion gate**: Mark Phase 9 `[x]` in `task.md`. Only then proceed to Phase 10.
+
+---
+
+## Phase 10: Final Status & Instructions
+
+Notify the user that both commits (Snapshot + Optimization) were successfully created.
+
+> [!IMPORTANT]
+> **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. Inform the user the repository is clean and to push manually when ready.
+
+Display this block at the end of your response:
+
+```bash
+# Push changes to remote
+git push origin main
+
+# Update database on a specific server
+npm run servers:db:update -- --server=<profile>
+
+# Update database on all configured servers
+npm run servers:db:update -- --all
+```
+
+Mark Phase 10 `[x]` in `task.md`. Workflow complete.
 
 ---
 
 ## Commit Message Standards
 
-See [commit-standards.md](./references/commit-standards.md) for the full Elegant Protocol, the dual-commit strategy, the gold standard example, and the list of forbidden patterns.
+See [commit-standards.md](./references/commit-standards.md) for the full Elegant Protocol, dual-commit strategy, gold standard example, and forbidden patterns.
 
 **Quick reference — forbidden patterns:**
 
 - Single-word messages (`commit`, `update`, `fix`).
-- Messages without a bulleted list for changes involving 2+ files.
-- Vague descriptions like "minor changes" without specifying the technical "what".
+- No bulleted list when 2+ files changed.
+- Vague descriptions without the technical "what".
+- Messages written from memory instead of the actual `git diff`.
 
 ---
 
-## Example Recovery Strategy
+## Anti-Shortcut Policy
 
-**Correct behavior after a fix:** "Fixed lowercase filter collision in `MapCard.vue`. **Workflow Projection**:
-
-1. [ ] Re-run `npm run audit:full` (Step 3).
-2. [ ] Run `npm run build` to verify compilation (Step 3.5).
-3. [ ] Workspace Cleanup (Step 6).
-4. [ ] Walkthrough Generation (Step 7).
-5. [ ] DOX Maintenance & Audit (Step 7.1).
-6. [ ] Extract lessons (Step 8). **Wait for 🛑 Lesson Approval**.
-7. [ ] **Wait for ✅ Skill Implementation Verification** (Step 8.2).
-8. [ ] Final Optimization Commit (Step 9)."
-
----
-
-## ⚠️ Anti-Shortcut Policy
-
-- **No Phase-Jumping**: It is strictly forbidden to execute Steps 9 or 10 if Steps 1–8 are not fully documented and checked in the **task**.
-- **Test Implementation Check**: You are FORBIDDEN from committing if there are identified "Missing Tests" in Step 2 that haven't been implemented and marked as `[x]`.
-- **Contextual Review**: Before each tool call in the verification cycle, ask yourself: "Is my task updated with the result of the *previous* tool call?". If not, update it first.
-- **Fallow Health Threshold Gate (< 85% Prohibition)**: It is STRICTLY FORBIDDEN to perform a commit if `npx fallow health --score` returns less than **85/100** (or regresses below baseline). Any attempt to commit code with a health score under 85 is a critical violation of project standards. The agent MUST create a refactoring plan in `task.md` / `implementation_plan.md` and execute improvements until reaching 85+.
-- **Fallow Bypass Prohibition (`.fallowrc.json`)**: It is STRICTLY FORBIDDEN to modify `.fallowrc.json` (such as adding ignored dependencies, files, or exports) solely to bypass Fallow errors in order to pass the commit gate. Every single error must be properly FIXED in the source code, regardless of the time or delay required. Shortcuts or configuration bypasses are forbidden. **Concrete example of a valid fix**: If Fallow reports `Export no usado: 'getCombatAI'`, check if the export is genuinely public API. If the function is only used within the same file, remove the `export` keyword — do NOT add it to `ignoreExports`.
-- **Safe Array Swaps (noUncheckedIndexedAccess)**: In strict TypeScript environments, indexing elements inside arrays (e.g. `arr[idx]`) can return `undefined`. Always verify that indexed elements are not undefined before performing values swaps or reassignments to prevent compiler errors.
+- **No Phase-Jumping**: Phases 9–10 cannot execute if any of Phases 0–8 have unresolved `task.md` items.
+- **Missing Tests Prohibition**: Committing with identified missing tests from Phase 2 that aren't implemented is FORBIDDEN.
+- **Fallow Health Gate**: Committing with health score < 85 is a critical violation.
+- **Fallow Bypass Prohibition**: Modifying `.fallowrc.json` to bypass Fallow errors instead of fixing them at the source is STRICTLY FORBIDDEN.
+- **Safe Array Swaps**: Always verify indexed array elements are not `undefined` before value swaps in strict TypeScript (`noUncheckedIndexedAccess`).
