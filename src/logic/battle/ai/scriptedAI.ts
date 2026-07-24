@@ -124,19 +124,12 @@ export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<
   runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0
 
   const choiceStr = runner.resolveAndConsumeNextChoice('p1', active.playerRequest)
-  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx}: "${choiceStr}"`)
+  debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
+  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx} -> next #${runner.p1ChoiceIdx}: "${choiceStr}"`)
 
   if (choiceStr === 'pass') {
-    const { requiresAction } = await import('../helpers/requestHelper.ts')
-    const enemyNeedsAction = requiresAction(active.enemyRequest)
-    if (enemyNeedsAction) {
-      console.debug(`[E2E-SCRIPTED-AI] Player passes ('pass'), but enemy requires action. Executing runEnemyAction.`)
-      const { runEnemyAction } = await import('../battleTurn.ts')
-      await runEnemyAction(battleStore.getContext())
-      return true
-    }
-    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Skipping player execution.`)
-    return false
+    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Replay completed or player requires no action.`);
+    return true;
   }
 
   const clean = choiceStr.trim().toLowerCase()

@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import type { BattleContext } from '../../../../src/types/battle/battleContext.ts';
 import type { BattleState, BattleStages, BattleLog } from '../../../../src/types/battle/battle.ts';
 import type { Pokemon, Move } from '../../../../src/types/pokemon/pokemon.ts';
+import { useGameStore } from '../../../../src/stores/game.ts';
 
 export function createMockBattleContext(
   playerPoke: Pokemon,
@@ -26,6 +27,11 @@ export function createMockBattleContext(
     startedAt: '',
     updatedAt: ''
   } as unknown as BattleState);
+
+  const gameStore = useGameStore();
+  if (gameStore) {
+    (gameStore as unknown as { state: { team: Pokemon[] } }).state = { team: playerTeam || [playerPoke] };
+  }
 
   const playerRef = ref<Pokemon | null | undefined>(playerPoke);
   const enemyRef = ref<Pokemon | null | undefined>(enemyPoke);

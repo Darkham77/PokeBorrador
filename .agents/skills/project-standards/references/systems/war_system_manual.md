@@ -43,10 +43,11 @@ Points are earned for activities on disputed maps:
 
 At the end of the week (Sunday 23:59), War Coins are distributed according to individual performance:
 
-- **Milestone 1 (500 PT)**: 10 Coins.
-- **Milestone 2 (1500 PT)**: 25 Coins.
-- **Milestone 3 (3000 PT)**: 50 Coins.
-- **Winner Bonus**: +10 Coins if your faction dominated more than 50% of the maps.
+- **Milestone 1 (1 PT)**: 10 Coins.
+- **Milestone 2 (101 PT)**: 35 Coins.
+- **Milestone 3 (501 PT)**: 75 Coins.
+- **Milestone 4 (1501 PT)**: 150 Coins.
+- **Winner Bonus**: +50 Coins if your faction dominated more than 50% of the maps.
 
 ---
 
@@ -54,7 +55,7 @@ At the end of the week (Sunday 23:59), War Coins are distributed according to in
 
 ### 1. Appearance
 
-- They have a base appearance probability (**GUARDIAN_CHANCE**) of 1% for every wild encounter on disputed maps.
+- They have a base appearance probability (**GUARDIAN_CHANCE**) of 1.5% for every wild encounter on disputed maps.
 
 ### 2. Catch vs. Defeat
 

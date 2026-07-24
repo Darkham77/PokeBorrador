@@ -14,6 +14,28 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
   const { store, type, parts, line, p, getPoke, getSide } = ctx;
 
   switch (type) {
+    case '-notarget': {
+      if (line.includes('[silent]')) return true;
+      const target = getPoke(parts[2] || '');
+      if (target) {
+        store.addLog(`¡No hay objetivo para el movimiento de ${target.name}!`, 'log-info', target);
+      } else {
+        store.addLog('¡No hay objetivo válido!', 'log-info');
+      }
+      return true;
+    }
+
+    case '-hint':
+    case '-message':
+    case 'message': {
+      if (line.includes('[silent]')) return true;
+      const msg = parts[2] || parts[1] || '';
+      if (msg && !msg.startsWith('http')) {
+        store.addLog(msg, 'log-info');
+      }
+      return true;
+    }
+
     case '-miss': {
       if (line.includes('[silent]')) return true;
       const attacker = getPoke(parts[2] || '');
@@ -172,9 +194,25 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     }
 
     case '-singlemove':
-    case '-singleturn':
+    case '-singleturn': {
+      if (line.includes('[silent]')) return true;
+      const target = getPoke(parts[2] || '');
+      const moveOrEffect = parts[3] || '';
+      const cleanEffect = (moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect).toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (target) {
+        if (cleanEffect === 'protect' || cleanEffect === 'detect' || cleanEffect === 'endure') {
+          store.addLog(`¡${target.name} se protegió!`, 'log-info', target);
+        }
+      }
+      return true;
+    }
     case '-candynamax':
-      return true; // Silencio intencional
+    case 'swap':
+    case '-center':
+    case '-combine':
+    case '-waiting':
+    case 'custom':
+      return true;
 
     case '-endability': {
       if (line.includes('[silent]')) return true;
@@ -221,7 +259,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
         if (store.activeBattle.value) {
           const sub = store.fsm?.currentSubState;
           const subName = String(sub?.value || sub || '');
-          const isFsmAnimActive = store.isIntroAnimating.value || ['POKEMON_RECALL', 'POKEMON_CALL', 'ENEMY_REPLACEMENT_SEQ', 'ENTRY_ANIM', 'PARALLEL_JUMP'].includes(subName);
+          const isFsmAnimActive = Boolean(store.isIntroAnimating?.value) || ['POKEMON_RECALL', 'POKEMON_CALL', 'ENEMY_REPLACEMENT_SEQ', 'ENTRY_ANIM', 'PARALLEL_JUMP'].includes(subName);
           const bState = store.activeBattle.value as unknown as Record<string, unknown>;
           if (side === 'player') {
             if (!isFsmAnimActive) {
@@ -250,6 +288,13 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       }
       if (type === 'drag' && !line.includes('[silent]')) {
         if (target) store.addLog(`¡${target.name} fue arrastrado al campo!`, 'log-info', target);
+      } else if (type === 'switch' && !line.includes('[silent]')) {
+        if (target) {
+          const side = getSide(parts[2] || '');
+          const msg = side === 'player' ? `¡Adelante, ${target.name}! ` : `¡El rival envió a ${target.name}!`;
+          const style = side === 'player' ? 'log-player' : 'log-enemy';
+          store.addLog(msg, style, target);
+        }
       }
       return true;
     }

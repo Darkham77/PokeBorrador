@@ -2,6 +2,7 @@
 // scripts/e2e/fuzzer/runners/run_gts_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Dex } from '@pkmn/sim';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 
@@ -27,7 +28,7 @@ async function runGTSFuzzer() {
   const createMockPoke = (speciesName: string): Pokemon => {
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
-      id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: Dex.toID(speciesName),
       name: speciesName,
       level: 30,
       gender: 'M',
@@ -121,7 +122,7 @@ async function runGTSFuzzer() {
   }
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       total: 200,
       passed,

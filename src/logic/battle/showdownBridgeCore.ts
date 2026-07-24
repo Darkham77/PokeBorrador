@@ -2,12 +2,14 @@ import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+
 /**
  * Maneja los eventos básicos de combate:
  * move, -prepare, -damage, -heal, faint, -status, -curestatus, -sethp
  */
 export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
-  const { store, type, parts, p, getPoke, getSide, turnLogs } = ctx;
+  const { store, type, parts, line, p, getPoke, getSide, turnLogs } = ctx;
 
   if (store.activeBattle.value && (store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
     if (type === 'move' || type === '-damage' || type === '-heal' || type === '-status' || type === '-curestatus' || type === '-sethp' || type === 'faint') {
@@ -20,7 +22,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const side = getSide(parts[2] || '');
       const attacker = getPoke(parts[2] || '');
       const moveId = parts[3] || 'Movimiento';
-      const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
       const moveData = pokemonDataProvider.getMoveData(moveId);
       const translatedName = moveData?.name || moveId;
 
@@ -74,7 +75,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case '-prepare': {
        const attacker = getPoke(parts[2] || '');
        const moveId = parts[3] || 'Movimiento';
-       const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
        const moveData = pokemonDataProvider.getMoveData(moveId);
        const translatedName = moveData?.name || moveId;
       if (attacker) {
@@ -86,6 +86,9 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           pp: 0,
           maxPP: 0
         } as unknown as Move;
+        if (!line.includes('[silent]')) {
+          store.addLog(`¡${attacker.name} está cargando ${translatedName}!`, 'log-info', attacker);
+        }
       }
       return true;
     }
@@ -101,10 +104,28 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           if (!isNaN(parsedMax)) victim.maxHp = parsedMax;
         }
         const fromClause = parts.find(p => p.startsWith('[from]'));
-        if (fromClause && fromClause.toLowerCase().includes('recoil')) {
-          store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
-        } else if (fromClause && fromClause.toLowerCase().includes('item: life orb')) {
-          store.addLog(`¡${victim.name} recibió daño de Vidasfera!`, 'log-info', victim);
+        if (fromClause) {
+          const fromLower = fromClause.toLowerCase();
+          if (fromLower.includes('recoil')) {
+            store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
+          } else if (fromLower.includes('item: life orb')) {
+            store.addLog(`¡${victim.name} recibió daño de Vidasfera!`, 'log-info', victim);
+          } else if (fromLower.includes('psn') || fromLower.includes('brn')) {
+            const cause = fromLower.includes('brn') ? 'la quemadura' : 'el veneno';
+            store.addLog(`¡${victim.name} sufrió daño por ${cause}!`, 'log-info', victim);
+          } else if (fromLower.includes('sandstorm') || fromLower.includes('hail')) {
+            const weatherName = fromLower.includes('sandstorm') ? 'la tormenta de arena' : 'el granizo';
+            store.addLog(`¡${victim.name} sufrió daño por ${weatherName}!`, 'log-info', victim);
+          } else if (fromLower.includes('leech seed')) {
+            store.addLog(`¡${victim.name} fue dañado por las Drenadoras!`, 'log-info', victim);
+          } else if (fromLower.includes('stealth rock') || fromLower.includes('spikes')) {
+            store.addLog(`¡${victim.name} sufrió daño por las trampa(s)!`, 'log-info', victim);
+          } else if (fromLower.includes('item:')) {
+            const itemName = fromClause.split('item:')[1]?.trim() || 'Objeto';
+            store.addLog(`¡${victim.name} sufrió daño por ${itemName}!`, 'log-info', victim);
+          } else {
+            store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
+          }
         } else {
           store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
         }
@@ -131,8 +152,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
-
-
     case 'faint': {
       const target = getPoke(parts[2] || '');
       if (target) {
@@ -150,16 +169,35 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const statusType = parts[3] || '';
       if (target && statusType) {
         target.status = statusType as PokemonStatus;
-        store.addLog(`¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`, 'log-info', target);
+        const statusMessages: Record<string, string> = {
+          brn: `¡${target.name} fue quemado!`,
+          psn: `¡${target.name} fue envenenado!`,
+          tox: `¡${target.name} fue gravemente envenenado!`,
+          slp: `¡${target.name} se quedó dormido!`,
+          par: `¡${target.name} fue paralizado! ¡Quizás no pueda moverse!`,
+          frz: `¡${target.name} fue congelado!`,
+        };
+        const msg = statusMessages[statusType] || `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`;
+        store.addLog(msg, 'log-info', target);
       }
       return true;
     }
 
     case '-curestatus': {
       const target = getPoke(parts[2] || '');
+      const curedStatus = parts[3] || '';
       if (target) {
         target.status = null;
-        store.addLog(`¡${target.name} se curó de su estado alterado!`, 'log-info', target);
+        const cureMessages: Record<string, string> = {
+          slp: `¡${target.name} se despertó!`,
+          frz: `¡${target.name} se descongeló!`,
+          brn: `¡${target.name} se curó de la quemadura!`,
+          psn: `¡${target.name} se curó del envenenamiento!`,
+          tox: `¡${target.name} se curó del envenenamiento!`,
+          par: `¡${target.name} se curó de la parálisis!`,
+        };
+        const msg = cureMessages[curedStatus] || `¡${target.name} se curó de su estado alterado!`;
+        store.addLog(msg, 'log-info', target);
       }
       return true;
     }
@@ -189,7 +227,8 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
-    case 'win': {
+    case 'win':
+    case 'tie': {
       const winnerName = parts[2] || 'Entrenador';
       let source: 'player' | 'enemy_trainer' = 'enemy_trainer';
       if (store.activeBattle.value?.playerNames && store.activeBattle.value.playerNames[winnerName] === 'player') {
@@ -197,7 +236,8 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       } else if (winnerName === 'Player') {
         source = 'player';
       }
-      store.addLog(`¡El combate ha terminado! Ganador: ${winnerName}`, 'log-info', source);
+      const msg = type === 'tie' ? '¡El combate ha terminado en empate!' : `¡El combate ha terminado! Ganador: ${winnerName}`;
+      store.addLog(msg, 'log-info', source);
       return true;
     }
 

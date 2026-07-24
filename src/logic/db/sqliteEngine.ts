@@ -106,6 +106,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
                 const arrayBuffer = await response.arrayBuffer()
                 _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as unknown as SQLiteDatabase
+                await ensureSchemaIntegrity(_sqliteDb)
+                await runMigrations()
                 return _sqliteDb
               }
             }
@@ -121,6 +123,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
           logger.info('SQLite', 'Clean DB template found. Initializing database instantly from template...')
           const arrayBuffer = await checkRes.arrayBuffer()
           _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as unknown as SQLiteDatabase
+          await ensureSchemaIntegrity(_sqliteDb)
+          await runMigrations()
           return _sqliteDb
         }
       } catch (err) {

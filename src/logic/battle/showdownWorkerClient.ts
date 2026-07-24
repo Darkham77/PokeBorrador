@@ -150,18 +150,9 @@ export async function executeTurnInWorker(
     throw new Error('showdownWorker is null')
   }
 
+  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
   let turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
-
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.cheats) {
-    const cheats = window.__VITE_DEBUG__.cheats;
-    // Pasar todos los cheats al worker para que los evalúe contra battle.turn de forma robusta y evitar desalineamientos por turnCount de la UI
-    if (Array.isArray(cheats)) {
-      turnCheats = cheats;
-    }
-  }
-
-  const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
 
 
 
@@ -183,7 +174,7 @@ export async function executeTurnInWorker(
       battleStore.state.battleHistory.push({
         turnCount: battleStore.state.turnCount,
         p1Choice,
-        p2Choice: finalP2Choice || 'struggle'
+        p2Choice: finalP2Choice || ''
       });
     }
 

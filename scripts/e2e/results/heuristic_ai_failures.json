@@ -1,7 +1,7 @@
 [
   {
-    "scenario": "fuzzer-npc",
-    "error": "locator.waitFor: Target page, context or browser has been closed",
-    "timestamp": "2026-07-22T02:30:26.372Z"
+    "scenario": "fuzzer-wild",
+    "error": "page.evaluate: Target page, context or browser has been closed",
+    "timestamp": "2026-07-24T00:05:21.637Z"
   }
 ]

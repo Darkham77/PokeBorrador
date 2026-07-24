@@ -51,6 +51,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         if (cleanEffect === 'confusion') {
           target.volatileCounters['confusion'] = 1;
           delete target.volatileCounters['lockedmove'];
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} se confundió!`, 'log-info', target);
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
           const moveId = toID(moveName);
@@ -59,6 +60,17 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           const translatedName = moveData?.name || moveName;
           target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
           target.disabledTurns = 4;
+          if (!line.includes('[silent]')) store.addLog(`¡El movimiento ${translatedName} de ${target.name} fue desactivado!`, 'log-info', target);
+        } else if (cleanEffect === 'leechseed') {
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} fue infectado con Drenadoras!`, 'log-info', target);
+        } else if (cleanEffect === 'substitute') {
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} creó un sustituto!`, 'log-info', target);
+        } else if (cleanEffect === 'attract') {
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} se enamoró!`, 'log-info', target);
+        } else if (cleanEffect === 'taunt') {
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} cayó bajo la mofa!`, 'log-info', target);
+        } else if (cleanEffect === 'encore') {
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} recibió un Bis!`, 'log-info', target);
         } else {
           let isLockedEffect = cleanEffect === 'lockedmove';
           if (!isLockedEffect) {
@@ -82,9 +94,19 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         if (target.volatileCounters) {
           if (cleanEffect === 'confusion') {
             delete target.volatileCounters['confusion'];
+            if (!line.includes('[silent]')) store.addLog(`¡${target.name} ya no está confundido!`, 'log-info', target);
           } else if (cleanEffect === 'disable') {
             target.disabledMove = null;
             target.disabledTurns = 0;
+            if (!line.includes('[silent]')) store.addLog(`¡El movimiento de ${target.name} ya no está desactivado!`, 'log-info', target);
+          } else if (cleanEffect === 'leechseed') {
+            if (!line.includes('[silent]')) store.addLog(`¡${target.name} se liberó de las Drenadoras!`, 'log-info', target);
+          } else if (cleanEffect === 'substitute') {
+            if (!line.includes('[silent]')) store.addLog(`¡El sustituto de ${target.name} se rompió!`, 'log-info', target);
+          } else if (cleanEffect === 'attract') {
+            if (!line.includes('[silent]')) store.addLog(`¡${target.name} ya no está enamorado!`, 'log-info', target);
+          } else if (cleanEffect === 'taunt') {
+            if (!line.includes('[silent]')) store.addLog(`¡El efecto de Mofa sobre ${target.name} terminó!`, 'log-info', target);
           } else {
             let isLockedEffect = cleanEffect === 'lockedmove';
             if (!isLockedEffect) {
@@ -139,6 +161,17 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
+    case '-swapsideconditions': {
+      if (line.includes('[silent]')) return true;
+      if (store.activeBattle.value) {
+        const temp = store.activeBattle.value.playerSideConditions;
+        store.activeBattle.value.playerSideConditions = store.activeBattle.value.enemySideConditions;
+        store.activeBattle.value.enemySideConditions = temp;
+        store.addLog('¡Los efectos de ambos lados del campo fueron intercambiados!', 'log-info', '🔄');
+      }
+      return true;
+    }
+
     case '-fieldstart': {
       if (line.includes('[silent]')) return true;
       const fieldCondition = (parts[2] || '').replace('move: ', '');
@@ -147,7 +180,18 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         if (terrains.includes(fieldCondition)) {
           store.activeBattle.value.terrain = fieldCondition;
         }
-        store.addLog(`¡${fieldCondition} activado en el campo!`, 'log-info', '🌀');
+        const fieldMessages: Record<string, string> = {
+          'Trick Room': '¡Espacio Raro distorsionó el tiempo!',
+          'Gravity': '¡La gravedad se intensificó!',
+          'Magic Room': '¡Zona Mágica eliminó el efecto de los objetos!',
+          'Wonder Room': '¡Zona Extraña cambió la Defensa y Def. Esp.!',
+          'Electric Terrain': '¡Un terreno eléctrico envolvió el campo!',
+          'Grassy Terrain': '¡Un terreno de hierba envolvió el campo!',
+          'Misty Terrain': '¡Un terreno de niebla envolvió el campo!',
+          'Psychic Terrain': '¡Un terreno psíquico envolvió el campo!',
+        };
+        const msg = fieldMessages[fieldCondition] || `¡${fieldCondition} activado en el campo!`;
+        store.addLog(msg, 'log-info', '🌀');
       }
       return true;
     }
@@ -160,7 +204,18 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         if (terrains.includes(fieldConditionEnd)) {
           store.activeBattle.value.terrain = null;
         }
-        store.addLog(`¡${fieldConditionEnd} terminó!`, 'log-info', '🌀');
+        const fieldEndMessages: Record<string, string> = {
+          'Trick Room': '¡Espacio Raro volvió a la normalidad!',
+          'Gravity': '¡La gravedad volvió a la normalidad!',
+          'Magic Room': '¡El efecto de Zona Mágica terminó!',
+          'Wonder Room': '¡El efecto de Zona Extraña terminó!',
+          'Electric Terrain': '¡El terreno eléctrico desapareció!',
+          'Grassy Terrain': '¡El terreno de hierba desapareció!',
+          'Misty Terrain': '¡El terreno de niebla desapareció!',
+          'Psychic Terrain': '¡El terreno psíquico desapareció!',
+        };
+        const msg = fieldEndMessages[fieldConditionEnd] || `¡${fieldConditionEnd} terminó!`;
+        store.addLog(msg, 'log-info', '🌀');
       }
       return true;
     }

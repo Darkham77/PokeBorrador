@@ -3,8 +3,9 @@ import { mapVisualToOfficialWeather } from '../../weather/weatherGenerationProvi
 import type { Battle } from '@pkmn/sim';
 import type { BattleCheatManager } from './battleCheatManager.ts';
 import { syncRequestConditionsWithSimulator } from '../cheats.ts';
-import { requiresAction } from './requestHelper.ts';
+import { requiresAction, classifyRequest } from './requestHelper.ts';
 import { syncSidePokemon } from './showdownSyncHelper.ts';
+import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
 export interface ShowdownExecutorOptions {
   battle: Battle;
@@ -22,12 +23,17 @@ export interface ShowdownExecutorOptions {
   currentStep?: number;
 }
 
+export interface ExecuteBattleTurnResult {
+  p1AcceptedChoice: string;
+  p2AcceptedChoice: string;
+}
+
 /**
  * Common executor to process a single battle turn/decision phase uniformly.
  * Handles weather sync, HP/status sync from client, pre-turn cheats,
  * choice registration, flinching skips, and post-turn cheats.
  */
-export function executeBattleTurn(options: ShowdownExecutorOptions): void {
+export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBattleTurnResult {
   const {
     battle,
     p1Choice,
@@ -104,7 +110,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
     return choice;
   };
 
-  const chooseOrThrow = (player: 'p1' | 'p2', choice: string) => {
+  const chooseOrThrow = (player: 'p1' | 'p2', choice: string): string => {
     const side = battle[player];
     const resolved = resolveChoice(side, choice, player === 'p1' ? !!p1Skip : !!p2Skip);
     console.debug(`[E2E-CHOOSE-DEBUG] Player ${player} choosing "${resolved}" (raw: "${choice}"). Active request: ${JSON.stringify(side.activeRequest)}`);
@@ -115,27 +121,52 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
       const requestStr = JSON.stringify(side.activeRequest || {});
       throw new Error(`INVALID_CHOICE: Elección "${choice}" (resuelta a "${resolved}") rechazada por el simulador para ${player}. ActiveMon: ${activeName}, Simulator Moves: ${JSON.stringify(activeMoves)}, Request: ${requestStr}`);
     }
+    return resolved;
   };
 
   const turnBeforeP1 = battle.turn;
-  const p1NeedsAction = !isFuzzerSimulation || requiresAction(battle.p1.activeRequest);
-  const p2NeedsAction = !isFuzzerSimulation || requiresAction(battle.p2.activeRequest);
+  let p1AcceptedChoice = '';
+  let p2AcceptedChoice = '';
 
-  if (p1Choice && p1NeedsAction) {
-    chooseOrThrow('p1', p1Choice);
-  }
-  const turnAlreadyProcessed = battle.turn > turnBeforeP1;
-  const p2CanAct = requiresAction(battle.p2.activeRequest);
-  if (p2Choice && p2NeedsAction && p2CanAct && !turnAlreadyProcessed && !battle.ended) {
-    try {
-      chooseOrThrow('p2', p2Choice);
-    } catch (err: unknown) {
-      const msg = String((err as Error)?.message || err);
-      if (msg.includes("It's not your turn") || msg.includes('Can\'t do anything')) {
-        console.warn(`[showdownExecutor] Ignorando p2Choice obsoleto "${p2Choice}": ${msg}`);
-      } else {
-        throw err;
+  const p1KindBefore = classifyRequest(battle.p1.activeRequest);
+  const p2KindBefore = classifyRequest(battle.p2.activeRequest);
+
+  const p1MustAct = p1KindBefore !== 'none' && p1KindBefore !== 'wait' && (p2KindBefore !== 'force-switch' || p1KindBefore === 'force-switch');
+  const p2MustAct = p2KindBefore !== 'none' && p2KindBefore !== 'wait' && (p1KindBefore !== 'force-switch' || p2KindBefore === 'force-switch');
+
+  const seats: Array<{ id: 'p1' | 'p2'; choice: string; skip?: boolean; mustAct: boolean }> = [
+    { id: 'p1', choice: p1Choice, skip: p1Skip, mustAct: p1MustAct },
+    { id: 'p2', choice: p2Choice, skip: p2Skip, mustAct: p2MustAct }
+  ];
+
+  for (const seat of seats) {
+    if (battle.ended) break;
+    if (!seat.mustAct) continue;
+
+    let choiceToExecute = seat.choice;
+
+    if (!choiceToExecute && !seat.skip) {
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+        const debugObj = window.__VITE_DEBUG__;
+        const runner = new ShowdownBattleRunner(debugObj?.playerChoices || [], debugObj?.enemyChoices || []);
+        runner.p1ChoiceIdx = debugObj?.p1ChoiceIdx || 0;
+        runner.p2ChoiceIdx = debugObj?.p2ChoiceIdx || 0;
+        choiceToExecute = runner.resolveAndConsumeNextChoice(seat.id, battle[seat.id].activeRequest);
+        if (debugObj) {
+          debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
+          debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
+        }
       }
+    }
+
+    if (!choiceToExecute && !seat.skip) {
+      throw new Error(`MISSING_CHOICE: ${seat.id} requiere acción (request: ${JSON.stringify(battle[seat.id].activeRequest)}) pero se recibió una elección vacía o undefined.`);
+    }
+
+    if (choiceToExecute) {
+      const accepted = chooseOrThrow(seat.id, choiceToExecute);
+      if (seat.id === 'p1') p1AcceptedChoice = accepted;
+      else p2AcceptedChoice = accepted;
     }
   }
 
@@ -143,4 +174,6 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): void {
   if (cheatManager) {
     cheatManager.applyPostTurnCheats(battle, turnBeforeP1, currentStep);
   }
+
+  return { p1AcceptedChoice, p2AcceptedChoice };
 }

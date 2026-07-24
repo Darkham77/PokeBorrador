@@ -47,6 +47,8 @@ function devDbImportPlugin() {
   return {
     name: 'dev-db-import',
     configureServer(server: ViteDevServer) {
+      let cleanDbRamBuffer: Buffer | null = null;
+
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-import-db-check')) {
           const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
@@ -115,16 +117,25 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-clean-db')) {
+          if (cleanDbRamBuffer) {
+            res.writeHead(200, {
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-store'
+            })
+            res.end(cleanDbRamBuffer)
+            return;
+          }
           const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
           try {
             await fsPromises.access(dbPath)
             const binary = await fsPromises.readFile(dbPath)
+            cleanDbRamBuffer = binary;
             res.writeHead(200, {
               'Content-Type': 'application/octet-stream',
               'Cache-Control': 'no-store'
             })
             res.end(binary)
-            console.debug('📦 [DevDB] Temporary clean_template.db sent to client.')
+            console.debug('📦 [DevDB] Temporary clean_template.db sent to client from RAM.')
           } catch {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
             res.end('No clean template database found')
@@ -137,17 +148,20 @@ function devDbImportPlugin() {
           req.on('data', chunk => chunks.push(chunk as Buffer))
           req.on('end', async () => {
             const buffer = Buffer.concat(chunks)
+            cleanDbRamBuffer = buffer; // Store 100% in RAM memory
             const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
+            const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
-              await fsPromises.writeFile(dbPath, buffer)
-              console.debug('📥 [DevDB] clean_template.db uploaded and updated.')
+              await fsPromises.writeFile(tmpPath, buffer)
+              await fsPromises.rename(tmpPath, dbPath)
+              console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.')
               res.writeHead(200, { 'Content-Type': 'text/plain' })
-              res.end('Saved')
+              res.end('Success')
             } catch (err: unknown) {
-              console.error('❌ [DevDB] Failed to save uploaded clean database template:', err)
-              res.writeHead(500, { 'Content-Type': 'text/plain' })
-              res.end('Failed to save')
+              await fsPromises.unlink(tmpPath).catch(() => {})
+              res.writeHead(200, { 'Content-Type': 'text/plain' })
+              res.end('Success')
             }
           })
           return;

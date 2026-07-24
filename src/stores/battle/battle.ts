@@ -297,12 +297,14 @@ export const useBattleStore = defineStore('battle', () => {
                              subBeforeEndTurn === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ
 
     if (!activeBattle.value.over && !isFaintSeqBefore) await applyEndTurnEffects()
-    activeMove.value = null
-    
     let sub = fsm.currentSubState.value
+    const hasPendingForceSwitch = Array.isArray(activeBattle.value?.playerRequest?.forceSwitch)
+      ? activeBattle.value.playerRequest.forceSwitch.some(x => !!x)
+      : !!activeBattle.value?.playerRequest?.forceSwitch
+
     if ((sub === BATTLE_SUBSTATES.SWITCH_MENU || sub === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ) && 
         activeBattle.value?.player && activeBattle.value.player.hp > 0 && 
-        !activeBattle.value.playerRequest?.forceSwitch?.length) {
+        !hasPendingForceSwitch) {
       console.debug(`[E2E-FSM-Safeguard] Player Pokémon was revived/healed. Resetting FSM substate to ANIM_SYNC.`);
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
       sub = BATTLE_SUBSTATES.ANIM_SYNC

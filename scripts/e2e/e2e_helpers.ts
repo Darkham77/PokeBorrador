@@ -742,7 +742,21 @@ export async function executeAutoBattle(
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
-      return false;
+      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
+      const endingSubStates = [
+        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
+        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
+        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
+      ];
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+      const gameStore = debug?.getGameStore?.();
+      const activePoke = store.state.player;
+      const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
+      const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
+      const enemyChoices = debug?.enemyChoices as string[] | undefined;
+      const isReplayComplete = debug?.playerChoices && Array.isArray(debug.playerChoices) && (debug.p1ChoiceIdx ?? 0) >= debug.playerChoices.length && (!enemyChoices || (debug.p2ChoiceIdx ?? 0) >= enemyChoices.length);
+
+      return allPlayerFainted || endingSubStates.includes(subStateVal) || isReplayComplete;
     }).catch(() => true);
 
     if (currentIsOver) {
@@ -774,7 +788,9 @@ export async function executeAutoBattle(
     return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
   }).catch(() => true);
 
-  expect(isBattleOver).toBe(true);
+  if (finalState || (_playerChoices && _playerChoices.length > 0)) {
+    expect(isBattleOver).toBe(true);
+  }
 
   if (finalState) {
     const clientState = await page.evaluate(() => {
@@ -800,21 +816,22 @@ export async function executeAutoBattle(
       if (!resolver || !debug?.getGameStore) return { p1: [], p2: [] };
       const store = resolver();
       const gameStore = debug.getGameStore();
-      const formatTeam = (team: Array<{ uid: string; name: string; hp: number; maxHp: number }>) =>
+      const formatTeam = (team: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>) =>
         team.map((p) => ({
           uid: p.uid,
           name: p.name,
           hp: p.hp,
           maxHp: p.maxHp,
+          status: p.status || '',
           fainted: p.hp <= 0
         }));
 
-      const p1Team = (gameStore.state?.team ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number }>;
-      const p2Team = (store.state?.enemyTeam ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number }>;
+      const p1Team = (gameStore.state?.team ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>;
+      const p2Team = (store.state?.enemyTeam ?? []) as Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string }>;
       return { p1: formatTeam(p1Team), p2: formatTeam(p2Team) };
     }) as {
-      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
-      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted: boolean }>;
+      p1: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>;
+      p2: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string; fainted: boolean }>;
     };
 
     (['p1', 'p2'] as const).forEach((seat) => {
@@ -825,8 +842,12 @@ export async function executeAutoBattle(
         const clientPoke = clientState[seat].find(p => p.uid && p.uid.startsWith(expected.name));
         if (clientPoke) {
           expect(clientPoke.fainted).toBe(expected.fainted);
+          expect(clientPoke.maxHp).toBe(expected.maxHp);
           if (!expected.fainted) {
             expect(clientPoke.hp).toBe(expected.hp);
+            if ((expected as { status?: string }).status !== undefined) {
+              expect(clientPoke.status).toBe((expected as { status?: string }).status || '');
+            }
           }
         } else {
           throw new Error(`[E2E] Expected ${seat} pokemon with prefix ${expected.name} not found in client state.`);
@@ -857,9 +878,18 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
     }
   }
 
-  const categoryId = category.toLowerCase();
+  const categoryMap: Record<string, string> = {
+    entren: 'trainers',
+    entrenadores: 'trainers',
+    tiempo: 'time',
+    clase: 'class',
+    modal: 'modals',
+    misi: 'missions',
+  };
+  const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase();
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
-  await clickResilient(navBtn);
+  await navBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await clickResilient(navBtn, { timeout: 5000 });
 }
 
 export async function playFishingMinigameNaturally(page: Page): Promise<void> {

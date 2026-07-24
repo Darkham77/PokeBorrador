@@ -63,21 +63,43 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   
   let nextEnemy: Pokemon | null = null
   if (active.enemyTeam) {
-    const activePlayer = active.player || active.enemyTeam[0]
-    if (activePlayer) {
-      const bestIdx = findBestSwitchIndex(
-        active.enemyTeam,
-        activePlayer,
-        pokemon.uid,
-        ctx
-      )
-      if (bestIdx !== -1) {
-        nextEnemy = active.enemyTeam[bestIdx] || null
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+      const { isMatchingUid } = await import('./showdownUidMapper.ts')
+      const debugObj = window.__VITE_DEBUG__
+      const runner = new ShowdownBattleRunner(debugObj.playerChoices || [], debugObj.enemyChoices || [])
+      runner.p1ChoiceIdx = debugObj.p1ChoiceIdx || 0
+      runner.p2ChoiceIdx = debugObj.p2ChoiceIdx || 0
+      const rawChoice = runner.resolveAndConsumeNextChoice('p2', active.enemyRequest)
+      debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
+      debugObj.p2ChoiceIdx = runner.p2ChoiceIdx
+      if (rawChoice.startsWith('switch ')) {
+        const slotIdx = parseInt(rawChoice.replace('switch ', '').trim(), 10) - 1
+        const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
+        const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
+        const candidateUid = rawIdent.split(': ')[1] || ''
+        if (candidateUid) {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid && isMatchingUid(p.uid, candidateUid)) || null
+        }
+      }
+    }
+    if (!nextEnemy) {
+      const activePlayer = active.player || active.enemyTeam[0]
+      if (activePlayer) {
+        const bestIdx = findBestSwitchIndex(
+          active.enemyTeam,
+          activePlayer,
+          pokemon.uid,
+          ctx
+        )
+        if (bestIdx !== -1) {
+          nextEnemy = active.enemyTeam[bestIdx] || null
+        } else {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
+        }
       } else {
         nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
       }
-    } else {
-      nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null
     }
   }
 

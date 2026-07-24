@@ -37,12 +37,15 @@ Resumed at: <step name> (only when resuming)
 
 ## Simulation Queue
 <!-- checked = done, unchecked = pending, ⚠ = failed/needs fix -->
-- [x] test:node (unit) — PASS
-- [x] test (integration) — PASS
-- [ ] sim:e2e:combat — IN PROGRESS
-- [ ] sim:e2e:gyms
-- [ ] sim:e2e:breeding
-...
+- [ ] sim:fuzzer (fuzzer cases regeneration) — PENDING
+- [ ] sim:e2e:combat (battle FSM sync & manual scenarios) — PENDING
+- [ ] sim:e2e:ai (heuristic AI simulation) — PENDING
+- [ ] sim:e2e:gyms (gym progression) — PENDING
+- [ ] sim:e2e:gts (GTS transactions) — PENDING
+- [ ] sim:e2e:breeding (breeding lifecycle) — PENDING
+- [ ] sim:e2e:missions (daycare missions) — PENDING
+- [ ] sim:e2e:save (save shield restrictions) — PENDING
+- [ ] sim:e2e (full E2E cross-domain regression pass) — PENDING
 
 ## Active Fix — <simulation name>
 Root cause: ...
@@ -183,6 +186,7 @@ so both the fuzzer and the real browser reach the same game state.
 | `sim:e2e:battle` | Only `scripts/e2e/battle/` |
 | `sim:e2e:combat` | ensure_fuzzer_cases + `battle_fsm_sync.sim.ts` |
 | `sim:e2e:combat:report` | Same, output redirected to `scripts/e2e/results/e2e_simulation_failures.json` |
+| `sim:e2e:ai` | Only `scripts/e2e/battle/heuristic_ai.simulation.ts` |
 | `sim:e2e:gyms` | Only `scripts/e2e/gyms/` |
 | `sim:e2e:gts` | Only `scripts/e2e/gts/` |
 | `sim:e2e:breeding` | Only `scripts/e2e/breeding/` |
@@ -293,9 +297,11 @@ DETECT failure in simulation X
 ANALYZE: read the test carefully. Understand what game behavior it asserts.
   |
 STUDY SHOWDOWN: Consult first the local Showdown source code in external/pokemon-showdown-code/
-                to understand the exact logic and flow Showdown uses for this scenario.
-                CRITICAL: NEVER copy code from Showdown! Use it only to understand
-                how to call the library and manage our state representations.
+                to understand the exact logic, algorithms, state transitions, condition strings,
+                and flow Showdown uses for this scenario. The local directory external/pokemon-showdown-code/
+                is the MANDATORY SINGLE SOURCE OF TRUTH for Showdown behavior. Developers and AI agents
+                MUST inspect it before implementing or repairing any combat logic, choice formatting,
+                or state parsing. NEVER invent ad-hoc string sanitizers, custom condition rules, or assumptions.
   |
 DIAGNOSE: locate the divergence in src/ (never in the test).
   |
@@ -329,8 +335,9 @@ RE-RUN only simulation X (use TEST_CASE filter or domain script).
 1. **Never skip reproducing tests:** Whenever a simulation fails or a bug is reported, you MUST first create or update a unit test (or lightweight Node test) that successfully reproduces the failure BEFORE applying any fix to `src/`.
 2. **Never run E2E simulations on untested code changes:** Any code edits in `src/` must first be validated by executing and passing the unit/integration tests (`npm run test` or specific file path test) BEFORE proposing or running any browser-based E2E Playwright simulations. This saves time and computational resources.
 
-After all individual fixes pass, **run the full E2E suite once more** to catch
-regressions before reporting completion.
+### Step 3.5 — Mandatory Final Full E2E Regression Pass (`npm run sim:e2e`)
+
+After all individual simulation targets (`sim:e2e:combat`, `sim:e2e:ai`, `sim:e2e:gyms`, `sim:e2e:gts`, `sim:e2e:breeding`, `sim:e2e:missions`, `sim:e2e:save`) pass, you **MUST** run the full E2E suite (`npm run sim:e2e` or `npm run sim:combat:all`) once more across the entire repository to guarantee zero cross-domain regressions before declaring the run `COMPLETE`.
 
 ### Step 4 — Final report
 

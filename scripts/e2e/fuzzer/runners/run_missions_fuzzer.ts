@@ -2,6 +2,7 @@
 // scripts/e2e/fuzzer/runners/run_missions_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Dex } from '@pkmn/sim';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { generateMission, validateMissionPokemon } from '../../../../src/logic/breeding/missionEngine.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
@@ -21,7 +22,7 @@ async function runMissionsFuzzer() {
   const createMockPoke = (speciesName: string, level: number, ivs: number, nature = 'Serious'): Pokemon => {
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
-      id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: Dex.toID(speciesName),
       name: speciesName,
       level,
       gender: 'M',
@@ -38,7 +39,7 @@ async function runMissionsFuzzer() {
     } as unknown as Pokemon;
   };
 
-  const dateStr = Temporal.Now.instant().toString().split('T')[0]!;
+  const dateStr = Temporal.Now.plainDateISO().toString();
 
   for (let i = 0; i < 200; i++) {
     const trainerLevel = Math.floor(Math.random() * 50) + 1; // 1 a 50

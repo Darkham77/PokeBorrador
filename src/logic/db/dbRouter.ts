@@ -429,16 +429,17 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     return response;
   } catch (e: unknown) {
     if (loadingStore) loadingStore.finish('db_compat')
-    logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
-    if (router.mode !== 'offline') {
-      return { 
-        compatible: false, 
-        client: CLIENT_DB_VERSION, 
-        db: 0,
-        error: 'OUTDATED_SERVER' 
-      };
+    if (router.mode === 'offline') {
+      logger.warn('DBRouter', 'Compatibility check offline lookup warning:', (e as Error).message);
+      return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
     }
-    return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
+    logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
+    return { 
+      compatible: false, 
+      client: CLIENT_DB_VERSION, 
+      db: 0,
+      error: 'OUTDATED_SERVER' 
+    };
   }
 }
 

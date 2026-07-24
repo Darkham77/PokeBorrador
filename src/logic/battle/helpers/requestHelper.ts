@@ -40,7 +40,7 @@ export function classifyRequest(req: unknown): RequestKind {
   const cReq = req as ChoiceRequest;
   if (cReq.wait) return 'wait';
   if (cReq.teamPreview) return 'team-preview';
-  if (Array.isArray(cReq.forceSwitch) && cReq.forceSwitch.some(x => !!x)) return 'force-switch';
+  if (cReq.forceSwitch === true || (Array.isArray(cReq.forceSwitch) && cReq.forceSwitch.some(x => !!x))) return 'force-switch';
   if (Array.isArray(cReq.active) && cReq.active.length > 0) return 'move';
   return 'none';
 }

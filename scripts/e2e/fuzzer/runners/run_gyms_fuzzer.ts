@@ -90,7 +90,7 @@ async function runGymsFuzzer() {
   }
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       total: 200,
       passed,

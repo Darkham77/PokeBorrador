@@ -19,8 +19,9 @@ import { parseShowdownSeedForBattle } from '../../../../src/logic/battle/helpers
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
-import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import { requiresAction, classifyRequest } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { isActionConsumed } from '../../../../src/logic/battle/helpers/choiceIndexer.ts';
+import { executeBattleTurn } from '../../../../src/logic/battle/helpers/showdownExecutor.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
@@ -223,6 +224,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   async function executeBatch(batch: typeof batches[0], roundNum: number) {
     resetRandomSeed();
     const maxAttempts = 5;
+    unhandledBridgeLines.length = 0;
     const localUnhandled: string[] = [];
 
     const belongsToThisBatch = (msg: string): boolean => {
@@ -278,8 +280,16 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 
       ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
 
-      const fullPlayerTeam = playerTeamCopy.map(createLocalPoke);
-      const fullEnemyTeam = enemyTeamCopy.map(createLocalPoke);
+      const fullPlayerTeam = playerTeamCopy.map(set => {
+        const p = createLocalPoke(set);
+        if (set.uid) p.uid = set.uid;
+        return p;
+      });
+      const fullEnemyTeam = enemyTeamCopy.map(set => {
+        const p = createLocalPoke(set);
+        if (set.uid) p.uid = set.uid;
+        return p;
+      });
       const localP1 = fullPlayerTeam[0]!;
       const localP2 = fullEnemyTeam[0]!;
       const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
@@ -310,6 +320,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       const steps: string[] = [];
       const batchChoices: string[] = [];
       const batchEnemyChoices: string[] = [];
+      const batchHistory: Array<{ turnCount: number; p1Choice: string; p2Choice: string }> = [];
 
       try {
         while (!simBattle.ended && turn < maxTurns) {
@@ -334,22 +345,28 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
           const forceOffensive = !hasUntestedItems;
 
           // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
-          const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest, forceOffensive);
+          const rawP1Choice = agent1.decide(p1Req as unknown as ChoiceRequest, forceOffensive);
+          const rawP2Choice = agent2.decide(p2Req as unknown as ChoiceRequest, forceOffensive);
           const p1NeedsAction = requiresAction(p1Req);
-          if (isActionConsumed(p1NeedsAction, p1Choice, p1Choice === 'pass') && !p1Choice.startsWith('team')) {
-            batchChoices.push(p1Choice);
-          }
-          const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest, forceOffensive);
           const p2NeedsAction = requiresAction(p2Req);
-          if (isActionConsumed(p2NeedsAction, p2Choice, p2Choice === 'pass') && !p2Choice.startsWith('team')) {
-            batchEnemyChoices.push(p2Choice);
-          }
 
-          if (p1NeedsAction) {
-            simBattle.choose('p1', p1Choice);
+          const { p1AcceptedChoice, p2AcceptedChoice } = executeBattleTurn({
+            battle: simBattle,
+            p1Choice: rawP1Choice,
+            p2Choice: rawP2Choice,
+            cheatManager: null,
+            isFuzzerSimulation: true,
+            currentStep: turn
+          });
+
+          if (p1NeedsAction && p1AcceptedChoice && !p1AcceptedChoice.startsWith('team')) {
+            batchChoices.push(p1AcceptedChoice);
           }
-          if (p2NeedsAction) {
-            simBattle.choose('p2', p2Choice);
+          if (p2NeedsAction && p2AcceptedChoice && !p2AcceptedChoice.startsWith('team')) {
+            batchEnemyChoices.push(p2AcceptedChoice);
+          }
+          if (p1NeedsAction || p2NeedsAction) {
+            batchHistory.push({ turnCount: turn, p1Choice: p1AcceptedChoice, p2Choice: p2AcceptedChoice });
           }
 
           const rawTurnLogs = getNewLogs();
@@ -446,6 +463,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? (err as Error).message : String(err);
+        console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batch.id}: ${errMsg}`, err);
         batch.movesToTest.forEach(m => {
           if (moveCoverage[m]) {
             moveCoverage[m]!.status = 'FAIL';
@@ -459,6 +477,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
       batchRecord.seed = seedNums;
       batchRecord.playerChoices = batchChoices;
       batchRecord.enemyChoices = batchEnemyChoices;
+      batchRecord.history = batchHistory;
       batchRecord.steps = steps;
       batchRecord.ended = simBattle.ended;
       batchRecord.winner = simBattle.ended
@@ -485,7 +504,9 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
     }
   }
 
-  await Promise.all(batches.map((b, idx) => executeBatch(b, idx + 1)));
+  for (let idx = 0; idx < batches.length; idx++) {
+    await executeBatch(batches[idx]!, idx + 1);
+  }
 
   // Force UNTESTED → PASS (Zero-Untested Goal Principle)
   Object.values(moveCoverage).forEach(m => { if (m.status === 'UNTESTED') m.status = 'PASS'; });
@@ -526,6 +547,7 @@ async function writeCertifiedBattleCases(batches: ReturnType<typeof generateTest
         seed: rec.seed || null,
         playerChoices: rec.playerChoices || [],
         enemyChoices: rec.enemyChoices || [],
+        history: rec.history || [],
         cheats: rec.cheats || [],
         steps: rec.steps || [],
         ended: rec.ended ?? false,
@@ -611,7 +633,7 @@ export async function runMovesFuzzer(): Promise<FuzzerResult[]> {
   const movesList = Object.values(moveCoverage);
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       totalMoves: movesList.length,
       passedMoves: movesList.filter(m => m.status === 'PASS').length,
@@ -641,7 +663,7 @@ export async function runAbilitiesFuzzer(): Promise<FuzzerResult[]> {
   const abilitiesList = Object.values(abilityCoverage);
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       totalAbilities: abilitiesList.length,
       passedAbilities: abilitiesList.filter(a => a.status === 'PASS').length,
@@ -1044,7 +1066,7 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
   const scenariosList = Object.values(scenarioResults);
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       total: scenariosList.length,
       passed: scenariosList.filter(s => s.status === 'PASS').length,

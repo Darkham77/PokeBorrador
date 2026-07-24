@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "case-4644f7232fc8",
+    "error": "page.waitForFunction: Test ended.",
+    "timestamp": "2026-07-24T02:19:37.297Z"
+  },
+  {
+    "id": "case-94b5cee719a7",
+    "error": "page.waitForFunction: Test ended.",
+    "timestamp": "2026-07-24T02:19:37.584Z"
+  },
+  {
+    "id": "case-d344fcad1912",
+    "error": "page.waitForFunction: Test ended.",
+    "timestamp": "2026-07-24T02:19:37.422Z"
+  }
+]

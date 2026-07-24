@@ -39,6 +39,11 @@ export function filterShowdownLogs(logs: string[]): string[] {
 
 import { useGameStore } from '@/stores/game';
 import { useBattleStore } from '@/stores/battle/battle';
+import { createPinia, setActivePinia, getActivePinia } from 'pinia';
+
+if (!getActivePinia()) {
+  setActivePinia(createPinia());
+}
 
 // Monkey-patch Worker.prototype.postMessage to inject weather into EXECUTE_TURN (browser only)
 if (typeof Worker !== 'undefined') {
@@ -153,7 +158,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
     const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const gameStore = useGameStore();
-    const team: Pokemon[] = side === 'player' ? (gameStore.state?.team || []) : (battle.enemyTeam || []);
+    const team: Pokemon[] = side === 'player' ? (gameStore.state?.team || battle.playerTeam || []) : (battle.enemyTeam || []);
     const findPokemonInBattle = (targetUid: string) => {
       console.debug('[DEBUG-UID-LOOKUP] Looking for targetUid:', targetUid, 'on side:', side, 'in team UIDs:', team.map((mon: Pokemon | null | undefined) => mon ? `${mon.name} (${mon.uid})` : 'null'));
       const found = team.find((mon: Pokemon | null | undefined) => mon && mon.uid === targetUid);

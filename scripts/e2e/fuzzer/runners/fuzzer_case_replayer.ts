@@ -140,24 +140,15 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
     console.log(`[Turn ${turn}] P1 simulator pokemon:`, JSON.stringify(battle.p1.pokemon.map(p => ({ name: p.name, hp: p.hp, maxhp: p.maxhp, fainted: p.fainted }))));
   }
 
-  let p1Ok = true;
-  let p2Ok = true;
-  try {
-    p1Ok = p1NeedsAction ? battle.choose('p1', p1Choice) : true;
-  } catch (err) {
-    console.error(`CRASH p1 choice: "${p1Choice}" (needsAction: ${p1NeedsAction}, choiceIdx: ${p1ChoiceIdx})`);
-    console.error(`P1 active request:`, JSON.stringify(p1Req));
-    console.error(`P1 pokemon details:`, JSON.stringify(battle.p1.pokemon.map((p, i) => `${i}: name=${p.name}, hp=${p.hp}/${p.maxhp}, fainted=${p.fainted}`)));
-    throw err;
-  }
-  try {
-    p2Ok = p2NeedsAction ? battle.choose('p2', p2Choice) : true;
-  } catch (err) {
-    console.error(`CRASH p2 choice: "${p2Choice}" (needsAction: ${p2NeedsAction}, choiceIdx: ${p2ChoiceIdx})`);
-    console.error(`P2 active request:`, JSON.stringify(p2Req));
-    console.error(`P2 pokemon details:`, JSON.stringify(battle.p2.pokemon.map((p, i) => `${i}: name=${p.name}, hp=${p.hp}/${p.maxhp}, fainted=${p.fainted}`)));
-    throw err;
-  }
+  const { executeBattleTurn } = await import('../../../../src/logic/battle/helpers/showdownExecutor.ts');
+  executeBattleTurn({
+    battle,
+    p1Choice,
+    p2Choice,
+    cheatManager: null,
+    isFuzzerSimulation: true,
+    currentStep: turn
+  });
 
   p1ChoiceIdx = runner.p1ChoiceIdx;
   p2ChoiceIdx = runner.p2ChoiceIdx;
@@ -167,8 +158,8 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   const p1ActiveMon = battle.p1.active[0] as unknown as ExtendedPokemon | undefined;
   const p2ActiveMon = battle.p2.active[0] as unknown as ExtendedPokemon | undefined;
 
-  console.log(`[Turn ${turn}] P1 Choice Index: ${p1ChoiceIdx - 1} | Choice: "${p1Choice}" (Valid: ${p1Ok})`);
-  console.log(`[Turn ${turn}] P2 Choice Index: ${p2ChoiceIdx - 1} | Choice: "${p2Choice}" (Valid: ${p2Ok})`);
+  console.log(`[Turn ${turn}] P1 Choice Index: ${p1ChoiceIdx - 1} | Choice: "${p1Choice}"`);
+  console.log(`[Turn ${turn}] P2 Choice Index: ${p2ChoiceIdx - 1} | Choice: "${p2Choice}"`);
   console.log(`[Turn ${turn}] P1 Active: ${p1ActiveMon?.name} (UID: ${p1ActiveMon?.uid})`);
   console.log(`[Turn ${turn}] P2 Active: ${p2ActiveMon?.name} (UID: ${p2ActiveMon?.uid})`);
 

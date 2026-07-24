@@ -200,8 +200,9 @@ export class BattleAgent {
   }
 
   /** Devuelve true si la condición del Pokémon indica que está debilitado. */
-  private isFainted(condition: string): boolean {
-    return condition === '0 fnt' || condition.endsWith(' fnt');
+  private isFainted(condition?: string): boolean {
+    if (!condition) return false;
+    return condition.endsWith(' fnt');
   }
 }
 

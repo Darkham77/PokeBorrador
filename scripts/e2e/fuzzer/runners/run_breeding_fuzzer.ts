@@ -26,7 +26,7 @@ async function runBreedingFuzzer() {
   const createMockPoke = (speciesName: string, gender: 'M' | 'F' | 'N', customId: number): Pokemon => {
     return {
       uid: `mock-${speciesName}-${customId}`,
-      id: speciesName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+      id: Dex.toID(speciesName),
       name: speciesName,
       level: 50,
       gender,
@@ -164,7 +164,7 @@ async function runBreedingFuzzer() {
   }
 
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       total: totalSimulations,
       passed,

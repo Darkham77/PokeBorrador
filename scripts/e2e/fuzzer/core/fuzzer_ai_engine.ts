@@ -228,7 +228,7 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
 
   // Write coverage report
   const report = {
-    generatedAt: Temporal.Now.instant().toString(),
+    generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       total: results.length,
       passed,

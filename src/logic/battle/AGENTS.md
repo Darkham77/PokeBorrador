@@ -36,6 +36,11 @@ Frontend Developers / Systems Engineers.
 - **AI Team Generation**: AI competitive moveset generation depends on `ACTIVE_AI_TEAM_GENERATION_GEN` from constants.ts. If a species lacks randombattle data in that specific generation, gracefully handle the error and fallback to generic pool members or getTeam() candidates.
 - **Action Validation & Faint Interception**: Never send combat actions (`move` or `struggle`) to the Showdown simulator if the active Pokemon is fainted or if the simulator request has an active `forceSwitch` state. Intercept these actions early in `executeTurn` and `executeFlee`. If fainted (HP <= 0), trigger `processFaint` to run the faint animations and logs before showing the switch menu. If alive, use `handleForceSwitch` to switch directly.
 - **Zero-Timer Forced Switch Animations**: When executing forced switch animations (like PLAY_ESCAPE_ANIM for Whirlwind/Roar on player side), await exclusively the GSAP promise from `ctx.animations.awaitTween` to sequence the menu transition. Using `sleep` or numeric timeout fallbacks is strictly prohibited.
+- **Showdown Combat Log 1:1 Protocol Parity**:
+  - The canonical source of truth for all battle protocol events is `external/pokemon-showdown-code/protocol/src/index.ts` (`BattleMajorArgs` & `BattleMinorArgs`).
+  - All battle protocol commands MUST be explicitly recognized and handled in `showdownBridgeCore.ts`, `showdownBridgeField.ts`, `showdownBridgeStages.ts`, or `showdownBridgeMisc.ts`.
+  - Damage residual causes (`[from] psn`, `[from] Sandstorm`, `[from] Leech Seed`, etc.), statuses/cures, volatile start/end (`confusion`, `disable`, `substitute`, etc.), charge moves (`-prepare`), single-turn protection (`Protect`), and field effects MUST produce localized Spanish messages in the combat log.
+  - Verification tests (`showdown_protocol_exhaustive_parity.spec.ts`) must dynamically validate that 100% of Showdown's battle protocol commands are handled by the bridge without unhandled fall-throughs.
 
 ## Work Guidance
 

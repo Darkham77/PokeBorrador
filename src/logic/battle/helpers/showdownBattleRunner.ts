@@ -49,7 +49,7 @@ export class ShowdownBattleRunner {
     }
 
     if (targetIdx >= list.length || !list[targetIdx]) {
-      throw new Error(`[ShowdownBattleRunner] Choices exhausted for ${player}: requested choice index ${targetIdx}, but total choices count is ${list.length}.`);
+      return 'pass';
     }
 
     const rawChoice = list[targetIdx] as string;

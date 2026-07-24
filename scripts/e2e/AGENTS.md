@@ -11,6 +11,9 @@ QA / Automation Engineers.
 - Playwright simulations run in local browser instances.
 - Speed up animations using `gsap.globalTimeline.timeScale(100)` under simulation mode.
 - Mock native Web APIs (like `Notification` permission) and local flags (like `pwa_permissions_accepted` in `localStorage`) in order to bypass popups and overlays that block UI synchronization.
+- **Certified Fuzzer Replay Termination Contract**: When an E2E replay finishes executing all planned choices from the certified fuzzer batch (`p1ChoiceIdx >= playerChoices.length`), the simulation loop MUST exit immediately without waiting for further events or input. The simulation then validates 1:1 state parity (`lastFinalState` vs `batch.finalState`). Matching state parity guarantees clean simulation completion (PASS).
+- **Absolute Prohibition on Simulation Bypasses**: It is STRICTLY FORBIDDEN to add bypasses, silent catch blocks, exception swallowing, or mock workarounds in E2E simulations or replayers solely to make tests "pass". Any error during simulation is an empirical indicator of a real synchronization failure, missing implementation, or codebase bug in `src/`. The root cause in `src/` MUST be diagnosed and fixed at the source—never hidden, swallowed, or ignored.
+- **Mandatory 100% Shared Code via Modular Inheritance & Polymorphism**: Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST import and execute the LITERALLY SAME shared battle execution module (`showdownExecutor.ts`, `showdownBattleRunner.ts`). Code duplication, parallel implementations, or divergent choice handling logic between headless replayers and browser simulations are strictly forbidden. All battle execution logic must be extracted into single, reusable generic functions and base classes.
 
 ## Work Guidance
 

@@ -84,6 +84,8 @@ In any E2E or Playwright simulation, **a single turn failure MUST immediately ab
 - Retry the same turn after a failure
 - Skip a choice and continue to the next turn
 - Use a `maxTurns` spin-loop as a substitute for a clean termination condition
+- Add bypasses, silent catch blocks, exception swallowing, or mock workarounds in E2E simulations or replayers solely to make tests "pass". Any error during simulation is an empirical indicator of a real synchronization failure, missing implementation, or codebase bug in `src/`. The root cause in `src/` MUST be diagnosed and fixed at the source—never hidden, swallowed, or ignored.
+- Use differing execution paths, code duplication, or branching logic between headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations. They MUST import and execute the LITERALLY SAME shared battle execution module (`showdownExecutor.ts`, `showdownBattleRunner.ts`) via reusable generic functions and base classes to guarantee 100% absolute parity.
 
 Any simulation loop must treat `handleBattleInput` returning `false` as a hard error and `throw` immediately. The `maxTurns` guard exists only to catch runaway battles where the simulator itself never ends — it must never be reached in a healthy battle.
 
