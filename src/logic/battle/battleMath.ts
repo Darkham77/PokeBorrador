@@ -146,7 +146,8 @@ export function getEffectiveStatPure(
     }
   }
 
-  const stage = Math.max(-6, Math.min(6, (stages[statKey as keyof PureBattleStages] as number) || 0));
+  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0;
+  const stage = Math.max(-6, Math.min(6, rawStage));
   const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
   let val = Math.floor(baseVal * stageMult);
 
@@ -174,6 +175,7 @@ export function getEffectiveStatPure(
     if (ab === 'swiftswim' && isRain) abilMult *= 2;
     if (ab === 'sandrush' && mechWeather === WEATHER_KEYS.SANDSTORM) abilMult *= 2;
     if (ab === 'slushrush'  && (mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL)) abilMult *= 2;
+    if (pokemon.heldItem === 'choicescarf') abilMult *= 1.5;
     val = Math.floor(val * abilMult);
     if (pokemon.status === 'par') {
       const mult = ACTIVE_GENERATION <= 6 ? 0.25 : 0.5;
@@ -281,6 +283,8 @@ export function calculateDamagePure(
     };
     if (typeBoosters[h] === moveType) itemMult = 1.2;
     if (h === 'choiceband' && moveCat === 'physical') itemMult = 1.5;
+    if (h === 'choicespecs' && moveCat === 'special') itemMult = 1.5;
+    if (h === 'lifeorb') itemMult = 1.3;
   }
 
   let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
@@ -353,6 +357,11 @@ export function calculateDamagePure(
   }
 
 
+  let terrainMult = 1;
+  if (weather && weather.type === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
+    terrainMult = 0.5;
+  }
+
   // Random damage roll: Showdown uses integer 85-100 divided by 100 with floor (not a float multiply)
   // Clamp to 100 to guard against mocked Math.random() === 1.0 producing 101
   const randomInt = randomFactor !== undefined
@@ -368,15 +377,20 @@ export function calculateDamagePure(
               Math.floor(baseDamage * critMult) * randomInt
             ) / 100
           ) * stab
-        ) * finalEff * finalAbilityMult * weatherMult * itemMult
+        ) * finalEff * finalAbilityMult * weatherMult * itemMult * terrainMult
       ))
     : 0;
 
   return {
-    dmg: finalDmg, eff: finalEff, stab, power, isCrit,
-    isSuperEffective:    finalEff > 1,
-    isNotVeryEffective:  finalEff < 1 && finalEff > 0,
-    isNoEffect:          finalEff === 0,
+    dmg: finalDmg,
+    damage: finalDmg,
+    eff: finalEff,
+    stab,
+    power,
+    isCrit,
+    isSuperEffective: finalEff > 1,
+    isNotVeryEffective: finalEff > 0 && finalEff < 1,
+    isNoEffect: finalEff === 0 || weatherMult === 0,
     triggeredAbility
   };
 }

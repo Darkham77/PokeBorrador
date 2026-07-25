@@ -23,10 +23,14 @@ export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY:
   }
   try {
     dbKey = decodeURIComponent(dbKey)
-  } catch (_e) {
-    // Ignore decode error
+  } catch (e) {
+    throw new Error(`[shadowHelpers] Error decoding spriteUrl '${dbKey}': ${String(e)}`)
   }
-  return POKEMON_FEET_DATABASE[dbKey] || { feetY: 0.9, feetX: 0.5 }
+  const coords = POKEMON_FEET_DATABASE[dbKey]
+  if (!coords) {
+    throw new Error(`[shadowHelpers] Missing feet coordinates mapping for spriteUrl key '${dbKey}'`)
+  }
+  return coords
 }
 
 /**

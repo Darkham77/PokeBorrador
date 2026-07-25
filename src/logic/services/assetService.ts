@@ -55,7 +55,9 @@ export interface AssetOptions {
  * Centralizes asset path construction and LOD application.
  */
 export const getAssetUrl = (type: AssetType, rawId: string | number, options: AssetOptions = {}): string => {
-  if (!rawId) return '';
+  if (!rawId) {
+    throw new Error(`[assetService] Cannot resolve asset URL for type '${type}': rawId is required and cannot be empty.`);
+  }
   const { 
     isShiny: isShinyPrimary,
     shiny: isShinyLegacy,
@@ -243,8 +245,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       let shopItem = null;
       try {
         shopItem = getItemById(idStr);
-      } catch (_err) {
-        // Fallback for custom or untyped items
+      } catch (err) {
+        throw new Error(`[assetService] Error looking up item data for '${idStr}': ${String(err)}`);
       }
       if (shopItem) {
         return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);

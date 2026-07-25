@@ -48,7 +48,10 @@ function resolveSpriteKey(pokemon: Pokemon | null | undefined): string {
   const formSuffix = pokemon.form && pokemon.form !== 'normal' ? `-${pokemon.form}` : '';
   const id = `${pokemon.id}${formSuffix}`;
   const stringId = String(id).toLowerCase();
-  const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] || id;
+  const num = POKEMON_SPRITE_IDS[stringId] ?? id;
+  if (!num) {
+    throw new Error(`[useBattleCombatantState] Failed to resolve spriteKey for combatant ID '${id}'`);
+  }
   return String(num);
 }
 
@@ -188,8 +191,8 @@ export function useBattleCombatantState(
     }
     try {
       key = decodeURIComponent(key);
-    } catch (_e) {
-      // ignore
+    } catch (e) {
+      throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`);
     }
     
     const dbPoints = POKEMON_FEET_DATABASE[key];

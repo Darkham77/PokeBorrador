@@ -56,16 +56,18 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
   if (typeof behavior.mult === 'function') ballMult = behavior.mult(pokemon, ctx)
   else if (behavior.mult) ballMult = behavior.mult
 
-  const curHp = pokemon.hp ?? 10
+  const currenthp = pokemon.hp ?? 10
   const maxHp = pokemon.maxHp ?? 10
-  const hpFactor = (3 * maxHp - 2 * curHp) / (3 * maxHp)
+  const hpFactor = (3 * maxHp - 2 * currenthp) / (3 * maxHp)
   const catchRate = pokemon.catchRate ?? 45
 
-  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.5 : 
-                     (pokemon.status ? 1.5 : 1.0)
+  const statusbonus = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.5 : 
+                      (pokemon.status ? 1.5 : 1.0)
+  const statusMult = statusbonus
 
   const eventBonus = eventCatchMult - 1
-  const totalMult = Math.max(0.1, ballMult + eventBonus)
+  const ballbonus = Math.max(0.1, ballMult + eventBonus)
+  const totalMult = ballbonus
 
   const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)))
   const b = Math.floor(65535 * Math.pow(finalRate / 255, 0.25))

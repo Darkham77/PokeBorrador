@@ -179,8 +179,8 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
     }
     const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
     return `${String(zdt.hour).padStart(2, '0')}:${String(zdt.minute).padStart(2, '0')}`;
-  } catch (_e) {
-    return '';
+  } catch (e) {
+    throw new Error(`[timeUtils] Error formatting time for timestamp '${ts}': ${String(e)}`);
   }
 }
 
@@ -212,20 +212,8 @@ export function parseZonedTime(
     }
 
     return Temporal.PlainDateTime.from(clean).toZonedDateTime(GAME_TIMEZONE);
-  } catch (_err) {
-    try {
-      if (typeof ts === 'string') {
-        return Temporal.Instant.from(ts.trim()).toZonedDateTimeISO(GAME_TIMEZONE);
-      }
-    } catch (_instantErr) {
-      // Ignore and proceed to fallback
-    }
-
-    try {
-      return Temporal.PlainDateTime.from(fallback).toZonedDateTime(GAME_TIMEZONE);
-    } catch (_fallbackErr) {
-      return Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO(GAME_TIMEZONE);
-    }
+  } catch (err) {
+    throw new Error(`[timeUtils] Error parsing zoned time for '${String(ts)}': ${String(err)}`);
   }
 }
 
@@ -273,8 +261,8 @@ export function parseInstantSafe(val: unknown): Temporal.Instant | null {
       return Temporal.Instant.from(isoStr)
     }
     return null
-  } catch (_e) {
-    return null
+  } catch (e) {
+    throw new Error(`[timeUtils] Error parsing instant for value '${String(val)}': ${String(e)}`);
   }
 }
 

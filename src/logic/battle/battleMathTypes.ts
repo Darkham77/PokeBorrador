@@ -57,6 +57,7 @@ export interface PureDamageOptions {
 
 export interface PureDamageResult {
   dmg: number;
+  damage?: number;
   eff: number;
   stab?: number;
   power?: number;

@@ -195,8 +195,8 @@ export async function executeTurnInWorker(
       p2Hps = p2Data.hps;
       p2Statuses = p2Data.statuses;
     }
-  } catch (_e) {
-    // Ignorar si se ejecuta fuera de contexto de tienda
+  } catch (e) {
+    throw new Error(`[ShowdownWorkerClient] Error loading battle store state in executeTurn: ${(e as Error).message}`)
   }
 
   showdownWorker.postMessage({

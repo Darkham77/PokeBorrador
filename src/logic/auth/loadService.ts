@@ -36,7 +36,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         user.db_version = profile.db_version;
       }
     } catch (e) {
-      logger.warn('LOAD', `No se pudo consultar el db_version de profiles: ${(e as Error).message}`);
+      throw new Error(`[loadService] Error de consulta db_version en profiles: ${(e as Error).message}`);
     }
   }
 
@@ -50,7 +50,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         try {
           await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
         } catch (e) {
-          logger.warn('LOAD', `No se pudo actualizar db_version en profiles SQLite: ${(e as Error).message}`);
+          throw new Error(`[loadService] Error al actualizar db_version en profiles: ${(e as Error).message}`);
         }
       }
     } else {
@@ -78,8 +78,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       if (typeof parsedSave === 'string') {
         try {
           parsedSave = JSON.parse(parsedSave);
-        } catch (_) {
-          // No es un JSON válido
+        } catch (e) {
+          throw new Error(`[loadService] Error al parsear JSON save_data: ${(e as Error).message}`);
         }
       }
       
@@ -91,7 +91,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       finalSaveData = parsedSave as GameState;
     }
   } catch (e) {
-    logger.error('LOAD', `Database fetch failed: ${(e as Error).message}`);
+    throw new Error(`[loadService] Error de consulta en la base de datos para game_saves: ${(e as Error).message}`);
   }
   }
 
@@ -106,7 +106,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       localData = JSON.parse(json) as GameState
     }
   } catch (e) {
-    logger.warn('LOAD', `Error reading OPFS save: ${(e as Error).message}`)
+    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`)
   }
 
   // Fallback to LocalStorage + Migration
@@ -134,7 +134,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
         await writeOpfsFile(opfsKey, compressed)
       } catch (e) {
-        logger.warn('LOAD', `Error parsing localStorage save: ${(e as Error).message}`)
+        throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`)
       }
     }
   }
@@ -174,8 +174,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
             try {
               const ms = Number(cloudSaveRow.updated_at);
               cloudTime = !isNaN(ms) ? ms : Temporal.Instant.from(cloudSaveRow.updated_at).epochMilliseconds;
-            } catch (__e) {
-              cloudTime = 0;
+            } catch (err) {
+              throw new Error(`[loadService] Error de parseo de timestamp en cloudSaveRow: ${(err as Error).message}`);
             }
           }
         }
@@ -189,7 +189,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         }
       }
     } catch (e) {
-      logger.warn('LOAD', `Error parsing local save: ${(e as Error).message}`);
+      throw new Error(`[loadService] Error parsing local save context: ${(e as Error).message}`);
     }
   }
 

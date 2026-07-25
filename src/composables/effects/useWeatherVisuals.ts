@@ -97,6 +97,21 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     else if (cleanWeather === 'gravity') {
       wBrightness = 0.8; wSaturate = 1.2; wContrast = 1.3; wHue = 210;
     }
+    else if (cleanWeather === 'stealthrock') {
+      wBrightness = 0.95; wSaturate = 1.1; wContrast = 1.1; wHue = 30;
+    }
+    else if (cleanWeather === 'toxicspikes') {
+      wBrightness = 0.9; wSaturate = 1.25; wContrast = 1.15; wHue = 290;
+    }
+    else if (cleanWeather === 'primal' || cleanWeather === 'desolateland' || cleanWeather === 'primordialsea') {
+      wBrightness = 1.15; wSaturate = 1.5; wContrast = 1.3; wHue = 15;
+    }
+    else if (cleanWeather === 'terastallize') {
+      wBrightness = 1.2; wSaturate = 1.6; wContrast = 1.2; wHue = 180;
+    }
+    else if (cleanWeather === 'dynamax') {
+      wBrightness = 0.85; wSaturate = 1.4; wContrast = 1.4; wHue = 340;
+    }
 
     // 3. Final mix
     const finalBrightness = (!weatherOnly && isNight) 

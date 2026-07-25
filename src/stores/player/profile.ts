@@ -65,8 +65,8 @@ export const useProfileStore = defineStore('profile', () => {
           lastSaveStr = `${day}/${month}/${year} ${hour}:${minute}:${second}`
         }
       }
-    } catch (_e) {
-      // Ignorar fallos al leer de localStorage en entornos aislados
+    } catch (e) {
+      throw new Error(`[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`)
     }
 
     updateProfile({

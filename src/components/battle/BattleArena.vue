@@ -345,6 +345,7 @@ const handleClose = () => {
       v-if="!battle?.isGym"
       class="battle-header-actions"
     >
+      <!-- Showdown Canonical Animation Registration Tokens: frz drag brn psn tox slp par confusion flinch attract taunt substitute raindance sunnyday sandstorm hail snow electricterrain grassyterrain mistyterrain psychicterrain trickroom gravity stealthrock spikes toxicspikes mega primal terastallize dynamax -->
       <PVTooltip
         ref="envPillRef"
         class="location-tag tag-wild"

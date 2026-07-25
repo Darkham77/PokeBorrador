@@ -188,7 +188,9 @@ export function calculateFinalAccuracy(
     acc = Math.floor(md.acc * (isMist ? 0.8 : 0.6))
   }
 
-  const netStage = Math.max(-6, Math.min(6, accStage - evaStage))
+  const clampedAccStage = Math.max(-6, Math.min(6, accStage))
+  const clampedEvaStage = Math.max(-6, Math.min(6, evaStage))
+  const netStage = Math.max(-6, Math.min(6, clampedAccStage - clampedEvaStage))
   let multiplier = 1
   if (netStage >= 0) {
     multiplier = (3 + netStage) / 3

@@ -188,8 +188,8 @@ const updateVisualSwap = (side = 'enemy') => {
     }
     try {
       dbKey = decodeURIComponent(dbKey)
-    } catch (_e) {
-      // ignore
+    } catch (e) {
+      throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`)
     }
 
     if (!POKEMON_FEET_DATABASE[dbKey]) {

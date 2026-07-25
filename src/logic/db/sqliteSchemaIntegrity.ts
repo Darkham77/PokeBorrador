@@ -113,8 +113,8 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
     db.run("UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'")
     
     logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.');
-  } catch (_err: unknown) {
-    // Columns or table might not exist or be loaded yet, which is safe to ignore
+  } catch (err: unknown) {
+    throw new Error(`[sqliteSchemaIntegrity] Legacy chat columns migration error: ${(err as Error).message}`)
   }
 
   // Auto-repair: Populate missing profiles from game_saves to restore cosmetics and profile visibility

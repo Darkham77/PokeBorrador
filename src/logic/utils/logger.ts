@@ -33,8 +33,8 @@ if (!isBrowser) {
     const nodeUtil = 'node:util';
     const util = await import(/* @vite-ignore */ nodeUtil) as { styleText: StyleTextFn };
     styleText = util.styleText;
-  } catch (_e) {
-    // Fallback if not available
+  } catch (e) {
+    throw new Error(`[Logger] Failed to load node:util module in Node environment: ${String(e)}`);
   }
 }
 

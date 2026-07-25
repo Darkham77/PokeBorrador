@@ -13,6 +13,7 @@ import { useGameStore } from '@/stores/game'
 import { useProfileStore } from '@/stores/player/profile'
 import { supabase } from '@/logic/db/supabase'
 import { getItemName } from '@/data/inventory/items'
+import { logger } from '@/logic/utils/logger'
 
 function formatAbilityDescription(desc: string): string {
   const lines: string[] = []
@@ -170,8 +171,8 @@ export function useCombatantStatus(
         let abEntry = null
         try {
           abEntry = pokemonDataProvider.getAbilityData(ab)
-        } catch (_err) {
-          // Fallback gracefully for unknown or custom abilities
+        } catch (err) {
+          logger.debug('useCombatantStatus', `Ability not found in provider: ${ab}`, err)
         }
         const abDescription = abEntry?.desc || 'Sin descripción disponible.'
 

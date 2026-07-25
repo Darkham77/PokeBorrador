@@ -44,7 +44,9 @@ let _isInMemory = false
 
 export async function queryLocal(sql: string, params: unknown[] = []): Promise<Record<string, unknown>[]> {
   if (!_sqliteDb) await initSQLite()
-  if (!_sqliteDb) return []
+  if (!_sqliteDb) {
+    throw new Error('[sqliteEngine] SQLite database engine is not initialized');
+  }
   const res = _sqliteDb.exec(sql, params)
   if (!res.length) return []
   return res[0]!.values.map((row: unknown[]) => {
@@ -77,10 +79,12 @@ export async function persistSQLite(): Promise<void> {
         })
         logger.success('SQLite', 'Dev DB synced to Vite server.')
       } catch (err) {
-        logger.warn('SQLite', 'Failed to sync Dev DB to server:', err)
+        throw new Error(`[sqliteEngine] Failed to sync Dev DB to server: ${String(err)}`)
       }
     }
-  } catch (e: unknown) { logger.error('SQLite', `Persistence failed: ${(e as Error).message}`) }
+  } catch (e: unknown) {
+    throw new Error(`[sqliteEngine] SQLite persistence failed: ${(e as Error).message}`)
+  }
 }
 
 export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean } = {}): Promise<SQLiteDatabase | null> {
@@ -113,7 +117,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
             }
           }
         } catch (err) {
-          logger.debug('SQLite', `Failed to fetch imported db: ${(err as Error).message}`)
+          throw new Error(`[sqliteEngine] Failed to fetch imported db: ${(err as Error).message}`)
         }
       }
 
@@ -128,7 +132,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
           return _sqliteDb
         }
       } catch (err) {
-        logger.debug('SQLite', `Failed to fetch clean db template: ${(err as Error).message}`)
+        throw new Error(`[sqliteEngine] Failed to fetch clean db template: ${(err as Error).message}`)
       }
 
       logger.info('SQLite', 'No clean DB template found. Initializing clean database and running schemas/migrations...')
@@ -145,7 +149,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
         })
         logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
       } catch (err) {
-        logger.warn('SQLite', 'Failed to upload generated clean DB template:', err)
+        throw new Error(`[sqliteEngine] Failed to upload generated clean DB template: ${String(err)}`)
       }
       return _sqliteDb
     }
@@ -169,8 +173,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                   const loadingStore = useLoadingStore()
                   loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true, '💾')
                 }
-              } catch (_) {
-                // Safe fallback if store/pinia not ready
+              } catch (e) {
+                throw new Error(`[sqliteEngine] Failed to initialize loadingStore in dev import: ${String(e)}`)
               }
 
               const arrayBuffer = await response.arrayBuffer()
@@ -185,7 +189,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               try {
                 await fetch('/api/dev-import-db-cleanup', { method: 'POST' })
               } catch (e) {
-                logger.warn('SQLite', 'Failed to cleanup import db file:', e)
+                throw new Error(`[sqliteEngine] Failed to cleanup dev import DB file: ${String(e)}`)
               }
 
               // Set import reload flag to preserve session during reload
@@ -193,8 +197,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 sessionStorage.setItem('pokevicio_import_reload', 'true')
                 localStorage.setItem('pokevicio_db_imported', 'true')
                 sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
-              } catch (_) {
-                // Ignore if sessionStorage is not available
+              } catch (e) {
+                throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`)
               }
 
               // Small delay so user sees the message

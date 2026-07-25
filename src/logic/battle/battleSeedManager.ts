@@ -46,12 +46,12 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
       if (arr.length === 4 && arr.every(n => !isNaN(n))) {
         return arr as unknown as NumericSeed;
       }
-    } catch (_e) {
-      // Fallback
+    } catch (e) {
+      throw new Error(`[BattleSeedManager] Error parsing numeric seed object: ${String(e)}`);
     }
   }
   
-  return generateRandomSeed();
+  throw new Error(`[BattleSeedManager] Raw seed parameter is missing or invalid: ${JSON.stringify(raw)}`);
 }
 
 

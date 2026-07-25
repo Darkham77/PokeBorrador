@@ -64,8 +64,7 @@ export class DBRouter {
     
     const { url, key } = this.config;
     if (!url || !key) {
-      logger.warn('DBRouter', 'Missing Supabase config. Online operations will fail.');
-      return null;
+      throw new Error('[DBRouter] Missing Supabase configuration (URL or API key). Online operations cannot proceed.');
     }
 
     try {
@@ -81,8 +80,7 @@ export class DBRouter {
       });
       return this._realClient;
     } catch (err) {
-      logger.error('DBRouter', 'Failed to initialize Supabase client:', (err as Error).message);
-      return null;
+      throw new Error(`[DBRouter] Failed to initialize Supabase client: ${(err as Error).message}`);
     }
   }
 
@@ -117,8 +115,8 @@ export class DBRouter {
       const targetDate = Temporal.Instant.from(dateStr);
       const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
       this.setTimeOffset(offset);
-    } catch (_e) {
-      logger.error('DBRouter', `Invalid mock time format: ${dateStr}`);
+    } catch (e) {
+      throw new Error(`[DBRouter] Invalid mock time format '${dateStr}': ${(e as Error).message}`);
     }
   }
 
@@ -147,7 +145,7 @@ export class DBRouter {
         .eq('id', userId);
       logger.success('DBRouter', 'Session ID updated in DB.');
     } catch (err) {
-      logger.error('DBRouter', 'Failed to set session ID:', (err as Error).message);
+      throw new Error(`[DBRouter] Failed to set session ID in DB: ${(err as Error).message}`);
     }
 
     if (this.userSubscription) this.userSubscription.unsubscribe();
@@ -227,11 +225,9 @@ export class DBRouter {
       const { data, error } = res;
       if (!error && data) return Temporal.Instant.fromEpochMilliseconds(Number(data)).epochMilliseconds;
       
-      // Fallback: use a fast select if RPC fails
-      return Temporal.Now.instant().epochMilliseconds; 
+      throw new Error(`[DBRouter] fn_get_server_time RPC returned error: ${String(error)}`);
     } catch (e) {
-      logger.warn('DBRouter', 'getServerTime error, falling back to local.', (e as Error).message);
-      return Temporal.Now.instant().epochMilliseconds;
+      throw new Error(`[DBRouter] getServerTime RPC error: ${(e as Error).message}`);
     }
   }
 
