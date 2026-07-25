@@ -24,18 +24,7 @@ export type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
   activeRequest?: ShowdownRequest;
 };
 
-export interface ShowdownRequestPokemon {
-  ident?: string;
-  uid?: string;
-  condition?: string;
-  active?: boolean;
-}
-
-export interface ShowdownRequest {
-  side?: {
-    pokemon: ShowdownRequestPokemon[];
-  };
-}
+import type { ShowdownRequest } from './helpers/showdownTeamMapper.ts';
 
 export interface CustomPokemonSet extends PokemonSet {
   stats?: Record<string, number>;

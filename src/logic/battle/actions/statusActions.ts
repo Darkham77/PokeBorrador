@@ -138,7 +138,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
     const team = isPlayer ? (battleCtx.activeBattle.value?.playerTeam || []) : (battleCtx.activeBattle.value?.enemyTeam || []);
     
     team.forEach((p: Pokemon) => {
-      p.status = null;
+      p.status = '';
       p.sleepTurns = 0;
     });
     

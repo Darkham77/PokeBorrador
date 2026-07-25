@@ -19,16 +19,16 @@ export function handleStageEvents(ctx: SBCtx): boolean {
   switch (type) {
     case '-boost':
     case '-setboost': {
-      const target = getPoke(parts[2] || '');
+      const target = getPoke(parts[2] || parts[1] || '');
       const stat = parts[3] || '';
       const amount = parseInt(parts[4] || '1');
       if (target && SHOWDOWN_STAT_KEYS.includes(stat as ShowdownStatKey)) {
-        const targetSide = getSide(parts[2] || '');
+        const targetSide = getSide(parts[2] || parts[1] || '');
         const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
         if (stages) {
           const key = stat as ShowdownStatKey;
           if (type === '-setboost') {
-            stages[key] = amount;
+            stages[key] = Math.max(-6, Math.min(6, amount));
           } else {
             stages[key] = Math.min(6, (stages[key] || 0) + amount);
           }

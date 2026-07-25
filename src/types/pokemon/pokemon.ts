@@ -1,4 +1,4 @@
-export type PokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' | null;
+export type PokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' | '' | null;
 
 export function isPokemonStatus(status: unknown): status is PokemonStatus {
   if (status === null || status === undefined) return true;
@@ -136,6 +136,7 @@ export interface Pokemon {
   evs?: PokemonEVs;
   nature: string;
   heldItem?: string | null;
+  lastItem?: string | null;
   item?: string | null; // @deprecated use heldItem
   friendship?: number;
   vigor?: number;

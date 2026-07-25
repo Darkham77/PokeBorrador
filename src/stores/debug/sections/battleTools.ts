@@ -75,6 +75,7 @@ export function registerBattleTools(debug: DebugSystem) {
         'catch': 'PLAY_CATCH_ENERGY',
         'shake': 'CATCH_SHAKE',
         'shake_damage': 'PLAY_DAMAGE',
+        'recoil_rebound': 'PLAY_RECOIL',
         'blink': 'PLAY_BLINK',
         'heal': 'PLAY_HEAL',
         'success': 'CATCH_SUCCESS',
@@ -89,14 +90,15 @@ export function registerBattleTools(debug: DebugSystem) {
       const event = eventMap[type] || type
       const payload: Record<string, unknown> = { side, ...options }
       
-      // Manejo especial para animación de ataque (incluyendo selfKO/explosion)
+      // Manejo especial para animación de ataque (incluyendo physical, special, status, selfKO y recoil)
       if (type === 'attack') {
         const battle = useBattleStore()
         battle.attackerSide = side as 'player' | 'enemy'
         battle.activeMove = {
-          name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug',
+          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'),
           cat: options.cat === 'selfKO' ? 'special' : ((options.cat as 'physical' | 'special' | 'status' | undefined) || 'physical'),
           selfKO: options.cat === 'selfKO',
+          recoil: options.cat === 'recoil' ? true : undefined,
           pp: 5,
           maxPP: 5
         }

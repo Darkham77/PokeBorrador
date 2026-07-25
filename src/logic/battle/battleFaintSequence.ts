@@ -32,10 +32,10 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     }
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
   } else {
-    // isTrainer / isNpc: Recall animation
+    // isTrainer / isNpc: Recall animation — trainer calls back their fainted pokemon
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-    if (ctx.animations?.handleCatchRequest) {
-      await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon })
+    if (ctx.animations?.handleWithdrawRequest) {
+      await ctx.animations.handleWithdrawRequest({ side: 'enemy', pokemon })
     } else {
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await sleep(800)

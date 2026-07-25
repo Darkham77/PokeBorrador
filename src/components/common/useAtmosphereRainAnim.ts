@@ -79,14 +79,14 @@ export function useAtmosphereRainAnim(
 
     if (isStorm) {
       const strike = () => {
-        const ctxVal = atmosphereContext
-        if (!props.isVisible || props.isPerformanceMode || !ctxVal || !['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
+        if (!props.isVisible || props.isPerformanceMode || !['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
 
         const x1 = Math.floor(Math.random() * 90) + 5
         const isFlipped = Math.random() > 0.5
         lightningPos.value = { x1, x2: x1 }
 
-        ctxVal.add(() => {
+        const runStrike = () => {
+          if (!lightningRef.value) return
           const tl = gsap.timeline()
           tl.to(lightningRef.value, {
             opacity: 1,
@@ -105,7 +105,13 @@ export function useAtmosphereRainAnim(
 
           const nextDelay = w === 'thunderstorm' ? (1 + Math.random() * 2) : (4 + Math.random() * 6)
           lightningTimer = gsap.delayedCall(nextDelay, strike)
-        })
+        }
+
+        if (atmosphereContext) {
+          atmosphereContext.add(runStrike)
+        } else {
+          runStrike()
+        }
       }
       lightningTimer = gsap.delayedCall(2 + Math.random() * 3, strike)
     }

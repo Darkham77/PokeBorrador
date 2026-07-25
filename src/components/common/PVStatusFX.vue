@@ -40,7 +40,7 @@ const activeStatusType = ref<string>('')
 
 const allUnifiedTypes = [
   'shiny',
-  'confused', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
+  'confused', 'taunted', 'substitute', 'flinched', 'disabled', 'encored', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
   'protected', 'enduring', 'focus', 'lockon',
   'reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'
 ]

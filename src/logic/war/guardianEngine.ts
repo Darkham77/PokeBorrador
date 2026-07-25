@@ -32,18 +32,18 @@ const GUARDIAN_POOL: Record<string, GuardianBase[]> = {
     { id: 'hypno',      lv: 42, pts: 150 }
   ],
   rare: [
-    { id: 'gyarados',   lv: 50, pts: 150 }, { id: 'alakazam',   lv: 48, pts: 150 },
-    { id: 'machamp',    lv: 48, pts: 150 }, { id: 'gengar',     lv: 48, pts: 150 },
-    { id: 'exeggutor',  lv: 46, pts: 150 }, { id: 'pinsir',     lv: 47, pts: 150 },
-    { id: 'scyther',    lv: 47, pts: 150 }, { id: 'kangaskhan', lv: 45, pts: 150 },
-    { id: 'tauros',     lv: 45, pts: 150 }, { id: 'slowbro',    lv: 46, pts: 150 }, 
-    { id: 'jolteon',    lv: 48, pts: 150 }, { id: 'vaporeon',   lv: 48, pts: 150 }, 
-    { id: 'flareon',    lv: 48, pts: 150 }
+    { id: 'gyarados',   lv: 50, pts: 300 }, { id: 'alakazam',   lv: 48, pts: 300 },
+    { id: 'machamp',    lv: 48, pts: 300 }, { id: 'gengar',     lv: 48, pts: 300 },
+    { id: 'exeggutor',  lv: 46, pts: 300 }, { id: 'pinsir',     lv: 47, pts: 300 },
+    { id: 'scyther',    lv: 47, pts: 300 }, { id: 'kangaskhan', lv: 45, pts: 300 },
+    { id: 'tauros',     lv: 45, pts: 300 }, { id: 'slowbro',    lv: 46, pts: 300 }, 
+    { id: 'jolteon',    lv: 48, pts: 300 }, { id: 'vaporeon',   lv: 48, pts: 300 }, 
+    { id: 'flareon',    lv: 48, pts: 300 }
   ],
   elite: [
-    { id: 'dragonite',  lv: 60, pts: 150 }, { id: 'snorlax',    lv: 55, pts: 150 },
-    { id: 'lapras',     lv: 55, pts: 150 }, { id: 'chansey',    lv: 50, pts: 150 },
-    { id: 'cloyster',   lv: 52, pts: 150 }
+    { id: 'dragonite',  lv: 60, pts: 750 }, { id: 'snorlax',    lv: 55, pts: 750 },
+    { id: 'lapras',     lv: 55, pts: 750 }, { id: 'chansey',    lv: 50, pts: 750 },
+    { id: 'cloyster',   lv: 52, pts: 750 }
   ]
 }
 
@@ -78,7 +78,7 @@ export function getConflictZones(allMapIds: string[], date: Temporal.ZonedDateTi
   const zones: string[] = []
   let tempSeed = hashString(dateStr + "zones")
   
-  while (zones.length < 5 && zones.length < allMapIds.length) {
+  while (zones.length < 12 && zones.length < allMapIds.length) {
     const idx = Math.abs(tempSeed) % allMapIds.length
     const mId = allMapIds[idx] || '';
     if (mId && !zones.includes(mId)) zones.push(mId)
@@ -94,9 +94,11 @@ export function getConflictZones(allMapIds: string[], date: Temporal.ZonedDateTi
  * @param {Temporal.ZonedDateTime|Temporal.Instant} date 
  * @returns {GuardianData|null}
  */
-export function getGuardianData(mapId: string, allMapIds: string[], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
-  const zones = getConflictZones(allMapIds, date)
-  if (!zones.includes(mapId)) return null
+export function getGuardianData(mapId: string, allMapIds: string[] = [], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
+  if (allMapIds && allMapIds.length > 0) {
+    const zones = getConflictZones(allMapIds, date)
+    if (!zones.includes(mapId)) return null
+  }
 
   const dateStr = getArgDateString(date)
   const seed = hashString(dateStr + mapId)

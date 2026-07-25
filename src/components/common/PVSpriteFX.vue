@@ -28,6 +28,11 @@ const props = defineProps({
   isGuardian: { type: Boolean, default: false },
   status: { type: String, default: null }, 
   isConfused: { type: Boolean, default: false },
+  isTaunted: { type: Boolean, default: false },
+  isSubstitute: { type: Boolean, default: false },
+  isFlinched: { type: Boolean, default: false },
+  isDisabled: { type: Boolean, default: false },
+  isEncored: { type: Boolean, default: false },
   isCursed: { type: Boolean, default: false },
   isSeeded: { type: Boolean, default: false },
   isTrapped: { type: Boolean, default: false },
@@ -71,6 +76,11 @@ const wrapperClasses = computed(() => ({
   'is-simplified': isSimplified.value,
   [`status-${props.status}`]: !!props.status && !isSimplified.value,
   'is-confused': props.isConfused && !isSimplified.value,
+  'is-taunted': props.isTaunted && !isSimplified.value,
+  'is-substitute': props.isSubstitute && !isSimplified.value,
+  'is-flinched': props.isFlinched && !isSimplified.value,
+  'is-disabled': props.isDisabled && !isSimplified.value,
+  'is-encored': props.isEncored && !isSimplified.value,
   'is-cursed': props.isCursed && !isSimplified.value,
   'is-seeded': props.isSeeded && !isSimplified.value,
   'is-trapped': props.isTrapped && !isSimplified.value,
@@ -83,6 +93,11 @@ const wrapperClasses = computed(() => ({
 const secondaryEffects = computed(() => [
   { active: props.isShiny, emoji: '⭐', type: 'shiny' },
   { active: props.isConfused, emoji: '💫', type: 'confused' },
+  { active: props.isTaunted, emoji: '💢', type: 'taunted' },
+  { active: props.isSubstitute, emoji: '🧸', type: 'substitute' },
+  { active: props.isFlinched, emoji: '💥', type: 'flinched' },
+  { active: props.isDisabled, emoji: '🔒', type: 'disabled' },
+  { active: props.isEncored, emoji: '🔄', type: 'encored' },
   { active: props.isCursed, emoji: '👻', type: 'cursed' },
   { active: props.attracted, emoji: '💖', type: 'attracted' },
   { active: props.isSeeded, emoji: '🌱', type: 'seeded' },
@@ -142,6 +157,18 @@ const refreshPersistentFX = (retryCount = 0) => {
   if (props.isConfused && !isImmobilized) {
     activeTweens.push(gsap.to(target, { x: 2, rotation: 1, duration: 0.15, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
+  if (props.isTaunted) {
+    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 12px Rgba(255, 0, 0, 0.9)) Brightness(1.2)', duration: 0.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+  }
+  if (props.isFlinched && !isImmobilized) {
+    activeTweens.push(gsap.to(target, { x: 4, duration: 0.05, yoyo: true, repeat: 10, ease: 'none' }))
+  }
+  if (props.isDisabled) {
+    activeTweens.push(gsap.to(target, { filter: 'Grayscale(0.8) Brightness(0.7) Drop-Shadow(0 0 8px Rgba(100, 100, 100, 0.8))', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+  }
+  if (props.isEncored) {
+    activeTweens.push(gsap.to(target, { filter: 'Hue-Rotate(90deg) Drop-Shadow(0 0 10px Rgba(0, 255, 255, 0.8))', duration: 0.8, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+  }
   if (props.isFocusEnergy) {
     activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)', duration: 0.75, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
@@ -179,7 +206,7 @@ const refreshPersistentFX = (retryCount = 0) => {
   }
 }
 
-watch([() => props.status, () => props.isConfused, () => props.isCursed, () => props.isGuardian, isSimplified], () => {
+watch([() => props.status, () => props.isConfused, () => props.isTaunted, () => props.isSubstitute, () => props.isFlinched, () => props.isDisabled, () => props.isEncored, () => props.isCursed, () => props.isGuardian, isSimplified], () => {
   nextTick(() => refreshPersistentFX())
 }, { immediate: true })
 

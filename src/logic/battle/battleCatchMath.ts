@@ -76,7 +76,7 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
     else break
   }
 
-  return { caught: shakes === 4, shakes: Math.min(3, shakes) }
+  return { caught: shakes === 4, shakes: Math.min(3, shakes), statusMultiplierApplied: statusMult > 1.0 }
 }
 
 export function calculateEscapeChancePure(

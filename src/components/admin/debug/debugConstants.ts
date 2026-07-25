@@ -42,8 +42,9 @@ export const DEBUG_STATUS_CONDITIONS: DebugItem[] = [
 
 export const DEBUG_SECONDARY_EFFECTS: DebugItem[] = [
   { id: 'confused', label: 'CONFUSIÓN (4t)', icon: '🌀' },
+  { id: 'tauntTurns', label: 'MOFA (3t)', icon: '🤬' },
+  { id: 'substitute', label: 'SUSTITUTO', icon: '🧸' },
   { id: 'disabledTurns', label: 'ANULADO (4t)', icon: '🔒' },
-  { id: 'tauntTurns', label: 'MOFA (3t)', icon: '🤐' },
   { id: 'encoreTurns', label: 'OTRA VEZ (3t)', icon: '🔁' },
   { id: 'perishSongCount', label: 'CANTO MORTAL (3t)', icon: '⏳' },
   { id: 'bound', label: 'ATADURA (4t)', icon: '⛓️' },
@@ -84,7 +85,8 @@ export const DEBUG_ATTACK_FX: DebugItem[] = [
   { id: 'physical', label: 'FÍSICO', icon: '⚔️', cat: 'physical' },
   { id: 'special', label: 'ESPECIAL', icon: '🔮', cat: 'special' },
   { id: 'status', label: 'ESTADO', icon: '🧪', cat: 'status' },
-  { id: 'selfKO', label: 'EXPLOSIÓN', icon: '💥', cat: 'selfKO' }
+  { id: 'selfKO', label: 'EXPLOSIÓN', icon: '💥', cat: 'selfKO' },
+  { id: 'recoil', label: 'RETROCESO', icon: '🔙', cat: 'recoil' }
 ]
 
 export const DEBUG_STATS: DebugItem[] = [
@@ -98,33 +100,38 @@ export const DEBUG_STATS: DebugItem[] = [
 ]
 
 export const DEBUG_FIELD_EFFECTS: DebugItem[] = [
+  { id: 'electricterrain', label: 'CAMPO ELÉCTRICO', icon: '⚡' },
+  { id: 'grassyterrain', label: 'CAMPO HIERBA', icon: '🌿' },
+  { id: 'mistyterrain', label: 'CAMPO NIEBLA', icon: '🌸' },
+  { id: 'psychicterrain', label: 'CAMPO PSÍQUICO', icon: '🔮' },
+  { id: 'trickroom', label: 'TRICK ROOM', icon: '⏳' },
+  { id: 'gravity', label: 'GRAVEDAD', icon: '🌌' },
   { id: 'reflect', label: 'REFLEJO', icon: '🧱' },
   { id: 'lightScreen', label: 'PANTALLA LUZ', icon: '🕯️' },
   { id: 'safeguard', label: 'VELO SAGRADO', icon: '🛡️' },
   { id: 'mist', label: 'NEBLINA', icon: '🌫️' },
-  { id: 'spikes', label: 'PÚAS', icon: '🌵' }
+  { id: 'spikes', label: 'PÚAS', icon: '📌' },
+  { id: 'stealthrock', label: 'TRAMPA ROCAS', icon: '🪨' },
+  { id: 'toxicspikes', label: 'PÚAS TÓXICAS', icon: '☠️' }
 ]
 
 export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
-  { id: 'clear', label: 'DESPEJADO', icon: '🌈', desc: 'Cielo despejado sin efectos atmosféricos.' },
-  { id: 'sun', label: 'SOL', icon: '☀️', desc: 'Sol intenso. Potencia fuego, debilita agua.' },
-  { id: 'intense_sun', label: 'SOL INTENSO', icon: '🔆', desc: 'Sol extremo. Potencia fuego significativamente.' },
-  { id: 'heatwave', label: 'OLA CALOR', icon: '🔥', desc: 'Calor extremo. Probabilidad de quemaduras ambientales.' },
-  { id: 'cold', label: 'FRÍO', icon: '🧊', desc: 'Ambiente gélido. Potencia hielo.' },
-  { id: 'coldwave', label: 'OLA FRÍO', icon: '🥶', desc: 'Frío extremo. Probabilidad de congelación ambiental.' },
-  { id: 'rain', label: 'LLUVIA', icon: '🌧️', desc: 'Lluvia constante. Potencia agua, debilita fuego.' },
-  { id: 'heavy_rain', label: 'LLUVIA FUERTE', icon: '☔', desc: 'Lluvia torrencial. Potencia agua significativamente.' },
-  { id: 'storm', label: 'TORMENTA', icon: '⛈️', desc: 'Tormenta con lluvia. Trueno infalible.' },
-  { id: 'thunderstorm', label: 'T. ELÉCTRICA', icon: '🌩️', desc: 'Tormenta eléctrica intensa. Rayos frecuentes.' },
-  { id: 'snow', label: 'NIEVE', icon: '❄️', desc: 'Nieve suave. Sube la Defensa de tipos Hielo.' },
-  { id: 'hail', label: 'GRANIZO', icon: '🌨️', desc: 'Granizo cortante. Daño por turno a no-Hielo.' },
-  { id: 'blizzard', label: 'VENTISCA', icon: '🌬️', desc: 'Tormenta de nieve. Daño por turno a no-Hielo.' },
-  { id: 'fog', label: 'NIEBLA', icon: '🌫️', desc: 'Niebla densa. Reduce la precisión de todos los Pokémon.' },
-  { id: 'mist', label: 'BRUMA', icon: '💨', desc: 'Humedad ambiental ligera que reduce suavemente la precisión.' },
-  { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: 'Tormenta de arena. Daño por turno a no-Tierra/Roca/Acero.' },
-  { id: 'dust_storm', label: 'T. POLVO', icon: '🌪️', desc: 'Tormenta de polvo densa. Reduce la precisión.' },
-  { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Viento suave. Facilita el vuelo.' },
-  { id: 'strong_winds', label: 'V. FUERTES', icon: '🌀', desc: 'Vientos huracanados. Debilita ataques tipo Volador.' }
+  { id: 'clear', label: 'DESPEJADO', icon: '🌈', desc: 'Sin efectos atmosféricos.' },
+  { id: 'sun', label: 'SOL', icon: '☀️', desc: 'Fuego x1.5, Agua x0.5. Rayo Solar sin turno de carga. Sintesis/Sol de Mañana cura 2/3.' },
+  { id: 'intense_sun', label: 'SOL INTENSO (DESOLATE LAND)', icon: '🔆', desc: 'Fuego x1.5. Bloquea totalmente los ataques de tipo Agua.' },
+  { id: 'heatwave', label: 'OLA CALOR', icon: '🔥', desc: 'Sol térmico ambiental.' },
+  { id: 'rain', label: 'LLUVIA', icon: '🌧️', desc: 'Agua x1.5, Fuego x0.5. Trueno y Vendaval 100% precisión. Sintesis/Sol de Mañana cura 1/4.' },
+  { id: 'heavy_rain', label: 'LLUVIA FUERTE (PRIMORDIAL SEA)', icon: '☔', desc: 'Agua x1.5. Bloquea totalmente los ataques de tipo Fuego.' },
+  { id: 'storm', label: 'TORMENTA', icon: '⛈️', desc: 'Lluvia intensa con tormenta eléctrica.' },
+  { id: 'thunderstorm', label: 'T. ELÉCTRICA', icon: '🌩️', desc: 'Lluvia y actividad eléctrica extrema.' },
+  { id: 'snow', label: 'NIEVE', icon: '❄️', desc: 'Aumenta la Defensa x1.5 a Pokémon tipo Hielo (Gen 9). Ventisca 100% precisión.' },
+  { id: 'hail', label: 'GRANIZO', icon: '🌨️', desc: 'Daño 1/16 HP a no-Hielo por turno. Ventisca 100% precisión.' },
+  { id: 'blizzard', label: 'VENTISCA', icon: '🌬️', desc: 'Granizo y tormenta de nieve.' },
+  { id: 'fog', label: 'NIEBLA', icon: '🌫️', desc: 'Reduce la precisión de todos los movimientos a x0.6.' },
+  { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: 'Daño 1/16 HP a no-Tierra/Roca/Acero. Aumenta Defensa Especial x1.5 a tipo Roca.' },
+  { id: 'dust_storm', label: 'T. POLVO', icon: '🌪️', desc: 'Tormenta de arena y polvo.' },
+  { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Corrientes de aire ambiental.' },
+  { id: 'strong_winds', label: 'V. FUERTES (DELTA STREAM)', icon: '🌀', desc: 'Elimina las debilidades del tipo Volador.' }
 ]
 
 export const DEBUG_UI_ANIMS: DebugItem[] = [

@@ -85,7 +85,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
       addLog(`¡${pokemon.name} está profundamente dormido!`, 'log-info', pokemon)
       return false
     } else {
-      pokemon.status = null
+      pokemon.status = ''
       addLog(`¡${pokemon.name} se despertó!`, 'log-info', pokemon)
     }
   }
@@ -94,7 +94,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
       addLog(`¡${pokemon.name} está congelado!`, 'log-info', pokemon)
       return false
     } else {
-      pokemon.status = null
+      pokemon.status = ''
       addLog(`¡${pokemon.name} se descongeló!`, 'log-info', pokemon)
     }
   }

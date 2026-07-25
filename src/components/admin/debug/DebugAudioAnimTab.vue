@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBattleStore } from '@/stores/battle/battle'
+import { gameBus } from '@/logic/events/gameBus'
 import DebugActionList from './DebugActionList.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
@@ -46,12 +47,24 @@ const playSound = (id: string) => {
 }
 
 const triggerAnim = (id: string, options = {}) => {
-  getDebugBridge().triggerAnim(id, activeSide.value, options)
+  const bridge = getDebugBridge()
+  if (bridge && typeof bridge.triggerAnim === 'function') {
+    bridge.triggerAnim(id, activeSide.value, options)
+  } else {
+    gameBus.emit(id === 'recoil_rebound' ? 'PLAY_RECOIL' : id, { side: activeSide.value, ...options })
+  }
 }
 
 const triggerAttack = (cat?: string) => {
   if (!cat) return
-  getDebugBridge().triggerAnim('attack', activeSide.value, { cat })
+  if (cat === 'recoil') {
+    gameBus.emit('PLAY_RECOIL', { side: activeSide.value })
+    return
+  }
+  const bridge = getDebugBridge()
+  if (bridge && typeof bridge.triggerAnim === 'function') {
+    bridge.triggerAnim('attack', activeSide.value, { cat })
+  }
 }
 
 const setStatus = (status: string) => {
@@ -59,7 +72,17 @@ const setStatus = (status: string) => {
 }
 
 const toggleSecondary = (type: string) => {
-  getDebugBridge().setSecondaryStatus(activeSide.value, type)
+  if (type === 'confusion' || type === 'flinch' || type === 'tauntTurns' || type === 'substitute') {
+    const sideKey = activeSide.value === 'player' ? 'player' : 'enemy'
+    const poke = sideKey === 'player' ? battleStore.player : battleStore.enemy
+    if (poke) {
+      if (!poke.volatileCounters) poke.volatileCounters = {}
+      poke.volatileCounters[type] = (poke.volatileCounters[type] || 0) > 0 ? 0 : 3
+      battleStore.addLog(`DEBUG: Estado volátil ${type.toUpperCase()} alternado en ${poke.name}`, 'log-info', poke)
+    }
+  } else {
+    getDebugBridge().setSecondaryStatus(activeSide.value, type)
+  }
 }
 
 const modifyStat = (stat: string, delta: number) => {
@@ -67,7 +90,34 @@ const modifyStat = (stat: string, delta: number) => {
 }
 
 const setField = (effect: string, val: number) => {
-  getDebugBridge().setFieldEffect(activeSide.value, effect, val)
+  if (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(effect)) {
+    if (battleStore.state) {
+      if (battleStore.state.weather?.type === effect || battleStore.state.weather?.visual === effect) {
+        battleStore.state.weather = { type: 'clear', visual: 'clear', turns: 0 }
+        battleStore.addLog(`DEBUG: Terreno/Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
+      } else {
+        battleStore.state.weather = {
+          type: effect as any,
+          visual: effect,
+          turns: 5
+        }
+        battleStore.addLog(`DEBUG: Terreno/Efecto de Campo ${effect.toUpperCase()} activado`, 'log-info')
+      }
+    }
+  } else if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(effect)) {
+    if (battleStore.state) {
+      if (!battleStore.state.enemySideConditions) battleStore.state.enemySideConditions = {}
+      if (battleStore.state.enemySideConditions[effect as any]) {
+        delete battleStore.state.enemySideConditions[effect as any]
+        battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
+      } else {
+        battleStore.state.enemySideConditions[effect as any] = { turns: 5 }
+        battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} aplicado al bando enemigo`, 'log-info')
+      }
+    }
+  } else {
+    getDebugBridge().setFieldEffect(activeSide.value, effect, val)
+  }
 }
 
 const toggleSilhouette = () => {
@@ -84,9 +134,11 @@ const isEffectActive = (type: string, category: string) => {
   if (category === 'status') return (poke as Pokemon | undefined)?.status === type
   if (category === 'secondary') {
     const p = poke as (Pokemon & Record<string, unknown>) | undefined
-    if (type === 'confused') return (p?.confused || 0) > 0
+    if (type === 'confusion' || type === 'confused') return !!p?.confused || ((p?.volatileCounters as any)?.['confusion'] || 0) > 0
+    if (type === 'flinch') return ((p?.volatileCounters as any)?.['flinch'] || 0) > 0
+    if (type === 'tauntTurns' || type === 'taunt') return (p?.tauntTurns || 0) > 0 || ((p?.volatileCounters as any)?.['tauntTurns'] || 0) > 0
+    if (type === 'substitute') return !!p?.substitute || ((p?.volatileCounters as any)?.['substitute'] || 0) > 0
     if (type === 'disabledTurns') return (p?.disabledTurns || 0) > 0
-    if (type === 'tauntTurns') return (p?.tauntTurns || 0) > 0
     if (type === 'encoreTurns') return (p?.encoreTurns || 0) > 0
     if (type === 'perishSongCount') return (p?.perishSongCount || 0) > 0
     if (type === 'bound') return (p?.bound || 0) > 0
@@ -95,7 +147,15 @@ const isEffectActive = (type: string, category: string) => {
     if (type === 'seeded') return !!p?.seeded
     return !!p?.[type]
   }
-  if (category === 'field') return ((stages as BattleStages | undefined)?.[type as keyof BattleStages] || 0) > 0
+  if (category === 'field') {
+    if (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(type)) {
+      return battleStore.state?.weather?.type === type || battleStore.state?.weather?.visual === type
+    }
+    if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(type)) {
+      return !!battleStore.state?.enemySideConditions?.[type as any] || !!battleStore.state?.playerSideConditions?.[type as any]
+    }
+    return ((stages as BattleStages | undefined)?.[type as keyof BattleStages] || 0) > 0
+  }
   if (category === 'weather') return battleStore.state?.weather?.type === type
 
   return false

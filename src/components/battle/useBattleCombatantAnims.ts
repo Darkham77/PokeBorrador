@@ -1,4 +1,4 @@
-import { watch, type Ref, nextTick, type ComputedRef, computed } from 'vue'
+import { watch, type Ref, nextTick, type ComputedRef, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
@@ -583,6 +583,25 @@ export function useBattleCombatantAnims(
       }
       gsap.set(pokeballImgRef.value, { clearProps: 'filter' })
     }
+  })
+  const onRecoilEvent = (e: Event) => {
+    const data = (e as CustomEvent).detail as { side?: string } | undefined
+    if (data?.side === props.side && spriteRef.value) {
+      const isPlayerSide = props.side === 'player'
+      const backX = isPlayerSide ? -35 : 35
+      const backY = isPlayerSide ? 10 : -10
+      gsap.timeline()
+        .to(spriteRef.value, { x: backX, y: backY, duration: 0.15, ease: 'power2.out' })
+        .to(spriteRef.value, { x: 0, y: 0, duration: 0.3, ease: 'back.out(1.7)' })
+    }
+  }
+
+  onMounted(() => {
+    gameBus.on('PLAY_RECOIL', onRecoilEvent)
+  })
+
+  onUnmounted(() => {
+    gameBus.off('PLAY_RECOIL', onRecoilEvent)
   })
 }
 

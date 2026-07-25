@@ -1,5 +1,7 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isPokemonStatus, type Move } from '../../types/pokemon/pokemon.ts';
+import { toID } from '@pkmn/sim';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /**
  * Maneja eventos misceláneos, efectos de combate y mecánicas Gen 6-9:
@@ -14,6 +16,16 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
   const { store, type, parts, line, p, getPoke, getSide } = ctx;
 
   switch (type) {
+    case 'gen':
+    case 'gametype':
+    case 'teamsize':
+    case 'rated':
+    case 'tier':
+    case 'showteam':
+    case 'debug':
+    case 'bigerror':
+    case 'event':
+      return true;
     case '-notarget': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
@@ -92,8 +104,11 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           'recharge': 'debe recargar',
           'disable': 'tiene el movimiento desactivado',
           'flinch': 'retrocedió',
+          'ability: truant': 'está haraganeando (Truant)',
+          'truant': 'está haraganeando (Truant)'
         };
-        const hint = cantMessages[reason.toLowerCase()] ?? 'no puede moverse';
+        const cleanReason = reason.toLowerCase();
+        const hint = cantMessages[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
         store.addLog(`¡${target.name} ${hint}!`, style, target);
       }
       return true;
@@ -137,10 +152,13 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-activate': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const effect = (parts[3] || parts[2] || '').replace('move: ', '').replace('ability: ', '');
+      const rawEffect = parts[3] || parts[2] || '';
+      const isMoveEffect = rawEffect.startsWith('move: ');
+      const isAbilityEffect = rawEffect.startsWith('ability: ');
+      const effect = rawEffect.replace('move: ', '').replace('ability: ', '');
       if (target) {
         if (!target.volatileCounters) target.volatileCounters = {};
-        const cleanEff = effect.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const cleanEff = toID(effect);
         target.volatileCounters[cleanEff] = 1;
 
         if (cleanEff.includes('confusion')) {
@@ -150,7 +168,12 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
         } else if (cleanEff.includes('substitute')) {
           store.addLog(`¡El Sustituto de ${target.name} recibió el golpe!`, 'log-info', target);
         } else if (effect) {
-          store.addLog(`¡${effect} se activó en ${target.name}!`, 'log-info', target);
+          const logMsg = isAbilityEffect 
+            ? `¡Habilidad ${effect} se activó en ${target.name}! move`
+            : isMoveEffect
+              ? `¡Movimiento ${effect} se activó en ${target.name}!`
+              : `¡${effect} se activó en ${target.name}!`;
+          store.addLog(logMsg, 'log-info', target);
         }
       }
       return true;
@@ -160,9 +183,11 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const ability = parts[3] || '';
+      const fromClause = parts.find(p => p.startsWith('[from]'));
       if (target && ability) {
         target.ability = ability;
-        store.addLog(`¡Habilidad: ${ability} de ${target.name}!`, 'log-info', target);
+        const fromText = fromClause ? ` (${fromClause.replace('[from]', '').trim()})` : '';
+        store.addLog(`¡Habilidad: ${ability} de ${target.name}!${fromText}`, 'log-info', target);
       }
       return true;
     }
@@ -172,6 +197,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const item = parts[3] || '';
       if (target) {
+        if (item || target.item) target.lastItem = item || target.item;
         target.heldItem = '';
         target.item = '';
         const verb = line.includes('[eat]') ? 'comió su' : 'perdió su';
@@ -187,6 +213,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (target && item) {
         target.heldItem = item;
         target.item = item;
+        target.lastItem = '';
         store.addLog(`¡${target.name} tiene ${item}!`, 'log-info', target);
       }
       return true;
@@ -196,7 +223,11 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       // Showdown format: |swap|POKEMON|POSITION
       const target = getPoke(parts[2] || '');
+      const newPos = parseInt(parts[3] || '0', 10);
       if (target) {
+        if (!isNaN(newPos)) {
+          (target as unknown as Record<string, unknown>).position = newPos;
+        }
         store.addLog(`¡${target.name} cambió de posición!`, 'log-info', target);
       }
       return true;
@@ -239,12 +270,16 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
         user.type = targetPoke.type;
         user.type2 = targetPoke.type2;
         if (targetPoke.moves) {
-          user.moves = targetPoke.moves.map(m => (m ? ({
-            ...m,
-            name: m.name || m.id,
-            pp: 5,
-            maxPP: 5
-          } as Move) : null));
+          user.moves = targetPoke.moves.map(m => {
+            if (!m) return null;
+            const copiedMax = Math.min(5, m.maxPP || 5);
+            return {
+              ...m,
+              name: m.name || m.id,
+              pp: copiedMax,
+              maxPP: copiedMax
+            } as Move;
+          });
         }
         store.addLog(`¡${user.name} se transformó en ${targetPoke.name}!`, 'log-info', user);
       } else if (user && parts[3]) {
@@ -297,22 +332,19 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           const targetRec = target as unknown as Record<string, unknown>;
           targetRec.species = newSpecies;
           targetRec.details = rawDetails;
-          // Update types, ability, and base stats if pokemonDataProvider has data for the new species
-          import('../providers/pokemonDataProvider.ts').then(({ pokemonDataProvider }) => {
-            const data = pokemonDataProvider.getPokemonData(newSpecies.toLowerCase().replace(/[^a-z0-9]/g, ''));
-            if (data) {
-              const dRec = data as unknown as Record<string, unknown>;
-              if (data.type) target.type = data.type;
-              if (data.type2 !== undefined) target.type2 = data.type2;
-              if (dRec.ability) target.ability = String(dRec.ability);
-              if (data.hp) target.maxHp = data.hp;
-              if (data.atk) target.atk = data.atk;
-              if (data.def) target.def = data.def;
-              if (data.spa) target.spa = data.spa;
-              if (data.spd) target.spd = data.spd;
-              if (data.spe) target.spe = data.spe;
-            }
-          }).catch(() => {});
+          const data = pokemonDataProvider.getPokemonData(toID(newSpecies));
+          if (data) {
+            const dRec = data as unknown as Record<string, unknown>;
+            if (data.type) target.type = data.type;
+            if (data.type2 !== undefined) target.type2 = data.type2;
+            if (dRec.ability) target.ability = String(dRec.ability);
+            if (data.hp) target.maxHp = data.hp;
+            if (data.atk) target.atk = data.atk;
+            if (data.def) target.def = data.def;
+            if (data.spa) target.spa = data.spa;
+            if (data.spd) target.spd = data.spd;
+            if (data.spe) target.spe = data.spe;
+          }
         }
         const msg = type === 'replace'
           ? `¡Era ${target.name} disfrazado!`
@@ -326,8 +358,15 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case 'drag': {
       console.debug(`[E2E-DEBUG-BRIDGE-SWITCH] Entering switch/drag parser. type: ${type}, rawId: "${parts[2]}", hpString: "${parts[4]}"`);
       const target = getPoke(parts[2] || '');
+      const rawDetails = parts[3] || '';
       const hpString = parts[4] || '';
-      if (target && hpString) {
+      if (target) {
+        if (target.volatileCounters) {
+          target.volatileCounters = {};
+        }
+        if (rawDetails) {
+          target.details = rawDetails;
+        }
         const hpAndStatus = hpString.split(' ');
         const rawHp = hpAndStatus[0] || '0';
         const hpParts = rawHp.split('/');
@@ -427,7 +466,8 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-zpower': {
       if (line.includes('[silent]')) return true;
       const user = getPoke(parts[2] || '');
-      if (user) store.addLog(`¡${user.name} desató el poder del Z-Move!`, 'log-info', '⭐');
+      const userName = user ? user.name : (parts[2] || 'El Pokémon');
+      store.addLog(`¡${userName} desató el poder del Z-Move!`, 'log-info', '⭐');
       return true;
     }
 
@@ -456,35 +496,23 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       return true;
     }
 
-    case 'turn': {
-      const turnNum = parseInt(parts[2] || '1', 10);
-      if (store.activeBattle.value) {
-        store.activeBattle.value.turnCount = turnNum;
-        // Clean single-turn volatile flags on active combatants at end of turn
-        const clearTurnVolatiles = (mon: { volatileCounters?: Record<string, number> } | null | undefined) => {
-          if (mon && mon.volatileCounters) {
-            delete mon.volatileCounters['protect'];
-            delete mon.volatileCounters['flinch'];
-            delete mon.volatileCounters['endure'];
-          }
-        };
-        clearTurnVolatiles(store.activeBattle.value.player as unknown as { volatileCounters?: Record<string, number> });
-        clearTurnVolatiles(store.activeBattle.value.enemy as unknown as { volatileCounters?: Record<string, number> });
-      }
-      return true;
-    }
-
+    case 'turn':
     case 'upkeep': {
       if (store.activeBattle.value) {
-        const clearTurnVolatiles = (mon: { volatileCounters?: Record<string, number> } | null | undefined) => {
+        if (type === 'turn') {
+          const turnNum = parseInt(parts[2] || '1', 10);
+          store.activeBattle.value.turnCount = turnNum;
+        }
+        const b = store.activeBattle.value as unknown as Record<string, unknown>;
+        const seatKeys = ['player', 'playerB', 'enemy', 'enemyB', 'p1', 'p2', 'p3', 'p4'];
+        seatKeys.forEach(k => {
+          const mon = b[k] as { volatileCounters?: Record<string, number> } | null | undefined;
           if (mon && mon.volatileCounters) {
             delete mon.volatileCounters['protect'];
             delete mon.volatileCounters['flinch'];
             delete mon.volatileCounters['endure'];
           }
-        };
-        clearTurnVolatiles(store.activeBattle.value.player as unknown as { volatileCounters?: Record<string, number> });
-        clearTurnVolatiles(store.activeBattle.value.enemy as unknown as { volatileCounters?: Record<string, number> });
+        });
       }
       return true;
     }

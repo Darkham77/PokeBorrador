@@ -41,6 +41,19 @@ export function getWeekId(date: Temporal.ZonedDateTime | Temporal.Instant = Temp
 }
 
 /**
+ * Calculates the previous week ID based on the ISO 8601 standard.
+ * Format: YYYY-WXX
+ * @param {Temporal.ZonedDateTime | Temporal.Instant} date 
+ * @returns {string}
+ */
+export function getPreviousWeekId(date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
+  const zdt = normalizeZonedDateTime(date)
+  const prevZdt = zdt.subtract({ days: 7 })
+  
+  return `${prevZdt.yearOfWeek}-W${String(prevZdt.weekOfYear).padStart(2, '0')}`
+}
+
+/**
  * Returns all valid week IDs for the current reconciliation period.
  * (Legacy compatibility for 2026 transition)
  */

@@ -31,7 +31,7 @@ const handleBackgroundError = (e: Event) => {
 </script>
 
 <template>
-  <div class="battle-environment">
+  <div class="battle-environment" data-weathers="raindance sunnyday electricterrain grassyterrain mistyterrain psychicterrain">
     <!-- Fondo dinámico -->
     <img 
       :src="bgData.url" 

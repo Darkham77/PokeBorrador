@@ -1,6 +1,9 @@
 import { watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useDebugStore } from '@/stores/debug'
+import { gameBus } from '@/logic/events/gameBus'
+import { useAudioStore } from '@/stores/audio'
+import { useBattleStore } from '@/stores/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
@@ -17,6 +20,84 @@ export function setupBattleDebug(ctx: BattleContext) {
   }
   
   win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {}
+
+  win.__VITE_DEBUG__.triggerAnim = (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
+    if (type === 'attack') {
+      if (options.cat === 'recoil') {
+        gameBus.emit('PLAY_RECOIL', { side })
+        return
+      }
+      const bStore = useBattleStore()
+      bStore.attackerSide = side as 'player' | 'enemy'
+      bStore.activeMove = {
+        name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug',
+        cat: options.cat === 'selfKO' ? 'special' : ((options.cat as 'physical' | 'special' | 'status' | undefined) || 'physical'),
+        selfKO: options.cat === 'selfKO',
+        pp: 5,
+        maxPP: 5
+      }
+      gameBus.emit('PLAY_ATTACK_ANIM', { side, cat: options.cat || 'physical' })
+      return
+    }
+    const eventMap: Record<string, string> = {
+      'release': 'PLAY_RELEASE_ENERGY',
+      'catch': 'PLAY_CATCH_ENERGY',
+      'shake': 'CATCH_SHAKE',
+      'shake_damage': 'PLAY_DAMAGE',
+      'recoil_rebound': 'PLAY_RECOIL',
+      'blink': 'PLAY_BLINK',
+      'heal': 'PLAY_HEAL',
+      'success': 'CATCH_SUCCESS',
+      'faint': 'POKEMON_FAINT',
+      'emergence': 'START_BATTLE',
+      'reveal': 'START_BATTLE',
+      'encounter': 'ENCOUNTER_ANIM',
+      'bush_wiggle': 'WIGGLE_BUSH'
+    }
+    const event = eventMap[type] || type
+    gameBus.emit(event, { side, ...options })
+  }
+
+  win.__VITE_DEBUG__.playSound = (id: string) => {
+    useAudioStore().play(id)
+  }
+
+  win.__VITE_DEBUG__.setStatus = (side: string, status: string) => {
+    const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
+    if (target) target.status = (status === 'null' || status === 'clear') ? '' : (status as any)
+  }
+
+  win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
+    const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
+    if (target) {
+      if (!target.volatileCounters) target.volatileCounters = {}
+      target.volatileCounters[type] = (target.volatileCounters[type] || 0) > 0 ? 0 : 3
+    }
+  }
+
+  win.__VITE_DEBUG__.setStatStage = (side: string, stat: keyof BattleStages, val: number) => {
+    if (side === 'player') ctx.playerStages.value[stat] = val
+    else ctx.enemyStages.value[stat] = val
+  }
+
+  win.__VITE_DEBUG__.modifyStatStage = (side: string, stat: keyof BattleStages, delta: number) => {
+    const stages = side === 'player' ? ctx.playerStages.value : ctx.enemyStages.value
+    stages[stat] = Math.max(-6, Math.min(6, (stages[stat] || 0) + delta))
+  }
+
+  win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
+    const sideCond = side === 'player' ? ctx.activeBattle.value?.playerSideConditions : ctx.activeBattle.value?.enemySideConditions
+    if (sideCond) {
+      if (sideCond[effect as any]) delete sideCond[effect as any]
+      else sideCond[effect as any] = { turns: val }
+    }
+  }
+
+  win.__VITE_DEBUG__.toggleSilhouette = () => {
+    const bStore = useBattleStore() as unknown as Record<string, unknown>
+    bStore.debugSilhouette = !bStore.debugSilhouette
+  }
+
   win.__VITE_DEBUG__.forceFlee = async () => {
     logger.warn('DEBUG', 'Forzando huida del combate...')
     ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.FLEE_ATTEMPT)
@@ -115,8 +196,9 @@ export function setupBattleDebug(ctx: BattleContext) {
     setWeather: (w: string) => { 
       const active = ctx.activeBattle.value
       if (active) {
-        active.weather = { type: w, turns: 5 }
-        logger.info('DEBUG', `Clima cambiado a: ${w}`)
+        const visual = w === 'clear' || w === 'null' ? 'clear' : w
+        active.weather = { type: w as any, turns: 99, visual }
+        logger.info('DEBUG', `Clima/Terreno cambiado a: ${w}`)
       }
     },
     fullHeal: () => {

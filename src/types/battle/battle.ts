@@ -158,6 +158,7 @@ export interface BattleCombatantProps {
     cat: 'physical' | 'special' | 'status' | 'selfKO';
     name: string;
     selfKO?: boolean;
+    recoil?: boolean | number;
   } | null;
   showGuides?: boolean;
   isCaptureSuccess?: boolean;

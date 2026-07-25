@@ -9,6 +9,14 @@ export interface ShowdownRequestPokemon {
   condition?: string;
   active?: boolean;
   details?: string;
+  reviving?: boolean;
+  commanding?: boolean;
+  canTerastallize?: boolean;
+  stats?: Record<string, number>;
+  moves?: unknown[];
+  baseAbility?: string;
+  item?: string;
+  pokeball?: string;
 }
 
 export interface ShowdownRequest {

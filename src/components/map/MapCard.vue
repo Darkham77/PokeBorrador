@@ -338,6 +338,7 @@ watch(
         :is-visible="isVisible"
         :is-locked="isCardLocked || isSafariLocked"
         :anim-seed="getWeatherAnimSeed(props.map.id)"
+        :z-index="'var(--z-map-weather)'"
       />
 
       <div

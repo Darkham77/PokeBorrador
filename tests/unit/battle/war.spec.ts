@@ -6,15 +6,21 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import { getWeekId, isDisputePhase, getPointReward } from '@/logic/war/warEngine'
+import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward } from '@/logic/war/warEngine'
+import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine'
 import type { GameState } from '@/types/system/game'
 import type { DBRouter } from '@/logic/db/dbRouter'
 
-describe('War Engine Logic', () => {
+describe('War Engine & Guardian Logic', () => {
   it('calculates week ID correctly for Monday', () => {
     // 2026-04-13 is Monday
     const date = Temporal.Instant.from('2026-04-13T12:00:00Z')
     expect(getWeekId(date)).toBe('2026-W16')
+  })
+
+  it('calculates previous week ID correctly', () => {
+    const date = Temporal.Instant.from('2026-04-13T12:00:00Z') // Week 16
+    expect(getPreviousWeekId(date)).toBe('2026-W15')
   })
 
   it('calculates same week ID for Tuesday as previous Monday', () => {
@@ -47,6 +53,28 @@ describe('War Engine Logic', () => {
     expect(getPointReward('WILD_WIN', false)).toBe(1) // Special rule: always 1
     expect(getPointReward('GUARDIAN', true)).toBe(150)
   })
+
+  it('generates 12 conflict zones deterministically', () => {
+    const mockMaps = Array.from({ length: 20 }, (_, i) => `route_${i + 1}`)
+    const date = Temporal.Instant.from('2026-04-15T12:00:00Z')
+    const zones = getConflictZones(mockMaps, date)
+    expect(zones).toHaveLength(12)
+    expect(new Set(zones).size).toBe(12)
+  })
+
+  it('returns valid guardian data with updated tier points', () => {
+    const mockMaps = Array.from({ length: 20 }, (_, i) => `route_${i + 1}`)
+    const date = Temporal.Instant.from('2026-04-15T12:00:00Z')
+    const zones = getConflictZones(mockMaps, date)
+    const guardianMap = zones[0]!
+
+    const guardian = getGuardianData(guardianMap, mockMaps, date)
+    expect(guardian).not.toBeNull()
+    expect(guardian?.isGuardian).toBe(true)
+    if (guardian?.tier === 'common') expect(guardian.pts).toBe(150)
+    else if (guardian?.tier === 'rare') expect(guardian.pts).toBe(300)
+    else if (guardian?.tier === 'elite') expect(guardian.pts).toBe(750)
+  })
 })
 
 describe('War Store Logic', () => {
@@ -62,7 +90,8 @@ describe('War Store Logic', () => {
       warDailyCap: {},
       warDailyCoins: {},
       warPointsAccumulator: 0,
-      faction: null
+      faction: null,
+      save: vi.fn().mockResolvedValue(true)
     } as unknown as GameState
     
     gs.db = {
@@ -134,5 +163,55 @@ describe('War Store Logic', () => {
     await war.addPoints('route1', 'SHINY_CAPTURE', true) // 40 PT = 4 coins
     expect(war.warCoins).toBe(4)
     expect(gameStore.state.warCoins).toBe(4)
+  })
+
+  it('should distribute weekly war coins with victory bonus', async () => {
+    const war = useWarStore()
+    const gameStore = useGameStore()
+    await war.chooseFaction('union')
+
+    // Mock DB queries for previous week points and dominance
+    gameStore.db = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'war_user_points') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: [{ points: 600 }], error: null })
+              })
+            })
+          }
+        }
+        if (table === 'war_dominance') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  { winner_faction: 'union' },
+                  { winner_faction: 'union' },
+                  { winner_faction: 'poder' }
+                ],
+                error: null
+              })
+            })
+          }
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null })
+            })
+          }),
+          upsert: vi.fn().mockResolvedValue({ error: null })
+        }
+      })
+    } as unknown as DBRouter
+
+    await war.distributeWeeklyWarCoins()
+
+    // 600 PT milestone awards 75 coins + 50 coins victory bonus = 125 coins
+    expect(war.warCoins).toBe(125)
+    expect(gameStore.state.warCoins).toBe(125)
+    expect(gameStore.state.lastResolvedWeek).toBe('2026-W15')
   })
 })

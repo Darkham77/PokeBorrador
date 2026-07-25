@@ -5,7 +5,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP } from '@/logic/war/warEngine'
+import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
 import type { DominanceInfo } from '@/types/system/stores'
@@ -44,6 +44,10 @@ export const useWarStore = defineStore('war', () => {
   async function loadWarData() {
     isLoading.value = true
     try {
+      // 0. Resolve previous week dominance & distribute rewards if applicable
+      await resolveWeekIfNeeded()
+      await distributeWeeklyWarCoins()
+
       // 1. Load Faction and Coins from Game State (Synchronized via DBRouter)
       faction.value = (gameStore.state.faction as 'union' | 'poder' | null) || null
       warCoins.value = gameStore.state.warCoins || 0
@@ -281,6 +285,116 @@ export const useWarStore = defineStore('war', () => {
     return getGuardianData(mapId, allMapIds)
   }
 
+  /**
+   * Resolves dominance for the previous week if not already settled.
+   */
+  async function resolveWeekIfNeeded() {
+    if (!gameStore.db) return
+
+    const prevWeek = getPreviousWeekId()
+
+    // 1. Check if previous week dominance has already been recorded
+    const { data: existingDom } = await gameStore.db.from('war_dominance')
+      .select('map_id')
+      .eq('week_id', prevWeek)
+
+    if (existingDom && (existingDom as Array<{ map_id: string }>).length > 0) {
+      return
+    }
+
+    // 2. Fetch all points earned during previous week
+    const { data: pointsData } = await gameStore.db.from('war_points')
+      .select('map_id, faction, points')
+      .eq('week_id', prevWeek)
+
+    const pointsList = pointsData as WarPointsRecord[] | null
+    if (!pointsList || pointsList.length === 0) return
+
+    // 3. Group points by map and faction
+    const mapTotals: Record<string, { union: number; poder: number }> = {}
+    pointsList.forEach(row => {
+      if (!mapTotals[row.map_id]) mapTotals[row.map_id] = { union: 0, poder: 0 }
+      mapTotals[row.map_id]![row.faction] += row.points
+    })
+
+    // 4. Prepare dominance insert/upsert payload
+    const dominanceRows = Object.entries(mapTotals).map(([map_id, totals]) => {
+      let winner_faction = 'tie'
+      if (totals.union > totals.poder) winner_faction = 'union'
+      else if (totals.poder > totals.union) winner_faction = 'poder'
+
+      return {
+        week_id: prevWeek,
+        map_id,
+        winner_faction
+      }
+    })
+
+    if (dominanceRows.length > 0) {
+      await gameStore.db.from('war_dominance').upsert(dominanceRows)
+    }
+  }
+
+  /**
+   * Distributes weekly reward War Coins based on user's weekly PT milestone + victory bonus.
+   */
+  async function distributeWeeklyWarCoins() {
+    if (!authStore.user || !gameStore.db || !faction.value) return
+
+    const prevWeek = getPreviousWeekId()
+    if (gameStore.state.lastResolvedWeek === prevWeek) return
+
+    // 1. Fetch user's PT from previous week
+    const { data: ptsData } = await gameStore.db.from('war_user_points')
+      .select('points')
+      .eq('user_id', authStore.user.id)
+      .eq('week_id', prevWeek)
+
+    const userPts = (ptsData as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
+    if (userPts <= 0) return
+
+    // 2. Calculate milestone coins
+    let milestoneCoins = 0
+    for (const milestone of WEEKLY_REWARD_MILESTONES) {
+      if (userPts >= milestone.pt) {
+        milestoneCoins = milestone.coins
+      }
+    }
+
+    // 3. Check faction majority bonus (+50 coins)
+    const { data: domData } = await gameStore.db.from('war_dominance')
+      .select('winner_faction')
+      .eq('week_id', prevWeek)
+
+    let victoryBonus = 0
+    if (domData && Array.isArray(domData)) {
+      let unionWins = 0
+      let poderWins = 0
+      ;(domData as DominanceRecord[]).forEach(d => {
+        if (d.winner_faction === 'union') unionWins++
+        else if (d.winner_faction === 'poder') poderWins++
+      })
+
+      const winningFaction = unionWins > poderWins ? 'union' : poderWins > unionWins ? 'poder' : null
+      if (winningFaction && winningFaction === faction.value) {
+        victoryBonus = 50
+      }
+    }
+
+    const totalReward = milestoneCoins + victoryBonus
+    if (totalReward > 0) {
+      warCoins.value += totalReward
+      gameStore.state.warCoins = (gameStore.state.warCoins || 0) + totalReward
+      gameStore.state.lastResolvedWeek = prevWeek
+      await gameStore.save()
+
+      uiStore.notify(
+        `¡Recompensa semanal recibida! ⚡+${totalReward} Monedas de Guerra (${milestoneCoins} por hitos${victoryBonus > 0 ? ' + 50 por victoria de facción' : ''}).`,
+        '🎁'
+      )
+    }
+  }
+
   return {
     faction,
     warCoins,
@@ -293,6 +407,8 @@ export const useWarStore = defineStore('war', () => {
     addPoints,
     checkGuardian,
     chooseFaction,
-    claimGuardian
+    claimGuardian,
+    resolveWeekIfNeeded,
+    distributeWeeklyWarCoins
   }
 })

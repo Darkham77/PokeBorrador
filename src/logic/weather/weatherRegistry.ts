@@ -270,11 +270,16 @@ export function getMechanicalWeather(type: string | null | undefined): WeatherMe
  * Converts any environmental weather token to its visual AtmosphereLayer equivalent.
  */
 export function getVisualWeather(type: string | null | undefined): string {
-  if (!type) return 'clear';
-  const lower = type.toLowerCase();
+  if (!type || type === 'none') return 'clear';
+  let lower = type.toLowerCase();
+  if (lower === 'raindance') lower = 'rain';
+  if (lower === 'sunnyday') lower = 'sun';
+  if (lower === 'desolateland') lower = 'intense_sun';
+  if (lower === 'primordialsea') lower = 'heavy_rain';
+  if (lower === 'deltastream') lower = 'strong_winds';
+
   const entry = WEATHER_REGISTRY[lower];
-  
-  return entry?.visual || 'clear';
+  return entry?.visual || lower;
 }
 
 /**

@@ -33,7 +33,6 @@ const preloadImages = (): Promise<[HTMLImageElement, HTMLImageElement]> => {
   })
 }
 
-const canvasKey = ref(0)
 const containerRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let atmosphereContext: gsap.Context | null = null
@@ -172,6 +171,13 @@ const updateWorkerParams = () => {
       animSeed: props.animSeed
     }
   })
+  worker.postMessage({ type: 'RESUME' })
+}
+
+const pauseWorker = () => {
+  if (worker) {
+    worker.postMessage({ type: 'PAUSE' })
+  }
 }
 
 const destroyWorker = () => {
@@ -183,7 +189,6 @@ const destroyWorker = () => {
     resizeObserver.disconnect()
     resizeObserver = null
   }
-  canvasKey.value++
 }
 
 const initWeatherAnim = () => {
@@ -217,7 +222,10 @@ const initWeatherAnim = () => {
   const seed2 = (animSeed.value * 1.618) % 1
   const speedVar = 0.8 + (animSeed.value * 0.4)
 
-  if (w === 'clear' || props.isPerformanceMode) return
+  if (w === 'clear' || props.isPerformanceMode) {
+    pauseWorker()
+    return
+  }
 
   // Canvas / OffscreenCanvas activation for noise/mist layers
   if (['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(w)) {
@@ -229,7 +237,7 @@ const initWeatherAnim = () => {
       }
     })
   } else {
-    destroyWorker()
+    pauseWorker()
   }
 
   // Rain / Storm / Heavy Rain / Thunderstorm
@@ -242,22 +250,18 @@ const initWeatherAnim = () => {
   initSandstormAnim(w, animSeed.value, props.isLowPower, speedVar)
 }
 
-const cleanUpAtmosphere = (keepWorker = false) => {
+const cleanUpAtmosphere = () => {
   if (atmosphereContext) {
     atmosphereContext.revert()
     atmosphereContext = null
   }
   weatherTimeline = null
   cleanUpLightning()
-  if (!keepWorker) {
-    destroyWorker()
-  } else if (worker) {
-    worker.postMessage({ type: 'PAUSE' })
-  }
+  pauseWorker()
 }
 
 const initAtmosphere = () => {
-  cleanUpAtmosphere(true)
+  cleanUpAtmosphere()
   
   if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
     return
@@ -277,7 +281,7 @@ watch(
     () => props.isPerformanceMode,
     () => props.animSeed
   ],
-  async ([visible, weather, , perfMode]) => {
+  async ([visible, , , perfMode]) => {
     if (visible && !perfMode) {
       await nextTick()
       await nextTick()
@@ -285,9 +289,7 @@ watch(
         initAtmosphere()
       }
     } else {
-      const canvasWeathers = ['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm']
-      const keepWorker = !perfMode && canvasWeathers.includes(weather)
-      cleanUpAtmosphere(keepWorker)
+      cleanUpAtmosphere()
     }
   },
   { flush: 'post' }
@@ -305,6 +307,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   cleanUpAtmosphere()
+  destroyWorker()
 })
 
 defineExpose({})
@@ -332,12 +335,15 @@ const leafCount = computed(() => {
 })
 
 const initLeafAnim = (ctxVal: gsap.Context) => {
-  initLeafAnimFn(ctxVal, atmosphereContext)
+  initLeafAnimFn(ctxVal)
 }
 
 const weatherOverlayStyles = computed(() => {
+  const finalZ = props.zIndex
+    ? (typeof props.zIndex === 'number' ? `calc(${props.zIndex} + 1)` : props.zIndex)
+    : 'var(--z-map-weather, 8)'
   return {
-    '--atmo-z-final': props.zIndex ? `calc(${props.zIndex} + 1)` : '1',
+    '--atmo-z-final': finalZ,
     '--card-seed': animSeed.value,
     '--card-speed': 0.6 + (animSeed.value * 1.0),
     '--atmo-dir': direction.value,
@@ -398,7 +404,7 @@ const weatherOverlayStyles = computed(() => {
       </template>
 
       <!-- Sandstorm, Strong Winds, Dust Storm -->
-      <template v-if="['strong_winds', 'dust_storm'].includes(weather)">
+      <template v-if="['sandstorm', 'strong_winds', 'dust_storm'].includes(weather)">
         <div
           ref="dustLayer1Ref"
           class="sandstorm-layer layer-1"
@@ -412,13 +418,11 @@ const weatherOverlayStyles = computed(() => {
         />
       </template>
 
-      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(weather)">
-        <canvas
-          ref="canvasRef"
-          :key="canvasKey"
-          class="weather-canvas"
-        />
-      </template>
+      <canvas
+        v-show="['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(weather)"
+        ref="canvasRef"
+        class="weather-canvas"
+      />
       
       <!-- Leaves (for Wind & Storm effects) -->
       <template v-if="leafTypes.includes(weather)">

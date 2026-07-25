@@ -95,6 +95,9 @@ graph TD
 
 Call `write_to_file` with `ArtifactMetadata` to write `<appDataDir>/brain/<conversation-id>/task.md`.
 
+> [!IMPORTANT]
+> **MANDATORY TEMPLATE PARITY**: You MUST use the exact structure and content from [task-template.md](./references/task-template.md) to initialize `task.md`. Creating custom, ad-hoc, or incomplete task checklists is STRICTLY FORBIDDEN.
+
 Write the full checklist for Phases 0–10 with all sub-items, all marked `[ ]`. This is the single source of truth — without it there is no way to verify which steps actually ran.
 
 **Step 0.2** — Note the scratch path
@@ -129,7 +132,9 @@ This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a fil
 - Use the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
 - Derive the message from the actual `git diff` read in Step 1.2, not from memory.
 
-**Step 1.6** — `git add .` → verify staged files match expectation
+**Step 1.6** — `git add .` (MANDATORY `.` — SELECTIVE `git add <file>` IS STRICTLY FORBIDDEN)
+> [!CAUTION]
+> **ZERO SELECTIVE ADD RULE**: You MUST execute `git add .` to capture 100% of modified, untracked, and deleted files in the working directory. Selecting individual files or ignoring untracked files is STRICTLY FORBIDDEN. Partial staging leaves untracked work unprotected against corruption during Phase 3 auto-fixes.
 
 **Step 1.7** — `git commit -m "<message>"` → verify commit was created successfully
 
@@ -325,10 +330,11 @@ Call `write_to_file` to create or update `<appDataDir>/brain/<conversation-id>/w
 
 ## Phase 7.1: DOX Maintenance (The DOX Pass)
 
-1. For each modified file (list from Step 1.1), `view_file` the nearest `AGENTS.md` in its folder tree.
-2. If changes modified any purpose, rules, contracts, or configurations, update that `AGENTS.md`.
-3. If any new directory with an `AGENTS.md` was created, add it to its parent's Child DOX Index.
-4. Run `npm run audit` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
+1. Load and follow the [dox-navigator](../dox-navigator/SKILL.md) skill.
+2. For each modified file (list from Step 1.1), `view_file` the nearest `AGENTS.md` in its folder tree.
+3. If changes modified any purpose, rules, contracts, or configurations, update that `AGENTS.md`.
+4. If any new directory with an `AGENTS.md` was created, add it to its parent's Child DOX Index.
+5. Run `npm run audit` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
 
 **✓ Completion gate**: Mark Phase 7.1 `[x]` in `task.md`. Only then proceed to Phase 8.
 
@@ -339,7 +345,7 @@ Call `write_to_file` to create or update `<appDataDir>/brain/<conversation-id>/w
 > [!CAUTION]
 > **PRE-LESSON GATE**: Before anything in this phase, call `view_file` on `task.md` and confirm Phases 0, 1, 2, 3, 4, 6, 7, and 7.1 are ALL marked `[x]`. If even one phase has an unresolved item, abort Phase 8, return to that phase, and resolve it. Generating a lesson proposal while phases are incomplete is a CRITICAL VIOLATION.
 
-**Step 8.1** — Load and follow the [learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons. This is mandatory — do NOT ask the user whether to run it.
+**Step 8.1** — Load and follow the [/learn-with-docs](../learn-with-docs/SKILL.md) skill to extract lessons. This is mandatory — do NOT ask the user whether to run it.
 
 **Step 8.2** — Call `write_to_file` to create `<appDataDir>/brain/<conversation-id>/learning_proposal.md` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: true`, detailed multi-line `Summary`). Never save it in `scratch/` or inside the repo.
 
@@ -407,4 +413,5 @@ See [commit-standards.md](./references/commit-standards.md) for the full Elegant
 - **Missing Tests Prohibition**: Committing with identified missing tests from Phase 2 that aren't implemented is FORBIDDEN.
 - **Fallow Health Gate**: Committing with health score < 85 is a critical violation.
 - **Fallow Bypass Prohibition**: Modifying `.fallowrc.json` to bypass Fallow errors instead of fixing them at the source is STRICTLY FORBIDDEN.
+- **Selective Git Add Prohibition**: Staging individual files via `git add <file>` during Phase 1 is STRICTLY FORBIDDEN. You MUST always execute `git add .` to snapshot the entire workspace before proceeding to Phase 2.
 - **Safe Array Swaps**: Always verify indexed array elements are not `undefined` before value swaps in strict TypeScript (`noUncheckedIndexedAccess`).
