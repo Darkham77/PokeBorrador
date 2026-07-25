@@ -4,4 +4,5 @@ General system maintenance scripts, import fixes, server configurations, and dev
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [audit_showdown/AGENTS.md](./audit_showdown/AGENTS.md)
+

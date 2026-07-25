@@ -45,6 +45,9 @@ Frontend Developers / Systems Engineers.
 
 - **Request State Snapshotting Rule**: When evaluating player choice eligibility in multi-seat battle loops (`executeBattleTurn`), initial request states (`p1KindBefore`, `p2KindBefore`) MUST be snapshotted BEFORE executing any choices. Mid-loop state mutations resulting from a `force-switch` resolution MUST NOT alter the acting eligibility of other seats during the same turn step.
 - **Symmetric Seat Resolution**: Missing or unprovided choices for any seat (`p1`, `p2`, `p3`, `p4`) in `isScriptedReplayMode` MUST be resolved generically inside `showdownExecutor.ts` using `ShowdownBattleRunner`, guaranteeing 1:1 seat parity.
+- **Showdown Active Combatant Sync**: Handlers for `|switch|` and `|drag|` events in `showdownBridgeCore.ts` must update `store.activeBattle.value.enemy` and `store.activeBattle.value.player` as well as parse status/HP conditions (`fnt`, `100/100`).
+- **Ability Effect Guards in Field/End Handlers**: `|-start|` and `|-end|` log parsing in `showdownBridgeField.ts` must check if `effect.startsWith('ability:')` before passing `effect` into `pokemonDataProvider.getMoveData()`.
+- **Combat Log Sprite Source Mapping**: Trainer-initiated events (challenges, switches, Rocket ambushes, item usage) must strictly use `'enemy_trainer'` or `'player'` as the `source` argument for `addLog`.
 
 ## Work Guidance
 
