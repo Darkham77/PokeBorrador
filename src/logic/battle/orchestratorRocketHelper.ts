@@ -152,7 +152,7 @@ export async function processRocketStealMechanics(
             }
           }
 
-          ctx.addLog(`¡El Team Rocket te ha emboscado! Te robaron recursos por valor de ₽${stolenTotalCost.toLocaleString()}.`, 'log-error', 'enemy')
+          ctx.addLog(`¡El Team Rocket te ha emboscado! Te robaron recursos por valor de ₽${stolenTotalCost.toLocaleString()}.`, 'log-error', 'enemy_trainer')
 
           if (moneyToSteal > 0) {
             ctx.uiStore.notify(`¡Te robaron ₽${moneyToSteal}!`, '💸')

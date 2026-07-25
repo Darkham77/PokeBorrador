@@ -390,7 +390,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ? `¡${trainerName} te desafía!` 
     : `¡Un ${initialEnemy.name} salvaje apareció!`
   
-  ctx.addLog(startMsg, 'log-info', initialEnemy)
+  ctx.addLog(startMsg, 'log-info', (isTrainer || isGym) ? 'enemy_trainer' : initialEnemy)
   logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
   
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog, ctx.activeBattle.value?.weather?.type)

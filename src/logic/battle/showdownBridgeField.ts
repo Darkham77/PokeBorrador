@@ -30,7 +30,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
 
         if (nextWeatherType !== currentWeatherType && !isUpkeep && !isFromDebug) {
           const weatherEmojis: Record<string, string> = {
-            'Sandstorm': '🌀', 'RainDance': '🌧️', 'SunnyDay': '☀️', 'Hail': '❄️', 'none': '🌤️'
+            'Sandstorm': '🌀', 'RainDance': '🌧️', 'SunnyDay': '☀️', 'Hail': '❄️', 'Snow': '❄️', 'none': '🌤️'
           };
           const emoji = weatherEmojis[weatherType] || '🌤️';
           const localizedName = getLocalizedWeatherName(weatherType, ACTIVE_GENERATION);
@@ -49,14 +49,21 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         const cleanEffect = toID(effect);
         if (!target.volatileCounters) target.volatileCounters = {};
 
-        if (cleanEffect === 'confusion') {
+        if (cleanEffect === 'typechange') {
+          const newType = parts[4] || '';
+          if (newType) target.type = newType;
+        } else if (cleanEffect === 'typeadd') {
+          const addedType = parts[4] || parts[3] || '';
+          if (addedType) {
+            (target as unknown as Record<string, unknown>).addedType = addedType;
+          }
+        } else if (cleanEffect === 'confusion') {
           target.volatileCounters['confusion'] = 1;
           delete target.volatileCounters['lockedmove'];
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} se confundió!`, 'log-info', target);
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
           const moveId = toID(moveName);
-          const { pokemonDataProvider } = await import('../providers/pokemonDataProvider.ts');
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
           target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
@@ -78,13 +85,14 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           target.volatileCounters['encore'] = 1;
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} recibió un Bis!`, 'log-info', target);
         } else {
-          const isLockedEffect = cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move');
+          const isAbilityEffect = effect.startsWith('ability:');
+          const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move'));
           if (isLockedEffect) {
             target.volatileCounters['lockedmove'] = 1;
           } else if (cleanEffect) {
             target.volatileCounters[cleanEffect] = 1;
           }
-          if (!line.includes('[silent]')) store.addLog(`¡${target.name} se vio afectado por ${cleanEffect}!`, 'log-info', target);
+          if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡${target.name} se vio afectado por ${cleanEffect}!`, 'log-info', target);
         }
       }
       return true;
@@ -102,6 +110,9 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           } else if (cleanEffect === 'disable') {
             target.disabledMove = null;
             target.disabledTurns = 0;
+            if (target.moves) {
+              target.moves.forEach(m => { if (m) m.disabled = false; });
+            }
             if (!line.includes('[silent]')) store.addLog(`¡El movimiento de ${target.name} volvió a estar disponible!`, 'log-info', target);
           } else if (cleanEffect === 'leechseed') {
             delete target.volatileCounters['leechseed'];
@@ -119,13 +130,14 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
             delete target.volatileCounters['encore'];
             if (!line.includes('[silent]')) store.addLog(`¡El efecto de Bis sobre ${target.name} terminó!`, 'log-info', target);
           } else {
-            const isLockedEffect = cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move');
+            const isAbilityEffect = effect.startsWith('ability:');
+            const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move'));
             if (isLockedEffect) {
               delete target.volatileCounters['lockedmove'];
             } else if (cleanEffect) {
               delete target.volatileCounters[cleanEffect];
             }
-            if (!line.includes('[silent]')) store.addLog(`¡El efecto de ${cleanEffect} sobre ${target.name} terminó!`, 'log-info', target);
+            if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡El efecto de ${cleanEffect} sobre ${target.name} terminó!`, 'log-info', target);
           }
         }
       }
@@ -139,7 +151,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       const isPlayer = rawSide.toLowerCase().startsWith(playerSide.toLowerCase());
       const sideLabel = isPlayer ? 'tu campo' : 'el campo rival';
       if (conditionRaw && store.activeBattle.value) {
-        const key = conditionRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const key = toID(conditionRaw);
         const sideObj = isPlayer
           ? (store.activeBattle.value.playerSideConditions ??= {})
           : (store.activeBattle.value.enemySideConditions ??= {});
@@ -161,7 +173,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       const rawSideEnd = parts[2] || '';
       const conditionEndRaw = (parts[3] || '').replace('move: ', '');
       if (conditionEndRaw && store.activeBattle.value) {
-        const key = conditionEndRaw.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const key = toID(conditionEndRaw);
         const isPlayer = rawSideEnd.toLowerCase().startsWith(playerSide.toLowerCase());
         const sideObj = isPlayer
           ? store.activeBattle.value.playerSideConditions
@@ -187,9 +199,11 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       if (line.includes('[silent]')) return true;
       const fieldCondition = (parts[2] || '').replace('move: ', '');
       if (fieldCondition && store.activeBattle.value) {
-        const terrains = ['Electric Terrain', 'Grassy Terrain', 'Misty Terrain', 'Psychic Terrain'];
-        if (terrains.includes(fieldCondition)) {
-          store.activeBattle.value.terrain = fieldCondition;
+        const cleanField = toID(fieldCondition);
+        const canonicalTerrains = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
+        const isTerrain = canonicalTerrains.includes(cleanField);
+        if (isTerrain) {
+          store.activeBattle.value.terrain = cleanField;
         } else {
           if (!store.activeBattle.value.fieldConditions) {
             store.activeBattle.value.fieldConditions = {};
@@ -205,6 +219,10 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           'Grassy Terrain': '¡Un terreno de hierba envolvió el campo!',
           'Misty Terrain': '¡Un terreno de niebla envolvió el campo!',
           'Psychic Terrain': '¡Un terreno psíquico envolvió el campo!',
+          'electricterrain': '¡Un terreno eléctrico envolvió el campo!',
+          'grassyterrain': '¡Un terreno de hierba envolvió el campo!',
+          'mistyterrain': '¡Un terreno de niebla envolvió el campo!',
+          'psychicterrain': '¡Un terreno psíquico envolvió el campo!'
         };
         const msg = fieldMessages[fieldCondition] || `¡${fieldCondition} activado en el campo!`;
         store.addLog(msg, 'log-info', '🌀');
@@ -216,8 +234,9 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       if (line.includes('[silent]')) return true;
       const fieldConditionEnd = (parts[2] || '').replace('move: ', '');
       if (fieldConditionEnd && store.activeBattle.value) {
-        const terrains = ['Electric Terrain', 'Grassy Terrain', 'Misty Terrain', 'Psychic Terrain'];
-        if (terrains.includes(fieldConditionEnd)) {
+        const cleanEndField = toID(fieldConditionEnd);
+        const canonicalTerrains = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
+        if (canonicalTerrains.includes(cleanEndField)) {
           store.activeBattle.value.terrain = null;
         } else if (store.activeBattle.value.fieldConditions) {
           delete store.activeBattle.value.fieldConditions[fieldConditionEnd];

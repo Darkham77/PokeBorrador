@@ -53,28 +53,40 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           attacker.volatileCounters['lockedmove'] = 1;
         }
 
+        if (attacker.disabledTurns) {
+          attacker.disabledTurns = Math.max(0, attacker.disabledTurns - 1);
+          if (attacker.disabledTurns === 0) {
+            attacker.disabledMove = null;
+            if (attacker.moves) {
+              attacker.moves.forEach(m => { if (m) m.disabled = false; });
+            }
+          }
+        }
+
         if (!isFromEffect && !isMissed) {
-          store.attackerSide.value = side;
-          store.activeMove.value = {
-            id: toID(moveId),
-            name: translatedName,
-            type: moveData?.type || 'normal',
-            cat: (moveData?.cat || 'physical') as 'physical' | 'special' | 'status',
-            power: moveData?.power,
-            acc: moveData?.acc,
-            pp: 0,
-            maxPP: 0,
-            priority: moveData?.priority || 0,
-            effect: moveData?.effect || '',
-            target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
-          };
+          if (store.attackerSide) store.attackerSide.value = side;
+          if (store.activeMove) {
+            store.activeMove.value = {
+              id: toID(moveId),
+              name: translatedName,
+              type: moveData?.type || 'normal',
+              cat: (moveData?.cat || 'physical') as 'physical' | 'special' | 'status',
+              power: moveData?.power,
+              acc: moveData?.acc,
+              pp: 0,
+              maxPP: 0,
+              priority: moveData?.priority || 0,
+              effect: moveData?.effect || '',
+              target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
+            };
+          }
 
           if (store.animations?.awaitTween) {
             await store.animations.awaitTween(`attack-${side}`);
           }
 
-          store.attackerSide.value = null;
-          store.activeMove.value = null;
+          if (store.attackerSide) store.attackerSide.value = null;
+          if (store.activeMove) store.activeMove.value = null;
         }
       }
       return true;
@@ -95,7 +107,8 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           maxPP: 0
         } as unknown as Move;
         if (!line.includes('[silent]')) {
-          store.addLog(`¡${attacker.name} está cargando ${translatedName}!`, 'log-info', attacker);
+          const style = attacker === p ? 'log-player' : 'log-enemy';
+          store.addLog(`¡${attacker.name} está cargando ${translatedName}!`, style, attacker);
         }
       }
       return true;
@@ -123,10 +136,11 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           }
         }
         if (statusAppended && statusAppended !== 'fnt' && !victim.status) {
-          victim.status = statusAppended as unknown as Pokemon['status'];
+          // Informational status in hp string - do not auto-inject status
         }
         const fromClause = parts.find(p => p.startsWith('[from]'));
-        if (fromClause) {
+        const isSilent = line.includes('[silent]');
+        if (fromClause && !isSilent) {
           const fromLower = fromClause.toLowerCase();
           if (fromLower.includes('recoil')) {
             store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
@@ -148,7 +162,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           } else {
             store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
           }
-        } else {
+        } else if (!isSilent) {
           store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
         }
         const side = victim === p ? 'player' : 'enemy';
@@ -181,9 +195,14 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           }
         }
         if (statusAppended && statusAppended !== 'fnt' && !target.status) {
-          target.status = statusAppended as unknown as Pokemon['status'];
+          // Informational status in hp string - do not auto-inject status
         }
-        store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
+        const fromClause = parts.find(p => p.startsWith('[from]'));
+        if (fromClause && fromClause.toLowerCase().includes('drain')) {
+          store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
+        } else {
+          store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
+        }
       }
       return true;
     }
@@ -194,7 +213,10 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const remainedAlive = target.hp > 0;
         target.hp = 0;
         target.fainted = true;
-        target.status = 'fnt' as unknown as Pokemon['status'];
+        target.status = null;
+        if (target.volatileCounters) {
+          target.volatileCounters = {};
+        }
         if (remainedAlive) {
           store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
         }
@@ -203,6 +225,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     }
 
     case '-status': {
+      if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const statusType = parts[3] || '';
       if (target && statusType) {
@@ -222,6 +245,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     }
 
     case '-curestatus': {
+      if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const curedStatus = parts[3] || '';
       if (target) {
@@ -243,8 +267,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case '-curestatusall': {
       if (store.activeBattle.value) {
         const battle = store.activeBattle.value;
-        if (battle.player) battle.player.status = null;
-        if (battle.enemy) battle.enemy.status = null;
         if (battle.playerTeam) battle.playerTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
         if (battle.enemyTeam) battle.enemyTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
       }
@@ -284,9 +306,13 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       let winnerResult: 'player' | 'enemy' | 'tie' = 'enemy';
       if (type === 'tie') {
         winnerResult = 'tie';
-      } else if ((store.activeBattle.value?.playerNames && store.activeBattle.value.playerNames[winnerName] === 'player') || winnerName === 'Player') {
-        source = 'player';
-        winnerResult = 'player';
+      } else {
+        const playerNames = store.activeBattle.value?.playerNames || {};
+        const isPlayerWin = winnerName.split(' & ').some(name => playerNames[name.trim()] === 'player') || winnerName === 'Player';
+        if (isPlayerWin) {
+          source = 'player';
+          winnerResult = 'player';
+        }
       }
       if (store.activeBattle.value) {
         store.activeBattle.value.over = true;
@@ -297,11 +323,27 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       return true;
     }
 
+    case 'gen':
+    case 'queue':
     case 'teampreview':
     case 'start':
     case 'poke':
     case 'clearpoke':
       return true;
+
+    case 'switch':
+    case 'drag': {
+      const side = getSide(parts[2] || '');
+      if (!side || !store.activeBattle.value) return true;
+      const switchedIn = getPoke(parts[2] || '');
+      if (!switchedIn) return true;
+      if (side === 'enemy') {
+        store.activeBattle.value.enemy = switchedIn;
+      } else {
+        store.activeBattle.value.player = switchedIn;
+      }
+      return true;
+    }
 
     default:
       return false;
