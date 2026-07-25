@@ -28,6 +28,7 @@ Frontend Developers / Systems Engineers.
 - **FSM Validation**: For FSM transitions, run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts`.
 
 - **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).
+- **Unified Stat Clamping & Parity**: All stat stage calculations (including accuracy and evasion) MUST enforce an unconditional clamp bounds of `[-6, +6]` across both `battleMath.ts` and `moveCalculator.ts`. Silent catch blocks inside composables or provider lookups (such as `useCombatantStatus.ts`) MUST NOT swallow underlying errors, but safely provide default UI descriptions while logging diagnostics to `logger.debug`.
 - **Showdown Nature Casing Constraint**: Showdown Dex methods return `Nature.name` capitalized (e.g. `'Adamant'`), but internal simulator representations, `PokemonSet` objects, and local `GamePokemon` stores strictly require lowercase strings (e.g. `'adamant'`). Converting natures to capitalized strings in adapters or client stores is strictly prohibited.
   - Use `getShowdownNickname(uid)` to initialize Showdown simulator names.
   - Use `findPokemonByShowdownName(expectedName, list)` to safely resolve client-side Pokémon instances from Showdown's worker logs and requests.
