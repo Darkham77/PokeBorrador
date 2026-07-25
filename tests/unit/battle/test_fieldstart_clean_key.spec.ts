@@ -18,6 +18,6 @@ describe('Audit Parity - Clean Key Fieldstart Token', () => {
     const handled = await handleFieldEvents(ctx as any);
     expect(handled).toBe(true);
     const conds = mockStore.activeBattle.value.fieldConditions as Record<string, unknown>;
-    expect(conds['Trick Room']).toBeDefined();
+    expect(conds['trickroom']).toBeDefined();
   });
 });

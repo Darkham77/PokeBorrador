@@ -110,10 +110,13 @@ export const usePvPStore = defineStore('pvp', () => {
     const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle() as { data: { season_name: string, config: string | Record<string, unknown> } | null }
     if (data) {
       const configObj = (typeof data.config === 'string' ? JSON.parse(data.config || '{}') : (data.config || {})) as Omit<SeasonRules, 'name'>;
-      currentSeasonRules.value = {
+      const rules: SeasonRules = {
         name: data.season_name,
+        levelCap: (configObj as { levelCap?: number }).levelCap ?? 100,
+        maxPokemon: (configObj as { maxPokemon?: number }).maxPokemon ?? 6,
         ...configObj
-      } as SeasonRules;
+      }
+      currentSeasonRules.value = rules;
     }
   }
 
@@ -183,7 +186,8 @@ export const usePvPStore = defineStore('pvp', () => {
   }
 
   const seasonRange = computed(() => {
-    const rules = currentSeasonRules.value || { name: 'Default', levelCap: 100, maxPokemon: 6 } as SeasonRules
+    const defaultRules: SeasonRules = { name: 'Default', levelCap: 100, maxPokemon: 6 }
+    const rules = currentSeasonRules.value || defaultRules
     
     const start = parseZonedTime(rules.startDate || rules.seasonStartDate, '2026-04-01T00:00:00')
     

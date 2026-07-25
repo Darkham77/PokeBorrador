@@ -50,7 +50,7 @@ class HeuristicAgent extends BattleAgent {
     const activePoke = activePokemonList[slotIdx] ?? team[slotIdx];
     if (!activePoke) return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
 
-    const projectPoke = createLocalPoke({
+    const projectSet: PokemonSet = {
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
       moves: activePoke.moves,
@@ -61,23 +61,28 @@ class HeuristicAgent extends BattleAgent {
       nature: 'serious',
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    } as PokemonSet);
+    };
+    const projectPoke = createLocalPoke(projectSet);
 
     // Extract opponent active pokemon properly instead of using player's benched team
     const oppTeam = (fullRequest as { oppSide?: { pokemon?: Array<{ active?: boolean; condition?: string; details?: string; ident?: string; moves?: string[]; ability?: string }> } }).oppSide?.pokemon ?? [];
     const opponentPoke = oppTeam.find((p) => p.active && !p.condition?.endsWith('fnt')) ?? oppTeam[0];
-    const oppProject = opponentPoke ? createLocalPoke({
-      species: opponentPoke.details?.split(',')[0] ?? opponentPoke.ident ?? 'Pikachu',
-      level: MAX_POKEMON_LEVEL,
-      moves: opponentPoke.moves ?? [],
-      ability: opponentPoke.ability ?? '',
-      item: '',
-      name: opponentPoke.ident?.split(': ')[1] ?? opponentPoke.ident ?? 'Opponent',
-      gender: 'M',
-      nature: 'serious',
-      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    } as PokemonSet) : projectPoke;
+    let oppProject = projectPoke;
+    if (opponentPoke) {
+      const oppProjectSet: PokemonSet = {
+        species: opponentPoke.details?.split(',')[0] ?? opponentPoke.ident ?? 'Pikachu',
+        level: MAX_POKEMON_LEVEL,
+        moves: opponentPoke.moves ?? [],
+        ability: opponentPoke.ability ?? '',
+        item: '',
+        name: opponentPoke.ident?.split(': ')[1] ?? opponentPoke.ident ?? 'Opponent',
+        gender: 'M',
+        nature: 'serious',
+        evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      }
+      oppProject = createLocalPoke(oppProjectSet);
+    }
 
     const mockCtx = createMockBattleContext(projectPoke, oppProject);
     const battleState = mockCtx.activeBattle.value!;

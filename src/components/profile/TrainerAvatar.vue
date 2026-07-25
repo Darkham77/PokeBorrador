@@ -53,11 +53,12 @@ const resolvedAvatarStyle = computed(() => {
   return props.avatarStyle;
 });
 
-const resolvedGender = computed(() => {
+const resolvedGender = computed((): 'h' | 'm' | undefined => {
   if (props.profile) {
-    return props.profile.gender || props.gender;
+    const g = props.profile.gender || props.gender;
+    return g === 'm' ? 'm' : (g === 'h' ? 'h' : undefined);
   }
-  return props.gender;
+  return props.gender === 'm' ? 'm' : (props.gender === 'h' ? 'h' : undefined);
 });
 
 interface PlayerClass {
@@ -172,7 +173,7 @@ const faceStyles = computed((): CSSProperties => {
     gender: resolvedGender.value || 'h'
   });
 
-  return {
+  const dynamicStyles: CSSProperties = {
     ...baseStyles,
     backgroundColor: cls.value.color,
     backgroundImage: `url('${displayUrl}')`,
@@ -181,7 +182,8 @@ const faceStyles = computed((): CSSProperties => {
     backgroundRepeat: 'no-repeat',
     imageRendering: 'pixelated',
     '--avatar-seed': Math.random()
-  } as CSSProperties;
+  };
+  return dynamicStyles;
 });
 
 // GSAP Animations Integration

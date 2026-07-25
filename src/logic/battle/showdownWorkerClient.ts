@@ -44,7 +44,7 @@ function syncPokemonState(
         } else {
           match.hp = monState.hp;
         }
-        match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? null : monState.status as Pokemon['status'];
+        match.status = (monState.status === '' || monState.status.toLowerCase() === 'fnt') ? '' : monState.status as Pokemon['status'];
         if (monState.fainted || monState.hp <= 0) {
           match.hp = 0;
         }
@@ -62,7 +62,7 @@ function syncActiveCombatant(
   if (activeState) {
     console.debug(`[E2E-SYNC-DEBUG] Syncing active combatant (${activeMon.name}) HP: ${activeMon.hp} -> ${activeState.hp}`);
     activeMon.hp = activeState.fainted || activeState.hp <= 0 ? 0 : activeState.hp;
-    activeMon.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? null : activeState.status as Pokemon['status'];
+    activeMon.status = (activeState.status === '' || activeState.status.toLowerCase() === 'fnt') ? '' : activeState.status as Pokemon['status'];
   }
 }
 

@@ -26,7 +26,7 @@ const healPlayer = () => {
   const p = battleStore.player
   if (!p) return
   p.hp = p.maxHp
-  p.status = null
+  p.status = ''
   battleStore.addLog('DEBUG: Jugador curado.', 'log-info', p)
 }
 
@@ -34,7 +34,7 @@ const healEnemy = () => {
   const e = battleStore.enemy
   if (!e) return
   e.hp = e.maxHp
-  e.status = null
+  e.status = ''
   battleStore.addLog('DEBUG: Enemigo curado.', 'log-info', e)
 }
 

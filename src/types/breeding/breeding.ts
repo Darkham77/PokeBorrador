@@ -3,7 +3,8 @@ import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
 export interface DaycareSlot {
   pokemon: Pokemon | null;
   slotIndex: number;
-  deposited_at: string | null;
+  depositedAt?: string | null;
+  deposited_at?: string | null;
 }
 
 export interface DaycareEgg {
@@ -13,8 +14,10 @@ export interface DaycareEgg {
   level: number;
   isEgg: boolean;
   steps: number;
-  mother_id: string;
-  deposited_at: string;
+  motherId?: string;
+  mother_id?: string;
+  depositedAt?: string;
+  deposited_at?: string;
   ivs: PokemonIVs;
   nature: string;
   movesAtBirth: string[];
@@ -23,10 +26,8 @@ export interface DaycareEgg {
   cost: number;
   tint?: string;
   isAncestral?: boolean;
-  inherited_ivs?: {
-    _scanned?: boolean;
-    [key: string]: number | boolean | undefined;
-  };
+  inheritedIvs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number };
+  inherited_ivs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number };
 }
 
 export interface DaycareMission {

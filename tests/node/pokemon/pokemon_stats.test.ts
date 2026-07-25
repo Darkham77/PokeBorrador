@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
 import {
   calcStatsPure,
   getExpNeededPure,
+  type NatureData,
 } from '../../../src/logic/pokemon/statsMath.ts';
 
 describe('getExpNeededPure', () => {
@@ -67,7 +68,7 @@ describe('calcStatsPure', () => {
 
   it('applies nature multipliers correctly (Firme/Adamant: +Atk, -Spa)', () => {
     const ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
-    const nature = { up: 'atk', down: 'spa' };
+    const nature: NatureData = { up: 'atk', down: 'spa' };
     
     const stats = calcStatsPure(100, ivs, charmanderBase, nature);
     

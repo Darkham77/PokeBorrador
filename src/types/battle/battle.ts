@@ -1,21 +1,14 @@
 import { Pokemon } from '@/types/pokemon/pokemon';
 
 
-export interface BattleStages {
-  atk: number;
-  def: number;
-  spa: number;
-  spd: number;
-  spe: number;
-  accuracy: number;
-  evasion: number;
-  reflect: number;
-  lightScreen: number;
-  safeguard: number;
-  mist: number;
-  spikes: number;
+export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
+export type BattleStatKey = CoreBattleStatKey | 'acc' | 'eva';
+
+export type BattleStages = Record<CoreBattleStatKey, number> & {
+  acc?: number;
+  eva?: number;
   [key: string]: number | undefined;
-}
+};
 
 export interface BattleWeather {
   type: string;
@@ -103,13 +96,13 @@ export interface BattleState {
   switchingToEnemy?: Pokemon | null;
 }
 
-export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;
+export type BattleSource = Pokemon | string;
 
 export interface BattleLog {
   id: number;
   msg: string;
   type: string;
-  side: 'player' | 'enemy' | string | null;
+  side: 'player' | 'enemy' | null;
   icon?: string | null;
   iconType?: string | null;
   source?: BattleSource;

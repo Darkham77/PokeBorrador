@@ -169,7 +169,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           store.addLog(`¡El Sustituto de ${target.name} recibió el golpe!`, 'log-info', target);
         } else if (effect) {
           const logMsg = isAbilityEffect 
-            ? `¡Habilidad ${effect} se activó en ${target.name}! move`
+            ? `¡Habilidad ${effect} se activó en ${target.name}!`
             : isMoveEffect
               ? `¡Movimiento ${effect} se activó en ${target.name}!`
               : `¡${effect} se activó en ${target.name}!`;
@@ -226,7 +226,8 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const newPos = parseInt(parts[3] || '0', 10);
       if (target) {
         if (!isNaN(newPos)) {
-          (target as unknown as Record<string, unknown>).position = newPos;
+          (target as unknown as { position?: number; slotIndex?: number }).position = newPos;
+          target.slotIndex = newPos;
         }
         store.addLog(`¡${target.name} cambió de posición!`, 'log-info', target);
       }
@@ -273,12 +274,13 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           user.moves = targetPoke.moves.map(m => {
             if (!m) return null;
             const copiedMax = Math.min(5, m.maxPP || 5);
-            return {
+            const builtMove: Move = {
               ...m,
-              name: m.name || m.id,
+              name: m.name ?? m.id ?? '',
               pp: copiedMax,
               maxPP: copiedMax
-            } as Move;
+            }
+            return builtMove;
           });
         }
         store.addLog(`¡${user.name} se transformó en ${targetPoke.name}!`, 'log-info', user);
@@ -379,7 +381,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
         if (statusStr && isPokemonStatus(statusStr)) {
           target.status = statusStr;
         } else {
-          target.status = null;
+          target.status = '';
         }
 
         const side = getSide(parts[2] || '');

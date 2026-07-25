@@ -65,11 +65,11 @@ describe('Battle Debug Commands', () => {
 
     // 4. Comprobar que el Pokémon en batalla se curó
     expect(battleStore.state.player!.hp).toBe(100)
-    expect(battleStore.state.player!.status).toBeNull()
+    expect(battleStore.state.player!.status).toBe('')
 
     // 5. Comprobar que el HP en el equipo de gameStore se sincronizó
     expect(gs.state.team[0]!.hp).toBe(100)
-    expect(gs.state.team[0]!.status).toBeNull()
+    expect(gs.state.team[0]!.status).toBe('')
   })
 
   it('should set enemy HP to 0 and trigger faint sequence in killEnemy', async () => {

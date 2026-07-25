@@ -45,7 +45,7 @@ export class ShowdownBattleRunner {
    * based on the active simulator request. If action is consumed, advances the choice index.
    */
   resolveAndConsumeNextChoice(
-    player: 'p1' | 'p2' | 'p3' | 'p4' | string,
+    player: 'p1' | 'p2' | 'p3' | 'p4',
     activeRequest: unknown
   ): string {
     const needsAction = requiresAction(activeRequest);

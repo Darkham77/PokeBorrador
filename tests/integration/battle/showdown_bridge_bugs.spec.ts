@@ -79,28 +79,28 @@ describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
     await parseShowdownLogLine(mockStore, '|switch|p2a: bd56a16e|Gengar, L100|0 fnt|[uids]p2a:bd56a16e=gengar-123');
     
     expect(targetPoke.hp).toBe(0);
-    expect(targetPoke.status).toBeNull();
+    expect(targetPoke.status).toBe('');
   });
 });
 
 import { isPokemonStatus } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('PokemonStatus Type Guard', () => {
-  it('debería retornar true para estados válidos y null', () => {
+  it('debería retornar true para estados válidos y cadenas vacías/null/undefined', () => {
     expect(isPokemonStatus('par')).toBe(true);
     expect(isPokemonStatus('brn')).toBe(true);
     expect(isPokemonStatus('psn')).toBe(true);
     expect(isPokemonStatus('slp')).toBe(true);
     expect(isPokemonStatus('frz')).toBe(true);
     expect(isPokemonStatus('tox')).toBe(true);
+    expect(isPokemonStatus('')).toBe(true);
     expect(isPokemonStatus(null)).toBe(true);
     expect(isPokemonStatus(undefined)).toBe(true);
   });
 
-  it('debería retornar false para estados inválidos como fnt o cadenas vacías', () => {
+  it('debería retornar false para estados inválidos como fnt', () => {
     expect(isPokemonStatus('fnt')).toBe(false);
     expect(isPokemonStatus('fainted')).toBe(false);
     expect(isPokemonStatus('sleep')).toBe(false);
-    expect(isPokemonStatus('')).toBe(false);
   });
 });

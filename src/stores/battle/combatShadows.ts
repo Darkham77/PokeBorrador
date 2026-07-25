@@ -83,7 +83,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     const visible = options.visible !== undefined ? options.visible : true
 
     // Guardamos/actualizamos la sombra inmediatamente para que sea visible
-    const newShadow = {
+    const newShadow: CombatShadow = {
       id,
       side: options.side || 'generic',
       entityX: options.entityX ?? (existing?.entityX ?? 0),
@@ -95,7 +95,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       feetX,
       spriteUrl: options.spriteUrl || existing?.spriteUrl || '',
       visible
-    } as CombatShadow
+    }
     
     activeShadows.set(id, newShadow)
 

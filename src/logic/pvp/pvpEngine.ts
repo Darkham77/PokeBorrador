@@ -126,16 +126,18 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const move = attacker.moves[moveIdx]
     const moveName = move?.name || '???'
     const moveId = move?.id || '';
-    const md = (moveId ? pokemonDataProvider.getMoveData(moveId) : null) || { 
+    const fallbackMd: MoveBaseData = { 
       id: '',
       name: moveName,
       power: 40, 
       type: 'normal', 
       cat: 'physical' as const, 
-      acc: 100, 
+      acc: 100,
+      pp: 0,
       priority: 0, 
       effect: 'none' 
-    } as MoveBaseData
+    }
+    const md = (moveId ? pokemonDataProvider.getMoveData(moveId) : null) || fallbackMd
 
     if (attacker.status === 'slp') {
       const sleepTurns = (attacker as unknown as { sleepTurns?: number }).sleepTurns ?? 0
@@ -143,7 +145,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
         (attacker as unknown as { sleepTurns: number }).sleepTurns = sleepTurns - 1
         return { type: 'move', moveName, actorIsHost, statusBlocked: 'slp', effectLog }
       }
-      attacker.status = null
+      attacker.status = ''
       effectLog.push(`¡${attacker.name} se despertó!`)
     }
 
@@ -151,7 +153,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
       return { type: 'move', moveName, actorIsHost, statusBlocked: 'par', effectLog }
     }
 
-    if (md.acc && Math.random() * 100 > md.acc * getAccuracyMultiplier(atkS.acc || 0)) {
+    if (md.acc && Math.random() * 100 > md.acc * getAccuracyMultiplier(atkS.accuracy || 0)) {
       return { type: 'move', moveName, actorIsHost, missed: true, effectLog }
     }
 

@@ -83,7 +83,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
     }
   }
 
-  let side = 'enemy';
+  let side: 'player' | 'enemy' | null = 'enemy';
   if (source === 'player' || (source && typeof source === 'object' && gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))) {
     side = 'player';
   } else if (source === 'enemy_trainer' || (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)) {

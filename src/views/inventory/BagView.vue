@@ -226,7 +226,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
             :item="item"
             :is-selected="!!inventoryStore.bagSellSelected[item.name]"
             :sell-mode="inventoryStore.bagSellMode"
-            :sell-qty="inventoryStore.bagSellSelected[item.name]"
+            :sell-qty="inventoryStore.bagSellSelected[item.name] ?? undefined"
             @use="onUseItem"
             @click="onItemClick(item.name, Number(item.qty), $event)"
             @qty-click="inventoryStore.toggleBagSellSelect(item.name, Number(item.qty))"

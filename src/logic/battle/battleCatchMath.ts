@@ -61,7 +61,7 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
   const hpFactor = (3 * maxHp - 2 * curHp) / (3 * maxHp)
   const catchRate = pokemon.catchRate ?? 45
 
-  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.0 : 
+  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.5 : 
                      (pokemon.status ? 1.5 : 1.0)
 
   const eventBonus = eventCatchMult - 1

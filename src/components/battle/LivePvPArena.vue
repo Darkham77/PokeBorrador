@@ -235,7 +235,7 @@ function handleForfeit() {
           </div>
           <div class="trainer-sprite-wrap">
             <img
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId, { gender: opponentCosmetics?.gender || 'h', trainerSuffix: 'front' })"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId, { gender: (opponentCosmetics?.gender === 'm' ? 'm' : 'h'), trainerSuffix: 'front' })"
               class="trainer-img"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >

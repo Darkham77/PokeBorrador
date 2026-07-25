@@ -69,7 +69,7 @@ const {
   pokedexSeen
 } = useTrainerProfile(() => authStore.user?.id)
 
-const formatNum = (num: number | string | unknown) => formatCurrency(Number(num || 0))
+const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
 
 const formatDate = (isoStr: string | null | undefined) => {
   if (!isoStr) return '---'

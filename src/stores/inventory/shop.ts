@@ -162,7 +162,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.team.forEach((p: Pokemon | null) => {
       if (!p) return;
       p.hp = p.maxHp;
-      p.status = null;
+      p.status = '';
       clearVolatileStatus(p);
       if (p.moves) {
         p.moves.forEach((m: Move | null) => {

@@ -95,7 +95,7 @@ describe('Shop Store', () => {
     
     expect(success).toBe(true);
     expect(game.state.team![0]!.hp).toBe(100);
-    expect(game.state.team![0]!.status).toBe(null);
+    expect(game.state.team![0]!.status).toBe('');
     expect(game.state.team![0]!.moves![0]!.pp).toBe(20);
   });
 });

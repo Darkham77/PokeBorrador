@@ -55,7 +55,7 @@ function makePoke(
     hp: 150,
     maxHp: 150,
     hpPercent: 100,
-    status: null,
+    status: '',
     active: true,
     fainted: false,
     stats: { hp: 150, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
@@ -505,7 +505,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
 
   describe('Escenario 10: Wildcard fuzzer (200 snapshots aleatorios)', () => {
     const SPECIES = ['charizard', 'blastoise', 'venusaur', 'pikachu', 'gengar', 'alakazam', 'dragonite', 'garchomp', 'lucario', 'mewtwo'];
-    const STATUSES: Array<HeuristicPokemonState['status']> = [null, 'brn', 'par', 'psn', 'slp', 'frz', 'tox'];
+    const STATUSES: Array<HeuristicPokemonState['status']> = ['', 'brn', 'par', 'psn', 'slp', 'frz', 'tox'];
     const ITEMS = ['', 'choiceband', 'choicespecs', 'lifeorb', 'leftovers', 'assaultvest', 'eviolite'];
     const WEATHERS: Array<HeuristicFieldState['weather']> = [null, 'sunnyday', 'raindance', 'sandstorm', 'snowscape'];
     const MOVE_POOL = ['tackle', 'thunderbolt', 'flamethrower', 'icebeam', 'earthquake', 'swordsdance', 'stealthrock', 'uturn', 'shadowball', 'bulletpunch'];

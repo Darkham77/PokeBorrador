@@ -19,7 +19,7 @@
     "noEmit": false,
     "jsx": "preserve",
 
-    /* Linting */
+    /* Linting & Strict Mode */
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -29,6 +29,10 @@
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
 
     /* Incremental JS Support */
     "allowJs": false,

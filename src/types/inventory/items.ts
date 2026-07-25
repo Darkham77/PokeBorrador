@@ -1,5 +1,5 @@
 
-export type ItemCategory = 'pokeballs' | 'pociones' | 'stones' | 'combat' | 'etc' | string;
+export type ItemCategory = 'pokeballs' | 'potions' | 'stones' | 'combat' | 'held' | 'breeding' | 'breeding_held' | 'raw_material' | 'refined_material' | 'component' | 'etc';
 
 export interface Item {
   id: string;
@@ -37,10 +37,12 @@ export type ShopItem = Item; // Alias for now as they share same structure in da
 export interface ItemEffectResult {
   success: boolean;
   message: string;
-  resultType?: string;
+  type?: 'heal' | 'status_cure' | 'stat_boost' | 'revive' | 'evolution' | 'generic' | 'relearner' | 'levelup' | 'learn_move' | 'pp_up' | 'ppmax' | 'nature_patch' | 'ability_pill';
+  resultType?: 'heal' | 'status_cure' | 'stat_boost' | 'revive' | 'evolution' | 'generic' | 'relearner' | 'levelup' | 'learn_move' | 'pp_up' | 'ppmax' | 'nature_patch' | 'ability_pill';
   deferred?: boolean;
   moveName?: string;
   targetId?: string;
+  reason?: string;
 }
 
 export type Inventory = Record<string, number>;

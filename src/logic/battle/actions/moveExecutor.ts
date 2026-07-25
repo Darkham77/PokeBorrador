@@ -85,7 +85,8 @@ export async function executeMoveAction(
       const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
       if (randomMove) {
         const rawMoveData = pokemonDataProvider.getMoveData(randomMove.id) || {};
-        executableMove = { ...rawMoveData, pp: 5, maxPP: 5 } as Move;
+        const builtMove: Move = { ...rawMoveData, pp: 5, maxPP: 5 }
+        executableMove = builtMove;
         store.addLog(`¡El Metrónomo escogió ${executableMove.name}!`, 'log-info', attacker);
       } else {
         store.addLog("¡Pero falló!", 'log-info', attacker);

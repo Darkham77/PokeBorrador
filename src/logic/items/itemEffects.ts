@@ -42,7 +42,7 @@ export const isValidTarget = (itemId: string, pokemon: Pokemon): boolean => {
   if (typeof effect !== 'function') return false;
 
   // Clone to avoid mutation during check
-  const pClone = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => m ? ({ ...m }) : null) : [] } as Pokemon;
+  const pClone: Pokemon = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => m ? ({ ...m }) : null) : [] } as unknown as Pokemon;
   const result = effect(pClone);
   return !!(result && result.success);
 };

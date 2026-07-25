@@ -78,7 +78,7 @@ export async function executeNavigation(
     ? (() => {
         const nextPoke = JSON.parse(JSON.stringify(battleStore.debugLoopPokemon)) as Pokemon;
         nextPoke.hp = nextPoke.maxHp;
-        nextPoke.status = null;
+        nextPoke.status = '';
         nextPoke.confused = 0;
         nextPoke.flinched = false;
         logger.debug('DEBUG', `Navegación: Usando bucle infinito de ${nextPoke.name}`);

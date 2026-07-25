@@ -89,7 +89,7 @@ export const pokemonDebugService = {
       obtainedMethod: isEgg ? 'egg' : 'wild',
       bypassWhitelist: true
     });
-    if (!p) return {} as Pokemon
+    if (!p) { const empty: Pokemon = ({} as unknown) as Pokemon; return empty }
 
     if (uid) {
       p.uid = uid;

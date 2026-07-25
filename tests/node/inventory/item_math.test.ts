@@ -69,7 +69,7 @@ describe('canClearStatus', () => {
   });
 
   it('returns false when no status', () => {
-    assert.ok(!canClearStatus(makeMon({ status: null }), 'psn'));
+    assert.ok(!canClearStatus(makeMon({ status: '' }), 'psn'));
   });
 
   it('returns true for "any" when any status is present', () => {
@@ -161,7 +161,7 @@ describe('clearStatusPure', () => {
 
 describe('curaTotalPure', () => {
   it('heals a damaged pokemon to full', () => {
-    const r = curaTotalPure(makeMon({ hp: 30, maxHp: 60, status: null }));
+    const r = curaTotalPure(makeMon({ hp: 30, maxHp: 60, status: '' }));
     assert.ok(r.success);
     assert.strictEqual(r.newHp, 60);
   });
@@ -172,7 +172,7 @@ describe('curaTotalPure', () => {
   });
 
   it('fails when already at full HP and no status', () => {
-    assert.ok(!curaTotalPure(makeMon({ hp: 60, maxHp: 60, status: null })).success);
+    assert.ok(!curaTotalPure(makeMon({ hp: 60, maxHp: 60, status: '' })).success);
   });
 
   it('fails when fainted', () => {

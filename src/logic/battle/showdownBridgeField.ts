@@ -208,7 +208,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           if (!store.activeBattle.value.fieldConditions) {
             store.activeBattle.value.fieldConditions = {};
           }
-          store.activeBattle.value.fieldConditions[fieldCondition] = { turns: 0 };
+          store.activeBattle.value.fieldConditions[cleanField] = { turns: 0 };
         }
         const fieldMessages: Record<string, string> = {
           'Trick Room': '¡Espacio Raro distorsionó el tiempo!',

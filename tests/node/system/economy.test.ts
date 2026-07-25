@@ -12,14 +12,14 @@ describe('Economy Formulas', () => {
     const healthyPkmn: Partial<Pokemon> = {
       hp: 100,
       maxHp: 100,
-      status: null,
+      status: '',
       moves: [{ name: 'Tackle', pp: 20, maxPP: 20 }] as (Move | null)[]
     };
 
     const damagedPkmn: Partial<Pokemon> = {
       hp: 90,
       maxHp: 100,
-      status: null,
+      status: '',
       moves: []
     };
 
@@ -33,7 +33,7 @@ describe('Economy Formulas', () => {
     const ppPkmn: Partial<Pokemon> = {
       hp: 100,
       maxHp: 100,
-      status: null,
+      status: '',
       moves: [{ name: 'Tackle', pp: 10, maxPP: 20 }] as (Move | null)[]
     };
 

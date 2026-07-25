@@ -25,9 +25,9 @@ describe('Audit Parity - BUG-024: -curestatusall must not create redundant doubl
     await handleCoreEvents(ctx);
 
     // All team members must be cured
-    expect(playerTeam[0]?.status).toBeNull();
-    expect(playerTeam[1]?.status).toBeNull();
-    // active player reference must also be null (same object)
-    expect(battle.player.status).toBeNull();
+    expect(playerTeam[0]?.status).toBe('');
+    expect(playerTeam[1]?.status).toBe('');
+    // active player reference must also be empty string (same object)
+    expect(battle.player.status).toBe('');
   });
 });

@@ -26,7 +26,7 @@ export interface Event {
   id: string;
   name: string;
   description: string;
-  type?: 'competition' | 'boost' | string;
+  type?: 'competition' | 'boost';
   icon?: string;
   active: boolean;
   manual?: boolean;

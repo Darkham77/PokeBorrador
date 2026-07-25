@@ -3,7 +3,7 @@
  * Serializes the current state into a format suitable for database storage.
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.
  */
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
@@ -131,7 +131,7 @@ interface EnemyPokemonSerialized {
   status: string | null
   isShiny: boolean
   gender: string | null
-  ivs: Record<string, number>
+  ivs: PokemonIVs
   nature: string
   ability: string
   exp: number
@@ -158,7 +158,7 @@ export function serializeState(state: GameState): SaveData {
 
   if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
     try {
-      activeBattle = {
+      const serialized: ActiveBattleSerialized = {
         isGym: battle.isGym || false,
         gymId: battle.gymId || null,
         isTrainer: battle.isTrainer || false,
@@ -171,7 +171,7 @@ export function serializeState(state: GameState): SaveData {
               spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
               status: p.status || null, isShiny: p.isShiny || false,
               gender: p.gender || null, ivs: p.ivs, nature: p.nature,
-              ability: p.ability, exp: p.exp || 0, expNeeded: p.expNeeded || 100,
+              ability: p.ability || '', exp: p.exp || 0, expNeeded: p.expNeeded || 100,
               friendship: p.friendship || 70,
               _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
               _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,
@@ -179,7 +179,8 @@ export function serializeState(state: GameState): SaveData {
             }))
           : null,
         timestamp: Temporal.Now.instant().epochMilliseconds,
-      } as ActiveBattleSerialized;
+      }
+      activeBattle = serialized;
     } catch(e) {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;
@@ -285,7 +286,7 @@ let lastValidatedBox: Pokemon[] = [];
  * Validates the state before saving to prevent cache hacking or data corruption.
  */
 export function validateAndSanitize(data: SaveData): { valid: boolean, data: SaveData, hadDuplicates?: boolean, issues: string[], error?: string } {
-  if (!data) return { valid: false, data: {} as SaveData, issues: [], error: 'No data' };
+  if (!data) { const empty: SaveData = ({} as unknown) as SaveData; return { valid: false, data: empty, issues: [], error: 'No data' }; }
   
   const issues: string[] = [];
 

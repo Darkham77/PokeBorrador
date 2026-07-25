@@ -213,7 +213,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const remainedAlive = target.hp > 0;
         target.hp = 0;
         target.fainted = true;
-        target.status = null;
+        target.status = '';
         if (target.volatileCounters) {
           target.volatileCounters = {};
         }
@@ -249,7 +249,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const target = getPoke(parts[2] || '');
       const curedStatus = parts[3] || '';
       if (target) {
-        target.status = null;
+        target.status = '';
         const cureMessages: Record<string, string> = {
           slp: `¡${target.name} se despertó!`,
           frz: `¡${target.name} se descongeló!`,
@@ -267,8 +267,8 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case '-curestatusall': {
       if (store.activeBattle.value) {
         const battle = store.activeBattle.value;
-        if (battle.playerTeam) battle.playerTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
-        if (battle.enemyTeam) battle.enemyTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = null; });
+        if (battle.playerTeam) battle.playerTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = ''; });
+        if (battle.enemyTeam) battle.enemyTeam.forEach((mon: Pokemon | null) => { if (mon) mon.status = ''; });
       }
       store.addLog('¡Todos los Pokémon del equipo fueron curados de sus problemas de estado!', 'log-info');
       return true;
@@ -278,11 +278,15 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       const target = getPoke(parts[2] || '');
       const hpString = parts[3] || '';
       if (target && hpString) {
-        const parsed = hpString.split('/').map(n => parseInt(n || '0'));
+        const parsed = hpString.split('/').map(n => parseInt(n || '0', 10));
         const cur = parsed[0] ?? 0;
         const max = parsed[1] ?? 0;
-        if (!isNaN(cur) && cur > 0) target.hp = cur;
-        if (!isNaN(max) && max > 0) target.maxHp = max;
+        if (!isNaN(max) && max > 0) {
+          const realMax = target.maxHp || max;
+          target.hp = Math.round((cur / max) * realMax);
+        } else if (!isNaN(cur)) {
+          target.hp = cur;
+        }
       }
       return true;
     }
@@ -308,7 +312,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         winnerResult = 'tie';
       } else {
         const playerNames = store.activeBattle.value?.playerNames || {};
-        const isPlayerWin = winnerName.split(' & ').some(name => playerNames[name.trim()] === 'player') || winnerName === 'Player';
+        const isPlayerWin = winnerName.split(/\s*&\s*/).some(name => playerNames[name.trim()] === 'player') || winnerName === 'Player';
         if (isPlayerWin) {
           source = 'player';
           winnerResult = 'player';
@@ -355,7 +359,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (statusAppended === 'fnt') {
           switchedIn.hp = 0;
           switchedIn.fainted = true;
-          switchedIn.status = null;
+          switchedIn.status = '';
         } else if (statusAppended && ['brn', 'psn', 'slp', 'par', 'frz', 'tox'].includes(statusAppended)) {
           switchedIn.status = statusAppended as PokemonStatus;
         }

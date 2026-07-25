@@ -107,7 +107,7 @@ const GYM_BADGES = [
   { id: 'viridian', name: 'Tierra' }
 ]
 
-const formatNum = (num: number | string | unknown) => formatCurrency(Number(num || 0))
+const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
 
 const close = () => {
   emit('close')

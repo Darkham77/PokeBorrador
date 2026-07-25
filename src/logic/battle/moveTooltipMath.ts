@@ -379,7 +379,7 @@ export function parseStatusEffectInfo(
     return {
       isCondition: false,
       isSelf,
-      direction,
+      direction: direction as 'up' | 'down',
       stat,
       statName,
       amount,
@@ -463,7 +463,7 @@ export function parseStatusEffectInfo(
     return {
       isCondition: true,
       isSelf: cond.isSelf,
-      direction: cond.isSelf ? 'up' : 'down',
+      direction: (cond.isSelf ? 'up' : 'down') as 'up' | 'down',
       targetName: cond.isSelf ? 'Usuario (Tú)' : 'Rival',
       label: cond.label,
       effect: cond.effect,

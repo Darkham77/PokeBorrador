@@ -162,11 +162,13 @@ export function mapInventoryToItems(
  ): Item[] {
    let items: Item[] = Object.entries(inventory)
      .map(([id, qty]) => {
-       if (id === 'bicycle') {
-         return { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools', qty } as Item;
-       }
-       const item = getItemById(id);
-       return { ...item, qty, name: item.name } as Item;
+        if (id === 'bicycle') {
+         const bicycleItem: Item = { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools', qty };
+         return bicycleItem
+        }
+        const item = getItemById(id);
+        const builtItem: Item = ({ ...item, qty, name: item.name } as unknown) as Item;
+        return builtItem;
      })
 
    if (isBattleActive) {

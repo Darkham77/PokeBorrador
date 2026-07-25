@@ -112,7 +112,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
   const showdownName = getShowdownNickname(poke.uid);
   const rawNature = (poke.nature || 'serious').trim();
 
-  return {
+  const showdownSet: PokemonSet & { uid?: string; stats?: Record<string, number> } = {
     name: showdownName,
     species: speciesName,
     level: poke.level,
@@ -125,7 +125,6 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     pokeball: 'pokeball',
     hpType: '',
     gigantamax: false,
-    status: poke.status || '',
     ivs: {
       hp: poke.ivs?.hp ?? 31,
       atk: poke.ivs?.atk ?? 31,
@@ -153,7 +152,9 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
       spd: poke.spd,
       spe: poke.spe
     }
-  } as PokemonSet & { uid?: string };
+  };
+
+  return showdownSet;
 }
 
 // Mapa inverso: número → nombre Showdown (construido una sola vez)

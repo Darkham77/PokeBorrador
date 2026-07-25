@@ -30,7 +30,7 @@ export function handleStageEvents(ctx: SBCtx): boolean {
           if (type === '-setboost') {
             stages[key] = Math.max(-6, Math.min(6, amount));
           } else {
-            stages[key] = Math.min(6, (stages[key] || 0) + amount);
+            stages[key] = Math.max(-6, Math.min(6, (stages[key] || 0) + amount));
           }
           const msg = amount === 6
             ? `¡El ${key.toUpperCase()} de ${target.name} se maximizó!`
@@ -151,12 +151,18 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       if (target) {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+        let cleared = false;
         if (stages) {
           for (const key of SHOWDOWN_STAT_KEYS) {
-            if ((stages[key] || 0) > 0) stages[key] = 0;
+            if ((stages[key] || 0) > 0) {
+              stages[key] = 0;
+              cleared = true;
+            }
           }
         }
-        store.addLog(`¡Los aumentos de ${target.name} fueron robados!`, 'log-info', target);
+        if (cleared) {
+          store.addLog(`¡Los aumentos de ${target.name} fueron robados!`, 'log-info', target);
+        }
       }
       return true;
     }
@@ -167,12 +173,18 @@ export function handleStageEvents(ctx: SBCtx): boolean {
       if (target) {
         const side = target === p ? 'player' : 'enemy';
         const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+        let cleared = false;
         if (stages) {
           for (const key of SHOWDOWN_STAT_KEYS) {
-            if ((stages[key] || 0) < 0) stages[key] = 0;
+            if ((stages[key] || 0) < 0) {
+              stages[key] = 0;
+              cleared = true;
+            }
           }
         }
-        store.addLog(`¡Las bajadas de stats de ${target.name} fueron eliminadas!`, 'log-info', target);
+        if (cleared) {
+          store.addLog(`¡Las bajadas de stats de ${target.name} fueron eliminadas!`, 'log-info', target);
+        }
       }
       return true;
     }

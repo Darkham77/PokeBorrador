@@ -267,7 +267,8 @@ export class DBRouter {
     if (this.mode === 'offline') {
       const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
       const localUser = localUserStr ? JSON.parse(localUserStr) as User : null;
-      const user = localUser || { id: 'local_user', email: 'offline@pkv.io' } as User;
+      const defaultUser: User = ({ id: 'local_user', email: 'offline@pkv.io' } as unknown) as User;
+      const user = localUser || defaultUser;
       const session = { access_token: 'mock', token_type: 'bearer', user, expires_at: 9999999999 } as unknown as Session;
       
       return {
@@ -307,7 +308,7 @@ export class DBRouter {
 
       const mockChannel = {
         on: (
-          type: 'broadcast' | 'presence' | 'postgres_changes' | string,
+          type: 'broadcast' | 'presence' | 'postgres_changes',
           _filter: Record<string, unknown> | string,
           callback: RealtimeCallback
         ) => {

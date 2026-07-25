@@ -97,7 +97,7 @@ const setField = (effect: string, val: number) => {
         battleStore.addLog(`DEBUG: Terreno/Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
       } else {
         battleStore.state.weather = {
-          type: effect as any,
+          type: effect,
           visual: effect,
           turns: 5
         }
@@ -107,11 +107,11 @@ const setField = (effect: string, val: number) => {
   } else if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(effect)) {
     if (battleStore.state) {
       if (!battleStore.state.enemySideConditions) battleStore.state.enemySideConditions = {}
-      if (battleStore.state.enemySideConditions[effect as any]) {
-        delete battleStore.state.enemySideConditions[effect as any]
+      if (battleStore.state.enemySideConditions[effect]) {
+        delete battleStore.state.enemySideConditions[effect]
         battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
       } else {
-        battleStore.state.enemySideConditions[effect as any] = { turns: 5 }
+        battleStore.state.enemySideConditions[effect] = { turns: 5 }
         battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} aplicado al bando enemigo`, 'log-info')
       }
     }
@@ -134,10 +134,10 @@ const isEffectActive = (type: string, category: string) => {
   if (category === 'status') return (poke as Pokemon | undefined)?.status === type
   if (category === 'secondary') {
     const p = poke as (Pokemon & Record<string, unknown>) | undefined
-    if (type === 'confusion' || type === 'confused') return !!p?.confused || ((p?.volatileCounters as any)?.['confusion'] || 0) > 0
-    if (type === 'flinch') return ((p?.volatileCounters as any)?.['flinch'] || 0) > 0
-    if (type === 'tauntTurns' || type === 'taunt') return (p?.tauntTurns || 0) > 0 || ((p?.volatileCounters as any)?.['tauntTurns'] || 0) > 0
-    if (type === 'substitute') return !!p?.substitute || ((p?.volatileCounters as any)?.['substitute'] || 0) > 0
+    if (type === 'confusion' || type === 'confused') return !!p?.confused || (p?.volatileCounters?.['confusion'] || 0) > 0
+    if (type === 'flinch') return (p?.volatileCounters?.['flinch'] || 0) > 0
+    if (type === 'tauntTurns' || type === 'taunt') return (p?.tauntTurns || 0) > 0 || (p?.volatileCounters?.['tauntTurns'] || 0) > 0
+    if (type === 'substitute') return !!p?.substitute || (p?.volatileCounters?.['substitute'] || 0) > 0
     if (type === 'disabledTurns') return (p?.disabledTurns || 0) > 0
     if (type === 'encoreTurns') return (p?.encoreTurns || 0) > 0
     if (type === 'perishSongCount') return (p?.perishSongCount || 0) > 0
@@ -152,7 +152,7 @@ const isEffectActive = (type: string, category: string) => {
       return battleStore.state?.weather?.type === type || battleStore.state?.weather?.visual === type
     }
     if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(type)) {
-      return !!battleStore.state?.enemySideConditions?.[type as any] || !!battleStore.state?.playerSideConditions?.[type as any]
+      return !!battleStore.state?.enemySideConditions?.[type] || !!battleStore.state?.playerSideConditions?.[type]
     }
     return ((stages as BattleStages | undefined)?.[type as keyof BattleStages] || 0) > 0
   }

@@ -78,7 +78,7 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
   if (!active) return;
 
   // Extract extra vars to pass to GSAP (e.g. delay)
-  const extraVars = { ...optObj } as Record<string, string | number | boolean | undefined>;
+  const extraVars: Record<string, string | number | boolean | undefined> = { ...optObj };
   delete extraVars.effect;
   delete extraVars.duration;
   delete extraVars.ease;

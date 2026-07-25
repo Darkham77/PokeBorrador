@@ -439,7 +439,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             batchRec.cheats.push({ turn: turn, side: 'p1', type: 'heal' });
             if (mockStore.player?.value) {
               mockStore.player.value.hp = mockStore.player.value.maxHp;
-              mockStore.player.value.status = null;
+              mockStore.player.value.status = '';
             }
           }
 
@@ -451,7 +451,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
             batchRec.cheats.push({ turn: turn, side: 'p2', type: 'heal' });
             if (mockStore.enemy?.value) {
               mockStore.enemy.value.hp = mockStore.enemy.value.maxHp;
-              mockStore.enemy.value.status = null;
+              mockStore.enemy.value.status = '';
             }
           }
           // (saves happen outside the loop after it completes)

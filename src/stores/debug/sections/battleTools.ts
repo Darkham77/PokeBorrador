@@ -172,11 +172,11 @@ export function registerBattleTools(debug: DebugSystem) {
           : battle.state?.enemy
 
         if (poke) {
-          if (status === 'null') {
-            poke.status = null
+          if (status === 'null' || status === '') {
+            poke.status = ''
           } else {
             // Toggle logic
-            poke.status = poke.status === (status as Pokemon['status']) ? null : (status as Pokemon['status'])
+            poke.status = poke.status === (status as Pokemon['status']) ? '' : (status as Pokemon['status'])
             if (poke.status === 'slp') poke.sleepTurns = 3
           }
 

@@ -13,6 +13,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 import fsPromises from 'node:fs/promises'
 import fs from 'node:fs'
 
+import type { ESBuildOptions } from 'vite'
+
+type ESBuildOptionsWithCharset = ESBuildOptions & { charset?: 'utf8' }
+const esbuildConfig: ESBuildOptionsWithCharset = {
+  charset: 'utf8',
+  drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
+  pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
+}
+
 function migrationsPlugin() {
   return {
     name: 'migrations-generator',
@@ -158,7 +167,7 @@ function devDbImportPlugin() {
               console.debug('📥 [DevDB] clean_template.db updated 100% in RAM and synchronized.')
               res.writeHead(200, { 'Content-Type': 'text/plain' })
               res.end('Success')
-            } catch (err: unknown) {
+            } catch (_err: unknown) {
               await fsPromises.unlink(tmpPath).catch(() => {})
               res.writeHead(200, { 'Content-Type': 'text/plain' })
               res.end('Success')
@@ -457,11 +466,5 @@ export default defineConfig({
       }
     }
   },
-  esbuild: {
-    // Force UTF-8 encoding to preserve non-ASCII characters
-    charset: 'utf8',
-    // Only drop non-critical logs in production
-    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
-    pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
-  } as import('vite').ESBuildOptions & { charset?: 'utf8' },
+  esbuild: esbuildConfig,
 })

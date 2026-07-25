@@ -5,7 +5,7 @@ import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
 
 export function setupBattleDebug(ctx: BattleContext) {
@@ -64,7 +64,7 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.setStatus = (side: string, status: string) => {
     const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
-    if (target) target.status = (status === 'null' || status === 'clear') ? '' : (status as any)
+    if (target) target.status = (status === 'null' || status === 'clear') ? '' : (status as PokemonStatus)
   }
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
@@ -88,8 +88,8 @@ export function setupBattleDebug(ctx: BattleContext) {
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
     const sideCond = side === 'player' ? ctx.activeBattle.value?.playerSideConditions : ctx.activeBattle.value?.enemySideConditions
     if (sideCond) {
-      if (sideCond[effect as any]) delete sideCond[effect as any]
-      else sideCond[effect as any] = { turns: val }
+      if (sideCond[effect]) delete sideCond[effect]
+      else sideCond[effect] = { turns: val }
     }
   }
 
@@ -197,7 +197,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active) {
         const visual = w === 'clear' || w === 'null' ? 'clear' : w
-        active.weather = { type: w as any, turns: 99, visual }
+        active.weather = { type: w, turns: 99, visual }
         logger.info('DEBUG', `Clima/Terreno cambiado a: ${w}`)
       }
     },
@@ -205,7 +205,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       const active = ctx.activeBattle.value
       if (active && active.player) {
         active.player.hp = active.player.maxHp
-        active.player.status = null;
+        active.player.status = '';
         (active.player as Pokemon & { confused?: number; seeded?: boolean }).confused = 0;
         (active.player as Pokemon & { confused?: number; seeded?: boolean }).seeded = false
         
@@ -215,7 +215,7 @@ export function setupBattleDebug(ctx: BattleContext) {
           const tp = team[active.playerTeamIndex]
           if (tp) {
             tp.hp = active.player.maxHp
-            tp.status = null
+            tp.status = ''
           }
         }
         

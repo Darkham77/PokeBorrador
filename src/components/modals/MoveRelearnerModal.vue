@@ -76,7 +76,7 @@ const forgottenMoves = computed(() => {
 
 const getMoveFullData = (mv: LearnsetEntry): Move => {
   const base = mv.id ? pokemonDataProvider.getMoveData(mv.id) : null
-  return {
+  const fullMove: Move = {
     name: mv.name,
     pp: base?.pp ?? mv.pp,
     maxPP: base?.pp ?? mv.pp,
@@ -85,7 +85,8 @@ const getMoveFullData = (mv: LearnsetEntry): Move => {
     power: base?.power ?? 0,
     acc: base?.acc ?? 100,
     effect: base?.effect
-  } as Move
+  }
+  return fullMove
 }
 
 const handleRelearn = (move: LearnsetEntry) => {
@@ -111,9 +112,10 @@ const handleRelearn = (move: LearnsetEntry) => {
     handleClose()
   } else {
     // If moves == 4, we need to forget one. Consume only on completion!
+    const moveEntry: Move = { name: moveData.name, pp: moveData.pp, maxPP: moveData.pp }
     uiStore.addToLearnQueue({ 
       pokemon: p, 
-      move: { name: moveData.name, pp: moveData.pp, maxPP: moveData.pp } as Move,
+      move: moveEntry,
       onComplete: () => {
         consumeItem(itemId)
       }

@@ -20,6 +20,7 @@ import type {
     PokemonData,
     NatureBaseData
 } from '@/types/system/database';
+import type { StatId } from '@/logic/pokemon/statsMath';
 
 /**
  * PokemonDataProvider
@@ -383,12 +384,13 @@ export const pokemonDataProvider = {
 
         const sdNature = Dex.natures.get(cleanId);
         
-        return {
+        const natureData: NatureBaseData = {
             name: staticData.name,
-            up: sdNature?.plus ?? staticData.up ?? null,
-            down: sdNature?.minus ?? staticData.down ?? null,
+            up: ((sdNature?.plus ?? staticData.up) as StatId | null) ?? null,
+            down: ((sdNature?.minus ?? staticData.down) as StatId | null) ?? null,
             desc: staticData.desc
-        } as NatureBaseData;
+        }
+        return natureData;
     },
 
     /**

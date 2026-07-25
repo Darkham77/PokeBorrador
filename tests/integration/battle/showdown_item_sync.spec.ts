@@ -86,7 +86,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
 
     // Simular uso de Revivir (revive al 50% HP)
     ePokeBenched.hp = 170;
-    ePokeBenched.status = null;
+    ePokeBenched.status = '';
 
     const p2Hps = enemyTeamList.map(p => p.hp);
     p2Hps.forEach((hp, idx) => {
@@ -135,7 +135,7 @@ describe('Showdown Consumable Items Synchronization Tests', () => {
       }
 
       // Simular uso de objeto curativo (cura estado)
-      ePokeActive.status = null;
+      ePokeActive.status = '';
 
       // Sincronizar estados en Showdown
       const p2Statuses = enemyTeamList.map(p => p.status || '');

@@ -1,7 +1,8 @@
-export type PokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' | '' | null;
+export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
+export type PokemonStatus = ActivePokemonStatus | '';
 
 export function isPokemonStatus(status: unknown): status is PokemonStatus {
-  if (status === null || status === undefined) return true;
+  if (status === null || status === undefined || status === '') return true;
   if (typeof status !== 'string') return false;
   return ['par', 'brn', 'psn', 'slp', 'frz', 'tox'].includes(status);
 }
@@ -14,28 +15,30 @@ export interface BreedingCompatibility {
   motherId?: string;
 }
 
+export type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe';
+
 export interface PokemonIVs {
-  [key: string]: number | boolean | undefined;
   hp: number;
   atk: number;
   def: number;
   spa: number;
   spd: number;
   spe: number;
+  [key: string]: number | undefined;
 }
 
 export interface PokemonEVs {
-  [key: string]: number | boolean | undefined;
   hp: number;
   atk: number;
   def: number;
   spa: number;
   spd: number;
   spe: number;
+  [key: string]: number | undefined;
 }
 
 export interface MoveEffect {
-  type: 'status' | 'stat' | 'flinch' | 'confuse' | 'trap' | 'drain' | 'recoil' | 'recharge' | 'fixed' | 'multi' | 'heal' | string;
+  type: 'status' | 'stat' | 'flinch' | 'confuse' | 'trap' | 'drain' | 'recoil' | 'recharge' | 'fixed' | 'multi' | 'heal';
   status?: PokemonStatus;
   stat?: keyof PokemonIVs;
   stages?: number;
@@ -137,6 +140,8 @@ export interface Pokemon {
   nature: string;
   heldItem?: string | null;
   lastItem?: string | null;
+  slotIndex?: number;
+  position?: number;
   item?: string | null; // @deprecated use heldItem
   friendship?: number;
   vigor?: number;

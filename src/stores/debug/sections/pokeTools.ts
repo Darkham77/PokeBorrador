@@ -171,7 +171,7 @@ export function registerPokeTools(debug: DebugSystem) {
         if (p) {
           p.hp = p.maxHp
           if (p.moves) p.moves.forEach((m) => { if (m) m.pp = m.maxPP })
-          p.status = null
+          p.status = ''
         }
       })
       ui.notify('Equipo curado', '💊')

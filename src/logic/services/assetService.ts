@@ -45,7 +45,7 @@ export interface AssetOptions {
   animated?: boolean;
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
   trainerSuffix?: 'avatar' | 'front' | 'back';
-  gender?: 'h' | 'm' | string;
+  gender?: 'h' | 'm';
   isLowPower?: boolean;
   [key: string]: unknown;
 }

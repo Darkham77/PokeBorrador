@@ -169,7 +169,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
     });
 
     it('should heal HP with Potion if active HP is below 25%', async () => {
-      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: undefined } as Pokemon;
+      const activePoke = { ...attacker, hp: 10, maxHp: 100, status: '' } as Pokemon;
       mockContext.activeBattle.value!.enemyInventory = { potion: 1 };
 
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);

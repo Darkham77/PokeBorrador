@@ -19,7 +19,7 @@ export function healHp(p: Pokemon, amount: number): ItemEffectResult {
 export function revive(p: Pokemon, amount: number): ItemEffectResult {
   if (p.hp > 0) return { success: false, message: 'No tendrá ningún efecto.' }
   p.hp = amount
-  p.status = null
+  p.status = ''
   return { success: true, message: `revivió con ${p.hp} HP` }
 }
 
@@ -46,7 +46,7 @@ export function clearStatus(p: Pokemon, type: string): ItemEffectResult {
   if (!isMatch) return { success: false, message: 'No tiene ese estado.' };
 
   const old = p.status;
-  p.status = null;
+  p.status = '';
   if ((old as string) === 'slp' || (old as string) === 'sleep') p.sleepTurns = 0;
   return { success: true, message: `se curó del estado ${old}` };
 }
@@ -55,7 +55,7 @@ export function curaTotal(p: Pokemon): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (!p.status && Number(p.hp) === Number(p.maxHp)) return { success: false, message: 'No tiene efecto.' };
   p.hp = Number(p.maxHp);
-  p.status = null;
+  p.status = '';
   p.sleepTurns = 0;
   return { success: true, message: 'se curó completamente' };
 }

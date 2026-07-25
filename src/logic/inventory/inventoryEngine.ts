@@ -40,7 +40,7 @@ export function filterInventoryByCategory(inventory: Inventory, category: string
     if (category === 'all' || category === 'todos') return true;
     
     // Modern category mapping
-    if (category === 'potion' || category === 'pociones' || category === 'potions') return item.cat === 'potions';
+    if (category === 'potion' || category === 'potions') return item.cat === 'potions';
     if (category === 'ball' || category === 'pokeballs') return item.cat === 'pokeballs';
     if (category === 'stones') return item.cat === 'stones';
     if (category === 'etc' || category === 'especial') return !['potions', 'pokeballs', 'stones'].includes(item.cat || '');

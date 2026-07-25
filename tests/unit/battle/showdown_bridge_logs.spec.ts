@@ -72,7 +72,7 @@ describe('Showdown Bridge Combat Log Messages Parity', () => {
     await parseShowdownLogLine(mockStore, '|-curestatus|p1a: Pikachu|slp|[uids]p1a:Pikachu=p1-12345678');
     expect(logs).toHaveLength(1);
     expect(logs[0]?.text).toBe('¡Pikachu se despertó!');
-    expect(playerMon.status).toBeNull();
+    expect(playerMon.status).toBe('');
   });
 
   it('differentiates damage sources for -damage', async () => {

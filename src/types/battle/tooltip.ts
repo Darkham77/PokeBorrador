@@ -61,7 +61,7 @@ export interface ParsedStatusEffectInfo {
   isCondition?: boolean;
   isSelf?: boolean;
   targetName?: string;
-  direction?: 'up' | 'down' | string;
+  direction?: 'up' | 'down';
   details?: string;
   statName?: string;
   stat?: string;

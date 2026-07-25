@@ -42,7 +42,7 @@ describe('Inventory Engine', () => {
     expect(balls.length).toBe(1);
     expect(balls[0]![0]).toBe('Pokéball');
 
-    const potions = filterInventoryByCategory(inv, 'pociones');
+    const potions = filterInventoryByCategory(inv, 'potions');
     expect(potions.length).toBe(1);
     expect(potions[0]![0]).toBe('Poción');
   });

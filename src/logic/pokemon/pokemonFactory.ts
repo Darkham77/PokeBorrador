@@ -437,7 +437,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level, bypass) as PokemonMove[],
-    status: null, sleepTurns: 0, friendship: 70, vigor, maxVigor,
+    status: '', sleepTurns: 0, friendship: 70, vigor, maxVigor,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],

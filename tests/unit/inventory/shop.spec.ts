@@ -113,7 +113,7 @@ describe('Shop & Healing Logic', () => {
       
       const p = gameStore.state.team[0]!
       expect(p.hp).toBe(50)
-      expect(p.status).toBeNull()
+      expect(p.status).toBe('')
       expect(p.moves[0]!.pp).toBe(15)
     })
 

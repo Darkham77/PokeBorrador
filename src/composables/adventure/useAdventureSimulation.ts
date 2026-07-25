@@ -173,7 +173,10 @@ export function useAdventureSimulation() {
   })
 
   function getSpawnPoolForMap(loc: MapLocation) {
-    if (!loc.wild) return { generic: [] as string[], specific: [] as string[], rates: {} as Record<string, number> }
+    if (!loc.wild) {
+      const emptyPool: { generic: string[]; specific: string[]; rates: Record<string, number> } = { generic: [], specific: [], rates: {} }
+      return emptyPool
+    }
 
     const activeWeather = getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
     const { generic, specific, rates } = getMapSpawnPoolData(

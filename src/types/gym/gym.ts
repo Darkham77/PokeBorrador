@@ -1,7 +1,13 @@
 
+export interface GymTeamMember {
+  pokemonId: string;
+  level: number;
+}
+
 export interface GymDifficulty {
   pokemon: string[];
   levels: number[];
+  team?: GymTeamMember[];
 }
 
 export interface Gym {

@@ -16,7 +16,7 @@ export function calculateSpikesDamage(pokemon: Pokemon, spikeLayers: number): nu
   return Math.max(1, Math.floor(pokemon.maxHp * dmgFraction))
 }
 
-export async function applyEntryHazards(pokemon: Pokemon, sideOrCtx: 'player' | 'enemy' | unknown, ctxOrLog?: BattleContext | LogFn) {
+export async function applyEntryHazards(pokemon: Pokemon, sideOrCtx: unknown, ctxOrLog?: BattleContext | LogFn) {
   const ctx = (typeof ctxOrLog === 'object' && ctxOrLog !== null && 'activeBattle' in ctxOrLog) ? (ctxOrLog as BattleContext) : null
   if (!ctx) return
   const active = ctx.activeBattle.value

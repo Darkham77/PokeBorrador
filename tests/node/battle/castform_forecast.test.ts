@@ -13,8 +13,7 @@ describe('Castform Forecast (Predicción) Ability Mechanics', () => {
       name: 'Castform',
       ability: 'forecast',
       form: 'normal',
-      type: 'normal',
-      type2: undefined
+      type: 'normal'
     };
 
     updateCastformForm(castform as Pokemon, 'sun', mockAddLog);
@@ -30,8 +29,7 @@ describe('Castform Forecast (Predicción) Ability Mechanics', () => {
       name: 'Castform',
       ability: 'forecast',
       form: 'normal',
-      type: 'normal',
-      type2: undefined
+      type: 'normal'
     };
 
     updateCastformForm(castform as Pokemon, 'rain', mockAddLog);
@@ -46,8 +44,7 @@ describe('Castform Forecast (Predicción) Ability Mechanics', () => {
       name: 'Castform',
       ability: 'forecast',
       form: 'normal',
-      type: 'normal',
-      type2: undefined
+      type: 'normal'
     };
 
     // Test with Hail
@@ -69,8 +66,7 @@ describe('Castform Forecast (Predicción) Ability Mechanics', () => {
       name: 'Castform',
       ability: 'forecast',
       form: 'sunny',
-      type: 'fire',
-      type2: undefined
+      type: 'fire'
     };
 
     updateCastformForm(castform as Pokemon, 'clear', mockAddLog);

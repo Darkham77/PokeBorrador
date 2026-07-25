@@ -29,7 +29,7 @@ function makePokemon(overrides: Partial<HeuristicPokemonState> = {}): HeuristicP
     hp: 150,
     maxHp: 150,
     hpPercent: 100,
-    status: null,
+    status: '',
     active: true,
     fainted: false,
     stats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 100 },

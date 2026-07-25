@@ -11,11 +11,11 @@ declare global {
     getFile(): Promise<File>;
   }
   interface FileSystemWritableFileStream extends WritableStream {
-    write(data: BufferSource | Blob | string | unknown): Promise<void>;
+    write(data: unknown): Promise<void>;
     close(): Promise<void>;
   }
   interface StorageManager {
-    getDirectory(): Promise<FileSystemDirectoryHandle | unknown>;
+    getDirectory(): Promise<FileSystemDirectoryHandle>;
   }
 
   // Compression API

@@ -76,7 +76,7 @@ describe('Item Reactivity & Integrity', () => {
     const result = useItemOnPokemon('antidote', mockPokemon)
     
     expect(result).toBeDefined()
-    expect(result!.pokemon.status).toBeNull()
+    expect(result!.pokemon.status).toBe('')
     expect(result!.message).toContain('se curó')
   })
 

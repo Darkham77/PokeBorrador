@@ -1,4 +1,6 @@
 
+import type { StatId } from '@/logic/pokemon/statsMath';
+
 export interface LearnsetMove {
   lv: number;
   id: string;
@@ -72,8 +74,8 @@ export interface PokemonAesthetics {
 
 export interface NatureBaseData {
   name: string;
-  up: string | null;
-  down: string | null;
+  up: StatId | null;
+  down: StatId | null;
   desc: string;
 }
 export type DBMode = 'online' | 'offline';
@@ -96,7 +98,7 @@ export interface DBCompatibilityResponse {
 
 export interface DBResponse<T = unknown> {
   data: T | null;
-  error: Error | string | null | unknown;
+  error: unknown;
   count?: number;
 }
 

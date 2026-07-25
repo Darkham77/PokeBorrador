@@ -160,7 +160,8 @@ export const useSocialStore = defineStore('social', () => {
         friends.value = friendIds.map((fId: string) => {
           const p = (profRes.data as ProfileRow[] || []).find((prof: ProfileRow) => prof.id === fId)
           const saveRow = (saveRes.data as GameSaveRow[])?.find((s: GameSaveRow) => s.user_id === fId)
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : {} as Partial<GameState>
+          const empty: Partial<GameState> = {}
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : empty
           const lastSeen = parseInstantSafe(saveRow?.updated_at)
           const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
 
@@ -206,7 +207,8 @@ export const useSocialStore = defineStore('social', () => {
         const profilesMap = requesterIds.reduce((acc, reqId) => {
           const p = (profRes.data || []).find((prof: ProfileRow) => prof.id === reqId)
           const saveRow = (saveRes.data || []).find((s: GameSaveRow) => s.user_id === reqId)
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : {} as Partial<GameState>
+          const emptyState: Partial<GameState> = {}
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : emptyState
           
           const fallbackName = reqId.startsWith('local_') ? reqId.replace('local_', '') : 'Entrenador'
           const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
@@ -221,7 +223,7 @@ export const useSocialStore = defineStore('social', () => {
             gender: (save.gender as string) || p?.gender || 'h'
           }
           return acc
-        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>)
+        }, ({} as unknown) as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>)
 
         pending.forEach((r: PendingRequest) => {
           const profInfo = profilesMap[r.requester_id]

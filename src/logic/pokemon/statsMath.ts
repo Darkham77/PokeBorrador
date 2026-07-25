@@ -39,8 +39,8 @@ export interface IVs {
 export type StatId = 'atk' | 'def' | 'spa' | 'spd' | 'spe';
 
 export interface NatureData {
-  up: StatId | string | null;
-  down: StatId | string | null;
+  up: StatId | null;
+  down: StatId | null;
 }
 
 export interface CalculatedStats {
@@ -64,7 +64,7 @@ export function calcStatsPure(
   evs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number } | null,
   isDittoQuickPowder: boolean = false
 ): CalculatedStats {
-  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: StatId | string) => {
+  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: StatId) => {
     let val = Math.floor(((baseVal * 2) + iv + Math.floor(ev / 4)) * lvl / 100 + 5);
     if (natureData.up === statId) val = Math.floor(val * 1.1);
     if (natureData.down === statId) val = Math.floor(val * 0.9);
