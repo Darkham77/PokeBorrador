@@ -2,7 +2,6 @@ import { Pokemon } from '@/types/pokemon/pokemon';
 
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
-export type BattleStatKey = CoreBattleStatKey | 'acc' | 'eva';
 
 export type BattleStages = Record<CoreBattleStatKey, number> & {
   acc?: number;

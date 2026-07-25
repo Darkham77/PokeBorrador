@@ -72,7 +72,7 @@
     "audit": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts",
     "audit:changed": "npm run audit -- --changed-since main",
     "audit:warnings-diff": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_warnings_diff.ts",
-    "audit:fix": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process scripts/maintenance/audit_project.ts --fix",
+    "audit:fix": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --fix",
     "audit:summary": "npm run audit -- --summary",
     "audit:errors": "npm run audit -- --errors-only",
     "audit:report": "npm run audit -- --output=scratch/audit_report.txt",

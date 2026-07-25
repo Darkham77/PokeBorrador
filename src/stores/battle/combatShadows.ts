@@ -102,13 +102,6 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     return Promise.resolve(newShadow)
   }
 
-  function showShadow(id: string) {
-    if (!id) return
-    const shadow = activeShadows.get(id)
-    if (shadow) {
-      shadow.visible = true
-    }
-  }
 
   function hideShadow(id: string) {
     if (!id) return
@@ -118,9 +111,6 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     }
   }
 
-  function removeShadow(id: string) {
-    activeShadows.delete(id)
-  }
 
   function clearAll() {
     activeShadows.clear()
@@ -130,9 +120,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     activeShadows,
     detectFeetPoints,
     requestShadow,
-    showShadow,
     hideShadow,
-    removeShadow,
     clearAll
   }
 })

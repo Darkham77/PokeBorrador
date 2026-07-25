@@ -15,7 +15,7 @@ export interface BreedingCompatibility {
   motherId?: string;
 }
 
-export type StatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe';
+
 
 export interface PokemonIVs {
   hp: number;

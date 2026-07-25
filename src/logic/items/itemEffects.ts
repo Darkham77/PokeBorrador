@@ -198,5 +198,5 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
 
 import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from './itemEffectHandlers.ts'
 
-export { healHp, revive, clearStatus, curaTotal, restorePP, handleStone }
+export { healHp, clearStatus, curaTotal, restorePP, handleStone }
 
