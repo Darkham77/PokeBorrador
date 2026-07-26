@@ -15,7 +15,7 @@ export const CURRENT_GENERATION = ACTIVE_GENERATION;
 export const ACTIVE_RULE_SET = ACTIVE_GENERATION;
 
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
-  '-6': 0.25, '-5': 0.28, '-4': 0.33, '-3': 0.40, '-2': 0.50, '-1': 0.66,
+  '-6': 2 / 8, '-5': 2 / 7, '-4': 1 / 3, '-3': 0.40, '-2': 0.50, '-1': 2 / 3,
   '0': 1.0, '1': 1.5, '2': 2.0, '3': 2.5, '4': 3.0, '5': 3.5, '6': 4.0
 };
 
@@ -369,7 +369,7 @@ export function calculateDamagePure(
     : Math.min(100, 85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
 
   // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
-  const finalDmg = (finalEff > 0 && weatherMult > 0)
+  let finalDmg = (power > 0 && finalEff > 0)
     ? Math.max(1, Math.floor(
         Math.floor(
           Math.floor(
@@ -380,6 +380,10 @@ export function calculateDamagePure(
         ) * finalEff * finalAbilityMult * weatherMult * itemMult * terrainMult
       ))
     : 0;
+
+  if (attacker.status === 'brn' && moveCat === 'physical' && attacker.ability !== 'guts') {
+    finalDmg = Math.floor(finalDmg * 0.5);
+  }
 
   return {
     dmg: finalDmg,
