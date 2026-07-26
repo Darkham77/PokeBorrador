@@ -21,4 +21,4 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [parity](./parity/AGENTS.md): Showdown engine behavior and bridge parity unit tests.

@@ -68,13 +68,21 @@ For each of the ≥20 suspects, write a test and run it:
 ```
 SUSPECT (from Stage 1)
        ↓
-Write test designed to FAIL if the divergence exists
+Add test describe block in tests/unit/battle/parity/ (e.g., showdown_protocol_tokens, showdown_volatiles_and_status, etc.)
        ↓
-npx vitest run tests/unit/battle/test_candidate.spec.ts
+npx vitest run tests/unit/battle/parity/
        ↓
 RED (test fails)  ──→ Confirmed real bug → Catalog it
 GREEN (test passes) ──→ Already working  → Discard. Do NOT catalog.
 ```
+
+> **IMPORTANT:** Do NOT create isolated single-bug `.spec.ts` files. Always append tests to the appropriate domain file in `tests/unit/battle/parity/`:
+> - `showdown_protocol_tokens.spec.ts` (token parsing)
+> - `showdown_volatiles_and_status.spec.ts` (status/volatiles)
+> - `showdown_field_weather_terrain.spec.ts` (field/hazards/weather)
+> - `showdown_stats_and_boosts.spec.ts` (stats/boosts/teras/megas)
+> - `showdown_turn_flow_and_switches.spec.ts` (switches/turn order/items)
+> - `showdown_bridge_historical_fixes.spec.ts` (bridge historical regressions)
 
 The number of cataloged bugs = number of suspects that fail RED. This may be 0, 5, 10, or 20. All are valid outcomes depending on what the code actually shows.
 
