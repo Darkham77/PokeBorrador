@@ -369,7 +369,7 @@ export function calculateDamagePure(
     : Math.min(100, 85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
 
   // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
-  let finalDmg = (power > 0 && finalEff > 0)
+  let finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)
     ? Math.max(1, Math.floor(
         Math.floor(
           Math.floor(

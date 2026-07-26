@@ -8,6 +8,7 @@ describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
       id: 'pikachu',
       hp: 10,
       maxHp: 10,
+      level: 50,
       type: 'electric',
       ability: 'Static-Ability',
       heldItem: 'Smoke-Ball'
@@ -16,6 +17,7 @@ describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
       id: 'pidgey',
       hp: 10,
       maxHp: 10,
+      level: 50,
       type: 'normal',
       ability: 'Run-Away'
     };

@@ -129,10 +129,14 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         const timestamp = Temporal.Now.instant().epochMilliseconds
         const serverTime = Temporal.Now.instant().toString();
         db.setMockTime(serverTime);
-        const { compress } = await import('@/logic/utils/compression')
-        const compressed = await compress(lsRaw)
-        await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
-        await writeOpfsFile(opfsKey, compressed)
+        try {
+          const { compress } = await import('@/logic/utils/compression')
+          const compressed = await compress(lsRaw)
+          await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
+          await writeOpfsFile(opfsKey, compressed)
+        } catch (opfsErr) {
+          logger.warn('LOAD', `OPFS migration backup skipped: ${(opfsErr as Error).message}`)
+        }
       } catch (e) {
         throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`)
       }

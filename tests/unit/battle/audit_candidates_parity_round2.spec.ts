@@ -15,8 +15,8 @@ describe('Audit Round 2 Candidates Parity Tests', () => {
   });
 
   it('Suspect 13: Catch rate status multiplier for Sleep/Freeze vs Poison/Burn', () => {
-    const slpMon = { id: 'pikachu', hp: 10, maxHp: 10, catchRate: 45, status: 'slp' as const };
-    const psnMon = { id: 'pikachu', hp: 10, maxHp: 10, catchRate: 45, status: 'psn' as const };
+    const slpMon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'slp' as const };
+    const psnMon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'psn' as const };
     
     const slpRes = calculateCatchRatePure(slpMon, 'poke-ball', 1, {});
     const psnRes = calculateCatchRatePure(psnMon, 'poke-ball', 1, {});

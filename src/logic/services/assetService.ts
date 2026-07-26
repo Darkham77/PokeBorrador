@@ -245,8 +245,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       let shopItem = null;
       try {
         shopItem = getItemById(idStr);
-      } catch (err) {
-        throw new Error(`[assetService] Error looking up item data for '${idStr}': ${String(err)}`);
+      } catch {
+        shopItem = null;
       }
       if (shopItem) {
         return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
