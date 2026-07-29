@@ -83,10 +83,10 @@ Finish the domain-type migration and make `npm run build` pass without weakening
 Latest command run:
 
 ```bash
-npm run validate:types
+npx fallow health --score
 ```
 
-Status: passing.
+Status: score gate passing (`85 B`).
 
 Current production-side status:
 
@@ -103,12 +103,24 @@ Current production-side status:
 Current build-side status:
 
 - `npm run build` now passes.
+- `npm run test` passes with 212 test files and 4276 tests.
 - The successful build included 59 Vitest node suites, 3384 passing tests, project audit with 0 errors, domain type audit with 0 errors/warnings, FSM validation, item integrity, ability validation, move validation, SQL/save migration validation, and the Vite production build.
+- `npm run audit:warnings-diff` passes with 0 project errors and 0 new warnings.
+- `npx fallow health --score` reports score `85 B`. The command still returns a non-zero process code because Fallow also reports 762 global units above threshold; the safe-commit health score gate is satisfied.
 - Existing audit warnings remain, but none were build-blocking in this run.
 
 Current known risk:
 
 - `src/data/inventory/items.json` still stores the raw item class field as `type`; `src/data/inventory/items.ts` treats that as a data boundary and exposes the strict runtime contract as `kind`. A future generated-data cleanup can rename the JSON field to `kind`, but the public TypeScript contract is no longer ambiguous.
+- `css-checker-kit` is still reported by Fallow as an unused devDependency, but it is invoked as a binary by the maintenance audit flow. Do not remove it or hide it with a dependency ignore unless the audit implementation changes.
+
+## Latest Repair Notes
+
+- `.fallowrc.json` was updated only under `ignoreExports`, with surgical entries for legitimate public/domain exports that Fallow cannot infer from direct imports. No wildcard export ignores were added.
+- The preserved dataset exports include canonical domain types derived from `as const`/`keyof` sources, plus `BABY_POKEMON` and `LEGENDARY_POKEMON`, which are consumed by the spawn integrity test as source-text contracts.
+- Local-only component/helper type exports were changed to local declarations or deleted when TypeScript confirmed they had no local use.
+- Stale Fallow suppression tokens `unit-size` were removed while keeping valid `security-sink` suppressions.
+- Two battle circular dependencies were broken by moving catch-rate imports to `battleCatchMath.ts` and injecting faint-resolution actions into `battleFaintSequence.ts`.
 
 ## Next Recommended Steps
 

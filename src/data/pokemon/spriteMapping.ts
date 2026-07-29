@@ -13,7 +13,7 @@ export function hasPokemonSpriteId(id: string): id is PokemonSpriteId {
   return Object.hasOwn(POKEMON_SPRITE_IDS, id);
 }
 
-export function requirePokemonSpriteId(id: string): PokemonSpriteId {
+function requirePokemonSpriteId(id: string): PokemonSpriteId {
   if (hasPokemonSpriteId(id)) return id;
   throw new Error(`[spriteMapping] Unknown pokemon sprite id: ${id}`);
 }

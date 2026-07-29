@@ -45,7 +45,7 @@ export const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
   default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
 };
 
-export function isNpcArchetype(value: string): value is NpcArchetype {
+function isNpcArchetype(value: string): value is NpcArchetype {
   return Object.hasOwn(ARCHETYPE_KEYWORDS, value);
 }
 

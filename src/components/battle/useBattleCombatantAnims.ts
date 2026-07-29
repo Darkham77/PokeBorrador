@@ -11,7 +11,6 @@ const VOICE_MOVE_IDS = [
   'disarmingvoice', 'boomburst', 'confide'
 ] as const
 
-export type VoiceMoveId = (typeof VOICE_MOVE_IDS)[number]
 
 function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
   const status = statusRaw?.toLowerCase() || ''
@@ -673,4 +672,3 @@ export function onBallLeave(el: Element, side: 'player' | 'enemy', done: () => v
   const animKey = `ball-fadeout-${side}`
   gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
 }
-

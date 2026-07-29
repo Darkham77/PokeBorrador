@@ -87,7 +87,7 @@ describe('Pokemon Factory', () => {
 
     it('should assign a gender unless genderless', () => {
       const p = makePokemon('charmander', 5);
-      expect(['M', 'F']).toContain(p!.gender);
+      expect(['m', 'f']).toContain(p!.gender);
     });
   });
 

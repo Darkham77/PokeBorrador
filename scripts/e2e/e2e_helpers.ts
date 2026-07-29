@@ -1,4 +1,4 @@
-// fallow-ignore-file security-sink unit-size
+// fallow-ignore-file security-sink
 import { type Page, type Locator, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 

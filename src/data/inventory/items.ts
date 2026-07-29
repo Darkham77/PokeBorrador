@@ -71,7 +71,7 @@ export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
 export type ShopItemData = (typeof SHOP_ITEMS)[number];
 export type ItemId = (typeof dbJson.SHOP_ITEMS)[number]['id'];
 
-export function isItemId(value: string): value is ItemId {
+function isItemId(value: string): value is ItemId {
   return SHOP_ITEMS.some(item => item.id === value);
 }
 

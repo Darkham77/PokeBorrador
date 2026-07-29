@@ -19,7 +19,7 @@ type FeetSpriteGroupKey = 'p' | 'n' | 't';
 type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
 export type FeetDatabasePath = `${FeetSpritePrefix}${string}.webp`;
 
-export const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
+const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
 
 function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
   const value = values[index];
@@ -41,7 +41,7 @@ for (const [key, prefix] of [
   }
 }
 
-export function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
+function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
   return Object.hasOwn(POKEMON_FEET_DATABASE, value);
 }
 
@@ -57,7 +57,7 @@ export function requireFeetPoints(value: string): FeetPoints {
   throw new Error(`[pokemonFeetDatabase] Missing feet points for path: ${path}`);
 }
 
-export const POKEMON_CRIES_DATABASE = PACKED_DATA.c;
+const POKEMON_CRIES_DATABASE = PACKED_DATA.c;
 export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
 
 export function getPokemonCryFilename(speciesId: string): string {

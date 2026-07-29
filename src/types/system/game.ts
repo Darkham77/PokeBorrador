@@ -50,7 +50,7 @@ export interface GymProgressEntry {
 
 export type ISODateKey = `${number}-${number}-${number}`;
 
-export function isISODateKey(value: string): value is ISODateKey {
+function isISODateKey(value: string): value is ISODateKey {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
@@ -70,10 +70,10 @@ export type GameStatKey =
   | 'trainersDefeated'
   | 'wins';
 
-export const FACTION_IDS = ['union', 'poder'] as const;
+const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 
-export function isFactionId(value: string): value is FactionId {
+function isFactionId(value: string): value is FactionId {
   return (FACTION_IDS as readonly string[]).includes(value);
 }
 

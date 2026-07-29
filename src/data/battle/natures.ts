@@ -29,11 +29,6 @@ export const NATURE_DATA = Object.freeze({
 export type NatureId = keyof typeof NATURE_DATA;
 export const NATURES = Object.keys(NATURE_DATA) as NatureId[];
 
-/** Strict accessor — throws if nature is not registered. */
-export function getNatureData(id: NatureId) {
-  return NATURE_DATA[id];
-}
-
 /** Boundary adapter for external data (saves, DB). Throws if invalid. */
 export function toNatureId(raw: string): NatureId {
   if (raw in NATURE_DATA) return raw as NatureId;

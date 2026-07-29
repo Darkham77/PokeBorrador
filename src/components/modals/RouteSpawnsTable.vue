@@ -28,7 +28,7 @@ export interface ArchaeologyRewardItem {
   percentage: number
   basePercentage: number
 }
-export interface NpcSpawnItem {
+interface NpcSpawnItem {
   type: string
   name: string
   active: boolean

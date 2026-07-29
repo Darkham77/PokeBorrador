@@ -26,7 +26,7 @@ import type { PokemonType } from '@/data/battle/types';
 export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_MECHANICAL];
 
 /** All registered weather state IDs, including 'none' (no weather / gym default) */
-export const WEATHER_IDS = [
+const WEATHER_IDS = [
   'none',
   'clear',
   'null',
@@ -61,16 +61,16 @@ export function requireWeatherId(value: string): WeatherId {
   throw new Error(`Invalid weather id: ${value}`);
 }
 
-export const SHOWDOWN_WEATHER_IDS = [
+const SHOWDOWN_WEATHER_IDS = [
   'raindance',
   'sunnyday',
   'desolateland',
   'primordialsea',
   'deltastream',
 ] as const;
-export type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
+type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
 
-export function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
+function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
   return (SHOWDOWN_WEATHER_IDS as readonly string[]).includes(value);
 }
 

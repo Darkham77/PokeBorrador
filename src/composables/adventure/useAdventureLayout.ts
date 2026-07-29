@@ -18,7 +18,7 @@ const POKEMON_CENTER_NODES = [
   'route23'          // Meseta Añil
 ] as const
 
-export type PokemonCenterNodeId = (typeof POKEMON_CENTER_NODES)[number]
+type PokemonCenterNodeId = (typeof POKEMON_CENTER_NODES)[number]
 
 function isPokemonCenterNodeId(value: AdventureNodeId): value is PokemonCenterNodeId {
   return (POKEMON_CENTER_NODES as readonly AdventureNodeId[]).includes(value)

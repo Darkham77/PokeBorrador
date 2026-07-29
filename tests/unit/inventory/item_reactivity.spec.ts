@@ -56,7 +56,7 @@ describe('Item Reactivity & Integrity', () => {
       name: 'Pikachu',
       hp: 10,
       maxHp: 100,
-      status: 'poison',
+      status: 'psn',
       moves: [
         { name: 'Thunderbolt', pp: 5, maxPP: 15 }
       ]

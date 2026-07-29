@@ -8,7 +8,7 @@ import dbJson from './abilities.json' with { type: 'json' };
 export const ABILITY_TRANSLATIONS_ES = dbJson;
 export type AbilityId = keyof typeof ABILITY_TRANSLATIONS_ES;
 
-export function isAbilityId(value: string): value is AbilityId {
+function isAbilityId(value: string): value is AbilityId {
   return Object.keys(ABILITY_TRANSLATIONS_ES).some(id => id === value);
 }
 

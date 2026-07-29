@@ -11,13 +11,15 @@ import type { WeatherId } from '../weather/weatherRegistry.ts';
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
   calculateDamagePure,
-  calculateCatchRatePure as pureCalculateCatchRate,
-  calculateEscapeChancePure as pureCalculateEscapeChance,
   type PurePokemon,
   type PureMove,
   type PureBattleWeather,
   type PureBattleStages
 } from './battleMath.ts';
+import {
+  calculateCatchRatePure as pureCalculateCatchRate,
+  calculateEscapeChancePure as pureCalculateEscapeChance
+} from './battleCatchMath.ts';
 import { getDayCycle } from '../utils/timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle/battle';

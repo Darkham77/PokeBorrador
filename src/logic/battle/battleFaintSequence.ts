@@ -4,11 +4,15 @@ import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 import { registerRewardCombatant } from './rewardsDistributor.ts'
 import { syncTeamHP } from './battleStateSync.ts'
-import { terminateBattle } from './resolution.ts'
 import { sleep } from '@/logic/utils/timeUtils'
 import { gameBus } from '@/logic/events/gameBus'
 
-export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pokemon) {
+interface EnemyFaintResolutionActions {
+  processFaint: (ctx: BattleContext, side: 'player' | 'enemy') => Promise<void>
+  terminateBattle: (ctx: BattleContext, winParam: boolean, fled?: boolean) => Promise<void>
+}
+
+export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pokemon, actions: EnemyFaintResolutionActions) {
   const active = ctx.activeBattle.value
   if (!active) return
 
@@ -148,8 +152,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
 
     if (nextEnemy.hp <= 0) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-      const { processFaint } = await import('./resolution.ts')
-      await processFaint(ctx, 'enemy')
+      await actions.processFaint(ctx, 'enemy')
       return
     }
 
@@ -172,5 +175,5 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     active._initialEnemy = null
   }
   ctx.faintedSides.value.add('enemy')
-  await terminateBattle(ctx, true)
+  await actions.terminateBattle(ctx, true)
 }

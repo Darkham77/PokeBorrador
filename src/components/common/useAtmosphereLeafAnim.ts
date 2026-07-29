@@ -2,10 +2,10 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-export type LeafWeatherId = 'wind' | 'strong_winds' | 'storm'
-export const LEAF_WEATHER_IDS = ['wind', 'strong_winds', 'storm'] as const satisfies readonly LeafWeatherId[]
+type LeafWeatherId = 'wind' | 'strong_winds' | 'storm'
+const LEAF_WEATHER_IDS = ['wind', 'strong_winds', 'storm'] as const satisfies readonly LeafWeatherId[]
 
-export function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
+function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
   return value === 'wind' || value === 'strong_winds' || value === 'storm'
 }
 

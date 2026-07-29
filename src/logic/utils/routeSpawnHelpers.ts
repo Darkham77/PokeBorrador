@@ -5,9 +5,9 @@ import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants'
 import type { PokemonType } from '@/data/battle/types'
-import type { ItemId, ShopItemData } from '@/data/inventory/items'
+import type { ItemId } from '@/data/inventory/items'
 
-export const TRAVEL_INCENSE_ITEM_IDS = [
+const TRAVEL_INCENSE_ITEM_IDS = [
   'incensefire',
   'incensewater',
   'incensegrass',
@@ -18,7 +18,7 @@ export const TRAVEL_INCENSE_ITEM_IDS = [
 
 export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number]
 
-export const TRAVEL_BUFF_ITEM_IDS = [
+const TRAVEL_BUFF_ITEM_IDS = [
   'repel',
   'superrepel',
   'maxrepel',
@@ -41,10 +41,6 @@ export const TRAVEL_INCENSE_TYPES = {
 
 export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
   return (TRAVEL_BUFF_ITEM_IDS as readonly ItemId[]).includes(value)
-}
-
-export function isTravelBuffShopItem(item: ShopItemData): item is ShopItemData & { id: TravelBuffItemId } {
-  return isTravelBuffItemId(item.id)
 }
 
 export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelIncenseItemId {
@@ -356,4 +352,3 @@ export function buildRouteSpawnItem(
     totalStats: pData.totalStats
   }
 }
-

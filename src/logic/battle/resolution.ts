@@ -92,7 +92,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     }
   } else if (pokemon) {
     const { processEnemyFaintSequence } = await import('./battleFaintSequence.ts')
-    await processEnemyFaintSequence(ctx, pokemon)
+    await processEnemyFaintSequence(ctx, pokemon, { processFaint, terminateBattle })
   }
 }
 

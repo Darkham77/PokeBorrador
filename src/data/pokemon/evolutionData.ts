@@ -15,15 +15,15 @@ export type StoneEvolutionKey = keyof typeof STONE_EVOLUTIONS;
 export const TRADE_EVOLUTIONS = dbJson.TRADE_EVOLUTIONS;
 export type TradeEvolutionSpeciesId = keyof typeof TRADE_EVOLUTIONS;
 
-export function isLevelEvolutionSpeciesId(id: string): id is LevelEvolutionSpeciesId {
+function isLevelEvolutionSpeciesId(id: string): id is LevelEvolutionSpeciesId {
   return Object.hasOwn(EVOLUTION_TABLE, id);
 }
 
-export function isStoneEvolutionKey(id: string): id is StoneEvolutionKey {
+function isStoneEvolutionKey(id: string): id is StoneEvolutionKey {
   return Object.hasOwn(STONE_EVOLUTIONS, id);
 }
 
-export function isTradeEvolutionSpeciesId(id: string): id is TradeEvolutionSpeciesId {
+function isTradeEvolutionSpeciesId(id: string): id is TradeEvolutionSpeciesId {
   return Object.hasOwn(TRADE_EVOLUTIONS, id);
 }
 

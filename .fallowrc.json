@@ -95,7 +95,7 @@
     },
     {
       "file": "src/data/inventory/items.ts",
-      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER", "BUFF_FIELD_TO_ITEM_IDS"]
+      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER", "BUFF_FIELD_TO_ITEM_IDS", "ItemCategoryId", "MarketCategoryId", "MarketUnlockLevel"]
     },
     {
       "file": "src/data/trainer.ts",
@@ -107,15 +107,15 @@
     },
     {
       "file": "src/data/player/playerClasses.ts",
-      "exports": ["REPUTATION_SHOP_ITEMS"]
+      "exports": ["REPUTATION_SHOP_ITEMS", "MissionId"]
     },
     {
       "file": "src/data/pokemon/pokedex.ts",
-      "exports": ["PDEX_TYPE_COLORS", "POKEMON_SPRITE_IDS"]
+      "exports": ["PDEX_TYPE_COLORS", "POKEMON_SPRITE_IDS", "PokedexOrderSpeciesId", "TmCompatibleSpeciesId", "BABY_POKEMON", "LEGENDARY_POKEMON"]
     },
     {
       "file": "src/data/system/rankedData.ts",
-      "exports": ["RANKED_TIER_ORDER", "RANKED_TYPES", "RANKED_TYPE_META"]
+      "exports": ["RANKED_TIER_ORDER", "RANKED_TYPES", "RANKED_TYPE_META", "RankedTierId"]
     },
     {
       "file": "src/data/spriteMapping.ts",
@@ -359,7 +359,7 @@
     },
     {
       "file": "src/data/system/constants.ts",
-      "exports": ["MAX_BATTLE_TURNS", "STAGE_MULT", "ACC_STAGE_MULT"]
+      "exports": ["MAX_BATTLE_TURNS", "STAGE_MULT", "ACC_STAGE_MULT", "FactionId", "EnabledPokemonId"]
     },
     {
       "file": "src/logic/battle/cheats.ts",
@@ -440,6 +440,18 @@
     {
       "file": "src/logic/battle/ai/scriptedAI.ts",
       "exports": ["ScriptedAI"]
+    },
+    {
+      "file": "src/data/pokemon/evolutionData.ts",
+      "exports": ["LevelEvolutionSpeciesId", "StoneEvolutionKey", "TradeEvolutionSpeciesId"]
+    },
+    {
+      "file": "src/data/pokemon/pokemonFeetDatabase.ts",
+      "exports": ["PokemonCryId"]
+    },
+    {
+      "file": "src/data/world/weather-tables.ts",
+      "exports": ["RouteWeatherTable"]
     }
   ]
 }

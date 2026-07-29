@@ -404,7 +404,7 @@ export const LEGENDARY_POKEMON = [
 ] as const;
 export type LegendaryPokemonSpeciesId = (typeof LEGENDARY_POKEMON)[number];
 
-export const FOSSIL_POKEMON = [
+const FOSSIL_POKEMON = [
   "omanyte", "omastar", "kabuto", "kabutops", "aerodactyl", "lileep", "cradily", "anorith", "armaldo", 
   "cranidos", "rampardos", "shieldon", "bastiodon", "tirtouga", "carracosta", "archen", "archeops", 
   "tyrunt", "tyrantrum", "amaura", "aurorus", "dracozolt", "arctozolt", "dracovish", "arctovish"
@@ -415,11 +415,11 @@ export type PokemonSpeciesId = SpeciesMetadataId;
 export type TmId = (typeof GAME_TMS)[number]['id'];
 export type TmCompatibleSpeciesId = keyof typeof TM_COMPAT;
 
-export function isTmId(value: string): value is TmId {
+function isTmId(value: string): value is TmId {
   return GAME_TMS.some(tm => tm.id === value);
 }
 
-export function requireTmId(value: string): TmId {
+function requireTmId(value: string): TmId {
   if (isTmId(value)) return value;
   throw new Error(`Invalid TM id: ${value}`);
 }
@@ -433,7 +433,7 @@ export function requirePokemonSpeciesId(value: string): PokemonSpeciesId {
   throw new Error(`Invalid Pokemon species id: ${value}`);
 }
 
-export function isTmCompatibleSpeciesId(value: PokemonSpeciesId): value is TmCompatibleSpeciesId {
+function isTmCompatibleSpeciesId(value: PokemonSpeciesId): value is TmCompatibleSpeciesId {
   return value in TM_COMPAT;
 }
 
@@ -442,7 +442,7 @@ export function getCompatibleTmIds(speciesId: PokemonSpeciesId): readonly TmId[]
   return TM_COMPAT[speciesId].map(requireTmId);
 }
 
-export function isPokedexOrderSpeciesId(value: string): value is PokedexOrderSpeciesId {
+function isPokedexOrderSpeciesId(value: string): value is PokedexOrderSpeciesId {
   return PDEX_ORDER.some(id => id === value) || GEN2_PDEX_ORDER.some(id => id === value);
 }
 

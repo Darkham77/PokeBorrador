@@ -1338,7 +1338,7 @@ export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRI
 
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 
-export function isNpcSpriteId(value: string): value is NpcSpriteId {
+function isNpcSpriteId(value: string): value is NpcSpriteId {
   return (VALID_NPC_SPRITES as readonly string[]).includes(value);
 }
 

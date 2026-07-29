@@ -15,8 +15,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 
 describe('Breeding Engine', () => {
   describe('getBreedingBaseId', () => {
-    it('should remove gender suffixes', () => {
-      expect(getBreedingBaseId('pikachu_m')).toBe('pikachu')
+    it('should require canonical species ids', () => {
+      expect(() => getBreedingBaseId('pikachu_m')).toThrow()
       expect(getBreedingBaseId('nidoranf')).toBe('nidoranf')
       expect(getBreedingBaseId('bulbasaur')).toBe('bulbasaur')
     })
@@ -50,8 +50,8 @@ describe('Breeding Engine', () => {
     })
 
     it('should detect compatible same-species pokemon', () => {
-      const pA = { id: 'bulbasaur', gender: 'F' } as unknown as Pokemon
-      const pB = { id: 'bulbasaur', gender: 'M' } as unknown as Pokemon
+      const pA = { id: 'bulbasaur', gender: 'f' } as unknown as Pokemon
+      const pB = { id: 'bulbasaur', gender: 'm' } as unknown as Pokemon
       const res = checkCompatibility(pA, pB)
       expect(res.level).toBe(3)
       expect(res.eggSpecies).toBe('bulbasaur')
@@ -59,8 +59,8 @@ describe('Breeding Engine', () => {
 
     it('should detect compatible different-species same egg-group', () => {
       // Bulbasaur (Monster/Plant) + Charmander (Monster/Dragon)
-      const pA = { id: 'bulbasaur', gender: 'F' } as unknown as Pokemon
-      const pB = { id: 'charmander', gender: 'M' } as unknown as Pokemon
+      const pA = { id: 'bulbasaur', gender: 'f' } as unknown as Pokemon
+      const pB = { id: 'charmander', gender: 'm' } as unknown as Pokemon
       const res = checkCompatibility(pA, pB)
       expect(res.level).toBe(2)
       expect(res.eggSpecies).toBe('bulbasaur')
@@ -68,7 +68,7 @@ describe('Breeding Engine', () => {
 
     it('should allow breeding with Ditto', () => {
       const pA = { id: 'ditto', gender: null } as unknown as Pokemon
-      const pB = { id: 'pikachu', gender: 'M' } as unknown as Pokemon
+      const pB = { id: 'pikachu', gender: 'm' } as unknown as Pokemon
       const res = checkCompatibility(pA, pB)
       expect(res.level).toBe(2)
       expect(res.eggSpecies).toBe('pichu')
@@ -108,8 +108,8 @@ describe('Breeding Engine', () => {
 
   describe('inheritAbility', () => {
     it('should inherit ability from the mother', () => {
-      const pA = { id: 'pA', gender: 'F', ability: 'Chlorophyll' } as unknown as Pokemon
-      const pB = { id: 'pB', gender: 'M', ability: 'Overgrow' } as unknown as Pokemon
+      const pA = { id: 'bulbasaur', gender: 'f', ability: 'chlorophyll' } as unknown as Pokemon
+      const pB = { id: 'charmander', gender: 'm', ability: 'blaze' } as unknown as Pokemon
       // Mocking Math.random to always pass under 0.6
       inheritAbility(pA, pB)
       // Since it's random, we can't be 100% sure in a simple test without mocks, 
@@ -128,8 +128,8 @@ describe('Breeding Engine', () => {
 
   describe('getGeneticsForecast', () => {
     it('should return correct summary for UI', () => {
-      const pA = { id: 'pikachu', gender: 'F', moves: [{ id: 'volttackle', name: 'Volt Tackle', pp: 15, maxPP: 15 }], heldItem: 'everstone' } as unknown as Pokemon
-      const pB = { id: 'pikachu', gender: 'M', moves: [] } as unknown as Pokemon
+      const pA = { id: 'pikachu', gender: 'f', moves: [{ id: 'volttackle', name: 'Volt Tackle', pp: 15, maxPP: 15 }], heldItem: 'everstone' } as unknown as Pokemon
+      const pB = { id: 'pikachu', gender: 'm', moves: [] } as unknown as Pokemon
       const res = getGeneticsForecast(pA, pB, '')
       expect(res.natureGuaranteed).toBe(true)
       expect(res.eggMovesCount).toBe(1)

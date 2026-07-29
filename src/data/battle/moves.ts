@@ -9,7 +9,7 @@ export const MOVE_TRANSLATIONS_ES = dbJson;
 export type MoveId = keyof typeof MOVE_TRANSLATIONS_ES;
 export type PokemonMoveId = MoveId;
 
-export function isPokemonMoveId(value: string): value is PokemonMoveId {
+function isPokemonMoveId(value: string): value is PokemonMoveId {
   return value in MOVE_TRANSLATIONS_ES;
 }
 

@@ -38,7 +38,7 @@ describe('Auth Load Service (Migration v2)', () => {
 
   it('should prefer local save if significantly newer than cloud', async () => {
     const cloudSave = {
-      save_data: { trainer: 'CloudHero', money: 100 },
+      save_data: { trainer: 'CloudHero', money: 100, team: [], box: [], eggs: [] },
       updated_at: Temporal.Instant.fromEpochMilliseconds(Temporal.Now.instant().epochMilliseconds - 86400000).toString(),
       last_save_id: 'cloud_v1'
     };
@@ -46,6 +46,9 @@ describe('Auth Load Service (Migration v2)', () => {
     const localSave = {
       trainer: 'LocalHero',
       money: 500,
+      team: [],
+      box: [],
+      eggs: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(localSave));
@@ -68,6 +71,8 @@ describe('Auth Load Service (Migration v2)', () => {
   it('should backfill genders for legacy pokemon', async () => {
     const legacySave = {
       trainer: 'OldTimer',
+      box: [],
+      eggs: [],
       team: [
         { id: 'pikachu', level: 5, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] } // Missing gender and UID
       ],
@@ -85,6 +90,8 @@ describe('Auth Load Service (Migration v2)', () => {
   it('should sanitize duplicate UIDs', async () => {
     const corruptedSave = {
       trainer: 'CloneMaster',
+      box: [],
+      eggs: [],
       team: [
         { id: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
         { id: 'squirtle', name: 'Squirtle', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
@@ -114,6 +121,7 @@ describe('Auth Load Service (Migration v2)', () => {
         { id: 'weedle', level: 5, uid: 'p7', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
       ],
       box: [],
+      eggs: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     
@@ -131,6 +139,8 @@ describe('Auth Load Service (Migration v2)', () => {
     const legacySave = {
       trainer: 'ash',
       team: [],
+      box: [],
+      eggs: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     db.mode = 'offline';
@@ -141,4 +151,3 @@ describe('Auth Load Service (Migration v2)', () => {
     expect(result.data).toBeDefined();
   });
 });
-

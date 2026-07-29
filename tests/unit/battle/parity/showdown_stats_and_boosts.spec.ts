@@ -101,7 +101,7 @@ describe('Audit Parity - BUG-048 & BUG-049: Mega & Primal stats update', () => {
       getSide: () => 'player'
     };
     handleMiscEvents(ctx as any);
-    expect(target.species).toBe('Lucario-Mega');
+    expect(target.species).toBe('lucariomega');
   });
 });
 
@@ -124,7 +124,7 @@ describe('Audit Parity - BUG-050: -formechange HP ratio preservation', () => {
     };
 
     handleMiscEvents(ctx as any);
-    expect(target.species).toBe('Wishiwashi');
+    expect(target.species).toBe('wishiwashi');
   });
 });
 

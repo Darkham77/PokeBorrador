@@ -56,8 +56,6 @@ export function toPokemonType(raw: string): PokemonType {
   throw new Error(`[types] Invalid PokemonType from external source: '${raw}'`);
 }
 
-export const requirePokemonType = toPokemonType;
-
 export function translateType(type: PokemonType): string {
   return TYPE_TRANSLATIONS[type];
 }

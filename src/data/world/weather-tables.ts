@@ -27,7 +27,7 @@ export function requireWeatherTableRouteId(value: string): WeatherTableRouteId {
   throw new Error(`[weather-tables] Unknown weather table route id: ${value}`);
 }
 
-export function isWeatherSeasonId(value: string): value is WeatherSeasonId {
+function isWeatherSeasonId(value: string): value is WeatherSeasonId {
   return WEATHER_SEASON_IDS.some(id => id === value);
 }
 
@@ -36,7 +36,7 @@ export function requireWeatherSeasonId(value: string): WeatherSeasonId {
   throw new Error(`[weather-tables] Unknown weather season id: ${value}`);
 }
 
-export function isWeatherCycleId(value: string): value is WeatherCycleId {
+function isWeatherCycleId(value: string): value is WeatherCycleId {
   return WEATHER_CYCLE_IDS.some(id => id === value);
 }
 

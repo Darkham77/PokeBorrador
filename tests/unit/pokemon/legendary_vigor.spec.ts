@@ -56,7 +56,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           heldItem: 'potion',
           ability: 'runaway',
           moves: [
-            { id: 'spore', name: 'Espora' },
+            { id: 'somnifera', name: 'Somnífera' },
             { id: 'tackle', name: 'Placaje' }
           ]
         },
@@ -83,10 +83,10 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           id: 'bulbasaur',
           name: 'Bulbasaur',
           vigor: 20,
-          heldItem: 'rarecandy',
+          heldItem: 'caramelo_vigor',
           ability: 'healer',
           moves: [
-            { id: 'leechseed', name: 'Semilladora' }
+            { id: 'recurrente', name: 'Recurrente' }
           ]
         }
       ]
@@ -159,12 +159,12 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
 
     // Verification: Mapped legacy properties (Pikachu)
     expect(pikachu?.heldItem).toBe('potion')
-    expect(pikachu?.ability).toBe('Fuga')
+    expect(pikachu?.ability).toBe('runaway')
     expect(pikachu?.moves?.[0]?.id).toBe('sleeppowder')
 
     // Verification: Mapped legacy properties (Bulbasaur)
     expect(bulbasaur?.heldItem).toBe('vigorcandy')
-    expect(bulbasaur?.ability).toBe('Cura Natural')
+    expect(bulbasaur?.ability).toBe('healer')
     expect(bulbasaur?.moves?.[0]?.id).toBe('bulletseed')
   })
 })

@@ -7,7 +7,7 @@ export const ACTIVE_SHOWDOWN_FORMAT = ACTIVE_GENERATION < 5
 export const IMPLEMENTED_GENERATION = 9;
 export const ACTIVE_AI_TEAM_GENERATION_GEN = 1;
 
-export const FACTIONS = {
+const FACTIONS = {
   UNION: 'union',
   POWER: 'poder'
 } as const;

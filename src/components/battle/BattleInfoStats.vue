@@ -2,13 +2,13 @@
 import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-export interface AdminStatItem {
+interface AdminStatItem {
   key: string
   label: string
   icon: string
 }
 
-export interface StatBreakdown {
+interface StatBreakdown {
   base: number
   final: number
 }

@@ -7,12 +7,12 @@ describe('Npc Encounter Chances & Extortion Helpers', () => {
   describe('isMapExtortable', () => {
     it('debe retornar false si el mapa es nulo o no tiene salvajes', () => {
       expect(isMapExtortable(null)).toBe(false)
-      expect(isMapExtortable({ id: 'pallet' as any, name: 'Pueblo Paleta', lv: [1, 2] })).toBe(false)
+      expect(isMapExtortable({ id: 'pallet_town', name: 'Pueblo Paleta', lv: [1, 2] } as MapLocation)).toBe(false)
     })
 
     it('debe retornar false si el mapa es una ciudad principal', () => {
       const cityMap: MapLocation = {
-        id: 'pallet' as any,
+        id: 'pallet_town',
         name: 'Pueblo Paleta',
         wild: { day: ['rattata'] },
         lv: [1, 5]
@@ -39,7 +39,7 @@ describe('Npc Encounter Chances & Extortion Helpers', () => {
         playerClass: 'entrenador' as const,
         classLevel: 10
       }
-      const chances = getNpcEncounterChances('route1', state as any, {}, [])
+      const chances = getNpcEncounterChances('route1', state as unknown as Parameters<typeof getNpcEncounterChances>[1], {}, [])
       const trainerInfo = chances.find(c => c.type === 'trainer')
       expect(trainerInfo).toBeDefined()
       expect(trainerInfo?.chance).toBe(8)
@@ -53,7 +53,7 @@ describe('Npc Encounter Chances & Extortion Helpers', () => {
         classLevel: 50,
         classData: { criminality: 120 }
       }
-      const chances = getNpcEncounterChances('route1', state as any, {}, [])
+      const chances = getNpcEncounterChances('route1', state as unknown as Parameters<typeof getNpcEncounterChances>[1], {}, [])
       const policeInfo = chances.find(c => c.type === 'police')
       expect(policeInfo).toBeDefined()
       expect(policeInfo?.chance).toBe(12) // 120 / 10

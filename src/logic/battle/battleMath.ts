@@ -496,5 +496,3 @@ export function calculateDamageRangePure(
 
   return { effectiveness, damageRange };
 }
-
-export { calculateCatchRatePure, calculateEscapeChancePure } from './battleCatchMath.ts'

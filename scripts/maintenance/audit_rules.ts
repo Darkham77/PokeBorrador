@@ -1,4 +1,4 @@
-// fallow-ignore-file security-sink unit-size
+// fallow-ignore-file security-sink
 /**
  * scripts/maintenance/audit_rules.ts
  * 

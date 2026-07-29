@@ -51,7 +51,7 @@ export function requireMapRouteId(value: string): MapRouteId {
   throw new Error(`Invalid map route id: ${value}`);
 }
 
-export const MAPS_WITH_CYCLES = [
+const MAPS_WITH_CYCLES = [
   'ruta1', 'ruta2', 'bosqueviridian', 'ruta22', 'ruta3', 'mt.moon', 'ruta4',
   'ruta24', 'ruta25', 'ruta5', 'ruta6', 'ruta11', 'ruta9', 'tunelroca',
   'ruta10', 'ruta8', 'torrepokemon', 'ruta12', 'ruta13', 'zonasafari',
@@ -63,12 +63,7 @@ export function isMapWithCycleId(value: string): value is MapWithCycleId {
   return (MAPS_WITH_CYCLES as readonly string[]).includes(value);
 }
 
-export function requireMapWithCycleId(value: string): MapWithCycleId {
-  if (isMapWithCycleId(value)) return value;
-  throw new Error(`Invalid map with cycle id: ${value}`);
-}
-
-export const AVAILABLE_BATTLE_MAPS = [
+const AVAILABLE_BATTLE_MAPS = [
   "bosqueviridian_amanecer",
   "bosqueviridian_atardecer",
   "bosqueviridian_dia",

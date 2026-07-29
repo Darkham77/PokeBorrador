@@ -12,7 +12,6 @@ export const MALE_NAMES = [
   'Felipe', 'Héctor', 'Óscar', 'César', 'Jaime', 'Alberto', 'Rodrigo', 'Santi'
 ] as const;
 
-export type MaleName = (typeof MALE_NAMES)[number];
 
 export const FEMALE_NAMES = [
   'Sara', 'Lucía', 'María', 'Elena', 'Laura', 'Ana', 'Carmen', 'Clara', 'Marta',
@@ -23,7 +22,6 @@ export const FEMALE_NAMES = [
   'Angela', 'Celia', 'Jimena', 'Leire', 'Vega', 'Lara', 'Ainhoa', 'Naiara'
 ] as const;
 
-export type FemaleName = (typeof FEMALE_NAMES)[number];
 
 const KNOWN_FEMALE_SPRITES = [
   'nurse', 'nurseryaide', 'battlegirl', 'beauty', 'lass', 'aromalady', 'lady', 'skyla',

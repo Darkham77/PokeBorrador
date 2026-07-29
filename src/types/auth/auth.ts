@@ -1,8 +1,8 @@
 export type UserRole = 'user' | 'admin';
 
-export const USER_ROLES = ['user', 'admin'] as const satisfies readonly UserRole[];
+const USER_ROLES = ['user', 'admin'] as const satisfies readonly UserRole[];
 
-export function isUserRole(value: string): value is UserRole {
+function isUserRole(value: string): value is UserRole {
   return (USER_ROLES as readonly string[]).includes(value);
 }
 

@@ -69,7 +69,7 @@ describe('MapCard Helper Logic', () => {
     })
 
     it('should return false for cities, gyms, and leagues', () => {
-      const cityMap = { id: 'pallet', wild: { morning: ['pikachu'] } }
+      const cityMap = { id: 'pallet_town', wild: { morning: ['pikachu'] } }
       const gymMap = { id: 'pewter_gym', wild: { morning: ['pikachu'] } }
       const leagueMap = { id: 'indigo_plateau_league', wild: { morning: ['pikachu'] } }
       

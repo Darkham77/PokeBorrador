@@ -19,24 +19,24 @@ export const legacyItemMap: Record<string, string> = {
 };
 
 export const legacyAbilityMap: Record<string, string> = {
-  escape: 'Fuga',
-  metamorfosis: 'Mudar',
-  escudopolvo: 'Polvo escudo',
-  polvoescudo: 'Polvo escudo',
-  correcaminos: 'Fuga',
-  obstruir: 'Insonorizar',
-  escurridizo: 'Flexibilidad',
-  puntocura: 'Cura Natural',
-  chlorophyll: 'Clorofila',
-  overgrow: 'Espesura',
-  blaze: 'Mar llamas',
-  torrent: 'Torrente',
-  static: 'Electricidad estática',
-  puntotoxico: 'Punto tóxico',
-  vistalince: 'Vista lince',
-  focointerno: 'Foco interno',
-  nadorapido: 'Nado rápido',
-  velohumedo: 'Velo húmedo'
+  escape: 'runaway',
+  metamorfosis: 'shedskin',
+  escudopolvo: 'shielddust',
+  polvoescudo: 'shielddust',
+  correcaminos: 'runaway',
+  obstruir: 'soundproof',
+  escurridizo: 'limber',
+  puntocura: 'healer',
+  chlorophyll: 'chlorophyll',
+  overgrow: 'overgrow',
+  blaze: 'blaze',
+  torrent: 'torrent',
+  static: 'static',
+  puntotoxico: 'poisonpoint',
+  vistalince: 'keeneye',
+  focointerno: 'innerfocus',
+  nadorapido: 'swiftswim',
+  velohumedo: 'waterveil'
 };
 
 export const legacyMoveMap: Record<string, string> = {

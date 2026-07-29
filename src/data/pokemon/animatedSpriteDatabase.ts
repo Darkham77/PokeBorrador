@@ -38,18 +38,13 @@ export function hasAnimatedSpriteId(id: string): id is AnimatedSpriteId {
   return Object.hasOwn(RAW, id);
 }
 
-export function requireAnimatedSpriteId(id: string): AnimatedSpriteId {
-  if (hasAnimatedSpriteId(id)) return id;
-  throw new Error(`[animatedSpriteDatabase] Unknown animated sprite id: ${id}`);
-}
-
 function requireAnimatedMetric(values: readonly number[], id: AnimatedSpriteId, index: number): number {
   const value = values[index];
   if (value !== undefined) return value;
   throw new Error(`[animatedSpriteDatabase] Invalid metric tuple for sprite id: ${id}`);
 }
 
-export const ANIMATED_SPRITE_DATABASE: Partial<Record<AnimatedSpriteId, AnimatedSpriteData>> = {};
+const ANIMATED_SPRITE_DATABASE: Partial<Record<AnimatedSpriteId, AnimatedSpriteData>> = {};
 
 for (const id in RAW) {
   if (!hasAnimatedSpriteId(id)) continue;
@@ -71,7 +66,7 @@ export function requireAnimatedSpriteData(id: AnimatedSpriteId): AnimatedSpriteD
 }
 
 /** Variation frame counts to keep variation sprites out of coordinate databases */
-export const ANIMATED_VARIATION_FRAMES: Partial<Record<keyof typeof dbJson.VARIATIONS, number>> = dbJson.VARIATIONS;
+const ANIMATED_VARIATION_FRAMES: Partial<Record<keyof typeof dbJson.VARIATIONS, number>> = dbJson.VARIATIONS;
 export type AnimatedVariationId = keyof typeof ANIMATED_VARIATION_FRAMES;
 
 export function hasAnimatedVariationId(id: string): id is AnimatedVariationId {

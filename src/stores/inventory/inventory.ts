@@ -28,16 +28,19 @@ function isValuableItemId(value: ItemId): value is ValuableItemId {
   return (VALUABLE_ITEM_IDS as readonly ItemId[]).includes(value)
 }
 
-export function isItemUsableOutsideCombat(item: Pick<Item, 'id' | 'cat'> | null | undefined): boolean {
+export function isItemUsableOutsideCombat(item: Pick<Item, 'id' | 'cat' | 'kind'> | null | undefined): boolean {
   if (!item) return false
   const cat = item.cat
   const id = item.id
+  const kind = item.kind
 
   if (isValuableItemId(id)) return false
 
   if (cat === 'pokeballs') return false
 
   if (id && id.startsWith('tm')) return true
+
+  if (kind === 'usable') return true
 
   if (
     cat === 'potions' ||

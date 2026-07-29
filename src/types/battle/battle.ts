@@ -39,7 +39,7 @@ export const BATTLE_CONDITION_KEYS = [
 ] as const;
 export type BattleConditionKey = (typeof BATTLE_CONDITION_KEYS)[number];
 
-export function isBattleConditionKey(value: string): value is BattleConditionKey {
+function isBattleConditionKey(value: string): value is BattleConditionKey {
   return BATTLE_CONDITION_KEYS.includes(value as BattleConditionKey);
 }
 

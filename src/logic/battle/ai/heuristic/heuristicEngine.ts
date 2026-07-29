@@ -17,19 +17,15 @@ import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
 const HAZARD_REMOVAL_MOVES = ['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin'] as const;
-export type HazardRemovalMove = (typeof HAZARD_REMOVAL_MOVES)[number];
 
 const SETUP_MOVES = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
 ] as const;
-export type SetupMove = (typeof SETUP_MOVES)[number];
 
 const HAZARD_MOVES = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
-export type HazardMove = (typeof HAZARD_MOVES)[number];
 
 const PIVOT_MOVES = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport'] as const;
-export type PivotMove = (typeof PIVOT_MOVES)[number];
 
 /** Full 9-layer heuristic decision. Returns null if no layer fires confidently. */
 export function heuristicDecision(

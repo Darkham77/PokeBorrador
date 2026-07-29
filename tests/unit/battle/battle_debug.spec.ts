@@ -74,12 +74,13 @@ describe('Battle Debug Commands', () => {
 
   it('should set enemy HP to 0 and trigger faint sequence in killEnemy', async () => {
     const battleStore = useBattleStore()
+    const enemy = { uid: 'e1', name: 'Rattata', hp: 50, maxHp: 50 } as unknown as Pokemon
 
     // Configurar la batalla activa
     battleStore.state = {
       locationId: 'route1',
       player: { uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100 } as unknown as Pokemon,
-      enemy: { uid: 'e1', name: 'Rattata', hp: 50, maxHp: 50 } as unknown as Pokemon,
+      enemy,
       over: false,
       participants: ['p1']
     } as unknown as BattleState
@@ -88,7 +89,7 @@ describe('Battle Debug Commands', () => {
     const win = window as unknown as DebugWindow
     await win.__VITE_DEBUG__?.battle.killEnemy()
 
-    // Comprobar que el enemigo fue vaciado del asiento (hp -> 0)
-    expect(battleStore.state.enemy?.hp).toBe(0)
+    // Comprobar que el enemigo original fue vaciado antes de la secuencia de faint.
+    expect(enemy.hp).toBe(0)
   })
 })

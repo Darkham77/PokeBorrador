@@ -13,7 +13,7 @@ export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as co
 export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
 export type PokemonStatus = ActivePokemonStatus | '';
 export type PokemonGender = 'm' | 'f' | null;
-export const VOLATILE_STATUS_KEYS = [
+const VOLATILE_STATUS_KEYS = [
   'attract',
   'bind',
   'choicelock',
@@ -58,7 +58,7 @@ export const VOLATILE_STATUS_KEYS = [
 ] as const;
 export type VolatileStatusKey = (typeof VOLATILE_STATUS_KEYS)[number];
 
-export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
+function isVolatileStatusKey(value: string): value is VolatileStatusKey {
   return VOLATILE_STATUS_KEYS.includes(value as VolatileStatusKey);
 }
 

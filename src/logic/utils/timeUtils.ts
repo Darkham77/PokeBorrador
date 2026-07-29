@@ -79,7 +79,7 @@ export function getGMT3Date(): Temporal.ZonedDateTime {
 export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
 export const DAY_PHASES = ['morning', 'day', 'dusk', 'night'] as const;
 
-export function isDayPhase(value: string): value is DayPhase {
+function isDayPhase(value: string): value is DayPhase {
   return DAY_PHASES.includes(value as DayPhase);
 }
 
