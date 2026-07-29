@@ -8,16 +8,36 @@ import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
-import { LEGENDARY_POKEMON } from '@/data/pokemon/pokedex';
+import { isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
+import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils';
+import { requireGymId, type GymId } from '@/data/world/gyms';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+
+type WeightedSpeciesSource = PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+
+export function getSpeciesEntries(source: WeightedSpeciesSource): Array<{ id: PokemonSpeciesId; weight?: number }> {
+  if (Array.isArray(source)) return source.map(id => ({ id }));
+  return Object.entries(source).map(([rawId, weight]) => ({
+    id: requirePokemonSpeciesId(rawId),
+    weight,
+  }));
+}
+
+function requireWeatherFamilyId(weather: WeatherId): WeatherId {
+  const family = getWeatherFamily(weather);
+  if (!family) throw new Error(`[encounterHelpers] Weather '${weather}' has no registered family`);
+  return requireWeatherId(family);
+}
 
 /**
  * Gets the valid pool of Pokémon for a location and time cycle.
  * Incorporates active events.
  */
-export function getEncounterPool(loc: MapLocation, cycle: string, weather: string = 'clear', activeEvents: GameEvent[]) {
-  if (!loc || !loc.wild) return { pool: [] as string[], rates: [] as number[] };
+export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: WeatherId = 'clear', activeEvents: GameEvent[]) {
+  if (!loc || !loc.wild) return { pool: [] as PokemonSpeciesId[], rates: [] as number[] };
   
   const pool = [...(loc.wild[cycle] || loc.wild.day || [])];
   const rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
@@ -29,42 +49,40 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
   let wConfig = loc.weather?.[weather];
   
   // Fallback to weather family if exact weather configuration does not exist
-  if (!wConfig && weather && weather !== 'clear') {
-    const family = getWeatherFamily(weather);
-    if (family && loc.weather?.[family]) {
+  if (!wConfig && weather !== 'clear') {
+    const family = requireWeatherFamilyId(weather);
+    if (loc.weather?.[family]) {
       wConfig = loc.weather[family];
     }
   }
 
-  if (weather && weather !== 'clear' && wConfig) {
+  if (weather !== 'clear' && wConfig) {
     // Especies Exclusivas (Pesos dinámicos o base 5)
     if (wConfig.exclusive) {
-      const exclusives = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
-      exclusives.forEach(id => {
+      const exclusives = getSpeciesEntries(wConfig.exclusive);
+      exclusives.forEach(({ id, weight }) => {
         // Castform no debe aparecer en forma soleado si es de noche
         if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
           return;
         }
         if (!pool.includes(id)) {
           pool.push(id);
-          const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
-          rates.push(weight || 5); 
+          rates.push(weight ?? 5); 
         }
       });
     }
 
     // Visitantes (Marcados con peso negativo para normalización proporcional)
     if (wConfig.visitors) {
-      const visitors = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
-      visitors.forEach(id => {
+      const visitors = getSpeciesEntries(wConfig.visitors);
+      visitors.forEach(({ id, weight }) => {
         // Castform no debe aparecer en forma soleado si es de noche
         if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
           return;
         }
         if (!pool.includes(id)) {
           pool.push(id);
-          const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
-          rates.push(weight || -10); 
+          rates.push(weight !== undefined ? -weight : -10); 
         }
       });
     }
@@ -75,12 +93,12 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
   activeEvents.forEach(ev => {
     const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined;
     if (ev.active && cfg?.ignoreTimeRestrictions && cfg.species) {
-      const eventSpecies = cfg.species.split(',').map((s: string) => s.trim().toLowerCase());
-      eventSpecies.forEach((spId: string) => {
+      const eventSpecies = cfg.species.split(',').map((s: string) => requirePokemonSpeciesId(s.trim().toLowerCase()));
+      eventSpecies.forEach((spId: PokemonSpeciesId) => {
         if (!pool.includes(spId)) {
           // Check if species exists in other cycles for this map
           const wild = loc.wild || {};
-          for (const c in wild) {
+          for (const c of DAY_PHASES) {
             const cyclePool = wild[c];
             if (!cyclePool) continue;
             const idx = cyclePool.indexOf(spId);
@@ -103,27 +121,30 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
 /**
  * Selects a random Pokémon ID from a pool using weights.
  */
-export function selectFromPool(pool: string[], rates: number[]): string {
-  if (!pool.length) return '';
+export function selectFromPool<T extends string>(pool: readonly T[], rates: number[]): T {
+  if (!pool.length) throw new Error('[encounterHelpers] Cannot select from an empty encounter pool');
   const totalRate = rates.reduce((a, b) => a + b, 0);
   const rand = Math.random() * totalRate;
   let cumulative = 0;
   
   for (let i = 0; i < pool.length; i++) {
     cumulative += rates[i] || 0;
-    if (rand <= cumulative) return pool[i] || '';
+    const selected = pool[i];
+    if (selected && rand <= cumulative) return selected;
   }
-  return pool[0] || '';
+  const first = pool[0];
+  if (!first) throw new Error('[encounterHelpers] Encounter pool became empty during selection');
+  return first;
 }
 
 /**
  * Checks for special, non-wild override encounters (debug overrides, rival, defender battles, guardians).
  */
 export function checkSpecialEncounters(
-  locId: string,
+  locId: MapRouteId,
   state: EncounterState,
   options: EncounterOptions,
-  allMapIds: string[]
+  allMapIds: MapRouteId[]
 ): Encounter | null {
   // 0. Debug: 50% trainer override
   const win = (typeof window !== 'undefined' ? window : null) as (Window & {
@@ -150,7 +171,7 @@ export function checkSpecialEncounters(
           maxStats: { hp: 30, atk: 10, def: 10, spa: 15, spd: 15, spe: 20 },
           exp: 0,
           nextLevelExp: 100,
-          gender: 'M',
+          gender: 'm',
           nature: 'hardy',
           ability: 'swiftswim',
           isShiny: false
@@ -172,7 +193,7 @@ export function checkSpecialEncounters(
           maxStats: { hp: 35, atk: 15, def: 20, spa: 15, spd: 15, spe: 15 },
           exp: 0,
           nextLevelExp: 100,
-          gender: 'M',
+          gender: 'm',
           nature: 'hardy',
           ability: 'battlearmor',
           isShiny: false
@@ -200,7 +221,7 @@ export function checkSpecialEncounters(
           maxStats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
           exp: 0,
           nextLevelExp: 100,
-          gender: 'M',
+          gender: 'm',
           nature: 'hardy',
           ability: 'keeneye',
           isShiny: false
@@ -241,7 +262,7 @@ export function checkSpecialEncounters(
     rivalChance *= eventRivalBonus;
 
     if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
-      const gymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+      const gymIds = (['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const satisfies readonly GymId[]).map(requireGymId);
       const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
       if (allGymsHard) {
         rivalChance *= 2;
@@ -256,7 +277,7 @@ export function checkSpecialEncounters(
   // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
   if (!isDisputePhase() && !options.forceEncounter) {
     if (Math.random() < 0.20 && state.faction) {
-      const dominance = (options.dominanceData || {})[locId];
+      const dominance = (options.dominanceData || {})[requireMapRouteId(locId)];
       const winner = dominance?.winner || null;
       if (winner && winner !== state.faction) {
         return { type: 'defender', faction: winner };
@@ -286,7 +307,7 @@ export function checkSpecialEncounters(
  */
 export function handleRepellentEncounter(
   loc: MapLocation,
-  cycle: string,
+  cycle: DayPhase,
   state: EncounterState,
   options: EncounterOptions,
   activeEvents: GameEvent[]
@@ -347,13 +368,15 @@ export function generateArchaeologyEncounter(
 /**
  * Calculates weights for ground, fishing, and archaeology encounter methods.
  */
+const RAINY_WEATHERS: readonly WeatherId[] = ['rain', 'heavy_rain', 'storm', 'thunderstorm'];
+
 export function calculateEncounterTypeWeights(
   loc: MapLocation,
-  weather: string,
+  weather: WeatherId,
   state: EncounterState,
   options: EncounterOptions
 ): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
-  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase());
+  const isRainy = RAINY_WEATHERS.includes(weather);
   const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
 
@@ -389,15 +412,13 @@ export function calculateEncounterTypeWeights(
  * Caps the weight/rate of legendary species so that their final probability does not exceed 1%.
  * Balances the other rates proportionally.
  */
-export function clampLegendaryRates(pool: string[], rates: number[]): void {
-  const legendaries = new Set(LEGENDARY_POKEMON);
-
+export function clampLegendaryRates(pool: PokemonSpeciesId[], rates: number[]): void {
   const legendaryIndices: number[] = [];
   let sumOtherRates = 0;
 
   for (let i = 0; i < pool.length; i++) {
     const spId = pool[i];
-    if (spId && legendaries.has(spId)) {
+    if (spId && isLegendaryPokemonSpeciesId(spId)) {
       legendaryIndices.push(i);
     } else {
       sumOtherRates += rates[i] || 0;
@@ -430,21 +451,21 @@ export function clampLegendaryRates(pool: string[], rates: number[]): void {
  */
 export function getFinalGroundRates(
   loc: MapLocation,
-  cycle: string,
-  weather: string,
+  cycle: DayPhase,
+  weather: WeatherId,
   activeEvents: GameEvent[]
-): { pool: string[]; rates: number[] } {
+): { pool: PokemonSpeciesId[]; rates: number[] } {
   const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
 
-  if (weather && weather !== 'clear') {
+  if (weather !== 'clear') {
     let wConfig = loc.weather?.[weather];
-    if (!wConfig && weather !== 'clear') {
-      const family = getWeatherFamily(weather);
-      if (family && loc.weather?.[family]) {
+    if (!wConfig) {
+      const family = requireWeatherFamilyId(weather);
+      if (loc.weather?.[family]) {
         wConfig = loc.weather[family];
       }
     }
-    const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+    const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : [];
     redistributeWeatherSpawns(rates, pool, weather, exclusives);
   }
 
@@ -453,21 +474,21 @@ export function getFinalGroundRates(
   return { pool, rates };
 }
 
-export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weather: string, selectedId: string): void {
+export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weather: WeatherId, selectedId: PokemonSpeciesId): void {
   let weatherCfg = loc.weather?.[weather];
-  if (!weatherCfg && weather && weather !== 'clear') {
-    const family = getWeatherFamily(weather);
-    if (family && loc.weather?.[family]) {
+  if (!weatherCfg && weather !== 'clear') {
+    const family = requireWeatherFamilyId(weather);
+    if (loc.weather?.[family]) {
       weatherCfg = loc.weather[family];
     }
   }
+  const visitors = weatherCfg?.visitors ? getSpeciesEntries(weatherCfg.visitors).map(entry => entry.id) : [];
+  const exclusives = weatherCfg?.exclusive ? getSpeciesEntries(weatherCfg.exclusive).map(entry => entry.id) : [];
   const isVisitor = !!(weatherCfg?.visitors && (
-    (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
-    (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
+    visitors.includes(selectedId)
   ));
   const isExclusive = !!(weatherCfg?.exclusive && (
-    (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[selectedId]) || 
-    (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
+    exclusives.includes(selectedId)
   ));
   const multiplier = getWeatherMultiplier(selectedId, weather);
   const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
@@ -481,15 +502,15 @@ export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weath
 }
 
 export interface SpawnPoolResult {
-  generic: string[]
-  specific: string[]
-  rates: Record<string, number>
+  generic: PokemonSpeciesId[]
+  specific: PokemonSpeciesId[]
+  rates: Partial<Record<PokemonSpeciesId, number>>
 }
 
 export function getMapSpawnPoolData(
   loc: MapLocation,
   cycle: 'morning' | 'day' | 'dusk' | 'night',
-  activeWeather: string,
+  activeWeather: WeatherId,
   activeEvents: GameEvent[] = []
 ): SpawnPoolResult {
   if (!loc.wild) {
@@ -499,11 +520,11 @@ export function getMapSpawnPoolData(
   const { pool, rates } = getEncounterPool(loc, cycle, activeWeather, activeEvents)
 
   const baseWild = loc.wild[cycle] || loc.wild.day || []
-  const generic: string[] = []
-  const specific: string[] = []
-  const ratesMap: Record<string, number> = {}
+  const generic: PokemonSpeciesId[] = []
+  const specific: PokemonSpeciesId[] = []
+  const ratesMap: Partial<Record<PokemonSpeciesId, number>> = {}
 
-  pool.forEach((id: string, index: number) => {
+  pool.forEach((id: PokemonSpeciesId, index: number) => {
     ratesMap[id] = rates[index] || 10
     if (baseWild.includes(id)) {
       generic.push(id)
@@ -513,7 +534,7 @@ export function getMapSpawnPoolData(
   })
 
   if (loc.fishing) {
-    loc.fishing.pool.forEach((id: string, index: number) => {
+    loc.fishing.pool.forEach((id: PokemonSpeciesId, index: number) => {
       if (!generic.includes(id) && !specific.includes(id)) {
         generic.push(id)
         ratesMap[id] = loc.fishing!.rates[index] || 10
@@ -523,6 +544,3 @@ export function getMapSpawnPoolData(
 
   return { generic, specific, rates: ratesMap }
 }
-
-
-

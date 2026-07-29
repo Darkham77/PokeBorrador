@@ -28,7 +28,7 @@ export async function applyEntryHazards(pokemon: Pokemon, sideOrCtx: unknown, ct
   const isImmune = pokemon.ability === 'magicguard'
 
   // Stealth Rock (Trampa Rocas)
-  if (sideConditions.stealthRock && !isImmune) {
+  if (sideConditions.stealthrock && !isImmune) {
     const { getTypeEffectiveness } = await import('@/logic/pokemon/typeEngine')
     const eff1 = getTypeEffectiveness('rock', pokemon.type)
     const eff2 = pokemon.type2 ? getTypeEffectiveness('rock', pokemon.type2) : 1
@@ -43,8 +43,7 @@ export async function applyEntryHazards(pokemon: Pokemon, sideOrCtx: unknown, ct
   }
 
   // Spikes (Púas)
-  const spikesEntry = sideConditions.spikes as { turns?: number; layers?: number; count?: number } | number | undefined
-  const spikeLayers = typeof spikesEntry === 'number' ? spikesEntry : (spikesEntry?.layers || spikesEntry?.count || (spikesEntry?.turns ? 1 : 0))
+  const spikeLayers = sideConditions.spikes?.turns ?? 0
   if (spikeLayers > 0 && !isImmune) {
     const dmg = calculateSpikesDamage(pokemon, spikeLayers)
     if (dmg > 0) {

@@ -8,6 +8,7 @@ import { useGameStore } from '@/stores/game'
 import { useWarStore } from '@/stores/war'
 import { checkSpecialEncounters } from '@/logic/encounters/encounterHelpers'
 import { getNpcEncounterChances } from '@/logic/weather/weatherUtils'
+import { requireISODateKey } from '@/types/system/game'
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -70,7 +71,7 @@ describe('Guardian Lockout System Integrity', () => {
     // Mock save method
     gameStore.save = vi.fn().mockResolvedValue(true)
 
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
 
     await warStore.claimGuardian('route1', false)
 
@@ -85,7 +86,7 @@ describe('Guardian Lockout System Integrity', () => {
     const gameStore = useGameStore()
     gameStore.save = vi.fn().mockResolvedValue(true)
 
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     gameStore.state.guardianCaptures = { route1: today }
 
     // Check special encounters with lockout
@@ -95,7 +96,7 @@ describe('Guardian Lockout System Integrity', () => {
 
   it('should suppress guardian in NPC encounter chances when locked out', async () => {
     const gameStore = useGameStore()
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     gameStore.state.guardianCaptures = { route1: today }
 
     const chances = getNpcEncounterChances('route1', gameStore.state, {}, ['route1'])
@@ -108,7 +109,7 @@ describe('Guardian Lockout System Integrity', () => {
     const gameStore = useGameStore()
     
     // Captured yesterday
-    gameStore.state.guardianCaptures = { route1: '2000-01-01' }
+    gameStore.state.guardianCaptures = { route1: requireISODateKey('2000-01-01') }
 
     // dailyGuardianCaptures evaluates to empty since it is a different date
     expect(gameStore.dailyGuardianCaptures).not.toContain('route1')

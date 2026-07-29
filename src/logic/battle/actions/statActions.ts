@@ -1,4 +1,6 @@
-import type { MoveAction } from '@/types/battle/battle';
+import type { BattleStages, MoveAction } from '@/types/battle/battle';
+
+const RESET_STAGE_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'eva', 'acc'] as const satisfies readonly (keyof BattleStages)[];
 
 export const STAT_ACTIONS: Record<string, MoveAction> = {
   'atk+1': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
@@ -137,7 +139,7 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡Bajó mucho el At. Esp de ${src.name}!`, 'log-info', src);
   },
   'reset_stats': (src, _tgt, srcStages, tgtStages, addLogFn) => {
-    ['atk', 'def', 'spa', 'spd', 'spe', 'eva', 'acc'].forEach(s => {
+    RESET_STAGE_KEYS.forEach(s => {
       srcStages[s] = 0;
       tgtStages[s] = 0;
     });
@@ -154,7 +156,7 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'psych_up': (src, tgt, srcStages, tgtStages, addLogFn) => {
-    ['atk', 'def', 'spa', 'spd', 'spe', 'eva', 'acc'].forEach(s => {
+    RESET_STAGE_KEYS.forEach(s => {
       srcStages[s] = tgtStages[s] || 0;
     });
     addLogFn(`¡${src.name} copió los cambios de estadísticas de ${tgt.name}!`, 'log-info', src);
@@ -285,7 +287,7 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡El Ataque y Defensa de ${src.name} subieron!`, 'log-info', src);
   },
   'stat_up_self_all': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
-    ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'].forEach(s => {
+    RESET_STAGE_KEYS.forEach(s => {
       srcStages[s] = Math.min(6, (srcStages[s] || 0) + 1);
     });
     addLogFn(`¡Todas las estadísticas de ${src.name} subieron!`, 'log-info', src);

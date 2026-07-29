@@ -2,7 +2,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
-import type { PokemonIVs } from '@/types/pokemon/pokemon'
+import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 interface PokemonConfig {
@@ -12,7 +12,7 @@ interface PokemonConfig {
   isGuardian: boolean
   nature: string
   ability: string
-  gender: 'M' | 'F'
+  gender: Exclude<PokemonGender, null>
   nickname: string
   friendship: number
   heldItem: string
@@ -43,7 +43,7 @@ export function useDebugPokemonCreator() {
     isGuardian: false,
     nature: 'adamant',
     ability: 'overgrow',
-    gender: 'M',
+    gender: 'm',
     nickname: '',
     friendship: 70,
     heldItem: '',
@@ -183,7 +183,7 @@ export function useDebugPokemonCreator() {
   }
 
   function randomizeNickname() {
-    const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE']
+    const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
     config.value.nickname = Math.random() > 0.3 ? names[Math.floor(Math.random() * names.length)] || '' : ''
   }
 
@@ -212,7 +212,7 @@ export function useDebugPokemonCreator() {
   function randomizeVisuals() {
     config.value.isShiny = Math.random() < 0.05
     config.value.isGuardian = Math.random() < 0.01
-    config.value.gender = Math.random() > 0.5 ? 'M' : 'F'
+    config.value.gender = Math.random() > 0.5 ? 'm' : 'f'
   }
 
   function randomizeExtras() {

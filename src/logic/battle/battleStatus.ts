@@ -3,7 +3,7 @@
  * Portado de js/07_battle.js para cumplir con el estándar modular v6.
  */
 
-import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon'
+import { requireVolatileStatusKey, type Pokemon, type PokemonStatus } from '@/types/pokemon/pokemon'
 import type { BattleContext } from '@/types/battle/battleContext'
 
 export function getStatusIcon(status: PokemonStatus): string {
@@ -33,8 +33,9 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
     for (const [key, val] of Object.entries(pokemon.volatileCounters)) {
       if (key === 'twoturnmove' || key === 'lockedmove') continue;
       if (val > 0) {
+        const volatileKey = requireVolatileStatusKey(key);
         const newVal = val - 1;
-        pokemon.volatileCounters[key] = newVal;
+        pokemon.volatileCounters[volatileKey] = newVal;
         
         if (key === 'partiallytrapped' && newVal > 0) {
           const dmg = Math.max(1, Math.floor(pokemon.maxHp / 16));
@@ -47,7 +48,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
 
         if (newVal === 0) {
           if (key === 'yawn') {
-            delete pokemon.volatileCounters[key];
+            delete pokemon.volatileCounters[volatileKey];
             if (!pokemon.status) {
               if (pokemon.ability === 'insomnia' || pokemon.ability === 'vitalspirit') {
                 addLogFn(`¡La habilidad de ${pokemon.name} evitó quedarse dormido!`, 'log-info', pokemon);
@@ -61,7 +62,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
               }
             }
           } else if (key === 'lockedmove') {
-            delete pokemon.volatileCounters[key];
+            delete pokemon.volatileCounters[volatileKey];
             if (!pokemon.confused) {
               if (pokemon.ability === 'owntempo') {
                 addLogFn(`¡El Ritmo Propio de ${pokemon.name} evitó la confusión!`, 'log-info', pokemon);

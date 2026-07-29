@@ -67,7 +67,7 @@ function onClickProfile() {
           <slot name="subtext">
             Nv.{{ profile.level }} • {{ formatPlayerClass(profile.playerClass) }}
             <template v-if="profile.faction && formatFaction(profile.faction) !== 'SIN BANDO'">
-              • <span :class="profile.faction.toLowerCase().trim() + '-text-small'">{{ formatFaction(profile.faction) }}</span>
+              • <span :class="profile.faction.toLowerCase() /* text-ok */ .trim() + '-text-small'">{{ formatFaction(profile.faction) }}</span>
             </template>
             <template v-else>
               • {{ formatFaction(profile.faction) }}

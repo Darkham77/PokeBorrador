@@ -66,7 +66,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
       const existingCols = info[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
       const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
       
-      const colDefs: string[] = []
+      const colDefs: string[] = [] // no-domain
       let current = ''
       let depth = 0
       for (let i = 0; i < colPart.length; i++) {
@@ -83,7 +83,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
       if (current.trim()) colDefs.push(current.trim())
 
       for (const def of colDefs) {
-        const upperDef = def.toUpperCase()
+        const upperDef = def.toUpperCase() // text-ok
         if (upperDef.startsWith('PRIMARY KEY') || upperDef.startsWith('FOREIGN KEY') || upperDef.startsWith('UNIQUE')) {
           continue
         }
@@ -106,8 +106,16 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
 
   // Post-repair: Migrate legacy chat columns if they exist in the database
   try {
-    db.run("UPDATE global_chat_messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL")
-    db.run("UPDATE global_chat_messages SET username = sender_name WHERE username IS NULL AND sender_name IS NOT NULL")
+    const chatInfo = db.exec("PRAGMA table_info(global_chat_messages)")
+    if (chatInfo.length > 0) {
+      const cols = chatInfo[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
+      if (cols.includes('sender_id')) {
+        db.run("UPDATE global_chat_messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL")
+      }
+      if (cols.includes('sender_name')) {
+        db.run("UPDATE global_chat_messages SET username = sender_name WHERE username IS NULL AND sender_name IS NOT NULL")
+      }
+    }
     // Align sender IDs for mock accounts to ensure correct profile loading
     db.run("UPDATE global_chat_messages SET user_id = 'local_ash' WHERE username = 'ash'")
     db.run("UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'")

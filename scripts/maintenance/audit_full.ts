@@ -37,6 +37,11 @@ const TASKS: AuditTask[] = [
     args: ['--permission', '--experimental-strip-types', '--allow-fs-read=*', '--allow-fs-write=*', '--allow-child-process', 'scripts/maintenance/audit_project.ts'] 
   },
   { 
+    name: 'Domain Types Integrity Audit', 
+    command: 'node', 
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/validation/validate_domain_types.ts', '--errors-only'] 
+  },
+  { 
     name: 'CSS/SCSS Duplicates Audit (css-checker)', 
     command: 'node', 
     args: ['--permission', '--experimental-strip-types', '--allow-fs-read=*', '--allow-fs-write=*', '--allow-child-process', 'scripts/maintenance/audit_project.ts', '--css-only', '--errors-only'] 

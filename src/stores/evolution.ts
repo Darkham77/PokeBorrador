@@ -4,6 +4,7 @@ import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export const useEvolutionStore = defineStore('evolution', () => {
   const gameStore = useGameStore();
@@ -11,7 +12,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
   // --- STATE ---
   const isEvolving = ref(false);
   const sourcePokemon = ref<Pokemon | null>(null);
-  const targetId = ref<string | null>(null);
+  const targetId = ref<PokemonSpeciesId | null>(null);
   const itemName = ref<string>('');
   const onComplete = ref<((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null>(null);
   const pendingMoves = ref<PokemonMove[]>([]);
@@ -32,7 +33,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     callback: ((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null = null
   ) {
     sourcePokemon.value = pokemon;
-    targetId.value = targetSpeciesId;
+    targetId.value = requirePokemonSpeciesId(targetSpeciesId);
     itemName.value = evItemName;
     isEvolving.value = true;
     onComplete.value = callback;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon'
+
 interface Props {
-  stats: Record<string, number>
+  stats: Record<PokemonStatKey, number>
 }
 
 defineProps<Props>()
@@ -9,13 +11,13 @@ defineProps<Props>()
 <template>
   <div class="base-stats-grid">
     <div
-      v-for="(val, stat) in stats"
+      v-for="stat in POKEMON_STAT_KEYS"
       :key="stat"
       class="stat-item"
     >
       <label>{{ stat.toUpperCase() }}</label>
       <div class="stat-value">
-        {{ val }}
+        {{ stats[stat] }}
       </div>
     </div>
   </div>

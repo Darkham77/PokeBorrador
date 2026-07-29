@@ -25,8 +25,7 @@ import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
-import { mapVisualToOfficialWeather } from '@/logic/weather/weatherGenerationProvider.ts'
-import { ACTIVE_GENERATION } from '@/data/system/constants.ts'
+import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
 
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -160,7 +159,7 @@ export const useBattleStore = defineStore('battle', () => {
   watch(() => mapStore.currentWeather, (newWeather) => {
     if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
       // Sincronizar el tipo con el clima oficial según la generación, y el visual con el del mapa
-      activeBattle.value.weather.type = mapVisualToOfficialWeather(newWeather || 'clear', ACTIVE_GENERATION)
+      activeBattle.value.weather.type = requireWeatherId(newWeather || 'clear')
       activeBattle.value.weather.visual = newWeather || 'clear'
     }
   })
@@ -430,7 +429,7 @@ export const useBattleStore = defineStore('battle', () => {
     const req = activeBattle.value.playerRequest
     if (req && req.active?.[0]?.moves) {
       const moves = req.active[0].moves
-      if (moves && moves.length === 1 && moves[0] && (moves[0].id === 'recharge' || moves[0].move === 'Recharge')) {
+      if (moves && moves.length === 1 && moves[0] && moves[0].move === 'Recharge') {
         logger.info('BattleStore', 'Forced recharge detected, waiting for isProcessing to clear...')
         await nextTick()
         let retries = 0

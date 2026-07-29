@@ -91,7 +91,7 @@ export function applyMarketFilters(
 
     // Search
     if (filters.search) {
-      const query = filters.search.toLowerCase();
+      const query = filters.search.toLowerCase(); // text-ok
       const nameMatch = offer.name?.toLowerCase().includes(query);
       const nickMatch = offer.nickname?.toLowerCase().includes(query);
       if (!nameMatch && !nickMatch) return false;

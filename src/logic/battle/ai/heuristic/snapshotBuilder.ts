@@ -6,9 +6,9 @@
 
 import { toID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
-import type { BattleState, BattleStages } from '@/types/battle/battle';
-import type { Pokemon, PokemonStatus, PokemonMove } from '@/types/pokemon/pokemon';
-import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState } from './types.ts';
+import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type BattleTimedCondition } from '@/types/battle/battle';
+import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey } from './types.ts';
 
 /**
  * Builds a HeuristicBattleSnapshot from the live BattleContext.
@@ -45,7 +45,7 @@ function buildSide(
   team: Pokemon[],
   stages: BattleStages,
   activePoke: Pokemon | null | undefined,
-  sideConditionsRaw: Record<string, { turns: number; [key: string]: unknown }> | undefined,
+  sideConditionsRaw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined,
 ): HeuristicSideState {
   const sideConditions = buildSideConditions(sideConditionsRaw);
   const activeName = activePoke?.name ?? '';
@@ -60,12 +60,13 @@ function buildSide(
 }
 
 function buildSideConditions(
-  raw: Record<string, { turns: number; [key: string]: unknown }> | undefined,
-): Map<string, number> {
-  const map = new Map<string, number>();
+  raw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined,
+): Map<(typeof BATTLE_CONDITION_KEYS)[number], number> {
+  const map = new Map<(typeof BATTLE_CONDITION_KEYS)[number], number>();
   if (!raw) return map;
-  for (const [key, val] of Object.entries(raw)) {
-    map.set(toID(key), typeof val === 'object' && val !== null ? (val.turns ?? 1) : 1);
+  for (const key of BATTLE_CONDITION_KEYS) {
+    const val = raw[key];
+    if (val) map.set(key, val.turns);
   }
   return map;
 }
@@ -90,7 +91,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     hp: p.hp,
     maxHp: p.maxHp,
     hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * 100 : 100, // AI-1 Fix: default 100% for unrevealed
-    status: p.status as PokemonStatus,
+    status: p.status ?? '',
     active,
     fainted,
     stats: {
@@ -125,8 +126,8 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   };
 }
 
-function buildVolatiles(p: Pokemon): Set<string> {
-  const v = new Set<string>();
+function buildVolatiles(p: Pokemon): Set<HeuristicVolatileKey> {
+  const v = new Set<HeuristicVolatileKey>();
   if (p.confused) v.add('confusion');
   if (p.substitute) v.add('substitute');
   if (p.focusEnergy) v.add('focusenergy');

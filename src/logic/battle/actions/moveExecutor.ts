@@ -44,7 +44,7 @@ export async function executeMoveAction(
 
   if (!await canAttack(attacker, store)) return
 
-  if (attacker.furyCutterCount && move.effect !== 'fury_cutter') attacker.furyCutterCount = 0
+  if (attacker.furyCutterCount && move.id !== 'furycutter') attacker.furyCutterCount = 0
   attacker.destinyBond = false
   attacker.snatching = false
   if (attacker.heldItem && (attacker.heldItem === 'choiceband' || attacker.heldItem === 'choicespecs' || attacker.heldItem === 'choicescarf')) {
@@ -74,25 +74,30 @@ export async function executeMoveAction(
       executableMove = { ...attacker.chargingMove }
       attacker.chargingMove = null
       store.addLog(`¡${attacker.name} lanzó el ataque cargado!`, 'log-info', attacker)
-    } else if (executableMove.id === 'solar_beam' && !isSunny) {
+    } else if (executableMove.id === 'solarbeam' && !isSunny) {
       attacker.chargingMove = { ...executableMove }
       store.addLog(`¡${attacker.name} está reuniendo luz solar!`, 'log-info', attacker)
       return
     }
 
-    if (move.effect === 'metronome') {
+    if (move.id === 'metronome') {
       const allMoves = Dex.forGen(ACTIVE_GENERATION).moves.all().filter(m => m.id !== 'metronome' && m.id !== 'struggle');
       const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
       if (randomMove) {
-        const rawMoveData = pokemonDataProvider.getMoveData(randomMove.id) || {};
-        const builtMove: Move = { ...rawMoveData, pp: 5, maxPP: 5 }
+        const rawMoveData = pokemonDataProvider.getMoveData(randomMove.id)
+        if (!rawMoveData) throw new Error(`[moveExecutor] Metronome selected an unavailable move: ${randomMove.id}`)
+        const builtMove: Move = {
+          ...rawMoveData,
+          pp: 5,
+          maxPP: 5
+        }
         executableMove = builtMove;
         store.addLog(`¡El Metrónomo escogió ${executableMove.name}!`, 'log-info', attacker);
       } else {
         store.addLog("¡Pero falló!", 'log-info', attacker);
         return;
       }
-    } else if (move.effect === 'mirror_move') {
+    } else if (move.id === 'mirrormove') {
       if (defender.lastMove) {
         executableMove = { ...defender.lastMove }
         store.addLog(`¡Espejo copió ${executableMove.name}!`, 'log-info', attacker)
@@ -128,15 +133,6 @@ export async function executeMoveAction(
     // Precision Check
     if (!checkMoveAccuracy(store, attacker, defender, attackerStages, defenderStages, executableMove)) {
       return
-    }
-
-    if (executableMove && (executableMove.effect === undefined || executableMove.effect === null)) {
-      if (!executableMove.id) throw new Error('[moveExecutor] El movimiento ejecutable no tiene un ID válido.');
-      const freshMoveData = pokemonDataProvider.getMoveData(executableMove.id)
-      if (!freshMoveData) throw new Error(`[moveExecutor] No se encontró información para el movimiento: ${executableMove.id}`);
-      if (freshMoveData.effect) {
-        executableMove.effect = freshMoveData.effect
-      }
     }
 
     let totalHits = 1
@@ -176,7 +172,7 @@ export async function executeMoveAction(
         if (result.isNotVeryEffective && i === 0) store.addLog('No es muy eficaz...', logStyle, attacker)
         if (result.isSuperEffective && i === 0) store.addLog('¡Es súper eficaz!', logStyle, attacker)
 
-        if (executableMove.effect === 'magnitude' && result.power) {
+        if (executableMove.id === 'magnitude' && result.power) {
           const magMap: Record<number, number> = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 }
           const mag = magMap[result.power] || 7
           store.addLog(`¡Magnitud ${mag}!`, 'log-info', defender)
@@ -236,9 +232,9 @@ export async function executeMoveAction(
       store.addLog(`¡${attacker.name} se sacrificó!`, 'log-info', attacker)
     }
 
-    if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
+    if (store.activeBattle.value && (hitsDealt > 0 || executableMove.cat === 'status')) {
       await dispatchMoveEffect(
-        executableMove.effect as string,
+        executableMove,
         attacker,
         defender,
         attackerStages,

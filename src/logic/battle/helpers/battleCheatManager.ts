@@ -36,7 +36,7 @@ export class BattleCheatManager {
       });
       syncRequestConditionsWithSimulator(sideObj as unknown as Parameters<typeof syncRequestConditionsWithSimulator>[0]);
       this.appliedCheats.add(key);
-      console.debug(`[CheatManager-${phase}] Applied ${phase.toLowerCase()}-turn cheat ${key} on side ${sideObj.id} for turn ${key.split('-')[0]} (battle.turn: ${battle.turn})`);
+      console.debug(`[CheatManager-${phase}] Applied ${phase.toLowerCase()}-turn cheat ${key} on side ${sideObj.id} for turn ${key.split('-')[0]} (battle.turn: ${battle.turn})`); // text-ok
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error(`[CheatManager-${phase}-ERROR] Failed to apply cheat ${key}: ${errMsg}`);

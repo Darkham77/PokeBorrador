@@ -5,8 +5,30 @@ import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon'
+import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages } from '@/types/battle/battle'
+import { requireBattleConditionKey } from '@/types/battle/battle'
+import { requireWeatherId } from '@/logic/weather/weatherRegistry'
+
+interface BattleReadyDetail {
+  subState: string
+  p1ChoiceIdx: number
+  p2ChoiceIdx: number
+  over: boolean
+}
+
+function isBattleReadyDetail(value: unknown): value is BattleReadyDetail {
+  return typeof value === 'object' &&
+    value !== null &&
+    'subState' in value &&
+    typeof value.subState === 'string' &&
+    'p1ChoiceIdx' in value &&
+    typeof value.p1ChoiceIdx === 'number' &&
+    'p2ChoiceIdx' in value &&
+    typeof value.p2ChoiceIdx === 'number' &&
+    'over' in value &&
+    typeof value.over === 'boolean'
+}
 
 export function setupBattleDebug(ctx: BattleContext) {
   if (typeof window === 'undefined') return
@@ -14,10 +36,7 @@ export function setupBattleDebug(ctx: BattleContext) {
   const debugStore = useDebugStore()
   if (!debugStore.canAccess) return
 
-  const win = window as unknown as { 
-    __VITE_DEBUG__: Record<string, unknown>;
-    __VITE_DEBUG_STORE_RESOLVER__?: () => unknown;
-  }
+  const win = window
   
   win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {}
 
@@ -64,14 +83,15 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.setStatus = (side: string, status: string) => {
     const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
-    if (target) target.status = (status === 'null' || status === 'clear') ? '' : (status as PokemonStatus)
+    if (target) target.status = (status === 'null' || status === 'clear') ? '' : requirePokemonStatus(status)
   }
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
     const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
     if (target) {
       if (!target.volatileCounters) target.volatileCounters = {}
-      target.volatileCounters[type] = (target.volatileCounters[type] || 0) > 0 ? 0 : 3
+      const key = requireVolatileStatusKey(type)
+      target.volatileCounters[key] = (target.volatileCounters[key] || 0) > 0 ? 0 : 3
     }
   }
 
@@ -88,8 +108,9 @@ export function setupBattleDebug(ctx: BattleContext) {
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
     const sideCond = side === 'player' ? ctx.activeBattle.value?.playerSideConditions : ctx.activeBattle.value?.enemySideConditions
     if (sideCond) {
-      if (sideCond[effect]) delete sideCond[effect]
-      else sideCond[effect] = { turns: val }
+      const key = requireBattleConditionKey(effect)
+      if (sideCond[key]) delete sideCond[key]
+      else sideCond[key] = { turns: val }
     }
   }
 
@@ -146,13 +167,19 @@ export function setupBattleDebug(ctx: BattleContext) {
       let unwatch: (() => void) | null = null
 
       const onReady = (detail: unknown) => {
+        if (!isBattleReadyDetail(detail)) {
+          throw new Error('[battleDebug] Invalid battle-ready-for-input detail payload')
+        }
         if (unwatch) unwatch()
         window.removeEventListener('battle-ready-for-input', handler)
         resolve(detail)
       }
 
       const handler = (e: Event) => {
-        onReady((e as CustomEvent).detail)
+        if (!(e instanceof CustomEvent)) {
+          throw new Error('[battleDebug] battle-ready-for-input must be a CustomEvent')
+        }
+        onReady(e.detail)
       }
 
       window.addEventListener('battle-ready-for-input', handler, { once: true })
@@ -196,9 +223,10 @@ export function setupBattleDebug(ctx: BattleContext) {
     setWeather: (w: string) => { 
       const active = ctx.activeBattle.value
       if (active) {
-        const visual = w === 'clear' || w === 'null' ? 'clear' : w
-        active.weather = { type: w, turns: 99, visual }
-        logger.info('DEBUG', `Clima/Terreno cambiado a: ${w}`)
+        const weatherId = requireWeatherId(w)
+        const visual = weatherId === 'clear' || weatherId === 'null' ? 'clear' : weatherId
+        active.weather = { type: weatherId, turns: 99, visual }
+        logger.info('DEBUG', `Clima/Terreno cambiado a: ${weatherId}`)
       }
     },
     fullHeal: () => {

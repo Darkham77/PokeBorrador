@@ -119,7 +119,7 @@ const metricText = computed(() => {
 const scheduleText = computed(() => {
   if (props.event.manual) return '🟢 Evento activo ahora mismo'
   if (sched.value.type === 'weekly' && sched.value.days) {
-    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+    const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] as const
     const days = sched.value.days.map((d: number) => dayNames[d]).join(', ')
     const hours = (sched.value.startHour !== undefined && sched.value.endHour !== undefined)
       ? ` · ${sched.value.startHour}:00 – ${sched.value.endHour}:00 hs (ARG)` : ''

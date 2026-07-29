@@ -1,17 +1,82 @@
-import { Pokemon } from '@/types/pokemon/pokemon';
+import { Pokemon, type PokemonMoveId } from '@/types/pokemon/pokemon';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { Inventory } from '@/types/inventory/items';
+import type { ItemId } from '@/data/inventory/items';
+import type { GymId } from '@/data/world/gyms';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { MapRouteId } from '@/data/world/map-assets';
 
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
+export type BattleSide = 'player' | 'enemy';
+export type BattleParticipantUid = Pokemon['uid'];
+export const BATTLE_CONDITION_KEYS = [
+  'auroraveil',
+  'desolatedterrain',
+  'electricterrain',
+  'gravity',
+  'grassyterrain',
+  'hail',
+  'lightscreen',
+  'magicroom',
+  'mist',
+  'mistyterrain',
+  'psychicterrain',
+  'raindance',
+  'reflect',
+  'safeguard',
+  'sandstorm',
+  'spikes',
+  'stealthrock',
+  'stickyweb',
+  'sunnyday',
+  'tailwind',
+  'toxicspikes',
+  'trickroom',
+  'wish',
+  'wonderroom',
+] as const;
+export type BattleConditionKey = (typeof BATTLE_CONDITION_KEYS)[number];
 
-export type BattleStages = Record<CoreBattleStatKey, number> & {
+export function isBattleConditionKey(value: string): value is BattleConditionKey {
+  return BATTLE_CONDITION_KEYS.includes(value as BattleConditionKey);
+}
+
+export function requireBattleConditionKey(value: string): BattleConditionKey {
+  if (isBattleConditionKey(value)) return value;
+  throw new Error(`Invalid battle condition key: ${value}`);
+}
+
+export type BattleConditionMetaKey = 'count' | 'duration' | 'layers' | 'source';
+
+export interface BattleTimedCondition {
+  turns: number;
+  meta?: Partial<Record<BattleConditionMetaKey, unknown>>;
+}
+
+export type BattleStages = Partial<Record<CoreBattleStatKey, number>> & {
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  accuracy: number;
+  evasion: number;
+  reflect: number;
+  lightScreen: number;
+  safeguard: number;
+  mist: number;
+  spikes: number;
+  stealthrock?: number;
+  toxicspikes?: number;
   acc?: number;
   eva?: number;
-  [key: string]: number | undefined;
 };
 
 export interface BattleWeather {
-  type: string;
-  visual?: string;
+  type: WeatherId;
+  visual?: string; // domain-ok
   turns: number;
 }
 
@@ -20,17 +85,17 @@ export interface BattleState {
   enemy: Pokemon | null;
   playerTeamIndex: number;
   enemyTeamIndex: number;
-  participants: string[];
-  locationId: string;
+  participants: BattleParticipantUid[];
+  locationId: MapRouteId;
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
   isTrainer: boolean;
-  trainerName?: string;
-  trainerSprite?: string;
-  trainerArchetype?: string;
+  trainerName?: string; // domain-ok
+  trainerSprite?: NpcSpriteId;
+  trainerArchetype?: NpcArchetype;
   isGym?: boolean;
-  gymId?: string;
+  gymId?: GymId;
   weather: BattleWeather;
   turnCount: number;
   over: boolean;
@@ -39,14 +104,14 @@ export interface BattleState {
   isCapture?: boolean;
   isRival?: boolean;
   escapeAttempts: number;
-  initialMapWeather?: string | null;
+  initialMapWeather?: WeatherId | null;
   rarity?: number;
   futureSightTurns?: number;
   futureSightTarget?: Pokemon | null;
-  terrain?: string | null;
-  fieldConditions?: Record<string, { turns: number; [key: string]: unknown }>;
-  playerSideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
-  enemySideConditions?: Record<string, { turns: number; [key: string]: unknown }>;
+  terrain?: string | null; // domain-ok
+  fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
+  playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
+  enemySideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
@@ -57,13 +122,13 @@ export interface BattleState {
   lastDamage?: number;
   enemyUsedItem?: boolean;
   playerUsedItem?: boolean;
-  enemyInventory?: Record<string, number>;
+  enemyInventory?: Inventory;
   enemyMoney?: number;
   enemyMaxLevel?: number;
-  rewardTM?: string;
+  rewardTM?: ItemId;
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
-  playerNames?: Record<string, 'player' | 'enemy'>;
+  playerNames?: Partial<Record<BattleParticipantUid, BattleSide>>;
   playerRequest?: ShowdownPlayerRequest;
   enemyRequest?: ShowdownPlayerRequest;
   battleLogs?: BattleLog[];
@@ -77,21 +142,21 @@ export interface BattleState {
   seed?: number[];
   battleHistory?: Array<{
     turnCount: number;
-    p1Choice: string;
-    p2Choice: string;
-    p1Hps?: Record<string, number> | number[];
-    p2Hps?: Record<string, number> | number[];
+    p1Choice: string; // domain-ok
+    p2Choice: string; // domain-ok
+    p1Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
+    p2Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
   }>;
   playerFled?: boolean;
-  quote?: string;
+  quote?: string; // domain-ok
   wasSearching?: boolean;
   cannotEscape?: boolean;
   stolenResources?: {
     money: number;
-    items: Record<string, number>;
+    items: Inventory;
   };
-  p1SlotOrder?: string[];
-  p2SlotOrder?: string[];
+  p1SlotOrder?: string[]; // domain-ok
+  p2SlotOrder?: string[]; // domain-ok
   switchingToEnemy?: Pokemon | null;
 }
 
@@ -99,17 +164,17 @@ export type BattleSource = Pokemon | string;
 
 export interface BattleLog {
   id: number;
-  msg: string;
-  type: string;
-  side: 'player' | 'enemy' | null;
-  icon?: string | null;
-  iconType?: string | null;
+  msg: string; // domain-ok
+  type: string; // domain-ok
+  side: BattleSide | null;
+  icon?: string | null; // domain-ok
+  iconType?: string | null; // domain-ok
   source?: BattleSource;
 }
 
 import type { BattleContext } from '@/types/battle/battleContext';
 
-export type LogFn = (msg: string, type?: string, actor?: Pokemon | string | null, side?: 'player' | 'enemy' | null) => void;
+export type LogFn = (msg: string, type?: string, actor?: Pokemon | string | null, side?: BattleSide | null) => void;
 
 export type MoveAction = (
   src: Pokemon, 
@@ -121,12 +186,12 @@ export type MoveAction = (
 ) => void;
 
 export interface SparkleData {
-  id: string | number;
+  id: string | number; // domain-ok
   tx: number;
   ty: number;
   tf: number;
   scale: number;
-  delay: string;
+  delay: string; // domain-ok
 }
 
 export interface BattleCombatantProps {
@@ -135,20 +200,20 @@ export interface BattleCombatantProps {
   position: { x: number; y: number };
   targetPosition?: { x: number; y: number } | null;
   baseSize: number;
-  groundY?: string;
-  shadowKey?: string | null;
+  groundY?: string; // domain-ok
+  shadowKey?: string | null; // domain-ok
   animState?: 'catching' | 'trapped' | 'releasing' | null;
-  ballId?: string;
+  ballId?: ItemId;
   isShaking?: boolean;
   isBlinking?: boolean;
   isHealing?: boolean;
   isSilhouette?: boolean;
   isAttacking?: boolean;
   activeMove?: {
-    id?: string;
-    side: string;
+    id?: PokemonMoveId;
+    side: BattleSide;
     cat: 'physical' | 'special' | 'status' | 'selfKO';
-    name: string;
+    name: string; // domain-ok
     selfKO?: boolean;
     recoil?: boolean | number;
   } | null;
@@ -161,15 +226,15 @@ export interface BattleCombatantProps {
   hidden?: boolean;
   hasSeat?: boolean;
   stages?: Partial<BattleStages>;
-  zIndex?: number | string;
+  zIndex?: number;
 }
 
 export interface ShowdownPlayerRequest {
   active?: {
     moves?: {
-      id?: string;
-      move?: string;
-      disabled?: boolean | string;
+      id?: PokemonMoveId;
+      move?: string; // domain-ok
+      disabled?: boolean | 'pp';
       pp?: number;
       maxpp?: number;
     }[];
@@ -179,13 +244,12 @@ export interface ShowdownPlayerRequest {
   forceSwitch?: boolean[];
   side?: {
     pokemon: {
-      ident: string;
-      details: string;
-      condition: string;
+      ident: string; // domain-ok
+      details: string; // domain-ok
+      condition: string; // domain-ok
       active: boolean;
-      uid?: string;
+      uid?: string; // domain-ok
     }[];
   };
   wait?: boolean;
 }
-

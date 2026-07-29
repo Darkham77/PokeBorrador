@@ -20,7 +20,7 @@ const HOVER_VISUAL_BORDER_CLASSES = [
   'market-item-wrapper',
   'info-item',
   'trainer-card'
-]
+] as const
 
 export const HOVER_DURATION_200MS_CLASSES = [
   'pc-banner',
@@ -44,7 +44,9 @@ export const HOVER_DURATION_200MS_CLASSES = [
   'gym-card',
   'inventory-item-card',
   'info-item'
-]
+] as const
+
+export type HoverDuration200MsClass = (typeof HOVER_DURATION_200MS_CLASSES)[number]
 
 export function hasVisualBorders(el: HTMLElement): boolean {
   if (HOVER_VISUAL_BORDER_CLASSES.some(cls => el.classList.contains(cls))) return true

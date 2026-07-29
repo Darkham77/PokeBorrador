@@ -140,6 +140,7 @@ const MOVE_EFFECT_DESCRIPTIONS: Record<string, string> = {
   skill_swap:           'Reemplaza entre ambos monstruos sus capacidades y habilidades.',
   snatch:               'Aprovecha robando los efectos positivos emitidos por el oponente.',
 };
+void MOVE_EFFECT_DESCRIPTIONS;
 
 /**
  * Returns a human-readable description for a move, based on its MoveBaseData.
@@ -160,15 +161,17 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
   if (md.levelDmg)                      return 'Causa un daño igual al nivel del usuario.';
   if (md.counter)                       return 'Devuelve al rival el doble del daño físico recibido este turno.';
 
-  const desc = MOVE_EFFECT_DESCRIPTIONS[md.effect ?? ''];
-  if (desc) return desc;
+  const effectText = Array.isArray(md.effect)
+    ? md.effect.map(effect => effect.text).find(Boolean)
+    : md.effect?.text;
+  if (effectText) return effectText;
 
   try {
     if (!md.id) {
       throw new Error("ID de movimiento no proporcionado en getMoveDescriptionPure");
     }
     const cleanId = toID(md.id);
-    const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+    const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {});
     if (translated.desc) return translated.desc;
 
     const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);

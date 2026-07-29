@@ -5,17 +5,20 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 /**
  * Get type effectiveness multiplier
  */
-export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: Pokemon | null = null): number {
+export function getTypeEffectiveness(moveType: PokemonType | string | undefined, defType: PokemonType | string | undefined, attacker: Pokemon | null = null): number {
   if (!moveType || !defType) return 1;
   
+  const mType = moveType as PokemonType;
+  const dType = defType as PokemonType;
+
   // Scrappy logic: Normal/Fighting can hit Ghost
-  if (attacker?.ability === 'scrappy' && defType.toLowerCase() === 'ghost' && (moveType.toLowerCase() === 'normal' || moveType.toLowerCase() === 'fighting')) {
+  if (attacker?.ability === 'scrappy' && dType === 'ghost' && (mType === 'normal' || mType === 'fighting')) {
     return 1;
   }
 
-  const row = TYPE_CHART[moveType.toLowerCase() as PokemonType];
+  const row = TYPE_CHART[mType];
   if (!row) return 1;
-  return row[defType.toLowerCase() as PokemonType] ?? 1;
+  return row[dType] ?? 1;
 }
 
 /**

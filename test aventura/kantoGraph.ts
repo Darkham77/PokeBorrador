@@ -1,5 +1,5 @@
 export interface Connection {
-  target: string;
+  target: AdventureNodeId;
   mo?: string; // Requisito opcional de MO
 }
 
@@ -10,7 +10,7 @@ export interface NodePosition {
   label: string;
 }
 
-export const KANTO_NODE_POSITIONS: Record<string, NodePosition> = {
+export const KANTO_NODE_POSITIONS = {
   route1:           { x: 22, y: 52, label: 'Ruta 1' },
   route2:           { x: 22, y: 38, label: 'Ruta 2' },
   forest:           { x: 14, y: 28, label: 'Bosque' },
@@ -45,11 +45,24 @@ export const KANTO_NODE_POSITIONS: Record<string, NodePosition> = {
   route23:          { x: 8,  y: 40, label: 'Ruta 23' },
   victory_road:     { x: 6,  y: 30, label: 'Vía Victoria' },
   cerulean_cave:    { x: 60, y: 20, label: 'Cueva Celeste' },
+} as const satisfies Record<string, NodePosition>
+
+export type AdventureNodeId = keyof typeof KANTO_NODE_POSITIONS
+
+export function isAdventureNodeId(value: string): value is AdventureNodeId {
+  return value in KANTO_NODE_POSITIONS
 }
 
+export function requireAdventureNodeId(value: string): AdventureNodeId {
+  if (isAdventureNodeId(value)) return value
+  throw new Error(`[kantoGraph] Invalid adventure node id: ${value}`)
+}
+
+export const ADVENTURE_NODE_IDS = Object.keys(KANTO_NODE_POSITIONS).filter(isAdventureNodeId)
+
 export interface GraphEdge {
-  from: string;
-  to: string;
+  from: AdventureNodeId;
+  to: AdventureNodeId;
   mo?: string;
 }
 
@@ -58,7 +71,8 @@ export function getGraphEdges(): GraphEdge[] {
   const seen = new Set<string>()
   const edges: GraphEdge[] = []
 
-  for (const [nodeId, connections] of Object.entries(KANTO_CONNECTIONS)) {
+  for (const nodeId of ADVENTURE_NODE_IDS) {
+    const connections = KANTO_CONNECTIONS[nodeId]
     for (const conn of connections) {
       const key = [nodeId, conn.target].sort().join('|')
       if (!seen.has(key)) {
@@ -71,7 +85,7 @@ export function getGraphEdges(): GraphEdge[] {
   return edges
 }
 
-export const KANTO_CONNECTIONS: Record<string, Connection[]> = {
+export const KANTO_CONNECTIONS: Record<AdventureNodeId, Connection[]> = {
   route1: [
     { target: 'route2' },      // Conexión por Ciudad Verde
     { target: 'route22' },     // Conexión por Ciudad Verde
@@ -226,16 +240,16 @@ export const KANTO_CONNECTIONS: Record<string, Connection[]> = {
  * Admite múltiples requisitos de MO separados por comas.
  */
 export function findShortestPath(
-  origin: string,
-  destination: string,
+  origin: AdventureNodeId,
+  destination: AdventureNodeId,
   activeHMs: Set<string>,
   blockedEdges?: Set<string>
-): string[] | null {
+): AdventureNodeId[] | null {
   if (origin === destination) return [origin];
   if (!KANTO_CONNECTIONS[origin] || !KANTO_CONNECTIONS[destination]) return null;
 
-  const queue: string[][] = [[origin]];
-  const visited = new Set<string>([origin]);
+  const queue: AdventureNodeId[][] = [[origin]];
+  const visited = new Set<AdventureNodeId>([origin]);
 
   while (queue.length > 0) {
     const path = queue.shift()!;

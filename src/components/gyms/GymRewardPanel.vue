@@ -2,27 +2,11 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGymsStore } from '@/stores/gyms'
-
-interface GymDifficulty {
-  pokemon: string[];
-  levels: number[];
-}
-
-interface Gym {
-  id: string;
-  name: string;
-  badgeName: string;
-  rewardTM: string;
-  difficulties: {
-    easy: GymDifficulty;
-    normal: GymDifficulty;
-    hard: GymDifficulty;
-  };
-}
+import type { Gym, GymDifficultyId } from '@/data/world/gyms'
 
 const props = defineProps<{
   gym: Gym
-  difficulty: string
+  difficulty: GymDifficultyId
 }>()
 
 // Expose to template
@@ -37,14 +21,14 @@ const isDifficultyDefeated = computed(() => gymsStore.isDifficultyDefeated(props
 const estimatedRewards = computed(() => {
   if (!props.gym?.difficulties) return { money: 0, exp: 0 }
   
-  const diff = props.gym.difficulties[props.difficulty as keyof typeof props.gym.difficulties] || props.gym.difficulties.easy
+  const diff = props.gym.difficulties[props.difficulty]
   if (!diff?.levels) return { money: 0, exp: 0 }
 
   const avgLevel = diff.levels.reduce((a, b) => a + b, 0) / diff.levels.length
   
   // Fórmulas de recompensa escaladas
-  const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
-  const mult = mults[props.difficulty] || 1
+  const mults: Record<GymDifficultyId, number> = { easy: 1, normal: 2.2, hard: 4.5 }
+  const mult = mults[props.difficulty]
   
   return {
     money: Math.floor(avgLevel * 30 * mult),

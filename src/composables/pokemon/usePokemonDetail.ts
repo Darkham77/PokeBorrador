@@ -11,6 +11,14 @@ import { getItemName } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MoveBaseData } from '@/types/system/database'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { toPokemonType } from '@/data/battle/types'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+
+function requireMoveCategory(value: string | undefined): 'physical' | 'special' | 'status' {
+  if (value === undefined) return 'physical'
+  if (value === 'physical' || value === 'special' || value === 'status') return value
+  throw new Error(`Invalid move category: ${value}`)
+}
 
 interface EvolutionEntry {
   type: 'level' | 'stone' | 'trade';
@@ -54,7 +62,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
 
   const targetSpeciesId = computed(() => {
     const id = isInstance.value ? targetPokemon.value?.id : getProp<string>('speciesId')
-    return String(id || '').toLowerCase()
+    return requirePokemonSpeciesId(String(id || '').toLowerCase())
   })
 
   const speciesRaw = computed(() => pokemonDataProvider.getPokemonData(targetSpeciesId.value))
@@ -62,8 +70,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
   const species = computed(() => {
     if (!speciesRaw.value) return null
     const s = speciesRaw.value
-    const types = Array.isArray(s.type) ? s.type : [s.type]
-    const nationalId = String((POKEMON_SPRITE_IDS as Record<string, number | string>)[targetSpeciesId.value] || 0)
+    const types = (Array.isArray(s.type) ? s.type : [s.type]).map(toPokemonType)
+    const nationalId = String(POKEMON_SPRITE_IDS[targetSpeciesId.value] || 0)
     
     return {
       ...s,
@@ -92,7 +100,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     const seen = gameStore.state.seenPokedex || []
 
     const enrichEvo = (evo: { type: 'level' | 'stone' | 'trade', requirement: string, to: string }): EvolutionEntry => {
-      const toId = evo.to.toLowerCase()
+      const toId = requirePokemonSpeciesId(evo.to)
       const isCaught = caught.includes(toId)
       const isSeen = isCaught || seen.includes(toId)
       return { ...evo, isSeen, isCaught }
@@ -135,7 +143,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       const current = isInstance.value ? (((targetPokemon.value as unknown as Record<string, number>)[key]) || base) : base
       return {
         id: key,
-        label: labels[key] || key.toUpperCase(),
+        label: labels[key] || key.toUpperCase(), // text-ok
         value: current,
         baseValue: base,
         max: 255,
@@ -156,8 +164,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         id: resolvedId,
         level: m.lv,
         name: m.name,
-        type: data?.type || 'normal',
-        cat: data?.cat || 'physical',
+        type: toPokemonType(data?.type || 'normal'),
+        cat: requireMoveCategory(data?.cat),
         power: data?.power ?? 0,
         acc: data?.acc ?? 100,
         pp: basePP,
@@ -172,7 +180,12 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       if (!m) return null
       const resolvedId = m.id || ''
       const data = pokemonDataProvider.getMoveData(resolvedId)
-      return { ...m, ...(data || {}) }
+      return {
+        ...m,
+        ...(data || {}),
+        type: toPokemonType(data?.type || m.type || 'normal'),
+        cat: requireMoveCategory(data?.cat || m.cat),
+      }
     }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
   })
 

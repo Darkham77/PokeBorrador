@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { NATURES } from '@/data/battle/natures';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { ENABLED_POKEMON_IDS, IMPLEMENTED_GENERATION } from '@/data/system/constants';
+import { IMPLEMENTED_GENERATION } from '@/data/system/constants';
 
 describe('Pokemon Database Integrity', () => {
   const species = Object.entries(POKEMON_DB);
@@ -119,14 +119,7 @@ describe('Pokemon Database Integrity', () => {
     // Bulbasaur is in the whitelist (Gen 1)
     expect(() => pokemonDataProvider.getPokemonData('bulbasaur')).not.toThrow();
 
-    // Temporarily remove bulbasaur from whitelist to simulate a disabled species
-    ENABLED_POKEMON_IDS.delete('bulbasaur');
-    
-    try {
-      expect(() => pokemonDataProvider.getPokemonData('bulbasaur')).toThrow(/whitelist/);
-    } finally {
-      // Restore bulbasaur to whitelist
-      ENABLED_POKEMON_IDS.add('bulbasaur');
-    }
+    // Aggron is Gen 3 and not in current ENABLED_POKEMON_IDS
+    expect(() => pokemonDataProvider.getPokemonData('aggron')).toThrow(/whitelist/);
   });
 });

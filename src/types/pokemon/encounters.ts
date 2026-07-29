@@ -2,6 +2,14 @@
 import { Pokemon } from '@/types/pokemon/pokemon';
 import type { DominanceInfo } from '@/types/system/stores';
 import type { Event } from '@/logic/events/eventEngine';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { GymId } from '@/data/world/gyms';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { FactionId, PlayerClassId } from '@/types/system/game';
+import type { ItemId } from '@/data/inventory/items';
 
 export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender' | 'archaeology' | 'rival';
 
@@ -10,15 +18,15 @@ export interface Encounter {
   pokemon?: Pokemon;
   rarity?: number;
   pts?: number;
-  faction?: string;
+  faction?: FactionId;
 }
 
 export interface MapLocation {
-  id: string;
-  name: string;
-  icon?: string;
+  id: MapRouteId;
+  name: string; // domain-ok
+  icon?: string; // domain-ok
   badges?: number;
-  desc?: string;
+  desc?: string; // domain-ok
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
@@ -28,57 +36,58 @@ export interface MapLocation {
   isDesert?: boolean;
   isSwamp?: boolean;
   isCoastal?: boolean;
+  isUrban?: boolean;
+  isArctic?: boolean;
+  isVolcanic?: boolean;
   wild?: {
-    morning?: string[];
-    day?: string[];
-    dusk?: string[];
-    night?: string[];
-    [key: string]: string[] | undefined;
+    morning?: PokemonSpeciesId[];
+    day?: PokemonSpeciesId[];
+    dusk?: PokemonSpeciesId[];
+    night?: PokemonSpeciesId[];
   };
   rates?: {
     morning?: number[];
     day?: number[];
     dusk?: number[];
     night?: number[];
-    [key: string]: number[] | undefined;
   };
   lv: number[];
   fishing?: {
-    pool: string[];
+    pool: PokemonSpeciesId[];
     rates: number[];
     lv: number[];
   };
   archaeology?: {
-    pool: string[];
+    pool: PokemonSpeciesId[];
     rates: number[];
     lv: number[];
   };
   weather?: {
-    [key: string]: {
-      exclusive?: string[] | Record<string, number | undefined>;
-      visitors?: string[] | Record<string, number | undefined>;
-      fishingExclusive?: string[] | Record<string, number | undefined>;
-      fishingVisitors?: string[] | Record<string, number | undefined>;
-    } | undefined;
+    [K in WeatherId]?: {
+      exclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+      visitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+      fishingExclusive?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+      fishingVisitors?: PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+    };
   };
-  trainerChances?: Record<string, number>;
+  trainerChances?: Partial<Record<NpcArchetype, number>>;
 }
 
 export interface EncounterOptions {
   forceEncounter?: boolean;
   activeEvents?: Event[];
   shinyMultiplier?: number;
-  weather?: string;
-  cycle?: string;
-  dominanceData?: Record<string, DominanceInfo> | null;
+  weather?: WeatherId;
+  cycle?: DayPhase;
+  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>> | null;
   eventTrainerBonus?: number;
   eventFishingBonus?: number;
   eventRivalBonus?: number;
 }
 
 export interface EncounterState {
-  faction: string | null;
-  dailyGuardianCaptures?: string[];
+  faction: FactionId | null;
+  dailyGuardianCaptures?: MapRouteId[];
   repelSecs?: number;
   fishingRodSecs?: number;
   fishingRodType?: 'standard' | 'good' | 'super' | null;
@@ -87,16 +96,16 @@ export interface EncounterState {
   brushSecs?: number;
   brushType?: 'standard' | 'good' | 'super' | null;
   incenseSecs?: number;
-  incenseType?: string | null;
+  incenseType?: ItemId | null;
   team?: Pokemon[];
   trainerChance?: number;
   eloRating?: number;
-  playerClass?: string | null;
+  playerClass?: PlayerClassId | null;
   classLevel?: number;
   classData?: {
     criminality?: number;
     blackMarketSales?: number;
-    [key: string]: unknown;
+    [key: string]: unknown; // open-record
   };
-  gymProgress?: Record<string, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>;
+  gymProgress?: Partial<Record<GymId, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>>;
 }

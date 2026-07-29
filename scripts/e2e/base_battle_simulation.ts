@@ -277,7 +277,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       await battleStore.startBattle(firstEnemy, {
         isTrainer: true,
         enemyTeam: localEnemyTeam,
-        trainerName: 'Simulador E2E',
+        trainerName: 'youngster',
         locationId: 'route1'
       });
 

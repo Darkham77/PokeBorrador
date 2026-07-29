@@ -4,7 +4,7 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 
 export function parseCondition(cond: string): { hp: number; status: Pokemon['status'] } {
   let hp = 0
-  let status: Pokemon['status'] = undefined
+  let status: Pokemon['status'] = ''
   if (!cond.includes('fnt')) {
     const slashIdx = cond.indexOf('/')
     if (slashIdx !== -1) {
@@ -12,7 +12,7 @@ export function parseCondition(cond: string): { hp: number; status: Pokemon['sta
     }
     const spaceIdx = cond.indexOf(' ')
     if (spaceIdx !== -1) {
-      status = (cond.substring(spaceIdx + 1).trim() || undefined) as Pokemon['status']
+      status = (cond.substring(spaceIdx + 1).trim() || '') as Pokemon['status']
     }
   }
   return { hp, status }

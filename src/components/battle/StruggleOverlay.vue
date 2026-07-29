@@ -4,6 +4,7 @@ import { useBattleStore } from '@/stores/battle/battle'
 import BattleMoveSlot from './BattleMoveSlot.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+import { toPokemonType } from '@/data/battle/types'
 import type { Move } from '@/types/pokemon/pokemon'
 
 const battleStore = useBattleStore()
@@ -21,13 +22,17 @@ const isStruggleMode = computed(() => {
 /** Objeto Move de Struggle construido con datos reales de Showdown. */
 const struggleMoveData = computed<Move>(() => {
   const raw = pokemonDataProvider.getMoveData('struggle') as { type?: string; power?: number; acc?: number; cat?: string } | null
+  const cat = raw?.cat
+  if (cat !== undefined && cat !== 'physical' && cat !== 'special' && cat !== 'status') {
+    throw new Error(`Invalid Struggle move category: ${cat}`)
+  }
   return {
     id: 'struggle',
     name: 'Forcejeo',
-    type: raw?.type ?? 'normal',
+    type: toPokemonType(raw?.type ?? 'normal'),
     power: raw?.power ?? 50,
     acc: undefined, // Struggle never misses
-    cat: (raw?.cat ?? 'physical') as 'physical' | 'special' | 'status',
+    cat: cat ?? 'physical',
     pp: 1,
     maxPP: 1,
     recoil: 0.25,

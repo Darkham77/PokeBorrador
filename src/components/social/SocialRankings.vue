@@ -36,7 +36,7 @@ const getFactionLabel = (faction: string | undefined | null) => {
 }
 
 const isFactionValid = (faction: string | undefined | null) => {
-  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none')
+  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none') // text-ok
 }
 </script>
 

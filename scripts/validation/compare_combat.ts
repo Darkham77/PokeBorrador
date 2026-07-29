@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import { toPokemonType } from '../../src/data/battle/types.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
 import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
 
@@ -244,8 +245,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spa: act1.storedStats.spa,
     spd: act1.storedStats.spd,
     spe: act1.storedStats.spe,
-    type: (p1Spec.types[0] ?? 'normal').toLowerCase(),
-    type2: p1Spec.types[1]?.toLowerCase(),
+    type: toPokemonType((p1Spec.types[0] ?? 'normal').toLowerCase()),
+    type2: p1Spec.types[1] ? toPokemonType(p1Spec.types[1].toLowerCase()) : undefined,
     ability: p1AbilityEs,
     heldItem: p1Item
   };
@@ -257,8 +258,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spa: act2.storedStats.spa,
     spd: act2.storedStats.spd,
     spe: act2.storedStats.spe,
-    type: (p2Spec.types[0] ?? 'normal').toLowerCase(),
-    type2: p2Spec.types[1]?.toLowerCase(),
+    type: toPokemonType((p2Spec.types[0] ?? 'normal').toLowerCase()),
+    type2: p2Spec.types[1] ? toPokemonType(p2Spec.types[1].toLowerCase()) : undefined,
     ability: p2AbilityEs,
     heldItem: p2Item
   };
@@ -266,9 +267,9 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const ourMove: PureMove = {
     id: moveSpec.id,
     name: moveSpec.name,
-    type: moveSpec.type.toLowerCase(),
+    type: toPokemonType(moveSpec.type.toLowerCase()),
     power: moveSpec.basePower,
-    cat: getMoveCategory({ id: moveSpec.id, type: moveSpec.type.toLowerCase(), power: moveSpec.basePower })
+    cat: getMoveCategory({ id: moveSpec.id, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower })
   };
 
   const weatherObj: PureBattleWeather | null = weatherType !== 'clear' ? { type: weatherType, turns: 5 } : null;

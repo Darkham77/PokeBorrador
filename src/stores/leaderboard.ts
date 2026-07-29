@@ -50,10 +50,10 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
             elo: p.elo_rating || 1000,
             level: p.trainer_level || 1,
             badges: p.badges || 0,
-            playerClass: p.player_class,
-            faction: p.faction,
-            nick_style: p.nick_style,
-            avatar_style: p.avatar_style,
+            playerClass: p.player_class || undefined,
+            faction: p.faction || undefined,
+            nick_style: p.nick_style || undefined,
+            avatar_style: p.avatar_style || undefined,
             isOnline: !!isOnline,
             gender: p.gender || 'h'
           }

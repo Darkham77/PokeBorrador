@@ -33,8 +33,8 @@ export function handleStageEvents(ctx: SBCtx): boolean {
             stages[key] = Math.max(-6, Math.min(6, (stages[key] || 0) + amount));
           }
           const msg = amount === 6
-            ? `¡El ${key.toUpperCase()} de ${target.name} se maximizó!`
-            : `¡El ${key.toUpperCase()} de ${target.name} aumentó!`;
+            ? `¡El ${key.toUpperCase()} de ${target.name} se maximizó!` // text-ok
+            : `¡El ${key.toUpperCase()} de ${target.name} aumentó!`; // text-ok
           store.addLog(msg, 'log-info', target);
         }
       }
@@ -51,7 +51,7 @@ export function handleStageEvents(ctx: SBCtx): boolean {
         if (stages) {
           const key = stat as ShowdownStatKey;
           stages[key] = Math.max(-6, (stages[key] || 0) - amount);
-          store.addLog(`¡El ${key.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target);
+          store.addLog(`¡El ${key.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target); // text-ok
         }
       }
       return true;

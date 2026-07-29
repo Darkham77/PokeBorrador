@@ -2,13 +2,14 @@ import { defineStore } from 'pinia'
 import { computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
+import { PLAYER_CLASSES, CLASS_MISSIONS, requirePlayerClassId, type PlayerClassId } from '@/data/player/playerClasses'
 import { supabase } from '@/logic/db/supabase'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
+import { requireFactionId } from '@/types/system/game'
 
 
 import { AVATAR_STYLES } from '@/data/player/cosmeticsData'
@@ -70,7 +71,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   
   const currentClassDef = computed<ClassDefinition | null>(() => {
     if (!playerClass.value) return null
-    return (PLAYER_CLASSES as Record<string, ClassDefinition>)[playerClass.value] || null
+    return (PLAYER_CLASSES as unknown as Record<string, ClassDefinition>)[playerClass.value] || null
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
@@ -112,7 +113,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    * Selecciona o cambia la clase del jugador.
    */
   async function selectClass(classId: string) {
-    const cls = (PLAYER_CLASSES as Record<string, ClassDefinition>)[classId]
+    const resolvedClassId = requirePlayerClassId(classId)
+    const cls = (PLAYER_CLASSES as unknown as Record<string, ClassDefinition>)[resolvedClassId]
     if (!cls) return { success: false, msg: 'Clase no válida' }
 
     const isChange = !!playerClass.value
@@ -136,14 +138,14 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       const avatarDef = AVATAR_STYLES.find(a => a.id === currentAvatar)
       if (avatarDef && avatarDef.requiredClass) {
         const isSquare = currentAvatar.includes('-sq-')
-        const classToStyleMap: Record<string, string> = {
+        const classToStyleMap: Record<PlayerClassId, string> = {
           cazabichos: 'av-class-cazabichos',
           criador: 'av-class-criador',
           rocket: 'av-class-rocket',
           entrenador: 'av-class-entrenador'
         }
         
-        const newBaseStyle = classToStyleMap[classId]
+        const newBaseStyle = classToStyleMap[resolvedClassId]
         if (newBaseStyle) {
           gameStore.state.avatar_style = isSquare 
             ? newBaseStyle.replace('av-class-', 'av-sq-')
@@ -154,7 +156,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       }
     }
 
-    gameStore.state.playerClass = classId
+    gameStore.state.playerClass = resolvedClassId
     gameStore.state.classLevel = 1
     gameStore.state.classXP = 0
     gameStore.state.classData = {
@@ -178,10 +180,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    * Establece la facción del jugador (Unión o Poder).
    */
   async function setFaction(factionId: string) {
-    if (!['union', 'poder', 'rocket'].includes(factionId)) return { success: false }
+    const resolvedFactionId = requireFactionId(factionId)
     
     const currentFaction = gameStore.state.faction
-    if (currentFaction === factionId) {
+    if (currentFaction === resolvedFactionId) {
       uiStore.notify('Ya perteneces a este bando.', '⚠️')
       return { success: false }
     }
@@ -197,8 +199,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       uiStore.notify(`Cambiaste de bando por 🪙 ${cost.toLocaleString()}`, '💸')
     }
 
-    gameStore.state.faction = factionId
-    uiStore.notify(`¡Te uniste al Equipo ${factionId.toUpperCase()}!`, '🚩')
+    gameStore.state.faction = resolvedFactionId
+    uiStore.notify(`¡Te uniste al Equipo ${resolvedFactionId.toUpperCase()}!`, '🚩') // text-ok
     await gameStore.save(false)
     return { success: true }
   }

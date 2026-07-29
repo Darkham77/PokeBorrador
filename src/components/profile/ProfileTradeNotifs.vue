@@ -12,7 +12,7 @@ const getOfferSummary = (t: TradeOffer) => {
   if (t.offer_pokemon) parts.push(t.offer_pokemon.name)
   if (t.offer_items) {
     Object.entries(t.offer_items).forEach(([name, qty]) => {
-      if (qty > 0) parts.push(`${name} x${qty}`)
+      if (qty !== undefined && qty > 0) parts.push(`${name} x${qty}`)
     })
   }
   if (t.offer_money > 0) parts.push(`₽${t.offer_money.toLocaleString()}`)
@@ -24,7 +24,7 @@ const getRequestSummary = (t: TradeOffer) => {
   if (t.request_pokemon) parts.push(t.request_pokemon.name)
   if (t.request_items) {
     Object.entries(t.request_items).forEach(([name, qty]) => {
-      if (qty > 0) parts.push(`${name} x${qty}`)
+      if (qty !== undefined && qty > 0) parts.push(`${name} x${qty}`)
     })
   }
   if (t.request_money > 0) parts.push(`₽${t.request_money.toLocaleString()}`)
@@ -52,7 +52,7 @@ const canFulfillTrade = (t: TradeOffer): { can: boolean; reason?: string } => {
   // 3. Check Items
   if (t.request_items) {
     for (const [name, qty] of Object.entries(t.request_items)) {
-      if (qty > 0) {
+      if (qty !== undefined && qty > 0) {
         const ownedQty = gameStore.state.inventory?.[name] || 0
         if (ownedQty < qty) {
           return { can: false, reason: `Objeto insuficiente: ${name} (tienes ${ownedQty}/${qty})` }

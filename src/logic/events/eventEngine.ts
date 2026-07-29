@@ -150,19 +150,21 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
   return multipliers
 }
 
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 /**
  * Checks if a specific species has active boosts.
  */
-export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { rate: number; shiny: number } {
+export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpeciesId | string): { rate: number; shiny: number } {
   let rateMult = 1
   let shinyMult = 1
-  const sId = speciesId.toLowerCase()
+  const sId = speciesId as PokemonSpeciesId
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
     if (!cfg.species) continue
 
-    const speciesList = cfg.species.split(',').map(s => s.trim().toLowerCase())
+    const speciesList = cfg.species.split(',').map(s => s.trim() as PokemonSpeciesId)
     if (speciesList.includes(sId)) {
       rateMult *= (cfg.speciesRateMult || 1)
       shinyMult *= (cfg.speciesShinyMult || 1)

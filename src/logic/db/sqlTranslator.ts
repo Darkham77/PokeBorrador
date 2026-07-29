@@ -8,7 +8,7 @@
  * Splits SQL by semicolon, respecting $$ blocks and strings.
  */
 export function splitSQLStatements(sql: string): string[] {
-  const statements: string[] = [];
+  const statements: string[] = []; // no-domain
   let current = '';
   let inDollarQuote = false;
   let inString = false;
@@ -86,34 +86,34 @@ export function splitSQLStatements(sql: string): string[] {
   return statements.filter(s => s.length > 0);
 }
 
+const SQL_SKIP_PATTERNS = [
+  'CREATE FUNCTION',
+  'CREATE OR REPLACE FUNCTION',
+  'DROP FUNCTION',
+  'DO $$',
+  'CREATE POLICY',
+  'DROP POLICY',
+  'ALTER PUBLICATION',
+  'COMMENT ON',
+  'CREATE TRIGGER',
+  'DROP TRIGGER',
+  'CREATE EXTENSION',
+  'REVOKE',
+  'GRANT',
+  'ALTER FUNCTION',
+  'SELECT SETVAL'
+] as const;
+
 /**
  * Translates common Postgres syntax to SQLite.
  */
 export function translatePostgresToSqlite(sql: string): string {
   if (!sql) return '';
   const cleanSql = sql.trim();
-  const upperSql = cleanSql.toUpperCase();
+  const upperSql = cleanSql.toUpperCase(); // text-ok
   
   // Logic Skipping for PostgreSQL-only constructs
-  const skipPatterns = [
-    'CREATE FUNCTION',
-    'CREATE OR REPLACE FUNCTION',
-    'DROP FUNCTION',
-    'DO $$',
-    'CREATE POLICY',
-    'DROP POLICY',
-    'ALTER PUBLICATION',
-    'COMMENT ON',
-    'CREATE TRIGGER',
-    'DROP TRIGGER',
-    'CREATE EXTENSION',
-    'REVOKE',
-    'GRANT',
-    'ALTER FUNCTION',
-    'SELECT SETVAL'
-  ];
-  
-  if (skipPatterns.some(pattern => upperSql.startsWith(pattern))) {
+  if (SQL_SKIP_PATTERNS.some(pattern => upperSql.startsWith(pattern))) {
     return '';
   }
 

@@ -386,6 +386,7 @@ Then summarize in chat with clear action options for the user.
 - Skip or comment out a failing scenario
 - Change an expected value to match incorrect `src/` behavior
 - Add a `try/catch` that silences a desync or failure
+- Add fallback values, default return objects, or recovery patches in `src/` or helper scripts (e.g. returning default coordinates, default objects, or fallback values when a sprite, item, move, UID, or asset lookup fails). If any data, asset, coordinate, or mapping is missing, IT IS A REAL BUG/ERROR IN DATA/DATASETS; it MUST throw an explicit error to fail loudly and force adding the missing asset/entry or fixing the data at the source.
 - Bypass a state-parity check
 - Use silent mock/patch workarounds in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize. The objective is never to finish simulations with fake patches/mocks, but to find and fix bugs in `src/` that prevent matching the fuzzer.
 - Hardcode FSM state transitions or manually manipulate FSM state variables (such as forcing transitions to `WAIT_INPUT` or bypassing `SWITCH_MENU`/`PLAYER_FAINT_SEQ` when a Pokémon is healed/restored) to force E2E simulations or test replays to pass. The FSM must transition naturally and mirror the simulator's requests exactly.

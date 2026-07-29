@@ -5,6 +5,7 @@ import { mulberry32 } from '@/logic/utils/math'
 
 // Mock the weather tables
 vi.mock('@/data/world/weather-tables', () => ({
+  isWeatherTableRouteId: (id: string) => id === 'test_route' || id === 'bad_route',
   ROUTE_WEATHER_TABLES: {
     test_route: {
       spring: {
@@ -49,34 +50,25 @@ describe('weatherUtils', () => {
   })
 
   describe('getRouteWeather', () => {
-    it('should return clear fallback if route has no data', () => {
-      const weather = getRouteWeather('unknown_route', 'spring', 100)
-      expect(weather).toBe('clear')
+    it('should throw Error if route has no registered weather table', () => {
+      expect(() => getRouteWeather('unknown_route' as any, 'spring', 100)).toThrow()
     })
 
-    it('should return clear fallback if season has no data', () => {
-      const weather = getRouteWeather('test_route', 'winter', 100)
-      expect(weather).toBe('clear')
+    it('should throw Error if season has no data', () => {
+      expect(() => getRouteWeather('test_route' as any, 'winter' as any, 100)).toThrow()
     })
 
     it('should be deterministic for the same epoch hour and route', () => {
-      const weather1 = getRouteWeather('test_route', 'spring', 5000)
-      const weather2 = getRouteWeather('test_route', 'spring', 5000)
+      const weather1 = getRouteWeather('test_route' as any, 'spring', 5000)
+      const weather2 = getRouteWeather('test_route' as any, 'spring', 5000)
       expect(weather1).toBe(weather2)
     })
 
     it('should select different weather for different day cycles', () => {
-      // 1 hour = 3600000ms
-      // Cycle is based on totalHours % 8
-      // phase 0,1: morning
-      // phase 2,3: day
-      // phase 4,5: dusk
-      // phase 6,7: night
-      
-      const morningWeather = getRouteWeather('test_route', 'spring', 0) // phase 0
-      const dayWeather = getRouteWeather('test_route', 'spring', 2)     // phase 2
-      const duskWeather = getRouteWeather('test_route', 'spring', 4)    // phase 4
-      const nightWeather = getRouteWeather('test_route', 'spring', 6)   // phase 6
+      const morningWeather = getRouteWeather('test_route' as any, 'spring', 0)
+      const dayWeather = getRouteWeather('test_route' as any, 'spring', 2)
+      const duskWeather = getRouteWeather('test_route' as any, 'spring', 4)
+      const nightWeather = getRouteWeather('test_route' as any, 'spring', 6)
       
       expect(morningWeather).toBe('fog')
       expect(dayWeather).toBe('clear')
@@ -85,14 +77,12 @@ describe('weatherUtils', () => {
     })
 
     it('should return 100% probability correctly', () => {
-      // Summer Day phase (2) -> heatwave
-      const weather = getRouteWeather('test_route', 'summer', 2)
+      const weather = getRouteWeather('test_route' as any, 'summer', 2)
       expect(weather).toBe('heatwave')
     })
 
-    it('should handle bad probability tables safely by returning a string', () => {
-      const weather = getRouteWeather('bad_route', 'spring', 0)
-      expect(typeof weather).toBe('string')
+    it('should throw Error on invalid probability tables', () => {
+      expect(() => getRouteWeather('bad_route' as any, 'spring', 0)).toThrow()
     })
   })
 

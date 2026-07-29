@@ -23,31 +23,19 @@ export function revive(p: Pokemon, amount: number): ItemEffectResult {
   return { success: true, message: `revivió con ${p.hp} HP` }
 }
 
-export function clearStatus(p: Pokemon, type: string): ItemEffectResult {
+import type { PokemonStatus } from '@/types/pokemon/pokemon';
+
+export function clearStatus(p: Pokemon, type: PokemonStatus | 'any'): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
 
-  const normTarget = type.toLowerCase();
-  const normStatus = p.status.toLowerCase();
-
-  const isMatch = normTarget === 'any' || 
-                  normStatus === normTarget ||
-                  (normTarget === 'psn' && normStatus === 'poison') ||
-                  (normTarget === 'poison' && normStatus === 'psn') ||
-                  (normTarget === 'par' && normStatus === 'paralyze') ||
-                  (normTarget === 'paralyze' && normStatus === 'par') ||
-                  (normTarget === 'brn' && normStatus === 'burn') ||
-                  (normTarget === 'burn' && normStatus === 'brn') ||
-                  (normTarget === 'slp' && normStatus === 'sleep') ||
-                  (normTarget === 'sleep' && normStatus === 'slp') ||
-                  (normTarget === 'frz' && normStatus === 'freeze') ||
-                  (normTarget === 'freeze' && normStatus === 'frz');
+  const isMatch = type === 'any' || p.status === type;
 
   if (!isMatch) return { success: false, message: 'No tiene ese estado.' };
 
   const old = p.status;
   p.status = '';
-  if ((old as string) === 'slp' || (old as string) === 'sleep') p.sleepTurns = 0;
+  if (old === 'slp') p.sleepTurns = 0;
   return { success: true, message: `se curó del estado ${old}` };
 }
 

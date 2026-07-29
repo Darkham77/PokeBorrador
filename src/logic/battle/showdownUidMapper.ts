@@ -19,10 +19,9 @@ export function getShowdownNickname(uid: string): string {
  */
 export function isMatchingUid(uidA: string | undefined | null, uidB: string | undefined | null): boolean {
   if (!uidA || !uidB) return false;
-  if (uidA === uidB) return true;
-  const cleanA = uidA.toLowerCase();
-  const cleanB = uidB.toLowerCase();
-  return cleanA === cleanB || cleanA.startsWith(cleanB) || cleanB.startsWith(cleanA);
+  const a = uidA.toLowerCase(); // text-ok
+  const b = uidB.toLowerCase(); // text-ok
+  return a === b || a.startsWith(b) || b.startsWith(a);
 }
 
 /**

@@ -153,7 +153,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(faintedPoke.hp, 50); // Revive cura el 50%
-      assert.strictEqual(faintedPoke.status, undefined); // Limpia estado
+      assert.strictEqual(faintedPoke.status, ''); // Showdown uses empty string for no status
       assert.strictEqual(mockContext.activeBattle.value!.enemyInventory['revive'], undefined); // Consumido
     });
 
@@ -164,7 +164,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       const itemUsed = await ai.evaluateAndUseItem(mockContext, activePoke);
       
       assert.strictEqual(itemUsed, true);
-      assert.strictEqual(activePoke.status, undefined);
+      assert.strictEqual(activePoke.status, '');
       assert.strictEqual(mockContext.activeBattle.value!.enemyInventory['antidote'], undefined);
     });
 
@@ -187,7 +187,7 @@ describe('HeuristicAI - Path Coverage Tests', () => {
       
       assert.strictEqual(itemUsed, true);
       assert.strictEqual(activePoke.hp, 100);
-      assert.strictEqual(activePoke.status, undefined);
+      assert.strictEqual(activePoke.status, '');
     });
   });
 });

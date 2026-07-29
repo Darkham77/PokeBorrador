@@ -20,7 +20,7 @@ describe('Capture Formula (battleEngine.js)', () => {
     maxHp: 100,
     catchRate: 45, // Standard rate
     type: 'normal',
-    status: null
+    status: ''
   }
 
   it('should guarantee capture with Master Ball', () => {

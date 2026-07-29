@@ -69,7 +69,7 @@ export interface SmogonTooltipResult {
 
 const CACHE_SIZE = 512;
 const cache = new Map<string, SmogonTooltipResult>();
-const cacheOrder: string[] = [];
+const cacheOrder: string[] = []; // no-domain
 
 function addToCache(key: string, result: SmogonTooltipResult): void {
   if (cache.size >= CACHE_SIZE) {
@@ -93,11 +93,13 @@ function resolveSpecies(id: string): string {
   return map[normalized] ?? (id.charAt(0).toUpperCase() + id.slice(1));
 }
 
+import type { PokemonStatus } from '@/types/pokemon/pokemon';
+
 function toSmogonStatus(
-  status: string | null | undefined
+  status: PokemonStatus | string | null | undefined
 ): '' | 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' {
   if (!status) return '';
-  const s = status.toLowerCase();
+  const s = status as PokemonStatus;
   if (s === 'par' || s === 'brn' || s === 'psn' || s === 'slp' || s === 'frz' || s === 'tox') {
     return s as 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
   }
@@ -351,13 +353,13 @@ export function calculateDamageForTooltip(
     const hasEviolite = defPkmn.item === 'Eviolite';
 
     // Terrain interactions
-    const terrainReductions: string[] = [];
+    const terrainReductions: string[] = []; // no-domain
     if (state.terrain) {
-      const normTerrain = state.terrain.toLowerCase();
-      const normMoveType = (move.type ?? '').toLowerCase();
-      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase());
+      const normTerrain = state.terrain.toLowerCase(); // text-ok
+      const normMoveType = (move.type ?? '').toLowerCase(); // text-ok
+      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
       const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'Air Balloon';
-      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase());
+      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
       const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'Air Balloon';
 
       if (isDefGrounded && normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {

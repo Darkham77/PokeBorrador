@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { useMapStore } from '@/stores/map'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets'
+import { MAP_ROUTE_MAPPING, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const warStore = useWarStore()
@@ -21,21 +21,22 @@ interface MapData {
   name: string
 }
 
-const getMapImage = (mapId: string) => {
-  const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[mapId] || 'default'
+const getMapImage = (mapId: MapRouteId) => {
+  const fileName = MAP_ROUTE_MAPPING[mapId]
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' })
 }
 
 const allMaps = computed(() => {
   const maps = pokemonDataProvider.getMaps() as MapData[]
   return maps.map(m => {
-    const data = warStore.mapDominance[m.id] || { union: 0, poder: 0, winner: null }
+    const mapId = requireMapRouteId(m.id)
+    const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null }
     const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
     const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : 50
     const winner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null) as 'union' | 'poder' | null
     
     return {
-      id: m.id,
+      id: mapId,
       name: m.name,
       union: data.union ?? 0,
       poder: data.poder ?? 0,

@@ -1,8 +1,10 @@
 import { Ref } from 'vue';
-import { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
+import { BattleState, BattleStages, BattleLog, type BattleSource } from '@/types/battle/battle';
 import { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from '@/types/system/stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+
+export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
 
 export interface BattleContext {
   gs: GameStore;
@@ -39,7 +41,7 @@ export interface BattleContext {
   isCrystalCave?: boolean;
   
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
-  addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;
+  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: 'player' | 'enemy' | null) => void;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
   completeBattleFlow: (option?: string) => Promise<void>;
   persistBattle: () => void;
@@ -51,7 +53,7 @@ export interface BattleContext {
   initBattle: () => Promise<void>;
   
   animations?: {
-    seats?: import('vue').Ref<Record<string, import('@/composables/battle/useBattleSeats').SeatState>>;
+    seats?: import('vue').Ref<Record<BattleSeatId, import('@/composables/battle/useBattleSeats').SeatState>>;
     triggerSearchEncounter: () => Promise<void>;
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;

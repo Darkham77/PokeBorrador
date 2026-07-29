@@ -2,7 +2,7 @@ import { ref, computed, watch, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { PDEX_ORDER } from '@/data/pokemon/pokedex'
+import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { hasPokemonTag } from '@/logic/constants/tags'
 
 interface FilterState {
@@ -126,8 +126,8 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
       }
 
       if (f.search) {
-        const query = f.search.toLowerCase()
-        const nameMatch = p.name.toLowerCase().includes(query)
+        const query = f.search.toLowerCase() // text-ok
+        const nameMatch = p.name.toLowerCase().includes(query) // text-ok
         const nickMatch = p.nickname?.toLowerCase().includes(query)
         if (!nameMatch && !nickMatch) return false
       }
@@ -164,8 +164,8 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
           result = tB - tA;
         }
         else if (sortMode.value === 'pokedex') {
-          const indexA = PDEX_ORDER.indexOf(pA.id);
-          const indexB = PDEX_ORDER.indexOf(pB.id);
+          const indexA = getPokedexOrderIndex(requirePokemonSpeciesId(pA.id));
+          const indexB = getPokedexOrderIndex(requirePokemonSpeciesId(pB.id));
           const idxA = indexA === -1 ? 9999 : indexA;
           const idxB = indexB === -1 ? 9999 : indexB;
           result = idxB - idxA;

@@ -4,7 +4,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { checkCompatibility, getEggSpecies, calculateInheritance, inheritNature, inheritMoves } from '../../../../src/logic/breeding/breedingEngine.ts';
 import { Dex } from '@pkmn/sim';
-import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+import type { Pokemon, PokemonGender, PokemonIVs } from '../../../../src/types/pokemon/pokemon.ts';
+import { requirePokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_breeding_coverage_report.json');
 
@@ -23,26 +24,35 @@ async function runBreedingFuzzer() {
 
   console.log(`🧬 Iniciando Fuzzer Matricial Completo: Cruzando todas las ${speciesList.length} especies entre sí (${speciesList.length * speciesList.length} combinaciones)...`);
 
-  const createMockPoke = (speciesName: string, gender: 'M' | 'F' | 'N', customId: number): Pokemon => {
+  const createMockPoke = (speciesName: string, gender: PokemonGender, customId: number): Pokemon => {
+    const speciesId = requirePokemonSpeciesId(Dex.toID(speciesName));
+    const ivs: PokemonIVs = customId === 1
+      ? { hp: 31, atk: 30, def: 29, spa: 28, spd: 27, spe: 26 }
+      : { hp: 5, atk: 6, def: 7, spa: 8, spd: 9, spe: 10 };
     return {
       uid: `mock-${speciesName}-${customId}`,
-      id: Dex.toID(speciesName),
+      id: speciesId,
       name: speciesName,
       level: 50,
       gender,
-      ability: `ability-${customId}`,
-      nature: customId === 1 ? 'Adamant' : 'Modest',
-      ivs: customId === 1 
-        ? { hp: 31, atk: 30, def: 29, spa: 28, spd: 27, spe: 26 }
-        : { hp: 5, atk: 6, def: 7, spa: 8, spd: 9, spe: 10 },
+      ability: customId === 1 ? 'overgrow' : 'blaze',
+      nature: customId === 1 ? 'adamant' : 'modest',
+      ivs,
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [{ id: 'pound', name: 'Destructor', pp: 35, maxPP: 35 }],
       hp: 100,
       maxHp: 100,
-      status: null,
+      atk: 50,
+      def: 50,
+      spa: 50,
+      spd: 50,
+      spe: 50,
+      status: '',
       exp: 0,
+      expNeeded: 100,
       isShiny: false,
-    } as unknown as Pokemon;
+      type: 'normal',
+    };
   };
 
   // Matriz completa: cruzamos todas las especies de la base de datos entre sí
@@ -53,18 +63,18 @@ async function runBreedingFuzzer() {
       const sB = speciesList[j]!;
       totalSimulations++;
 
-      let genderA: 'M' | 'F' | 'N' = 'M';
-      let genderB: 'M' | 'F' | 'N' = 'F';
+      let genderA: PokemonGender = 'm';
+      let genderB: PokemonGender = 'f';
 
       if (sA.id === 'ditto') {
-        genderA = 'N';
-        genderB = sB.gender === 'N' ? 'N' : 'M';
+        genderA = null;
+        genderB = sB.gender === 'N' ? null : 'm';
       } else if (sB.id === 'ditto') {
-        genderA = sA.gender === 'N' ? 'N' : 'F';
-        genderB = 'N';
+        genderA = sA.gender === 'N' ? null : 'f';
+        genderB = null;
       } else {
-        genderA = 'M';
-        genderB = 'F';
+        genderA = 'm';
+        genderB = 'f';
       }
 
       const pA = createMockPoke(sA.name, genderA, 1);
@@ -133,7 +143,7 @@ async function runBreedingFuzzer() {
           if (!ivsRangeValid) continue;
 
           // 3. Validar movimientos heredados
-          const inheritedMoves = inheritMoves(pA, pB, eggSpecies);
+          const inheritedMoves = inheritMoves(pA, pB, requirePokemonSpeciesId(eggSpecies));
           if (inheritedMoves.length > 4) {
             errors.push(`[Error] Demasiados movimientos heredados (${inheritedMoves.length}) en cruce ${pA.name} x ${pB.name}`);
             failed++;

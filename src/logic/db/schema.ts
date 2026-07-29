@@ -5,7 +5,7 @@
  * Synchronized with database/migrations and database/schemas.
  */
 
-export const TABLES_SCHEMA: string[] = [
+export const TABLES_SCHEMA = [
   "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, gender TEXT DEFAULT 'h', role TEXT DEFAULT 'user', elo_rating INTEGER DEFAULT 1000, pvp_wins INTEGER DEFAULT 0, pvp_losses INTEGER DEFAULT 0, pvp_draws INTEGER DEFAULT 0, badges INTEGER DEFAULT 0, current_session_id TEXT, db_version INTEGER DEFAULT 1, last_renamed_at TEXT, created_at TEXT, updated_at TEXT, is_banned BOOLEAN DEFAULT FALSE, ban_reason TEXT, playtime INTEGER DEFAULT 0, last_played_at TEXT, ranked_max_elo INTEGER DEFAULT 1000, class_level INTEGER DEFAULT 1, box_count INTEGER DEFAULT 0, longest_streak INTEGER DEFAULT 0, shiny_count INTEGER DEFAULT 0, max_damage INTEGER DEFAULT 0, total_battles INTEGER DEFAULT 0, trade_volume INTEGER DEFAULT 0, capture_attempts INTEGER DEFAULT 0, capture_successes INTEGER DEFAULT 0)",
   "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, last_save_id TEXT, updated_at TEXT)",
   "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
@@ -36,4 +36,4 @@ export const TABLES_SCHEMA: string[] = [
   "claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "system_config (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)",
   "config (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)"
-]
+] as const;

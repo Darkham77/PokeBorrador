@@ -39,14 +39,34 @@ export const MAP_ROUTE_MAPPING = {
   saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
   fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
   cinnabar_island: '/test aventura/imagenes/150px-Cinnabar_Island_FRLG.png'
-};
+} as const;
+export type MapRouteId = keyof typeof MAP_ROUTE_MAPPING;
+
+export function isMapRouteId(value: string): value is MapRouteId {
+  return value in MAP_ROUTE_MAPPING;
+}
+
+export function requireMapRouteId(value: string): MapRouteId {
+  if (isMapRouteId(value)) return value;
+  throw new Error(`Invalid map route id: ${value}`);
+}
 
 export const MAPS_WITH_CYCLES = [
   'ruta1', 'ruta2', 'bosqueviridian', 'ruta22', 'ruta3', 'mt.moon', 'ruta4',
   'ruta24', 'ruta25', 'ruta5', 'ruta6', 'ruta11', 'ruta9', 'tunelroca',
   'ruta10', 'ruta8', 'torrepokemon', 'ruta12', 'ruta13', 'zonasafari',
   'islasespuma', 'mansionpokemon', 'ruta23', 'callevictoria'
-];
+] as const;
+export type MapWithCycleId = (typeof MAPS_WITH_CYCLES)[number];
+
+export function isMapWithCycleId(value: string): value is MapWithCycleId {
+  return (MAPS_WITH_CYCLES as readonly string[]).includes(value);
+}
+
+export function requireMapWithCycleId(value: string): MapWithCycleId {
+  if (isMapWithCycleId(value)) return value;
+  throw new Error(`Invalid map with cycle id: ${value}`);
+}
 
 export const AVAILABLE_BATTLE_MAPS = [
   "bosqueviridian_amanecer",
@@ -141,3 +161,13 @@ export const AVAILABLE_BATTLE_MAPS = [
   "zonasafari_dia",
   "zonasafari_noche"
 ] as const;
+export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
+
+export function isBattleMapAssetId(value: string): value is BattleMapAssetId {
+  return AVAILABLE_BATTLE_MAPS.some(id => id === value);
+}
+
+export function requireBattleMapAssetId(value: string): BattleMapAssetId {
+  if (isBattleMapAssetId(value)) return value;
+  throw new Error(`Invalid battle map asset id: ${value}`);
+}

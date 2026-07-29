@@ -1,23 +1,29 @@
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+
+export type LeafWeatherId = 'wind' | 'strong_winds' | 'storm'
+export const LEAF_WEATHER_IDS = ['wind', 'strong_winds', 'storm'] as const satisfies readonly LeafWeatherId[]
+
+export function isLeafWeatherId(value: WeatherId): value is LeafWeatherId {
+  return value === 'wind' || value === 'strong_winds' || value === 'storm'
+}
 
 export function useAtmosphereLeafAnim(
   containerRef: Ref<HTMLElement | null>,
   props: {
-    weather: string
+    weather: WeatherId
     isPerformanceMode: boolean
     isLowPower: boolean
     animSeed: number
     isVisible: boolean
   }
 ) {
-  const leafTypes = ['wind', 'strong_winds', 'storm']
-
   const initLeafAnim = (ctxVal: gsap.Context) => {
-    if (!leafTypes.includes(props.weather) || props.isPerformanceMode || !ctxVal) return
+    if (!isLeafWeatherId(props.weather) || props.isPerformanceMode || !ctxVal) return
 
     const runLeafAnimation = () => {
-      if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !leafTypes.includes(props.weather)) return
+      if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !isLeafWeatherId(props.weather)) return
 
       const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
       if (!leafNodes || leafNodes.length === 0) return
@@ -26,7 +32,7 @@ export function useAtmosphereLeafAnim(
 
       activeLeaves.forEach((el, i) => {
         const animateLeaf = () => {
-          if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !leafTypes.includes(props.weather)) return
+          if (ctxVal.reverted || !props.isVisible || props.isPerformanceMode || !isLeafWeatherId(props.weather)) return
 
           const s1 = Math.random()
           const s2 = Math.random()
@@ -90,7 +96,8 @@ export function useAtmosphereLeafAnim(
   }
 
   return {
-    leafTypes,
+    leafTypes: LEAF_WEATHER_IDS,
+    isLeafWeatherId,
     initLeafAnim
   }
 }

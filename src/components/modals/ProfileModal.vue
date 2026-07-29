@@ -195,7 +195,7 @@ const handleFactionChoice = () => {
         />
 
         <ProfileXpCard 
-          v-if="classStore.playerClass && classStore.playerClass !== 'none' && classStore.playerClass !== 'undefined' && classStore.currentClassDef"
+          v-if="classStore.playerClass && classStore.currentClassDef"
           :level="classStore.classLevel"
           :exp="classStore.classXP"
           :exp-needed="classStore.classXPNeeded"

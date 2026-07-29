@@ -1,6 +1,8 @@
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useInventoryStore } from '@/stores/inventory/inventory.ts';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
@@ -50,19 +52,13 @@ export function executeCloneFossil(
     return false;
   }
 
-  const FOSSIL_SPECIES_MAP: Record<string, string> = {
-    'domefossil': 'kabuto',
-    'helixfossil': 'omanyte',
-    'oldamber': 'aerodactyl'
-  };
+  const FOSSIL_SPECIES_MAP: Record<ItemId, PokemonSpeciesId> = {
+    domefossil: 'kabuto',
+    helixfossil: 'omanyte',
+    oldamber: 'aerodactyl'
+  } satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
   
-  const cleanFossilId = fossilId.toLowerCase().trim();
-  const normalizedId = cleanFossilId === 'fósil domo' || cleanFossilId === 'fosil domo' ? 'domefossil' :
-                       cleanFossilId === 'fósil hélix' || cleanFossilId === 'fosil helix' ? 'helixfossil' :
-                       cleanFossilId === 'ámbar viejo' || cleanFossilId === 'ambar viejo' ? 'oldamber' :
-                       fossilId;
-
-  const speciesId = FOSSIL_SPECIES_MAP[normalizedId];
+  const speciesId = FOSSIL_SPECIES_MAP[fossilId as ItemId];
   if (!speciesId) {
     uiStore.notify('Fósil no reconocido para clonar.', '❌');
     return false;

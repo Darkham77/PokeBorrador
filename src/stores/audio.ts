@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
-import { POKEMON_CRIES_DATABASE } from '@/data/pokemon/pokemonFeetDatabase';
+import { getPokemonCryFilename } from '@/data/pokemon/pokemonFeetDatabase';
 import { toID } from '@pkmn/sim';
 
 /**
@@ -61,7 +61,7 @@ export const useAudioStore = defineStore('audio', () => {
     if (!ctx || !dest) return;
 
     const cleanName = toID(pokemonName);
-    const cryToFetch = POKEMON_CRIES_DATABASE[cleanName] || cleanName;
+    const cryToFetch = getPokemonCryFilename(cleanName);
 
     let buffer = cryCache.get(cryToFetch);
 

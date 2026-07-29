@@ -1,4 +1,6 @@
-export const FIRE_RED_MAPS = [
+import type { MapLocation } from '@/types/pokemon/encounters';
+
+export const FIRE_RED_MAPS: MapLocation[] = [
   {
     "id": "route1",
     "name": "Ruta 1",
@@ -78,6 +80,14 @@ export const FIRE_RED_MAPS = [
         "visitors": {
           "pidgeotto": 80,
           "butterfree": 20
+        }
+      },
+      "thunderstorm": {
+        "visitors": {
+          "shinx": 100
+        },
+        "exclusive": {
+          "castform": 100
         }
       }
     }

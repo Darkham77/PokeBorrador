@@ -6,6 +6,8 @@ import { generateSearchLoopEncounter } from './searchLoopEncounterHelper.ts'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { nextTick } from 'vue'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -53,7 +55,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     
-    const locId = ctx.activeBattle.value.locationId || ''
+    const locId = requireMapRouteId(ctx.activeBattle.value.locationId || '')
     
     const encounter = await generateSearchLoopEncounter(ctx, locId)
     
@@ -63,14 +65,14 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     if (encounter) {
       if (encounter.type === 'trainer') {
-        const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(ctx.gs.state, locId || '')
+        const { name, sprite, quote, archetype, enemyTeam } = await buildTrainerEncounter(ctx.gs.state, locId)
 
         if (enemyTeam.length > 0 && enemyTeam[0]) {
           generatedPoke = enemyTeam[0]
           ctx.activeBattle.value.isTrainer = true
           ctx.activeBattle.value.enemyTeam = enemyTeam
           ctx.activeBattle.value.trainerName = name
-          ctx.activeBattle.value.trainerSprite = sprite
+          ctx.activeBattle.value.trainerSprite = requireNpcSpriteId(sprite)
           ctx.activeBattle.value.trainerArchetype = archetype
           ctx.activeBattle.value.quote = quote
           ctx.activeBattle.value.isRival = false
@@ -83,7 +85,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.isTrainer = true
           ctx.activeBattle.value.enemyTeam = enemyTeam
           ctx.activeBattle.value.trainerName = name
-          ctx.activeBattle.value.trainerSprite = sprite
+          ctx.activeBattle.value.trainerSprite = requireNpcSpriteId(sprite)
           ctx.activeBattle.value.trainerArchetype = 'rival'
           ctx.activeBattle.value.isRival = true
         }

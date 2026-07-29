@@ -1,6 +1,7 @@
 import { TM_COMPAT, GAME_TMS } from '../../data/pokemon/pokedex.ts';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
@@ -10,6 +11,7 @@ import { getItemById } from '../../data/inventory/items.ts';
 interface TMData {
   id: string
   name: string
+  moveId: PokemonMoveId
 }
 
 /**
@@ -18,13 +20,15 @@ interface TMData {
  * Returns { success: boolean, message: string, resultType?: string }
  */
 
-export const isValidTarget = (itemId: string, pokemon: Pokemon): boolean => {
+import type { ItemId } from '@/data/inventory/items';
+
+export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
-  const resolvedId = itemId;
+  const resolvedId = itemId as ItemId;
 
   // Ensure the item ID exists in SHOP_ITEMS (or is a valid TM)
-  const isTM = resolvedId.toLowerCase().startsWith('tm') || resolvedId.toLowerCase().startsWith('mt');
+  const isTM = resolvedId.startsWith('tm') || resolvedId.startsWith('mt');
   let itemExists = isTM;
   if (!isTM) {
     try {
@@ -177,7 +181,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }
-    const tmData = (GAME_TMS as TMData[]).find(t => t.id === tmId);
+    const tmData: TMData | undefined = GAME_TMS.find(t => t.id === tmId);
     if (!tmData) return { success: false, message: 'MT inválida.' };
     
     // Check if pokemon already knows the move
@@ -190,7 +194,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
       message: `aprenderá ${tmData.name}`, 
       deferred: true, 
       resultType: 'learn_move', 
-      moveName: tmData.name 
+      moveName: tmData.moveId 
     };
   }
   return null;
@@ -199,4 +203,3 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
 import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from './itemEffectHandlers.ts'
 
 export { healHp, clearStatus, curaTotal, restorePP, handleStone }
-

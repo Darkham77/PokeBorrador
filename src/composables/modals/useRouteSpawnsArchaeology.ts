@@ -176,7 +176,7 @@ export function useRouteSpawnsArchaeology(
   })
 
   function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
-    const lines: string[] = []
+    const lines: string[] = [] // no-domain
 
     lines.push(`CÁLCULO DE PROBABILIDAD BASE:`)
     lines.push(`• Peso Base del Grupo: ${reward.baseWeight.toFixed(1)} pts`)

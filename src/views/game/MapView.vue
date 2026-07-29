@@ -19,6 +19,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
+import { requireMapRouteId } from '@/data/world/map-assets'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -46,8 +47,8 @@ onUnmounted(() => {
 
 const navigateToMap = async (loc: MapLocation | string | number) => {
   if (modalStore.isOpen('Confirm')) return
-  const id = typeof loc === 'object' ? loc.id : String(loc)
-  const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+  const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc))
+  const maps = pokemonDataProvider.getMaps()
   const targetMap = maps.find(m => m.id === id)
   
   // Lógica de extorsión del Team Rocket

@@ -1,7 +1,7 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { MAP_ROUTE_MAPPING, AVAILABLE_BATTLE_MAPS } from '@/data/world/map-assets'
+import { MAP_ROUTE_MAPPING, isBattleMapAssetId, requireBattleMapAssetId, requireMapRouteId } from '@/data/world/map-assets'
 
-const CYCLE_SUFFIXES: Record<string, string> = {
+const CYCLE_SUFFIXES = {
   // English keys
   morning: '_amanecer',
   dawn: '_amanecer',
@@ -13,6 +13,25 @@ const CYCLE_SUFFIXES: Record<string, string> = {
   dia: '_dia',
   atardecer: '_atardecer',
   noche: '_noche'
+} as const
+
+type BattleBackgroundCycle = keyof typeof CYCLE_SUFFIXES
+const BATTLE_BACKGROUND_CYCLES = [
+  'morning',
+  'dawn',
+  'day',
+  'dusk',
+  'night',
+  'amanecer',
+  'dia',
+  'atardecer',
+  'noche',
+] as const satisfies readonly BattleBackgroundCycle[]
+
+function requireBattleBackgroundCycle(value: string): BattleBackgroundCycle {
+  const cycle = BATTLE_BACKGROUND_CYCLES.find(candidate => candidate === value)
+  if (cycle) return cycle
+  throw new Error(`[useBattleBackground] Invalid battle background cycle: ${value}`)
 }
 
 export function useBattleBackground() {
@@ -24,43 +43,35 @@ export function useBattleBackground() {
    * @returns {{ url: string, isBakedIn: boolean }}
    */
   function getBackgroundUrl(locationId: string, cycle = 'day', _isFishing = false) {
-    let baseName = MAP_ROUTE_MAPPING[locationId as keyof typeof MAP_ROUTE_MAPPING]
-    if (!baseName) {
-      if (locationId === 'gym' || locationId === 'pvp') {
-        baseName = 'gimnasio'
-      } else {
-        baseName = 'ruta1' // Default fallback
-      }
-    }
+    const baseName = locationId === 'gym' || locationId === 'pvp'
+      ? 'gimnasio'
+      : MAP_ROUTE_MAPPING[requireMapRouteId(locationId)]
 
-    const suffix = CYCLE_SUFFIXES[cycle.toLowerCase()] || '_dia'
-    const battleMapsSet = new Set<string>(AVAILABLE_BATTLE_MAPS)
+    const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())] // text-ok
 
     let fileName = `${baseName}${suffix}`
     let isBakedIn = false
 
-    if (battleMapsSet.has(fileName)) {
+    if (isBattleMapAssetId(fileName)) {
       // The cycle-suffixed file exists
       isBakedIn = suffix !== '_dia'
     } else {
       // Fallback to day version
       const dayFileName = `${baseName}_dia`
-      if (battleMapsSet.has(dayFileName)) {
+      if (isBattleMapAssetId(dayFileName)) {
         fileName = dayFileName
         isBakedIn = false
-      } else if (battleMapsSet.has(baseName)) {
+      } else if (isBattleMapAssetId(baseName)) {
         // Fallback to base name without suffix
         fileName = baseName
         isBakedIn = false
       } else {
-        // Ultimate fallback
-        fileName = 'ruta1_dia'
-        isBakedIn = false
+        throw new Error(`[useBattleBackground] No battle background asset for location ${locationId} and cycle ${cycle}`)
       }
     }
 
     return {
-      url: getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName),
+      url: getAssetUrl(ASSET_TYPES.BATTLE_BG, requireBattleMapAssetId(fileName)),
       isBakedIn
     }
   }

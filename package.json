@@ -51,7 +51,7 @@
     "test:combat:choice:report": "vitest run tests/unit/battle/test_choice_items.spec.ts --reporter=verbose > scratch/choice_report.txt",
     "sim:fuzzer:report": "npm run sim:fuzzer > scripts/e2e/results/fuzzer_report.txt",
     "sim:combat:all:report": "npm run sim:fuzzer && playwright test scripts/e2e/ > scripts/e2e/results/playwright_report.txt",
-    "lint": "npm run validate:types && eslint . --fix --cache && npm run lint:md",
+    "lint": "npm run validate:domain-types:errors && npm run validate:types && eslint . --fix --cache && npm run lint:md",
     "lint:fix": "eslint . --fix --cache",
     "lint:report": "eslint . --cache -f codeframe -o scratch/lint_report.txt",
     "lint:summary": "node -e \"try { require('child_process').execSync('npm run lint:report', { stdio: 'inherit', timeout: 30000 }); } catch {} require('child_process').execSync('node --experimental-strip-types scripts/maintenance/parse_lint.ts', { stdio: 'inherit' });\"",
@@ -116,6 +116,10 @@
     "validate:fsm:summary": "npm run validate:fsm:implementation -- --summary",
     "validate:fsm:errors": "npm run validate:fsm:implementation -- --errors-only",
     "validate:fsm:report": "npm run validate:fsm:implementation -- --output=scratch/fsm_report.txt",
+    "validate:domain-types": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_domain_types.ts",
+    "validate:domain-types:errors": "npm run validate:domain-types -- --errors-only",
+    "validate:domain-types:summary": "npm run validate:domain-types -- --summary",
+    "validate:domain-types:report": "npm run validate:domain-types -- --output=scratch/domain_types_report.txt",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {

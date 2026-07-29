@@ -10,6 +10,10 @@ import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireDayPhase } from '@/logic/utils/timeUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
@@ -44,6 +48,7 @@ const { isSearching } = storeToRefs(battleStore)
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 const audioStore = useAudioStore()
+const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id))
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
@@ -238,16 +243,21 @@ const {
   shouldShowEncounterLayers
 } = useBattleHud(animations, battleStore, enemy)
 
-const computedWeather = computed(() => {
+const computedWeather = computed<WeatherId>(() => {
   // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1 (incluso en gimnasios)
   if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
-    return battle.value.weather.visual || battle.value.weather.type
+    return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
   }
   // Bloquear clima natural en gimnasios
   if (battle.value?.isGym) return 'clear'
   // De lo contrario, cae en el clima global o del mapa
-  if (mapStore.globalWeather) return mapStore.globalWeather
-  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+  return getRouteWeather(
+    requireMapRouteId(battle.value?.locationId || 'route1'),
+    requireWeatherSeasonId(mapStore.currentSeason.id),
+    mapStore.currentEpochHour,
+    requireDayPhase(mapStore.currentCycle)
+  )
 })
 
 const atmosphereSeed = computed(() => {
@@ -647,7 +657,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
             :shadow-key="currentEnemyShadowKey"
-            :z-index="'calc(var(--z-map-spawns) + 2)'"
+            :z-index="2"
             :anim-state="getPokemonAnimState('enemy', p)"
             :ball-id="getPokemonBallId('enemy', p)"
             :is-shaking="getPokemonIsShaking('enemy', p)"
@@ -699,7 +709,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             :base-size="BASE_ENTITY_SIZE_PLAYER"
             :ground-y="playerGroundY"
             :shadow-key="currentPlayerShadowKey"
-            :z-index="'calc(var(--z-map-spawns) + 4)'"
+            :z-index="4"
             :anim-state="getPokemonAnimState('player', p)"
             :ball-id="getPokemonBallId('player', p)"
             :is-shaking="getPokemonIsShaking('player', p)"
@@ -775,7 +785,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
     <AtmosphereLayer
       :weather="computedWeather"
       :cycle="mapStore.currentCycle"
-      :season="mapStore.currentSeason.id"
+      :season="currentWeatherSeason"
       :is-performance-mode="uiStore.isPerformanceMode"
       :z-index="'calc(var(--z-base) + 20)'"
       :anim-seed="atmosphereSeed"

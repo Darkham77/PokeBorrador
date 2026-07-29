@@ -7,6 +7,7 @@ import MapCard from '@/components/map/MapCard.vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 // Mock dependencies
 vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
@@ -79,7 +80,7 @@ describe('MapCard Discovery Logic', () => {
   })
 
   const defaultProps = {
-    map: { id: 'route-1', name: 'Route 1', lv: 1 },
+    map: { id: 'route1', name: 'Route 1', lv: 1 },
     dominance: {
       guardian: { id: 'pidgey', captured: false },
       winner: 'neutral'
@@ -99,7 +100,7 @@ describe('MapCard Discovery Logic', () => {
 
   it('reveals guardian name and sprite if seen in combat (but not caught)', async () => {
     // Only in seenPokedex
-    const guardianId = defaultProps.dominance.guardian.id // 'pidgey'
+    const guardianId = requirePokemonSpeciesId(defaultProps.dominance.guardian.id) // 'pidgey'
     gameStore.state.seenPokedex = [guardianId]
     gameStore.state.pokedex = []
     

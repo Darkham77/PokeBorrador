@@ -16,6 +16,7 @@ import { useBreedingActions } from '@/stores/game/actions/breedingActions.ts'
 import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
 
 import { DBRouter } from '@/logic/db/dbRouter'
+import { requireMapRouteId } from '@/data/world/map-assets'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
@@ -209,7 +210,7 @@ export const useGameStore = defineStore('game', () => {
     const captures = state.guardianCaptures || {}
     return Object.entries(captures)
       .filter(([_, date]) => date === today)
-      .map(([mapId]) => mapId)
+      .map(([mapId]) => requireMapRouteId(mapId))
   })
 
   // --- WATCHERS ---

@@ -2,33 +2,37 @@ import { computed, type Ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/world/map-assets'
-import { translateType } from '@/data/battle/types'
+import { toPokemonType, translateType, type PokemonType } from '@/data/battle/types'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
+import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils'
+import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { DominanceInfo } from '@/types/system/stores'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 interface SpawnPool {
-  generic: string[]
-  specific: string[]
-  rates: Record<string, number>
+  generic: PokemonSpeciesId[]
+  specific: PokemonSpeciesId[]
+  rates: Partial<Record<PokemonSpeciesId, number>>
 }
 
 interface MapCardProps {
   map: MapLocation
   isLocked?: boolean
   isSafariLocked?: boolean
-  cycle?: 'morning' | 'day' | 'dusk' | 'night'
-  weather?: string
+  cycle?: DayPhase
+  weather?: WeatherId
   badgeCount?: number
   dominance?: DominanceInfo | null
   isRocketExtorted?: boolean
   spawnPool?: SpawnPool
-  forcedWeather?: string | null
+  forcedWeather?: WeatherId | null
 }
 
 export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, isVisible: Ref<boolean>) {
@@ -36,12 +40,13 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   const gameStore = useGameStore()
   const mapStore = useMapStore()
 
-  const computedWeather = computed(() => {
-    return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour, props.cycle || 'day')
+  const computedWeather = computed<WeatherId>(() => {
+    return props.forcedWeather
+      || (mapStore.globalWeather ? requireWeatherId(mapStore.globalWeather) : getRouteWeather(props.map.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, props.cycle || 'day'))
   })
 
   const imgPath = computed(() => {
-    const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[props.map.id] || 'default'
+    const fileName = MAP_ROUTE_MAPPING[props.map.id]
     return getAssetUrl(ASSET_TYPES.MAP, fileName, { 
       cycle: props.cycle,
       isLowPower: uiStore.isLowPowerActive
@@ -62,16 +67,16 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 
   const weatherEmoji = computed(() => {
-    const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+    const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
     if (visual) return visual.icon
-    const mech = getMechanicalWeather(computedWeather.value as string)
+    const mech = getMechanicalWeather(computedWeather.value)
     return WEATHER_UI_METADATA[mech]?.icon || ''
   })
 
   const weatherName = computed(() => {
-    const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+    const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
     if (visual) return visual.label
-    const mech = getMechanicalWeather(computedWeather.value as string)
+    const mech = getMechanicalWeather(computedWeather.value)
     return WEATHER_UI_METADATA[mech]?.label || 'Normal'
   })
 
@@ -90,14 +95,14 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
   const getFormattedTypes = (data: { type: string | string[]; type2?: string }): string => {
-    const types: string[] = []
+    const types: PokemonType[] = []
     if (Array.isArray(data.type)) {
-      types.push(...data.type)
+      types.push(...data.type.map(t => toPokemonType(t)))
     } else {
-      if (data.type) types.push(data.type)
-      if (data.type2) types.push(data.type2)
+      if (data.type) types.push(toPokemonType(data.type))
+      if (data.type2) types.push(toPokemonType(data.type2))
     }
-    return types.map(translateType).join('/').toUpperCase()
+    return types.map(type => translateType(type)).join('/').toUpperCase() // text-ok
   }
 
   const processedGuardian = computed(() => {
@@ -115,7 +120,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     }
     
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-    const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
+    const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
     const typeInfo = (isSeen && data) ? getFormattedTypes(data) : '???'
     const captured = props.dominance.guardian.captured || (gameStore.dailyGuardianCaptures || []).includes(props.map.id)
 
@@ -133,19 +138,20 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
 
   const isPlayerWinner = computed(() => checkPlayerWinner(props.dominance?.winner || null, gameStore.state.faction))
 
-  const allSpawns = computed(() => {
+  const allSpawns = computed<PokemonSpeciesId[]>(() => {
     const pool = props.spawnPool || { generic: [], specific: [], rates: {} }
     return [...pool.generic, ...pool.specific]
   })
 
-  const spawnGrid = computed(() => {
+  const spawnGrid = computed<{ slots: Array<PokemonSpeciesId | null>; rows: number; cols: number; totalSlots: number }>(() => {
     const weather = computedWeather.value
     const cycle = props.cycle || 'day'
     const wildList = props.map.wild?.[cycle] || []
 
     const filteredSpawns = allSpawns.value.filter(id => {
-      const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
-      const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
+      const weatherConfig = props.map.weather?.[weather]
+      const isVisitor = !!weatherConfig?.visitors && getSpeciesEntries(weatherConfig.visitors).some(entry => entry.id === id)
+      const isExclusive = !!weatherConfig?.exclusive && getSpeciesEntries(weatherConfig.exclusive).some(entry => entry.id === id)
       const isFishingActive = !!props.map.fishing?.pool?.includes(id)
       const hasWildRestrictions = !!props.map.wild
       const isWildActive = !hasWildRestrictions || wildList.includes(id) || isVisitor || isExclusive || isFishingActive
@@ -154,9 +160,9 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     })
 
     const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)
-    const grid = new Array(totalSlots).fill(null)
+    const grid: Array<PokemonSpeciesId | null> = new Array(totalSlots).fill(null)
     filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
-    return { slots: grid, rows, cols }
+    return { slots: grid, rows, cols, totalSlots }
   })
 
   const processedGrid = computed(() => {
@@ -165,7 +171,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     const seenPokedex = gameStore.state.seenPokedex || []
     const caughtPokedex = gameStore.state.pokedex || []
 
-    return slots.map((id: string | null, index: number) => {
+    return slots.map((id, index) => {
       if (!id) return { id: null, key: `empty-${index}` }
       let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
       let isCaught = caughtPokedex.includes(id)
@@ -178,18 +184,19 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
       const pool = props.spawnPool || { generic: [], specific: [], rates: {} }
       const rate = pool.rates?.[id] || 10
       const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-      const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
+      const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
       const typeInfo = (isSeen && data) ? `Tipo: ${getFormattedTypes(data)}` : ''
 
-      const cycles = ['morning', 'day', 'dusk', 'night']
+      const cycles = DAY_PHASES
       const appearingCycles = cycles.filter(c => (props.map.wild?.[c] || []).includes(id))
       const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
       
-      const emojiMap: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
+      const emojiMap: Record<DayPhase, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
       
       const weather = computedWeather.value
-      const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
-      const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
+      const weatherConfig = props.map.weather?.[weather]
+      const isVisitor = !!weatherConfig?.visitors && getSpeciesEntries(weatherConfig.visitors).some(entry => entry.id === id)
+      const isExclusive = !!weatherConfig?.exclusive && getSpeciesEntries(weatherConfig.exclusive).some(entry => entry.id === id)
 
       let timeText = ''
       

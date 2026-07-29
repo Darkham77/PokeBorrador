@@ -23,6 +23,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       name: 'Mewtwo',
       level: 70,
       vigor: 0,
+      status: '',
       type: 'psychic',
       hp: 200,
       maxHp: 200,
@@ -33,8 +34,8 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       spe: 150,
       moves: [],
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-      nature: 'Modest',
-      ability: 'Presión',
+      nature: 'modest',
+      ability: 'pressure',
       exp: 0,
       expNeeded: 1000
     }
@@ -52,10 +53,10 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           id: 'pikachu',
           name: 'Pikachu',
           vigor: 20,
-          heldItem: 'pocion', // Legacy item
-          ability: 'escape', // Legacy ability
+          heldItem: 'potion',
+          ability: 'runaway',
           moves: [
-            { id: 'somnifera', name: 'Espora' }, // Legacy move
+            { id: 'spore', name: 'Espora' },
             { id: 'tackle', name: 'Placaje' }
           ]
         },
@@ -64,17 +65,17 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           id: 'mew',
           name: 'Mew',
           vigor: 12, // Legendary: should be coerced to 0
-          ability: 'Sincronía',
+          ability: 'synchronize',
           moves: []
         }
       ],
       box: [
         {
           uid: 'zapdos-test',
-          id: 'Zapdos',
+          id: 'zapdos',
           name: 'Zapdos',
           vigor: 8, // Legendary: should be coerced to 0
-          ability: 'Presión',
+          ability: 'pressure',
           moves: []
         },
         {
@@ -82,10 +83,10 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
           id: 'bulbasaur',
           name: 'Bulbasaur',
           vigor: 20,
-          heldItem: 'caramelo_vigor', // Legacy item
-          ability: 'puntocura', // Legacy ability
+          heldItem: 'rarecandy',
+          ability: 'healer',
           moves: [
-            { id: 'recurrente', name: 'Semilladora' } // Legacy move
+            { id: 'leechseed', name: 'Semilladora' }
           ]
         }
       ]

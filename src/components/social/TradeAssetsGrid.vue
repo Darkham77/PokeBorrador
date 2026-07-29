@@ -9,19 +9,19 @@ const props = defineProps<{
 
 const hasOffer = computed(() =>
   !!props.trade.offer_pokemon || props.trade.offer_money > 0 ||
-  Object.values(props.trade.offer_items ?? {}).some(q => q > 0)
+  Object.values(props.trade.offer_items ?? {}).some(q => q !== undefined && q > 0)
 );
 
 const hasRequest = computed(() =>
   !!props.trade.request_pokemon || props.trade.request_money > 0 ||
-  Object.values(props.trade.request_items ?? {}).some(q => q > 0)
+  Object.values(props.trade.request_items ?? {}).some(q => q !== undefined && q > 0)
 );
 
 const offerItems = computed(() =>
-  Object.entries(props.trade.offer_items ?? {}).filter(([, q]) => q > 0)
+  Object.entries(props.trade.offer_items ?? {}).filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
 );
 const requestItems = computed(() =>
-  Object.entries(props.trade.request_items ?? {}).filter(([, q]) => q > 0)
+  Object.entries(props.trade.request_items ?? {}).filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
 );
 </script>
 

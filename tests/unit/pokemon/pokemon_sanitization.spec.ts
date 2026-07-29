@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getMaxBuffDuration } from '@/data/inventory/items';
+import { BUFF_FIELDS, getMaxBuffDuration } from '@/data/inventory/items';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -101,7 +101,7 @@ describe('Player State Buff Timer Sanitization', () => {
       eggs: []
     };
 
-    const buffFields = Object.keys(state).filter(key => key.endsWith('Secs'));
+    const buffFields = BUFF_FIELDS.filter(field => state[field] !== undefined);
     
     // Simulate sanitizeAll logic
     buffFields.forEach(field => {
@@ -120,4 +120,3 @@ describe('Player State Buff Timer Sanitization', () => {
     expect(state.shinyBoostSecs).toBe(0);
   });
 });
-

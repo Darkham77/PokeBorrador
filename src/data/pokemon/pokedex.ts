@@ -1,3 +1,6 @@
+import { SPECIES_METADATA, type SpeciesMetadataId } from './speciesMetadata.ts';
+import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+
 export const PDEX_ORDER = [
   'bulbasaur','ivysaur','venusaur',
   'charmander','charmeleon','charizard',
@@ -74,7 +77,8 @@ export const PDEX_ORDER = [
   'articuno','zapdos','moltres',
   'dratini','dragonair','dragonite',
   'mewtwo','mew'
-];
+] as const;
+export type Gen1PokemonSpeciesId = (typeof PDEX_ORDER)[number];
 
 export const GEN2_PDEX_ORDER = [
   'chikorita', 'bayleef', 'meganium', 'cyndaquil', 'quilava', 'typhlosion', 'totodile', 'croconaw', 'feraligatr',
@@ -89,7 +93,9 @@ export const GEN2_PDEX_ORDER = [
   'houndour', 'houndoom', 'kingdra', 'phanpy', 'donphan', 'porygon2', 'stantler', 'smeargle',
   'tyrogue', 'hitmontop', 'smoochum', 'elekid', 'magby', 'miltank', 'blissey', 'raikou', 'entei',
   'suicune', 'larvitar', 'pupitar', 'tyranitar', 'lugia', 'hooh', 'celebi'
-];
+] as const;
+export type Gen2PokemonSpeciesId = (typeof GEN2_PDEX_ORDER)[number];
+export type PokedexOrderSpeciesId = Gen1PokemonSpeciesId | Gen2PokemonSpeciesId;
 
 export const PDEX_TYPE_COLORS = {
   normal:'#aaa', fire:'#FF6B35', water:'#3B8BFF', grass:'#6BCB77',
@@ -160,57 +166,57 @@ export { POKEMON_SPRITE_IDS } from './spriteMapping.ts';
 
 
 export const GAME_TMS = [
-  { id: 'TM01', name: 'Puño Certero', type: 'fighting' },
-  { id: 'TM02', name: 'Garra Dragón', type: 'dragon' },
-  { id: 'TM03', name: 'Hidropulso', type: 'water' },
-  { id: 'TM04', name: 'Paz Mental', type: 'psychic' },
-  { id: 'TM05', name: 'Rugido', type: 'normal' },
-  { id: 'TM06', name: 'Tóxico', type: 'poison' },
-  { id: 'TM07', name: 'Granizo', type: 'ice' },
-  { id: 'TM08', name: 'Corpulencia', type: 'fighting' },
-  { id: 'TM09', name: 'Recurrente', type: 'grass' },
-  { id: 'TM10', name: 'Poder Oculto', type: 'normal' },
-  { id: 'TM11', name: 'Día Soleado', type: 'fire' },
-  { id: 'TM12', name: 'Mofa', type: 'dark' },
-  { id: 'TM13', name: 'Rayo Hielo', type: 'ice' },
-  { id: 'TM14', name: 'Ventisca', type: 'ice' },
-  { id: 'TM15', name: 'Hiperrayo', type: 'normal' },
-  { id: 'TM16', name: 'Pantalla de Luz', type: 'psychic' },
-  { id: 'TM17', name: 'Protección', type: 'normal' },
-  { id: 'TM18', name: 'Danza Lluvia', type: 'water' },
-  { id: 'TM19', name: 'Gigadrenado', type: 'grass' },
-  { id: 'TM20', name: 'Velo Sagrado', type: 'normal' },
-  { id: 'TM21', name: 'Frustración', type: 'normal' },
-  { id: 'TM22', name: 'Rayo Solar', type: 'grass' },
-  { id: 'TM23', name: 'Cola Férrea', type: 'steel' },
-  { id: 'TM24', name: 'Rayo', type: 'electric' },
-  { id: 'TM25', name: 'Trueno', type: 'electric' },
-  { id: 'TM26', name: 'Terremoto', type: 'ground' },
-  { id: 'TM27', name: 'Retribución', type: 'normal' },
-  { id: 'TM28', name: 'Excavar', type: 'ground' },
-  { id: 'TM29', name: 'Psíquico', type: 'psychic' },
-  { id: 'TM30', name: 'Bola Sombra', type: 'ghost' },
-  { id: 'TM31', name: 'Demolición', type: 'fighting' },
-  { id: 'TM32', name: 'Doble Equipo', type: 'normal' },
-  { id: 'TM33', name: 'Reflejo', type: 'psychic' },
-  { id: 'TM34', name: 'Onda Voltio', type: 'electric' },
-  { id: 'TM35', name: 'Lanzallamas', type: 'fire' },
-  { id: 'TM36', name: 'Bomba Lodo', type: 'poison' },
-  { id: 'TM37', name: 'Tormenta de Arena', type: 'rock' },
-  { id: 'TM38', name: 'Llamarada', type: 'fire' },
-  { id: 'TM39', name: 'Tumba Rocas', type: 'rock' },
-  { id: 'TM40', name: 'Golpe Aéreo', type: 'flying' },
-  { id: 'TM41', name: 'Tormento', type: 'dark' },
-  { id: 'TM42', name: 'Imagen', type: 'normal' },
-  { id: 'TM43', name: 'Daño Secreto', type: 'normal' },
-  { id: 'TM44', name: 'Descanso', type: 'psychic' },
-  { id: 'TM45', name: 'Atracción', type: 'normal' },
-  { id: 'TM46', name: 'Ladrón', type: 'dark' },
-  { id: 'TM47', name: 'Ala de Acero', type: 'steel' },
-  { id: 'TM48', name: 'Intercambio', type: 'psychic' },
-  { id: 'TM49', name: 'Robo', type: 'dark' },
-  { id: 'TM50', name: 'Sofoco', type: 'fire' },
-];
+  { id: 'TM01', name: 'Puño Certero', type: 'fighting', moveId: 'focuspunch' },
+  { id: 'TM02', name: 'Garra Dragón', type: 'dragon', moveId: 'dragonclaw' },
+  { id: 'TM03', name: 'Hidropulso', type: 'water', moveId: 'waterpulse' },
+  { id: 'TM04', name: 'Paz Mental', type: 'psychic', moveId: 'calmmind' },
+  { id: 'TM05', name: 'Rugido', type: 'normal', moveId: 'roar' },
+  { id: 'TM06', name: 'Tóxico', type: 'poison', moveId: 'toxic' },
+  { id: 'TM07', name: 'Granizo', type: 'ice', moveId: 'hail' },
+  { id: 'TM08', name: 'Corpulencia', type: 'fighting', moveId: 'bulkup' },
+  { id: 'TM09', name: 'Recurrente', type: 'grass', moveId: 'bulletseed' },
+  { id: 'TM10', name: 'Poder Oculto', type: 'normal', moveId: 'hiddenpower' },
+  { id: 'TM11', name: 'Día Soleado', type: 'fire', moveId: 'sunnyday' },
+  { id: 'TM12', name: 'Mofa', type: 'dark', moveId: 'taunt' },
+  { id: 'TM13', name: 'Rayo Hielo', type: 'ice', moveId: 'icebeam' },
+  { id: 'TM14', name: 'Ventisca', type: 'ice', moveId: 'blizzard' },
+  { id: 'TM15', name: 'Hiperrayo', type: 'normal', moveId: 'hyperbeam' },
+  { id: 'TM16', name: 'Pantalla de Luz', type: 'psychic', moveId: 'lightscreen' },
+  { id: 'TM17', name: 'Protección', type: 'normal', moveId: 'protect' },
+  { id: 'TM18', name: 'Danza Lluvia', type: 'water', moveId: 'raindance' },
+  { id: 'TM19', name: 'Gigadrenado', type: 'grass', moveId: 'gigadrain' },
+  { id: 'TM20', name: 'Velo Sagrado', type: 'normal', moveId: 'safeguard' },
+  { id: 'TM21', name: 'Frustración', type: 'normal', moveId: 'frustration' },
+  { id: 'TM22', name: 'Rayo Solar', type: 'grass', moveId: 'solarbeam' },
+  { id: 'TM23', name: 'Cola Férrea', type: 'steel', moveId: 'irontail' },
+  { id: 'TM24', name: 'Rayo', type: 'electric', moveId: 'thunderbolt' },
+  { id: 'TM25', name: 'Trueno', type: 'electric', moveId: 'thunder' },
+  { id: 'TM26', name: 'Terremoto', type: 'ground', moveId: 'earthquake' },
+  { id: 'TM27', name: 'Retribución', type: 'normal', moveId: 'return' },
+  { id: 'TM28', name: 'Excavar', type: 'ground', moveId: 'dig' },
+  { id: 'TM29', name: 'Psíquico', type: 'psychic', moveId: 'psychic' },
+  { id: 'TM30', name: 'Bola Sombra', type: 'ghost', moveId: 'shadowball' },
+  { id: 'TM31', name: 'Demolición', type: 'fighting', moveId: 'brickbreak' },
+  { id: 'TM32', name: 'Doble Equipo', type: 'normal', moveId: 'doubleteam' },
+  { id: 'TM33', name: 'Reflejo', type: 'psychic', moveId: 'reflect' },
+  { id: 'TM34', name: 'Onda Voltio', type: 'electric', moveId: 'shockwave' },
+  { id: 'TM35', name: 'Lanzallamas', type: 'fire', moveId: 'flamethrower' },
+  { id: 'TM36', name: 'Bomba Lodo', type: 'poison', moveId: 'sludgebomb' },
+  { id: 'TM37', name: 'Tormenta de Arena', type: 'rock', moveId: 'sandstorm' },
+  { id: 'TM38', name: 'Llamarada', type: 'fire', moveId: 'fireblast' },
+  { id: 'TM39', name: 'Tumba Rocas', type: 'rock', moveId: 'rocktomb' },
+  { id: 'TM40', name: 'Golpe Aéreo', type: 'flying', moveId: 'aerialace' },
+  { id: 'TM41', name: 'Tormento', type: 'dark', moveId: 'torment' },
+  { id: 'TM42', name: 'Imagen', type: 'normal', moveId: 'facade' },
+  { id: 'TM43', name: 'Daño Secreto', type: 'normal', moveId: 'secretpower' },
+  { id: 'TM44', name: 'Descanso', type: 'psychic', moveId: 'rest' },
+  { id: 'TM45', name: 'Atracción', type: 'normal', moveId: 'attract' },
+  { id: 'TM46', name: 'Ladrón', type: 'dark', moveId: 'thief' },
+  { id: 'TM47', name: 'Ala de Acero', type: 'steel', moveId: 'steelwing' },
+  { id: 'TM48', name: 'Intercambio', type: 'psychic', moveId: 'skillswap' },
+  { id: 'TM49', name: 'Robo', type: 'dark', moveId: 'snatch' },
+  { id: 'TM50', name: 'Sofoco', type: 'fire', moveId: 'overheat' },
+] as const satisfies readonly { id: string; name: string; type: string; moveId: PokemonMoveId }[];
 
 export const TM_COMPAT = {
   bulbasaur: ['TM06','TM09','TM10','TM11','TM17','TM19','TM21','TM22','TM27','TM32','TM36','TM42','TM43','TM44','TM45'],
@@ -366,7 +372,8 @@ export const TM_COMPAT = {
 export const BABY_POKEMON = [
   "azurill", "bonsly", "budew", "chingling", "cleffa", "elekid", "happiny", "igglybuff", "magby", "mantyke", 
   "mimejr", "munchlax", "pichu", "poipole", "riolu", "smoochum", "togepi", "toxel", "tyrogue", "wynaut"
-];
+] as const;
+export type BabyPokemonSpeciesId = (typeof BABY_POKEMON)[number];
 
 export const LEGENDARY_POKEMON = [
   "arceus", "arceusbug", "arceusdark", "arceusdragon", "arceuselectric", "arceusfairy", "arceusfighting", 
@@ -394,11 +401,73 @@ export const LEGENDARY_POKEMON = [
   "urshifurapidstrikegmax", "uxie", "victini", "virizion", "volcanion", "wochien", "xerneas", "xerneasneutral", 
   "yveltal", "zacian", "zaciancrowned", "zamazenta", "zamazentacrowned", "zapdos", "zapdosgalar", "zarude", 
   "zarudedada", "zekrom", "zeraora", "zeraoramega", "zygarde", "zygarde10", "zygardecomplete", "zygardemega"
-];
+] as const;
+export type LegendaryPokemonSpeciesId = (typeof LEGENDARY_POKEMON)[number];
 
 export const FOSSIL_POKEMON = [
   "omanyte", "omastar", "kabuto", "kabutops", "aerodactyl", "lileep", "cradily", "anorith", "armaldo", 
   "cranidos", "rampardos", "shieldon", "bastiodon", "tirtouga", "carracosta", "archen", "archeops", 
   "tyrunt", "tyrantrum", "amaura", "aurorus", "dracozolt", "arctozolt", "dracovish", "arctovish"
-];
+] as const;
+export type FossilPokemonSpeciesId = (typeof FOSSIL_POKEMON)[number];
 
+export type PokemonSpeciesId = SpeciesMetadataId;
+export type TmId = (typeof GAME_TMS)[number]['id'];
+export type TmCompatibleSpeciesId = keyof typeof TM_COMPAT;
+
+export function isTmId(value: string): value is TmId {
+  return GAME_TMS.some(tm => tm.id === value);
+}
+
+export function requireTmId(value: string): TmId {
+  if (isTmId(value)) return value;
+  throw new Error(`Invalid TM id: ${value}`);
+}
+
+export function isPokemonSpeciesId(value: string): value is PokemonSpeciesId {
+  return value in SPECIES_METADATA;
+}
+
+export function requirePokemonSpeciesId(value: string): PokemonSpeciesId {
+  if (isPokemonSpeciesId(value)) return value;
+  throw new Error(`Invalid Pokemon species id: ${value}`);
+}
+
+export function isTmCompatibleSpeciesId(value: PokemonSpeciesId): value is TmCompatibleSpeciesId {
+  return value in TM_COMPAT;
+}
+
+export function getCompatibleTmIds(speciesId: PokemonSpeciesId): readonly TmId[] {
+  if (!isTmCompatibleSpeciesId(speciesId)) return [];
+  return TM_COMPAT[speciesId].map(requireTmId);
+}
+
+export function isPokedexOrderSpeciesId(value: string): value is PokedexOrderSpeciesId {
+  return PDEX_ORDER.some(id => id === value) || GEN2_PDEX_ORDER.some(id => id === value);
+}
+
+export function getPokedexOrderIndex(value: string): number {
+  if (!isPokedexOrderSpeciesId(value)) return -1;
+
+  for (let index = 0; index < PDEX_ORDER.length; index += 1) {
+    if (PDEX_ORDER[index] === value) return index;
+  }
+
+  for (let index = 0; index < GEN2_PDEX_ORDER.length; index += 1) {
+    if (GEN2_PDEX_ORDER[index] === value) return PDEX_ORDER.length + index;
+  }
+
+  return -1;
+}
+
+export function isLegendaryPokemonSpeciesId(value: string): value is LegendaryPokemonSpeciesId {
+  return LEGENDARY_POKEMON.some(id => id === value);
+}
+
+export function isBabyPokemonSpeciesId(value: string): value is BabyPokemonSpeciesId {
+  return BABY_POKEMON.some(id => id === value);
+}
+
+export function isFossilPokemonSpeciesId(value: string): value is FossilPokemonSpeciesId {
+  return FOSSIL_POKEMON.some(id => id === value);
+}

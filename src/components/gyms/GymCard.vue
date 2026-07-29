@@ -5,29 +5,8 @@ import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import GymRewardPanel from './GymRewardPanel.vue'
-
-interface GymDifficulty {
-  pokemon: string[];
-  levels: number[];
-}
-
-interface Gym {
-  id: string;
-  name: string;
-  city: string;
-  leader: string;
-  type: string;
-  typeColor: string;
-  badge: string;
-  badgeName: string;
-  rewardTM: string;
-  badgesRequired: number;
-  difficulties: {
-    easy: GymDifficulty;
-    normal: GymDifficulty;
-    hard: GymDifficulty;
-  };
-}
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import { GYM_DIFFICULTY_IDS, type Gym, type GymDifficultyId } from '@/data/world/gyms'
 
 interface Props {
   gym: Gym
@@ -43,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const gymsStore = useGymsStore()
-const selectedDifficulty = defineModel<string>('difficulty', { default: 'easy' })
+const selectedDifficulty = defineModel<GymDifficultyId>('difficulty', { default: 'easy' })
 const cardRef = ref<HTMLElement | null>(null)
 
 onMounted(() => {
@@ -59,11 +38,11 @@ onMounted(() => {
 
 const handleChallenge = () => {
   if (props.isLocked) return
-  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value as 'easy' | 'normal' | 'hard')
+  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value)
 }
 
 const typeIcon = computed(() => {
-  const icons: Record<string, string> = {
+  const icons: Partial<Record<PokemonType, string>> = {
     rock: '🪨', water: '💧', electric: '⚡', grass: '🌿',
     poison: '☠️', psychic: '🔮', fire: '🔥', ground: '🌍'
   }
@@ -169,7 +148,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           </div>
           <div class="badges-row">
             <PokemonTypeTag
-              :type="gym.type"
+              :type="toPokemonType(gym.type)"
               size="md"
             />
           </div>
@@ -212,7 +191,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           <!-- Selector de dificultad siempre disponible para permitir rematches en otros niveles -->
           <div class="diff-selector">
             <button 
-              v-for="d in ['easy', 'normal', 'hard']" 
+              v-for="d in GYM_DIFFICULTY_IDS" 
               :key="d"
               class="diff-btn"
               :class="{ 

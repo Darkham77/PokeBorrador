@@ -1,6 +1,7 @@
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonType } from '@/data/battle/types'
 
 export interface CombatEnvState {
   isSunActive: boolean;
@@ -70,15 +71,15 @@ export function calculateFinalPower(
   const cycle = getDayCycle()
 
   // 1. STAB
-  const moveType = md.type.toLowerCase()
-  let stab = (moveType === attacker.type?.toLowerCase() || moveType === attacker.type2?.toLowerCase()) ? 1.5 : 1
+  const moveType = md.type as PokemonType;
+  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1
   if (attacker.ability === 'adaptability' && stab > 1) stab = 2
   power *= stab
 
   // 2. Weather
   let weatherMult = 1
   if (weather && weather.turns !== 0) {
-    const wType = (weather.type || weather.visual || 'clear').toLowerCase()
+    const wType = (weather.type || weather.visual || 'clear')
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
       if (moveType === 'fire') weatherMult = 1.5
       if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5
@@ -91,7 +92,7 @@ export function calculateFinalPower(
   }
 
   // Solar Beam
-  if (md.id === 'solar_beam' && weather && weather.turns !== 0) {
+  if (md.id === 'solarbeam' && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_MECHANICAL.SUN
     const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm'
     if (!isSun && !isClear) {
@@ -223,7 +224,7 @@ export function calculateMoveModifier(
   }
 
   // 2. Solar Moves
-  if (moveId === 'solar_beam' || moveId === 'solar_blade') {
+  if (moveId === 'solarbeam' || moveId === 'solarblade') {
     if (env.mechWeather !== WEATHER_MECHANICAL.CLEAR && !env.isSunActive) return 'penalized'
     if (env.isSunActive) return 'boosted'
   }

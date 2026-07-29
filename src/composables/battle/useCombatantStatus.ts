@@ -4,7 +4,8 @@ import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP, STATUS_NAME_MAP }
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getStatMultiplier } from '@/logic/battle/battleEngine'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStatus } from '@/types/pokemon/pokemon'
+import type { PokemonType } from '@/data/battle/types'
 import { VOLATILE_STATUS_LIST } from '@/data/battle/volatileStatusMap'
 import { toID } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
@@ -15,8 +16,24 @@ import { supabase } from '@/logic/db/supabase'
 import { getItemName } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
 
+const SUN_AFFECTED_MOVE_NAMES = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar'] as const
+const RAIN_AFFECTED_MOVE_NAMES = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball'] as const
+const SNOW_AFFECTED_MOVE_NAMES = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora', 'cold-snap'] as const
+
+function isSunAffectedMoveName(value: string): boolean {
+  return (SUN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+}
+
+function isRainAffectedMoveName(value: string): boolean {
+  return (RAIN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+}
+
+function isSnowAffectedMoveName(value: string): boolean {
+  return (SNOW_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+}
+
 function formatAbilityDescription(desc: string): string {
-  const lines: string[] = []
+  const lines: string[] = [] // no-domain
   
   const boostRegexes = [
     /aumenta la velocidad/i,
@@ -106,6 +123,8 @@ interface VolatileStatusItem {
   isAdminOnly?: boolean
 }
 
+type ShowdownStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'acc' | 'eva';
+
 export function useCombatantStatus(
   pokemonRef: MaybeRefOrGetter<Pokemon | null | undefined>,
   battleStore: ReturnType<typeof useBattleStore>,
@@ -130,7 +149,7 @@ export function useCombatantStatus(
     if (!s) return []
     
     const results = []
-    const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
+    const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'] as const satisfies readonly ShowdownStatKey[];
     
     for (const key of keys) {
       const val = (s as Record<string, number | undefined>)[key] || 0
@@ -275,10 +294,10 @@ export function useCombatantStatus(
 
     // 3. Clima
     const weather = battleStore.state?.weather
-    const types: string[] = []
-    if (target.type) types.push(target.type.toLowerCase())
-    if (target.type2) types.push(target.type2.toLowerCase())
-    const moveNames = (target.moves || []).map((m) => (m?.name || '').toLowerCase())
+    const types: PokemonType[] = [] // no-domain
+    if (target.type) types.push(target.type as PokemonType)
+    if (target.type2) types.push(target.type2 as PokemonType)
+    const moveNames = (target.moves || []).map((m) => (m?.name || '').toLowerCase()) // text-ok
 
     let weatherAffects = false
     if (weather && weather.type !== 'clear' && weather.type !== 'none') {
@@ -293,14 +312,10 @@ export function useCombatantStatus(
       if (mechWeather === 'snow' && types.includes('ice')) weatherAffects = true
       if ((mechWeather === 'wind' || visualWeather === 'strong_winds') && (types.includes('flying') || target.isFloating)) weatherAffects = true
 
-      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
-      const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora', 'cold-snap']
-
       if (!weatherAffects) {
-        if (mechWeather === 'sun' && moveNames.some(n => sunMoves.includes(n))) weatherAffects = true
-        if (mechWeather === 'rain' && moveNames.some(n => rainMoves.includes(n))) weatherAffects = true
-        if (mechWeather === 'snow' && moveNames.some(n => snowMoves.includes(n))) weatherAffects = true
+        if (mechWeather === 'sun' && moveNames.some(isSunAffectedMoveName)) weatherAffects = true
+        if (mechWeather === 'rain' && moveNames.some(isRainAffectedMoveName)) weatherAffects = true
+        if (mechWeather === 'snow' && moveNames.some(isSnowAffectedMoveName)) weatherAffects = true
       }
     }
 
@@ -330,7 +345,7 @@ export function useCombatantStatus(
 
     // 1. Estado Primario
     if (target.status) {
-      const s = target.status.toLowerCase()
+      const s = target.status as PokemonStatus
       const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s]
       const title = (STATUS_NAME_MAP as Record<string, string>)[s]
       const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s]
@@ -346,7 +361,7 @@ export function useCombatantStatus(
         emoji,
         title,
         description,
-        count: s === 'sleep' ? target.sleepTurns : undefined,
+        count: s === 'slp' ? target.sleepTurns : undefined,
         class: s
       })
     }

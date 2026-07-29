@@ -5,6 +5,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { SPECIAL_ACTIONS } from '@/logic/battle/actions/specialActions'
+import { toPokemonType } from '@/data/battle/types'
+import { toNatureId } from '@/data/battle/natures'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 describe('Ditto Pre-Transformation Capture Preservation', () => {
@@ -16,6 +18,7 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
       name: 'Ditto',
       level: 30,
       vigor: 20,
+      status: '',
       type: 'normal',
       hp: 80,
       maxHp: 80,
@@ -28,8 +31,8 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
         { id: 'transform', name: 'Transformación', pp: 10, maxPP: 10 }
       ],
       ivs: { hp: 31, atk: 25, def: 20, spa: 15, spd: 10, spe: 5 },
-      nature: 'Hardy',
-      ability: 'Flexibilidad',
+      nature: 'hardy',
+      ability: 'limber',
       isShiny: true,
       exp: 0,
       expNeeded: 1000
@@ -42,6 +45,7 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
       name: 'Pikachu',
       level: 25,
       vigor: 20,
+      status: '',
       type: 'electric',
       hp: 60,
       maxHp: 60,
@@ -54,8 +58,8 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
         { id: 'thunderbolt', name: 'Rayo', pp: 15, maxPP: 15 }
       ],
       ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-      nature: 'Jolly',
-      ability: 'Static',
+      nature: 'jolly',
+      ability: 'static',
       exp: 0,
       expNeeded: 500
     }
@@ -99,10 +103,10 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
     const eAny = e as unknown as Record<string, unknown>
     if (e.isTransformed && eAny.originalDitto) {
       const orig = eAny.originalDitto as Record<string, unknown>
-      e.id = orig.id as string
+      e.id = orig.id as Pokemon['id']
       e.name = orig.name as string
-      e.type = orig.type as string
-      e.type2 = orig.type2 as string
+      e.type = toPokemonType(orig.type as string)
+      e.type2 = orig.type2 ? toPokemonType(orig.type2 as string) : undefined
       e.atk = orig.atk as number
       e.def = orig.def as number
       e.spa = orig.spa as number
@@ -112,8 +116,8 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
       e.ivs = orig.ivs as unknown as import('@/types/pokemon/pokemon').PokemonIVs
       e.isShiny = orig.isShiny as boolean
       e.level = orig.level as number
-      e.nature = orig.nature as string
-      e.ability = orig.ability as string
+      e.nature = toNatureId(orig.nature as string)
+      e.ability = orig.ability as Pokemon['ability']
       e.hp = orig.hp as number
       e.maxHp = orig.maxHp as number
       e.isTransformed = false

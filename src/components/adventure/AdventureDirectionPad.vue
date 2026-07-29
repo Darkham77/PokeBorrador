@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import MapCard from '@/components/map/MapCard.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { gsapHover as vGsapHover } from '@/directives/gsapHover'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import type { DayPhase } from '@/logic/utils/timeUtils'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
 
 interface ConnectionItem {
-  target: string
+  target: AdventureNodeId
   mo?: string
   label: string
 }
@@ -19,19 +24,21 @@ interface Props {
   isTraveling: boolean
   hasHealthyTeam: boolean
   activeHMs: Set<string>
-  originMap: string
-  mapLocationsById: Record<string, MapLocation>
-  currentCycle: 'morning' | 'day' | 'dusk' | 'night'
+  originMap: AdventureNodeId
+  mapLocationsById: Partial<Record<AdventureNodeId, MapLocation>>
+  currentCycle: DayPhase
 
-  getWeatherForMap: (mapId: string) => string
-  getSpawnPoolForMap: (map: MapLocation) => { generic: string[]; specific: string[]; rates: Record<string, number> }
-  pokemonCenterNodes: Set<string>
+  getWeatherForMap: (mapId: AdventureNodeId) => WeatherId
+  getSpawnPoolForMap: (map: MapLocation) => { generic: PokemonSpeciesId[]; specific: PokemonSpeciesId[]; rates: Partial<Record<PokemonSpeciesId, number>> }
+  pokemonCenterNodes: readonly AdventureNodeId[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const originLocation = computed(() => props.mapLocationsById[props.originMap] ?? null)
 
 const emit = defineEmits<{
-  (e: 'travel', target: string): void
+  (e: 'travel', target: AdventureNodeId): void
   (e: 'explore'): void
   (e: 'heal'): void
 }>()
@@ -97,14 +104,14 @@ const emit = defineEmits<{
       <!-- Map Card Core Container -->
       <div class="adv-manual-card-container">
         <MapCard
-          v-if="originMap && mapLocationsById[originMap]"
-          :map="(mapLocationsById[originMap] as MapLocation)"
+          v-if="originLocation"
+          :map="originLocation"
           :is-locked="false"
           :cycle="currentCycle"
           :weather="getWeatherForMap(originMap)"
           :forced-weather="getWeatherForMap(originMap)"
           :badge-count="8"
-          :spawn-pool="getSpawnPoolForMap(mapLocationsById[originMap] as MapLocation)"
+          :spawn-pool="getSpawnPoolForMap(originLocation)"
           @navigate="() => {}"
         />
         
@@ -122,7 +129,7 @@ const emit = defineEmits<{
             🔍 Explorar Zona
           </button>
           <button 
-            v-if="pokemonCenterNodes.has(originMap)"
+            v-if="pokemonCenterNodes.includes(originMap)"
             v-gsap-hover
             class="adv-action-btn heal-btn"
             @click="emit('heal')"

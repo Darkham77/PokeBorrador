@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import type { WeatherCycleId, WeatherSeasonId } from '@/data/world/weather-tables'
+
+interface AtmosphereLayerProps {
+  weather?: WeatherId
+  cycle?: WeatherCycleId
+  season?: WeatherSeasonId
+  isPerformanceMode?: boolean
+  isLocked?: boolean
+  zIndex?: number | string
+  animSeed?: number
+  isVisible?: boolean
+  isLowPower?: boolean
+}
 
 // Cache for weather noise textures
 let cachedNoise1Img: HTMLImageElement | null = null
@@ -39,16 +53,16 @@ let atmosphereContext: gsap.Context | null = null
 let worker: Worker | null = null
 let resizeObserver: ResizeObserver | null = null
 
-const props = defineProps({
-  weather: { type: String, default: 'clear' },
-  cycle: { type: String, default: 'day' },
-  season: { type: String, default: 'spring' },
-  isPerformanceMode: { type: Boolean, default: false },
-  isLocked: { type: Boolean, default: false },
-  zIndex: { type: [Number, String], default: 0 },
-  animSeed: { type: Number, default: 0.5 },
-  isVisible: { type: Boolean, default: false },
-  isLowPower: { type: Boolean, default: false }
+const props = withDefaults(defineProps<AtmosphereLayerProps>(), {
+  weather: 'clear',
+  cycle: 'day',
+  season: 'spring',
+  isPerformanceMode: false,
+  isLocked: false,
+  zIndex: 0,
+  animSeed: 0.5,
+  isVisible: false,
+  isLowPower: false
 })
 
 // Centralized Seed for Animations (Inherited from Map)
@@ -318,15 +332,15 @@ import { useAtmosphereSandstormAnim } from './useAtmosphereSandstormAnim'
 import { useAtmosphereSnowAnim } from './useAtmosphereSnowAnim'
 import { useAtmosphereRainAnim } from './useAtmosphereRainAnim'
 
-const { leafTypes, initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props)
+const { isLeafWeatherId, initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props)
 const { initSandstormAnim } = useAtmosphereSandstormAnim(dustLayer1Ref, dustLayer2Ref, applyParallaxLayer)
 const { initSnowAnim } = useAtmosphereSnowAnim(layer1Ref, layer2Ref, applyParallaxLayer)
 const { initRainAnim, cleanUpLightning } = useAtmosphereRainAnim(layer1Ref, layer2Ref, lightningRef, flashRef, lightningPos)
 
 const leafCount = computed(() => {
   let count = 0
-  if (['storm', 'strong_winds'].includes(props.weather)) count = 15
-  else if (['wind'].includes(props.weather)) count = 8
+  if (props.weather === 'storm' || props.weather === 'strong_winds') count = 15
+  else if (props.weather === 'wind') count = 8
   
   if (props.isLowPower) {
     return Math.round(count / 2)
@@ -425,7 +439,7 @@ const weatherOverlayStyles = computed(() => {
       />
       
       <!-- Leaves (for Wind & Storm effects) -->
-      <template v-if="leafTypes.includes(weather)">
+      <template v-if="isLeafWeatherId(weather)">
         <div
           v-for="n in leafCount"
           :key="'leaf-'+n"

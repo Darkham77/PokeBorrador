@@ -1,4 +1,4 @@
-export const NATURE_DATA: Record<string, { name: string; up: string | null; down: string | null; desc: string }> = {
+export const NATURE_DATA = Object.freeze({
   adamant: { name: 'Firme', up: 'Ataque', down: 'At. Esp', desc: '▲ +10% Ataque / ▼ -10% At. Especial' },
   bashful: { name: 'Tímido', up: null, down: null, desc: 'Sin efecto en estadísticas.' },
   bold: { name: 'Osado', up: 'Defensa', down: 'Ataque', desc: '▲ +10% Defensa / ▼ -10% Ataque' },
@@ -24,6 +24,18 @@ export const NATURE_DATA: Record<string, { name: string; up: string | null; down
   sassy: { name: 'Grosera', up: 'Def. Esp', down: 'Velocidad', desc: '▲ +10% Def. Especial / ▼ -10% Velocidad' },
   serious: { name: 'Seria', up: null, down: null, desc: 'Sin efecto en estadísticas.' },
   timid: { name: 'Miedosa', up: 'Velocidad', down: 'Ataque', desc: '▲ +10% Velocidad / ▼ -10% Ataque' }
-};
+} as const);
 
-export const NATURES = Object.keys(NATURE_DATA);
+export type NatureId = keyof typeof NATURE_DATA;
+export const NATURES = Object.keys(NATURE_DATA) as NatureId[];
+
+/** Strict accessor — throws if nature is not registered. */
+export function getNatureData(id: NatureId) {
+  return NATURE_DATA[id];
+}
+
+/** Boundary adapter for external data (saves, DB). Throws if invalid. */
+export function toNatureId(raw: string): NatureId {
+  if (raw in NATURE_DATA) return raw as NatureId;
+  throw new Error(`[natures] Invalid NatureId: '${raw}'`);
+}

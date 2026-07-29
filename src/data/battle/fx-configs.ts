@@ -3,6 +3,7 @@
  * Centraliza las reglas visuales para todos los efectos de partículas.
  * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
  */
+import type { VolatileStatusKey } from '@/types/pokemon/pokemon'
 
 export interface ParticleArea {
   x: [number, number]
@@ -14,7 +15,7 @@ export interface WobbleConfig {
   rotation: number
   duration: number
   yoyo?: boolean
-  ease?: string
+  ease?: string // domain-ok
 }
 
 export interface EffectSettings {
@@ -33,10 +34,22 @@ export interface EffectSettings {
   rotation?: number
 }
 
+type EffectConfigPreset = {
+  mult: number
+  activeRange: [number, number]
+  useFade: boolean
+  duration: number
+  targetOpacity?: number
+  stagger?: number
+  randomizeVars?: boolean | { min: number, max: number }
+  growDuration?: number
+  wobble?: boolean
+}
+
 export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number } = {}): EffectSettings => {
   const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
-  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'].includes(typeKey)
-  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused', 'slp'].includes(typeKey)
+  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
+  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused', 'slp'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
 
   // 1. Helper para rango dinámico basado en radio
   const getDynamicRange = (base: [number, number]) => {
@@ -60,7 +73,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
 
   // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
-  const configs: Record<string, Partial<EffectSettings>> = {
+  const configs: Record<string, EffectConfigPreset> = { // open-record
     brn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
     frz: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
     slp: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
@@ -98,12 +111,13 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     shiny: { mult: 0.2, activeRange: getDynamicRange([10, 16]), useFade: false, duration: 1.4, randomizeVars: { min: 0.6, max: 1.5 }, targetOpacity: 1.0, wobble: true }
   }
 
-  const base = configs[typeKey] || { 
+  const fallbackConfig: EffectConfigPreset = { 
     mult: 0.5, 
     activeRange: getDynamicRange([2, 4]), 
     useFade: true, 
     duration: isField ? 3.0 : 1.5 
   }
+  const base = configs[typeKey] ?? fallbackConfig
   
   // 3. Parámetros de Wobble exactos
   let wobbleConfig: WobbleConfig | boolean = false
@@ -130,8 +144,8 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   if (isHeadEffect) offset = { x: 0, y: -ar * 0.75 }
   else if (isFeetEffect) offset = { x: 0, y: ar * 0.35 }
 
-  const isPrimary = ['brn', 'frz', 'slp', 'par', 'psn', 'tox'].includes(typeKey)
-  const isTactical = ['protected', 'enduring', 'focus', 'lockon'].includes(typeKey)
+  const isPrimary = (['brn', 'frz', 'slp', 'par', 'psn', 'tox'] as const).includes(typeKey as never)
+  const isTactical = (['protected', 'enduring', 'focus', 'lockon'] as const).includes(typeKey as never)
   
   const targetOpacity = base.targetOpacity ?? (isField ? 0.6 : (isTactical ? 1.0 : 1.0))
   const duration = base.duration || (isField ? 2.0 : (isTactical ? 1.2 : 0.8))

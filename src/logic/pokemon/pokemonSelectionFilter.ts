@@ -38,7 +38,7 @@ export function filterAndSortPokemon(
     if (criteria.allowedIds && !criteria.allowedIds.includes(p.uid)) return false
     
     if (criteria.searchQuery) {
-      const q = criteria.searchQuery.toLowerCase()
+      const q = criteria.searchQuery.toLowerCase() // text-ok
       const matchName = p.name?.toLowerCase().includes(q)
       const matchNick = p.nickname?.toLowerCase().includes(q)
       const matchId = String(p.id).includes(q)

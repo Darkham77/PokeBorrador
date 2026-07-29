@@ -4,7 +4,8 @@ import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
-import { getItemById, getMaxBuffDuration } from '@/data/inventory/items'
+import { BUFF_FIELDS, getItemById, getMaxBuffDuration, requireItemId } from '@/data/inventory/items'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { logger } from '@/logic/utils/logger'
 import { healStuckMissions } from '@/logic/player/missionRecovery'
 
@@ -15,24 +16,25 @@ export function usePokemonActions(
   autoFillPvpTeam: () => void, 
   autoFillWarTeam: () => void
 ) {
-  function registerPokedex(id: string, caught = false) {
+  function registerPokedex(id: PokemonSpeciesId, caught = false) {
     if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id)
     if (caught && !state.pokedex.includes(id)) state.pokedex.push(id)
   }
   
   async function chooseStarter(id: string) {
+    const speciesId = requirePokemonSpeciesId(id)
     const loadingStore = useLoadingStore()
     loadingStore.start('choose_starter', 'Preparando aventura...', 'Asignando primer compañero', true, '🎒')
     
     const uiStore = useUIStore()
-    const starter = makePokemon(id, 5)
+    const starter = makePokemon(speciesId, 5)
     
     if (starter) {
       addPokemon(starter, { notify: false })
       state.starterChosen = true
       uiStore.activeTab = 'map'
       
-      const speciesData = pokemonDataProvider.getPokemonData(id)
+      const speciesData = pokemonDataProvider.getPokemonData(speciesId)
       if (speciesData) {
         uiStore.notify(`¡${speciesData.name} es tu compañero! ¡Buena suerte!`, '🎉')
       }
@@ -141,10 +143,6 @@ export function usePokemonActions(
     scheduleSave()
   }
 
-  interface LegacyEgg extends PokemonEgg {
-    pokemonId?: string;
-  }
-
   function validateAll() {
     // Self-healing stuck Pokémon on mission
     if (state.classData) {
@@ -162,7 +160,7 @@ export function usePokemonActions(
     // Validate inventory: must strictly match official IDs, no runtime translation fallbacks allowed
     if (state.inventory) {
       for (const key of Object.keys(state.inventory)) {
-        getItemById(key);
+        getItemById(requireItemId(key));
       }
     }
     // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, defensa) a la caja PC
@@ -198,34 +196,23 @@ export function usePokemonActions(
     if (state.eggs && Array.isArray(state.eggs)) {
       state.eggs.forEach((egg: PokemonEgg) => {
         if (!egg) return;
-        const legacyEgg = egg as LegacyEgg;
-        
-        if (legacyEgg.pokemonId && legacyEgg.pokemonId !== legacyEgg.id) {
-          if (!legacyEgg.uid) {
-            legacyEgg.uid = `egg_${legacyEgg.id}`;
-          }
-          legacyEgg.id = legacyEgg.pokemonId;
+        const speciesId = requirePokemonSpeciesId(egg.id);
+        if (egg.pokemonId && egg.pokemonId !== speciesId) {
+          throw new Error(`[game] Invalid egg species data: id=${speciesId}, pokemonId=${egg.pokemonId}. Run a data migration instead of runtime patching.`);
         }
-        
-        if (!legacyEgg.uid) {
-          const timestamp = Temporal.Now.instant().epochMilliseconds;
-          legacyEgg.uid = `egg_${legacyEgg.id || 'unknown'}-${timestamp}-${Math.random().toString(36).substring(2, 7)}`;
-        }
-        
-        if (legacyEgg.ready === undefined) {
-          legacyEgg.ready = (legacyEgg.steps <= 0);
+        if (!egg.uid) {
+          throw new Error(`[game] Invalid egg ${speciesId}: missing uid.`);
         }
       });
     }
 
     // Saneamiento de timers de buffs activos del jugador (Basado en el valor máximo definido por los objetos en SHOP_ITEMS)
-    const buffFields = Object.keys(state).filter(key => key.endsWith('Secs')) as (keyof GameState)[]
-    buffFields.forEach(field => {
+    BUFF_FIELDS.forEach(field => {
       const val = state[field]
       if (val !== undefined && typeof val === 'number') {
-        const maxAllowedSecs = getMaxBuffDuration(field as string)
+        const maxAllowedSecs = getMaxBuffDuration(field)
         if (val > maxAllowedSecs) {
-          logger.warn('Self-Healing', `Timer corrupto detectado en ${field as string} (${val}s). Ajustando al máximo permitido por el objeto (${maxAllowedSecs}s).`);
+          logger.warn('Self-Healing', `Timer corrupto detectado en ${field} (${val}s). Ajustando al máximo permitido por el objeto (${maxAllowedSecs}s).`);
           (state as unknown as Record<string, unknown>)[field as string] = maxAllowedSecs
           scheduleSave()
         }

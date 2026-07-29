@@ -11,6 +11,7 @@ import type { ItemEffectResult } from '@/types/inventory/items'
 import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts'
 import {
   findInventoryKey as helperFindInventoryKey,
+  isEquippableHeldItem,
   isItemUsableOn as helperIsItemUsableOn,
   mapInventoryToItems,
   type Item
@@ -18,24 +19,31 @@ import {
 
 export type { Item }
 
-export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
+import type { ItemId } from '@/data/inventory/items'
+
+const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
+type ValuableItemId = (typeof VALUABLE_ITEM_IDS)[number]
+
+function isValuableItemId(value: ItemId): value is ValuableItemId {
+  return (VALUABLE_ITEM_IDS as readonly ItemId[]).includes(value)
+}
+
+export function isItemUsableOutsideCombat(item: Pick<Item, 'id' | 'cat'> | null | undefined): boolean {
   if (!item) return false
   const cat = item.cat
-  const type = item.type
   const id = item.id
 
-  const valuables = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece']
-  if (valuables.includes(id)) return false
+  if (isValuableItemId(id)) return false
 
   if (cat === 'pokeballs') return false
 
-  if (id && id.toLowerCase().startsWith('tm')) return true
+  if (id && id.startsWith('tm')) return true
 
   if (
     cat === 'potions' ||
-    cat === 'stones' || type === 'stone' ||
-    cat === 'combat_held' || cat === 'breeding_held' || type === 'held' ||
-    cat === 'tools' || type === 'booster' || type === 'usable'
+    cat === 'stones' ||
+    isEquippableHeldItem(item) ||
+    cat === 'tools'
   ) {
     return true
   }
@@ -65,7 +73,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // --- GETTERS ---
-  const bagItems = computed(() => {
+  const bagItems = computed<Item[]>(() => {
     const inventory = gameStore.state.inventory || {}
     const isBattleActive = useBattleStore().isBattleActive
     let items = mapInventoryToItems(inventory, isBattleActive, activeMainTab.value)
@@ -90,7 +98,7 @@ export const useInventoryStore = defineStore('inventory', () => {
           if (isGlobalItem(item.id)) return true
 
 
-          const isHeld = item.cat === 'combat_held' || item.cat === 'breeding_held' || item.type === 'held'
+          const isHeld = isEquippableHeldItem(item)
           if (isHeld) return (gameStore.state.team || []).length > 0
 
           const dbItem = getItemById(item.id)
@@ -107,7 +115,7 @@ export const useInventoryStore = defineStore('inventory', () => {
       const resolvedCat = item.cat || 'otros'
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
       // Do not apply the global store searchQuery if a battle is active (to avoid sharing the filter with the battle modal)
-      if (!isBattleActive && searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
+      if (!isBattleActive && searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false // text-ok
       return true
     })
 

@@ -79,18 +79,19 @@ export function isDisputePhase(date: Temporal.ZonedDateTime | Temporal.Instant =
   return (day >= 1 && day <= 5)
 }
 
+export type WarEventType = 'WILD_WIN' | 'TRAINER_WIN' | 'BOSS_WIN' | 'PVP_WIN';
+
 /**
  * Gets the raw point reward for an event.
- * @param {string} eventType 
+ * @param {WarEventType} eventType 
  * @param {boolean} success 
  * @returns {number}
  */
-export function getPointReward(eventType: string, success: boolean): number {
-  const type = eventType.toUpperCase()
-  const record = WAR_PTS_TABLE[type] || { win: 1, lose: 0 }
+export function getPointReward(eventType: WarEventType | string, success: boolean): number {
+  const record = WAR_PTS_TABLE[eventType as keyof typeof WAR_PTS_TABLE] || { win: 1, lose: 0 }
   
   // Special rule for wild win balance
-  if (type === 'WILD_WIN') return 1
+  if (eventType === 'WILD_WIN') return 1
   
   return success ? record.win : record.lose
 }

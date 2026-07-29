@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/pokemon/evolutionData'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { toPokemonType } from '@/data/battle/types'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
@@ -76,12 +77,16 @@ const forgottenMoves = computed(() => {
 
 const getMoveFullData = (mv: LearnsetEntry): Move => {
   const base = mv.id ? pokemonDataProvider.getMoveData(mv.id) : null
+  const cat = base?.cat
+  if (cat !== undefined && cat !== 'physical' && cat !== 'special' && cat !== 'status') {
+    throw new Error(`Invalid relearn move category for ${mv.name}: ${cat}`)
+  }
   const fullMove: Move = {
     name: mv.name,
     pp: base?.pp ?? mv.pp,
     maxPP: base?.pp ?? mv.pp,
-    type: base?.type ?? 'normal',
-    cat: (base?.cat as 'physical' | 'special' | 'status') ?? 'physical',
+    type: toPokemonType(base?.type ?? 'normal'),
+    cat: cat ?? 'physical',
     power: base?.power ?? 0,
     acc: base?.acc ?? 100,
     effect: base?.effect

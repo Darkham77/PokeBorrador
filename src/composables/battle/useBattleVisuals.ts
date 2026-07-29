@@ -43,12 +43,12 @@ export function useBattleVisuals() {
   }
 
   const getGenderText = (g: string) => {
-    const texts: Record<string, string> = { M: '♂', F: '♀' }
+    const texts: Record<string, string> = { m: '♂', f: '♀' }
     return texts[g] || ''
   }
 
   const getGenderCls = (g: string) => {
-    const classes: Record<string, string> = { M: 'gender-male', F: 'gender-female' }
+    const classes: Record<string, string> = { m: 'gender-male', f: 'gender-female' }
     return classes[g] || 'gender-none'
   }
 

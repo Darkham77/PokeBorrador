@@ -1,0 +1,417 @@
+// fallow-ignore-file security-sink
+/**
+ * scripts/validation/validate_domain_types.ts
+ *
+ * DOMAIN TYPE AUDIT (Node.js 26+ Native)
+ * Detects finite-domain values declared with loose runtime structures or
+ * broad string types instead of strict TypeScript domain contracts.
+ *
+ * Detects these anti-patterns:
+ *   1. new Set<string>(...) / new Set([...]) used for finite domains.
+ *   2. new Map<string, ...>(...) / new Map([[literal, ...]]) for domain maps.
+ *   3. String literal arrays without `as const`.
+ *   4. `string[]`, `Array<string>`, or `ReadonlyArray<string>` domain constants.
+ *   5. `type X = string` aliases and enum-like unions ending in `| string`.
+ *   6. `Record<string, ...>`, `Record<PropertyKey, ...>`, and `[key: string]`
+ *      in type/data contracts.
+ *   7. Contract fields declared as raw `string` in type/data files.
+ *   8. Ambiguous unions mixing empty-string sentinels with null/undefined.
+ *
+ * Usage:
+ *   npm run validate:domain-types
+ *   npm run validate:domain-types -- --errors-only
+ *   npm run validate:domain-types -- --summary
+ *   npm run validate:domain-types -- --output=scratch/domain_types_report.txt
+ */
+
+import fs from 'node:fs/promises';
+import { enableCompileCache } from 'node:module';
+import path from 'node:path';
+import { parseArgs, styleText } from 'node:util';
+
+enableCompileCache();
+
+// ─── CLI Args ────────────────────────────────────────────────────────────────
+const { values: args } = parseArgs({
+  options: {
+    'errors-only': { type: 'boolean', default: false },
+    summary: { type: 'boolean', short: 's', default: false },
+    output: { type: 'string' },
+  },
+  strict: false,
+});
+
+const errorsOnly = Boolean(args['errors-only']);
+const summaryOnly = Boolean(args.summary);
+const outputFile = typeof args.output === 'string' ? args.output : undefined;
+
+// ─── Config ──────────────────────────────────────────────────────────────────
+const ROOT = path.resolve(import.meta.dirname, '../..');
+const SCAN_ROOTS = [path.join(ROOT, 'src')];
+const EXTENSIONS = ['.ts', '.vue'] as const;
+const SKIP_DIRS = ['node_modules', '.git', 'dist', 'coverage', 'external', '.agents'] as const;
+const TEST_PATH_MARKERS = ['/tests/', '.test.', '.spec.'] as const;
+const ESCAPE_HATCHES = ['domain-ok', 'string-ok', 'open-record', 'runtime-set', 'runtime-map', 'no-domain'] as const;
+
+// ─── Patterns ────────────────────────────────────────────────────────────────
+const P_SET_STRING = /\bnew\s+Set\s*(?:<[^>]+>)?\s*\(\s*\[\s*['"`]/g;
+const P_MAP_STRING = /\bnew\s+Map\s*(?:<[^>]+>)?\s*\(\s*\[\s*\[\s*['"`]/g;
+const P_LITERAL_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>))?\s*=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
+const P_TYPED_STRING_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*:\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>)/g;
+const P_TYPE_ALIAS_STRING = /\b(?:export\s+)?type\s+\w+\s*=\s*string\s*;/g;
+const P_STRING_SINK_UNION = /\b(?:export\s+)?type\s+\w+\s*=\s*(?=[^;\n]*['"`][^'"`]+['"`])[^;\n]*\|\s*string\s*;/g;
+const P_FIELD_WILDCARD_STRING_UNION = /^\s*(?:readonly\s+)?([A-Z_a-z]\w*)\??:\s*(?!\s*string\s*(?:\[\])?\s*[;,]?)[^;\n]*\|\s*string\b[^;\n]*[;,]?/gm;
+const P_OPEN_STRING_INTERSECTION = /\b(?:export\s+)?type\s+\w+\s*=[^;\n]*string\s*&\s*\{\s*\}[^;\n]*;/g;
+const P_RECORD_STRING_KEY = /\bRecord\s*<\s*string\s*,/g;
+const P_RECORD_PROPERTY_KEY = /\bRecord\s*<\s*PropertyKey\s*,/g;
+const P_INDEX_SIGNATURE = /\[\s*\w+\s*:\s*string\s*\]\s*:/g;
+const P_DOMAIN_STRING_FIELD = /^\s*(?:readonly\s+)?([A-Z_a-z]\w*)\??:\s*string(?:\[\])?\s*[;,]?/gm;
+const P_AMBIGUOUS_EMPTY_NULL_TYPE_ALIAS = /^\s*(?:export\s+)?type\s+\w+\s*=[^;\n]*(?:''|""|``)[^;\n]*\|\s*(?:null|undefined)[^;\n]*;|^\s*(?:export\s+)?type\s+\w+\s*=[^;\n]*(?:null|undefined)[^;\n]*\|\s*(?:''|""|``)[^;\n]*;/gm;
+const P_AMBIGUOUS_EMPTY_NULL_FIELD = /^\s*(?:readonly\s+)?\w+\??:\s*[^;\n]*(?:''|""|``)[^;\n]*\|\s*(?:null|undefined)[^;\n]*[;,]?|^\s*(?:readonly\s+)?\w+\??:\s*[^;\n]*(?:null|undefined)[^;\n]*\|\s*(?:''|""|``)[^;\n]*[;,]?/gm;
+const P_RUNTIME_CASE_NORMALIZATION = /\b\w+\.(?:toLowerCase|toUpperCase)\s*\(\s*\)\s*(?:as\s+\w+|satisfies\s+\w+)?/g;
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface Finding {
+  file: string;
+  line: number;
+  col: number;
+  pattern: string;
+  snippet: string;
+  severity: 'ERROR' | 'WARN';
+}
+
+type MatchFilter = (match: RegExpExecArray, line: string, file: string) => boolean;
+type SeverityPicker = (match: RegExpExecArray, line: string, file: string) => Finding['severity'];
+
+// ─── Scanner ─────────────────────────────────────────────────────────────────
+async function* walkFiles(dir: string): AsyncGenerator<string> {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue;
+
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      yield* walkFiles(full);
+      continue;
+    }
+
+    if (EXTENSIONS.some(extension => extension === path.extname(entry.name))) {
+      yield full;
+    }
+  }
+}
+
+function toRepoPath(filePath: string): string {
+  return path.relative(ROOT, filePath).split(path.sep).join(path.posix.sep);
+}
+
+function hasEscapeHatch(line: string): boolean {
+  return ESCAPE_HATCHES.some(hatch => line.includes(`// ${hatch}`));
+}
+
+function isCommentLine(line: string): boolean {
+  const trimmed = line.trimStart();
+  return trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*');
+}
+
+function isTestFile(file: string): boolean {
+  return TEST_PATH_MARKERS.some(marker => file.includes(marker));
+}
+
+function isContractFile(file: string): boolean {
+  return file.includes('/types/') || file.includes('/data/') || file.endsWith('.d.ts');
+}
+
+function isAmbientDeclarationFile(file: string): boolean {
+  return file.endsWith('.d.ts');
+}
+
+function isOpenUnknownDictionary(line: string): boolean {
+  return /Record\s*<\s*string\s*,\s*unknown\s*>|\[\s*\w+\s*:\s*string\s*\]\s*:\s*unknown/.test(line);
+}
+
+function findMatches(
+  content: string,
+  file: string,
+  pattern: RegExp,
+  label: string,
+  severity: Finding['severity'] | SeverityPicker,
+  filter?: MatchFilter,
+  overrideEscapeHatch?: boolean
+): Finding[] {
+  const findings: Finding[] = [];
+  const lines = content.split('\n');
+  pattern.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(content)) !== null) {
+    const before = content.slice(0, match.index);
+    const lineNum = (before.match(/\n/g) ?? []).length + 1;
+    const lastNl = before.lastIndexOf('\n');
+    const col = match.index - lastNl;
+    const line = lines[lineNum - 1] ?? '';
+
+    if (isCommentLine(line) || isTestFile(file) || (!overrideEscapeHatch && hasEscapeHatch(line))) continue;
+    if (filter && !filter(match, line, file)) continue;
+
+    findings.push({
+      file,
+      line: lineNum,
+      col,
+      pattern: label,
+      snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+      severity: typeof severity === 'function' ? severity(match, line, file) : severity,
+    });
+  }
+
+  return findings;
+}
+
+async function auditFile(filePath: string): Promise<Finding[]> {
+  const content = await fs.readFile(filePath, 'utf8');
+  const rel = toRepoPath(filePath);
+  const findings: Finding[] = [];
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_SET_STRING,
+    'Set used as finite-domain storage/validator (use `as const` array + derived type)',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_MAP_STRING,
+    'Map with string/domain keys used as finite-domain map (use typed object/Record with union keys)',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_LITERAL_ARRAY_DECL,
+    'String literal array without `as const` — potential untyped domain (MUST use `as const satisfies readonly DomainType[]` or mark `// no-domain`)',
+    'ERROR',
+    (match, line) => {
+      if (match[0].includes('as const')) return false;
+      const trimmed = line.trim();
+      // Filter out report/log/text buffers and class names
+      return !/const\s+(?:report|candidates|lines|parts|chunks|words|tokens|classes)\s*=/i.test(trimmed);
+    }
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPED_STRING_ARRAY_DECL,
+    'String array type annotation erases finite domain values (MUST use `as const` or specific domain array type)',
+    'ERROR',
+    (_match, line) => {
+      const trimmed = line.trim();
+      return !/const\s+(?:lines|parts|chunks|words|tokens|report|candidates)\s*:\s*(?:readonly\s+)?string\[\]/i.test(trimmed);
+    }
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPE_ALIAS_STRING,
+    'Type alias directly to `string` — defeats domain enforcement',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_STRING_SINK_UNION,
+    'Enum-like union ends with `| string` — compiler cannot reject invalid domain values',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_FIELD_WILDCARD_STRING_UNION,
+    'Strict domain type combined with `| string` wildcard union — erases compile-time type safety',
+    'ERROR',
+    (_match, _line, file) => isContractFile(file),
+    true // overrideEscapeHatch: ignore // domain-ok if line contains a wildcard union
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_OPEN_STRING_INTERSECTION,
+    'Open `string & {}` intersection keeps a domain effectively unbounded',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_RUNTIME_CASE_NORMALIZATION,
+    'Runtime string case normalization (toLowerCase/toUpperCase) inside domain code — use strict typed domain values directly without string transformations',
+    'ERROR',
+    (_match, line) => {
+      if (line.includes('// text-ok') || line.includes('// no-domain') || line.includes('// domain-ok')) return false;
+      // Filter out case-insensitive user search / filtering comparisons (e.g. name.toLowerCase().includes(search.toLowerCase()))
+      if (/\.(?:includes|startsWith|endsWith|indexOf)\s*\(/.test(line) || /\b(?:search|query|filter|input)\b/i.test(line)) return false;
+      // Filter out template literals used for UI formatting (`${...toUpperCase()}`)
+      if (/`[^`]*\$\{[^}]*\.(?:toLowerCase|toUpperCase)\(\)\}[^`]*`/.test(line)) return false;
+      // Filter out UI presentation variables
+      if (/\b(?:title|label|name|text|description|rewardLabel|rewardVal|statusText|unequipped|captureDateFormatted|requiredClass|requiredFaction|stat|nature|heldItem|weather|slotId|phase|genderVal|current|activeRegion|mech|leader|cat|nat|typeFocus|c|d|p|t|clean|to|sessionMode|moRequired|value|choiceMove|faction)\.(?:toLowerCase|toUpperCase)\(\)/.test(line)) return false;
+      return true;
+    }
+  ));
+
+  if (isContractFile(rel)) {
+    findings.push(...findMatches(
+      content,
+      rel,
+      P_RECORD_STRING_KEY,
+      'Record<string, ...> in type/data contract — use a finite union key when the domain is known',
+      (_match, line, file) => (isOpenUnknownDictionary(line) || isAmbientDeclarationFile(file)
+        ? 'WARN'
+        : 'ERROR')
+    ));
+
+    findings.push(...findMatches(
+      content,
+      rel,
+      P_INDEX_SIGNATURE,
+      'Open string index signature in type/data contract — use explicit domain keys or a boundary adapter',
+      (_match, line, file) => (isOpenUnknownDictionary(line) || isAmbientDeclarationFile(file) ? 'WARN' : 'ERROR')
+    ));
+
+    findings.push(...findMatches(
+      content,
+      rel,
+      P_RECORD_PROPERTY_KEY,
+      'Record<PropertyKey, ...> in type/data contract is an open keyspace — use a finite union key',
+      'ERROR'
+    ));
+  }
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_DOMAIN_STRING_FIELD,
+    'Raw `string` field in type/data contract — use a strict domain type or mark truly open text (`// domain-ok` if genuinely open text)',
+    'ERROR',
+    (_match, _line, file) => isContractFile(file) && !isAmbientDeclarationFile(file)
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_AMBIGUOUS_EMPTY_NULL_TYPE_ALIAS,
+    'Ambiguous type alias mixes empty-string sentinel with null/undefined',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_AMBIGUOUS_EMPTY_NULL_FIELD,
+    'Ambiguous field type mixes empty-string sentinel with null/undefined',
+    'ERROR',
+    (_match, _line, file) => isContractFile(file)
+  ));
+
+  return findings;
+}
+
+// ─── Report ───────────────────────────────────────────────────────────────────
+function formatFinding(finding: Finding, color = true): string {
+  const sev = color
+    ? (finding.severity === 'ERROR' ? styleText('red', 'ERROR') : styleText('yellow', 'WARN'))
+    : finding.severity;
+  const loc = color
+    ? styleText('cyan', `${finding.file}:${finding.line}:${finding.col}`)
+    : `${finding.file}:${finding.line}:${finding.col}`;
+  const pattern = color ? styleText('dim', finding.pattern) : finding.pattern;
+  return `  ${sev}  ${loc}\n         ${pattern}\n         ${finding.snippet}`;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+const allFindings: Finding[] = [];
+for (const scanRoot of SCAN_ROOTS) {
+  for await (const file of walkFiles(scanRoot)) {
+    allFindings.push(...await auditFile(file));
+  }
+}
+
+const visibleFindings = errorsOnly ? allFindings.filter(finding => finding.severity === 'ERROR') : allFindings;
+const errors = allFindings.filter(finding => finding.severity === 'ERROR');
+const warnings = allFindings.filter(finding => finding.severity === 'WARN');
+
+const byFile = new Map<string, Finding[]>();
+for (const finding of visibleFindings) {
+  const existing = byFile.get(finding.file);
+  if (existing) existing.push(finding);
+  else byFile.set(finding.file, [finding]);
+}
+
+// ─── Output ───────────────────────────────────────────────────────────────────
+const lines: string[] = [];
+const scannedRoots = SCAN_ROOTS.map(root => path.relative(ROOT, root).split(path.sep).join(path.posix.sep)).join(', ');
+
+lines.push('');
+lines.push(styleText('bold', '━━━ DOMAIN TYPE AUDIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+lines.push(`  Scanned: ${styleText('cyan', scannedRoots)}`);
+lines.push('');
+
+if (!summaryOnly) {
+  for (const [file, findings] of byFile) {
+    lines.push(styleText('bold', `  📄 ${file}`));
+    for (const finding of findings) {
+      lines.push(formatFinding(finding));
+    }
+    lines.push('');
+  }
+}
+
+lines.push('━━━ SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+lines.push(`  Files with visible issues : ${styleText('cyan', String(byFile.size))}`);
+lines.push(`  Total findings            : ${styleText('cyan', String(allFindings.length))}`);
+lines.push(`  Visible findings          : ${styleText('cyan', String(visibleFindings.length))}`);
+lines.push(`  ${styleText('red', 'ERRORS')}                    : ${errors.length}`);
+lines.push(`  ${styleText('yellow', 'WARNINGS')}                  : ${warnings.length}`);
+lines.push('');
+
+const byPattern = new Map<string, number>();
+for (const finding of allFindings) {
+  byPattern.set(finding.pattern, (byPattern.get(finding.pattern) ?? 0) + 1);
+}
+lines.push('  Pattern breakdown:');
+for (const [pattern, count] of [...byPattern.entries()].sort((a, b) => b[1] - a[1])) {
+  lines.push(`    ${styleText('dim', String(count).padStart(4))}  ${pattern}`);
+}
+lines.push('');
+
+if (errors.length === 0) {
+  lines.push(styleText('green', '  ✅ No ERROR-level domain type violations found.'));
+} else {
+  lines.push(styleText('red', `  ❌ ${errors.length} ERROR(s) must be fixed before commit.`));
+}
+lines.push('');
+lines.push('  💡 Escape hatches (for intentional exceptions — use sparingly):');
+lines.push('    // domain-ok    → field genuinely accepts any string (open text)');
+lines.push('    // string-ok    → type alias to string is intentional');
+lines.push('    // open-record  → Record<string, ...> key is intentionally open');
+lines.push('    // runtime-set  → Set used for runtime lookup (not domain typing)');
+lines.push('    // runtime-map  → Map used for runtime lookup (not domain typing)');
+lines.push('    // no-domain    → string array is dynamic data, not a finite domain');
+lines.push('');
+
+const report = lines.join('\n');
+console.log(report);
+
+if (outputFile) {
+  const plain = report.replace(/\x1B\[[0-9;]*m/g, '');
+  await fs.writeFile(path.resolve(ROOT, outputFile), plain, 'utf8');
+  console.log(styleText('dim', `  Report saved to: ${outputFile}`));
+}
+
+if (errors.length > 0) process.exit(1);

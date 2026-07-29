@@ -286,7 +286,7 @@ async function runMigrations(): Promise<void> {
             try {
               if (_sqliteDb) _sqliteDb.run(sql)
             } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase()
+              const msg = (stmtErr as Error).message.toLowerCase() // text-ok
               const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
               const isMissing = msg.includes('no such column')
               

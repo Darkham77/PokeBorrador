@@ -6,6 +6,7 @@
 
 import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
+import type { BattleConditionKey } from '@/types/battle/battle';
 
 const POSITION_WEIGHTS = {
   pokemonAdvantage: 0.20,
@@ -17,7 +18,7 @@ const POSITION_WEIGHTS = {
   winConditionViability: 0.15,
 } as const;
 
-function countHazardLayers(conditions: Map<string, number>): number {
+function countHazardLayers(conditions: Map<BattleConditionKey, number>): number {
   return (conditions.get('stealthrock') ?? 0) +
     (conditions.get('spikes') ?? 0) +
     (conditions.get('toxicspikes') ?? 0) +

@@ -83,7 +83,7 @@ describe('Shop Store', () => {
     const game = useGameStore();
     
     game.state.money = 1000;
-    game.state.playerClass = 'trainer'; // Free healing for non-rocket
+    game.state.playerClass = 'entrenador'; // Free healing for non-rocket
     game.state.team = [{
       hp: 10,
       maxHp: 100,

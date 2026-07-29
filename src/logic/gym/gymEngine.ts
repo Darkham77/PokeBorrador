@@ -4,8 +4,11 @@
  * Logic for Gym rewards, rematches, and progress.
  */
 
+import { requireGymId, type GymId } from '@/data/world/gyms';
+import type { GameState } from '@/types/system/game';
+
 export interface Gym {
-  id: string;
+  id: GymId;
   leader: string;
   rewardTM?: string;
   level?: number;
@@ -15,8 +18,6 @@ export const GYM_RATIOS = {
   rematchTMRateNormal: 0.03,
   rematchTMRateHard: 0.05
 };
-
-import type { GameState } from '@/types/system/game';
 
 export interface GymVictoryResult {
   tmDropped: boolean;
@@ -35,12 +36,13 @@ export interface GymVictoryResult {
 export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: GameState): GymVictoryResult {
   const diffMap: Record<string, number> = { easy: 1, normal: 2, hard: 3 };
   const diffValue = diffMap[difficulty] || 1;
-  const isFirstTime = !state.defeatedGyms.includes(gym.id);
+  const gymId = requireGymId(gym.id);
+  const isFirstTime = !state.defeatedGyms.includes(gymId);
   
   let tmDropped = false;
   let extraCoins = 0;
   let newProgress = 0;
-  const currentEntry = state.gymProgress?.[gym.id];
+  const currentEntry = state.gymProgress?.[gymId];
   if (typeof currentEntry === 'number') newProgress = currentEntry;
   else if (currentEntry && typeof currentEntry === 'object') newProgress = currentEntry.attempts || 0; // Fallback to attempts or similar if it was object
 

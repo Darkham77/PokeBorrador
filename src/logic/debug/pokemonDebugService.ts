@@ -6,11 +6,14 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import { requirePokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface DebugPokemon extends Pokemon {
-  mapId?: string | null
+  mapId?: MapRouteId | null
 }
 
 interface GenerateParams {
@@ -33,19 +36,13 @@ interface GenerateParams {
   uid?: string
 }
 
-interface EggData {
-  uid: string
-  id: string
-  name: string
-  isEgg: boolean
-  steps: number
-  ivs: Pokemon['ivs']
-  nature: string
-  movesAtBirth: string[]
-  abilitySlot: number
-  isShiny: boolean
-  isGuardian: boolean
-  ready: boolean
+function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
+  return pokemon.moves.map((move) => {
+    if (!move?.id) {
+      throw new Error(`[debug] Cannot create egg for ${pokemon.id}: move slot is missing a canonical Showdown move id.`);
+    }
+    return requirePokemonMoveId(move.id);
+  });
 }
 
 /**
@@ -77,8 +74,8 @@ export const pokemonDebugService = {
       uid
     } = params;
 
-    const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
-    const mappedGender = (gender && genderMap[gender]) ? genderMap[gender] : undefined;
+    const genderMap: Record<'male' | 'female' | 'genderless', PokemonGender> = { male: 'm', female: 'f', genderless: null };
+    const mappedGender = gender ? genderMap[gender] : undefined;
     const isEgg = protocol === 'hatch' || protocol === 'hatch_anim' || protocol === 'egg_anim' || protocol === 'egg_silent';
     const p = makePokemon(id, level, { 
       isShiny, 
@@ -96,7 +93,7 @@ export const pokemonDebugService = {
     }
 
     if (mapId) {
-      (p as DebugPokemon).mapId = mapId
+      (p as DebugPokemon).mapId = requireMapRouteId(mapId)
     }
 
     // 2. Apply Overrides
@@ -147,7 +144,7 @@ export const pokemonDebugService = {
     const ui = useUIStore();
     const animationsEnabled = ui.debugAnimationsEnabled ?? true;
 
-    logger.debug('DEBUG', `Executing ${protocol.toUpperCase()} protocol for ${p.name}`);
+    logger.debug('DEBUG', `Executing ${protocol.toUpperCase()} protocol for ${p.name}`); // text-ok
 
     switch (protocol) {
       case 'catch':
@@ -163,15 +160,13 @@ export const pokemonDebugService = {
       case 'hatch':
       case 'egg_silent': {
         // Protocol: Add UNHATCHED egg to inventory
-        const eggForInventory: Partial<EggData> = {
+        const eggForInventory: Partial<PokemonEgg> = {
           uid: `egg_${Temporal.Now.instant().epochMilliseconds}`,
-          id: p.id,
-          name: 'Huevo Pokémon',
-          isEgg: true,
+          id: requirePokemonSpeciesId(p.id),
           steps: 1, // 1 step remaining for quick debug testing
           ivs: p.ivs,
           nature: p.nature,
-          movesAtBirth: p.moves.map(m => m?.name || '???'),
+          movesAtBirth: requireMoveIdsForDebugEgg(p),
           abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
           isShiny: p.isShiny,
           isGuardian: p.isGuardian
@@ -184,9 +179,17 @@ export const pokemonDebugService = {
         }
 
         if (!game.state.eggs) game.state.eggs = [];
-        const eggToPush: EggData = {
-          ...(eggForInventory as EggData),
-          uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
+        const eggSpecies = requirePokemonSpeciesId(p.id);
+        const eggToPush: PokemonEgg = {
+          uid: `${eggSpecies}-${Temporal.Now.instant().epochMilliseconds}`,
+          id: eggSpecies,
+          steps: eggForInventory.steps ?? 1,
+          ivs: eggForInventory.ivs,
+          nature: eggForInventory.nature,
+          movesAtBirth: eggForInventory.movesAtBirth,
+          abilitySlot: eggForInventory.abilitySlot,
+          isShiny: eggForInventory.isShiny,
+          isGuardian: eggForInventory.isGuardian,
           ready: false
         };
         game.state.eggs.push(eggToPush);
@@ -202,10 +205,10 @@ export const pokemonDebugService = {
         
         const { eggFactory } = await import('@/logic/breeding/eggFactory');
         const egg = eggFactory.createDaycareEgg({
-          species: p.id,
+          species: requirePokemonSpeciesId(p.id),
           ivs: p.ivs,
           nature: p.nature,
-          movesAtBirth: p.moves.map(m => m?.name || '???'),
+          movesAtBirth: requireMoveIdsForDebugEgg(p),
           abilityIndex: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
           isShiny: !!p.isShiny,
           cost: 0
@@ -242,7 +245,7 @@ export const pokemonDebugService = {
             async () => {
               ui.notify(`¡Pesca exitosa! Iniciando combate...`, '🎣')
               await battleStore._startBattle(p, { 
-                locationId: (p as DebugPokemon).mapId || 'route12',
+                locationId: (p as DebugPokemon).mapId || requireMapRouteId('route12'),
                 isDebug: true,
                 isFishing: true
               })
@@ -267,7 +270,7 @@ export const pokemonDebugService = {
             async () => {
               ui.notify(`¡Excavación exitosa! Iniciando combate...`, '⛏️')
               await battleStore._startBattle(p, { 
-                locationId: (p as DebugPokemon).mapId || 'mt_moon',
+                locationId: (p as DebugPokemon).mapId || requireMapRouteId('mt_moon'),
                 isDebug: true,
                 isArchaeology: true
               })
@@ -291,6 +294,7 @@ export const pokemonDebugService = {
    * Starts a custom encounter.
    */
   async triggerEncounter(p: Pokemon, mapId: string = 'plains'): Promise<void> {
+    const routeId = requireMapRouteId(mapId);
     const battleStore = useBattleStore();
     // const _ui = useUIStore();
 
@@ -300,7 +304,7 @@ export const pokemonDebugService = {
       await battleStore.endBattle(false, true);
     }
 
-    logger.debug('DEBUG', `Triggering encounter with ${p.name} at ${mapId}`);
+    logger.debug('DEBUG', `Triggering encounter with ${p.name} at ${routeId}`);
     
     // Register as seen
     const game = useGameStore();
@@ -308,7 +312,7 @@ export const pokemonDebugService = {
 
     // Start battle
     await battleStore._startBattle(p, { 
-      locationId: mapId,
+      locationId: routeId,
       isDebug: true
     });
 

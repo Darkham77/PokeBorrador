@@ -13,13 +13,15 @@ const gtsStore = useGTSStore()
 
 const isExpanded = ref(false)
 
+import type { PokemonType } from '@/data/battle/types'
+
 const filters = computed(() => gtsStore.filters)
 
 const types = [
   'all', 'fire', 'water', 'grass', 'electric', 'psychic', 'normal', 
   'rock', 'ground', 'poison', 'bug', 'flying', 'ghost', 'ice', 
   'dragon', 'fighting', 'dark', 'steel'
-]
+] as const satisfies readonly (PokemonType | 'all')[]
 
 const categories = [
   { value: 'all', label: 'Todo' },
@@ -37,7 +39,7 @@ const categories = [
   { value: 'otros', label: 'Otros' }
 ]
 
-const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F']
+const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F'] as const
 
 const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]) => {
   gtsStore.filters[key] = value

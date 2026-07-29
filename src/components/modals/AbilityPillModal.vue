@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities'
 import gsap from 'gsap'
 
 const uiStore = useUIStore()
@@ -17,12 +18,12 @@ const abilityPokemon = computed(() => {
   const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
   return list[target.index] ?? null
 })
-const availableAbilities = computed<string[]>(() => {
+const availableAbilities = computed<AbilityId[]>(() => {
   if (!abilityPokemon.value) return []
-  return pokemonDataProvider.getSpeciesAbilities(abilityPokemon.value.id)
+  return pokemonDataProvider.getSpeciesAbilities(abilityPokemon.value.id).map(requireAbilityId)
 })
 
-const handleApplyAbility = (ability: string) => {
+const handleApplyAbility = (ability: AbilityId) => {
   if (!abilityPokemon.value) return
   if (abilityPokemon.value.ability === ability) {
     uiStore.notify('Ya tiene esa habilidad.', '⚠️')
@@ -39,13 +40,13 @@ const handleApplyAbility = (ability: string) => {
   gameStore.save()
 }
 
-const getAbilityDesc = (ability: string) => {
+const getAbilityDesc = (ability: AbilityId) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
   const data = pokemonDataProvider.getAbilityData(ability)
   return data ? data.desc : 'Habilidad especial de este Pokémon.'
 }
 
-const getAbilityName = (ability: string) => {
+const getAbilityName = (ability: AbilityId) => {
   if (!ability) return '—'
   const data = pokemonDataProvider.getAbilityData(ability)
   return data ? data.name : ability

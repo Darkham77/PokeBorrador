@@ -4,13 +4,14 @@ import { useGameStore } from '@/stores/game'
 import { usePvPStore } from '@/stores/pvp'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { GymId } from '@/data/world/gyms'
 
 interface ViteDebugBridge {
   setMoney: (val: number) => void;
   setElo: (val: number) => void;
   setLevel: (val: number) => void;
   setBadges: (val: number) => void;
-  winGym: (gymId: string, difficulty?: string) => void;
+  winGym: (gymId: GymId, difficulty?: string) => void;
   resetBadges: () => void;
   setDominance: (faction: string) => void;
   setFaction: (faction: string) => void;
@@ -30,11 +31,11 @@ const debugWarCoins = ref(game.state.warCoins || 0)
 const currentForcedFaction = ref('none')
 const simDifficulty = ref('easy')
 
-const isDefeated = (gymId: string) => {
+const isDefeated = (gymId: GymId) => {
   return (game.state.defeatedGyms || []).includes(gymId)
 }
 
-const simulateWin = (gymId: string) => {
+const simulateWin = (gymId: GymId) => {
   getDebugBridge().winGym(gymId, simDifficulty.value)
 }
 

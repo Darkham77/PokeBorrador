@@ -4,7 +4,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -98,11 +98,11 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         const tm = active.rewardTM
         let itemObj = null
         try {
-          itemObj = getItemById(tm)
+          itemObj = getItemById(tm as ItemId)
         } catch {
-          itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tm.toLowerCase()) || null
+          itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tm.toLowerCase()) || null // text-ok
         }
-        const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
+        const tmId = itemObj ? itemObj.id : (tm as ItemId)
         ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
         ctx.addLog(`¡Recibiste la ${itemObj?.name || tm}!`, 'log-info', tmId) 
         ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tm}!`, '🎒')
@@ -123,11 +123,11 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         if (tmChance > 0 && Math.random() < tmChance) {
           let itemObj = null
           try {
-            itemObj = getItemById(tmReward)
+            itemObj = getItemById(tmReward as ItemId)
           } catch {
-            itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tmReward.toLowerCase()) || null
+            itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tmReward.toLowerCase()) || null // text-ok
           }
-          const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
+          const tmId = itemObj ? itemObj.id : (tmReward as ItemId)
           ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
           ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)
           ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tmReward}!`, '🎒')
@@ -144,7 +144,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       const key = diff as 'easy' | 'normal' | 'hard'
       if (!prog[key]) {
         prog[key] = true
-        ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆')
+        ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆') // text-ok
         
         // Award Gym Difficulty-Specific rewards dynamically (Bulk Money and EXP only, NO unconditional TM)
         const { useGymsStore } = await import('@/stores/gyms')
@@ -408,7 +408,7 @@ export async function awardDebugExp(ctx: BattleContext) {
 
   ctx.addLog(`DEBUG: Añadiendo ${needed} EXP para subir de nivel...`, 'log-info', p)
 
-  const participantsSet = new Set([p.uid])
+  const participantsSet = new Set([p.uid]) // runtime-set
   const reward = processExpGain(teamPoke, needed, participantsSet, {
     isActive: true,
     classMult: 1,

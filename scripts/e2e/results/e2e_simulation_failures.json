@@ -1,7 +1,17 @@
 [
   {
-    "id": "case-b51d6cdd9174",
+    "id": "case-5309508236c2",
+    "error": "page.waitForFunction: Test ended.",
+    "timestamp": "2026-07-27T21:46:36.226Z"
+  },
+  {
+    "id": "case-d34cb9009c1a",
     "error": "page.evaluate: Test ended.",
-    "timestamp": "2026-07-24T13:00:46.926Z"
+    "timestamp": "2026-07-27T21:46:36.551Z"
+  },
+  {
+    "id": "case-e190c35133ed",
+    "error": "page.evaluate: Target page, context or browser has been closed",
+    "timestamp": "2026-07-27T21:46:36.541Z"
   }
 ]

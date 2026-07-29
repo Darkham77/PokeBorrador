@@ -2,6 +2,7 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MapStore } from '@/types/system/stores'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
+import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 
 export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: Pokemon, isGym: boolean) {
@@ -9,7 +10,7 @@ export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: 
     const { useMapStore } = await import('@/stores/map')
     const mapStore = useMapStore() as unknown as MapStore
     ctx.activeBattle.value.weather = {
-      type: isGym ? 'none' : mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION),
+      type: isGym ? requireWeatherId('none') : requireWeatherId(mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION)),
       visual: isGym ? 'clear' : mapStore.currentWeather,
       turns: -1
     }

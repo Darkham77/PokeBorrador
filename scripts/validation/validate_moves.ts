@@ -23,6 +23,15 @@ import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../src/data/battle/moves.ts';
 
 const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemon/pokemonUtils.ts');
+type MoveTranslationId = keyof typeof MOVE_TRANSLATIONS_ES;
+
+function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
+}
+
+function hasMoveTranslation(id: string): id is MoveTranslationId {
+  return Object.hasOwn(MOVE_TRANSLATIONS_ES, id);
+}
 
 async function main() {
   const { values } = parseArgs({
@@ -40,7 +49,7 @@ async function main() {
   // Extraer todos los movimientos de los learnsets de especies habilitadas
   const learnsetMoves = new Set<string>();
   for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
-    if (!ENABLED_POKEMON_IDS.has(pokeId)) continue;
+    if (!isEnabledPokemonId(pokeId)) continue;
     if (poke.learnset && Array.isArray(poke.learnset)) {
       poke.learnset.forEach((m: { id: string }) => {
         if (m.id && m.id !== 'Unknown') {
@@ -65,8 +74,7 @@ async function main() {
     }
 
     // Verificar traducción al español
-    const translated = MOVE_TRANSLATIONS_ES[moveId];
-    if (!translated) {
+    if (!hasMoveTranslation(moveId)) {
       warnings.push(`${tag} No tiene traducción oficial al español en moves.ts.`);
     }
   });

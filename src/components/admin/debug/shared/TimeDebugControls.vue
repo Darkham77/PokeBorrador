@@ -11,7 +11,7 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { useBattleStore } from '@/stores/battle/battle'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { DEBUG_WEATHER_EFFECTS } from '../debugConstants'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
@@ -34,7 +34,7 @@ interface ViteDebugBridge {
   resetTime: () => void;
   addHours: (h: number) => void;
   addWeeks: (w: number) => void;
-  setWeather: (w: string | null) => void;
+  setWeather: (w: WeatherId | null) => void;
   setCycle: (c: string | null) => void;
 }
 
@@ -67,17 +67,18 @@ function addWeeks(w: number) {
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
-function toggleWeather(w: string | null) {
+function toggleWeather(w: WeatherId | null) {
   const next = mapStore.globalWeather === w ? null : w;
   getDebugBridge().setWeather(next);
   
   // Sincronización con Batalla Activa
   if (battleStore.isBattleActive && battleStore.state) {
-    const mech = getMechanicalWeather(next || 'clear');
+    const visual = requireWeatherId(next ?? 'clear');
+    const mech = getMechanicalWeather(visual);
     battleStore.state.weather = { 
-      type: mech, 
+      type: visual, 
       turns: 99, // Larga duración para debug
-      visual: next || 'clear'
+      visual
     };
     battleStore.addLog(`DEBUG: Entorno sincronizado (${mech.toUpperCase()})`, 'log-info');
   }

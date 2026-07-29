@@ -1,21 +1,16 @@
 import { useGameStore } from '@/stores/game.ts';
-import { getItemById } from '@/data/inventory/items';
+import { getItemById, requireItemId } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Inventory, Item as ItemData, ItemCategory } from '@/types/inventory/items';
 
-export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: string): string | null {
+import type { ItemId } from '@/data/inventory/items';
+
+export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId | string): ItemId | string | null {
   if (!id) return null;
-  const normalizedId = String(id).toLowerCase().trim();
-
   const inv = gameStore.state.inventory || {};
-  if (inv[normalizedId] !== undefined) return normalizedId;
   if (inv[id] !== undefined) return id;
-
-  const keys = Object.keys(inv);
-  const matchCaseInsensitive = keys.find(k => k.toLowerCase() === normalizedId || k.toLowerCase() === id.toLowerCase());
-  if (matchCaseInsensitive) return matchCaseInsensitive;
-
   return null;
 }
 
@@ -34,15 +29,11 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
   if (pokemon.inDaycare) {
     if (!item) return false;
     const isVigorRestorer = item.id === 'vigorrestorer' || item.id === 'vigorcandy';
-    const isBreedingHeld = item.cat === 'breeding' || item.cat === 'breeding_held';
+    const isBreedingHeld = item.cat === 'breeding_held';
     return !!(isVigorRestorer || isBreedingHeld);
   }
 
-  if (item && (
-    item.cat === 'held' || 
-    item.type === 'held' || 
-    ((item.cat === 'breeding' || item.cat === 'breeding_held') && item.id !== 'vigorrestorer' && !item.id.includes('berry'))
-  )) return true;
+  if (item && isEquippableHeldItem(item)) return true;
 
   const p = JSON.parse(JSON.stringify(pokemon)) as Pokemon;
 
@@ -56,10 +47,14 @@ export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
   return dynamicRes && dynamicRes.success;
 }
 
-export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemName: string) {
+export function isEquippableHeldItem(item: Pick<ItemData, 'cat' | 'id'>): boolean {
+  return item.cat === 'combat_held'
+    || (item.cat === 'breeding_held' && item.id !== 'vigorrestorer' && !item.id.includes('berry'));
+}
+
+export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: ItemId | string) {
   const inv = gameStore.state.inventory;
   if (!inv) return;
-  const itemId = itemName.toLowerCase();
   const actualKey = findInventoryKey(gameStore, itemId);
   if (actualKey && inv[actualKey]) {
     inv[actualKey]--;
@@ -70,7 +65,7 @@ export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemName
   }
 }
 
-export function getItemTier(item: { cat?: string; sprite?: string; craftingTier?: number }): number {
+export function getItemTier(item: { cat?: ItemCategory; sprite?: string; craftingTier?: number }): number {
   if (item.craftingTier !== undefined) return item.craftingTier;
   const cat = item.cat || 'otros';
   if (cat === 'raw_material' || item.sprite?.includes('crafting/tier0/')) return 0;
@@ -79,16 +74,14 @@ export function getItemTier(item: { cat?: string; sprite?: string; craftingTier?
   return 3;
 }
 
-export function isItemProduct(item: { name: string; cat?: string; type?: string; id?: string; sprite?: string }): boolean {
+export function isItemProduct(item: ItemData): boolean {
   if (getItemTier(item) === 3) return true;
 
   const cat = item.cat;
-  const type = item.type;
   const id = item.id;
 
   if (id) {
-    const lid = id.toLowerCase();
-    if (lid.endsWith('fossil') || lid.includes('fossilized') || lid === 'oldamber') {
+    if (id.endsWith('fossil') || id.includes('fossilized') || id === 'oldamber') {
       return true;
     }
   }
@@ -99,10 +92,6 @@ export function isItemProduct(item: { name: string; cat?: string; type?: string;
     cat === 'stones' ||
     cat === 'combat_held' ||
     cat === 'breeding_held' ||
-    type === 'stone' ||
-    type === 'held' ||
-    type === 'usable' ||
-    type === 'booster' ||
     cat === 'tools' ||
     cat === 'tms'
   ) {
@@ -110,18 +99,17 @@ export function isItemProduct(item: { name: string; cat?: string; type?: string;
   }
 
   if (id && ITEM_EFFECTS[id]) return true;
-  if (id?.toLowerCase().startsWith('tm')) return true;
+  if (id?.startsWith('tm')) return true;
 
   return false;
 }
 
-export function getAdjustedProductCategory(item: { name: string; cat?: string; id?: string }): string {
-  const cat = item.cat || 'otros';
-  const id = item.id || '';
+export function getAdjustedProductCategory(item: Pick<ItemData, 'cat' | 'id' | 'name'>): ItemCategory {
+  const cat = item.cat;
+  const id = item.id;
 
   if (id) {
-    const lid = id.toLowerCase();
-    if (lid.endsWith('fossil') || lid.includes('fossilized') || lid === 'oldamber') {
+    if (id.endsWith('fossil') || id.includes('fossilized') || id === 'oldamber') {
       return 'breeding_held';
     }
   }
@@ -130,44 +118,33 @@ export function getAdjustedProductCategory(item: { name: string; cat?: string; i
     return cat;
   }
 
-  if (id.includes('stone') || item.name.toLowerCase().includes('piedra')) {
+  const nameLower = item.name.toLowerCase(); // text-ok
+
+  if (id.includes('stone') || nameLower.includes('piedra')) {
     return 'stones';
   }
 
-  if (id.includes('root') || id.includes('revive') || item.name.toLowerCase().includes('pocion') || item.name.toLowerCase().includes('revivir')) {
+  if (id.includes('root') || id.includes('revive') || nameLower.includes('pocion') || nameLower.includes('revivir')) {
     return 'potions';
   }
 
   return 'otros';
 }
 
-export interface Item {
-  name: string;
+export interface Item extends ItemData {
   qty: number;
-  id: string;
-  cat?: string;
-  type?: string;
-  sprite?: string;
-  desc?: string;
-  price?: number;
-  craftingTier?: number;
-  tier?: 'common' | 'rare' | 'epic' | 'legend';
-  nonCombat?: boolean;
 }
 
 export function mapInventoryToItems(
-  inventory: Record<string, number>,
+  inventory: Inventory,
   isBattleActive: boolean,
   mainTab: 'productos' | 'materiales'
  ): Item[] {
    let items: Item[] = Object.entries(inventory)
+     .filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
      .map(([id, qty]) => {
-        if (id === 'bicycle') {
-         const bicycleItem: Item = { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools', qty };
-         return bicycleItem
-        }
-        const item = getItemById(id);
-        const builtItem: Item = ({ ...item, qty, name: item.name } as unknown) as Item;
+        const item = getItemById(requireItemId(id));
+        const builtItem: Item = { ...item, qty, name: item.name };
         return builtItem;
      })
 
@@ -184,7 +161,7 @@ export function mapInventoryToItems(
       .filter(item => getItemTier(item) < 3)
       .map(item => {
         const tier = getItemTier(item)
-        let cat = item.cat
+        let cat: ItemCategory = item.cat
         if (tier === 0) cat = 'raw_material'
         else if (tier === 1) cat = 'refined_material'
         else if (tier === 2) cat = 'component'
@@ -202,4 +179,3 @@ export function mapInventoryToItems(
 
   return items
 }
-

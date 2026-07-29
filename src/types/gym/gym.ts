@@ -1,28 +1,33 @@
 
+import type { GymId } from '@/data/world/gyms';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonType } from '@/data/battle/types';
+import type { ItemId } from '@/data/inventory/items';
+
 export interface GymTeamMember {
-  pokemonId: string;
+  pokemonId: PokemonSpeciesId;
   level: number;
 }
 
 export interface GymDifficulty {
-  pokemon: string[];
+  pokemon: PokemonSpeciesId[];
   levels: number[];
   team?: GymTeamMember[];
 }
 
 export interface Gym {
-  id: string;
-  name: string;
-  city: string;
-  leader: string;
-  type: string;
-  typeColor: string;
-  badge: string;
-  badgeName: string;
-  quote: string;
-  victoryQuote: string;
-  rewardTM: string;
-  pokemon: string[];
+  id: GymId;
+  name: string; // domain-ok
+  city: string; // domain-ok
+  leader: string; // domain-ok
+  type: PokemonType;
+  typeColor: string; // domain-ok
+  badge: string; // domain-ok
+  badgeName: string; // domain-ok
+  quote: string; // domain-ok
+  victoryQuote: string; // domain-ok
+  rewardTM: ItemId;
+  pokemon: PokemonSpeciesId[];
   levels: number[];
   badgesRequired: number;
   difficulties: {

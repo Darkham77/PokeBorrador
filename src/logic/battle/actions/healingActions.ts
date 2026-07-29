@@ -1,5 +1,13 @@
 import type { MoveAction } from '@/types/battle/battle';
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '../../weather/weatherRegistry.ts';
+import { getMechanicalWeather, WEATHER_MECHANICAL, type WeatherMechanical } from '../../weather/weatherRegistry.ts';
+
+const BAD_HEAL_WEATHERS: readonly WeatherMechanical[] = [
+  WEATHER_MECHANICAL.RAIN,
+  WEATHER_MECHANICAL.HAIL,
+  WEATHER_MECHANICAL.SNOW,
+  WEATHER_MECHANICAL.SANDSTORM,
+  WEATHER_MECHANICAL.FOG
+];
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
@@ -20,10 +28,9 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     const mechWeather = getMechanicalWeather(weather);
 
     // Prioridad 1: Clima (Mecánicas oficiales)
-    const badWeathers: string[] = [WEATHER_MECHANICAL.RAIN, WEATHER_MECHANICAL.HAIL, WEATHER_MECHANICAL.SNOW, WEATHER_MECHANICAL.SANDSTORM, WEATHER_MECHANICAL.FOG];
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
       healPct = 0.66;
-    } else if (badWeathers.includes(mechWeather)) {
+    } else if (BAD_HEAL_WEATHERS.includes(mechWeather as WeatherMechanical)) {
       healPct = 0.25;
     } else {
       // Clear weather (Default)

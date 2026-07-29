@@ -7,13 +7,13 @@ import { useAudioStore } from '@/stores/audio'
 import { getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import DebugActionPanelQuickButtons from './DebugActionPanelQuickButtons.vue'
-import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokemon/pokedex'
+import { PDEX_ORDER, GEN2_PDEX_ORDER, isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { gameBus } from '@/logic/events/gameBus'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { ANIMATED_SPRITE_DATABASE } from '@/data/pokemon/animatedSpriteDatabase'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase'
+import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
-const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
+const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
@@ -131,7 +131,7 @@ const updateVisualSwap = (side = 'enemy') => {
 
   let targetBase = String(baseIdVal ?? '').trim().toLowerCase()
   if (!/^\d+$/.test(targetBase)) {
-    const idx = ALL_PDEX.indexOf(targetBase)
+    const idx = isPokemonSpeciesId(targetBase) ? ALL_PDEX.indexOf(targetBase) : -1
     if (idx !== -1) {
       targetBase = String(idx + 1)
     }
@@ -152,23 +152,23 @@ const updateVisualSwap = (side = 'enemy') => {
 
   let animatedKey = ''
   if (isBack) {
-    if (isFemale && ANIMATED_SPRITE_DATABASE[`${candIdle}_f_back`]) {
+    if (isFemale && hasAnimatedSpriteId(`${candIdle}_f_back`)) {
       animatedKey = `${candIdle}_f_back`
-    } else if (ANIMATED_SPRITE_DATABASE[`${candIdle}_back`]) {
+    } else if (hasAnimatedSpriteId(`${candIdle}_back`)) {
       animatedKey = `${candIdle}_back`
-    } else if (isFemale && ANIMATED_SPRITE_DATABASE[`${candSimple}_f_back`]) {
+    } else if (isFemale && hasAnimatedSpriteId(`${candSimple}_f_back`)) {
       animatedKey = `${candSimple}_f_back`
-    } else if (ANIMATED_SPRITE_DATABASE[`${candSimple}_back`]) {
+    } else if (hasAnimatedSpriteId(`${candSimple}_back`)) {
       animatedKey = `${candSimple}_back`
     }
   } else {
-    if (isFemale && ANIMATED_SPRITE_DATABASE[`${candIdle}_f`]) {
+    if (isFemale && hasAnimatedSpriteId(`${candIdle}_f`)) {
       animatedKey = `${candIdle}_f`
-    } else if (ANIMATED_SPRITE_DATABASE[candIdle]) {
+    } else if (hasAnimatedSpriteId(candIdle)) {
       animatedKey = candIdle
-    } else if (isFemale && ANIMATED_SPRITE_DATABASE[`${candSimple}_f`]) {
+    } else if (isFemale && hasAnimatedSpriteId(`${candSimple}_f`)) {
       animatedKey = `${candSimple}_f`
-    } else if (ANIMATED_SPRITE_DATABASE[candSimple]) {
+    } else if (hasAnimatedSpriteId(candSimple)) {
       animatedKey = candSimple
     }
   }
@@ -192,9 +192,7 @@ const updateVisualSwap = (side = 'enemy') => {
       throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`)
     }
 
-    if (!POKEMON_FEET_DATABASE[dbKey]) {
-      throw new Error(`[DebugActionPanel] El ID de Pokémon generado "${targetId}" (ruta: "${dbKey}") no existe en POKEMON_FEET_DATABASE ni en ANIMATED_SPRITE_DATABASE.`);
-    }
+    requireFeetPoints(dbKey)
   }
 
   if (side === 'player' && battleStore.state?.player) {
@@ -212,7 +210,8 @@ const incrementSwap = (side = 'enemy') => {
   
   let num = parseInt(current, 10)
   if (isNaN(num)) {
-    const idx = ALL_PDEX.indexOf(current.toLowerCase())
+    const speciesId = current.toLowerCase()
+    const idx = isPokemonSpeciesId(speciesId) ? ALL_PDEX.indexOf(speciesId) : -1
     num = idx !== -1 ? idx + 1 : 1
   }
   
@@ -226,7 +225,8 @@ const decrementSwap = (side = 'enemy') => {
 
   let num = parseInt(current, 10)
   if (isNaN(num)) {
-    const idx = ALL_PDEX.indexOf(current.toLowerCase())
+    const speciesId = current.toLowerCase()
+    const idx = isPokemonSpeciesId(speciesId) ? ALL_PDEX.indexOf(speciesId) : -1
     num = idx !== -1 ? idx + 1 : 1
   }
   

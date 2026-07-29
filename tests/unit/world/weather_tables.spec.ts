@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables'
-import { WEATHER_REGISTRY, getMechanicalWeather } from '@/logic/weather/weatherRegistry'
+import { ROUTE_WEATHER_TABLES, requireWeatherCycleId, requireWeatherSeasonId, requireWeatherTableRouteId } from '@/data/world/weather-tables'
+import { WEATHER_REGISTRY, getMechanicalWeather, isWeatherId } from '@/logic/weather/weatherRegistry'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { MapLocation } from '@/types/pokemon/encounters'
@@ -11,14 +11,19 @@ describe('Weather tables coverage and integrity', () => {
     const usedWeatherKeys = new Set<string>()
 
     // Traverse all routes, seasons, cycles and collect weather keys with probability > 0
-    for (const routeId in ROUTE_WEATHER_TABLES) {
-      const seasons = ROUTE_WEATHER_TABLES[routeId] || {}
-      for (const seasonName in seasons) {
-        const phases = seasons[seasonName] || {}
-        for (const phaseName in phases) {
-          const weatherProbs = phases[phaseName] || {}
-          for (const weatherKey in weatherProbs) {
-            const probability = weatherProbs[weatherKey]
+    for (const rawRouteId in ROUTE_WEATHER_TABLES) {
+      const routeId = requireWeatherTableRouteId(rawRouteId)
+      const seasons = ROUTE_WEATHER_TABLES[routeId]
+      for (const rawSeasonName in seasons) {
+        const seasonName = requireWeatherSeasonId(rawSeasonName)
+        const phases = seasons[seasonName]
+        for (const rawPhaseName in phases) {
+          const phaseName = requireWeatherCycleId(rawPhaseName)
+          const weatherProbs = phases[phaseName]
+          for (const [weatherKey, probability] of Object.entries(weatherProbs)) {
+            if (!isWeatherId(weatherKey)) {
+              throw new Error(`[weather_tables] Invalid weather id in route table: ${weatherKey}`)
+            }
             if (probability !== undefined && probability > 0) {
               usedWeatherKeys.add(weatherKey.toLowerCase())
             }
@@ -58,7 +63,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
   it('should ensure all weather fishing pool encounters (exclusives and visitors) have at least one Water type', () => {
     FIRE_RED_MAPS.forEach((map: MapLocation) => {
       // Weather fishing exclusives and visitors
-      const weather = map.weather
+      const weather = map.weather as Record<string, any> | undefined
       if (weather) {
         Object.keys(weather).forEach(wKey => {
           const wCfg = weather[wKey]
@@ -128,7 +133,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
       }
 
       // Weather visitors and exclusives (terrestrial)
-      const weather = map.weather
+      const weather = map.weather as Record<string, any> | undefined
       if (weather) {
         Object.keys(weather).forEach(wKey => {
           const wCfg = weather[wKey]
@@ -174,7 +179,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
           return
         }
 
-        const wCfg = weather[wKey]
+        const wCfg = (weather as Record<string, any>)[wKey]
         if (!wCfg) return
 
         const hasTerrestrialVisitors = wCfg.visitors && Object.keys(wCfg.visitors).length > 0
@@ -204,18 +209,23 @@ describe('Weather visitor and exclusive type compatibility', () => {
 
     const missingConfigs: string[] = []
 
-    for (const routeId in ROUTE_WEATHER_TABLES) {
+    for (const rawRouteId in ROUTE_WEATHER_TABLES) {
+      const routeId = requireWeatherTableRouteId(rawRouteId)
       const map = mapById.get(routeId)
       if (!map) continue
 
       const possibleWeathers = new Set<string>()
-      const seasons = ROUTE_WEATHER_TABLES[routeId] || {}
-      for (const season in seasons) {
-        const phases = seasons[season] || {}
-        for (const phase in phases) {
-          const weatherProbs = phases[phase] || {}
-          for (const wKey in weatherProbs) {
-            const prob = weatherProbs[wKey]
+      const seasons = ROUTE_WEATHER_TABLES[routeId]
+      for (const rawSeason in seasons) {
+        const season = requireWeatherSeasonId(rawSeason)
+        const phases = seasons[season]
+        for (const rawPhase in phases) {
+          const phase = requireWeatherCycleId(rawPhase)
+          const weatherProbs = phases[phase]
+          for (const [wKey, prob] of Object.entries(weatherProbs)) {
+            if (!isWeatherId(wKey)) {
+              throw new Error(`[weather_tables] Invalid weather id in route table: ${wKey}`)
+            }
             if (prob !== undefined && prob > 0) {
               const norm = wKey.toLowerCase().trim()
               if (norm !== 'clear' && norm !== 'null' && norm !== 'none') {
@@ -226,7 +236,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
         }
       }
 
-      const weatherCfg = map.weather || {}
+      const weatherCfg = (map.weather || {}) as Record<string, any>
       possibleWeathers.forEach(wKey => {
         // Obtenemos la familia mecánica del clima (por ej. si es 'heatwave' se puede configurar bajo 'sun')
         const family = getWeatherFamily(wKey) || getMechanicalWeather(wKey)
@@ -252,6 +262,3 @@ describe('Weather visitor and exclusive type compatibility', () => {
     ).toEqual([])
   })
 })
-
-
-

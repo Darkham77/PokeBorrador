@@ -31,8 +31,8 @@ const stats = computed(() => {
   const caught = gs.value.pokedex || []
   const seen = gs.value.seenPokedex || []
   const currentGenTotal = currentOrder.value.length
-  const currentGenSeen = currentOrder.value.filter((id: string) => seen.includes(id) || caught.includes(id)).length
-  const currentGenCaught = currentOrder.value.filter((id: string) => caught.includes(id)).length
+  const currentGenSeen = currentOrder.value.filter(id => seen.includes(id) || caught.includes(id)).length
+  const currentGenCaught = currentOrder.value.filter(id => caught.includes(id)).length
 
   return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal }
 })

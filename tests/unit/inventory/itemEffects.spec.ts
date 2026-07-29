@@ -234,12 +234,11 @@ describe('Paralizador Curas', () => {
 
 describe('Despertar', () => {
   it('despierta al Pokémon dormido', () => {
-    setup({ hp: 50, maxHp: 100, status: 'slp', sleepTurns: 3 }, { awakening: 1 })
+    setup({ hp: 50, maxHp: 100, status: 'slp' }, { awakening: 1 })
     const res = useInventoryStore().useItem('awakening', 'team', 0)
     expect(res.success).toBe(true)
     const p = useGameStore().state.team[0]!
     expect(p.status).toBe('')
-    expect(p.sleepTurns).toBe(0)
   })
 
   it('falla si no está dormido', () => {

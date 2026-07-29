@@ -2,7 +2,7 @@
  * Database of trainer personality traits and phrases.
  */
 
-const TRAINER_PHRASES: Record<string, string[]> = {
+const TRAINER_PHRASES = {
   timido: [
     "B-bueno... si insistes, supongo que podemos combatir...",
     "Espero no hacerlo demasiado mal... ¡allá voy!",
@@ -179,9 +179,9 @@ const TRAINER_PHRASES: Record<string, string[]> = {
     "Cero tensiones por aquí... ¡que fluya la energía!",
     "El mejor combate es el que se hace con una mente despejada."
   ]
-};
+} as const;
 
-const TRAINER_PERSONALITIES: Record<string, string[]> = {
+const TRAINER_PERSONALITIES = {
   caza_bichos: ["timido", "entusiasta"],
   ornitologo: ["audaz", "entusiasta"],
   cientifico: ["inteligente", "relajado"],
@@ -201,18 +201,23 @@ const TRAINER_PERSONALITIES: Record<string, string[]> = {
   artista: ["misterioso", "entusiasta"],
   rival: ["competitivo", "inteligente"],
   default: ["entusiasta", "competitivo"]
-};
+} as const;
+
+type TrainerPhraseKey = keyof typeof TRAINER_PERSONALITIES;
+
+function isTrainerPhraseKey(key: string): key is TrainerPhraseKey {
+  return Object.hasOwn(TRAINER_PERSONALITIES, key);
+}
 
 // Precompute combined phrases for each trainer type key at module loading time
-const PRECOMPUTED_TRAINER_PHRASES: Record<string, string[]> = {};
+const PRECOMPUTED_TRAINER_PHRASES: Partial<Record<TrainerPhraseKey, string[]>> = {};
 
-for (const [trainerType, personalities] of Object.entries(TRAINER_PERSONALITIES)) {
-  const quotes: string[] = [];
-  personalities.forEach(trait => {
+for (const trainerType in TRAINER_PERSONALITIES) {
+  if (!isTrainerPhraseKey(trainerType)) continue;
+  const quotes: string[] = []; // no-domain
+  TRAINER_PERSONALITIES[trainerType].forEach(trait => {
     const traitQuotes = TRAINER_PHRASES[trait];
-    if (traitQuotes) {
-      quotes.push(...traitQuotes);
-    }
+    quotes.push(...traitQuotes);
   });
   PRECOMPUTED_TRAINER_PHRASES[trainerType] = quotes;
 }
@@ -221,6 +226,10 @@ for (const [trainerType, personalities] of Object.entries(TRAINER_PERSONALITIES)
  * Returns a random quote from the precomputed dictionary for O(1) performance.
  */
 export function getRandomQuoteForTrainer(trainerTypeKey: string): string {
+  if (!isTrainerPhraseKey(trainerTypeKey)) {
+    throw new Error(`Missing personality mapping for trainer type "${trainerTypeKey}" in trainerPhrases.ts`);
+  }
+
   const quotes = PRECOMPUTED_TRAINER_PHRASES[trainerTypeKey];
   if (!quotes || quotes.length === 0) {
     throw new Error(`Missing custom phrases or personality for trainer type "${trainerTypeKey}" in trainerPhrases.ts`);

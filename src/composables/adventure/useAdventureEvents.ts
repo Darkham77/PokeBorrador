@@ -9,6 +9,9 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useShopStore } from '@/stores/inventory/shop'
 import { useMapStore } from '@/stores/map'
+import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets'
+import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
 
 import { TRAINER_TYPES } from '@/data/player/trainerTypes'
@@ -19,9 +22,9 @@ interface AdventureEventsConfig {
   isTraveling: Ref<boolean>
   isPaused: Ref<boolean>
   currentSegmentIndex: Ref<number>
-  calculatedPath: Ref<string[]>
-  currentMapId: Ref<string>
-  originMap: Ref<string>
+  calculatedPath: Ref<AdventureNodeId[]>
+  currentMapId: Ref<AdventureNodeId>
+  originMap: Ref<AdventureNodeId>
   activeHMs: Ref<Set<string>>
   travelLog: Ref<string[]>
   injectedItems: Ref<Set<string>>
@@ -54,7 +57,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     wildPokemon?: Pokemon;
     isTrainer?: boolean;
     trainerName?: string;
-    trainerSprite?: string;
+    trainerSprite?: NpcSpriteId;
     enemyTeam?: Pokemon[];
     quote?: string;
   } | null>(null)
@@ -72,10 +75,14 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     
     // Pick a random sprite from the full archetype catalog (not just the hardcoded fallback)
     const archetypeSprites = getSpritesForArchetype(t.archetype)
-    const trainerSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)] || t.sprite
+    const selectedSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)]
+    if (!selectedSprite) {
+      throw new Error(`[useAdventureEvents] No NPC sprite registered for trainer archetype: ${t.archetype}`)
+    }
+    const trainerSprite = requireNpcSpriteId(selectedSprite)
 
     const { buildTrainerTeam } = await import('@/logic/battle/trainerFactory')
-    const enemyTeam = await buildTrainerTeam(t.pool as unknown as string[], trainerLv, teamSize)
+    const enemyTeam = await buildTrainerTeam(t.pool, trainerLv, teamSize)
     const quote = getRandomQuoteForTrainer(typeKey)
     return {
       trainerName: t.name,
@@ -164,9 +171,9 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     let wildPoke: Pokemon | null = null
     let isTrainer = false
     let trainerName = ''
-    let trainerSprite = ''
+    let trainerSprite: NpcSpriteId | undefined
     let enemyTeam: Pokemon[] = []
-    let trainerData: { trainerName: string; trainerSprite: string; enemyTeam: Pokemon[]; quote: string } | null = null
+    let trainerData: { trainerName: string; trainerSprite: NpcSpriteId; enemyTeam: Pokemon[]; quote: string } | null = null
 
     if (chosenType === 'combat') {
       if (Math.random() < 0.35) {
@@ -287,14 +294,14 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       if (evt.isTrainer && evt.enemyTeam && evt.enemyTeam.length > 0 && evt.enemyTeam[0]) {
         config.travelLog.value.push(`💥 Iniciando combate contra el entrenador ${evt.trainerName}...`)
         config.battleStore.startBattle(evt.enemyTeam[0], {
-          locationId: config.currentMapId.value,
+          locationId: requireMapRouteId(config.currentMapId.value),
           wasSearching: !config.isTraveling.value,
           isTrainer: true,
           enemyTeam: evt.enemyTeam,
           trainerName: evt.trainerName,
           trainerSprite: evt.trainerSprite,
           trainerQuote: evt.quote,
-          persistenceMode: config.isTraveling.value ? 'SINGLE' : undefined,
+          persistenceMode: config.isTraveling.value ? 'local' : undefined,
           cannotEscape: true
         })
       } else {
@@ -305,9 +312,9 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
 
         config.travelLog.value.push(`💥 Iniciando combate de pruebas contra ${wild?.name} (Nivel ${wild?.level})...`)
         config.battleStore.startBattle(wild!, { 
-          locationId: config.currentMapId.value, 
+          locationId: requireMapRouteId(config.currentMapId.value), 
           wasSearching: !config.isTraveling.value,
-          persistenceMode: config.isTraveling.value ? 'SINGLE' : undefined,
+          persistenceMode: config.isTraveling.value ? 'local' : undefined,
           cannotEscape: config.isTraveling.value
         })
       }
@@ -385,7 +392,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       config.travelLog.value.push('💀 ¡Todo tu equipo ha sido debilitado! Viaje cancelado.')
       config.cancelTravel()
       const originNode = config.originMap.value
-      config.mapStore.currentMap = originNode
+      if (isMapRouteId(originNode)) config.mapStore.currentMap = originNode
       config.shopStore.healAllPokemon(0)
       config.travelLog.value.push(`🏥 Regresaste de inmediato a ${FIRE_RED_MAPS.find(m => m.id === originNode)?.name || originNode}. Tu equipo ha sido curado.`)
       activeEvent.value = null

@@ -4,6 +4,10 @@ import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { getSpeciesEntries } from '@/logic/encounters/encounters'
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { type WeatherId } from '@/logic/weather/weatherRegistry'
+import { type DayPhase } from '@/logic/utils/timeUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
@@ -19,7 +23,7 @@ import {
 } from '@/logic/utils/routeSpawnHelpers'
 
 export function useRouteSpawnsFishing(
-  props: { map: MapLocation; weather: string; cycle: string }
+  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
 ) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
@@ -28,36 +32,34 @@ export function useRouteSpawnsFishing(
   const fishingSpawns = computed(() => {
     if (!props.map.fishing?.pool) return []
 
-    const pool = [...props.map.fishing.pool]
+    const pool: PokemonSpeciesId[] = [...props.map.fishing.pool]
     const rates = [...props.map.fishing.rates]
     while (rates.length < pool.length) rates.push(10)
 
     const weatherCfg = props.map.weather?.[props.weather]
     if (props.weather && props.weather !== 'clear' && weatherCfg) {
       if (weatherCfg.fishingExclusive) {
-        const exclusives = Array.isArray(weatherCfg.fishingExclusive) ? weatherCfg.fishingExclusive : Object.keys(weatherCfg.fishingExclusive)
-        exclusives.forEach(id => {
+        const exclusives = getSpeciesEntries(weatherCfg.fishingExclusive)
+        exclusives.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            const weight = Array.isArray(weatherCfg.fishingExclusive) ? 5 : ((weatherCfg.fishingExclusive as Record<string, number>)[id] || 5)
-            rates.push(weight)
+            rates.push(weight ?? 5)
           }
         })
       }
       if (weatherCfg.fishingVisitors) {
-        const visitors = Array.isArray(weatherCfg.fishingVisitors) ? weatherCfg.fishingVisitors : Object.keys(weatherCfg.fishingVisitors)
-        visitors.forEach(id => {
+        const visitors = getSpeciesEntries(weatherCfg.fishingVisitors)
+        visitors.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            const weight = Array.isArray(weatherCfg.fishingVisitors) ? -10 : -((weatherCfg.fishingVisitors as Record<string, number>)[id] || 10)
-            rates.push(weight)
+            rates.push(weight !== undefined ? -weight : -10)
           }
         })
       }
     }
 
     if (props.weather && props.weather !== 'clear') {
-      const exclusives = weatherCfg?.fishingExclusive ? (Array.isArray(weatherCfg.fishingExclusive) ? weatherCfg.fishingExclusive : Object.keys(weatherCfg.fishingExclusive)) : []
+      const exclusives = weatherCfg?.fishingExclusive ? getSpeciesEntries(weatherCfg.fishingExclusive).map(entry => entry.id) : []
       redistributeWeatherSpawns(rates, pool, props.weather, exclusives)
     }
 
@@ -86,14 +88,8 @@ export function useRouteSpawnsFishing(
       const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode, seenPokedex, caughtPokedex)
       const pData = getPokemonBasicData(id, isSeen)
 
-      const isVisitor = !!(weatherCfg?.fishingVisitors && (
-        (!Array.isArray(weatherCfg.fishingVisitors) && (weatherCfg.fishingVisitors as Record<string, number>)[id]) || 
-        (Array.isArray(weatherCfg.fishingVisitors) && weatherCfg.fishingVisitors.includes(id))
-      ))
-      const isExclusive = !!(weatherCfg?.fishingExclusive && (
-        (!Array.isArray(weatherCfg.fishingExclusive) && (weatherCfg.fishingExclusive as Record<string, number>)[id]) || 
-        (Array.isArray(weatherCfg.fishingExclusive) && weatherCfg.fishingExclusive.includes(id))
-      ))
+      const isVisitor = !!weatherCfg?.fishingVisitors && getSpeciesEntries(weatherCfg.fishingVisitors).some(entry => entry.id === id)
+      const isExclusive = !!weatherCfg?.fishingExclusive && getSpeciesEntries(weatherCfg.fishingExclusive).some(entry => entry.id === id)
 
       const multiplier = getWeatherMultiplier(id, props.weather)
       const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0
@@ -126,7 +122,7 @@ export function useRouteSpawnsFishing(
   })
 
   function getFishingSpawnTooltip(poke: RouteSpawnMappedItem) {
-    const lines: string[] = []
+    const lines: string[] = [] // no-domain
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
     const rodType = gameStore.state.fishingRodType
     const rodSecs = gameStore.state.fishingRodSecs || 0
@@ -142,7 +138,7 @@ export function useRouteSpawnsFishing(
       }
     }
     const weather = props.weather || 'clear'
-    const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase())
+    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
     if (isRainy) {
       lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`)
     }

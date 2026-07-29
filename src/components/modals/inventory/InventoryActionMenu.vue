@@ -4,6 +4,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { useUIStore } from '@/stores/ui'
 import { getItemById } from '@/data/inventory/items'
 import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory'
+import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers'
 import type { Item } from '@/stores/inventory/inventory'
 
 interface Props {
@@ -34,7 +35,7 @@ const isItemHeld = computed(() => {
   if (!props.item) return false
   const dbItem = getItemById(props.item.id)
   if (!dbItem) return false
-  return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))
+  return isEquippableHeldItem(dbItem)
 })
 
 const handleSelect = (actionType: 'use' | 'sell' | 'release') => {

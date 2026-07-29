@@ -2,9 +2,10 @@ import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { PokedexAggregator } from '../../../src/logic/pokemon/pokedexAggregator.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 
 // Mock simple de Pokémon
-const createMockPoke = (id: string): Pokemon => ({
+const createMockPoke = (id: PokemonSpeciesId): Pokemon => ({
   id,
   name: id,
   uid: Math.random().toString(),
@@ -22,7 +23,7 @@ describe('PokedexAggregator', () => {
   it('should concatenate species from different pools using native Iterators', () => {
     const team = [createMockPoke('pikachu'), createMockPoke('bulbasaur')];
     const pc = [createMockPoke('charmander')];
-    const wild = ['squirtle', 'caterpie'];
+    const wild: PokemonSpeciesId[] = ['squirtle', 'caterpie'];
 
     const all = PokedexAggregator.getAllKnownSpecies(team, pc, wild);
     
@@ -35,7 +36,7 @@ describe('PokedexAggregator', () => {
   it('should return unique species list filtering duplicates', () => {
     const team = [createMockPoke('pikachu')];
     const pc = [createMockPoke('pikachu'), createMockPoke('eevee')];
-    const wild = ['eevee', 'mew'];
+    const wild: PokemonSpeciesId[] = ['eevee', 'mew'];
 
     const unique = PokedexAggregator.getFilteredSpecies(team, pc, wild);
     

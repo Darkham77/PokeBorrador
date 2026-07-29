@@ -8,6 +8,7 @@ import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine'
 import { getPreviousWeekId } from '@/logic/war/warEngine'
 import type { GameState } from '@/types/system/game'
 import type { DBRouter } from '@/logic/db/dbRouter'
+import type { MapRouteId } from '@/data/world/map-assets'
 
 describe('War System Integration', () => {
   let insertedPoints: Array<{ map_id: string; points: number }>
@@ -71,9 +72,9 @@ describe('War System Integration', () => {
             select: vi.fn().mockReturnValue({
               eq: vi.fn().mockResolvedValue({
                 data: [
-                  { map_id: 'route_1', faction: 'union', points: 500 },
-                  { map_id: 'route_1', faction: 'poder', points: 200 },
-                  { map_id: 'route_2', faction: 'union', points: 400 }
+                  { map_id: 'route1', faction: 'union', points: 500 },
+                  { map_id: 'route1', faction: 'poder', points: 200 },
+                  { map_id: 'route2', faction: 'union', points: 400 }
                 ],
                 error: null
               })
@@ -126,7 +127,11 @@ describe('War System Integration', () => {
 
     await warStore.loadWarData()
 
-    const allMaps = Array.from({ length: 15 }, (_, i) => `route_${i + 1}`)
+    const allMaps: MapRouteId[] = [
+      'route1', 'route2', 'forest', 'route3', 'mt_moon',
+      'route4', 'route24', 'route25', 'route5', 'route6',
+      'route8', 'route9', 'route10', 'rock_tunnel', 'power_plant',
+    ]
     const today = Temporal.Instant.from('2026-04-15T12:00:00Z')
 
     // 1. Verify 12 conflict zones generated

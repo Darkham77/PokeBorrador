@@ -1,13 +1,14 @@
 import { computed, type Ref } from 'vue'
+import type { AbilityId } from '@/data/battle/abilities'
 
 const ADVENTURE_PASSIVES = {
-  flame_body: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: '+15% Vel. Viaje', value: 0.15 },
-  magma_armor: { id: 'speed_bonus', label: 'Escudo Magma', desc: '+15% Vel. Viaje', value: 0.15 },
+  flamebody: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: '+15% Vel. Viaje', value: 0.15 },
+  magmaarmor: { id: 'speed_bonus', label: 'Escudo Magma', desc: '+15% Vel. Viaje', value: 0.15 },
   pickup: { id: 'loot_bonus', label: 'Recogida', desc: '+20% Prob. Botín', value: 0.20 },
   synchronize: { id: 'nature_sync', label: 'Sincronía', desc: 'Sincronizar Naturaleza', value: 0.50 }
-}
+} satisfies Partial<Record<AbilityId, { id: string; label: string; desc: string; value: number }>>
 
-export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: number; ability?: string } | null> } }) {
+export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: number; ability?: AbilityId } | null> } }) {
   const activeTeamPassives = computed(() => {
     const team = gameStore.state.team || []
     let speedBonus = 0
@@ -17,7 +18,7 @@ export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: nu
 
     team.forEach(pkmn => {
       if (pkmn && pkmn.hp > 0 && pkmn.ability) {
-        const abilityKey = pkmn.ability.toLowerCase().replace(/[\s-]/g, '_')
+        const abilityKey = pkmn.ability
         const passive = ADVENTURE_PASSIVES[abilityKey as keyof typeof ADVENTURE_PASSIVES]
         if (passive) {
           if (passive.id === 'speed_bonus') {

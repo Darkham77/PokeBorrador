@@ -7,11 +7,17 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { UIStore, MapStore } from '@/types/system/stores'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
+import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
 import { resetActiveBattleState } from './orchestratorStateHelper.ts'
 import { processRocketStealMechanics } from './orchestratorRocketHelper.ts'
 import { executePokemonCallSequence } from './orchestratorCallSequence.ts'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireGymId } from '@/data/world/gyms'
+import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import {
   showdownWorker,
   setShowdownWorker,
@@ -69,7 +75,19 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     trainerQuote = undefined
   } = options
 
-  const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
+  const optionTrainerArchetype = typeof battleOptions.trainerArchetype === 'string'
+    ? requireNpcArchetype(battleOptions.trainerArchetype)
+    : undefined
+  const resolvedTrainerArchetype = trainerArchetype
+    ? requireNpcArchetype(trainerArchetype)
+    : optionTrainerArchetype
+  const resolvedLocationId = requireMapRouteId(locationId)
+  const resolvedGymId = gymId ? requireGymId(gymId) : undefined
+  const resolvedDifficulty = difficulty === 'easy' || difficulty === 'normal' || difficulty === 'hard'
+    ? difficulty
+    : undefined
+
+  const { activeBiome, mapTags } = getMapBiomeAndTags(resolvedLocationId)
   const tagsStr = mapTags.join(', ') || 'ninguno'
   logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`, { isTrainer, isGym, wasSearchingOpt })
 
@@ -108,42 +126,46 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   const maxEnemyLv = Math.max(...finalEnemyTeam.map(p => p?.level || 1))
   const npcInvResult = (isTrainer || isGym)
-    ? generateNPCInventory(maxEnemyLv, difficulty as 'easy' | 'normal' | 'hard', isGym, isRival || (battleOptions.isRival as boolean), trainerArchetype || (battleOptions.trainerArchetype as string))
+    ? generateNPCInventory(maxEnemyLv, resolvedDifficulty, isGym, isRival || battleOptions.isRival === true, resolvedTrainerArchetype)
     : null;
   const enemyInventory = npcInvResult?.inventory;
   const enemyMoney = npcInvResult?.remainingMoney;
 
+  const nestedTrainerSprite = typeof battleOptions.trainerSprite === 'string' ? battleOptions.trainerSprite : undefined;
+  const resolvedTrainerSprite = trainerSprite || nestedTrainerSprite;
+
   ctx.activeBattle.value = {
+    ...battleOptions,
     enemy: null, 
     player: null, 
     _initialEnemy: JSON.parse(JSON.stringify(startingEnemyPoke)) as unknown as Pokemon,
     _initialPlayer: JSON.parse(JSON.stringify(playerPoke)) as unknown as Pokemon,
     _rewardCombatants: [],
-    isGym, gymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
+    isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM,
     enemyInventory,
     enemyMoney,
     enemyMaxLevel: maxEnemyLv,
-    trainerSprite: trainerSprite || (battleOptions.trainerSprite as string) || undefined,
-    trainerArchetype: trainerArchetype || (battleOptions.trainerArchetype as string) || undefined,
-    isRival: isRival || (battleOptions.isRival as boolean) || false,
+    trainerSprite: resolvedTrainerSprite ? requireNpcSpriteId(resolvedTrainerSprite) : undefined,
+    trainerArchetype: resolvedTrainerArchetype,
+    isRival: isRival || battleOptions.isRival === true,
     playerTeam: ctx.gs.state.team,
-    trainerName, locationId,
+    trainerName, locationId: resolvedLocationId,
     quote: trainerQuote || (battleOptions.quote as string) || undefined,
-    isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
-    isIndoors: FIRE_RED_MAPS.find(m => m.id === locationId)?.isIndoors || false,
-    isCrystalCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCrystalCave || false,
+    isCave: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isCave || false,
+    isIndoors: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isIndoors || false,
+    isCrystalCave: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
     isFishing, isArchaeology, rarity,
     wasSearching,
     cannotEscape: cannotEscape || (battleOptions.cannotEscape as boolean) || false,
     weather: { 
-      type: isGym ? 'none' : mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION), 
+      type: isGym ? requireWeatherId('none') : requireWeatherId(mapVisualToOfficialWeather(mapStore.currentWeather, ACTIVE_GENERATION)), 
       visual: isGym ? 'clear' : mapStore.currentWeather, 
       turns: -1 
     },
     playerTeamIndex: ctx.gs.state.team.indexOf(playerPoke),
     enemyTeamIndex: 0,
-    participants: [playerPoke.uid], learnQueue: [], ...battleOptions,
+    participants: [playerPoke.uid], learnQueue: [],
     escapeAttempts: 0,
     playerSideConditions: {},
     enemySideConditions: {},
@@ -186,11 +208,12 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   // Weight Calculation
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.WEIGHT_CALCULATION)
   if (isFishing) {
-    const loc = FIRE_RED_MAPS.find(l => l.id === locationId)
+    const loc = FIRE_RED_MAPS.find(l => l.id === resolvedLocationId)
     if (loc && loc.fishing) {
       const pool = loc.fishing.pool
       const rates = loc.fishing.rates
-      const idx = pool.indexOf(finalEnemyPoke.id)
+      const enemySpeciesId = requirePokemonSpeciesId(finalEnemyPoke.id)
+      const idx = pool.indexOf(enemySpeciesId)
       if (idx !== -1) {
         const totalRate = rates.reduce((a, b) => a + b, 0)
         const rateVal = rates[idx]
@@ -222,7 +245,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   // antes de avanzar al flujo visual de FIRST_INTRO.
   logger.info('Orchestrator', 'Calling initBattleSequence...');
   await initBattleSequence(ctx, { 
-    locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
+    locationId: resolvedLocationId, isTrainer, trainerName, isGym, gymId: resolvedGymId, wasSearching,
     initialEnemy: startingEnemyPoke,
     initialPlayer: playerPoke
   })
@@ -410,5 +433,3 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 }
 
 export { restoreBattleState } from './orchestratorRestoreHelper.ts'
-
-

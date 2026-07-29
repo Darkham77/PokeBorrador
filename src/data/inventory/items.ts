@@ -4,21 +4,86 @@
  * Wrapper to export item configurations loaded from JSON.
  */
 import dbJson from './items.json' with { type: 'json' };
-import type { Item } from '@/types/inventory/items';
+import type { EvolutionStoneKind, Item, ItemCategory, ItemKind, ItemTier } from '@/types/inventory/items';
 
-export const CATEGORY_LABELS = dbJson.CATEGORY_LABELS as Record<string, string>;
-export const MARKET_CAT_ORDER = dbJson.MARKET_CAT_ORDER as Record<string, number>;
-export const MARKET_UNLOCKS = dbJson.MARKET_UNLOCKS as Record<string, string[]>;
-export const SHOP_ITEMS = dbJson.SHOP_ITEMS as Item[];
+const ITEM_DATA_CATEGORIES = [
+  'pokeballs',
+  'potions',
+  'stones',
+  'combat_held',
+  'breeding_held',
+  'raw_material',
+  'refined_material',
+  'component',
+  'machinery',
+  'tools',
+  'tms',
+  'otros',
+] as const satisfies readonly ItemCategory[];
 
-export const getItemById = (id: string): Item => {
+const ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const satisfies readonly ItemTier[];
+const ITEM_KINDS = ['held', 'usable', 'stone', 'booster'] as const satisfies readonly ItemKind[];
+const EVOLUTION_STONE_KINDS = ['fire', 'water', 'thunder', 'leaf', 'moon', 'sun', 'oval'] as const satisfies readonly EvolutionStoneKind[];
+
+function requireItemCategory(value: string): ItemCategory {
+  const category = ITEM_DATA_CATEGORIES.find(candidate => candidate === value);
+  if (category) return category;
+  throw new Error(`[items] Invalid item category: ${value}`);
+}
+
+function requireItemTier(value: string): ItemTier {
+  const tier = ITEM_TIERS.find(candidate => candidate === value);
+  if (tier) return tier;
+  throw new Error(`[items] Invalid item tier: ${value}`);
+}
+
+function requireItemKind(value: string): ItemKind {
+  const kind = ITEM_KINDS.find(candidate => candidate === value);
+  if (kind) return kind;
+  throw new Error(`[items] Invalid item kind: ${value}`);
+}
+
+function requireEvolutionStoneKind(value: string): EvolutionStoneKind {
+  const kind = EVOLUTION_STONE_KINDS.find(candidate => candidate === value);
+  if (kind) return kind;
+  throw new Error(`[items] Invalid evolution stone kind: ${value}`);
+}
+
+export const CATEGORY_LABELS = dbJson.CATEGORY_LABELS;
+export type ItemCategoryId = keyof typeof CATEGORY_LABELS;
+
+export const MARKET_CAT_ORDER = dbJson.MARKET_CAT_ORDER;
+export type MarketCategoryId = keyof typeof MARKET_CAT_ORDER;
+
+export const MARKET_UNLOCKS = dbJson.MARKET_UNLOCKS;
+export type MarketUnlockLevel = keyof typeof MARKET_UNLOCKS;
+
+export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
+  const { type: rawKind, ...itemData } = item;
+  return {
+    ...itemData,
+    cat: requireItemCategory(item.cat),
+    tier: item.tier ? requireItemTier(item.tier) : undefined,
+    kind: rawKind ? requireItemKind(rawKind) : undefined,
+    stoneType: item.stoneType ? requireEvolutionStoneKind(item.stoneType) : undefined,
+  };
+});
+export type ShopItemData = (typeof SHOP_ITEMS)[number];
+export type ItemId = (typeof dbJson.SHOP_ITEMS)[number]['id'];
+
+export function isItemId(value: string): value is ItemId {
+  return SHOP_ITEMS.some(item => item.id === value);
+}
+
+export function requireItemId(value: string): ItemId {
+  if (isItemId(value)) return value;
+  throw new Error(`[items] Invalid item id: ${value}`);
+}
+
+export const getItemById = (id: string): ShopItemData => {
   if (!id) throw new Error("ID de objeto no proporcionado");
-  const normalizedId = String(id).toLowerCase().trim();
 
-  const item = SHOP_ITEMS.find(i => 
-    i.id === id || 
-    i.id === normalizedId
-  );
+  const item = SHOP_ITEMS.find(i => i.id === id);
 
   if (!item) {
     throw new Error(`Objeto no encontrado por ID: ${id}`);
@@ -35,7 +100,24 @@ export const getItemName = (id: string): string => {
   }
 };
 
-export const BUFF_FIELD_TO_ITEM_IDS: Record<string, string[]> = {
+export const BUFF_FIELDS = [
+  'repelSecs',
+  'luckyEggSecs',
+  'amuletCoinSecs',
+  'fishingRodSecs',
+  'pickaxeSecs',
+  'brushSecs',
+  'shinyBoostSecs',
+  'safariTicketSecs',
+  'ceruleanTicketSecs',
+  'articunoTicketSecs',
+  'mewtwoTicketSecs',
+  'ivScannerSecs',
+  'incenseSecs',
+] as const;
+export type BuffField = (typeof BUFF_FIELDS)[number];
+
+export const BUFF_FIELD_TO_ITEM_IDS: Record<BuffField, readonly ItemId[]> = {
   repelSecs: ['repel', 'superrepel', 'maxrepel'],
   luckyEggSecs: ['luckyegg'],
   amuletCoinSecs: ['amuletcoin'],
@@ -54,8 +136,8 @@ export const BUFF_FIELD_TO_ITEM_IDS: Record<string, string[]> = {
   ]
 };
 
-export function getMaxBuffDuration(field: string): number {
-  const itemIds = BUFF_FIELD_TO_ITEM_IDS[field] || [];
+export function getMaxBuffDuration(field: BuffField): number {
+  const itemIds = BUFF_FIELD_TO_ITEM_IDS[field];
   let maxAllowedSecs = 3600;
 
   const matchingItems = SHOP_ITEMS.filter(item => item.id && itemIds.includes(item.id));

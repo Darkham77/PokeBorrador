@@ -76,13 +76,21 @@ describe('getMoveDescription (with explicit MoveBaseData)', () => {
     assert.ok(getMoveDescriptionPure('mega-drain', md).includes('Restaura'));
   });
 
-  it('burn_10 effect returns correct string', () => {
-    const md = { effect: 'burn_10', cat: 'special', power: 40 } as unknown as MoveBaseData;
+  it('structured burn effect returns correct string', () => {
+    const md = {
+      effect: { type: 'status', status: 'brn', chance: 10, text: 'Puede quemar al objetivo.' },
+      cat: 'special',
+      power: 40,
+    } as unknown as MoveBaseData;
     assert.ok(getMoveDescriptionPure('ember', md).includes('quemar'));
   });
 
-  it('poison effect returns correct string', () => {
-    const md = { effect: 'poison', cat: 'special', power: 65 } as unknown as MoveBaseData;
+  it('structured poison effect returns correct string', () => {
+    const md = {
+      effect: { type: 'status', status: 'psn', text: 'Envenena al objetivo.' },
+      cat: 'special',
+      power: 65,
+    } as unknown as MoveBaseData;
     assert.ok(getMoveDescriptionPure('sludge-bomb', md).includes('Envenena'));
   });
 

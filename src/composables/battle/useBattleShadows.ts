@@ -2,42 +2,51 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
-import { ANIMATED_SPRITE_DATABASE } from '@/data/pokemon/animatedSpriteDatabase'
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
+import {
+  hasAnimatedSpriteId,
+  requireAnimatedSpriteData,
+  type AnimatedSpriteId
+} from '@/data/pokemon/animatedSpriteDatabase'
+import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping'
 
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonType } from '@/data/battle/types'
 import { logger } from '@/logic/utils/logger'
 
 function resolveAnimatedKey(
   pokemonId: string | number | null | undefined,
   isBack = false,
   gender?: string | null
-): string | null {
+): AnimatedSpriteId | null {
   if (!pokemonId) return null
-  const strId = String(pokemonId).toLowerCase()
-  const spriteNum = (POKEMON_SPRITE_IDS as Record<string, number | string>)[strId] || pokemonId
+  const strId = String(pokemonId).toLowerCase() // text-ok
+  const spriteNum = requirePokemonSpriteValue(strId)
   const match = String(spriteNum).match(/^(\d+)(.*)$/)
   if (!match) return null
   const numId = match[1]!
   const suffix = match[2]!
-  const isFemale = gender === 'F'
+  const isFemale = gender === 'f'
 
-  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`]
+  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`] as const satisfies readonly string[]
+
   for (const cand of candidates) {
     if (isBack) {
-      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) {
-        return `${cand}_f_back`
+      const femaleBack = `${cand}_f_back`
+      const back = `${cand}_back`
+      if (isFemale && hasAnimatedSpriteId(femaleBack)) {
+        return femaleBack
       }
-      if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) {
-        return `${cand}_back`
+      if (hasAnimatedSpriteId(back)) {
+        return back
       }
     } else {
-      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) {
-        return `${cand}_f`
+      const femaleFront = `${cand}_f`
+      if (isFemale && hasAnimatedSpriteId(femaleFront)) {
+        return femaleFront
       }
-      if (ANIMATED_SPRITE_DATABASE[cand]) {
+      if (hasAnimatedSpriteId(cand)) {
         return cand
       }
     }
@@ -78,9 +87,9 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
   if (!data) return false
   if (data.isFloating !== undefined) return data.isFloating
   
-  const types: string[] = []
-  if (data.type) types.push(data.type.toLowerCase())
-  if (data.type2) types.push(data.type2.toLowerCase())
+  const types: PokemonType[] = [] // no-domain
+  if (data.type) types.push(data.type as PokemonType)
+  if (data.type2) types.push(data.type2 as PokemonType)
   return types.includes('flying')
 }
 
@@ -91,7 +100,7 @@ function getEffectiveSpriteId(pokemon: { id: string | number; form?: string }): 
 function getShadowWidth(pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string {
   const spriteId = getEffectiveSpriteId(pokemon)
   const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
-  const meta = animKey ? ANIMATED_SPRITE_DATABASE[animKey] : null
+  const meta = animKey ? requireAnimatedSpriteData(animKey) : null
   const bodyRadius = meta?.bodyRadius ?? 0.4
   return `${bodyRadius * 250}%`
 }

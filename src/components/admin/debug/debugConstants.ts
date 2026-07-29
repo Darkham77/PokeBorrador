@@ -3,6 +3,8 @@
  * Constants for debug components.
  */
 
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+
 export interface DebugItem {
   id: string;
   label: string;
@@ -115,7 +117,7 @@ export const DEBUG_FIELD_EFFECTS: DebugItem[] = [
   { id: 'toxicspikes', label: 'PÚAS TÓXICAS', icon: '☠️' }
 ]
 
-export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
+export const DEBUG_WEATHER_EFFECTS = [
   { id: 'clear', label: 'DESPEJADO', icon: '🌈', desc: 'Sin efectos atmosféricos.' },
   { id: 'sun', label: 'SOL', icon: '☀️', desc: 'Fuego x1.5, Agua x0.5. Rayo Solar sin turno de carga. Sintesis/Sol de Mañana cura 2/3.' },
   { id: 'intense_sun', label: 'SOL INTENSO (DESOLATE LAND)', icon: '🔆', desc: 'Fuego x1.5. Bloquea totalmente los ataques de tipo Agua.' },
@@ -132,7 +134,7 @@ export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
   { id: 'dust_storm', label: 'T. POLVO', icon: '🌪️', desc: 'Tormenta de arena y polvo.' },
   { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Corrientes de aire ambiental.' },
   { id: 'strong_winds', label: 'V. FUERTES (DELTA STREAM)', icon: '🌀', desc: 'Elimina las debilidades del tipo Volador.' }
-]
+] satisfies readonly (DebugItem & { id: WeatherId })[]
 
 export const DEBUG_UI_ANIMS: DebugItem[] = [
   { id: 'levelUp', label: 'SUBIDA NIVEL', icon: '📈', desc: 'Destello de subida de nivel en la tarjeta.' },

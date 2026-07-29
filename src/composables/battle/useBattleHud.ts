@@ -4,6 +4,7 @@ import type { useBattleStore } from '@/stores/battle/battle'
 import type { useBattleAnimations } from '@/composables/battle/useBattleAnimations'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine'
 
 /**
  * Composable para gestionar la visibilidad y estados del HUD en combate.
@@ -22,30 +23,31 @@ function isSeatCapturing(seat: unknown): boolean {
   )
 }
 
-function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
-  const initStates = ['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO']
-  if (state && initStates.includes(state)) return true
+const INIT_FSM_STATES = ['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO'] as const satisfies readonly BattleStateName[]
+const SILHOUETTE_FSM_SUBSTATES = [
+  'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_PREP', 
+  'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE'
+] as const satisfies readonly BattleSubStateName[]
 
-  const silhouetteSubstates = [
-    'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_PREP', 
-    'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE'
-  ]
-  return !!subState && silhouetteSubstates.includes(subState)
+function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
+  if (state && (INIT_FSM_STATES as readonly string[]).includes(state)) return true
+  return !!subState && (SILHOUETTE_FSM_SUBSTATES as readonly string[]).includes(subState)
 }
+
+const TECHNICAL_FSM_SUBSTATES = ['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN'] as const satisfies readonly BattleSubStateName[]
+const TRAINER_VISIBLE_FSM_SUBSTATES = [
+  'ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 
+  'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT'
+] as const satisfies readonly BattleSubStateName[]
 
 function checkEnemyTechnicalHidden(subState: string | null | undefined, state: string | null | undefined, isTrainer: boolean): boolean {
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true
   
   if (state === 'SEARCH_PHASE') {
-    const technicalSubstates = ['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN']
-    if (subState && technicalSubstates.includes(subState)) return true
+    if (subState && (TECHNICAL_FSM_SUBSTATES as readonly string[]).includes(subState)) return true
   }
 
-  const trainerVisibleStates = [
-    'ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 
-    'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT'
-  ]
-  return isTrainer && !!subState && trainerVisibleStates.includes(subState)
+  return isTrainer && !!subState && (TRAINER_VISIBLE_FSM_SUBSTATES as readonly string[]).includes(subState)
 }
 
 function checkFloatingState(p: { id?: string | number; ability?: string } | Pokemon | undefined | null): boolean {

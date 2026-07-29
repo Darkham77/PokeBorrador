@@ -2,11 +2,13 @@ import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { redistributeWeatherSpawns, applyFishingRodBudget } from '@/logic/utils/routeSpawnHelpers'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import { clampLegendaryRates, selectFromPool, applyAtmosphericStatus } from './encounterHelpers.ts'
+import { clampLegendaryRates, selectFromPool, applyAtmosphericStatus, getSpeciesEntries } from './encounterHelpers.ts'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 export function generateFishingEncounter(
   loc: MapLocation,
-  weather: string,
+  weather: WeatherId,
   state: EncounterState,
   options: EncounterOptions
 ): Encounter | null {
@@ -22,29 +24,29 @@ export function generateFishingEncounter(
   const wConfig = loc.weather?.[weather]
   if (weather && weather !== 'clear' && wConfig) {
     if (wConfig.fishingExclusive) {
-      const exclusives = Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive)
-      exclusives.forEach(id => {
+      const exclusives = getSpeciesEntries(wConfig.fishingExclusive)
+      exclusives.forEach(({ id, weight }) => {
         if (!pool.includes(id)) {
           pool.push(id)
-          const weight = Array.isArray(wConfig.fishingExclusive) ? 5 : ((wConfig.fishingExclusive as Record<string, number>)[id] || 5)
-          rates.push(weight || 5)
+          rates.push(weight ?? 5)
         }
       })
     }
     if (wConfig.fishingVisitors) {
-      const visitors = Array.isArray(wConfig.fishingVisitors) ? wConfig.fishingVisitors : Object.keys(wConfig.fishingVisitors)
-      visitors.forEach(id => {
+      const visitors = getSpeciesEntries(wConfig.fishingVisitors)
+      visitors.forEach(({ id, weight }) => {
         if (!pool.includes(id)) {
           pool.push(id)
-          const weight = Array.isArray(wConfig.fishingVisitors) ? -10 : -((wConfig.fishingVisitors as Record<string, number>)[id] || 10)
-          rates.push(weight || -10)
+          rates.push(weight !== undefined ? -weight : -10)
         }
       })
     }
   }
 
   if (weather && weather !== 'clear') {
-    const exclusives = wConfig?.fishingExclusive ? (Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive)) : []
+    const exclusives: PokemonSpeciesId[] = wConfig?.fishingExclusive
+      ? getSpeciesEntries(wConfig.fishingExclusive).map(entry => entry.id)
+      : []
     redistributeWeatherSpawns(rates, pool, weather, exclusives)
   }
 

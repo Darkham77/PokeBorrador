@@ -14,7 +14,7 @@ export const FACTIONS = {
 export type FactionId = typeof FACTIONS[keyof typeof FACTIONS];
 
 
-export const ENABLED_POKEMON_IDS = new Set<string>([
+export const ENABLED_POKEMON_IDS = [
   ...PDEX_ORDER,
   'pichu',
   'cleffa',
@@ -28,7 +28,10 @@ export const ENABLED_POKEMON_IDS = new Set<string>([
   'castform-sunny',
   'castform-rainy',
   'castform-snowy'
-]);
+] as const;
+
+export type EnabledPokemonId = (typeof ENABLED_POKEMON_IDS)[number];
+
 
 export const MAX_POKEMON_LEVEL = 100;
 export const MAX_BATTLE_TURNS = 150;

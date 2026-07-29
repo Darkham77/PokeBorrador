@@ -1,7 +1,5 @@
-/**
- * npcSpriteRouter.ts
- * Centralized routing and classification logic for NPC sprites and trainer archetypes.
- */
+import { ARCHETYPE_SPRITES, VALID_NPC_SPRITES, type NpcSpriteId } from '../../data/pokemon/npcSpriteCatalog.ts';
+export type { NpcSpriteId } from '../../data/pokemon/npcSpriteCatalog.ts';
 
 export type NpcArchetype =
   | 'rival'         // Renowned masters / rivals
@@ -47,7 +45,14 @@ export const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
   default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
 };
 
-import { ARCHETYPE_SPRITES } from '../../data/pokemon/npcSpriteCatalog.ts';
+export function isNpcArchetype(value: string): value is NpcArchetype {
+  return Object.hasOwn(ARCHETYPE_KEYWORDS, value);
+}
+
+export function requireNpcArchetype(value: string): NpcArchetype {
+  if (isNpcArchetype(value)) return value;
+  throw new Error(`[npcSpriteRouter] Invalid NPC archetype: ${value}`);
+}
 
 /**
  * Classifies a trainer's sprite ID or name into an NpcArchetype.
@@ -56,7 +61,7 @@ import { ARCHETYPE_SPRITES } from '../../data/pokemon/npcSpriteCatalog.ts';
 export function classifyNpcArchetype(spriteIdOrName: string): NpcArchetype {
   if (!spriteIdOrName) return 'default';
 
-  const normalized = spriteIdOrName.toLowerCase().replace(/[-_]/g, '');
+  const normalized = spriteIdOrName.toLowerCase().replace(/[-_]/g, ''); // text-ok
 
   // 1. Prioridad Alta: Búsqueda exacta y coincidencia de palabras clave
   for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {
@@ -94,24 +99,7 @@ export function getSpritesForArchetype(archetype: NpcArchetype): readonly string
   return sprites;
 }
 
-/**
- * Resolves a specific sprite for the NPC.
- * If the current sprite matches the archetype, it will return it.
- * Otherwise, it will return a random valid sprite for the classified archetype.
- */
-export function resolveNpcSprite(spriteIdOrName: string): string {
-  const archetype = classifyNpcArchetype(spriteIdOrName);
-  const availableSprites = getSpritesForArchetype(archetype);
-  
-  // Si el spriteIdOrName original ya es válido para este arquetipo, lo conservamos
-  if (availableSprites.includes(spriteIdOrName)) {
-    return spriteIdOrName;
-  }
-
-  // Si no, devolvemos el primero o lanzamos error si está vacío
-  const fallbackSprite = availableSprites[0];
-  if (!fallbackSprite) {
-    throw new Error(`[npcSpriteRouter] No sprites available to resolve for archetype: ${archetype}`);
-  }
-  return fallbackSprite;
+export function resolveNpcSprite(spriteId: NpcSpriteId): NpcSpriteId {
+  if (VALID_NPC_SPRITES.includes(spriteId)) return spriteId;
+  throw new Error(`[npcSpriteRouter] Invalid NPC sprite identifier: '${spriteId}'`);
 }

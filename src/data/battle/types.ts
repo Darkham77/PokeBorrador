@@ -1,4 +1,10 @@
-export type PokemonType = 'normal' | 'fire' | 'water' | 'grass' | 'electric' | 'ice' | 'fighting' | 'poison' | 'ground' | 'flying' | 'psychic' | 'bug' | 'rock' | 'ghost' | 'dragon' | 'dark' | 'steel' | 'fairy';
+export const POKEMON_TYPES = [
+  'normal', 'fire', 'water', 'grass', 'electric', 'ice',
+  'fighting', 'poison', 'ground', 'flying', 'psychic',
+  'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'
+] as const;
+
+export type PokemonType = (typeof POKEMON_TYPES)[number];
 
 export const TYPE_CHART: Record<PokemonType, Partial<Record<PokemonType, number>>> = {
   normal: { rock: 0.5, ghost: 0, steel: 0.5 },
@@ -22,7 +28,7 @@ export const TYPE_CHART: Record<PokemonType, Partial<Record<PokemonType, number>
 };
 
 
-export const TYPE_TRANSLATIONS: Record<string, string> = {
+export const TYPE_TRANSLATIONS: Record<PokemonType, string> = {
   normal: 'Normal',
   fire: 'Fuego',
   water: 'Agua',
@@ -43,9 +49,15 @@ export const TYPE_TRANSLATIONS: Record<string, string> = {
   fairy: 'Hada'
 } as const;
 
-export function translateType(type: string): string {
-  if (!type) return '';
-  const key = type.toLowerCase();
-  return TYPE_TRANSLATIONS[key] || type;
+/** Boundary adapter for data coming from Showdown or external sources. Throws if invalid. */
+export function toPokemonType(raw: string): PokemonType {
+  const clean = raw.toLowerCase(); // text-ok
+  if (POKEMON_TYPES.includes(clean as PokemonType)) return clean as PokemonType;
+  throw new Error(`[types] Invalid PokemonType from external source: '${raw}'`);
 }
 
+export const requirePokemonType = toPokemonType;
+
+export function translateType(type: PokemonType): string {
+  return TYPE_TRANSLATIONS[type];
+}

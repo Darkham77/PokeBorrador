@@ -6,12 +6,14 @@ import { GYMS } from '@/data/world/gyms';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
-import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex';
+import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants';
-import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
+import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
+import { toPokemonType } from '@/data/battle/types';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/services/assetService';
+import { SHOWDOWN_BOOST_STAT_KEYS, requirePokemonStatus, type MoveEffectBoosts, type ShowdownHitEffect, type ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { 
     PokemonBaseData, 
     MoveBaseData, 
@@ -21,6 +23,44 @@ import type {
     NatureBaseData
 } from '@/types/system/database';
 import type { StatId } from '@/logic/pokemon/statsMath';
+
+interface RawShowdownHitEffect {
+    boosts?: Partial<Record<string, number>>;
+    chance?: number;
+    status?: string;
+    volatileStatus?: string;
+}
+
+interface RawShowdownSecondaryEffect extends RawShowdownHitEffect {
+    self?: RawShowdownHitEffect;
+}
+
+function toMoveEffectBoosts(boosts: Partial<Record<string, number>> | undefined): MoveEffectBoosts | undefined {
+    if (!boosts) return undefined;
+    const result: MoveEffectBoosts = {};
+    for (const stat of SHOWDOWN_BOOST_STAT_KEYS) {
+        const value = boosts[stat];
+        if (value !== undefined) result[stat] = value;
+    }
+    return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function toShowdownHitEffect(effect: RawShowdownHitEffect | undefined): ShowdownHitEffect | undefined {
+    if (!effect) return undefined;
+    return {
+        boosts: toMoveEffectBoosts(effect.boosts),
+        status: effect.status ? requirePokemonStatus(effect.status) : undefined,
+        volatileStatus: effect.volatileStatus,
+    };
+}
+
+function toShowdownSecondaryEffect(effect: RawShowdownSecondaryEffect | undefined): ShowdownSecondaryEffect | undefined {
+    if (!effect) return undefined;
+    return {
+        ...toShowdownHitEffect(effect),
+        self: toShowdownHitEffect(effect.self),
+    };
+}
 
 /**
  * PokemonDataProvider
@@ -39,6 +79,12 @@ const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, Pokem
 const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [num, name])
 );
+
+function requireMoveCategory(category: string): MoveBaseData['cat'] {
+    const normalized = category.toLowerCase(); // text-ok
+    if (normalized === 'physical' || normalized === 'special' || normalized === 'status') return normalized;
+    throw new Error(`[pokemonDataProvider] Invalid move category from Showdown: ${category}`);
+}
 
 /**
  * Realiza una copia profunda de un objeto para evitar mutaciones accidentales.
@@ -68,7 +114,7 @@ export const pokemonDataProvider = {
         }
 
         const isDebug = bypassWhitelist || (import.meta.env.DEV && process.env.NODE_ENV !== 'test') || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
-        if (!ENABLED_POKEMON_IDS.has(normalizedId) && !isDebug) {
+        if (!(ENABLED_POKEMON_IDS as readonly string[]).includes(normalizedId) && !isDebug) {
             throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
         }
         
@@ -82,7 +128,7 @@ export const pokemonDataProvider = {
         // Añadimos el id al objeto retornado para conveniencia
         const extendedData = {
             ...data,
-            id: normalizedId,
+            id: requirePokemonSpeciesId(normalizedId),
             category: metadata?.category || 'Pokémon Desconocido',
             height: species?.exists ? species.heightm : null,
             weight: species?.exists ? species.weightkg : null,
@@ -111,9 +157,9 @@ export const pokemonDataProvider = {
 
         if (!ability || !ability.exists) {
             // Intenta buscar por nombre en español en las traducciones estáticas
-            const nameLower = name.trim().toLowerCase();
+            const nameLower = name.trim().toLowerCase(); // text-ok
             const foundEntry = Object.entries(ABILITY_TRANSLATIONS_ES).find(
-                ([_, trans]) => trans.name.toLowerCase() === nameLower
+                ([_, trans]) => trans.name.toLowerCase() === nameLower // text-ok
             );
             if (foundEntry) {
                 cleanId = toID(foundEntry[0]);
@@ -126,7 +172,7 @@ export const pokemonDataProvider = {
         }
 
         // Buscar traducción en las traducciones estáticas
-        const translated = ABILITY_TRANSLATIONS_ES[cleanId];
+        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId];
         if (!translated || !translated.name || !translated.desc) {
             throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
         }
@@ -159,180 +205,35 @@ export const pokemonDataProvider = {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
         
-        // Manejar el caso especial del movimiento virtual de recarga de Showdown
-        if (cleanId === 'recharge') {
-            return {
-                id: 'recharge',
-                name: 'Recargar',
-                type: 'normal',
-                cat: 'special',
-                pp: 1,
-                acc: 1000,
-                power: 0,
-                priority: 0,
-                effect: undefined
-            };
-        }
-
         let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
         if (!move || !move.exists) {
             move = Dex.moves.get(cleanId);
         }
         if (!move || !move.exists) {
-            // Reverse lookup: attempt to map Spanish name (e.g. "Últimapalabra") to English ID ("partingshot")
-            for (const [canonicalId, trans] of Object.entries(MOVE_TRANSLATIONS_ES)) {
-                if (toID(trans.name) === cleanId || trans.name.toLowerCase() === id.trim().toLowerCase()) {
-                    move = Dex.moves.get(canonicalId);
-                    if (move && move.exists) break;
-                }
-            }
-        }
-        if (!move || !move.exists) {
             throw new Error(`Movimiento no encontrado por ID: ${id}`);
         }
 
-        // Traducir nombre y descripción usando MOVE_TRANSLATIONS_ES[cleanId]
-        const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+        const moveId = requirePokemonMoveId(move.id);
+        const translated = MOVE_TRANSLATIONS_ES[moveId];
         const espName = translated.name || move.name;
 
-        const SPECIAL_EFFECTS: Record<string, string> = {
-            metronome: 'metronome',
-            mirrormove: 'mirror_move',
-            sandstorm: 'sandstorm',
-            raindance: 'rain_dance',
-            sunnyday: 'sunny_day',
-            hail: 'hail',
-            spikes: 'spikes',
-            destinybond: 'destiny_bond',
-            grudge: 'grudge',
-            yawn: 'yawn',
-            rest: 'rest',
-            recover: 'heal_50',
-            slackoff: 'heal_50',
-            softboiled: 'heal_50',
-            synthesis: 'heal_50',
-            milkdrink: 'heal_50',
-            healbell: 'heal_bell',
-            furycutter: 'fury_cutter',
-            rapidspin: 'rapid_spin',
-            brickbreak: 'brick_break',
-            focuspunch: 'focus_punch',
-            spitup: 'spit_up',
-            stockpile: 'stockpile',
-            dreameater: 'dream_eater',
-            teleport: 'teleport',
-            covet: 'covet',
-            rage: 'rage',
-            futuresight: 'future_sight',
-            psychup: 'psych_up',
-            charge: 'charge',
-            curse: 'curse',
-            flail: 'hp_scale',
-            reversal: 'hp_scale',
-            waterspout: 'hp_scale_high',
-            snore: 'flinch_30',
-            hyperbeam: 'recharge',
-            wish: 'wish',
-            outrage: 'locked_move',
-            thrash: 'locked_move',
-            petaldance: 'locked_move',
-            ragingfury: 'locked_move',
-            uproar: 'locked_move',
-            bind: 'partially_trapped',
-            wrap: 'partially_trapped',
-            clamp: 'partially_trapped',
-            firespin: 'partially_trapped',
-            infestation: 'partially_trapped',
-            magmastorm: 'partially_trapped',
-            sandtomb: 'partially_trapped',
-            snaptrap: 'partially_trapped',
-            thundercage: 'partially_trapped',
-            whirlpool: 'partially_trapped',
-            disable: 'disable',
-            encore: 'encore',
-            toxicspikes: 'toxic_spikes',
-            stealthrock: 'stealth_rock',
-        };
-
-        let localEffect: string | undefined = SPECIAL_EFFECTS[cleanId];
-
-        if (!localEffect && move.secondaries && move.secondaries.length > 0) {
-            const sec = move.secondaries[0];
-            if (sec) {
-                const chance = sec.chance !== undefined ? `_${sec.chance}` : '';
-                if (sec.status) {
-                    const map: Record<string, string> = { par: 'paralyze', brn: 'burn', frz: 'freeze', psn: 'poison', tox: 'poison', slp: 'sleep' };
-                    if (map[sec.status]) localEffect = `${map[sec.status]}${chance}`;
-                } else if (sec.volatileStatus === 'flinch') {
-                    localEffect = `flinch${chance}`;
-                } else if (sec.volatileStatus === 'confusion') {
-                    localEffect = `confuse${chance}`;
-                } else if (sec.boosts) {
-                    const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
-                    const entries = Object.entries(sec.boosts);
-                    if (entries.length > 0) {
-                        const [stat, val] = entries[0] as [string, number];
-                        const localStat = statMap[stat];
-                        if (localStat) {
-                            const dir = val > 0 ? 'up' : 'down';
-                            const who = sec.self ? 'self' : 'enemy';
-                            const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
-                            localEffect = `stat_${dir}_${who}_${localStat}${stage}${chance}`;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!localEffect && move.status) {
-            const map: Record<string, string> = { par: 'paralyze', brn: 'burn', frz: 'freeze', psn: 'poison', tox: 'poison', slp: 'sleep' };
-            if (map[move.status]) localEffect = map[move.status];
-        }
-
-        if (!localEffect && move.volatileStatus === 'confusion') {
-            localEffect = 'confuse';
-        }
-
-        if (!localEffect && move.self && move.self.boosts) {
-            const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
-            const entries = Object.entries(move.self.boosts);
-            if (entries.length > 0) {
-                const [stat, val] = entries[0] as [string, number];
-                const localStat = statMap[stat];
-                if (localStat) {
-                    const dir = val > 0 ? 'up' : 'down';
-                    const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
-                    const chance = move.self.chance !== undefined ? `_${move.self.chance}` : '';
-                    localEffect = `stat_${dir}_self_${localStat}${stage}${chance}`;
-                }
-            }
-        }
-
-        if (!localEffect && move.boosts) {
-            const statMap: Record<string, string> = { atk: 'atk', def: 'def', spa: 'spa', spd: 'spd', spe: 'spe', accuracy: 'acc', evasion: 'eva' };
-            const entries = Object.entries(move.boosts);
-            if (entries.length > 0) {
-                const [stat, val] = entries[0] as [string, number];
-                const localStat = statMap[stat];
-                if (localStat) {
-                    const dir = val > 0 ? 'up' : 'down';
-                    const who = move.target === 'self' ? 'self' : 'enemy';
-                    const stage = Math.abs(val) > 1 ? `_${Math.abs(val)}` : '';
-                    localEffect = `stat_${dir}_${who}_${localStat}${stage}`;
-                }
-            }
-        }
-
         const moveData: MoveBaseData = {
-            id: move.id,
+            id: moveId,
             name: espName,
             power: move.basePower,
             acc: move.accuracy === true ? 1000 : move.accuracy,
-            type: move.type.toLowerCase(),
-            cat: move.category.toLowerCase() as 'physical' | 'special' | 'status',
+            type: toPokemonType(move.type.toLowerCase()), // text-ok
+            cat: requireMoveCategory(move.category),
             pp: move.pp,
             priority: move.priority || 0,
-            effect: localEffect
+            boosts: toMoveEffectBoosts(move.boosts),
+            secondary: toShowdownSecondaryEffect(move.secondary),
+            secondaries: move.secondaries?.map(toShowdownSecondaryEffect).filter((effect): effect is ShowdownSecondaryEffect => effect !== undefined),
+            self: toShowdownHitEffect(move.self),
+            status: move.status ? requirePokemonStatus(move.status) : undefined,
+            volatileStatus: move.volatileStatus,
+            sideCondition: move.sideCondition,
+            weather: move.weather
         };
 
         if (move.selfdestruct === 'always') moveData.selfKO = true;
@@ -341,7 +242,15 @@ export const pokemonDataProvider = {
         }
         if (move.drain) moveData.drain = true;
         if (move.multihit) {
-            moveData.hits = Array.isArray(move.multihit) ? `${move.multihit[0]}-${move.multihit[1]}` : move.multihit;
+            if (Array.isArray(move.multihit)) {
+                const [minHits, maxHits] = move.multihit;
+                if (minHits === undefined || maxHits === undefined) {
+                    throw new Error(`[pokemonDataProvider] Invalid multihit range for move: ${moveId}`);
+                }
+                moveData.hits = [minHits, maxHits];
+            } else {
+                moveData.hits = move.multihit;
+            }
         }
         if (move.ohko) moveData.ohko = true;
         if (move.damage === 'level') {
@@ -431,7 +340,7 @@ export const pokemonDataProvider = {
      * Lanza error si no se encuentra.
      */
     getMoveIdBySpanishName(spanishName: string): string {
-        const nameLower = spanishName.trim().toLowerCase();
+        const nameLower = spanishName.trim().toLowerCase(); // text-ok
         for (const [id, trans] of Object.entries(MOVE_TRANSLATIONS_ES)) {
             if (trans.name.toLowerCase() === nameLower) {
                 return id;
@@ -439,7 +348,7 @@ export const pokemonDataProvider = {
         }
         // También intentar coincidencia por ID normalizado
         const possibleId = toID(spanishName);
-        if (MOVE_TRANSLATIONS_ES[possibleId]) {
+        if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) {
             return possibleId;
         }
         throw new Error(`No se pudo resolver el movimiento a partir del nombre en español: ${spanishName}`);

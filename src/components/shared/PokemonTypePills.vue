@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import PokemonTypeTag from './PokemonTypeTag.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
 interface Props {
   pokemon: Partial<Pokemon>
@@ -12,10 +13,10 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md'
 })
 
-const types = computed<string[]>(() => {
-  const t: string[] = []
-  if (props.pokemon?.type) t.push(props.pokemon.type)
-  if (props.pokemon?.type2) t.push(props.pokemon.type2)
+const types = computed<PokemonType[]>(() => {
+  const t: PokemonType[] = []
+  if (props.pokemon?.type) t.push(toPokemonType(props.pokemon.type))
+  if (props.pokemon?.type2) t.push(toPokemonType(props.pokemon.type2))
   return t
 })
 </script>

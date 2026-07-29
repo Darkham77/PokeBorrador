@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import type { PokemonSpeciesId } from '../../../src/data/pokemon/pokedex.ts';
 
 interface SaveWrapper {
   user_id?: string
@@ -15,7 +16,7 @@ function findAngianemarSave(saves: SaveWrapper[]): SaveWrapper | undefined {
   return saves.find((s) => s.user_id === '259ef49f-54b2-40c6-a797-5951dc966cb4');
 }
 
-function filterSquirtle(list: string[] | undefined): string[] {
+function filterSquirtle(list: PokemonSpeciesId[] | undefined): PokemonSpeciesId[] {
   return (list || []).filter((id) => id !== 'squirtle');
 }
 
@@ -23,8 +24,8 @@ function hasSquirtle(box: Pokemon[] | undefined): boolean {
   return (box || []).some((p) => p.id === 'squirtle');
 }
 
-function getPokemonIds(team: Pokemon[] | undefined, box: Pokemon[] | undefined): string[] {
-  const ids: string[] = [];
+function getPokemonIds(team: Pokemon[] | undefined, box: Pokemon[] | undefined): PokemonSpeciesId[] {
+  const ids: PokemonSpeciesId[] = [];
   if (team) {
     for (const p of team) {
       if (p?.id) ids.push(p.id);
@@ -67,8 +68,8 @@ describe('Pokedex Migration Logic Test', () => {
     // 4. Run JS equivalent of the SQL migration logic
     const pokemonIds = getPokemonIds(saveData.team, saveData.box);
 
-    saveData.pokedex = Array.from(new Set<string>([...(saveData.pokedex || []), ...pokemonIds]));
-    saveData.seenPokedex = Array.from(new Set<string>([...(saveData.seenPokedex || []), ...pokemonIds]));
+    saveData.pokedex = Array.from(new Set<PokemonSpeciesId>([...(saveData.pokedex || []), ...pokemonIds]));
+    saveData.seenPokedex = Array.from(new Set<PokemonSpeciesId>([...(saveData.seenPokedex || []), ...pokemonIds]));
 
     // Simulate rotation of last_save_id
     userSave.last_save_id = 'mocked-random-uuid-generation-1234';

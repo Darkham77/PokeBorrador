@@ -13,7 +13,8 @@ import {
   classifyNpcArchetype,
   getSpritesForArchetype,
   resolveNpcSprite,
-  type NpcArchetype
+  type NpcArchetype,
+  type NpcSpriteId
 } from '../../../src/logic/utils/npcSpriteRouter.ts';
 import { getRandomQuoteForTrainer } from '../../../src/data/player/trainerPhrases.ts';
 
@@ -99,7 +100,7 @@ describe('NPC Sprite Catalog and Fallback Errors', () => {
   it('throws an error when querying quotes for a non-existent trainer type', () => {
     assert.throws(() => {
       getRandomQuoteForTrainer('non_existent');
-    }, /Missing custom phrases or personality for trainer type/);
+    }, /Missing personality mapping for trainer type/);
   });
 
   it('resolves a valid sprite directly', () => {
@@ -107,10 +108,9 @@ describe('NPC Sprite Catalog and Fallback Errors', () => {
     assert.strictEqual(resolveNpcSprite('beauty-gen4dp'), 'beauty-gen4dp');
   });
 
-  it('resolves a default fallback when matching archetype but invalid sprite name', () => {
-    // 'unknown_beauty' is not in the catalog, resolves to first 'artista' sprite (e.g. 'artist')
-    const resolved = resolveNpcSprite('unknown_beauty');
-    assert.ok(resolved);
-    assert.notStrictEqual(resolved, 'unknown_beauty');
+  it('throws an error when resolving an uncataloged sprite name (Zero-Fallback Rule)', () => {
+    assert.throws(() => {
+      resolveNpcSprite('unknown_beauty' as NpcSpriteId);
+    }, /Invalid NPC sprite identifier: 'unknown_beauty'/);
   });
 });

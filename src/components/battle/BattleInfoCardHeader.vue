@@ -9,8 +9,8 @@ const props = defineProps<{
   isScrambled: boolean
 }>()
 
-const GENDER_TEXT_MAP: Record<string, string> = { M: '♂', F: '♀' }
-const GENDER_CLS_MAP: Record<string, string> = { M: 'gender-male', F: 'gender-female' }
+const GENDER_TEXT_MAP: Record<string, string> = { m: '♂', f: '♀' }
+const GENDER_CLS_MAP: Record<string, string> = { m: 'gender-male', f: 'gender-female' }
 
 const getGenderText = (g: string) => GENDER_TEXT_MAP[g] || ''
 const getGenderCls = (g: string) => GENDER_CLS_MAP[g] || 'gender-none'

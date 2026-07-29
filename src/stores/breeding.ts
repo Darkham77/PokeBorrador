@@ -19,10 +19,15 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
-import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
+import {
+  isBabyPokemonSpeciesId,
+  isFossilPokemonSpeciesId,
+  isLegendaryPokemonSpeciesId,
+  requirePokemonSpeciesId,
+} from '@/data/pokemon/pokedex';
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -62,13 +67,13 @@ export const useBreedingStore = defineStore('breeding', () => {
 
   const isBreeding = computed(() => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon);
   
-  const compatibility = computed(() => {
+  const compatibility = computed<BreedingCompatibility>(() => {
     if (!isBreeding.value) {
-      return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [], eggSpecies: '' };
+      return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
     }
     const p1 = slots.value[0]?.pokemon;
     const p2 = slots.value[1]?.pokemon;
-    if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [], eggSpecies: '' };
+    if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
     return checkCompatibility(p1, p2);
   });
   
@@ -145,17 +150,17 @@ export const useBreedingStore = defineStore('breeding', () => {
       return false;
     }
 
-    const legendaries = new Set(LEGENDARY_POKEMON);
-    const babyPokemon = new Set(BABY_POKEMON);
-    const isFossil = FOSSIL_POKEMON.includes(pokemon.id ? pokemon.id.toLowerCase() : '');
+    const isFossil = isFossilPokemonSpeciesId(pokemon.id);
+    const isLegendary = isLegendaryPokemonSpeciesId(pokemon.id);
+    const isBaby = isBabyPokemonSpeciesId(pokemon.id);
     const maxVig = pokemon.maxVigor !== undefined ? pokemon.maxVigor : 10;
     
-    if (maxVig <= 0 || isFossil || (pokemon.id && legendaries.has(pokemon.id.toLowerCase()))) {
+    if (maxVig <= 0 || isFossil || isLegendary) {
       uiStore.notify('Este Pokémon no tiene vigor y no puede reproducirse en la Guardería.', '⚠️');
       return false;
     }
 
-    if (pokemon.id && babyPokemon.has(pokemon.id.toLowerCase())) {
+    if (isBaby) {
       uiStore.notify('Los Pokémon bebé no pueden reproducirse en la Guardería.', '⚠️');
       return false;
     }
@@ -233,7 +238,10 @@ export const useBreedingStore = defineStore('breeding', () => {
       return;
     }
 
-    const eggSpecies = compat.eggSpecies || '';
+    if (!compat.eggSpecies) {
+      throw new Error('[breeding] Cannot generate an egg without a valid egg species.');
+    }
+    const eggSpecies = compat.eggSpecies;
     const itemA = pA.heldItem || '';
     const itemB = pB.heldItem || '';
     const playerClass = classStore.playerClass as string;
@@ -245,7 +253,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     const egg = eggFactory.createDaycareEgg({
       species: eggSpecies,
-      motherId: compat.motherId,
+      motherId: compat.motherId ? requirePokemonSpeciesId(compat.motherId) : eggSpecies,
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
       nature: inheritNature(pA, pB, itemA, itemB) || 'serious',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),

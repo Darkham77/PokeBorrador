@@ -4,7 +4,7 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { gameBus } from '@/logic/events/gameBus'
 import DebugActionList from './DebugActionList.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages } from '@/types/battle/battle'
+import { requireBattleConditionKey, type BattleStages } from '@/types/battle/battle'
 
 import { 
   DEBUG_SOUNDS, 
@@ -92,26 +92,25 @@ const modifyStat = (stat: string, delta: number) => {
 const setField = (effect: string, val: number) => {
   if (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(effect)) {
     if (battleStore.state) {
-      if (battleStore.state.weather?.type === effect || battleStore.state.weather?.visual === effect) {
-        battleStore.state.weather = { type: 'clear', visual: 'clear', turns: 0 }
+      const condition = requireBattleConditionKey(effect)
+      if (!battleStore.state.fieldConditions) battleStore.state.fieldConditions = {}
+      if (battleStore.state.fieldConditions[condition]) {
+        delete battleStore.state.fieldConditions[condition]
         battleStore.addLog(`DEBUG: Terreno/Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
       } else {
-        battleStore.state.weather = {
-          type: effect,
-          visual: effect,
-          turns: 5
-        }
+        battleStore.state.fieldConditions[condition] = { turns: 5 }
         battleStore.addLog(`DEBUG: Terreno/Efecto de Campo ${effect.toUpperCase()} activado`, 'log-info')
       }
     }
   } else if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(effect)) {
     if (battleStore.state) {
+      const condition = requireBattleConditionKey(effect)
       if (!battleStore.state.enemySideConditions) battleStore.state.enemySideConditions = {}
-      if (battleStore.state.enemySideConditions[effect]) {
-        delete battleStore.state.enemySideConditions[effect]
+      if (battleStore.state.enemySideConditions[condition]) {
+        delete battleStore.state.enemySideConditions[condition]
         battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} desactivado`, 'log-info')
       } else {
-        battleStore.state.enemySideConditions[effect] = { turns: 5 }
+        battleStore.state.enemySideConditions[condition] = { turns: 5 }
         battleStore.addLog(`DEBUG: Efecto ${effect.toUpperCase()} aplicado al bando enemigo`, 'log-info')
       }
     }
@@ -149,10 +148,12 @@ const isEffectActive = (type: string, category: string) => {
   }
   if (category === 'field') {
     if (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(type)) {
-      return battleStore.state?.weather?.type === type || battleStore.state?.weather?.visual === type
+      const condition = requireBattleConditionKey(type)
+      return !!battleStore.state?.fieldConditions?.[condition]
     }
     if (['stealthrock', 'spikes', 'toxicspikes', 'reflect', 'lightscreen', 'safeguard', 'mist'].includes(type)) {
-      return !!battleStore.state?.enemySideConditions?.[type] || !!battleStore.state?.playerSideConditions?.[type]
+      const condition = requireBattleConditionKey(type)
+      return !!battleStore.state?.enemySideConditions?.[condition] || !!battleStore.state?.playerSideConditions?.[condition]
     }
     return ((stages as BattleStages | undefined)?.[type as keyof BattleStages] || 0) > 0
   }

@@ -9,7 +9,8 @@ import { PDEX_ORDER } from '@/data/pokemon/pokedex';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 describe('Gym Engine', () => {
-  const mockGym = { id: 'pewter', leader: 'Brock', rewardTM: 'MT39 Tumba Rocas' };
+  const mockGym = GYMS.find(gym => gym.id === 'pewter');
+  if (!mockGym) throw new Error('Expected Pewter gym fixture to exist');
 
   it('should give TM on first victory (Easy)', () => {
     const state = { defeatedGyms: [], gymProgress: {} };
@@ -121,4 +122,3 @@ describe('Gym Engine', () => {
 function activePokePokeIdToID(id: string): string {
   return id.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
-

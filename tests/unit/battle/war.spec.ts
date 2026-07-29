@@ -10,6 +10,14 @@ import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward } from '@/
 import { getConflictZones, getGuardianData } from '@/logic/war/guardianEngine'
 import type { GameState } from '@/types/system/game'
 import type { DBRouter } from '@/logic/db/dbRouter'
+import type { MapRouteId } from '@/data/world/map-assets'
+
+const TEST_CONFLICT_MAPS: MapRouteId[] = [
+  'route1', 'route2', 'forest', 'route3', 'mt_moon',
+  'route4', 'route24', 'route25', 'route5', 'route6',
+  'route8', 'route9', 'route10', 'rock_tunnel', 'power_plant',
+  'pokemon_tower', 'route11', 'route12', 'route13', 'safari_zone',
+]
 
 describe('War Engine & Guardian Logic', () => {
   it('calculates week ID correctly for Monday', () => {
@@ -55,20 +63,18 @@ describe('War Engine & Guardian Logic', () => {
   })
 
   it('generates 12 conflict zones deterministically', () => {
-    const mockMaps = Array.from({ length: 20 }, (_, i) => `route_${i + 1}`)
     const date = Temporal.Instant.from('2026-04-15T12:00:00Z')
-    const zones = getConflictZones(mockMaps, date)
+    const zones = getConflictZones(TEST_CONFLICT_MAPS, date)
     expect(zones).toHaveLength(12)
     expect(new Set(zones).size).toBe(12)
   })
 
   it('returns valid guardian data with updated tier points', () => {
-    const mockMaps = Array.from({ length: 20 }, (_, i) => `route_${i + 1}`)
     const date = Temporal.Instant.from('2026-04-15T12:00:00Z')
-    const zones = getConflictZones(mockMaps, date)
+    const zones = getConflictZones(TEST_CONFLICT_MAPS, date)
     const guardianMap = zones[0]!
 
-    const guardian = getGuardianData(guardianMap, mockMaps, date)
+    const guardian = getGuardianData(guardianMap, TEST_CONFLICT_MAPS, date)
     expect(guardian).not.toBeNull()
     expect(guardian?.isGuardian).toBe(true)
     if (guardian?.tier === 'common') expect(guardian.pts).toBe(150)

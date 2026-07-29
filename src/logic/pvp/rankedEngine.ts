@@ -1,8 +1,8 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 export interface EloTier {
-  id: string;
-  name: string;
+  id: RankedTierId;
+  name: RankedTierName;
   minElo: number;
   color: string;
   icon: string;
@@ -17,10 +17,13 @@ export interface RankedRules {
   bannedPokemonIds: string[];
 }
 
-export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'];
+export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
+export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
+export type RankedTierId = 'bronce' | 'plata' | 'oro' | 'platino' | 'diamante' | 'maestro';
+type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
 const RANKED_MAX_TIER_GAP = 1;
 
-const RANKED_TIERS: Record<string, EloTier> = {
+const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
   BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,    color: '#c8a060', icon: '🥉' },
   PLATA:    { id: 'plata',    name: 'Plata',    minElo: 1200, color: '#9E9E9E', icon: '🥈' },
   ORO:      { id: 'oro',      name: 'Oro',      minElo: 1600, color: '#FFB800', icon: '🥇' },
@@ -60,13 +63,16 @@ export function isAllowedRankGap(myElo: number | string, opponentElo: number | s
 /**
  * Normalizes ranked rules from raw configuration.
  */
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName: string = 'TEMPORADA ACTUAL'): RankedRules {
   return {
     seasonName: seasonName || 'TEMPORADA ACTUAL',
     maxPokemon: Math.max(1, Math.min(6, Number(raw.maxPokemon) || 6)),
     levelCap: Math.max(1, Math.min(100, Number(raw.levelCap) || 100)),
-    allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map((t: string) => t.toLowerCase()) : [],
-    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map((id: string) => id.toLowerCase()) : []
+    allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase() as PokemonType) : [],
+    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase() as PokemonSpeciesId) : []
   };
 }
 
@@ -76,7 +82,7 @@ export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName:
 export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedRules): { ok: boolean; reason?: string } {
   if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
-  const id = (pokemon.id || '').toLowerCase();
+  const id = pokemon.id as PokemonSpeciesId;
   if (rules.bannedPokemonIds.includes(id)) {
     return { ok: false, reason: `${pokemon.name || id} está baneado esta temporada.` };
   }
@@ -86,8 +92,8 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
   }
 
   if (rules.allowedTypes.length > 0) {
-    const types = [pokemon.type, pokemon.type2].filter(Boolean).map(t => typeof t === 'string' ? t.toLowerCase() : String(t).toLowerCase());
-    const hasAllowedType = types.some((t: string) => rules.allowedTypes.includes(t));
+    const types = [pokemon.type, pokemon.type2].filter((t): t is PokemonType => !!t);
+    const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes.includes(t));
     if (!hasAllowedType) {
       return { ok: false, reason: `${pokemon.name || id} no tiene un tipo permitido.` };
     }

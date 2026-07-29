@@ -43,7 +43,7 @@ export class DBRouter {
       this.options.inMemory = true;
     }
     
-    logger.info('DBRouter', `Initialized in STRICT ${this.mode.toUpperCase()} mode. (inMemory: ${!!this.options.inMemory})`);
+    logger.info('DBRouter', `Initialized in STRICT ${this.mode.toUpperCase()} mode. (inMemory: ${!!this.options.inMemory})`); // text-ok
   }
 
   /**
@@ -183,7 +183,7 @@ export class DBRouter {
    */
   setMode(mode: DBMode): void {
     if (this.mode === mode) return;
-    logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`);
+    logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`); // text-ok
     this.mode = mode;
     
     if (mode === 'offline') {

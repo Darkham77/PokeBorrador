@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
-import { NATURES, NATURE_DATA } from '@/data/battle/natures'
+import { NATURES, NATURE_DATA, toNatureId, type NatureId } from '@/data/battle/natures'
 import BaseModal from '@/components/common/BaseModal.vue'
 import gsap from 'gsap'
 
@@ -19,7 +19,7 @@ const naturePokemon = computed(() => {
 })
 const sortedNatures = [...NATURES].sort()
 
-const handleApplyNature = (nature: string) => {
+const handleApplyNature = (nature: NatureId) => {
   if (!naturePokemon.value) return
   naturePokemon.value.nature = nature
   
@@ -27,7 +27,7 @@ const handleApplyNature = (nature: string) => {
   import('@/logic/pokemon/pokemonFactory').then(({ recalcPokemonStats }) => {
     if (naturePokemon.value) {
       recalcPokemonStats(naturePokemon.value)
-      const translatedNature = NATURE_DATA[nature]?.name || nature
+      const translatedNature = NATURE_DATA[nature].name
       uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${translatedNature}!`, '✨')
     }
     // Consume only after confirming
@@ -92,21 +92,21 @@ const close = () => {
           v-for="n in sortedNatures" 
           :key="n" 
           class="nature-btn"
-          :class="{ active: naturePokemon?.nature === n }"
+          :class="{ active: naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false }"
           @mouseenter="onBtnEnter"
-          @mouseleave="onBtnLeave($event, naturePokemon?.nature === n)"
+          @mouseleave="onBtnLeave($event, naturePokemon && naturePokemon.nature ? toNatureId(naturePokemon.nature) === n : false)"
           @click.stop="handleApplyNature(n)"
         >
-          <span class="n-name">{{ NATURE_DATA[n]?.name || n }}</span>
+          <span class="n-name">{{ NATURE_DATA[n].name }}</span>
           <div class="n-effects">
-            <template v-if="NATURE_DATA[n]?.up">
+            <template v-if="NATURE_DATA[n].up">
               <span class="stat-mod mod-up">
                 <span class="indicator-icon">▲</span>
-                <span>+10% {{ NATURE_DATA[n]?.up }}</span>
+                <span>+10% {{ NATURE_DATA[n].up }}</span>
               </span>
               <span class="stat-mod mod-down">
                 <span class="indicator-icon">▼</span>
-                <span>-10% {{ NATURE_DATA[n]?.down }}</span>
+                <span>-10% {{ NATURE_DATA[n].down }}</span>
               </span>
             </template>
             <template v-else>

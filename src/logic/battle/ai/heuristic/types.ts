@@ -3,7 +3,23 @@
 // Adapted from external/pokemon-showdown-ai/src/types.ts
 // ============================================================
 
+import type { BattleConditionKey } from '@/types/battle/battle';
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
+
+export const HEURISTIC_VOLATILE_KEYS = [
+  'choicelock',
+  'confusion',
+  'encore',
+  'focusenergy',
+  'ingrain',
+  'leechseed',
+  'mustrecharge',
+  'protect',
+  'substitute',
+  'taunt',
+  'trapped',
+] as const;
+export type HeuristicVolatileKey = (typeof HEURISTIC_VOLATILE_KEYS)[number];
 
 export interface HeuristicPokemonState {
   name: string;
@@ -24,14 +40,14 @@ export interface HeuristicPokemonState {
   knownItem: string | null;
   itemConsumed: boolean;
   boosts: { atk: number; def: number; spa: number; spd: number; spe: number; accuracy: number; evasion: number };
-  volatiles: Set<string>;
+  volatiles: Set<HeuristicVolatileKey>;
 }
 
 export interface HeuristicSideState {
   id: 'p1' | 'p2';
   pokemon: HeuristicPokemonState[];
   activePokemon: HeuristicPokemonState | null;
-  sideConditions: Map<string, number>;
+  sideConditions: Map<BattleConditionKey, number>;
 }
 
 export interface HeuristicFieldState {

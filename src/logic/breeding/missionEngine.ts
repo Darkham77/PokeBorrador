@@ -5,8 +5,9 @@
  */
 
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/player/trainerTypes';
+import { TRAINER_TYPES } from '@/data/player/trainerTypes';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import { NATURE_DATA, NATURES } from '@/data/battle/natures';
 
@@ -149,7 +150,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   if (trainerLevel >= 40) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
 
   const targetId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
-  const missionTypes = ['level', 'nature', 'iv_total'];
+  const missionTypes: Array<MissionRequirement['type']> = ['level', 'nature', 'iv_total'];
   if (trainerLevel >= 15) missionTypes.push('iv_31');
 
   const type = missionTypes[Math.floor(Math.random() * missionTypes.length)] || 'level';
@@ -202,13 +203,18 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)] || possibleRewards[0] as MissionReward;
   const tKeys = Object.keys(TRAINER_TYPES);
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
-  const trainer = TRAINER_TYPES[tKey as TrainerTypeKey] ?? TRAINER_TYPES['caza_bichos'];
 
   const archetypeSprites = getSpritesForArchetype(tKey as NpcArchetype);
   const chosenSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
   if (!chosenSprite) {
     throw new Error(`[missionEngine] generateMission failed: no sprites found for archetype ${tKey}`);
   }
+
+  const trainerName = generateNpcName({
+    spriteId: chosenSprite,
+    archetype: tKey,
+    includeTitle: true
+  });
 
   const targetName = (POKEMON_DB as Record<string, { name: string } | undefined>)[targetId]?.name || targetId;
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
@@ -223,7 +229,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     reward,
     completed: false,
     trainerType: tKey,
-    trainerName: trainer.name,
+    trainerName,
     trainerSprite: chosenSprite,
     dialogue
   };

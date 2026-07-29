@@ -1,5 +1,8 @@
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+
+const RAIN_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['rain', 'storm', 'heavy_rain', 'thunderstorm']
 
 export function useAtmosphereRainAnim(
   layer1Ref: Ref<HTMLElement | null>,
@@ -11,7 +14,7 @@ export function useAtmosphereRainAnim(
   let lightningTimer: gsap.core.Tween | null = null
 
   const initRainAnim = (
-    w: string,
+    w: WeatherId,
     seed1: number,
     seed2: number,
     animSeed: number,
@@ -19,9 +22,9 @@ export function useAtmosphereRainAnim(
     speedVar: number,
     weatherTimeline: gsap.core.Timeline | null,
     atmosphereContext: gsap.Context | null,
-    props: { isVisible: boolean; isPerformanceMode: boolean; weather: string }
+    props: { isVisible: boolean; isPerformanceMode: boolean; weather: WeatherId }
   ) => {
-    if (!['rain', 'storm', 'heavy_rain', 'thunderstorm'].includes(w) || !weatherTimeline) return
+    if (!RAIN_ATMOSPHERE_WEATHER_IDS.includes(w) || !weatherTimeline) return
 
     const isStorm = w === 'storm' || w === 'thunderstorm'
     const isHeavy = w === 'heavy_rain'

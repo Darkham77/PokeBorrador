@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ShopItem } from '@/types/inventory/items'
+import type { ShopItemData } from '@/data/inventory/items'
+import type { Inventory } from '@/types/inventory/items'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { calculateActiveTravelModifiers, type TravelBuffItemId } from '@/logic/utils/routeSpawnHelpers'
 
 const props = defineProps<{
   show: boolean
   hasBicycle: boolean
-  filteredBuffItems: ShopItem[]
-  selectedTravelItems: Set<string>
-  inventory: Record<string, number>
+  filteredBuffItems: Array<ShopItemData & { id: TravelBuffItemId }>
+  selectedTravelItems: Set<TravelBuffItemId>
+  inventory: Inventory
 }>()
 
 const emit = defineEmits<{
@@ -16,8 +18,6 @@ const emit = defineEmits<{
   (e: 'confirm'): void
   (e: 'cancel'): void
 }>()
-
-import { calculateActiveTravelModifiers } from '@/logic/utils/routeSpawnHelpers'
 
 const activeTravelModifiers = computed(() => {
   return calculateActiveTravelModifiers(props.selectedTravelItems)

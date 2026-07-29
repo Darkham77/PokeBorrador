@@ -1,15 +1,15 @@
-import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokemon/pokedex'
+import { PDEX_ORDER, GEN2_PDEX_ORDER, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { hasPokemonSpriteId, requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping'
 
-const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
+const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
   const parts = fullId.split('_')
-  const spriteIds = POKEMON_SPRITE_IDS as Record<string, number | string>
 
   for (let i = parts.length; i >= 1; i--) {
     const candidate = parts.slice(0, i).join('_').toLowerCase()
-    if (spriteIds[candidate] !== undefined) {
-      return { numId: String(spriteIds[candidate]), rest: parts.slice(i) }
+    if (hasPokemonSpriteId(candidate)) {
+      return { numId: String(requirePokemonSpriteValue(candidate)), rest: parts.slice(i) }
     }
   }
 
@@ -17,8 +17,7 @@ const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] 
     return { numId: parts[0], rest: parts.slice(1) }
   }
 
-  const idx = ALL_PDEX.indexOf((parts[0] || '').toLowerCase())
-  return { numId: idx !== -1 ? String(idx + 1) : '1', rest: parts.slice(1) }
+  throw new Error(`[DebugActionPanel] Unknown pokemon id: ${fullId}`)
 }
 
 export const deconstructPokemonId = (fullId: string) => {
@@ -41,8 +40,18 @@ export const deconstructPokemonId = (fullId: string) => {
   return { baseId: numId, variant, gender }
 }
 
-export const constructPokemonId = (baseId: string, variant: string, gender: string) => {
-  let id = baseId.trim().toLowerCase()
+function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId {
+  const cleanBase = baseId.trim().toLowerCase()
+  if (/^\d+$/.test(cleanBase)) {
+    const species = ALL_PDEX[Number(cleanBase) - 1]
+    if (species) return species
+    throw new Error(`[DebugActionPanel] Unknown pokedex number: ${baseId}`)
+  }
+  return requirePokemonSpeciesId(cleanBase)
+}
+
+export const constructPokemonId = (baseId: string, variant: string, gender: string): PokemonSpeciesId => {
+  let id = requireSpeciesFromDebugBase(baseId)
   const cleanVariant = variant.trim().toLowerCase()
   const cleanGender = gender.trim().toLowerCase()
 
@@ -52,5 +61,5 @@ export const constructPokemonId = (baseId: string, variant: string, gender: stri
   if (cleanGender) {
     id += `_${cleanGender}`
   }
-  return id
+  return requirePokemonSpeciesId(id)
 }

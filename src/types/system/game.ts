@@ -1,37 +1,43 @@
 import { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { BattleState } from '@/types/battle/battle';
+import type { Inventory } from '@/types/inventory/items';
+import type { GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export interface NotificationItem {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
+  id: string; // domain-ok
+  type: string; // domain-ok
+  title: string; // domain-ok
+  message: string; // domain-ok
   timestamp: number;
   read: boolean;
-  meta?: Record<string, unknown>;
+  meta?: Record<string, unknown>; // open-record
 }
 
 export interface PokedexItem {
-  id: string;
-  dexNum: string;
+  id: PokemonSpeciesId;
+  dexNum: string; // domain-ok
   rawDexNum: number;
-  name: string;
+  name: string; // domain-ok
   isSeen: boolean;
   isCaught: boolean;
-  spriteUrl: string | null;
+  spriteUrl: string | null; // domain-ok
 }
 
 export interface ClaimItem {
-  id: string | number;
+  id: string | number; // domain-ok
   type: 'pokemon' | 'item' | 'currency';
   asset_data: {
     type: 'pokemon' | 'item' | 'money';
-    data: Record<string, unknown>;
+    data: Record<string, unknown>; // open-record
   };
-  source_type: string;
-  source_id: string;
-  created_at: string;
+  source_type: string; // domain-ok
+  source_id: string; // domain-ok
+  created_at: string; // domain-ok
 }
 
 export interface GymProgressEntry {
@@ -42,9 +48,47 @@ export interface GymProgressEntry {
   lastWin?: number;
 }
 
+export type ISODateKey = `${number}-${number}-${number}`;
+
+export function isISODateKey(value: string): value is ISODateKey {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+export function requireISODateKey(value: string): ISODateKey {
+  if (isISODateKey(value)) return value;
+  throw new Error(`Invalid ISO date key: ${value}`);
+}
+
+export type GameStatKey =
+  | 'captureAttempts'
+  | 'captureSuccesses'
+  | 'longestStreak'
+  | 'maxDamage'
+  | 'shinyCount'
+  | 'totalBattles'
+  | 'tradeVolume'
+  | 'trainersDefeated'
+  | 'wins';
+
+export const FACTION_IDS = ['union', 'poder'] as const;
+export type FactionId = (typeof FACTION_IDS)[number];
+
+export function isFactionId(value: string): value is FactionId {
+  return (FACTION_IDS as readonly string[]).includes(value);
+}
+
+export function requireFactionId(value: string): FactionId {
+  if (isFactionId(value)) return value;
+  throw new Error(`Invalid faction id: ${value}`);
+}
+
+export type { PlayerClassId } from '@/data/player/playerClasses';
+
+export type GenderId = 'h' | 'm';
+
 export interface GameState {
-  trainer: string;
-  gender?: 'h' | 'm';
+  trainer: string; // domain-ok
+  gender?: GenderId;
   playtime?: number;
   badges: number;
   balls: number;
@@ -55,34 +99,34 @@ export interface GameState {
   trainerLevel: number;
   trainerExp: number;
   trainerExpNeeded: number;
-  inventory: Record<string, number>;
+  inventory: Inventory;
   map: {
-    currentMap: string;
-    region: string;
+    currentMap: MapRouteId;
+    region: string; // domain-ok
     lastNavigateAt: number;
   };
   team: Pokemon[];
   box: Pokemon[];
-  pokedex: string[];
-  seenPokedex: string[];
-  defeatedGyms: string[];
-  gymProgress: Record<string, GymProgressEntry>;
-  lastGymWins: Record<string, number>;
-  lastGymAttempts: Record<string, number>;
+  pokedex: PokemonSpeciesId[];
+  seenPokedex: PokemonSpeciesId[];
+  defeatedGyms: GymId[];
+  gymProgress: Partial<Record<GymId, GymProgressEntry>>;
+  lastGymWins: Partial<Record<GymId, number>>;
+  lastGymAttempts: Partial<Record<GymId, number>>;
   battle: BattleState | null;
   starterChosen: boolean;
   lastPokemonCenterHeal?: number;
-  lastRankedSeason: string | null;
-  nick_style: string | null;
-  avatar_style: string | null;
-  stats: Record<string, number | string>;
-  guardianCaptures?: Record<string, string>;
+  lastRankedSeason: string | null; // domain-ok
+  nick_style: string | null; // domain-ok
+  avatar_style: string | null; // domain-ok
+  stats: Partial<Record<GameStatKey, number>>;
+  guardianCaptures?: Partial<Record<MapRouteId, ISODateKey>>;
   eloRating: number;
   pvpStats: { wins: number; losses: number; draws: number };
   rankedMaxElo: number;
-  passiveTeamUids: string[];
+  passiveTeamUids: string[]; // domain-ok
   passiveTeamActive: boolean;
-  rankedRewardsClaimed: string[];
+  rankedRewardsClaimed: string[]; // domain-ok
   activeBattle: BattleState | null;
   daycare_missions: DaycareMission[];
   daycare_mission_refreshes: number;
@@ -101,12 +145,12 @@ export interface GameState {
   amuletCoinSecs: number;
   luckyEggSecs: number;
   ivScannerSecs: number;
-  incenseType: string | null;
+  incenseType: ItemId | null;
   incenseSecs: number;
   daycare_berry_egg_time: number;
   boxCount: number;
-  chats: Record<string, unknown>;
-  playerClass: string | null;
+  chats: Record<string, unknown>; // open-record
+  playerClass: PlayerClassId | null;
   classLevel: number;
   classXP: number;
   classData: {
@@ -115,29 +159,29 @@ export interface GameState {
     reputation: number;
     blackMarketSales: number;
     criminality: number;
-    blackMarketDaily: { date: string; items: string[]; purchased: string[] };
+    blackMarketDaily: { date: string; items: ItemId[]; purchased: ItemId[] };
     activeMission?: unknown;
-    extortedRouteId?: string | null;
-    extortedRouteTimestamp?: string | null;
-    lastEggScanDate?: string | null;
-    officialRouteId?: string | null;
-    officialRouteTimestamp?: string | null;
+    extortedRouteId?: MapRouteId | null;
+    extortedRouteTimestamp?: string | null; // domain-ok
+    lastEggScanDate?: string | null; // domain-ok
+    officialRouteId?: MapRouteId | null;
+    officialRouteTimestamp?: string | null; // domain-ok
     kitCaptures?: number;
   };
-  faction: string | null;
+  faction: FactionId | null;
   warCoins: number;
   warCoinsSpent: number;
-  warDailyCap: Record<string, Record<string, number>>;
-  warDailyCoins: Record<string, number>;
-  warMyPtsLocal: Record<string, number>;
+  warDailyCap: Partial<Record<ISODateKey, Partial<Record<MapRouteId, number>>>>;
+  warDailyCoins: Partial<Record<ISODateKey, number>>;
+  warMyPtsLocal: Partial<Record<MapRouteId, number>>;
   warPointsAccumulator?: number;
-  lastResolvedWeek?: string;
+  lastResolvedWeek?: string; // domain-ok
   notificationHistory: NotificationItem[];
-  marketSoldSeenIds: string[];
+  marketSoldSeenIds: string[]; // domain-ok
   claimQueue: ClaimItem[];
-  pvpTeam: string[];
-  warTeam: string[];
+  pvpTeam: string[]; // domain-ok
+  warTeam: string[]; // domain-ok
   warSlots: number;
   isOverlayLoading?: boolean;
-  overlayMessage?: string;
+  overlayMessage?: string; // domain-ok
 }

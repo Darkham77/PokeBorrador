@@ -9,6 +9,8 @@ import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { getNpcEncounterChances } from '@/logic/weather/weatherUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { type WeatherId } from '@/logic/weather/weatherRegistry'
+import { type DayPhase } from '@/logic/utils/timeUtils'
 
 import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts'
 import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts'
@@ -26,7 +28,7 @@ interface ExtendedMapLocation extends MapLocation {
 }
 
 export function useRouteSpawnsCalculation(
-  props: { map: MapLocation; weather: string; cycle: string }
+  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
 ) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
@@ -91,7 +93,7 @@ export function useRouteSpawnsCalculation(
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
       const cleanSentence = sentence.endsWith('.') ? sentence : sentence
       const currentSentence = cleanSentence.replace(/^[▲▼•]\s*/u, '').trim()
-      const lowerSentence = currentSentence.toLowerCase()
+      const lowerSentence = currentSentence.toLowerCase() // text-ok
 
       let typeClass = ''
       let icon = ''
@@ -127,7 +129,7 @@ export function useRouteSpawnsCalculation(
 
       const parts = restOfSentence.split(regex)
       const segments = parts.filter(Boolean).map(part => {
-        const lower = part.toLowerCase()
+        const lower = part.toLowerCase() // text-ok
         const typeKey = SPANISH_TYPE_MAP[lower]
         return {
           text: part,
@@ -186,7 +188,7 @@ export function useRouteSpawnsCalculation(
 
   const terrainTags = computed(() => {
     const m = props.map as ExtendedMapLocation
-    const tags: string[] = []
+    const tags: string[] = [] // no-domain
     if (m.isCrystalCave) tags.push('💎 Cueva de Cristal')
     if (m.isCave) tags.push('🧗 Cueva')
     if (m.isVolcanic) tags.push('🌋 Volcánico')
@@ -205,7 +207,7 @@ export function useRouteSpawnsCalculation(
 
   const activeWeights = computed(() => {
     const weather = props.weather || 'clear'
-    const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase())
+    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
     const climateFishingMultiplier = isRainy ? 1.20 : 1.0
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
     const fishingBonus = eventFishingBonus * climateFishingMultiplier

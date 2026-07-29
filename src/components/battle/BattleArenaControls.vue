@@ -145,7 +145,7 @@ watch(() => [
   ) {
     const p = player.value
     if (!p) return
-    const forcedIdx = p.moves.findIndex(m => m?.effect === 'thrash')
+    const forcedIdx = p.moves.findIndex(m => m?.id === 'thrash')
     if (forcedIdx !== -1) {
       battleStore.executeMove(forcedIdx)
     }

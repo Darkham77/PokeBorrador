@@ -14,6 +14,7 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 
 import { logger } from '@/logic/utils/logger'
 
@@ -29,24 +30,27 @@ const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2')
 
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { DominanceInfo } from '@/types/system/stores'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import type { DayPhase } from '@/logic/utils/timeUtils'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 interface SpawnPool {
-  generic: string[]
-  specific: string[]
-  rates: Record<string, number>
+  generic: PokemonSpeciesId[]
+  specific: PokemonSpeciesId[]
+  rates: Partial<Record<PokemonSpeciesId, number>>
 }
 
 interface Props {
   map: MapLocation
   isLocked?: boolean
   isSafariLocked?: boolean
-  cycle?: 'morning' | 'day' | 'dusk' | 'night'
-  weather?: string
+  cycle?: DayPhase
+  weather?: WeatherId
   badgeCount?: number
   dominance?: DominanceInfo | null
   isRocketExtorted?: boolean
   spawnPool?: SpawnPool
-  forcedWeather?: string | null
+  forcedWeather?: WeatherId | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -88,6 +92,7 @@ const windowWidthRef = computed(() => uiStore.windowWidth)
 const { currentCols, isVisible } = useMapCardObservers(cardRef, windowWidthRef)
 
 const computedWeather = computed(() => mapCardState.computedWeather.value)
+const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id))
 
 const mapCardState = useMapCardState(props, currentCols, isVisible)
 
@@ -332,7 +337,7 @@ watch(
       <AtmosphereLayer
         :weather="computedWeather"
         :cycle="cycle"
-        :season="mapStore.currentSeason.id"
+        :season="currentWeatherSeason"
         :is-performance-mode="isPerformanceMode"
         :is-low-power="uiStore.isLowPowerActive"
         :is-visible="isVisible"
@@ -427,7 +432,7 @@ watch(
 
         <!-- Faction Status Pill -->
         <PVTooltip
-          v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
+          v-if="dominance?.winner && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
           ref="factionPillRef"
           class="faction-status-pill"
           title="DOMINIO FACCIÓN"
@@ -512,4 +517,3 @@ watch(
 </template>
 
 <style src="./MapCard.styles.scss" scoped lang="scss"></style>
-

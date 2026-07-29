@@ -36,10 +36,10 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     getMoveData:         () => ({ pp: BASE_PP, type: 'normal', power: null, accuracy: null }),
     getNatureData:       () => null,
     getAbilityData:      (name: string) => ({ name, desc: 'Efecto de la habilidad' }),
-    getSpeciesAbilities: () => ['Presión', 'Estática'],
+    getSpeciesAbilities: () => ['pressure', 'static'],
     getPokemonData:      () => ({
       baseStats: { hp: 90, atk: 90, def: 85, spa: 125, spd: 90, spe: 100 },
-      types: ['electric'], abilities: ['Presión', 'Estática'],
+      types: ['electric'], abilities: ['pressure', 'static'],
     }),
   }
 }))
@@ -92,7 +92,7 @@ function makePokemon(): Pokemon {
       { id: 'agility', name: 'Agilidad',     pp: 29, maxPP: 30 },
     ],
     atk: 90, def: 85, spa: 125, spd: 90, spe: 100,
-    type: 'electric', nature: 'Fuerte', ability: 'Presión',
+    type: 'electric', nature: 'hardy', ability: 'pressure',
     isShiny: false, gender: 'none',
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
@@ -279,7 +279,7 @@ describe('NaturePatchModal — integración', () => {
   it('cambia naturaleza exacta en gameStore y consume el ítem', async () => {
     const { gameStore } = setupStores({ naturepatch: 1 })
     const uiStore = useUIStore()
-    gameStore.state.team[0]!.nature = 'Fuerte'
+    gameStore.state.team[0]!.nature = 'hardy'
     uiStore.activePokemonForNature = { context: 'team', index: 0 }
     uiStore.isNaturePatchOpen = true
 
@@ -327,15 +327,15 @@ describe('AbilityPillModal — integración', () => {
   it('cambia habilidad exacta en gameStore y consume el ítem', async () => {
     const { gameStore } = setupStores({ abilitypill: 1 })
     const uiStore = useUIStore()
-    // The mock returns ['Presión', 'Estática'] so both are available
-    gameStore.state.team[0]!.ability = 'Presión'
+    // The mock returns ['pressure', 'static'] so both are available
+    gameStore.state.team[0]!.ability = 'pressure'
     uiStore.activePokemonForAbility = { context: 'team', index: 0 }
     uiStore.isAbilityPillOpen = true
 
     const wrapper = mount(AbilityPillModal, { global: { stubs: globalStubs } })
     await flushPromises()
 
-    // Click "Estática" (not active)
+    // Click "static" (not active)
     const targetBtn = wrapper.findAll('.ability-btn').find(b => !b.classes('active'))
     expect(targetBtn).toBeDefined()
     const chosenAbility = targetBtn!.find('.a-name').text()

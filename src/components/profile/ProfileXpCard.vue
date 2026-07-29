@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { usePlayerClassStore, type ClassDefinition } from '@/stores/player/playerClass'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
 import gsap from 'gsap'
+
+type PlayerClassId = keyof typeof PLAYER_CLASSES
+
+function isPlayerClassId(value: string): value is PlayerClassId {
+  return Object.hasOwn(PLAYER_CLASSES, value)
+}
 
 interface Props {
   level?: number
@@ -58,9 +64,9 @@ const nextClassUnlocks = computed(() => {
   const currentClassId = props.classId !== undefined ? props.classId : gs.value.playerClass
   const cLevel = currentLevel.value
   if (!currentClassId) return []
+  if (!isPlayerClassId(currentClassId)) throw new Error(`[ProfileXpCard] Invalid player class id: ${currentClassId}`)
 
-  const classDef = (PLAYER_CLASSES as Record<string, ClassDefinition>)[currentClassId]
-  if (!classDef) return []
+  const classDef = PLAYER_CLASSES[currentClassId]
 
   const unlocks: { level: number; desc: string; type: 'bonus' | 'mission' }[] = []
 

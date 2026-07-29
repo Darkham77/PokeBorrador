@@ -21,19 +21,84 @@ export const WEATHER_MECHANICAL = {
   UNKNOWN: 'unknown'
 } as const;
 
+import type { PokemonType } from '@/data/battle/types';
+
 export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_MECHANICAL];
 
+/** All registered weather state IDs, including 'none' (no weather / gym default) */
+export const WEATHER_IDS = [
+  'none',
+  'clear',
+  'null',
+  'sun',
+  'heatwave',
+  'intense_sun',
+  'rain',
+  'storm',
+  'thunderstorm',
+  'heavy_rain',
+  'sandstorm',
+  'dust_storm',
+  'snow',
+  'cold',
+  'hail',
+  'blizzard',
+  'coldwave',
+  'fog',
+  'mist',
+  'mist_visual',
+  'wind',
+  'strong_winds',
+] as const;
+export type WeatherId = (typeof WEATHER_IDS)[number];
+
+export function isWeatherId(value: string): value is WeatherId {
+  return WEATHER_IDS.includes(value as WeatherId);
+}
+
+export function requireWeatherId(value: string): WeatherId {
+  if (isWeatherId(value)) return value;
+  throw new Error(`Invalid weather id: ${value}`);
+}
+
+export const SHOWDOWN_WEATHER_IDS = [
+  'raindance',
+  'sunnyday',
+  'desolateland',
+  'primordialsea',
+  'deltastream',
+] as const;
+export type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
+
+export function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
+  return (SHOWDOWN_WEATHER_IDS as readonly string[]).includes(value);
+}
+
+const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
+  raindance: 'rain',
+  sunnyday: 'sun',
+  desolateland: 'intense_sun',
+  primordialsea: 'heavy_rain',
+  deltastream: 'strong_winds',
+} as const satisfies Record<ShowdownWeatherId, WeatherId>;
+
+function toRegisteredWeatherId(type: WeatherId | ShowdownWeatherId | string): WeatherId | string {
+  if (isWeatherId(type)) return type;
+  if (isShowdownWeatherId(type)) return SHOWDOWN_WEATHER_TO_WEATHER_ID[type];
+  return type;
+}
+
 export interface WeatherDefinition {
-  id: string;               // Raw token used in map/atmosphere (e.g. 'storm')
-  mech: WeatherMechanical;  // Mechanical group (e.g. 'rain')
-  label: string;            // Human-readable name (e.g. 'TORMENTA')
-  icon: string;             // UI Icon
-  visual: string;           // AtmosphereLayer animation key
-  description: string;      // Tactical description for tooltips
-  modifiers?: {             // Mechanical multipliers for types
-    boost?: string[];
-    debuff?: string[];
-    block?: string[];
+  id: WeatherId;               // Raw token used in map/atmosphere (e.g. 'storm')
+  mech: WeatherMechanical;    // Mechanical group (e.g. 'rain')
+  label: string;              // Human-readable name (e.g. 'TORMENTA')
+  icon: string;               // UI Icon
+  visual: string;             // AtmosphereLayer animation key
+  description: string;        // Tactical description for tooltips
+  modifiers?: {               // Mechanical multipliers for types
+    boost?: readonly PokemonType[];
+    debuff?: readonly PokemonType[];
+    block?: readonly PokemonType[];
   }
 }
 
@@ -243,18 +308,9 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   }
 };
 
-export function getMechanicalWeather(type: string | null | undefined): WeatherMechanical {
+export function getMechanicalWeather(type: WeatherId | string | null | undefined): WeatherMechanical {
   if (!type || type === 'none') return WEATHER_MECHANICAL.CLEAR;
-  let lower = type.toLowerCase();
-  // Normalizar nombres de climas Showdown
-  if (lower === 'raindance') lower = 'rain';
-  if (lower === 'sunnyday') lower = 'sun';
-  if (lower === 'snow') lower = 'snow';
-  if (lower === 'hail') lower = 'hail';
-  if (lower === 'sandstorm') lower = 'sandstorm';
-  if (lower === 'desolateland') lower = 'intense_sun';
-  if (lower === 'primordialsea') lower = 'heavy_rain';
-  if (lower === 'deltastream') lower = 'strong_winds';
+  const lower = toRegisteredWeatherId(type);
 
   const entry = WEATHER_REGISTRY[lower];
 
@@ -269,14 +325,9 @@ export function getMechanicalWeather(type: string | null | undefined): WeatherMe
 /**
  * Converts any environmental weather token to its visual AtmosphereLayer equivalent.
  */
-export function getVisualWeather(type: string | null | undefined): string {
+export function getVisualWeather(type: WeatherId | string | null | undefined): string {
   if (!type || type === 'none') return 'clear';
-  let lower = type.toLowerCase();
-  if (lower === 'raindance') lower = 'rain';
-  if (lower === 'sunnyday') lower = 'sun';
-  if (lower === 'desolateland') lower = 'intense_sun';
-  if (lower === 'primordialsea') lower = 'heavy_rain';
-  if (lower === 'deltastream') lower = 'strong_winds';
+  const lower = toRegisteredWeatherId(type);
 
   const entry = WEATHER_REGISTRY[lower];
   return entry?.visual || lower;

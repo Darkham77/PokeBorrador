@@ -8,6 +8,19 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
+type PlayerClassDefinition = (typeof PLAYER_CLASSES)[keyof typeof PLAYER_CLASSES]
+interface RenderPlayerClass {
+  id: PlayerClassDefinition['id']
+  name: string
+  color: string
+  description: string
+  bonuses: readonly string[]
+  penalties: readonly string[]
+  technicalBonuses: readonly string[]
+  technicalPenalties: readonly string[]
+  spriteId: string
+}
+
 interface Props {
   show?: boolean
 }
@@ -25,6 +38,17 @@ defineOptions({ inheritAttrs: false });
 const classStore = usePlayerClassStore();
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
+const playerClassList = computed<RenderPlayerClass[]>(() => Object.values(PLAYER_CLASSES).map(cls => ({
+  id: cls.id,
+  name: cls.name,
+  color: cls.color,
+  description: cls.description,
+  bonuses: cls.bonuses,
+  penalties: cls.penalties,
+  technicalBonuses: cls.technicalBonuses,
+  technicalPenalties: cls.technicalPenalties,
+  spriteId: cls.showdownSpriteId,
+})))
 
 const close = () => { 
   emit('close');
@@ -138,7 +162,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 
       <div class="classes-grid">
         <div 
-          v-for="cls in PLAYER_CLASSES" 
+          v-for="cls in playerClassList" 
           :key="cls.id"
           class="class-card-premium"
           :style="{ '--cls-color': cls.color }"
@@ -151,7 +175,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           <div class="avatar-circle-wrap">
             <div class="avatar-circle">
               <img 
-                :src="getTrainerSprite(cls.showdownSpriteId || cls.id)"
+                :src="getTrainerSprite(cls.spriteId)"
                 class="trainer-pixel-art" 
                 @error="handleImageError"
               >

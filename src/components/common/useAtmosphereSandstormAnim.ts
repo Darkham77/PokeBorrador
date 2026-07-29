@@ -1,5 +1,8 @@
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+
+const SANDSTORM_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['sandstorm', 'strong_winds', 'dust_storm']
 
 export function useAtmosphereSandstormAnim(
   dustLayer1Ref: Ref<HTMLElement | null>,
@@ -7,12 +10,12 @@ export function useAtmosphereSandstormAnim(
   applyParallaxLayer: (layer: HTMLElement | null, startX: number, startY: number, moveX: number, moveY: number, duration: number) => void
 ) {
   const initSandstormAnim = (
-    w: string,
+    w: WeatherId,
     animSeed: number,
     isLowPower: boolean,
     speedVar: number
   ) => {
-    if (!['sandstorm', 'strong_winds', 'dust_storm'].includes(w)) return
+    if (!SANDSTORM_ATMOSPHERE_WEATHER_IDS.includes(w)) return
 
     const isStrongWind = w === 'strong_winds'
     const isDust = w === 'dust_storm'

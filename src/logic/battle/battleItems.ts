@@ -24,7 +24,9 @@ interface ItemUsageOptions {
   itemId?: string;
 }
 
-export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
+import type { ItemId } from '@/data/inventory/items';
+
+export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
   const { 
     eventStore, 
     addLog, 
@@ -32,7 +34,7 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
   } = options
 
   const displayName = getItemName(itemName)
-  const nameLower = itemName.toLowerCase()
+  const nameLower = itemName as ItemId
   const isBall = nameLower.includes('ball') || nameLower.includes('bola')
 
   if (isBall) {

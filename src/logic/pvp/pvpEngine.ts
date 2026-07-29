@@ -95,8 +95,10 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const cIdx = clientPick.moveIndex ?? 0
     const hMove = hostPoke.moves[hIdx]
     const cMove = clientPoke.moves[cIdx]
-    const hMoveId = hMove?.id || '';
-    const cMoveId = cMove?.id || '';
+    if (!hMove?.id) throw new Error('[pvpEngine] Host selected a move slot without a valid move id');
+    if (!cMove?.id) throw new Error('[pvpEngine] Client selected a move slot without a valid move id');
+    const hMoveId = hMove.id;
+    const cMoveId = cMove.id;
     const hPrio = pokemonDataProvider.getMoveData(hMoveId)?.priority || 0
     const cPrio = pokemonDataProvider.getMoveData(cMoveId)?.priority || 0
 
@@ -111,7 +113,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
 
   // 2. Helper to calculate a single action
   const calcAction = (actorIsHost: boolean): PvPActionResult => {
-    const effectLog: string[] = []
+    const effectLog: string[] = [] // no-domain
     const attacker = actorIsHost ? hostPoke : clientPoke
     const defender = actorIsHost ? clientPoke : hostPoke
     const atkS = actorIsHost ? battleState.myStages : battleState.enemyStages
@@ -124,20 +126,10 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
 
     const moveIdx = pick.moveIndex ?? 0
     const move = attacker.moves[moveIdx]
-    const moveName = move?.name || '???'
-    const moveId = move?.id || '';
-    const fallbackMd: MoveBaseData = { 
-      id: '',
-      name: moveName,
-      power: 40, 
-      type: 'normal', 
-      cat: 'physical' as const, 
-      acc: 100,
-      pp: 0,
-      priority: 0, 
-      effect: 'none' 
-    }
-    const md = (moveId ? pokemonDataProvider.getMoveData(moveId) : null) || fallbackMd
+    if (!move?.id) throw new Error('[pvpEngine] Selected move slot has no valid move id');
+    const moveName = move.name
+    const moveId = move.id;
+    const md: MoveBaseData = pokemonDataProvider.getMoveData(moveId)
 
     if (attacker.status === 'slp') {
       const sleepTurns = (attacker as unknown as { sleepTurns?: number }).sleepTurns ?? 0
@@ -170,7 +162,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const targetIdx = actorIsHost ? battleState.enemyActiveIdx : battleState.myActiveIdx
     const newHp = Math.max(0, (targetHpArr[targetIdx] ?? 0) - dmg)
     
-    if (md.effect && md.effect !== 'none' && dmg > 0) {
+    if (md.effect && dmg > 0) {
       applyMoveEffect(md.effect, attacker, defender, atkS, defS, (m: string) => effectLog.push(m))
     }
 

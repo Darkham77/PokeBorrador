@@ -205,7 +205,7 @@ const pokemonSchema = object({
   isShiny: fallback(boolean(), false),
   isGuardian: fallback(boolean(), false),
   isFloating: fallback(boolean(), false),
-  gender: fallback(nullable(union([literal('M'), literal('F'), literal('N')])), null),
+  gender: fallback(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])), null),
   status: fallback(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')])), null),
   sleepTurns: optional(number()),
   confused: optional(number()),
@@ -289,7 +289,7 @@ const pokemonEggSchema = object({
   isGuardian: optional(boolean()),
   nature: optional(string()),
   abilitySlot: optional(number()),
-  gender: fallback(nullable(union([literal('M'), literal('F'), literal('N')])), null),
+  gender: fallback(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])), null),
   ivs: optional(pokemonIVsSchema),
   movesAtBirth: optional(array(string())),
   obtainedAt: optional(number()),
@@ -322,7 +322,7 @@ const enemyPokemonSerializedSchema = object({
   moves: array(unknown()),
   status: nullable(string()),
   isShiny: boolean(),
-  gender: nullable(string()),
+  gender: nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])),
   ivs: record(string(), number()),
   nature: string(),
   ability: string(),
@@ -450,4 +450,3 @@ const saveDataSchema = object({
 export function validateSaveData(data: unknown) {
   return safeParse(saveDataSchema, data);
 }
-

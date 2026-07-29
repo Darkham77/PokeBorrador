@@ -1,33 +1,27 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import { GAME_TMS, TM_COMPAT } from '@/data/pokemon/pokedex'
+import { GAME_TMS, getCompatibleTmIds } from '@/data/pokemon/pokedex'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import { toPokemonType } from '@/data/battle/types'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 interface Props {
-  speciesId: string
+  speciesId: PokemonSpeciesId
 }
 
 const props = defineProps<Props>()
 
 const ui = useUIStore()
 
-interface TM {
-  id: string
-  name: string
-  type: string
-}
-
 const tmSearchQuery = ref('')
 const tmSortBy = ref('id')
 
 const tms = computed(() => {
-  const compatData = TM_COMPAT as Record<string, string[]>
-  const compatibleList = compatData[props.speciesId] || []
+  const compatibleList = getCompatibleTmIds(props.speciesId)
 
-  const gameTms = GAME_TMS as TM[]
-  const allTms = gameTms.map(tm => ({
+  const allTms = GAME_TMS.map(tm => ({
     ...tm,
     isCompatible: compatibleList.includes(tm.id)
   }))
@@ -41,7 +35,7 @@ const tms = computed(() => {
     )
   }
 
-  return filtered.sort((a, b) => {
+  return [...filtered].sort((a, b) => {
     if (tmSortBy.value === 'name') return a.name.localeCompare(b.name)
     return a.id.localeCompare(b.id, undefined, { numeric: true })
   })
@@ -88,14 +82,14 @@ const tms = computed(() => {
       >
         <div
           class="tm-id"
-          :style="{ background: PDEX_TYPE_COLORS[tm.type.toLowerCase()] }"
+          :style="{ background: PDEX_TYPE_COLORS[toPokemonType(tm.type)] }"
         >
           {{ tm.id }}
         </div>
         <div class="tm-info">
           <span class="tm-name">{{ tm.name }}</span>
           <PokemonTypeTag
-            :type="tm.type"
+            :type="toPokemonType(tm.type)"
             size="sm"
           />
         </div>

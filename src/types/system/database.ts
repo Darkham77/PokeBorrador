@@ -1,17 +1,22 @@
 
 import type { StatId } from '@/logic/pokemon/statsMath';
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { FactionId, GenderId } from '@/types/system/game';
 
 export interface LearnsetMove {
   lv: number;
-  id: string;
-  name: string;
+  id: PokemonMoveId;
+  name: string; // domain-ok
   pp: number;
 }
 
 export interface PokemonBaseData {
-  name: string;
-  type: string;
-  type2?: string;
+  name: string; // domain-ok
+  type: PokemonType;
+  type2?: PokemonType;
   hp: number;
   atk: number;
   def: number;
@@ -24,33 +29,41 @@ export interface PokemonBaseData {
 }
 
 export interface PokemonData extends PokemonBaseData {
-  id: string;
-  category: string;
+  id: PokemonSpeciesId;
+  category: string; // domain-ok
   height: number | null;
   weight: number | null;
-  description: string;
+  description: string; // domain-ok
 }
 
 export interface AbilityBaseData {
-  name?: string;
-  desc: string;
-  effect?: string;
+  name?: string; // domain-ok
+  desc: string; // domain-ok
+  effect?: string; // domain-ok
 }
 
 export interface MoveBaseData {
-  id: string;
-  name: string;
+  id: PokemonMoveId;
+  name: string; // domain-ok
   power: number;
   acc: number;
-  type: string;
+  type: PokemonType;
   cat: 'physical' | 'special' | 'status';
   pp: number;
   priority?: number;
-  effect?: string;
+  effect?: MoveEffect | MoveEffect[];
+  boosts?: MoveEffectBoosts;
+  secondary?: ShowdownSecondaryEffect;
+  secondaries?: ShowdownSecondaryEffect[];
+  self?: ShowdownSecondaryEffect;
+  status?: PokemonStatus;
+  volatileStatus?: string; // domain-ok: Showdown condition id boundary
+  sideCondition?: string; // domain-ok: Showdown side condition id boundary
+  weather?: string; // domain-ok: Showdown weather id boundary
   recoil?: number | boolean;
   selfKO?: boolean;
   drain?: number | boolean;
-  hits?: number | string;
+  hits?: number | [number, number] | '2-5';
   fixedDmg?: number;
   ohko?: boolean;
   halfHP?: boolean;
@@ -62,8 +75,8 @@ export interface MoveBaseData {
 }
 
 export interface SpeciesMetadata {
-  category: string;
-  description: string;
+  category: string; // domain-ok
+  description: string; // domain-ok
   catchRate: number;
 }
 
@@ -73,16 +86,16 @@ export interface PokemonAesthetics {
 }
 
 export interface NatureBaseData {
-  name: string;
+  name: string; // domain-ok
   up: StatId | null;
   down: StatId | null;
-  desc: string;
+  desc: string; // domain-ok
 }
 export type DBMode = 'online' | 'offline';
 
 export interface DBConfig {
-  url: string;
-  key: string;
+  url: string; // domain-ok
+  key: string; // domain-ok
 }
 
 export interface DBRouterOptions {
@@ -93,7 +106,7 @@ export interface DBCompatibilityResponse {
   compatible: boolean;
   client: number;
   db: number;
-  error?: string;
+  error?: string; // domain-ok
 }
 
 export interface DBResponse<T = unknown> {
@@ -103,27 +116,27 @@ export interface DBResponse<T = unknown> {
 }
 
 export interface ProxyQueryChainItem {
-  type: string;
+  type: string; // domain-ok
   args: unknown[];
 }
 
 /** Shared Supabase row shape used across leaderboard, playerSearch and social stores. */
 export interface ProfileRow {
-  id: string
-  username: string
+  id: string // domain-ok
+  username: string // domain-ok
   elo_rating?: number
   trainer_level?: number
   badges?: number
-  player_class?: string
-  faction?: string
-  nick_style?: string
-  avatar_style?: string
-  gender?: string
+  player_class?: PlayerClassId | null
+  faction?: FactionId | null
+  nick_style?: string | null // domain-ok
+  avatar_style?: string | null // domain-ok
+  gender?: GenderId | null
 }
 
 /** Shared Supabase row shape for game_saves table. */
 export interface GameSaveRow {
-  user_id: string
-  save_data: Record<string, unknown>
-  updated_at: string
+  user_id: string // domain-ok
+  save_data: Record<string, unknown> // open-record
+  updated_at: string // domain-ok
 }

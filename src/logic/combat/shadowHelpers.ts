@@ -1,5 +1,5 @@
 import { gsap } from 'gsap'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { requireFeetDatabasePath, requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
 export function generatePixelShadow(w = 10, h = 7): string {
   if (typeof document === 'undefined') return ''
@@ -26,11 +26,7 @@ export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY:
   } catch (e) {
     throw new Error(`[shadowHelpers] Error decoding spriteUrl '${dbKey}': ${String(e)}`)
   }
-  const coords = POKEMON_FEET_DATABASE[dbKey]
-  if (!coords) {
-    throw new Error(`[shadowHelpers] Missing feet coordinates mapping for spriteUrl key '${dbKey}'`)
-  }
-  return coords
+  return requireFeetPoints(requireFeetDatabasePath(dbKey))
 }
 
 /**

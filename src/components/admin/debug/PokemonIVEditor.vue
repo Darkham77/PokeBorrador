@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { POKEMON_STAT_KEYS, type PokemonIVs, type PokemonStatKey } from '@/types/pokemon/pokemon'
+
 interface Props {
-  ivs: Record<string, number>
+  ivs: PokemonIVs
 }
 
 defineProps<Props>()
 
 const emit = defineEmits<{
-  (e: 'update:iv', stat: string, val: number): void
+  (e: 'update:iv', stat: PokemonStatKey, val: number): void
 }>()
 </script>
 
@@ -18,18 +20,18 @@ const emit = defineEmits<{
     >
       <div class="iv-grid">
         <div
-          v-for="(val, stat) in ivs"
+          v-for="stat in POKEMON_STAT_KEYS"
           :key="stat"
           class="iv-item"
         >
           <label>{{ stat.toUpperCase() }}</label>
           <input
             :id="`debug-iv-${stat}`"
-            :value="val"
+            :value="ivs[stat]"
             type="number"
             min="0"
             max="31"
-            @input="(e: Event) => emit('update:iv', stat as string, parseInt((e.target as HTMLInputElement).value))"
+            @input="(e: Event) => emit('update:iv', stat, parseInt((e.target as HTMLInputElement).value))"
           >
         </div>
       </div>

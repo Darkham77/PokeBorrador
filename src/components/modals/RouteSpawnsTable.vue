@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { toPokemonType } from '@/data/battle/types'
 
 export interface SpawnItem {
   id: string
@@ -140,7 +141,7 @@ defineEmits<{
                 <PokemonTypeTag
                   v-for="t in poke.types"
                   :key="t"
-                  :type="t"
+                  :type="toPokemonType(t)"
                   size="ssm"
                 />
               </template>

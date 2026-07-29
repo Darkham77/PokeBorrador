@@ -6,6 +6,7 @@
  */
 import { toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
+import type { WeatherId } from '../weather/weatherRegistry.ts';
 
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
@@ -116,8 +117,8 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
   if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
 
-  const wType = activeWeather?.type ? activeWeather.type.toLowerCase() : 'clear';
-  const pTypes = [pokemon.type?.toLowerCase(), pokemon.type2?.toLowerCase()];
+  const wType = activeWeather?.type ? activeWeather.type as WeatherId : 'clear';
+  const pTypes = [pokemon.type, pokemon.type2];
   
   const WEATHER_MAP: Record<string, string> = {
     sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
@@ -277,11 +278,14 @@ export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _mo
   return { mult: 1, triggeredAbility: null }; // Simplified, logic is now in battleMath
 }
 
+import type { PokemonType } from '@/data/battle/types';
+
+const SPECIAL_TYPES_GEN3: readonly PokemonType[] = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+
 export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
   if (move.cat === 'status') return 'status';
   if (ACTIVE_GENERATION <= 3) {
-    const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-    if (move.type && specialTypes.includes(move.type)) return 'special';
+    if (move.type && SPECIAL_TYPES_GEN3.includes(move.type)) return 'special';
     return 'physical';
   }
   return move.cat ?? 'physical';

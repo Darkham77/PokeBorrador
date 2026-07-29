@@ -1,8 +1,11 @@
 import type { DebugSystem } from '@/stores/debug'
+import { GYM_IDS, isGymId, requireGymId } from '@/data/world/gyms'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/player/trainer'
+import { requireFactionId } from '@/types/system/game'
+import { requirePlayerClassId } from '@/data/player/playerClasses'
 
 
 export function registerStatsTools(debug: DebugSystem) {
@@ -142,16 +145,15 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setBadges',
     category: 'stats',
     action: (val: number | string | string[]) => {
-      const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian']
       if (typeof val === 'number') {
         const count = Math.max(0, Math.min(8, val))
-        game.state.defeatedGyms = allGymIds.slice(0, count)
+        game.state.defeatedGyms = [...GYM_IDS.slice(0, count)]
         game.state.badges = count
       } else if (Array.isArray(val)) {
-        game.state.defeatedGyms = val.filter(id => allGymIds.includes(id))
+        game.state.defeatedGyms = val.filter(isGymId)
         game.state.badges = game.state.defeatedGyms.length
       } else if (typeof val === 'string' && val) {
-        const list = val.split(',').map(s => s.trim().toLowerCase()).filter(id => allGymIds.includes(id))
+        const list = val.split(',').map(s => s.trim().toLowerCase()).filter(isGymId)
         game.state.defeatedGyms = list
         game.state.badges = list.length
       }
@@ -167,14 +169,15 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'winGym',
     category: 'stats',
     action: async (gymId: string, difficulty: 'easy' | 'normal' | 'hard' = 'easy') => {
+      const resolvedGymId = requireGymId(gymId)
       const gymsStore = (await import('@/stores/gyms')).useGymsStore()
-      const gym = gymsStore.gyms.find(g => g.id === gymId)
+      const gym = gymsStore.gyms.find(g => g.id === resolvedGymId)
       if (!gym) return
       
-      const isFirstWin = !game.state.defeatedGyms.includes(gymId)
+      const isFirstWin = !game.state.defeatedGyms.includes(resolvedGymId)
       
       if (isFirstWin) {
-        game.state.defeatedGyms.push(gymId)
+        game.state.defeatedGyms.push(resolvedGymId)
         game.state.badges = game.state.defeatedGyms.length
         
         const tm = gym.rewardTM
@@ -187,11 +190,11 @@ export function registerStatsTools(debug: DebugSystem) {
       }
 
       // Guardar progreso específico por dificultad
-      if (!game.state.gymProgress[gymId] || typeof game.state.gymProgress[gymId] !== 'object') {
-        game.state.gymProgress[gymId] = { easy: false, normal: false, hard: false, attempts: 0 }
+      if (!game.state.gymProgress[resolvedGymId] || typeof game.state.gymProgress[resolvedGymId] !== 'object') {
+        game.state.gymProgress[resolvedGymId] = { easy: false, normal: false, hard: false, attempts: 0 }
       }
-      const progress = game.state.gymProgress[gymId]
-      progress[difficulty as keyof typeof progress] = true as never
+      const progress = game.state.gymProgress[resolvedGymId]
+      progress[difficulty] = true
       progress.attempts++
 
       // Simular recompensas adicionales basadas en dificultad (EXP y Dinero aproximado)
@@ -201,8 +204,8 @@ export function registerStatsTools(debug: DebugSystem) {
       game.state.money += moneyGained
       
       const msg = isFirstWin 
-        ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}`
-        : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`;
+        ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}` // text-ok
+        : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`; // text-ok
 
       ui.notify(msg, '🏆')
       game.saveGame(false)
@@ -232,7 +235,7 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setFaction',
     category: 'stats',
     action: (f: string) => {
-      game.state.faction = (f === 'none' || f === 'null') ? null : f
+      game.state.faction = (f === 'none' || f === 'null') ? null : requireFactionId(f)
       ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️')
       game.saveGame(false)
     },
@@ -245,7 +248,7 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setPlayerClass',
     category: 'stats',
     action: (c: string) => {
-      game.state.playerClass = c
+      game.state.playerClass = requirePlayerClassId(c)
       ui.notify(`Debug: Clase cambiada a ${c}`, '🎭')
       game.saveGame(false)
     },

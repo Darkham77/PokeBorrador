@@ -8,72 +8,71 @@
  */
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables'
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_CYCLE_IDS, WEATHER_SEASON_IDS, type WeatherCycleId, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
+import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { MapRouteId } from '@/data/world/map-assets'
+import type { PokemonType } from '@/data/battle/types'
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const cycleLabels: Record<string, string> = {
+const cycleLabels: Record<WeatherCycleId, string> = {
   morning: '🌅 Amanecer',
   day: '☀️ Día',
   dusk: '🌇 Ocaso',
   night: '🌙 Noche'
 }
 
-const seasonLabels: Record<string, string> = {
+const seasonLabels: Record<WeatherSeasonId, string> = {
   spring: 'Primavera',
   summer: 'Verano',
   autumn: 'Otoño',
   winter: 'Invierno'
 }
 
-const getWeatherMetadata = (weather: string) => {
+const getWeatherMetadata = (weather: WeatherId) => {
   const visual = WEATHER_VISUAL_METADATA[weather]
   if (visual) return visual
   const mech = getMechanicalWeather(weather)
   return WEATHER_UI_METADATA[mech] || { icon: '❓', label: weather.toUpperCase() }
 }
 
+type RegionId = 'kanto' | 'johto' | 'hoenn' | 'sinnoh'
+
 interface Region {
-  id: string
+  id: RegionId
   name: string
-  maps: string[]
+  maps: readonly WeatherTableRouteId[]
 }
 
 const REGIONS: Region[] = [
-  { id: 'kanto', name: 'Kanto', maps: FIRE_RED_MAPS.map(m => m.id) },
+  { id: 'kanto', name: 'Kanto', maps: FIRE_RED_MAPS.map(m => m.id).filter(isWeatherTableRouteId) },
   { id: 'johto', name: 'Johto', maps: [] },
   { id: 'hoenn', name: 'Hoenn', maps: [] },
   { id: 'sinnoh', name: 'Sinnoh', maps: [] }
 ]
 
-interface MapWeatherConfig {
-  visitors?: Record<string, number> | string[]
-  exclusive?: Record<string, number> | string[]
-}
-
 interface PrecomputedRouteData {
-  routeId: string
+  routeId: WeatherTableRouteId
   name: string
   seasons: {
-    seasonId: string
+    seasonId: WeatherSeasonId
     label: string
     cycles: {
-      cycleId: string
+      cycleId: WeatherCycleId
       label: string
       probs: {
-        weather: string
+        weather: WeatherId
         chance: number
         icon: string
         label: string
         visitors: { name: string; sprite: string }[]
         exclusive: { name: string; sprite: string }[]
-        modifiers: { boost: string[]; debuff: string[]; block: string[] } | null
+        modifiers: { boost: readonly PokemonType[]; debuff: readonly PokemonType[]; block: readonly PokemonType[] } | null
         hasSpawns: boolean
       }[]
     }[]
@@ -82,34 +81,39 @@ interface PrecomputedRouteData {
 
 // Pre-calculate the entire structure statically once at import time
 const PRECOMPUTED_WEATHER_DATA = (() => {
-  const result: Record<string, PrecomputedRouteData[]> = {}
+  const result: Record<RegionId, PrecomputedRouteData[]> = {
+    kanto: [],
+    johto: [],
+    hoenn: [],
+    sinnoh: [],
+  }
   
   for (const region of REGIONS) {
     const mapsData = region.maps
       .map(routeId => {
         const rawRouteData = ROUTE_WEATHER_TABLES[routeId]
-        if (!rawRouteData) return null
+        const map = FIRE_RED_MAPS.find(m => m.id === routeId)
+        if (!map) throw new Error(`[DebugWeatherTablesModal] Missing map data for weather route: ${routeId}`)
         
-        const seasons = Object.entries(rawRouteData).map(([seasonId, rawCycles]) => {
-          const cycles = Object.entries(rawCycles).map(([cycleId, rawProbs]) => {
-            const probs = Object.entries(rawProbs).map(([weather, chance]) => {
+        const seasons = WEATHER_SEASON_IDS.map(seasonId => {
+          const cycles = WEATHER_CYCLE_IDS.map(cycleId => {
+            const rawProbs = rawRouteData[seasonId][cycleId]
+            const probs = Object.entries(rawProbs)
+              .filter((entry): entry is [string, number] => entry[1] !== undefined)
+              .map(([rawWeather, chance]) => {
+              const weather = requireWeatherId(rawWeather)
               const metadata = getWeatherMetadata(weather)
               
               let visitors: { name: string; sprite: string }[] = []
               let exclusive: { name: string; sprite: string }[] = []
               
-              const map = FIRE_RED_MAPS.find(m => m.id === routeId)
               if (map && map.weather) {
-                let weatherData = (map.weather as unknown as Record<string, MapWeatherConfig>)[weather]
-                if (!weatherData) {
-                  const mech = getMechanicalWeather(weather)
-                  weatherData = (map.weather as unknown as Record<string, MapWeatherConfig>)[mech]
-                }
+                const weatherData = Object.entries(map.weather).find(([id]) => id === weather)?.[1]
                 if (weatherData) {
                   const rawVis = weatherData.visitors || {}
                   const rawExc = weatherData.exclusive || {}
-                  const visList = Array.isArray(rawVis) ? rawVis : Object.keys(rawVis)
-                  const excList = Array.isArray(rawExc) ? rawExc : Object.keys(rawExc)
+                  const visList = Object.keys(rawVis)
+                  const excList = Object.keys(rawExc)
                   
                   visitors = visList.map(p => ({
                     name: p.toUpperCase(),
@@ -143,28 +147,24 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
             
             return {
               cycleId,
-              label: cycleLabels[cycleId] || cycleId,
+              label: cycleLabels[cycleId],
               probs
             }
           })
           
           return {
             seasonId,
-            label: seasonLabels[seasonId] || seasonId,
+            label: seasonLabels[seasonId],
             cycles
           }
         })
         
-        const mapObj = FIRE_RED_MAPS.find(m => m.id === routeId)
-        const name = mapObj ? mapObj.name : routeId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        
         return {
           routeId,
-          name,
+          name: map.name,
           seasons
         }
       })
-      .filter((r): r is PrecomputedRouteData => r !== null)
     
     result[region.id] = mapsData
   }
@@ -172,21 +172,21 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
   return result
 })()
 
-const activeRegion = ref('kanto')
+const activeRegion = ref<RegionId>('kanto')
 
 const regionTableData = computed(() => {
   return PRECOMPUTED_WEATHER_DATA[activeRegion.value] || []
 })
 
-const hasWeatherTables = (regionId: string) => {
+const hasWeatherTables = (regionId: RegionId) => {
   const data = PRECOMPUTED_WEATHER_DATA[regionId]
   return data && data.length > 0
 }
 
 // Collapsible Route State to avoid rendering 5000+ DOM nodes at the same time
-const expandedRoutes = ref<Record<string, boolean>>({})
+const expandedRoutes = ref<Partial<Record<MapRouteId, boolean>>>({})
 
-function toggleRoute(routeId: string) {
+function toggleRoute(routeId: MapRouteId) {
   expandedRoutes.value[routeId] = !expandedRoutes.value[routeId]
 }
 </script>

@@ -1,5 +1,6 @@
 import { usePvPStore } from '@/stores/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonType } from '@/data/battle/types';
 
 export function useRankedValidation() {
   const rankedStore = usePvPStore();
@@ -27,8 +28,8 @@ export function useRankedValidation() {
 
     // 3. Type Restrictions
     if ((rules.allowedTypes?.length ?? 0) > 0) {
-      const types = Array.isArray(pokemon.type) ? pokemon.type : [pokemon.type];
-      const hasAllowedType = types.some((t: string) => rules.allowedTypes!.includes(t.toLowerCase()));
+      const types = Array.isArray(pokemon.type) ? pokemon.type as PokemonType[] : [pokemon.type as PokemonType];
+      const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes!.includes(t));
       if (!hasAllowedType) {
         return { ok: false, reason: `${pokemon.name} no cumple con los tipos permitidos.` };
       }

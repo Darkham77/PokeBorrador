@@ -17,18 +17,27 @@ import { syncSidePokemon } from '@/logic/battle/helpers/showdownSyncHelper.ts';
 import { BattleAgent } from '../../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 import { ActiveSlotRequest } from '@/logic/battle/helpers/showdownBattleAgent.ts';
 import { ChoiceRequest } from '@/logic/battle/helpers/requestHelper.ts';
+import type { PureMove, PurePokemon } from '@/logic/battle/battleMathTypes.ts';
+
+function purePokemon(pokemon: PurePokemon): PurePokemon {
+  return pokemon;
+}
+
+function pureMove(move: PureMove): PureMove {
+  return move;
+}
 
 // --- From test_bug001_003.spec.ts ---
 describe('BUG-001 / BUG-002 / BUG-003: Showdown Catch Math Parity', () => {
   it('should accurately process catch rate without missing term discrepancies', () => {
-    const poke = {
+    const poke = purePokemon({
       level: 50,
       hp: 50,
       maxHp: 100,
       catchRate: 45,
       status: 'slp',
       type: 'grass'
-    }
+    })
     const res = calculateCatchRatePure(poke, 'ultra', 1)
     expect(res).toBeDefined()
     expect(typeof res.caught).toBe('boolean')
@@ -39,8 +48,8 @@ describe('BUG-001 / BUG-002 / BUG-003: Showdown Catch Math Parity', () => {
 // --- From test_bug021_040.spec.ts ---
 describe('BUG-021 to BUG-040: Showdown 1:1 Parity Batch 2 Suite', () => {
   it('BUG-031: Escape chance calculation evaluates correctly for fast pokemon', () => {
-    const player = { id: 'pikachu', level: 50, speed: 100, type: 'electric' }
-    const wild = { id: 'pidgey', level: 50, speed: 50, type: 'normal' }
+    const player = purePokemon({ id: 'pikachu', level: 50, spe: 100, type: 'electric' })
+    const wild = purePokemon({ id: 'pidgey', level: 50, spe: 50, type: 'normal' })
     const canEscape = calculateEscapeChancePure(player, wild, 1, null)
     expect(canEscape).toBe(true)
   })
@@ -49,9 +58,9 @@ describe('BUG-021 to BUG-040: Showdown 1:1 Parity Batch 2 Suite', () => {
 // --- From test_bug041_060.spec.ts ---
 describe('BUG-041 to BUG-060: Showdown 1:1 Parity Batch 3 Suite', () => {
   it('BUG-042: Grassy Terrain reduces earthquake damage appropriately', () => {
-    const attacker = { id: 'rhyhorn', level: 50, type: 'ground' }
-    const defender = { id: 'pikachu', level: 50, type: 'electric', hp: 100, maxHp: 100 }
-    const move = { id: 'earthquake', type: 'ground', power: 100, cat: 'physical' as const }
+    const attacker = purePokemon({ id: 'rhyhorn', level: 50, type: 'ground' })
+    const defender = purePokemon({ id: 'pikachu', level: 50, type: 'electric', hp: 100, maxHp: 100 })
+    const move = pureMove({ id: 'earthquake', type: 'ground', power: 100, cat: 'physical' })
     const ctxNormal = { weather: null }
     const ctxGrassy = { weather: { type: 'grassyterrain', turns: 5 } }
     
@@ -65,10 +74,10 @@ describe('BUG-041 to BUG-060: Showdown 1:1 Parity Batch 3 Suite', () => {
 // --- From test_bug061_080.spec.ts ---
 describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
   it('BUG-064: Choice Specs applies 1.5x special attack multiplier appropriately', () => {
-    const attackerNormal = { id: 'alakazam', level: 50, type: 'psychic', heldItem: '' }
-    const attackerSpecs = { id: 'alakazam', level: 50, type: 'psychic', heldItem: 'choicespecs' }
-    const defender = { id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 }
-    const move = { id: 'psychic', type: 'psychic', power: 90, cat: 'special' as const }
+    const attackerNormal = purePokemon({ id: 'alakazam', level: 50, type: 'psychic', heldItem: '' })
+    const attackerSpecs = purePokemon({ id: 'alakazam', level: 50, type: 'psychic', heldItem: 'choicespecs' })
+    const defender = purePokemon({ id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 })
+    const move = pureMove({ id: 'psychic', type: 'psychic', power: 90, cat: 'special' })
     
     const dmgNormal = calculateDamagePure(attackerNormal, defender, move, { weather: null })
     const dmgSpecs = calculateDamagePure(attackerSpecs, defender, move, { weather: null })
@@ -80,8 +89,8 @@ describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
 // --- From test_bug081_100.spec.ts ---
 describe('BUG-081 to BUG-100: Showdown 1:1 Parity Batch 5 Suite', () => {
   it('BUG-084: Choice Scarf speed multiplier applies 1.5x boost correctly', () => {
-    const attackerNormal = { id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: '' }
-    const attackerScarf = { id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: 'choicescarf' }
+    const attackerNormal = purePokemon({ id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: '' })
+    const attackerScarf = purePokemon({ id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: 'choicescarf' })
     
     const speNormal = getEffectiveStatPure(attackerNormal, 'spe', {}, null, undefined)
     const speScarf = getEffectiveStatPure(attackerScarf, 'spe', {}, null, undefined)
@@ -93,10 +102,10 @@ describe('BUG-081 to BUG-100: Showdown 1:1 Parity Batch 5 Suite', () => {
 // --- From test_bug101_120.spec.ts ---
 describe('BUG-101 to BUG-120: Showdown 1:1 Parity Batch 6 Suite', () => {
   it('BUG-110: Burn status applies 0.5x attack penalty on physical moves', () => {
-    const attackerNormal = { id: 'machamp', level: 50, type: 'fighting', status: '', atk: 100 }
-    const attackerBurned = { id: 'machamp', level: 50, type: 'fighting', status: 'brn', atk: 100 }
-    const defender = { id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 }
-    const move = { id: 'crosschop', type: 'fighting', power: 100, cat: 'physical' as const }
+    const attackerNormal = purePokemon({ id: 'machamp', level: 50, type: 'fighting', status: '', atk: 100 })
+    const attackerBurned = purePokemon({ id: 'machamp', level: 50, type: 'fighting', status: 'brn', atk: 100 })
+    const defender = purePokemon({ id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 })
+    const move = pureMove({ id: 'crosschop', type: 'fighting', power: 100, cat: 'physical' })
     
     const dmgNormal = calculateDamagePure(attackerNormal, defender, move, { weather: null })
     const dmgBurned = calculateDamagePure(attackerBurned, defender, move, { weather: null })
@@ -108,8 +117,8 @@ describe('BUG-101 to BUG-120: Showdown 1:1 Parity Batch 6 Suite', () => {
 // --- From test_bug121_140.spec.ts ---
 describe('BUG-121 to BUG-140: Showdown 1:1 Parity Batch 7 Suite', () => {
   it('BUG-121: Paralyze status applies 0.5x speed multiplier in Gen 7+', () => {
-    const pokeNormal = { id: 'zapdos', level: 50, spe: 100, status: '', type: 'electric' }
-    const pokePar = { id: 'zapdos', level: 50, spe: 100, status: 'par', type: 'electric' }
+    const pokeNormal = purePokemon({ id: 'zapdos', level: 50, spe: 100, status: '', type: 'electric' })
+    const pokePar = purePokemon({ id: 'zapdos', level: 50, spe: 100, status: 'par', type: 'electric' })
     
     const speNormal = getEffectiveStatPure(pokeNormal, 'spe', {}, null, undefined)
     const spePar = getEffectiveStatPure(pokePar, 'spe', {}, null, undefined)
@@ -121,10 +130,10 @@ describe('BUG-121 to BUG-140: Showdown 1:1 Parity Batch 7 Suite', () => {
 // --- From test_bug141_160.spec.ts ---
 describe('BUG-141 to BUG-160: Showdown 1:1 Parity Batch 8 Suite', () => {
   it('BUG-141: Solar Power applies 1.5x special attack multiplier in Sun', () => {
-    const attackerNormal = { id: 'charizard', level: 50, type: 'fire', ability: '', spa: 100 }
-    const attackerSolar = { id: 'charizard', level: 50, type: 'fire', ability: 'solarpower', spa: 100 }
-    const defender = { id: 'blastoise', level: 50, type: 'water', hp: 200, maxHp: 200 }
-    const move = { id: 'flamethrower', type: 'fire', power: 90, cat: 'special' as const }
+    const attackerNormal = purePokemon({ id: 'charizard', level: 50, type: 'fire', ability: '', spa: 100 })
+    const attackerSolar = purePokemon({ id: 'charizard', level: 50, type: 'fire', ability: 'solarpower', spa: 100 })
+    const defender = purePokemon({ id: 'blastoise', level: 50, type: 'water', hp: 200, maxHp: 200 })
+    const move = pureMove({ id: 'flamethrower', type: 'fire', power: 90, cat: 'special' })
     const sunCtx = { weather: { type: 'sun', turns: 5 } }
     
     const dmgNormal = calculateDamagePure(attackerNormal, defender, move, sunCtx)

@@ -1,43 +1,56 @@
 import { Ref } from 'vue';
 import { GameState } from '@/types/system/game';
 import { Pokemon } from '@/types/pokemon/pokemon';
-import { BattleState, BattleStages, BattleLog } from '@/types/battle/battle';
+import { BattleState, BattleStages, BattleLog, BattleSource } from '@/types/battle/battle';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import { AuthUser } from '@/types/auth/auth';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { DayPhase, Season } from '@/logic/utils/timeUtils';
+import type { Inventory } from '@/types/inventory/items';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { GymId } from '@/data/world/gyms';
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { FactionId } from '@/types/system/game';
 
 export interface WorldMap {
-  id: string;
-  name: string;
-  icon: string;
+  id: MapRouteId;
+  name: string; // domain-ok
+  icon: string; // domain-ok
   badges: number;
-  desc: string;
-  wild: { morning: string[]; day: string[]; dusk: string[]; night: string[] };
+  desc: string; // domain-ok
+  wild: Record<DayPhase, string[]>;
   rates: { morning: number[]; day: number[]; dusk: number[]; night: number[] };
   lv: [number, number];
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
   fishing?: { pool: string[]; rates: number[]; lv: [number, number] };
-  weather?: Record<string, { visitors: Record<string, number>; exclusive?: Record<string, number> }>;
+  weather?: Partial<Record<WeatherId, {
+    visitors: Partial<Record<PokemonSpeciesId, number>>;
+    exclusive?: Partial<Record<PokemonSpeciesId, number>>;
+  }>>;
 }
 
 export interface DominanceInfo {
-  winner: string | null;
+  winner: FactionId | null;
   since?: number;
   union?: number;
   poder?: number;
-  guardian?: { id: string, captured: boolean } | null;
+  guardian?: { id: PokemonSpeciesId, captured: boolean } | null;
 }
 
 export interface BattleOptions {
   isTrainer?: boolean;
-  trainerName?: string;
+  trainerName?: string; // domain-ok
   isGym?: boolean;
-  gymId?: string;
-  locationId?: string;
+  gymId?: GymId;
+  locationId?: MapRouteId;
   wasSearching?: boolean;
   enemyTeam?: Pokemon[];
   isFishing?: boolean;
@@ -45,14 +58,14 @@ export interface BattleOptions {
   isGuardian?: boolean;
   pts?: number;
   isDebug?: boolean;
-  difficulty?: string;
-  rewardTM?: string;
-  trainerSprite?: string;
-  trainerArchetype?: string;
+  difficulty?: 'easy' | 'normal' | 'hard';
+  rewardTM?: ItemId;
+  trainerSprite?: NpcSpriteId;
+  trainerArchetype?: NpcArchetype;
   isRival?: boolean;
-  persistenceMode?: string;
+  persistenceMode?: 'local' | 'remote';
   cannotEscape?: boolean;
-  trainerQuote?: string;
+  trainerQuote?: string; // domain-ok
 }
 
 export interface GameStore {
@@ -76,7 +89,7 @@ export interface GameStore {
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
   saveGame: (showNotif?: boolean) => Promise<void>;
-  chats: Record<string, unknown>;
+  chats: Record<string, unknown>; // open-record
   eloRating: number;
 }
 
@@ -98,7 +111,7 @@ export interface BattleStore {
     currentSubState: Ref<BattleSubStateName | null>;
     transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<void>;
   };
-  addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;
+  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: 'player' | 'enemy' | null) => void;
   startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   executeMove: (moveIndex: number) => Promise<void>;
@@ -110,43 +123,43 @@ export interface BattleStore {
 }
 
 export interface ConfirmOptions {
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
+  title: string; // domain-ok
+  message: string; // domain-ok
+  confirmText?: string; // domain-ok
+  cancelText?: string; // domain-ok
   onConfirm: () => void;
   onCancel?: () => void;
 }
 
 export interface PromptOptions {
-  title: string;
-  message: string;
-  initialValue?: string;
-  confirmText?: string;
-  cancelText?: string;
+  title: string; // domain-ok
+  message: string; // domain-ok
+  initialValue?: string; // domain-ok
+  confirmText?: string; // domain-ok
+  cancelText?: string; // domain-ok
   onConfirm: (value: string) => void;
 }
 
 export interface UINotification {
-  id: string | number;
-  msg: string;
-  icon: string;
+  id: string | number; // domain-ok
+  msg: string; // domain-ok
+  icon: string; // domain-ok
 }
 
 export interface UIStore {
-  activeTab: string;
+  activeTab: string; // domain-ok
   notifications: UINotification[];
   isBattleSwitchForced: boolean;
   isDebugPerformanceMode: boolean;
   isAnyBlockingModalOpen: boolean;
   isAnyFullscreenModalOpen: boolean;
-  openHudGroup: string | null;
+  openHudGroup: string | null; // domain-ok
   autoBattle: boolean;
   setAutoBattle: (val: boolean) => void;
   notify: (msg: string, icon?: string) => void;
   openConfirm: (options: ConfirmOptions) => void;
   openPrompt: (options: PromptOptions) => void;
-  open: (name: string, props?: Record<string, unknown>) => void;
+  open: (name: string, props?: Record<string, unknown>) => void; // open-record
   close: (name: string) => void;
   closeAll: () => void;
   setLoading: (val: boolean, msg?: string, sub?: string) => void;
@@ -154,27 +167,27 @@ export interface UIStore {
 }
 
 export interface MapStore {
-  currentMap: string;
-  currentWeather: string;
-  globalWeather: string | null;
-  mapWinners: Record<string, DominanceInfo>;
+  currentMap: MapRouteId;
+  currentWeather: WeatherId;
+  globalWeather: WeatherId | null;
+  mapWinners: Partial<Record<MapRouteId, DominanceInfo>>;
   activeEvents: Event[];
   currentSeason: Season;
   currentEpochHour: number;
   currentCycle: DayPhase;
   maps: WorldMap[];
-  setGlobalWeather: (w: string | null) => void;
+  setGlobalWeather: (w: WeatherId | null) => void;
   setGlobalCycle: (c: DayPhase | null) => void;
-  navigate: (locId: string) => Promise<void>;
+  navigate: (locId: MapRouteId) => Promise<void>;
 }
 
 export interface PendingAward {
-  id: string;
-  winner_id: string;
-  prize: string;
-  received_at: string | null;
-  event_id?: string;
-  prize_summary?: string;
+  id: string; // domain-ok
+  winner_id: string; // domain-ok
+  prize: string; // domain-ok
+  received_at: string | null; // domain-ok
+  event_id?: string; // domain-ok
+  prize_summary?: string; // domain-ok
 }
 
 export interface EventStore {
@@ -191,32 +204,30 @@ export interface EventStore {
 // DominanceInfo merged at the top
 
 export interface CompetitionResult {
-  id: string;
-  event_id: string;
+  id: string; // domain-ok
+  event_id: string; // domain-ok
   winners: {
     first?: { player_name: string; score: number };
     second?: { player_name: string; score: number };
     third?: { player_name: string; score: number };
   };
-  ended_at: string;
+  ended_at: string; // domain-ok
 }
-
-import type { FactionId } from '../../data/system/constants.ts';
 
 export interface WarStore {
   faction: FactionId | null;
   warCoins: number;
   weeklyPoints: number;
-  mapDominance: Record<string, DominanceInfo>;
-  dailyGuardianCaptures: string[];
-  addPoints: (mapId: string, eventType: string, success: boolean, customPoints?: number) => Promise<number>;
-  claimGuardian: (mapId: string, isDefeat?: boolean) => Promise<void>;
+  mapDominance: Partial<Record<MapRouteId, DominanceInfo>>;
+  dailyGuardianCaptures: MapRouteId[];
+  addPoints: (mapId: MapRouteId, eventType: string, success: boolean, customPoints?: number) => Promise<number>;
+  claimGuardian: (mapId: MapRouteId, isDefeat?: boolean) => Promise<void>;
 }
 
 export interface PlayerClassStore {
-  playerClass: string | null;
+  playerClass: PlayerClassId | null;
   classLevel: number;
-  getModifier: (type: string, context?: Record<string, unknown>) => number;
+  getModifier: (type: string, context?: Record<string, unknown>) => number; // open-record
   addCriminality: (amount: number) => void;
 }
 
@@ -227,25 +238,25 @@ export interface AudioStore {
 export interface AuthStore {
   user: AuthUser | null;
   sessionMode: 'online' | 'offline';
-  sessionId: string;
+  sessionId: string; // domain-ok
   isOnline: boolean;
   connectionLost: boolean;
   sessionConflict: boolean;
   logout: () => Promise<void>;
 }
 export interface TradeOffer {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
+  id: string; // domain-ok
+  sender_id: string; // domain-ok
+  receiver_id: string; // domain-ok
   offer_pokemon: Pokemon | null;
-  offer_items: Record<string, number>;
+  offer_items: Inventory;
   offer_money: number;
   request_pokemon: Pokemon | null;
-  request_items: Record<string, number>;
+  request_items: Inventory;
   request_money: number;
-  message: string;
+  message: string; // domain-ok
   status: 'pending' | 'accepted' | 'rejected' | 'claimed';
-  created_at: string;
+  created_at: string; // domain-ok
 }
 
 export interface InventoryStore {
@@ -256,4 +267,3 @@ export interface InventoryStore {
 export interface ShopStore {
   healAllPokemon: (cost?: number) => void;
 }
-

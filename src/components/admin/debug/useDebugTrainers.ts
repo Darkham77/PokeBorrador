@@ -3,14 +3,16 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
-import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter'
+import { getSpritesForArchetype, type NpcArchetype, type NpcSpriteId } from '@/logic/utils/npcSpriteRouter'
 import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS } from '@/data/world/gyms'
 import { TRAINER_TYPES } from '@/data/player/trainerTypes'
+import { generateNpcName } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
 
@@ -46,7 +48,7 @@ export const ARCHETYPE_PRESETS = [
 ]
 
 // All sprites across all archetypes, flattened — used for totally random selection
-const ALL_CATALOG_SPRITES: readonly string[] = (Object.values(ARCHETYPE_SPRITES) as ReadonlyArray<readonly string[]>).flat()
+const ALL_CATALOG_SPRITES: readonly NpcSpriteId[] = (Object.values(ARCHETYPE_SPRITES) as ReadonlyArray<readonly NpcSpriteId[]>).flat()
 
 export function useDebugTrainers() {
   const battleStore = useBattleStore()
@@ -108,10 +110,11 @@ export function useDebugTrainers() {
   })
 
   function generateThemedTrainerName(archetype: string): string {
-    const firstNames = ['Ramón', 'Pedro', 'Roberto', 'Carlos', 'Andrés', 'Elías', 'Hugo', 'Lucas', 'Paco', 'Tomás', 'Sofía', 'Lucía', 'Sara', 'María', 'Elena', 'Laura', 'Ana', 'Carmen', 'Clara', 'Marta']
-    const rName = firstNames[Math.floor(Math.random() * firstNames.length)]
-    const prefix = TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.name ?? 'Entrenador'
-    return `${prefix} ${rName}`
+    return generateNpcName({
+      spriteId: trainerSprite.value,
+      archetype,
+      includeTitle: true
+    })
   }
 
   function randomizeTrainer() {
@@ -120,14 +123,11 @@ export function useDebugTrainers() {
   }
 
   function randomizeTrainerName() {
-    const randomNames = [
-      'Joven Chano', 'Cazabichos Roberto', 'Montañero Pedro', 'Marinero Paco', 
-      'Domadora Sara', 'Ornitólogo Andrés', 'Médium Elías', 'Caballero Carlos', 
-      'Recluta Rocket', 'Líder Brock', 'Líder Misty', 'Líder Lt. Surge', 
-      'Líder Erika', 'Líder Koga', 'Líder Sabrina', 'Líder Blaine', 'Líder Giovanni',
-      'Entrenador Guay Hugo', 'Motorista Ramón', 'Bella Lucía', 'Científico Lucas'
-    ]
-    trainerName.value = randomNames[Math.floor(Math.random() * randomNames.length)] || 'Entrenador Vicio'
+    trainerName.value = generateNpcName({
+      spriteId: trainerSprite.value,
+      archetype: trainerArchetype.value,
+      includeTitle: true
+    })
   }
 
   function randomizeTrainerSprite() {
@@ -154,7 +154,7 @@ export function useDebugTrainers() {
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
         const isShiny = genForceShiny.value || Math.random() < 0.05
         const p = pokemonDebugService.generate({
-          id: randomSpecies,
+          id: randomSpecies as PokemonSpeciesId,
           level: Math.max(1, Math.min(100, level)),
           isShiny
         })
@@ -171,7 +171,7 @@ export function useDebugTrainers() {
       const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
       trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'youngster'
 
-      const pool: string[] = [...(TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.pool ?? ['rattata'])]
+      const pool: PokemonSpeciesId[] = [...(TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.pool ?? ['rattata'])] as PokemonSpeciesId[]
       for (let i = 0; i < size; i++) {
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
@@ -198,7 +198,7 @@ export function useDebugTrainers() {
     trainerArchetype.value = 'policeman'
     combatLocationType.value = 'map'
 
-    const pool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
+    const pool: PokemonSpeciesId[] = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot'] as const
     const team: Pokemon[] = []
     
     const teamAlive = gameStore.state.team.filter((p: Pokemon | null) => p && p.hp > 0)

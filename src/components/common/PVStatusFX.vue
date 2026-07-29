@@ -43,7 +43,7 @@ const allUnifiedTypes = [
   'confused', 'taunted', 'substitute', 'flinched', 'disabled', 'encored', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
   'protected', 'enduring', 'focus', 'lockon',
   'reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'
-]
+] as const
 
 allUnifiedTypes.forEach(type => {
   engines.set(type, useParticleEngine())

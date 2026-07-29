@@ -1,11 +1,10 @@
-import { ROUTE_WEATHER_TABLES } from '@/data/world/weather-tables';
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, type WeatherCycleId, type WeatherSeasonId } from '@/data/world/weather-tables';
+import type { MapRouteId } from '@/data/world/map-assets';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { WEATHER_REGISTRY } from './weatherRegistry.ts';
+import { requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
+import { translateType, type PokemonType } from '@/data/battle/types';
 import type { PokemonData } from '@/types/system/database';
-
-type WeatherProbabilityTable = Record<string, number>;
-type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
 
 const WEATHER_BUFF_MULTIPLIER = 1.5;
 const WEATHER_DEBUFF_MULTIPLIER = 0.4;
@@ -27,20 +26,20 @@ import { mulberry32, hashString } from '../utils/math.ts';
  * @param {string} [forcedCycle] - Optional forced cycle for debug/testing.
  * @returns {string} The weather string (e.g., 'clear', 'rain', 'snow').
  */
-export function getRouteWeather(mapId: string, seasonId: string, epochHour: number, forcedCycle?: string): string {
-  // 1. Get Probability Table
-  const routeTables = (ROUTE_WEATHER_TABLES as Record<string, Record<string, Record<string, number> | Record<string, Record<string, number>>>>)[mapId];
-  if (!routeTables || !routeTables[seasonId]) {
-    return 'clear'; // Fallback for missing tables
+export function getRouteWeather(
+  mapId: MapRouteId,
+  seasonId: WeatherSeasonId,
+  epochHour: number,
+  forcedCycle?: WeatherCycleId
+): WeatherId {
+  if (!isWeatherTableRouteId(mapId)) {
+    throw new Error(`[weatherUtils] Route '${mapId}' has no registered weather table`);
   }
+  const routeTables = ROUTE_WEATHER_TABLES[mapId];
+  const seasonTable = routeTables[seasonId];
   
-  // Use forced cycle if provided, otherwise calculate based on epochHour
-  const cycle = forcedCycle || getDayCycle(epochHour * 3600000);
-  const seasonTable = routeTables[seasonId] as unknown as SeasonWeatherTable;
-  if (!seasonTable) return 'clear';
-  
-  // Get the specific table for the cycle, or fallback to the season root if not using cycles yet
-  const table = seasonTable[cycle as keyof SeasonWeatherTable] || (seasonTable as unknown as WeatherProbabilityTable);
+  const cycle: WeatherCycleId = forcedCycle || getDayCycle(epochHour * 3600000);
+  const table = seasonTable[cycle];
   
   // 2. Generate Deterministic Seed
   const mapHash = hashString(mapId);
@@ -56,15 +55,15 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
   
   // 4. Iterate and accumulate probabilities
   let cumulative = 0;
-  for (const [weather, prob] of Object.entries(table as Record<string, number>)) {
+  for (const [weather, prob] of Object.entries(table)) {
+    if (prob === undefined) continue;
     cumulative += prob;
     if (randNum < cumulative) {
-      return weather;
+      return requireWeatherId(weather);
     }
   }
   
-  // Fallback in case table probabilities don't sum to 100 or something goes wrong
-  return 'clear'; 
+  throw new Error(`[weatherUtils] Weather table probabilities did not select a weather for route '${mapId}', season '${seasonId}', cycle '${cycle}'`);
 }
 
 /**
@@ -79,16 +78,17 @@ export function getWeatherMultiplier(id: string, weather: string): number {
   }
   if (!pData || !weather || weather === 'clear') return 1.0;
   
-  const types: string[] = []
+  const types: PokemonType[] = []
   if (Array.isArray(pData.type)) {
-    types.push(...pData.type.map(t => t.toLowerCase()))
+    types.push(...pData.type as PokemonType[])
   } else if (pData.type) {
-    types.push(pData.type.toLowerCase())
+    types.push(pData.type as PokemonType)
   }
   if (pData.type2) {
-    types.push(pData.type2.toLowerCase())
+    types.push(pData.type2 as PokemonType)
   }
-  const w = weather.toLowerCase();
+
+  const w = weather as WeatherId;
   
   const entry = WEATHER_REGISTRY[w];
   const mods = entry?.modifiers;
@@ -101,18 +101,16 @@ export function getWeatherMultiplier(id: string, weather: string): number {
   return 1.0;
 }
 
-import { translateType } from '@/data/battle/types';
-
 /**
  * Generates the modifiers text block for a weather (boosts, debuffs, blocks).
  */
-export function getWeatherModifiersDescription(weather: string): string {
-  const w = weather.toLowerCase();
+export function getWeatherModifiersDescription(weather: WeatherId | string): string {
+  const w = weather as WeatherId;
   const entry = WEATHER_REGISTRY[w];
   const mods = entry?.modifiers;
   if (!mods) return '';
 
-  const formatList = (list?: string[]) => (list || []).map(translateType).join(', ');
+  const formatList = (list?: readonly PokemonType[]) => (list || []).map(translateType).join(', ');
   
   const lines = [];
   if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`);
@@ -128,6 +126,7 @@ import { getActivePinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { GAME_RATIOS } from '@/data/system/constants';
 import type { EncounterState, EncounterOptions } from '@/types/pokemon/encounters';
+import { GYM_IDS } from '@/data/world/gyms';
 
 export interface NpcChanceInfo {
   name: string;
@@ -141,10 +140,10 @@ export interface NpcChanceInfo {
  * Calcula las probabilidades de encuentros especiales y entrenadores para una ruta.
  */
 export function getNpcEncounterChances(
-  locId: string,
+  locId: MapRouteId,
   state: EncounterState,
   options: EncounterOptions = {},
-  allMapIds: string[]
+  allMapIds: readonly MapRouteId[]
 ): NpcChanceInfo[] {
   const result: NpcChanceInfo[] = [];
 
@@ -157,8 +156,7 @@ export function getNpcEncounterChances(
   rivalChance *= eventRivalBonus;
 
   if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
-    const gymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
-    const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
+    const allGymsHard = GYM_IDS.every(id => state.gymProgress?.[id]?.hard === true);
     if (allGymsHard) {
       rivalChance *= 2;
     }

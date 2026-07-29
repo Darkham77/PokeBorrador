@@ -12,7 +12,7 @@ vi.mock('@/stores/ui', () => ({
 }))
 
 vi.mock('@/stores/map', () => ({
-  useMapStore: vi.fn(() => ({ activeEvents: [], mapWinners: {} }))
+  useMapStore: vi.fn(() => ({ activeEvents: [], mapWinners: {}, currentWeather: 'clear', currentCycle: 'day' }))
 }))
 
 vi.mock('@/stores/events', () => ({

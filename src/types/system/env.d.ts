@@ -80,7 +80,7 @@ declare global {
     status?: string;
     nickname?: string;
     moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
-    volatileCounters?: Record<string, unknown> | null;
+    volatileCounters?: Record<string, unknown> | null; // open-record
   }
 
   interface BattleLogEntry {
@@ -144,7 +144,7 @@ declare global {
       createPokemon?: (config: unknown) => Promise<void>;
       getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
       nextEnemyChoice?: string;
-      getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>;
+      getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>; // open-record
       p1ChoiceIdx?: number;
       p2ChoiceIdx?: number;
       isDeterministicSimulation?: boolean;
@@ -157,7 +157,7 @@ declare global {
       forceFlee?: () => void | Promise<void>;
       forceEncounterType?: string;
       /** Comandos y utilidades de debug registradas en runtime */
-      [key: string]: unknown;
+      [key: string]: unknown; // open-record
     };
     __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
     drawBattleBackground?: (locationId: string, cycle: string) => void;

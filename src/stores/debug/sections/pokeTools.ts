@@ -4,9 +4,11 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useBreedingStore } from '@/stores/breeding'
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 export function registerPokeTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -26,7 +28,7 @@ export function registerPokeTools(debug: DebugSystem) {
         ui.notify('Pokedex REAL RESTAURADA', '✅')
       } else {
         ui.debugPokedexMode = mode as 'caught' | 'seen' | 'none' | null
-        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️')
+        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️') // text-ok
       }
     },
     description: 'Cambia el modo de visualización de la pokedex (none, seen, caught, real).'
@@ -40,8 +42,8 @@ export function registerPokeTools(debug: DebugSystem) {
     action: async (force = false) => {
       if (!force && !confirm('¿Sincronizar pokedex con colección actual?')) return
       
-      const caughtIds = new Set<string>()
-      const seenIds = new Set<string>()
+      const caughtIds = new Set<PokemonSpeciesId>()
+      const seenIds = new Set<PokemonSpeciesId>()
       game.state.team.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
       if (game.state.box) {
         game.state.box.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
@@ -215,10 +217,9 @@ export function registerPokeTools(debug: DebugSystem) {
         }
       }
 
-      // Fallback si no tiene evolución alguna
       if (!target) {
-        target = 'vaporeon'
-        item = 'waterstone'
+        ui.notify(`${pokemon.name} no tiene una evolución debug resoluble.`, '❌')
+        return
       }
 
       ui.notify(`Iniciando evolución de ${pokemon.name} a ${target}...`, '✨')
@@ -288,7 +289,7 @@ export function registerPokeTools(debug: DebugSystem) {
       const db = POKEMON_DB as Record<string, { name: string }>
       let scannedCount = 0
 
-      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all'
+      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all' // text-ok
 
       // Scan warehouse eggs
       breedingStore.warehouseEggs.forEach(e => {
@@ -310,7 +311,7 @@ export function registerPokeTools(debug: DebugSystem) {
             
             // Calculate total IV
             const eggIvs = e.ivs || {}
-            const totalIv = Object.keys(eggIvs).reduce((acc, key) => {
+            const totalIv = POKEMON_STAT_KEYS.reduce((acc, key) => {
               const val = eggIvs[key]
               return acc + (typeof val === 'number' ? val : 0)
             }, 0)
@@ -355,4 +356,3 @@ export function registerPokeTools(debug: DebugSystem) {
     description: 'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
   })
 }
-

@@ -5,7 +5,12 @@ import { useEventStore } from '@/stores/events'
 import { getGuardianData } from '@/logic/war/guardianEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { useMapStore } from '@/stores/map'
+import { type MapRouteId } from '@/data/world/map-assets'
+import { type DayPhase } from '@/logic/utils/timeUtils'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 
 import type { MapLocation } from '@/types/pokemon/encounters'
@@ -15,19 +20,14 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 interface Props {
   maps: MapLocation[]
   badgeCount?: number
-  cycle?: 'morning' | 'day' | 'dusk' | 'night'
-  weather?: string
+  cycle?: DayPhase
+  weather?: WeatherId
   playerClass?: string
-  classData?: { 
-    extortedRouteId?: string | null; 
-    extortedRouteTimestamp?: string | null;
-    officialRouteId?: string | null;
-    officialRouteTimestamp?: string | null;
-  }
+  classData?: Record<string, unknown>
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
-  dominanceData?: Record<string, import('@/types/system/stores').DominanceInfo>
-  dailyGuardianCaptures?: string[]
+  dominanceData?: Partial<Record<MapRouteId, import('@/types/system/stores').DominanceInfo>>
+  dailyGuardianCaptures?: MapRouteId[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,10 +50,10 @@ const eventStore = useEventStore()
 const mapStore = useMapStore()
 
 interface SpawnPoolData {
-  generic: string[]
-  specific: string[]
-  rates: Record<string, number>
-  weather: string | null | undefined
+  generic: PokemonSpeciesId[]
+  specific: PokemonSpeciesId[]
+  rates: Partial<Record<PokemonSpeciesId, number>>
+  weather: WeatherId | null | undefined
 }
 
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
@@ -64,7 +64,9 @@ const getMapData = (loc: MapLocation): SpawnPoolData => {
   const activeEvents = eventStore.activeEvents || []
   
   // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es undefined
-  const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+  const activeWeather = (props.weather !== undefined)
+    ? requireWeatherId(props.weather)
+    : getRouteWeather(loc.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, props.cycle)
   
   const { generic, specific, rates: ratesMap } = getMapSpawnPoolData(
     loc,
@@ -82,8 +84,8 @@ const isMapLocked = (loc: MapLocation) => {
   return (props.badgeCount || 0) < (loc.badges || 0)
 }
 
-const getDominanceForMap = (mapId: string) => {
-  const data = (props.dominanceData || {})[mapId] || {}
+const getDominanceForMap = (mapId: MapRouteId) => {
+  const data = props.dominanceData?.[mapId]
   const captured = (props.dailyGuardianCaptures || []).includes(mapId)
   
   const allMaps = pokemonDataProvider.getMaps()
@@ -95,8 +97,8 @@ const getDominanceForMap = (mapId: string) => {
   }
 
   return {
-    winner: (data as { winner?: string | null }).winner || null,
-    guardian: guardian as { id: string, captured: boolean } | null
+    winner: data?.winner || null,
+    guardian
   }
 }
 

@@ -24,7 +24,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     getMoveData: vi.fn((id) => {
       if (id === 'tackle') return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
       if (id === 'flamethrower') return { id: 'flamethrower', name: 'Lanzallamas', power: 90, type: 'fire', cat: 'special', pp: 15 };
-      if (id === 'm1' || id === 'm2' || id === 'm3' || id === 'm4') {
+      if (id === 'scratch' || id === 'growl' || id === 'ember' || id === 'smokescreen') {
         return { id, name: id.toUpperCase(), power: 40, type: 'normal', cat: 'physical', pp: 35 };
       }
       return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
@@ -72,14 +72,12 @@ describe('Pokemon Factory', () => {
       expect(p!.uid).toBeDefined();
     });
 
-    it('should fallback to pidgey if species is missing', () => {
-      const p = makePokemon('missing_id', 5);
-      expect(p!.id).toBe('pidgey');
+    it('should throw an error if species is missing', () => {
+      expect(() => makePokemon('missing_id', 5)).toThrow()
     });
 
-    it('should handle numeric IDs correctly by casting to string and fallback', () => {
-      const p = makePokemon(1776736888069.925, 5);
-      expect(p!.id).toBe('pidgey');
+    it('should handle numeric IDs correctly by casting to string and throw if invalid', () => {
+      expect(() => makePokemon(1776736888069.925, 5)).toThrow()
     });
 
     it('should respect level limits', () => {
@@ -123,10 +121,10 @@ describe('Pokemon Factory', () => {
     it('should return pending moves if moves list is full', () => {
       const p = makePokemon('charmander', 9);
       p!.moves = [
-        { id: 'm1', name: 'M1', pp: 10, maxPP: 10 },
-        { id: 'm2', name: 'M2', pp: 10, maxPP: 10 },
-        { id: 'm3', name: 'M3', pp: 10, maxPP: 10 },
-        { id: 'm4', name: 'M4', pp: 10, maxPP: 10 }
+        { id: 'scratch', name: 'Scratch', pp: 10, maxPP: 10 },
+        { id: 'growl', name: 'Growl', pp: 10, maxPP: 10 },
+        { id: 'ember', name: 'Ember', pp: 10, maxPP: 10 },
+        { id: 'smokescreen', name: 'Smokescreen', pp: 10, maxPP: 10 }
       ];
       
       const pending = levelUpPokemon(p!);

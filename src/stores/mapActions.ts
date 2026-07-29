@@ -8,34 +8,41 @@ import { generateEncounter } from '@/logic/encounters/encounters';
 import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemById } from '@/data/inventory/items.ts';
+import type { ItemId } from '@/data/inventory/items.ts';
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { logger } from '@/logic/utils/logger';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
 import { calculateArchaeologyWeights } from '@/logic/utils/archaeologyHelpers';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 
-import type { Event } from '@/logic/events/eventEngine';
 import type { DominanceInfo } from '@/types/system/stores';
+import type { Event } from '@/logic/events/eventEngine';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import { requireMapRouteId } from '@/data/world/map-assets';
 
 export async function executeNavigation(
-  locId: string,
+  rawLocId: string,
   state: {
-    currentMap: string;
+    currentMap: MapRouteId;
     currentEpochHour: number;
     lastNavigateTime: number;
     lastTrainerChanceIncrementAt: number;
-    currentWeather: string;
-    currentCycle: string;
+    currentWeather: WeatherId;
+    currentCycle: DayPhase;
     activeEvents: Event[];
-    mapWinners: Record<string, DominanceInfo>;
+    mapWinners: Partial<Record<MapRouteId, DominanceInfo>>;
   },
   callbacks: {
-    setCurrentMap: (val: string) => void;
+    setCurrentMap: (val: MapRouteId) => void;
     setCurrentEpochHour: (val: number) => void;
     setLastNavigateTime: (val: number) => void;
     setLastTrainerChanceIncrementAt: (val: number) => void;
   }
 ) {
+  const locId = requireMapRouteId(rawLocId);
   const gs = useGameStore();
   const battleStore = useBattleStore();
   const uiStore = useUIStore();
@@ -130,7 +137,7 @@ export async function executeNavigation(
         isTrainer: true,
         enemyTeam,
         trainerName: name,
-        trainerSprite: sprite,
+        trainerSprite: requireNpcSpriteId(sprite),
         trainerArchetype: archetype,
         trainerQuote: quote,
         cannotEscape: true
@@ -146,7 +153,7 @@ export async function executeNavigation(
         isTrainer: true,
         enemyTeam,
         trainerName: name,
-        trainerSprite: sprite,
+        trainerSprite: requireNpcSpriteId(sprite),
         trainerArchetype: 'rival',
         isRival: true,
         cannotEscape: true
@@ -194,7 +201,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
       selectedCategory = 'rare';
     }
 
-    let rewardId = '';
+    let rewardId: ItemId | null = null;
     let rewardIcon = '';
 
     if (selectedCategory === 'fossil') {
@@ -211,7 +218,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
         rewardIcon = '💎';
       }
     } else if (selectedCategory === 'stone') {
-      const stones = ['firestone', 'waterstone', 'thunderstone', 'leafstone', 'moonstone', 'sunstone'];
+      const stones = ['firestone', 'waterstone', 'thunderstone', 'leafstone', 'moonstone', 'sunstone'] as const satisfies readonly ItemId[];
       rewardId = stones[Math.floor(Math.random() * stones.length)]!;
       rewardIcon = '💎';
     } else if (selectedCategory === 'common') {
@@ -221,7 +228,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
         { id: 'coalore', icon: '🪨' },
         { id: 'copperore', icon: '🟫' },
         { id: 'ironore', icon: '🧱' }
-      ];
+      ] as const satisfies readonly { id: ItemId; icon: string }[];
       const item = commons[Math.floor(Math.random() * commons.length)]!;
       rewardId = item.id;
       rewardIcon = item.icon;
@@ -239,12 +246,13 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
         { id: 'emmeraldore', icon: '💚' },
         { id: 'topazore', icon: '🟡' },
         { id: 'diamondore', icon: '💎' }
-      ];
+      ] as const satisfies readonly { id: ItemId; icon: string }[];
       const item = rares[Math.floor(Math.random() * rares.length)]!;
       rewardId = item.id;
       rewardIcon = item.icon;
     }
 
+    if (!rewardId) throw new Error(`[mapActions] Archaeology category ${selectedCategory} did not resolve an item id.`);
     const itemData = getItemById(rewardId);
     const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon;
 

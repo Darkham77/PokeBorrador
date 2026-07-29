@@ -1,16 +1,17 @@
 import { ref } from 'vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
+import type { ItemId } from '@/data/inventory/items'
 import { getItemName } from '@/data/inventory/items'
 
 const FOSSIL_POKEMON_IDS = ['omanyte', 'kabuto', 'aerodactyl'] as const
 const FISH_POKEMON_IDS = ['magikarp', 'goldeen', 'staryu'] as const
 
 interface MinigameConfig {
-  inventoryStore: { addItem: (id: string, qty: number) => void }
+  inventoryStore: { addItem: (id: ItemId, qty: number) => void }
   injectedItems: { value: Set<string> }
   travelLog: { value: string[] }
-  triggerExtraLoot: (itemId: string, defaultQtyValue?: number) => void
+  triggerExtraLoot: (itemId: ItemId, defaultQtyValue?: number) => void
   resumeTravelAfterEvent: () => void
 }
 
@@ -38,7 +39,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
     showFishing.value = false
     minigamePokemon.value = null
     if (source === 'archaeology') {
-      const fossils = ['helixfossil', 'domefossil', 'oldamber']
+      const fossils = ['helixfossil', 'domefossil', 'oldamber'] as const satisfies readonly ItemId[]
       const chosen = fossils[Math.floor(Math.random() * fossils.length)]!
       config.inventoryStore.addItem(chosen, 1)
       config.injectedItems.value.add(chosen)
@@ -46,7 +47,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
       config.travelLog.value.push(`🦴 ¡Excavación exitosa! Has recuperado el fósil completo: +1 ${name} obtenido en tu mochila de pruebas.`)
       config.triggerExtraLoot(chosen, 1)
     } else {
-      const fishLoot = ['pearl', 'bigpearl', 'waterstone']
+      const fishLoot = ['pearl', 'bigpearl', 'waterstone'] as const satisfies readonly ItemId[]
       const chosen = fishLoot[Math.floor(Math.random() * fishLoot.length)]!
       config.inventoryStore.addItem(chosen, 1)
       config.injectedItems.value.add(chosen)

@@ -102,6 +102,7 @@ Default section order:
 - Do not duplicate rules across many files unless each scope needs a local version
 - Delete stale notes instead of explaining history
 - Trim obvious statements, repeated rules, misplaced detail, and warnings for risks that no longer exist
+- **Type-First Mandate**: When documenting any data domain (e.g., in a child AGENTS.md or domain manual), always identify and reference the strict TypeScript type (union, `keyof`, or `as const` derived) for finite-value fields. Any domain whose values are finite and known MUST have a canonical TypeScript type declared before it can be used in code. This must be reflected in any DOX index that describes that domain.
 
 ### Closeout
 

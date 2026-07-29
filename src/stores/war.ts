@@ -9,10 +9,12 @@ import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_C
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
 import type { DominanceInfo } from '@/types/system/stores'
+import { requireFactionId, requireISODateKey, type FactionId } from '@/types/system/game'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 
 interface WarPointsRecord {
   map_id: string
-  faction: 'union' | 'poder'
+  faction: string
   points: number
 }
 
@@ -26,11 +28,11 @@ export const useWarStore = defineStore('war', () => {
   const authStore = useAuthStore()
   const uiStore = useUIStore()
 
-  const faction = ref<'union' | 'poder' | null>(null)
+  const faction = ref<FactionId | null>(null)
   const warCoins = ref(0)
   const weeklyPoints = ref(0)
-  const mapDominance = ref<Record<string, DominanceInfo>>({})
-  const dailyGuardianCaptures = ref<string[]>([])
+  const mapDominance = ref<Partial<Record<MapRouteId, DominanceInfo>>>({})
+  const dailyGuardianCaptures = ref<MapRouteId[]>([])
   const isLoading = ref(false)
 
   // Reactive engine-based state
@@ -49,7 +51,7 @@ export const useWarStore = defineStore('war', () => {
       await distributeWeeklyWarCoins()
 
       // 1. Load Faction and Coins from Game State (Synchronized via DBRouter)
-      faction.value = (gameStore.state.faction as 'union' | 'poder' | null) || null
+      faction.value = gameStore.state.faction || null
       warCoins.value = gameStore.state.warCoins || 0
 
       // 2. Load Individual Weekly Progress
@@ -62,23 +64,22 @@ export const useWarStore = defineStore('war', () => {
         weeklyPoints.value = (pts as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
 
         // 3. Load Guardian Captures for today (isolated world)
-        const today = Temporal.Now.plainDateISO().toString()
+        const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
         const { data: guardians } = await gameStore.db.from('guardian_captures')
           .select('map_id')
           .eq('user_id', authStore.user.id)
           .eq('capture_date', today)
         
         const typedGuardians = guardians as { map_id: string }[] | null;
-        dailyGuardianCaptures.value = typedGuardians?.map(g => g.map_id) || []
+        dailyGuardianCaptures.value = typedGuardians?.map(g => requireMapRouteId(g.map_id)) || []
 
         if (typedGuardians && Array.isArray(typedGuardians)) {
           if (!gameStore.state.guardianCaptures) {
             gameStore.state.guardianCaptures = {}
           }
           typedGuardians.forEach(g => {
-            if (g.map_id) {
-              gameStore.state.guardianCaptures![g.map_id] = today
-            }
+            const routeId = requireMapRouteId(g.map_id)
+            gameStore.state.guardianCaptures![routeId] = today
           })
         }
       }
@@ -95,6 +96,7 @@ export const useWarStore = defineStore('war', () => {
    * Logic handles Daily Cap and Faction requirement.
    */
   async function addPoints(mapId: string, eventType: string, success: boolean, customPoints?: number) {
+    const routeId = requireMapRouteId(mapId)
     if (!faction.value || !isDisputeActive.value || !gameStore.db) return 0
     
     // 1. Calculate points from Engine or use custom override
@@ -102,13 +104,13 @@ export const useWarStore = defineStore('war', () => {
     if (pts <= 0) return 0
 
     // 2. Daily PT Cap Check (Isolated by World)
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     if (!gameStore.state.warDailyCap) gameStore.state.warDailyCap = {}
     
-    const dailyCap = gameStore.state.warDailyCap as Record<string, Record<string, number>>
+    const dailyCap = gameStore.state.warDailyCap
     if (!dailyCap[today]) dailyCap[today] = {}
     
-    const currentMapPts = dailyCap[today]?.[mapId] || 0
+    const currentMapPts = dailyCap[today]?.[routeId] || 0
     if (currentMapPts >= DAILY_MAP_CAP) {
       // Only notify once per map session
       return 0
@@ -119,14 +121,14 @@ export const useWarStore = defineStore('war', () => {
     // 3. Registration via DBRouter (Handles RPC online or SQL local)
     const { error } = await gameStore.db.rpc('add_war_points', {
       p_week_id: currentWeekId.value,
-      p_map_id: mapId,
+      p_map_id: routeId,
       p_faction: faction.value,
       p_points: allowedPts
     })
 
     if (!error) {
        weeklyPoints.value += allowedPts
-       dailyCap[today]![mapId] = currentMapPts + allowedPts
+       dailyCap[today]![routeId] = currentMapPts + allowedPts
        
        // Handle War Coins (1 coin per 10 PT)
        handleWarCoins(allowedPts)
@@ -142,7 +144,7 @@ export const useWarStore = defineStore('war', () => {
    * Cap: 50 coins per day (Legacy Parity).
    */
   function handleWarCoins(pts: number) {
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
     const dailyCoins = gameStore.state.warDailyCoins as Record<string, number>
@@ -172,11 +174,12 @@ export const useWarStore = defineStore('war', () => {
    * Cost: 25k for changes.
    */
   async function chooseFaction(newFaction: string) {
+    const resolvedFaction = requireFactionId(newFaction)
     if (!authStore.user || !gameStore.db) return false
     
     const isChange = !!faction.value
     if (isChange) {
-      if (faction.value === newFaction) return true
+      if (faction.value === resolvedFaction) return true
       if (gameStore.state.money < FACTION_CHANGE_COST) {
         uiStore.notify(`Necesitás 🪙${FACTION_CHANGE_COST.toLocaleString()} para cambiar de bando.`, '⛔')
         return false
@@ -192,12 +195,12 @@ export const useWarStore = defineStore('war', () => {
     }
 
     const { error } = await gameStore.db.from('war_factions')
-      .upsert({ user_id: authStore.user.id, faction: newFaction })
+      .upsert({ user_id: authStore.user.id, faction: resolvedFaction })
     
     if (!error) {
-      faction.value = newFaction as 'union' | 'poder'
-      gameStore.state.faction = newFaction
-      uiStore.notify(`¡Ahora eres parte del Team ${newFaction === 'union' ? 'Unión' : 'Poder'}!`, '⚔️')
+      faction.value = resolvedFaction
+      gameStore.state.faction = resolvedFaction
+      uiStore.notify(`¡Ahora eres parte del Team ${resolvedFaction === 'union' ? 'Unión' : 'Poder'}!`, '⚔️')
       return true
     }
     return false
@@ -207,29 +210,30 @@ export const useWarStore = defineStore('war', () => {
    * Records a guardian capture or defeat.
    */
   async function claimGuardian(mapId: string, isDefeat = false) {
-    const today = Temporal.Now.plainDateISO().toString()
+    const routeId = requireMapRouteId(mapId)
+    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     
     // Save to user account state immediately for local lockout persistence
     if (!gameStore.state.guardianCaptures) {
       gameStore.state.guardianCaptures = {}
     }
-    gameStore.state.guardianCaptures[mapId] = today
+    gameStore.state.guardianCaptures[routeId] = today
     await gameStore.save()
 
-    if (!dailyGuardianCaptures.value.includes(mapId)) {
-      dailyGuardianCaptures.value.push(mapId)
+    if (!dailyGuardianCaptures.value.includes(routeId)) {
+      dailyGuardianCaptures.value.push(routeId)
     }
 
     if (!authStore.user || !gameStore.db) return
     
-    const guardian = getGuardianData(mapId, []) // In real use we pass map list
+    const guardian = getGuardianData(routeId, []) // In real use we pass map list
     if (!guardian) return
 
     const ptsAwarded = isDefeat ? Math.floor(guardian.pts * 0.7) : guardian.pts
 
     const { error } = await gameStore.db.from('guardian_captures').insert({
       capture_date: today,
-      map_id: mapId,
+      map_id: routeId,
       user_id: authStore.user.id,
       winner_faction: faction.value || null,
       pts_awarded: ptsAwarded
@@ -237,7 +241,7 @@ export const useWarStore = defineStore('war', () => {
 
     if (!error) {
       if (faction.value) {
-        await addPoints(mapId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
+        await addPoints(routeId, 'GUARDIAN', true, ptsAwarded) // Points logic handles Coins/State
       }
       uiStore.notify(`¡Guardián ${isDefeat ? 'Derrotado' : 'Capturado'}! +${ptsAwarded} PT.`, '🏆')
     }
@@ -254,10 +258,12 @@ export const useWarStore = defineStore('war', () => {
       .select('map_id, faction, points')
       .eq('week_id', currentWeekId.value)
 
-    const newDom: Record<string, DominanceInfo> = {}
+    const newDom: Partial<Record<MapRouteId, DominanceInfo>> = {}
     ;(points as WarPointsRecord[] | null)?.forEach(row => {
-      if (!newDom[row.map_id]) newDom[row.map_id] = { union: 0, poder: 0, winner: null }
-      newDom[row.map_id]![row.faction] = row.points
+      const routeId = requireMapRouteId(row.map_id)
+      const factionId = requireFactionId(row.faction)
+      if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null }
+      newDom[routeId]![factionId] = row.points
     })
 
     // 2. Fetch settled winners if not in dispute phase
@@ -267,8 +273,9 @@ export const useWarStore = defineStore('war', () => {
         .eq('week_id', currentWeekId.value)
       
       ;(dom as DominanceRecord[] | null)?.forEach(row => {
-        if (!newDom[row.map_id]) newDom[row.map_id] = { union: 0, poder: 0, winner: null }
-        newDom[row.map_id]!.winner = row.winner_faction
+        const routeId = requireMapRouteId(row.map_id)
+        if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null }
+        newDom[routeId]!.winner = row.winner_faction === 'tie' ? null : requireFactionId(row.winner_faction)
       })
     }
 
@@ -279,10 +286,12 @@ export const useWarStore = defineStore('war', () => {
    * Triggers a guardian appearance check.
    */
   function checkGuardian(mapId: string, allMapIds: string[]) {
-    if (dailyGuardianCaptures.value.includes(mapId)) return null
+    const routeId = requireMapRouteId(mapId)
+    const routeIds = allMapIds.map(id => requireMapRouteId(id))
+    if (dailyGuardianCaptures.value.includes(routeId)) return null
     if (Math.random() > GUARDIAN_CHANCE) return null
 
-    return getGuardianData(mapId, allMapIds)
+    return getGuardianData(routeId, routeIds)
   }
 
   /**
@@ -311,10 +320,12 @@ export const useWarStore = defineStore('war', () => {
     if (!pointsList || pointsList.length === 0) return
 
     // 3. Group points by map and faction
-    const mapTotals: Record<string, { union: number; poder: number }> = {}
+    const mapTotals: Partial<Record<MapRouteId, { union: number; poder: number }>> = {}
     pointsList.forEach(row => {
-      if (!mapTotals[row.map_id]) mapTotals[row.map_id] = { union: 0, poder: 0 }
-      mapTotals[row.map_id]![row.faction] += row.points
+      const routeId = requireMapRouteId(row.map_id)
+      const factionId = requireFactionId(row.faction)
+      if (!mapTotals[routeId]) mapTotals[routeId] = { union: 0, poder: 0 }
+      mapTotals[routeId]![factionId] += row.points
     })
 
     // 4. Prepare dominance insert/upsert payload

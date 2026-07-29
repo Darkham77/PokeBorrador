@@ -2,8 +2,12 @@ import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherGenerationProvider.ts';
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import type { Move } from '../../types/pokemon/pokemon.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import { toPokemonType } from '@/data/battle/types';
+import { requirePokemonMoveId } from '@/data/battle/moves';
+import { requireWeatherId } from '../weather/weatherRegistry';
+import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
+import { requireVolatileStatusKey } from '@/types/pokemon/pokemon';
 
 /**
  * Maneja eventos de campo y efectos persistentes:
@@ -23,7 +27,7 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         const currentWeatherType = store.activeBattle.value.weather?.type || 'clear';
 
         store.activeBattle.value.weather = {
-          type: nextWeatherType,
+          type: requireWeatherId(nextWeatherType),
           visual: nextWeatherType,
           turns: -1
         };
@@ -51,11 +55,11 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
 
         if (cleanEffect === 'typechange') {
           const newType = parts[4] || '';
-          if (newType) target.type = newType;
+          if (newType) target.type = toPokemonType(toID(newType));
         } else if (cleanEffect === 'typeadd') {
           const addedType = parts[4] || parts[3] || '';
           if (addedType) {
-            (target as unknown as Record<string, unknown>).addedType = addedType;
+            target.addedType = toPokemonType(toID(addedType));
           }
         } else if (cleanEffect === 'confusion') {
           target.volatileCounters['confusion'] = 1;
@@ -63,10 +67,10 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} se confundió!`, 'log-info', target);
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
-          const moveId = toID(moveName);
+          const moveId = requirePokemonMoveId(toID(moveName));
           const moveData = pokemonDataProvider.getMoveData(moveId);
           const translatedName = moveData?.name || moveName;
-          target.disabledMove = { id: moveId, name: translatedName } as unknown as Move;
+          target.disabledMove = { id: moveId, name: translatedName, pp: 0, maxPP: 0 };
           target.disabledTurns = 4;
           if (!line.includes('[silent]')) store.addLog(`¡El ataque ${translatedName} de ${target.name} ha sido desactivado temporalmente!`, 'log-info', target);
         } else if (cleanEffect === 'leechseed') {
@@ -86,11 +90,11 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} recibió un Bis!`, 'log-info', target);
         } else {
           const isAbilityEffect = effect.startsWith('ability:');
-          const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move'));
+          const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || pokemonDataProvider.getMoveData(effect)?.self?.volatileStatus === 'lockedmove');
           if (isLockedEffect) {
             target.volatileCounters['lockedmove'] = 1;
           } else if (cleanEffect) {
-            target.volatileCounters[cleanEffect] = 1;
+            target.volatileCounters[requireVolatileStatusKey(cleanEffect)] = 1;
           }
           if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡${target.name} se vio afectado por ${cleanEffect}!`, 'log-info', target);
         }
@@ -131,11 +135,11 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
             if (!line.includes('[silent]')) store.addLog(`¡El efecto de Bis sobre ${target.name} terminó!`, 'log-info', target);
           } else {
             const isAbilityEffect = effect.startsWith('ability:');
-            const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || (pokemonDataProvider.getMoveData(effect)?.effect === 'locked_move'));
+            const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || pokemonDataProvider.getMoveData(effect)?.self?.volatileStatus === 'lockedmove');
             if (isLockedEffect) {
               delete target.volatileCounters['lockedmove'];
             } else if (cleanEffect) {
-              delete target.volatileCounters[cleanEffect];
+              delete target.volatileCounters[requireVolatileStatusKey(cleanEffect)];
             }
             if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡El efecto de ${cleanEffect} sobre ${target.name} terminó!`, 'log-info', target);
           }
@@ -148,10 +152,10 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       if (line.includes('[silent]')) return true;
       const rawSide = parts[2] || '';
       const conditionRaw = (parts[3] || '').replace('move: ', '');
-      const isPlayer = rawSide.toLowerCase().startsWith(playerSide.toLowerCase());
+      const isPlayer = rawSide.toLowerCase().startsWith(playerSide.toLowerCase()); // text-ok
       const sideLabel = isPlayer ? 'tu campo' : 'el campo rival';
       if (conditionRaw && store.activeBattle.value) {
-        const key = toID(conditionRaw);
+        const key = requireBattleConditionKey(toID(conditionRaw));
         const sideObj = isPlayer
           ? (store.activeBattle.value.playerSideConditions ??= {})
           : (store.activeBattle.value.enemySideConditions ??= {});
@@ -173,8 +177,8 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       const rawSideEnd = parts[2] || '';
       const conditionEndRaw = (parts[3] || '').replace('move: ', '');
       if (conditionEndRaw && store.activeBattle.value) {
-        const key = toID(conditionEndRaw);
-        const isPlayer = rawSideEnd.toLowerCase().startsWith(playerSide.toLowerCase());
+        const key = requireBattleConditionKey(toID(conditionEndRaw));
+        const isPlayer = rawSideEnd.toLowerCase().startsWith(playerSide.toLowerCase()); // text-ok
         const sideObj = isPlayer
           ? store.activeBattle.value.playerSideConditions
           : store.activeBattle.value.enemySideConditions;
@@ -199,8 +203,8 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       if (line.includes('[silent]')) return true;
       const fieldCondition = (parts[2] || '').replace('move: ', '');
       if (fieldCondition && store.activeBattle.value) {
-        const cleanField = toID(fieldCondition);
-        const canonicalTerrains = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
+        const cleanField = requireBattleConditionKey(toID(fieldCondition));
+        const canonicalTerrains: readonly BattleConditionKey[] = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
         const isTerrain = canonicalTerrains.includes(cleanField);
         if (isTerrain) {
           store.activeBattle.value.terrain = cleanField;
@@ -234,12 +238,12 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
       if (line.includes('[silent]')) return true;
       const fieldConditionEnd = (parts[2] || '').replace('move: ', '');
       if (fieldConditionEnd && store.activeBattle.value) {
-        const cleanEndField = toID(fieldConditionEnd);
-        const canonicalTerrains = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
+        const cleanEndField = requireBattleConditionKey(toID(fieldConditionEnd));
+        const canonicalTerrains: readonly BattleConditionKey[] = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
         if (canonicalTerrains.includes(cleanEndField)) {
           store.activeBattle.value.terrain = null;
         } else if (store.activeBattle.value.fieldConditions) {
-          delete store.activeBattle.value.fieldConditions[fieldConditionEnd];
+          delete store.activeBattle.value.fieldConditions[cleanEndField];
         }
         const fieldEndMessages: Record<string, string> = {
           'Trick Room': '¡Espacio Raro volvió a la normalidad!',

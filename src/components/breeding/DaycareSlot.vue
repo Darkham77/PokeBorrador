@@ -228,7 +228,7 @@ const handleItemClick = () => {
 
 const genderIcon = computed(() => {
   if (!props.pokemon?.gender) return ''
-  return props.pokemon.gender === 'M' ? '♂' : '♀'
+  return props.pokemon.gender === 'm' ? '♂' : '♀'
 })
 
 const getSprite = (id: string | number, isShiny: boolean) => {
@@ -300,7 +300,7 @@ const heldItemSprite = computed(() => {
             <span
               v-if="pokemon.gender"
               class="m-badge-gender mini"
-              :class="pokemon.gender === 'M' ? 'male' : 'female'"
+              :class="pokemon.gender === 'm' ? 'male' : 'female'"
             >{{ genderIcon }}</span>
           </div>
           <div class="iv-grid-daycare">

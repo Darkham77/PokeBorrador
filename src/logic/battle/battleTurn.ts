@@ -44,7 +44,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const forcedIdx = p.moves.findIndex((m) => m?.id === p.lastMove?.id);
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   } else if (p.thrashTurns && p.thrashTurns > 0) {
-    const forcedIdx = p.moves.findIndex((m) => m?.effect === 'thrash');
+    const forcedIdx = p.moves.findIndex((m) => m?.id === 'thrash');
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   } else if (p.encoreTurns && p.encoreTurns > 0 && p.encoreMove) {
     const forcedIdx = p.moves.findIndex((m) => m?.id === p.encoreMove?.id);
@@ -64,7 +64,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const isStruggle = moveIndex === -1;
   const move = isStruggle ? null : p.moves[moveIndex];
 
-  if (!isStruggle && !isLocked && move?.id !== 'recharge' && move?.id !== 'struggle') {
+  if (!isStruggle && !isLocked && move?.id !== 'struggle') {
     if (!move || move.pp <= 0) {
       store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
       return
@@ -416,4 +416,3 @@ async function resolvePostTurnSwitchesAndFaints(
   }
   return false
 }
-

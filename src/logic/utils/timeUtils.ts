@@ -77,6 +77,16 @@ export function getGMT3Date(): Temporal.ZonedDateTime {
 }
 
 export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
+export const DAY_PHASES = ['morning', 'day', 'dusk', 'night'] as const;
+
+export function isDayPhase(value: string): value is DayPhase {
+  return DAY_PHASES.includes(value as DayPhase);
+}
+
+export function requireDayPhase(value: string): DayPhase {
+  if (isDayPhase(value)) return value;
+  throw new Error(`Invalid day phase: ${value}`);
+}
 
 export function getDayCycle(now: Temporal.Instant | number = getServerInstant()): DayPhase {
   // Compatibility: Handle numeric timestamps (ms)
@@ -265,6 +275,5 @@ export function parseInstantSafe(val: unknown): Temporal.Instant | null {
     throw new Error(`[timeUtils] Error parsing instant for value '${String(val)}': ${String(e)}`);
   }
 }
-
 
 

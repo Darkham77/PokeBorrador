@@ -8,17 +8,17 @@ import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const SETUP_MOVES = new Set([
+const SETUP_MOVES = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'irondefense', 'bellydrum', 'coil',
   'shiftgear', 'workup', 'agility', 'autotomize', 'tailglow',
-]);
+] as const;
 
-const PRIORITY_MOVES = new Set([
+const PRIORITY_MOVES = [
   'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
   'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
   'fakeout', 'firstimpression', 'accelerock',
-]);
+] as const;
 
 export function evaluateWinConditions(
   snapshot: HeuristicBattleSnapshot,
@@ -33,10 +33,10 @@ export function evaluateWinConditions(
   const conditions: WinCondition[] = [];
 
   for (const pokemon of myAlive) {
-    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.has(toID(m)));
-    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.has(toID(m)));
+    const hasSetup = pokemon.moves.some(m => (SETUP_MOVES as readonly string[]).includes(toID(m)));
+    const hasPriority = pokemon.moves.some(m => (PRIORITY_MOVES as readonly string[]).includes(toID(m)));
     let speedAdvantageCount = 0, canKOCount = 0, coverageScore = 0, defensiveScore = 0;
-    const threats: string[] = [];
+    const threats: WinCondition['threatsRemaining'] = [];
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
 
     for (const opp of oppAlive) {

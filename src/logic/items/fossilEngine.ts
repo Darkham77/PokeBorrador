@@ -1,6 +1,7 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * fossilEngine.ts
@@ -14,12 +15,14 @@ import type { GameState } from '@/types/system/game';
  * @returns {any} { pokemon, sentTo }
  */
 export function restoreFossil(pokemonId: string, state: GameState): { pokemon: Pokemon; sentTo: 'team' | 'box' } {
+  const speciesId = requirePokemonSpeciesId(pokemonId);
+
   // 1. Generate the Pokemon at Level 1
-  const pokemon = makePokemon(pokemonId, 1) as Pokemon;
+  const pokemon = makePokemon(speciesId, 1) as Pokemon;
   
   // 2. Register in Pokedex
-  if (!state.seenPokedex.includes(pokemonId)) state.seenPokedex.push(pokemonId);
-  if (!state.pokedex.includes(pokemonId)) state.pokedex.push(pokemonId);
+  if (!state.seenPokedex.includes(speciesId)) state.seenPokedex.push(speciesId);
+  if (!state.pokedex.includes(speciesId)) state.pokedex.push(speciesId);
   
   // 3. Determine where to send it
   let sentTo: 'team' | 'box' = 'team';

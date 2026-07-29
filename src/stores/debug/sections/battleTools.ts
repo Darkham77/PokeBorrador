@@ -4,8 +4,17 @@ import { useBattleStore } from '@/stores/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
+import { isWeatherId } from '@/logic/weather/weatherRegistry'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
 import type { DebugSystem } from '@/stores/debug'
+
+const DEBUG_FIELD_WEATHER_IDS = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave'] as const satisfies readonly WeatherId[]
+type DebugFieldWeatherId = (typeof DEBUG_FIELD_WEATHER_IDS)[number]
+
+function isDebugFieldWeatherId(value: WeatherId): value is DebugFieldWeatherId {
+  return (DEBUG_FIELD_WEATHER_IDS as readonly WeatherId[]).includes(value)
+}
 
 export function registerBattleTools(debug: DebugSystem) {
   const audio = useAudioStore()
@@ -282,15 +291,14 @@ export function registerBattleTools(debug: DebugSystem) {
         const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
         
         // Screens & Hazards (Stage based)
-        const isStageEffect = ['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'].includes(effect)
+        const isStageEffect = (['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'] as const).includes(effect as 'reflect')
         if (isStageEffect && stages) {
           // Lógica FLIP: si ya tiene el efecto (>0), lo quitamos (0). Si no, lo ponemos (val o 5).
           stages[effect] = (stages[effect] || 0) > 0 ? 0 : (parseInt(val) || 5)
         }
         
         // Weather (Context based)
-        const ALL_WEATHER = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave']
-        if (ALL_WEATHER.includes(effect)) {
+        if (isWeatherId(effect) && isDebugFieldWeatherId(effect)) {
           if (battle.state) {
             const current = battle.state?.weather?.type
             // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.

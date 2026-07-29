@@ -1,55 +1,59 @@
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { ItemId } from '@/data/inventory/items'
+import type { NatureId } from '@/data/battle/natures'
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
 export interface DaycareSlot {
   pokemon: Pokemon | null;
   slotIndex: number;
-  depositedAt?: string | null;
-  deposited_at?: string | null;
+  depositedAt?: string | null; // domain-ok
+  deposited_at?: string | null; // domain-ok
 }
 
 export interface DaycareEgg {
-  id: string;
-  species: string;
-  name: string;
+  id: string; // domain-ok: unique egg instance id
+  species: PokemonSpeciesId;
+  name: string; // domain-ok
   level: number;
   isEgg: boolean;
   steps: number;
-  motherId?: string;
-  mother_id?: string;
-  depositedAt?: string;
-  deposited_at?: string;
+  motherId?: string; // domain-ok
+  mother_id?: string; // domain-ok
+  depositedAt?: string; // domain-ok
+  deposited_at?: string; // domain-ok
   ivs: PokemonIVs;
-  nature: string;
-  movesAtBirth: string[];
+  nature: NatureId;
+  movesAtBirth: PokemonMoveId[];
   abilityIndex: number;
   isShiny: boolean;
   cost: number;
-  tint?: string;
+  tint?: string; // domain-ok
   isAncestral?: boolean;
-  inheritedIvs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number };
-  inherited_ivs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number };
+  inheritedIvs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number }; // open-record
+  inherited_ivs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number }; // open-record
 }
 
 export interface DaycareMission {
-  date: string;
-  targetId: string;
+  date: string; // domain-ok
+  targetId: PokemonSpeciesId;
   requirement: {
-    type: string;
+    type: string; // domain-ok
     minLevel?: number;
     minIvTotal?: number;
-    nature?: string;
+    nature?: NatureId;
     stat31?: keyof PokemonIVs;
   };
-  reqText: string;
+  reqText: string; // domain-ok
   reward: {
-    id: string;
-    name: string;
+    id: ItemId | PokemonSpeciesId;
+    name: string; // domain-ok
     qty: number;
-    icon: string;
+    icon: string; // domain-ok
   };
   completed: boolean;
-  trainerType: string;
-  trainerName: string;
-  trainerSprite: string;
-  dialogue: string;
+  trainerType: string; // domain-ok
+  trainerName: string; // domain-ok
+  trainerSprite: NpcSpriteId;
+  dialogue: string; // domain-ok
 }

@@ -145,7 +145,7 @@ export class ProxyQuery {
 
       // Default: select
       let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
-      const where: string[] = [];
+      const where: string[] = []; // no-domain
       const params: unknown[] = [];
 
       this.chain.forEach(s => {
@@ -188,12 +188,12 @@ export class ProxyQuery {
           const filterStr = s.args[0] as string;
           if (filterStr.includes('and(')) {
             const clauses = filterStr.split(/\),?/);
-            const orClauses: string[] = [];
+            const orClauses: string[] = []; // no-domain
             clauses.forEach(clause => {
               const cleanClause = clause.replace(/and\(/g, '').trim();
               if (!cleanClause) return;
               const subFilters = cleanClause.split(',');
-              const andClauses: string[] = [];
+              const andClauses: string[] = []; // no-domain
               subFilters.forEach(f => {
                 const parts = f.split('.');
                 if (parts.length >= 3) {
@@ -215,7 +215,7 @@ export class ProxyQuery {
             }
           } else {
             const subFilters = filterStr.split(',');
-            const subClauses: string[] = [];
+            const subClauses: string[] = []; // no-domain
             subFilters.forEach(f => {
               const parts = f.split('.');
               if (parts.length >= 3) {
@@ -310,7 +310,7 @@ export class ProxyQuery {
       const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
       const params: unknown[] = Object.values(data).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
       
-      const where: string[] = [];
+      const where: string[] = []; // no-domain
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
         if (s.type === 'match') {
@@ -334,7 +334,7 @@ export class ProxyQuery {
   async _executeLocalDelete(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
       const params: unknown[] = [];
-      const where: string[] = [];
+      const where: string[] = []; // no-domain
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
       });

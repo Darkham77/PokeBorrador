@@ -1,7 +1,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { getDayCycle } from '@/logic/utils/timeUtils';
+import { getDayCycle, requireDayPhase } from '@/logic/utils/timeUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -16,20 +16,24 @@ import {
   calculateEncounterTypeWeights,
   clampLegendaryRates,
   getFinalGroundRates,
+  getSpeciesEntries,
   applyAtmosphericStatus
 } from './encounterHelpers.ts';
 
 import { generateFishingEncounter } from './fishingEncounterHelper.ts'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
-export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates }
+export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates, getSpeciesEntries }
 
 /**
  * General walking wild encounter tables, weather visitor quota, incense, and region boosts.
  */
 function generateGroundEncounter(
   loc: MapLocation,
-  cycle: string,
-  weather: string,
+  cycle: ReturnType<typeof requireDayPhase>,
+  weather: WeatherId,
   state: EncounterState,
   options: EncounterOptions,
   activeEvents: GameEvent[],
@@ -44,7 +48,7 @@ function generateGroundEncounter(
     }).filter(idx => idx !== -1);
 
     if (typeIndices.length > 0) {
-      pool = typeIndices.map(idx => pool[idx]).filter((id): id is string => id !== undefined);
+      pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
       rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
     }
   }
@@ -71,17 +75,18 @@ function generateGroundEncounter(
  * Decomposes complex logic flows into single-responsibility utilities.
  */
 export async function generateEncounter(locId: string, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
-  const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[];
-  const loc = maps.find(l => l.id === locId);
+  const routeId = requireMapRouteId(locId);
+  const maps = pokemonDataProvider.getMaps();
+  const loc = maps.find(l => l.id === routeId);
   if (!loc) return null;
 
-  const cycle = options.cycle || getDayCycle();
+  const cycle = requireDayPhase(options.cycle || getDayCycle());
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const allMapIds = maps.map(m => m.id);
 
   // 1. Check special overrides (debug, rival, defender, guardian)
-  const specialEncounter = checkSpecialEncounters(locId, state, options, allMapIds);
+  const specialEncounter = checkSpecialEncounters(routeId, state, options, allMapIds);
   if (specialEncounter) return specialEncounter;
 
   // 2. Repellent logic
@@ -103,7 +108,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   }
 
   // 4. Weighted Encounter Roll (Walking vs Fishing vs Archaeology)
-  const weather = options.weather || 'clear';
+  const weather = requireWeatherId(options.weather || 'clear');
   const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(loc, weather, state, options);
   const roll = Math.random() * totalWeight;
 
@@ -114,5 +119,5 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   }
 
   // 5. Wild Pokemon Pool Selection (Normal)
-  return generateGroundEncounter(loc, cycle, weather, state, options, activeEvents, locId);
+  return generateGroundEncounter(loc, cycle, weather, state, options, activeEvents, routeId);
 }

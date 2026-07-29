@@ -17,6 +17,15 @@ import { Dex, toID } from '@pkmn/sim';
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
+type AbilityTranslationId = keyof typeof ABILITY_TRANSLATIONS_ES;
+
+function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
+}
+
+function hasAbilityTranslation(id: string): id is AbilityTranslationId {
+  return Object.hasOwn(ABILITY_TRANSLATIONS_ES, id);
+}
 
 async function main() {
   const validator = setupValidation({
@@ -32,7 +41,7 @@ async function main() {
   // Extraer habilidades del POKEMON_DB de especies habilitadas
   const gameAbilities = new Set<string>();
   for (const pokeId of Object.keys(POKEMON_DB)) {
-    if (!ENABLED_POKEMON_IDS.has(pokeId)) continue;
+    if (!isEnabledPokemonId(pokeId)) continue;
     const species = Dex.species.get(pokeId);
     if (species && species.exists) {
       Object.values(species.abilities).forEach(abiName => {
@@ -53,7 +62,7 @@ async function main() {
     }
 
     // Verificar si tiene traducción en el archivo local exportado
-    if (!ABILITY_TRANSLATIONS_ES[abId]) {
+    if (!hasAbilityTranslation(abId)) {
       errors.push(`${tag} No tiene traducción al español registrada en abilities.ts.`);
     }
   }

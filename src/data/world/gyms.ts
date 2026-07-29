@@ -1,32 +1,35 @@
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+
+export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
+export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
+
 export interface GymDifficulty {
-  pokemon: string[];
+  pokemon: PokemonSpeciesId[];
   levels: number[];
 }
 
 export interface Gym {
-  id: string;
-  name: string;
-  city: string;
-  leader: string;
-  type: string;
-  typeColor: string;
-  badge: string;
-  badgeName: string;
-  sprite: string;
-  quote: string;
-  victoryQuote: string;
-  rewardTM: string;
-  pokemon: string[];
+  id: string; // domain-ok
+  name: string; // domain-ok
+  city: string; // domain-ok
+  leader: string; // domain-ok
+  type: PokemonType;
+  typeColor: string; // domain-ok
+  badge: string; // domain-ok
+  badgeName: string; // domain-ok
+  sprite: NpcSpriteId;
+  quote: string; // domain-ok
+  victoryQuote: string; // domain-ok
+  rewardTM: string; // domain-ok
+  pokemon: PokemonSpeciesId[];
   levels: number[];
   badgesRequired: number;
-  difficulties: {
-    easy: GymDifficulty;
-    normal: GymDifficulty;
-    hard: GymDifficulty;
-  };
+  difficulties: Record<GymDifficultyId, GymDifficulty>;
 }
 
-export const GYMS: Gym[] = [
+export const GYMS = [
   {
     id: 'pewter', name: 'Gimnasio Plateada', city: 'Ciudad Plateada',
     leader: 'Brock', type: 'rock', typeColor: '#c8a060',
@@ -147,4 +150,15 @@ export const GYMS: Gym[] = [
       hard: { pokemon: ['dugtrio', 'nidoqueen', 'nidoking', 'marowak', 'sandslash', 'rhydon'], levels: [85, 87, 87, 87, 87, 90] }
     }
   },
-];
+] as const satisfies readonly Gym[];
+export type GymId = (typeof GYMS)[number]['id'];
+export const GYM_IDS = GYMS.map(gym => gym.id);
+
+export function isGymId(value: string): value is GymId {
+  return GYM_IDS.includes(value as GymId);
+}
+
+export function requireGymId(value: string): GymId {
+  if (isGymId(value)) return value;
+  throw new Error(`Invalid gym id: ${value}`);
+}

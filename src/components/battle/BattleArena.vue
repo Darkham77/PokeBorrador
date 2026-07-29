@@ -8,12 +8,15 @@ import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
 import { useGameStore } from '@/stores/game'
 import { getRouteWeather, getWeatherMultiplier, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
+import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getEncounterPool } from '@/logic/encounters/encounters'
+import { getEncounterPool, getSpeciesEntries } from '@/logic/encounters/encounters'
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireDayPhase } from '@/logic/utils/timeUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing'
 import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology'
@@ -49,17 +52,23 @@ const cycleEmoji = computed(() => {
   return emojis[mapStore.currentCycle] || '☀️'
 })
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
-const computedWeather = computed(() => {
+const currentDayPhase = computed(() => requireDayPhase(mapStore.currentCycle || 'day'))
+const computedWeather = computed<WeatherId>(() => {
   if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
-    return battle.value.weather.visual || battle.value.weather.type
+    return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
   }
-  if (mapStore.globalWeather) return mapStore.globalWeather
-  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+  return getRouteWeather(
+    requireMapRouteId(battle.value?.locationId || 'route1'),
+    requireWeatherSeasonId(mapStore.currentSeason.id),
+    mapStore.currentEpochHour,
+    currentDayPhase.value
+  )
 })
 const weatherEmoji = computed(() => {
-  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
   if (visual) return visual.icon
-  const mech = getMechanicalWeather(computedWeather.value as string)
+  const mech = getMechanicalWeather(computedWeather.value)
   return WEATHER_UI_METADATA[mech]?.icon || ''
 })
 
@@ -69,30 +78,34 @@ const cycleName = computed(() => {
 })
 const seasonName = computed(() => mapStore.currentSeason.label)
 const weatherName = computed(() => {
-  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value]
   if (visual) return visual.label
-  const mech = getMechanicalWeather(computedWeather.value as string)
+  const mech = getMechanicalWeather(computedWeather.value)
   return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
-const mapsList = computed(() => pokemonDataProvider.getMaps() as unknown as MapLocation[])
+const mapsList = computed<MapLocation[]>(() => pokemonDataProvider.getMaps())
 
 const mapPropForModal = computed(() => {
-  const locId = battle.value?.locationId || 'route1'
-  return mapsList.value.find(m => m.id === locId) as MapLocation
+  const locId = requireMapRouteId(battle.value?.locationId || 'route1')
+  const loc = mapsList.value.find(m => m.id === locId)
+  if (loc) return loc
+  const first = mapsList.value[0]
+  if (first) return first
+  throw new Error('[BattleArena] No maps available for route spawns modal')
 })
 
 const routeSpawnsProps = reactive({
   map: computed(() => mapPropForModal.value || mapsList.value[0]),
-  weather: computed(() => computedWeather.value || 'clear'),
-  cycle: computed(() => mapStore.currentCycle || 'day')
+  weather: computedWeather,
+  cycle: currentDayPhase
 })
 
-const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps as unknown as { map: MapLocation; weather: string; cycle: string })
-const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps as unknown as { map: MapLocation; weather: string; cycle: string })
+const { fishingSpawns } = useRouteSpawnsFishing(routeSpawnsProps)
+const { archaeologyRewards } = useRouteSpawnsArchaeology(routeSpawnsProps)
 
 const weatherTooltipDescription = computed(() => {
-  const weatherKey = (computedWeather.value as string || 'clear').toLowerCase()
+  const weatherKey = computedWeather.value
   const desc = getWeatherCombatDescription(weatherKey, ACTIVE_GENERATION)
   const weatherDescText = desc && desc !== 'Sin efectos en combate.' ? `\n---\nEFECTOS EN COMBATE:\n${desc}` : ''
   const baseDesc = `Ciclo: ${cycleName.value}\nEstación: ${seasonName.value}\nClima: ${weatherName.value}${weatherDescText}`
@@ -102,8 +115,8 @@ const weatherTooltipDescription = computed(() => {
   const loc = mapsList.value.find(m => m.id === locId)
   if (!loc) return baseDesc
 
-  const cycle = mapStore.currentCycle || 'day'
-  const weather = computedWeather.value || 'clear'
+  const cycle = currentDayPhase.value
+  const weather = computedWeather.value
   const activeEvents = mapStore.activeEvents || []
 
   const lines: string[] = []
@@ -125,7 +138,7 @@ const weatherTooltipDescription = computed(() => {
           wConfig = loc.weather[family]
         }
       }
-      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : []
+      const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
 
       nativeIndices.forEach(idx => {
         const spId = poolCopy[idx]
@@ -160,8 +173,8 @@ const weatherTooltipDescription = computed(() => {
           wConfig = loc.weather[family]
         }
       }
-      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : []
-      const visitors = wConfig?.visitors ? (Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors)) : []
+      const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : []
+      const visitors = wConfig?.visitors ? getSpeciesEntries(wConfig.visitors).map(entry => entry.id) : []
 
       poolCopy.forEach((spId, idx) => {
         const rateVal = ratesCopy[idx] || 0

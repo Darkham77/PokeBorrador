@@ -63,7 +63,7 @@ const injectTestTeam = () => {
   const char = makePokemon('charizard', 25)
   
   if (char) {
-    char.ability = 'Flame Body'
+    char.ability = 'flamebody'
   }
   
   if (pika) gameStore.addPokemon(pika, { notify: false })

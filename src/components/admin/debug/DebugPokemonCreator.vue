@@ -164,8 +164,8 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             </PVTooltip>
           </div>
           <PokemonIVEditor 
-            :ivs="config.ivs as unknown as Record<string, number>" 
-            @update:iv="(stat: string, val: number) => (config.ivs)[stat] = val" 
+            :ivs="config.ivs" 
+            @update:iv="(stat, val) => (config.ivs)[stat] = val" 
           />
         </div>
 
@@ -241,7 +241,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           :gender="config.gender"
           @toggle-shiny="config.isShiny = !config.isShiny"
           @toggle-guardian="config.isGuardian = !config.isGuardian"
-          @toggle-gender="config.gender = config.gender === 'M' ? 'F' : 'M'"
+          @toggle-gender="config.gender = config.gender === 'm' ? 'f' : 'm'"
         />
 
         <PokemonMovePicker 

@@ -62,7 +62,7 @@ describe('Battle Store - Turn Count Logic', () => {
 
   it('should initialize turnCount at 1', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100, ability: 'runaway', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, moves: [{ id: 'tackle' }] } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100, ability: 'runaway', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, moves: [{ id: 'tackle' }] } as unknown as Pokemon, { locationId: 'route1', wasSearching: false })
     expect(battle.state!.turnCount).toBe(1)
   })
 
@@ -155,7 +155,7 @@ describe('Battle Store - Turn Count Logic', () => {
       moves: [{ id: 'tackle' }]
     } as unknown as Pokemon
 
-    await battle._startBattle(enemy, { locationId: 'test', wasSearching: false })
+    await battle._startBattle(enemy, { locationId: 'route1', wasSearching: false })
     
     // Execute move index 0 (Recuperación)
     await battle.executeMove(0)

@@ -2,10 +2,16 @@
  * Volatile status definitions and icons mapping for combatants.
  */
 
+export type VolatileStatusKey =
+  | 'confused' | 'attracted' | 'cursed' | 'seeded' | 'badPoison' | 'endure' | 'trapped'
+  | 'disabledTurns' | 'encoreTurns' | 'tauntTurns' | 'flinched' | 'protect' | 'detect'
+  | 'substitute' | 'destinyBond' | 'perishSongCount' | 'ingrain' | 'focusEnergy' | 'lockOn'
+  | 'isTransformed' | 'rageActive' | 'snatching' | 'tormentActive' | 'mustRecharge' | 'bound';
+
 export interface VolatileStatusDefinition {
-  prop: string;
-  icon: string;
-  text: string;
+  prop: VolatileStatusKey;
+  icon: string; // domain-ok
+  text: string; // domain-ok
   isCounter?: boolean;
 }
 

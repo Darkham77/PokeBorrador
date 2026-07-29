@@ -29,9 +29,11 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
-function getMechWeather(type: string | null | undefined): string {
+import type { WeatherId } from '../weather/weatherRegistry.ts';
+
+function getMechWeather(type: WeatherId | string | null | undefined): string {
   if (!type) return 'clear';
-  const lower = type.toLowerCase();
+  const lower = type as WeatherId;
   if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun';
   if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain';
   if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
@@ -43,10 +45,10 @@ function getMechWeather(type: string | null | undefined): string {
 }
 
 
-function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
+function getTypeEff(moveType: PokemonType | string | undefined, defType: PokemonType | string | undefined, scrapy = false): number {
   if (!moveType || !defType) return 1;
-  const mType = moveType.toLowerCase();
-  const dType = defType.toLowerCase();
+  const mType = moveType as PokemonType;
+  const dType = defType as PokemonType;
 
   if (scrapy && dType === 'ghost' && (mType === 'normal' || mType === 'fighting')) {
     return 1;
@@ -73,13 +75,14 @@ function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PureP
   return eff;
 }
 
+import type { PokemonType } from '../../data/battle/types.ts';
+
+const SPECIAL_POKEMON_TYPES: readonly PokemonType[] = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+
 export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'special' {
   if (move.cat === 'status') return 'status';
   if (ACTIVE_GENERATION <= 3) {
-    if (move.type) {
-      const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-      if (specialTypes.includes(move.type.toLowerCase())) return 'special';
-    }
+    if (move.type && SPECIAL_POKEMON_TYPES.includes(move.type)) return 'special';
     return 'physical';
   }
   return move.cat ?? 'physical';

@@ -2,6 +2,11 @@ import type { DebugSystem } from '@/stores/debug'
 
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
+import type { DominanceInfo } from '@/types/system/stores'
+import { requireFactionId } from '@/types/system/game'
+import type { MapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireWeatherId } from '@/logic/weather/weatherRegistry'
 export function registerMapTools(debug: DebugSystem) {
   const map = useMapStore()
   const ui = useUIStore()
@@ -36,12 +41,13 @@ export function registerMapTools(debug: DebugSystem) {
     command: 'setDominance',
     category: 'map',
     action: (faction: string) => {
-      const winnerMap: Record<string, { winner: string, union: number, poder: number }> = {}
+      const winnerMap: Partial<Record<MapRouteId, DominanceInfo>> = {}
       if (faction && faction !== 'none') {
-        const unionPoints = faction === 'union' ? 100 : 0
-        const poderPoints = faction === 'poder' ? 100 : 0
+        const factionId = requireFactionId(faction)
+        const unionPoints = factionId === 'union' ? 100 : 0
+        const poderPoints = factionId === 'poder' ? 100 : 0
         map.maps.forEach((m: { id: string }) => { 
-          winnerMap[m.id] = { winner: faction, union: unionPoints, poder: poderPoints } 
+          winnerMap[requireMapRouteId(m.id)] = { winner: factionId, union: unionPoints, poder: poderPoints } 
         })
       }
       map.mapWinners = winnerMap
@@ -56,7 +62,7 @@ export function registerMapTools(debug: DebugSystem) {
     command: 'setWeather',
     category: 'map',
     action: (w: string) => {
-      const weatherId = w === 'none' ? null : w
+      const weatherId = w === 'none' ? null : requireWeatherId(w)
       map.setGlobalWeather(weatherId)
       console.debug(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`)
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅')

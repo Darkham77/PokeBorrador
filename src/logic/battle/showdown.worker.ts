@@ -31,7 +31,7 @@ export interface CustomPokemonSet extends PokemonSet {
   uid?: string;
 }
 
-const debugLogs: string[] = [];
+const debugLogs: string[] = []; // no-domain
 function logDebug(msg: string) {
   debugLogs.push(msg);
   console.debug(msg);
@@ -92,7 +92,7 @@ function getSideTeamState(side: ExtendedSide | null | undefined): Array<Synchron
       uid: p.uid || '',
       hp: p.hp,
       maxHp: p.maxhp,
-      status: status.toLowerCase() === 'fnt' ? '' : status,
+      status: (status as string) === 'fnt' ? '' : status,
       fainted: !!p.fainted,
       boosts: p.boosts ? { ...p.boosts } : undefined,
       volatiles: volatiles.length > 0 ? volatiles : undefined

@@ -1,8 +1,10 @@
 
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import { type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Move } from '@/types/pokemon/pokemon';
+import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
+import type { Move, MoveEffectBoosts, ShowdownBoostStatKey, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
+import type { ParsedStatusEffectInfo, TooltipStageStatId, TooltipStageStatName } from '@/types/battle/tooltip';
+import type { PokemonType } from '@/data/battle/types';
 
 /**
  * Gets modifier info for a move based on weather and cycle.
@@ -32,13 +34,13 @@ export function calculateMoveModifierInfo(
   }
 
   // Charging Moves
-  if (moveId === 'solar_beam' || moveId === 'solar_blade') {
+  if (moveId === 'solarbeam' || moveId === 'solarblade') {
     if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x y requiere carga)' };
   }
 
   // Weather Ball
-  if (moveId === 'weather_ball') {
+  if (moveId === 'weatherball') {
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Tipo y potencia adaptados al clima (100 BP).' };
   }
 
@@ -106,7 +108,7 @@ export function calculateMovePower(
     }
 
     // Solar Beam
-    if (move.id === 'solar_beam' && weather && weather.turns !== 0) {
+    if (move.id === 'solarbeam' && weather && weather.turns !== 0) {
       const isSun = mechWeather === WEATHER_MECHANICAL.SUN;
       const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR;
       if (!isSun && !isClear) {
@@ -273,7 +275,7 @@ import { calculateDamageRangePure } from '@/logic/battle/battleMath';
  */
 export function calculateMoveEffectivenessAndDamage(
   move: Move,
-  md: { type?: string; cat?: string; power?: number; acc?: number },
+  md: { type?: PokemonType; cat?: Move['cat']; power?: number; acc?: number },
   attacker: PurePokemon,
   defender: PurePokemon | null,
   weather: { type: string; turns: number } | null,
@@ -302,180 +304,197 @@ export function calculateMoveEffectivenessAndDamage(
   return calculateDamageRangePure(attacker, defender, pureMove, pureCtx, cycle);
 }
 
-/**
- * Parses status effect description details.
- */
+const TOOLTIP_STAGE_STAT_NAMES = {
+  atk: 'Ataque',
+  def: 'Defensa',
+  spa: 'At. Especial',
+  spd: 'Def. Especial',
+  spe: 'Velocidad',
+  acc: 'Precisión',
+  eva: 'Evasión',
+  all: 'Todos los Stats',
+} as const satisfies Record<TooltipStageStatId, TooltipStageStatName>;
+
+const TOOLTIP_CONDITION_DETAILS = {
+  psn: {
+    label: 'Envenenamiento',
+    effect: 'Estado Alterado (PSN)',
+    details: 'El objetivo pierde 1/8 (12.5%) de sus PS máximos al final de cada turno.',
+    isSelf: false,
+  },
+  tox: {
+    label: 'Envenenamiento Grave',
+    effect: 'Estado Alterado (TÓXICO)',
+    details: 'El objetivo pierde PS progresivamente: empieza en 1/16 y aumenta en 1/16 cada turno consecutivo.',
+    isSelf: false,
+  },
+  brn: {
+    label: 'Quemadura',
+    effect: 'Estado Alterado (BRN)',
+    details: 'El objetivo pierde 1/8 (12.5%) de sus PS máximos al final de cada turno. Además, reduce a la mitad (x0.5) su Ataque Físico.',
+    isSelf: false,
+  },
+  par: {
+    label: 'Parálisis',
+    effect: 'Estado Alterado (PAR)',
+    details: 'Reduce la Velocidad del objetivo al 50% (x0.5) y otorga un 25% de probabilidad de no atacar en cada turno.',
+    isSelf: false,
+  },
+  slp: {
+    label: 'Sueño',
+    effect: 'Estado Alterado (SLP)',
+    details: 'El objetivo se duerme durante 1 a 3 turnos, impidiéndole atacar por completo.',
+    isSelf: false,
+  },
+  frz: {
+    label: 'Congelación',
+    effect: 'Estado Alterado (FRZ)',
+    details: 'El objetivo queda congelado e incapaz de moverse. Cada turno tiene un 20% de probabilidad de descongelarse.',
+    isSelf: false,
+  },
+  confusion: {
+    label: 'Confusión',
+    effect: 'Estado Volátil',
+    details: 'El objetivo se confunde durante 1 a 4 turnos. En cada turno, puede golpearse a sí mismo.',
+    isSelf: false,
+  },
+  leechseed: {
+    label: 'Semilla Drenadora',
+    effect: 'Efecto de Campo Volátil',
+    details: 'Al final de cada turno, el objetivo pierde 1/8 de sus PS máximos y se los transfiere al usuario.',
+    isSelf: false,
+  },
+} as const;
+
+type TooltipConditionKey = keyof typeof TOOLTIP_CONDITION_DETAILS;
+
+function isTooltipConditionKey(value: string): value is TooltipConditionKey {
+  return value in TOOLTIP_CONDITION_DETAILS;
+}
+
+function toTooltipStageStatId(stat: ShowdownBoostStatKey): TooltipStageStatId {
+  if (stat === 'accuracy') return 'acc';
+  if (stat === 'evasion') return 'eva';
+  if (stat === 'atk' || stat === 'def' || stat === 'spa' || stat === 'spd' || stat === 'spe') return stat;
+  throw new Error(`[moveTooltipMath] Unsupported boost stat for tooltip: ${stat}`);
+}
+
+function getPokemonStageBaseStat(pokemon: PurePokemon, stat: TooltipStageStatId): number {
+  if (stat === 'acc' || stat === 'eva' || stat === 'all') return 100;
+  return pokemon[stat] || 100;
+}
+
+function getStageMultiplier(stat: TooltipStageStatId, stage: number): number {
+  if (stat === 'acc' || stat === 'eva') {
+    if (stage >= 0) return (3 + stage) / 3;
+    return 3 / (3 - stage);
+  }
+  if (stage >= 0) return (2 + stage) / 2;
+  return 2 / (2 - stage);
+}
+
+function firstBoostEntry(effect: { boosts?: MoveEffectBoosts } | undefined): [ShowdownBoostStatKey, number] | null {
+  if (!effect?.boosts) return null;
+  for (const stat of SHOWDOWN_BOOST_STAT_KEYS) {
+    const stages = effect.boosts[stat];
+    if (stages !== undefined && stages !== 0) return [stat, stages];
+  }
+  return null;
+}
+
+function firstShowdownSecondary(move: Move): ShowdownSecondaryEffect | undefined {
+  if (move.secondary) return move.secondary;
+  return move.secondaries?.[0];
+}
+
+function buildConditionInfo(conditionKey: TooltipConditionKey, isSelfOverride?: boolean): ParsedStatusEffectInfo {
+  const condition = TOOLTIP_CONDITION_DETAILS[conditionKey];
+  const isSelf = isSelfOverride ?? condition.isSelf;
+  return {
+    isCondition: true,
+    isSelf,
+    direction: isSelf ? 'up' : 'down',
+    targetName: isSelf ? 'Usuario (Tú)' : 'Rival',
+    label: condition.label,
+    effect: condition.effect,
+    details: condition.details,
+  };
+}
+
+function buildBoostInfo(
+  rawStat: ShowdownBoostStatKey,
+  stages: number,
+  isSelf: boolean,
+  attacker: PurePokemon,
+  defender: PurePokemon | null,
+  playerStages: Partial<Record<TooltipStageStatId, number>> | null | undefined,
+  enemyStages: Partial<Record<TooltipStageStatId, number>> | null | undefined
+): ParsedStatusEffectInfo | null {
+  const stat = toTooltipStageStatId(rawStat);
+  const targetPokemon = isSelf ? attacker : defender;
+  if (!targetPokemon) return null;
+
+  const isUp = stages > 0;
+  const amount = Math.abs(stages);
+  const targetStages = isSelf ? playerStages : enemyStages;
+  const currentStage = targetStages?.[stat] ?? 0;
+  const finalStage = Math.max(-6, Math.min(6, currentStage + stages));
+  const baseStatVal = getPokemonStageBaseStat(targetPokemon, stat);
+  const suffix = stat === 'acc' || stat === 'eva' ? '%' : '';
+  const initialStatVal = `${Math.round(baseStatVal * getStageMultiplier(stat, currentStage))}${suffix}`;
+  const finalStatVal = `${Math.round(baseStatVal * getStageMultiplier(stat, finalStage))}${suffix}`;
+  const statName = TOOLTIP_STAGE_STAT_NAMES[stat];
+
+  return {
+    isCondition: false,
+    isSelf,
+    direction: isUp ? 'up' : 'down',
+    stat,
+    statName,
+    amount,
+    targetName: isSelf ? 'Usuario (Tú)' : 'Rival',
+    currentStage,
+    finalStage,
+    initialStatVal,
+    finalStatVal,
+    label: `${isUp ? 'Aumenta' : 'Reduce'} ${statName} en ${amount} ${amount === 1 ? 'nivel' : 'niveles'}`,
+  };
+}
+
 export function parseStatusEffectInfo(
   move: Move,
   attacker: PurePokemon,
   defender: PurePokemon | null,
-  playerStages: Record<string, number | undefined> | null | undefined,
-  enemyStages: Record<string, number | undefined> | null | undefined
-) {
-  const moveIdLookup = move.id || '';
-  const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { effect?: string };
-  const effectStr = (move.effect || md.effect) as string | undefined;
-
-  if (!effectStr || typeof effectStr !== 'string') return null;
-
-  // 1. Mapear efectos tipo stat_up/stat_down
-  const statMatch = effectStr.match(/stat_(up|down)_(self|enemy)_([a-z0-9_]+)/);
-  if (statMatch) {
-    const [, direction, target, statKey] = statMatch;
-    if (!direction || !target || !statKey) return null;
-
-    const isUp = direction === 'up';
-    const isSelf = target === 'self';
-
-    let stat = statKey;
-    let amount = 1;
-    if (statKey.endsWith('_2')) {
-      stat = statKey.substring(0, statKey.length - 2);
-      amount = 2;
-    } else if (statKey.endsWith('_3')) {
-      stat = statKey.substring(0, statKey.length - 2);
-      amount = 3;
-    }
-
-    if (stat.endsWith('_10')) stat = stat.substring(0, stat.length - 3);
-    if (stat.endsWith('_20')) stat = stat.substring(0, stat.length - 3);
-    if (stat.endsWith('_30')) stat = stat.substring(0, stat.length - 3);
-    if (stat.endsWith('_50')) stat = stat.substring(0, stat.length - 3);
-
-    const statNames: Record<string, string> = {
-      atk: 'Ataque',
-      def: 'Defensa',
-      spa: 'At. Especial',
-      spd: 'Def. Especial',
-      spe: 'Velocidad',
-      acc: 'Precisión',
-      eva: 'Evasión',
-      all: 'Todos los Stats'
-    };
-    const statName = statNames[stat] || stat.toUpperCase();
-
-    const targetPokemon = isSelf ? attacker : defender;
-    const targetStages = isSelf ? playerStages : enemyStages;
-
-    if (!targetPokemon) return null;
-
-    const currentStage = targetStages ? (targetStages[stat as keyof typeof targetStages] || 0) as number : 0;
-    const finalStage = Math.max(-6, Math.min(6, currentStage + (isUp ? amount : -amount)));
-
-    const getStageMultiplier = (stage: number) => {
-      if (stat === 'acc' || stat === 'eva') {
-        if (stage >= 0) return (3 + stage) / 3;
-        return 3 / (3 - stage);
-      }
-      if (stage >= 0) return (2 + stage) / 2;
-      return 2 / (2 - stage);
-    };
-
-    const baseStatVal = (stat === 'acc' || stat === 'eva') ? 100 : ((targetPokemon as unknown as Record<string, number>)[stat] || 100);
-    const initialStatVal = Math.round(baseStatVal * getStageMultiplier(currentStage));
-    const finalStatVal = Math.round(baseStatVal * getStageMultiplier(finalStage));
-    const suffix = (stat === 'acc' || stat === 'eva') ? '%' : '';
-
-    return {
-      isCondition: false,
-      isSelf,
-      direction: direction as 'up' | 'down',
-      stat,
-      statName,
-      amount,
-      targetName: isSelf ? 'Usuario (Tú)' : 'Rival',
-      currentStage,
-      finalStage,
-      initialStatVal: initialStatVal + suffix,
-      finalStatVal: finalStatVal + suffix,
-      label: `${isUp ? 'Aumenta' : 'Reduce'} ${statName} en ${amount} ${amount === 1 ? 'nivel' : 'niveles'}`,
-      effect: undefined,
-      details: undefined
-    };
+  playerStages: Partial<Record<TooltipStageStatId, number>> | null | undefined,
+  enemyStages: Partial<Record<TooltipStageStatId, number>> | null | undefined
+): ParsedStatusEffectInfo | null {
+  const directBoost = firstBoostEntry(move);
+  if (directBoost) {
+    const [stat, stages] = directBoost;
+    return buildBoostInfo(stat, stages, false, attacker, defender, playerStages, enemyStages);
   }
 
-  // 2. Mapear efectos tipo status condition / condiciones de combate específicas
-  const conditionDescriptions: Record<string, { label: string; effect: string; details: string; isSelf: boolean }> = {
-    'poison': {
-      label: 'Envenenamiento',
-      effect: 'Estado Alterado (PSN)',
-      details: 'El objetivo pierde 1/8 (12.5%) de sus PS máximos al final de cada turno.',
-      isSelf: false
-    },
-    'bad_poison': {
-      label: 'Envenenamiento Grave',
-      effect: 'Estado Alterado (TÓXICO)',
-      details: 'El objetivo pierde PS progresivamente: empieza en 1/16 y aumenta en 1/16 cada turno consecutivo.',
-      isSelf: false
-    },
-    'burn': {
-      label: 'Quemadura',
-      effect: 'Estado Alterado (BRN)',
-      details: 'El objetivo pierde 1/8 (12.5%) de sus PS máximos al final de cada turno. Además, reduce a la mitad (x0.5) su Ataque Físico.',
-      isSelf: false
-    },
-    'paralyze': {
-      label: 'Parálisis',
-      effect: 'Estado Alterado (PAR)',
-      details: 'Reduce la Velocidad del objetivo al 50% (x0.5) y otorga un 25% de probabilidad de no atacar en cada turno.',
-      isSelf: false
-    },
-    'sleep': {
-      label: 'Sueño',
-      effect: 'Estado Alterado (SLP)',
-      details: 'El objetivo se duerme durante 1 a 3 turnos, impidiéndole atacar por completo.',
-      isSelf: false
-    },
-    'freeze': {
-      label: 'Congelación',
-      effect: 'Estado Alterado (FRZ)',
-      details: 'El objetivo queda congelado e incapaz de moverse. Cada turno tiene un 20% de probabilidad de descongelarse.',
-      isSelf: false
-    },
-    'confuse': {
-      label: 'Confusión',
-      effect: 'Estado Volátil',
-      details: 'El objetivo se confunde durante 1 a 4 turnos. En cada turno, tiene una probabilidad del 33% de golpearse a sí mismo (daño físico de potencia 40).',
-      isSelf: false
-    },
-    'leech_seed': {
-      label: 'Semilla Drenadora',
-      effect: 'Efecto de Campo Volátil',
-      details: 'Al final de cada turno, el objetivo pierde 1/8 (12.5%) de sus PS máximos y se los transfiere al usuario.',
-      isSelf: false
-    },
-    'heal_50': {
-      label: 'Recuperación de Salud',
-      effect: 'Efecto de Curación',
-      details: 'Restaura el 50% de los PS máximos del usuario de forma inmediata.',
-      isSelf: true
-    },
-    'reset_stats': {
-      label: 'Niebla / Reinicio',
-      effect: 'Efecto de Limpieza',
-      details: 'Elimina todos los cambios en los rangos de estadísticas (ataque, defensa, velocidad, etc.) de todos los Pokémon activos y los devuelve a +0.',
-      isSelf: true
-    }
-  };
+  const selfBoost = firstBoostEntry(move.self);
+  if (selfBoost) {
+    const [stat, stages] = selfBoost;
+    return buildBoostInfo(stat, stages, true, attacker, defender, playerStages, enemyStages);
+  }
 
-  const cond = conditionDescriptions[effectStr];
-  if (cond) {
-    return {
-      isCondition: true,
-      isSelf: cond.isSelf,
-      direction: (cond.isSelf ? 'up' : 'down') as 'up' | 'down',
-      targetName: cond.isSelf ? 'Usuario (Tú)' : 'Rival',
-      label: cond.label,
-      effect: cond.effect,
-      details: cond.details,
-      stat: undefined,
-      statName: undefined,
-      amount: undefined,
-      currentStage: undefined,
-      finalStage: undefined,
-      initialStatVal: undefined,
-      finalStatVal: undefined
-    };
+  const secondary = firstShowdownSecondary(move);
+  const secondaryBoost = firstBoostEntry(secondary);
+  if (secondaryBoost) {
+    const [stat, stages] = secondaryBoost;
+    return buildBoostInfo(stat, stages, secondary?.self !== undefined, attacker, defender, playerStages, enemyStages);
+  }
+
+  const statusKey = move.status || secondary?.status;
+  if (statusKey) {
+    return buildConditionInfo(statusKey);
+  }
+
+  const volatileKey = move.volatileStatus || secondary?.volatileStatus;
+  if (volatileKey && isTooltipConditionKey(volatileKey)) {
+    return buildConditionInfo(volatileKey);
   }
 
   return null;

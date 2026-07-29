@@ -20,12 +20,19 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 - If a test passes GREEN on the first run (before any `src/` modification), the behavior is **already correctly implemented**. It is NOT a bug. Do not catalog it.
 - **NEVER** pre-catalog bugs based on suspicion and mark them GREEN "because the test passed". That is fabricating bugs.
 
-### PROHIBITION 2 — NEVER fabricate bugs to fill a quota
+### PROHIBITION 2 — NEVER fabricate bugs to fill a quota or mask errors with fallbacks
 
 - There is **NO minimum quota** of bugs per audit run.
+- It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, or silent recovery adapters when a missing property, asset, sprite, or mapping error occurs. A missing value or coordinate is a data/code defect that MUST fail loudly. Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
 - If the diagnostic suite and manual comparison find **0 real divergences**, the correct and honest output is:
   > "✅ Auditoría completa: 0 divergencias reales encontradas. El codebase está en paridad 1:1 con Showdown."
 - Inventing entries, splitting trivially, or cataloging already-resolved behavior to look productive is **STRICTLY FORBIDDEN** and constitutes deliberate deception of the user.
+
+### PROHIBITION 2b — NEVER introduce or tolerate naked `string` for finite domain values
+
+- It is **STRICTLY FORBIDDEN** to introduce or leave any field, parameter, or variable typed as `string` (or `string[]`) when its value belongs to a finite, known domain (e.g., Pokémon types, natures, weather mechanics, NPC archetypes, move categories, status effects, obtained methods). Every such domain MUST have a strict TypeScript type declared as a union type or derived via `as const` + `keyof` / `(typeof ARRAY)[number]`, and used at every call site. Passing the wrong domain value MUST produce a TypeScript compile error — if it doesn't, the type is wrong and must be fixed.
+- During any audit, whenever a `string` field is found where a finite domain applies, it MUST be flagged as a type-safety defect and fixed by declaring the proper domain type, never by widening or adding `| string` to suppress errors.
+
 
 ### PROHIBITION 3 — NEVER overwrite `implementation_plan.md` or `task.md` with partial content
 

@@ -1,10 +1,13 @@
 import { computed } from 'vue'
-import { getFinalGroundRates } from '@/logic/encounters/encounters'
+import { getFinalGroundRates, getSpeciesEntries } from '@/logic/encounters/encounters'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { type WeatherId } from '@/logic/weather/weatherRegistry'
+import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
@@ -18,7 +21,7 @@ import {
 } from '@/logic/utils/routeSpawnHelpers'
 
 export function useRouteSpawnsWild(
-  props: { map: MapLocation; weather: string; cycle: string }
+  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
 ) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
@@ -26,34 +29,34 @@ export function useRouteSpawnsWild(
 
   const wildSpawns = computed(() => {
     const activeEvents = eventStore.activeEvents || []
-    const allMapSpawns = new Set<string>()
-    const cycles = ['morning', 'day', 'dusk', 'night']
-    cycles.forEach(c => {
+    const allMapSpawns: PokemonSpeciesId[] = []
+    const addMapSpawn = (id: PokemonSpeciesId) => {
+      if (!allMapSpawns.includes(id)) allMapSpawns.push(id)
+    }
+    DAY_PHASES.forEach(c => {
       const list = props.map.wild?.[c] || []
-      list.forEach(id => allMapSpawns.add(id))
+      list.forEach(addMapSpawn)
     })
     
     const weatherCfg = props.map.weather?.[props.weather]
     if (weatherCfg) {
       if (weatherCfg.visitors) {
-        const visitors = Array.isArray(weatherCfg.visitors) ? weatherCfg.visitors : Object.keys(weatherCfg.visitors)
-        visitors.forEach(id => allMapSpawns.add(id))
+        getSpeciesEntries(weatherCfg.visitors).forEach(({ id }) => addMapSpawn(id))
       }
       if (weatherCfg.exclusive) {
-        const exclusives = Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)
-        exclusives.forEach(id => allMapSpawns.add(id))
+        getSpeciesEntries(weatherCfg.exclusive).forEach(({ id }) => addMapSpawn(id))
       }
     }
     activeEvents.forEach(ev => {
       const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined
       if (ev.active && cfg?.species) {
         cfg.species.split(',').forEach((s: string) => {
-          const clean = s.trim().toLowerCase()
-          if (clean) allMapSpawns.add(clean)
+          const clean = s.trim()
+          if (clean) addMapSpawn(requirePokemonSpeciesId(clean))
         })
       }
     })
-    const fullPool = Array.from(allMapSpawns)
+    const fullPool = allMapSpawns
 
     const { pool: activePool, rates: activeRates } = getFinalGroundRates(props.map, props.cycle, props.weather, activeEvents)
     const totalRate = activeRates.reduce((sum, r) => sum + r, 0)
@@ -84,14 +87,8 @@ export function useRouteSpawnsWild(
       const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode, seenPokedex, caughtPokedex)
       const pData = getPokemonBasicData(id, isSeen)
       
-      const isVisitor = !!(weatherCfg?.visitors && (
-        (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[id]) || 
-        (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(id))
-      ))
-      const isExclusive = !!(weatherCfg?.exclusive && (
-        (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[id]) || 
-        (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(id))
-      ))
+      const isVisitor = !!weatherCfg?.visitors && getSpeciesEntries(weatherCfg.visitors).some(entry => entry.id === id)
+      const isExclusive = !!weatherCfg?.exclusive && getSpeciesEntries(weatherCfg.exclusive).some(entry => entry.id === id)
       
       const multiplier = getWeatherMultiplier(id, props.weather)
       const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0
@@ -134,13 +131,14 @@ export function useRouteSpawnsWild(
   })
 
   function getWildSpawnTooltip(poke: RouteSpawnMappedItem) {
-    const lines: string[] = []
+    const pokeId = requirePokemonSpeciesId(poke.id)
+    const lines: string[] = [] // no-domain
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const speciesEvent = eventStore.activeEvents.find(e => {
       const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
       if (cfg?.species) {
-        return cfg.species.split(',').map((s: string) => s.trim().toLowerCase()).includes(poke.id)
+        return cfg.species.split(',').map((s: string) => requirePokemonSpeciesId(s.trim())).includes(pokeId)
       }
       return false
     })

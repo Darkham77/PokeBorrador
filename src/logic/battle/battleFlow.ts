@@ -1,9 +1,10 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
+import { getMechanicalWeather, requireWeatherId, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
 import { getWeatherFamily } from '../../data/system/weatherFamilies.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { PokemonType } from '@/data/battle/types'
 
 export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn) {
   if (!pokemon) return;
@@ -12,7 +13,7 @@ export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherT
 
   const family = weatherType ? getWeatherFamily(weatherType) : null;
   let targetForm = 'normal';
-  let targetType = 'normal';
+  let targetType: PokemonType = 'normal';
 
   if (family === WEATHER_MECHANICAL.SUN) {
     targetForm = 'sunny';
@@ -244,7 +245,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
     w.turns--
     if (w.turns === 0) {
       ctx.addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info')
-      w.type = mapStore.currentWeather || 'clear'
+      w.type = requireWeatherId(mapStore.currentWeather || 'clear')
       w.turns = -1
     }
   }

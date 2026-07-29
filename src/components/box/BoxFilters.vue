@@ -3,6 +3,7 @@ import { gsap } from 'gsap'
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import { POKEMON_TYPES } from '@/data/battle/types'
 
 interface BoxFilters {
   tier: string
@@ -100,12 +101,6 @@ const getSliderStyle = (val: number, max: number, color: string) => {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
   }
 }
-
-const POKEMON_TYPES = [
-  'normal', 'fire', 'water', 'electric', 'grass', 'ice', 
-  'fighting', 'poison', 'ground', 'flying', 'psychic', 
-  'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'
-]
 
 const AVAILABLE_TAGS = [
   { id: 'fav', label: 'FAV', icon: '⭐' },
@@ -474,4 +469,3 @@ const leave = (el: Element, done: () => void) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_box-filters.scss"></style>
-

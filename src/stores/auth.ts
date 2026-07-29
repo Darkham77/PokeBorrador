@@ -7,7 +7,7 @@ import { syncServerTime } from '@/logic/utils/timeUtils'
 import { useLoadingStore } from '@/stores/loading.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SESSION_ID } from '@/logic/auth/sessionId'
-import type { AuthUser, SessionMode } from '@/types/auth/auth'
+import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth'
 import type { Session } from '@supabase/supabase-js'
 
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -192,7 +192,7 @@ export const useAuthStore = defineStore('auth', () => {
           // Build and assign the fully-configured user object AT THE VERY END
           rawUser.db_version = dbVersion
           rawUser.user_metadata.gender = userGender as 'h' | 'm'
-          if (userRole) rawUser.role = userRole
+          if (userRole) rawUser.role = requireUserRole(userRole)
 
           session.value = data.session
           user.value = rawUser
@@ -372,7 +372,7 @@ export const useAuthStore = defineStore('auth', () => {
     loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')
     try {
       const userData = {
-        id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'),
+        id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'), // text-ok
         email: name + '@local',
         user_metadata: { full_name: name, username: name, gender },
         db_version: 3

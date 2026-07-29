@@ -33,7 +33,7 @@ export function useSaveActions(
     }
     
     let data: GameState | null = null;
-    let issues: string[] = [];
+    let issues: string[] = []; // no-domain
     let lastSaveId: string | null = null;
     let isNewerThanCloud: boolean | undefined;
     let attempts = 0;
@@ -75,8 +75,8 @@ export function useSaveActions(
       const err = lastError as Error;
       const isTimeout = err.message === 'LOAD_TIMEOUT';
       const isNetworkError = err.message && (
-        err.message.toLowerCase().includes('fetch') ||
-        err.message.toLowerCase().includes('network')
+        err.message.toLowerCase().includes('fetch') || // text-ok
+        err.message.toLowerCase().includes('network') // text-ok
       );
       
       if (isTimeout || isNetworkError || !navigator.onLine) {

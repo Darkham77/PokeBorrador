@@ -2,12 +2,14 @@
  * Global registry of trainer archetype definitions, sprites, and spawn pools.
  */
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export interface TrainerTypeDefinition {
-  readonly name: string;
-  readonly sprite: string;
+  readonly name: string; // domain-ok
+  readonly sprite: NpcSpriteId;
   readonly archetype: NpcArchetype;
-  readonly pool: readonly string[];
+  readonly pool: readonly PokemonSpeciesId[];
 }
 
 export const TRAINER_TYPES = {

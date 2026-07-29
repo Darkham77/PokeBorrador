@@ -3,7 +3,7 @@
 import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore, type Item } from '@/stores/inventory/inventory'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useModalStore } from '@/stores/modals'
@@ -12,7 +12,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { getItemById } from '@/data/inventory/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
-import { mapInventoryToItems } from '@/stores/inventory/inventoryHelpers'
+import { isEquippableHeldItem, mapInventoryToItems, type Item as InventoryListItem } from '@/stores/inventory/inventoryHelpers'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Sub-components
@@ -53,8 +53,8 @@ const isSmallScreen = computed(() => ui.isSmallScreen)
 // State
 const multiSelectMode = ref<string | null>(null)
 const selectedItems = reactive(new Map<string, number>()) // name -> qty
-const quantitySelectionItem = ref<Item | null>(null)
-const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|'menu' }
+const quantitySelectionItem = ref<InventoryListItem | null>(null)
+const itemActionMenu = ref<InventoryListItem | null>(null) // { item, type: 'sell'|'release'|'menu' }
 
 
 
@@ -78,7 +78,7 @@ watch(activeMainTab, () => {
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
-const filteredItems = computed<Item[]>(() => {
+const filteredItems = computed<InventoryListItem[]>(() => {
   if (props.battleMode) {
     const inventory = gameStore.state.inventory || {}
     const isBattleActive = useBattleStore().isBattleActive
@@ -111,11 +111,11 @@ const filteredItems = computed<Item[]>(() => {
     return result
   }
   
-  return (inventoryStore.bagItems as Item[]) || []
+  return inventoryStore.bagItems || []
 })
 
 // Local items state to handle smooth transitions on tab switches
-const displayedItems = ref<Item[]>([])
+const displayedItems = ref<InventoryListItem[]>([])
 const lastCategory = ref(props.battleMode ? battleActiveCategory.value : inventoryStore.activeCategory)
 const isCategorySwitching = ref(false)
 
@@ -199,14 +199,14 @@ const totalObjectsCount = computed(() => {
   const source = props.battleMode 
     ? (filteredItems.value || [])
     : Object.entries(gameStore.state.inventory || {})
-        .filter(([, qty]) => (qty as number) > 0)
-        .map(([name, qty]) => ({ name, id: name, qty: qty as number }))
+        .filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
+        .map(([name, qty]) => ({ name, id: name, qty }))
   return source.reduce((s, v) => s + (v.qty || 0), 0)
 })
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
 
 // Handlers
-const handleItemClick = (item: Item) => {
+const handleItemClick = (item: InventoryListItem) => {
   if (multiSelectMode.value) {
     if (selectedItems.has(item.id)) {
       selectedItems.delete(item.id)
@@ -251,7 +251,7 @@ const handleActionSelect = (type: string) => {
 
     if (uiStore.inventoryTarget) {
       // Logic for pre-selected target
-      if (dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))) {
+      if (isEquippableHeldItem(dbItem)) {
         const success = inventoryStore.equipItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
         if (success) {
           uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
@@ -277,7 +277,7 @@ const handleActionSelect = (type: string) => {
       return
     }
 
-    const isHeld = dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigorrestorer' && !dbItem.id.includes('berry'))
+    const isHeld = isEquippableHeldItem(dbItem)
     const validTargets = isHeld
       ? (gameStore.state.team || [])
       : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.id, p))

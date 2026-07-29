@@ -1,16 +1,26 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Inventory } from '@/types/inventory/items'
+
+const ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const
+type ItemTier = (typeof ITEM_TIERS)[number]
+
+function requireItemTier(value: string | undefined): ItemTier | undefined {
+  if (value === undefined) return undefined
+  if (value === 'common' || value === 'rare' || value === 'epic' || value === 'legend') return value
+  throw new Error(`Invalid item tier: ${value}`)
+}
 
 interface Props {
   title: string
   pokemon?: Pokemon | null
-  inventory?: Record<string, number>
-  selectedItems?: Record<string, number>
+  inventory?: Inventory
+  selectedItems?: Inventory
   money?: number
   maxMoney?: number
   isGift?: boolean
@@ -41,16 +51,16 @@ const handleMoneyInput = (e: Event) => {
 
 const mappedItems = computed(() => {
   return Object.entries(props.inventory || {})
-    .filter(([_, qty]) => qty > 0)
+    .filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
     .map(([name, qty]) => {
-      const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+      const dbItem = getItemById(name)
       return {
-        id: dbItem?.id || name,
-        name: dbItem?.name || name,
+        id: dbItem.id,
+        name: dbItem.name,
         qty,
-        desc: dbItem?.desc || '',
-        sprite: dbItem?.sprite || dbItem?.id || name,
-        tier: (dbItem?.tier as 'common' | 'rare' | 'epic' | 'legend') || 'common'
+        desc: dbItem.desc ?? '',
+        sprite: dbItem.sprite ?? dbItem.id,
+        tier: requireItemTier(dbItem.tier)
       }
     })
 })

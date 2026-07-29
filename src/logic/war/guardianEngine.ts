@@ -7,20 +7,25 @@
  * Absolute isolation: This module does not store state or connect to DB.
  */
 import { getArgDateString } from '../utils/timeUtils.ts'
+import type { MapRouteId } from '@/data/world/map-assets'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+
+const GUARDIAN_TIERS = ['common', 'rare', 'elite'] as const
+type GuardianTier = (typeof GUARDIAN_TIERS)[number]
 
 
 export interface GuardianBase {
-  id: string;
+  id: PokemonSpeciesId;
   lv: number;
   pts: number;
 }
 
 export interface GuardianData extends GuardianBase {
-  tier: string;
+  tier: GuardianTier;
   isGuardian: boolean;
 }
 
-const GUARDIAN_POOL: Record<string, GuardianBase[]> = {
+const GUARDIAN_POOL: Record<GuardianTier, readonly GuardianBase[]> = {
   common: [
     { id: 'arcanine',   lv: 45, pts: 150 }, { id: 'pidgeot',    lv: 42, pts: 150 },
     { id: 'nidoking',   lv: 44, pts: 150 }, { id: 'nidoqueen',  lv: 44, pts: 150 },
@@ -71,17 +76,20 @@ function hashString(str: string): number {
  * @param {Date} date 
  * @returns {string[]} List of map IDs
  */
-export function getConflictZones(allMapIds: string[], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string[] {
+export function getConflictZones(allMapIds: readonly MapRouteId[], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): MapRouteId[] {
   if (!allMapIds || allMapIds.length === 0) return []
   
   const dateStr = getArgDateString(date)
-  const zones: string[] = []
+  const zones: MapRouteId[] = []
   let tempSeed = hashString(dateStr + "zones")
   
   while (zones.length < 12 && zones.length < allMapIds.length) {
     const idx = Math.abs(tempSeed) % allMapIds.length
-    const mId = allMapIds[idx] || '';
-    if (mId && !zones.includes(mId)) zones.push(mId)
+    const mId = allMapIds[idx]
+    if (!mId) {
+      throw new Error(`[guardianEngine] Failed to resolve conflict zone at index ${idx}`)
+    }
+    if (!zones.includes(mId)) zones.push(mId)
     tempSeed = hashString(tempSeed.toString())
   }
   return zones
@@ -94,7 +102,7 @@ export function getConflictZones(allMapIds: string[], date: Temporal.ZonedDateTi
  * @param {Temporal.ZonedDateTime|Temporal.Instant} date 
  * @returns {GuardianData|null}
  */
-export function getGuardianData(mapId: string, allMapIds: string[] = [], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
+export function getGuardianData(mapId: MapRouteId, allMapIds: readonly MapRouteId[] = [], date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
   if (allMapIds && allMapIds.length > 0) {
     const zones = getConflictZones(allMapIds, date)
     if (!zones.includes(mapId)) return null
@@ -104,11 +112,11 @@ export function getGuardianData(mapId: string, allMapIds: string[] = [], date: T
   const seed = hashString(dateStr + mapId)
   
   const rarityRand = (seed % 100)
-  let tier = 'common'
+  let tier: GuardianTier = 'common'
   if (rarityRand >= 90) tier = 'elite'
   else if (rarityRand >= 60) tier = 'rare'
 
-  const pool = GUARDIAN_POOL[tier] || GUARDIAN_POOL['common'] || [];
+  const pool = GUARDIAN_POOL[tier];
   if (pool.length === 0) return null;
   const index = seed % pool.length;
   const base = pool[index];
@@ -126,7 +134,7 @@ export function getGuardianData(mapId: string, allMapIds: string[] = [], date: T
  * Simulates a dominance shift for offline play.
  * Generates random points for factions to keep maps dynamic.
  */
-export function simulateLocalDominance(allMapIds: string[]): { mapId: string; union: number; poder: number }[] {
+export function simulateLocalDominance(allMapIds: readonly MapRouteId[]): { mapId: MapRouteId; union: number; poder: number }[] {
   // Logic to be used in warStore for Local Instance
   return allMapIds.map(mapId => ({
     mapId,

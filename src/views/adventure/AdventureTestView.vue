@@ -225,7 +225,7 @@ onMounted(() => {
                 :disabled="move.pp <= 0"
                 @click="useActiveRouteMove(move.pokemonUid, move.moveName)"
               >
-                <span>{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }} {{ move.moveName }} ({{ move.pokemonName }})</span>
+                <span>{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }} {{ move.moveName }} ({{ move.pokemonName }})</span> <!-- text-ok -->
                 <span :style="{ color: move.pp > 0 ? '#ffcb05' : '#ef5350' }">PP {{ move.pp }}/{{ move.maxPP }}</span>
               </button>
             </div>
@@ -479,7 +479,7 @@ onMounted(() => {
           class="adv-mo-status"
         >
           Requisito: <span :class="['adv-mo-badge', { ok: activeHMs.has(activeEvent.moRequired) }]">
-            MO {{ activeEvent.moRequired.toUpperCase() }}
+            MO {{ activeEvent.moRequired.toUpperCase() }} <!-- text-ok -->
             ({{ activeHMs.has(activeEvent.moRequired) ? 'DISPONIBLE' : 'FALTANTE' }})
           </span>
         </div>

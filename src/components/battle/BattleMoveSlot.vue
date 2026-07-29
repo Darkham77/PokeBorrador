@@ -8,6 +8,7 @@ import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
+import { toPokemonType } from '@/data/battle/types'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -46,9 +47,11 @@ const { moveData, finalPower, finalAccuracy, moveModifier, effectivenessMultipli
 
 const moveColor = computed(() => {
   if (!props.move) return '#444'
-  const type = moveData.value ? moveData.value.type.toLowerCase() : 'normal'
+  const type = moveType.value
   return (PDEX_TYPE_COLORS as Record<string, string>)[type] || '#444'
 })
+
+const moveType = computed(() => toPokemonType(moveData.value?.type || 'normal'))
 
 const hexColorRgb = computed(() => {
   const hex = moveColor.value
@@ -334,7 +337,7 @@ const formatMoveName = (name: string) => {
         <div class="move-top">
           <span class="mv-name pixelated">{{ move.name ? formatMoveName(move.name) : '???' }}</span>
           <PokemonTypeTag
-            :type="moveData!.type || 'normal'"
+            :type="moveType"
             size="ssm"
           />
         </div>

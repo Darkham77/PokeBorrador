@@ -13,7 +13,12 @@ import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { LEGENDARY_POKEMON, BABY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex'
+import {
+  isBabyPokemonSpeciesId,
+  isFossilPokemonSpeciesId,
+  isLegendaryPokemonSpeciesId,
+  requirePokemonSpeciesId,
+} from '@/data/pokemon/pokedex'
 import { getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
@@ -175,18 +180,15 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
   })
 
   if (props.isDaycareContext) {
-    const legendaries = new Set(LEGENDARY_POKEMON);
-    const babyPokemon = new Set(BABY_POKEMON);
-    const fossils = new Set(FOSSIL_POKEMON);
     result = result.filter(item => {
       const p = item.pokemon;
       if (!p.id) return true;
-      const idLower = p.id.toLowerCase();
+      const speciesId = requirePokemonSpeciesId(p.id);
       const maxVig = getMaxVigor(p);
       if (maxVig <= 0) return false;
-      if (legendaries.has(idLower)) return false;
-      if (babyPokemon.has(idLower)) return false;
-      if (fossils.has(idLower)) return false;
+      if (isLegendaryPokemonSpeciesId(speciesId)) return false;
+      if (isBabyPokemonSpeciesId(speciesId)) return false;
+      if (isFossilPokemonSpeciesId(speciesId)) return false;
       return true;
     });
   }

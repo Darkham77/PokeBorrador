@@ -7,6 +7,10 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+import type { DayPhase } from '@/logic/utils/timeUtils'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { toPokemonType } from '@/data/battle/types'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
 import RouteSpawnsTable, { type SpawnItem, type ArchaeologyRewardItem } from './RouteSpawnsTable.vue'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
@@ -14,8 +18,8 @@ import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMes
 interface Props {
   show?: boolean
   map: MapLocation
-  weather: string
-  cycle: string
+  weather: WeatherId
+  cycle: DayPhase
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -200,10 +204,10 @@ const toggleOfficialRoute = () => {
 
 const openPokemonDetail = (speciesId: string, isSeen: boolean) => {
   if (!isSeen) return
-  modalStore.open('PokemonDetail', { speciesId, context: 'pokedex' })
+  modalStore.open('PokemonDetail', { speciesId: requirePokemonSpeciesId(speciesId), context: 'pokedex' })
 }
 
-const cycleLabels: Record<string, string> = {
+const cycleLabels: Record<DayPhase, string> = {
   morning: '🌅 Amanecer',
   day: '☀️ Día',
   dusk: '🌇 Ocaso',
@@ -236,7 +240,7 @@ const {
   npcSpawns
 } = useRouteSpawnsCalculation(props)
 
-const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value as unknown as NpcChanceInfo[])
+const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
 </script>
 
 <template>
@@ -298,7 +302,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value as unknow
                   >
                     <PokemonTypeTag
                       v-if="segment.isType"
-                      :type="segment.type"
+                      :type="toPokemonType(segment.type)"
                       size="ssm"
                       class="inline-type-tag"
                     />

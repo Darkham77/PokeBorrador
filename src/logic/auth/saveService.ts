@@ -3,7 +3,7 @@
  * Serializes the current state into a format suitable for database storage.
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.
  */
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonEgg, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
@@ -36,15 +36,15 @@ export interface SaveData {
   trainerLevel: number;
   trainerExp: number;
   trainerExpNeeded: number;
-  inventory: Record<string, number>;
+  inventory: Partial<Record<string, number>>;
   team: Pokemon[];
   box: Pokemon[];
   pokedex: string[];
   seenPokedex: string[];
   defeatedGyms: string[];
   gymProgress: Record<string, unknown>;
-  lastGymWins: Record<string, number>;
-  lastGymAttempts: Record<string, number>;
+  lastGymWins: Partial<Record<string, number>>;
+  lastGymAttempts: Partial<Record<string, number>>;
   starterChosen: boolean;
   lastRankedSeason: string | null;
   nick_style: string | null;
@@ -103,8 +103,8 @@ export interface SaveData {
   faction: string | null;
   warCoins: number;
   warCoinsSpent: number;
-  warDailyCap: Record<string, Record<string, number>>;
-  warDailyCoins: Record<string, number>;
+  warDailyCap: Partial<Record<string, Partial<Record<string, number>>>>;
+  warDailyCoins: Partial<Record<string, number>>;
   warMyPtsLocal: Record<string, number>;
   notificationHistory: unknown[];
   marketSoldSeenIds: string[];
@@ -151,6 +151,62 @@ interface ActiveBattleSerialized {
   enemyTeam: EnemyPokemonSerialized[] | null
   timestamp: number
   isPvP?: boolean
+}
+
+type PersistedPokemonGender = 'M' | 'F' | 'N';
+type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: PersistedPokemonGender };
+type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: PersistedPokemonGender };
+
+function toPersistedPokemonGender(gender: PokemonGender | undefined): PersistedPokemonGender {
+  if (gender === 'm') return 'M';
+  if (gender === 'f') return 'F';
+  return 'N';
+}
+
+function withPersistedPokemonGender(pokemon: Pokemon): PersistedPokemon {
+  return {
+    ...pokemon,
+    gender: toPersistedPokemonGender(pokemon.gender),
+  };
+}
+
+function withPersistedEggGender(egg: PokemonEgg): PersistedPokemonEgg {
+  return {
+    ...egg,
+    gender: toPersistedPokemonGender(egg.gender),
+  };
+}
+
+function serializeSaveGenderCodes(data: SaveData): unknown {
+  return {
+    ...data,
+    team: data.team.map(withPersistedPokemonGender),
+    box: data.box.map(withPersistedPokemonGender),
+    eggs: data.eggs.map(egg => {
+      if (!egg || typeof egg !== 'object' || !('gender' in egg)) return egg;
+      return withPersistedEggGender(egg as PokemonEgg);
+    }),
+    activeBattle: serializeActiveBattleGenderCodes(data.activeBattle),
+  };
+}
+
+function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
+  if (!activeBattle || typeof activeBattle !== 'object') return activeBattle;
+  const battle = activeBattle as ActiveBattleSerialized;
+  if (!battle.enemyTeam) return activeBattle;
+  return {
+    ...battle,
+    enemyTeam: battle.enemyTeam.map(enemy => ({
+      ...enemy,
+      gender: toPersistedPokemonGender(enemy.gender === 'm' || enemy.gender === 'f' ? enemy.gender : null),
+    })),
+  };
+}
+
+function normalizeRuntimePokemonGender(pokemon: Pokemon): void {
+  if (Object.is(pokemon.gender, 'M')) pokemon.gender = 'm';
+  if (Object.is(pokemon.gender, 'F')) pokemon.gender = 'f';
+  if (Object.is(pokemon.gender, 'N')) pokemon.gender = null;
 }
 export function serializeState(state: GameState): SaveData {
   let activeBattle: ActiveBattleSerialized | null = null;
@@ -270,8 +326,8 @@ export function serializeState(state: GameState): SaveData {
     warCoins: state.warCoins || 0,
     warCoinsSpent: state.warCoinsSpent || 0,
     warDailyCap: state.warDailyCap || {},
-    warDailyCoins: (state.warDailyCoins || {}) as Record<string, number>,
-    warMyPtsLocal: (state.warMyPtsLocal || {}) as Record<string, number>,
+    warDailyCoins: state.warDailyCoins || {},
+    warMyPtsLocal: state.warMyPtsLocal || {},
     notificationHistory: state.notificationHistory || [],
     marketSoldSeenIds: state.marketSoldSeenIds || [],
     lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0,
@@ -288,7 +344,7 @@ let lastValidatedBox: Pokemon[] = [];
 export function validateAndSanitize(data: SaveData): { valid: boolean, data: SaveData, hadDuplicates?: boolean, issues: string[], error?: string } {
   if (!data) { const empty: SaveData = ({} as unknown) as SaveData; return { valid: false, data: empty, issues: [], error: 'No data' }; }
   
-  const issues: string[] = [];
+  const issues: string[] = []; // no-domain
 
 
   // Calculate box hash to check if it's dirty
@@ -325,6 +381,8 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
 
   // Sanitized data from Valibot (with fallbacks applied!)
   const sanitizedData = parsedResult.output as unknown as SaveData;
+  sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
+  sanitizedData.box?.forEach(normalizeRuntimePokemonGender);
   
   // 1. Basic numeric validation
   if (sanitizedData.money < 0) { sanitizedData.money = 0; issues.push('Dinero negativo corregido'); }
@@ -469,10 +527,11 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
 
     (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
+    const persistedSaveData = serializeSaveGenderCodes(save_data);
 
     // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
     try {
-      const json = JSON.stringify(save_data);
+      const json = JSON.stringify(persistedSaveData);
       localStorage.setItem('pokemon_local_save_' + user.id, json);
       
       // Modern High-Fidelity Binary Storage (OPFS)
@@ -500,7 +559,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     try {
       const { data: res, error } = await db.rpc('save_game_trusted', {
-        p_save_data: save_data,
+        p_save_data: persistedSaveData,
         p_expected_id: options.lastSaveId || null
       });
 

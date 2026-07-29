@@ -59,7 +59,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
         saveRes = { data: allSavesRes.data }
         relRes = { data: allRelsRes.data }
 
-        const queryLower = query.toLowerCase()
+        const queryLower = query.toLowerCase() // text-ok
         profiles = (profRes.data || []).filter((p: ProfileRow) => {
           if (p.id === authStore.user!.id) return false
           
@@ -68,19 +68,19 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
           const originalUsername = p.username || ''
           
           const matchesQuery = 
-            trainerName.toLowerCase().includes(queryLower) ||
-            originalUsername.toLowerCase().includes(queryLower)
+            trainerName.toLowerCase().includes(queryLower) || // text-ok
+            originalUsername.toLowerCase().includes(queryLower) // text-ok
             
           if (!matchesQuery) return false
           
           if (filters?.playerClass) {
             const currentClass = (save.playerClass as string) || p.player_class || 'entrenador'
-            if (currentClass.toLowerCase() !== filters.playerClass.toLowerCase()) return false
+            if (currentClass !== filters.playerClass) return false
           }
           
           if (filters?.faction) {
             const currentFaction = (save.faction as string) || p.faction || ''
-            if (currentFaction.toLowerCase() !== filters.faction.toLowerCase()) return false
+            if (currentFaction !== filters.faction) return false
           }
           
           return true

@@ -14,7 +14,7 @@ import { useGameStore } from '@/stores/game';
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
  */
 export function filterShowdownLogs(logs: string[], playerSide: string = 'p1'): string[] {
-  const filtered: string[] = [];
+  const filtered: string[] = []; // no-domain
   for (let i = 0; i < logs.length; i++) {
     const line = logs[i] || '';
     if (line.startsWith('|split|')) {
@@ -211,7 +211,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = (team.find(mon => mon && (mon.name.toLowerCase() === namePart.toLowerCase() || isMatchingUid(mon.uid, namePart))) ?? null) as Pokemon | null;
+      matchMon = (team.find(mon => mon && (mon.name === namePart || isMatchingUid(mon.uid, namePart))) ?? null) as Pokemon | null;
       if (matchMon) {
         console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/suffix`);
         return matchMon;

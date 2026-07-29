@@ -1,18 +1,19 @@
 // [PureVue-Ignore-Length]
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { NATURES } from '@/data/battle/natures';
+import { NATURES, toNatureId } from '@/data/battle/natures';
+
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { useWarStore } from '@/stores/war';
-import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
-import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
+import type { ObtainedMethod, Pokemon, PokemonMove, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
+import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
-import { logger } from '../utils/logger.ts';
 import { getItemById } from '@/data/inventory/items';
 import { Dex, toID } from '@pkmn/sim';
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 
 
 /**
@@ -43,18 +44,24 @@ const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
   dragonite: { rare: 'dragonscale' }
 };
 
-const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
+const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'] as const satisfies readonly PokemonSpeciesId[];
+const MALE_ONLY_SPECIES = ['nidoranm'] as const satisfies readonly PokemonSpeciesId[];
+const FEMALE_ONLY_SPECIES = ['nidoranf'] as const satisfies readonly PokemonSpeciesId[];
 
-export function assignGender(id: string): 'M' | 'F' | null {
-  if (GENDERLESS.includes(id)) return null;
-  if (id.endsWith('_m')) return 'M';
-  if (id.endsWith('_f')) return 'F';
-  return Math.random() < 0.5 ? 'M' : 'F';
+function isGenderlessSpeciesId(id: PokemonSpeciesId): boolean {
+  return (GENDERLESS as readonly PokemonSpeciesId[]).includes(id);
+}
+
+export function assignGender(id: PokemonSpeciesId): PokemonGender {
+  if (isGenderlessSpeciesId(id)) return null;
+  if ((MALE_ONLY_SPECIES as readonly PokemonSpeciesId[]).includes(id)) return 'm';
+  if ((FEMALE_ONLY_SPECIES as readonly PokemonSpeciesId[]).includes(id)) return 'f';
+  return Math.random() < 0.5 ? 'm' : 'f';
 }
 
 export function ensurePokemonGender(p: Pokemon): boolean {
   if (!p) return false;
-  if (!p.gender) { p.gender = assignGender(p.id); return true; }
+  if (p.gender === undefined) { p.gender = assignGender(p.id); return true; }
   return false;
 }
 
@@ -162,14 +169,14 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
 
   // 1. Validar Habilidad usando pkms Dex
   if (p.ability) {
-    const normAbility = toID(p.ability);
+    const normAbility = requireAbilityId(toID(p.ability));
     const abilityData = Dex.abilities.get(normAbility);
     if (bypass && abilityData.exists) {
       p.ability = normAbility;
     } else {
       const speciesData = Dex.species.get(p.id);
-      const validAbilities: string[] = speciesData.exists 
-        ? Object.values(speciesData.abilities).map(a => toID(a)) 
+      const validAbilities: AbilityId[] = speciesData.exists 
+        ? Object.values(speciesData.abilities).map(a => requireAbilityId(toID(a))) 
         : ['overgrow'];
       
       if (validAbilities.includes(normAbility)) {
@@ -201,7 +208,7 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   p.moves.forEach((m, idx) => {
     if (!m) return;
 
-    if (!m.id || m.id === 'null' || m.id === 'undefined' || m.id === '???') {
+    if (!m.id) {
       throw new Error(`[pokemonFactory] Movimiento corrupto o ID inválido ("${m.id}") detectado en la posición ${idx} de ${p.id} (UID: ${p.uid}).`);
     }
 
@@ -249,7 +256,7 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   }
 
   // 3. Validar consistencia básica
-  if (!p.gender && !GENDERLESS.includes(p.id)) {
+  if (!p.gender && !isGenderlessSpeciesId(p.id)) {
     throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
   }
   if (p.hp === undefined || isNaN(p.hp)) {
@@ -264,7 +271,7 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
     const normNature = toID(p.nature);
     const natureData = Dex.natures.get(normNature);
     if (natureData && natureData.exists) {
-      p.nature = normNature;
+      p.nature = toNatureId(normNature);
     } else {
       throw new Error(`[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`);
     }
@@ -288,9 +295,9 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
     }
   }
 
-  const cleanIdForCheck = toID(p.id);
-  const isLegendary = LEGENDARY_POKEMON.includes(cleanIdForCheck);
-  const isFossil = FOSSIL_POKEMON.includes(cleanIdForCheck);
+  const cleanIdForCheck = p.id;
+  const isLegendary = isLegendaryPokemonSpeciesId(cleanIdForCheck);
+  const isFossil = isFossilPokemonSpeciesId(cleanIdForCheck);
   if (isLegendary || isFossil) {
     // No lanzar error, se resolverá a 0/0 dinámicamente en UI/lógica
   } else {
@@ -311,14 +318,14 @@ export interface PokemonCreationOptions {
   nature?: string;
   ability?: string;
   abilitySlot?: number;
-  gender?: 'M' | 'F' | 'N' | null;
+  gender?: PokemonGender;
   heldItem?: string | null;
   ivFloor?: number;
   mapId?: string;
   shinyMultiplier?: number;
-  forceGender?: 'M' | 'F' | 'N' | null;
+  forceGender?: PokemonGender;
   isGuardian?: boolean;
-  obtainedMethod?: string;
+  obtainedMethod?: ObtainedMethod;
   isNpcEgg?: boolean;
   bypassWhitelist?: boolean;
 }
@@ -328,18 +335,14 @@ export interface PokemonCreationOptions {
  */
 export function makePokemon(idVal: string | number, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
   if (idVal === undefined || idVal === null || idVal === '') return null;
-  let id = String(idVal).toLowerCase().trim();
+  const id = requirePokemonSpeciesId(toID(String(idVal)));
   
   if (level > MAX_POKEMON_LEVEL) level = MAX_POKEMON_LEVEL;
   const bypass = options.bypassWhitelist || false;
-  let base = pokemonDataProvider.getPokemonData(id, bypass);
+  const base = pokemonDataProvider.getPokemonData(id, bypass);
   if (!base) {
-    logger.error('Factory', `Missing Pokémon in DB: ${id}`);
-    base = pokemonDataProvider.getPokemonData('pidgey', bypass);
-    id = 'pidgey';
+    throw new Error(`[pokemonFactory] Missing Pokémon in DB: ${id}`);
   }
-
-  if (!base) return null; // Safety for pidgey missing too
 
   // 1. IV Floor from Class (Cazabichos)
   const classStore = usePlayerClassStore();
@@ -366,9 +369,11 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     spe: _randIv(_ivFloor, false, !!isGuardianPotential) 
   };
   
-  const nature = options.nature ? toID(options.nature) : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
+  const nature = options.nature ? toNatureId(toID(options.nature)) : NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
   const abilityList = pokemonDataProvider.getSpeciesAbilities(id);
-  const ability = options.ability ? toID(options.ability) : abilityList[Math.floor(Math.random() * abilityList.length)] || 'pressure';
+  const selectedAbility = options.ability ? toID(options.ability) : abilityList[Math.floor(Math.random() * abilityList.length)];
+  if (!selectedAbility) throw new Error(`[pokemonFactory] No ability available for species ${id}`);
+  const ability = requireAbilityId(selectedAbility);
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
   // Shiny Calculation
@@ -402,9 +407,9 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     }
   }
   
-  const cleanIdForCheck = toID(id);
-  const isLegendary = LEGENDARY_POKEMON.includes(cleanIdForCheck);
-  const isFossil = FOSSIL_POKEMON.includes(cleanIdForCheck);
+  const cleanIdForCheck = id;
+  const isLegendary = isLegendaryPokemonSpeciesId(cleanIdForCheck);
+  const isFossil = isFossilPokemonSpeciesId(cleanIdForCheck);
   let maxVigor = 0;
   let vigor = 0;
   if (!isLegendary && !isFossil) {
@@ -442,7 +447,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     nickname: null,
     tags: ['ball:pokeball'],
     obtainedAt: Temporal.Now.instant().epochMilliseconds,
-    obtainedMethod: options.obtainedMethod || 'wild',
+    obtainedMethod: options.obtainedMethod ?? 'wild',
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 

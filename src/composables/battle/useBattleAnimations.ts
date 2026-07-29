@@ -105,10 +105,7 @@ export function useBattleAnimations(
       if (!state) return
 
       const subState = sub || ''
-      const isCleanupState = [
-        'CONTEXT_SETUP', 
-        'EXIT_BATTLE'
-      ].includes(state) || subState === 'WAIT_INPUT'
+      const isCleanupState = (['CONTEXT_SETUP', 'EXIT_BATTLE'] as const).includes(state as never) || subState === 'WAIT_INPUT'
 
       if (isCleanupState) {
         isGlobalFadeActive.value = (state === 'EXIT_BATTLE' && !['DEFEAT_SCREEN', 'DEFEAT_WAIT'].includes(String(subState)))

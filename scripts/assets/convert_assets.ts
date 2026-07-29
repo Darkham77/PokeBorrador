@@ -549,8 +549,9 @@ export type BushFamily = keyof typeof BUSH_FAMILIES;
     mapAssetsContent = mapAssetsContent.trimEnd() + '\n';
   }
 
-  const generatedContent = `${mapAssetsContent}
+const generatedContent = `${mapAssetsContent}
 export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as const;
+export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
 `;
 
   await fs.writeFile(mapAssetsPath, generatedContent, 'utf-8');
@@ -694,29 +695,52 @@ export interface FeetPoints {
   readonly feetX: number;
 }
 
-const PACKED_DATA = packedData as unknown as {
-  p: Record<string, [number, number]>;
-  n: Record<string, [number, number]>;
-  t: Record<string, [number, number]>;
-  c: Record<string, string>;
-};
+const PACKED_DATA = packedData;
 
-export const POKEMON_FEET_DATABASE: Record<string, FeetPoints> = {};
+type FeetSpriteGroupKey = 'p' | 'n' | 't';
+type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
+export type FeetDatabasePath = \`\${FeetSpritePrefix}\${string}.webp\`;
+
+export const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
+
+function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
+  const value = values[index];
+  if (value !== undefined) return value;
+  throw new Error(\`[pokemonFeetDatabase] Invalid feet tuple for path: \${path}\`);
+}
 
 for (const [key, prefix] of [
   ['p', '/assets/sprites/pokemon/'],
   ['n', '/assets/sprites/npc/'],
   ['t', '/assets/sprites/trainers/']
-] as const) {
+] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
   const group = PACKED_DATA[key];
-  if (group) {
-    for (const [subKey, [y, x]] of Object.entries(group)) {
-      POKEMON_FEET_DATABASE[\`\${prefix}\${subKey}.webp\`] = { feetY: y, feetX: x };
-    }
+  for (const [subKey, tuple] of Object.entries(group)) {
+    const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
+    const y = requireFeetMetric(tuple, dbPath, 0);
+    const x = requireFeetMetric(tuple, dbPath, 1);
+    POKEMON_FEET_DATABASE[dbPath] = { feetY: y, feetX: x };
   }
 }
 
-export const POKEMON_CRIES_DATABASE = (PACKED_DATA.c || {}) as Readonly<Record<string, string>>;
+export function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
+  return Object.hasOwn(POKEMON_FEET_DATABASE, value);
+}
+
+export function requireFeetDatabasePath(value: string): FeetDatabasePath {
+  if (hasFeetDatabasePath(value)) return value;
+  throw new Error(\`[pokemonFeetDatabase] Unknown feet database path: \${value}\`);
+}
+
+export function requireFeetPoints(value: string): FeetPoints {
+  const path = requireFeetDatabasePath(value);
+  const points = POKEMON_FEET_DATABASE[path];
+  if (points) return points;
+  throw new Error(\`[pokemonFeetDatabase] Missing feet points for path: \${path}\`);
+}
+
+export const POKEMON_CRIES_DATABASE = PACKED_DATA.c;
+export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
 `;
 
   await fs.writeFile(databasePath, databaseContent, 'utf-8');
@@ -794,6 +818,10 @@ export const POKEMON_CRIES_DATABASE = (PACKED_DATA.c || {}) as Readonly<Record<s
  */
 
 export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as const;
+
+export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
+
+export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 `;
 
   await fs.writeFile(npcCatalogPath, npcCatalogContent, 'utf-8');
@@ -930,17 +958,58 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as con
     `export const MAX_ANIMATED_SPRITE_SIZE_BACK = ${maxAnimatedSizeBack} as const;`,
     `export const MAX_ANIMATED_SPRITE_SIZE = MAX_ANIMATED_SPRITE_SIZE_FRONT;`,
     '',
-    'const RAW = dbJson.RAW as unknown as Record<string, readonly [number, number, number, number, number, number, number]>;',
+    'const RAW = dbJson.RAW;',
+    'export type AnimatedSpriteId = keyof typeof RAW;',
     '',
-    'export const ANIMATED_SPRITE_DATABASE: Record<string, AnimatedSpriteData> = Object.fromEntries(',
-    '  Object.entries(RAW).map(([id, [frames, size, feetY, feetX, bodyH, bodyW, bodyRadius]]) => [',
-    '    id,',
-    '    { frames, size, feetY, feetX, bodyH, bodyW, bodyRadius }',
-    '  ])',
-    ');',
+    'export function hasAnimatedSpriteId(id: string): id is AnimatedSpriteId {',
+    '  return Object.hasOwn(RAW, id);',
+    '}',
+    '',
+    'export function requireAnimatedSpriteId(id: string): AnimatedSpriteId {',
+    '  if (hasAnimatedSpriteId(id)) return id;',
+    '  throw new Error(`[animatedSpriteDatabase] Unknown animated sprite id: ${id}`);',
+    '}',
+    '',
+    'function requireAnimatedMetric(values: readonly number[], id: AnimatedSpriteId, index: number): number {',
+    '  const value = values[index];',
+    '  if (value !== undefined) return value;',
+    '  throw new Error(`[animatedSpriteDatabase] Invalid metric tuple for sprite id: ${id}`);',
+    '}',
+    '',
+    'export const ANIMATED_SPRITE_DATABASE: Partial<Record<AnimatedSpriteId, AnimatedSpriteData>> = {};',
+    '',
+    'for (const id in RAW) {',
+    '  if (!hasAnimatedSpriteId(id)) continue;',
+    '  const tuple = RAW[id];',
+    '  const frames = requireAnimatedMetric(tuple, id, 0);',
+    '  const size = requireAnimatedMetric(tuple, id, 1);',
+    '  const feetY = requireAnimatedMetric(tuple, id, 2);',
+    '  const feetX = requireAnimatedMetric(tuple, id, 3);',
+    '  const bodyH = requireAnimatedMetric(tuple, id, 4);',
+    '  const bodyW = requireAnimatedMetric(tuple, id, 5);',
+    '  const bodyRadius = requireAnimatedMetric(tuple, id, 6);',
+    '  ANIMATED_SPRITE_DATABASE[id] = { frames, size, feetY, feetX, bodyH, bodyW, bodyRadius };',
+    '}',
+    '',
+    'export function requireAnimatedSpriteData(id: AnimatedSpriteId): AnimatedSpriteData {',
+    '  const data = ANIMATED_SPRITE_DATABASE[id];',
+    '  if (data) return data;',
+    '  throw new Error(`[animatedSpriteDatabase] Missing animated sprite data for id: ${id}`);',
+    '}',
     '',
     `/** Variation frame counts to keep variation sprites out of coordinate databases */`,
-    `export const ANIMATED_VARIATION_FRAMES = dbJson.VARIATIONS as Record<string, number>;`,
+    `export const ANIMATED_VARIATION_FRAMES: Partial<Record<keyof typeof dbJson.VARIATIONS, number>> = dbJson.VARIATIONS;`,
+    `export type AnimatedVariationId = keyof typeof ANIMATED_VARIATION_FRAMES;`,
+    '',
+    'export function hasAnimatedVariationId(id: string): id is AnimatedVariationId {',
+    '  return Object.hasOwn(ANIMATED_VARIATION_FRAMES, id);',
+    '}',
+    '',
+    'export function requireAnimatedVariationFrameCount(id: AnimatedVariationId): number {',
+    '  const frames = ANIMATED_VARIATION_FRAMES[id];',
+    '  if (frames !== undefined) return frames;',
+    '  throw new Error(`[animatedSpriteDatabase] Missing variation frame count for id: ${id}`);',
+    '}',
     '',
   ].join('\n');
 
@@ -954,5 +1023,3 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as con
 if (isMainThread) {
   main();
 }
-
-

@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase'
+import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
 /**
  * Combat Shadow Store
  * Centralized management for shadows in the virtual battle arena.
  */
-interface FeetPoints {
-  feetY: number;
-  feetX: number;
-}
-
 interface CombatShadow {
   id: string;
   side: string;
@@ -48,11 +43,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       throw new Error(`[PokemonFeetDatabase] Cannot detect feet points: url is empty or undefined.`);
     }
     const key = getCleanDatabaseKey(url)
-    const points = POKEMON_FEET_DATABASE[key]
-    if (!points) {
-      throw new Error(`[PokemonFeetDatabase] Sprite key "${key}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
-    }
-    return points
+    return requireFeetPoints(key)
   }
 
   async function requestShadow(id: string, options: Partial<CombatShadow> = {}) {
@@ -69,11 +60,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
 
     // Obtener valores de la base de datos estática para evitar el salto inicial (Sync)
     const dbKey = getCleanDatabaseKey(options.spriteUrl || '')
-    const cachedPoints = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
-    
-    if (options.spriteUrl && !cachedPoints) {
-      throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
-    }
+    const cachedPoints = options.spriteUrl ? requireFeetPoints(dbKey) : null
     
     let feetY = options.feetY || (cachedPoints?.feetY ?? (existing?.feetY ?? 0.9))
     // Si es volador, ignoramos el valor detectado y forzamos el suelo

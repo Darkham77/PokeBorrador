@@ -32,6 +32,7 @@ function buildKoText(ko: { chance: number | undefined; n: number }): string {
 }
 
 type SideConditions = Record<string, { turns: number; [key: string]: unknown }> | undefined;
+type TooltipMoveData = Partial<Pick<Move, 'cat' | 'type' | 'power' | 'acc' | 'effect' | 'priority'>>;
 
 /** Compile active field conditions for the tooltip's CONDICIONES section. */
 function buildFieldConditionsList(
@@ -39,7 +40,7 @@ function buildFieldConditionsList(
   enemySC:  SideConditions,
   terrain:  string | null | undefined
 ): string[] {
-  const list: string[] = [];
+  const list: string[] = []; // no-domain
   if (playerSC?.['reflect'])     list.push('Reflect (↓ daño físico enemigo)');
   if (playerSC?.['lightscreen']) list.push('Pantalla de Luz (↓ daño esp. enemigo)');
   if (playerSC?.['auroraveil'])  list.push('Aurora Velo (↓ todo daño enemigo)');
@@ -72,7 +73,7 @@ export function useMoveTooltip(
       const itemName = getItemName(itemKey);
       
       const moveIdLookup = move.id || '';
-      const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number };
+      const md: TooltipMoveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {};
       const category = move.cat || md.cat || 'physical';
       const isPhysical = category === 'physical';
       const isSpecial = category === 'special';
@@ -118,7 +119,7 @@ export function useMoveTooltip(
     if (!attacker) return null;
 
     const moveIdLookup = move.id || '';
-    const md = (moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {}) as { cat?: 'physical' | 'special' | 'status'; type?: string; power?: number; acc?: number; effect?: string; priority?: number };
+    const md: TooltipMoveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {};
     const basePower = move.power !== undefined ? move.power : md.power || 0;
     const isStatus = move.cat === 'status' || md.cat === 'status';
     const moveType = (move.type || md.type || 'normal').toLowerCase();

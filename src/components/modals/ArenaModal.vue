@@ -10,6 +10,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import ArenaMilestoneTrack from '@/components/modals/ArenaMilestoneTrack.vue'
 import { gsap } from 'gsap'
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -58,7 +59,7 @@ const offlineTransitionHooks = useGsapTransition({
   duration: 0.3
 })
 
-const allowedTypes = computed<string[]>(() => pvp.currentSeasonRules?.allowedTypes || [])
+const allowedTypes = computed<PokemonType[]>(() => (pvp.currentSeasonRules?.allowedTypes || []).map(toPokemonType))
 
 const getRankIcon = (tierId: string) => {
   return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)

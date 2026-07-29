@@ -1,8 +1,10 @@
 import { Dex, toID } from '@pkmn/sim';
 import type { PokemonBaseData } from '@/types/system/database';
 import { ACTIVE_GENERATION, IMPLEMENTED_GENERATION } from '../system/constants.ts';
-import { MOVE_TRANSLATIONS_ES } from '../battle/moves.ts';
+import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '../battle/moves.ts';
 import { SPECIES_METADATA } from './speciesMetadata.ts';
+import { toPokemonType } from '../battle/types.ts';
+import type { LearnsetMove } from '@/types/system/database';
 
 const MAX_DEX_NUMS: Record<number, number> = {
   1: 151,
@@ -18,16 +20,26 @@ const MAX_DEX_NUMS: Record<number, number> = {
 
 const maxDexNum = MAX_DEX_NUMS[IMPLEMENTED_GENERATION] ?? 1025;
 const allSpecies = Dex.forGen(ACTIVE_GENERATION).species.all();
-const db: Record<string, PokemonBaseData> = {};
+type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
+
+const db: { [K in PokemonDbSpeciesId]?: PokemonBaseData } = {};
+
+function isPokemonDbSpeciesId(id: string): id is PokemonDbSpeciesId {
+  return Object.hasOwn(SPECIES_METADATA, id);
+}
 
 for (const species of allSpecies) {
   if (species.num <= 0 || species.num > maxDexNum) {
     continue;
   }
 
-  const speciesId = toID(species.id);
-  const type = (species.types[0] ?? '').toLowerCase();
-  const type2 = species.types[1] ? species.types[1].toLowerCase() : undefined;
+  const speciesId = String(toID(species.id));
+  if (!isPokemonDbSpeciesId(speciesId)) {
+    throw new Error(`[pokemonDB] Missing species metadata for active Showdown species: ${speciesId}`);
+  }
+
+  const type = toPokemonType((species.types[0] ?? '').toLowerCase());
+  const type2 = species.types[1] ? toPokemonType(species.types[1].toLowerCase()) : undefined;
 
   const movesMap = new Map<string, number>();
   let currentId: string | undefined = species.id;
@@ -69,15 +81,16 @@ for (const species of allSpecies) {
     }
   }
 
-  const learnset: Array<{ lv: number; id: string; name: string; pp: number }> = [];
+  const learnset: LearnsetMove[] = [];
   for (const [moveId, level] of movesMap.entries()) {
     const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
     if (moveData.exists && moveData.isNonstandard !== 'Past') {
-      const translated = MOVE_TRANSLATIONS_ES[moveId];
+      const pokemonMoveId = requirePokemonMoveId(moveId);
+      const translated = Object.entries(MOVE_TRANSLATIONS_ES).find(([id]) => id === moveId)?.[1];
       const espName = translated ? translated.name : moveData.name;
       learnset.push({
         lv: level,
-        id: moveId,
+        id: pokemonMoveId,
         name: espName,
         pp: moveData.pp
       });
@@ -87,11 +100,12 @@ for (const species of allSpecies) {
     const defaultMoveId = speciesId === 'unown' ? 'hiddenpower' : 'tackle';
     const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId);
     if (moveData.exists) {
-      const translated = MOVE_TRANSLATIONS_ES[defaultMoveId];
+      const pokemonMoveId = requirePokemonMoveId(defaultMoveId);
+      const translated = Object.entries(MOVE_TRANSLATIONS_ES).find(([id]) => id === defaultMoveId)?.[1];
       const espName = translated ? translated.name : moveData.name;
       learnset.push({
         lv: 1,
-        id: defaultMoveId,
+        id: pokemonMoveId,
         name: espName,
         pp: moveData.pp
       });
@@ -111,7 +125,7 @@ for (const species of allSpecies) {
     spa: species.baseStats.spa,
     spd: species.baseStats.spd,
     spe: species.baseStats.spe,
-    catchRate: metadata?.catchRate ?? 45,
+    catchRate: metadata.catchRate,
     learnset
   };
 }

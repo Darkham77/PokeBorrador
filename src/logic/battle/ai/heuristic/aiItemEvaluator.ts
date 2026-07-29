@@ -6,7 +6,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
   if (!battleState?.enemyInventory) return false
 
   const enemyInventory = battleState.enemyInventory
-  if (!Object.values(enemyInventory).some(qty => qty > 0)) return false
+  if (!Object.values(enemyInventory).some(qty => qty !== undefined && qty > 0)) return false
 
   const npcName = battleState.isGym
     ? `Líder ${battleState.trainerName || 'de Gimnasio'}`
@@ -31,7 +31,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
     if (enemyInventory['revivemax'] && enemyInventory['revivemax'] > 0) {
       const target = fainted[0]!
       target.hp = target.maxHp
-      target.status = undefined
+      target.status = ''
       if (--enemyInventory['revivemax'] <= 0) delete enemyInventory['revivemax']
       ctx.addLog(`¡${npcName} usó Revivir Máximo en ${target.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${target.name} revivió por completo!`, 'log-info', target, 'enemy')
@@ -41,7 +41,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
     if (enemyInventory['revive'] && enemyInventory['revive'] > 0) {
       const target = fainted[0]!
       target.hp = Math.floor(target.maxHp * 0.5)
-      target.status = undefined
+      target.status = ''
       if (--enemyInventory['revive'] <= 0) delete enemyInventory['revive']
       ctx.addLog(`¡${npcName} usó Revivir en ${target.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${target.name} revivió con la mitad de su salud!`, 'log-info', target, 'enemy')
@@ -76,7 +76,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       if (!statuses.includes(e.status as string)) continue
       if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue
       if (itemId === 'fullrestore') e.hp = e.maxHp
-      e.status = undefined
+      e.status = ''
       if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId]
       ctx.addLog(`¡${npcName} usó ${itemName} en ${e.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${e.name} ${curedMsg}!`, 'log-info', e, 'enemy')
@@ -99,7 +99,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue
       const prev = e.hp
       e.hp = amount === 'full' ? e.maxHp : Math.min(e.maxHp, e.hp + amount)
-      if (itemId === 'fullrestore') e.status = undefined
+      if (itemId === 'fullrestore') e.status = ''
       if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId]
       ctx.addLog(`¡${npcName} usó ${itemName} en ${e.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${e.name} recuperó salud!`, 'log-info', e, 'enemy')

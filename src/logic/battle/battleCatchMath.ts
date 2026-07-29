@@ -1,9 +1,12 @@
 import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import { getEffectiveStatPure } from './battleMath.ts'
 
-function getMechWeather(type: string | null | undefined): string {
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { ItemId } from '@/data/inventory/items';
+
+function getMechWeather(type: WeatherId | string | null | undefined): string {
   if (!type) return 'clear'
-  const lower = type.toLowerCase()
+  const lower = type as WeatherId
   if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun'
   if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain'
   if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm'
@@ -14,17 +17,11 @@ function getMechWeather(type: string | null | undefined): string {
   return 'clear'
 }
 
-export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: PureCatchOptions = {}) {
-  const ballName = String(rawBallType || '').toLowerCase()
-  
-  const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }> = {
-    'master': { guaranteed: true },
-    '100': { guaranteed: true },
-    'ultra': { mult: 2.0 },
-    'great': { mult: 1.5 },
-    'super': { mult: 1.5 },
-    'súper': { mult: 1.5 },
-    'net': { 
+const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }>> = {
+  masterball: { guaranteed: true },
+  ultraball: { mult: 2.0 },
+  greatball: { mult: 1.5 },
+  netball: {
       mult: (p, c) => {
         const isWaterOrBug = (p.type === 'water' || p.type2 === 'water' || p.type === 'bug' || p.type2 === 'bug')
         const mech = getMechWeather(c.weather?.type)
@@ -32,7 +29,7 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
         return (isWaterOrBug || isRain) ? 3.5 : 1.0
       }
     },
-    'dusk': { 
+  duskball: {
       mult: (_p, c) => {
         const cycle = c.cycle || 'day'
         const isNight = cycle === 'night' || cycle === 'dusk'
@@ -42,13 +39,13 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType = 'poke
         return (isNight || isCave || isFog) ? 3.0 : 1.0
       }
     },
-    'timer': { 
+  timerball: {
       mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
     }
-  }
+}
 
-  const behaviorEntry = Object.entries(BALL_BEHAVIORS).find(([key]) => ballName.includes(key))
-  const behavior = behaviorEntry ? behaviorEntry[1] : { mult: 1.0 }
+export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType: ItemId = 'pokeball', eventCatchMult = 1, ctx: PureCatchOptions = {}) {
+  const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 }
 
   if (behavior.guaranteed) return { caught: true, shakes: 3 }
 
@@ -128,4 +125,3 @@ export function calculateEscapeChancePure(
 
   return Math.floor(Math.random() * 256) < f
 }
-

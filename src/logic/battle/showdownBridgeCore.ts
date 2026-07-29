@@ -1,6 +1,7 @@
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
+import { requirePokemonMoveId } from '@/data/battle/moves';
 
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
@@ -30,7 +31,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
       if (attacker && side) {
         const style = attacker === p ? 'log-player' : 'log-enemy';
         store.addLog(`¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`, style, attacker);
-        const cleanMoveId = toID(moveId);
+        const cleanMoveId = requirePokemonMoveId(toID(moveId));
 
         attacker.lastMove = {
           id: cleanMoveId,
@@ -48,7 +49,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           delete attacker.volatileCounters['twoturnmove'];
         }
 
-        const isLockedMove = moveData?.effect === 'locked_move';
+        const isLockedMove = moveData?.self?.volatileStatus === 'lockedmove';
         if (isLockedMove && attacker.volatileCounters) {
           attacker.volatileCounters['lockedmove'] = 1;
         }
@@ -67,7 +68,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           if (store.attackerSide) store.attackerSide.value = side;
           if (store.activeMove) {
             store.activeMove.value = {
-              id: toID(moveId),
+              id: cleanMoveId,
               name: translatedName,
               type: moveData?.type || 'normal',
               cat: (moveData?.cat || 'physical') as 'physical' | 'special' | 'status',
@@ -76,7 +77,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
               pp: 0,
               maxPP: 0,
               priority: moveData?.priority || 0,
-              effect: moveData?.effect || '',
+              effect: moveData?.effect,
               target: ((moveData as { target?: string })?.target || 'normal') as 'enemy' | 'self' | 'all'
             };
           }
@@ -101,7 +102,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (!attacker.volatileCounters) attacker.volatileCounters = {};
         attacker.volatileCounters['twoturnmove'] = 1;
         attacker.lastMove = {
-          id: toID(moveId),
+          id: requirePokemonMoveId(toID(moveId)),
           name: translatedName,
           pp: 0,
           maxPP: 0
@@ -141,7 +142,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         const fromClause = parts.find(p => p.startsWith('[from]'));
         const isSilent = line.includes('[silent]');
         if (fromClause && !isSilent) {
-          const fromLower = fromClause.toLowerCase();
+          const fromLower = fromClause.toLowerCase(); // text-ok
           if (fromLower.includes('recoil')) {
             store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
           } else if (fromLower.includes('item: life orb')) {
@@ -198,7 +199,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           // Informational status in hp string - do not auto-inject status
         }
         const fromClause = parts.find(p => p.startsWith('[from]'));
-        if (fromClause && fromClause.toLowerCase().includes('drain')) {
+        if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok
           store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
         } else {
           store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
@@ -238,7 +239,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
           par: `¡${target.name} fue paralizado! ¡Quizás no pueda moverse!`,
           frz: `¡${target.name} fue congelado!`,
         };
-        const msg = statusMessages[statusType] || `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`;
+        const msg = statusMessages[statusType] || `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok
         store.addLog(msg, 'log-info', target);
       }
       return true;

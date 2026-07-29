@@ -71,6 +71,10 @@ const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const activeTab = ref('summary')
+const primaryTypeColor = computed(() => {
+  const type = species.value?.type[0]
+  return type ? PDEX_TYPE_COLORS[type] ?? '#888' : '#888'
+})
 
 const tabs = computed(() => {
   const base = [
@@ -187,8 +191,8 @@ const handleReorderMoves = (from: number, to: number) => {
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
-        '--type-color': (PDEX_TYPE_COLORS as Record<string, string>)[species.type[0].toLowerCase()] || '#888',
-        '--type-color-rgb': hexToRgb((PDEX_TYPE_COLORS as Record<string, string>)[species.type[0].toLowerCase()] || '#888')
+        '--type-color': primaryTypeColor,
+        '--type-color-rgb': hexToRgb(primaryTypeColor)
       }"
     >
       <!-- Custom Content Header -->

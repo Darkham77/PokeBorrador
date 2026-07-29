@@ -4,7 +4,11 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory'
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
+import { toNatureId } from '@/data/battle/natures'
+import { requireAbilityId } from '@/data/battle/abilities'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
 
 // Subcomponents
 import DebugSearchSelect from './DebugSearchSelect.vue'
@@ -14,6 +18,7 @@ import PokemonPreview from './PokemonPreview.vue'
 import PokemonBaseStats from './PokemonBaseStats.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon'
 
 const props = defineProps<{
   pokemon: Pokemon
@@ -21,8 +26,6 @@ const props = defineProps<{
 }>()
 
 const activePoke = computed(() => props.pokemon)
-
-import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } from '@/logic/utils/routeSpawnHelpers'
 
 // --- DATA LISTS FOR EDITORS ---
 const allSpecies = computed(() => getSelectableSpecies(true))
@@ -32,26 +35,26 @@ const allItems = computed(() => {
   return [
     { id: '', name: 'Ninguno' },
     ...SHOP_ITEMS
-      .filter(i => i.cat === 'held' || i.type === 'held')
-      .map(i => ({ id: i.name, name: i.name }))
+      .filter(i => i.cat === 'combat_held' || i.cat === 'breeding_held')
+      .map(i => ({ id: i.id, name: i.name }))
   ]
 })
 
 
 // --- ACTIVE POKEMON EDIT COMPUTEDS ---
 const activePokeNature = computed({
-  get: () => activePoke.value.nature || '',
-  set: (val: string) => { activePoke.value.nature = val }
+  get: () => activePoke.value.nature || 'hardy',
+  set: (val: string) => { activePoke.value.nature = toNatureId(val) }
 })
 
 const activePokeAbility = computed({
   get: () => activePoke.value.ability || '',
-  set: (val: string) => { activePoke.value.ability = val }
+  set: (val: string) => { activePoke.value.ability = val ? requireAbilityId(val) : undefined }
 })
 
 const activePokeHeldItem = computed({
   get: () => activePoke.value.heldItem || '',
-  set: (val: string) => { activePoke.value.heldItem = val }
+  set: (val: string) => { activePoke.value.heldItem = val ? requireItemId(val) : null }
 })
 
 const activePokeNickname = computed({
@@ -59,7 +62,7 @@ const activePokeNickname = computed({
   set: (val: string) => { activePoke.value.nickname = val }
 })
 
-const activeSpeciesMoves = computed<string[]>(() => {
+const activeSpeciesMoves = computed<PokemonMoveId[]>(() => {
   const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
   if (!data || !data.learnset) return []
   return [...new Set(data.learnset.map(m => m.id))]
@@ -84,7 +87,7 @@ const activePokeMoves = computed({
     while (moves.length < 4) moves.push(null)
     return moves
   },
-  set: (val: (string | null)[]) => {
+  set: (val: (PokemonMoveId | null)[]) => {
     const formatted = val.map(mId => {
       if (!mId) return null
       const mData = pokemonDataProvider.getMoveData(mId)
@@ -107,7 +110,7 @@ const activePokeMoves = computed({
 // --- RANDOMIZERS ---
 function randomizeActiveSpecies() {
   const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
-  const randomId = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
+  const randomId = requirePokemonSpeciesId(dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur')
   selectEditPokeSpecies({ id: randomId })
 }
 
@@ -145,22 +148,23 @@ function randomizeActiveHeldItem() {
 }
 
 function randomizeActiveNickname() {
-  const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE']
+  const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
   activePokeNickname.value = Math.random() > 0.3 ? names[Math.floor(Math.random() * names.length)] || '' : ''
 }
 
 function selectEditPokeSpecies(p: { id: string }) {
-  activePoke.value.id = p.id
-  activePoke.value.name = pokemonDataProvider.getPokemonDb()[p.id]?.name || p.id
+  const speciesId = requirePokemonSpeciesId(p.id)
+  activePoke.value.id = speciesId
+  activePoke.value.name = pokemonDataProvider.getPokemonDb()[speciesId]?.name || speciesId
   
   // Set default ability
-  const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
+  const abilities = pokemonDataProvider.getSpeciesAbilities(speciesId)
   if (abilities.length > 0) {
-    activePoke.value.ability = abilities[0] || ''
+    activePoke.value.ability = abilities[0] ? requireAbilityId(abilities[0]) : undefined
   }
 
   // Refill moves based on level
-  const data = pokemonDataProvider.getPokemonData(p.id)
+  const data = pokemonDataProvider.getPokemonData(speciesId)
   if (data?.learnset) {
     const learnedMoves = data.learnset
       .filter(m => m.lv <= activePoke.value.level)
@@ -194,8 +198,8 @@ function randomFillActiveMoves() {
   activePokeMoves.value = shuffled.slice(0, 4)
 }
 
-function updateActiveIV(stat: string, val: number) {
-  activePoke.value.ivs[stat as keyof typeof activePoke.value.ivs] = Math.max(0, Math.min(31, val))
+function updateActiveIV(stat: PokemonStatKey, val: number) {
+  activePoke.value.ivs[stat] = Math.max(0, Math.min(31, val))
   recalcPokemonStats(activePoke.value)
 }
 
@@ -275,10 +279,10 @@ watch(() => activePoke.value?.level, (newLv) => {
           :sprite-url="pokemonDataProvider.getSpriteUrl(activePoke.id, activePoke.isShiny)"
           :is-shiny="activePoke.isShiny"
           :is-guardian="activePoke.isGuardian"
-          :gender="activePoke.gender || 'M'"
+          :gender="activePoke.gender || 'm'"
           @toggle-shiny="activePoke.isShiny = !activePoke.isShiny"
           @toggle-guardian="activePoke.isGuardian = !activePoke.isGuardian"
-          @toggle-gender="activePoke.gender = activePoke.gender === 'M' ? 'F' : 'M'"
+          @toggle-gender="activePoke.gender = activePoke.gender === 'm' ? 'f' : 'm'"
         />
 
         <PokemonBaseStats :stats="activeBaseStats" />
@@ -344,7 +348,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             </button>
           </div>
           <PokemonIVEditor 
-            :ivs="activePoke.ivs as unknown as Record<string, number>" 
+            :ivs="activePoke.ivs" 
             @update:iv="updateActiveIV"
           />
         </div>

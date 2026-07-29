@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { calculateEscapeChancePure } from '../../../src/logic/battle/battleCatchMath.ts';
 import { STAGE_MULTIPLIERS_STAT, STAGE_MULTIPLIERS_ACC } from '../../../src/logic/battle/battleMath.ts';
+import type { PurePokemon } from '../../../src/logic/battle/battleMathTypes.ts';
 
 describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
   it('Suspect 1: battleCatchMath uses regex replacement on IDs', () => {
-    const poke = {
+    const poke: PurePokemon = {
       id: 'pikachu',
       hp: 10,
       maxHp: 10,
@@ -13,7 +14,7 @@ describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
       ability: 'Static-Ability',
       heldItem: 'Smoke-Ball'
     };
-    const wild = {
+    const wild: PurePokemon = {
       id: 'pidgey',
       hp: 10,
       maxHp: 10,

@@ -2,9 +2,11 @@
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { TRAINER_RANKS } from '@/data/player/trainer';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { requireAbilityId } from '@/data/battle/abilities';
 
-import { validateAndSanitize } from './saveService.ts';
+import { validateAndSanitize, type SaveData } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { GymId } from '@/data/world/gyms';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
@@ -203,7 +205,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   const normalized = normalizeData(finalSaveData);
 
   // 4. Sanitize and Validate
-  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(normalized);
+  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(normalized as SaveData);
   if (!valid) {
     logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
     throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
@@ -259,19 +261,25 @@ function normalizeData(state: GameState): GameState {
     if (!p) return null;
     if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Temporal.Now.instant().epochMilliseconds.toString(36);
     
+    if (Object.is(p.gender, 'M')) p.gender = 'm';
+    if (Object.is(p.gender, 'F')) p.gender = 'f';
+    if (Object.is(p.gender, 'N')) p.gender = null;
+
     // Legacy gender backfill
-    if (!p.gender) {
+    if (p.gender === undefined) {
       // Logic from legacy 02_pokemon_data.js
-      const isGenderless = ['magnemite', 'magneton', 'voltorb', 'electrode', 'staryu', 'starmie', 'ditto', 'porygon', 'mewtwo', 'mew'].includes(p.id);
+      const isGenderless = ['magnemite', 'magneton', 'voltorb', 'electrode', 'staryu', 'starmie', 'ditto', 'porygon', 'mewtwo', 'mew'].includes(p.id); // no-domain
       if (!isGenderless) {
-        p.gender = Math.random() < 0.5 ? 'M' : 'F';
+        p.gender = Math.random() < 0.5 ? 'm' : 'f';
+      } else {
+        p.gender = null;
       }
     }
 
     // Legacy ability backfill
     if (!p.ability) {
       const speciesAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
-      p.ability = speciesAbilities[0] || 'overgrow';
+      p.ability = requireAbilityId(speciesAbilities[0] || 'overgrow');
     }
 
     if (p.vigor === undefined) p.vigor = 100;
@@ -295,6 +303,12 @@ function normalizeData(state: GameState): GameState {
 
   state.team = state.team.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
   state.box = state.box.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
+  state.eggs = state.eggs.map(egg => {
+    if (Object.is(egg.gender, 'M')) egg.gender = 'm';
+    if (Object.is(egg.gender, 'F')) egg.gender = 'f';
+    if (Object.is(egg.gender, 'N')) egg.gender = null;
+    return egg;
+  });
 
   // Patch: If the team exceeds 6 pokemon, safely move the excess to the box
   if (state.team.length > 6) {
@@ -321,9 +335,9 @@ function normalizeData(state: GameState): GameState {
   } else if (state.badges > 0) {
     // Si tiene un contador de medallas heredado pero defeatedGyms está vacío,
     // reconstruimos la lista secuencialmente según el orden de progresión de Kanto
-    const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+    const kantoGymIds: GymId[] = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
     const count = Math.min(8, Math.max(0, state.badges));
-    state.defeatedGyms = allGymIds.slice(0, count);
+    state.defeatedGyms = kantoGymIds.slice(0, count);
   }
 
   if (state.lastPokemonCenterHeal === undefined) {

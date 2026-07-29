@@ -1,5 +1,8 @@
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
+
+const SNOW_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['snow', 'blizzard', 'hail']
 
 export function useAtmosphereSnowAnim(
   layer1Ref: Ref<HTMLElement | null>,
@@ -7,7 +10,7 @@ export function useAtmosphereSnowAnim(
   applyParallaxLayer: (layer: HTMLElement | null, startX: number, startY: number, moveX: number, moveY: number, duration: number) => void
 ) {
   const initSnowAnim = (
-    w: string,
+    w: WeatherId,
     seed1: number,
     seed2: number,
     animSeed: number,
@@ -15,7 +18,7 @@ export function useAtmosphereSnowAnim(
     speedVar: number,
     weatherTimeline: gsap.core.Timeline | null
   ) => {
-    if (!['snow', 'blizzard', 'hail'].includes(w) || !weatherTimeline) return
+    if (!SNOW_ATMOSPHERE_WEATHER_IDS.includes(w) || !weatherTimeline) return
 
     const isBlizzard = w === 'blizzard'
     const isHail = w === 'hail'

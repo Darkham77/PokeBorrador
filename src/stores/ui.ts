@@ -8,11 +8,12 @@ import { safeStorage } from '@/logic/utils/storage'
 import { useNotificationStore } from '@/stores/notifications.ts'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 
 interface EvolutionData {
   pokemon: Pokemon;
-  targetId: string;
+  targetId: PokemonSpeciesId;
   itemName: string;
 }
 
@@ -224,13 +225,14 @@ export const useUIStore = defineStore('ui', () => {
   function closeMoveDetail() { useModalStore().close('MoveDetail') }
 
   function startEvolution(pokemon: Pokemon, targetId: string, itemName: string) {
-    evolutionData.value = { pokemon, targetId, itemName }
+    const targetSpeciesId = requirePokemonSpeciesId(targetId)
+    evolutionData.value = { pokemon, targetId: targetSpeciesId, itemName }
     useModalStore().open('Evolution')
     
     // Dynamic import to break circular dependency: ui -> evolution -> game -> ui
     import('@/stores/evolution').then(m => {
       const evolutionStore = m.useEvolutionStore()
-      evolutionStore.startEvolution(pokemon, targetId, itemName, () => {
+      evolutionStore.startEvolution(pokemon, targetSpeciesId, itemName, () => {
         useModalStore().close('Evolution')
       })
     })
@@ -260,19 +262,13 @@ export const useUIStore = defineStore('ui', () => {
 
 
   /**
-   * List of modals that do NOT obscure the background (e.g., side panels).
-   * These will NOT trigger "Simplified/Performance Mode" for the map.
-   */
-  const NON_OBSCURING_MODALS = ['Profile']
-
-  /**
    * Returns true if there is any active modal that obscures the background.
    */
   const isAnyBlockingModalOpen = computed(() => {
     const modalStore = useModalStore()
     const battleStore = useBattleStore()
     const obscuringModals = modalStore.stack.filter(m => {
-      if (NON_OBSCURING_MODALS.includes(m.name)) return false
+      if (m.name === 'Profile') return false
       if (m.props?.overlay === 'none') return false
       return true
     })

@@ -94,8 +94,8 @@ describe('PokemonStatus Type Guard', () => {
     expect(isPokemonStatus('frz')).toBe(true);
     expect(isPokemonStatus('tox')).toBe(true);
     expect(isPokemonStatus('')).toBe(true);
-    expect(isPokemonStatus(null)).toBe(true);
-    expect(isPokemonStatus(undefined)).toBe(true);
+    expect(isPokemonStatus(null as any)).toBe(false);
+    expect(isPokemonStatus(undefined as any)).toBe(false);
   });
 
   it('debería retornar false para estados inválidos como fnt', () => {

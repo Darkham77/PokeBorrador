@@ -16,6 +16,7 @@ import { useModalStore } from '@/stores/modals'
 import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -35,6 +36,13 @@ const uiStore = useUIStore()
 const boxStore = useBoxStore()
 
 const pokemon = computed(() => (gameStore.state.box[props.boxIndex] || null))
+const pokemonTypes = computed<PokemonType[]>(() => {
+  const p = pokemon.value
+  if (!p) return []
+  const types: PokemonType[] = [toPokemonType(p.type)]
+  if (p.type2) types.push(toPokemonType(p.type2))
+  return types
+})
 const team = computed(() => (gameStore.state.team || []))
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
 const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : null)
@@ -179,9 +187,9 @@ const handleSellRocket = () => {
           <div class="header-badges">
             <span
               v-if="pokemon?.gender"
-              :class="['m-badge-gender', pokemon?.gender === 'M' ? 'male' : 'female']"
+              :class="['m-badge-gender', pokemon?.gender === 'm' ? 'male' : 'female']"
             >
-              {{ pokemon?.gender === 'M' ? '♂' : '♀' }}
+              {{ pokemon?.gender === 'm' ? '♂' : '♀' }}
             </span>
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
             <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>
@@ -217,9 +225,9 @@ const handleSellRocket = () => {
         <div class="summary-meta">
           <div class="box-types-row">
             <PokemonTypeTag
-              v-for="t in [pokemon?.type, pokemon?.type2].filter(Boolean)" 
-              :key="String(t)"
-              :type="String(t)"
+              v-for="t in pokemonTypes" 
+              :key="t"
+              :type="t"
               size="sm"
             />
           </div>

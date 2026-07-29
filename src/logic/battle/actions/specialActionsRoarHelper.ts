@@ -4,6 +4,31 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gameBus } from '@/logic/events/gameBus'
 import { callPokemonToBattle } from './specialActionsHelper.ts'
 
+const BATTLE_STAGE_RESET_KEYS = [
+  'atk',
+  'def',
+  'spa',
+  'spd',
+  'spe',
+  'accuracy',
+  'evasion',
+  'reflect',
+  'lightScreen',
+  'safeguard',
+  'mist',
+  'spikes',
+  'stealthrock',
+  'toxicspikes',
+  'acc',
+  'eva'
+] as const satisfies readonly (keyof BattleStages)[]
+
+function resetBattleStages(stages: BattleStages): void {
+  for (const key of BATTLE_STAGE_RESET_KEYS) {
+    stages[key] = 0
+  }
+}
+
 export async function executeRoarAction(
   src: Pokemon,
   tgt: Pokemon,
@@ -47,9 +72,7 @@ export async function executeRoarAction(
         : Promise.resolve()
 
       b.enemy = randomPick
-      Object.keys(tgtStages).forEach(k => {
-        tgtStages[k] = 0
-      })
+      resetBattleStages(tgtStages)
 
       await withdrawPromise
 
@@ -92,9 +115,7 @@ export async function executeRoarAction(
       if (randomPick) {
         b.playerTeamIndex = b.playerTeam?.findIndex(p => p.uid === randomPick.uid) ?? b.playerTeamIndex
       }
-      Object.keys(tgtStages).forEach(k => {
-        tgtStages[k] = 0
-      })
+      resetBattleStages(tgtStages)
 
       await withdrawPromise
 

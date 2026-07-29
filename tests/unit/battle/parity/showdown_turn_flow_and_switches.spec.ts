@@ -136,8 +136,8 @@ describe('Audit Parity - BUG-029: -start typechange must update target.type, not
 
     await handleFieldEvents(ctx);
 
-    // typechange must update target.type to 'Fire', not store a counter
-    expect(mockPoke.type).toBe('Fire');
+    // typechange must update target.type to 'fire', not store a counter
+    expect(mockPoke.type).toBe('fire');
     expect((mockPoke.volatileCounters as Record<string, number>)['typechange']).toBeUndefined();
   });
 });
@@ -159,8 +159,8 @@ describe('Audit Parity - BUG-030: -start typeadd must update type2, not add a co
 
     await handleFieldEvents(ctx);
 
-    // typeadd must add Fire as addedType — type2 should reflect it or addedType field should be set
-    expect((mockPoke as Record<string, unknown>).addedType).toBe('Fire');
+    // typeadd must add fire as addedType — type2 should reflect it or addedType field should be set
+    expect((mockPoke as Record<string, unknown>).addedType).toBe('fire');
     expect((mockPoke.volatileCounters as Record<string, number>)['typeadd']).toBeUndefined();
   });
 });

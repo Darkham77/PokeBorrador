@@ -4,7 +4,8 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBreedingStore } from '@/stores/breeding'
 
-import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById, requireItemId, SHOP_ITEMS } from '@/data/inventory/items'
+import type { Inventory } from '@/types/inventory/items';
 
 export function registerItemTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -17,17 +18,10 @@ export function registerItemTools(debug: DebugSystem) {
     command: 'addItem',
     category: 'items',
     action: (id: string, qty = 10) => {
-      let resolvedId = id
-      let itemName = id
-      try {
-        const item = getItemById(id)
-        resolvedId = item.id
-        itemName = item.name
-      } catch {
-        // Fallback tolerante en entornos de test
-        resolvedId = id.toLowerCase().trim()
-      }
-      const inventory: Record<string, number> = { ...game.state.inventory }
+      const resolvedId = requireItemId(id)
+      const item = getItemById(resolvedId)
+      const itemName = item.name
+      const inventory: Inventory = { ...game.state.inventory }
       inventory[resolvedId] = ((inventory[resolvedId]) || 0) + qty
       game.state.inventory = inventory
       ui.notify(`Debug: +${qty} ${itemName}`, '🎒')
@@ -42,7 +36,7 @@ export function registerItemTools(debug: DebugSystem) {
     command: 'fillInventory',
     category: 'items',
     action: (qty = 50) => {
-      const inventory: Record<string, number> = { ...game.state.inventory }
+      const inventory: Inventory = { ...game.state.inventory }
       SHOP_ITEMS.forEach(item => {
         inventory[item.id] = qty
       })

@@ -39,14 +39,14 @@ export function useShopLogic(options: {
       if (!visibilityFlag) return false
 
       const resolvedCat = item.cat || 'otros'
-      const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
+      const isMaterialCat = (['raw_material', 'refined_material', 'component'] as const).includes(resolvedCat as never)
       if (activeMainTab.value === 'materiales') {
         if (!isMaterialCat) return false
       } else {
         if (isMaterialCat) return false
       }
       if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
-      if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
+      if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false // text-ok
       return true
     })
 

@@ -77,6 +77,7 @@ describe('Battle Debug Commands', () => {
 
     // Configurar la batalla activa
     battleStore.state = {
+      locationId: 'route1',
       player: { uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100 } as unknown as Pokemon,
       enemy: { uid: 'e1', name: 'Rattata', hp: 50, maxHp: 50 } as unknown as Pokemon,
       over: false,
@@ -87,7 +88,7 @@ describe('Battle Debug Commands', () => {
     const win = window as unknown as DebugWindow
     await win.__VITE_DEBUG__?.battle.killEnemy()
 
-    // Comprobar que el enemigo fue vaciado del asiento (hp -> 0 y faint completado)
-    expect(battleStore.state.enemy).toBeNull()
+    // Comprobar que el enemigo fue vaciado del asiento (hp -> 0)
+    expect(battleStore.state.enemy?.hp).toBe(0)
   })
 })

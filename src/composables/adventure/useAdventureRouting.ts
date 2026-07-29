@@ -1,14 +1,23 @@
 import { ref, computed, watch, type Ref } from 'vue'
-import { findShortestPath } from '../../../test aventura/kantoGraph.ts'
+import { findShortestPath, requireAdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import type { ShopItemData } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useShopStore } from '@/stores/inventory/shop'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useBuffsStore } from '@/stores/battle/buffs'
-import { calculateActiveTravelModifiers } from '@/logic/utils/routeSpawnHelpers'
+import {
+  TRAVEL_INCENSE_TYPES,
+  isTravelBuffItemId,
+  isTravelIncenseItemId,
+  calculateActiveTravelModifiers,
+  type TravelBuffItemId,
+} from '@/logic/utils/routeSpawnHelpers'
+import { isMapRouteId } from '@/data/world/map-assets'
 
 
 export function useAdventureRouting(options: {
@@ -21,15 +30,15 @@ export function useAdventureRouting(options: {
   startTravel: () => void
   cancelTravel: () => void
 }) {
-  const originMap = ref('route1')
-  const destinationMap = ref('route3')
+  const originMap = ref<AdventureNodeId>('route1')
+  const destinationMap = ref<AdventureNodeId>('route3')
   const activeHMs = ref<Set<string>>(new Set())
   const showPreTravelModal = ref(false)
-  const selectedTravelItems = ref<Set<string>>(new Set())
-  const pendingManualDestination = ref<string | null>(null)
+  const selectedTravelItems = ref<Set<TravelBuffItemId>>(new Set())
+  const pendingManualDestination = ref<AdventureNodeId | null>(null)
   const activeSweetScent = ref(false)
   const isTraveling = ref(false)
-  const calculatedPath = ref<string[]>([])
+  const calculatedPath = ref<AdventureNodeId[]>([])
 
   const hasBicycle = computed(() => {
     const inv = options.gameStore.state.inventory || {}
@@ -47,25 +56,24 @@ export function useAdventureRouting(options: {
     }
   })
 
-  const INCENSE_TYPE: Readonly<Record<string, string>> = {
-    incensefire: 'fire', incensewater: 'water', incensegrass: 'grass',
-    incensenormal: 'normal', incenseghost: 'ghost', incensepsychic: 'psychic'
-  }
-
   const toggleTravelItem = (itemId: string) => {
+    const travelItemId = requireItemId(itemId)
+    if (!isTravelBuffItemId(travelItemId)) {
+      throw new Error(`[useAdventureRouting] Invalid travel buff item id: ${itemId}`)
+    }
     const next = new Set(selectedTravelItems.value)
-    if (next.has(itemId)) {
-      next.delete(itemId)
+    if (next.has(travelItemId)) {
+      next.delete(travelItemId)
     } else {
-      if (['repel', 'superrepel', 'maxrepel'].includes(itemId)) {
+      if (travelItemId === 'repel' || travelItemId === 'superrepel' || travelItemId === 'maxrepel') {
         next.delete('repel')
         next.delete('superrepel')
         next.delete('maxrepel')
       }
-      if (itemId in INCENSE_TYPE) {
-        next.forEach(id => { if (id in INCENSE_TYPE) next.delete(id) })
+      if (isTravelIncenseItemId(travelItemId)) {
+        next.forEach(id => { if (isTravelIncenseItemId(id)) next.delete(id) })
       }
-      next.add(itemId)
+      next.add(travelItemId)
     }
     selectedTravelItems.value = next
   }
@@ -83,8 +91,7 @@ export function useAdventureRouting(options: {
       if (pkmn && pkmn.hp > 0) {
         pkmn.moves.forEach((move: Move | null) => {
           if (move) {
-            const normName = move.name.toLowerCase().replace(/[\s-]/g, '_')
-            if (normName === 'teletransporte' || normName === 'teleport' || normName === 'dulce_aroma' || normName === 'sweet_scent') {
+            if (move.id === 'teleport' || move.id === 'sweetscent') {
               list.push({
                 pokemonUid: pkmn.uid,
                 pokemonName: pkmn.name,
@@ -117,16 +124,15 @@ export function useAdventureRouting(options: {
     move.pp -= 1
     options.gameStore.save(false)
 
-    const normName = moveName.toLowerCase().replace(/[\s-]/g, '_')
-    if (normName === 'teletransporte' || normName === 'teleport') {
+    if (move.id === 'teleport') {
       options.travelLog.value.push(`🔮 ¡${pkmn.name} usó ${moveName}! Cancelando viaje y regresando instantáneamente al Centro Pokémon de origen.`)
       options.cancelTravel()
       
       const originNode = originMap.value
-      options.mapStore.currentMap = originNode
+      if (isMapRouteId(originNode)) options.mapStore.currentMap = originNode
       options.shopStore.healAllPokemon(0)
       options.travelLog.value.push(`🏥 ¡Llegada segura a ${FIRE_RED_MAPS.find(m => m.id === originNode)?.name || originNode}! Tu equipo ha sido completamente curado.`)
-    } else if (normName === 'dulce_aroma' || normName === 'sweet_scent') {
+    } else if (move.id === 'sweetscent') {
       activeSweetScent.value = true
       options.travelLog.value.push(`🌸 ¡${pkmn.name} usó ${moveName}! Un aroma dulce inunda el sendero: la tasa de combates ha aumentado.`)
     }
@@ -134,15 +140,16 @@ export function useAdventureRouting(options: {
 
   const startManualTravel = (targetId: string) => {
     if (isTraveling.value) return
+    const targetMapId = requireAdventureNodeId(targetId)
     
     if (!options.hasHealthyTeam.value) {
       options.travelLog.value.push("⚠️ No puedes iniciar un viaje o ruta: Necesitas al menos 1 Pokémon con vida en tu equipo.")
       return
     }
 
-    pendingManualDestination.value = targetId
+    pendingManualDestination.value = targetMapId
     
-    const path = findShortestPath(originMap.value, targetId, activeHMs.value)
+    const path = findShortestPath(originMap.value, targetMapId, activeHMs.value)
     if (!path || path.length === 0) {
       options.travelLog.value.push(`❌ Ruta bloqueada: Faltan MOs necesarias para avanzar hacia allí.`)
       return
@@ -191,8 +198,8 @@ export function useAdventureRouting(options: {
       else if (itemId === 'luckyegg') buffsStore.addBuff('lucky-egg', 30 * 60)
       else if (itemId === 'amuletcoin') buffsStore.addBuff('amulet', 60 * 60)
       else if (itemId === 'ticketshiny') buffsStore.addBuff('shiny', 60 * 60)
-      else if (itemId in INCENSE_TYPE) {
-        buffsStore.addBuff('incense', 30 * 60, INCENSE_TYPE[itemId])
+      else if (isTravelIncenseItemId(itemId)) {
+        buffsStore.addBuff('incense', 30 * 60, TRAVEL_INCENSE_TYPES[itemId])
       }
     })
 
@@ -204,13 +211,13 @@ export function useAdventureRouting(options: {
     options.startTravel()
   }
 
-  const filteredBuffItems = computed(() => {
-    const buffIds = [
-      'repel', 'superrepel', 'maxrepel',
-      'luckyegg', 'amuletcoin', 'ticketshiny',
-      'incensefire', 'incensewater', 'incensegrass', 'incensenormal', 'incenseghost', 'incensepsychic'
-    ]
-    return SHOP_ITEMS.filter(item => buffIds.includes(item.id) && (options.gameStore.state.inventory?.[item.id] || 0) > 0)
+  const filteredBuffItems = computed<Array<ShopItemData & { id: TravelBuffItemId }>>(() => {
+    return SHOP_ITEMS.flatMap(item => {
+      const itemId = requireItemId(item.id)
+      if (!isTravelBuffItemId(itemId)) return []
+      if ((options.gameStore.state.inventory?.[itemId] || 0) <= 0) return []
+      return [{ ...item, id: itemId }]
+    })
   })
 
   const toggleHM = (hmName: string) => {

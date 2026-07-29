@@ -16,13 +16,20 @@ import type {
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const HAZARD_REMOVAL_MOVES = new Set(['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin']);
-const SETUP_MOVES = new Set([
+const HAZARD_REMOVAL_MOVES = ['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin'] as const;
+export type HazardRemovalMove = (typeof HAZARD_REMOVAL_MOVES)[number];
+
+const SETUP_MOVES = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
-]);
-const HAZARD_MOVES = new Set(['stealthrock', 'spikes', 'toxicspikes', 'stickyweb']);
-const PIVOT_MOVES = new Set(['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport']);
+] as const;
+export type SetupMove = (typeof SETUP_MOVES)[number];
+
+const HAZARD_MOVES = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
+export type HazardMove = (typeof HAZARD_MOVES)[number];
+
+const PIVOT_MOVES = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport'] as const;
+export type PivotMove = (typeof PIVOT_MOVES)[number];
 
 /** Full 9-layer heuristic decision. Returns null if no layer fires confidently. */
 export function heuristicDecision(
@@ -121,7 +128,7 @@ export function heuristicDecision(
   // 6a. Hazard removal — only when hazards threaten win conditions
   // ═══════════════════════════════════════
   if (snapshot.mySide.sideConditions.size > 0) {
-    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.has(toID(m.id)));
+    const removalMove = availableMoves.find(m => (HAZARD_REMOVAL_MOVES as readonly string[]).includes(toID(m.id)));
     if (removalMove && myActive.hpPercent > 40 && !guaranteedKO) {
       if (hazardsThreatenTeam(snapshot, strategic)) {
         const moveIdx = findMoveIndex(availableMoves, removalMove.id);
@@ -140,7 +147,7 @@ export function heuristicDecision(
   // 6b. Set up hazards when safe
   // ═══════════════════════════════════════
   if (!snapshot.opponentSide.sideConditions.has('stealthrock') && myActive.hpPercent > 60) {
-    const hazardMove = availableMoves.find(m => HAZARD_MOVES.has(toID(m.id)));
+    const hazardMove = availableMoves.find(m => (HAZARD_MOVES as readonly string[]).includes(toID(m.id)));
     if (hazardMove) {
       const worstOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
       if (worstOppDmg < 50) {
@@ -159,7 +166,7 @@ export function heuristicDecision(
   // ═══════════════════════════════════════
   // 7. Setup opportunity
   // ═══════════════════════════════════════
-  const setupMove = availableMoves.find(m => SETUP_MOVES.has(toID(m.id)));
+  const setupMove = availableMoves.find(m => (SETUP_MOVES as readonly string[]).includes(toID(m.id)));
   if (setupMove && myActive.hpPercent > 60) {
     const worstOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
     const isWinCond = strategic.winConditions.length > 0 &&
@@ -185,7 +192,7 @@ export function heuristicDecision(
   // 8a. Pivot — U-turn / Volt Switch when matchup is unfavorable
   // ═══════════════════════════════════════
   if (!isTrapped && switchOptions.length > 0) {
-    const pivotMove = availableMoves.find(m => PIVOT_MOVES.has(toID(m.id)));
+    const pivotMove = availableMoves.find(m => (PIVOT_MOVES as readonly string[]).includes(toID(m.id)));
     if (pivotMove) {
       const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
       const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;

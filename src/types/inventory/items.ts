@@ -1,11 +1,17 @@
+import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
+export type ItemCategory = 'pokeballs' | 'potions' | 'stones' | 'combat_held' | 'breeding_held' | 'raw_material' | 'refined_material' | 'component' | 'machinery' | 'tools' | 'tms' | 'otros';
 
-export type ItemCategory = 'pokeballs' | 'potions' | 'stones' | 'combat' | 'held' | 'breeding' | 'breeding_held' | 'raw_material' | 'refined_material' | 'component' | 'etc';
+export type ItemTier = 'common' | 'rare' | 'epic' | 'legend';
+export type ItemKind = 'held' | 'usable' | 'stone' | 'booster';
+export type EvolutionStoneKind = 'fire' | 'water' | 'thunder' | 'leaf' | 'moon' | 'sun' | 'oval';
 
 export interface Item {
-  id: string;
-  name: string;
-  desc?: string;
-  description?: string;
+  id: ItemId;
+  name: string; // domain-ok
+  desc?: string; // domain-ok
+  description?: string; // domain-ok
   price: number;
   cat: ItemCategory;
   market?: boolean;
@@ -16,16 +22,16 @@ export interface Item {
   showInBCShop?: boolean;
   showInWarShop?: boolean;
   unlockLv?: number;
-  tier?: string;
-  icon?: string;
-  sprite?: string;
-  effect?: string;
+  tier?: ItemTier;
+  icon?: string; // domain-ok
+  sprite?: string; // domain-ok
+  effect?: string; // domain-ok
   heal?: number;
-  boost?: string;
+  boost?: string; // domain-ok
   catchRate?: number;
-  type?: string;
-  stoneType?: string;
-  heldEffect?: string;
+  kind?: ItemKind;
+  stoneType?: EvolutionStoneKind;
+  heldEffect?: string; // domain-ok
   isGlobal?: boolean;
   globalItem?: boolean;
   nonCombat?: boolean;
@@ -36,13 +42,13 @@ export type ShopItem = Item; // Alias for now as they share same structure in da
 
 export interface ItemEffectResult {
   success: boolean;
-  message: string;
+  message: string; // domain-ok
   type?: 'heal' | 'status_cure' | 'stat_boost' | 'revive' | 'evolution' | 'generic' | 'relearner' | 'levelup' | 'learn_move' | 'pp_up' | 'ppmax' | 'nature_patch' | 'ability_pill';
   resultType?: 'heal' | 'status_cure' | 'stat_boost' | 'revive' | 'evolution' | 'generic' | 'relearner' | 'levelup' | 'learn_move' | 'pp_up' | 'ppmax' | 'nature_patch' | 'ability_pill';
   deferred?: boolean;
-  moveName?: string;
-  targetId?: string;
-  reason?: string;
+  moveName?: PokemonMoveId;
+  targetId?: PokemonMoveId | PokemonSpeciesId;
+  reason?: string; // domain-ok
 }
 
-export type Inventory = Record<string, number>;
+export type Inventory = Partial<Record<ItemId, number>>;

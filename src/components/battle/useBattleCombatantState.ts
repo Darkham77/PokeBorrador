@@ -2,14 +2,18 @@ import { ref, computed, watch, onMounted, onUnmounted, toValue } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import gsap from 'gsap';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
+import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
 import {
-  ANIMATED_SPRITE_DATABASE,
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
-  ANIMATED_VARIATION_FRAMES,
+  hasAnimatedSpriteId,
+  hasAnimatedVariationId,
+  requireAnimatedSpriteData,
+  requireAnimatedVariationFrameCount,
+  type AnimatedSpriteId,
+  type AnimatedVariationId,
 } from '@/data/pokemon/animatedSpriteDatabase';
-import { POKEMON_FEET_DATABASE } from '@/data/pokemon/pokemonFeetDatabase';
+import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { useBattleStore } from '@/stores/battle/battle';
@@ -32,14 +36,16 @@ interface SmokeParticle {
 const pokeballCoordsCache = new Map<string, { top: string; left: string }>();
 const rawCoordsCache = new Map<string, { x: number; y: number }>();
 
+import { toPokemonType, type PokemonType } from '@/data/battle/types';
+
 function checkPokemonFloating(pokemon: Pokemon | null | undefined): boolean {
   if (!pokemon) return false;
   const data = pokemonDataProvider.getPokemonData(pokemon.id);
   if (!data) return false;
   if (data.isFloating !== undefined) return data.isFloating;
-  const types: string[] = [];
-  if (data.type) types.push(data.type.toLowerCase());
-  if (data.type2) types.push(data.type2.toLowerCase());
+  const types: PokemonType[] = [];
+  if (data.type) types.push(toPokemonType(data.type));
+  if (data.type2) types.push(toPokemonType(data.type2));
   return types.includes('flying');
 }
 
@@ -48,29 +54,28 @@ function resolveSpriteKey(pokemon: Pokemon | null | undefined): string {
   const formSuffix = pokemon.form && pokemon.form !== 'normal' ? `-${pokemon.form}` : '';
   const id = `${pokemon.id}${formSuffix}`;
   const stringId = String(id).toLowerCase();
-  const num = POKEMON_SPRITE_IDS[stringId] ?? id;
-  if (!num) {
-    throw new Error(`[useBattleCombatantState] Failed to resolve spriteKey for combatant ID '${id}'`);
-  }
-  return String(num);
+  return String(requirePokemonSpriteValue(stringId));
 }
 
-function resolveIdleKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): string | null {
+function resolveIdleKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): AnimatedSpriteId | null {
   if (!spriteKeyVal) return null;
   const match = spriteKeyVal.match(/^(\d+)(.*)$/);
   if (!match) return null;
   const numId = match[1]!;
   const suffix = match[2]!;
-  const isFemale = gender === 'F';
+  const isFemale = gender === 'f';
 
   const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`];
   for (const cand of candidates) {
     if (isPlayerSide) {
-      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) return `${cand}_f_back`;
-      if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) return `${cand}_back`;
+      const femaleBack = `${cand}_f_back`;
+      const back = `${cand}_back`;
+      if (isFemale && hasAnimatedSpriteId(femaleBack)) return femaleBack;
+      if (hasAnimatedSpriteId(back)) return back;
     } else {
-      if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) return `${cand}_f`;
-      if (ANIMATED_SPRITE_DATABASE[cand]) return cand;
+      const femaleFront = `${cand}_f`;
+      if (isFemale && hasAnimatedSpriteId(femaleFront)) return femaleFront;
+      if (hasAnimatedSpriteId(cand)) return cand;
     }
   }
   return null;
@@ -96,27 +101,30 @@ export function useBattleCombatantState(
   const spriteKey = computed(() => resolveSpriteKey(props.pokemon));
   const idleKey = computed(() => resolveIdleKey(spriteKey.value, isPlayer.value, props.pokemon?.gender));
 
-  const variationKey = computed(() => {
+  const variationKey = computed<AnimatedVariationId | null>(() => {
     if (!spriteKey.value) return null;
     const match = spriteKey.value.match(/^(\d+)(.*)$/);
     if (!match) return null;
     const numId = match[1]!;
     const suffix = match[2]!;
-    const isFemale = props.pokemon?.gender === 'F';
+    const isFemale = props.pokemon?.gender === 'f';
 
     const cand = `${numId}v${suffix}`;
     if (isPlayer.value) {
-      if (isFemale && ANIMATED_VARIATION_FRAMES[`${cand}_f_back`] !== undefined) {
-        return `${cand}_f_back`;
+      const femaleBack = `${cand}_f_back`;
+      const back = `${cand}_back`;
+      if (isFemale && hasAnimatedVariationId(femaleBack)) {
+        return femaleBack;
       }
-      if (ANIMATED_VARIATION_FRAMES[`${cand}_back`] !== undefined) {
-        return `${cand}_back`;
+      if (hasAnimatedVariationId(back)) {
+        return back;
       }
     } else {
-      if (isFemale && ANIMATED_VARIATION_FRAMES[`${cand}_f`] !== undefined) {
-        return `${cand}_f`;
+      const femaleFront = `${cand}_f`;
+      if (isFemale && hasAnimatedVariationId(femaleFront)) {
+        return femaleFront;
       }
-      if (ANIMATED_VARIATION_FRAMES[cand] !== undefined) {
+      if (hasAnimatedVariationId(cand)) {
         return cand;
       }
     }
@@ -127,16 +135,17 @@ export function useBattleCombatantState(
 
   const animatedMeta = computed(() => {
     if (!idleKey.value) return null;
-    return ANIMATED_SPRITE_DATABASE[idleKey.value] || null;
+    return requireAnimatedSpriteData(idleKey.value);
   });
 
   const variationMeta = computed(() => {
     if (!variationKey.value) return null;
-    const directMeta = ANIMATED_SPRITE_DATABASE[variationKey.value];
-    if (directMeta) return directMeta;
+    if (hasAnimatedSpriteId(variationKey.value)) {
+      return requireAnimatedSpriteData(variationKey.value);
+    }
 
     if (!animatedMeta.value) return null;
-    const frames = ANIMATED_VARIATION_FRAMES[variationKey.value] || 0;
+    const frames = requireAnimatedVariationFrameCount(variationKey.value);
     return {
       frames,
       size: animatedMeta.value.size,
@@ -195,10 +204,7 @@ export function useBattleCombatantState(
       throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`);
     }
     
-    const dbPoints = POKEMON_FEET_DATABASE[key];
-    if (!dbPoints) {
-      throw new Error(`[PokemonFeetDatabase] Sprite key "${key}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`);
-    }
+    const dbPoints = requireFeetPoints(key);
     return {
       feetX: dbPoints.feetX,
       feetY: dbPoints.feetY

@@ -1258,5 +1258,5830 @@
     "category": "Pokémon Clima",
     "description": "Su tipo y aspecto físico varían según el clima del momento. Los cambios climáticos alteran sus moléculas.",
     "catchRate": 45
+  },
+  "venusaurmega": {
+    "category": "Pokémon Semilla",
+    "description": "Forma Megaevolucionada de Venusaur con flor gigante en el lomo.",
+    "catchRate": 45
+  },
+  "rayquaza": {
+    "category": "Pokémon Cielo",
+    "description": "Habita en la capa de ozono, por encima de las nubes. Se dice que ha vivido allí durante millones de años.",
+    "catchRate": 45
+  },
+  "rayquazamega": {
+    "category": "Pokémon Cielo",
+    "description": "Forma Megaevolucionada de Rayquaza desatada al recordar Ascenso Draco.",
+    "catchRate": 45
+  },
+  "milotic": {
+    "category": "Milotic Pokémon",
+    "description": "Milotic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "treecko": {
+    "category": "Treecko Pokémon",
+    "description": "Treecko registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grovyle": {
+    "category": "Grovyle Pokémon",
+    "description": "Grovyle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sceptile": {
+    "category": "Sceptile Pokémon",
+    "description": "Sceptile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "torchic": {
+    "category": "Torchic Pokémon",
+    "description": "Torchic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "combusken": {
+    "category": "Combusken Pokémon",
+    "description": "Combusken registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blaziken": {
+    "category": "Blaziken Pokémon",
+    "description": "Blaziken registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mudkip": {
+    "category": "Mudkip Pokémon",
+    "description": "Mudkip registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "marshtomp": {
+    "category": "Marshtomp Pokémon",
+    "description": "Marshtomp registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swampert": {
+    "category": "Swampert Pokémon",
+    "description": "Swampert registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "beautifly": {
+    "category": "Beautifly Pokémon",
+    "description": "Beautifly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ralts": {
+    "category": "Ralts Pokémon",
+    "description": "Ralts registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kirlia": {
+    "category": "Kirlia Pokémon",
+    "description": "Kirlia registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gardevoir": {
+    "category": "Gardevoir Pokémon",
+    "description": "Gardevoir registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "exploud": {
+    "category": "Exploud Pokémon",
+    "description": "Exploud registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "azurill": {
+    "category": "Azurill Pokémon",
+    "description": "Azurill registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mawile": {
+    "category": "Mawile Pokémon",
+    "description": "Mawile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "plusle": {
+    "category": "Plusle Pokémon",
+    "description": "Plusle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "minun": {
+    "category": "Minun Pokémon",
+    "description": "Minun registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kecleon": {
+    "category": "Kecleon Pokémon",
+    "description": "Kecleon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "feebas": {
+    "category": "Feebas Pokémon",
+    "description": "Feebas registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "duskull": {
+    "category": "Duskull Pokémon",
+    "description": "Duskull registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dusclops": {
+    "category": "Dusclops Pokémon",
+    "description": "Dusclops registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "regirock": {
+    "category": "Regirock Pokémon",
+    "description": "Regirock registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "regice": {
+    "category": "Regice Pokémon",
+    "description": "Regice registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "registeel": {
+    "category": "Registeel Pokémon",
+    "description": "Registeel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "charizardmegax": {
+    "category": "Charizard-Mega-X Pokémon",
+    "description": "Charizard-Mega-X registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alakazammega": {
+    "category": "Alakazam-Mega Pokémon",
+    "description": "Alakazam-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swellow": {
+    "category": "Swellow Pokémon",
+    "description": "Swellow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wingull": {
+    "category": "Wingull Pokémon",
+    "description": "Wingull registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pelipper": {
+    "category": "Pelipper Pokémon",
+    "description": "Pelipper registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "masquerain": {
+    "category": "Masquerain Pokémon",
+    "description": "Masquerain registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "delcatty": {
+    "category": "Delcatty Pokémon",
+    "description": "Delcatty registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "volbeat": {
+    "category": "Volbeat Pokémon",
+    "description": "Volbeat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "illumise": {
+    "category": "Illumise Pokémon",
+    "description": "Illumise registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "torkoal": {
+    "category": "Torkoal Pokémon",
+    "description": "Torkoal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lunatone": {
+    "category": "Lunatone Pokémon",
+    "description": "Lunatone registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "solrock": {
+    "category": "Solrock Pokémon",
+    "description": "Solrock registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "castformsunny": {
+    "category": "Castform-Sunny Pokémon",
+    "description": "Castform-Sunny registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "castformrainy": {
+    "category": "Castform-Rainy Pokémon",
+    "description": "Castform-Rainy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chimecho": {
+    "category": "Chimecho Pokémon",
+    "description": "Chimecho registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "latiasmega": {
+    "category": "Latias-Mega Pokémon",
+    "description": "Latias-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "latiosmega": {
+    "category": "Latios-Mega Pokémon",
+    "description": "Latios-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachuoriginal": {
+    "category": "Pikachu-Original Pokémon",
+    "description": "Pikachu-Original registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachuhoenn": {
+    "category": "Pikachu-Hoenn Pokémon",
+    "description": "Pikachu-Hoenn registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachusinnoh": {
+    "category": "Pikachu-Sinnoh Pokémon",
+    "description": "Pikachu-Sinnoh registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachuunova": {
+    "category": "Pikachu-Unova Pokémon",
+    "description": "Pikachu-Unova registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachukalos": {
+    "category": "Pikachu-Kalos Pokémon",
+    "description": "Pikachu-Kalos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachualola": {
+    "category": "Pikachu-Alola Pokémon",
+    "description": "Pikachu-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachupartner": {
+    "category": "Pikachu-Partner Pokémon",
+    "description": "Pikachu-Partner registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "trapinch": {
+    "category": "Trapinch Pokémon",
+    "description": "Trapinch registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vibrava": {
+    "category": "Vibrava Pokémon",
+    "description": "Vibrava registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flygon": {
+    "category": "Flygon Pokémon",
+    "description": "Flygon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "growlithehisui": {
+    "category": "Growlithe-Hisui Pokémon",
+    "description": "Growlithe-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arcaninehisui": {
+    "category": "Arcanine-Hisui Pokémon",
+    "description": "Arcanine-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "typhlosionhisui": {
+    "category": "Typhlosion-Hisui Pokémon",
+    "description": "Typhlosion-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sneaselhisui": {
+    "category": "Sneasel-Hisui Pokémon",
+    "description": "Sneasel-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shiftry": {
+    "category": "Shiftry Pokémon",
+    "description": "Shiftry registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "venusaurgmax": {
+    "category": "Venusaur-Gmax Pokémon",
+    "description": "Venusaur-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "charizardmegay": {
+    "category": "Charizard-Mega-Y Pokémon",
+    "description": "Charizard-Mega-Y registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "charizardgmax": {
+    "category": "Charizard-Gmax Pokémon",
+    "description": "Charizard-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blastoisemega": {
+    "category": "Blastoise-Mega Pokémon",
+    "description": "Blastoise-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blastoisegmax": {
+    "category": "Blastoise-Gmax Pokémon",
+    "description": "Blastoise-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "butterfreegmax": {
+    "category": "Butterfree-Gmax Pokémon",
+    "description": "Butterfree-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "beedrillmega": {
+    "category": "Beedrill-Mega Pokémon",
+    "description": "Beedrill-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pidgeotmega": {
+    "category": "Pidgeot-Mega Pokémon",
+    "description": "Pidgeot-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rattataalola": {
+    "category": "Rattata-Alola Pokémon",
+    "description": "Rattata-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raticatealola": {
+    "category": "Raticate-Alola Pokémon",
+    "description": "Raticate-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raticatealolatotem": {
+    "category": "Raticate-Alola-Totem Pokémon",
+    "description": "Raticate-Alola-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachucosplay": {
+    "category": "Pikachu-Cosplay Pokémon",
+    "description": "Pikachu-Cosplay registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachurockstar": {
+    "category": "Pikachu-Rock-Star Pokémon",
+    "description": "Pikachu-Rock-Star registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachubelle": {
+    "category": "Pikachu-Belle Pokémon",
+    "description": "Pikachu-Belle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachupopstar": {
+    "category": "Pikachu-Pop-Star Pokémon",
+    "description": "Pikachu-Pop-Star registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachuphd": {
+    "category": "Pikachu-PhD Pokémon",
+    "description": "Pikachu-PhD registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachulibre": {
+    "category": "Pikachu-Libre Pokémon",
+    "description": "Pikachu-Libre registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachustarter": {
+    "category": "Pikachu-Starter Pokémon",
+    "description": "Pikachu-Starter registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachugmax": {
+    "category": "Pikachu-Gmax Pokémon",
+    "description": "Pikachu-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikachuworld": {
+    "category": "Pikachu-World Pokémon",
+    "description": "Pikachu-World registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raichualola": {
+    "category": "Raichu-Alola Pokémon",
+    "description": "Raichu-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raichumegax": {
+    "category": "Raichu-Mega-X Pokémon",
+    "description": "Raichu-Mega-X registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raichumegay": {
+    "category": "Raichu-Mega-Y Pokémon",
+    "description": "Raichu-Mega-Y registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandshrewalola": {
+    "category": "Sandshrew-Alola Pokémon",
+    "description": "Sandshrew-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandslashalola": {
+    "category": "Sandslash-Alola Pokémon",
+    "description": "Sandslash-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clefablemega": {
+    "category": "Clefable-Mega Pokémon",
+    "description": "Clefable-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vulpixalola": {
+    "category": "Vulpix-Alola Pokémon",
+    "description": "Vulpix-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ninetalesalola": {
+    "category": "Ninetales-Alola Pokémon",
+    "description": "Ninetales-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "diglettalola": {
+    "category": "Diglett-Alola Pokémon",
+    "description": "Diglett-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dugtrioalola": {
+    "category": "Dugtrio-Alola Pokémon",
+    "description": "Dugtrio-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowthalola": {
+    "category": "Meowth-Alola Pokémon",
+    "description": "Meowth-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowthgalar": {
+    "category": "Meowth-Galar Pokémon",
+    "description": "Meowth-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowthgmax": {
+    "category": "Meowth-Gmax Pokémon",
+    "description": "Meowth-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "persianalola": {
+    "category": "Persian-Alola Pokémon",
+    "description": "Persian-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "machampgmax": {
+    "category": "Machamp-Gmax Pokémon",
+    "description": "Machamp-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "victreebelmega": {
+    "category": "Victreebel-Mega Pokémon",
+    "description": "Victreebel-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "geodudealola": {
+    "category": "Geodude-Alola Pokémon",
+    "description": "Geodude-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "graveleralola": {
+    "category": "Graveler-Alola Pokémon",
+    "description": "Graveler-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golemalola": {
+    "category": "Golem-Alola Pokémon",
+    "description": "Golem-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ponytagalar": {
+    "category": "Ponyta-Galar Pokémon",
+    "description": "Ponyta-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rapidashgalar": {
+    "category": "Rapidash-Galar Pokémon",
+    "description": "Rapidash-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slowpokegalar": {
+    "category": "Slowpoke-Galar Pokémon",
+    "description": "Slowpoke-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slowbromega": {
+    "category": "Slowbro-Mega Pokémon",
+    "description": "Slowbro-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slowbrogalar": {
+    "category": "Slowbro-Galar Pokémon",
+    "description": "Slowbro-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "farfetchdgalar": {
+    "category": "Farfetch’d-Galar Pokémon",
+    "description": "Farfetch’d-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grimeralola": {
+    "category": "Grimer-Alola Pokémon",
+    "description": "Grimer-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mukalola": {
+    "category": "Muk-Alola Pokémon",
+    "description": "Muk-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gengarmega": {
+    "category": "Gengar-Mega Pokémon",
+    "description": "Gengar-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gengargmax": {
+    "category": "Gengar-Gmax Pokémon",
+    "description": "Gengar-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kinglergmax": {
+    "category": "Kingler-Gmax Pokémon",
+    "description": "Kingler-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "voltorbhisui": {
+    "category": "Voltorb-Hisui Pokémon",
+    "description": "Voltorb-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "electrodehisui": {
+    "category": "Electrode-Hisui Pokémon",
+    "description": "Electrode-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "exeggutoralola": {
+    "category": "Exeggutor-Alola Pokémon",
+    "description": "Exeggutor-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "marowakalola": {
+    "category": "Marowak-Alola Pokémon",
+    "description": "Marowak-Alola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "marowakalolatotem": {
+    "category": "Marowak-Alola-Totem Pokémon",
+    "description": "Marowak-Alola-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "weezinggalar": {
+    "category": "Weezing-Galar Pokémon",
+    "description": "Weezing-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kangaskhanmega": {
+    "category": "Kangaskhan-Mega Pokémon",
+    "description": "Kangaskhan-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "starmiemega": {
+    "category": "Starmie-Mega Pokémon",
+    "description": "Starmie-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mrmimegalar": {
+    "category": "Mr. Mime-Galar Pokémon",
+    "description": "Mr. Mime-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pinsirmega": {
+    "category": "Pinsir-Mega Pokémon",
+    "description": "Pinsir-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "taurospaldeacombat": {
+    "category": "Tauros-Paldea-Combat Pokémon",
+    "description": "Tauros-Paldea-Combat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "taurospaldeablaze": {
+    "category": "Tauros-Paldea-Blaze Pokémon",
+    "description": "Tauros-Paldea-Blaze registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "taurospaldeaaqua": {
+    "category": "Tauros-Paldea-Aqua Pokémon",
+    "description": "Tauros-Paldea-Aqua registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gyaradosmega": {
+    "category": "Gyarados-Mega Pokémon",
+    "description": "Gyarados-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "laprasgmax": {
+    "category": "Lapras-Gmax Pokémon",
+    "description": "Lapras-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eeveestarter": {
+    "category": "Eevee-Starter Pokémon",
+    "description": "Eevee-Starter registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eeveegmax": {
+    "category": "Eevee-Gmax Pokémon",
+    "description": "Eevee-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aerodactylmega": {
+    "category": "Aerodactyl-Mega Pokémon",
+    "description": "Aerodactyl-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "snorlaxgmax": {
+    "category": "Snorlax-Gmax Pokémon",
+    "description": "Snorlax-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "articunogalar": {
+    "category": "Articuno-Galar Pokémon",
+    "description": "Articuno-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zapdosgalar": {
+    "category": "Zapdos-Galar Pokémon",
+    "description": "Zapdos-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "moltresgalar": {
+    "category": "Moltres-Galar Pokémon",
+    "description": "Moltres-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dragonitemega": {
+    "category": "Dragonite-Mega Pokémon",
+    "description": "Dragonite-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mewtwomegax": {
+    "category": "Mewtwo-Mega-X Pokémon",
+    "description": "Mewtwo-Mega-X registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mewtwomegay": {
+    "category": "Mewtwo-Mega-Y Pokémon",
+    "description": "Mewtwo-Mega-Y registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meganiummega": {
+    "category": "Meganium-Mega Pokémon",
+    "description": "Meganium-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "feraligatrmega": {
+    "category": "Feraligatr-Mega Pokémon",
+    "description": "Feraligatr-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pichuspikyeared": {
+    "category": "Pichu-Spiky-eared Pokémon",
+    "description": "Pichu-Spiky-eared registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ampharosmega": {
+    "category": "Ampharos-Mega Pokémon",
+    "description": "Ampharos-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wooperpaldea": {
+    "category": "Wooper-Paldea Pokémon",
+    "description": "Wooper-Paldea registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slowkinggalar": {
+    "category": "Slowking-Galar Pokémon",
+    "description": "Slowking-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "steelixmega": {
+    "category": "Steelix-Mega Pokémon",
+    "description": "Steelix-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "qwilfishhisui": {
+    "category": "Qwilfish-Hisui Pokémon",
+    "description": "Qwilfish-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scizormega": {
+    "category": "Scizor-Mega Pokémon",
+    "description": "Scizor-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "heracrossmega": {
+    "category": "Heracross-Mega Pokémon",
+    "description": "Heracross-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "corsolagalar": {
+    "category": "Corsola-Galar Pokémon",
+    "description": "Corsola-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skarmorymega": {
+    "category": "Skarmory-Mega Pokémon",
+    "description": "Skarmory-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "houndoommega": {
+    "category": "Houndoom-Mega Pokémon",
+    "description": "Houndoom-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tyranitarmega": {
+    "category": "Tyranitar-Mega Pokémon",
+    "description": "Tyranitar-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sceptilemega": {
+    "category": "Sceptile-Mega Pokémon",
+    "description": "Sceptile-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blazikenmega": {
+    "category": "Blaziken-Mega Pokémon",
+    "description": "Blaziken-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swampertmega": {
+    "category": "Swampert-Mega Pokémon",
+    "description": "Swampert-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "poochyena": {
+    "category": "Poochyena Pokémon",
+    "description": "Poochyena registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mightyena": {
+    "category": "Mightyena Pokémon",
+    "description": "Mightyena registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zigzagoon": {
+    "category": "Zigzagoon Pokémon",
+    "description": "Zigzagoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zigzagoongalar": {
+    "category": "Zigzagoon-Galar Pokémon",
+    "description": "Zigzagoon-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "linoone": {
+    "category": "Linoone Pokémon",
+    "description": "Linoone registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "linoonegalar": {
+    "category": "Linoone-Galar Pokémon",
+    "description": "Linoone-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wurmple": {
+    "category": "Wurmple Pokémon",
+    "description": "Wurmple registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silcoon": {
+    "category": "Silcoon Pokémon",
+    "description": "Silcoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cascoon": {
+    "category": "Cascoon Pokémon",
+    "description": "Cascoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dustox": {
+    "category": "Dustox Pokémon",
+    "description": "Dustox registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lotad": {
+    "category": "Lotad Pokémon",
+    "description": "Lotad registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lombre": {
+    "category": "Lombre Pokémon",
+    "description": "Lombre registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ludicolo": {
+    "category": "Ludicolo Pokémon",
+    "description": "Ludicolo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "seedot": {
+    "category": "Seedot Pokémon",
+    "description": "Seedot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nuzleaf": {
+    "category": "Nuzleaf Pokémon",
+    "description": "Nuzleaf registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "taillow": {
+    "category": "Taillow Pokémon",
+    "description": "Taillow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gardevoirmega": {
+    "category": "Gardevoir-Mega Pokémon",
+    "description": "Gardevoir-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "surskit": {
+    "category": "Surskit Pokémon",
+    "description": "Surskit registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shroomish": {
+    "category": "Shroomish Pokémon",
+    "description": "Shroomish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "breloom": {
+    "category": "Breloom Pokémon",
+    "description": "Breloom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slakoth": {
+    "category": "Slakoth Pokémon",
+    "description": "Slakoth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vigoroth": {
+    "category": "Vigoroth Pokémon",
+    "description": "Vigoroth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slaking": {
+    "category": "Slaking Pokémon",
+    "description": "Slaking registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nincada": {
+    "category": "Nincada Pokémon",
+    "description": "Nincada registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ninjask": {
+    "category": "Ninjask Pokémon",
+    "description": "Ninjask registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shedinja": {
+    "category": "Shedinja Pokémon",
+    "description": "Shedinja registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "whismur": {
+    "category": "Whismur Pokémon",
+    "description": "Whismur registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "loudred": {
+    "category": "Loudred Pokémon",
+    "description": "Loudred registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "makuhita": {
+    "category": "Makuhita Pokémon",
+    "description": "Makuhita registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hariyama": {
+    "category": "Hariyama Pokémon",
+    "description": "Hariyama registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nosepass": {
+    "category": "Nosepass Pokémon",
+    "description": "Nosepass registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skitty": {
+    "category": "Skitty Pokémon",
+    "description": "Skitty registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sableye": {
+    "category": "Sableye Pokémon",
+    "description": "Sableye registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sableyemega": {
+    "category": "Sableye-Mega Pokémon",
+    "description": "Sableye-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mawilemega": {
+    "category": "Mawile-Mega Pokémon",
+    "description": "Mawile-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aron": {
+    "category": "Aron Pokémon",
+    "description": "Aron registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lairon": {
+    "category": "Lairon Pokémon",
+    "description": "Lairon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aggron": {
+    "category": "Aggron Pokémon",
+    "description": "Aggron registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aggronmega": {
+    "category": "Aggron-Mega Pokémon",
+    "description": "Aggron-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meditite": {
+    "category": "Meditite Pokémon",
+    "description": "Meditite registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "medicham": {
+    "category": "Medicham Pokémon",
+    "description": "Medicham registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "medichammega": {
+    "category": "Medicham-Mega Pokémon",
+    "description": "Medicham-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "electrike": {
+    "category": "Electrike Pokémon",
+    "description": "Electrike registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "manectric": {
+    "category": "Manectric Pokémon",
+    "description": "Manectric registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "manectricmega": {
+    "category": "Manectric-Mega Pokémon",
+    "description": "Manectric-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "roselia": {
+    "category": "Roselia Pokémon",
+    "description": "Roselia registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gulpin": {
+    "category": "Gulpin Pokémon",
+    "description": "Gulpin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swalot": {
+    "category": "Swalot Pokémon",
+    "description": "Swalot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "carvanha": {
+    "category": "Carvanha Pokémon",
+    "description": "Carvanha registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sharpedo": {
+    "category": "Sharpedo Pokémon",
+    "description": "Sharpedo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sharpedomega": {
+    "category": "Sharpedo-Mega Pokémon",
+    "description": "Sharpedo-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wailmer": {
+    "category": "Wailmer Pokémon",
+    "description": "Wailmer registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wailord": {
+    "category": "Wailord Pokémon",
+    "description": "Wailord registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "numel": {
+    "category": "Numel Pokémon",
+    "description": "Numel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "camerupt": {
+    "category": "Camerupt Pokémon",
+    "description": "Camerupt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cameruptmega": {
+    "category": "Camerupt-Mega Pokémon",
+    "description": "Camerupt-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spoink": {
+    "category": "Spoink Pokémon",
+    "description": "Spoink registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grumpig": {
+    "category": "Grumpig Pokémon",
+    "description": "Grumpig registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spinda": {
+    "category": "Spinda Pokémon",
+    "description": "Spinda registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cacnea": {
+    "category": "Cacnea Pokémon",
+    "description": "Cacnea registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cacturne": {
+    "category": "Cacturne Pokémon",
+    "description": "Cacturne registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swablu": {
+    "category": "Swablu Pokémon",
+    "description": "Swablu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "altaria": {
+    "category": "Altaria Pokémon",
+    "description": "Altaria registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "altariamega": {
+    "category": "Altaria-Mega Pokémon",
+    "description": "Altaria-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zangoose": {
+    "category": "Zangoose Pokémon",
+    "description": "Zangoose registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "seviper": {
+    "category": "Seviper Pokémon",
+    "description": "Seviper registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "barboach": {
+    "category": "Barboach Pokémon",
+    "description": "Barboach registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "whiscash": {
+    "category": "Whiscash Pokémon",
+    "description": "Whiscash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "corphish": {
+    "category": "Corphish Pokémon",
+    "description": "Corphish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crawdaunt": {
+    "category": "Crawdaunt Pokémon",
+    "description": "Crawdaunt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "baltoy": {
+    "category": "Baltoy Pokémon",
+    "description": "Baltoy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "claydol": {
+    "category": "Claydol Pokémon",
+    "description": "Claydol registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lileep": {
+    "category": "Lileep Pokémon",
+    "description": "Lileep registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cradily": {
+    "category": "Cradily Pokémon",
+    "description": "Cradily registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "anorith": {
+    "category": "Anorith Pokémon",
+    "description": "Anorith registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "armaldo": {
+    "category": "Armaldo Pokémon",
+    "description": "Armaldo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "castformsnowy": {
+    "category": "Castform-Snowy Pokémon",
+    "description": "Castform-Snowy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shuppet": {
+    "category": "Shuppet Pokémon",
+    "description": "Shuppet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "banette": {
+    "category": "Banette Pokémon",
+    "description": "Banette registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "banettemega": {
+    "category": "Banette-Mega Pokémon",
+    "description": "Banette-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tropius": {
+    "category": "Tropius Pokémon",
+    "description": "Tropius registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chimechomega": {
+    "category": "Chimecho-Mega Pokémon",
+    "description": "Chimecho-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "absol": {
+    "category": "Absol Pokémon",
+    "description": "Absol registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "absolmega": {
+    "category": "Absol-Mega Pokémon",
+    "description": "Absol-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "absolmegaz": {
+    "category": "Absol-Mega-Z Pokémon",
+    "description": "Absol-Mega-Z registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wynaut": {
+    "category": "Wynaut Pokémon",
+    "description": "Wynaut registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "snorunt": {
+    "category": "Snorunt Pokémon",
+    "description": "Snorunt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glalie": {
+    "category": "Glalie Pokémon",
+    "description": "Glalie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glaliemega": {
+    "category": "Glalie-Mega Pokémon",
+    "description": "Glalie-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spheal": {
+    "category": "Spheal Pokémon",
+    "description": "Spheal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sealeo": {
+    "category": "Sealeo Pokémon",
+    "description": "Sealeo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "walrein": {
+    "category": "Walrein Pokémon",
+    "description": "Walrein registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clamperl": {
+    "category": "Clamperl Pokémon",
+    "description": "Clamperl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "huntail": {
+    "category": "Huntail Pokémon",
+    "description": "Huntail registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gorebyss": {
+    "category": "Gorebyss Pokémon",
+    "description": "Gorebyss registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "relicanth": {
+    "category": "Relicanth Pokémon",
+    "description": "Relicanth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "luvdisc": {
+    "category": "Luvdisc Pokémon",
+    "description": "Luvdisc registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bagon": {
+    "category": "Bagon Pokémon",
+    "description": "Bagon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shelgon": {
+    "category": "Shelgon Pokémon",
+    "description": "Shelgon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "salamence": {
+    "category": "Salamence Pokémon",
+    "description": "Salamence registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "salamencemega": {
+    "category": "Salamence-Mega Pokémon",
+    "description": "Salamence-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "beldum": {
+    "category": "Beldum Pokémon",
+    "description": "Beldum registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "metang": {
+    "category": "Metang Pokémon",
+    "description": "Metang registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "metagross": {
+    "category": "Metagross Pokémon",
+    "description": "Metagross registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "metagrossmega": {
+    "category": "Metagross-Mega Pokémon",
+    "description": "Metagross-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "latias": {
+    "category": "Latias Pokémon",
+    "description": "Latias registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "latios": {
+    "category": "Latios Pokémon",
+    "description": "Latios registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kyogre": {
+    "category": "Kyogre Pokémon",
+    "description": "Kyogre registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kyogreprimal": {
+    "category": "Kyogre-Primal Pokémon",
+    "description": "Kyogre-Primal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "groudon": {
+    "category": "Groudon Pokémon",
+    "description": "Groudon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "groudonprimal": {
+    "category": "Groudon-Primal Pokémon",
+    "description": "Groudon-Primal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "jirachi": {
+    "category": "Jirachi Pokémon",
+    "description": "Jirachi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deoxys": {
+    "category": "Deoxys Pokémon",
+    "description": "Deoxys registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deoxysattack": {
+    "category": "Deoxys-Attack Pokémon",
+    "description": "Deoxys-Attack registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deoxysdefense": {
+    "category": "Deoxys-Defense Pokémon",
+    "description": "Deoxys-Defense registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deoxysspeed": {
+    "category": "Deoxys-Speed Pokémon",
+    "description": "Deoxys-Speed registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "turtwig": {
+    "category": "Turtwig Pokémon",
+    "description": "Turtwig registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grotle": {
+    "category": "Grotle Pokémon",
+    "description": "Grotle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "torterra": {
+    "category": "Torterra Pokémon",
+    "description": "Torterra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chimchar": {
+    "category": "Chimchar Pokémon",
+    "description": "Chimchar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "monferno": {
+    "category": "Monferno Pokémon",
+    "description": "Monferno registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "infernape": {
+    "category": "Infernape Pokémon",
+    "description": "Infernape registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "piplup": {
+    "category": "Piplup Pokémon",
+    "description": "Piplup registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "prinplup": {
+    "category": "Prinplup Pokémon",
+    "description": "Prinplup registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "empoleon": {
+    "category": "Empoleon Pokémon",
+    "description": "Empoleon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "starly": {
+    "category": "Starly Pokémon",
+    "description": "Starly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "staravia": {
+    "category": "Staravia Pokémon",
+    "description": "Staravia registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "staraptor": {
+    "category": "Staraptor Pokémon",
+    "description": "Staraptor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "staraptormega": {
+    "category": "Staraptor-Mega Pokémon",
+    "description": "Staraptor-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bidoof": {
+    "category": "Bidoof Pokémon",
+    "description": "Bidoof registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bibarel": {
+    "category": "Bibarel Pokémon",
+    "description": "Bibarel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kricketot": {
+    "category": "Kricketot Pokémon",
+    "description": "Kricketot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kricketune": {
+    "category": "Kricketune Pokémon",
+    "description": "Kricketune registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shinx": {
+    "category": "Shinx Pokémon",
+    "description": "Shinx registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "luxio": {
+    "category": "Luxio Pokémon",
+    "description": "Luxio registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "luxray": {
+    "category": "Luxray Pokémon",
+    "description": "Luxray registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "budew": {
+    "category": "Budew Pokémon",
+    "description": "Budew registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "roserade": {
+    "category": "Roserade Pokémon",
+    "description": "Roserade registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cranidos": {
+    "category": "Cranidos Pokémon",
+    "description": "Cranidos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rampardos": {
+    "category": "Rampardos Pokémon",
+    "description": "Rampardos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shieldon": {
+    "category": "Shieldon Pokémon",
+    "description": "Shieldon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bastiodon": {
+    "category": "Bastiodon Pokémon",
+    "description": "Bastiodon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "burmy": {
+    "category": "Burmy Pokémon",
+    "description": "Burmy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "burmysandy": {
+    "category": "Burmy-Sandy Pokémon",
+    "description": "Burmy-Sandy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "burmytrash": {
+    "category": "Burmy-Trash Pokémon",
+    "description": "Burmy-Trash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wormadam": {
+    "category": "Wormadam Pokémon",
+    "description": "Wormadam registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wormadamsandy": {
+    "category": "Wormadam-Sandy Pokémon",
+    "description": "Wormadam-Sandy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wormadamtrash": {
+    "category": "Wormadam-Trash Pokémon",
+    "description": "Wormadam-Trash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mothim": {
+    "category": "Mothim Pokémon",
+    "description": "Mothim registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "combee": {
+    "category": "Combee Pokémon",
+    "description": "Combee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vespiquen": {
+    "category": "Vespiquen Pokémon",
+    "description": "Vespiquen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pachirisu": {
+    "category": "Pachirisu Pokémon",
+    "description": "Pachirisu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "buizel": {
+    "category": "Buizel Pokémon",
+    "description": "Buizel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "floatzel": {
+    "category": "Floatzel Pokémon",
+    "description": "Floatzel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cherubi": {
+    "category": "Cherubi Pokémon",
+    "description": "Cherubi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cherrim": {
+    "category": "Cherrim Pokémon",
+    "description": "Cherrim registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cherrimsunshine": {
+    "category": "Cherrim-Sunshine Pokémon",
+    "description": "Cherrim-Sunshine registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shellos": {
+    "category": "Shellos Pokémon",
+    "description": "Shellos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shelloseast": {
+    "category": "Shellos-East Pokémon",
+    "description": "Shellos-East registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gastrodon": {
+    "category": "Gastrodon Pokémon",
+    "description": "Gastrodon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gastrodoneast": {
+    "category": "Gastrodon-East Pokémon",
+    "description": "Gastrodon-East registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ambipom": {
+    "category": "Ambipom Pokémon",
+    "description": "Ambipom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drifloon": {
+    "category": "Drifloon Pokémon",
+    "description": "Drifloon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drifblim": {
+    "category": "Drifblim Pokémon",
+    "description": "Drifblim registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "buneary": {
+    "category": "Buneary Pokémon",
+    "description": "Buneary registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lopunny": {
+    "category": "Lopunny Pokémon",
+    "description": "Lopunny registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lopunnymega": {
+    "category": "Lopunny-Mega Pokémon",
+    "description": "Lopunny-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mismagius": {
+    "category": "Mismagius Pokémon",
+    "description": "Mismagius registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "honchkrow": {
+    "category": "Honchkrow Pokémon",
+    "description": "Honchkrow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glameow": {
+    "category": "Glameow Pokémon",
+    "description": "Glameow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "purugly": {
+    "category": "Purugly Pokémon",
+    "description": "Purugly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chingling": {
+    "category": "Chingling Pokémon",
+    "description": "Chingling registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stunky": {
+    "category": "Stunky Pokémon",
+    "description": "Stunky registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skuntank": {
+    "category": "Skuntank Pokémon",
+    "description": "Skuntank registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bronzor": {
+    "category": "Bronzor Pokémon",
+    "description": "Bronzor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bronzong": {
+    "category": "Bronzong Pokémon",
+    "description": "Bronzong registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bonsly": {
+    "category": "Bonsly Pokémon",
+    "description": "Bonsly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mimejr": {
+    "category": "Mime Jr. Pokémon",
+    "description": "Mime Jr. registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "happiny": {
+    "category": "Happiny Pokémon",
+    "description": "Happiny registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chatot": {
+    "category": "Chatot Pokémon",
+    "description": "Chatot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spiritomb": {
+    "category": "Spiritomb Pokémon",
+    "description": "Spiritomb registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gible": {
+    "category": "Gible Pokémon",
+    "description": "Gible registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gabite": {
+    "category": "Gabite Pokémon",
+    "description": "Gabite registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garchomp": {
+    "category": "Garchomp Pokémon",
+    "description": "Garchomp registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garchompmega": {
+    "category": "Garchomp-Mega Pokémon",
+    "description": "Garchomp-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garchompmegaz": {
+    "category": "Garchomp-Mega-Z Pokémon",
+    "description": "Garchomp-Mega-Z registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "munchlax": {
+    "category": "Munchlax Pokémon",
+    "description": "Munchlax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "riolu": {
+    "category": "Riolu Pokémon",
+    "description": "Riolu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lucario": {
+    "category": "Lucario Pokémon",
+    "description": "Lucario registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lucariomega": {
+    "category": "Lucario-Mega Pokémon",
+    "description": "Lucario-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lucariomegaz": {
+    "category": "Lucario-Mega-Z Pokémon",
+    "description": "Lucario-Mega-Z registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hippopotas": {
+    "category": "Hippopotas Pokémon",
+    "description": "Hippopotas registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hippowdon": {
+    "category": "Hippowdon Pokémon",
+    "description": "Hippowdon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skorupi": {
+    "category": "Skorupi Pokémon",
+    "description": "Skorupi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drapion": {
+    "category": "Drapion Pokémon",
+    "description": "Drapion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "croagunk": {
+    "category": "Croagunk Pokémon",
+    "description": "Croagunk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxicroak": {
+    "category": "Toxicroak Pokémon",
+    "description": "Toxicroak registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "carnivine": {
+    "category": "Carnivine Pokémon",
+    "description": "Carnivine registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "finneon": {
+    "category": "Finneon Pokémon",
+    "description": "Finneon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lumineon": {
+    "category": "Lumineon Pokémon",
+    "description": "Lumineon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mantyke": {
+    "category": "Mantyke Pokémon",
+    "description": "Mantyke registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "snover": {
+    "category": "Snover Pokémon",
+    "description": "Snover registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "abomasnow": {
+    "category": "Abomasnow Pokémon",
+    "description": "Abomasnow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "abomasnowmega": {
+    "category": "Abomasnow-Mega Pokémon",
+    "description": "Abomasnow-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "weavile": {
+    "category": "Weavile Pokémon",
+    "description": "Weavile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magnezone": {
+    "category": "Magnezone Pokémon",
+    "description": "Magnezone registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lickilicky": {
+    "category": "Lickilicky Pokémon",
+    "description": "Lickilicky registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rhyperior": {
+    "category": "Rhyperior Pokémon",
+    "description": "Rhyperior registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tangrowth": {
+    "category": "Tangrowth Pokémon",
+    "description": "Tangrowth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "electivire": {
+    "category": "Electivire Pokémon",
+    "description": "Electivire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magmortar": {
+    "category": "Magmortar Pokémon",
+    "description": "Magmortar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "togekiss": {
+    "category": "Togekiss Pokémon",
+    "description": "Togekiss registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yanmega": {
+    "category": "Yanmega Pokémon",
+    "description": "Yanmega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "leafeon": {
+    "category": "Leafeon Pokémon",
+    "description": "Leafeon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glaceon": {
+    "category": "Glaceon Pokémon",
+    "description": "Glaceon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gliscor": {
+    "category": "Gliscor Pokémon",
+    "description": "Gliscor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mamoswine": {
+    "category": "Mamoswine Pokémon",
+    "description": "Mamoswine registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "porygonz": {
+    "category": "Porygon-Z Pokémon",
+    "description": "Porygon-Z registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gallade": {
+    "category": "Gallade Pokémon",
+    "description": "Gallade registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gallademega": {
+    "category": "Gallade-Mega Pokémon",
+    "description": "Gallade-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "probopass": {
+    "category": "Probopass Pokémon",
+    "description": "Probopass registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dusknoir": {
+    "category": "Dusknoir Pokémon",
+    "description": "Dusknoir registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "froslass": {
+    "category": "Froslass Pokémon",
+    "description": "Froslass registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "froslassmega": {
+    "category": "Froslass-Mega Pokémon",
+    "description": "Froslass-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotom": {
+    "category": "Rotom Pokémon",
+    "description": "Rotom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotomheat": {
+    "category": "Rotom-Heat Pokémon",
+    "description": "Rotom-Heat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotomwash": {
+    "category": "Rotom-Wash Pokémon",
+    "description": "Rotom-Wash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotomfrost": {
+    "category": "Rotom-Frost Pokémon",
+    "description": "Rotom-Frost registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotomfan": {
+    "category": "Rotom-Fan Pokémon",
+    "description": "Rotom-Fan registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rotommow": {
+    "category": "Rotom-Mow Pokémon",
+    "description": "Rotom-Mow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "uxie": {
+    "category": "Uxie Pokémon",
+    "description": "Uxie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mesprit": {
+    "category": "Mesprit Pokémon",
+    "description": "Mesprit registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "azelf": {
+    "category": "Azelf Pokémon",
+    "description": "Azelf registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dialga": {
+    "category": "Dialga Pokémon",
+    "description": "Dialga registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dialgaorigin": {
+    "category": "Dialga-Origin Pokémon",
+    "description": "Dialga-Origin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palkia": {
+    "category": "Palkia Pokémon",
+    "description": "Palkia registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palkiaorigin": {
+    "category": "Palkia-Origin Pokémon",
+    "description": "Palkia-Origin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "heatran": {
+    "category": "Heatran Pokémon",
+    "description": "Heatran registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "heatranmega": {
+    "category": "Heatran-Mega Pokémon",
+    "description": "Heatran-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "regigigas": {
+    "category": "Regigigas Pokémon",
+    "description": "Regigigas registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "giratina": {
+    "category": "Giratina Pokémon",
+    "description": "Giratina registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "giratinaorigin": {
+    "category": "Giratina-Origin Pokémon",
+    "description": "Giratina-Origin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cresselia": {
+    "category": "Cresselia Pokémon",
+    "description": "Cresselia registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "phione": {
+    "category": "Phione Pokémon",
+    "description": "Phione registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "manaphy": {
+    "category": "Manaphy Pokémon",
+    "description": "Manaphy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darkrai": {
+    "category": "Darkrai Pokémon",
+    "description": "Darkrai registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darkraimega": {
+    "category": "Darkrai-Mega Pokémon",
+    "description": "Darkrai-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shaymin": {
+    "category": "Shaymin Pokémon",
+    "description": "Shaymin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shayminsky": {
+    "category": "Shaymin-Sky Pokémon",
+    "description": "Shaymin-Sky registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceus": {
+    "category": "Arceus Pokémon",
+    "description": "Arceus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusbug": {
+    "category": "Arceus-Bug Pokémon",
+    "description": "Arceus-Bug registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusdark": {
+    "category": "Arceus-Dark Pokémon",
+    "description": "Arceus-Dark registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusdragon": {
+    "category": "Arceus-Dragon Pokémon",
+    "description": "Arceus-Dragon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceuselectric": {
+    "category": "Arceus-Electric Pokémon",
+    "description": "Arceus-Electric registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusfairy": {
+    "category": "Arceus-Fairy Pokémon",
+    "description": "Arceus-Fairy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusfighting": {
+    "category": "Arceus-Fighting Pokémon",
+    "description": "Arceus-Fighting registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusfire": {
+    "category": "Arceus-Fire Pokémon",
+    "description": "Arceus-Fire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusflying": {
+    "category": "Arceus-Flying Pokémon",
+    "description": "Arceus-Flying registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusghost": {
+    "category": "Arceus-Ghost Pokémon",
+    "description": "Arceus-Ghost registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusgrass": {
+    "category": "Arceus-Grass Pokémon",
+    "description": "Arceus-Grass registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusground": {
+    "category": "Arceus-Ground Pokémon",
+    "description": "Arceus-Ground registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusice": {
+    "category": "Arceus-Ice Pokémon",
+    "description": "Arceus-Ice registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceuspoison": {
+    "category": "Arceus-Poison Pokémon",
+    "description": "Arceus-Poison registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceuspsychic": {
+    "category": "Arceus-Psychic Pokémon",
+    "description": "Arceus-Psychic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceusrock": {
+    "category": "Arceus-Rock Pokémon",
+    "description": "Arceus-Rock registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceussteel": {
+    "category": "Arceus-Steel Pokémon",
+    "description": "Arceus-Steel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arceuswater": {
+    "category": "Arceus-Water Pokémon",
+    "description": "Arceus-Water registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "victini": {
+    "category": "Victini Pokémon",
+    "description": "Victini registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "snivy": {
+    "category": "Snivy Pokémon",
+    "description": "Snivy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "servine": {
+    "category": "Servine Pokémon",
+    "description": "Servine registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "serperior": {
+    "category": "Serperior Pokémon",
+    "description": "Serperior registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tepig": {
+    "category": "Tepig Pokémon",
+    "description": "Tepig registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pignite": {
+    "category": "Pignite Pokémon",
+    "description": "Pignite registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "emboar": {
+    "category": "Emboar Pokémon",
+    "description": "Emboar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "emboarmega": {
+    "category": "Emboar-Mega Pokémon",
+    "description": "Emboar-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oshawott": {
+    "category": "Oshawott Pokémon",
+    "description": "Oshawott registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dewott": {
+    "category": "Dewott Pokémon",
+    "description": "Dewott registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "samurott": {
+    "category": "Samurott Pokémon",
+    "description": "Samurott registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "samurotthisui": {
+    "category": "Samurott-Hisui Pokémon",
+    "description": "Samurott-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "patrat": {
+    "category": "Patrat Pokémon",
+    "description": "Patrat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "watchog": {
+    "category": "Watchog Pokémon",
+    "description": "Watchog registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lillipup": {
+    "category": "Lillipup Pokémon",
+    "description": "Lillipup registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "herdier": {
+    "category": "Herdier Pokémon",
+    "description": "Herdier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stoutland": {
+    "category": "Stoutland Pokémon",
+    "description": "Stoutland registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "purrloin": {
+    "category": "Purrloin Pokémon",
+    "description": "Purrloin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "liepard": {
+    "category": "Liepard Pokémon",
+    "description": "Liepard registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pansage": {
+    "category": "Pansage Pokémon",
+    "description": "Pansage registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "simisage": {
+    "category": "Simisage Pokémon",
+    "description": "Simisage registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pansear": {
+    "category": "Pansear Pokémon",
+    "description": "Pansear registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "simisear": {
+    "category": "Simisear Pokémon",
+    "description": "Simisear registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "panpour": {
+    "category": "Panpour Pokémon",
+    "description": "Panpour registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "simipour": {
+    "category": "Simipour Pokémon",
+    "description": "Simipour registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "munna": {
+    "category": "Munna Pokémon",
+    "description": "Munna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "musharna": {
+    "category": "Musharna Pokémon",
+    "description": "Musharna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pidove": {
+    "category": "Pidove Pokémon",
+    "description": "Pidove registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tranquill": {
+    "category": "Tranquill Pokémon",
+    "description": "Tranquill registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "unfezant": {
+    "category": "Unfezant Pokémon",
+    "description": "Unfezant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blitzle": {
+    "category": "Blitzle Pokémon",
+    "description": "Blitzle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zebstrika": {
+    "category": "Zebstrika Pokémon",
+    "description": "Zebstrika registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "roggenrola": {
+    "category": "Roggenrola Pokémon",
+    "description": "Roggenrola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "boldore": {
+    "category": "Boldore Pokémon",
+    "description": "Boldore registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gigalith": {
+    "category": "Gigalith Pokémon",
+    "description": "Gigalith registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "woobat": {
+    "category": "Woobat Pokémon",
+    "description": "Woobat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swoobat": {
+    "category": "Swoobat Pokémon",
+    "description": "Swoobat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drilbur": {
+    "category": "Drilbur Pokémon",
+    "description": "Drilbur registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "excadrill": {
+    "category": "Excadrill Pokémon",
+    "description": "Excadrill registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "excadrillmega": {
+    "category": "Excadrill-Mega Pokémon",
+    "description": "Excadrill-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "audino": {
+    "category": "Audino Pokémon",
+    "description": "Audino registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "audinomega": {
+    "category": "Audino-Mega Pokémon",
+    "description": "Audino-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "timburr": {
+    "category": "Timburr Pokémon",
+    "description": "Timburr registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gurdurr": {
+    "category": "Gurdurr Pokémon",
+    "description": "Gurdurr registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "conkeldurr": {
+    "category": "Conkeldurr Pokémon",
+    "description": "Conkeldurr registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tympole": {
+    "category": "Tympole Pokémon",
+    "description": "Tympole registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palpitoad": {
+    "category": "Palpitoad Pokémon",
+    "description": "Palpitoad registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "seismitoad": {
+    "category": "Seismitoad Pokémon",
+    "description": "Seismitoad registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "throh": {
+    "category": "Throh Pokémon",
+    "description": "Throh registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sawk": {
+    "category": "Sawk Pokémon",
+    "description": "Sawk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sewaddle": {
+    "category": "Sewaddle Pokémon",
+    "description": "Sewaddle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swadloon": {
+    "category": "Swadloon Pokémon",
+    "description": "Swadloon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "leavanny": {
+    "category": "Leavanny Pokémon",
+    "description": "Leavanny registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "venipede": {
+    "category": "Venipede Pokémon",
+    "description": "Venipede registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "whirlipede": {
+    "category": "Whirlipede Pokémon",
+    "description": "Whirlipede registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scolipede": {
+    "category": "Scolipede Pokémon",
+    "description": "Scolipede registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scolipedemega": {
+    "category": "Scolipede-Mega Pokémon",
+    "description": "Scolipede-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cottonee": {
+    "category": "Cottonee Pokémon",
+    "description": "Cottonee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "whimsicott": {
+    "category": "Whimsicott Pokémon",
+    "description": "Whimsicott registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "petilil": {
+    "category": "Petilil Pokémon",
+    "description": "Petilil registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lilligant": {
+    "category": "Lilligant Pokémon",
+    "description": "Lilligant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lilliganthisui": {
+    "category": "Lilligant-Hisui Pokémon",
+    "description": "Lilligant-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "basculin": {
+    "category": "Basculin Pokémon",
+    "description": "Basculin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "basculinbluestriped": {
+    "category": "Basculin-Blue-Striped Pokémon",
+    "description": "Basculin-Blue-Striped registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "basculinwhitestriped": {
+    "category": "Basculin-White-Striped Pokémon",
+    "description": "Basculin-White-Striped registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandile": {
+    "category": "Sandile Pokémon",
+    "description": "Sandile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "krokorok": {
+    "category": "Krokorok Pokémon",
+    "description": "Krokorok registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "krookodile": {
+    "category": "Krookodile Pokémon",
+    "description": "Krookodile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darumaka": {
+    "category": "Darumaka Pokémon",
+    "description": "Darumaka registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darumakagalar": {
+    "category": "Darumaka-Galar Pokémon",
+    "description": "Darumaka-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darmanitan": {
+    "category": "Darmanitan Pokémon",
+    "description": "Darmanitan registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darmanitanzen": {
+    "category": "Darmanitan-Zen Pokémon",
+    "description": "Darmanitan-Zen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darmanitangalar": {
+    "category": "Darmanitan-Galar Pokémon",
+    "description": "Darmanitan-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "darmanitangalarzen": {
+    "category": "Darmanitan-Galar-Zen Pokémon",
+    "description": "Darmanitan-Galar-Zen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "maractus": {
+    "category": "Maractus Pokémon",
+    "description": "Maractus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dwebble": {
+    "category": "Dwebble Pokémon",
+    "description": "Dwebble registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crustle": {
+    "category": "Crustle Pokémon",
+    "description": "Crustle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scraggy": {
+    "category": "Scraggy Pokémon",
+    "description": "Scraggy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scrafty": {
+    "category": "Scrafty Pokémon",
+    "description": "Scrafty registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scraftymega": {
+    "category": "Scrafty-Mega Pokémon",
+    "description": "Scrafty-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sigilyph": {
+    "category": "Sigilyph Pokémon",
+    "description": "Sigilyph registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yamask": {
+    "category": "Yamask Pokémon",
+    "description": "Yamask registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yamaskgalar": {
+    "category": "Yamask-Galar Pokémon",
+    "description": "Yamask-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cofagrigus": {
+    "category": "Cofagrigus Pokémon",
+    "description": "Cofagrigus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tirtouga": {
+    "category": "Tirtouga Pokémon",
+    "description": "Tirtouga registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "carracosta": {
+    "category": "Carracosta Pokémon",
+    "description": "Carracosta registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "archen": {
+    "category": "Archen Pokémon",
+    "description": "Archen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "archeops": {
+    "category": "Archeops Pokémon",
+    "description": "Archeops registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "trubbish": {
+    "category": "Trubbish Pokémon",
+    "description": "Trubbish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garbodor": {
+    "category": "Garbodor Pokémon",
+    "description": "Garbodor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garbodorgmax": {
+    "category": "Garbodor-Gmax Pokémon",
+    "description": "Garbodor-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zorua": {
+    "category": "Zorua Pokémon",
+    "description": "Zorua registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zoruahisui": {
+    "category": "Zorua-Hisui Pokémon",
+    "description": "Zorua-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zoroark": {
+    "category": "Zoroark Pokémon",
+    "description": "Zoroark registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zoroarkhisui": {
+    "category": "Zoroark-Hisui Pokémon",
+    "description": "Zoroark-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "minccino": {
+    "category": "Minccino Pokémon",
+    "description": "Minccino registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cinccino": {
+    "category": "Cinccino Pokémon",
+    "description": "Cinccino registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gothita": {
+    "category": "Gothita Pokémon",
+    "description": "Gothita registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gothorita": {
+    "category": "Gothorita Pokémon",
+    "description": "Gothorita registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gothitelle": {
+    "category": "Gothitelle Pokémon",
+    "description": "Gothitelle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "solosis": {
+    "category": "Solosis Pokémon",
+    "description": "Solosis registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "duosion": {
+    "category": "Duosion Pokémon",
+    "description": "Duosion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "reuniclus": {
+    "category": "Reuniclus Pokémon",
+    "description": "Reuniclus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ducklett": {
+    "category": "Ducklett Pokémon",
+    "description": "Ducklett registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swanna": {
+    "category": "Swanna Pokémon",
+    "description": "Swanna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vanillite": {
+    "category": "Vanillite Pokémon",
+    "description": "Vanillite registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vanillish": {
+    "category": "Vanillish Pokémon",
+    "description": "Vanillish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vanilluxe": {
+    "category": "Vanilluxe Pokémon",
+    "description": "Vanilluxe registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deerling": {
+    "category": "Deerling Pokémon",
+    "description": "Deerling registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deerlingsummer": {
+    "category": "Deerling-Summer Pokémon",
+    "description": "Deerling-Summer registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deerlingautumn": {
+    "category": "Deerling-Autumn Pokémon",
+    "description": "Deerling-Autumn registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deerlingwinter": {
+    "category": "Deerling-Winter Pokémon",
+    "description": "Deerling-Winter registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sawsbuck": {
+    "category": "Sawsbuck Pokémon",
+    "description": "Sawsbuck registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "emolga": {
+    "category": "Emolga Pokémon",
+    "description": "Emolga registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "karrablast": {
+    "category": "Karrablast Pokémon",
+    "description": "Karrablast registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "escavalier": {
+    "category": "Escavalier Pokémon",
+    "description": "Escavalier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "foongus": {
+    "category": "Foongus Pokémon",
+    "description": "Foongus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "amoonguss": {
+    "category": "Amoonguss Pokémon",
+    "description": "Amoonguss registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "frillish": {
+    "category": "Frillish Pokémon",
+    "description": "Frillish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "jellicent": {
+    "category": "Jellicent Pokémon",
+    "description": "Jellicent registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alomomola": {
+    "category": "Alomomola Pokémon",
+    "description": "Alomomola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "joltik": {
+    "category": "Joltik Pokémon",
+    "description": "Joltik registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "galvantula": {
+    "category": "Galvantula Pokémon",
+    "description": "Galvantula registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ferroseed": {
+    "category": "Ferroseed Pokémon",
+    "description": "Ferroseed registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ferrothorn": {
+    "category": "Ferrothorn Pokémon",
+    "description": "Ferrothorn registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "klink": {
+    "category": "Klink Pokémon",
+    "description": "Klink registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "klang": {
+    "category": "Klang Pokémon",
+    "description": "Klang registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "klinklang": {
+    "category": "Klinklang Pokémon",
+    "description": "Klinklang registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tynamo": {
+    "category": "Tynamo Pokémon",
+    "description": "Tynamo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eelektrik": {
+    "category": "Eelektrik Pokémon",
+    "description": "Eelektrik registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eelektross": {
+    "category": "Eelektross Pokémon",
+    "description": "Eelektross registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eelektrossmega": {
+    "category": "Eelektross-Mega Pokémon",
+    "description": "Eelektross-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "elgyem": {
+    "category": "Elgyem Pokémon",
+    "description": "Elgyem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "beheeyem": {
+    "category": "Beheeyem Pokémon",
+    "description": "Beheeyem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "litwick": {
+    "category": "Litwick Pokémon",
+    "description": "Litwick registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lampent": {
+    "category": "Lampent Pokémon",
+    "description": "Lampent registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chandelure": {
+    "category": "Chandelure Pokémon",
+    "description": "Chandelure registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chandeluremega": {
+    "category": "Chandelure-Mega Pokémon",
+    "description": "Chandelure-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "axew": {
+    "category": "Axew Pokémon",
+    "description": "Axew registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fraxure": {
+    "category": "Fraxure Pokémon",
+    "description": "Fraxure registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "haxorus": {
+    "category": "Haxorus Pokémon",
+    "description": "Haxorus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cubchoo": {
+    "category": "Cubchoo Pokémon",
+    "description": "Cubchoo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "beartic": {
+    "category": "Beartic Pokémon",
+    "description": "Beartic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cryogonal": {
+    "category": "Cryogonal Pokémon",
+    "description": "Cryogonal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shelmet": {
+    "category": "Shelmet Pokémon",
+    "description": "Shelmet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "accelgor": {
+    "category": "Accelgor Pokémon",
+    "description": "Accelgor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stunfisk": {
+    "category": "Stunfisk Pokémon",
+    "description": "Stunfisk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stunfiskgalar": {
+    "category": "Stunfisk-Galar Pokémon",
+    "description": "Stunfisk-Galar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mienfoo": {
+    "category": "Mienfoo Pokémon",
+    "description": "Mienfoo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mienshao": {
+    "category": "Mienshao Pokémon",
+    "description": "Mienshao registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "druddigon": {
+    "category": "Druddigon Pokémon",
+    "description": "Druddigon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golett": {
+    "category": "Golett Pokémon",
+    "description": "Golett registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golurk": {
+    "category": "Golurk Pokémon",
+    "description": "Golurk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golurkmega": {
+    "category": "Golurk-Mega Pokémon",
+    "description": "Golurk-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pawniard": {
+    "category": "Pawniard Pokémon",
+    "description": "Pawniard registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bisharp": {
+    "category": "Bisharp Pokémon",
+    "description": "Bisharp registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bouffalant": {
+    "category": "Bouffalant Pokémon",
+    "description": "Bouffalant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rufflet": {
+    "category": "Rufflet Pokémon",
+    "description": "Rufflet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "braviary": {
+    "category": "Braviary Pokémon",
+    "description": "Braviary registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "braviaryhisui": {
+    "category": "Braviary-Hisui Pokémon",
+    "description": "Braviary-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vullaby": {
+    "category": "Vullaby Pokémon",
+    "description": "Vullaby registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mandibuzz": {
+    "category": "Mandibuzz Pokémon",
+    "description": "Mandibuzz registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "heatmor": {
+    "category": "Heatmor Pokémon",
+    "description": "Heatmor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "durant": {
+    "category": "Durant Pokémon",
+    "description": "Durant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "deino": {
+    "category": "Deino Pokémon",
+    "description": "Deino registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zweilous": {
+    "category": "Zweilous Pokémon",
+    "description": "Zweilous registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hydreigon": {
+    "category": "Hydreigon Pokémon",
+    "description": "Hydreigon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "larvesta": {
+    "category": "Larvesta Pokémon",
+    "description": "Larvesta registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "volcarona": {
+    "category": "Volcarona Pokémon",
+    "description": "Volcarona registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cobalion": {
+    "category": "Cobalion Pokémon",
+    "description": "Cobalion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "terrakion": {
+    "category": "Terrakion Pokémon",
+    "description": "Terrakion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "virizion": {
+    "category": "Virizion Pokémon",
+    "description": "Virizion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tornadus": {
+    "category": "Tornadus Pokémon",
+    "description": "Tornadus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tornadustherian": {
+    "category": "Tornadus-Therian Pokémon",
+    "description": "Tornadus-Therian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "thundurus": {
+    "category": "Thundurus Pokémon",
+    "description": "Thundurus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "thundurustherian": {
+    "category": "Thundurus-Therian Pokémon",
+    "description": "Thundurus-Therian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "reshiram": {
+    "category": "Reshiram Pokémon",
+    "description": "Reshiram registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zekrom": {
+    "category": "Zekrom Pokémon",
+    "description": "Zekrom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "landorus": {
+    "category": "Landorus Pokémon",
+    "description": "Landorus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "landorustherian": {
+    "category": "Landorus-Therian Pokémon",
+    "description": "Landorus-Therian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kyurem": {
+    "category": "Kyurem Pokémon",
+    "description": "Kyurem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kyuremblack": {
+    "category": "Kyurem-Black Pokémon",
+    "description": "Kyurem-Black registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kyuremwhite": {
+    "category": "Kyurem-White Pokémon",
+    "description": "Kyurem-White registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "keldeo": {
+    "category": "Keldeo Pokémon",
+    "description": "Keldeo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "keldeoresolute": {
+    "category": "Keldeo-Resolute Pokémon",
+    "description": "Keldeo-Resolute registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meloetta": {
+    "category": "Meloetta Pokémon",
+    "description": "Meloetta registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meloettapirouette": {
+    "category": "Meloetta-Pirouette Pokémon",
+    "description": "Meloetta-Pirouette registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "genesect": {
+    "category": "Genesect Pokémon",
+    "description": "Genesect registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "genesectdouse": {
+    "category": "Genesect-Douse Pokémon",
+    "description": "Genesect-Douse registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "genesectshock": {
+    "category": "Genesect-Shock Pokémon",
+    "description": "Genesect-Shock registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "genesectburn": {
+    "category": "Genesect-Burn Pokémon",
+    "description": "Genesect-Burn registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "genesectchill": {
+    "category": "Genesect-Chill Pokémon",
+    "description": "Genesect-Chill registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chespin": {
+    "category": "Chespin Pokémon",
+    "description": "Chespin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "quilladin": {
+    "category": "Quilladin Pokémon",
+    "description": "Quilladin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chesnaught": {
+    "category": "Chesnaught Pokémon",
+    "description": "Chesnaught registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chesnaughtmega": {
+    "category": "Chesnaught-Mega Pokémon",
+    "description": "Chesnaught-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fennekin": {
+    "category": "Fennekin Pokémon",
+    "description": "Fennekin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "braixen": {
+    "category": "Braixen Pokémon",
+    "description": "Braixen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "delphox": {
+    "category": "Delphox Pokémon",
+    "description": "Delphox registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "delphoxmega": {
+    "category": "Delphox-Mega Pokémon",
+    "description": "Delphox-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "froakie": {
+    "category": "Froakie Pokémon",
+    "description": "Froakie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "frogadier": {
+    "category": "Frogadier Pokémon",
+    "description": "Frogadier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greninja": {
+    "category": "Greninja Pokémon",
+    "description": "Greninja registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greninjabond": {
+    "category": "Greninja-Bond Pokémon",
+    "description": "Greninja-Bond registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greninjaash": {
+    "category": "Greninja-Ash Pokémon",
+    "description": "Greninja-Ash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greninjamega": {
+    "category": "Greninja-Mega Pokémon",
+    "description": "Greninja-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bunnelby": {
+    "category": "Bunnelby Pokémon",
+    "description": "Bunnelby registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "diggersby": {
+    "category": "Diggersby Pokémon",
+    "description": "Diggersby registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fletchling": {
+    "category": "Fletchling Pokémon",
+    "description": "Fletchling registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fletchinder": {
+    "category": "Fletchinder Pokémon",
+    "description": "Fletchinder registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "talonflame": {
+    "category": "Talonflame Pokémon",
+    "description": "Talonflame registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scatterbug": {
+    "category": "Scatterbug Pokémon",
+    "description": "Scatterbug registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spewpa": {
+    "category": "Spewpa Pokémon",
+    "description": "Spewpa registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillon": {
+    "category": "Vivillon Pokémon",
+    "description": "Vivillon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonicysnow": {
+    "category": "Vivillon-Icy Snow Pokémon",
+    "description": "Vivillon-Icy Snow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonpolar": {
+    "category": "Vivillon-Polar Pokémon",
+    "description": "Vivillon-Polar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillontundra": {
+    "category": "Vivillon-Tundra Pokémon",
+    "description": "Vivillon-Tundra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivilloncontinental": {
+    "category": "Vivillon-Continental Pokémon",
+    "description": "Vivillon-Continental registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillongarden": {
+    "category": "Vivillon-Garden Pokémon",
+    "description": "Vivillon-Garden registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonelegant": {
+    "category": "Vivillon-Elegant Pokémon",
+    "description": "Vivillon-Elegant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonmodern": {
+    "category": "Vivillon-Modern Pokémon",
+    "description": "Vivillon-Modern registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonmarine": {
+    "category": "Vivillon-Marine Pokémon",
+    "description": "Vivillon-Marine registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonarchipelago": {
+    "category": "Vivillon-Archipelago Pokémon",
+    "description": "Vivillon-Archipelago registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonhighplains": {
+    "category": "Vivillon-High Plains Pokémon",
+    "description": "Vivillon-High Plains registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonsandstorm": {
+    "category": "Vivillon-Sandstorm Pokémon",
+    "description": "Vivillon-Sandstorm registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonriver": {
+    "category": "Vivillon-River Pokémon",
+    "description": "Vivillon-River registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonmonsoon": {
+    "category": "Vivillon-Monsoon Pokémon",
+    "description": "Vivillon-Monsoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonsavanna": {
+    "category": "Vivillon-Savanna Pokémon",
+    "description": "Vivillon-Savanna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonsun": {
+    "category": "Vivillon-Sun Pokémon",
+    "description": "Vivillon-Sun registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonocean": {
+    "category": "Vivillon-Ocean Pokémon",
+    "description": "Vivillon-Ocean registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonjungle": {
+    "category": "Vivillon-Jungle Pokémon",
+    "description": "Vivillon-Jungle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonfancy": {
+    "category": "Vivillon-Fancy Pokémon",
+    "description": "Vivillon-Fancy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vivillonpokeball": {
+    "category": "Vivillon-Pokeball Pokémon",
+    "description": "Vivillon-Pokeball registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "litleo": {
+    "category": "Litleo Pokémon",
+    "description": "Litleo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pyroar": {
+    "category": "Pyroar Pokémon",
+    "description": "Pyroar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pyroarmega": {
+    "category": "Pyroar-Mega Pokémon",
+    "description": "Pyroar-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flabebe": {
+    "category": "Flabébé Pokémon",
+    "description": "Flabébé registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "floette": {
+    "category": "Floette Pokémon",
+    "description": "Floette registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "floetteeternal": {
+    "category": "Floette-Eternal Pokémon",
+    "description": "Floette-Eternal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "floettemega": {
+    "category": "Floette-Mega Pokémon",
+    "description": "Floette-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "florges": {
+    "category": "Florges Pokémon",
+    "description": "Florges registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skiddo": {
+    "category": "Skiddo Pokémon",
+    "description": "Skiddo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gogoat": {
+    "category": "Gogoat Pokémon",
+    "description": "Gogoat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pancham": {
+    "category": "Pancham Pokémon",
+    "description": "Pancham registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pangoro": {
+    "category": "Pangoro Pokémon",
+    "description": "Pangoro registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "furfrou": {
+    "category": "Furfrou Pokémon",
+    "description": "Furfrou registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "espurr": {
+    "category": "Espurr Pokémon",
+    "description": "Espurr registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowstic": {
+    "category": "Meowstic Pokémon",
+    "description": "Meowstic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowsticf": {
+    "category": "Meowstic-F Pokémon",
+    "description": "Meowstic-F registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowsticmmega": {
+    "category": "Meowstic-M-Mega Pokémon",
+    "description": "Meowstic-M-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowsticfmega": {
+    "category": "Meowstic-F-Mega Pokémon",
+    "description": "Meowstic-F-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "honedge": {
+    "category": "Honedge Pokémon",
+    "description": "Honedge registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "doublade": {
+    "category": "Doublade Pokémon",
+    "description": "Doublade registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aegislash": {
+    "category": "Aegislash Pokémon",
+    "description": "Aegislash registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aegislashblade": {
+    "category": "Aegislash-Blade Pokémon",
+    "description": "Aegislash-Blade registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spritzee": {
+    "category": "Spritzee Pokémon",
+    "description": "Spritzee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aromatisse": {
+    "category": "Aromatisse Pokémon",
+    "description": "Aromatisse registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "swirlix": {
+    "category": "Swirlix Pokémon",
+    "description": "Swirlix registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slurpuff": {
+    "category": "Slurpuff Pokémon",
+    "description": "Slurpuff registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "inkay": {
+    "category": "Inkay Pokémon",
+    "description": "Inkay registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "malamar": {
+    "category": "Malamar Pokémon",
+    "description": "Malamar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "malamarmega": {
+    "category": "Malamar-Mega Pokémon",
+    "description": "Malamar-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "binacle": {
+    "category": "Binacle Pokémon",
+    "description": "Binacle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "barbaracle": {
+    "category": "Barbaracle Pokémon",
+    "description": "Barbaracle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "barbaraclemega": {
+    "category": "Barbaracle-Mega Pokémon",
+    "description": "Barbaracle-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skrelp": {
+    "category": "Skrelp Pokémon",
+    "description": "Skrelp registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dragalge": {
+    "category": "Dragalge Pokémon",
+    "description": "Dragalge registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dragalgemega": {
+    "category": "Dragalge-Mega Pokémon",
+    "description": "Dragalge-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clauncher": {
+    "category": "Clauncher Pokémon",
+    "description": "Clauncher registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clawitzer": {
+    "category": "Clawitzer Pokémon",
+    "description": "Clawitzer registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "helioptile": {
+    "category": "Helioptile Pokémon",
+    "description": "Helioptile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "heliolisk": {
+    "category": "Heliolisk Pokémon",
+    "description": "Heliolisk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tyrunt": {
+    "category": "Tyrunt Pokémon",
+    "description": "Tyrunt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tyrantrum": {
+    "category": "Tyrantrum Pokémon",
+    "description": "Tyrantrum registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "amaura": {
+    "category": "Amaura Pokémon",
+    "description": "Amaura registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "aurorus": {
+    "category": "Aurorus Pokémon",
+    "description": "Aurorus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sylveon": {
+    "category": "Sylveon Pokémon",
+    "description": "Sylveon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hawlucha": {
+    "category": "Hawlucha Pokémon",
+    "description": "Hawlucha registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hawluchamega": {
+    "category": "Hawlucha-Mega Pokémon",
+    "description": "Hawlucha-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dedenne": {
+    "category": "Dedenne Pokémon",
+    "description": "Dedenne registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "carbink": {
+    "category": "Carbink Pokémon",
+    "description": "Carbink registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "goomy": {
+    "category": "Goomy Pokémon",
+    "description": "Goomy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sliggoo": {
+    "category": "Sliggoo Pokémon",
+    "description": "Sliggoo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sliggoohisui": {
+    "category": "Sliggoo-Hisui Pokémon",
+    "description": "Sliggoo-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "goodra": {
+    "category": "Goodra Pokémon",
+    "description": "Goodra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "goodrahisui": {
+    "category": "Goodra-Hisui Pokémon",
+    "description": "Goodra-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "klefki": {
+    "category": "Klefki Pokémon",
+    "description": "Klefki registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "phantump": {
+    "category": "Phantump Pokémon",
+    "description": "Phantump registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "trevenant": {
+    "category": "Trevenant Pokémon",
+    "description": "Trevenant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pumpkaboo": {
+    "category": "Pumpkaboo Pokémon",
+    "description": "Pumpkaboo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pumpkaboosmall": {
+    "category": "Pumpkaboo-Small Pokémon",
+    "description": "Pumpkaboo-Small registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pumpkaboolarge": {
+    "category": "Pumpkaboo-Large Pokémon",
+    "description": "Pumpkaboo-Large registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pumpkaboosuper": {
+    "category": "Pumpkaboo-Super Pokémon",
+    "description": "Pumpkaboo-Super registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gourgeist": {
+    "category": "Gourgeist Pokémon",
+    "description": "Gourgeist registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gourgeistsmall": {
+    "category": "Gourgeist-Small Pokémon",
+    "description": "Gourgeist-Small registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gourgeistlarge": {
+    "category": "Gourgeist-Large Pokémon",
+    "description": "Gourgeist-Large registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gourgeistsuper": {
+    "category": "Gourgeist-Super Pokémon",
+    "description": "Gourgeist-Super registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bergmite": {
+    "category": "Bergmite Pokémon",
+    "description": "Bergmite registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "avalugg": {
+    "category": "Avalugg Pokémon",
+    "description": "Avalugg registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "avalugghisui": {
+    "category": "Avalugg-Hisui Pokémon",
+    "description": "Avalugg-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "noibat": {
+    "category": "Noibat Pokémon",
+    "description": "Noibat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "noivern": {
+    "category": "Noivern Pokémon",
+    "description": "Noivern registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "xerneas": {
+    "category": "Xerneas Pokémon",
+    "description": "Xerneas registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "xerneasneutral": {
+    "category": "Xerneas-Neutral Pokémon",
+    "description": "Xerneas-Neutral registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yveltal": {
+    "category": "Yveltal Pokémon",
+    "description": "Yveltal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zygarde": {
+    "category": "Zygarde Pokémon",
+    "description": "Zygarde registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zygarde10": {
+    "category": "Zygarde-10% Pokémon",
+    "description": "Zygarde-10% registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zygardecomplete": {
+    "category": "Zygarde-Complete Pokémon",
+    "description": "Zygarde-Complete registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zygardemega": {
+    "category": "Zygarde-Mega Pokémon",
+    "description": "Zygarde-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "diancie": {
+    "category": "Diancie Pokémon",
+    "description": "Diancie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dianciemega": {
+    "category": "Diancie-Mega Pokémon",
+    "description": "Diancie-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hoopa": {
+    "category": "Hoopa Pokémon",
+    "description": "Hoopa registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hoopaunbound": {
+    "category": "Hoopa-Unbound Pokémon",
+    "description": "Hoopa-Unbound registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "volcanion": {
+    "category": "Volcanion Pokémon",
+    "description": "Volcanion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rowlet": {
+    "category": "Rowlet Pokémon",
+    "description": "Rowlet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dartrix": {
+    "category": "Dartrix Pokémon",
+    "description": "Dartrix registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "decidueye": {
+    "category": "Decidueye Pokémon",
+    "description": "Decidueye registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "decidueyehisui": {
+    "category": "Decidueye-Hisui Pokémon",
+    "description": "Decidueye-Hisui registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "litten": {
+    "category": "Litten Pokémon",
+    "description": "Litten registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "torracat": {
+    "category": "Torracat Pokémon",
+    "description": "Torracat registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "incineroar": {
+    "category": "Incineroar Pokémon",
+    "description": "Incineroar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "popplio": {
+    "category": "Popplio Pokémon",
+    "description": "Popplio registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "brionne": {
+    "category": "Brionne Pokémon",
+    "description": "Brionne registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "primarina": {
+    "category": "Primarina Pokémon",
+    "description": "Primarina registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pikipek": {
+    "category": "Pikipek Pokémon",
+    "description": "Pikipek registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "trumbeak": {
+    "category": "Trumbeak Pokémon",
+    "description": "Trumbeak registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toucannon": {
+    "category": "Toucannon Pokémon",
+    "description": "Toucannon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yungoos": {
+    "category": "Yungoos Pokémon",
+    "description": "Yungoos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gumshoos": {
+    "category": "Gumshoos Pokémon",
+    "description": "Gumshoos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gumshoostotem": {
+    "category": "Gumshoos-Totem Pokémon",
+    "description": "Gumshoos-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grubbin": {
+    "category": "Grubbin Pokémon",
+    "description": "Grubbin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "charjabug": {
+    "category": "Charjabug Pokémon",
+    "description": "Charjabug registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vikavolt": {
+    "category": "Vikavolt Pokémon",
+    "description": "Vikavolt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "vikavolttotem": {
+    "category": "Vikavolt-Totem Pokémon",
+    "description": "Vikavolt-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crabrawler": {
+    "category": "Crabrawler Pokémon",
+    "description": "Crabrawler registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crabominable": {
+    "category": "Crabominable Pokémon",
+    "description": "Crabominable registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crabominablemega": {
+    "category": "Crabominable-Mega Pokémon",
+    "description": "Crabominable-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oricorio": {
+    "category": "Oricorio Pokémon",
+    "description": "Oricorio registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oricoriopompom": {
+    "category": "Oricorio-Pom-Pom Pokémon",
+    "description": "Oricorio-Pom-Pom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oricoriopau": {
+    "category": "Oricorio-Pa'u Pokémon",
+    "description": "Oricorio-Pa'u registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oricoriosensu": {
+    "category": "Oricorio-Sensu Pokémon",
+    "description": "Oricorio-Sensu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cutiefly": {
+    "category": "Cutiefly Pokémon",
+    "description": "Cutiefly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ribombee": {
+    "category": "Ribombee Pokémon",
+    "description": "Ribombee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ribombeetotem": {
+    "category": "Ribombee-Totem Pokémon",
+    "description": "Ribombee-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rockruff": {
+    "category": "Rockruff Pokémon",
+    "description": "Rockruff registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rockruffdusk": {
+    "category": "Rockruff-Dusk Pokémon",
+    "description": "Rockruff-Dusk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lycanroc": {
+    "category": "Lycanroc Pokémon",
+    "description": "Lycanroc registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lycanrocmidnight": {
+    "category": "Lycanroc-Midnight Pokémon",
+    "description": "Lycanroc-Midnight registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lycanrocdusk": {
+    "category": "Lycanroc-Dusk Pokémon",
+    "description": "Lycanroc-Dusk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wishiwashi": {
+    "category": "Wishiwashi Pokémon",
+    "description": "Wishiwashi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wishiwashischool": {
+    "category": "Wishiwashi-School Pokémon",
+    "description": "Wishiwashi-School registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mareanie": {
+    "category": "Mareanie Pokémon",
+    "description": "Mareanie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxapex": {
+    "category": "Toxapex Pokémon",
+    "description": "Toxapex registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mudbray": {
+    "category": "Mudbray Pokémon",
+    "description": "Mudbray registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mudsdale": {
+    "category": "Mudsdale Pokémon",
+    "description": "Mudsdale registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dewpider": {
+    "category": "Dewpider Pokémon",
+    "description": "Dewpider registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "araquanid": {
+    "category": "Araquanid Pokémon",
+    "description": "Araquanid registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "araquanidtotem": {
+    "category": "Araquanid-Totem Pokémon",
+    "description": "Araquanid-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fomantis": {
+    "category": "Fomantis Pokémon",
+    "description": "Fomantis registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lurantis": {
+    "category": "Lurantis Pokémon",
+    "description": "Lurantis registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lurantistotem": {
+    "category": "Lurantis-Totem Pokémon",
+    "description": "Lurantis-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "morelull": {
+    "category": "Morelull Pokémon",
+    "description": "Morelull registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shiinotic": {
+    "category": "Shiinotic Pokémon",
+    "description": "Shiinotic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "salandit": {
+    "category": "Salandit Pokémon",
+    "description": "Salandit registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "salazzle": {
+    "category": "Salazzle Pokémon",
+    "description": "Salazzle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "salazzletotem": {
+    "category": "Salazzle-Totem Pokémon",
+    "description": "Salazzle-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stufful": {
+    "category": "Stufful Pokémon",
+    "description": "Stufful registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bewear": {
+    "category": "Bewear Pokémon",
+    "description": "Bewear registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bounsweet": {
+    "category": "Bounsweet Pokémon",
+    "description": "Bounsweet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "steenee": {
+    "category": "Steenee Pokémon",
+    "description": "Steenee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tsareena": {
+    "category": "Tsareena Pokémon",
+    "description": "Tsareena registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "comfey": {
+    "category": "Comfey Pokémon",
+    "description": "Comfey registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oranguru": {
+    "category": "Oranguru Pokémon",
+    "description": "Oranguru registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "passimian": {
+    "category": "Passimian Pokémon",
+    "description": "Passimian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wimpod": {
+    "category": "Wimpod Pokémon",
+    "description": "Wimpod registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golisopod": {
+    "category": "Golisopod Pokémon",
+    "description": "Golisopod registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "golisopodmega": {
+    "category": "Golisopod-Mega Pokémon",
+    "description": "Golisopod-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandygast": {
+    "category": "Sandygast Pokémon",
+    "description": "Sandygast registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palossand": {
+    "category": "Palossand Pokémon",
+    "description": "Palossand registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pyukumuku": {
+    "category": "Pyukumuku Pokémon",
+    "description": "Pyukumuku registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "typenull": {
+    "category": "Type: Null Pokémon",
+    "description": "Type: Null registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvally": {
+    "category": "Silvally Pokémon",
+    "description": "Silvally registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallybug": {
+    "category": "Silvally-Bug Pokémon",
+    "description": "Silvally-Bug registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallydark": {
+    "category": "Silvally-Dark Pokémon",
+    "description": "Silvally-Dark registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallydragon": {
+    "category": "Silvally-Dragon Pokémon",
+    "description": "Silvally-Dragon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyelectric": {
+    "category": "Silvally-Electric Pokémon",
+    "description": "Silvally-Electric registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyfairy": {
+    "category": "Silvally-Fairy Pokémon",
+    "description": "Silvally-Fairy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyfighting": {
+    "category": "Silvally-Fighting Pokémon",
+    "description": "Silvally-Fighting registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyfire": {
+    "category": "Silvally-Fire Pokémon",
+    "description": "Silvally-Fire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyflying": {
+    "category": "Silvally-Flying Pokémon",
+    "description": "Silvally-Flying registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyghost": {
+    "category": "Silvally-Ghost Pokémon",
+    "description": "Silvally-Ghost registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallygrass": {
+    "category": "Silvally-Grass Pokémon",
+    "description": "Silvally-Grass registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyground": {
+    "category": "Silvally-Ground Pokémon",
+    "description": "Silvally-Ground registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyice": {
+    "category": "Silvally-Ice Pokémon",
+    "description": "Silvally-Ice registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallypoison": {
+    "category": "Silvally-Poison Pokémon",
+    "description": "Silvally-Poison registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallypsychic": {
+    "category": "Silvally-Psychic Pokémon",
+    "description": "Silvally-Psychic registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallyrock": {
+    "category": "Silvally-Rock Pokémon",
+    "description": "Silvally-Rock registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallysteel": {
+    "category": "Silvally-Steel Pokémon",
+    "description": "Silvally-Steel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silvallywater": {
+    "category": "Silvally-Water Pokémon",
+    "description": "Silvally-Water registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "minior": {
+    "category": "Minior Pokémon",
+    "description": "Minior registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniororange": {
+    "category": "Minior-Orange Pokémon",
+    "description": "Minior-Orange registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "minioryellow": {
+    "category": "Minior-Yellow Pokémon",
+    "description": "Minior-Yellow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniorgreen": {
+    "category": "Minior-Green Pokémon",
+    "description": "Minior-Green registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniorblue": {
+    "category": "Minior-Blue Pokémon",
+    "description": "Minior-Blue registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniorindigo": {
+    "category": "Minior-Indigo Pokémon",
+    "description": "Minior-Indigo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniorviolet": {
+    "category": "Minior-Violet Pokémon",
+    "description": "Minior-Violet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miniormeteor": {
+    "category": "Minior-Meteor Pokémon",
+    "description": "Minior-Meteor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "komala": {
+    "category": "Komala Pokémon",
+    "description": "Komala registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "turtonator": {
+    "category": "Turtonator Pokémon",
+    "description": "Turtonator registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "togedemaru": {
+    "category": "Togedemaru Pokémon",
+    "description": "Togedemaru registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "togedemarutotem": {
+    "category": "Togedemaru-Totem Pokémon",
+    "description": "Togedemaru-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mimikyu": {
+    "category": "Mimikyu Pokémon",
+    "description": "Mimikyu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mimikyubusted": {
+    "category": "Mimikyu-Busted Pokémon",
+    "description": "Mimikyu-Busted registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mimikyutotem": {
+    "category": "Mimikyu-Totem Pokémon",
+    "description": "Mimikyu-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mimikyubustedtotem": {
+    "category": "Mimikyu-Busted-Totem Pokémon",
+    "description": "Mimikyu-Busted-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bruxish": {
+    "category": "Bruxish Pokémon",
+    "description": "Bruxish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drampa": {
+    "category": "Drampa Pokémon",
+    "description": "Drampa registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drampamega": {
+    "category": "Drampa-Mega Pokémon",
+    "description": "Drampa-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dhelmise": {
+    "category": "Dhelmise Pokémon",
+    "description": "Dhelmise registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "jangmoo": {
+    "category": "Jangmo-o Pokémon",
+    "description": "Jangmo-o registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hakamoo": {
+    "category": "Hakamo-o Pokémon",
+    "description": "Hakamo-o registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kommoo": {
+    "category": "Kommo-o Pokémon",
+    "description": "Kommo-o registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kommoototem": {
+    "category": "Kommo-o-Totem Pokémon",
+    "description": "Kommo-o-Totem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tapukoko": {
+    "category": "Tapu Koko Pokémon",
+    "description": "Tapu Koko registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tapulele": {
+    "category": "Tapu Lele Pokémon",
+    "description": "Tapu Lele registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tapubulu": {
+    "category": "Tapu Bulu Pokémon",
+    "description": "Tapu Bulu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tapufini": {
+    "category": "Tapu Fini Pokémon",
+    "description": "Tapu Fini registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cosmog": {
+    "category": "Cosmog Pokémon",
+    "description": "Cosmog registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cosmoem": {
+    "category": "Cosmoem Pokémon",
+    "description": "Cosmoem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "solgaleo": {
+    "category": "Solgaleo Pokémon",
+    "description": "Solgaleo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lunala": {
+    "category": "Lunala Pokémon",
+    "description": "Lunala registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nihilego": {
+    "category": "Nihilego Pokémon",
+    "description": "Nihilego registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "buzzwole": {
+    "category": "Buzzwole Pokémon",
+    "description": "Buzzwole registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pheromosa": {
+    "category": "Pheromosa Pokémon",
+    "description": "Pheromosa registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "xurkitree": {
+    "category": "Xurkitree Pokémon",
+    "description": "Xurkitree registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "celesteela": {
+    "category": "Celesteela Pokémon",
+    "description": "Celesteela registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kartana": {
+    "category": "Kartana Pokémon",
+    "description": "Kartana registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "guzzlord": {
+    "category": "Guzzlord Pokémon",
+    "description": "Guzzlord registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "necrozma": {
+    "category": "Necrozma Pokémon",
+    "description": "Necrozma registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "necrozmaduskmane": {
+    "category": "Necrozma-Dusk-Mane Pokémon",
+    "description": "Necrozma-Dusk-Mane registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "necrozmadawnwings": {
+    "category": "Necrozma-Dawn-Wings Pokémon",
+    "description": "Necrozma-Dawn-Wings registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "necrozmaultra": {
+    "category": "Necrozma-Ultra Pokémon",
+    "description": "Necrozma-Ultra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magearna": {
+    "category": "Magearna Pokémon",
+    "description": "Magearna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magearnaoriginal": {
+    "category": "Magearna-Original Pokémon",
+    "description": "Magearna-Original registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magearnamega": {
+    "category": "Magearna-Mega Pokémon",
+    "description": "Magearna-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "magearnaoriginalmega": {
+    "category": "Magearna-Original-Mega Pokémon",
+    "description": "Magearna-Original-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "marshadow": {
+    "category": "Marshadow Pokémon",
+    "description": "Marshadow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "poipole": {
+    "category": "Poipole Pokémon",
+    "description": "Poipole registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "naganadel": {
+    "category": "Naganadel Pokémon",
+    "description": "Naganadel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stakataka": {
+    "category": "Stakataka Pokémon",
+    "description": "Stakataka registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blacephalon": {
+    "category": "Blacephalon Pokémon",
+    "description": "Blacephalon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zeraora": {
+    "category": "Zeraora Pokémon",
+    "description": "Zeraora registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zeraoramega": {
+    "category": "Zeraora-Mega Pokémon",
+    "description": "Zeraora-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meltan": {
+    "category": "Meltan Pokémon",
+    "description": "Meltan registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "melmetal": {
+    "category": "Melmetal Pokémon",
+    "description": "Melmetal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "melmetalgmax": {
+    "category": "Melmetal-Gmax Pokémon",
+    "description": "Melmetal-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grookey": {
+    "category": "Grookey Pokémon",
+    "description": "Grookey registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "thwackey": {
+    "category": "Thwackey Pokémon",
+    "description": "Thwackey registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rillaboom": {
+    "category": "Rillaboom Pokémon",
+    "description": "Rillaboom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rillaboomgmax": {
+    "category": "Rillaboom-Gmax Pokémon",
+    "description": "Rillaboom-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scorbunny": {
+    "category": "Scorbunny Pokémon",
+    "description": "Scorbunny registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "raboot": {
+    "category": "Raboot Pokémon",
+    "description": "Raboot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cinderace": {
+    "category": "Cinderace Pokémon",
+    "description": "Cinderace registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cinderacegmax": {
+    "category": "Cinderace-Gmax Pokémon",
+    "description": "Cinderace-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sobble": {
+    "category": "Sobble Pokémon",
+    "description": "Sobble registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drizzile": {
+    "category": "Drizzile Pokémon",
+    "description": "Drizzile registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "inteleon": {
+    "category": "Inteleon Pokémon",
+    "description": "Inteleon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "inteleongmax": {
+    "category": "Inteleon-Gmax Pokémon",
+    "description": "Inteleon-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skwovet": {
+    "category": "Skwovet Pokémon",
+    "description": "Skwovet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greedent": {
+    "category": "Greedent Pokémon",
+    "description": "Greedent registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rookidee": {
+    "category": "Rookidee Pokémon",
+    "description": "Rookidee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "corvisquire": {
+    "category": "Corvisquire Pokémon",
+    "description": "Corvisquire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "corviknight": {
+    "category": "Corviknight Pokémon",
+    "description": "Corviknight registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "corviknightgmax": {
+    "category": "Corviknight-Gmax Pokémon",
+    "description": "Corviknight-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "blipbug": {
+    "category": "Blipbug Pokémon",
+    "description": "Blipbug registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dottler": {
+    "category": "Dottler Pokémon",
+    "description": "Dottler registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "orbeetle": {
+    "category": "Orbeetle Pokémon",
+    "description": "Orbeetle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "orbeetlegmax": {
+    "category": "Orbeetle-Gmax Pokémon",
+    "description": "Orbeetle-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nickit": {
+    "category": "Nickit Pokémon",
+    "description": "Nickit registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "thievul": {
+    "category": "Thievul Pokémon",
+    "description": "Thievul registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gossifleur": {
+    "category": "Gossifleur Pokémon",
+    "description": "Gossifleur registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eldegoss": {
+    "category": "Eldegoss Pokémon",
+    "description": "Eldegoss registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wooloo": {
+    "category": "Wooloo Pokémon",
+    "description": "Wooloo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dubwool": {
+    "category": "Dubwool Pokémon",
+    "description": "Dubwool registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chewtle": {
+    "category": "Chewtle Pokémon",
+    "description": "Chewtle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drednaw": {
+    "category": "Drednaw Pokémon",
+    "description": "Drednaw registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drednawgmax": {
+    "category": "Drednaw-Gmax Pokémon",
+    "description": "Drednaw-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "yamper": {
+    "category": "Yamper Pokémon",
+    "description": "Yamper registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "boltund": {
+    "category": "Boltund Pokémon",
+    "description": "Boltund registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rolycoly": {
+    "category": "Rolycoly Pokémon",
+    "description": "Rolycoly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "carkol": {
+    "category": "Carkol Pokémon",
+    "description": "Carkol registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "coalossal": {
+    "category": "Coalossal Pokémon",
+    "description": "Coalossal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "coalossalgmax": {
+    "category": "Coalossal-Gmax Pokémon",
+    "description": "Coalossal-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "applin": {
+    "category": "Applin Pokémon",
+    "description": "Applin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flapple": {
+    "category": "Flapple Pokémon",
+    "description": "Flapple registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flapplegmax": {
+    "category": "Flapple-Gmax Pokémon",
+    "description": "Flapple-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "appletun": {
+    "category": "Appletun Pokémon",
+    "description": "Appletun registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "appletungmax": {
+    "category": "Appletun-Gmax Pokémon",
+    "description": "Appletun-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "silicobra": {
+    "category": "Silicobra Pokémon",
+    "description": "Silicobra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandaconda": {
+    "category": "Sandaconda Pokémon",
+    "description": "Sandaconda registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandacondagmax": {
+    "category": "Sandaconda-Gmax Pokémon",
+    "description": "Sandaconda-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cramorant": {
+    "category": "Cramorant Pokémon",
+    "description": "Cramorant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cramorantgulping": {
+    "category": "Cramorant-Gulping Pokémon",
+    "description": "Cramorant-Gulping registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cramorantgorging": {
+    "category": "Cramorant-Gorging Pokémon",
+    "description": "Cramorant-Gorging registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arrokuda": {
+    "category": "Arrokuda Pokémon",
+    "description": "Arrokuda registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "barraskewda": {
+    "category": "Barraskewda Pokémon",
+    "description": "Barraskewda registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxel": {
+    "category": "Toxel Pokémon",
+    "description": "Toxel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxtricity": {
+    "category": "Toxtricity Pokémon",
+    "description": "Toxtricity registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxtricitylowkey": {
+    "category": "Toxtricity-Low-Key Pokémon",
+    "description": "Toxtricity-Low-Key registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxtricitygmax": {
+    "category": "Toxtricity-Gmax Pokémon",
+    "description": "Toxtricity-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toxtricitylowkeygmax": {
+    "category": "Toxtricity-Low-Key-Gmax Pokémon",
+    "description": "Toxtricity-Low-Key-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sizzlipede": {
+    "category": "Sizzlipede Pokémon",
+    "description": "Sizzlipede registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "centiskorch": {
+    "category": "Centiskorch Pokémon",
+    "description": "Centiskorch registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "centiskorchgmax": {
+    "category": "Centiskorch-Gmax Pokémon",
+    "description": "Centiskorch-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clobbopus": {
+    "category": "Clobbopus Pokémon",
+    "description": "Clobbopus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grapploct": {
+    "category": "Grapploct Pokémon",
+    "description": "Grapploct registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sinistea": {
+    "category": "Sinistea Pokémon",
+    "description": "Sinistea registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sinisteaantique": {
+    "category": "Sinistea-Antique Pokémon",
+    "description": "Sinistea-Antique registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "polteageist": {
+    "category": "Polteageist Pokémon",
+    "description": "Polteageist registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "polteageistantique": {
+    "category": "Polteageist-Antique Pokémon",
+    "description": "Polteageist-Antique registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hatenna": {
+    "category": "Hatenna Pokémon",
+    "description": "Hatenna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hattrem": {
+    "category": "Hattrem Pokémon",
+    "description": "Hattrem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hatterene": {
+    "category": "Hatterene Pokémon",
+    "description": "Hatterene registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hatterenegmax": {
+    "category": "Hatterene-Gmax Pokémon",
+    "description": "Hatterene-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "impidimp": {
+    "category": "Impidimp Pokémon",
+    "description": "Impidimp registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "morgrem": {
+    "category": "Morgrem Pokémon",
+    "description": "Morgrem registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grimmsnarl": {
+    "category": "Grimmsnarl Pokémon",
+    "description": "Grimmsnarl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grimmsnarlgmax": {
+    "category": "Grimmsnarl-Gmax Pokémon",
+    "description": "Grimmsnarl-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "obstagoon": {
+    "category": "Obstagoon Pokémon",
+    "description": "Obstagoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "perrserker": {
+    "category": "Perrserker Pokémon",
+    "description": "Perrserker registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cursola": {
+    "category": "Cursola Pokémon",
+    "description": "Cursola registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sirfetchd": {
+    "category": "Sirfetch’d Pokémon",
+    "description": "Sirfetch’d registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mrrime": {
+    "category": "Mr. Rime Pokémon",
+    "description": "Mr. Rime registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "runerigus": {
+    "category": "Runerigus Pokémon",
+    "description": "Runerigus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "milcery": {
+    "category": "Milcery Pokémon",
+    "description": "Milcery registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremie": {
+    "category": "Alcremie Pokémon",
+    "description": "Alcremie registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremierubycream": {
+    "category": "Alcremie-Ruby-Cream Pokémon",
+    "description": "Alcremie-Ruby-Cream registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremiematchacream": {
+    "category": "Alcremie-Matcha-Cream Pokémon",
+    "description": "Alcremie-Matcha-Cream registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremiemintcream": {
+    "category": "Alcremie-Mint-Cream Pokémon",
+    "description": "Alcremie-Mint-Cream registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremielemoncream": {
+    "category": "Alcremie-Lemon-Cream Pokémon",
+    "description": "Alcremie-Lemon-Cream registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremierubyswirl": {
+    "category": "Alcremie-Ruby-Swirl Pokémon",
+    "description": "Alcremie-Ruby-Swirl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremiecaramelswirl": {
+    "category": "Alcremie-Caramel-Swirl Pokémon",
+    "description": "Alcremie-Caramel-Swirl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremierainbowswirl": {
+    "category": "Alcremie-Rainbow-Swirl Pokémon",
+    "description": "Alcremie-Rainbow-Swirl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "alcremiegmax": {
+    "category": "Alcremie-Gmax Pokémon",
+    "description": "Alcremie-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "falinks": {
+    "category": "Falinks Pokémon",
+    "description": "Falinks registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "falinksmega": {
+    "category": "Falinks-Mega Pokémon",
+    "description": "Falinks-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pincurchin": {
+    "category": "Pincurchin Pokémon",
+    "description": "Pincurchin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "snom": {
+    "category": "Snom Pokémon",
+    "description": "Snom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "frosmoth": {
+    "category": "Frosmoth Pokémon",
+    "description": "Frosmoth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "stonjourner": {
+    "category": "Stonjourner Pokémon",
+    "description": "Stonjourner registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eiscue": {
+    "category": "Eiscue Pokémon",
+    "description": "Eiscue registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eiscuenoice": {
+    "category": "Eiscue-Noice Pokémon",
+    "description": "Eiscue-Noice registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "indeedee": {
+    "category": "Indeedee Pokémon",
+    "description": "Indeedee registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "indeedeef": {
+    "category": "Indeedee-F Pokémon",
+    "description": "Indeedee-F registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "morpeko": {
+    "category": "Morpeko Pokémon",
+    "description": "Morpeko registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "morpekohangry": {
+    "category": "Morpeko-Hangry Pokémon",
+    "description": "Morpeko-Hangry registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cufant": {
+    "category": "Cufant Pokémon",
+    "description": "Cufant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "copperajah": {
+    "category": "Copperajah Pokémon",
+    "description": "Copperajah registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "copperajahgmax": {
+    "category": "Copperajah-Gmax Pokémon",
+    "description": "Copperajah-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dracozolt": {
+    "category": "Dracozolt Pokémon",
+    "description": "Dracozolt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arctozolt": {
+    "category": "Arctozolt Pokémon",
+    "description": "Arctozolt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dracovish": {
+    "category": "Dracovish Pokémon",
+    "description": "Dracovish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arctovish": {
+    "category": "Arctovish Pokémon",
+    "description": "Arctovish registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "duraludon": {
+    "category": "Duraludon Pokémon",
+    "description": "Duraludon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "duraludongmax": {
+    "category": "Duraludon-Gmax Pokémon",
+    "description": "Duraludon-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dreepy": {
+    "category": "Dreepy Pokémon",
+    "description": "Dreepy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "drakloak": {
+    "category": "Drakloak Pokémon",
+    "description": "Drakloak registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dragapult": {
+    "category": "Dragapult Pokémon",
+    "description": "Dragapult registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zacian": {
+    "category": "Zacian Pokémon",
+    "description": "Zacian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zaciancrowned": {
+    "category": "Zacian-Crowned Pokémon",
+    "description": "Zacian-Crowned registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zamazenta": {
+    "category": "Zamazenta Pokémon",
+    "description": "Zamazenta registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zamazentacrowned": {
+    "category": "Zamazenta-Crowned Pokémon",
+    "description": "Zamazenta-Crowned registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eternatus": {
+    "category": "Eternatus Pokémon",
+    "description": "Eternatus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "eternatuseternamax": {
+    "category": "Eternatus-Eternamax Pokémon",
+    "description": "Eternatus-Eternamax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kubfu": {
+    "category": "Kubfu Pokémon",
+    "description": "Kubfu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "urshifu": {
+    "category": "Urshifu Pokémon",
+    "description": "Urshifu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "urshifurapidstrike": {
+    "category": "Urshifu-Rapid-Strike Pokémon",
+    "description": "Urshifu-Rapid-Strike registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "urshifugmax": {
+    "category": "Urshifu-Gmax Pokémon",
+    "description": "Urshifu-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "urshifurapidstrikegmax": {
+    "category": "Urshifu-Rapid-Strike-Gmax Pokémon",
+    "description": "Urshifu-Rapid-Strike-Gmax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zarude": {
+    "category": "Zarude Pokémon",
+    "description": "Zarude registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "zarudedada": {
+    "category": "Zarude-Dada Pokémon",
+    "description": "Zarude-Dada registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "regieleki": {
+    "category": "Regieleki Pokémon",
+    "description": "Regieleki registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "regidrago": {
+    "category": "Regidrago Pokémon",
+    "description": "Regidrago registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glastrier": {
+    "category": "Glastrier Pokémon",
+    "description": "Glastrier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spectrier": {
+    "category": "Spectrier Pokémon",
+    "description": "Spectrier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "calyrex": {
+    "category": "Calyrex Pokémon",
+    "description": "Calyrex registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "calyrexice": {
+    "category": "Calyrex-Ice Pokémon",
+    "description": "Calyrex-Ice registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "calyrexshadow": {
+    "category": "Calyrex-Shadow Pokémon",
+    "description": "Calyrex-Shadow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wyrdeer": {
+    "category": "Wyrdeer Pokémon",
+    "description": "Wyrdeer registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kleavor": {
+    "category": "Kleavor Pokémon",
+    "description": "Kleavor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ursaluna": {
+    "category": "Ursaluna Pokémon",
+    "description": "Ursaluna registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ursalunabloodmoon": {
+    "category": "Ursaluna-Bloodmoon Pokémon",
+    "description": "Ursaluna-Bloodmoon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "basculegion": {
+    "category": "Basculegion Pokémon",
+    "description": "Basculegion registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "basculegionf": {
+    "category": "Basculegion-F Pokémon",
+    "description": "Basculegion-F registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sneasler": {
+    "category": "Sneasler Pokémon",
+    "description": "Sneasler registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "overqwil": {
+    "category": "Overqwil Pokémon",
+    "description": "Overqwil registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "enamorus": {
+    "category": "Enamorus Pokémon",
+    "description": "Enamorus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "enamorustherian": {
+    "category": "Enamorus-Therian Pokémon",
+    "description": "Enamorus-Therian registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sprigatito": {
+    "category": "Sprigatito Pokémon",
+    "description": "Sprigatito registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "floragato": {
+    "category": "Floragato Pokémon",
+    "description": "Floragato registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "meowscarada": {
+    "category": "Meowscarada Pokémon",
+    "description": "Meowscarada registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fuecoco": {
+    "category": "Fuecoco Pokémon",
+    "description": "Fuecoco registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "crocalor": {
+    "category": "Crocalor Pokémon",
+    "description": "Crocalor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "skeledirge": {
+    "category": "Skeledirge Pokémon",
+    "description": "Skeledirge registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "quaxly": {
+    "category": "Quaxly Pokémon",
+    "description": "Quaxly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "quaxwell": {
+    "category": "Quaxwell Pokémon",
+    "description": "Quaxwell registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "quaquaval": {
+    "category": "Quaquaval Pokémon",
+    "description": "Quaquaval registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lechonk": {
+    "category": "Lechonk Pokémon",
+    "description": "Lechonk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oinkologne": {
+    "category": "Oinkologne Pokémon",
+    "description": "Oinkologne registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "oinkolognef": {
+    "category": "Oinkologne-F Pokémon",
+    "description": "Oinkologne-F registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tarountula": {
+    "category": "Tarountula Pokémon",
+    "description": "Tarountula registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "spidops": {
+    "category": "Spidops Pokémon",
+    "description": "Spidops registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nymble": {
+    "category": "Nymble Pokémon",
+    "description": "Nymble registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "lokix": {
+    "category": "Lokix Pokémon",
+    "description": "Lokix registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pawmi": {
+    "category": "Pawmi Pokémon",
+    "description": "Pawmi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pawmo": {
+    "category": "Pawmo Pokémon",
+    "description": "Pawmo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pawmot": {
+    "category": "Pawmot Pokémon",
+    "description": "Pawmot registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tandemaus": {
+    "category": "Tandemaus Pokémon",
+    "description": "Tandemaus registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "maushold": {
+    "category": "Maushold Pokémon",
+    "description": "Maushold registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mausholdfour": {
+    "category": "Maushold-Four Pokémon",
+    "description": "Maushold-Four registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fidough": {
+    "category": "Fidough Pokémon",
+    "description": "Fidough registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dachsbun": {
+    "category": "Dachsbun Pokémon",
+    "description": "Dachsbun registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "smoliv": {
+    "category": "Smoliv Pokémon",
+    "description": "Smoliv registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dolliv": {
+    "category": "Dolliv Pokémon",
+    "description": "Dolliv registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arboliva": {
+    "category": "Arboliva Pokémon",
+    "description": "Arboliva registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "squawkabilly": {
+    "category": "Squawkabilly Pokémon",
+    "description": "Squawkabilly registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "squawkabillyblue": {
+    "category": "Squawkabilly-Blue Pokémon",
+    "description": "Squawkabilly-Blue registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "squawkabillyyellow": {
+    "category": "Squawkabilly-Yellow Pokémon",
+    "description": "Squawkabilly-Yellow registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "squawkabillywhite": {
+    "category": "Squawkabilly-White Pokémon",
+    "description": "Squawkabilly-White registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "nacli": {
+    "category": "Nacli Pokémon",
+    "description": "Nacli registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "naclstack": {
+    "category": "Naclstack Pokémon",
+    "description": "Naclstack registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "garganacl": {
+    "category": "Garganacl Pokémon",
+    "description": "Garganacl registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "charcadet": {
+    "category": "Charcadet Pokémon",
+    "description": "Charcadet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "armarouge": {
+    "category": "Armarouge Pokémon",
+    "description": "Armarouge registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ceruledge": {
+    "category": "Ceruledge Pokémon",
+    "description": "Ceruledge registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tadbulb": {
+    "category": "Tadbulb Pokémon",
+    "description": "Tadbulb registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bellibolt": {
+    "category": "Bellibolt Pokémon",
+    "description": "Bellibolt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wattrel": {
+    "category": "Wattrel Pokémon",
+    "description": "Wattrel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kilowattrel": {
+    "category": "Kilowattrel Pokémon",
+    "description": "Kilowattrel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "maschiff": {
+    "category": "Maschiff Pokémon",
+    "description": "Maschiff registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "mabosstiff": {
+    "category": "Mabosstiff Pokémon",
+    "description": "Mabosstiff registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "shroodle": {
+    "category": "Shroodle Pokémon",
+    "description": "Shroodle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "grafaiai": {
+    "category": "Grafaiai Pokémon",
+    "description": "Grafaiai registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bramblin": {
+    "category": "Bramblin Pokémon",
+    "description": "Bramblin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "brambleghast": {
+    "category": "Brambleghast Pokémon",
+    "description": "Brambleghast registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toedscool": {
+    "category": "Toedscool Pokémon",
+    "description": "Toedscool registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "toedscruel": {
+    "category": "Toedscruel Pokémon",
+    "description": "Toedscruel registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "klawf": {
+    "category": "Klawf Pokémon",
+    "description": "Klawf registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "capsakid": {
+    "category": "Capsakid Pokémon",
+    "description": "Capsakid registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scovillain": {
+    "category": "Scovillain Pokémon",
+    "description": "Scovillain registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "scovillainmega": {
+    "category": "Scovillain-Mega Pokémon",
+    "description": "Scovillain-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rellor": {
+    "category": "Rellor Pokémon",
+    "description": "Rellor registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "rabsca": {
+    "category": "Rabsca Pokémon",
+    "description": "Rabsca registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flittle": {
+    "category": "Flittle Pokémon",
+    "description": "Flittle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "espathra": {
+    "category": "Espathra Pokémon",
+    "description": "Espathra registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tinkatink": {
+    "category": "Tinkatink Pokémon",
+    "description": "Tinkatink registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tinkatuff": {
+    "category": "Tinkatuff Pokémon",
+    "description": "Tinkatuff registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tinkaton": {
+    "category": "Tinkaton Pokémon",
+    "description": "Tinkaton registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wiglett": {
+    "category": "Wiglett Pokémon",
+    "description": "Wiglett registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wugtrio": {
+    "category": "Wugtrio Pokémon",
+    "description": "Wugtrio registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "bombirdier": {
+    "category": "Bombirdier Pokémon",
+    "description": "Bombirdier registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "finizen": {
+    "category": "Finizen Pokémon",
+    "description": "Finizen registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palafin": {
+    "category": "Palafin Pokémon",
+    "description": "Palafin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "palafinhero": {
+    "category": "Palafin-Hero Pokémon",
+    "description": "Palafin-Hero registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "varoom": {
+    "category": "Varoom Pokémon",
+    "description": "Varoom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "revavroom": {
+    "category": "Revavroom Pokémon",
+    "description": "Revavroom registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cyclizar": {
+    "category": "Cyclizar Pokémon",
+    "description": "Cyclizar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "orthworm": {
+    "category": "Orthworm Pokémon",
+    "description": "Orthworm registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glimmet": {
+    "category": "Glimmet Pokémon",
+    "description": "Glimmet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glimmora": {
+    "category": "Glimmora Pokémon",
+    "description": "Glimmora registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "glimmoramega": {
+    "category": "Glimmora-Mega Pokémon",
+    "description": "Glimmora-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greavard": {
+    "category": "Greavard Pokémon",
+    "description": "Greavard registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "houndstone": {
+    "category": "Houndstone Pokémon",
+    "description": "Houndstone registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "flamigo": {
+    "category": "Flamigo Pokémon",
+    "description": "Flamigo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cetoddle": {
+    "category": "Cetoddle Pokémon",
+    "description": "Cetoddle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "cetitan": {
+    "category": "Cetitan Pokémon",
+    "description": "Cetitan registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "veluza": {
+    "category": "Veluza Pokémon",
+    "description": "Veluza registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dondozo": {
+    "category": "Dondozo Pokémon",
+    "description": "Dondozo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiri": {
+    "category": "Tatsugiri Pokémon",
+    "description": "Tatsugiri registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiridroopy": {
+    "category": "Tatsugiri-Droopy Pokémon",
+    "description": "Tatsugiri-Droopy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiristretchy": {
+    "category": "Tatsugiri-Stretchy Pokémon",
+    "description": "Tatsugiri-Stretchy registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiricurlymega": {
+    "category": "Tatsugiri-Curly-Mega Pokémon",
+    "description": "Tatsugiri-Curly-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiridroopymega": {
+    "category": "Tatsugiri-Droopy-Mega Pokémon",
+    "description": "Tatsugiri-Droopy-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tatsugiristretchymega": {
+    "category": "Tatsugiri-Stretchy-Mega Pokémon",
+    "description": "Tatsugiri-Stretchy-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "annihilape": {
+    "category": "Annihilape Pokémon",
+    "description": "Annihilape registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "clodsire": {
+    "category": "Clodsire Pokémon",
+    "description": "Clodsire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "farigiraf": {
+    "category": "Farigiraf Pokémon",
+    "description": "Farigiraf registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dudunsparce": {
+    "category": "Dudunsparce Pokémon",
+    "description": "Dudunsparce registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dudunsparcethreesegment": {
+    "category": "Dudunsparce-Three-Segment Pokémon",
+    "description": "Dudunsparce-Three-Segment registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "kingambit": {
+    "category": "Kingambit Pokémon",
+    "description": "Kingambit registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "greattusk": {
+    "category": "Great Tusk Pokémon",
+    "description": "Great Tusk registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "screamtail": {
+    "category": "Scream Tail Pokémon",
+    "description": "Scream Tail registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "brutebonnet": {
+    "category": "Brute Bonnet Pokémon",
+    "description": "Brute Bonnet registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fluttermane": {
+    "category": "Flutter Mane Pokémon",
+    "description": "Flutter Mane registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "slitherwing": {
+    "category": "Slither Wing Pokémon",
+    "description": "Slither Wing registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sandyshocks": {
+    "category": "Sandy Shocks Pokémon",
+    "description": "Sandy Shocks registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "irontreads": {
+    "category": "Iron Treads Pokémon",
+    "description": "Iron Treads registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironbundle": {
+    "category": "Iron Bundle Pokémon",
+    "description": "Iron Bundle registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironhands": {
+    "category": "Iron Hands Pokémon",
+    "description": "Iron Hands registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironjugulis": {
+    "category": "Iron Jugulis Pokémon",
+    "description": "Iron Jugulis registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironmoth": {
+    "category": "Iron Moth Pokémon",
+    "description": "Iron Moth registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironthorns": {
+    "category": "Iron Thorns Pokémon",
+    "description": "Iron Thorns registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "frigibax": {
+    "category": "Frigibax Pokémon",
+    "description": "Frigibax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "arctibax": {
+    "category": "Arctibax Pokémon",
+    "description": "Arctibax registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "baxcalibur": {
+    "category": "Baxcalibur Pokémon",
+    "description": "Baxcalibur registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "baxcaliburmega": {
+    "category": "Baxcalibur-Mega Pokémon",
+    "description": "Baxcalibur-Mega registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gimmighoul": {
+    "category": "Gimmighoul Pokémon",
+    "description": "Gimmighoul registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gimmighoulroaming": {
+    "category": "Gimmighoul-Roaming Pokémon",
+    "description": "Gimmighoul-Roaming registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gholdengo": {
+    "category": "Gholdengo Pokémon",
+    "description": "Gholdengo registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "wochien": {
+    "category": "Wo-Chien Pokémon",
+    "description": "Wo-Chien registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chienpao": {
+    "category": "Chien-Pao Pokémon",
+    "description": "Chien-Pao registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "tinglu": {
+    "category": "Ting-Lu Pokémon",
+    "description": "Ting-Lu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "chiyu": {
+    "category": "Chi-Yu Pokémon",
+    "description": "Chi-Yu registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "roaringmoon": {
+    "category": "Roaring Moon Pokémon",
+    "description": "Roaring Moon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironvaliant": {
+    "category": "Iron Valiant Pokémon",
+    "description": "Iron Valiant registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "koraidon": {
+    "category": "Koraidon Pokémon",
+    "description": "Koraidon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "miraidon": {
+    "category": "Miraidon Pokémon",
+    "description": "Miraidon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "walkingwake": {
+    "category": "Walking Wake Pokémon",
+    "description": "Walking Wake registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironleaves": {
+    "category": "Iron Leaves Pokémon",
+    "description": "Iron Leaves registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "dipplin": {
+    "category": "Dipplin Pokémon",
+    "description": "Dipplin registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "poltchageist": {
+    "category": "Poltchageist Pokémon",
+    "description": "Poltchageist registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "poltchageistartisan": {
+    "category": "Poltchageist-Artisan Pokémon",
+    "description": "Poltchageist-Artisan registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sinistcha": {
+    "category": "Sinistcha Pokémon",
+    "description": "Sinistcha registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "sinistchamasterpiece": {
+    "category": "Sinistcha-Masterpiece Pokémon",
+    "description": "Sinistcha-Masterpiece registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "okidogi": {
+    "category": "Okidogi Pokémon",
+    "description": "Okidogi registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "munkidori": {
+    "category": "Munkidori Pokémon",
+    "description": "Munkidori registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "fezandipiti": {
+    "category": "Fezandipiti Pokémon",
+    "description": "Fezandipiti registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerpon": {
+    "category": "Ogerpon Pokémon",
+    "description": "Ogerpon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponwellspring": {
+    "category": "Ogerpon-Wellspring Pokémon",
+    "description": "Ogerpon-Wellspring registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponhearthflame": {
+    "category": "Ogerpon-Hearthflame Pokémon",
+    "description": "Ogerpon-Hearthflame registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponcornerstone": {
+    "category": "Ogerpon-Cornerstone Pokémon",
+    "description": "Ogerpon-Cornerstone registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerpontealtera": {
+    "category": "Ogerpon-Teal-Tera Pokémon",
+    "description": "Ogerpon-Teal-Tera registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponwellspringtera": {
+    "category": "Ogerpon-Wellspring-Tera Pokémon",
+    "description": "Ogerpon-Wellspring-Tera registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponhearthflametera": {
+    "category": "Ogerpon-Hearthflame-Tera Pokémon",
+    "description": "Ogerpon-Hearthflame-Tera registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ogerponcornerstonetera": {
+    "category": "Ogerpon-Cornerstone-Tera Pokémon",
+    "description": "Ogerpon-Cornerstone-Tera registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "archaludon": {
+    "category": "Archaludon Pokémon",
+    "description": "Archaludon registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "hydrapple": {
+    "category": "Hydrapple Pokémon",
+    "description": "Hydrapple registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "gougingfire": {
+    "category": "Gouging Fire Pokémon",
+    "description": "Gouging Fire registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ragingbolt": {
+    "category": "Raging Bolt Pokémon",
+    "description": "Raging Bolt registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironboulder": {
+    "category": "Iron Boulder Pokémon",
+    "description": "Iron Boulder registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "ironcrown": {
+    "category": "Iron Crown Pokémon",
+    "description": "Iron Crown registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "terapagos": {
+    "category": "Terapagos Pokémon",
+    "description": "Terapagos registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "terapagosterastal": {
+    "category": "Terapagos-Terastal Pokémon",
+    "description": "Terapagos-Terastal registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "terapagosstellar": {
+    "category": "Terapagos-Stellar Pokémon",
+    "description": "Terapagos-Stellar registrado en la Pokédex.",
+    "catchRate": 45
+  },
+  "pecharunt": {
+    "category": "Pecharunt Pokémon",
+    "description": "Pecharunt registrado en la Pokédex.",
+    "catchRate": 45
   }
 }

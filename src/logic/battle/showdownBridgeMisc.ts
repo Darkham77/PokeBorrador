@@ -1,7 +1,10 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
-import { isPokemonStatus, type Move } from '../../types/pokemon/pokemon.ts';
+import { isPokemonStatus, requireVolatileStatusKey, type Move } from '../../types/pokemon/pokemon.ts';
 import { toID } from '@pkmn/sim';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import { requireAbilityId } from '../../data/battle/abilities.ts';
+import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
+
 
 /**
  * Maneja eventos misceláneos, efectos de combate y mecánicas Gen 6-9:
@@ -107,7 +110,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           'ability: truant': 'está haraganeando (Truant)',
           'truant': 'está haraganeando (Truant)'
         };
-        const cleanReason = reason.toLowerCase();
+        const cleanReason = reason.toLowerCase(); // text-ok
         const hint = cantMessages[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
         store.addLog(`¡${target.name} ${hint}!`, style, target);
       }
@@ -159,7 +162,9 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (target) {
         if (!target.volatileCounters) target.volatileCounters = {};
         const cleanEff = toID(effect);
-        target.volatileCounters[cleanEff] = 1;
+        if (cleanEff !== 'mist') {
+          target.volatileCounters[requireVolatileStatusKey(cleanEff)] = 1;
+        }
 
         if (cleanEff.includes('confusion')) {
           store.addLog(`¡${target.name} está confundido y se lastimó!`, 'log-info', target);
@@ -185,7 +190,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const ability = parts[3] || '';
       const fromClause = parts.find(p => p.startsWith('[from]'));
       if (target && ability) {
-        target.ability = ability;
+        target.ability = requireAbilityId(toID(ability));
         const fromText = fromClause ? ` (${fromClause.replace('[from]', '').trim()})` : '';
         store.addLog(`¡Habilidad: ${ability} de ${target.name}!${fromText}`, 'log-info', target);
       }
@@ -254,7 +259,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const rawSpecies = parts[3] || '';
       if (target && rawSpecies) {
         const cleanSpecies = rawSpecies.split(',')[0]?.trim() || rawSpecies;
-        target.species = cleanSpecies;
+        target.species = requirePokemonSpeciesId(toID(cleanSpecies));
         target.details = rawSpecies;
         store.addLog(`¡${target.name} cambió de forma a ${cleanSpecies}!`, 'log-info', target);
       }
@@ -267,7 +272,10 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const targetPoke = getPoke(parts[3] || '');
       if (user && targetPoke) {
         user.isTransformed = true;
-        user.species = targetPoke.species || targetPoke.name;
+        if (!targetPoke.species) {
+          throw new Error(`[showdownBridgeMisc] Transform target has no species: ${targetPoke.name}`);
+        }
+        user.species = targetPoke.species;
         user.type = targetPoke.type;
         user.type2 = targetPoke.type2;
         if (targetPoke.moves) {
@@ -295,7 +303,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       const moveOrEffect = parts[3] || '';
-      const cleanEffect = (moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanEffect = requireVolatileStatusKey(toID(moveOrEffect.startsWith('move:') ? moveOrEffect.replace('move:', '') : moveOrEffect));
       if (target) {
         if (!target.volatileCounters) target.volatileCounters = {};
         target.volatileCounters[cleanEffect] = 1;
@@ -317,7 +325,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       if (target) {
-        target.ability = '';
+        target.ability = undefined;
         store.addLog(`¡La habilidad de ${target.name} fue suprimida!`, 'log-info', target);
       }
       return true;
@@ -331,15 +339,15 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (target && rawDetails) {
         const newSpecies = rawDetails.split(',')[0]?.trim();
         if (newSpecies) {
-          const targetRec = target as unknown as Record<string, unknown>;
-          targetRec.species = newSpecies;
-          targetRec.details = rawDetails;
-          const data = pokemonDataProvider.getPokemonData(toID(newSpecies));
+          const speciesId = requirePokemonSpeciesId(toID(newSpecies));
+          target.species = speciesId;
+          target.details = rawDetails;
+          const data = pokemonDataProvider.getPokemonData(speciesId);
           if (data) {
-            const dRec = data as unknown as Record<string, unknown>;
             if (data.type) target.type = data.type;
             if (data.type2 !== undefined) target.type2 = data.type2;
-            if (dRec.ability) target.ability = String(dRec.ability);
+            const ability = pokemonDataProvider.getSpeciesAbilities(speciesId)[0];
+            if (ability) target.ability = requireAbilityId(ability);
             if (data.hp) target.maxHp = data.hp;
             if (data.atk) target.atk = data.atk;
             if (data.def) target.def = data.def;
@@ -441,11 +449,8 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const target = getPoke(parts[2] || '');
       const megaSpecies = parts[3] || '';
       if (target) {
-        const curSpecies = target.species || target.name || '';
         if (megaSpecies && megaSpecies !== 'Mega Stone') {
-          target.species = megaSpecies;
-        } else if (!curSpecies.toLowerCase().includes('mega')) {
-          target.species = `${curSpecies}-Mega`;
+          target.species = requirePokemonSpeciesId(toID(megaSpecies));
         }
         store.addLog(`¡${target.name} megaevolucionó${megaSpecies ? ` en ${megaSpecies}` : ''}!`, 'log-info', '✨');
       }
@@ -456,10 +461,6 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       if (target) {
-        const curSpecies = target.species || target.name || '';
-        if (!curSpecies.toLowerCase().includes('primal')) {
-          target.species = `${curSpecies}-Primal`;
-        }
         store.addLog(`¡${target.name} regresó a su forma Primigenia!`, 'log-info', '🌋');
       }
       return true;
@@ -484,10 +485,6 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
       if (target) {
-        const curSpecies = target.species || target.name || '';
-        if (!curSpecies.toLowerCase().includes('ultra')) {
-          target.species = `${curSpecies}-Ultra`;
-        }
         store.addLog(`¡${target.name} ha Ultra Estallado!`, 'log-info', '🌟');
       }
       return true;
@@ -506,7 +503,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           store.activeBattle.value.turnCount = turnNum;
         }
         const b = store.activeBattle.value as unknown as Record<string, unknown>;
-        const seatKeys = ['player', 'playerB', 'enemy', 'enemyB', 'p1', 'p2', 'p3', 'p4'];
+        const seatKeys = ['player', 'playerB', 'enemy', 'enemyB', 'p1', 'p2', 'p3', 'p4'] as const;
         seatKeys.forEach(k => {
           const mon = b[k] as { volatileCounters?: Record<string, number> } | null | undefined;
           if (mon && mon.volatileCounters) {

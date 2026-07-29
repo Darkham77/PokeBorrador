@@ -174,7 +174,18 @@ export const PLAYER_CLASSES = {
     avatarSpriteId: 'criador',
     showdownSpriteId: 'criador'
   }
-};
+} as const;
+
+export type PlayerClassId = keyof typeof PLAYER_CLASSES;
+
+export function isPlayerClassId(value: string): value is PlayerClassId {
+  return value in PLAYER_CLASSES;
+}
+
+export function requirePlayerClassId(value: string): PlayerClassId {
+  if (isPlayerClassId(value)) return value;
+  throw new Error(`Invalid player class id: ${value}`);
+}
 
 /**
  * CLASS_MISSIONS: Definiciones de misiones idle según la duración.
@@ -183,4 +194,6 @@ export const CLASS_MISSIONS = [
   { id: 'mission_6h',  durationHs: 6,  reqLv: 1,  name: 'Misión Básica (6h)',     color: '#22c55e' },
   { id: 'mission_12h', durationHs: 12, reqLv: 15, name: 'Misión Avanzada (12h)',  color: '#3b82f6' },
   { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)',   color: '#a855f7' }
-];
+] as const;
+
+export type MissionId = (typeof CLASS_MISSIONS)[number]['id'];

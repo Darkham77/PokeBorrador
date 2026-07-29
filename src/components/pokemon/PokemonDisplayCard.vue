@@ -127,14 +127,14 @@ const cardClasses = computed(() => {
 })
 
 function renderGenderSymbol(gender: string) {
-  if (gender === 'M') return '♂'
-  if (gender === 'F') return '♀'
+  if (gender === 'm') return '♂'
+  if (gender === 'f') return '♀'
   return ''
 }
 
 function getGenderClass(gender: string) {
-  if (gender === 'M') return 'gender-male'
-  if (gender === 'F') return 'gender-female'
+  if (gender === 'm') return 'gender-male'
+  if (gender === 'f') return 'gender-female'
   return 'gender-none'
 }
 </script>

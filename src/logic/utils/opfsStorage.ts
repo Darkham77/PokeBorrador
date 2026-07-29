@@ -47,7 +47,7 @@ export async function deleteOpfsFile(fileName: string) {
 
 export async function listBackups(): Promise<string[]> {
   const root = await navigator.storage.getDirectory() as unknown as AsyncIterable<FileSystemHandle> & { values(): AsyncIterable<FileSystemHandle & { name: string }> };
-  const backups: string[] = []
+  const backups: string[] = [] // no-domain
   for await (const entry of root.values()) {
     if (entry.name.startsWith('backup_')) {
       backups.push(entry.name)

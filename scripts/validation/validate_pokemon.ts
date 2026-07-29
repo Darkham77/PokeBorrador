@@ -151,8 +151,6 @@ async function main() {
     // D. Validar movimientos del learnset
     if (corePoke.learnset && Array.isArray(corePoke.learnset)) {
       for (const moveEntry of corePoke.learnset) {
-        if (moveEntry.id === 'Unknown') continue;
-
         const moveId = toID(moveEntry.id);
         const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
 

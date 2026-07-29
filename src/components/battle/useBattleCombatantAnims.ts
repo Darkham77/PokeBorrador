@@ -5,11 +5,13 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { BattleCombatantProps } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
 
-const VOICE_MOVE_IDS = new Set([
+const VOICE_MOVE_IDS = [
   'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',
   'screech', 'supersonic', 'grasswhistle', 'chatter', 'snarl', 'round',
   'disarmingvoice', 'boomburst', 'confide'
-])
+] as const
+
+export type VoiceMoveId = (typeof VOICE_MOVE_IDS)[number]
 
 function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
   const status = statusRaw?.toLowerCase() || ''
@@ -308,7 +310,7 @@ export function useBattleCombatantAnims(
       
       const moveIdLookup = move.id || ''
       const cleanMoveId = moveIdLookup
-      if (VOICE_MOVE_IDS.has(cleanMoveId) && props.pokemon) {
+      if ((VOICE_MOVE_IDS as readonly string[]).includes(cleanMoveId) && props.pokemon) {
         tl.add(() => {
           gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name })
         })

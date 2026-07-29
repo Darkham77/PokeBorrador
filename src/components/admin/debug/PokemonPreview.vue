@@ -6,14 +6,14 @@ interface Props {
   spriteUrl?: string
   isShiny?: boolean
   isGuardian?: boolean
-  gender?: string
+  gender?: 'm' | 'f' | null
 }
 
 withDefaults(defineProps<Props>(), {
   spriteUrl: '',
   isShiny: false,
   isGuardian: false,
-  gender: 'M'
+  gender: 'm'
 })
 
 const emit = defineEmits<{
@@ -67,10 +67,10 @@ const emit = defineEmits<{
       >
         <button
           class="flag-btn gender"
-          :class="[gender === 'M' ? 'male' : 'female']"
+          :class="[gender === 'm' ? 'male' : 'female']"
           @click.stop="emit('toggleGender')"
         >
-          {{ gender === 'M' ? '♂️' : '♀️' }}
+          {{ gender === 'm' ? '♂️' : '♀️' }}
         </button>
       </PVTooltip>
     </div>

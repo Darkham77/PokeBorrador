@@ -35,7 +35,8 @@ vi.mock('@/stores/events', () => ({
 }));
 
 vi.mock('@/logic/utils/timeUtils', () => ({
-  getDayCycle: vi.fn(() => 'day')
+  getDayCycle: vi.fn(() => 'day'),
+  requireDayPhase: vi.fn((phase: string) => phase)
 }));
 
 describe('encounters.js', () => {

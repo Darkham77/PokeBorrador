@@ -281,9 +281,9 @@ onUnmounted(() => {
           </div>
           <div 
             v-if="props.pokemon.gender"
-            :class="['m-badge-gender', 'mini', props.pokemon.gender === 'M' ? 'male' : 'female']"
+            :class="['m-badge-gender', 'mini', props.pokemon.gender === 'm' ? 'male' : 'female']"
           >
-            {{ props.pokemon.gender === 'M' ? '♂' : '♀' }}
+            {{ props.pokemon.gender === 'm' ? '♂' : '♀' }}
           </div>
         </div>
         <div

@@ -10,6 +10,12 @@ import { useGameStore } from '@/stores/game.ts'
 import type { Event } from '@/logic/events/eventEngine'
 import type { DayPhase, Season } from '@/logic/utils/timeUtils'
 
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { requireMapRouteId } from '@/data/world/map-assets';
+import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import type { DominanceInfo } from '@/types/system/stores';
+
 export interface PendingAward {
   id: string;
   type: string;
@@ -18,12 +24,12 @@ export interface PendingAward {
 
 export const useMapStore = defineStore('map', () => {
   const gs = useGameStore()
-  const currentMap = computed({
-    get: () => gs.state.map?.currentMap || 'route1',
-    set: (val: string) => { if (gs.state.map) gs.state.map.currentMap = val }
+  const currentMap = computed<MapRouteId>({
+    get: () => requireMapRouteId(gs.state.map?.currentMap || 'route1'),
+    set: (val: MapRouteId) => { if (gs.state.map) gs.state.map.currentMap = val }
   })
 
-  const globalWeather = ref<string | null>(null) // Si está forzado anula el determinístico
+  const globalWeather = ref<WeatherId | null>(null) // Si está forzado anula el determinístico
   const forcedCycle = ref<DayPhase | null>(null)
   const forcedSeason = ref<Season | null>(null)
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
@@ -47,9 +53,9 @@ export const useMapStore = defineStore('map', () => {
     return getSeason(currentEpochHour.value * 3600000)
   })
   
-  const currentWeather = computed(() => {
+  const currentWeather = computed<WeatherId>(() => {
     if (globalWeather.value) return globalWeather.value
-    return getRouteWeather(currentMap.value, currentSeason.value.id, currentEpochHour.value, currentCycle.value)
+    return getRouteWeather(currentMap.value, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
   })
   
   if (typeof window !== 'undefined') {
@@ -65,7 +71,7 @@ export const useMapStore = defineStore('map', () => {
   const activeEvents = ref<Event[]>([])
   const lastNavigateTime = ref(0)
   const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
-  const mapWinners = ref<Record<string, import('@/types/system/stores').DominanceInfo>>({}) // locId -> winner
+  const mapWinners = ref<Partial<Record<MapRouteId, DominanceInfo>>>({}) // locId -> winner
   const pendingAwards = ref<PendingAward[]>([])
   
   const setGlobalSeason = (s: string | null) => {
@@ -82,7 +88,7 @@ export const useMapStore = defineStore('map', () => {
     forcedSeason.value = seasons.find(sea => sea.id === s) || null
   }
   
-  const setGlobalWeather = (w: string | null) => { globalWeather.value = w }
+  const setGlobalWeather = (w: WeatherId | null) => { globalWeather.value = w }
   const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
 
   const navigate = async (locId: string) => {
@@ -100,7 +106,7 @@ export const useMapStore = defineStore('map', () => {
         mapWinners: mapWinners.value
       },
       {
-        setCurrentMap: (val: string) => { currentMap.value = val },
+        setCurrentMap: (val: MapRouteId) => { currentMap.value = val },
         setCurrentEpochHour: (val: number) => { currentEpochHour.value = val },
         setLastNavigateTime: (val: number) => { lastNavigateTime.value = val },
         setLastTrainerChanceIncrementAt: (val: number) => { lastTrainerChanceIncrementAt.value = val }

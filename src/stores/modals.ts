@@ -25,10 +25,7 @@ export const useModalStore = defineStore('modals', () => {
       return null
     }
 
-    const registryKey = Object.keys(MODAL_REGISTRY).find(
-      key => key.toLowerCase() === name.toLowerCase()
-    )
-    const component = registryKey ? (MODAL_REGISTRY as Record<string, Component>)[registryKey] : undefined
+    const component = (MODAL_REGISTRY as Record<string, Component>)[name]
     if (!component) {
       logger.error('ModalStore', `Modal "${name}" not found in registry`)
       return null

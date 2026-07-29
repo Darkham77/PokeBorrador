@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { translateType } from '@/data/battle/types'
+import { translateType, type PokemonType } from '@/data/battle/types'
 
 interface Props {
-  type: string
+  type: PokemonType
   size?: 'ssm' | 'sm' | 'md' | 'lg'
   tag?: 'span' | 'button'
   active?: boolean
@@ -18,9 +18,8 @@ withDefaults(defineProps<Props>(), {
 <template>
   <component 
     :is="tag"
-    :class="['m-type-tag', size, `type-${type.toLowerCase()}`, { active }]"
+    :class="['m-type-tag', size, `type-${type}`, { active }]"
   >
     {{ translateType(type).toUpperCase() }}
   </component>
 </template>
-

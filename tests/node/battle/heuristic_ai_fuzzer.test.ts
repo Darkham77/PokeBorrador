@@ -44,6 +44,10 @@ function makeBoosts() {
   return { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 };
 }
 
+function makeVolatiles(values: Iterable<HeuristicPokemonState['volatiles'] extends Set<infer T> ? T : never> = []) {
+  return new Set(values);
+}
+
 function makePoke(
   name: string,
   overrides: Partial<HeuristicPokemonState> = {},
@@ -67,7 +71,7 @@ function makePoke(
     knownItem: null,
     itemConsumed: false,
     boosts: makeBoosts(),
-    volatiles: new Set<string>(),
+    volatiles: makeVolatiles(),
     ...overrides,
   };
 }
@@ -555,7 +559,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         knownItem: Math.random() > 0.5 ? item : null,
         itemConsumed: Math.random() > 0.8,
         boosts: randBoosts(),
-        volatiles: new Set(Math.random() > 0.7 ? ['trapped'] : []),
+        volatiles: makeVolatiles(Math.random() > 0.7 ? ['trapped'] : []),
       };
     }
 

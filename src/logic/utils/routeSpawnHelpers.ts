@@ -1,15 +1,61 @@
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, NATURES } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants'
+import type { PokemonType } from '@/data/battle/types'
+import type { ItemId, ShopItemData } from '@/data/inventory/items'
+
+export const TRAVEL_INCENSE_ITEM_IDS = [
+  'incensefire',
+  'incensewater',
+  'incensegrass',
+  'incensenormal',
+  'incenseghost',
+  'incensepsychic',
+] as const satisfies readonly ItemId[]
+
+export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number]
+
+export const TRAVEL_BUFF_ITEM_IDS = [
+  'repel',
+  'superrepel',
+  'maxrepel',
+  'luckyegg',
+  'amuletcoin',
+  'ticketshiny',
+  ...TRAVEL_INCENSE_ITEM_IDS,
+] as const satisfies readonly ItemId[]
+
+export type TravelBuffItemId = (typeof TRAVEL_BUFF_ITEM_IDS)[number]
+
+export const TRAVEL_INCENSE_TYPES = {
+  incensefire: 'fire',
+  incensewater: 'water',
+  incensegrass: 'grass',
+  incensenormal: 'normal',
+  incenseghost: 'ghost',
+  incensepsychic: 'psychic',
+} satisfies Record<TravelIncenseItemId, PokemonType>
+
+export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
+  return (TRAVEL_BUFF_ITEM_IDS as readonly ItemId[]).includes(value)
+}
+
+export function isTravelBuffShopItem(item: ShopItemData): item is ShopItemData & { id: TravelBuffItemId } {
+  return isTravelBuffItemId(item.id)
+}
+
+export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelIncenseItemId {
+  return (TRAVEL_INCENSE_ITEM_IDS as readonly ItemId[]).includes(value)
+}
 
 
 export function getSelectableSpecies(bypassWhitelist = false) {
   const db = pokemonDataProvider.getPokemonDb()
   return Object.keys(db)
-    .filter(id => bypassWhitelist || ENABLED_POKEMON_IDS.has(id))
+    .filter(id => bypassWhitelist || (ENABLED_POKEMON_IDS as readonly string[]).includes(id))
     .map(id => ({
       id,
       name: db[id]?.name || id,
@@ -18,7 +64,7 @@ export function getSelectableSpecies(bypassWhitelist = false) {
 }
 
 export function getSelectableNatures() {
-  return Object.keys(NATURE_DATA).map(n => ({ id: n, name: NATURE_DATA[n]?.name || n }))
+  return NATURES.map(n => ({ id: n, name: NATURE_DATA[n].name }))
 }
 
 export function getSelectableAbilities() {
@@ -41,13 +87,13 @@ export function translateWeather(w: string): string {
   return WEATHER_UI_METADATA[mech]?.label || w
 }
 
-export function calculateActiveTravelModifiers(items: Set<string> | string[]) {
+export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItemId> | readonly TravelBuffItemId[]) {
   const itemSet = items instanceof Set ? items : new Set(items)
   let encounterRateMod = 0
   let expMultiplier = 1.0
   let moneyMultiplier = 1.0
   let shinyChanceMod = 1.0
-  let typeFocus: string | null = null
+  let typeFocus: PokemonType | null = null
 
   if (itemSet.has('repel')) encounterRateMod = -50
   else if (itemSet.has('superrepel')) encounterRateMod = -80
@@ -57,12 +103,12 @@ export function calculateActiveTravelModifiers(items: Set<string> | string[]) {
   if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0
   if (itemSet.has('ticketshiny')) shinyChanceMod = 2.0
 
-  if (itemSet.has('incensefire')) typeFocus = 'fire'
-  else if (itemSet.has('incensewater')) typeFocus = 'water'
-  else if (itemSet.has('incensegrass')) typeFocus = 'grass'
-  else if (itemSet.has('incensenormal')) typeFocus = 'normal'
-  else if (itemSet.has('incenseghost')) typeFocus = 'ghost'
-  else if (itemSet.has('incensepsychic')) typeFocus = 'psychic'
+  for (const incenseItemId of TRAVEL_INCENSE_ITEM_IDS) {
+    if (itemSet.has(incenseItemId)) {
+      typeFocus = TRAVEL_INCENSE_TYPES[incenseItemId]
+      break
+    }
+  }
 
   return {
     encounterRateMod,
@@ -98,7 +144,7 @@ export function getPokedexVisibility(
 
 export function getPokemonBasicData(id: string, isSeen: boolean) {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-  const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
+  const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
   const types = data ? [data.type, data.type2].filter(Boolean) as string[] : []
   const hp = data?.hp || 0
   const atk = data?.atk || 0
@@ -151,7 +197,7 @@ interface SimpleEventStore {
 }
 
 export function getSharedShinyEventLines(id: string, eventStore: SimpleEventStore): string[] {
-  const lines: string[] = []
+  const lines: string[] = [] // no-domain
   const globalShiny = eventStore.globalMultipliers?.shiny || 1
   if (globalShiny !== 1) {
     lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
@@ -171,7 +217,7 @@ export interface SpawnTooltipData {
 }
 
 export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: string): string[] {
-  const lines: string[] = []
+  const lines: string[] = [] // no-domain
   if (poke.multiplier !== 1) {
     const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
     const label = translateWeather(weather)
@@ -310,6 +356,4 @@ export function buildRouteSpawnItem(
     totalStats: pData.totalStats
   }
 }
-
-
 

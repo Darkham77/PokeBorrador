@@ -1,4 +1,5 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { TeamGenerators } from '@pkmn/randoms';
@@ -57,7 +58,7 @@ export async function applyCompetitiveSet(
  * Builds a list of Pokémon for a trainer based on a pool of archetypes, level, and team size.
  */
 export async function buildTrainerTeam(
-  pool: string[] | readonly string[],
+  pool: readonly PokemonSpeciesId[],
   trainerLv: number,
   teamSize: number
 ): Promise<Pokemon[]> {
@@ -69,12 +70,17 @@ export async function buildTrainerTeam(
   const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } };
 
   const enemyTeam: Pokemon[] = [];
-  const usedSpecies = new Set<string>();
+  const usedSpecies: PokemonSpeciesId[] = [];
+
+  if (pool.length === 0) {
+    throw new Error('[trainerFactory] Trainer species pool is empty');
+  }
 
   for (let i = 0; i < teamSize; i++) {
     // Intentar sacar un pokémon del pool que no se haya usado
-    const availablePool = pool.filter(id => !usedSpecies.has(toID(id)));
-    const pIdBase = availablePool[Math.floor(Math.random() * availablePool.length)] || pool[Math.floor(Math.random() * pool.length)] || 'rattata';
+    const availablePool = pool.filter(id => !usedSpecies.includes(id));
+    const sourcePool = availablePool.length > 0 ? availablePool : pool;
+    const pIdBase = sourcePool[Math.floor(Math.random() * sourcePool.length)]!;
     const pId = getEvolvedForm(pIdBase, trainerLv);
     
     const p = makePokemon(pId, trainerLv, { bypassWhitelist: true }) as Pokemon;
@@ -91,7 +97,7 @@ export async function buildTrainerTeam(
         }
       }
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
-      usedSpecies.add(toID(pId));
+      usedSpecies.push(pId);
       enemyTeam.push(p);
     }
   }

@@ -1,12 +1,18 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { MapStore, EventStore, WarStore } from '@/types/system/stores'
-import type { MapLocation } from '@/types/pokemon/encounters'
 import { generateEncounter } from '@/logic/encounters/encounters'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireWeatherId } from '@/logic/weather/weatherRegistry'
+import { requireDayPhase } from '@/logic/utils/timeUtils'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+
+const BUG_ATTRACT_SPECIES: readonly PokemonSpeciesId[] = ['scyther', 'pinsir'];
 
 export async function generateSearchLoopEncounter(ctx: BattleContext, locId: string) {
+  const routeId = requireMapRouteId(locId)
   const mapStore = useMapStore() as unknown as MapStore
   const eventStore = useEventStore() as unknown as EventStore
   const warStore = useWarStore() as unknown as WarStore
@@ -21,8 +27,8 @@ export async function generateSearchLoopEncounter(ctx: BattleContext, locId: str
     eventTrainerBonus: (eventStore.globalMultipliers?.trainer || 1) * (debugMults.trainer || 1),
     eventFishingBonus: (eventStore.globalMultipliers?.fishing || 1) * (debugMults.fishing || 1),
     eventRivalBonus: (eventStore.globalMultipliers?.rival || 1) * (debugMults.rival || 1),
-    weather: mapStore.currentWeather,
-    cycle: mapStore.currentCycle
+    weather: requireWeatherId(mapStore.currentWeather),
+    cycle: requireDayPhase(mapStore.currentCycle)
   }
 
   let encounter = null
@@ -30,14 +36,13 @@ export async function generateSearchLoopEncounter(ctx: BattleContext, locId: str
   if (ctx.gs.state.playerClass === 'cazabichos' && Math.random() < 0.005) {
     const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
     const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
-    const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
-    const currentMapData = mapsList.find(m => m.id === (locId || ''))
+    const mapsList = pokemonDataProvider.getMaps()
+    const currentMapData = mapsList.find(m => m.id === routeId)
     const minLv = currentMapData?.lv?.[0] || 5
     const maxLv = currentMapData?.lv?.[1] || minLv
     const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
-    const bugs = ['scyther', 'pinsir']
-    const chosenBug = bugs[Math.floor(Math.random() * bugs.length)]
-    const generatedBug = makePokemon(chosenBug || '', level)
+    const chosenBug = BUG_ATTRACT_SPECIES[Math.floor(Math.random() * BUG_ATTRACT_SPECIES.length)]!
+    const generatedBug = makePokemon(chosenBug, level)
     if (generatedBug) {
       encounter = { type: 'wild', pokemon: generatedBug }
       ctx.uiStore.notify(`¡Aroma Atractivo atrajo a un ${generatedBug.name} salvaje!`, '🐝')
@@ -45,7 +50,7 @@ export async function generateSearchLoopEncounter(ctx: BattleContext, locId: str
   }
 
   if (!encounter) {
-    encounter = await generateEncounter(locId || '', ctx.gs.state, encounterOptions)
+    encounter = await generateEncounter(routeId, ctx.gs.state, encounterOptions)
   }
 
   return encounter

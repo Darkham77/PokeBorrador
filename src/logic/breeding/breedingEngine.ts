@@ -3,6 +3,8 @@ import { Dex } from '@pkmn/sim'
 import { EGG_GROUPS, BABY_MAP, BREEDING_CONSTANTS } from './breedingData.ts'
 import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon/pokemon'
+import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 /**
  * breedingEngine.ts
@@ -10,13 +12,13 @@ import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon
  */
 
 /** Memoized: Egg Moves de una especie base consultadas desde @pkmn/sim. */
-const _eggMovesCache = new Map<string, string[]>()
-function getEggMoves(speciesId: string): string[] {
+const _eggMovesCache = new Map<PokemonSpeciesId, PokemonMoveId[]>() // runtime-map
+function getEggMoves(speciesId: PokemonSpeciesId): PokemonMoveId[] {
   if (_eggMovesCache.has(speciesId)) return _eggMovesCache.get(speciesId)!
   const learnset = Dex.data.Learnsets[speciesId]?.learnset ?? {}
   const eggMoves = Object.entries(learnset)
     .filter(([, sources]) => sources.some(s => s.includes('E')))
-    .map(([moveId]) => moveId)
+    .map(([moveId]) => requirePokemonMoveId(moveId))
   _eggMovesCache.set(speciesId, eggMoves)
   return eggMoves
 }
@@ -24,10 +26,8 @@ function getEggMoves(speciesId: string): string[] {
 /**
  * Retorna el ID base de un Pokémon (remueve sufijos de género si existen).
  */
-export function getBreedingBaseId(id: string): string {
-  if (!id) return id
-  if (id === 'nidoranf' || id === 'nidoranm') return id
-  return id.endsWith('_m') || id.endsWith('_f') ? id.slice(0, -2) : id
+export function getBreedingBaseId(id: string): PokemonSpeciesId {
+  return requirePokemonSpeciesId(id)
 }
 
 export { getFirstEvolution };
@@ -36,9 +36,10 @@ export { getFirstEvolution };
  * Determina qué especie nacerá de un huevo.
  * Considera si la forma base tiene una forma "Bebé".
  */
-export function getEggSpecies(motherId: string): string {
+export function getEggSpecies(motherId: string): PokemonSpeciesId {
   const firstEvo = getFirstEvolution(motherId)
-  return BABY_MAP[firstEvo] || firstEvo
+  const babySpecies = BABY_MAP[firstEvo] || firstEvo
+  return requirePokemonSpeciesId(babySpecies)
 }
 
 /**
@@ -76,7 +77,7 @@ export function checkCompatibility(pA: Pokemon, pB: Pokemon): BreedingCompatibil
 
   // Grupos compatibles
   if (shared.length > 0) {
-    const mother = pA.gender === 'F' ? pA : pB
+    const mother = pA.gender === 'f' ? pA : pB
     const species = getEggSpecies(mother.id)
     const level = (idA === idB) ? 3 : 2
     return { level, eggSpecies: species, reason: 'OK', sharedGroups: shared }
@@ -142,10 +143,10 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
  * Calcula la herencia de movimientos.
  * Prioridad: Egg Moves > TMs learned by parents > Level-up moves shared.
  */
-export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: string): string[] {
+export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpeciesId): PokemonMoveId[] {
   const babyId = getBreedingBaseId(eggSpeciesId)
   const possibleEggMoves = getEggMoves(babyId)
-  const inheritedMoves: string[] = []
+  const inheritedMoves: PokemonMoveId[] = []
 
   // 1. Egg Moves (si el padre o la madre lo conocen Y está en la DB de posibles egg moves)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])]
@@ -179,7 +180,7 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
   let source: Pokemon | null;
   if (isADitto) source = pB
   else if (isBDitto) source = pA
-  else source = pA.gender === 'F' ? pA : pB // La madre manda
+  else source = pA.gender === 'f' ? pA : pB // La madre manda
   
   if (!source) return null
   

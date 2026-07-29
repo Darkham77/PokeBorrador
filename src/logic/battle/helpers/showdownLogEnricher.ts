@@ -16,7 +16,7 @@ export class ShowdownLogEnricher {
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
-        const uidMappings: string[] = [];
+        const uidMappings: string[] = []; // no-domain
         parts.forEach(part => {
           if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
             const ident = part.toString();
@@ -38,7 +38,7 @@ export class ShowdownLogEnricher {
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
-        const uidMappings: string[] = [];
+        const uidMappings: string[] = []; // no-domain
         parts.forEach(part => {
           if (part && typeof part === 'object' && 'uid' in part && (part as { uid: string }).uid) {
             const ident = part.toString();

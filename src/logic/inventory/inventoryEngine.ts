@@ -33,7 +33,9 @@ export function getItemSpriteUrl(itemId: string): string {
  * @returns {Array} List of [itemName, quantity]
  */
 export function filterInventoryByCategory(inventory: Inventory, category: string): [string, number][] {
-  return Object.entries(inventory).filter(([name, qty]) => {
+  return Object.entries(inventory)
+  .filter((entry): entry is [string, number] => entry[1] !== undefined)
+  .filter(([name, qty]) => {
     if (qty <= 0) return false;
     const item = (SHOP_ITEMS as { name: string, cat?: string }[]).find(i => i.name === name);
     if (!item) return false;

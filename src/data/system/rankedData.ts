@@ -1,8 +1,11 @@
-export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'];
+import type { PokemonType } from '../battle/types.ts';
 
-export const RANKED_TYPES = [
-  'normal', 'fire', 'water', 'electric', 'grass', 'ice', 
-  'fighting', 'poison', 'ground', 'flying', 'psychic', 
+export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
+export type RankedTierId = (typeof RANKED_TIER_ORDER)[number];
+
+export const RANKED_TYPES: PokemonType[] = [
+  'normal', 'fire', 'water', 'electric', 'grass', 'ice',
+  'fighting', 'poison', 'ground', 'flying', 'psychic',
   'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'
 ];
 

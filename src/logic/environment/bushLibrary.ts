@@ -10,6 +10,7 @@
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
 import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 import { mulberry32 } from '../utils/math.ts';
+import type { MapLocation } from '@/types/pokemon/encounters';
 
 export { BUSH_FAMILIES, type BushFamily };
 
@@ -28,7 +29,7 @@ export const BUSH_ANIMATION_MAPPING: Record<string, BushAnimationType> = {
 export function getAnimationTypeForFamily(family: string): BushAnimationType {
   const mapped = BUSH_ANIMATION_MAPPING[family];
   if (mapped) return mapped;
-  const lower = family.toLowerCase();
+  const lower = family.toLowerCase(); // text-ok
   if (lower.startsWith('rock') || lower.startsWith('box') || lower.startsWith('crystal')) {
     return 'none';
   }
@@ -104,6 +105,12 @@ export const BIOME_BUSH_CONFIG: Record<string, BiomeBushWeights> = {
   isPlains:   { weights: { bush: 30, bushflower: 5, grassflower: 5, grass: 35, fern: 15, rock: 10 } }
 };
 
+const MAP_BIOME_KEYS = [
+  'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
+  'isDesert', 'isSwamp', 'isMountain',
+  'isCoastal', 'isForest', 'isPlains'
+] as const satisfies readonly (keyof MapLocation)[];
+
 export function getActiveBushesForMap(
   locationId: string,
   layer: 'front' | 'back',
@@ -115,14 +122,8 @@ export function getActiveBushesForMap(
   let activeBiomeKey = 'isPlains';
 
   if (map) {
-    const hierarchy = [
-      'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-      'isDesert', 'isSwamp', 'isMountain',
-      'isCoastal', 'isForest', 'isPlains'
-    ];
-
-    for (const key of hierarchy) {
-      if ((map as Record<string, unknown>)[key]) {
+    for (const key of MAP_BIOME_KEYS) {
+      if (map[key]) {
         activeBiomeKey = key;
         break;
       }
@@ -198,4 +199,3 @@ export function getActiveBushesForMap(
     };
   });
 }
-

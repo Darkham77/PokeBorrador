@@ -9,11 +9,25 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import { useAudioStore } from '@/stores/audio.ts';
 import type { GameState } from '@/types/system/game';
-import { SHOP_ITEMS } from '@/data/inventory/items';
+import { requireItemId, SHOP_ITEMS } from '@/data/inventory/items';
 import { useErrorStore } from '@/stores/errorStore.ts';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+
+import type { ItemId } from '@/data/inventory/items';
+
+const HEAL_ITEM_IDS = [
+  'potion', 'superpotion', 'hyperpotion', 'maxpotion',
+  'revive', 'revivemax', 'antidote', 'burnheal',
+  'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'sodapop', 'lemonade'
+] as const satisfies readonly ItemId[];
+type HealItemId = (typeof HEAL_ITEM_IDS)[number];
+
+function isHealItemId(value: ItemId): value is HealItemId {
+  return (HEAL_ITEM_IDS as readonly ItemId[]).includes(value);
+}
 
 export function executeUseItem(
-  itemName: string,
+  itemName: ItemId | string,
   context: 'team' | 'box' | null = null,
   index: number | null = null
 ): ItemEffectResult {
@@ -22,7 +36,7 @@ export function executeUseItem(
     const uiStore = useUIStore();
     const battleStore = useBattleStore();
 
-    const itemId = itemName.toLowerCase();
+    const itemId = requireItemId(itemName);
     
     // Verify item exists in SHOP_ITEMS catalog or is a TM
     const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
@@ -81,12 +95,13 @@ export function executeUseItem(
       uiStore.isMoveRelearnerOpen = true;
       shouldConsumeImmediately = false; // Handled by MoveRelearnerModal
     } else if (result.resultType === 'evolution') {
-      uiStore.startEvolution(pokemon, result.targetId || '', itemId);
+      if (!result.targetId) throw new Error(`[executeUseItem] Evolution item ${itemId} did not provide a target species id.`);
+      uiStore.startEvolution(pokemon, requirePokemonSpeciesId(result.targetId), itemId);
     } else if (result.resultType === 'levelup') {
       gameStore.checkLevelUp(pokemon);
     } else if (result.resultType === 'learn_move') {
-      const moveName = result.moveName || '';
-      const moveId = pokemonDataProvider.getMoveIdBySpanishName(moveName);
+      if (!result.moveName) throw new Error(`[executeUseItem] Learn-move item ${itemId} did not provide a canonical move id.`);
+      const moveId = result.moveName;
       const moveData = pokemonDataProvider.getMoveData(moveId);
       if (!moveData) throw new Error(`[executeUseItem] No se encontró información en la base de datos para el movimiento: ${moveId}`);
       const moveObj = { 
@@ -131,12 +146,7 @@ export function executeUseItem(
     }
 
     const audioStore = useAudioStore();
-    const healItems = [
-      'potion', 'superpotion', 'hyperpotion', 'maxpotion',
-      'revive', 'revivemax', 'antidote', 'burnheal',
-      'paralyzeheal', 'awakening', 'iceheal', 'fullheal', 'sodapop', 'lemonade'
-    ];
-    if (healItems.includes(itemId)) {
+    if (isHealItemId(itemId)) {
       audioStore.play('heal');
     } else {
       audioStore.play('item');

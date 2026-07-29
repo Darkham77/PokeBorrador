@@ -13,6 +13,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
@@ -55,6 +56,12 @@ const ivTotal = computed(() => {
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
 const typesCount = computed(() => {
   return [props.item.pokemon.type, props.item.pokemon.type2].filter(Boolean).length
+})
+const pokemonTypes = computed<PokemonType[]>(() => {
+  const p = props.item.pokemon
+  const types: PokemonType[] = [toPokemonType(p.type)]
+  if (p.type2) types.push(toPokemonType(p.type2))
+  return types
 })
 
 const listCompatibility = computed(() => {
@@ -142,9 +149,9 @@ function handleClick() {
           </div>
           <span
             v-if="item.pokemon.gender"
-            :class="['gender-icon', item.pokemon.gender === 'M' ? 'male' : 'female']"
+            :class="['gender-icon', item.pokemon.gender === 'm' ? 'male' : 'female']"
           >
-            {{ item.pokemon.gender === 'M' ? '♂' : '♀' }}
+            {{ item.pokemon.gender === 'm' ? '♂' : '♀' }}
           </span>
 
           <!-- Action badges relocated next to gender -->
@@ -177,9 +184,9 @@ function handleClick() {
         <div class="info-row stats-line">
           <div class="sel-types-row">
             <PokemonTypeTag
-              v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
-              :key="String(t)"
-              :type="String(t)"
+              v-for="t in pokemonTypes" 
+              :key="t"
+              :type="t"
               :size="typesCount > 1 ? 'ssm' : 'sm'"
             />
           </div>

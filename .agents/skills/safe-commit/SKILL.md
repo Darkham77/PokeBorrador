@@ -112,6 +112,9 @@ The scratch directory is `<appDataDir>/brain/<conversation-id>/scratch/`. All te
 
 This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a file, `git diff HEAD~1` shows exactly what changed. Without this commit, an auto-fix could silently overwrite your creative logic.
 
+> [!IMPORTANT]
+> **SNAPSHOT HEALTH EXEMPTION**: Phase 1 is a recovery snapshot, not the final safety gate. If `npx fallow health --score` reports a score below the project minimum of 85 during Step 1.4, record that value as `BASELINE_HEALTH` and continue with the snapshot commit. Do not block, refactor, or repair in Phase 1 because the snapshot exists specifically to protect the pre-repair state. The 85 minimum is enforced later in Phase 3.5e, after audits, fixes, tests, and build verification run.
+
 **Step 1.1** — `git status`
 - Identify all modified, untracked, and deleted files.
 - Record the file list in `task.md`.
@@ -127,6 +130,7 @@ This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a fil
 **Step 1.4** — `npx fallow health --score`
 - Read and record the score as `BASELINE_HEALTH = <score>` in `task.md`.
 - This number is required for the Phase 3.5e comparison. Do not proceed without recording it.
+- If the score is below 85, write `snapshot baseline below final gate` in `task.md` and continue. This is the only allowed Fallow health exemption, and it applies only before the Phase 1 snapshot commit.
 
 **Step 1.5** — Compose the commit message
 - Use the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
@@ -411,7 +415,7 @@ See [commit-standards.md](./references/commit-standards.md) for the full Elegant
 
 - **No Phase-Jumping**: Phases 9–10 cannot execute if any of Phases 0–8 have unresolved `task.md` items.
 - **Missing Tests Prohibition**: Committing with identified missing tests from Phase 2 that aren't implemented is FORBIDDEN.
-- **Fallow Health Gate**: Committing with health score < 85 is a critical violation.
+- **Fallow Health Gate**: Creating the Phase 1 snapshot commit with health < 85 is allowed only as recovery insurance after recording `BASELINE_HEALTH`. Exiting Phase 3 or creating the final commit with health < 85 remains a critical violation.
 - **Fallow Bypass Prohibition**: Modifying `.fallowrc.json` to bypass Fallow errors instead of fixing them at the source is STRICTLY FORBIDDEN.
 - **Selective Git Add Prohibition**: Staging individual files via `git add <file>` during Phase 1 is STRICTLY FORBIDDEN. You MUST always execute `git add .` to snapshot the entire workspace before proceeding to Phase 2.
 - **Safe Array Swaps**: Always verify indexed array elements are not `undefined` before value swaps in strict TypeScript (`noUncheckedIndexedAccess`).

@@ -1,8 +1,9 @@
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
-import { MAPS_WITH_CYCLES } from '@/data/world/map-assets';
+import { isMapWithCycleId } from '@/data/world/map-assets';
 import { getItemById } from '@/data/inventory/items';
+import { isPlayerClassId } from '@/data/player/playerClasses';
 import { Dex } from '@pkmn/sim';
 
 /**
@@ -82,8 +83,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 
   switch (type) {
     case ASSET_TYPES.POKEMON: {
-      const stringId = String(id).toLowerCase();
-      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`);
+      const stringId = String(id).toLowerCase(); // text-ok
+      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok
 
       let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId];
       if (num === undefined) {
@@ -106,7 +107,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       let finalId = id;
       
       // Aplicar sufijos de ciclo horario si el mapa lo soporta
-      if (options.cycle && MAPS_WITH_CYCLES.includes(String(id))) {
+      if (options.cycle && isMapWithCycleId(String(id))) {
         const suffixes: Record<string, string> = {
           morning: '_amanecer',
           day: '_dia',
@@ -144,14 +145,13 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 
       // Sanitize ID: remove spaces and dots (e.g., "Lt. Surge" -> "ltsurge")
       const idStr = String(id);
-      const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, '');
+      const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, ''); // text-ok
       const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
 
       // Other remote URLs fallback
       if (idStr.startsWith('http')) return idStr;
       
-      const PLAYER_CLASSES_LIST = ['rocket', 'cazabichos', 'entrenador', 'criador'];
-      if (PLAYER_CLASSES_LIST.includes(finalId)) {
+      if (isPlayerClassId(finalId)) {
         const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
         const gender = options.gender || 'h';
         return resolveAsset(`/assets/sprites/trainers/${finalId}_${gender}_${suffix}${extension}`);
@@ -271,7 +271,7 @@ export function useAssets() {
  * Gets the PokeAPI sprite URL for a given species ID.
  */
 export function getSpriteUrl(id: string, isShiny = false) {
-  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) {
+  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) { // text-ok
     return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
   }
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
@@ -283,4 +283,3 @@ export function getSpriteUrl(id: string, isShiny = false) {
 export function getBackSpriteUrl(id: string, isShiny = false) {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
 }
-

@@ -1,7 +1,7 @@
 import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { getGraphEdges } from '../../../test aventura/kantoGraph.ts'
-import type { GraphEdge } from '../../../test aventura/kantoGraph.ts'
+import { getGraphEdges, isAdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import type { AdventureNodeId, GraphEdge } from '../../../test aventura/kantoGraph.ts'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { useMapStore } from '@/stores/map'
 import { useShopStore } from '@/stores/inventory/shop'
@@ -9,6 +9,9 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { requireWeatherSeasonId } from '@/data/world/weather-tables'
+import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets'
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { useAdventureCamera } from '@/composables/adventure/useAdventureCamera'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { useAdventureMinigames } from './useAdventureMinigames.ts'
@@ -17,10 +20,11 @@ import { useAdventureRouting } from './useAdventureRouting.ts'
 import { useAdventureLayout } from './useAdventureLayout.ts'
 import { useAdventurePassives } from './useAdventurePassives.ts'
 import { useAdventureModalAnims } from './useAdventureModalAnims.ts'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 
 
-const POKEMON_CENTER_NODES = new Set([
+const POKEMON_CENTER_NODES = [
   'route2',          // Ciudad Verde / Plateada
   'route4',          // Centro Mt. Moon
   'route5',          // Ciudad Celeste
@@ -31,7 +35,13 @@ const POKEMON_CENTER_NODES = new Set([
   'mansion',         // Isla Canela
   'route10',         // Centro Túnel Roca
   'route23'          // Meseta Añil
-])
+] as const satisfies readonly AdventureNodeId[]
+
+type PokemonCenterNodeId = (typeof POKEMON_CENTER_NODES)[number]
+
+function isPokemonCenterNodeId(value: AdventureNodeId): value is PokemonCenterNodeId {
+  return (POKEMON_CENTER_NODES as readonly AdventureNodeId[]).includes(value)
+}
 
 const CANVAS_W = 6400
 const CANVAS_H = 4400
@@ -44,6 +54,10 @@ export function useAdventureSimulation() {
   const inventoryStore = useInventoryStore()
   const gameStore = useGameStore()
   const battleStore = useBattleStore()
+
+  function syncCurrentMapFromAdventureNode(nodeId: AdventureNodeId) {
+    if (isMapRouteId(nodeId)) mapStore.currentMap = nodeId
+  }
 
   if (typeof gameStore.enterSandboxMode === 'function') {
     gameStore.enterSandboxMode()
@@ -146,9 +160,9 @@ export function useAdventureSimulation() {
   })
 
   const mapLocationsById = computed(() => {
-    const map: Record<string, MapLocation> = {}
+    const map: Partial<Record<AdventureNodeId, MapLocation>> = {}
     for (const loc of FIRE_RED_MAPS) {
-      map[loc.id] = loc as MapLocation
+      if (isAdventureNodeId(loc.id)) map[loc.id] = loc
     }
     return map
   })
@@ -174,11 +188,11 @@ export function useAdventureSimulation() {
 
   function getSpawnPoolForMap(loc: MapLocation) {
     if (!loc.wild) {
-      const emptyPool: { generic: string[]; specific: string[]; rates: Record<string, number> } = { generic: [], specific: [], rates: {} }
+      const emptyPool: { generic: PokemonSpeciesId[]; specific: PokemonSpeciesId[]; rates: Partial<Record<PokemonSpeciesId, number>> } = { generic: [], specific: [], rates: {} }
       return emptyPool
     }
 
-    const activeWeather = getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+    const activeWeather = getRouteWeather(loc.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, mapStore.currentCycle)
     const { generic, specific, rates } = getMapSpawnPoolData(
       loc,
       mapStore.currentCycle || 'day',
@@ -186,7 +200,7 @@ export function useAdventureSimulation() {
       []
     )
 
-    return { generic, specific, rates }
+    return { generic: generic as PokemonSpeciesId[], specific: specific as PokemonSpeciesId[], rates }
   }
 
 
@@ -247,8 +261,10 @@ export function useAdventureSimulation() {
     triggerExtraLootFn(itemId, defaultQty, inventoryStore, injectedItems, travelLog)
   }
 
-  function getWeatherForMap(mapId: string): string {
-    return mapStore.globalWeather || getRouteWeather(mapId, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
+  function getWeatherForMap(mapId: AdventureNodeId): WeatherId {
+    return mapStore.globalWeather
+      ? requireWeatherId(mapStore.globalWeather)
+      : getRouteWeather(requireMapRouteId(mapId), requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, mapStore.currentCycle)
   }
 
   watch(showMarker, async (visible: boolean) => {
@@ -298,7 +314,7 @@ export function useAdventureSimulation() {
       centerOnPoint(markerX.value, markerY.value, 0.5)
     }
 
-    if (POKEMON_CENTER_NODES.has(originMap.value)) {
+    if (isPokemonCenterNodeId(originMap.value)) {
       shopStore.healAllPokemon(0)
       travelLog.value.push(`🏥 Centro Pokémon inicial: Tu equipo de pruebas ha sido completamente curado.`)
     }
@@ -394,7 +410,7 @@ export function useAdventureSimulation() {
     travelLog.value.push(`🏥 ¡Tu equipo ha sido completamente curado en el Centro Pokémon!`)
   }
 
-  const finishTravelAtNode = (nodeId: string) => {
+  const finishTravelAtNode = (nodeId: AdventureNodeId) => {
     if (travelTween) { travelTween.kill(); travelTween = null }
     if (markerTimeline) { markerTimeline.kill(); markerTimeline = null }
 
@@ -412,7 +428,7 @@ export function useAdventureSimulation() {
     }
 
     originMap.value = nodeId
-    mapStore.currentMap = nodeId
+    syncCurrentMapFromAdventureNode(nodeId)
     const nodeName = FIRE_RED_MAPS.find(m => m.id === nodeId)?.name || nodeId
     travelLog.value.push(`📍 Ubicación actual: ${nodeName}. El selector de origen ha sido actualizado.`)
     calculateRoute()
@@ -433,14 +449,14 @@ export function useAdventureSimulation() {
         const nodeName = FIRE_RED_MAPS.find(m => m.id === nextNodeId)?.name || nextNodeId
         travelLog.value.push(`Entrando a: ${nodeName}`)
 
-        if (POKEMON_CENTER_NODES.has(nextNodeId)) {
+        if (isPokemonCenterNodeId(nextNodeId)) {
           shopStore.healAllPokemon(0)
           travelLog.value.push(`🏥 ¡Centro Pokémon visitado en ${nodeName}! Tu equipo de pruebas ha sido completamente curado.`)
         }
 
         currentSegmentIndex.value = nextSegIdx
         originMap.value = nextNodeId
-        mapStore.currentMap = nextNodeId
+        syncCurrentMapFromAdventureNode(nextNodeId)
       }
 
       lastStepPct.value = 0
@@ -473,7 +489,7 @@ export function useAdventureSimulation() {
     showArchaeology.value = false
     showFishing.value = false
     originMap.value = currentNodeId
-    mapStore.currentMap = currentNodeId
+    syncCurrentMapFromAdventureNode(currentNodeId)
     travelLog.value.push('❌ Viaje cancelado por el usuario.')
     travelLog.value.push(`📍 Ubicación actual: ${FIRE_RED_MAPS.find(m => m.id === currentNodeId)?.name || currentNodeId}.`)
     calculateRoute()

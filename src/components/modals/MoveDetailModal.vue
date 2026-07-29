@@ -5,6 +5,7 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
+import { toPokemonType } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -39,8 +40,10 @@ const md = computed(() => {
 const typeColor = computed(() => {
   if (!md.value) return '#aaa'
   const colors = PDEX_TYPE_COLORS as Record<string, string>
-  return colors[md.value.type.toLowerCase()] || '#aaa'
+  return colors[moveType.value] || '#aaa'
 })
+
+const moveType = computed(() => toPokemonType(md.value?.type || 'normal'))
 
 const catInfo = computed(() => {
   if (!md.value) return { icon: '', text: '' }
@@ -83,7 +86,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     >
       <div class="type-cat-row">
         <PokemonTypeTag
-          :type="md.type"
+          :type="moveType"
           size="md"
           class="pixelated"
         />

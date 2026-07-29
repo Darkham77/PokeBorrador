@@ -6,16 +6,14 @@ import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
-import { LEGENDARY_POKEMON, FOSSIL_POKEMON } from '@/data/pokemon/pokedex';
-
 export { getPokemonTier };
+
+import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 function isLegendaryOrFossil(pokemonId: string): boolean {
   if (!pokemonId) return false;
   const cleanId = toID(pokemonId);
-  const isLegendary = LEGENDARY_POKEMON.includes(cleanId);
-  const isFossil = FOSSIL_POKEMON.includes(cleanId);
-  return isLegendary || isFossil;
+  return isLegendaryPokemonSpeciesId(cleanId) || isFossilPokemonSpeciesId(cleanId);
 }
 
 export function getVigor(p: Pokemon | null | undefined): number {
@@ -301,14 +299,17 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
     'charge': "Carga electricidad para potenciar el próximo ataque de tipo Eléctrico.",
     'covet': "Roba el objeto equipado por el oponente.",
   };
+  void effects;
   
-  const desc = effects[md.effect || ''];
-  if (desc) return desc;
+  const effectText = Array.isArray(md.effect)
+    ? md.effect.map(effect => effect.text).find(Boolean)
+    : md.effect?.text;
+  if (effectText) return effectText;
 
   const cleanId = toID(md.id || (mdProvided ? '' : id));
   if (cleanId) {
     try {
-      const translated = (MOVE_TRANSLATIONS_ES[cleanId] || {}) as { name?: string; desc?: string };
+      const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {});
       if (translated.desc) return translated.desc;
 
       const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
@@ -323,5 +324,3 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
   return "Causa daño al oponente sin efectos secundarios adicionales.";
 }
-
-

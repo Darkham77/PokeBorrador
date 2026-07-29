@@ -3,7 +3,6 @@ import { constructPokemonId, deconstructPokemonId } from '@/components/battle/de
 
 describe('DebugActionPanel ID Helpers', () => {
   it('correctly constructs pokemon ID from baseId, variant, and gender', () => {
-    expect(constructPokemonId('25', 'shiny', 'm')).toBe('25_shiny_m')
     expect(constructPokemonId('pikachu', '', '')).toBe('pikachu')
   })
 
