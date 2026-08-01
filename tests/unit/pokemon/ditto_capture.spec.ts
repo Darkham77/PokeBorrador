@@ -15,6 +15,7 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
     const ditto: Pokemon = {
       uid: 'ditto-test',
       id: 'ditto',
+      species: 'ditto',
       name: 'Ditto',
       level: 30,
       vigor: 20,
@@ -42,6 +43,7 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
     const pikachu: Pokemon = {
       uid: 'pikachu-test',
       id: 'pikachu',
+      species: 'pikachu',
       name: 'Pikachu',
       level: 25,
       vigor: 20,

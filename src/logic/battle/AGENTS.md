@@ -65,4 +65,5 @@ Frontend Developers / Systems Engineers.
 
 - [actions/](./actions/AGENTS.md): Domain module documentation for actions.
 - [ai/](./ai/AGENTS.md): Domain module documentation for ai.
+- [engine/](./engine/AGENTS.md): Domain module documentation for engine.
 - [helpers/](./helpers/AGENTS.md): Domain module documentation for helpers.

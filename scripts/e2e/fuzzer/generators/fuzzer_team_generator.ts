@@ -36,6 +36,8 @@ export interface TestBatch {
   playerChoices?: string[];
   /** Populated by run-tester: ordered P2 choices for E2E determinism */
   enemyChoices?: string[];
+  /** Populated by run-tester: history terna array for E2E replay and cheat tracking */
+  history?: Array<{ turnCount: number; p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: boolean; p2Heal?: boolean }>;
   /** Populated by run-tester: per-turn damage/HP snapshots */
   steps?: string[];
   /** Final state snapshot for validation */

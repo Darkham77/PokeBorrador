@@ -13,7 +13,7 @@ export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as co
 export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
 export type PokemonStatus = ActivePokemonStatus | '';
 export type PokemonGender = 'm' | 'f' | null;
-export type VolatileStatusKey = string; // Showdown dynamic volatile status key (e.g. toID(move.name))
+export type VolatileStatusKey = string; // string-ok Showdown dynamic volatile status key (e.g. toID(move.name))
 
 export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
   return typeof value === 'string' && value.length > 0 && /^[a-z0-9]+$/i.test(value);

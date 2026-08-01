@@ -51,12 +51,13 @@ if (caseId) {
     process.exit(1);
   }
   const fileContent = fs.readFileSync(casesPath, 'utf8');
-  const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; items?: TestBatch[]; items_consumption?: TestBatch[] };
+  const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; abilities?: TestBatch[]; items?: TestBatch[]; items_consumption?: TestBatch[]; scenarios?: TestBatch[] };
   const casesList = [
     ...(allCases.battle || []),
     ...(allCases.abilities || []),
     ...(allCases.items || []),
-    ...(allCases.items_consumption || [])
+    ...(allCases.items_consumption || []),
+    ...(allCases.scenarios || [])
   ];
   match = casesList.find((c) => 
     (c.seed && c.seed.join(',') === caseId) || 

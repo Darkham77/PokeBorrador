@@ -3,6 +3,19 @@ import { BattleCheatManager } from '@/logic/battle/helpers/battleCheatManager.ts
 import { createShowdownBattle } from '@/logic/battle/helpers/showdownBattleFactory.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '@/data/system/constants.ts';
 
+const makePoke = (species: string, moves: string[]) => ({
+  name: species,
+  species,
+  moves,
+  gender: 'M',
+  ability: 'illuminate',
+  evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  item: '',
+  level: 100,
+  nature: 'hardy'
+});
+
 describe('BattleCheatManager - Unit & Integrity Tests', () => {
   it('should parse history terna correctly and apply post-turn heal', () => {
     const history = [
@@ -12,8 +25,8 @@ describe('BattleCheatManager - Unit & Integrity Tests', () => {
 
     const cheatManager = new BattleCheatManager(history);
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [1, 2, 3, 4]);
-    battle.setPlayer('p1', { name: 'Player', team: [{ species: 'Mew', moves: ['tackle'] }] });
-    battle.setPlayer('p2', { name: 'Enemy', team: [{ species: 'Blissey', moves: ['tackle'] }] });
+    battle.setPlayer('p1', { name: 'Player', team: [makePoke('Mew', ['tackle'])] });
+    battle.setPlayer('p2', { name: 'Enemy', team: [makePoke('Blissey', ['tackle'])] });
 
     // Simulate P1 taking damage so HP drops below max
     battle.p1.pokemon[0]!.hp = 50;
@@ -34,8 +47,8 @@ describe('BattleCheatManager - Unit & Integrity Tests', () => {
 
     const cheatManager = new BattleCheatManager(history);
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [1, 2, 3, 4]);
-    battle.setPlayer('p1', { name: 'Player', team: [{ species: 'Mew', moves: ['tackle'] }] });
-    battle.setPlayer('p2', { name: 'Enemy', team: [{ species: 'Blissey', moves: ['tackle'] }] });
+    battle.setPlayer('p1', { name: 'Player', team: [makePoke('Mew', ['tackle'])] });
+    battle.setPlayer('p2', { name: 'Enemy', team: [makePoke('Blissey', ['tackle'])] });
 
     battle.p1.pokemon[0]!.hp = 20;
 
@@ -54,8 +67,8 @@ describe('BattleCheatManager - Unit & Integrity Tests', () => {
 
     const cheatManager = new BattleCheatManager(history);
     const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [1, 2, 3, 4]);
-    battle.setPlayer('p1', { name: 'Player', team: [{ species: 'Mew', moves: ['tackle'] }] });
-    battle.setPlayer('p2', { name: 'Enemy', team: [{ species: 'Blissey', moves: ['tackle'] }] });
+    battle.setPlayer('p1', { name: 'Player', team: [makePoke('Mew', ['tackle'])] });
+    battle.setPlayer('p2', { name: 'Enemy', team: [makePoke('Blissey', ['tackle'])] });
 
     // Set fainted
     battle.p1.pokemon[0]!.hp = 0;

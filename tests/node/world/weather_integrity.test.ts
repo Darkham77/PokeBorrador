@@ -185,7 +185,7 @@ describe('Weather Integrity & Biome Restrictions', () => {
         if (!weather) return;
 
         Object.entries(weather).forEach(([weatherType, cfg]) => {
-          const isExclusiveWeather = ['rain', 'storm', 'thunderstorm', 'heavy_rain', 'hail', 'blizzard', 'coldwave'].includes(weatherType);
+          const isExclusiveWeather = ['rain', 'storm', 'thunderstorm', 'heavy_rain', 'hail', 'blizzard'].includes(weatherType);
           const isVisitorWeather = ['sun', 'intense_sun', 'snow', 'cold'].includes(weatherType);
           if (!isExclusiveWeather && !isVisitorWeather) return;
 

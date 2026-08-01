@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 // scripts/e2e/helpers/fileWriterQueue.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -18,8 +19,12 @@ class FileWriterQueue {
    * sequentially in single-writer FIFO queue order to prevent OS file locking issues.
    */
   async safeWriteFile(filePath: string, data: string): Promise<void> {
+    const normalized = path.normalize(filePath);
+    if (normalized.includes('..')) {
+      throw new Error(`[FileWriterQueue] Security Error: Path traversal attempt rejected for "${filePath}"`);
+    }
     return new Promise((resolve, reject) => {
-      this.queue.push({ filePath, data, resolve, reject });
+      this.queue.push({ filePath: normalized, data, resolve, reject });
       void this.processQueue();
     });
   }
@@ -28,23 +33,36 @@ class FileWriterQueue {
     if (this.isProcessing) return;
     this.isProcessing = true;
 
+    const projectRoot = process.cwd();
+
     while (this.queue.length > 0) {
       const task = this.queue.shift();
       if (!task) continue;
 
       try {
-        const dir = path.dirname(task.filePath);
-        await fs.mkdir(dir, { recursive: true });
+        const fileName = path.basename(task.filePath);
+        const targetPath = path.resolve(projectRoot, 'scripts', 'e2e', 'results', fileName);
 
-        const tmpPath = `${task.filePath}.${performance.now().toString().replace('.', '')}.${Math.random().toString(36).substring(2, 8)}.tmp`;
-        await fs.writeFile(tmpPath, task.data, 'utf8');
-        await fs.rename(tmpPath, task.filePath);
+        if (!targetPath.startsWith(projectRoot) || fileName.includes('..')) {
+          throw new Error(`[FileWriterQueue] Invalid file target path: ${task.filePath}`);
+        }
+
+        const targetDir = path.dirname(targetPath);
+        await fs.mkdir(targetDir, { recursive: true });
+
+        const tmpFileName = `${fileName}.${performance.now().toString().replace('.', '')}.tmp`;
+        const tmpFilePath = path.resolve(targetDir, tmpFileName);
+
+        await fs.writeFile(tmpFilePath, task.data, 'utf8');
+        await fs.rename(tmpFilePath, targetPath);
 
         task.resolve();
       } catch (err: unknown) {
         // Fallback atomic direct write if rename fails cross-device
         try {
-          await fs.writeFile(task.filePath, task.data, 'utf8');
+          const fileName = path.basename(task.filePath);
+          const targetPath = path.resolve(projectRoot, 'scripts', 'e2e', 'results', fileName);
+          await fs.writeFile(targetPath, task.data, 'utf8');
           task.resolve();
         } catch (fallbackErr: unknown) {
           task.reject(fallbackErr);

@@ -164,7 +164,6 @@ export class ShowdownBattleEngine {
         ok = false;
       }
       if (!ok && seat.choice.startsWith('switch')) {
-        const targetIdx = parseInt(seat.choice.split(' ')[1] || '0', 10);
         for (let mIdx = 1; mIdx <= 4; mIdx++) {
           try {
             if (battle.choose(seat.id, `move ${mIdx}`)) {

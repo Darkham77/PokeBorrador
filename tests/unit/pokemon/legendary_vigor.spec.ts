@@ -20,6 +20,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
     const legendaryMock: Pokemon = {
       uid: 'mewtwo-test',
       id: 'mewtwo',
+      species: 'mewtwo',
       name: 'Mewtwo',
       level: 70,
       vigor: 0,
