@@ -92,8 +92,10 @@ function handleClick() {
     class="list-item"
     :data-pokemon-uid="item.pokemon.uid"
     :class="{ 
-      selected: isSelected,
-      'is-premium-tier': isPremiumTier 
+      'is-selected': isSelected, 
+      'is-active-battle': isBattleContext && item.pokemon.hp > 0,
+      'is-fainted': item.pokemon.hp <= 0,
+      'is-premium-tier': isPremiumTier
     }"
     :style="{ 
       '--tier-color': tierData.color,

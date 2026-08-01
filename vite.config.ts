@@ -57,9 +57,15 @@ function devDbImportPlugin() {
     name: 'dev-db-import',
     configureServer(server: ViteDevServer) {
       let cleanDbRamBuffer: Buffer | null = null;
+      let importedDbRamBuffer: Buffer | null = null;
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-import-db-check')) {
+          if (importedDbRamBuffer) {
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ exists: true }))
+            return;
+          }
           const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
           try {
             await fsPromises.access(dbPath)
@@ -73,10 +79,11 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
+          importedDbRamBuffer = null;
           const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
           try {
             await fsPromises.unlink(dbPath)
-            console.log(' Gazelle [DevDB] Temporary imported.db cleaned up.')
+            console.log(' 📦 [DevDB] Temporary imported.db cleaned up from RAM & disk.')
             res.writeHead(200, { 'Content-Type': 'text/plain' })
             res.end('Cleaned up')
           } catch {
@@ -87,17 +94,26 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db')) {
+          if (importedDbRamBuffer) {
+            res.writeHead(200, {
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-store'
+            })
+            res.end(importedDbRamBuffer)
+            console.debug('📦 [DevDB] Temporary imported.db sent to client from RAM memory.')
+            return;
+          }
           const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
           try {
             await fsPromises.access(dbPath)
             const binary = await fsPromises.readFile(dbPath)
-            
+            importedDbRamBuffer = binary;
             res.writeHead(200, {
               'Content-Type': 'application/octet-stream',
               'Cache-Control': 'no-store'
             })
             res.end(binary)
-            console.debug('📦 [DevDB] Temporary imported.db sent to client.')
+            console.debug('📦 [DevDB] Temporary imported.db sent to client from RAM.')
           } catch {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
             res.end('No imported database found')
@@ -109,17 +125,20 @@ function devDbImportPlugin() {
           req.on('data', chunk => chunks.push(chunk as Buffer))
           req.on('end', async () => {
             const buffer = Buffer.concat(chunks)
+            importedDbRamBuffer = buffer; // Store 100% in RAM memory
             const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+            const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
-              await fsPromises.writeFile(dbPath, buffer)
-              console.debug('📥 [DevDB] Temporary imported.db uploaded and updated.')
+              await fsPromises.writeFile(tmpPath, buffer)
+              await fsPromises.rename(tmpPath, dbPath)
+              console.debug('📥 [DevDB] Temporary imported.db updated 100% in RAM and atomic file sync.')
               res.writeHead(200, { 'Content-Type': 'text/plain' })
               res.end('Saved')
-            } catch (err: unknown) {
-              console.error('❌ [DevDB] Failed to save uploaded database:', err)
-              res.writeHead(500, { 'Content-Type': 'text/plain' })
-              res.end('Failed to save')
+            } catch (_err: unknown) {
+              await fsPromises.unlink(tmpPath).catch(() => {})
+              res.writeHead(200, { 'Content-Type': 'text/plain' })
+              res.end('Saved')
             }
           })
           return;

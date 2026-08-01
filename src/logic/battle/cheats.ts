@@ -60,9 +60,6 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   if (side.pokemonLeft !== undefined) {
     side.pokemonLeft = side.pokemon.filter(p => p && !p.fainted).length;
   }
-  if (side.activeRequest) {
-    delete (side.activeRequest as unknown as { forceSwitch?: boolean[] }).forceSwitch;
-  }
 }
 
 /**
@@ -99,3 +96,49 @@ export function syncRequestConditionsWithSimulator(side: CheatSide | null | unde
     }
   });
 }
+
+/**
+ * Shared generic function for Infinite Punching Bag (IPB) heal mechanics.
+ * Evaluates active combatants' health and applies heal cheats identically across
+ * both the fuzzer generator and the Web Worker / runtime simulator.
+ */
+export function processIPBHeals(
+  battle: { p1: CheatSide; p2: CheatSide; turn: number },
+  cheatsArray?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> | null,
+  clientP1Active?: CheatPokemon | null,
+  clientP2Active?: CheatPokemon | null
+): { p1Healed: boolean; p2Healed: boolean } {
+  let p1Healed = false;
+  let p2Healed = false;
+
+  const p1Active = battle.p1?.active?.[0];
+  if (p1Active && (p1Active.hp <= (p1Active.maxhp || p1Active.maxHp || 0) * 0.3 || p1Active.fainted)) {
+    applyHealCheatToSide(battle.p1);
+    syncRequestConditionsWithSimulator(battle.p1);
+    p1Healed = true;
+    if (Array.isArray(cheatsArray)) {
+      cheatsArray.push({ turn: battle.turn, side: 'p1', type: 'heal' });
+    }
+    if (clientP1Active) {
+      clientP1Active.hp = clientP1Active.maxhp || clientP1Active.maxHp || 0;
+      clientP1Active.status = '';
+    }
+  }
+
+  const p2Active = battle.p2?.active?.[0];
+  if (p2Active && (p2Active.hp <= (p2Active.maxhp || p2Active.maxHp || 0) * 0.3 || p2Active.fainted)) {
+    applyHealCheatToSide(battle.p2);
+    syncRequestConditionsWithSimulator(battle.p2);
+    p2Healed = true;
+    if (Array.isArray(cheatsArray)) {
+      cheatsArray.push({ turn: battle.turn, side: 'p2', type: 'heal' });
+    }
+    if (clientP2Active) {
+      clientP2Active.hp = clientP2Active.maxhp || clientP2Active.maxHp || 0;
+      clientP2Active.status = '';
+    }
+  }
+
+  return { p1Healed, p2Healed };
+}
+

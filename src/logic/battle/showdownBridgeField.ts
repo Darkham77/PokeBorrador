@@ -1,10 +1,10 @@
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { ACTIVE_GENERATION, SHOWDOWN_DISABLE_DURATION_TURNS } from '../../data/system/constants.ts';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherGenerationProvider.ts';
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { toPokemonType } from '@/data/battle/types';
-import { requirePokemonMoveId } from '@/data/battle/moves';
+import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves';
 import { requireWeatherId } from '../weather/weatherRegistry';
 import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
 import { requireVolatileStatusKey } from '@/types/pokemon/pokemon';
@@ -55,7 +55,10 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
 
         if (cleanEffect === 'typechange') {
           const newType = parts[4] || '';
-          if (newType) target.type = toPokemonType(toID(newType));
+          // Canonical ref: external/handler.ts L768 — when Reflect Type is used, args[3] is
+          // '[from] move: Reflect Type' (a metadata tag), NOT the new type. The new type must
+          // be inferred from the target; we skip the assignment silently in that case.
+          if (newType && !newType.startsWith('[')) target.type = toPokemonType(toID(newType));
         } else if (cleanEffect === 'typeadd') {
           const addedType = parts[4] || parts[3] || '';
           if (addedType) {
@@ -67,12 +70,15 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} se confundió!`, 'log-info', target);
         } else if (cleanEffect === 'disable') {
           const moveName = parts[4] || '';
-          const moveId = requirePokemonMoveId(toID(moveName));
-          const moveData = pokemonDataProvider.getMoveData(moveId);
-          const translatedName = moveData?.name || moveName;
-          target.disabledMove = { id: moveId, name: translatedName, pp: 0, maxPP: 0 };
-          target.disabledTurns = 4;
-          if (!line.includes('[silent]')) store.addLog(`¡El ataque ${translatedName} de ${target.name} ha sido desactivado temporalmente!`, 'log-info', target);
+          const cleanMoveId = toID(moveName);
+          if (isPokemonMoveId(cleanMoveId)) {
+            const moveId = requirePokemonMoveId(cleanMoveId);
+            const moveData = pokemonDataProvider.getMoveData(moveId);
+            const translatedName = moveData?.name || moveName;
+            target.disabledMove = { id: moveId, name: translatedName, pp: 0, maxPP: 0 };
+            target.disabledTurns = SHOWDOWN_DISABLE_DURATION_TURNS;
+            if (!line.includes('[silent]')) store.addLog(`¡El ataque ${translatedName} de ${target.name} ha sido desactivado temporalmente!`, 'log-info', target);
+          }
         } else if (cleanEffect === 'leechseed') {
           target.volatileCounters['leechseed'] = 1;
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} fue infectado con Drenadoras!`, 'log-info', target);
@@ -88,15 +94,26 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
         } else if (cleanEffect === 'encore') {
           target.volatileCounters['encore'] = 1;
           if (!line.includes('[silent]')) store.addLog(`¡${target.name} recibió un Bis!`, 'log-info', target);
+        } else if (cleanEffect.startsWith('perish')) {
+          // Perish Song emits |-start|...|perish3|, |perish2|, |perish1|, |perish0| per turn residual.
+          // The effect ID encodes the countdown value. Map to 'perishsong' volatile.
+          // Canonical reference: external/pokemon-showdown-code/client/src/handler.ts#L758-L762
+          const perishCount = parseInt(cleanEffect.slice(-1), 10);
+          target.volatileCounters['perishsong'] = perishCount;
+          if (!line.includes('[silent]')) store.addLog(`¡${target.name} escucha el Canto Mortal! (${perishCount} turnos)`, 'log-info', target);
         } else {
           const isAbilityEffect = effect.startsWith('ability:');
-          const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || pokemonDataProvider.getMoveData(effect)?.self?.volatileStatus === 'lockedmove');
+          const isMoveEffect = effect.startsWith('move:');
+          const rawEffectId = isMoveEffect ? effect.replace(/^move:\s*/i, '') : isAbilityEffect ? effect.replace(/^ability:\s*/i, '') : effect;
+          const cleanEffectKey = toID(rawEffectId);
+          // Guard: only call getMoveData if rawEffectId is a valid move ID to avoid crashes on non-move volatile effects.
+          const isLockedEffect = !isAbilityEffect && (cleanEffectKey === 'lockedmove' || (isPokemonMoveId(cleanEffectKey) && pokemonDataProvider.getMoveData(rawEffectId).self?.volatileStatus === 'lockedmove'));
           if (isLockedEffect) {
             target.volatileCounters['lockedmove'] = 1;
-          } else if (cleanEffect) {
-            target.volatileCounters[requireVolatileStatusKey(cleanEffect)] = 1;
+          } else if (cleanEffectKey) {
+            target.volatileCounters[requireVolatileStatusKey(cleanEffectKey)] = 1;
           }
-          if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡${target.name} se vio afectado por ${cleanEffect}!`, 'log-info', target);
+          if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡${target.name} se vio afectado por ${cleanEffectKey}!`, 'log-info', target);
         }
       }
       return true;
@@ -133,15 +150,23 @@ export async function handleFieldEvents(ctx: SBCtx): Promise<boolean> {
           } else if (cleanEffect === 'encore') {
             delete target.volatileCounters['encore'];
             if (!line.includes('[silent]')) store.addLog(`¡El efecto de Bis sobre ${target.name} terminó!`, 'log-info', target);
+          } else if (cleanEffect.startsWith('perish')) {
+            // Perish Song -end event: the volatile ends when the pokemon faints (perish0).
+            // Canonical reference: external/pokemon-showdown-code/sim/data/moves.ts#L13269-L13272
+            delete target.volatileCounters['perishsong'];
           } else {
             const isAbilityEffect = effect.startsWith('ability:');
-            const isLockedEffect = !isAbilityEffect && (cleanEffect === 'lockedmove' || pokemonDataProvider.getMoveData(effect)?.self?.volatileStatus === 'lockedmove');
+            const isMoveEffect = effect.startsWith('move:');
+            const rawEffectId = isMoveEffect ? effect.replace(/^move:\s*/i, '') : isAbilityEffect ? effect.replace(/^ability:\s*/i, '') : effect;
+            const cleanEffectKey = toID(rawEffectId);
+            // Guard: only call getMoveData if rawEffectId is a valid move ID to avoid crashes on non-move volatile effects.
+            const isLockedEffect = !isAbilityEffect && (cleanEffectKey === 'lockedmove' || (isPokemonMoveId(cleanEffectKey) && pokemonDataProvider.getMoveData(rawEffectId).self?.volatileStatus === 'lockedmove'));
             if (isLockedEffect) {
               delete target.volatileCounters['lockedmove'];
-            } else if (cleanEffect) {
-              delete target.volatileCounters[requireVolatileStatusKey(cleanEffect)];
+            } else if (cleanEffectKey) {
+              delete target.volatileCounters[requireVolatileStatusKey(cleanEffectKey)];
             }
-            if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡El efecto de ${cleanEffect} sobre ${target.name} terminó!`, 'log-info', target);
+            if (!isAbilityEffect && !line.includes('[silent]')) store.addLog(`¡El efecto de ${cleanEffectKey} sobre ${target.name} terminó!`, 'log-info', target);
           }
         }
       }

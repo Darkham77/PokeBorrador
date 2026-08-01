@@ -173,7 +173,7 @@ const moveSchema = object({
   fixedDmg: optional(number()),
   levelDmg: optional(boolean()),
   halfHP: optional(boolean()),
-  hits: optional(union([number(), string()])),
+  hits: optional(union([number(), string(), array(union([number(), string()]))])),
   recoil: optional(union([number(), boolean()])),
   selfKO: optional(boolean()),
   side: optional(union([literal('player'), literal('enemy')])),

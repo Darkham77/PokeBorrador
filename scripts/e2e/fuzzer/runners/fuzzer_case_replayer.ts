@@ -54,6 +54,7 @@ if (caseId) {
   const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; items?: TestBatch[]; items_consumption?: TestBatch[] };
   const casesList = [
     ...(allCases.battle || []),
+    ...(allCases.abilities || []),
     ...(allCases.items || []),
     ...(allCases.items_consumption || [])
   ];
@@ -162,17 +163,14 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
   console.log('  Logs:');
   newLogs.forEach(line => console.log(`    ${line}`));
 
-  // Check and apply HP restoration (Infinite Punching Bag) matching the fuzzer's engine behavior
-  const cheats = (match as unknown as { cheats?: Array<{ turn: number; side: string; type: string }> }).cheats || [];
-  const hasP1HealCheat = cheats.some(c => c.turn === turn && c.side === 'p1' && c.type === 'heal');
-  const hasP2HealCheat = cheats.some(c => c.turn === turn && c.side === 'p2' && c.type === 'heal');
-
-  if (hasP1HealCheat && p1ActiveMon) {
+  // Check and apply HP restoration (Infinite Punching Bag) matching history flags
+  const histEntry = match.history?.[turn - 1];
+  if (histEntry?.p1Heal && p1ActiveMon) {
     applyHealCheatToSide(battle.p1);
     syncRequestConditionsWithSimulator(battle.p1);
     console.log(`  [IPB CHEAT] Restored P1 Active HP to max (${p1ActiveMon.name})`);
   }
-  if (hasP2HealCheat && p2ActiveMon) {
+  if (histEntry?.p2Heal && p2ActiveMon) {
     applyHealCheatToSide(battle.p2);
     syncRequestConditionsWithSimulator(battle.p2);
     console.log(`  [IPB CHEAT] Restored P2 Active HP to max (${p2ActiveMon.name})`);
@@ -190,8 +188,15 @@ if (match.finalState) {
   if (finalState.isOver !== undefined && actualEnded !== finalState.isOver) {
     throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle end state! Expected isOver=${finalState.isOver}, but replay actual ended=${actualEnded}`);
   }
-  if (finalState.winner !== undefined && finalState.winner !== null && battle.winner !== finalState.winner) {
-    throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle winner! Expected winner=${finalState.winner}, but replay actual winner=${battle.winner}`);
+  if (finalState.winner !== undefined && finalState.winner !== null) {
+    const rawExp = String(finalState.winner);
+    const expectedSeat = (rawExp === 'p1' || rawExp.startsWith('P-') || rawExp === battle.p1.name)
+      ? 'p1'
+      : ((rawExp === 'p2' || rawExp.startsWith('E-') || rawExp === battle.p2.name) ? 'p2' : rawExp);
+    const actualSeat = battle.winner === battle.p1.name ? 'p1' : (battle.winner === battle.p2.name ? 'p2' : battle.winner);
+    if (expectedSeat !== actualSeat) {
+      throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle winner! Expected winner=${finalState.winner} (${expectedSeat}), but replay actual winner=${battle.winner} (${actualSeat})`);
+    }
   }
   if (Array.isArray(finalState.p1)) {
     (finalState.p1 as Array<{ hp: number; fainted: boolean }>).forEach((expectedMon, idx) => {

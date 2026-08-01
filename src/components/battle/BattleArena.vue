@@ -133,7 +133,7 @@ const weatherTooltipDescription = computed(() => {
 
       let wConfig = loc.weather?.[weather]
       if (!wConfig && weather) {
-        const family = getWeatherFamily(weather)
+        const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
         if (family && loc.weather?.[family]) {
           wConfig = loc.weather[family]
         }
@@ -168,7 +168,7 @@ const weatherTooltipDescription = computed(() => {
       lines.push('Chances actuales (Hierba/Tierra):')
       let wConfig = loc.weather?.[weather]
       if (!wConfig && weather) {
-        const family = getWeatherFamily(weather)
+        const family = getWeatherFamily(weather) as keyof NonNullable<typeof loc.weather>
         if (family && loc.weather?.[family]) {
           wConfig = loc.weather[family]
         }

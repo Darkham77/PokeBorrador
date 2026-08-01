@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-07-25T22:54:00.400323975-03:00[America/Buenos_Aires]",
+  "generatedAt": "2026-07-31T21:25:12.440962891-03:00[America/Buenos_Aires]",
   "summary": {
-    "total": 2301289,
-    "passed": 2301289,
+    "total": 2007889,
+    "passed": 2007889,
     "failed": 0,
-    "compatibleCount": 3835,
-    "incompatibleCount": 2297454
+    "compatibleCount": 3635,
+    "incompatibleCount": 2004254
   },
   "errors": [],
   "warnings": []

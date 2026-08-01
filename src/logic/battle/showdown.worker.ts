@@ -1,15 +1,12 @@
 // fallow-ignore-file security-sink
 import { Battle, Pokemon, Side, type PokemonSet } from '@pkmn/sim';
 import { statsMap, patchShowdownSpreadModify } from './showdownAdapter.ts';
-import { isActionConsumed } from './helpers/choiceIndexer.ts';
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
-import { BattleCheatManager } from './helpers/battleCheatManager.ts';
-import { requiresAction } from './helpers/requestHelper.ts';
 import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
-import { executeBattleTurn } from './helpers/showdownExecutor.ts';
+import { ShowdownBattleEngine } from './engine/showdownBattleEngine.ts';
 import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
 
@@ -44,7 +41,6 @@ patchShowdownSpreadModify(() => isDeterministicSimulation);
 
 let currentBattle: Battle | null = null;
 let currentBattleExecuteTurnCount = 0;
-let cheatManager: BattleCheatManager | null = null;
 
 export function setTestingBattle(battle: Battle | null): void {
   currentBattle = battle;
@@ -117,6 +113,7 @@ interface WorkerEventPayload {
   side?: 'p1' | 'p2';
   type?: 'heal';
   cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+  history?: Array<{ p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
   isDeterministicSimulation?: boolean;
   isFuzzerSimulation?: boolean;
   format?: string;
@@ -136,7 +133,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         debugLogs.length = 0;
         isDeterministicSimulation = !!payload.isDeterministicSimulation;
         logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`);
-        cheatManager = new BattleCheatManager(payload.cheats);
         const { p1, p2 } = payload;
         if (!p1 || !p2) {
           throw new Error('INIT_BATTLE payload must contain p1 and p2');
@@ -262,33 +258,20 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
       case 'EXECUTE_TURN': {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
-
-        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, weather, isFuzzerSimulation } = payload;
-
-        const p1NeedsAction = !isFuzzerSimulation || requiresAction(battle.p1.activeRequest);
-        const p2NeedsAction = !isFuzzerSimulation || requiresAction(battle.p2.activeRequest);
-        const p1ActionConsumed = isActionConsumed(p1NeedsAction, p1Choice, !!p1Skip);
-        const p2ActionConsumed = isActionConsumed(p2NeedsAction, p2Choice, !!p2Skip);
+        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats } = payload;
 
         currentBattleExecuteTurnCount++;
 
-        console.debug(`[WORKER-EXECUTE-DEBUG] isFuzzerSim: ${isFuzzerSimulation}, p1NeedsAction: ${p1NeedsAction}, p2NeedsAction: ${p2NeedsAction}, p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: ${!!p1Skip}, p2Skip: ${!!p2Skip}, p1ActionConsumed: ${p1ActionConsumed}, p2ActionConsumed: ${p2ActionConsumed}, executeTurnCount: ${currentBattleExecuteTurnCount}`);
-
-        executeBattleTurn({
-          battle,
-          p1Choice: p1Choice || '',
-          p2Choice: p2Choice || '',
-          p1Skip,
-          p2Skip,
-          p1Hps,
-          p2Hps,
-          p1Statuses,
-          p2Statuses,
-          weather,
-          cheatManager,
-          isFuzzerSimulation,
-          currentStep: currentBattleExecuteTurnCount
+        const engine = new ShowdownBattleEngine({
+          mode: 'replayer',
+          cheats: Array.isArray(cheats) ? cheats.map(c => ({ turn: c.turn, side: c.side, type: 'heal' })) : []
         });
+        (engine as unknown as { battle: Battle }).battle = battle;
+
+        const result = engine.executeTurn({ p1Choice, p2Choice, p1Skip, p2Skip });
+
+        syncSidePokemon(battle.p1, p1Hps || {}, p1Statuses || {});
+        syncSidePokemon(battle.p2, p2Hps || {}, p2Statuses || {});
 
         const turnLogs = getNewLogs();
         if (p2Skip) {
@@ -313,8 +296,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             p2Request: injectUidsIntoRequest('p2', battle.p2.activeRequest),
             p1TeamState: getSideTeamState(battle.p1 as ExtendedSide),
             p2TeamState: getSideTeamState(battle.p2 as ExtendedSide),
-            p1ActionConsumed,
-            p2ActionConsumed
+            p1ActionConsumed: result.p1AcceptedChoice !== '',
+            p2ActionConsumed: result.p2AcceptedChoice !== ''
           } 
         });
         break;
@@ -362,7 +345,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         }
         currentBattle = null;
         statsMap.clear();
-        cheatManager = null;
         break;
       }
 
@@ -373,7 +355,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         }
         currentBattle = null;
         statsMap.clear();
-        cheatManager = null;
         break;
       }
 

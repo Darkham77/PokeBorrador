@@ -180,6 +180,12 @@ export async function executeTurnInWorker(
         p1Choice,
         p2Choice: finalP2Choice || ''
       });
+
+      if (typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.cheats)) {
+        const currentTurn = battleStore.state.turnCount;
+        const matchingCheats = window.__VITE_DEBUG__.cheats.filter(c => c.turn === currentTurn);
+        turnCheats.push(...matchingCheats);
+      }
     }
 
     const { useGameStore } = await import('@/stores/game');
@@ -218,7 +224,9 @@ export async function executeTurnInWorker(
         } else {
           worker.onmessage = null
         }
-        reject(new Error(String(payload || 'Showdown Worker Error')))
+        const errPayload = payload as { message?: string } | string | null | undefined;
+        const msg = typeof errPayload === 'object' && errPayload?.message ? errPayload.message : (typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload || 'Showdown Worker Error'));
+        reject(new Error(msg))
         return
       }
       if (type === 'TURN_SUCCESS') {

@@ -205,9 +205,25 @@ export const pokemonDataProvider = {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
         
+
+
         let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
         if (!move || !move.exists) {
             move = Dex.moves.get(cleanId);
+        }
+        if (cleanId === 'recharge') {
+            const moveId = requirePokemonMoveId('recharge');
+            const translated = MOVE_TRANSLATIONS_ES[moveId];
+            return {
+                id: moveId,
+                name: translated.name || 'Recargando',
+                power: 0,
+                acc: 1000,
+                type: 'normal',
+                cat: 'status',
+                pp: 0,
+                priority: 0
+            };
         }
         if (!move || !move.exists) {
             throw new Error(`Movimiento no encontrado por ID: ${id}`);

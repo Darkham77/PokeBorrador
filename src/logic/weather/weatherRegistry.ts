@@ -57,7 +57,8 @@ export function isWeatherId(value: string): value is WeatherId {
 }
 
 export function requireWeatherId(value: string): WeatherId {
-  if (isWeatherId(value)) return value;
+  const registered = toRegisteredWeatherId(value);
+  if (isWeatherId(registered)) return registered;
   throw new Error(`Invalid weather id: ${value}`);
 }
 
@@ -82,7 +83,7 @@ const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
   deltastream: 'strong_winds',
 } as const satisfies Record<ShowdownWeatherId, WeatherId>;
 
-function toRegisteredWeatherId(type: WeatherId | ShowdownWeatherId | string): WeatherId | string {
+export function toRegisteredWeatherId(type: WeatherId | ShowdownWeatherId | string): WeatherId | string {
   if (isWeatherId(type)) return type;
   if (isShowdownWeatherId(type)) return SHOWDOWN_WEATHER_TO_WEATHER_ID[type];
   return type;

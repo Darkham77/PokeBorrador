@@ -21,6 +21,8 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
   if (!active || active.rewardsProcessed || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
 
   const isPlayer = side === 'player'
+  if (isPlayer && active.player && active.player.hp > 0) return;
+  if (!isPlayer && active.enemy && active.enemy.hp > 0) return;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
@@ -483,8 +485,22 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
       
       const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
       if (showdownWorker && active.enemyTeam) {
-        const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
-        const result = await executeTurnInWorker('', `switch ${slot}`)
+        let p2Choice = ''
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+          const debugObj = window.__VITE_DEBUG__;
+          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
+          const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
+          runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
+          runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
+          p2Choice = runner.resolveAndConsumeNextChoice('p2', active.enemyRequest);
+          debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
+          debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
+          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved forceSwitch enemy choice via ShowdownBattleRunner: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+        } else {
+          const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
+          p2Choice = `switch ${slot}`
+        }
+        const result = await executeTurnInWorker('', p2Choice)
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
 

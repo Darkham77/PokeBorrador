@@ -198,6 +198,9 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (statusAppended && statusAppended !== 'fnt' && !target.status) {
           // Informational status in hp string - do not auto-inject status
         }
+        if (target.hp > 0) {
+          target.fainted = false;
+        }
         const fromClause = parts.find(p => p.startsWith('[from]'));
         if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok
           store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);

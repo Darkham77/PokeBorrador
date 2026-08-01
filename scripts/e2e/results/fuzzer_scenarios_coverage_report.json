@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T22:53:54.724594971-03:00[America/Buenos_Aires]",
+  "generatedAt": "2026-08-01T04:30:57.403400879-03:00[America/Buenos_Aires]",
   "summary": {
     "total": 86,
     "passed": 86,
@@ -17,33 +17,12 @@
   },
   "scenarios": [
     {
-      "name": "Low HP Pinch Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca E-Attacker con False Swipe a P-Pinch",
-        "ataca P-Pinch con Ember a E-Attacker",
-        "ataca P-Pinch con Ember a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Pinch"
-      ]
-    },
-    {
-      "name": "Switch Out Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Regen con Tackle a E-Dummy",
-        "ataca E-Dummy con Toxic a P-Regen",
-        "ataca E-Dummy con Tackle a P-Benched"
-      ]
-    },
-    {
       "name": "Electric Absorption & Boost",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Electric con Tackle a E-Electrician",
-        "ataca E-Electrician con Thunderbolt a P-Electric"
+        "ataca E-Electrician con Thunderbolt a P-Electric",
+        "ataca P-Electric con Tackle a E-Electrician"
       ]
     },
     {
@@ -51,8 +30,8 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Water con Tackle a E-Swimmer",
-        "ataca E-Swimmer con Surf a P-Water"
+        "ataca E-Swimmer con Surf a P-Water",
+        "ataca P-Water con Tackle a E-Swimmer"
       ]
     },
     {
@@ -69,9 +48,9 @@
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Grass con Tackle a E-Gardener",
         "ataca E-Gardener con Giga Drain a P-Grass",
-        "P-Grass activa su habilidad Sap Sipper"
+        "P-Grass activa su habilidad Sap Sipper",
+        "ataca P-Grass con Tackle a E-Gardener"
       ]
     },
     {
@@ -85,14 +64,59 @@
       ]
     },
     {
+      "name": "Switch Out Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Regen con Tackle a E-Dummy",
+        "ataca E-Dummy con Toxic a P-Regen",
+        "ataca E-Dummy con Tackle a P-Benched"
+      ]
+    },
+    {
+      "name": "Low HP Pinch Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Pinch con Ember a E-Attacker",
+        "ataca E-Attacker con False Swipe a P-Pinch",
+        "ataca E-Attacker con Tackle a P-Pinch",
+        "ataca P-Pinch con Ember a E-Attacker"
+      ]
+    },
+    {
       "name": "Contact Status Contact Abilities",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
         "ataca E-Attacker con Tackle a P-Static",
         "ataca P-Static con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Static",
-        "ataca P-Static con Tackle a E-Attacker"
+        "ataca P-Static con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Static"
+      ]
+    },
+    {
+      "name": "KO Boost Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Moxie con Hyper Beam a E-Fodder1",
+        "ataca E-Fodder1 con Scratch a P-Moxie",
+        "ataca P-Moxie con Tackle a E-Fodder1",
+        "ataca E-Fodder1 con Scratch a P-Moxie"
+      ]
+    },
+    {
+      "name": "Terrain Entry & Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-ESurge con Thunderbolt a E-Dummy",
+        "ataca E-Dummy con Grassy Terrain a E-Dummy",
+        "ataca E-Dummy con Grassy Terrain",
+        "E-Dummy pero falló",
+        "ataca P-Surfer con Tackle a E-Dummy",
+        "ataca E-Dummy con Misty Terrain a E-Dummy"
       ]
     },
     {
@@ -103,6 +127,19 @@
         "ataca P-Sun con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
         "ataca P-Sun con Flamethrower a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló"
+      ]
+    },
+    {
+      "name": "Snow Weather Entry & Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Snow con Blizzard a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca P-Snow con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy",
         "ataca E-Dummy con Soft-Boiled",
         "E-Dummy pero falló"
@@ -133,43 +170,6 @@
       ]
     },
     {
-      "name": "Snow Weather Entry & Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Snow con Blizzard a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "ataca P-Snow con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled",
-        "E-Dummy pero falló"
-      ]
-    },
-    {
-      "name": "Terrain Entry & Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-ESurge con Thunderbolt a E-Dummy",
-        "ataca E-Dummy con Grassy Terrain a E-Dummy",
-        "ataca E-Dummy con Grassy Terrain",
-        "E-Dummy pero falló",
-        "ataca P-Surfer con Tackle a E-Dummy",
-        "ataca E-Dummy con Misty Terrain a E-Dummy"
-      ]
-    },
-    {
-      "name": "KO Boost Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Moxie con Hyper Beam a E-Fodder1",
-        "ataca E-Fodder1 con Scratch a P-Moxie",
-        "ataca P-Moxie con Tackle a E-Fodder1",
-        "ataca E-Fodder1 con Scratch a P-Moxie"
-      ]
-    },
-    {
       "name": "Attack Modifier Abilities",
       "type": "ability_scenario",
       "status": "PASS",
@@ -180,7 +180,8 @@
         "ataca E-Tank con Soft-Boiled a E-Tank",
         "ataca P-ToughClaws con Water Pulse a E-Tank",
         "ataca E-Tank con Soft-Boiled a E-Tank",
-        "ataca P-ToughClaws con Mach Punch a E-Tank"
+        "ataca P-ToughClaws con Mach Punch a E-Tank",
+        "ataca E-Tank con Soft-Boiled a E-Tank"
       ]
     },
     {
@@ -192,38 +193,46 @@
         "ataca P-Filter con Tackle a E-Attacker",
         "ataca E-Attacker con Flamethrower a P-Filter",
         "ataca P-Filter con Tackle a E-Attacker",
-        "ataca P-Filter con Tackle a E-Attacker",
         "ataca E-Attacker con Ice Beam a P-Filter",
         "ataca P-Filter con Tackle a E-Attacker",
-        "ataca E-Attacker con Close Combat a P-Filter"
+        "ataca E-Attacker con Close Combat a P-Filter",
+        "ataca P-Filter con Tackle a E-Attacker"
       ]
     },
     {
-      "name": "Priority Blocking Abilities",
+      "name": "Nuzzle & Ice Punch Scenario",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca E-Priority con Quick Attack",
-        "ataca P-Dazzling con Tackle a E-Priority",
-        "ataca E-Priority con Mach Punch",
-        "ataca P-Dazzling con Tackle a E-Priority",
-        "ataca E-Priority con Quick Attack a P-Prankster",
-        "ataca P-Prankster con Thunder Wave a E-Priority",
-        "ataca E-Priority con Quick Attack a P-Prankster"
+        "ataca P-Puncher con Nuzzle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy",
+        "ataca P-Puncher con Ice Punch a E-Dummy"
       ]
     },
     {
-      "name": "End-of-Turn Abilities",
+      "name": "Focus Punch & Noble Roar Scenario",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Harvest con Substitute a P-Harvest",
-        "ataca E-Attacker con Tackle a P-Harvest",
-        "ataca E-Attacker con Tackle a P-Harvest",
-        "ataca P-Harvest con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Harvest",
-        "ataca P-Harvest con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-SpeedBoost"
+        "ataca E-Dummy con Soft-Boiled",
+        "E-Dummy pero falló",
+        "ataca P-Focus con Focus Punch a E-Dummy",
+        "ataca P-Focus con Noble Roar a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+      ]
+    },
+    {
+      "name": "Forme Change — Zen Mode Darmanitan",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca E-Striker con False Swipe a P-Darm",
+        "ataca P-Darm con Tackle a E-Striker",
+        "ataca E-Striker con False Swipe a P-Darm",
+        "ataca P-Darm con Flare Blitz a E-Striker",
+        "ataca E-Striker con False Swipe a P-Darm",
+        "ataca P-Darm con Tackle a E-Striker",
+        "E-Striker se debilitó"
       ]
     },
     {
@@ -240,16 +249,30 @@
       ]
     },
     {
-      "name": "Forme Change — Zen Mode Darmanitan",
+      "name": "Priority Blocking Abilities",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca E-Striker con False Swipe a P-Darm",
-        "ataca P-Darm con Tackle a E-Striker",
-        "ataca E-Striker con False Swipe a P-Darm",
-        "ataca P-Darm con Flare Blitz a E-Striker",
-        "ataca E-Striker con False Swipe a P-Darm",
-        "ataca P-Darm con Tackle a E-Striker"
+        "ataca E-Priority con Quick Attack",
+        "ataca P-Dazzling con Tackle a E-Priority",
+        "ataca E-Priority con Mach Punch",
+        "ataca P-Dazzling con Tackle a E-Priority",
+        "ataca E-Priority con Quick Attack a P-Prankster",
+        "ataca P-Prankster con Thunder Wave a E-Priority"
+      ]
+    },
+    {
+      "name": "End-of-Turn Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Harvest con Substitute a P-Harvest",
+        "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca P-Harvest con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca E-Attacker con Tackle a P-Harvest",
+        "ataca P-Harvest con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-SpeedBoost"
       ]
     },
     {
@@ -285,26 +308,13 @@
       ]
     },
     {
-      "name": "Focus Punch & Noble Roar Scenario",
+      "name": "No Retreat Scenario",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
+        "ataca P-Falinks con No Retreat a P-Falinks",
         "ataca E-Dummy con Soft-Boiled",
-        "E-Dummy pero falló",
-        "ataca P-Focus con Focus Punch a E-Dummy",
-        "ataca P-Focus con Noble Roar a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy"
-      ]
-    },
-    {
-      "name": "Nuzzle & Ice Punch Scenario",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Puncher con Nuzzle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy",
-        "ataca P-Puncher con Ice Punch a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+        "E-Dummy pero falló"
       ]
     },
     {
@@ -319,13 +329,25 @@
       ]
     },
     {
-      "name": "No Retreat Scenario",
+      "name": "Entry Abilities & Scouting",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Falinks con No Retreat a P-Falinks",
-        "ataca E-Dummy con Soft-Boiled",
-        "E-Dummy pero falló"
+        "P-Intimidator activa su habilidad Intimidate",
+        "ataca P-Intimidator con Tackle a E-Scouted",
+        "ataca E-Scouted con Tackle a P-Intimidator",
+        "ataca E-Scouted con Tackle a P-Scout"
+      ]
+    },
+    {
+      "name": "Contact Reactives & Damage Abilities",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Contact con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Contact",
+        "ataca P-Contact con Tackle a E-Attacker",
+        "ataca E-Attacker con Double-Edge a P-Contact"
       ]
     },
     {
@@ -342,29 +364,30 @@
       ]
     },
     {
-      "name": "Contact Reactives & Damage Abilities",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Contact con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Contact",
-        "ataca P-Contact con Tackle a E-Attacker",
-        "ataca E-Attacker con Double-Edge a P-Contact"
-      ]
-    },
-    {
       "name": "Status Blockers & Immunities",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
         "ataca P-Immunities con Tackle a E-Troublemaker",
         "ataca E-Troublemaker con Thunder Wave a P-Immunities",
-        "E-Troublemaker falló el ataque",
         "ataca P-Immunities con Tackle a E-Troublemaker",
         "ataca E-Troublemaker con Toxic a P-Immunities",
         "ataca P-Immunities con Tackle a E-Troublemaker",
-        "ataca E-Troublemaker con Sing",
-        "E-Troublemaker pero falló"
+        "ataca E-Troublemaker con Sing a P-Immunities",
+        "E-Troublemaker falló el ataque"
+      ]
+    },
+    {
+      "name": "Weather & Terrain Synergies",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Solar con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
+        "ataca P-Solar con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Rain Dance a E-WeatherMaker",
+        "ataca P-Solar con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Grassy Terrain a E-WeatherMaker"
       ]
     },
     {
@@ -384,57 +407,12 @@
       ]
     },
     {
-      "name": "Weather & Terrain Synergies",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Solar con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
-        "ataca P-Solar con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Rain Dance a E-WeatherMaker",
-        "ataca P-Solar con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Grassy Terrain a E-WeatherMaker"
-      ]
-    },
-    {
-      "name": "Entry Abilities & Scouting",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "P-Intimidator activa su habilidad Intimidate",
-        "ataca P-Intimidator con Tackle a E-Scouted",
-        "ataca E-Scouted con Tackle a P-Intimidator",
-        "ataca E-Scouted con Tackle a P-Scout"
-      ]
-    },
-    {
       "name": "Flinch & Secondary Effects",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
         "ataca E-Flincher con Fake Out a P-Flincher",
         "ataca P-Flincher con Tackle a E-Flincher"
-      ]
-    },
-    {
-      "name": "Critical & Accuracy Modifiers",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Armor con Tackle a E-Sniper",
-        "ataca E-Sniper con Storm Throw a P-Armor",
-        "ataca P-Armor con Tackle a E-Sniper",
-        "ataca E-Sniper con Zap Cannon a P-Armor",
-        "E-Sniper falló el ataque"
-      ]
-    },
-    {
-      "name": "Status Condition Reactives & Synchronize",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Sync con Tackle a E-Inflicter",
-        "ataca E-Inflicter con Toxic a P-Sync"
       ]
     },
     {
@@ -448,24 +426,12 @@
       ]
     },
     {
-      "name": "Type Immunity Absorbers",
+      "name": "Status Condition Reactives & Synchronize",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Absorber con Tackle a E-Elementalist",
-        "ataca E-Elementalist con Earthquake a P-Absorber",
-        "ataca P-Absorber con Tackle a E-Elementalist",
-        "ataca E-Elementalist con Flamethrower a P-Absorber"
-      ]
-    },
-    {
-      "name": "Forme & Combat Shifts",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Mimikyu con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Mimikyu",
-        "ataca E-Attacker con Tackle a P-Eiscue"
+        "ataca P-Sync con Tackle a E-Inflicter",
+        "ataca E-Inflicter con Toxic a P-Sync"
       ]
     },
     {
@@ -482,6 +448,39 @@
       ]
     },
     {
+      "name": "Type Immunity Absorbers",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Absorber con Tackle a E-Elementalist",
+        "ataca E-Elementalist con Earthquake a P-Absorber",
+        "ataca P-Absorber con Tackle a E-Elementalist",
+        "ataca E-Elementalist con Flamethrower a P-Absorber"
+      ]
+    },
+    {
+      "name": "Critical & Accuracy Modifiers",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Armor con Tackle a E-Sniper",
+        "ataca E-Sniper con Storm Throw a P-Armor",
+        "ataca P-Armor con Tackle a E-Sniper",
+        "ataca E-Sniper con Zap Cannon a P-Armor",
+        "E-Sniper falló el ataque"
+      ]
+    },
+    {
+      "name": "Forme & Combat Shifts",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Mimikyu con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Mimikyu",
+        "ataca E-Attacker con Tackle a P-Eiscue"
+      ]
+    },
+    {
       "name": "Weather & Speed Boosts",
       "type": "ability_scenario",
       "status": "PASS",
@@ -489,7 +488,6 @@
         "ataca P-Chlo con Tackle a E-WeatherMaker",
         "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
         "ataca P-Chlo con Hurricane a E-WeatherMaker",
-        "P-Chlo falló el ataque",
         "ataca E-WeatherMaker con Soft-Boiled a E-WeatherMaker"
       ]
     },
@@ -500,6 +498,24 @@
       "steps": []
     },
     {
+      "name": "Physical Modifiers & Analytical",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Power con Tackle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+      ]
+    },
+    {
+      "name": "Berry Gluttons & Item Blockers",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Glutton con Tackle a E-Damager",
+        "ataca E-Damager con Double-Edge a P-Glutton"
+      ]
+    },
+    {
       "name": "Magic Blockers & Bouncers",
       "type": "ability_scenario",
       "status": "PASS",
@@ -508,6 +524,29 @@
         "ataca E-Spellcaster con Toxic a P-Gold",
         "ataca P-Gold con Tackle a E-Spellcaster",
         "ataca E-Spellcaster con Taunt a P-Gold"
+      ]
+    },
+    {
+      "name": "Ground Levitation & Infiltration",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Levitate con Tackle a E-Grounder",
+        "ataca E-Grounder con Earthquake a P-Levitate",
+        "ataca P-Levitate con Tackle a E-Grounder",
+        "ataca E-Grounder con Substitute a E-Grounder"
+      ]
+    },
+    {
+      "name": "Anti-Drain & Exploding Protectors",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Liquid con Tackle a E-Drainer",
+        "ataca E-Drainer con Giga Drain a P-Liquid",
+        "ataca P-Liquid con Tackle a E-Drainer",
+        "ataca E-Drainer con Self-Destruct a P-Liquid",
+        "E-Drainer se debilitó"
       ]
     },
     {
@@ -533,54 +572,39 @@
       ]
     },
     {
-      "name": "Physical Modifiers & Analytical",
+      "name": "Area Status Blockers",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Power con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+        "ataca P-Pastel con Tackle a E-Spellcaster",
+        "ataca E-Spellcaster con Toxic a P-Pastel"
       ]
     },
     {
-      "name": "Anti-Drain & Exploding Protectors",
+      "name": "Priority & Type Conversion Shifts",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Liquid con Tackle a E-Drainer",
-        "ataca E-Drainer con Giga Drain a P-Liquid",
-        "ataca P-Liquid con Tackle a E-Drainer",
-        "ataca E-Drainer con Self-Destruct a P-Liquid",
-        "E-Drainer se debilitó"
+        "ataca P-Normalizer con Thunderbolt a E-Statter",
+        "ataca E-Statter con Calm Mind a E-Statter"
       ]
     },
     {
-      "name": "Ground Levitation & Infiltration",
+      "name": "Priority & Fairy Transmuter",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Levitate con Tackle a E-Grounder",
-        "ataca E-Grounder con Earthquake a P-Levitate",
-        "ataca P-Levitate con Tackle a E-Grounder",
-        "ataca E-Grounder con Substitute a E-Grounder"
+        "ataca P-Prankster con Toxic a E-Target",
+        "ataca E-Target con Tackle a P-Prankster"
       ]
     },
     {
-      "name": "Berry Gluttons & Item Blockers",
+      "name": "Special Corrosive Poisoning",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Glutton con Tackle a E-Damager",
-        "ataca E-Damager con Double-Edge a P-Glutton"
-      ]
-    },
-    {
-      "name": "Aura & Voice Modifiers",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Magician con Hyper Voice a E-Target",
-        "ataca E-Target con Toxic a P-Magician",
-        "E-Target falló el ataque"
+        "ataca P-Corrosion con Toxic a E-Steel",
+        "ataca E-Steel con Tackle a P-Corrosion"
       ]
     },
     {
@@ -611,90 +635,12 @@
       ]
     },
     {
-      "name": "Priority & Type Conversion Shifts",
+      "name": "Aura & Voice Modifiers",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Normalizer con Thunderbolt a E-Statter",
-        "ataca E-Statter con Calm Mind a E-Statter"
-      ]
-    },
-    {
-      "name": "Area Status Blockers",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Pastel con Tackle a E-Spellcaster",
-        "ataca E-Spellcaster con Toxic a P-Pastel"
-      ]
-    },
-    {
-      "name": "Priority & Fairy Transmuter",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Prankster con Toxic a E-Target",
-        "ataca E-Target con Tackle a P-Prankster"
-      ]
-    },
-    {
-      "name": "Special Corrosive Poisoning",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Corrosion con Toxic a E-Steel",
-        "ataca E-Steel con Tackle a P-Corrosion"
-      ]
-    },
-    {
-      "name": "Touch Stealing & Theft",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Thief con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Thief"
-      ]
-    },
-    {
-      "name": "Future & Ancient Boosts",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Ancient con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
-        "ataca P-Ancient con Tackle a E-WeatherMaker",
-        "ataca E-WeatherMaker con Electric Terrain a E-WeatherMaker"
-      ]
-    },
-    {
-      "name": "Rain Hydration & Recovery",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-RainDish con Tackle a E-RainMaker",
-        "ataca E-RainMaker con Rain Dance a E-RainMaker",
-        "ataca P-RainDish con Tackle a E-RainMaker",
-        "ataca E-RainMaker con Soft-Boiled a E-RainMaker"
-      ]
-    },
-    {
-      "name": "Inherited Chemistry",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Fainter con Tackle a E-Sweeper",
-        "ataca E-Sweeper con Double-Edge a P-Fainter",
-        "ataca E-Sweeper con Soft-Boiled a E-Sweeper"
-      ]
-    },
-    {
-      "name": "Regenerative Switch",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Regen con Tackle a E-Damager",
-        "ataca E-Damager con Double-Edge a P-Regen",
-        "ataca E-Damager con Soft-Boiled a E-Damager"
+        "ataca P-Magician con Hyper Voice a E-Target",
+        "ataca E-Target con Toxic a P-Magician"
       ]
     },
     {
@@ -725,22 +671,54 @@
       ]
     },
     {
-      "name": "Combat Cleaners & Slices",
+      "name": "Touch Stealing & Theft",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Slicer con Air Slash a E-Screener",
-        "ataca E-Screener con Light Screen a E-Screener",
-        "ataca E-Screener con Soft-Boiled a E-Screener"
+        "ataca P-Thief con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Thief"
       ]
     },
     {
-      "name": "Hit Induced Terrains",
+      "name": "Inherited Chemistry",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Sower con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Sower"
+        "ataca P-Fainter con Tackle a E-Sweeper",
+        "ataca E-Sweeper con Double-Edge a P-Fainter",
+        "ataca E-Sweeper con Soft-Boiled a E-Sweeper"
+      ]
+    },
+    {
+      "name": "Regenerative Switch",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Regen con Tackle a E-Damager",
+        "ataca E-Damager con Double-Edge a P-Regen",
+        "ataca E-Damager con Soft-Boiled a E-Damager"
+      ]
+    },
+    {
+      "name": "Rain Hydration & Recovery",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-RainDish con Tackle a E-RainMaker",
+        "ataca E-RainMaker con Rain Dance a E-RainMaker",
+        "ataca P-RainDish con Tackle a E-RainMaker",
+        "ataca E-RainMaker con Soft-Boiled a E-RainMaker"
+      ]
+    },
+    {
+      "name": "Future & Ancient Boosts",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Ancient con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Sunny Day a E-WeatherMaker",
+        "ataca P-Ancient con Tackle a E-WeatherMaker",
+        "ataca E-WeatherMaker con Electric Terrain a E-WeatherMaker"
       ]
     },
     {
@@ -750,15 +728,6 @@
       "steps": [
         "ataca P-SlowStart con Tackle a E-Dummy",
         "ataca E-Dummy con Soft-Boiled a E-Dummy"
-      ]
-    },
-    {
-      "name": "Simple Buffers & Multi-hits",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Simple con Bullet Seed a E-Statter",
-        "ataca E-Statter con Growl a P-Simple"
       ]
     },
     {
@@ -772,15 +741,6 @@
       ]
     },
     {
-      "name": "Viscosity & Watchers",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Sticky con Tackle a E-Thief",
-        "ataca E-Thief con Knock Off a P-Sticky"
-      ]
-    },
-    {
       "name": "Water Attraction & Temperature",
       "type": "ability_scenario",
       "status": "PASS",
@@ -788,6 +748,15 @@
         "ataca P-Drainer con Tackle a E-WaterUser",
         "ataca E-WaterUser con Water Pulse a P-Drainer",
         "P-Drainer activa su habilidad Storm Drain"
+      ]
+    },
+    {
+      "name": "Viscosity & Watchers",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Sticky con Tackle a E-Thief",
+        "ataca E-Thief con Knock Off a P-Sticky"
       ]
     },
     {
@@ -800,15 +769,49 @@
       ]
     },
     {
-      "name": "Unstoppable Focus",
+      "name": "Hit Induced Terrains",
       "type": "ability_scenario",
       "status": "PASS",
       "steps": [
-        "ataca P-Sturdy con Tackle a E-ForceOut",
-        "ataca E-ForceOut con Double-Edge a P-Sturdy",
-        "ataca P-Sturdy con Tackle a E-ForceOut",
-        "ataca E-ForceOut con Roar",
-        "E-ForceOut pero falló"
+        "ataca P-Sower con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Sower"
+      ]
+    },
+    {
+      "name": "Simple Buffers & Multi-hits",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Simple con Bullet Seed a E-Statter",
+        "ataca E-Statter con Growl a P-Simple"
+      ]
+    },
+    {
+      "name": "Combat Cleaners & Slices",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Slicer con Air Slash a E-Screener",
+        "ataca E-Screener con Soft-Boiled a E-Screener"
+      ]
+    },
+    {
+      "name": "Fairy & Elemental Transmuters",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Transmuter con Tackle a E-Dummy",
+        "ataca E-Dummy con Soft-Boiled a E-Dummy"
+      ]
+    },
+    {
+      "name": "The Final Five",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Victory con Soft-Boiled",
+        "P-Victory pero falló",
+        "ataca E-Attacker con Tackle a P-Victory"
       ]
     },
     {
@@ -821,6 +824,15 @@
       ]
     },
     {
+      "name": "Berry Chewing & Unburden",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-CudChewer con Tackle a E-Damager",
+        "ataca E-Damager con Double-Edge a P-CudChewer"
+      ]
+    },
+    {
       "name": "Overlord Retribution",
       "type": "ability_scenario",
       "status": "PASS",
@@ -828,15 +840,6 @@
         "ataca P-Fainter con Tackle a E-Sweeper",
         "ataca E-Sweeper con Double-Edge a P-Fainter",
         "ataca E-Sweeper con Soft-Boiled a E-Sweeper"
-      ]
-    },
-    {
-      "name": "Fairy & Elemental Transmuters",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Transmuter con Tackle a E-Dummy",
-        "ataca E-Dummy con Soft-Boiled a E-Dummy"
       ]
     },
     {
@@ -852,6 +855,18 @@
       ]
     },
     {
+      "name": "Unstoppable Focus",
+      "type": "ability_scenario",
+      "status": "PASS",
+      "steps": [
+        "ataca P-Sturdy con Tackle a E-ForceOut",
+        "ataca E-ForceOut con Double-Edge a P-Sturdy",
+        "ataca P-Sturdy con Tackle a E-ForceOut",
+        "ataca E-ForceOut con Roar",
+        "E-ForceOut pero falló"
+      ]
+    },
+    {
       "name": "Wind & Toxic Reactives",
       "type": "ability_scenario",
       "status": "PASS",
@@ -859,26 +874,8 @@
         "ataca P-Anger con Tackle a E-Stormer",
         "ataca E-Stormer con Storm Throw a P-Anger",
         "ataca P-Anger con Tackle a E-Stormer",
-        "ataca E-Stormer con Hurricane a P-Anger"
-      ]
-    },
-    {
-      "name": "Berry Chewing & Unburden",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-CudChewer con Tackle a E-Damager",
-        "ataca E-Damager con Double-Edge a P-CudChewer"
-      ]
-    },
-    {
-      "name": "The Final Five",
-      "type": "ability_scenario",
-      "status": "PASS",
-      "steps": [
-        "ataca P-Victory con Soft-Boiled",
-        "P-Victory pero falló",
-        "ataca E-Attacker con Tackle a P-Victory"
+        "ataca E-Stormer con Hurricane a P-Anger",
+        "E-Stormer falló el ataque"
       ]
     },
     {
@@ -889,6 +886,28 @@
         "ataca P-Exploder con Explosion a E-Fragile",
         "P-Exploder se debilitó",
         "E-Fragile se debilitó"
+      ]
+    },
+    {
+      "name": "Forced Switch via Dragon Tail Scenario",
+      "type": "combat_mechanics",
+      "status": "PASS",
+      "steps": [
+        "ataca E-Target con Splash a E-Target",
+        "ataca P-Tailer con Dragon Tail a E-Target",
+        "ataca P-Tailer con Tackle a E-Bench1",
+        "ataca E-Bench1 con Splash a E-Bench1"
+      ]
+    },
+    {
+      "name": "P1 Fainted Switch with Bench Scenario",
+      "type": "combat_mechanics",
+      "status": "PASS",
+      "steps": [
+        "ataca E-Attacker con Tackle a P-Fragile",
+        "P-Fragile se debilitó",
+        "ataca P-Bench1 con Tackle a E-Attacker",
+        "ataca E-Attacker con Tackle a P-Bench1"
       ]
     },
     {
@@ -915,39 +934,17 @@
       ]
     },
     {
-      "name": "Forced Switch via Dragon Tail Scenario",
-      "type": "combat_mechanics",
-      "status": "PASS",
-      "steps": [
-        "ataca E-Target con Splash a E-Target",
-        "ataca P-Tailer con Dragon Tail a E-Target",
-        "ataca P-Tailer con Tackle a E-Bench1",
-        "ataca E-Bench1 con Splash a E-Bench1"
-      ]
-    },
-    {
       "name": "Transform Copying Species Scenario",
       "type": "combat_mechanics",
       "status": "PASS",
       "steps": [
-        "ataca E-Target con Sunny Day a E-Target",
         "ataca P-Ditto con Soft-Boiled",
         "P-Ditto pero falló",
+        "ataca E-Target con Sunny Day a E-Target",
         "ataca E-Target con Soft-Boiled",
         "E-Target pero falló",
         "ataca P-Ditto con Sunny Day",
         "P-Ditto pero falló"
-      ]
-    },
-    {
-      "name": "P1 Fainted Switch with Bench Scenario",
-      "type": "combat_mechanics",
-      "status": "PASS",
-      "steps": [
-        "ataca E-Attacker con Tackle a P-Fragile",
-        "P-Fragile se debilitó",
-        "ataca P-Bench1 con Tackle a E-Attacker",
-        "ataca E-Attacker con Tackle a P-Bench1"
       ]
     }
   ]

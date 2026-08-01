@@ -8,10 +8,11 @@ import type { ChoiceRequest } from './helpers/requestHelper.ts'
 function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean): string {
   let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`
   const pReq = active?.playerRequest as ChoiceRequest | undefined
-  if (pReq?.active?.[0]?.moves) {
-    const activeMoves = pReq.active[0].moves
-    if (activeMoves && activeMoves.length === 1 && activeMoves[0] && activeMoves[0].id === 'recharge') {
-      p1Choice = 'move recharge'
+  const reqMoves = pReq?.active?.[0]?.moves
+  if (!isStruggle && move?.id && reqMoves && Array.isArray(reqMoves)) {
+    const idx = reqMoves.findIndex((m: { id?: string }) => m && m.id === move.id)
+    if (idx !== -1) {
+      p1Choice = `move ${idx + 1}`
     }
   }
   return p1Choice
@@ -59,7 +60,17 @@ export async function computeP2Choice(
     }
   }
 
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const debugObj = window.__VITE_DEBUG__;
+    const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
+    const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
+    runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
+    runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
+    p2Choice = runner.resolveAndConsumeNextChoice('p2', active?.enemyRequest);
+    debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
+    debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
+    console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice via ShowdownBattleRunner in executeTurn: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+  } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice
       console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in executeTurn: ${p2Choice}`)
@@ -98,5 +109,5 @@ export async function resolveTurnChoices(
     p2Skip = true
   }
 
-  return { p1Choice, p2Choice, p1Skip }
+  return { p1Choice, p2Choice, p1Skip, p2Skip }
 }

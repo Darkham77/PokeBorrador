@@ -34,12 +34,21 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **User Interaction & Review Artifacts**: All direct communication via chat with the user (responses, explanations, questions) as well as temporary review artifacts/proposals (like `learning_proposal.md`) MUST be written in Spanish. However, any proposed code changes, rule additions, or file diffs within those proposals MUST be written in English.
 - **File & Documentation Editing**: All files inside the repository (such as code files, skill files, technical manuals, `.md` files, or any documentation inside `.agents/` and `.github/`) MUST be written strictly in English. Writing documentation, rules, or files in Spanish within the repository is strictly prohibited. Spanish is reserved exclusively for real-time user chat interaction and temporary, non-committed review drafts.
 - **Logging Standards**: The use of `console.log` is strictly discouraged for diagnostics, E2E tracing, and automated test checkpoints. Developers and agents MUST use `console.debug` (or specific logger levels like `logger.debug`/`logger.warn` if available) for any technical logging that is only useful during development or test execution. This prevents polluting the production/runtime console.
-- **Clarification & Resolution (Zero-Waste Policy)**: Whenever there are any doubts, ambiguities, or unclear requirements regarding a task, the agent MUST trigger the `/grill-me` slash command (or use the skill `/@brinstorming` if its not available) to interview the user and resolve all issues before any implementation. Writing code based on assumptions, which leads to wasting tokens and developer time, is strictly prohibited.
+- **Clarification & Resolution (Zero-Waste Policy)**: Whenever there are any doubts, ambiguities, or unclear requirements regarding a task, the agent MUST trigger the `/grill-me` slash command (or invoke the `@/brainstorming` skill `(.agents/skills/brainstorming/SKILL.md)` if unavailable) to interview the user and resolve all issues before any implementation. Writing code based on assumptions, which leads to wasting tokens and developer time, is strictly prohibited.
 
 ## 1. Mandatory Skill Invocation
 
-- Always load and follow the instructions in the `@/project-standards` skill.
-- This skill is NOT a checklist; it is the foundation of every reasoning and implementation step.
+Before analyzing, writing code, or executing tasks, EVERY AI agent MUST explicitly load and follow these skills:
+
+- Always load and follow the `@/project-standards` skill (`.agents/skills/project-standards/SKILL.md`) for core architecture governance, navigation hub, and mandatory standards.
+- Always load and follow the `@/ponytail` skill (`.agents/skills/ponytail/SKILL.md`) for senior developer efficiency, YAGNI, standard library adoption, native platform features, zero boilerplate, and the minimum working code ladder.
+- Always load and follow the `@/dox-navigator` skill (`.agents/skills/dox-navigator/SKILL.md`) for directory navigation, DOX index hierarchy, relative path mandates, reading prior contracts before editing, and updating owning `AGENTS.md` files upon closeout.
+- Always load and follow the `@/domain-type-first` skill (`.agents/skills/domain-type-first/SKILL.md`) whenever creating, modifying, reviewing, or generating any data type, DTO, interface field, finite domain constant, schema, generated database, or domain boundary validation.
+- Always load and follow the `@/project-browser-testing` skill (`.agents/skills/project-browser-testing/SKILL.md`) whenever executing E2E browser tests, Playwright simulations, or CLI state debugging.
+- Always load and follow the `@/systematic-debugging` skill (`.agents/skills/systematic-debugging/SKILL.md`) whenever investigating crashes, state desynchronizations, or complex bugs.
+- Always load and follow the `@/safe-commit` skill (`.agents/skills/safe-commit/SKILL.md`) whenever performing commits or repository saves.
+
+These skills are NOT optional checklists; they form the mandatory foundation of every reasoning and implementation step.
 
 ## 2. Core Identity: Hybrid Retro-Modern
 
@@ -64,11 +73,12 @@ Not lazy about: input validation at trust boundaries, error handling that preven
   3. Queda estrictamente PROHIBIDO implementar fallbacks basados en nombres, apodos genéricos, especies o índices de slots físicos cuando falla una resolución. Si no se puede resolver el UID de un Pokémon en un request o línea de log, MUST lanzar un error descriptivo e interrumpir la ejecución inmediatamente para exponer la anomalía en su origen.
 - **Showdown Simulator Pokemon Status Constraint**: Any status clearance or assignment on a Showdown simulator Pokemon instance (e.g. inside cheats or initialization scripts) MUST use an empty string `''` instead of `null` to denote no status. Assigning `null` to `status` on simulator instances will cause internal simulator crashes (e.g., calling `.startsWith` on null). Client-side Vue store Pokémon representations may still use `null` to indicate no status.
 
-## 4. Code Modularity (500/1000 Rule)
+## 4. Code Modularity & Clean Constants (500/1000 Rule)
 
 - **Recommended Limit**: Files exceeding **500 lines** should trigger warnings and recommendations to modularize.
 - **Hard Limit**: No logic or UI component may exceed **1000 lines**. Exceeding this limit is considered a critical technical debt error.
   - _Exception_: Massive databases, metadata modules, and files in `src/data/` are exempt from this limit to preserve data integrity.
+- **Absolute Prohibition on Magic Numbers (Named Constants Mandate)**: It is STRICTLY FORBIDDEN to use inline numeric literals ("magic numbers", e.g., hardcoded offsets, arbitrary timeouts, max attempts, scaling factors, or math thresholds like `86400000`, `18`, `0.75`, `5000`) directly inside business logic, UI components, workers, or tests. All numbers MUST be declared as descriptive `readonly` named constants (or `as const` config objects) at module scope or in dedicated constants modules (e.g. `export const MAX_NICKNAME_LENGTH = 18;`). If a constant is used or referenced across more than one file, it MUST be extracted and exported from a shared constants module to prevent duplication and guarantee a single source of truth.
 
 ## 5. Architectural Reuse & Inheritance
 
@@ -79,13 +89,16 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - **Efficiency Over GUI**: When simulating game states or testing conditional UI (e.g., money, levels, map dominance), **ALWAYS** prioritize using the `window.__VITE_DEBUG__` console commands over manual GUI interaction.
 - **Speed & Reliability**: CLI-based state simulation is faster and more reliable for automated tests and subagent tasks.
-- **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill.
+- **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill (`.agents/skills/project-browser-testing/SKILL.md`).
 - **Zero-Untested Goal Principle**: It is strictly forbidden to report a coverage or mass-testing goal as "Completed" if there is even one (1) move, ability, or item reported as `UNTESTED` in the final fuzzer output. The coverage must be numerically absolute (0 untested) to declare the goal fulfilled.
 - **Infinite Punching Bag Pattern**: To prevent fuzzing battles from ending prematurely due to rapid Pokémon fainting, the testing framework should implement silent health maintenance (restoring HP above a threshold directly in the Showdown simulator instance), acting as an infinite punching bag.
-- **Absolute Prohibition on Silent Test Fallbacks & Mocks**: It is STRICTLY FORBIDDEN to implement silent fallbacks, recovery catch blocks, or logical mocks in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize between Showdown and the UI. Any deviation of state, moves availability, or active Pokémon MUST result in a clear, immediate test failure to expose parity bugs instead of hiding them.
+- **Absolute Prohibition on Silent Test Fallbacks & Mocks**: It is STRICTLY FORBIDDEN to implement silent fallbacks, recovery catch blocks, or logical mocks in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize between Showdown and the UI. Never write hasty patches or silent fallbacks (for example: returning `'default'`, fallback moves, dummy objects, or default coordinates to force tests/simulations to pass quickly). Any deviation of state, moves availability, or active Pokémon MUST result in a clear, immediate test failure to expose parity bugs instead of hiding them.
 - **Prohibition on FSM State Manipulation in Tests**: It is STRICTLY FORBIDDEN to hardcode FSM state transitions or manually manipulate FSM state variables (such as forcing transitions to `WAIT_INPUT` or bypassing `SWITCH_MENU`/`PLAYER_FAINT_SEQ`) to make E2E simulations or test replays pass. The frontend FSM must run naturally, and any desynchronization or divergence between the UI state and Showdown's worker request state must result in an immediate test failure to expose the parity bug at its source.
 - **Prohibition on Bypassing Pointer Events & UI Actionability in Tests**: It is STRICTLY FORBIDDEN to use force-click overrides (e.g., `{ force: true }` in Playwright or other pointer bypasses) or arbitrary delays to bypass pointer event blockages, overlay interceptions, or disabled states on UI elements during E2E tests. Any case where a UI element is intercepted, covered, or disabled (e.g., covered by another panel or locked under `is-ui-locked`) represents a real user interaction blockage or synchronization issue. The underlying UI logic, visibility states, or test wait conditions MUST be corrected in the codebase or the test synchronization flow itself, rather than bypassing the actionability check in the test script.
 - **Prohibition on Arbitrary Timers in Simulations**: It is STRICTLY FORBIDDEN to use arbitrary timeouts (e.g., `page.waitForTimeout` or `setTimeout`) to wait for animations, scene loads, or UI stability during Playwright simulations. Tests MUST remain event-driven by waiting on explicit FSM state/substate transitions and store processing flags (such as `store.currentFsmState`, `store.currentSubState`, and `!store.isProcessing` in a `page.waitForFunction`) or using robust DOM visibility locators, preventing race conditions and fragile tests.
+- **Strict Simulation Timeout Limits**: Per-action timeout is strictly capped at 5s (`MAX_PER_ACTION_TIMEOUT_MS = 5000`), and suite total timeout is strictly capped at 3 minutes (`MAX_SUITE_TOTAL_TIMEOUT_MS = 180000`). It is STRICTLY FORBIDDEN to alter or increase these timeouts without explicit user permission or >150 turns.
+- **Mandatory 100% Shared Action Array & Runner Code**: Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST consume the LITERALLY SAME choices (`batchData.playerChoices` and `batchData.enemyChoices`) via the SAME shared class `ShowdownBattleRunner` (`src/logic/battle/helpers/showdownBattleRunner.ts`). Parallel, fallback, or divergent choice arrays (such as swapping to `history` or fallback arrays) are strictly prohibited.
+- **Fail-Loud Prohibition on Silent Catch Blocks**: It is STRICTLY FORBIDDEN to use `.catch(() => true)` or swallow errors during `page.evaluate()` or state checks. All errors MUST fail loudly immediately to expose state desynchronizations at their source.
 - **Prohibition on Modifying Playwright Configuration**: It is STRICTLY FORBIDDEN for any AI agent to modify `playwright.config.ts` (or any Playwright configuration file) without an explicit user request to do so. In particular, the `workers` field (currently `'25%'`) MUST NEVER be changed by an agent. If a simulation suite times out or saturates the CPU, the correct response is to diagnose the root cause in `src/` or the test logic — never to throttle Playwright's concurrency settings.
 - **Mandatory ID-Based UI Selection for Testing & Simulations**: Whenever locating UI components (buttons, modals, cards, inputs, windows) in Playwright tests or E2E simulations, you MUST strictly use unique HTML `id` attributes (`#start-encounter-btn`, `#confirm-battle-btn`, `#modal-close-btn`, etc.). It is STRICTLY FORBIDDEN to locate elements by text content, regex labels, or button text (e.g. `has-text(...)`, `:has-text(...)`, text matching). All interactive UI components in Vue templates MUST have unique, descriptive `id` attributes.
 - **Absolute Prohibition on Simulation Bypasses**: It is STRICTLY FORBIDDEN to add bypasses, silent catch blocks, exception swallowing, or mock workarounds in E2E simulations or replayers solely to make tests "pass". Any error during simulation is an empirical indicator of a real synchronization failure, missing implementation, or codebase bug in `src/`. The root cause in `src/` MUST be diagnosed and fixed at the source—never hidden, swallowed, or ignored.
@@ -95,6 +108,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
 - **Zero-Any Policy**: The use of `any` is STRICTLY FORBIDDEN. This integrity is absolute: no `any` is allowed anywhere, including Web Workers (`showdown.worker.ts`), orchestrators, and E2E simulation files. All payloads, window objects, and intermediate states must have dedicated interfaces or be imported from their respective packages (such as `@pkmn/sim`). Before resorting to it, you MUST analyze if new interfaces or data types should be defined to maintain strict type safety.
+- **Mandatory Domain-Type-First Governance**: Every data type, domain constant, schema, DTO, or boundary contract MUST strictly follow the `@/domain-type-first` skill (`.agents/skills/domain-type-first/SKILL.md`). Unconstrained raw `string` declarations for finite domains, open index signatures (`[key: string]: unknown`), wildcard unions (`| string`), open sets/maps (`new Set<string>()`/`new Map()`), and inline type casts (`as Type`, `as any`) are STRICTLY FORBIDDEN. All domain values must derive from canonical `as const` tuples/objects, and invalid domain values MUST fail at compile time or fail loudly at trust boundaries using explicit boundary guards (`requireDomainId()`).
 - **Strong Typing & Domain Values Mandate (Type-First)**: Raw or loosely typed variables (e.g. unconstrained `string`, `number` or `Record<string, unknown>`) MUST NOT be used for domain-specific variables, states, or constants. If a value has a predefined set of options (such as status types, categories, modes, stats, database routers), you MUST use strict TypeScript `enum`, raw union types (e.g., `'active' | 'inactive'`), or readonly tuple mappings with `as const` assertions. **This is ABSOLUTE and non-negotiable**: It is STRICTLY FORBIDDEN to declare any field, parameter, or constant with type `string` when its value belongs to a finite domain. The domain type MUST be declared FIRST (via `as const` + `keyof`, `(typeof ARRAY)[number]`, or explicit union), and used at every declaration and call site. Examples of domains that MUST have types: Pokémon natures (`NatureId`), Pokémon types (`PokemonType`), battle weather mechanics (`WeatherMechanical`), NPC archetypes (`NpcArchetype`), player classes (`PlayerClassId`), ranked tiers (`RankedTierId`), item categories, obtained methods (`ObtainedMethod`), volatile status keys (`VolatileStatusKey`), move categories, stat names, faction IDs (`FactionId`), mission IDs (`MissionId`). If the TypeScript compiler does NOT produce an error when an invalid domain value is passed, the type declaration is WRONG and must be fixed.
 - **Absolute Prohibition on `Set`/`Map` for Domain Types**: It is STRICTLY FORBIDDEN to use `new Set<string>()`, `new Map()`, or any other mutable runtime data structure to represent or validate a finite domain of string values. `Set` and `Map` are designed for mutable runtime data — they are NOT types. The canonical pattern is: (1) declare a `as const` array as the Single Source of Truth, (2) derive the TypeScript type via `(typeof ARRAY)[number]`, (3) for runtime boundary validation use `(ARRAY as readonly string[]).includes(raw)`. Example: `export const POKEMON_TYPES = ['fire', 'water', ...] as const; export type PokemonType = (typeof POKEMON_TYPES)[number];`
 - **Strict Data Schema & Zero-Ambiguity Rule**: It is STRICTLY FORBIDDEN to define ambiguous union types that mix multiple representations of missing or default data (e.g. mixing `''` and `null` in the same type definition). All domain types MUST follow single canonical representations (e.g. matching Showdown's `''` ID standard for statuses). It is STRICTLY FORBIDDEN to use string sink wildcards (`| string`) at the end of enum-like unions, open Index Signatures (`[key: string]: unknown/any`), or duplicate synonym properties (`item`/`heldItem`, `desc`/`description`).
@@ -133,84 +147,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 ## 12. DOX framework
 
-- DOX is highly performant AGENTS.md hierarchy installed here
-- Agent must follow DOX instructions across any edits
-- **Relative Paths Mandate**: All links to other files and indices in all `AGENTS.md` files MUST use relative paths (e.g. `./database/AGENTS.md` or `../database/AGENTS.md`). Absolute paths (e.g., `file:///C:/...` or absolute file system URLs) are strictly forbidden to ensure portability across different development environments. If any absolute paths are found in any `AGENTS.md` files, they must be corrected to relative paths immediately.
-- **Gitignored Paths in DOX Indices**: Directories or files that exist locally but are excluded via `.gitignore` (e.g. credential folders, generated local configs) MUST still be referenced in their parent's Child DOX Index if they represent a real domain boundary. Mark them with the suffix `_(gitignored — reason)_` so agents and reviewers understand why they are absent from the repo. The DOX audit engine skips existence checks for gitignored paths automatically, so these entries will never produce CI failures.
-
-## Core Contract
-
-- AGENTS.md files are binding work contracts for their subtrees
-- Work products, source materials, instructions, records, assets, and durable docs must stay understandable from the nearest applicable AGENTS.md plus every parent AGENTS.md above it
-
-## Read Before Editing
-
-1. Read the root AGENTS.md
-2. Identify every file or folder you expect to touch
-3. Walk from the repository root to each target path
-4. Read every AGENTS.md found along each route
-5. If a parent AGENTS.md lists a child AGENTS.md whose scope contains the path, read that child and continue from there
-6. Use the nearest AGENTS.md as the local contract and parent docs for repo-wide rules
-7. If docs conflict, the closer doc controls local work details, but no child doc may weaken DOX
-
-Do not rely on memory. Re-read the applicable DOX chain in the current session before editing.
-
-## Update After Editing
-
-Every meaningful change requires a DOX pass before the task is done.
-
-Update the closest owning AGENTS.md when a change affects:
-
-- purpose, scope, ownership, or responsibilities
-- durable structure, contracts, workflows, or operating rules
-- required inputs, outputs, permissions, constraints, side effects, or artifacts
-- user preferences about behavior, communication, process, organization, or quality
-- AGENTS.md creation, deletion, move, rename, or index contents
-
-Update parent docs when parent-level structure, ownership, workflow, or child index changes. Update child docs when parent changes alter local rules. Remove stale or contradictory text immediately. Small edits that do not change behavior or contracts may leave docs unchanged, but the DOX pass still must happen.
-
-## Hierarchy
-
-- Root AGENTS.md is the DOX rail: project-wide instructions, global preferences, durable workflow rules, and the top-level Child DOX Index
-- Child AGENTS.md files own domain-specific instructions and their own Child DOX Index
-- Each parent explains what its direct children cover and what stays owned by the parent
-- The closer a doc is to the work, the more specific and practical it must be
-
-## Child Doc Shape
-
-- Create a child AGENTS.md when a folder becomes a durable boundary with its own purpose, rules, responsibilities, workflow, materials, or quality standards
-- Work Guidance must reflect the current standards of the project or user instructions; if there are no specific standards or instructions yet, leave it empty
-- Verification must reflect an existing check; if no verification framework exists yet, leave it empty and update it when one exists
-
-Default section order:
-
-- Purpose
-- Ownership
-- Local Contracts
-- Work Guidance
-- Verification
-- Child DOX Index
-
-## Style
-
-- Keep docs concise, current, and operational
-- Document stable contracts, not diary entries
-- Put broad rules in parent docs and concrete details in child docs
-- Prefer direct bullets with explicit names
-- Do not duplicate rules across many files unless each scope needs a local version
-- Delete stale notes instead of explaining history
-- Trim obvious statements, repeated rules, misplaced detail, and warnings for risks that no longer exist
-
-## Closeout
-
-1. Re-check changed paths against the DOX chain
-2. Update nearest owning docs and any affected parents or children
-3. Refresh every affected Child DOX Index
-4. Remove stale or contradictory text
-5. Run existing verification when relevant
-6. Report any docs intentionally left unchanged and why
-
-## Child DOX Index
+- DOX is highly performant AGENTS.md hierarchy installed here. For complete guidelines on DOX hierarchy, navigation, relative path mandates, and closeout steps, always load and consult the `@/dox-navigator` skill (`.agents/skills/dox-navigator/SKILL.md`).
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
 - [scripts/AGENTS.md](./scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.
@@ -232,4 +169,5 @@ Default section order:
 
 ---
 
-_Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now._
+_Note: AI agents MUST load `@/project-standards`, `@/ponytail`, `@/dox-navigator`, and `@/domain-type-first` skills upon starting work._
+

@@ -68,6 +68,7 @@ export class ShowdownBattleRunner {
     }
 
     const rawChoice = list[targetIdx] as string;
+
     const skip = rawChoice.trim().toLowerCase() === 'pass';
     const consumed = isActionConsumed(needsAction, rawChoice, skip);
 

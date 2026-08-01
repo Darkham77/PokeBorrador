@@ -1,17 +1,22 @@
 [
   {
-    "id": "case-5309508236c2",
-    "error": "page.waitForFunction: Test ended.",
-    "timestamp": "2026-07-27T21:46:36.226Z"
-  },
-  {
-    "id": "case-d34cb9009c1a",
-    "error": "page.evaluate: Test ended.",
-    "timestamp": "2026-07-27T21:46:36.551Z"
-  },
-  {
-    "id": "case-e190c35133ed",
+    "id": "case-32d9f08262d5",
     "error": "page.evaluate: Target page, context or browser has been closed",
-    "timestamp": "2026-07-27T21:46:36.541Z"
+    "timestamp": "2026-08-01T06:16:49.923Z"
+  },
+  {
+    "id": "case-5f0680600dec",
+    "error": "page.evaluate: Target page, context or browser has been closed",
+    "timestamp": "2026-08-01T06:16:49.893Z"
+  },
+  {
+    "id": "case-975d39397cf6",
+    "error": "page.evaluate: Test timeout of 180000ms exceeded.",
+    "timestamp": "2026-08-01T06:16:50.028Z"
+  },
+  {
+    "id": "case-f8064e36378f",
+    "error": "page.evaluate: Target page, context or browser has been closed",
+    "timestamp": "2026-08-01T06:16:50.018Z"
   }
 ]

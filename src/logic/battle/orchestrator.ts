@@ -69,7 +69,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { 
     isGym = false, gymId = undefined, locationId = 'plains', 
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
-    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null,
+    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
     difficulty = undefined, rewardTM = undefined, cannotEscape = false,
     trainerQuote = undefined
@@ -104,7 +104,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     await ctx.endBattle(false, true)
   }
 
-  const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
+  const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : false
   logger.info('Orchestrator', `wasSearching evaluated: ${wasSearching} (wasSearchingOpt: ${wasSearchingOpt})`)
   
   const { validatePokemon } = await import('@/logic/pokemon/pokemonFactory')

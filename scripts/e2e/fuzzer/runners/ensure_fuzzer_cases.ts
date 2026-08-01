@@ -3,56 +3,47 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 
-const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+const resultsDir = path.resolve(process.cwd(), 'scripts/e2e/results');
+
+function cleanFuzzerGeneratedFiles() {
+  if (!fs.existsSync(resultsDir)) return;
+  const files = fs.readdirSync(resultsDir);
+  for (const file of files) {
+    // Preservar AGENTS.md y logs de progreso
+    if (file === 'AGENTS.md' || file.startsWith('simulation_progress_log_')) continue;
+    // Eliminar todo archivo fuzzer_*, *.json y *.txt generado por el fuzzer
+    if (file.startsWith('fuzzer_') || file.endsWith('.json') || file.endsWith('.txt')) {
+      try {
+        fs.unlinkSync(path.join(resultsDir, file));
+        console.log(`🗑️ Eliminado artefacto generado previo: ${file}`);
+      } catch (_e) {
+        /* ignore */
+      }
+    }
+  }
+}
 
 function checkAndRunFuzzers() {
   console.log(`\n======================================================`);
-  console.log(`🔍 [PRE-CHECK E2E] Comprobando casos de fuzzer certificados...`);
+  console.log(`🔍 [PRE-CHECK E2E] Limpiando artefactos y regenerando fuzzers desde CERO...`);
 
-  let needsRun = process.env.FORCE_FUZZER === 'true';
-  if (needsRun) {
-    console.log(`🔄 FORCE_FUZZER es true. Forzando regeneración de casos...`);
-  } else if (!fs.existsSync(consolidatorPath)) {
-    console.log(`⚠️  No se encontró fuzzer_certified_cases.json.`);
-    needsRun = true;
-  } else {
-    try {
-      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as {
-        battle?: unknown;
-        items_consumption?: unknown;
-      };
-      if (!content.battle || !content.items_consumption) {
-        console.log(`⚠️  fuzzer_certified_cases.json está incompleto.`);
-        needsRun = true;
-      }
-    } catch (_e) {
-      console.log(`⚠️  Error al leer fuzzer_certified_cases.json.`);
-      needsRun = true;
-    }
+  cleanFuzzerGeneratedFiles();
+
+  // Anular filtros de TEST_CASE para forzar una simulación completa
+  if (process.env.TEST_CASE || process.env.TEST_CASE_ID || process.env.TEST_START_FROM_CASE_ID) {
+    console.log(`⚠️  Anulando filtros de TEST_CASE/TEST_CASE_ID/TEST_START_FROM_CASE_ID para forzar una simulación limpia.`);
+    delete process.env.TEST_CASE;
+    delete process.env.TEST_CASE_ID;
+    delete process.env.TEST_START_FROM_CASE_ID;
   }
 
-  if (needsRun) {
-    // Si por alguna razón se ejecuta el fuzzer otra vez regenerando los casos certificados,
-    // todos los filtros de TEST_CASE quedan anulados y hay que ejecutar una simulación completa
-    // para detectar nuevos fallos.
-    if (process.env.TEST_CASE || process.env.TEST_CASE_ID || process.env.TEST_START_FROM_CASE_ID) {
-      console.log(`⚠️  Se ha regenerado fuzzer_certified_cases.json. Anulando filtros de TEST_CASE/TEST_CASE_ID/TEST_START_FROM_CASE_ID para forzar una simulación completa.`);
-      delete process.env.TEST_CASE;
-      delete process.env.TEST_CASE_ID;
-      delete process.env.TEST_START_FROM_CASE_ID;
-    }
-
-    console.log(`🚀 Ejecutando fuzzers lógicos de combate para generar casos de prueba...`);
-    try {
-      // Ejecutar la suite unificada de fuzzers
-      execSync('npm run sim:fuzzer', { stdio: 'inherit' });
-      console.log(`✅ Casos certificados generados con éxito en fuzzer_certified_cases.json.`);
-    } catch (err) {
-      console.error(`❌ Error al ejecutar los fuzzers:`, err);
-      process.exit(1);
-    }
-  } else {
-    console.log(`✅ fuzzer_certified_cases.json existe y está completo.`);
+  console.log(`🚀 Ejecutando suite completa de fuzzers desde cero...`);
+  try {
+    execSync('npm run sim:fuzzer', { stdio: 'inherit' });
+    console.log(`✅ Casos certificados y reportes de cobertura generados desde cero con éxito en scripts/e2e/results/.`);
+  } catch (err) {
+    console.error(`❌ Error al ejecutar los fuzzers:`, err);
+    process.exit(1);
   }
   console.log(`======================================================\n`);
 }

@@ -110,14 +110,18 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
                 const arrayBuffer = await response.arrayBuffer()
                 _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as unknown as SQLiteDatabase
-                await ensureSchemaIntegrity(_sqliteDb)
-                await runMigrations()
-                return _sqliteDb
+                try {
+                  await ensureSchemaIntegrity(_sqliteDb)
+                  await runMigrations()
+                  return _sqliteDb
+                } catch (schemaErr) {
+                  logger.warn('SQLite', `Imported DB integrity check failed (${(schemaErr as Error).message}). Falling back to clean DB template...`)
+                }
               }
             }
           }
         } catch (err) {
-          throw new Error(`[sqliteEngine] Failed to fetch imported db: ${(err as Error).message}`)
+          logger.warn('SQLite', `Failed to load imported db: ${(err as Error).message}. Falling back to clean DB template...`)
         }
       }
 

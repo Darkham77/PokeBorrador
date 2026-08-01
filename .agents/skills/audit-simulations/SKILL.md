@@ -43,6 +43,12 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 
 ### PROHIBITION 4 — NEVER skip updating `task.md` after each work phase
 
+### PROHIBITION 5 — NEVER truncate fuzzer battles artificially or maintain permanent cheats
+
+- Fuzzer battles MUST run in two distinct phases: (1) Cheat-assisted testing (IPB) while moves/abilities are untested, followed immediately by (2) Natural unassisted combat completion as soon as all items in the batch are certified `PASS`.
+- It is **STRICTLY FORBIDDEN** to introduce artificial `break` statements, early loop exits, or synthetic truncations when testing finishes.
+- Cheats MUST be turned off once testing completes, and the battle MUST execute turn-by-turn naturally until `battle.ended === true` to produce clean, complete choice streams for Playwright E2E browser replays.
+
 - After finishing any phase (test creation, cataloging, fixes), **MUST IMMEDIATELY** update `task.md`.
 - `task.md` uses: `[ ]` pending, `[/]` in progress, `[x]` completed.
 
@@ -277,3 +283,11 @@ During the audit, the agent **MUST AUDIT THAT THE FUZZER AND SIMULATIONS SHARE T
 
 - It is **STRICTLY FORBIDDEN** to disable, skip, mock, or shortcut GSAP animations, particle effects, or visual sequences solely to make simulations pass faster.
 - All visual responses to Showdown logs MUST use GSAP's native deterministic orchestration (`.then()`, `await timeline`, or `onComplete`). Using `setTimeout` or reactive flags for animations is strictly prohibited.
+
+---
+
+## 🚨 MANDATE: ZERO-FALLBACK & NO HASTY PATCHES
+
+- **Never Prioritize Speed Over Correctness**: It is strictly forbidden to rush fixes, implement quick patches, or invent fallbacks to force simulations or tests to pass quickly.
+- **Showdown as Single Source of Truth**: Showdown produces all valid choices and requests. If a choice is rejected by Showdown (`[Invalid choice]`), it represents an actual state/request desynchronization or a bug in how application code parses/dispatches Showdown's state. Diagnose the root cause at the source.
+

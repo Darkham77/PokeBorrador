@@ -108,6 +108,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const p1Choice = choices.p1Choice
     let p2Choice = choices.p2Choice
     const p1Skip = choices.p1Skip
+    p2Skip = choices.p2Skip || p2Skip
     if (p2Choice === 'pass') {
       p2Choice = '';
       p2Skip = true;
@@ -292,18 +293,20 @@ export async function runEnemyAction(store: BattleContext) {
       return
     }
 
-    const playerFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
-    const enemyFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0
+    const isPlayerStillFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
+    const isEnemyStillFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0
 
-    if (playerFainted || enemyFainted) {
-      if (playerFainted && enemyFainted) {
+    if (isPlayerStillFainted || isEnemyStillFainted) {
+      if (isPlayerStillFainted && isEnemyStillFainted) {
         await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
         if (store.fsm.currentState.value === store.BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return
         
-        await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await store.handleFaint('player')
-      } else if (playerFainted) {
+        if (store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0) {
+          await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+          await store.handleFaint('player')
+        }
+      } else if (isPlayerStillFainted) {
         await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await store.handleFaint('player')
       } else {

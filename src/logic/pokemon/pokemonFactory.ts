@@ -436,7 +436,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   const p: Pokemon = {
     uid: getUidStr(),
-    id, name: base.name, type: base.type, type2: base.type2,
+    id, species: id, name: base.name, type: base.type, type2: base.type2,
     isFloating: base.isFloating,
     catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),

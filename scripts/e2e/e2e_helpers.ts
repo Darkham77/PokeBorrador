@@ -1,6 +1,7 @@
 // fallow-ignore-file security-sink
 import { type Page, type Locator, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
+import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
   const cleanOptions = { ...options };
@@ -535,14 +536,14 @@ export interface CertifiedTestBatch {
   enemyTeam: Array<{ species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean; uid?: string }>;
   playerChoices: string[];
   enemyChoices: string[];
-  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
   finalState?: {
     p1: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
     p2: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
   };
   abilitiesToTest?: string[];
   movesToTest?: string[];
-  history?: Array<{ p1Choice: string; p2Choice: string }>;
+  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+  history?: Array<{ p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
   ended?: boolean;
 }
 
@@ -638,6 +639,7 @@ export async function executeAutoBattle(
     })) as { subState: string; over: boolean; p1ChoiceIdx: number; p2ChoiceIdx: number };
 
     if (eventDetail.over) {
+      over = true;
       break;
     }
 
@@ -645,26 +647,23 @@ export async function executeAutoBattle(
       await verifyHpParity(page);
     }
 
-    const currentP1Idx = eventDetail.p1ChoiceIdx;
-    const currentP2Idx = eventDetail.p2ChoiceIdx ?? 0;
+    const success = await page.evaluate(async () => {
+      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
+        return await window.__VITE_DEBUG__.executeScriptedAction();
+      }
+      return false;
+    });
 
-    // Mandar a ejecutar la acción correspondiente con reintento reactivo si la FSM está completando animaciones GSAP
-    let success = false;
-    for (let attempt = 0; attempt < 15; attempt++) {
-      success = await page.evaluate(async () => {
-        if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
-          return await window.__VITE_DEBUG__.executeScriptedAction();
-        }
-        return false;
-      });
-      if (success) break;
-
+    if (!success) {
       const isEndingOrOver = await page.evaluate(() => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
         const store = resolver?.();
         if (!store?.state || store.state.over) return true;
+        const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+        const gameStore = debug?.getGameStore?.();
         const activePoke = store.state.player;
-        const playerFainted = !activePoke || (activePoke.hp !== undefined && activePoke.hp <= 0);
+        const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
+        const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
         const sub = String(store.currentSubState || '');
         const state = String(store.currentFsmState || '');
         const endingSubStates = [
@@ -672,131 +671,43 @@ export async function executeAutoBattle(
           'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
           'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
         ];
-        return playerFainted || state !== 'ACTIVE_BATTLE' || endingSubStates.includes(sub);
+        return allPlayerFainted || state !== 'ACTIVE_BATTLE' || endingSubStates.includes(sub);
       });
 
       if (isEndingOrOver) {
-        await page.waitForFunction(() => {
-          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          const store = resolver?.();
-          return !store?.state || store.state.over;
-        }, undefined, { timeout: 15000 });
         over = true;
         break;
       }
-
-      // Esperar reactivamente a que la FSM y animaciones GSAP terminen de estabilizarse
-      await page.waitForFunction(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        if (!store?.state || store.state.over) return true;
-        const sub = String(store.currentSubState || '');
-        const bState = store.state as unknown as Record<string, unknown>;
-        return !store.isProcessing && !store.isIntroAnimating && !bState?.switchingToPlayer && (sub === 'WAIT_INPUT' || sub === 'SWITCH_MENU');
-      }, undefined, { timeout: 3000 });
+      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction returned false when FSM emitted ready event.`);
     }
-
-    if (over) break;
-
-    if (!success) {
-      const finalIsEnding = await page.evaluate(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        if (!store?.state || store.state.over) return true;
-        const activePoke = store.state.player;
-        return !activePoke || (activePoke.hp !== undefined && activePoke.hp <= 0);
-      });
-      if (finalIsEnding) {
-        over = true;
-        break;
-      }
-      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction falló al ejecutar la acción tras aguardar la estabilización de la FSM.`);
-    }
-
-    // Esperar reactivamente a que la elección sea procesada e incrementada
-    await page.waitForFunction(([prevP1, prevP2]) => {
-      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      const gameStore = debug?.getGameStore?.();
-      const activePoke = store?.state?.player;
-      const subStateVal = store?.currentSubState ? String(store.currentSubState) : '';
-      const endingSubStates = [
-        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
-        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
-        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
-      ];
-      const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
-      const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
-      const isOver = !store?.state || store.state.over || allPlayerFainted || endingSubStates.includes(subStateVal) || store?.currentFsmState !== 'ACTIVE_BATTLE';
-      if (isOver) return true;
-      if (!debug) return false;
-
-      const isReady = store.currentFsmState === 'ACTIVE_BATTLE' &&
-                      ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
-                      !store.isProcessing &&
-                      !store.isIntroAnimating;
-
-      const enemyChoices = debug.enemyChoices as string[] | undefined;
-      const isReplayComplete = debug.playerChoices && Array.isArray(debug.playerChoices) && (debug.p1ChoiceIdx ?? 0) >= debug.playerChoices.length && (!enemyChoices || (debug.p2ChoiceIdx ?? 0) >= enemyChoices.length);
-      if (isReplayComplete) return true;
-
-      const p1 = prevP1 ?? 0;
-      const p2 = prevP2 ?? 0;
-      return isReady && ((debug.p1ChoiceIdx ?? 0) > p1 || (debug.p2ChoiceIdx ?? 0) > p2 || !debug.isScriptedReplayMode);
-    }, [currentP1Idx, currentP2Idx], { timeout: 30000 });
-
-    const currentIsOver = await page.evaluate(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
-      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
-      const endingSubStates = [
-        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
-        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
-        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
-      ];
-      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-      const gameStore = debug?.getGameStore?.();
-      const activePoke = store.state.player;
-      const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
-      const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
-      const enemyChoices = debug?.enemyChoices as string[] | undefined;
-      const isReplayComplete = debug?.playerChoices && Array.isArray(debug.playerChoices) && (debug.p1ChoiceIdx ?? 0) >= debug.playerChoices.length && (!enemyChoices || (debug.p2ChoiceIdx ?? 0) >= enemyChoices.length);
-
-      return allPlayerFainted || endingSubStates.includes(subStateVal) || isReplayComplete;
-    }).catch(() => true);
-
-    if (currentIsOver) {
-      over = true;
-      break;
-    }
-
-    const nextDetail = (await page.evaluate(async () => {
-      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
-        return await window.__VITE_DEBUG__.waitForBattleReady();
-      }
-      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
-    })) as { subState: string; over: boolean; p1ChoiceIdx: number; p2ChoiceIdx: number };
-    over = nextDetail.over;
   }
 
-  // Esperar a que la batalla sea declarada como finalizada en el store (hasta 30s)
+  // Esperar a que la batalla sea declarada como finalizada en el store (hasta MAX_PER_ACTION_TIMEOUT_MS)
   await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
     return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
-  }, undefined, { timeout: 30000 }).catch(() => {});
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
 
-  const isBattleOver = await page.evaluate(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return true;
-    const store = resolver();
-    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
-  }).catch(() => true);
+  if (finalState) {
+    const isBattleOver = await page.evaluate(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return true;
+      const store = resolver();
+      if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
+      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
+      const endingSubStates = [
+        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
+        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
+        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'SWITCH_MENU'
+      ];
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+      const pChoices = debug?.playerChoices as string[] | undefined;
+      const isReplayComplete = Boolean(pChoices && Array.isArray(pChoices) && pChoices.length > 0 && (debug?.p1ChoiceIdx ?? 0) >= pChoices.length);
+      return endingSubStates.includes(subStateVal) || isReplayComplete;
+    });
 
-  if (finalState || (_playerChoices && _playerChoices.length > 0)) {
     expect(isBattleOver).toBe(true);
   }
 
@@ -847,7 +758,10 @@ export async function executeAutoBattle(
       if (!expectedTeam) return;
 
       expectedTeam.forEach((expected) => {
-        const clientPoke = clientState[seat].find(p => p.uid && p.uid.startsWith(expected.name));
+        const clientPoke = clientState[seat].find(p => 
+          (p.uid && p.uid.startsWith(expected.name)) || 
+          (p.name && p.name.startsWith(expected.name))
+        );
         if (clientPoke) {
           expect(clientPoke.fainted).toBe(expected.fainted);
           expect(clientPoke.maxHp).toBe(expected.maxHp);

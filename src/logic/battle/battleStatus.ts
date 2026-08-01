@@ -31,7 +31,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
   // 0. Procesar Contadores Volátiles (ej: yawn)
   if (pokemon.volatileCounters) {
     for (const [key, val] of Object.entries(pokemon.volatileCounters)) {
-      if (key === 'twoturnmove' || key === 'lockedmove') continue;
+      if (val === undefined || key === 'twoturnmove' || key === 'lockedmove') continue;
       if (val > 0) {
         const volatileKey = requireVolatileStatusKey(key);
         const newVal = val - 1;

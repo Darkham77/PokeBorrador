@@ -5,7 +5,7 @@ import path from 'node:path';
 import { checkCompatibility, getEggSpecies, calculateInheritance, inheritNature, inheritMoves } from '../../../../src/logic/breeding/breedingEngine.ts';
 import { Dex } from '@pkmn/sim';
 import type { Pokemon, PokemonGender, PokemonIVs } from '../../../../src/types/pokemon/pokemon.ts';
-import { requirePokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import { requirePokemonSpeciesId, isPokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_breeding_coverage_report.json');
 
@@ -13,8 +13,8 @@ async function runBreedingFuzzer() {
   const errors: string[] = [];
   const warnings: string[] = [];
   
-  // Obtener todas las especies que tienen grupos de huevo definidos
-  const speciesList = Array.from(Dex.species.all()).filter(s => s.exists && s.eggGroups);
+  // Obtener todas las especies válidas en nuestro Pokédex que tienen grupos de huevo definidos
+  const speciesList = Array.from(Dex.species.all()).filter(s => s.exists && s.eggGroups && isPokemonSpeciesId(Dex.toID(s.name)));
   
   let totalSimulations = 0;
   let compatibleCount = 0;

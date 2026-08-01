@@ -38,11 +38,15 @@ export class DBRouter {
     this.userSubscription = null;
     this._timeOffset = 0; // ms
     
-    if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>).__E2E__) {
+    const isE2E = (typeof window !== 'undefined' && !!(window as unknown as Record<string, unknown>).__E2E__) ||
+                  (typeof globalThis !== 'undefined' && !!(globalThis as unknown as Record<string, unknown>).__E2E__) ||
+                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+
+    if (isE2E) {
       this.mode = 'offline';
       this.options.inMemory = true;
     }
-    
+
     logger.info('DBRouter', `Initialized in STRICT ${this.mode.toUpperCase()} mode. (inMemory: ${!!this.options.inMemory})`); // text-ok
   }
 

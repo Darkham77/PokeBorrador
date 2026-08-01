@@ -277,7 +277,7 @@ export const useBattleStore = defineStore('battle', () => {
       
       await finalizeTurnExecution()
     } catch (error) {
-      logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
+      logger.error('BattleStore', `Error executing move index ${moveIndex}`, error)
       addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
       useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
     } finally {

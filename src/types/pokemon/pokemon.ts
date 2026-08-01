@@ -13,53 +13,10 @@ export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as co
 export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
 export type PokemonStatus = ActivePokemonStatus | '';
 export type PokemonGender = 'm' | 'f' | null;
-const VOLATILE_STATUS_KEYS = [
-  'attract',
-  'bind',
-  'choicelock',
-  'clamp',
-  'confusion',
-  'confusionhit',
-  'curse',
-  'disable',
-  'disabledTurns',
-  'detect',
-  'encore',
-  'encoreTurns',
-  'enditem',
-  'endure',
-  'firespin',
-  'flinch',
-  'focusenergy',
-  'furycutter',
-  'ingrain',
-  'itemconsumed',
-  'leechseed',
-  'lockedmove',
-  'maybetrapped',
-  'mustrecharge',
-  'partiallytrapped',
-  'perishsong',
-  'protect',
-  'rage',
-  'rollout',
-  'roost',
-  'speedboost',
-  'stockpile',
-  'substitute',
-  'taunt',
-  'tauntTurns',
-  'torment',
-  'trapped',
-  'twoturnmove',
-  'wonderguard',
-  'wrap',
-  'yawn',
-] as const;
-export type VolatileStatusKey = (typeof VOLATILE_STATUS_KEYS)[number];
+export type VolatileStatusKey = string; // Showdown dynamic volatile status key (e.g. toID(move.name))
 
-function isVolatileStatusKey(value: string): value is VolatileStatusKey {
-  return VOLATILE_STATUS_KEYS.includes(value as VolatileStatusKey);
+export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
+  return typeof value === 'string' && value.length > 0 && /^[a-z0-9]+$/i.test(value);
 }
 
 export function requireVolatileStatusKey(value: string): VolatileStatusKey {
@@ -169,7 +126,7 @@ export interface Pokemon {
   uid: string; // domain-ok
   id: PokemonSpeciesId;
   name: string; // domain-ok
-  species?: PokemonSpeciesId;
+  species: PokemonSpeciesId;
   details?: string; // domain-ok
   nickname?: string | null; // domain-ok
   level: number;

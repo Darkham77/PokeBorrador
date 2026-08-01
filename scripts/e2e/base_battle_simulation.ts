@@ -52,7 +52,10 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return resolver?.()?.isProcessing || resolver?.()?.currentSubState === 'APPLY_MOVE';
     }, undefined, { timeout: 5000 });
-    await this.page.locator('.modal-overlay').waitFor({ state: 'detached', timeout: 5000 });
+    await this.page.waitForFunction(async () => {
+      const { useModalStore } = await import('../../src/stores/modals.ts');
+      return !useModalStore().isOpen('PokemonSelection');
+    }, undefined, { timeout: 5000 });
     await waitForWaitInput(this.page);
   }
 
@@ -150,10 +153,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
     await this.page.evaluate(async (batchData) => {
-      // 1. Sobrescribir Math.random con una función determinista basada en semilla (LCG)
-      let seed = 12345;
+      // 1. Sobrescribir Math.random con una función determinista basada en la semilla real del lote
+      let seedVal = 12345;
+      if (Array.isArray(batchData.seed) && batchData.seed.length > 0) {
+        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % 2147483647, 0) || 12345;
+      }
       Math.random = () => {
-        const x = Math.sin(seed++) * 10000;
+        const x = Math.sin(seedVal++) * 10000;
         return x - Math.floor(x);
       };
 
@@ -250,15 +256,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.battleSeed = (batchData.seed ?? undefined) as [number, number, number, number] | undefined;
       debugObj.isDeterministicSimulation = true;
       debugObj.isScriptedReplayMode = true;
-      const enemyChoices: string[] = batchData.enemyChoices
-        ?? (batchData.history as Array<{ p2Choice: string }> | undefined)?.map(h => h.p2Choice)
-        ?? [];
+      const enemyChoices: string[] = batchData.enemyChoices ?? [];
       debugObj.enemyChoices = [...enemyChoices];
       debugObj.mockEnemyChoices = [...enemyChoices];
       
-      const playerChoices: string[] = batchData.playerChoices
-        ?? (batchData.history as Array<{ p1Choice: string }> | undefined)?.map(h => h.p1Choice)
-        ?? [];
+      const playerChoices: string[] = batchData.playerChoices ?? [];
       debugObj.playerChoices = [...playerChoices];
       
       debugObj.p1ChoiceIdx = 0;
@@ -278,8 +280,17 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         isTrainer: true,
         enemyTeam: localEnemyTeam,
         trainerName: 'youngster',
-        locationId: 'route1'
+        locationId: 'route1',
+        wasSearchingOpt: false
       });
+
+      // Asegurar que las elecciones y los índices se mantengan limpios tras la inicialización del worker
+      debugObj.p1ChoiceIdx = 0;
+      debugObj.p2ChoiceIdx = 0;
+      debugObj.enemyChoiceIndex = 0;
+      debugObj.playerChoices = [...playerChoices];
+      debugObj.enemyChoices = [...enemyChoices];
+      debugObj.mockEnemyChoices = [...enemyChoices];
 
       // Speed up GSAP animations to 30x to run tests extremely fast
       const winWithGsap = w as unknown as { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };

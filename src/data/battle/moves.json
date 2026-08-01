@@ -3750,5 +3750,13 @@
   "polarflare": {
     "name": "Polar Flare",
     "desc": "10% chance to frz foe(s). Ramnarok transforms."
+  },
+  "struggle": {
+    "name": "Forcejeo",
+    "desc": "Solo se usa al agotar todos los PP de los demás movimientos. Daña también a quien lo usa."
+  },
+  "recharge": {
+    "name": "Recargando",
+    "desc": "El Pokémon se recupera del esfuerzo tras usar un movimiento de gran potencia."
   }
 }

@@ -256,9 +256,9 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
   try {
     const existing = await fs.readFile(CERTIFIED_CASES_FILE, 'utf8');
     consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if ((process.env.SKIP_REGENERATE === 'true' || process.env.REGENERATE_CASES === 'false') && consolidatedData.ai_vs_ai) {
+    if (process.env.SKIP_REGENERATE === 'true' && consolidatedData.ai_vs_ai) {
       shouldWrite = false;
-      console.log('⚠️  Conservando casos IA vs. IA certificados (usa SKIP_REGENERATE=false o REGENERATE_CASES=true para forzar regeneración).');
+      console.log('⚠️  Conservando casos IA vs. IA certificados.');
     }
   } catch (_e) { /* file doesn't exist yet */ }
 

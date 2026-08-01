@@ -304,14 +304,15 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
     for (let e = 0; e < Math.max(batchSize, 2); e++) {
       // Equipo universal: los 4 slots cubren los 4 tipos de trigger más comunes.
       // El NPC siempre tiene disponibles: eléctrico, agua, fuego y contacto.
-      // Si el jugador tiene focuspunch, forzamos a que el NPC no ataque para no romper la concentración.
+      // If player has focuspunch, NPC must not attack so concentration isn't broken.
+      // 'splash' does nothing — no healing, no damage — so Blissey can still faint naturally.
       const eMoves: string[] = hasFocusPunch
-        ? ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
+        ? ['splash', 'sunnyday', 'raindance', 'sandstorm']
         : [...ENEMY_TRIGGER_MOVES];
 
       const eUid = crypto.randomUUID();
       const eNickname = getShowdownNickname(eUid);
-      const eEvs = { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 };
+      const eEvs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 252 };
       const eIvs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
       const eBaseStats = resolveBaseStats('blissey');
       const eStats = calcStatsPure(100, eIvs, eBaseStats, { up: null, down: null }, false, eEvs);

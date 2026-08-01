@@ -15,6 +15,8 @@ export type { ChoiceRequest, RequestKind };
 export { classifyRequest };
 
 export class BattleAgent extends ShowdownBattleAgent {
+  public failedSwitches = new Set<number>();
+
   constructor(
     sideId: 'p1' | 'p2',
     public movesToTest: Set<string> = new Set(),
@@ -39,17 +41,21 @@ export class BattleAgent extends ShowdownBattleAgent {
     const activePokemonList = team.filter((p: SidePokemon) => p.active);
     const activePoke = activePokemonList[slotIdx] || team[slotIdx] || team[0];
     const isTrapped = this.isTrapped(slotReq);
+    const moves = slotReq.moves ?? [];
+    const isLockedInMove = moves.length > 0 && moves.every(m => m.disabled);
+    const cannotSwitch = isTrapped || isLockedInMove;
 
-    // Periodic voluntary switch
+    // Periodic voluntary switch (ONLY while there are pending moves to test)
     if (
-      !isTrapped &&
+      !cannotSwitch &&
       !this.justSwitched &&
+      this.movesToTest.size > 0 &&
       this.periodicSwitchEvery > 0 &&
       this.turnCount % this.periodicSwitchEvery === 0 &&
       team.length > 1
     ) {
       const switchTarget = this.findBenchCandidate(team);
-      if (switchTarget !== null) {
+      if (switchTarget !== null && !this.failedSwitches.has(switchTarget)) {
         this.justSwitched = true;
         return `switch ${switchTarget}`;
       }
@@ -57,20 +63,19 @@ export class BattleAgent extends ShowdownBattleAgent {
 
     // Auto-switch if active exhausted test moves but bench has pending ones
     const activeHasPending = activePoke?.moves.some((m: string) => this.movesToTest.has(toCleanId(m)));
-    if (!isTrapped && !activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
+    if (!cannotSwitch && !activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
       for (let i = 0; i < team.length; i++) {
         const mon = team[i]!;
-        if (!mon.active && !this.isFainted(mon.condition)) {
+        const switchIdx = i + 1;
+        if (!mon.active && !this.isFainted(mon.condition) && !this.failedSwitches.has(switchIdx)) {
           const hasPending = mon.moves.some((m: string) => this.movesToTest.has(toCleanId(m)));
           if (hasPending) {
             this.justSwitched = true;
-            return `switch ${i + 1}`;
+            return `switch ${switchIdx}`;
           }
         }
       }
     }
-
-    const moves = slotReq.moves ?? [];
 
     // Trigger slot override
     if (this.abilityTriggerMoveSlot !== null) {
@@ -88,10 +93,18 @@ export class BattleAgent extends ShowdownBattleAgent {
         const id = toCleanId(m.id);
         if (this.movesToTest.has(id)) {
           this.movesToTest.delete(id);
-          return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
+          return `move ${i + 1}${targetLocation ? ` ${targetLocation}` : ''}`;
         }
       }
     }
+
+    // All objectives dispatched — pick the first non-disabled move deterministically.
+    // Prefer non-self-switching moves to avoid infinite Shed Tail / Baton Pass switch loops.
+    const SELF_SWITCHING_MOVES = new Set(['shedtail', 'batonpass', 'uturn', 'voltswitch', 'teleport', 'partingshot', 'chillyreception', 'flipturn']);
+    const nonSwitchingIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0) && !SELF_SWITCHING_MOVES.has(toCleanId(m.id)));
+    const firstValidIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0));
+    const fallbackIdx = nonSwitchingIndex !== -1 ? nonSwitchingIndex : (firstValidIndex !== -1 ? firstValidIndex : 0);
+    if (moves.length > 0) return `move ${fallbackIdx + 1}${targetLocation ? ` ${targetLocation}` : ''}`;
 
     return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
   }

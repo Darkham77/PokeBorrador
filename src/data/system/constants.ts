@@ -34,7 +34,12 @@ export type EnabledPokemonId = (typeof ENABLED_POKEMON_IDS)[number];
 
 
 export const MAX_POKEMON_LEVEL = 100;
-export const MAX_BATTLE_TURNS = 150;
+export const MAX_BATTLE_TURNS = 300;
+/**
+ * Duración efectiva del estado volátil Disable (Anulación) en Pokémon Showdown (Gen 5-9).
+ * Fuente de verdad: `external/pokemon-showdown-code/sim/data/moves.ts` (línea 3664: `duration: 5`, decrementado a 4 en `onStart` cuando el objetivo aún no ha actuado en ese turno).
+ */
+export const SHOWDOWN_DISABLE_DURATION_TURNS = 4;
 
 
 export const GAME_RATIOS = {

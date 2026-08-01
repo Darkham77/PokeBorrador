@@ -17,6 +17,69 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 ---
 
+## 🔴 MANDATORY SIMULATION DIRECTIVES (IMMUTABLE LAWS)
+
+> These rules exist because they were violated in production and caused token waste or false reports. Every AI agent MUST strictly follow them without exception:
+
+1. **Strict Timeout Constants Policy (3-Minute Max & Easy Modifications)**:
+   - Per-Action Timeout: `MAX_PER_ACTION_TIMEOUT_MS = 5000` (5s).
+   - Suite Total Timeout: `MAX_SUITE_TOTAL_TIMEOUT_MS = 180000` (3m maximum).
+   - Immutability Rule: All simulation timeout values MUST be exported as top-level global constants (e.g. in `scripts/e2e/simulation_config.ts`). It is STRICTLY FORBIDDEN to alter or increase these timeouts unless explicitly requested/approved by the USER or if the simulated turn count exceeds 150 turns.
+
+2. **Mandatory 100% Shared Action Array & Runner Code (Zero Divergence)**:
+   - Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST consume the LITERALLY SAME choices (`batchData.playerChoices` and `batchData.enemyChoices`) via the SAME shared class `ShowdownBattleRunner` (`src/logic/battle/helpers/showdownBattleRunner.ts`).
+   - It is STRICTLY FORBIDDEN to implement parallel, fallback, or divergent choice arrays (such as swapping to `history` or fallback arrays) between headless replayers and browser simulations.
+
+3. **Event-Driven Architecture & Zero-Fallback Fail-Loud Mandate**:
+   - Simulation actions MUST react purely to explicit game events (`battle-ready-for-input`, `WAIT_INPUT`, `SWITCH_MENU`) without arbitrary timers or manual poll loops.
+   - It is STRICTLY FORBIDDEN to use `.catch(() => true)` or swallow errors during `page.evaluate()` or state checks. All errors MUST fail loudly immediately to expose state desynchronizations at their source.
+
+4. **Mandatory Generic Root-Cause Verification & Absolute Zero-Fallback Protocol**:
+   - BEFORE making or proposing any edits to `src/`, the agent MUST isolate and output the un-truncated trace or exact log line causing the error.
+   - **MANDATORY PRE-FIX FALLBACK AUDIT**: Whenever investigating a bug or simulation failure, the agent MUST FIRST verify: *Are there any masking fallbacks (`||`, `??`, default assignments, or property derivations) in the execution path hiding the real root cause?* If any exist, the agent MUST REMOVE THEM FIRST so the system fails loudly with an explicit, traceable stack trace showing the true origin of the bug.
+   - **ABSOLUTE PROHIBITION ON FALLBACKS**: It is STRICTLY FORBIDDEN to introduce compatibility adapters, silent fallbacks, default assignments (`||`, `??`), or property derivations (e.g. deriving `species` from `name`/`id` or assigning dummy/default values) to make tests pass quickly.
+   - **FALLBACKS ARE BUGS**: Any missing property, undefined value, missing choice, or unregistered constant is an empirical indicator of a missing implementation or data initialization bug upstream. It MUST NOT be "healed" or patched with fallbacks.
+   - All error handling and data lookups MUST fail loudly with explicit descriptive errors (`throw new Error(...)`) when data or state is missing/corrupted, forcing the fix to be applied at the upstream source.
+
+5. **Natural Battle Execution & Temporary Cheats Deactivation Law**:
+   - Fuzzer battle execution MUST operate in two mandatory sequential phases:
+     1. **Phase 1 (Cheat-Assisted Testing)**: While there are untested moves/abilities remaining in the batch (`hasUntestedItemsAfterTurn === true`), apply Infinite Punching Bag (IPB) healing cheats when HP drops to critical levels.
+     2. **Phase 2 (Natural Unassisted Combat Completion)**: As soon as all moves/abilities in the batch have been certified (`hasUntestedItemsAfterTurn === false`), IPB cheats MUST be completely deactivated. The battle MUST continue executing naturally turn-by-turn until the battle ends organically (`simBattle.ended === true`).
+   - It is STRICTLY FORBIDDEN to introduce artificial loop breaks, early returns, or synthetic truncations when testing finishes. Battles must always complete naturally to generate a clean, un-truncated choice stream for Playwright E2E replays.
+
+   **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
+
+   *❌ Forbidden (Silent Fallback Assignment):*
+   ```typescript
+   // BAD: Silently assigning 'default' when choice is missing in a simulation run
+   if (!choiceToExecute) {
+     choiceToExecute = 'default';
+   }
+   ```
+   *✅ Required (Generic Fail-Loud Error):*
+   ```typescript
+   // GOOD: Fail loudly when a required choice is missing from the certified choice stream
+   if (!choiceToExecute) {
+     throw new Error(`[ShowdownExecutor] Required choice for seat "${seatId}" is missing from certified choices array.`);
+   }
+   ```
+
+   *❌ Forbidden (Silent Property Recovery / Derivation Fallback):*
+   ```typescript
+   // BAD: Deriving missing property from secondary fields or using fallback OR operator
+   const species = target.species || target.name || target.id;
+   ```
+   *✅ Required (Strict Boundary Guard & Upstream Fix):*
+   ```typescript
+   // GOOD: Throw explicit descriptive error when required property is missing, then fix upstream initialization
+   if (!target.species) {
+     throw new Error(`[ShowdownBridge] Target object "${target.name}" (UID: ${target.uid}) has no species defined.`);
+   }
+   const species = target.species;
+   ```
+
+---
+
 ## Mandatory Progress Artifact
 
 **Every simulation run MUST maintain a live internal artifact named `simulation_progress.md` (located in the brain directory) as the single source of truth for the current run, allowing resumption at any point without losing context. Simultaneously, a copy of this artifact MUST be mirrored in the repository at `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` (create both before the first command runs, and update/mirror after each meaningful step).**
@@ -80,6 +143,7 @@ Status: FIXING | PENDING_RERUN | PASS
 4. **Resuming a run (Physical File Synchronization First).** Whenever starting, resuming, or continuing a simulation workflow, the agent MUST first look for the latest mirrored physical file `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` in the repository (sorting by date to find the most recent one). Even if an internal `simulation_progress.md` exists in the brain, the agent MUST prioritize the physical mirrored file's content to restore the execution state, simulation queue, and pending tasks. This prevents desynchronization when changing branches, repositories, or active agents. The agent MUST recreate/synchronize the brain's internal `simulation_progress.md` artifact from this physical repository file before executing any simulation command, ensuring both representations are in perfect parity.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
 6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
+7. **No Searching for Outdated / Pre-Regeneration Case IDs.** Whenever `npm run sim:fuzzer` finishes or is regenerated, all case IDs and hashes are updated in `fuzzer_certified_cases.json`. It is STRICTLY FORBIDDEN to search for, trace, or run Playwright tests against stale case IDs from previous runs (e.g., `case-a6f13ae7994b`). Always read the newly generated `fuzzer_certified_cases.json` to obtain current case IDs before running isolated traces.
 
 ## Event-Driven Core Simulation Mandate
 
@@ -88,7 +152,10 @@ The simulation infrastructure (Playwright, replayers, and deciders) must operate
 1. **Reactive Event Waiting**: The simulation runner must only react to events dispatched by the application (specifically the `battle-ready-for-input` CustomEvent). It must not poll states or use arbitrary delays (`sleep`, `setTimeout`, or `page.waitForTimeout`) to guess when a player action can be sent.
 2. **Scripted Choice Separation**: The Playwright test script must not parse the fuzzer script or read player choices to execute clicks manually. All logic regarding reading fuzzer choice logs, track of choice indices, and executing the corresponding store actions must reside strictly inside the application code within `ScriptedAI`.
 3. **Execution Delegate**: Upon receiving the action-ready event, the simulation script must simply invoke the browser-side delegate `window.__VITE_DEBUG__.executeScriptedAction()`, letting `ScriptedAI` resolve and dispatch the turn choices.
-4. **Mandatory Event Timeout & Strict 5-Second Maximum Limit**: After the `battle-ready-for-input` event is dispatched, the simulation must consume it within **5 seconds maximum** by invoking the browser-side delegate. If 5 seconds pass without consumption, the application must throw a fatal simulation error (`[SIMULATION-FATAL]`). **ABSOLUTE PROHIBITION ON INCREASING TIMEOUTS:** It is strictly forbidden to increase event consumption timeouts or Playwright action timeouts beyond 5 seconds. A timeout failure is NEVER caused by a lack of time; it is ALWAYS an empirical indicator of a bug in `src/` (such as early returns, unhandled state desyncs, or silent promise freezes). The underlying code bug in `src/` must be diagnosed and fixed—never mask it by inflating timeouts.
+4. **Mandatory Event Timeout & Strict Limits (5s Per-Action / 3m Max Suite Total)**: 
+   - **Per-Action Limit**: After the `battle-ready-for-input` event is dispatched, the simulation must consume it within **5 seconds maximum** by invoking the browser-side delegate. If 5 seconds pass without consumption, the application must throw a fatal simulation error (`[SIMULATION-FATAL]`).
+   - **Max Suite Total Limit**: The absolute maximum total execution time for any full battle simulation batch or test suite is **3 minutes (180 seconds)**. It is STRICTLY FORBIDDEN to set test timeouts exceeding 180 seconds (e.g. 10 minutes is prohibited). If a batch exceeds 3 minutes total, it indicates an execution deadlock in `src/`.
+   - **ABSOLUTE PROHIBITION ON INCREASING TIMEOUTS:** It is strictly forbidden to increase event consumption timeouts beyond 5 seconds or suite total timeouts beyond 180 seconds. A timeout failure is NEVER caused by a lack of time; it is ALWAYS an empirical indicator of a bug in `src/` (such as early returns, unhandled state desyncs, or silent promise freezes). The underlying code bug in `src/` must be diagnosed and fixed—never mask it by inflating timeouts.
 5. **Strict Mandatory UID-Based Element Locators**: All E2E simulations and Playwright test scripts MUST interact with UI components (such as Pokémon in selection modals, team drawers, and combat cards) EXCLUSIVELY using their unique identifiers (`data-pokemon-uid="${uid}"` or `data-item-id="${id}"`). Locating UI elements by text content (such as species names, nicknames, or strings) is STRICTLY FORBIDDEN to prevent desynchronization, translation errors, and font-rendering failures.
 
 ---
@@ -145,7 +212,7 @@ scripts/e2e/                          <- Layer 3: Simulations (Playwright, real 
     missions/
         daycare_missions.sim.ts       <- Mission completion flow
     save/
-        save_shield_restrictions.sim.ts <- Zero-Pokemon save guard
+        save_shield_restrictions.sim.ts
 ```
 
 ### Fuzzer -> E2E Dependency Chain
@@ -154,12 +221,12 @@ scripts/e2e/                          <- Layer 3: Simulations (Playwright, real 
 run_moves_fuzzer.ts / run_abilities_fuzzer.ts / run_items_fuzzer.ts
   |  simulates battles deterministically using @pkmn/sim
   |  applies Infinite Punching Bag pattern (HP < 30% -> restore to 100%)
-  |  records each restoration in batchCheats[]
+  |  embeds p1Heal / p2Heal flags directly in the history terna: { p1Choice, p2Choice, battleTurn, p1Heal?, p2Heal? }
   |
   +---> fuzzer_certified_cases.json
             |-- section "battle" -> consumed by battle_fsm_sync.sim.ts
             +-- section "items"  -> consumed by battle_held_items.sim.ts
-                 (E2E replays identical cheats to mirror the fuzzer state)
+                 (E2E replays identical cheats directly from history terna flags to mirror fuzzer state)
 ```
 
 **Key rule:** The fuzzer runs `@pkmn/sim` as the authoritative engine. If the
@@ -170,8 +237,7 @@ simulation is right.
 
 The fuzzer prevents premature battle endings by restoring HP when it drops below
 30% of max. This keeps Pokemon alive long enough to cover all moves and abilities.
-Restorations are saved in `batchCheats` and replayed identically in the E2E specs,
-so both the fuzzer and the real browser reach the same game state.
+Restorations are saved directly as boolean flags (`p1Heal: true`, `p2Heal: true`) inside each turn's history terna entry (`history`), linked to `battleTurn`. There are NO separate `cheats` arrays or index lookups. Both the fuzzer and the real browser read the history terna to execute identical restorations.
 
 ---
 
@@ -273,9 +339,9 @@ This command installs the required browsers along with all system dependencies (
 | Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
 | Single failing simulation | env var filter or `npm run sim:e2e -- -g "<name>"` |
 
-**Fuzzer rule:** The fuzzer (`sim:fuzzer`) always regenerates and writes certified cases to disk by default. To preserve the existing cached cases for quick iterative testing, the user must explicitly set `SKIP_REGENERATE=true` or `REGENERATE_CASES=false`. `ensure_fuzzer_cases.ts` handles this check automatically.
+**Fuzzer rule:** The fuzzer (`sim:fuzzer`) ALWAYS performs a clean wipe of all previously generated fuzzer artifacts (`fuzzer_*.json`, `fuzzer_*.txt`, `fuzzer_certified_cases.json`) in `scripts/e2e/results/` before starting, ensuring execution starts 100% clean from scratch by default. `ensure_fuzzer_cases.ts` handles this clean wipe and triggers `npm run sim:fuzzer`.
 
-**Important Fuzzer Regeneration Rule:** If the fuzzer is executed again and regenerates the certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated (deleted) inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all regenerated cases to identify any new regressions or bugs.
+**Important Fuzzer Regeneration Rule:** Whenever the fuzzer runs and regenerates certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated and deleted inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all newly generated cases to identify any new regressions or bugs.
 
 ### Step 2 — Execute and capture output
 
@@ -292,7 +358,12 @@ npm run sim:e2e -- scripts/e2e/battle/battle_fsm_sync.sim.ts 2>&1 | tee scripts/
 ### Step 3 — On failure: the fix loop
 
 ```
-DETECT failure in simulation X
+DETECT failure or 1:1 parity bug between fuzzer and simulation
+  |
+INVOKE AUDIT SKILL: When debugging Showdown event desynchronizations, fuzzer vs simulation state
+                    mismatches, or 1:1 logic bugs, ALWAYS load and follow the `@/audit-simulations`
+                    skill (`.agents/skills/audit-simulations/SKILL.md`) to perform source code
+                    comparison against `external/pokemon-showdown-code/` and run the two-stage test gate.
   |
 ANALYZE: read the test carefully. Understand what game behavior it asserts.
   |
@@ -386,7 +457,7 @@ Then summarize in chat with clear action options for the user.
 - Skip or comment out a failing scenario
 - Change an expected value to match incorrect `src/` behavior
 - Add a `try/catch` that silences a desync or failure
-- Add fallback values, default return objects, or recovery patches in `src/` or helper scripts (e.g. returning default coordinates, default objects, or fallback values when a sprite, item, move, UID, or asset lookup fails). If any data, asset, coordinate, or mapping is missing, IT IS A REAL BUG/ERROR IN DATA/DATASETS; it MUST throw an explicit error to fail loudly and force adding the missing asset/entry or fixing the data at the source.
+- Add fallback values, default return objects, or recovery patches in `src/` or helper scripts (e.g. returning default coordinates, default objects, or fallback values when a sprite, item, move, UID, or asset lookup fails). Never write hasty patches to make tests pass quickly. If any data, asset, coordinate, or mapping is missing, IT IS A REAL BUG/ERROR IN DATA/DATASETS; it MUST throw an explicit error to fail loudly and force adding the missing asset/entry or fixing the data at the source.
 - Bypass a state-parity check
 - Use silent mock/patch workarounds in E2E tests, helper scripts, or test workers that automatically bypass, ignore, or rewrite choices when state, active combatants, or move selections desynchronize. The objective is never to finish simulations with fake patches/mocks, but to find and fix bugs in `src/` that prevent matching the fuzzer.
 - Hardcode FSM state transitions or manually manipulate FSM state variables (such as forcing transitions to `WAIT_INPUT` or bypassing `SWITCH_MENU`/`PLAYER_FAINT_SEQ` when a Pokémon is healed/restored) to force E2E simulations or test replays to pass. The FSM must transition naturally and mirror the simulator's requests exactly.

@@ -84,8 +84,9 @@ export async function initWorkerForBattle(
         ctx.activeBattle.value.enemyRequest = responsePayload.p2Request
       }
       if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__.p1ChoiceIdx = 0
-        window.__VITE_DEBUG__.p2ChoiceIdx = 0
+        window.__VITE_DEBUG__.p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0
+        window.__VITE_DEBUG__.p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0
+        window.dispatchEvent(new CustomEvent('worker-init-complete'))
       }
       if (activeWorker.removeEventListener) {
         activeWorker.removeEventListener('message', initHandler)
@@ -126,7 +127,7 @@ export async function initWorkerForBattle(
       weather: initialWeatherOfficial,
       seed: seedArr,
       isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
-      cheats: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.cheats) || []
+      history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.history) || []
     }
   })
 }

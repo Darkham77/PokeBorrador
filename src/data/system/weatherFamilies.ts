@@ -1,35 +1,26 @@
-import { WEATHER_MECHANICAL, WEATHER_REGISTRY, type WeatherId, type WeatherMechanical } from '../../logic/weather/weatherRegistry.ts';
+import { WEATHER_MECHANICAL, WEATHER_REGISTRY, toRegisteredWeatherId, type WeatherId, type WeatherMechanical } from '../../logic/weather/weatherRegistry.ts';
 
-
-const WEATHER_FAMILY_KEYS = [
-  WEATHER_MECHANICAL.RAIN,
-  WEATHER_MECHANICAL.SUN,
-  WEATHER_MECHANICAL.SNOW,
-] as const;
-
-export type WeatherFamilyKey = (typeof WEATHER_FAMILY_KEYS)[number];
-
-function weatherIdsForMechanical(...mechanics: readonly WeatherMechanical[]): WeatherId[] {
-  return Object.values(WEATHER_REGISTRY)
-    .filter(weather => mechanics.includes(weather.mech))
-    .map(weather => weather.id);
-}
-
-export const WEATHER_FAMILIES: Record<WeatherFamilyKey, readonly WeatherId[]> = {
-  [WEATHER_MECHANICAL.RAIN]: weatherIdsForMechanical(WEATHER_MECHANICAL.RAIN),
-  [WEATHER_MECHANICAL.SUN]: weatherIdsForMechanical(WEATHER_MECHANICAL.SUN),
-  [WEATHER_MECHANICAL.SNOW]: weatherIdsForMechanical(WEATHER_MECHANICAL.SNOW, WEATHER_MECHANICAL.HAIL),
-};
-
+export type WeatherFamilyKey = WeatherMechanical;
 
 /**
- * Returns the canonical weather family for a given weather active state.
+ * Returns the canonical weather family (WeatherMechanical) for a given weather active state.
+ * Accepts both game tokens ('rain', 'storm', 'mist') and Showdown weather condition IDs ('raindance', 'sunnyday', 'desolateland', etc.).
  */
 export function getWeatherFamily(weather: WeatherId | string): WeatherFamilyKey | null {
   if (!weather) return null;
-  const lower = weather as WeatherId;
-  for (const family of WEATHER_FAMILY_KEYS) {
-    if (WEATHER_FAMILIES[family].some(member => member === lower)) return family;
+  const canonicalId = toRegisteredWeatherId(weather);
+  const lower = canonicalId as WeatherId;
+
+  // 1. Direct lookup in central WEATHER_REGISTRY
+  const registryEntry = WEATHER_REGISTRY[lower as WeatherId];
+  if (registryEntry?.mech) {
+    return registryEntry.mech;
   }
+
+  // 2. Fallback for special tokens mapping to CLEAR family
+  if (lower === 'none' || lower === 'null') {
+    return WEATHER_MECHANICAL.CLEAR;
+  }
+
   return null;
 }

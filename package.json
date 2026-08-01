@@ -21,7 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "test:all": "npm run test",
     "sim:combat:all": "npm run sim:fuzzer && playwright test scripts/e2e/",
-    "sim:fuzzer": "npm run sim:fuzzer:moves && npm run sim:fuzzer:abilities && npm run sim:fuzzer:items && npm run sim:fuzzer:scenarios && npm run sim:fuzzer:breeding && npm run sim:fuzzer:missions && npm run sim:fuzzer:gyms && npm run sim:fuzzer:gts && npm run sim:fuzzer:ai",
+    "sim:fuzzer": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_all_fuzzers.ts",
     "sim:fuzzer:moves": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_moves_fuzzer.ts",
     "sim:fuzzer:abilities": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_abilities_fuzzer.ts",
     "sim:fuzzer:items": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_items_fuzzer.ts",

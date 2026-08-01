@@ -36,6 +36,7 @@ The ladder is a reflex, not a research project. Two rungs work → take the high
 - Fewest files possible. Shortest working diff wins.
 - Complex request? Ship the lazy version and question it in the same response, "Did X; Y covers it. Need full X? Say so." Never stall on an answer you can default.
 - Two stdlib options, same size? Take the one that's correct on edge cases. Lazy means writing less code, not picking the flimsier algorithm.
+- **LAZY MEANS CORRECT, NEVER HASTY OR FLIMSY**: Never write fake patches, silent fallbacks, or recovery hacks to force tests or simulations to pass quickly. Laziness means writing minimal, robust code that fails fast at the source when broken, rather than smuggling in silent workarounds.
 - Mark deliberate simplifications with a `ponytail:` comment (`// ponytail: this exists`), simple reads as intent, not ignorance. Shortcut with a known ceiling (global lock, O(n²) scan, naive heuristic)? The comment names the ceiling and the upgrade path: `# ponytail: global lock, per-account locks if throughput matters`.
 
 ## Output

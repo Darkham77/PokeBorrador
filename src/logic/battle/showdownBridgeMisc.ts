@@ -273,7 +273,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       if (user && targetPoke) {
         user.isTransformed = true;
         if (!targetPoke.species) {
-          throw new Error(`[showdownBridgeMisc] Transform target has no species: ${targetPoke.name}`);
+          throw new Error(`[showdownBridgeMisc] Transform target has no species defined: ${targetPoke.name}`);
         }
         user.species = targetPoke.species;
         user.type = targetPoke.type;

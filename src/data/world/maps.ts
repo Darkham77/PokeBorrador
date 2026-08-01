@@ -49,6 +49,12 @@ export const FIRE_RED_MAPS: MapLocation[] = [
       5
     ],
     "weather": {
+      "coldwave": {
+        "visitors": {
+          "swinub": 50,
+          "snorunt": 50
+        }
+      },
       "rain": {
         "visitors": {
           "slowpoke": 50,

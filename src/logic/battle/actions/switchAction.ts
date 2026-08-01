@@ -54,7 +54,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
   if (!activeBattle.value) return
   
-  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke)) {
+  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as unknown as { volatileCounters?: Record<string, number> })) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }

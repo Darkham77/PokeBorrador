@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string, logBuffer?: string[]) {
@@ -94,7 +95,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
   if (batches.length > 0) {
     batches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
-        test.setTimeout(600000);
+        test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
         const logBuffer: string[] = [];
@@ -102,16 +103,8 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         await sim.setup();
         await waitForWaitInput(page);
 
-        // Inyectar lote
-        await sim.setupFuzzerScenario(batch);
-
-        if (batch.ended === false) {
-          console.warn(`[E2E-WARN] Saltando lote ${batch.id || index + 1} porque no terminó exitosamente en el fuzzer.`);
-          return;
-        }
-
         try {
-          await sim.startBattle();
+          await sim.setupFuzzerScenario(batch);
           await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
           reportProgress(index, false);
         } catch (error: unknown) {
