@@ -69,6 +69,7 @@ const handleSwitch = (index: number) => {
     <div class="quick-team-grid">
       <BoxPokemonCard
         v-for="(pokemon, index) in team"
+        :id="`battle-switch-${pokemon.uid}`"
         :key="pokemon.uid"
         :pokemon="pokemon"
         :index="index"

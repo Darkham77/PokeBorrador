@@ -7,16 +7,16 @@ import path from 'node:path'
  * caching that the old `node --experimental-strip-types` runner lacked.
  */
 export default defineConfig({
+  cacheDir: '.vitest-cache/node',
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   test: {
     globals: true,
     environment: 'node',
     include: ['tests/node/**/*.test.ts'],
-    cache: { dir: '.vitest-cache/node' },
     testTimeout: 60000,
     coverage: {
       provider: 'v8',

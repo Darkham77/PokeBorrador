@@ -160,7 +160,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     })
 
     const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)
-    const grid: Array<PokemonSpeciesId | null> = new Array(totalSlots).fill(null)
+    const grid: Array<PokemonSpeciesId | null> = new Array<PokemonSpeciesId | null>(totalSlots).fill(null)
     filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
     return { slots: grid, rows, cols, totalSlots }
   })

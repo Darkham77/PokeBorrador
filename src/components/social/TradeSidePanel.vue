@@ -7,8 +7,8 @@ import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.v
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { Inventory } from '@/types/inventory/items'
 
-const ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const
-type ItemTier = (typeof ITEM_TIERS)[number]
+const _ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const
+type ItemTier = (typeof _ITEM_TIERS)[number]
 
 function requireItemTier(value: string | undefined): ItemTier | undefined {
   if (value === undefined) return undefined

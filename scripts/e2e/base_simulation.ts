@@ -12,11 +12,11 @@ export abstract class BaseE2ESimulation {
     this.username = username;
     this.logBuffer = logBuffer;
   }
-
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
+    await this.page.setViewportSize({ width: 1600, height: 900 });
     await loginE2ETestUser(this.page, this.username, this.logBuffer);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
     // loginE2ETestUser only waits for mapaBtn to be attached — the Vue router

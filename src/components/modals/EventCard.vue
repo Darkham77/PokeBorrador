@@ -54,7 +54,7 @@ const openParticipationModal = () => {
     onConfirm: async (selectedObjects: Pokemon[]) => {
       const pokemon = selectedObjects[0]
       if (pokemon) {
-        await eventStore.submitCompetitionEntry(pokemon, props.event.id)
+        await eventStore.submitCompetitionEntry(props.event.id, pokemon.uid)
       }
     }
   })

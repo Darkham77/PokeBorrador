@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Pokemon, PokemonEVs, PokemonIVs } from '@/types/pokemon/pokemon'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-
+import { isStatId } from '@/logic/pokemon/statsMath'
 interface AdminStatItem {
   key: string
   label: string
@@ -22,13 +22,13 @@ const props = defineProps<{
 
 function getEvValue(key: string): number {
   if (!props.pokemon?.evs) return 0
-  const evs = props.pokemon.evs as unknown as PokemonEVs
+  const evs = props.pokemon.evs as PokemonEVs // domain-ok
   return Number(evs[key as keyof PokemonEVs] || 0)
 }
 
 function getIvValue(key: string): number {
   if (!props.pokemon?.ivs) return 0
-  const ivs = props.pokemon.ivs as unknown as PokemonIVs
+  const ivs = props.pokemon.ivs as PokemonIVs // domain-ok
   return Number(ivs[key as keyof PokemonIVs] || 0)
 }
 
@@ -37,7 +37,7 @@ function getSpeciesBaseStat(key: string): number {
   try {
     const data = pokemonDataProvider.getPokemonData(props.pokemon.id, true)
     if (!data) return 0
-    return Number(data[key as keyof typeof data] || 0)
+    return isStatId(key) ? Number(data[key] || 0) : 0
   } catch {
     return 0
   }

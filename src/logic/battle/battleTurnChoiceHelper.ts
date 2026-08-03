@@ -4,6 +4,7 @@ import { shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 
 import type { BattleState } from '@/types/battle/battle'
 import type { ChoiceRequest } from './helpers/requestHelper.ts'
+import { ShowdownBattleRunner } from './helpers/showdownBattleRunner.ts'
 
 function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean): string {
   let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`
@@ -38,7 +39,9 @@ export async function computeP2Choice(
       const targetMon = enemyTeam?.[bestIdx]
       if (targetMon && targetMon.uid) {
         const slot = ShowdownTeamResolver.getShowdownSlotForUid(active?.enemyRequest, targetMon.uid)
-        p2Choice = `switch ${slot}`
+        if (slot) {
+          p2Choice = `switch ${slot}`
+        }
       }
     }
   } else {
@@ -61,15 +64,13 @@ export async function computeP2Choice(
   }
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    if (p2Skip) {
+      console.debug('[E2E-MOCK-CENTRAL-DEBUG] Preserved the certified history cursor because Showdown did not request a P2 action.');
+      return 'pass';
+    }
     const debugObj = window.__VITE_DEBUG__;
-    const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-    const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
-    runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
-    runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
-    p2Choice = runner.resolveAndConsumeNextChoice('p2', active?.enemyRequest);
-    debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
-    debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
-    console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice via ShowdownBattleRunner in executeTurn: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+    p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
+    console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${p2Choice}".`);
   } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice
@@ -98,6 +99,13 @@ export async function resolveTurnChoices(
   const active = store.activeBattle.value
   let p1Choice = computeP1Choice(active, move, isStruggle)
   let p2Choice = await computeP2Choice(store, p, e, isWild, p2Skip, eMove)
+
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const debugObj = window.__VITE_DEBUG__
+    p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
+    p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+    console.debug(`[E2E-CERTIFIED-REPLAY] Resolved the complete Showdown submission from certified history. context=${JSON.stringify({ historyIndex: debugObj.replayHistoryIdx, p1Choice, p2Choice })}`)
+  }
 
   let p1Skip = false
   if (p1Choice === 'pass') {

@@ -49,6 +49,7 @@ defineProps<{
         class="hud-submenu"
       >
         <button
+          id="nav-market-global-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('GlobalMarket') }"
           @click.stop="handleTabChange('online-market'); emit('close-hud-group')"
@@ -63,6 +64,7 @@ defineProps<{
           </span>
         </button>
         <button
+          id="nav-market-local-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('Shop') }"
           @click.stop="handleTabChange('market'); emit('close-hud-group')"
@@ -71,6 +73,7 @@ defineProps<{
           <span class="nav-item-label">LOCAL</span>
         </button>
         <button
+          id="nav-market-bc-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('BCShop') }"
           @click.stop="handleTabChange('trainer-shop'); emit('close-hud-group')"
@@ -80,6 +83,7 @@ defineProps<{
         </button>
         <button
           v-if="gameStore.state.playerClass === 'entrenador'"
+          id="nav-market-reputation-btn"
           class="hud-nav-btn rep-shop-nav-btn"
           :class="{ active: modalStore.isOpen('ReputationShop') }"
           @click.stop="handleTabChange('reputation-shop'); emit('close-hud-group')"
@@ -88,6 +92,7 @@ defineProps<{
           <span class="nav-item-label">REPUTACIÓN</span>
         </button>
         <button
+          id="nav-market-war-btn"
           class="hud-nav-btn war-shop-nav-btn"
           :class="{ active: modalStore.isOpen('WarShop') }"
           @click.stop="handleTabChange('war-shop'); emit('close-hud-group')"

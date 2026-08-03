@@ -172,7 +172,7 @@ const openCenter = () => {
 // Mapeo de misiones para los sprites
 const missionSprites = computed(() => {
   const missions = (gameStore.state.daycare_missions || []).filter(m => !m.completed)
-  return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4) as string[]
+  return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4)
 })
 
 const gymSprites = computed(() => {

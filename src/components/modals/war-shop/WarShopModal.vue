@@ -32,7 +32,7 @@ const filteredItems = computed<ShopItem[]>(() => {
   const coins = warStore.warCoins || 0
   const trainerLevel = gameStore.state.trainerLevel || 1
 
-  const items = (SHOP_ITEMS as unknown as ShopItem[]).filter(item => {
+  const items = (SHOP_ITEMS as readonly ShopItem[]).filter(item => { // domain-ok
     if (!item.showInWarShop) return false
     const resolvedCat = item.cat || 'otros'
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
@@ -75,7 +75,7 @@ const filteredItems = computed<ShopItem[]>(() => {
 
 const availableCategories = computed<string[]>(() => {
   const cats = new Set<string>()
-  for (const item of (SHOP_ITEMS as unknown as ShopItem[])) {
+  for (const item of (SHOP_ITEMS as readonly ShopItem[])) { // domain-ok
     if (!item.showInWarShop) continue
     cats.add(item.cat || 'otros')
   }
@@ -121,20 +121,15 @@ const closeWarShop = () => {
 
 // Shim for legacy code
 if (typeof window !== 'undefined') {
-  const win = window as unknown as { 
-    showWarShop?: () => void; 
-    closeWarShop?: () => void;
-    renderWarShop?: () => void; // Legacy might try to call this
-  }
-  win.showWarShop = () => {
+  Reflect.set(window, 'showWarShop', () => {
     isOpen.value = true
-  }
-  win.closeWarShop = () => {
+  })
+  Reflect.set(window, 'closeWarShop', () => {
     isOpen.value = false
-  }
-  win.renderWarShop = () => {
+  })
+  Reflect.set(window, 'renderWarShop', () => {
     // No-op, Vue handles reactivity
-  }
+  })
 }
 </script>
 

@@ -30,7 +30,7 @@ import { logger } from '@/logic/utils/logger'
 
 import { useProfileStore } from '@/stores/player/profile'
 import { useSocialStore } from '@/stores/social/social'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useBackNavigation } from '@/composables/system/useBackNavigation'
 import { usePWA } from '@/composables/system/usePWA'
 
@@ -42,6 +42,7 @@ const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const route = useRoute()
+const router = useRouter()
 
 const { 
   needRefresh, 
@@ -70,13 +71,15 @@ const dismissedLock = computed({
 
 const isLoginPage = computed(() => {
   if (typeof window === 'undefined') return false
-  return window.location?.pathname === '/login' || route.path === '/login'
+  const path = router?.currentRoute?.value?.path || route.path
+  return window.location?.pathname === '/login' || path === '/login'
 })
 
 
 const isAdventureTestPage = computed(() => {
   if (typeof window === 'undefined') return false
-  return window.location?.pathname === '/test-aventura' || route.path === '/test-aventura'
+  const path = router?.currentRoute?.value?.path || route.path
+  return window.location?.pathname === '/test-aventura' || path === '/test-aventura'
 })
 
 const loadingInfo = computed(() => {
@@ -153,14 +156,14 @@ const initGameSession = async () => {
   if (authStore.user && !isLoginPage.value && !isAdventureTestPage.value && !gameStore.isReady) {
     isSessionInitializing.value = true
     try {
-      const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
+      const comp = await checkDBCompatibility(gameStore.db as DBRouter) // domain-ok
       if (!comp.compatible) {
         dbIncompatible.value = true
         dbVersionInfo.value = comp
         return
       }
 
-      const appComp = await checkAppVersionCompatibility(gameStore.db as unknown as DBRouter)
+      const appComp = await checkAppVersionCompatibility(gameStore.db as DBRouter) // domain-ok
       if (!appComp.compatible) {
         appVersionInfo.value = appComp
         if (appComp.error === 'OUTDATED_SERVER') {

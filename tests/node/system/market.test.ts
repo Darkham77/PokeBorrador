@@ -22,20 +22,54 @@ import {
 
 import type { GameState } from '../../../src/types/system/game.ts';
 
-// Helper to create mock market listings
-function makeMockListing(id: string, type: 'pokemon' | 'item', name: string, price: number, sellerId: string, extra: Record<string, unknown> = {}): MarketListing {
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+
+// Test fixture helpers — builds a minimal but type-complete Pokemon for filter testing
+const BASE_POKEMON: Pokemon = {
+  uid: 'test-uid',
+  id: 'bulbasaur',
+  name: '',
+  species: 'bulbasaur',
+  level: 1,
+  exp: 0,
+  expNeeded: 100,
+  hp: 45,
+  maxHp: 45,
+  atk: 49,
+  def: 49,
+  spa: 65,
+  spd: 65,
+  spe: 45,
+  type: 'normal',
+  status: '',
+  moves: [],
+  ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+  nature: 'hardy'
+}
+
+function makePokemonListing(id: string, name: string, price: number, sellerId: string, extra: Partial<Pokemon> = {}): Extract<MarketListing, { listing_type: 'pokemon' }> {
   return {
     id,
-    listing_type: type,
+    listing_type: 'pokemon',
     price,
     seller_id: sellerId,
     seller_name: `Seller_${sellerId}`,
     status: 'active',
     created_at: '2026-05-13T10:00:00Z',
-    data: {
-      name,
-      ...extra
-    }
+    data: { ...BASE_POKEMON, name, ...extra }
+  };
+}
+
+function makeItemListing(id: string, name: string, price: number, sellerId: string, qty = 1): Extract<MarketListing, { listing_type: 'item' }> {
+  return {
+    id,
+    listing_type: 'item',
+    price,
+    seller_id: sellerId,
+    seller_name: `Seller_${sellerId}`,
+    status: 'active',
+    created_at: '2026-05-13T10:00:00Z',
+    data: { name, qty }
   };
 }
 
@@ -64,17 +98,17 @@ describe('Global Market Logic & Calculations', () => {
     });
 
     it('returns correct label for a Pokemon listing', () => {
-      const listing = makeMockListing('list_1', 'pokemon', 'Charizard', 15000, 'seller_1');
+      const listing = makePokemonListing('list_1', 'Charizard', 15000, 'seller_1');
       assert.strictEqual(buildMarketSaleLabel(listing), 'tu Pokémon Charizard');
     });
 
     it('returns correct label for an item listing with custom quantity', () => {
-      const listing = makeMockListing('list_2', 'item', 'Ultra Ball', 800, 'seller_1', { qty: 5 });
+      const listing = makeItemListing('list_2', 'Ultra Ball', 800, 'seller_1', 5);
       assert.strictEqual(buildMarketSaleLabel(listing), 'tu objeto Ultra Ball x5');
     });
 
     it('defaults to qty 1 if quantity is omitted in item listing', () => {
-      const listing = makeMockListing('list_3', 'item', 'Poción', 300, 'seller_1');
+      const listing = makeItemListing('list_3', 'Poción', 300, 'seller_1');
       assert.strictEqual(buildMarketSaleLabel(listing), 'tu objeto Poción x1');
     });
   });
@@ -102,20 +136,20 @@ describe('Global Market Logic & Calculations', () => {
   });
 
   describe('applyMarketFilters', () => {
-    const pokemonListing1 = makeMockListing('pk_1', 'pokemon', 'Pikachu', 1200, 'user_a', {
+    const pokemonListing1 = makePokemonListing('pk_1', 'Pikachu', 1200, 'user_a', {
       level: 25,
       type: 'electric',
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } // Sum = 60
     });
 
-    const pokemonListing2 = makeMockListing('pk_2', 'pokemon', 'Gyarados', 9500, 'user_b', {
+    const pokemonListing2 = makePokemonListing('pk_2', 'Gyarados', 9500, 'user_b', {
       level: 42,
       type: 'water',
       ivs: { hp: 31, atk: 25, def: 20, spa: 15, spd: 20, spe: 31 } // Sum = 122, contains 31 IV
     });
 
-    const itemListing1 = makeMockListing('it_1', 'item', 'Poción', 150, 'user_c', { qty: 10 });
-    const itemListing2 = makeMockListing('it_2', 'item', 'Gema Dominante', 50000, 'user_d', { qty: 1 });
+    const itemListing1 = makeItemListing('it_1', 'Poción', 150, 'user_c', 10);
+    const itemListing2 = makeItemListing('it_2', 'Gema Dominante', 50000, 'user_d', 1);
 
     const allListings = [pokemonListing1, pokemonListing2, itemListing1, itemListing2];
 

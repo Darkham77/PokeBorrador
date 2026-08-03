@@ -16,12 +16,33 @@ function toMove(moveData: MoveBaseData): Move {
 
 function createDispatchFixture() {
   const logs: string[] = [];
-  const dummySrc = { name: 'Bulbasaur' } as Pokemon;
-  const dummyTgt = { name: 'Pikachu' } as Pokemon;
+  const dummySrc = { uid: 'src-uid', name: 'Bulbasaur' } as Pokemon;
+  const dummyTgt = { uid: 'tgt-uid', name: 'Pikachu' } as Pokemon;
   const srcStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as BattleStages;
   const tgtStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } as BattleStages;
   const addLogFn = (msg: string) => { logs.push(msg); };
-  const dummyCtx = {} as BattleContext;
+  const dummyCtx = {
+    activeBattle: {
+      value: {
+        player: dummySrc,
+        enemy: dummyTgt,
+        playerTeam: [dummySrc],
+        enemyTeam: [dummyTgt],
+        playerSideConditions: {},
+        enemySideConditions: {},
+        weather: { type: 'clear', visual: 'clear', turns: 5 }
+      }
+    },
+    player: { value: dummySrc },
+    enemy: { value: dummyTgt },
+    playerStages: { value: srcStages },
+    enemyStages: { value: tgtStages },
+    exitingPlayer: { value: null },
+    exitingEnemy: { value: null },
+    fsm: { transition: async () => {} },
+    uiStore: { notify: () => {}, isBattleSwitchForced: false },
+    gs: { state: { money: 1000 } }
+  } as unknown as BattleContext;
   return { dummySrc, dummyTgt, srcStages, tgtStages, addLogFn, dummyCtx };
 }
 

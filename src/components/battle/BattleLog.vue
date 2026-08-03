@@ -15,7 +15,7 @@ const logs = computed(() => battleStore.battleLogs)
 
 const playerClassColor = computed(() => {
   const pClass = gameStore.state.playerClass || 'entrenador'
-  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6'
+  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6' // open-record
 })
 
 const scrollToBottom = async (isInstant = false) => {

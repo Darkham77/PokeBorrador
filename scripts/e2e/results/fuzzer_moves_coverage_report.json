@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-01T04:29:33.50302002-03:00[America/Buenos_Aires]",
+  "generatedAt": "2026-08-03T12:58:18.768254883-03:00[America/Buenos_Aires]",
   "summary": {
-    "totalMoves": 682,
-    "passedMoves": 682,
+    "totalMoves": 684,
+    "passedMoves": 684,
     "failedMoves": 0,
     "untestedMoves": 0
   },
@@ -1953,12 +1953,22 @@
       "status": "PASS"
     },
     {
+      "id": "nobleroar",
+      "type": "move",
+      "status": "PASS"
+    },
+    {
       "id": "noretreat",
       "type": "move",
       "status": "PASS"
     },
     {
       "id": "nuzzle",
+      "type": "move",
+      "status": "PASS"
+    },
+    {
+      "id": "orderup",
       "type": "move",
       "status": "PASS"
     },

@@ -77,7 +77,7 @@ export function useBackNavigation() {
         if (delta > 0) {
           // UI opened: Push states to history
           for (let i = 0; i < delta; i++) {
-            const currentState = (window.history.state as Record<string, unknown> | null) || {}
+            const currentState = (window.history.state as Record<string, unknown> | null) || {} // open-record
             window.history.pushState({ ...currentState, pokevicioUI: true }, '')
           }
         } else if (delta < 0) {

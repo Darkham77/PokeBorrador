@@ -56,9 +56,9 @@ if (typeof Worker !== 'undefined') {
     if (
       message &&
       typeof message === 'object' &&
-      (message as Record<string, unknown>).type === 'EXECUTE_TURN'
+      (message as Record<string, unknown>).type === 'EXECUTE_TURN' // open-record
     ) {
-      const payload = (message as Record<string, unknown>).payload as Record<string, unknown> | undefined;
+      const payload = (message as Record<string, unknown>).payload as Record<string, unknown> | undefined; // open-record
       if (payload) {
         try {
           const battleStore = useBattleStore();
@@ -91,34 +91,35 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
   if (type === 'turnStart') {
     if (store.activeBattle.value) {
-      (store.activeBattle.value as unknown as { p2Skip: boolean }).p2Skip = parts[2] === 'p2Skip=true';
-      (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = false;
+      Reflect.set(store.activeBattle.value, 'p2Skip', parts[2] === 'p2Skip=true')
+      Reflect.set(store.activeBattle.value, 'ignoreEnemyLogs', false)
     }
     return;
   }
 
   // Si ignoreEnemyLogs está activo, evaluar si debemos desactivarlo antes de ignorar la línea actual
-  if ((store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+  if (store.activeBattle.value && Reflect.get(store.activeBattle.value, 'ignoreEnemyLogs')) {
     const isPlayerMove = type === 'move' && (parts[2]?.startsWith('p1a:') || parts[2]?.startsWith('p1:'));
     const isSwitchOrDrag = type === 'switch' || type === 'drag';
     const isTurnOrUpkeep = type === 'turn' || type === 'upkeep' || type === 'win' || type === 'tie';
 
     if (isPlayerMove || isSwitchOrDrag || isTurnOrUpkeep) {
-      (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = false;
+      Reflect.set(store.activeBattle.value, 'ignoreEnemyLogs', false)
     }
   }
 
   // Activar ignoreEnemyLogs si p2Skip está activo y es el turno del enemigo
   if (
-    (store.activeBattle.value as unknown as { p2Skip?: boolean }).p2Skip &&
+    store.activeBattle.value &&
+    Reflect.get(store.activeBattle.value, 'p2Skip') &&
     type === 'move' &&
     (parts[2]?.startsWith('p2a:') || parts[2]?.startsWith('p2:'))
   ) {
-    (store.activeBattle.value as unknown as { ignoreEnemyLogs: boolean }).ignoreEnemyLogs = true;
+    Reflect.set(store.activeBattle.value, 'ignoreEnemyLogs', true)
   }
 
   // Ignorar por completo si ignoreEnemyLogs está activo
-  if ((store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+  if (store.activeBattle.value && Reflect.get(store.activeBattle.value, 'ignoreEnemyLogs')) {
     console.debug(`[BRIDGE-SKIP] Ignorando línea por p2Skip: "${line}"`);
     return;
   }
@@ -133,7 +134,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     return null;
   };
 
-  const getPoke = (rawId: string) => {
+  const getPoke = (rawId: string): Pokemon | null => {
     const side = getSide(rawId);
     if (!side) return null;
 
@@ -145,18 +146,6 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
 
     console.debug(`[E2E-GETPOKE] rawId: "${rawId}", side: "${side}", line: "${line}"`);
 
-    interface RequestPokemon {
-      active?: boolean;
-      ident?: string;
-      uid?: string;
-    }
-    interface RequestSide {
-      pokemon?: RequestPokemon[];
-    }
-    interface ShowdownRequest {
-      side?: RequestSide;
-    }
-    const request = (side === 'player' ? battle.playerRequest : battle.enemyRequest) as ShowdownRequest | null | undefined;
     const team: Pokemon[] = side === 'player'
       ? ((battle.playerTeam && battle.playerTeam.length > 0) ? battle.playerTeam : (useGameStore().state?.team || (battle.player ? [battle.player] : [])))
       : ((battle.enemyTeam && battle.enemyTeam.length > 0) ? battle.enemyTeam : (battle.enemy ? [battle.enemy] : []));
@@ -171,9 +160,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
           ? (key.startsWith('player') || key === 'ally') 
           : key.startsWith('enemy');
         if (matchesSide) {
-          const val = (battle as unknown as Record<string, unknown>)[key];
+          const val = Reflect.get(battle, key) as Record<string, unknown> | null | undefined; // open-record
           if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
-            return { val: val as unknown as Pokemon, found };
+            return { val: val as unknown as Pokemon, found }; // domain-ok
           }
         }
       }
@@ -226,42 +215,11 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       return matchMon;
     }
 
-    if (!matchMon) {
-      throw new Error(
-        `[ShowdownBridge] UID resolution failed for "${rawId}". ` +
-        `This indicates a synchronization bug — UID must be present in the tracked team. ` +
-        `Aborting to expose the desync at its source.`
-      );
-    }
-
-    if (!foundUid && request && request.side && Array.isArray(request.side.pokemon)) {
-      if (!foundUid) {
-        // Resolver por ident (e.g. p1a: P-Poke2-2 -> p1: P-Poke2-2)
-        const identToMatch = rawId.replace(/^(p1|p2)[a-d]:/, '$1:').trim();
-        const reqPoke = request.side.pokemon.find((rp: unknown) => {
-          const p = rp as { ident?: string; uid?: string } | null;
-          return p && p.ident === identToMatch;
-        });
-        if (reqPoke && (reqPoke as { uid?: string }).uid) {
-          foundUid = (reqPoke as { uid?: string }).uid;
-        }
-      }
-    }
-
-    if (foundUid) {
-      const res = findPokemonInBattle(foundUid);
-      if (res) {
-        if (res.val) {
-          console.debug(`[E2E-GETPOKE-RESOLVED-ACTIVE] Resolved rawId "${rawId}" to active UID "${res.found.uid}" matches`);
-          return res.val;
-        }
-        console.debug(`[E2E-GETPOKE-RESOLVED-TEAM] Resolved rawId "${rawId}" to team UID "${res.found.uid}" name "${res.found.name}"`);
-        return res.found;
-      }
-      throw new Error(`[showdownBridge.ts] Resolved UID "${foundUid}" for "${rawId}" but it was not found in the reactively tracked team list.`);
-    }
-
-    throw new Error(`[showdownBridge.ts] Failed to resolve Pokemon reference for "${rawId}" (no UID match found). Line: "${line}"`);
+    throw new Error(
+      `[ShowdownBridge] UID resolution failed for "${rawId}". ` +
+      `This indicates a synchronization bug — UID must be present in the tracked team. ` +
+      `Aborting to expose the desync at its source.`
+    );
   };
 
   const ctx: SBCtx = { store, type: type ?? '', parts, line, p, e, turnLogs, getSide, getPoke };

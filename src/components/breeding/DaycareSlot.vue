@@ -5,7 +5,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
@@ -236,7 +236,8 @@ const getSprite = (id: string | number, isShiny: boolean) => {
 }
 
 const getNatureDescription = (natureName: string) => {
-  return (NATURE_DATA as Record<string, { desc: string }>)[natureName]?.desc || 'Sin efecto en estadísticas.'
+  const clean = (natureName || '').toLowerCase().trim()
+  return isNatureId(clean) ? NATURE_DATA[clean].desc : 'Sin efecto en estadísticas.'
 }
 
 const heldItemSprite = computed(() => {

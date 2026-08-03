@@ -5,7 +5,7 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
-import { toPokemonType } from '@/data/battle/types'
+import { toPokemonType, TYPE_COLORS } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -39,8 +39,7 @@ const md = computed(() => {
 
 const typeColor = computed(() => {
   if (!md.value) return '#aaa'
-  const colors = PDEX_TYPE_COLORS as Record<string, string>
-  return colors[moveType.value] || '#aaa'
+  return TYPE_COLORS[moveType.value] || '#aaa'
 })
 
 const moveType = computed(() => toPokemonType(md.value?.type || 'normal'))

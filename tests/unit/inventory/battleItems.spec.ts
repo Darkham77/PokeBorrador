@@ -44,8 +44,8 @@ describe('battleItems.js', () => {
     const e = { id: '16', hp: 10, maxHp: 20, catchRate: 255 } as unknown as Pokemon
     
     // We expect PLAY_CATCH_ENERGY to be emitted
-    await handleItemUsage('poke-ball', p, e, mockOptions)
+    await handleItemUsage('pokeball', p, e, mockOptions)
     
-    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: 'poke-ball' })
+    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: 'pokeball' })
   })
 });

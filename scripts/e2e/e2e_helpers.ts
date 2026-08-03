@@ -2,6 +2,8 @@
 import { type Page, type Locator, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
+import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
+import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
   const cleanOptions = { ...options };
@@ -27,6 +29,17 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         return;
       }
       if (msg.includes('visible') || msg.includes('stable') || msg.includes('intercepts pointer events')) {
+        // Fallback: If standard click is intercepted (e.g. by a PVTooltip overlay),
+        // try focusing the element and triggering via Enter key to bypass pointer-events.
+        try {
+          console.debug('[E2E-CLICK-FALLBACK] Click intercepted or unstable. Trying focus + Enter key...');
+          await locator.focus({ timeout: 1000 });
+          await locator.page().keyboard.press('Enter');
+          return;
+        } catch (fallbackErr) {
+          console.debug(`[E2E-CLICK-FALLBACK-FAILED] Focus + Enter failed: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`);
+        }
+
         const postClickState = await locator.page().evaluate(() => {
           const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
           if (!resolver) return null;
@@ -43,6 +56,7 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: 1000 }).catch(() => null);
         continue;
       }
+      throw err; // Re-throw other unexpected errors (e.g. syntax, timeout of non-visible elements)
     }
   }
   throw new Error(`[E2E-CLICK-FAILED] Click failed after 5 retries on locator without force bypass.`);
@@ -106,6 +120,15 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
     (window as unknown as Record<string, unknown>).__E2E__ = true;
     localStorage.setItem('pwa_permissions_accepted', 'true');
     localStorage.setItem('auto-battle', 'false');
+    // Pre-initialize session mode to offline so authStore.checkSession()
+    // does not perform slow Supabase connection health checks and retries
+    // which time out and block Vue mounting under high test concurrency.
+    localStorage.setItem('pokevicio_session_mode', 'offline');
+    // Clear stale logout reason so LoginView does not render the "session expired"
+    // panel (v-if="sessionExpired") instead of the actual login form (v-else).
+    // Without this, a previous failed run can leave 'session_invalidated' in
+    // sessionStorage, hiding #server-tab-local for the entire test.
+    sessionStorage.removeItem('pokevicio_logout_reason');
     if ('Notification' in window) {
       Object.defineProperty(Notification, 'permission', {
         get() { return 'granted'; }
@@ -119,49 +142,46 @@ export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', log
   await loginTestUser(page, username);
 }
 
-/**
- * Realiza el login de test en el servidor local
- */
 export async function loginTestUser(page: Page, testUser: string): Promise<void> {
-  // Navegar al Login
-  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+  // Navigate to login. Wait for 'load' (all scripts executed) so Vue has fully
+  // bootstrapped and mounted the login component tree before we query for elements.
+  // 'domcontentloaded' fires too early — Vue hasn't run yet, causing #server-tab-local
+  // to be absent when multiple concurrent workers share the same Vite dev server.
+  await page.goto('/login', { waitUntil: 'load' });
 
-  // Seleccionar servidor local
+  // Under heavy CPU congestion from parallel workers, client-side Vue mounting,
+  // router resolution, and authStore checks can take several seconds.
+  // Wait explicitly for Vue to mount and initial loader overlays to disappear.
+  await page.waitForFunction(() => {
+    return (window as unknown as Record<string, unknown>).pwa_app_mounted === true &&
+           !document.querySelector('.loading-overlay') &&
+           !document.querySelector('.auth-loading-text');
+  }, undefined, { timeout: 15000 }).catch(() => {});
+
+  // The local form does not exist until its server tab has rendered.
   const localTab = page.locator('#server-tab-local').first();
-  await localTab.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
-  if (await localTab.isVisible().catch(() => false)) {
-    await clickResilient(localTab);
-  }
+  await localTab.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await localTab.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  // Iniciar sesión
   const userInput = page.locator('#local-username-input').first();
-  await userInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  await userInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await userInput.fill(testUser);
 
   const jugarBtn = page.locator('#local-login-btn').first();
-  await jugarBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-  await clickResilient(jugarBtn);
+  await jugarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await jugarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  // Esperar de forma no bloqueante a que aparezca la pantalla de inicial o la pantalla principal directamente
-  const starterCard = page.locator('.starter-card.grass, #starter-img-bulbasaur').first();
-  const mapaBtn = page.locator('button.map-btn').first();
+  await page.waitForFunction(() => localStorage.getItem('pokevicio_session_mode') === 'offline', undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await page.waitForURL(url => url.pathname !== '/login', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  await Promise.race([
-    starterCard.waitFor({ state: 'visible', timeout: 5000 }).then(() => 'starter'),
-    mapaBtn.waitFor({ state: 'attached', timeout: 5000 }).then(() => 'map')
-  ]).then(async (resolvedScreen) => {
-    if (resolvedScreen === 'starter') {
-      console.log(`[E2E-LOGIN] Pantalla de inicial detectada. Seleccionando Bulbasaur...`);
-      await clickResilient(starterCard);
-    } else {
-      console.log(`[E2E-LOGIN] Interfaz principal detectada directamente (inicial ya seleccionado anteriormente).`);
-    }
-  }).catch((err) => {
-    console.debug(`[E2E-LOGIN] Error en transición de login: ${String(err)}`);
-  });
+  await waitForStoreReady(page);
 
-  // Asegurar que estamos en el mapa para iniciar el test
-  await mapaBtn.waitFor({ state: 'attached', timeout: 5000 });
+  // A new local profile must choose a starter; an existing profile goes straight to the map.
+  const starterCard = page.locator('[id^="starter-card-"]').first();
+
+  if (await starterCard.isVisible()) {
+    await starterCard.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
 }
 
 export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
@@ -529,23 +549,7 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
   }, choice);
 }
 
-export interface CertifiedTestBatch {
-  id?: string;
-  seed?: [number, number, number, number];
-  playerTeam: Array<{ species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean; uid?: string }>;
-  enemyTeam: Array<{ species: string; level?: number; ability?: string; moves?: string[]; item?: string; name?: string; nature?: string; ivs?: Record<string, number>; evs?: Record<string, number>; gender?: string; shiny?: boolean; uid?: string }>;
-  playerChoices: string[];
-  enemyChoices: string[];
-  finalState?: {
-    p1: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
-    p2: Array<{ name: string; hp: number; maxHp: number; fainted: boolean }>;
-  };
-  abilitiesToTest?: string[];
-  movesToTest?: string[];
-  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
-  history?: Array<{ p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
-  ended?: boolean;
-}
+export type CertifiedTestBatch = CertifiedBattleCase;
 
 export async function waitForBattleReadyEvent(page: Page, batchIndex: number, turnCount: number): Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }> {
   try {
@@ -610,11 +614,7 @@ export async function verifyHpParity(page: Page) {
 }
 
 export async function executeAutoBattle(
-  page: Page, 
-  _batchIndex: number, 
-  _startingTurn = 0, 
-  _playerChoices?: string[], 
-  _cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>, 
+  page: Page,
   finalState?: CertifiedTestBatch['finalState']
 ) {
   await page.evaluate(() => {
@@ -631,12 +631,18 @@ export async function executeAutoBattle(
 
   let over = false;
   while (!over) {
-    const eventDetail = (await page.evaluate(async () => {
-      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
-        return await window.__VITE_DEBUG__.waitForBattleReady();
+    await page.waitForFunction(() => {
+      const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
+      return readiness?.isReady === true;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    const eventDetail = await page.evaluate(() => {
+      const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
+      if (!readiness?.isReady) {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Scripted replay readiness disappeared before action dispatch. context=${JSON.stringify(readiness)}`);
       }
-      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
-    })) as { subState: string; over: boolean; p1ChoiceIdx: number; p2ChoiceIdx: number };
+      return readiness;
+    });
 
     if (eventDetail.over) {
       over = true;
@@ -654,30 +660,24 @@ export async function executeAutoBattle(
       return false;
     });
 
-    if (!success) {
-      const isEndingOrOver = await page.evaluate(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        if (!store?.state || store.state.over) return true;
-        const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-        const gameStore = debug?.getGameStore?.();
-        const activePoke = store.state.player;
-        const team = gameStore?.state?.team as Array<{ hp?: number }> | undefined;
-        const allPlayerFainted = !activePoke || (team && team.every(p => !p || (p.hp !== undefined && p.hp <= 0)));
-        const sub = String(store.currentSubState || '');
-        const state = String(store.currentFsmState || '');
-        const endingSubStates = [
-          'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
-          'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
-          'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL'
-        ];
-        return allPlayerFainted || state !== 'ACTIVE_BATTLE' || endingSubStates.includes(sub);
-      });
+    const isEndingOrOver = await page.evaluate(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const store = resolver?.();
+      if (!store?.state || store.state.over) return true;
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+      const history = Reflect.get(debug ?? {}, 'history');
+      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+      const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
+      const workerEnded = Reflect.get(debug ?? {}, 'certifiedReplayWorkerEnded') === true;
+      return isReplayComplete && workerEnded;
+    });
 
-      if (isEndingOrOver) {
-        over = true;
-        break;
-      }
+    if (isEndingOrOver) {
+      over = true;
+      break;
+    }
+
+    if (!success) {
       throw new Error(`[E2E-TURN-FAIL] executeScriptedAction returned false when FSM emitted ready event.`);
     }
   }
@@ -688,7 +688,7 @@ export async function executeAutoBattle(
     if (!resolver) return true;
     const store = resolver();
     return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   if (finalState) {
     const isBattleOver = await page.evaluate(() => {
@@ -696,22 +696,42 @@ export async function executeAutoBattle(
       if (!resolver) return true;
       const store = resolver();
       if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
-      const subStateVal = store.currentSubState ? String(store.currentSubState) : '';
-      const endingSubStates = [
-        'PLAYER_FAINT_SEQ', 'PLAY_ENEMY_FAINT', 'ENEMY_DEFEAT', 'DISTRIBUTE_XP',
-        'EVAL_HP', 'EVAL_CONTINUE', 'ALL_FAINTED', 'DEFEAT_SCREEN', 'CLEANUP_MEMORY',
-        'EXIT_BATTLE', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'SWITCH_MENU'
-      ];
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-      const pChoices = debug?.playerChoices as string[] | undefined;
-      const isReplayComplete = Boolean(pChoices && Array.isArray(pChoices) && pChoices.length > 0 && (debug?.p1ChoiceIdx ?? 0) >= pChoices.length);
-      return endingSubStates.includes(subStateVal) || isReplayComplete;
+      const history = Reflect.get(debug ?? {}, 'history');
+      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+      const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
+      const workerEnded = Reflect.get(debug ?? {}, 'certifiedReplayWorkerEnded') === true;
+      return isReplayComplete && workerEnded;
     });
 
     expect(isBattleOver).toBe(true);
   }
 
   if (finalState) {
+    const replayTraceMismatch = await page.evaluate(() => {
+      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+      const history = Reflect.get(debug ?? {}, 'history');
+      const trace = Reflect.get(debug ?? {}, 'certifiedReplaySubmissionTrace');
+      if (!Array.isArray(history) || !Array.isArray(trace)) {
+        throw new Error(`[E2E-CERTIFICATION] Missing replay history or worker submission trace. context=${JSON.stringify({ hasHistory: Array.isArray(history), hasTrace: Array.isArray(trace) })}`);
+      }
+      if (trace.length !== history.length) {
+        return { traceLength: trace.length, historyLength: history.length, mismatch: null };
+      }
+      interface ReplayStep { p1Choice?: string; p2Choice?: string }
+      for (let index = 0; index < history.length; index++) {
+        const expected = history[index] as ReplayStep | undefined;
+        const actual = trace[index] as ReplayStep | undefined;
+        if (!expected || !actual || expected.p1Choice !== actual.p1Choice || expected.p2Choice !== actual.p2Choice) {
+          return { traceLength: trace.length, historyLength: history.length, mismatch: { index, expected, actual } };
+        }
+      }
+      return null;
+    });
+    if (replayTraceMismatch) {
+      throw new Error(`[E2E-CERTIFICATION] Worker submissions diverged from the certified JSON. context=${JSON.stringify(replayTraceMismatch)}`);
+    }
+
     const clientState = await page.evaluate(() => {
       interface LocalDebugObject {
         [key: string]: unknown;
@@ -727,6 +747,10 @@ export async function executeAutoBattle(
       }
 
       const win = window as WindowWithDebug;
+      const workerFinalState = Reflect.get(win.__VITE_DEBUG__ ?? {}, 'certifiedReplayWorkerFinalState');
+      if (workerFinalState) {
+        return workerFinalState;
+      }
       if (win.__VITE_DEBUG__ && win.__VITE_DEBUG__.lastFinalState) {
         return win.__VITE_DEBUG__.lastFinalState;
       }
@@ -758,17 +782,24 @@ export async function executeAutoBattle(
       if (!expectedTeam) return;
 
       expectedTeam.forEach((expected) => {
-        const clientPoke = clientState[seat].find(p => 
-          (p.uid && p.uid.startsWith(expected.name)) || 
-          (p.name && p.name.startsWith(expected.name))
-        );
+        const targetUid = (expected as { uid?: string }).uid || expected.name;
+        const clientPoke = clientState[seat].find(p => isMatchingUid(p.uid, targetUid));
         if (clientPoke) {
-          expect(clientPoke.fainted).toBe(expected.fainted);
-          expect(clientPoke.maxHp).toBe(expected.maxHp);
+          if (clientPoke.fainted !== expected.fainted) {
+            throw new Error(`[E2E-PARITY] ${seat} ${targetUid} fainted mismatch: expected=${expected.fainted}, actual=${clientPoke.fainted}, hp=${clientPoke.hp}/${clientPoke.maxHp}.`);
+          }
+          if (clientPoke.maxHp !== expected.maxHp) {
+            throw new Error(`[E2E-PARITY] ${seat} ${targetUid} max HP mismatch: expected=${expected.maxHp}, actual=${clientPoke.maxHp}.`);
+          }
           if (!expected.fainted) {
-            expect(clientPoke.hp).toBe(expected.hp);
+            if (clientPoke.hp !== expected.hp) {
+              throw new Error(`[E2E-PARITY] ${seat} ${targetUid} HP mismatch: expected=${expected.hp}, actual=${clientPoke.hp}.`);
+            }
             if ((expected as { status?: string }).status !== undefined) {
-              expect(clientPoke.status).toBe((expected as { status?: string }).status || '');
+              const expectedStatus = (expected as { status?: string }).status || '';
+              if (clientPoke.status !== expectedStatus) {
+                throw new Error(`[E2E-PARITY] ${seat} ${targetUid} status mismatch: expected=${expectedStatus}, actual=${clientPoke.status}.`);
+              }
             }
           }
         } else {
@@ -779,12 +810,53 @@ export async function executeAutoBattle(
   }
 }
 
+/**
+ * Drives an ordinary browser battle through the real UI. It is deliberately
+ * separate from executeAutoBattle: manual scenarios have no certified history
+ * and must never activate the fuzzer replayer.
+ */
+export async function executeNativeAutoBattle(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    if (window.__VITE_DEBUG__) window.__VITE_DEBUG__.isScriptedReplayMode = false;
+  });
+
+  while (true) {
+    await waitForWaitInput(page);
+    const state = await page.evaluate(() => {
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      return { over: !store?.state || store.state.over, subState: store?.currentSubState ?? null };
+    });
+    if (state.over) return;
+
+    if (state.subState === 'WAIT_INPUT') {
+      const moveBtn = page.locator('button[id^="move-btn-"]:not([disabled])').first();
+      await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      // Use focus() + keyboard Enter instead of mouse click to avoid triggering PVTooltip hover.
+      // Playwright's click() internally moves the mouse to the element's center, which hovers the
+      // "?" info zone inside the move slot and causes the MoveTooltip popup to appear and intercept
+      // subsequent pointer events. Keyboard activation bypasses pointer-events entirely.
+      await moveBtn.focus();
+      await page.keyboard.press('Enter');
+      continue;
+    }
+
+    if (state.subState === 'SWITCH_MENU') {
+      const target = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted)').first();
+      await target.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await clickResilient(target, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      continue;
+    }
+
+    throw new Error(`[E2E-NATIVE-AUTO] Battle awaited a UI action from an unsupported FSM substate. context=${JSON.stringify(state)}`);
+  }
+}
+
 export async function waitForStoreReady(page: Page): Promise<void> {
   await page.waitForFunction(() => {
     const debug = (window as WindowWithResolver).__VITE_DEBUG__;
     if (!debug || !debug.getGameStore) return false;
     const store = debug.getGameStore();
-    return !!store && (store.isReady === true || (store as unknown as { isDataLoaded?: boolean }).isDataLoaded === true);
+    return !!store && !!store.state && store.isReady === true;
   }, undefined, { timeout: 30000 });
 }
 

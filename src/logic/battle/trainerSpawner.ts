@@ -1,4 +1,4 @@
-import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/player/trainerTypes';
+import { TRAINER_TYPES, isTrainerTypeKey, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { MapRouteId } from '@/data/world/map-assets';
@@ -67,7 +67,7 @@ function selectTrainerArchetype(
     return rivalChance > 0 ? 'rival' : 'policeman';
   }
 
-  const relativeKeys = (Object.keys(TRAINER_TYPES) as TrainerTypeKey[]).filter(
+  const relativeKeys = Object.keys(TRAINER_TYPES).filter(isTrainerTypeKey).filter(
     k => k !== 'rival' && k !== 'policeman'
   );
 
@@ -125,7 +125,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   const rivalLevel = Math.floor(avgLevel) + 2;
 
   // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
-  const rivalPool = TRAINER_TYPES['rival'].pool as readonly string[];
+  const rivalPool = TRAINER_TYPES['rival'].pool;
   const aceBase = rivalPool[Math.floor(Math.random() * rivalPool.length)] ?? 'charizard';
 
   // 2. Init randombattle generator based on active generation setting
@@ -135,7 +135,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
 
   // 3. Build ace: 1 random Pokémon from rival pool + its competitive randomSet
   // Cast needed: TeamGenerator interface is minimal; underlying RandomTeams class exposes randomSet
-  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } };
+  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } }; // domain-ok
   const aceSet = generatorWithRandomSet.randomSet(aceBase);
 
   const acePokemon = makePokemon(aceBase, rivalLevel, { bypassWhitelist: true }) as Pokemon;

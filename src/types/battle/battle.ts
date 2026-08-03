@@ -252,4 +252,5 @@ export interface ShowdownPlayerRequest {
     }[];
   };
   wait?: boolean;
+  teamPreview?: boolean;
 }

@@ -2,6 +2,7 @@ import { sleep } from '@/logic/utils/timeUtils'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
+import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 
 import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
 
@@ -30,8 +31,9 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
 
   const oldPoke = activeBattle.value?.player
   const req = activeBattle.value?.playerRequest
-  const hasForceSwitch = !!(req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x))))
-  const isFaintState = (fsm.currentState?.value as unknown as string) === 'PLAYER_FAINT_SEQ' || fsm.currentSubState?.value === 'PLAYER_FAINT_SEQ' || (fsm.currentState?.value as unknown as string) === 'SWITCH_MENU' || fsm.currentSubState?.value === 'SWITCH_MENU'
+  const isRevivingTarget = isRevivingForceSwitchRequest(req)
+  const hasForceSwitch = !isRevivingTarget && !!(req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x))))
+  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentState?.value as string) === 'SWITCH_MENU' || (fsm.currentSubState?.value as string) === 'SWITCH_MENU'
   const reallyForced = isForced || hasForceSwitch || isFaintState || (oldPoke && oldPoke.hp <= 0)
 
   if (!reallyForced) {
@@ -39,7 +41,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     const isTrapped = await isPlayerTrappedInWorker()
     if (isTrapped) {
       const { useUIStore } = await import('@/stores/ui')
-      ;(useUIStore() as unknown as { notify: (msg: string, icon: string) => void }).notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
+      useUIStore().notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       return
     }
@@ -49,12 +51,19 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
   
   const newPoke = gs.state.team[teamIndex]
-  if (!newPoke || newPoke.hp <= 0) return
+  if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) return
   
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
   if (!activeBattle.value) return
+
+  if (isRevivingTarget) {
+    await processForcedSwitchWorkerTurn(ctx, newPoke, true)
+    persistBattle()
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+    return
+  }
   
-  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as unknown as { volatileCounters?: Record<string, number> })) {
+  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> })) { // domain-ok
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
@@ -64,7 +73,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     return
   }
 
-  if (oldPoke && oldPoke.hp > 0) {
+  if (oldPoke && oldPoke.hp > 0 && !reallyForced) {
     const { processSwitchSwapAnimations } = await import('./switchSequenceHelper.ts')
     await processSwitchSwapAnimations(ctx, oldPoke, newPoke, teamIndex)
   } else {
@@ -99,15 +108,32 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
 }
 
-async function processForcedSwitchWorkerTurn(ctx: BattleContext, newPoke: NonNullable<BattleContext['activeBattle']['value']>['player']) {
+async function processForcedSwitchWorkerTurn(
+  ctx: BattleContext,
+  newPoke: NonNullable<BattleContext['activeBattle']['value']>['player'],
+  isRevivingTarget = false
+) {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   if (!activeBattle.value || !newPoke) return
   const active = activeBattle.value
   try {
-    const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
     const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
-
-    const switchResult = await executeTurnInWorker(`switch ${slot}`, undefined)
+    let p1Choice: string
+    let p2Choice = ''
+    let p2Skip = true
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+      p1Choice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p1')
+      p2Choice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2')
+      if (!p1Choice.startsWith('switch ') || (p2Choice !== '' && !p2Choice.startsWith('switch '))) {
+        throw new Error(`[switchAction] Certified forced player switch has an invalid atomic history entry. context=${JSON.stringify({ p1Choice, p2Choice })}`)
+      }
+      p2Skip = p2Choice === ''
+    } else {
+      const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
+      p1Choice = `switch ${slot}`
+    }
+    const switchResult = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
     if (switchResult) {
       active.playerRequest = switchResult.p1Request
       active.enemyRequest = switchResult.p2Request
@@ -120,9 +146,13 @@ async function processForcedSwitchWorkerTurn(ctx: BattleContext, newPoke: NonNul
 
       const { syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
       await syncTeamsFromLastWorkerState()
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+        const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+        ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+      }
     }
 
-    if (newPoke.hp <= 0) {
+    if (!isRevivingTarget && newPoke.hp <= 0) {
       const { processFaint } = await import('../resolution.ts')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
       await processFaint(ctx, 'player')

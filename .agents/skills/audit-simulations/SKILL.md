@@ -23,7 +23,7 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 ### PROHIBITION 2 — NEVER fabricate bugs to fill a quota or mask errors with fallbacks
 
 - There is **NO minimum quota** of bugs per audit run.
-- It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, or silent recovery adapters when a missing property, asset, sprite, or mapping error occurs. A missing value or coordinate is a data/code defect that MUST fail loudly. Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
+- It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, silent recovery adapters, or runtime auto-choice fallbacks when a missing property, asset, sprite, disabled move, or mapping error occurs. Intercepting choice rejections in `src/` to substitute default moves or call fallback agents is STRICTLY PROHIBITED. A missing value, coordinate, or invalid choice is a defect that MUST fail fast and loudly (`throw new Error(...)`). Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
 - If the diagnostic suite and manual comparison find **0 real divergences**, the correct and honest output is:
   > "✅ Auditoría completa: 0 divergencias reales encontradas. El codebase está en paridad 1:1 con Showdown."
 - Inventing entries, splitting trivially, or cataloging already-resolved behavior to look productive is **STRICTLY FORBIDDEN** and constitutes deliberate deception of the user.

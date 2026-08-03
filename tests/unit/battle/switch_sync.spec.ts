@@ -174,7 +174,8 @@ describe('Switch Sync & Move Tooltip Stat Modifiers', () => {
     expect(mockWorker.postMessage).toHaveBeenCalledWith({
       type: 'EXECUTE_TURN',
       payload: {
-        p1Choice: 'switch 2'
+        p1Choice: 'switch 2',
+        p2Choice: ''
       }
     })
   })

@@ -36,7 +36,8 @@ export interface IVs {
   spe: number;
 }
 
-export type StatId = 'atk' | 'def' | 'spa' | 'spd' | 'spe';
+export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+export type StatId = (typeof STAT_IDS)[number];
 
 export interface NatureData {
   up: StatId | null;
@@ -102,3 +103,26 @@ export function calcStatsPure(
 
   return { maxHp, atk, def, spa, spd, spe };
 }
+
+export function isStatId(stat: string): stat is StatId {
+  return (STAT_IDS as readonly string[]).includes(stat); // domain-ok
+}
+
+export function calculateTotalIVs(ivs?: Partial<Record<StatId, number>> | null): number {
+  if (!ivs) return 0;
+  return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+}
+
+export function calculateTotalBaseStats(stats?: Partial<BaseStats> | null): number {
+  if (!stats) return 0;
+  return (stats.hp || 0) + (stats.atk || 0) + (stats.def || 0) + (stats.spa || 0) + (stats.spd || 0) + (stats.spe || 0);
+}
+
+export function modifyStatStage(stages: Record<string, number>, stat: string, delta: number): number {
+  const current = stages[stat] || 0;
+  const next = Math.max(-6, Math.min(6, current + delta));
+  stages[stat] = next;
+  return next;
+}
+
+

@@ -1,7 +1,7 @@
 
 import { itemEffects } from '../items/itemEffects.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import { getItemById } from '@/data/inventory/items';
+import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items';
 import type { Item } from '@/types/inventory/items';
 
 /**
@@ -15,14 +15,14 @@ export const ITEM_EFFECTS = itemEffects;
  * Intenta usar un objeto sobre un Pokémon.
  * @returns {any|null} Resultado del uso o null si no tuvo efecto.
  */
-import type { ItemId } from '@/data/inventory/items';
+
 
 /**
  * Intenta usar un objeto sobre un Pokémon.
  * @returns {any|null} Resultado del uso o null si no tuvo efecto.
  */
 export function useItemOnPokemon(itemName: ItemId | string, pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
-  const itemId = itemName as ItemId;
+  const itemId = requireItemId(itemName);
 
   // Validate item exists in SHOP_ITEMS
   const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
@@ -46,7 +46,7 @@ export function useItemOnPokemon(itemName: ItemId | string, pokemon: Pokemon): {
 }
 
 export function isGlobalItem(itemName: ItemId | string): boolean {
-  const itemId = itemName as ItemId;
+  const itemId = requireItemId(itemName);
   const item = getItemById(itemId) as Item | undefined;
   if (!item) return false;
   return !!(item.isGlobal || item.globalItem);

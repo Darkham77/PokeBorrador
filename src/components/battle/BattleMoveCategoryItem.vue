@@ -11,8 +11,8 @@ defineProps<{
   <div class="detail-item">
     <span class="d-label pixelated">CAT:</span>
     <span class="d-val pixelated">
-      <span class="cat-full">{{ ({ physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' } as Record<string, string>)[moveData?.cat || 'status'] || '🔮 Estado' }}</span>
-      <span class="cat-short">{{ ({ physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' } as Record<string, string>)[moveData?.cat || 'status'] || '🔮 EST' }}</span>
+      <span class="cat-full">{{ moveData?.cat === 'physical' ? '⚔️ Físico' : moveData?.cat === 'special' ? '✨ Especial' : '🔮 Estado' }}</span>
+      <span class="cat-short">{{ moveData?.cat === 'physical' ? '⚔️ FIS' : moveData?.cat === 'special' ? '✨ ESP' : '🔮 EST' }}</span>
     </span>
   </div>
   <div class="mv-pp-wrap">

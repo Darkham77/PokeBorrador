@@ -92,7 +92,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
         missingIds.forEach(id => {
           const p = profilesList.find(prof => prof.id === id)
           const saveRow = savesList.find(s => s.user_id === id)
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {}
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {} // open-record
 
           const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'
           const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)

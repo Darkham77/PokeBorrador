@@ -150,13 +150,13 @@ test.describe('E2E Held Items Verification', () => {
   });
 
   // Cargar y ejecutar lotes fuzzer
-  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_auxiliary_cases.json');
   let itemBatches: CertifiedTestBatch[] = [];
   if (fs.existsSync(consolidatorPath)) {
     try {
       const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
-      if (content.items_consumption) {
-        itemBatches = content.items_consumption as CertifiedTestBatch[];
+      if (content.items) {
+        itemBatches = content.items as CertifiedTestBatch[];
       }
     } catch (_e: unknown) { /* expected */ }
   }
@@ -191,14 +191,9 @@ test.describe('E2E Held Items Verification', () => {
         // Inyectar el lote usando la clase base unificada
         await sim.setupFuzzerScenario(batch);
 
-        if (batch.ended === false) {
-          console.warn(`[E2E-WARN] Saltando lote ${batch.id || index + 1} porque no terminó exitosamente en el fuzzer.`);
-          return;
-        }
-
         try {
           await sim.startBattle();
-          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
+          await sim.playBattle(batch.finalState);
         } catch (error: unknown) {
           const caseId = batch.id || `lote-items-${index + 1}`;
           if (process.env.CONTINUE_ON_ERROR === 'true') {

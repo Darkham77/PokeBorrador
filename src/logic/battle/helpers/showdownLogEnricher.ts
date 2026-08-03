@@ -12,7 +12,7 @@ export class ShowdownLogEnricher {
   static setupRealtimeEnrichment(battle: Battle): void {
     const originalAdd = battle.add;
     battle.add = function (...parts: unknown[]) {
-      originalAdd.apply(this, parts as unknown as Parameters<typeof originalAdd>);
+      originalAdd.apply(this, parts as Parameters<typeof originalAdd>); // domain-ok
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
@@ -34,7 +34,7 @@ export class ShowdownLogEnricher {
 
     const originalAddMove = battle.addMove;
     battle.addMove = function (...parts: unknown[]) {
-      originalAddMove.apply(this, parts as unknown as Parameters<typeof originalAddMove>);
+      originalAddMove.apply(this, parts as Parameters<typeof originalAddMove>); // domain-ok
       const lastIndex = battle.log.length - 1;
       if (lastIndex >= 0) {
         const line = battle.log[lastIndex];
@@ -66,7 +66,7 @@ export class ShowdownLogEnricher {
         const isPlayer = rawId.startsWith('p1a:') || rawId === 'p1a';
         const sideObj = isPlayer ? battle.p1 : battle.p2;
         const activeMon = sideObj?.active?.[0];
-        const uid = activeMon ? (activeMon as unknown as { uid?: string }).uid : null;
+        const uid = activeMon ? (Reflect.get(activeMon, 'uid') as string | undefined) : null;
         if (uid && !line.includes('|[uids]')) {
           const cleanIdent = rawId.replace(/\s+/g, '');
           return `${line}|[uids]${cleanIdent}=${uid}`;

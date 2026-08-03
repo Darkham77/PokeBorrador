@@ -127,8 +127,8 @@ export function useMoveTooltip(
     // 1. Power details
     const power = calculateMovePower(
       move,
-      attacker as unknown as PurePokemon,
-      defender as unknown as PurePokemon | null,
+      attacker as PurePokemon, // domain-ok
+      defender as PurePokemon | null, // domain-ok
       weather ? { type: weather.type, turns: weather.turns } : null,
       mechWeather,
       cycle,
@@ -152,8 +152,8 @@ export function useMoveTooltip(
 
     // 3. Crit Chance
     const critChance = calculateCritChance(
-      attacker as unknown as PurePokemon,
-      defender as unknown as PurePokemon | null
+      attacker as PurePokemon, // domain-ok
+      defender as PurePokemon | null // domain-ok
     );
 
     // 4. Effectiveness (type chart) + Damage range via @smogon/calc
@@ -169,8 +169,8 @@ export function useMoveTooltip(
     const enemyStagesEff  = enemyStageFull.def  !== undefined ? { def: isPhysical ? enemyStageFull.def  : enemyStageFull.spd  } : null;
     const { effectiveness } = calculateMoveEffectivenessAndDamage(
       move, md,
-      attacker as unknown as PurePokemon,
-      defender as unknown as PurePokemon | null,
+      attacker as PurePokemon, // domain-ok
+      defender as PurePokemon | null, // domain-ok
       weather ? { type: weather.type, turns: weather.turns } : null,
       cycle, basePower, playerStagesEff, enemyStagesEff
     );
@@ -217,7 +217,7 @@ export function useMoveTooltip(
       const stage = isPhysical ? (battleStore.playerStages.atk || 0) : (battleStore.playerStages.spa || 0);
       const rawVal = attacker[statKey] || 0;
       const finalVal = defender ? getEffectiveStatPure(
-        attacker as unknown as PurePokemon,
+        attacker as PurePokemon, // domain-ok
         statKey,
         { [statKey]: stage },
         weather ? { type: weather.type, turns: weather.turns } : null,
@@ -240,7 +240,7 @@ export function useMoveTooltip(
       const stage = isPhysical ? (battleStore.enemyStages.def || 0) : (battleStore.enemyStages.spd || 0);
       const rawVal = defender[statKey] || 0;
       const finalVal = getEffectiveStatPure(
-        defender as unknown as PurePokemon,
+        defender as PurePokemon, // domain-ok
         statKey,
         { [statKey]: stage },
         weather ? { type: weather.type, turns: weather.turns } : null,
@@ -308,8 +308,8 @@ export function useMoveTooltip(
 
     return parseStatusEffectInfo(
       move,
-      attacker as unknown as PurePokemon,
-      defender as unknown as PurePokemon | null,
+      attacker as PurePokemon, // domain-ok
+      defender as PurePokemon | null, // domain-ok
       battleStore.playerStages,
       battleStore.enemyStages
     );

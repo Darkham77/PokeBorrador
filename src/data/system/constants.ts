@@ -7,7 +7,7 @@ export const ACTIVE_SHOWDOWN_FORMAT = ACTIVE_GENERATION < 5
 export const IMPLEMENTED_GENERATION = 9;
 export const ACTIVE_AI_TEAM_GENERATION_GEN = 1;
 
-const FACTIONS = {
+export const FACTIONS = {
   UNION: 'union',
   POWER: 'poder'
 } as const;
@@ -31,6 +31,18 @@ export const ENABLED_POKEMON_IDS = [
 ] as const;
 
 export type EnabledPokemonId = (typeof ENABLED_POKEMON_IDS)[number];
+
+export function isEnabledPokemonId(id: string): id is EnabledPokemonId {
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // domain-ok
+}
+
+export const STARTER_POKEMON_IDS = [
+  'bulbasaur',
+  'charmander',
+  'squirtle'
+] as const;
+
+export type StarterPokemonId = (typeof STARTER_POKEMON_IDS)[number];
 
 
 export const MAX_POKEMON_LEVEL = 100;

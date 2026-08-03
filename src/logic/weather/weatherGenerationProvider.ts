@@ -10,11 +10,12 @@ import { toID } from '@pkmn/sim';
  * Maps a Poké Vicio visual weather ID to its official Showdown weather ID
  * for a specific generation.
  */
-import type { WeatherId } from './weatherRegistry.ts';
+import { isWeatherId, type WeatherId } from './weatherRegistry.ts';
 
-export function mapVisualToOfficialWeather(visualWeather: WeatherId | string | null | undefined, gen: number): string {
+export function mapVisualToOfficialWeather(visualWeather: string | null | undefined, gen: number): string {
   if (!visualWeather) return 'none';
-  const lower = visualWeather as WeatherId;
+  const lower = isWeatherId(visualWeather) ? visualWeather : null;
+  if (!lower) return 'none';
 
   // Gen 9 Mapping
   if (gen >= 9) {

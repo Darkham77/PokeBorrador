@@ -69,6 +69,13 @@ const P_DOMAIN_STRING_FIELD = /^\s*(?:readonly\s+)?([A-Z_a-z]\w*)\??:\s*string(?
 const P_AMBIGUOUS_EMPTY_NULL_TYPE_ALIAS = /^\s*(?:export\s+)?type\s+\w+\s*=[^;\n]*(?:''|""|``)[^;\n]*\|\s*(?:null|undefined)[^;\n]*;|^\s*(?:export\s+)?type\s+\w+\s*=[^;\n]*(?:null|undefined)[^;\n]*\|\s*(?:''|""|``)[^;\n]*;/gm;
 const P_AMBIGUOUS_EMPTY_NULL_FIELD = /^\s*(?:readonly\s+)?\w+\??:\s*[^;\n]*(?:''|""|``)[^;\n]*\|\s*(?:null|undefined)[^;\n]*[;,]?|^\s*(?:readonly\s+)?\w+\??:\s*[^;\n]*(?:null|undefined)[^;\n]*\|\s*(?:''|""|``)[^;\n]*[;,]?/gm;
 const P_RUNTIME_CASE_NORMALIZATION = /\b\w+\.(?:toLowerCase|toUpperCase)\s*\(\s*\)\s*(?:as\s+\w+|satisfies\s+\w+)?/g;
+const P_TYPECAST_UNKNOWN = /\bas\s+unknown\s+as\b/g;
+const P_TYPECAST_INLINE_ANY = /\bas\s+any\b/g;
+const P_TYPECAST_READONLY_STRING_ARRAY = /\bas\s+(?:readonly\s+)?string\[\]/g;
+const P_TYPECAST_INLINE_DOMAIN_ID = /\bas\s+(?:[A-Z]\w*Id|keyof\s+typeof\s+[A-Z_a-z]\w*)\b/g;
+const P_TYPECAST_RECORD_STRING = /\bas\s+Record\s*<\s*string\s*,/g;
+const P_TYPECAST_ARRAY_ANY_UNKNOWN = /\bas\s+(?:any|unknown)\[\]/g;
+const P_OBJECT_KEYS_CAST = /\bObject\.(?:keys|entries)\s*\([^)]+\)\s+as\s+(?:\([|\w\s]+\)|[A-Za-z]\w*)\[\]/g;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Finding {
@@ -235,7 +242,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_FIELD_WILDCARD_STRING_UNION,
     'Strict domain type combined with `| string` wildcard union — erases compile-time type safety',
     'ERROR',
-    (_match, _line, file) => isContractFile(file),
+    (_match, _line, file) => isContractFile(file) && !isAmbientDeclarationFile(file),
     true // overrideEscapeHatch: ignore // domain-ok if line contains a wildcard union
   ));
 
@@ -317,6 +324,71 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'Ambiguous field type mixes empty-string sentinel with null/undefined',
     'ERROR',
     (_match, _line, file) => isContractFile(file)
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_UNKNOWN,
+    'Double type assertion `as unknown as T` used to bypass domain contracts — use typed boundary guards or Window augmentations',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_INLINE_ANY,
+    'Type assertion `as any` used to bypass TypeScript checks — strictly forbidden by Zero-Any policy',
+    'ERROR',
+    (_match, line) => !line.includes('// any-ok') && !line.includes('eslint-disable')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_READONLY_STRING_ARRAY,
+    'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard',
+    'ERROR',
+    (_match, line, _file) => {
+      if (line.includes('// domain-ok') || line.includes('// no-domain')) return false;
+      return !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line);
+    }
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_INLINE_DOMAIN_ID,
+    'Inline type assertion `as DomainId` used to force dynamic string into domain type — use boundary guard `isDomainId()` or `requireDomainId()`',
+    'ERROR',
+    (_match, line) => !/\bfunction\s+(?:is|require)[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line) && !line.includes('// domain-ok')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_RECORD_STRING,
+    'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard',
+    'ERROR',
+    (_match, line) => !line.includes('// open-record') && !line.includes('// no-domain')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_TYPECAST_ARRAY_ANY_UNKNOWN,
+    'Type assertion `as any[]` or `as unknown[]` erases element domain types — define explicit interface or discriminated union',
+    'ERROR',
+    (_match, line) => !line.includes('// any-ok') && !line.includes('// no-domain')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_OBJECT_KEYS_CAST,
+    'Type assertion on `Object.keys(...)` or `Object.entries(...)` to `as DomainId[]` — use typed helper or `isDomainId` filtering',
+    'ERROR',
+    (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !line.includes('// domain-ok')
   ));
 
   return findings;
@@ -409,6 +481,7 @@ const report = lines.join('\n');
 console.log(report);
 
 if (outputFile) {
+  // eslint-disable-next-line no-control-regex
   const plain = report.replace(/\x1B\[[0-9;]*m/g, '');
   await fs.writeFile(path.resolve(ROOT, outputFile), plain, 'utf8');
   console.log(styleText('dim', `  Report saved to: ${outputFile}`));

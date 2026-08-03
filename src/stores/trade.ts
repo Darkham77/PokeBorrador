@@ -66,11 +66,15 @@ export const useTradeStore = defineStore('trade', () => {
     if (!authStore.user) return
 
     const db = gameStore.db
-    const [incomingRes, outgoingRes, acceptedRes] = await Promise.all([
-      db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending') as unknown as Promise<{ data: TradeOffer[] | null }>,
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending') as unknown as Promise<{ data: TradeOffer[] | null }>,
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted') as unknown as Promise<{ data: TradeOffer[] | null }>
+    const [incRes, outRes, accRes] = await Promise.all([
+      db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending'),
+      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending'),
+      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted')
     ])
+
+    const incomingRes = { data: incRes.data as TradeOffer[] | null } // domain-ok
+    const outgoingRes = { data: outRes.data as TradeOffer[] | null } // domain-ok
+    const acceptedRes = { data: accRes.data as TradeOffer[] | null } // domain-ok
 
     const validateOffers = (offers: TradeOffer[] | null): TradeOffer[] => {
       if (!offers) return []
@@ -99,13 +103,15 @@ export const useTradeStore = defineStore('trade', () => {
     Object.keys(tradeOfferItems).forEach(k => delete tradeOfferItems[k])
     Object.keys(tradeRequestItems).forEach(k => delete tradeRequestItems[k])
 
-    const { data, error } = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single() as unknown as { data: { save_data: GameState } | null, error: { message: string } | null }
+    const saveRes = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single()
+    const data = saveRes.data as { save_data: GameState } | null // domain-ok
+    const error = saveRes.error
     
     if (error || !data) {
-      tradeFriendSave.value = { team: [], box: [], inventory: {}, money: 0 } as unknown as GameState
+      tradeFriendSave.value = ({ team: [], box: [], inventory: {}, money: 0 } as unknown as GameState) // domain-ok
       uiStore.notify('No se pudo cargar el inventario del amigo.', '⚠️')
     } else {
-      tradeFriendSave.value = data.save_data as unknown as GameState
+      tradeFriendSave.value = data.save_data as GameState // domain-ok
     }
     uiStore.open('Trade')
   }

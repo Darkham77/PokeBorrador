@@ -11,7 +11,7 @@ interface ViteDebugBridge {
 const game = useGameStore()
 const debug = useDebugStore()
 
-const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge // domain-ok
 
 const regenerate = () => {
   const bridge = getDebugBridge()

@@ -49,7 +49,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
     iconType = 'emoji';
   } else if (source) {
     if (source === 'player') {
-      const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || ''];
+      const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || '']; // open-record
       const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador';
       icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
       iconType = 'player_avatar';

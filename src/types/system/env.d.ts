@@ -152,6 +152,8 @@ declare global {
       playerChoices?: string[];
       executeScriptedAction?: () => Promise<boolean>;
       waitForBattleReady?: () => Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }>;
+      getScriptedReplayReadiness?: () => { subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean; isReady: boolean };
+      certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: 'entering' | 'retreating' | 'idle' | null; isCaptureSequenceActive: boolean };
       useItemInBattle?: (itemId: string, targetUid: string) => void;
       healAll?: () => void;
       forceFlee?: () => void | Promise<void>;
@@ -162,6 +164,12 @@ declare global {
     __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
     drawBattleBackground?: (locationId: string, cycle: string) => void;
     pwa_app_mounted?: boolean;
+    __GTS_SIMULATION__?: boolean;
+    __E2E__?: boolean;
+    __showdownWorker__?: Worker;
+    __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
+    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // text-ok // string-ok // open-record
+    __WEATHER_SESSION_SEED__?: number;
   }
 }
 

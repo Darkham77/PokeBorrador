@@ -67,7 +67,7 @@ export function useDebugPokemonCreator() {
   })
 
   const filteredMaps = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
     return maps
       .filter(m => {
         if (selectedMinigame.value === 'fishing') {

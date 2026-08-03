@@ -7,14 +7,27 @@ import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMap
 
 import crypto from 'node:crypto';
 
-export interface FuzzerPokemonSet extends PokemonSet {
+import type { PersistedPokemonGender } from '../../../../src/logic/auth/saveService.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
+import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
+
+export interface FuzzerPokemonSet extends Omit<PokemonSet, 'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'> {
+  species: PokemonSpeciesId;
+  gender: PersistedPokemonGender;
+  item: ItemId;
+  ability: AbilityId;
+  nature: NatureId;
+  moves: PokemonMoveId[];
   uid?: string;
 }
 
 export interface ItemTestBatch {
   playerTeam: FuzzerPokemonSet[];
   enemyTeam: FuzzerPokemonSet[];
-  itemsToTest: string[];
+  itemsToTest: ItemId[];
 }
 
 export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] {
@@ -35,14 +48,14 @@ export function generateItemTestBatches(batchSize: number = 6): ItemTestBatch[] 
   return generateItemBatches(itemPool, batchSize);
 }
 
-export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTestBatch[] {
+export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTestBatch[] {
   const batches: ItemTestBatch[] = [];
   let itemIdx = 0;
 
   while (itemIdx < itemPool.length) {
     const playerTeam: FuzzerPokemonSet[] = [];
     const enemyTeam: FuzzerPokemonSet[] = [];
-    const batchItems: string[] = [];
+    const batchItems: ItemId[] = [];
 
     // Llenar equipo del jugador con Mew, equipándole los diferentes items a testear
     for (let p = 0; p < batchSize; p++) {
@@ -60,7 +73,7 @@ export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTest
         name: pNickname,
         species: 'mew',
         level: 100,
-        gender: '',
+        gender: 'N',
         item: itemId,
         ability: 'noability',
         nature: 'serious',
@@ -82,7 +95,7 @@ export function generateItemBatches(itemPool: string[], batchSize = 6): ItemTest
         name: eNickname,
         species: 'blissey',
         level: 100,
-        gender: '',
+        gender: 'F',
         item: '',
         ability: 'naturalcure',
         nature: 'serious',

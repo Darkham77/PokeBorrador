@@ -1,9 +1,9 @@
 // scripts/e2e/fuzzer/core/fuzzerMemoryStore.ts
 import path from 'node:path';
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
+import type { CertifiedBattleCase, CertifiedBattleCaseDocument } from '../generators/fuzzer_team_generator.ts';
 
-export interface CertifiedCaseStore {
-  battle?: unknown[];
+export interface FuzzerAuxiliaryCaseStore {
   abilities?: unknown[];
   items?: unknown[];
   scenarios?: unknown[];
@@ -15,28 +15,33 @@ export interface CertifiedCaseStore {
 }
 
 class FuzzerMemoryStore {
-  private data: CertifiedCaseStore = {};
+  private battle: CertifiedBattleCase[] = [];
+  private auxiliary: FuzzerAuxiliaryCaseStore = {};
 
-  public setSection(section: keyof CertifiedCaseStore, cases: unknown[]): void {
-    this.data[section] = cases;
+  public appendBattleCases(cases: CertifiedBattleCase[]): void {
+    this.battle.push(...cases);
   }
 
-  public getSection(section: keyof CertifiedCaseStore): unknown[] | undefined {
-    return this.data[section];
+  public setAuxiliarySection(section: keyof FuzzerAuxiliaryCaseStore, cases: unknown[]): void {
+    this.auxiliary[section] = cases;
   }
 
-  public getAll(): CertifiedCaseStore {
-    return this.data;
+  public getAuxiliarySection(section: keyof FuzzerAuxiliaryCaseStore): unknown[] | undefined {
+    return this.auxiliary[section];
   }
 
   public clear(): void {
-    this.data = {};
+    this.battle = [];
+    this.auxiliary = {};
   }
 
   public async flushToDisk(): Promise<void> {
-    const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-    await fileWriterQueue.safeWriteFile(consolidatorPath, JSON.stringify(this.data, null, 2));
-    console.log(`💾 [FuzzerMemoryStore] Almacén de memoria consolidado en disco de forma atómica: ${consolidatorPath}`);
+    const certifiedPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+    const auxiliaryPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_auxiliary_cases.json');
+    const certifiedDocument: CertifiedBattleCaseDocument = { battle: this.battle };
+    await fileWriterQueue.safeWriteFile(certifiedPath, JSON.stringify(certifiedDocument, null, 2));
+    await fileWriterQueue.safeWriteFile(auxiliaryPath, JSON.stringify(this.auxiliary, null, 2));
+    console.log(`💾 [FuzzerMemoryStore] Wrote terminal certified battles to ${certifiedPath} and auxiliary artifacts to ${auxiliaryPath}.`);
   }
 }
 

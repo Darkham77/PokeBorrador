@@ -35,6 +35,22 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
     assert.equal(choice, 'switch 3, switch 4');
   });
 
+  it('selects a fainted party member for Showdown Revival Blessing target requests', () => {
+    const agent = new TestAgent('p1');
+    const request: ChoiceRequest = {
+      forceSwitch: [true],
+      side: {
+        pokemon: [
+          { ident: 'p1a: Reviver', details: 'Pawmot', condition: '100/100', active: true, reviving: true, stats: { hp: 100 }, moves: [], ability: '' },
+          { ident: 'p1: FaintedTarget', details: 'Pikachu', condition: '0 fnt', active: false, stats: { hp: 100 }, moves: [], ability: '' },
+          { ident: 'p1: HealthyBench', details: 'Raichu', condition: '100/100', active: false, stats: { hp: 100 }, moves: [], ability: '' },
+        ],
+      },
+    };
+
+    assert.equal(agent.testDecide(request), 'switch 2');
+  });
+
   it('avoids "undefined" modifier string coercion when canMegaEvo is not defined', () => {
     const agent = new TestAgent('p1');
     const request: ChoiceRequest = {

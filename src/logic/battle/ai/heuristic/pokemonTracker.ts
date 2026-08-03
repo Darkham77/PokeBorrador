@@ -4,10 +4,10 @@
 // ============================================================
 
 import { toID } from '@pkmn/sim';
-import type { ItemId } from '@/data/inventory/items';
+import { requireItemId, type ItemId } from '@/data/inventory/items';
 import type { InferredInfo, InferredSet, RandomBattleSetEntry } from './types.ts';
 
-const CHOICE_ITEMS: readonly ItemId[] = ['choiceband', 'choicescarf', 'choicespecs'];
+const CHOICE_ITEMS = ['choiceband', 'choicescarf', 'choicespecs'] as const satisfies readonly ItemId[];
 
 export class PokemonTracker {
   readonly species: string;
@@ -150,7 +150,7 @@ export class PokemonTracker {
       for (const set of this.sets) {
         if (set.probability <= 0) continue;
         const iid = toID(set.item);
-        probs.set(iid, (probs.get(iid) ?? 0) + set.probability * (CHOICE_ITEMS.includes(iid as ItemId) ? 3.0 : 1.0));
+        probs.set(iid, (probs.get(iid) ?? 0) + set.probability * (CHOICE_ITEMS.includes(requireItemId(iid)) ? 3.0 : 1.0));
       }
       const total = [...probs.values()].reduce((a, b) => a + b, 0);
       if (total > 0) for (const [k, v] of probs) probs.set(k, v / total);

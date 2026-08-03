@@ -61,11 +61,13 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   function _pollMatchmaking() {
     if (!isSearching.value || !gameStore.db || !authStore.user) return
     gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async (res) => {
-      const { data } = res as unknown as { data: RankedQueueEntry[] | null, error: { message: string } | null }
+      const data = res.data as RankedQueueEntry[] | null // domain-ok
       if (data && data.length > 0 && authStore.user && gameStore.db) {
         const match = data[0]
         if (!match) return
-        const { data: invite, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single() as unknown as { data: BattleInvite | null, error: { message: string } | null }
+        const invRes = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single()
+        const invite = invRes.data as BattleInvite | null // domain-ok
+        const error = invRes.error
         if (!error && invite) {
           await gameStore.db.from('ranked_queue').delete().in('user_id', [authStore.user.id, match.user_id])
           isSearching.value = false; startBattle(invite, true, true)
@@ -73,6 +75,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       }
     })
   }
+
+
 
   function initInvitePoller() {
     if (invitePoller) invitePoller.kill()
@@ -119,7 +123,9 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   async function sendInvite(opponentId: string, opponentName: string) {
     if (!authStore.user || !gameStore.db) return
-    const { data, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single() as unknown as { data: BattleInvite | null, error: { message: string } | null }
+    const invRes = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single()
+    const data = invRes.data as BattleInvite | null // domain-ok
+    const error = invRes.error
     if (error || !data) { uiStore.notify('Error al enviar invitación', '❌'); return }
     uiStore.notify(`Invitación enviada a ${opponentName}`, '✉️'); startBattle(data, true, false)
   }

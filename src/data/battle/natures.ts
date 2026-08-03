@@ -27,10 +27,15 @@ export const NATURE_DATA = Object.freeze({
 } as const);
 
 export type NatureId = keyof typeof NATURE_DATA;
-export const NATURES = Object.keys(NATURE_DATA) as NatureId[];
+
+export function isNatureId(raw: string): raw is NatureId {
+  return raw in NATURE_DATA;
+}
+
+export const NATURES: readonly NatureId[] = Object.keys(NATURE_DATA).filter(isNatureId);
 
 /** Boundary adapter for external data (saves, DB). Throws if invalid. */
 export function toNatureId(raw: string): NatureId {
-  if (raw in NATURE_DATA) return raw as NatureId;
+  if (isNatureId(raw)) return raw;
   throw new Error(`[natures] Invalid NatureId: '${raw}'`);
 }

@@ -1,5 +1,4 @@
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { MapStore, EventStore, WarStore } from '@/types/system/stores'
 import { generateEncounter } from '@/logic/encounters/encounters'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
@@ -13,12 +12,11 @@ const BUG_ATTRACT_SPECIES: readonly PokemonSpeciesId[] = ['scyther', 'pinsir'];
 
 export async function generateSearchLoopEncounter(ctx: BattleContext, locId: string) {
   const routeId = requireMapRouteId(locId)
-  const mapStore = useMapStore() as unknown as MapStore
-  const eventStore = useEventStore() as unknown as EventStore
-  const warStore = useWarStore() as unknown as WarStore
-  const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>
-  const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined
-  const debugMults = (debug?.multipliers as Record<string, number> | undefined) || {}
+  const mapStore = useMapStore()
+  const eventStore = useEventStore()
+  const warStore = useWarStore()
+  const debug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined
+  const debugMults = (debug?.multipliers as Record<string, number> | undefined) || {} // open-record
 
   const encounterOptions = {
     activeEvents: mapStore.activeEvents,

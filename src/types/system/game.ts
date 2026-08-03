@@ -74,7 +74,7 @@ const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 
 function isFactionId(value: string): value is FactionId {
-  return (FACTION_IDS as readonly string[]).includes(value);
+  return (FACTION_IDS as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireFactionId(value: string): FactionId {

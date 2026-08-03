@@ -1,8 +1,6 @@
 import { nextTick } from 'vue'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { UIStore } from '@/types/system/stores'
-
 export async function processSearchPhaseSequence(
   ctx: BattleContext,
   finalEnemyPoke: Pokemon,
@@ -30,7 +28,7 @@ export async function processSearchPhaseSequence(
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
   
   const { useUIStore } = await import('@/stores/ui')
-  const uiStore = useUIStore() as unknown as UIStore
+  const uiStore = useUIStore()
   const autoBattle = uiStore.autoBattle && !isTrainer
 
   if (!autoBattle) {

@@ -1,6 +1,7 @@
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { MapRouteId } from '@/data/world/map-assets';
 
 export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
@@ -14,6 +15,7 @@ export interface Gym {
   id: string; // domain-ok
   name: string; // domain-ok
   city: string; // domain-ok
+  locationId: MapRouteId;
   leader: string; // domain-ok
   type: PokemonType;
   typeColor: string; // domain-ok
@@ -31,7 +33,7 @@ export interface Gym {
 
 export const GYMS = [
   {
-    id: 'pewter', name: 'Gimnasio Plateada', city: 'Ciudad Plateada',
+    id: 'pewter', name: 'Gimnasio Plateada', city: 'Ciudad Plateada', locationId: 'pewter_city',
     leader: 'Brock', type: 'rock', typeColor: '#c8a060',
     badge: '💎', badgeName: 'Medalla Roca',
     sprite: 'brock',
@@ -46,7 +48,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'cerulean', name: 'Gimnasio Celeste', city: 'Ciudad Celeste',
+    id: 'cerulean', name: 'Gimnasio Celeste', city: 'Ciudad Celeste', locationId: 'cerulean_city',
     leader: 'Misty', type: 'water', typeColor: '#3B8BFF',
     badge: '💧', badgeName: 'Medalla Cascada',
     sprite: 'misty',
@@ -61,7 +63,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'vermilion', name: 'Gimnasio Carmín', city: 'Ciudad Carmín',
+    id: 'vermilion', name: 'Gimnasio Carmín', city: 'Ciudad Carmín', locationId: 'vermilion_city',
     leader: 'Lt. Surge', type: 'electric', typeColor: '#FFD93D',
     badge: '⚡', badgeName: 'Medalla Trueno',
     sprite: 'ltsurge',
@@ -76,7 +78,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'celadon', name: 'Gimnasio Celadón', city: 'Ciudad Celadón',
+    id: 'celadon', name: 'Gimnasio Celadón', city: 'Ciudad Celadón', locationId: 'celadon_city',
     leader: 'Erika', type: 'grass', typeColor: '#6BCB77',
     badge: '🌿', badgeName: 'Medalla Arcoíris',
     sprite: 'erika',
@@ -91,7 +93,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'fuchsia', name: 'Gimnasio Fucsia', city: 'Ciudad Fucsia',
+    id: 'fuchsia', name: 'Gimnasio Fucsia', city: 'Ciudad Fucsia', locationId: 'fuchsia_city',
     leader: 'Koga', type: 'poison', typeColor: '#C77DFF',
     badge: '☠️', badgeName: 'Medalla Alma',
     sprite: 'koga',
@@ -106,7 +108,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'saffron', name: 'Gimnasio Azafrán', city: 'Ciudad Azafrán',
+    id: 'saffron', name: 'Gimnasio Azafrán', city: 'Ciudad Azafrán', locationId: 'saffron_city',
     leader: 'Sabrina', type: 'psychic', typeColor: '#FF793F',
     badge: '🔮', badgeName: 'Medalla Marsh',
     sprite: 'sabrina',
@@ -121,7 +123,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'cinnabar', name: 'Gimnasio Canela', city: 'Isla Canela',
+    id: 'cinnabar', name: 'Gimnasio Canela', city: 'Isla Canela', locationId: 'cinnabar_island',
     leader: 'Blaine', type: 'fire', typeColor: '#FF6B35',
     badge: '🔥', badgeName: 'Medalla Volcán',
     sprite: 'blaine',
@@ -136,7 +138,7 @@ export const GYMS = [
     }
   },
   {
-    id: 'viridian', name: 'Gimnasio Verde', city: 'Ciudad Verde',
+    id: 'viridian', name: 'Gimnasio Verde', city: 'Ciudad Verde', locationId: 'viridian_city',
     leader: 'Giovanni', type: 'ground', typeColor: '#c8a060',
     badge: '🌍', badgeName: 'Medalla Tierra',
     sprite: 'giovanni',
@@ -155,7 +157,7 @@ export type GymId = (typeof GYMS)[number]['id'];
 export const GYM_IDS = GYMS.map(gym => gym.id);
 
 export function isGymId(value: string): value is GymId {
-  return GYM_IDS.includes(value as GymId);
+  return (GYM_IDS as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireGymId(value: string): GymId {

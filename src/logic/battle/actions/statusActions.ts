@@ -134,7 +134,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
 
   'heal_status_party': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
-    const isPlayer = (src === battleCtx.player.value);
+    const isPlayer = (src === battleCtx.player?.value);
     const team = isPlayer ? (battleCtx.activeBattle.value?.playerTeam || []) : (battleCtx.activeBattle.value?.enemyTeam || []);
     
     team.forEach((p: Pokemon) => {

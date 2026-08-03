@@ -15,12 +15,12 @@ import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
 
 const getNatureData = (nat: string | undefined) => {
   if (!nat) return NATURE_DATA['serious']
   const key = nat.toLowerCase()
-  return NATURE_DATA[key as keyof typeof NATURE_DATA] || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === key)
+  return (isNatureId(key) ? NATURE_DATA[key] : undefined) || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === key)
 }
 
 interface Props {
@@ -56,8 +56,7 @@ const isIvScannerActive = computed(() => {
 })
 
 const isAdmin = computed(() => {
-  const win = window as unknown as { __ADMIN_DEBUG__: boolean }
-  return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
+  return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) || supabase.isLocal
 })
 
 const showStatsTable = computed(() => {
@@ -114,7 +113,7 @@ const adminStatConfig = [
 const getStatModifier = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   if (!stages) return 0
-  return (stages as Record<string, number>)[key] || 0
+  return (stages as Record<string, number>)[key] || 0 // open-record
 }
 
 const getBreakdown = (key: string) => {

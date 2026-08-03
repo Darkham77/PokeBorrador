@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { STONE_EVOLUTIONS } from '@/data/pokemon/evolutionData';
+import { STONE_EVOLUTIONS, isStoneEvolutionKey } from '@/data/pokemon/evolutionData';
 import { SHOP_ITEMS } from '@/data/inventory/items';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -43,8 +43,7 @@ const options = computed(() => {
     ];
   }
   
-  const id = p.id as keyof typeof STONE_EVOLUTIONS;
-  const evo = STONE_EVOLUTIONS[id];
+  const evo = isStoneEvolutionKey(p.id) ? STONE_EVOLUTIONS[p.id] : undefined;
   return evo ? [evo] : [];
 });
 

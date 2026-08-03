@@ -138,7 +138,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
         let saveData: Record<string, unknown> = {}
         try {
           if (typeof rawSave === 'string') {
-            saveData = JSON.parse(rawSave) as Record<string, unknown>
+            saveData = JSON.parse(rawSave) as Record<string, unknown> // open-record
           }
         } catch (_) {
           continue

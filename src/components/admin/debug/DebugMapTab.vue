@@ -10,7 +10,7 @@ interface ViteDebug {
   togglePerf: () => void
 }
 
-const getDebug = () => (window as unknown as { __VITE_DEBUG__: ViteDebug }).__VITE_DEBUG__
+const getDebug = () => window.__VITE_DEBUG__ as unknown as ViteDebug // domain-ok
 
 const toggleGrid = () => getDebug().toggleGrid()
 const togglePerf = () => getDebug().togglePerf()

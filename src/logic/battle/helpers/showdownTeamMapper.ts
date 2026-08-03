@@ -59,7 +59,8 @@ export class ShowdownTeamMapper {
   ): ShowdownRequest | null {
     if (!req) return null;
     if (req.side && Array.isArray(req.side.pokemon)) {
-      const simulatorPokemon = (battle?.[player] as unknown as { pokemon?: Array<{ uid?: string }> })?.pokemon || [];
+      const sideObj = battle ? battle[player] : null;
+      const simulatorPokemon = (sideObj ? Reflect.get(sideObj, 'pokemon') as Array<{ uid?: string }> | undefined : undefined) || [];
       const assignedUids = new Set<string>();
 
       req.side.pokemon.forEach((reqMon) => {

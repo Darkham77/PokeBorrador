@@ -1,7 +1,7 @@
 // fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
 import { BaseE2ESimulation } from './base_simulation.ts';
-import { confirmAndStartBattle, executeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
+import { confirmAndStartBattle, executeAutoBattle, executeNativeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
 
 /** Shape of a single Pokémon entry inside a fuzzer-certified batch team list. */
 interface FuzzerTeamSet {
@@ -99,13 +99,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         activePlayerUid: store.state.player?.uid ?? '',
         playerHp: store.state.player?.hp ?? 0,
         playerMaxHp: store.state.player?.maxHp ?? 0,
-        playerStatus: store.state.player?.status ?? null,
+        playerStatus: store.state.player?.status || null,
         playerTeam: (store.state.playerTeam ?? []).map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({
           uid: p?.uid ?? '',
           name: p?.name ?? '',
           hp: p?.hp ?? 0,
           maxHp: p?.maxHp ?? 0,
-          status: p?.status ?? null
+          status: p?.status || null
         }))
       };
     });
@@ -171,7 +171,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           startBattle: (enemy: unknown, opts: unknown) => Promise<void>;
         };
         useGameStore: () => {
-          state: { team: unknown[]; inventory: Record<string, number> };
+          state: { team: unknown[]; inventory: Record<string, number>; starterChosen: boolean };
         };
         useMapStore: () => {
           setGlobalWeather: (weather: string) => void;
@@ -193,6 +193,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       battleStore.state = null;
       gameStore.state.team = [];
+      gameStore.state.starterChosen = true;
 
       // Esperar reactivamente a que Vue procese el desmontado del componente de batalla previo usando ciclos de animación nativos
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -265,8 +266,12 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       
       debugObj.p1ChoiceIdx = 0;
       debugObj.p2ChoiceIdx = 0;
+      Reflect.set(debugObj, 'replayHistoryIdx', 0);
+      Reflect.set(debugObj, 'certifiedReplayWorkerEnded', false);
+      Reflect.deleteProperty(debugObj, 'certifiedReplayWorkerFinalState');
+      Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', []);
       debugObj.enemyChoiceIndex = 0;
-      debugObj.cheats = batchData.cheats ?? [];
+      debugObj.history = batchData.history;
 
       if (batchData.seed && debug.injectDebugSeed) {
         debug.injectDebugSeed(batchData.seed as [number, number, number, number]);
@@ -287,6 +292,10 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       // Asegurar que las elecciones y los índices se mantengan limpios tras la inicialización del worker
       debugObj.p1ChoiceIdx = 0;
       debugObj.p2ChoiceIdx = 0;
+      Reflect.set(debugObj, 'replayHistoryIdx', 0);
+      Reflect.set(debugObj, 'certifiedReplayWorkerEnded', false);
+      Reflect.deleteProperty(debugObj, 'certifiedReplayWorkerFinalState');
+      Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', []);
       debugObj.enemyChoiceIndex = 0;
       debugObj.playerChoices = [...playerChoices];
       debugObj.enemyChoices = [...enemyChoices];
@@ -310,13 +319,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Ejecuta el combate automático determinista (genérico o fuzzer)
    */
   public async playBattle(
-    batchIndex?: number,
-    startingTurn = 0,
-    playerChoices?: string[],
-    cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>,
     finalState?: CertifiedTestBatch['finalState']
   ): Promise<void> {
-    await executeAutoBattle(this.page, batchIndex as number, startingTurn, playerChoices, cheats, finalState);
+    if (finalState) {
+      await executeAutoBattle(this.page, finalState);
+      return;
+    }
+    await executeNativeAutoBattle(this.page);
   }
 
   /**
@@ -337,4 +346,3 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     }, undefined, { timeout });
   }
 }
-

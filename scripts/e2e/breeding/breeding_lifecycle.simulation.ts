@@ -140,6 +140,8 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Breeding & Hatching Lifecycle Simulation', () => {
+  test.use({ viewport: { width: 1600, height: 900 } });
+
   test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
     const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const sim = new BreedingLifecycleSimulation(page, testUser);
@@ -150,7 +152,9 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
 
     // 2. Cargar padres DittoxBulbasaur y depositar en guardería
     await sim.setupDittoAndBulbasaur();
+    await sim.reloadAndSync();
     await sim.depositInDaycare();
+    await sim.reloadAndSync();
 
     // 3. Reclamar el huevo en el almacén
     await sim.generateAndClaimEgg();

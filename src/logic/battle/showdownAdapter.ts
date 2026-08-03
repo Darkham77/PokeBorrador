@@ -20,26 +20,27 @@ export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
       const stats = statsMap.get(set.name);
       if (stats) {
         const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-        const mapped = { ...(stats as Record<string, number>) };
+        const mapped = { ...(stats as Record<string, number>) }; // open-record
         if (mapped.maxHp !== undefined && mapped.hp === undefined) {
           mapped.hp = mapped.maxHp;
         }
         for (const k of Object.keys(mapped)) {
           if (typeof mapped[k] === 'number') mapped[k] = clampStat(mapped[k]);
         }
-        return mapped as unknown as StatsTable;
+        return mapped as StatsTable; // domain-ok
       }
     }
-    if (set && (set as unknown as { stats?: unknown }).stats) {
+    if (set && Reflect.get(set, 'stats')) {
       const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-      const stats = { ...((set as unknown as { stats: Record<string, number> }).stats) };
+      const setStats = Reflect.get(set, 'stats') as Record<string, number> | undefined; // open-record
+      const stats = { ...(setStats || {}) };
       if (stats.maxHp !== undefined && stats.hp === undefined) {
         stats.hp = stats.maxHp;
       }
       for (const k of Object.keys(stats)) {
         if (typeof stats[k] === 'number') stats[k] = clampStat(stats[k]);
       }
-      return stats as unknown as StatsTable;
+      return stats as StatsTable; // domain-ok
     }
     return originalSpreadModify.call(this, baseStats, set);
   };

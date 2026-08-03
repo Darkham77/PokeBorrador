@@ -125,7 +125,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
   if (props.customList && props.customList.length > 0) {
     sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
   } else if (props.battleMode === 'pvp') {
-    const pvpUids = (gameStore.state.pvpTeam || []) as string[]
+    const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain
     const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
     sourceList = allPokes
       .filter(p => pvpUids.includes(p.uid))
@@ -135,7 +135,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
         index: pvpUids.indexOf(p.uid) 
       }))
   } else if (props.battleMode === 'war') {
-    const warUids = (gameStore.state.warTeam || []) as string[]
+    const warUids = (gameStore.state.warTeam || []) as string[] // no-domain
     const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
     sourceList = allPokes
       .filter(p => warUids.includes(p.uid))
@@ -251,8 +251,7 @@ function forceClose() {
 
 
 if (typeof window !== 'undefined') {
-  const win = window as unknown as { _openPokemonSelectionModal?: (opts: Record<string, unknown>) => void }
-  win._openPokemonSelectionModal = (opts: Record<string, unknown>) => {
+  Reflect.set(window, '_openPokemonSelectionModal', (opts: Record<string, unknown>) => { // open-record
     uiStore.open('PokemonSelection', { 
       title: '⚡ SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
@@ -261,7 +260,7 @@ if (typeof window !== 'undefined') {
       ...opts 
     })
     selectedUids.value = []
-  }
+  })
 }
 
 function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {

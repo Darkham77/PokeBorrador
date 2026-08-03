@@ -8,7 +8,7 @@ import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
-import { toPokemonType } from '@/data/battle/types'
+import { toPokemonType, TYPE_COLORS } from '@/data/battle/types'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -47,8 +47,7 @@ const { moveData, finalPower, finalAccuracy, moveModifier, effectivenessMultipli
 
 const moveColor = computed(() => {
   if (!props.move) return '#444'
-  const type = moveType.value
-  return (PDEX_TYPE_COLORS as Record<string, string>)[type] || '#444'
+  return (TYPE_COLORS?.[moveType.value]) || '#444'
 })
 
 const moveType = computed(() => toPokemonType(moveData.value?.type || 'normal'))
@@ -114,7 +113,7 @@ const isDisabled = computed(() => {
 
   const isLocked = isPokemonLocked(p)
 
-  if (!isLocked && props.move.pp <= 0) return true
+  if (!isLocked && props.move.id !== 'struggle' && props.move.pp <= 0) return true
 
   return false
 })
@@ -259,7 +258,7 @@ const formatMoveName = (name: string) => {
 
 <template>
   <div
-    :id="'move-btn-' + index"
+    :id="'move-btn-wrapper-' + index"
     ref="rootEl"
     class="move-slot-wrapper"
     :class="[
@@ -324,6 +323,7 @@ const formatMoveName = (name: string) => {
     />
 
     <button 
+      :id="'move-btn-' + index"
       class="move-card-vicio"
       :class="{ 
         'disabled-move': !canReorder && move && isDisabled,

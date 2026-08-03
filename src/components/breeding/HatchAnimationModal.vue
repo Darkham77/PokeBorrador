@@ -56,8 +56,7 @@ const activeTweens: gsap.core.Tween[] = []
 let idleTimeline: gsap.core.Timeline | null = null
 
 const playSound = (soundName: string) => {
-  const win = window as unknown as { playSound?: (s: string) => void }
-  win.playSound?.(soundName)
+  (Reflect.get(window, 'playSound') as ((s: string) => void) | undefined)?.(soundName);
 }
 
 const getSprite = (id: string | number, isShiny: boolean) => {

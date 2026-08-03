@@ -1,11 +1,11 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
+import { toRaw } from 'vue'
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { UIStore, MapStore } from '@/types/system/stores'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
@@ -16,7 +16,9 @@ import { executePokemonCallSequence } from './orchestratorCallSequence.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireGymId } from '@/data/world/gyms'
 import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import {
   showdownWorker,
@@ -51,8 +53,8 @@ export interface BattleOptions {
   isDebug?: boolean;
   over?: boolean;
   turn?: 'player' | 'enemy' | null;
-  trainerSprite?: string;
-  trainerArchetype?: string;
+  trainerSprite?: NpcSpriteId;
+  trainerArchetype?: NpcArchetype;
   isRival?: boolean;
   difficulty?: string;
   rewardTM?: string;
@@ -94,7 +96,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
     const { useUIStore } = await import('@/stores/ui')
-    ;(useUIStore() as unknown as UIStore).notify('No tienes Pokémon sanos para combatir', '❌')
+    useUIStore().notify('No tienes Pokémon sanos para combatir', '❌')
     return
   }
 
@@ -109,7 +111,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   
   const { validatePokemon } = await import('@/logic/pokemon/pokemonFactory')
   const { useMapStore } = await import('@/stores/map')
-  const mapStore = useMapStore() as unknown as MapStore
+  const mapStore = useMapStore()
   const finalEnemyPoke = enemyPoke
   const finalEnemyTeam = enemyTeam && enemyTeam.length > 0 ? enemyTeam : [finalEnemyPoke]
   const startingEnemyPoke = finalEnemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
@@ -138,8 +140,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     ...battleOptions,
     enemy: null, 
     player: null, 
-    _initialEnemy: JSON.parse(JSON.stringify(startingEnemyPoke)) as unknown as Pokemon,
-    _initialPlayer: JSON.parse(JSON.stringify(playerPoke)) as unknown as Pokemon,
+    _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
+    _initialPlayer: structuredClone(toRaw(playerPoke)),
     _rewardCombatants: [],
     isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM,
     enemyInventory,

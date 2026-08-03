@@ -219,7 +219,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
 
   const classDef = computed(() => {
     if (!playerClass.value) return null
-    return (PLAYER_CLASSES as Record<string, { id: string; name: string; color: string; description: string }>)[playerClass.value] || null
+    return (PLAYER_CLASSES as Record<string, { id: string; name: string; color: string; description: string }>)[playerClass.value] || null // open-record
   })
 
   const trainerLevel = computed(() => {

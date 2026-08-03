@@ -28,5 +28,5 @@ function parseShowdownSeed(seed: unknown): [number, number, number, number] | un
  */
 export function parseShowdownSeedForBattle(seed: unknown): `${number},${string}` | undefined {
   const parsed = parseShowdownSeed(seed);
-  return parsed as unknown as `${number},${string}` | undefined;
+  return parsed as `${number},${string}` | undefined; // domain-ok
 }

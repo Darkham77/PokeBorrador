@@ -354,6 +354,7 @@ onUnmounted(() => {
   >
     <!-- 1. MAPA -->
     <PVHUDButton
+      id="nav-map-btn"
       custom-class="map-btn"
       :active="activeTab === 'map'"
       data-tab="map"
@@ -372,6 +373,7 @@ onUnmounted(() => {
       @mouseleave="handleMouseLeave('POKEMON')"
     >
       <PVHUDButton
+        id="nav-pokemon-btn"
         custom-class="group-btn"
         :active="['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') || modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions')"
         :badge-value="breedingStore.fulfillableMissionsCount"
@@ -394,6 +396,7 @@ onUnmounted(() => {
           class="hud-submenu"
         >
           <button
+            id="nav-pokemon-team-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('TeamManagement') }"
             @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
@@ -402,6 +405,7 @@ onUnmounted(() => {
             <span class="nav-item-label">EQUIPO</span>
           </button>
           <button
+            id="nav-pokemon-pc-btn"
             class="hud-nav-btn"
             :class="{ active: activeTab === 'box' }"
             @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
@@ -410,6 +414,7 @@ onUnmounted(() => {
             <span class="nav-item-label">CAJA PC</span>
           </button>
           <button
+            id="nav-pokemon-missions-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
             @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
@@ -424,6 +429,7 @@ onUnmounted(() => {
             </span>
           </button>
           <button
+            id="nav-pokemon-pokedex-btn"
             class="hud-nav-btn"
             :class="{ active: activeTab === 'pokedex' }"
             @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
@@ -442,6 +448,7 @@ onUnmounted(() => {
       position="top"
     >
       <PVHUDButton
+        id="nav-bag-btn"
         :active="modalStore.isOpen('Inventory')"
         @click.stop="handleTabChange('bag')"
       >
@@ -459,6 +466,7 @@ onUnmounted(() => {
       position="top"
     >
       <PVHUDButton
+        id="nav-gyms-btn"
         :active="activeTab === 'gyms'"
         :badge-value="gymRematchesCount > 0 ? gymRematchesCount : 0"
         @click.stop="handleTabChange('gyms')"
@@ -514,6 +522,7 @@ onUnmounted(() => {
       @mouseleave="handleMouseLeave('SOCIAL')"
     >
       <PVHUDButton
+        id="nav-social-btn"
         custom-class="group-btn"
         :active="modalStore.isOpen('Arena') || modalStore.isOpen('Ranking') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar')"
         :badge-value="totalSocialNotifications"
@@ -536,6 +545,7 @@ onUnmounted(() => {
           class="hud-submenu"
         >
           <button
+            id="nav-social-friends-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('SocialCenter') }"
             @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
@@ -551,6 +561,7 @@ onUnmounted(() => {
           </button>
 
           <button
+            id="nav-social-arena-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('Arena') }"
             @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
@@ -565,6 +576,7 @@ onUnmounted(() => {
             </span>
           </button>
           <button
+            id="nav-social-ranking-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('Ranking') }"
             @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
@@ -573,6 +585,7 @@ onUnmounted(() => {
             <span class="nav-item-label">RANKING</span>
           </button>
           <button
+            id="nav-social-dominance-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('FactionWar') }"
             @click.stop="modalStore.open('FactionWar'); uiStore.openHudGroup = null"
@@ -581,6 +594,7 @@ onUnmounted(() => {
             <span class="nav-item-label">DOMINANCIA</span>
           </button>
           <button
+            id="nav-social-events-btn"
             class="hud-nav-btn"
             :class="{ active: modalStore.isOpen('WorldEvents') }"
             @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"

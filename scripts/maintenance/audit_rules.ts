@@ -377,6 +377,21 @@ export const doxIndexIntegrity: AuditRule = {
   fixable: false
 };
 
+export const forbiddenTypeCasts: AuditRule = {
+  regex: /\bas\s+unknown\s+as\b|\bas\s+any\s+as\b/g,
+  message: (match: string) => `Casteo arbitrario prohibido detectado: '${match}'. Viola las directivas de integridad de tipos (@/domain-type-first y Regla 7 de AGENTS.md). Define e importa la interfaz o unión de tipos explícita.`,
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const lowerPath = filePath.toLowerCase();
+    const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('spec') || lowerPath.includes('fuzzer') || lowerPath.includes('simulation');
+    if (isTestOrMock) return false;
+    const isSrcOrScripts = lowerPath.includes('src/') || lowerPath.includes('src\\') || lowerPath.includes('scripts/');
+    return isSrcOrScripts;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, doxIndexIntegrity
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity
 };

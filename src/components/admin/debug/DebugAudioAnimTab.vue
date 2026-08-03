@@ -36,7 +36,7 @@ const battleStore = useBattleStore()
 
 const activeSide = ref<'player' | 'enemy'>('enemy')
 
-const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
 
 const setStatStage = (side: string, stat: string, val: number) => {
   getDebugBridge().setStatStage(side, stat, val)

@@ -10,7 +10,7 @@ import { getArgDateString } from '../utils/timeUtils.ts'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
-const GUARDIAN_TIERS = ['common', 'rare', 'elite'] as const
+export const GUARDIAN_TIERS = ['common', 'rare', 'elite'] as const
 type GuardianTier = (typeof GUARDIAN_TIERS)[number]
 
 

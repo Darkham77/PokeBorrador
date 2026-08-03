@@ -6,7 +6,7 @@ import { useBoxStore } from '@/stores/box'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId, type NatureId } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -36,6 +36,10 @@ const uiStore = useUIStore()
 const boxStore = useBoxStore()
 
 const pokemon = computed(() => (gameStore.state.box[props.boxIndex] || null))
+const natureDesc = computed(() => {
+  const nat = pokemon.value?.nature || ''
+  return isNatureId(nat) ? NATURE_DATA[nat].desc : ''
+})
 const pokemonTypes = computed<PokemonType[]>(() => {
   const p = pokemon.value
   if (!p) return []
@@ -236,7 +240,7 @@ const handleSellRocket = () => {
             <PVTooltip
               v-if="pokemon?.nature"
               :title="pokemon?.nature"
-              :description="(NATURE_DATA as Record<string, any>)[pokemon?.nature]?.desc"
+              :description="natureDesc"
               position="top"
             >
               <span class="interactive-text">{{ pokemon?.nature }}</span>

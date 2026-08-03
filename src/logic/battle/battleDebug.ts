@@ -9,12 +9,19 @@ import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/
 import type { BattleStages } from '@/types/battle/battle'
 import { requireBattleConditionKey } from '@/types/battle/battle'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
+import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness'
+
+export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness'
 
 interface BattleReadyDetail {
   subState: string
   p1ChoiceIdx: number
   p2ChoiceIdx: number
   over: boolean
+}
+
+interface ScriptedReplayReadinessDetail extends BattleReadyDetail {
+  isReady: boolean
 }
 
 function isBattleReadyDetail(value: unknown): value is BattleReadyDetail {
@@ -115,8 +122,8 @@ export function setupBattleDebug(ctx: BattleContext) {
   }
 
   win.__VITE_DEBUG__.toggleSilhouette = () => {
-    const bStore = useBattleStore() as unknown as Record<string, unknown>
-    bStore.debugSilhouette = !bStore.debugSilhouette
+    const bStore = useBattleStore()
+    Reflect.set(bStore, 'debugSilhouette', !Reflect.get(bStore, 'debugSilhouette'))
   }
 
   win.__VITE_DEBUG__.forceFlee = async () => {
@@ -130,28 +137,46 @@ export function setupBattleDebug(ctx: BattleContext) {
     return await executeScriptedPlayerAction(ctx)
   }
 
+  const getScriptedReplayReadiness = (): ScriptedReplayReadinessDetail => {
+    const active = ctx.activeBattle.value
+    if (!active || active.over) {
+      return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, isReady: true }
+    }
+    const subStateVal = ctx.fsm.currentSubState.value ? String(ctx.fsm.currentSubState.value) : ''
+    const hasPendingSwitch = Boolean(Reflect.get(active, 'switchingToPlayer')) || Boolean(Reflect.get(active, 'switchingToEnemy'))
+    const isReady = canExecuteScriptedReplayAction({
+      isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
+      subState: subStateVal,
+      isProcessing: ctx.isProcessing.value,
+      isIntroAnimating: ctx.isIntroAnimating.value,
+      hasPendingSwitch,
+    })
+    if (!isReady && subStateVal === 'SWITCH_MENU' && win.__VITE_DEBUG__?.isScriptedReplayMode) {
+      console.debug(`[E2E-CERTIFIED-REPLAY] SWITCH_MENU is not actionable. context=${JSON.stringify({
+        isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
+        isProcessing: ctx.isProcessing.value,
+        isIntroAnimating: ctx.isIntroAnimating.value,
+        hasPendingSwitch,
+        introDiagnostics: win.__VITE_DEBUG__?.certifiedReplayIntroDiagnostics,
+      })}`)
+    }
+    return {
+      subState: subStateVal,
+      p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+      p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+      over: false,
+      isReady,
+    }
+  }
+
+  win.__VITE_DEBUG__.getScriptedReplayReadiness = getScriptedReplayReadiness
+
   win.__VITE_DEBUG__.waitForBattleReady = () => {
     return new Promise((resolve) => {
       const checkCurrentReady = () => {
-        const active = ctx.activeBattle.value
-        if (!active || active.over) {
-          return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true }
-        }
-        const subStateVal = ctx.fsm.currentSubState.value ? String(ctx.fsm.currentSubState.value) : ''
-        const bState = active as unknown as Record<string, unknown>
-        const hasPendingSwitch = !!bState?.switchingToPlayer || !!bState?.switchingToEnemy
-        const isReady = ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE &&
-                        ['WAIT_INPUT', 'SWITCH_MENU', 'ENEMY_REPLACEMENT_SEQ'].includes(subStateVal) &&
-                        !ctx.isProcessing.value &&
-                        !ctx.isIntroAnimating.value &&
-                        !hasPendingSwitch
-        if (isReady) {
-          return {
-            subState: subStateVal,
-            p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-            p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
-            over: false
-          }
+        const detail = getScriptedReplayReadiness()
+        if (detail.over || detail.isReady) {
+          return detail
         }
         return null
       }

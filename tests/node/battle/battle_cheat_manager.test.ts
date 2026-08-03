@@ -135,4 +135,42 @@ describe('BattleCheatManager - Unit Tests', () => {
     assert.strictEqual(p1Mon.fainted, true);
     assert.strictEqual(manager.getAppliedCheatsCount(), 1);
   });
+
+  it('does not mutate a terminal battle with a recorded post-turn heal', () => {
+    const formatId = getShowdownFormatId();
+    const battle = new Battle({ formatid: formatId });
+    battle.setPlayer('p1', { name: 'Player 1', team: pikachuTeam as any });
+    battle.setPlayer('p2', { name: 'Player 2', team: pikachuTeam as any });
+
+    const manager = new BattleCheatManager([{ turn: 1, side: 'p1', type: 'heal' }]);
+    const p1Mon = battle.p1.pokemon[0];
+    if (!p1Mon) throw new Error('Pokemon not found');
+    p1Mon.hp = 1;
+    battle.ended = true;
+
+    manager.applyPostTurnCheats(battle, 1);
+
+    assert.strictEqual(p1Mon.hp, 1);
+    assert.strictEqual(manager.getAppliedCheatsCount(), 0);
+  });
+
+  it('keys certified heals by atomic history step instead of a repeated Showdown turn', () => {
+    const formatId = getShowdownFormatId();
+    const battle = new Battle({ formatid: formatId });
+    battle.setPlayer('p1', { name: 'Player 1', team: pikachuTeam as any });
+    battle.setPlayer('p2', { name: 'Player 2', team: pikachuTeam as any });
+
+    const manager = new BattleCheatManager([
+      { turnCount: 1, battleTurn: 2, p1Heal: true },
+      { turnCount: 2, battleTurn: 2 },
+    ]);
+    const p1Mon = battle.p1.pokemon[0];
+    if (!p1Mon) throw new Error('Pokemon not found');
+    p1Mon.hp = 1;
+
+    manager.applyPostTurnCheats(battle, 2);
+
+    assert.strictEqual(p1Mon.hp, 1);
+    assert.strictEqual(manager.getAppliedCheatsCount(), 0);
+  });
 });

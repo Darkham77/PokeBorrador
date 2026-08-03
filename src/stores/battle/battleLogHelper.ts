@@ -63,8 +63,8 @@ export function createBattleLoggerHelper(
     battleLogs.value = []
     logQueue.value = []
     isProcessingLogs.value = false
-    playerStages.value = { ...(initialStages as Record<string, number>) }
-    enemyStages.value = { ...(initialStages as Record<string, number>) }
+    playerStages.value = { ...initialStages }
+    enemyStages.value = { ...initialStages }
     activeMove.value = null
     attackerSide.value = null
   }

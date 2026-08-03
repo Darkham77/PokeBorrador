@@ -2,7 +2,7 @@ import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, type WeatherCycleId, type 
 import type { MapRouteId } from '@/data/world/map-assets';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
+import { isWeatherId, requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
 import { translateType, type PokemonType } from '@/data/battle/types';
 import type { PokemonData } from '@/types/system/database';
 
@@ -33,6 +33,9 @@ export function getRouteWeather(
   forcedCycle?: WeatherCycleId
 ): WeatherId {
   if (!isWeatherTableRouteId(mapId)) {
+    if (mapId === 'gym' || mapId === 'pvp') {
+      return 'clear';
+    }
     throw new Error(`[weatherUtils] Route '${mapId}' has no registered weather table`);
   }
   const routeTables = ROUTE_WEATHER_TABLES[mapId];
@@ -88,7 +91,8 @@ export function getWeatherMultiplier(id: string, weather: string): number {
     types.push(pData.type2 as PokemonType)
   }
 
-  const w = weather as WeatherId;
+  const w = isWeatherId(weather) ? weather : null;
+  if (!w) return 1.0;
   
   const entry = WEATHER_REGISTRY[w];
   const mods = entry?.modifiers;
@@ -104,8 +108,9 @@ export function getWeatherMultiplier(id: string, weather: string): number {
 /**
  * Generates the modifiers text block for a weather (boosts, debuffs, blocks).
  */
-export function getWeatherModifiersDescription(weather: WeatherId | string): string {
-  const w = weather as WeatherId;
+export function getWeatherModifiersDescription(weather: string): string {
+  const w = isWeatherId(weather) ? weather : null;
+  if (!w) return '';
   const entry = WEATHER_REGISTRY[w];
   const mods = entry?.modifiers;
   if (!mods) return '';
@@ -148,8 +153,7 @@ export function getNpcEncounterChances(
   const result: NpcChanceInfo[] = [];
 
   // 1. Rival
-  const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>;
-  const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined;
+  const debug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined;
   
   let rivalChance = GAME_RATIOS.encounters.rival;
   const eventRivalBonus = options.eventRivalBonus || 1;

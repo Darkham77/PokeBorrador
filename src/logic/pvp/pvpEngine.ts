@@ -132,9 +132,9 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     const md: MoveBaseData = pokemonDataProvider.getMoveData(moveId)
 
     if (attacker.status === 'slp') {
-      const sleepTurns = (attacker as unknown as { sleepTurns?: number }).sleepTurns ?? 0
+      const sleepTurns = (Reflect.get(attacker, 'sleepTurns') as number | undefined) ?? 0
       if (sleepTurns > 0) {
-        (attacker as unknown as { sleepTurns: number }).sleepTurns = sleepTurns - 1
+        Reflect.set(attacker, 'sleepTurns', sleepTurns - 1)
         return { type: 'move', moveName, actorIsHost, statusBlocked: 'slp', effectLog }
       }
       attacker.status = ''
@@ -155,8 +155,8 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     }
 
     const { dmg, eff } = calculateDamage(attacker, defender, md, { 
-      atkStages: (atkS as unknown as Record<string, number>)[md.cat === 'physical' ? 'atk' : 'spa'], 
-      defStages: (defS as unknown as Record<string, number>)[md.cat === 'physical' ? 'def' : 'spd'] 
+      atkStages: md.cat === 'physical' ? atkS.atk : atkS.spa, 
+      defStages: md.cat === 'physical' ? defS.def : defS.spd 
     })
     const targetHpArr = actorIsHost ? battleState.enemyHp : battleState.myHp
     const targetIdx = actorIsHost ? battleState.enemyActiveIdx : battleState.myActiveIdx

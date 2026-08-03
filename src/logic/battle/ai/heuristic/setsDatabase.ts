@@ -19,7 +19,7 @@ const DB = new Map<string, RandomBattleSetEntry[]>();
 import rawSets from '@/data/ai/random-sets.json' with { type: 'json' };
 
 // Poblar la base de datos estática al cargar el módulo
-const entries = rawSets as unknown as RawEntry[];
+const entries = rawSets as RawEntry[]; // domain-ok
 for (const entry of entries) {
   DB.set(toID(entry.pokemon), entry.sets);
 }

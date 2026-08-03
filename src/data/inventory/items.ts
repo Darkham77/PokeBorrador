@@ -77,7 +77,9 @@ function isItemId(value: string): value is ItemId {
 
 export function requireItemId(value: string): ItemId {
   if (isItemId(value)) return value;
-  throw new Error(`[items] Invalid item id: ${value}`);
+  const match = SHOP_ITEMS.find(item => item.name === value);
+  if (match) return match.id;
+  throw new Error(`[items] Invalid item id or name: ${value}`);
 }
 
 export const getItemById = (id: string): ShopItemData => {

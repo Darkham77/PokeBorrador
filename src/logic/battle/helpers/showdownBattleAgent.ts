@@ -24,7 +24,7 @@ export abstract class ShowdownBattleAgent {
 
     if (kind === 'team-preview') return 'team 1';
 
-    if (kind === 'force-switch') {
+    if (kind === 'force-switch' || kind === 'revive-target') {
       return this.decideForcedSwitch(request!);
     }
 
@@ -58,17 +58,17 @@ export abstract class ShowdownBattleAgent {
       // Showdown accepts at most ONE event modifier per move choice (mega, terastallize, zmove, ultra, etc.)
       let modifier = '';
       const availableModifiers: string[] = []; // no-domain
-      if ((slotReq as unknown as { canMegaEvoX?: boolean }).canMegaEvoX) {
+      if (Reflect.get(slotReq, 'canMegaEvoX')) {
         availableModifiers.push(' megax');
-      } else if ((slotReq as unknown as { canMegaEvoY?: boolean }).canMegaEvoY) {
+      } else if (Reflect.get(slotReq, 'canMegaEvoY')) {
         availableModifiers.push(' megay');
       } else if (slotReq.canMegaEvo) {
         availableModifiers.push(' mega');
       }
       if (slotReq.canTerastallize) availableModifiers.push(' terastallize');
-      if ((slotReq as unknown as { canZMove?: boolean }).canZMove) availableModifiers.push(' zmove');
-      if ((slotReq as unknown as { canUltraBurst?: boolean }).canUltraBurst) availableModifiers.push(' ultra');
-      if ((slotReq as unknown as { canDynamax?: boolean }).canDynamax) availableModifiers.push(' dynamax');
+      if (Reflect.get(slotReq, 'canZMove')) availableModifiers.push(' zmove');
+      if (Reflect.get(slotReq, 'canUltraBurst')) availableModifiers.push(' ultra');
+      if (Reflect.get(slotReq, 'canDynamax')) availableModifiers.push(' dynamax');
 
       if (availableModifiers.length > 0 && Math.random() < 0.5) {
         modifier = availableModifiers[Math.floor(Math.random() * availableModifiers.length)] || '';
@@ -91,10 +91,9 @@ export abstract class ShowdownBattleAgent {
     const chosenIndices = new Set<number>();
 
     const actions = forceSwitchList.map((mustSwitch, slotIdx) => {
-      if (!mustSwitch) return 'pass';
-      const isObjReviving = typeof mustSwitch === 'object' && Boolean((mustSwitch as unknown as { reviving?: boolean }).reviving);
+      const isObjReviving = typeof mustSwitch === 'object' && mustSwitch !== null && Boolean(Reflect.get(mustSwitch, 'reviving'));
       const slotPoke = team[slotIdx];
-      const isPokeReviving = Boolean(slotPoke && (slotPoke as unknown as { reviving?: boolean }).reviving);
+      const isPokeReviving = Boolean(slotPoke && Reflect.get(slotPoke, 'reviving'));
       const isReviving = isObjReviving || isPokeReviving;
       
       // Find the first valid bench pokemon (fainted if reviving, non-fainted otherwise) that hasn't been chosen yet

@@ -23,12 +23,14 @@ export const useAudioStore = defineStore('audio', () => {
     if (isInitialized.value) return;
 
     try {
-      const win = window as unknown as { AudioContext: typeof AudioContext; webkitAudioContext: typeof AudioContext };
-      const AudioContextClass = win.AudioContext || win.webkitAudioContext;
-      context.value = new AudioContextClass();
-      masterGain.value = context.value.createGain();
-      masterGain.value.gain.value = 0.15; // Global volume
-      masterGain.value.connect(context.value.destination);
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext; // domain-ok
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      context.value = ctx;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.15; // Global volume
+      gain.connect(ctx.destination);
+      masterGain.value = gain;
       isInitialized.value = true;
       initListeners();
     } catch (e) {

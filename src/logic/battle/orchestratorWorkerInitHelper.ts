@@ -22,7 +22,9 @@ export async function initWorkerForBattle(
   }
   const workerInstance = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' })
   setShowdownWorker(workerInstance)
-  ;(window as unknown as Record<string, unknown>).__showdownWorker__ = workerInstance
+  if (typeof window !== 'undefined') {
+    window.__showdownWorker__ = workerInstance;
+  }
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
     window.__VITE_DEBUG__.getSimulatorState = getSimulatorState
   }
@@ -47,7 +49,7 @@ export async function initWorkerForBattle(
 
   const initialWeatherOfficial = battleState?.weather?.type || 'none'
 
-  console.warn(`[E2E-SEED-DEBUG] Inicializando batalla en el worker con clima: ${initialWeatherOfficial}, debugSeed: ${JSON.stringify(debugSeed)}, seedArr: ${JSON.stringify(seedArr)}`)
+  console.debug(`[E2E-SEED-DEBUG] Initializing worker battle. context=${JSON.stringify({ initialWeatherOfficial, debugSeed, seedArr })}`)
 
   const worker = showdownWorker!
 

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type WindowWithResolver, type BattleLogEntry } from '../e2e_helpers.ts';
+import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
 
 interface FailureRecord {
   scenario: string;
@@ -14,6 +15,12 @@ interface FailureRecord {
 const failures: FailureRecord[] = [];
 const FAILURES_DIR = path.resolve(process.cwd(), 'scratch/e2e_failures');
 const REPORT_PATH  = path.resolve(process.cwd(), 'scripts/e2e/results/heuristic_ai_failures.json');
+
+const TRAINER_FIXTURES = {
+  npc: { name: 'NPC', sprite: 'youngster' },
+  gym: { name: 'Líder Gimnasio', sprite: 'brock' },
+  rival: { name: 'Rival', sprite: 'youngster-masters' }
+} as const satisfies Record<'npc' | 'gym' | 'rival', { readonly name: string; readonly sprite: NpcSpriteId }>;
 
 function recordFailure(scenario: string, error: string): void {
   const rec: FailureRecord = { scenario, error, timestamp: new Date().toISOString() };
@@ -38,7 +45,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       useGameStore().state.team = [charizard];
 
       const blastoise = pokemonDebugService.generate({ id: 'blastoise', level: 50, moves: ['surf', 'icebeam', 'flashcannon', 'protect'] });
-      await useBattleStore().startBattle(blastoise, { locationId: 'route1', isTrainer: true, trainerName: 'NPC' });
+      await useBattleStore().startBattle(blastoise, { locationId: 'route1', isTrainer: true, trainerName: 'NPC', trainerSprite: 'youngster' });
     });
   }
 
@@ -53,7 +60,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       useGameStore().state.team = [magikarp];
 
       const mewtwo = pokemonDebugService.generate({ id: 'mewtwo', level: 100, moves: ['psychic', 'shadowball', 'icebeam', 'thunderbolt'] });
-      await useBattleStore().startBattle(mewtwo, { locationId: 'route1', isTrainer: true, trainerName: 'Rival' });
+      await useBattleStore().startBattle(mewtwo, { locationId: 'route1', isTrainer: true, trainerName: 'Rival', trainerSprite: 'youngster-masters' });
     });
   }
 
@@ -81,7 +88,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       useGameStore().state.team = [machamp];
 
       const blissey = pokemonDebugService.generate({ id: 'blissey', level: 50, moves: ['softboiled', 'seismictoss', 'thunderwave', 'protect'] });
-      await useBattleStore().startBattle(blissey, { locationId: 'route1', isTrainer: true, isGym: true, trainerName: 'Líder Gimnasio' });
+      await useBattleStore().startBattle(blissey, { locationId: 'route1', isTrainer: true, isGym: true, trainerName: 'Líder Gimnasio', trainerSprite: 'brock' });
     });
   }
 
@@ -96,7 +103,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
 
       const gengar   = pokemonDebugService.generate({ id: 'gengar', level: 50, moves: ['shadowball', 'sludgebomb', 'thunderbolt', 'focusblast'] });
       const clefable = pokemonDebugService.generate({ id: 'clefable', level: 50, moves: ['moonblast', 'softboiled', 'thunderwave', 'fireblast'] });
-      await useBattleStore().startBattle(gengar, { locationId: 'route1', isTrainer: true, trainerName: 'Rival', enemyTeam: [gengar, clefable] });
+      await useBattleStore().startBattle(gengar, { locationId: 'route1', isTrainer: true, trainerName: 'Rival', trainerSprite: 'youngster-masters', enemyTeam: [gengar, clefable] });
     });
   }
 
@@ -233,14 +240,14 @@ test.describe('HeuristicAI E2E Verification', () => {
 
   test('Escenario 6 - Fuzzer: los 4 tipos de entrenador corren sin error', async ({ page }) => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_6_${Date.now()}`);
-    const trainerTypes = ['wild', 'npc', 'gym', 'rival'] as const;
+      const trainerTypes = ['wild', 'npc', 'gym', 'rival'] as const;
 
     for (const trainerType of trainerTypes) {
       try {
         await sim.setup();
         await waitForWaitInput(page);
 
-        await page.evaluate(async (tt) => {
+        await page.evaluate(async ({ trainerType, fixture }) => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
           const { useGameStore }   = await import('../../../src/stores/game.ts');
           const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
@@ -249,16 +256,16 @@ test.describe('HeuristicAI E2E Verification', () => {
           useGameStore().state.team = [mew];
 
           const rattata = pokemonDebugService.generate({ id: 'rattata', level: 5, moves: ['tackle', 'tailwhip', 'quickattack', 'bite'] });
-          const isTrainer = tt !== 'wild';
-          const isGym = tt === 'gym';
-          const nameMap: Record<string, string> = { rival: 'Rival', gym: 'Líder Gimnasio', npc: 'NPC' };
+          const isTrainer = trainerType !== 'wild';
+          const isGym = trainerType === 'gym';
           await useBattleStore().startBattle(rattata, {
             locationId: 'route1',
             isTrainer,
             isGym,
-            trainerName: isTrainer ? (nameMap[tt] || 'NPC') : undefined
+            trainerName: fixture?.name,
+            trainerSprite: fixture?.sprite
           });
-        }, trainerType);
+        }, { trainerType, fixture: trainerType === 'wild' ? undefined : TRAINER_FIXTURES[trainerType] });
 
         await sim.startBattle();
         await waitForWaitInput(page);

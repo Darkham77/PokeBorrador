@@ -54,6 +54,8 @@ Consult this skill whenever you need to:
 5. If a parent AGENTS.md lists a child AGENTS.md whose scope contains the path, read that child and continue from there
 6. Use the nearest AGENTS.md as the local contract and parent docs for repo-wide rules
 7. If docs conflict, the closer doc controls local work details, but no child doc may weaken DOX
+8. **Strict Zero-Fallback Mandate**: Under NO circumstances implement runtime fallbacks, compatibility patches, default returns, or recovery adapters (`||`, `??`, dummy objects, fallback choices) to make tests pass or hide errors. System logic MUST fail fast and loudly (`throw new Error`).
+9. **Strict Event-Driven Mandate**: Application design, state transitions, and save loading MUST be 100% event-driven. Timers and timeouts (`setTimeout`, `setInterval`, race timeouts) are STRICTLY FORBIDDEN in application code (`src/`), and are only allowed as max execution failure caps in E2E tests.
 
 Do not rely on memory. Re-read the applicable DOX chain in the current session before editing.
 

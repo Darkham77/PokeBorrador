@@ -50,10 +50,10 @@ export function syncSidePokemon(
   hps: Record<string, number>,
   statuses?: Record<string, string>
 ): void {
-  console.debug(`[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${(p as unknown as { uid?: string })?.uid}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
+  console.debug(`[SYNC-SIDE] Side ${side.id}: before sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
   side.pokemon.forEach(p => {
     if (p) {
-      const uid = (p as unknown as { uid?: string }).uid;
+      const uid = Reflect.get(p, 'uid') as string | undefined;
       const clientHp = uid ? findMatchingValue(uid, hps) : undefined;
       if (clientHp !== undefined) {
 
@@ -70,27 +70,29 @@ export function syncSidePokemon(
           }
         } else {
           p.fainted = false;
-          (p as unknown as { faintQueued: boolean }).faintQueued = false;
+          Reflect.set(p, 'faintQueued', false);
           clearPokemonFromFaintQueue(side, p);
           const rawStatus = uid && statuses ? findMatchingValue(uid, statuses) : undefined;
           if (rawStatus !== undefined) {
             const targetStatus = (rawStatus || '') as ID;
             console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
-            const pAny = p as unknown as { cureStatus?: (silent?: boolean) => boolean; setStatus?: (s: string) => boolean };
-            if (targetStatus === '' && typeof pAny.cureStatus === 'function') {
-              pAny.cureStatus(true);
-            } else if (typeof pAny.setStatus === 'function') {
-              pAny.setStatus(targetStatus);
+            const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
+            const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
+            if (targetStatus === '' && typeof cureFn === 'function') {
+              cureFn.call(p, true);
+            } else if (typeof setFn === 'function') {
+              setFn.call(p, targetStatus);
             } else {
               p.status = targetStatus;
             }
             console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} status after sync: "${p.status}"`);
           } else if (p.status === 'fnt') {
-            const pAny = p as unknown as { cureStatus?: (silent?: boolean) => boolean; setStatus?: (s: string) => boolean };
-            if (typeof pAny.cureStatus === 'function') {
-              pAny.cureStatus(true);
-            } else if (typeof pAny.setStatus === 'function') {
-              pAny.setStatus('');
+            const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
+            const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
+            if (typeof cureFn === 'function') {
+              cureFn.call(p, true);
+            } else if (typeof setFn === 'function') {
+              setFn.call(p, '');
             } else {
               p.status = '' as ID;
             }
@@ -99,6 +101,6 @@ export function syncSidePokemon(
       }
     }
   });
-  console.debug(`[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${(p as unknown as { uid?: string })?.uid}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
-  (side as unknown as { pokemonLeft: number }).pokemonLeft = side.pokemon.filter(p => p && !p.fainted).length;
+  console.debug(`[SYNC-SIDE] Side ${side.id}: after sync, pokemon:`, side.pokemon.map(p => `${p?.name} (uid:${p ? Reflect.get(p, 'uid') : undefined}, hp:${p?.hp}, maxhp:${p?.maxhp}, fainted:${p?.fainted})`));
+  Reflect.set(side, 'pokemonLeft', side.pokemon.filter(p => p && !p.fainted).length);
 }

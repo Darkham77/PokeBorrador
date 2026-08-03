@@ -18,19 +18,15 @@ const closeEditor = () => {
 }
 
 const confirmSave = () => {
-  const win = window as unknown as { confirmPassiveTeamEdit?: () => void }
-  if (typeof win.confirmPassiveTeamEdit === 'function') {
-    win.confirmPassiveTeamEdit()
-  }
+  (Reflect.get(window, 'confirmPassiveTeamEdit') as (() => void) | undefined)?.();
 }
 
 // Shim for legacy code - we keep this but use the prop as source of truth
 if (typeof window !== 'undefined') {
-  const win = window as unknown as { openPassiveTeamEditor?: () => void }
-  win.openPassiveTeamEditor = () => {
+  Reflect.set(window, 'openPassiveTeamEditor', () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
     import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor'))
-  }
+  })
 }
 </script>
 

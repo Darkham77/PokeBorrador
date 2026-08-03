@@ -12,7 +12,7 @@ import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
   const { store, type, parts, line, p, getPoke, getSide, turnLogs } = ctx;
 
-  if (store.activeBattle.value && (store.activeBattle.value as unknown as { ignoreEnemyLogs?: boolean }).ignoreEnemyLogs) {
+  if (store.activeBattle.value && Reflect.get(store.activeBattle.value, 'ignoreEnemyLogs')) {
     if (type === 'move' || type === '-damage' || type === '-heal' || type === '-status' || type === '-curestatus' || type === '-sethp' || type === 'faint') {
       return true;
     }
@@ -33,19 +33,20 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         store.addLog(`¡${attacker.name} usó ${translatedName}!${isFromEffect ? ' (efecto)' : ''}`, style, attacker);
         const cleanMoveId = requirePokemonMoveId(toID(moveId));
 
-        attacker.lastMove = {
+        const lastMove: Move = {
           id: cleanMoveId,
           name: translatedName,
           pp: 0,
           maxPP: 0
-        } as unknown as Move;
+        };
+        attacker.lastMove = lastMove;
 
         const hasPrepareThisTurn = turnLogs?.some(l => {
           const lp = l.split('|').map(x => x.trim());
           return lp[1] === '-prepare' && getSide(lp[2] || '') === side;
         });
 
-        if (attacker.volatileCounters && !hasPrepareThisTurn) {
+        if (!hasPrepareThisTurn && attacker.volatileCounters) {
           delete attacker.volatileCounters['twoturnmove'];
         }
 
@@ -94,19 +95,27 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     }
 
     case '-prepare': {
-       const attacker = getPoke(parts[2] || '');
+       const attacker = getPoke(parts[2] ?? '');
        const moveId = parts[3] || 'Movimiento';
        const moveData = pokemonDataProvider.getMoveData(moveId);
        const translatedName = moveData?.name || moveId;
       if (attacker) {
         if (!attacker.volatileCounters) attacker.volatileCounters = {};
         attacker.volatileCounters['twoturnmove'] = 1;
-        attacker.lastMove = {
+        const prepareMoveObj: Move = {
           id: requirePokemonMoveId(toID(moveId)),
           name: translatedName,
           pp: 0,
-          maxPP: 0
-        } as unknown as Move;
+          maxPP: 0,
+          type: 'normal',
+          cat: 'physical',
+          priority: 0,
+          power: undefined,
+          acc: undefined,
+          effect: undefined,
+          target: undefined
+        };
+        attacker.lastMove = prepareMoveObj;
         if (!line.includes('[silent]')) {
           const style = attacker === p ? 'log-player' : 'log-enemy';
           store.addLog(`¡${attacker.name} está cargando ${translatedName}!`, style, attacker);

@@ -9,7 +9,7 @@ import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS } from '@/data/world/gyms'
-import { TRAINER_TYPES } from '@/data/player/trainerTypes'
+import { TRAINER_TYPES, isTrainerTypeKey } from '@/data/player/trainerTypes'
 import { generateNpcName } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -87,7 +87,7 @@ export function useDebugTrainers() {
   })
 
   const allMapsList = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
     return maps.map(m => ({ id: m.id, name: m.name || m.id }))
   })
 
@@ -97,7 +97,7 @@ export function useDebugTrainers() {
     const sprites = preset !== 'random'
       ? getSpritesForArchetype(preset as NpcArchetype)
       : ALL_CATALOG_SPRITES
-    return (sprites as readonly string[]).map(id => ({ id, label: id }))
+    return (sprites as readonly string[]).map(id => ({ id, label: id })) // domain-ok
   })
 
   const gymList = computed(() => {
@@ -154,7 +154,7 @@ export function useDebugTrainers() {
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
         const isShiny = genForceShiny.value || Math.random() < 0.05
         const p = pokemonDebugService.generate({
-          id: randomSpecies as PokemonSpeciesId,
+          id: requirePokemonSpeciesId(randomSpecies),
           level: Math.max(1, Math.min(100, level)),
           isShiny
         })
@@ -165,13 +165,13 @@ export function useDebugTrainers() {
       }
     } else {
       const archetype = selectedPreset.value
-      trainerArchetype.value = TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.archetype || archetype
+      trainerArchetype.value = isTrainerTypeKey(archetype) ? TRAINER_TYPES[archetype].archetype : archetype
       trainerName.value = generateThemedTrainerName(archetype)
 
       const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
       trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'youngster'
 
-      const pool: PokemonSpeciesId[] = [...(TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.pool ?? ['rattata'])] as PokemonSpeciesId[]
+      const pool: readonly PokemonSpeciesId[] = isTrainerTypeKey(archetype) ? TRAINER_TYPES[archetype].pool : ['rattata']
       for (let i = 0; i < size; i++) {
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
@@ -277,7 +277,7 @@ export function useDebugTrainers() {
       }
     }
 
-    await battleStore.startBattle(firstEnemy, opts as unknown as BattleOptions)
+    await battleStore.startBattle(firstEnemy, opts as BattleOptions) // domain-ok
     modalStore.closeAll()
   }
 

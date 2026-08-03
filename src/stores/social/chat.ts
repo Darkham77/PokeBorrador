@@ -101,16 +101,16 @@ export const useChatStore = defineStore('chat', () => {
           )
           if (idx !== -1 && globalMessages.value[idx]) {
             // Preserve the numeric optimistic ID so Vue doesn't re-animate the element on key change
-            const updatedRow = {
+            const updatedRow: ChatMessage = {
               ...row,
               id: globalMessages.value[idx].id
-            } as unknown as ChatMessage
+            }
             globalMessages.value.splice(idx, 1, updatedRow)
           }
           return
         }
 
-        globalMessages.value.push(row as unknown as ChatMessage)
+        globalMessages.value.push(row as ChatMessage) // domain-ok
         if (globalMessages.value.length > 50) globalMessages.value.shift()
         
         const senderId = row.user_id as string
@@ -153,7 +153,7 @@ export const useChatStore = defineStore('chat', () => {
       ...payload,
       created_at: Temporal.Now.instant().toString()
     }
-    globalMessages.value.push(optimisticRow as unknown as ChatMessage)
+    globalMessages.value.push(optimisticRow as ChatMessage) // domain-ok
     if (globalMessages.value.length > 50) globalMessages.value.shift()
     fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
 

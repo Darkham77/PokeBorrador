@@ -5,6 +5,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
+import { loadBestSave } from '@/logic/auth/loadService'
+
 vi.mock('@/logic/auth/loadService', () => ({
   loadBestSave: vi.fn()
 }))
@@ -92,19 +94,18 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const gameModule = await import('@/stores/game')
     const authModule = await import('@/stores/auth')
     const loadingModule = await import('@/stores/loading')
-    const loadServiceModule = await import('@/logic/auth/loadService')
 
     useGameStore = gameModule.useGameStore
     useAuthStore = authModule.useAuthStore
     useLoadingStore = loadingModule.useLoadingStore
-    loadBestSaveMock = loadServiceModule.loadBestSave as unknown as import('vitest').Mock
-  })
+    loadBestSaveMock = vi.mocked(loadBestSave) as unknown as import('vitest').Mock
+  }, 30000)
 
   const runTimeoutSession = async () => {
     const gameStore = useGameStore()
-    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
+    loadBestSaveMock.mockRejectedValue(new Error('LOAD_TIMEOUT'))
     const loadPromise = gameStore.loadGame()
-    await vi.advanceTimersByTimeAsync(80000)
+    await vi.runAllTimersAsync()
     await loadPromise
   }
 

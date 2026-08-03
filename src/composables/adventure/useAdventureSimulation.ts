@@ -200,7 +200,7 @@ export function useAdventureSimulation() {
       []
     )
 
-    return { generic: generic as PokemonSpeciesId[], specific: specific as PokemonSpeciesId[], rates }
+    return { generic, specific, rates }
   }
 
 

@@ -1,15 +1,7 @@
-import { ChoiceRequest, RequestKind, classifyRequest } from '../../../../src/logic/battle/helpers/requestHelper.ts';
+import { ChoiceRequest, RequestKind, classifyRequest, type ChoiceRequestPokemon } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { ShowdownBattleAgent, ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 
-export interface SidePokemon {
-  ident: string;
-  details: string;
-  condition: string;
-  active: boolean;
-  stats: { hp: number };
-  moves: string[];
-  ability: string;
-}
+export type SidePokemon = ChoiceRequestPokemon;
 
 export type { ChoiceRequest, RequestKind };
 export { classifyRequest };
@@ -62,13 +54,13 @@ export class BattleAgent extends ShowdownBattleAgent {
     }
 
     // Auto-switch if active exhausted test moves but bench has pending ones
-    const activeHasPending = activePoke?.moves.some((m: string) => this.movesToTest.has(toCleanId(m)));
+    const activeHasPending = (activePoke?.moves ?? []).some((m: string) => this.movesToTest.has(toCleanId(m)));
     if (!cannotSwitch && !activeHasPending && this.movesToTest.size > 0 && !this.justSwitched) {
       for (let i = 0; i < team.length; i++) {
         const mon = team[i]!;
         const switchIdx = i + 1;
         if (!mon.active && !this.isFainted(mon.condition) && !this.failedSwitches.has(switchIdx)) {
-          const hasPending = mon.moves.some((m: string) => this.movesToTest.has(toCleanId(m)));
+          const hasPending = (mon.moves ?? []).some((m: string) => this.movesToTest.has(toCleanId(m)));
           if (hasPending) {
             this.justSwitched = true;
             return `switch ${switchIdx}`;
@@ -103,10 +95,17 @@ export class BattleAgent extends ShowdownBattleAgent {
     const SELF_SWITCHING_MOVES = new Set(['shedtail', 'batonpass', 'uturn', 'voltswitch', 'teleport', 'partingshot', 'chillyreception', 'flipturn']);
     const nonSwitchingIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0) && !SELF_SWITCHING_MOVES.has(toCleanId(m.id)));
     const firstValidIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0));
-    const fallbackIdx = nonSwitchingIndex !== -1 ? nonSwitchingIndex : (firstValidIndex !== -1 ? firstValidIndex : 0);
-    if (moves.length > 0) return `move ${fallbackIdx + 1}${targetLocation ? ` ${targetLocation}` : ''}`;
+    if (firstValidIndex !== -1) {
+      const chosenIdx = nonSwitchingIndex !== -1 ? nonSwitchingIndex : firstValidIndex;
+      return `move ${chosenIdx + 1}${targetLocation ? ` ${targetLocation}` : ''}`;
+    }
 
     return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
+  }
+
+  protected override decideForcedSwitch(request: ChoiceRequest): string {
+    this.failedSwitches.clear();
+    return super.decideForcedSwitch(request);
   }
 }
 

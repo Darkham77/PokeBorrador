@@ -36,7 +36,7 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
   if (typeof raw === 'string') {
     const parts = raw.split(',').map(Number);
     if (parts.length === 4 && parts.every(n => !isNaN(n))) {
-      return parts as unknown as NumericSeed;
+      return parts as NumericSeed; // domain-ok
     }
   }
   
@@ -44,7 +44,7 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
     try {
       const arr = Array.from(raw as ArrayLike<unknown>).map(Number);
       if (arr.length === 4 && arr.every(n => !isNaN(n))) {
-        return arr as unknown as NumericSeed;
+        return arr as NumericSeed; // domain-ok
       }
     } catch (e) {
       throw new Error(`[BattleSeedManager] Error parsing numeric seed object: ${String(e)}`);

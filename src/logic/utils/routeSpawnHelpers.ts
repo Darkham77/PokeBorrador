@@ -3,7 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants'
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, isEnabledPokemonId } from '@/data/system/constants'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
 
@@ -44,14 +44,14 @@ export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
 }
 
 export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelIncenseItemId {
-  return (TRAVEL_INCENSE_ITEM_IDS as readonly ItemId[]).includes(value)
+  return (TRAVEL_INCENSE_ITEM_IDS as readonly ItemId[]).includes(value) // domain-ok
 }
 
 
 export function getSelectableSpecies(bypassWhitelist = false) {
   const db = pokemonDataProvider.getPokemonDb()
   return Object.keys(db)
-    .filter(id => bypassWhitelist || (ENABLED_POKEMON_IDS as readonly string[]).includes(id))
+    .filter(id => bypassWhitelist || isEnabledPokemonId(id))
     .map(id => ({
       id,
       name: db[id]?.name || id,
@@ -141,7 +141,7 @@ export function getPokedexVisibility(
 export function getPokemonBasicData(id: string, isSeen: boolean) {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
   const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
-  const types = data ? [data.type, data.type2].filter(Boolean) as string[] : []
+  const types = data ? ([data.type, data.type2].filter((t): t is PokemonType => Boolean(t))) : []
   const hp = data?.hp || 0
   const atk = data?.atk || 0
   const def = data?.def || 0

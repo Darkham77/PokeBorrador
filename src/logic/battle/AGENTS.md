@@ -49,6 +49,7 @@ Frontend Developers / Systems Engineers.
 - **Showdown Active Combatant Sync**: Handlers for `|switch|` and `|drag|` events in `showdownBridgeCore.ts` must update `store.activeBattle.value.enemy` and `store.activeBattle.value.player` as well as parse status/HP conditions (`fnt`, `100/100`).
 - **Ability Effect Guards in Field/End Handlers**: `|-start|` and `|-end|` log parsing in `showdownBridgeField.ts` must check if `effect.startsWith('ability:')` before passing `effect` into `pokemonDataProvider.getMoveData()`.
 - **Combat Log Sprite Source Mapping**: Trainer-initiated events (challenges, switches, Rocket ambushes, item usage) must strictly use `'enemy_trainer'` or `'player'` as the `source` argument for `addLog`.
+- **ShowdownBattleRunner & Manual Scenario Separation**: `ShowdownBattleRunner` strictly resolves pre-recorded choice stream indices for fuzzer batch replays (`playerChoices` present). It MUST NEVER be patched with ad-hoc choice fallbacks (e.g. forcing `'move 1'`) to force manual UI scenario tests (e.g. `battle_manual_scenarios.simulation.ts`) to pass. Manual scenario tests test dynamic UI/FSM workflows and MUST execute native game AI logic (`CombatAI` / `ScriptedAI`). `ShowdownBattleRunner` encapsulates readiness checks internally to avoid repeating FSM substate guards at invocation sites.
 
 ## Work Guidance
 

@@ -15,15 +15,27 @@ function seedMockListings(count: number) {
     `);
 
     const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
+    const speciesTypes: Record<string, { type: string, type2?: string }> = {
+      caterpie: { type: 'bug' },
+      weedle: { type: 'bug', type2: 'poison' },
+      pidgey: { type: 'normal', type2: 'flying' },
+      rattata: { type: 'normal' },
+      spearow: { type: 'normal', type2: 'flying' },
+      ekans: { type: 'poison' },
+      sandshrew: { type: 'ground' }
+    };
     
     db.exec('BEGIN TRANSACTION;');
     for (let i = 0; i < count; i++) {
       const sp = species[i % species.length]!;
+      const typeInfo = speciesTypes[sp] || { type: 'normal' };
       const mockPkmn = {
         uid: `${sp}-mock-${i}`,
         id: sp,
         name: sp.charAt(0).toUpperCase() + sp.slice(1),
         level: 5,
+        type: typeInfo.type,
+        type2: typeInfo.type2,
         hp: 20,
         maxHp: 20,
         atk: 10,
@@ -65,15 +77,22 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       const game = useGameStore();
       game.state.money = money;
 
+      const team: typeof game.state.team = [];
       const box: typeof game.state.box = [];
       const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
       for (let k = 0; k < pokemonCount; k++) {
         const sp = species[k % species.length]!;
         const pkmn = pokemonDebugService.generate({ id: sp, level: 5 });
         pkmn.nickname = `GTS_TEST_${sp.toUpperCase()}_${k}`;
-        box.push(pkmn);
+        if (k === 0) {
+          team.push(pkmn);
+        } else {
+          box.push(pkmn);
+        }
       }
+      game.state.team = team;
       game.state.box = box;
+      game.state.starterChosen = true;
       await game.saveGame();
     }, { money, pokemonCount });
 
@@ -116,11 +135,14 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await request.post('/api/dev-import-db-cleanup');
   });
 
-  test('should allow listing limits, pagination check, and successful purchase', async ({ browser }) => {
+  test('should allow listing limits, pagination check, and successful purchase', async ({ browser, request }) => {
     test.setTimeout(90000);
 
     const sellerContext = await browser.newContext();
     const pageSeller = await sellerContext.newPage();
+    await pageSeller.addInitScript(() => {
+      window.__GTS_SIMULATION__ = true;
+    });
     const sellerName = `SELLER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const seller = new GTSSimulationWrapper(pageSeller, sellerName);
 
@@ -183,9 +205,20 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
     seedMockListings(50);
 
+    // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
+    const fs = await import('node:fs');
+    const updatedDbBuffer = fs.readFileSync(path.resolve('database/temp/imported.db'));
+    await request.post('/api/dev-export-db', {
+      headers: { 'Content-Type': 'application/octet-stream' },
+      data: updatedDbBuffer
+    });
+
     // 6. Setup Comprador (Logear e inyectar inventario inicial, lo cual descargará la DB con los mocks)
     const buyerContext = await browser.newContext();
     const pageBuyer = await buyerContext.newPage();
+    await pageBuyer.addInitScript(() => {
+      window.__GTS_SIMULATION__ = true;
+    });
     const buyerName = `BUYER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const buyer = new GTSSimulationWrapper(pageBuyer, buyerName);
 

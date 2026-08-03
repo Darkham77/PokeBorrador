@@ -4,7 +4,7 @@
  * Tarjeta premium de estadísticas del Pokémon eclosionado.
  */
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -21,8 +21,8 @@ const tierInfo = computed(() => getPokemonTier(props.pokemon))
 
 const getNatureInfo = (nature: string) => {
   if (!nature) return { desc: 'Sin datos de naturaleza.' }
-  const data = NATURE_DATA as Record<string, { desc: string }>
-  const entry = data[nature] || Object.entries(data).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
+  const cleanId = nature.toLowerCase().trim()
+  const entry = isNatureId(cleanId) ? NATURE_DATA[cleanId] : undefined
   return entry || { desc: 'Naturaleza desconocida.' }
 }
 

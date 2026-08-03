@@ -1,4 +1,5 @@
 import type { MoveAction } from '@/types/battle/battle';
+import { incrementRecordKey } from '@/logic/utils/mapUtils';
 
 export const FIELD_ACTIONS: Record<string, MoveAction> = {
   'reflect': (src, _tgt, srcStages, _tgtStages, addLogFn, _battleCtx) => {
@@ -26,25 +27,25 @@ export const FIELD_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'hail': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx?.activeBattle.value) {
+    if (battleCtx?.activeBattle?.value) {
       battleCtx.activeBattle.value.weather = { type: 'hail', visual: 'hail', turns: 5 };
       addLogFn("¡Empezó a granizar!", 'log-info', src);
     }
   },
   'rain': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx?.activeBattle.value) {
+    if (battleCtx?.activeBattle?.value) {
       battleCtx.activeBattle.value.weather = { type: 'rain', visual: 'rain', turns: 5 };
       addLogFn("¡Empezó a llover!", 'log-info', src);
     }
   },
   'sun': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx?.activeBattle.value) {
+    if (battleCtx?.activeBattle?.value) {
       battleCtx.activeBattle.value.weather = { type: 'sun', visual: 'sun', turns: 5 };
       addLogFn("¡El sol se volvió muy intenso!", 'log-info', src);
     }
   },
   'sandstorm': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx?.activeBattle.value) {
+    if (battleCtx?.activeBattle?.value) {
       battleCtx.activeBattle.value.weather = { type: 'sandstorm', visual: 'sandstorm', turns: 5 };
       addLogFn("¡Se desató una tormenta de arena!", 'log-info', src);
     }
@@ -61,11 +62,11 @@ export const FIELD_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'spikes': (src, _tgt, _srcStages, tgtStages, addLogFn, _battleCtx) => {
-    tgtStages.spikes = Math.min(3, (tgtStages.spikes || 0) + 1);
+    tgtStages.spikes = Math.min(3, incrementRecordKey(tgtStages, 'spikes', 1));
     addLogFn(`¡${src.name} lanzó púas alrededor de su rival!`, 'log-info', src);
   },
   'toxic_spikes': (src, _tgt, _srcStages, tgtStages, addLogFn, _battleCtx) => {
-    tgtStages.toxicspikes = Math.min(2, (tgtStages.toxicspikes || 0) + 1);
+    tgtStages.toxicspikes = Math.min(2, incrementRecordKey(tgtStages, 'toxicspikes', 1));
     addLogFn(`¡${src.name} lanzó púas tóxicas alrededor de su rival!`, 'log-info', src);
   },
   'stealth_rock': (src, _tgt, _srcStages, tgtStages, addLogFn, _battleCtx) => {

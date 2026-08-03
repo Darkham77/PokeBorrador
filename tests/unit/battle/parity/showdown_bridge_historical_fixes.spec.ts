@@ -16,7 +16,7 @@ import { HeuristicDamageCalculator } from '@/logic/battle/ai/heuristic/damageCal
 import { syncSidePokemon } from '@/logic/battle/helpers/showdownSyncHelper.ts';
 import { BattleAgent } from '../../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 import { ActiveSlotRequest } from '@/logic/battle/helpers/showdownBattleAgent.ts';
-import { ChoiceRequest } from '@/logic/battle/helpers/requestHelper.ts';
+import { ChoiceRequest, classifyRequest } from '@/logic/battle/helpers/requestHelper.ts';
 import type { PureMove, PurePokemon } from '@/logic/battle/battleMathTypes.ts';
 
 function purePokemon(pokemon: PurePokemon): PurePokemon {
@@ -79,8 +79,8 @@ describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
     const defender = purePokemon({ id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 })
     const move = pureMove({ id: 'psychic', type: 'psychic', power: 90, cat: 'special' })
     
-    const dmgNormal = calculateDamagePure(attackerNormal, defender, move, { weather: null })
-    const dmgSpecs = calculateDamagePure(attackerSpecs, defender, move, { weather: null })
+    const dmgNormal = calculateDamagePure(attackerNormal, defender, move, { weather: null }, 'day', 1.0)
+    const dmgSpecs = calculateDamagePure(attackerSpecs, defender, move, { weather: null }, 'day', 1.0)
     
     expect(dmgSpecs.damage!).toBeGreaterThan(dmgNormal.damage!)
   })
@@ -500,5 +500,20 @@ describe('Showdown Audit v8 Fixes Unit Tests', () => {
       .decideForcedSwitch(mockFullReq);
 
     assert.equal(choice, 'switch 2', `Expected switch to fainted slot 2 when reviving: true, got "${choice}"`);
+  });
+
+  it('classifies Revival Blessing target selection as revive-target instead of a real forced replacement', () => {
+    const request = {
+      forceSwitch: [{ reviving: true }],
+      side: {
+        pokemon: [{ active: true, reviving: true }]
+      }
+    };
+
+    assert.equal(
+      classifyRequest(request),
+      'revive-target',
+      'Showdown uses switch syntax for Revival Blessing target selection, but the active Pokémon must not be withdrawn.'
+    );
   });
 });

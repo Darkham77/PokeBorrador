@@ -223,7 +223,7 @@ export const useSocialStore = defineStore('social', () => {
             gender: (save.gender as string) || p?.gender || 'h'
           }
           return acc
-        }, ({} as unknown) as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>)
+        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>) // open-record
 
         pending.forEach((r: PendingRequest) => {
           const profInfo = profilesMap[r.requester_id]

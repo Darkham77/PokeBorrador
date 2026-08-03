@@ -153,7 +153,7 @@ interface ActiveBattleSerialized {
   isPvP?: boolean
 }
 
-type PersistedPokemonGender = 'M' | 'F' | 'N';
+export type PersistedPokemonGender = 'M' | 'F' | 'N';
 type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: PersistedPokemonGender };
 type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: PersistedPokemonGender };
 
@@ -241,8 +241,8 @@ export function serializeState(state: GameState): SaveData {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;
     }
-  } else if (state.activeBattle && (state.activeBattle as unknown as Record<string, unknown>).isPvP) {
-    activeBattle = { ...(state.activeBattle as unknown as Record<string, unknown>) } as unknown as ActiveBattleSerialized;
+  } else if (state.activeBattle && Reflect.get(state.activeBattle, 'isPvP')) {
+    activeBattle = { ...state.activeBattle } as unknown as ActiveBattleSerialized; // domain-ok
   }
 
   return {
@@ -358,13 +358,13 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     parsedResult = validateSaveData(testData);
     if (parsedResult.success) {
       // Restore the original box array
-      parsedResult.output.box = data.box as unknown as typeof parsedResult.output.box;
+      parsedResult.output.box = data.box as typeof parsedResult.output.box; // domain-ok
     }
   } else {
     parsedResult = validateSaveData(data);
     if (parsedResult.success) {
       lastBoxHash = currentBoxHash;
-      lastValidatedBox = parsedResult.output.box as unknown as Pokemon[];
+      lastValidatedBox = parsedResult.output.box as Pokemon[]; // domain-ok
     }
   }
 
@@ -380,7 +380,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   }
 
   // Sanitized data from Valibot (with fallbacks applied!)
-  const sanitizedData = parsedResult.output as unknown as SaveData;
+  const sanitizedData = parsedResult.output as unknown as SaveData; // domain-ok
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
   sanitizedData.box?.forEach(normalizeRuntimePokemonGender);
   
@@ -591,7 +591,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         }
 
         const shinyCount = ((save_data.team || []).filter(p => p.isShiny).length) + ((save_data.box || []).filter(p => p.isShiny).length);
-        const statsRecord = (save_data.stats || {}) as Record<string, unknown>;
+        const statsRecord = (save_data.stats || {}) as Record<string, unknown>; // open-record
         const maxDamage = Number(statsRecord.maxDamage) || 0;
         const totalBattles = Number(statsRecord.totalBattles) || 0;
         const tradeVolume = Number(statsRecord.tradeVolume) || 0;

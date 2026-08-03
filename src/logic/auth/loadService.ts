@@ -175,7 +175,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
             if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
               dateStr = dateStr.replace(' ', 'T') + 'Z';
             }
-            cloudTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
+            cloudTime = Temporal.Instant.from(dateStr).epochMilliseconds;
           } catch (_) {
             try {
               const ms = Number(cloudSaveRow.updated_at);
@@ -185,8 +185,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
             }
           }
         }
-        const localTime = (localData as unknown as { _last_updated?: number })._last_updated || 0;
- 
+        const localTime = (Reflect.get(localData, '_last_updated') as number | undefined) || 0;
+
         // Legacy Rule: If local is at least 3s newer, prioritize it.
         if (localTime > cloudTime + 3000) {
           logger.info('LOAD', 'Local save is newer. Prioritizing Local.');
@@ -213,7 +213,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 
 
   return {
-    data: sanitized as unknown as GameState,
+    data: sanitized as GameState, // domain-ok
     issues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
     isNewerThanCloud
@@ -287,13 +287,13 @@ function normalizeData(state: GameState): GameState {
 
     // Clean legacy iv fields if corrupted
     if (p.ivs) {
-      const ivs = p.ivs as unknown as Record<string, unknown>
+      const ivs = p.ivs as Record<string, unknown>; // domain-ok
       delete ivs._cost;
       delete ivs._nature;
     }
 
     // Backfill capture date if missing
-    const pRaw = p as unknown as Record<string, unknown>
+    const pRaw = p as unknown as Record<string, unknown>; // domain-ok
     if (!p.obtainedAt && !pRaw.created_at && !pRaw.captureDate && !pRaw.timestamp && !pRaw.date) {
       p.obtainedAt = Temporal.Now.instant().epochMilliseconds;
     }

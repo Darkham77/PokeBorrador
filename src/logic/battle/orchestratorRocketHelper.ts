@@ -1,4 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 import type { BattleState } from '@/types/battle/battle'
 
@@ -50,7 +51,7 @@ export async function processRocketStealMechanics(
             }
 
             if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {}
-            ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + qtyToSteal
+            incrementRecordKey(ctx.gs.state.inventory, itemId, qtyToSteal)
 
             stolenTotalCost += qtyToSteal * itemPrice
             stolenItemsList.push({ id: itemId, qty: qtyToSteal, name: itemDef?.name || itemId })
@@ -98,43 +99,14 @@ export async function processRocketStealMechanics(
         })
 
         const itemsLimit = maxLimit * 0.5
-        let stolenTotalCost = 0
         const stolenItems: Record<string, number> = {}
 
         if (availableItems.length > 0) {
-          const shuffledItems = [...availableItems].sort(() => Math.random() - 0.5)
-          for (const itemId of shuffledItems) {
-            if (stolenTotalCost >= itemsLimit) break
-
-            let itemDef = null
-            try {
-              itemDef = getItemById(itemId)
-            } catch {
-              continue
-            }
-            const itemPrice = itemDef?.price || 100
-            const availableQty = playerInventory[itemId] || 0
-
-            const remainingItemsBudget = itemsLimit - stolenTotalCost
-            const maxQtyToStealBasedOnBudget = Math.floor(remainingItemsBudget / itemPrice)
-
-            if (maxQtyToStealBasedOnBudget >= 1 && availableQty > 0) {
-              const maxQtyAllowed = Math.min(availableQty, maxQtyToStealBasedOnBudget)
-              const qtyToSteal = Math.floor(Math.random() * maxQtyAllowed) + 1
-
-              playerInventory[itemId] = availableQty - qtyToSteal
-              stolenItems[itemId] = (stolenItems[itemId] || 0) + qtyToSteal
-              stolenTotalCost += qtyToSteal * itemPrice
-              if (ctx.activeBattle.value) {
-                if (!ctx.activeBattle.value.enemyInventory) {
-                  ctx.activeBattle.value.enemyInventory = {}
-                }
-                ctx.activeBattle.value.enemyInventory[itemId] = (ctx.activeBattle.value.enemyInventory[itemId] || 0) + qtyToSteal
-              }
-            }
-          }
+          applyRocketStolenItems(ctx, playerInventory, [...availableItems].sort(() => Math.random() - 0.5), stolenItems, itemsLimit)
         }
 
+        let stolenTotalCost = Object.entries(stolenItems).reduce((acc, [id, qty]) => acc + (getItemById(id)?.price || 100) * qty, 0)
+        
         const remainingLimit = maxLimit - stolenTotalCost
         const playerMoney = ctx.gs.state.money || 0
         const moneyToSteal = Math.min(playerMoney, remainingLimit)

@@ -3,11 +3,15 @@ import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
-interface ArchaeologyRewardData {
+export interface ArchaeologyRewardData {
   name: string
   type: string
+  icon: string
+  sprite: string
   basePercentage: number
   percentage: number
+  statusClass: string
+  description?: string
   baseWeight: number
   activeWeight: number
   addedWeight: number

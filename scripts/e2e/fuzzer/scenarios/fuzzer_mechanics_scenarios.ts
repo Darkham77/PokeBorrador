@@ -9,29 +9,29 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Exploder',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Explosion', 'Tackle', 'Pound', 'Scratch']
+        moves: ['explosion', 'tackle', 'pound', 'scratch']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Fragile',
-        species: 'Blissey',
+        species: 'blissey',
         level: 1,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 4, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
         ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        moves: ['Splash', 'Tackle', 'Pound', 'Scratch']
+        moves: ['splash', 'tackle', 'pound', 'scratch']
       }
     ],
     actions: [
@@ -44,53 +44,53 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Exploder',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Explosion', 'Tackle', 'Pound', 'Scratch']
+        moves: ['explosion', 'tackle', 'pound', 'scratch']
       },
       {
         name: 'P-Bench1',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle', 'Pound', 'Scratch', 'Growl']
+        moves: ['tackle', 'pound', 'scratch', 'growl']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Fragile',
-        species: 'Blissey',
+        species: 'blissey',
         level: 1,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 4, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
         ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        moves: ['Splash', 'Tackle', 'Pound', 'Scratch']
+        moves: ['splash', 'tackle', 'pound', 'scratch']
       },
       {
         name: 'E-Bench1',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Soft-Boiled', 'Sunny Day', 'Rain Dance', 'Sandstorm']
+        moves: ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
       }
     ],
     actions: [
@@ -105,41 +105,41 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Uturner',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['U-turn', 'Tackle', 'Pound', 'Scratch']
+        moves: ['uturn', 'tackle', 'pound', 'scratch']
       },
       {
         name: 'P-Bench1',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle', 'Pound', 'Scratch', 'Growl']
+        moves: ['tackle', 'pound', 'scratch', 'growl']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Dummy',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Soft-Boiled', 'Sunny Day', 'Rain Dance', 'Sandstorm']
+        moves: ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
       }
     ],
     actions: [
@@ -154,41 +154,41 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Tailer',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Dragon Tail', 'Tackle', 'Pound', 'Scratch']
+        moves: ['dragontail', 'tackle', 'pound', 'scratch']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Target',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Splash', 'Soft-Boiled', 'Tackle', 'Pound']
+        moves: ['splash', 'softboiled', 'tackle', 'pound']
       },
       {
         name: 'E-Bench1',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Splash', 'Soft-Boiled', 'Tackle', 'Pound']
+        moves: ['splash', 'softboiled', 'tackle', 'pound']
       }
     ],
     actions: [
@@ -202,29 +202,29 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Ditto',
-        species: 'Ditto',
+        species: 'ditto',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
-        ability: 'Imposter',
-        nature: 'Serious',
+        ability: 'imposter',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Transform']
+        moves: ['transform']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Target',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Soft-Boiled', 'Sunny Day', 'Rain Dance', 'Sandstorm']
+        moves: ['softboiled', 'sunnyday', 'raindance', 'sandstorm']
       }
     ],
     actions: [
@@ -238,41 +238,41 @@ export const MECHANICS_SCENARIOS: ScriptedScenario[] = [
     playerTeam: [
       {
         name: 'P-Fragile',
-        species: 'Mew',
+        species: 'mew',
         level: 1,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
         ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        moves: ['Splash']
+        moves: ['splash']
       },
       {
         name: 'P-Bench1',
-        species: 'Mew',
+        species: 'mew',
         level: 100,
-        gender: 'M',
+        gender: 'N',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle']
+        moves: ['tackle']
       }
     ],
     enemyTeam: [
       {
         name: 'E-Attacker',
-        species: 'Blissey',
+        species: 'blissey',
         level: 100,
-        gender: 'M',
+        gender: 'F',
         item: '',
         ability: 'illuminate',
-        nature: 'Serious',
+        nature: 'serious',
         evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['Tackle']
+        moves: ['tackle']
       }
     ],
     actions: [

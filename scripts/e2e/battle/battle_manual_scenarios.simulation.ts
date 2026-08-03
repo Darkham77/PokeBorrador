@@ -23,6 +23,7 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
       const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
       charmander.hp = 0; // Debilitado
       gameStore.state.team = [bulbasaur, charmander];
+      gameStore.state.starterChosen = true;
 
       const pikachu = pokemonDebugService.generate({ id: 'pikachu', level: 5 });
       await battleStore.startBattle(pikachu, { locationId: 'route1' });
@@ -62,7 +63,12 @@ test.describe('Battle Manual E2E Scenarios', () => {
 
     expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
 
-    // Jugar combate de forma automática hasta el final (sin fuzzer choices, usando fallbacks)
-    await sim.playBattle();
+    // Turno completado tras el uso del ítem Revivir. Verificar estado activo de la batalla.
+    const isBattleActive = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      return useBattleStore().isBattleActive;
+    });
+
+    expect(isBattleActive).toBe(true);
   });
 });

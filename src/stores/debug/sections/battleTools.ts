@@ -248,7 +248,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, stat: string, val: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
           stages[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
@@ -268,7 +268,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, stat: string, delta: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
           stages[sKey] = Math.max(-6, Math.min(6, (stages[sKey] || 0) + parseInt(delta)))
@@ -288,7 +288,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, effect: string, val: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
         
         // Screens & Hazards (Stage based)
         const isStageEffect = (['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'] as const).includes(effect as 'reflect')

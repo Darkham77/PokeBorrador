@@ -163,7 +163,7 @@ export async function executeNavigation(
 }
 
 export async function executeArchaeologyRewards(locId: string, gs: ReturnType<typeof useGameStore>, difficulty?: string) {
-  const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[];
+  const mapsList = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok
   const loc = mapsList.find(m => m.id === locId);
   const inventoryStore = useInventoryStore();
   const uiStore = useUIStore();

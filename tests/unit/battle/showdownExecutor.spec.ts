@@ -34,8 +34,7 @@ describe('showdownExecutor - Invalid Choice / Obsolete Turn Safeguard', () => {
       executeBattleTurn({
         battle,
         p1Choice: 'move outrage',
-        p2Choice: 'switch 2',
-        cheatManager: null
+        p2Choice: 'switch 2'
       });
     }).not.toThrow();
   });

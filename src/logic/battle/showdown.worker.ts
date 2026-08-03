@@ -6,7 +6,7 @@ import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from './chea
 import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
-import { ShowdownBattleEngine } from './engine/showdownBattleEngine.ts';
+import { executeBattleTurn } from './helpers/showdownExecutor.ts';
 import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
 
@@ -40,6 +40,7 @@ let isDeterministicSimulation = false;
 patchShowdownSpreadModify(() => isDeterministicSimulation);
 
 let currentBattle: Battle | null = null;
+// eslint-disable-next-line unused-imports/no-unused-vars
 let currentBattleExecuteTurnCount = 0;
 
 export function setTestingBattle(battle: Battle | null): void {
@@ -113,7 +114,8 @@ interface WorkerEventPayload {
   side?: 'p1' | 'p2';
   type?: 'heal';
   cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
-  history?: Array<{ p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
+  history?: Array<{ turnCount: number; p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
+  certifiedHistoryStep?: number;
   isDeterministicSimulation?: boolean;
   isFuzzerSimulation?: boolean;
   format?: string;
@@ -174,7 +176,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             if (pokemon) {
               const set = p1.team[idx];
               if (set && set.uid) {
-                (pokemon as unknown as Record<string, unknown>).uid = set.uid;
+                Reflect.set(pokemon, 'uid', set.uid);
               }
             }
           });
@@ -184,7 +186,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             if (pokemon) {
               const set = p2.team[idx];
               if (set && set.uid) {
-                (pokemon as unknown as Record<string, unknown>).uid = set.uid;
+                Reflect.set(pokemon, 'uid', set.uid);
               }
             }
           });
@@ -258,20 +260,35 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
       case 'EXECUTE_TURN': {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
-        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats } = payload;
+        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep } = payload;
 
         currentBattleExecuteTurnCount++;
 
-        const engine = new ShowdownBattleEngine({
-          mode: 'replayer',
-          cheats: Array.isArray(cheats) ? cheats.map(c => ({ turn: c.turn, side: c.side, type: 'heal' })) : []
+        const result = executeBattleTurn({
+          battle,
+          p1Choice: p1Choice || '',
+          p2Choice: p2Choice || '',
+          p1Skip: !!p1Skip,
+          p2Skip: !!p2Skip,
+          p1Hps,
+          p2Hps,
+          p1Statuses,
+          p2Statuses,
+          history,
+          currentStep: certifiedHistoryStep,
+          // Every worker turn is a replay submission. Fuzzer generation runs
+          // directly through ShowdownBattleEngine; enabling generation IPB
+          // here would mutate PP/HP beyond the certified history.
+          isFuzzerSimulation: false
         });
-        (engine as unknown as { battle: Battle }).battle = battle;
 
-        const result = engine.executeTurn({ p1Choice, p2Choice, p1Skip, p2Skip });
-
-        syncSidePokemon(battle.p1, p1Hps || {}, p1Statuses || {});
-        syncSidePokemon(battle.p2, p2Hps || {}, p2Statuses || {});
+        // NOTE: syncSidePokemon is intentionally NOT called here after executeBattleTurn.
+        // The pre-turn HP sync already runs inside engine.executeTurn (via p1Hps/p2Hps inputs)
+        // BEFORE the choices are resolved. Calling it POST-TURN would overwrite the damage
+        // computed by Showdown (e.g. Sturdy at 1 HP reset back to full HP), corrupting the
+        // p2Request condition sent to the client and causing infinite AI cycling loops.
+        syncRequestConditionsWithSimulator(battle.p1);
+        syncRequestConditionsWithSimulator(battle.p2);
 
         const turnLogs = getNewLogs();
         if (p2Skip) {
@@ -306,7 +323,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
 
       case 'CHECK_TRAPPED': {
-        const activeReq = (currentBattle?.p1?.activeRequest as unknown as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined);
+        const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined; // domain-ok
         const trapped = !!(activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped);
         self.postMessage({
           type: 'CHECK_TRAPPED_RESPONSE',
@@ -384,5 +401,3 @@ function getNewLogs(): string[] {
   lastLogIndex = allLogs.length;
   return newLogs;
 }
-
-

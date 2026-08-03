@@ -116,11 +116,8 @@ const getCategoryDescription = (cat: string) => {
 
 // --- HANDLERS ---
 const handleBuy = () => {
-  const win = window as unknown as { 
-    buyFromMarket?: (offerId: string, price: number, type: string) => void 
-  }
-  if (props.extra && typeof win.buyFromMarket === 'function') {
-    win.buyFromMarket(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '')
+  if (props.extra) {
+    (Reflect.get(window, 'buyFromMarket') as ((offerId: string, price: number, type: string) => void) | undefined)?.(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '')
     emit('close')
   }
 }

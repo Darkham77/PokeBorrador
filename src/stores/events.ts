@@ -10,7 +10,6 @@ import { useMapStore } from '@/stores/map.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PendingAward } from '@/types/system/stores'
 
 export const useEventStore = defineStore('events', () => {
@@ -49,7 +48,8 @@ export const useEventStore = defineStore('events', () => {
       }
     try {
       // 1. Fetch from config (DBRouter handles source)
-      const { data: events } = await db.from('events_config').select('*') as unknown as { data: GameEvent[] | null }
+      const res = await db.from('events_config').select('*')
+      const events = res.data as GameEvent[] | null // domain-ok
       allEvents.value = events || []
       
       // 2. Filter using Engine logic with synchronized time
@@ -59,7 +59,7 @@ export const useEventStore = defineStore('events', () => {
       // 4. Check for unclaimed prizes
       await checkPendingAwards()
     } catch (e) {
-      logger.error('Events', `Error fetching events: ${(e as Error).message}`)
+      logger.error('Events', `Error initializing events: ${(e as Error).message}`)
     } finally {
       isLoading.value = false
     }
@@ -69,40 +69,29 @@ export const useEventStore = defineStore('events', () => {
     return activeEvents.value.some(e => e.id === ev)
   }
 
-  async function submitCompetitionEntry(pokemon: Pokemon, eventId: string) {
-    if (!authStore.user || authStore.sessionMode === 'offline') return
+  /**
+   * Submits a Pokemon to a weekly competition.
+   */
+  async function submitCompetitionEntry(eventId: string, pokemonUid: string) {
+    const gameStore = useGameStore()
+    const authStore = useAuthStore()
+    const uiStore = useUIStore()
     
-    // Check if the event is active before attempting database submit
-    if (!isEventActive(eventId)) {
-      logger.info('Events', `Submission skipped: event ${eventId} is not active.`)
-      return
-    }
-    
-    try {
-      const db = gameStore.db
-      if (!db) return
+    if (!authStore.user || !gameStore.db) return
 
-      const totalIvs = Object.values(pokemon.ivs || {}).reduce((a: number, b) => a + (typeof b === 'number' ? b : 0), 0)
+    try {
       const entryData = {
         event_id: eventId,
         player_id: authStore.user.id,
-        player_name: gameStore.state.trainer || 'Trainer',
-        player_email: authStore.user.email,
-        data: {
-          pokemon_uid: pokemon.uid,
-          pokemon_name: pokemon.name,
-          ivs: pokemon.ivs,
-          total_ivs: totalIvs,
-          level: pokemon.level,
-          isShiny: pokemon.isShiny || false,
-          score: pokemon.pts || 0
-        },
+        pokemon_uid: pokemonUid,
         submitted_at: Temporal.Now.instant().toString()
       }
       
-      const { data: entry, error } = await db.from('competition_entries').upsert(entryData, {
+      const res = await gameStore.db.from('competition_entries').upsert(entryData, {
         onConflict: 'event_id, player_id'
-      }).select().single() as unknown as { data: { id: string } | null, error: { message: string } | null }
+      }).select().single()
+      const entry = res.data as { id: string } | null // domain-ok
+      const error = res.error as { message?: string } | null // domain-ok
       
       if (error || !entry) {
         const dbError = new Error(error?.message || 'Error al registrar Pokémon en concurso semanal')
@@ -148,12 +137,13 @@ export const useEventStore = defineStore('events', () => {
   async function claimAward(awardId: string): Promise<string | null> {
     if (!gameStore.db) return null
     const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
+    const claimResult = data as { ok?: boolean; prize?: string } | null // domain-ok
     
-    if (!error && (data as unknown as { ok: boolean })?.ok) {
+    if (!error && claimResult?.ok) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
       uiStore.notify('¡Recompensa reclamada!', '🎁')
       // Return details for local state updates (e.g., adding to inventory)
-      return (data as unknown as { prize: string })?.prize as string
+      return claimResult.prize ?? null
     }
     return null
   }
@@ -183,6 +173,7 @@ export const useEventStore = defineStore('events', () => {
     submitCompetitionEntry,
     checkPendingAwards,
     claimAward,
-    getSpeciesBonuses
+    getSpeciesBonuses,
+    isEventActive
   }
 })

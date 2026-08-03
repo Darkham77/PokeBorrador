@@ -31,7 +31,7 @@ const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => {
 
 const filteredMoves = computed(() => {
   const s = moveSearch.value.toLowerCase().trim()
-  if (!s) return props.speciesMoves as string[]
+  if (!s) return props.speciesMoves as string[] // no-domain
   
   return allMovesList
     .filter(m => m.id.toLowerCase().includes(s) || m.nameEs.toLowerCase().includes(s))

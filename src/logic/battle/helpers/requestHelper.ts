@@ -1,22 +1,36 @@
-interface ChoiceRequestPokemon {
+export interface ChoiceRequestPokemon {
   ident: string;
   details: string;
   condition: string;
   active: boolean;
-  stats: { hp: number };
-  moves: string[];
-  ability: string;
+  stats?: {
+    hp?: number;
+    atk?: number;
+    def?: number;
+    spa?: number;
+    spd?: number;
+    spe?: number;
+  };
+  moves?: string[];
+  ability?: string;
+  reviving?: boolean;
 }
+
+export interface RevivingForceSwitchRequest {
+  reviving: true;
+}
+
+export type ForceSwitchRequest = boolean | RevivingForceSwitchRequest | null;
 
 export interface ChoiceRequest {
   wait?: boolean;
   teamPreview?: boolean;
-  forceSwitch?: Array<boolean | null> | null;
+  forceSwitch?: ForceSwitchRequest[] | null;
   active?: Array<{
     trapped?: boolean;
     maybeTrapped?: boolean;
     canMegaEvo?: boolean;
-    canZMove?: Array<{ move: string; target: string } | false> | null;
+    canZMove?: unknown;
     canDynamax?: boolean;
     canTerastallize?: string | null;
     moves?: Array<{
@@ -37,7 +51,19 @@ export interface ChoiceRequest {
   noCancel?: boolean;
 }
 
-export type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'move' | 'wait';
+export type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'revive-target' | 'move' | 'wait';
+
+export function isRevivingForceSwitchRequest(req: unknown): boolean {
+  if (!req || typeof req !== 'object') return false;
+  const request = req as ChoiceRequest;
+  const hasRevivingForceSwitch = request.forceSwitch?.some(
+    (entry) => typeof entry === 'object' && entry !== null && entry.reviving === true
+  ) ?? false;
+  const hasRevivingActivePokemon = request.side?.pokemon.some(
+    (pokemon) => pokemon.active && pokemon.reviving === true
+  ) ?? false;
+  return hasRevivingForceSwitch || hasRevivingActivePokemon;
+}
 
 /**
  * Classifies a Showdown battle request to determine its action type.
@@ -47,7 +73,11 @@ export function classifyRequest(req: unknown): RequestKind {
   const cReq = req as ChoiceRequest;
   if (cReq.wait) return 'wait';
   if (cReq.teamPreview) return 'team-preview';
-  if (cReq.forceSwitch && (Array.isArray(cReq.forceSwitch) && cReq.forceSwitch.some(x => !!x))) return 'force-switch';
+  if (cReq.forceSwitch && Array.isArray(cReq.forceSwitch)) {
+    if (isRevivingForceSwitchRequest(cReq)) return 'revive-target';
+    if (cReq.forceSwitch.some(x => !!x)) return 'force-switch';
+    return 'wait';
+  }
   if (Array.isArray(cReq.active) && cReq.active.length > 0) return 'move';
   return 'none';
 }

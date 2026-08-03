@@ -13,7 +13,7 @@ function isPokemon(value: Pokemon | null): value is Pokemon {
 export const useGymsStore = defineStore('gyms', {
   state: () => ({
     gyms: GYMS,
-    defeatedGyms: [] as GymId[]
+    defeatedGyms: Array<GymId>()
   }),
   actions: {
     async loadGymProgress() {
@@ -47,6 +47,7 @@ export const useGymsStore = defineStore('gyms', {
         isGym: true,
         isTrainer: true,
         gymId: gym.id,
+        locationId: 'gym',
         trainerName: `Líder ${gym.leader}`,
         trainerSprite: gym.sprite,
         enemyTeam: enemyTeam,

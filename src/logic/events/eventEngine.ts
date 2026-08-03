@@ -51,9 +51,9 @@ export interface GlobalMultipliers {
 
 const safeParse = (val: string | object | null | undefined): Record<string, unknown> => {
   if (typeof val === 'string') {
-    try { return JSON.parse(val) as Record<string, unknown>; } catch (_e) { return {}; }
+    try { return JSON.parse(val) as Record<string, unknown>; } catch (_e) { return {}; } // open-record
   }
-  return (val as Record<string, unknown>) || {};
+  return (val as Record<string, unknown>) || {}; // open-record
 };
 
 
@@ -150,21 +150,21 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
   return multipliers
 }
 
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * Checks if a specific species has active boosts.
  */
-export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpeciesId | string): { rate: number; shiny: number } {
+export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { rate: number; shiny: number } {
   let rateMult = 1
   let shinyMult = 1
-  const sId = speciesId as PokemonSpeciesId
+  const sId = requirePokemonSpeciesId(speciesId)
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
     if (!cfg.species) continue
 
-    const speciesList = cfg.species.split(',').map(s => s.trim() as PokemonSpeciesId)
+    const speciesList = cfg.species.split(',').map(s => s.trim()).filter(isPokemonSpeciesId)
     if (speciesList.includes(sId)) {
       rateMult *= (cfg.speciesRateMult || 1)
       shinyMult *= (cfg.speciesShinyMult || 1)
@@ -182,7 +182,7 @@ export function isNewEntryBetter(existingData: unknown, newData: unknown, sortBy
   if (!existingData) return true
   
   const getVal = (obj: unknown, path: string): number => {
-    return path.split('.').reduce((acc, part) => (acc as Record<string, unknown>)?.[part], obj) as number || 0
+    return path.split('.').reduce((acc, part) => (acc as Record<string, unknown>)?.[part], obj) as number || 0 // open-record
   }
 
   const oldScore = getVal(existingData, sortBy)

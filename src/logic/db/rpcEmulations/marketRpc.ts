@@ -105,7 +105,7 @@ export async function emulateBuyListing(
   let assetDataObj = listing.data;
   if (typeof assetDataObj === 'string') {
     try {
-      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>;
+      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record
     } catch (_e) {
       void 0;
     }
@@ -143,7 +143,7 @@ export async function emulateBuyListing(
 
 export async function emulateCancelListing(
   sqliteDb: SQLiteDatabase,
-  params: Record<string, unknown>,
+  params: Record<string, unknown>, // open-record
   context: { userId: string }
 ): Promise<DBResponse> {
   const { p_listing_id } = params;
@@ -157,7 +157,7 @@ export async function emulateCancelListing(
   let assetDataObj = listing.data;
   if (typeof assetDataObj === 'string') {
     try {
-      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>;
+      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record
     } catch (_e) {
       void 0;
     }
@@ -169,7 +169,7 @@ export async function emulateCancelListing(
 
   if (listing.listing_type === 'pokemon') {
     saveObj.box = saveObj.box || [];
-    saveObj.box.push(assetDataObj as Record<string, unknown>);
+    saveObj.box.push(assetDataObj as Record<string, unknown>); // open-record
   } else {
     saveObj.inventory = saveObj.inventory || {};
     const itemName = (assetDataObj as { name: string }).name;
@@ -193,7 +193,7 @@ export async function emulateCancelListing(
 
 export async function emulateClaimAsset(
   sqliteDb: SQLiteDatabase,
-  params: Record<string, unknown>,
+  params: Record<string, unknown>, // open-record
   context: { userId: string }
 ): Promise<DBResponse> {
   const { p_claim_id } = params;
@@ -218,10 +218,10 @@ export async function emulateClaimAsset(
   if (assetPayload.type === 'pokemon') {
     userSave.team = userSave.team || [];
     if (userSave.team.length < 6) {
-      userSave.team.push(assetPayload.data as Record<string, unknown>);
+      userSave.team.push(assetPayload.data as Record<string, unknown>); // open-record
     } else {
       userSave.box = userSave.box || [];
-      userSave.box.push(assetPayload.data as Record<string, unknown>);
+      userSave.box.push(assetPayload.data as Record<string, unknown>); // open-record
     }
   } else if (assetPayload.type === 'money') {
     userSave.money = (userSave.money || 0) + Number(assetPayload.data);

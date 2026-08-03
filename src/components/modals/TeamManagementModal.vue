@@ -29,7 +29,7 @@ const adventureTeam = computed(() => {
 })
 
 const pvpTeam = computed(() => {
-  const pvpUids = (gameStore.state.pvpTeam || []) as string[]
+  const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
   const slots: (Pokemon | null)[] = []
   for (let i = 0; i < 3; i++) {
@@ -40,7 +40,7 @@ const pvpTeam = computed(() => {
 })
 
 const warTeam = computed(() => {
-  const warUids = (gameStore.state.warTeam || []) as string[]
+  const warUids = (gameStore.state.warTeam || []) as string[] // no-domain
   const maxSlots = gameStore.state.warSlots || 6
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
   const slots: (Pokemon | null)[] = []
@@ -150,7 +150,7 @@ function sendToBox(pokemon: Pokemon | null) {
 }
 
 function selectPvp(slotIndex: number) {
-  const pvpTeam = (gameStore.state.pvpTeam || []) as string[]
+  const pvpTeam = (gameStore.state.pvpTeam || []) as string[] // no-domain
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])]
   const available = allPokes.filter((p): p is Pokemon => p !== null && !pvpTeam.includes(p.uid))
   
@@ -172,7 +172,7 @@ function selectPvp(slotIndex: number) {
 }
 
 function selectWar(slotIndex: number) {
-  const warTeam = (gameStore.state.warTeam || []) as string[]
+  const warTeam = (gameStore.state.warTeam || []) as string[] // no-domain
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])]
   const available = allPokes.filter((p): p is Pokemon => p !== null && !warTeam.includes(p.uid))
   
@@ -194,7 +194,7 @@ function selectWar(slotIndex: number) {
 }
 
 function selectAdventure(_slotIndex: number) {
-  const currentTeamUids = (gameStore.state.team || []).map((p: Pokemon | null) => p?.uid).filter(Boolean) as string[]
+  const currentTeamUids = (gameStore.state.team || []).map((p: Pokemon | null) => p?.uid).filter(Boolean) as string[] // no-domain
   
   uiStore.open('PokemonSelection', {
     title: '⚡ SELECCIONAR POKÉMON',

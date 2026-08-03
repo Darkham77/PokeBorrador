@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -28,6 +28,10 @@ const uiStore = useUIStore();
 const isProcessing = ref(false);
 const isCooldown = ref(false);
 
+const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? (props.claim.asset_data.data as unknown as PokemonAssetData) : null); // domain-ok
+const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as unknown as ItemAssetData) : null); // domain-ok
+const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as unknown as number) : 0); // domain-ok
+
 const getFriendlySourceType = (sourceType: string) => {
   switch (sourceType) {
     case 'trade':
@@ -44,7 +48,7 @@ const getFriendlySourceType = (sourceType: string) => {
 const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget');
   if (asset.type === 'item') {
-    const itemData = asset.data as unknown as ItemAssetData;
+    const itemData = asset.data as unknown as ItemAssetData; // domain-ok
     const dbItem = SHOP_ITEMS.find(i => i.id === itemData.name || i.name === itemData.name);
     const slug = dbItem?.sprite || dbItem?.id || itemData.name;
     return getAssetUrl(ASSET_TYPES.ITEM, slug);
@@ -80,8 +84,8 @@ const onClaim = async () => {
     <div class="claim-main">
       <div class="asset-preview-wrapper">
         <img 
-          v-if="claim.asset_data.type === 'pokemon'"
-          :src="getSpriteUrl((claim.asset_data.data as unknown as PokemonAssetData).id)" 
+          v-if="claim.asset_data.type === 'pokemon' && pokemonAsset"
+          :src="getSpriteUrl(pokemonAsset.id)"
           class="pixel-art pokemon-sprite" 
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
@@ -94,16 +98,16 @@ const onClaim = async () => {
       </div>
       <div class="claim-info">
         <span class="name">
-          <template v-if="claim.asset_data.type === 'pokemon'">
-            {{ (claim.asset_data.data as unknown as PokemonAssetData).name }}
-            <span class="lvl-label">Nvl {{ (claim.asset_data.data as unknown as PokemonAssetData).level }}</span>
+          <template v-if="claim.asset_data.type === 'pokemon' && pokemonAsset">
+            {{ pokemonAsset.name }}
+            <span class="lvl-label">Nvl {{ pokemonAsset.level }}</span>
           </template>
           <template v-else-if="claim.asset_data.type === 'money'">
-            ₽{{ (claim.asset_data.data as unknown as number).toLocaleString() }}
+            ₽{{ moneyAsset.toLocaleString() }}
           </template>
-          <template v-else-if="claim.asset_data.type === 'item'">
-            {{ (claim.asset_data.data as unknown as ItemAssetData).name }}
-            <span class="qty-label">x{{ (claim.asset_data.data as unknown as ItemAssetData).qty }}</span>
+          <template v-else-if="claim.asset_data.type === 'item' && itemAsset">
+            {{ itemAsset.name }}
+            <span class="qty-label">x{{ itemAsset.qty }}</span>
           </template>
         </span>
         <span class="meta">Origen: {{ getFriendlySourceType(claim.source_type) }}</span>

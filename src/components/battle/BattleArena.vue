@@ -23,7 +23,7 @@ import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsAr
 
 const debugStore = useDebugStore()
 const isDebugActive = computed(() => {
-  return debugStore.canAccess && typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
+  return debugStore.canAccess && typeof window !== 'undefined' && !!window.__VITE_DEBUG__
 })
 const BattleDebugTools = defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
 

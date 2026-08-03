@@ -21,7 +21,7 @@ export function getClassModifier(playerClass: string, type: string, context: Mod
     return 1.0;
   }
 
-  const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass];
+  const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass]; // open-record
   if (!cls) return type === 'shopDiscount' ? 0 : 1.0;
 
   const m = cls.modifiers;
@@ -50,7 +50,7 @@ export function getClassModifier(playerClass: string, type: string, context: Mod
  * Calculates the rewards and costs for a passive mission.
  */
 export function getMissionCostInfo(missionId: string, playerClass: string): Record<string, unknown> | null {
-  const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass];
+  const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass]; // open-record
   if (!cls) return null;
 
   if (playerClass === 'cazabichos') {

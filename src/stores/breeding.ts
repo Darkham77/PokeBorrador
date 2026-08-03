@@ -365,7 +365,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       gameStore.state.classData.lastEggScanDate = Temporal.Now.instant().toString();
       
       saveWarehouseEggs();
-      const name = (POKEMON_DB as Record<string, { name: string }>)[egg.species]?.name || 'Huevo';
+      const name = POKEMON_DB[egg.species]?.name || 'Huevo';
       uiStore.notify(`¡Huevo de ${name} escaneado!`, '🔍');
       gameStore.scheduleSave();
     }
@@ -479,5 +479,5 @@ export const useBreedingStore = defineStore('breeding', () => {
 });
 
 if (typeof window !== 'undefined') {
-  (window as unknown as { __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown }).__VITE_DEBUG_BREEDING_STORE_RESOLVER__ = () => useBreedingStore();
+  window.__VITE_DEBUG_BREEDING_STORE_RESOLVER__ = () => useBreedingStore();
 }

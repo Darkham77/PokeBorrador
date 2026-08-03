@@ -172,7 +172,7 @@ export const pokemonDebugService = {
           isGuardian: p.isGuardian
         };
         
-        const state = game.state as Record<string, unknown>;
+        const state = game.state as Record<string, unknown>; // open-record
         const key = `${p.id}TicketSecs`;
         if (state[key] !== undefined) {
           state[key] = (Number(state[key]) || 0) + 12 * 3600;

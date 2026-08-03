@@ -21,15 +21,15 @@ const RAIN_AFFECTED_MOVE_NAMES = ['thunder', 'trueno', 'hurricane', 'vendaval', 
 const SNOW_AFFECTED_MOVE_NAMES = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora', 'cold-snap'] as const
 
 function isSunAffectedMoveName(value: string): boolean {
-  return (SUN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+  return (SUN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
 }
 
 function isRainAffectedMoveName(value: string): boolean {
-  return (RAIN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+  return (RAIN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
 }
 
 function isSnowAffectedMoveName(value: string): boolean {
-  return (SNOW_AFFECTED_MOVE_NAMES as readonly string[]).includes(value)
+  return (SNOW_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
 }
 
 function formatAbilityDescription(desc: string): string {
@@ -140,8 +140,7 @@ export function useCombatantStatus(
   })
 
   const isAdmin = computed(() => {
-    const win = window as unknown as { __ADMIN_DEBUG__: boolean }
-    return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
+    return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) || supabase.isLocal
   })
 
   const activeStages = computed(() => {
@@ -152,9 +151,9 @@ export function useCombatantStatus(
     const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'] as const satisfies readonly ShowdownStatKey[];
     
     for (const key of keys) {
-      const val = (s as Record<string, number | undefined>)[key] || 0
+      const val = (s as Record<string, number | undefined>)[key] || 0 // open-record
       if (val !== 0) {
-        const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key }
+        const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key } // open-record
         const mult = getStatMultiplier(val || 0)
         const pct = Math.round((mult - 1) * 100)
         const pctText = pct > 0 ? `+${pct}%` : `${pct}%`
@@ -346,9 +345,9 @@ export function useCombatantStatus(
     // 1. Estado Primario
     if (target.status) {
       const s = target.status as PokemonStatus
-      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s]
-      const title = (STATUS_NAME_MAP as Record<string, string>)[s]
-      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s]
+      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s] // open-record
+      const title = (STATUS_NAME_MAP as Record<string, string>)[s] // open-record
+      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s] // open-record
 
       if (!emoji || !title || !description) {
         throw new Error(

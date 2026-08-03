@@ -3,11 +3,33 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { STARTER_POKEMON } from '@/data/pokemon/starters.ts'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { gsap } from 'gsap'
 
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const gs = computed(() => gameStore.state)
+
+const starterList = computed(() => {
+  return STARTER_POKEMON.map((config, index) => {
+    const data = pokemonDataProvider.getPokemonData(config.id)
+    const primaryType = data.type || 'normal'
+    const typeLabel = primaryType === 'grass' ? '🌿 Planta' : primaryType === 'fire' ? '🔥 Fuego' : primaryType === 'water' ? '💧 Agua' : primaryType
+    return {
+      id: config.id,
+      name: data.name || config.id,
+      type: primaryType,
+      typeLabel,
+      seed: 0.1 + index * 0.4,
+      stats: {
+        hp: data.hp || 45,
+        attack: data.atk || 49,
+        defense: data.def || 49
+      }
+    }
+  })
+})
 
 const handleChooseStarter = async (id: string) => {
   await gameStore.chooseStarter(id)
@@ -90,104 +112,42 @@ const handleMouseLeave = (event: MouseEvent) => {
     </p>
     
     <div class="starter-grid">
-      <!-- Bulbasaur -->
       <div
-        class="starter-card grass"
-        :style="{ '--card-seed': 0.1 }"
-        @click.stop="handleChooseStarter('bulbasaur')"
-        @mouseenter="handleMouseEnter($event, 'grass')"
+        v-for="starter in starterList"
+        :id="`starter-card-${starter.id}`"
+        :key="starter.id"
+        class="starter-card"
+        :class="starter.type"
+        :style="{ '--card-seed': starter.seed }"
+        @click.stop="handleChooseStarter(starter.id)"
+        @mouseenter="handleMouseEnter($event, starter.type)"
         @mouseleave="handleMouseLeave($event)"
       >
         <div class="starter-img-container">
           <img
-            id="starter-img-bulbasaur"
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur')"
-            alt="Bulbasaur"
+            :id="`starter-img-${starter.id}`"
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, starter.id)"
+            :alt="starter.name"
             class="starter-sprite"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
         <div class="starter-name">
-          Bulbasaur
+          {{ starter.name }}
         </div>
-        <span class="starter-type type-grass">🌿 Planta</span>
+        <span
+          class="starter-type"
+          :class="`type-${starter.type}`"
+        >{{ starter.typeLabel }}</span>
         <div class="starter-stats">
           <div class="stat-mini">
-            <span>HP</span><span>45</span>
+            <span>HP</span><span>{{ starter.stats.hp }}</span>
           </div>
           <div class="stat-mini">
-            <span>Ataque</span><span>49</span>
+            <span>Ataque</span><span>{{ starter.stats.attack }}</span>
           </div>
           <div class="stat-mini">
-            <span>Defensa</span><span>49</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charmander -->
-      <div
-        class="starter-card fire"
-        :style="{ '--card-seed': 0.5 }"
-        @click.stop="handleChooseStarter('charmander')"
-        @mouseenter="handleMouseEnter($event, 'fire')"
-        @mouseleave="handleMouseLeave($event)"
-      >
-        <div class="starter-img-container">
-          <img
-            id="starter-img-charmander"
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'charmander')"
-            alt="Charmander"
-            class="starter-sprite"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-          >
-        </div>
-        <div class="starter-name">
-          Charmander
-        </div>
-        <span class="starter-type type-fire">🔥 Fuego</span>
-        <div class="starter-stats">
-          <div class="stat-mini">
-            <span>HP</span><span>39</span>
-          </div>
-          <div class="stat-mini">
-            <span>Ataque</span><span>52</span>
-          </div>
-          <div class="stat-mini">
-            <span>Defensa</span><span>43</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Squirtle -->
-      <div
-        class="starter-card water"
-        :style="{ '--card-seed': 0.9 }"
-        @click.stop="handleChooseStarter('squirtle')"
-        @mouseenter="handleMouseEnter($event, 'water')"
-        @mouseleave="handleMouseLeave($event)"
-      >
-        <div class="starter-img-container">
-          <img
-            id="starter-img-squirtle"
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, 'squirtle')"
-            alt="Squirtle"
-            class="starter-sprite"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-          >
-        </div>
-        <div class="starter-name">
-          Squirtle
-        </div>
-        <span class="starter-type type-water">💧 Agua</span>
-        <div class="starter-stats">
-          <div class="stat-mini">
-            <span>HP</span><span>44</span>
-          </div>
-          <div class="stat-mini">
-            <span>Ataque</span><span>48</span>
-          </div>
-          <div class="stat-mini">
-            <span>Defensa</span><span>65</span>
+            <span>Defensa</span><span>{{ starter.stats.defense }}</span>
           </div>
         </div>
       </div>

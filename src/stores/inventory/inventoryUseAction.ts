@@ -23,7 +23,7 @@ const HEAL_ITEM_IDS = [
 type HealItemId = (typeof HEAL_ITEM_IDS)[number];
 
 function isHealItemId(value: ItemId): value is HealItemId {
-  return (HEAL_ITEM_IDS as readonly ItemId[]).includes(value);
+  return (HEAL_ITEM_IDS as readonly ItemId[]).includes(value); // domain-ok
 }
 
 export function executeUseItem(
@@ -61,10 +61,11 @@ export function executeUseItem(
 
     // Global items
     if (isGlobalItem(itemId)) {
-      const effectFn = (ITEM_EFFECTS as Record<string, (p: GameState) => ItemEffectResult>)[itemId];
+      const validItemId = requireItemId(itemId);
+      const effectFn = ITEM_EFFECTS[validItemId];
       if (!effectFn) return { success: false, message: 'Efecto global no implementado.' };
       
-      const result = effectFn(gameStore.state);
+      const result = (effectFn as (p: GameState) => ItemEffectResult)(gameStore.state);
       if (result.success) {
         consumeItem(gameStore, itemId);
         gameStore.save(false);
@@ -74,11 +75,12 @@ export function executeUseItem(
 
     if (!pokemon) return { success: false, message: 'Seleccioná un Pokémon.' };
 
-    const effectFn = (ITEM_EFFECTS as Record<string, (p: Pokemon) => ItemEffectResult>)[itemId];
+    const validItemId = requireItemId(itemId);
+    const effectFn = ITEM_EFFECTS[validItemId];
     let result: ItemEffectResult | null;
 
     if (effectFn) {
-      result = effectFn(pokemon);
+      result = (effectFn as (p: Pokemon) => ItemEffectResult)(pokemon);
     } else {
       result = getDynamicItemEffect(itemId, pokemon);
     }

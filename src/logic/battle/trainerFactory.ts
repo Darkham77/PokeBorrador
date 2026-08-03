@@ -67,7 +67,7 @@ export async function buildTrainerTeam(
 
   // Inicializa el generador competitivo
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
-  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } };
+  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } }; // domain-ok
 
   const enemyTeam: Pokemon[] = [];
   const usedSpecies: PokemonSpeciesId[] = [];

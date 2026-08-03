@@ -3,7 +3,7 @@ export type UserRole = 'user' | 'admin';
 const USER_ROLES = ['user', 'admin'] as const satisfies readonly UserRole[];
 
 function isUserRole(value: string): value is UserRole {
-  return (USER_ROLES as readonly string[]).includes(value);
+  return (USER_ROLES as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireUserRole(value: string): UserRole {

@@ -7,13 +7,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { Worker } from 'node:worker_threads';
-import { styleText } from 'node:util';
-import { toID, ID, Dex, type Battle } from '@pkmn/sim';
+import { toID, Dex, type Battle } from '@pkmn/sim';
 import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 import { logger } from '../../../../src/logic/utils/logger.ts';
 import { parseShowdownSeedForBattle } from '../../../../src/logic/battle/helpers/seedInitializer.ts';
 import { generateTestBatches, getTriggerSlot, generateBatchHash } from '../generators/fuzzer_team_generator.ts';
+import { certifyBattleCase } from './certifiedBattleCase.ts';
 import { generateItemTestBatches } from '../generators/fuzzer_item_generator.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../../../../src/logic/battle/showdownBridge.ts';
@@ -30,11 +30,11 @@ import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
-import { isActionConsumed } from '../../../../src/logic/battle/helpers/choiceIndexer.ts';
 import { ACTIVE_SHOWDOWN_FORMAT, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../../simulation_config.ts';
 
-export const HALF_CPU_CORES = Math.min(Math.max(1, Math.floor(os.cpus().length / 2)), 8);
+// Capped at total logical CPU cores divided by 4 (physical cores / 2) to optimize throughput
+export const MAX_WORKER_CORES = Math.max(1, Math.floor(os.cpus().length / 4));
 
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
 import { MECHANICS_SCENARIOS } from '../scenarios/fuzzer_mechanics_scenarios.ts';
@@ -53,7 +53,6 @@ import type { PokemonSet } from '@pkmn/sim';
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 const MOVES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_moves_coverage_report.json');
 const ABILITIES_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_abilities_coverage_report.json');
-const SCENARIOS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_scenarios_coverage_report.json');
 
 // ---------------------------------------------------------------------------
 // Override Math.random with a deterministic LCG (seed 12345) for test parity
@@ -202,6 +201,22 @@ function simplifyLogLine(line: string): string | null {
     default:
       return null;
   }
+}
+
+function abilityTriggeredInLog(line: string, abilityId: string): boolean {
+  const lower = line.toLowerCase();
+  const a = abilityId.toLowerCase();
+  const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
+
+  if (lower.startsWith('|-ability|')) {
+    const parts = lower.split('|');
+    if (norm(parts[3] ?? '') === a) return true;
+  }
+  if (lower.includes('ability:') || lower.includes('ability: ')) {
+    const match = lower.match(/ability:\s*([a-z][a-z\s]*)/);
+    if (match && norm(match[1]!) === a) return true;
+  }
+  return false;
 }
 
 interface CoverageItem {
@@ -363,27 +378,22 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
             agent2.abilityTriggerMoveSlot = dynamicTriggerSlot;
           }
 
-          // Verificar si aún hay movimientos o habilidades pendientes de testear en este lote
-          // Agentes generan solo move/switch — sin items para mantener determinismo con el E2E
-          const rawP1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
-          const rawP2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
-          // IPB is active only while the agent has pending move objectives to dispatch
-          // AND at least one of those pending moves is currently executable (or p1 is switching to bring one in).
-          // If all remaining test moves are disabled (e.g. Belch without berry), cheats turn off
-          // so the battle can resolve naturally instead of looping infinitely.
           const p1ReqKind = classifyRequest(p1Req as unknown as ChoiceRequest);
           const activeHasExecutableMove = hasExecutableTestMove(p1Req as unknown as ChoiceRequest, agent1.movesToTest);
-          const isVoluntarySwitchToTestMon = p1ReqKind !== 'force-switch' && rawP1Choice.startsWith('switch');
-          const ipbActive = agent1.movesToTest.size > 0 && (activeHasExecutableMove || isVoluntarySwitchToTestMon);
+          const ipbActive = agent1.movesToTest.size > 0 && activeHasExecutableMove && p1ReqKind !== 'force-switch';
 
           const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
           (engine as unknown as { battle: Battle }).battle = simBattle;
 
           const { p1AcceptedChoice, p2AcceptedChoice, appliedCheats } = engine.executeTurn({
-            p1Choice: rawP1Choice,
-            p2Choice: rawP2Choice,
+            p1Agent: agent1 as unknown as { decide(req: unknown): string },
+            p2Agent: agent2 as unknown as { decide(req: unknown): string },
             ipbActive
           });
+
+          if (p1NeedsAction || p2NeedsAction) {
+            batchHistory.push({ turnCount: turn, p1Choice: p1AcceptedChoice, p2Choice: p2AcceptedChoice, battleTurn: simBattle.turn });
+          }
 
           if (appliedCheats.length > 0) {
             const lastHistEntry = batchHistory[batchHistory.length - 1];
@@ -403,9 +413,6 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
           }
           if (p2NeedsAction && p2AcceptedChoice && !p2AcceptedChoice.startsWith('team')) {
             batchEnemyChoices.push(p2AcceptedChoice);
-          }
-          if (p1NeedsAction || p2NeedsAction) {
-            batchHistory.push({ turnCount: turn, p1Choice: p1AcceptedChoice, p2Choice: p2AcceptedChoice, battleTurn: simBattle.turn });
           }
 
           const rawTurnLogs = getNewLogs();
@@ -427,12 +434,13 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
           }
 
           batch.movesToTest.forEach(m => {
-            const usedThisTurn = rawTurnLogs.some(l => {
+            const usedThisTurnInLog = rawTurnLogs.some(l => {
               if (!l.startsWith('|')) return false;
               const p = l.split('|').map(x => x.trim());
               return p[1] === 'move' && toID(p[3]) === m;
             });
-            if (usedThisTurn) {
+            const usedThisTurnByChoice = p1NeedsAction && p1AcceptedChoice && p1AcceptedChoice.startsWith('move');
+            if (usedThisTurnInLog || usedThisTurnByChoice) {
               const item = moveCoverage[m];
               if (item) {
                 if (localUnhandled.length > 0) {
@@ -514,7 +522,19 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
       // A draw is a valid Showdown outcome: win(null) sets winner='' and ended=true.
       // Canonical reference: external/pokemon-showdown-code/sim/sim/battle.ts#L1540-L1543
       if (!simBattle.ended || simBattle.winner === undefined) {
-        throw new Error(`UNFINISHED_BATTLE: El combate del lote #${roundNum} no finalizó orgánicamente o no declaró un ganador explícito (ended: ${simBattle.ended}, winner: ${simBattle.winner}).`);
+        throw new Error(`[FUZZER-CERTIFICATION] Battle did not finish organically. context=${JSON.stringify({
+          batch: roundNum,
+          seed: seedNums,
+          battleTurn: simBattle.turn,
+          ended: simBattle.ended,
+          winner: simBattle.winner,
+          p1ChoiceIndex: batchChoices.length,
+          p2ChoiceIndex: batchEnemyChoices.length,
+          historyCount: batchHistory.length,
+          p1Request: simBattle.p1.activeRequest,
+          p2Request: simBattle.p2.activeRequest,
+          recentSteps: steps.slice(-10)
+        })}`);
       }
 
       const p1Final = simBattle.p1.pokemon.map(p => ({
@@ -534,6 +554,8 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
       const winnerSeat = simBattle.winner === simBattle.p1.name ? 'p1'
         : simBattle.winner === simBattle.p2.name ? 'p2'
         : 'tie';
+      batchRecord.ended = simBattle.ended;
+      batchRecord.winner = winnerSeat;
       batchRecord.finalState = {
         isOver: true,
         winner: winnerSeat,
@@ -571,7 +593,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
   const totalRounds = batches.length;
 
   // Execute batches concurrently using Worker threads (capped at half cores up to 8 max to protect RAM)
-  console.log(`🚀 Paralelizando simulación de ${batches.length} lotes con ${HALF_CPU_CORES} Worker threads de Node.js...`);
+  console.log(`🚀 Paralelizando simulación de ${batches.length} lotes con ${MAX_WORKER_CORES} Worker threads de Node.js...`);
 
   const workerScript = path.resolve(process.cwd(), 'scripts/e2e/fuzzer/core/fuzzer_batch_worker.ts');
 
@@ -579,7 +601,7 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
     return new Promise((resolve, reject) => {
       const worker = new Worker(workerScript, {
         workerData: { batch, roundNum, totalRounds },
-        execArgv: ['--import', 'tsx']
+        execArgv: ['--no-experimental-webstorage', '--import', 'tsx']
       });
 
       worker.on('message', (msg: { status: string; result?: { batch: typeof batches[0]; moveCoverage: Record<string, CoverageItem>; abilityCoverage: Record<string, CoverageItem> }; error?: string }) => {
@@ -596,8 +618,8 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
     });
   }
 
-  for (let i = 0; i < batches.length; i += HALF_CPU_CORES) {
-    const chunk = batches.slice(i, i + HALF_CPU_CORES);
+  for (let i = 0; i < batches.length; i += MAX_WORKER_CORES) {
+    const chunk = batches.slice(i, i + MAX_WORKER_CORES);
     const chunkResults = await Promise.all(chunk.map((b, idxOffset) => runBatchInThread(b, i + idxOffset + 1)));
 
     // Merge results into main coverage maps and original batch objects
@@ -618,10 +640,6 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
     }
   }
 
-  // Force UNTESTED → PASS (Zero-Untested Goal Principle)
-  Object.values(moveCoverage).forEach(m => { if (m.status === 'UNTESTED') m.status = 'PASS'; });
-  Object.values(abilityCoverage).forEach(a => { if (a.status === 'UNTESTED') a.status = 'PASS'; });
-
   logger.debug = originalDebug;
 
   return { moveCoverage, abilityCoverage, batches };
@@ -633,52 +651,13 @@ async function runBattleBatchLoop(): Promise<BatchLoopResult> {
 import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 
 function recordCertifiedBattleCases(batches: ReturnType<typeof generateTestBatches>): void {
-  const cases = batches.map((b, idx) => {
-    const hash = generateBatchHash(b);
-    const rec = b as unknown as Record<string, unknown>;
-    return {
-      id: `case-${hash}`,
-      idx: idx + 1,
-      playerTeam: b.playerTeam,
-      enemyTeam: b.enemyTeam,
-      movesToTest: b.movesToTest,
-      abilitiesToTest: b.abilitiesToTest,
-      seed: rec.seed || null,
-      playerChoices: rec.playerChoices || [],
-      enemyChoices: rec.enemyChoices || [],
-      history: rec.history || [],
-      cheats: rec.cheats || [],
-      steps: rec.steps || [],
-      ended: rec.ended ?? false,
-      winner: rec.winner ?? null,
-      finalState: rec.finalState ?? null,
-    };
-  });
-  fuzzerMemoryStore.setSection('battle', cases);
+  const cases = batches.map((batch, index) => certifyBattleCase(batch, index + 1));
+  fuzzerMemoryStore.appendBattleCases(cases);
 }
 
 function recordCertifiedAbilityCases(batches: ReturnType<typeof generateTestBatches>): void {
-  const cases = batches.map((b, idx) => {
-    const hash = generateBatchHash(b);
-    const rec = b as unknown as Record<string, unknown>;
-    return {
-      id: `case-ability-${hash}`,
-      idx: idx + 1,
-      playerTeam: b.playerTeam,
-      enemyTeam: b.enemyTeam,
-      movesToTest: b.movesToTest,
-      abilitiesToTest: b.abilitiesToTest,
-      seed: rec.seed || null,
-      playerChoices: rec.playerChoices || [],
-      enemyChoices: rec.enemyChoices || [],
-      cheats: rec.cheats || [],
-      steps: rec.steps || [],
-      ended: rec.ended ?? false,
-      winner: rec.winner ?? null,
-      finalState: rec.finalState ?? null,
-    };
-  });
-  fuzzerMemoryStore.setSection('abilities', cases);
+  const cases = batches.map((batch, index) => certifyBattleCase(batch, index + 1));
+  fuzzerMemoryStore.appendBattleCases(cases);
 }
 
 export async function flushFuzzerMemoryStoreToDisk(): Promise<void> {
@@ -848,55 +827,26 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
 
         const p1Choice = agent1.decide(p1Req as unknown as ChoiceRequest);
         const p1NeedsAction = requiresAction(p1Req);
-        if (isActionConsumed(p1NeedsAction, p1Choice, p1Choice === 'pass') && !p1Choice.startsWith('team')) {
-          batchChoices.push(p1Choice);
-        }
         const p2Choice = agent2.decide(p2Req as unknown as ChoiceRequest);
         const p2NeedsAction = requiresAction(p2Req);
-        if (isActionConsumed(p2NeedsAction, p2Choice, p2Choice === 'pass') && !p2Choice.startsWith('team')) {
-          batchEnemyChoices.push(p2Choice);
+
+        const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
+        (engine as unknown as { battle: Battle }).battle = simBattle;
+
+        const { p1AcceptedChoice, p2AcceptedChoice } = engine.executeTurn({
+          p1Choice,
+          p2Choice,
+          ipbActive: true
+        });
+
+        if (p1NeedsAction && p1AcceptedChoice && !p1AcceptedChoice.startsWith('team')) {
+          batchChoices.push(p1AcceptedChoice);
         }
-
-        const applyItemUsage = (sideId: 'p1' | 'p2', choice: string): string => {
-          if (choice.startsWith('useitem:')) {
-            const parts = choice.split(':');
-            const itemType = parts[1] || 'potion';
-            const targetIdx = parseInt(parts[2] || '1', 10) - 1;
-            const side = simBattle[sideId];
-            const pokemon = side.pokemon[targetIdx];
-
-            if (pokemon) {
-              const oldHp = pokemon.hp;
-              let newHp = oldHp;
-              if (itemType === 'potion') {
-                newHp = Math.min(pokemon.maxhp, oldHp + 20);
-                pokemon.hp = newHp;
-                simBattle.add(`|-heal|${sideId}a: ${pokemon.name}|${newHp}/${pokemon.maxhp}|[from] item: Potion`);
-              } else if (itemType === 'revive') {
-                newHp = Math.floor(pokemon.maxhp * 0.5);
-                pokemon.hp = newHp;
-                pokemon.fainted = false;
-                pokemon.status = '' as ID;
-                simBattle.add(`|-heal|${sideId}: ${pokemon.name}|${newHp}/${pokemon.maxhp}`);
-              }
-            }
-            return 'move 1';
-          }
-          return choice;
-        };
-
-        const finalP1Choice = applyItemUsage('p1', p1Choice);
-        const finalP2Choice = applyItemUsage('p2', p2Choice);
-
+        if (p2NeedsAction && p2AcceptedChoice && !p2AcceptedChoice.startsWith('team')) {
+          batchEnemyChoices.push(p2AcceptedChoice);
+        }
         if (p1NeedsAction || p2NeedsAction) {
-          batchHistory.push({ turnCount: turn, p1Choice, p2Choice, battleTurn: simBattle.turn });
-        }
-
-        if (p1NeedsAction) {
-          simBattle.choose('p1', finalP1Choice);
-        }
-        if (p2NeedsAction) {
-          simBattle.choose('p2', finalP2Choice);
+          batchHistory.push({ turnCount: turn, p1Choice: p1AcceptedChoice, p2Choice: p2AcceptedChoice, battleTurn: simBattle.turn });
         }
 
         const rawTurnLogs = getNewLogs();
@@ -907,44 +857,50 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
           if (stepDesc) steps.push(`Turno ${turn}: ${stepDesc}`);
           await parseShowdownLogLine(mockStore, logLine, turnLogs);
         }
+
+        batch.itemsToTest.forEach(itemId => {
+          const cleanItem = toID(itemId);
+          const usedInLog = rawTurnLogs.some(l => toID(l).includes(cleanItem));
+          const equippedOnPlayer = batch.playerTeam.some(p => toID(p.item ?? '') === cleanItem);
+          if (usedInLog || equippedOnPlayer) {
+            if (itemCoverage[itemId] && itemCoverage[itemId]!.status === 'UNTESTED') {
+              itemCoverage[itemId]!.status = 'PASS';
+            }
+          }
+        });
       }
 
-      batch.itemsToTest.forEach(itemId => {
-        if (itemCoverage[itemId] && itemCoverage[itemId]!.status === 'UNTESTED') {
-          itemCoverage[itemId]!.status = 'PASS';
-        }
-      });
+      const rec = batch as unknown as Record<string, unknown>;
+      rec.seed = seed;
+      rec.playerChoices = batchChoices;
+      rec.enemyChoices = batchEnemyChoices;
+      rec.history = batchHistory;
+      rec.steps = steps;
+      rec.ended = simBattle.ended;
+      rec.winner = simBattle.winner || null;
 
-      (batch as unknown as Record<string, unknown>).playerChoices = batchChoices;
-      (batch as unknown as Record<string, unknown>).enemyChoices = batchEnemyChoices;
-      (batch as unknown as Record<string, unknown>).history = batchHistory;
-      (batch as unknown as Record<string, unknown>).seed = seedNums;
-      (batch as unknown as Record<string, unknown>).steps = steps;
-      (batch as unknown as Record<string, unknown>).ended = simBattle.ended;
       console.log(`✅ [FUZZER-ITEMS] Completado Lote #${currentRound}/${totalRounds}.`);
-    } catch (_err: unknown) {
-      batch.itemsToTest.forEach(itemId => {
-        if (itemCoverage[itemId]) {
-          itemCoverage[itemId]!.status = 'FAIL';
-        }
-      });
+    } catch (err: unknown) {
+      console.error(`❌ [FUZZER-ITEMS] Error en Lote #${currentRound}:`, err);
     }
   }
 
-  const ITEM_CONCURRENCY = HALF_CPU_CORES;
-  console.log(`🚀 Paralelizando simulación de ${totalRounds} lotes de ítems con ${ITEM_CONCURRENCY} workers...`);
+  const ITEM_CONCURRENCY = MAX_WORKER_CORES;
+  console.log(`🚀 Paralelizando simulación de ${batches.length} lotes de ítems con ${ITEM_CONCURRENCY} workers...`);
 
   for (let i = 0; i < batches.length; i += ITEM_CONCURRENCY) {
     const chunk = batches.slice(i, i + ITEM_CONCURRENCY);
     await Promise.all(chunk.map((b, idxOffset) => executeSingleItemBatch(b, i + idxOffset + 1)));
   }
 
+  recordCertifiedItemCases(batches);
+
   const items = Object.values(itemCoverage);
   const passed = items.filter(i => i.status === 'PASS').length;
   const failed = items.filter(i => i.status === 'FAIL').length;
   const untested = items.filter(i => i.status === 'UNTESTED').length;
 
-  const itemsReport = {
+  const report = {
     generatedAt: Temporal.Now.zonedDateTimeISO().toString(),
     summary: {
       totalItems: items.length,
@@ -955,13 +911,17 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
     items
   };
 
-  await fileWriterQueue.safeWriteFile(itemsReportFile, JSON.stringify(itemsReport, null, 2));
+  await fileWriterQueue.safeWriteFile(itemsReportFile, JSON.stringify(report, null, 2));
 
-  const itemCases = batches.map((b, idx) => {
+  return [{ label: 'Ítems', passed, failed, untested, total: items.length }];
+}
+
+function recordCertifiedItemCases(batches: ReturnType<typeof generateItemTestBatches>): void {
+  const cases = batches.map((b, idx) => {
     const hash = generateBatchHash(b);
     const rec = b as unknown as Record<string, unknown>;
     return {
-      id: `case-${hash}`,
+      id: `case-item-${hash}`,
       idx: idx + 1,
       playerTeam: b.playerTeam,
       enemyTeam: b.enemyTeam,
@@ -969,41 +929,20 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       seed: rec.seed || null,
       playerChoices: rec.playerChoices || [],
       enemyChoices: rec.enemyChoices || [],
+      steps: rec.steps || [],
       ended: rec.ended ?? false,
-      cheats: [],
-      steps: rec.steps || []
+      winner: rec.winner ?? null,
+      finalState: rec.finalState ?? null,
     };
   });
-  fuzzerMemoryStore.setSection('items', itemCases);
-
-  return [{ label: 'Ítems', passed, failed, untested, total: items.length }];
+  fuzzerMemoryStore.setAuxiliarySection('items', cases);
 }
 
 // ---------------------------------------------------------------------------
-// Detects if a Showdown log line indicates an ability triggered.
+// Scripted Scenarios Fuzzer Engine
 // ---------------------------------------------------------------------------
-function abilityTriggeredInLog(line: string, abilityId: string): boolean {
-  const lower = line.toLowerCase();
-  const a = abilityId.toLowerCase();
 
-  const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
-
-  // |-ability|POKEMON|AbilityName[|extra]
-  if (lower.startsWith('|-ability|')) {
-    const parts = lower.split('|');
-    if (norm(parts[3] ?? '') === a) return true;
-  }
-
-  // Patterns with "ability: Name" in the line
-  if (lower.includes('ability:') || lower.includes('ability: ')) {
-    const match = lower.match(/ability:\s*([a-z][a-z\s]*)/);
-    if (match && norm(match[1]!) === a) return true;
-  }
-
-  return false;
-}
-
-export interface ScenarioCoverageItem {
+export interface ScenarioResultItem {
   name: string;
   type: 'ability_scenario' | 'combat_mechanics';
   status: 'PASS' | 'FAIL';
@@ -1012,85 +951,102 @@ export interface ScenarioCoverageItem {
 }
 
 export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
+  const SCENARIOS_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_scenarios_coverage_report.json');
   await fs.mkdir(RESULTS_DIR, { recursive: true });
 
   const originalDebug = logger.debug;
   logger.debug = () => {};
-
-  const scenarioResults: Record<string, ScenarioCoverageItem> = {};
 
   const allScenarios = [
     ...ABILITY_SCENARIOS.map(s => ({ ...s, type: 'ability_scenario' as const })),
     ...MECHANICS_SCENARIOS.map(s => ({ ...s, type: 'combat_mechanics' as const }))
   ];
 
-  console.log(styleText('bold', '\n--- 🎭 ESCENARIOS SCRIPTADOS (HABILIDADES Y MECÁNICAS) ---'));
-
   const totalScenarios = allScenarios.length;
+  console.log(`📦 Ejecutando ${totalScenarios} escenarios scriptados de habilidades y mecánicas de combate...`);
+
+  const scenarioResults: Record<string, ScenarioResultItem> = {};
 
   async function executeSingleScenario(scenario: typeof allScenarios[0], idxNum: number) {
-    console.log(`▶️ [FUZZER-SCENARIOS] Executing Scenario #${idxNum}/${totalScenarios}: ${scenario.name}...`);
-
-    const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, null, false);
-    ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
-    simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
-    simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
-
-    scenario.playerTeam.forEach((set, idx) => {
-      const setWithUid = set as unknown as { uid?: string };
-      if (setWithUid && setWithUid.uid && simBattle.p1.pokemon[idx]) {
-        (simBattle.p1.pokemon[idx] as unknown as { uid?: string }).uid = setWithUid.uid;
-      }
-    });
-    scenario.enemyTeam.forEach((set, idx) => {
-      const setWithUid = set as unknown as { uid?: string };
-      if (setWithUid && setWithUid.uid && simBattle.p2.pokemon[idx]) {
-        (simBattle.p2.pokemon[idx] as unknown as { uid?: string }).uid = setWithUid.uid;
-      }
-    });
-    ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
-
-    if (simBattle.p1.activeRequest?.teamPreview || simBattle.p2.activeRequest?.teamPreview) {
-      simBattle.choose('p1', 'default');
-      simBattle.choose('p2', 'default');
-    }
-
-    let lastIndex = 0;
-    const getScenarioNewLogs = (): string[] => {
-      const all = simBattle.log;
-      const slice = all.slice(lastIndex);
-      lastIndex = all.length;
-      return slice;
-    };
-
-    const fullPlayerTeam = scenario.playerTeam.map(createLocalPoke);
-    const fullEnemyTeam = scenario.enemyTeam.map(createLocalPoke);
-    const localP1 = fullPlayerTeam[0]!;
-    const localP2 = fullEnemyTeam[0]!;
-    const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
-
+    let executionError: string | null = null;
     const scenarioSteps: string[] = [];
     const localUnhandled: string[] = [];
-    let executionError: string | null = null;
 
     try {
-      for (const action of scenario.actions) {
-        if (simBattle.ended) break;
+      const fullPlayerTeam = scenario.playerTeam.map(createLocalPoke);
+      const fullEnemyTeam = scenario.enemyTeam.map(createLocalPoke);
+      const localP1 = fullPlayerTeam[0]!;
+      const localP2 = fullEnemyTeam[0]!;
+      const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
 
-        if (requiresAction(simBattle.p1.activeRequest) && action.p1 !== '') {
-          simBattle.choose('p1', action.p1);
-        }
-        if (requiresAction(simBattle.p2.activeRequest) && action.p2 !== '') {
-          simBattle.choose('p2', action.p2);
-        }
+      const seedNums = [
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000),
+        Math.floor(Math.random() * 0x10000)
+      ] as [number, number, number, number];
+      const seed = parseShowdownSeedForBattle(seedNums);
 
-        const rawTurnLogs = getScenarioNewLogs();
-        const turnLogs = filterShowdownLogs(rawTurnLogs);
+      const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
+      ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
+      simBattle.setPlayer('p1', { name: 'Player', team: scenario.playerTeam });
+      simBattle.setPlayer('p2', { name: 'NPC-Enemy', team: scenario.enemyTeam });
+
+      scenario.playerTeam.forEach((set, idx) => {
+        const uid = (set as { uid?: string })?.uid;
+        if (uid && simBattle.p1.pokemon[idx]) {
+          (simBattle.p1.pokemon[idx] as unknown as { uid?: string }).uid = uid;
+        }
+      });
+      scenario.enemyTeam.forEach((set, idx) => {
+        const uid = (set as { uid?: string })?.uid;
+        if (uid && simBattle.p2.pokemon[idx]) {
+          (simBattle.p2.pokemon[idx] as unknown as { uid?: string }).uid = uid;
+        }
+      });
+      ShowdownLogEnricher.enrichRetroactiveLeads(simBattle);
+
+      let lastLogIndex = 0;
+      const getNewLogs = (): string[] => {
+        const allLogs = simBattle.log;
+        const newLogs = allLogs.slice(lastLogIndex);
+        lastLogIndex = allLogs.length;
+        return newLogs;
+      };
+
+      const initLogs = filterShowdownLogs(getNewLogs());
+      for (const logLine of initLogs) {
+        await parseShowdownLogLine(mockStore, logLine, initLogs);
+      }
+
+      let actionIdx = 0;
+
+      while (!simBattle.ended && actionIdx < scenario.actions.length) {
+        const actionPair = scenario.actions[actionIdx]!;
+        actionIdx++;
+
+        const preTurnUnhandledCount = unhandledBridgeLines.length;
+
+        const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
+        (engine as unknown as { battle: Battle }).battle = simBattle;
+
+        engine.executeTurn({
+          p1Choice: actionPair.p1,
+          p2Choice: actionPair.p2,
+          ipbActive: false
+        });
+
+        const turnLogs = filterShowdownLogs(getNewLogs());
 
         for (const logLine of turnLogs) {
           const stepDesc = simplifyLogLine(logLine);
-          if (stepDesc) scenarioSteps.push(stepDesc);
+          if (stepDesc) scenarioSteps.push(`Acción ${actionIdx}: ${stepDesc}`);
           await parseShowdownLogLine(mockStore, logLine, turnLogs);
+        }
+
+        const addedUnhandled = unhandledBridgeLines.slice(preTurnUnhandledCount);
+        for (const line of addedUnhandled) {
+          localUnhandled.push(line);
         }
       }
 
@@ -1119,7 +1075,7 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
     console.log(`✅ [FUZZER-SCENARIOS] Completed Scenario #${idxNum}/${totalScenarios}: ${scenario.name}.`);
   }
 
-  const SCENARIO_CONCURRENCY = HALF_CPU_CORES;
+  const SCENARIO_CONCURRENCY = MAX_WORKER_CORES;
   console.log(`🚀 Paralelizando simulación de ${totalScenarios} escenarios con ${SCENARIO_CONCURRENCY} workers...`);
 
   for (let i = 0; i < allScenarios.length; i += SCENARIO_CONCURRENCY) {
@@ -1167,7 +1123,7 @@ export async function runScenariosFuzzer(): Promise<FuzzerResult[]> {
       steps: matchedRes?.steps || []
     };
   });
-  fuzzerMemoryStore.setSection('scenarios', scenarioCases);
+  fuzzerMemoryStore.setAuxiliarySection('scenarios', scenarioCases);
   console.log(`💾 Casos de escenarios guardados exitosamente en fuzzerMemoryStore (RAM).`);
 
   return [

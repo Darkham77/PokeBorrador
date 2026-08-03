@@ -96,7 +96,7 @@ function resolveSpecies(id: string): string {
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
 
 function toSmogonStatus(
-  status: PokemonStatus | string | null | undefined
+  status: string | null | undefined
 ): '' | 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' {
   if (!status) return '';
   const s = status as PokemonStatus;

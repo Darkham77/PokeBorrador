@@ -14,7 +14,13 @@ export const BATTLE_STATES = {
   EXIT_BATTLE: 'EXIT_BATTLE'
 } as const;
 
-export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
+export function isBattleStateName(val: string): val is BattleStateName {
+  return (Object.values(BATTLE_STATES) as readonly string[]).includes(val); // domain-ok
+}
+
+export function isBattleSubStateName(val: string): val is BattleSubStateName {
+  return (Object.values(BATTLE_SUBSTATES) as readonly string[]).includes(val); // domain-ok
+}
 
 export const BATTLE_SUBSTATES = {
   WAIT_INPUT: 'WAIT_INPUT',
@@ -174,16 +180,16 @@ export function createBattleStateMachine() {
 
       const executeTransition = () => {
         // Validation check (can be expanded for strict enforcement)
-        if (newState && (Object.values(BATTLE_STATES) as readonly string[]).includes(newState)) {
+        if (newState && isBattleStateName(newState)) {
           const isSameState = currentState.value === newState;
           const allowedTransitions = validTransitions[currentState.value];
           if (!isSameState && allowedTransitions && !allowedTransitions.includes(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
             logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
           }
-          currentState.value = newState as BattleStateName;
-        } else if (newState && (Object.values(BATTLE_SUBSTATES) as readonly string[]).includes(newState)) {
+          currentState.value = newState;
+        } else if (newState && isBattleSubStateName(newState)) {
           // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
-          newSubState = newState as BattleSubStateName;
+          newSubState = newState;
         }
 
         if (newSubState) {

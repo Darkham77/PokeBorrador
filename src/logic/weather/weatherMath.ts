@@ -80,7 +80,7 @@ export function getRouteWeatherPure(
   const randNum = prng() * 100;
 
   let cumulative = 0;
-  for (const [weather, prob] of Object.entries(table as Record<string, number>)) {
+  for (const [weather, prob] of Object.entries(table as Record<string, number>)) { // open-record
     cumulative += prob;
     if (randNum < cumulative) return weather;
   }
@@ -94,11 +94,10 @@ import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 
 let sessionWeatherSeed = 500;
 if (typeof window !== 'undefined') {
-  const win = window as unknown as { __WEATHER_SESSION_SEED__?: number };
-  if (win.__WEATHER_SESSION_SEED__ === undefined) {
-    win.__WEATHER_SESSION_SEED__ = Math.random() * 1000;
+  if (window.__WEATHER_SESSION_SEED__ === undefined) {
+    window.__WEATHER_SESSION_SEED__ = Math.random() * 1000;
   }
-  sessionWeatherSeed = win.__WEATHER_SESSION_SEED__;
+  sessionWeatherSeed = window.__WEATHER_SESSION_SEED__;
 } else {
   sessionWeatherSeed = Math.random() * 1000;
 }

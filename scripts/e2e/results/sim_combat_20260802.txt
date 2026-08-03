@@ -1,0 +1,17 @@
+npm notice run pokemon-online@0.5.0 npx
+npm notice run playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts scripts/e2e/battle/battle_manual_scenarios.simulation.ts
+
+Running 30 tests using 11 workers
+
+[BROWSER-LOG] [vite] connecting...
+[BROWSER-LOG] [vite] connected.
+[BROWSER-LOG] %c[DBRouter]%c Initialized in STRICT OFFLINE mode. (inMemory: true) color: #4facfe; font-weight: bold; color: inherit;
+[BROWSER-LOG] %c[DEBUG]%c Initializing debug tools (Modular)... color: #a8a8a8; font-style: italic; color: #888;
+[BROWSER-LOG] %c[ERROR_HANDLER]%c Global listeners initialized (Vue Bridge active). color: #4facfe; font-weight: bold; color: inherit;
+[BROWSER-LOG] %c[LoadingStore]%c App View Mounted color: #00f2fe; font-weight: bold; color: #00f2fe;
+[BROWSER-LOG] %c[LoadingStore]%c Started: auth_init ("Iniciando sesión...") color: #a8a8a8; font-style: italic; color: #888;
+[BROWSER-LOG] %c[LoadingStore]%c Finished: auth_init color: #a8a8a8; font-style: italic; color: #888;
+[BROWSER-LOG] %c[Auth]%c CheckSession finished. Loading: false color: #a8a8a8; font-style: italic; color: #888;
+[BROWSER-LOG] ⚡ [E2E] GSAP timeScale set to 100x for instant animations.
+[BROWSER-LOG] %c[DBRouter]%c Server configuration updated: https://wakrkvizmoqdlrtnxcth.supabase.co color: #4facfe; font-weight: bold; color: inherit;
+[BROWSER-ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED

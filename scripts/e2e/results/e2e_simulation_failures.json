@@ -1,22 +1,17 @@
 [
   {
-    "id": "case-32d9f08262d5",
-    "error": "page.evaluate: Target page, context or browser has been closed",
-    "timestamp": "2026-08-01T06:16:49.923Z"
+    "id": "case-0f8acfd277aa",
+    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+    "timestamp": "2026-08-03T16:04:58.668Z"
   },
   {
-    "id": "case-5f0680600dec",
-    "error": "page.evaluate: Target page, context or browser has been closed",
-    "timestamp": "2026-08-01T06:16:49.893Z"
+    "id": "case-8f93c900d190",
+    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+    "timestamp": "2026-08-03T16:04:58.624Z"
   },
   {
-    "id": "case-975d39397cf6",
-    "error": "page.evaluate: Test timeout of 180000ms exceeded.",
-    "timestamp": "2026-08-01T06:16:50.028Z"
-  },
-  {
-    "id": "case-f8064e36378f",
-    "error": "page.evaluate: Target page, context or browser has been closed",
-    "timestamp": "2026-08-01T06:16:50.018Z"
+    "id": "case-ee4c72373125",
+    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+    "timestamp": "2026-08-03T16:04:58.668Z"
   }
 ]

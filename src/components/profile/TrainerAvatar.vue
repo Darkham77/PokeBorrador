@@ -73,7 +73,7 @@ interface PlayerClass {
 const cls = computed(() => {
   const pClass = resolvedPlayerClass.value;
   if (!pClass) return null;
-  return (PLAYER_CLASSES as Record<string, PlayerClass>)[pClass] || null;
+  return (PLAYER_CLASSES as Record<string, PlayerClass>)[pClass] || null; // open-record
 });
 
 const borderColor = computed(() => {

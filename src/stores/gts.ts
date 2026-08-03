@@ -82,27 +82,28 @@ export const useGTSStore = defineStore('gts', () => {
   async function fetchUserData() {
     if (!auth.user) return
 
-    const [mine, history] = await Promise.all([
-      game.db.from('market_listings')
-        .select('*')
-        .eq('seller_id', auth.user.id)
-        .neq('status', 'sold')
-        .order('created_at', { ascending: false }) as unknown as Promise<{ data: MarketListing[] | null }>,
-      game.db.from('market_listings')
-        .select('*')
-        .eq('seller_id', auth.user.id)
-        .eq('status', 'sold')
-        .order('created_at', { ascending: false })
-        .limit(20) as unknown as Promise<{ data: MarketListing[] | null }>
-    ])
+    const mineRes = await game.db.from('market_listings')
+      .select('*')
+      .eq('seller_id', auth.user.id)
+      .neq('status', 'sold')
+      .order('created_at', { ascending: false });
+    const histRes = await game.db.from('market_listings')
+      .select('*')
+      .eq('seller_id', auth.user.id)
+      .eq('status', 'sold')
+      .order('created_at', { ascending: false })
+      .limit(20);
 
-    myListings.value = mine.data || []
-    salesHistory.value = history.data || []
+    const mineListings = mineRes.data as MarketListing[] | null; // domain-ok
+    const histListings = histRes.data as MarketListing[] | null; // domain-ok
+
+    myListings.value = mineListings || []
+    salesHistory.value = histListings || []
 
     // Check for new sales
-    if (history.data && history.data.length > 0) {
+    if (histListings && histListings.length > 0) {
       let updatedStats = false
-      history.data.forEach(sale => {
+      histListings.forEach(sale => {
         if (!isMarketSoldSeen(sale.id, game.state)) {
           ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
           markMarketSoldSeen(sale.id, game.state)

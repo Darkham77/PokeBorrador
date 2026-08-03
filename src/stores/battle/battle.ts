@@ -24,6 +24,7 @@ import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts'
+import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
 
@@ -188,12 +189,12 @@ export const useBattleStore = defineStore('battle', () => {
   const isPvP = computed(() => !!activeBattle.value?.isPvP)
 
   const getContext = (): BattleContext => ({
-    gs: gs as unknown as GameStore, 
+    gs: gs as unknown as GameStore, // domain-ok
     warStore, 
-    eventStore: eventStore as unknown as EventStore, 
+    eventStore: eventStore as unknown as EventStore, // domain-ok
     classStore, 
-    audio: audio as unknown as AudioStore, 
-    uiStore: uiStore as unknown as UIStore,
+    audio: audio as unknown as AudioStore, // domain-ok
+    uiStore: uiStore as unknown as UIStore, // domain-ok
     activeBattle, 
     player, 
     enemy, 
@@ -424,7 +425,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const checkAndAutoRecharge = async () => {
-    if (typeof window !== 'undefined' && (window as unknown as { __VITE_DEBUG__?: { isDeterministicSimulation?: boolean } }).__VITE_DEBUG__?.isDeterministicSimulation) return
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isDeterministicSimulation) return
     if (!activeBattle.value || activeBattle.value.over) return
     const req = activeBattle.value.playerRequest
     if (req && req.active?.[0]?.moves) {
@@ -446,14 +447,15 @@ export const useBattleStore = defineStore('battle', () => {
   watch(fsm.currentSubState, async (newVal) => {
     if (newVal === BATTLE_SUBSTATES.WAIT_INPUT) {
       if (activeBattle.value) {
-        const bState = activeBattle.value as unknown as Record<string, unknown>;
-        if (bState.switchingToPlayer) {
-          activeBattle.value.player = bState.switchingToPlayer as Pokemon;
-          delete bState.switchingToPlayer;
+        const switchingToPlayer = Reflect.get(activeBattle.value, 'switchingToPlayer') as Pokemon | undefined
+        if (switchingToPlayer) {
+          activeBattle.value.player = switchingToPlayer
+          Reflect.deleteProperty(activeBattle.value, 'switchingToPlayer')
         }
-        if (bState.switchingToEnemy) {
-          activeBattle.value.enemy = bState.switchingToEnemy as Pokemon;
-          delete bState.switchingToEnemy;
+        const switchingToEnemy = Reflect.get(activeBattle.value, 'switchingToEnemy') as Pokemon | undefined
+        if (switchingToEnemy) {
+          activeBattle.value.enemy = switchingToEnemy
+          Reflect.deleteProperty(activeBattle.value, 'switchingToEnemy')
         }
       }
       await checkAndAutoRecharge()
@@ -478,25 +480,25 @@ export const useBattleStore = defineStore('battle', () => {
         if (!p1NeedsAction && !p2NeedsAction) return;
 
         const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
-        const bState = activeBattle.value as unknown as Record<string, unknown>;
-        const hasPendingSwitch = !!bState?.switchingToPlayer || !!bState?.switchingToEnemy;
+        const hasPendingSwitch = Boolean(Reflect.get(activeBattle.value!, 'switchingToPlayer')) || Boolean(Reflect.get(activeBattle.value!, 'switchingToEnemy'));
 
         if (activeBattle.value?.over) return;
 
-        let isReady = false;
-        if (kind === 'move') {
-          const activePoke = activeBattle.value?.player;
-          isReady = subState === BATTLE_SUBSTATES.WAIT_INPUT && !hasPendingSwitch && (!p1NeedsAction || (!!activePoke && activePoke.hp > 0));
-        } else if (kind === 'force-switch') {
-          isReady = (subState === BATTLE_SUBSTATES.SWITCH_MENU || subState === BATTLE_SUBSTATES.WAIT_INPUT) && !hasPendingSwitch;
-        } else if (kind === 'team-preview') {
-          isReady = true;
-        }
+        const activePoke = activeBattle.value?.player;
+        const isMoveReady = kind !== 'move' || !p1NeedsAction || (!!activePoke && activePoke.hp > 0);
+        const isReady = (kind === 'team-preview' || canExecuteScriptedReplayAction({
+          isActiveBattle: fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE,
+          subState,
+          isProcessing: processing,
+          isIntroAnimating: intro,
+          hasPendingSwitch,
+        })) && isMoveReady;
 
         if (isReady && typeof window !== 'undefined') {
           const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
           const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
-          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${(req as unknown as { rqid?: number })?.rqid ?? 0}`;
+          const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
+          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}`;
           if (lastEmittedStateKey === emitKey) return;
           lastEmittedStateKey = emitKey;
 
@@ -536,8 +538,7 @@ export const useBattleStore = defineStore('battle', () => {
   );
 
   if (typeof window !== 'undefined') {
-    const win = window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => unknown }
-    win.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore()
+    window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as unknown as DebugStore // domain-ok
     setupBattleDebug(getContext())
   }
 

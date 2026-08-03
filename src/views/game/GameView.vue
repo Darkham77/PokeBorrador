@@ -81,7 +81,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
           <span>Mapa</span>
         </router-link>
         <router-link
-          to="/team"
+          to="/"
           class="nav-item"
           active-class="active"
           @mouseenter="onNavItemMouseEnter"

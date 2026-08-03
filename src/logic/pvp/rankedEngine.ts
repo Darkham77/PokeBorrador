@@ -1,4 +1,6 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonType } from '@/data/battle/types';
 
 export interface EloTier {
   id: RankedTierId;
@@ -71,8 +73,8 @@ export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName:
     seasonName: seasonName || 'TEMPORADA ACTUAL',
     maxPokemon: Math.max(1, Math.min(6, Number(raw.maxPokemon) || 6)),
     levelCap: Math.max(1, Math.min(100, Number(raw.levelCap) || 100)),
-    allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase() as PokemonType) : [],
-    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase() as PokemonSpeciesId) : []
+    allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase()).filter((t): t is PokemonType => isPokemonType(t)) : [],
+    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase()).filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id)) : []
   };
 }
 
@@ -82,8 +84,8 @@ export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName:
 export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedRules): { ok: boolean; reason?: string } {
   if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
-  const id = pokemon.id as PokemonSpeciesId;
-  if (rules.bannedPokemonIds.includes(id)) {
+  const id = isPokemonSpeciesId(pokemon.id) ? pokemon.id : null;
+  if (id && rules.bannedPokemonIds.includes(id)) {
     return { ok: false, reason: `${pokemon.name || id} está baneado esta temporada.` };
   }
 

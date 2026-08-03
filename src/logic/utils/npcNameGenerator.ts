@@ -1,6 +1,3 @@
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-
 export type NpcGender = 'M' | 'F';
 
 export const MALE_NAMES = [
@@ -30,18 +27,24 @@ const KNOWN_FEMALE_SPRITES = [
   'fantina', 'candice', 'iris', 'roxie', 'korrina', 'valerie', 'olympia', 'acerola',
   'mina', 'nessa', 'marnie', 'allister', 'klara', 'iono', 'tulip', 'geeta', 'lillie',
   'lusamine', 'mallow', 'lanacu', 'marley', 'cheryl', 'cynthia', 'daisy', 'yellow',
-  'doctorf', 'scientistf', 'skytrainerf', 'pokemonrangerf'
-] as const;
+  'doctorf', 'scientistf', 'skytrainerf', 'pokemonrangerf',
+  'whitney', 'flannery', 'winona', 'candice', 'iris', 'eleesa', 'korrina', 'nessa',
+  'bea', 'marnie', 'acerola', 'kahili', 'mallow', 'lana', 'lusamine', 'lillie',
+  'cynthia', 'diantha', 'nemona', 'penny', 'geeta', 'mira', 'turo-ai', 'parasollady',
+  'picnicker', 'hexmaniac', 'channeler', 'medium', 'swimmerf', 'swimmerf-gen4',
+  'swimmerf-gen5', 'tuberf', 'teacher', 'interviewers', 'kimonogirl', 'cowgirl',
+  'dancer', 'idol', 'nurse-gen4', 'nurse-gen5', 'nurseryaide-gen5'
+] as const satisfies readonly string[]; // no-domain
 
 const KNOWN_MALE_SPRITES = [
-  'oak', 'elm', 'rowan', 'kukui', 'sycamore', 'birch', 'blaine', 'brock', 'lt-surge',
-  'koga', 'giovanni', 'falkner', 'bugsy', 'morty', 'chuck', 'pryce', 'clair',
-  'roark', 'byron', 'volkner', 'cilan', 'chili', 'cress', 'burgh', 'clay', 'drayden',
-  'cheren', 'rood', 'zinzolin', 'ghetsis', 'colress', 'hugh', 'milo', 'kabu',
-  'gordie', 'piers', 'raihan', 'blackbelt', 'hiker', 'bugcatcher', 'gentleman',
-  'biker', 'fisherman', 'birdkeeper', 'scientist', 'youngster', 'supernerd',
-  'psychic', 'tamer', 'policeman', 'doctor'
-] as const;
+  'youngster', 'bugcatcher', 'camper', 'picnicker-m', 'hiker', 'fisherman',
+  'birdkeeper', 'blackbelt', 'cueball', 'gambler', 'rocker', 'tamer', 'engineer',
+  'juggler', 'gentleman', 'biker', 'sailor', 'swimmerm', 'swimmerm-gen4',
+  'psychic-m', 'schoolboy', 'supernerd', 'red', 'blue', 'green', 'oak',
+  'lance', 'steven', 'wallace', 'alder', 'cheren', 'n', 'ghetsis', 'colress',
+  'zygard', 'volkner', 'roark', 'byron', 'fantina', 'clay', 'brycen', 'drayden',
+  'scientist', 'doctor'
+] as const satisfies readonly string[]; // no-domain
 
 const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
   caza_bichos: { M: 'Caza Bichos', F: 'Caza Bichos' },
@@ -66,8 +69,8 @@ const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
 };
 
 export interface NpcNameOptions {
-  spriteId?: NpcSpriteId | string;
-  archetype?: NpcArchetype | string;
+  spriteId?: string;
+  archetype?: string;
   gender?: NpcGender;
   includeTitle?: boolean;
 }
@@ -79,8 +82,8 @@ export function detectGenderFromSprite(spriteId?: string): NpcGender {
 
   // Check known female sprite IDs or suffixes
   if (
-    (KNOWN_FEMALE_SPRITES as readonly string[]).includes(clean) ||
-    (KNOWN_FEMALE_SPRITES as readonly string[]).includes(baseName) ||
+    KNOWN_FEMALE_SPRITES.includes(clean) ||
+    KNOWN_FEMALE_SPRITES.includes(baseName) ||
     clean.includes('female') ||
     clean.endsWith('f') ||
     clean.includes('girl') ||
@@ -91,8 +94,8 @@ export function detectGenderFromSprite(spriteId?: string): NpcGender {
 
   // Check known male sprite IDs
   if (
-    (KNOWN_MALE_SPRITES as readonly string[]).includes(clean) ||
-    (KNOWN_MALE_SPRITES as readonly string[]).includes(baseName) ||
+    KNOWN_MALE_SPRITES.includes(clean) ||
+    KNOWN_MALE_SPRITES.includes(baseName) ||
     clean.includes('man') ||
     clean.includes('boy')
   ) {

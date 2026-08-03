@@ -22,7 +22,7 @@ export function initGlobalErrorHandlers(): void {
   // fallow-ignore-next-line complexity
   console.error = function(...args: unknown[]): void {
     originalConsoleError.apply(console, args)
-    if (isUnloading || isHandlingError || (console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__) return
+    if (isUnloading || isHandlingError || Boolean(Reflect.get(console, '__BYPASS_INTERCEPTOR__'))) return
     isHandlingError = true
     try {
       const firstErr = args.find(arg => arg instanceof Error)
@@ -83,7 +83,7 @@ export function initGlobalErrorHandlers(): void {
   };
 
   // Legacy bridge
-  (window as unknown as { showGameError: (error: Error | string, context?: Record<string, unknown>) => void }).showGameError = (error: Error | string, context: Record<string, unknown> = {}) => {
+  window.showGameError = (error: Error | string, context: Record<string, unknown> = {}) => {
     errorStore.setError(error, context)
   }
 

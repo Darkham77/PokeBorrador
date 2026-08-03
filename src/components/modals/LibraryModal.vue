@@ -28,7 +28,7 @@ watch(() => props.initialTab, (newTab) => {
 })
 
 const currentContent = computed(() => {
-  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>'
+  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record
 })
 
 const selectTab = (tabId: string) => {

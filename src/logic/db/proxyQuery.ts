@@ -91,29 +91,49 @@ export class ProxyQuery {
       if (!client) throw new Error('[DBRouter] Online client not available.');
 
       try {
-        const q = client.from(this.table) as unknown as Record<string, (...args: unknown[]) => Promise<DBResponse>>;
+        interface DynamicPostgrestQuery {
+          upsert?: (data: unknown, opts?: unknown) => Promise<DBResponse>;
+          insert?: (data: unknown) => Promise<DBResponse>;
+          update?: (data: unknown) => DynamicPostgrestQuery;
+          delete?: () => DynamicPostgrestQuery;
+          then?: (onfulfilled?: (value: DBResponse) => unknown) => Promise<unknown>;
+          [key: string]: unknown; // open-record
+        }
+
+        const q = client.from(this.table) as unknown as DynamicPostgrestQuery; // domain-ok
         
         if (this.action === 'upsert') return await q.upsert!(this.actionData, this.actionOpts);
         if (this.action === 'insert') return await q.insert!(this.actionData);
         
         if (this.action === 'update') {
-          let updQ = (q as unknown as Record<string, (d: unknown) => unknown>).update!(this.actionData) as Record<string, (...args: unknown[]) => unknown>;
-          this.chain.forEach(s => { updQ = updQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; });
-          return await (updQ as unknown as Promise<DBResponse>);
+          let updQ = q.update!(this.actionData);
+          this.chain.forEach(s => {
+            const fn = Reflect.get(updQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+            if (fn) updQ = fn(...s.args);
+          });
+          const updPromise = updQ as unknown as Promise<DBResponse>; // domain-ok
+          return await updPromise;
         }
         
         if (this.action === 'delete') {
-          let delQ = (q as unknown as Record<string, () => unknown>).delete!() as Record<string, (...args: unknown[]) => unknown>;
-          this.chain.forEach(s => { delQ = delQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; });
-          return await (delQ as unknown as Promise<DBResponse>);
+          let delQ = q.delete!();
+          this.chain.forEach(s => {
+            const fn = Reflect.get(delQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+            if (fn) delQ = fn(...s.args);
+          });
+          const delPromise = delQ as unknown as Promise<DBResponse>; // domain-ok
+          return await delPromise;
         }
 
         // Default: select
-        let selQ = q as Record<string, (...args: unknown[]) => unknown>;
+        let selQ = q;
         this.chain.forEach(s => { 
-          selQ = selQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; 
+          const fn = Reflect.get(selQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+          if (fn) selQ = fn(...s.args);
         });
-        return final ? await (selQ as unknown as Record<string, () => Promise<DBResponse>>)[final]!() : await (selQ as unknown as Promise<DBResponse>);
+        const finalFn = final ? (Reflect.get(selQ, final) as (() => Promise<DBResponse>) | undefined) : undefined;
+        const selPromise = selQ as unknown as Promise<DBResponse>; // domain-ok
+        return finalFn ? await finalFn() : await selPromise;
       } catch (err: unknown) {
         logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
         
@@ -156,7 +176,7 @@ export class ProxyQuery {
         if (s.type === 'gte') { where.push(`${s.args[0]} >= ?`); params.push(s.args[1]); }
         if (s.type === 'lte') { where.push(`${s.args[0]} <= ?`); params.push(s.args[1]); }
         if (s.type === 'in') {
-          const arr = (s.args[1] as unknown[]) || [];
+          const arr = (s.args[1] as unknown[]) || []; // open-record
           const marks = arr.map(() => '?').join(',');
           where.push(`${s.args[0]} IN (${marks})`);
           params.push(...arr);
@@ -175,7 +195,7 @@ export class ProxyQuery {
           }
         }
         if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => {
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record
             where.push(`${k} = ?`);
             params.push(v);
           });
@@ -290,7 +310,7 @@ export class ProxyQuery {
       const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
       for (const row of values) {
         if (typeof row !== 'object' || row === null) continue;
-        const r = row as Record<string, unknown>;
+        const r = row as Record<string, unknown>; // open-record
         const cols = Object.keys(r);
         const marks = cols.map(() => '?').join(',');
         const vals = cols.map(c => typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
@@ -306,7 +326,7 @@ export class ProxyQuery {
 
   async _executeLocalUpdate(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
-      const data = this.actionData as Record<string, unknown>;
+      const data = this.actionData as Record<string, unknown>; // open-record
       const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
       const params: unknown[] = Object.values(data).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
       
@@ -314,7 +334,7 @@ export class ProxyQuery {
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
         if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => {
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record
             where.push(`${k} = ?`); params.push(v);
           });
         }

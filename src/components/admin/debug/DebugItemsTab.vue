@@ -6,6 +6,7 @@ import { SHOP_ITEMS } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory/inventory'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 interface ShopItem {
   id: string
@@ -34,7 +35,7 @@ async function addItem(item: ShopItem, qty = 10) {
 function addTenOfEach() {
   const inventory = { ...gameStore.state.inventory }
   ;(SHOP_ITEMS as ShopItem[]).forEach(item => {
-    inventory[item.id] = (inventory[item.id] || 0) + 10
+    incrementRecordKey(inventory, item.id, 10)
   })
   gameStore.state.inventory = inventory
   gameStore.save(false)

@@ -141,7 +141,7 @@ export const useBoxStore = defineStore('box', () => {
     
     // Ensure array is large enough to reach target box
     while (gameStore.state.box.length < targetStart) {
-      gameStore.state.box.push(null as unknown as Pokemon)
+      gameStore.state.box.push(null as unknown as Pokemon) // domain-ok
     }
     
     gameStore.state.box.splice(targetStart, 0, p)

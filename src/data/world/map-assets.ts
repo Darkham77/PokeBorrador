@@ -38,7 +38,10 @@ export const MAP_ROUTE_MAPPING = {
   celadon_city: '/test aventura/imagenes/Celadon_City_FRLG.png',
   saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
   fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
-  cinnabar_island: '/test aventura/imagenes/150px-Cinnabar_Island_FRLG.png'
+  cinnabar_island: '/test aventura/imagenes/Cinnabar_Island_FRLG.png',
+  // Special Battle Locations
+  gym: 'gimnasio',
+  pvp: 'gimnasio'
 } as const;
 export type MapRouteId = keyof typeof MAP_ROUTE_MAPPING;
 
@@ -60,7 +63,7 @@ const MAPS_WITH_CYCLES = [
 export type MapWithCycleId = (typeof MAPS_WITH_CYCLES)[number];
 
 export function isMapWithCycleId(value: string): value is MapWithCycleId {
-  return (MAPS_WITH_CYCLES as readonly string[]).includes(value);
+  return (MAPS_WITH_CYCLES as readonly string[]).includes(value); // domain-ok
 }
 
 const AVAILABLE_BATTLE_MAPS = [

@@ -53,12 +53,12 @@ const WEATHER_IDS = [
 export type WeatherId = (typeof WEATHER_IDS)[number];
 
 export function isWeatherId(value: string): value is WeatherId {
-  return WEATHER_IDS.includes(value as WeatherId);
+  return (WEATHER_IDS as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireWeatherId(value: string): WeatherId {
   const registered = toRegisteredWeatherId(value);
-  if (isWeatherId(registered)) return registered;
+  if (registered !== null) return registered;
   throw new Error(`Invalid weather id: ${value}`);
 }
 
@@ -72,7 +72,7 @@ const SHOWDOWN_WEATHER_IDS = [
 type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
 
 function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
-  return (SHOWDOWN_WEATHER_IDS as readonly string[]).includes(value);
+  return (SHOWDOWN_WEATHER_IDS as readonly string[]).includes(value); // domain-ok
 }
 
 const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
@@ -83,10 +83,10 @@ const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
   deltastream: 'strong_winds',
 } as const satisfies Record<ShowdownWeatherId, WeatherId>;
 
-export function toRegisteredWeatherId(type: WeatherId | ShowdownWeatherId | string): WeatherId | string {
+export function toRegisteredWeatherId(type: string): WeatherId | null {
   if (isWeatherId(type)) return type;
   if (isShowdownWeatherId(type)) return SHOWDOWN_WEATHER_TO_WEATHER_ID[type];
-  return type;
+  return null;
 }
 
 export interface WeatherDefinition {
@@ -309,29 +309,30 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   }
 };
 
-export function getMechanicalWeather(type: WeatherId | string | null | undefined): WeatherMechanical {
+export function getMechanicalWeather(type: string | null | undefined): WeatherMechanical {
   if (!type || type === 'none') return WEATHER_MECHANICAL.CLEAR;
-  const lower = toRegisteredWeatherId(type);
-
-  const entry = WEATHER_REGISTRY[lower];
-
+  const weatherId = toRegisteredWeatherId(type);
+  if (weatherId === null) {
+    logger.warn('WeatherIntegrity', `Token de clima no registrado detectado: "${type}".`);
+    return WEATHER_MECHANICAL.UNKNOWN;
+  }
+  const entry = WEATHER_REGISTRY[weatherId];
   if (!entry) {
     logger.warn('WeatherIntegrity', `Token de clima no registrado detectado: "${type}".`);
     return WEATHER_MECHANICAL.UNKNOWN;
   }
-
   return entry.mech;
 }
 
 /**
  * Converts any environmental weather token to its visual AtmosphereLayer equivalent.
  */
-export function getVisualWeather(type: WeatherId | string | null | undefined): string {
+export function getVisualWeather(type: string | null | undefined): string {
   if (!type || type === 'none') return 'clear';
-  const lower = toRegisteredWeatherId(type);
-
-  const entry = WEATHER_REGISTRY[lower];
-  return entry?.visual || lower;
+  const weatherId = toRegisteredWeatherId(type);
+  if (weatherId === null) return 'clear';
+  const entry = WEATHER_REGISTRY[weatherId];
+  return entry?.visual || 'clear';
 }
 
 /**

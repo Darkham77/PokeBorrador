@@ -5,7 +5,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 /**
  * Get type effectiveness multiplier
  */
-export function getTypeEffectiveness(moveType: PokemonType | string | undefined, defType: PokemonType | string | undefined, attacker: Pokemon | null = null): number {
+export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: Pokemon | null = null): number {
   if (!moveType || !defType) return 1;
   
   const mType = moveType as PokemonType;

@@ -213,7 +213,7 @@ export function usePokemonActions(
         const maxAllowedSecs = getMaxBuffDuration(field)
         if (val > maxAllowedSecs) {
           logger.warn('Self-Healing', `Timer corrupto detectado en ${field} (${val}s). Ajustando al máximo permitido por el objeto (${maxAllowedSecs}s).`);
-          (state as unknown as Record<string, unknown>)[field as string] = maxAllowedSecs
+          Reflect.set(state, field, maxAllowedSecs)
           scheduleSave()
         }
       }

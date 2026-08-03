@@ -53,9 +53,8 @@ export async function syncServerTime(): Promise<void> {
 export function getServerInstant(): Temporal.Instant {
   if (!_timeSynced) return Temporal.Now.instant();
 
-  const routerOffsetMs = (supabase && typeof (supabase as unknown as { getTimeOffset: () => number }).getTimeOffset === 'function') 
-    ? (supabase as unknown as { getTimeOffset: () => number }).getTimeOffset() 
-    : 0;
+  const getTimeOffset = Reflect.get(supabase, 'getTimeOffset') as (() => number) | undefined;
+  const routerOffsetMs = typeof getTimeOffset === 'function' ? getTimeOffset() : 0;
     
   const now = Temporal.Now.instant();
   const offsetDuration = Temporal.Duration.from({ 

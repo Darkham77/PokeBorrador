@@ -28,7 +28,7 @@ function migrationsPlugin() {
     async buildStart() {
       await generateMigrations()
       try {
-        const templatePath = path.resolve(__dirname, 'database/temp/clean_template.db')
+        const templatePath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
         if (fs.existsSync(templatePath)) {
           fs.unlinkSync(templatePath)
           console.log('🗑️ [DevDB] clean_template.db cleaned up at build start.')
@@ -41,7 +41,7 @@ function migrationsPlugin() {
           console.error('[Migrations Generator] Hot update generation failed:', err)
         })
         try {
-          const templatePath = path.resolve(__dirname, 'database/temp/clean_template.db')
+          const templatePath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
           if (fs.existsSync(templatePath)) {
             fs.unlinkSync(templatePath)
             console.log('🗑️ [DevDB] clean_template.db deleted due to migration update.')
@@ -66,7 +66,7 @@ function devDbImportPlugin() {
             res.end(JSON.stringify({ exists: true }))
             return;
           }
-          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
           try {
             await fsPromises.access(dbPath)
             res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -80,7 +80,7 @@ function devDbImportPlugin() {
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
           importedDbRamBuffer = null;
-          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
           try {
             await fsPromises.unlink(dbPath)
             console.log(' 📦 [DevDB] Temporary imported.db cleaned up from RAM & disk.')
@@ -103,7 +103,7 @@ function devDbImportPlugin() {
             console.debug('📦 [DevDB] Temporary imported.db sent to client from RAM memory.')
             return;
           }
-          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
           try {
             await fsPromises.access(dbPath)
             const binary = await fsPromises.readFile(dbPath)
@@ -126,7 +126,7 @@ function devDbImportPlugin() {
           req.on('end', async () => {
             const buffer = Buffer.concat(chunks)
             importedDbRamBuffer = buffer; // Store 100% in RAM memory
-            const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+            const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
             const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
@@ -153,7 +153,7 @@ function devDbImportPlugin() {
             res.end(cleanDbRamBuffer)
             return;
           }
-          const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
+          const dbPath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
           try {
             await fsPromises.access(dbPath)
             const binary = await fsPromises.readFile(dbPath)
@@ -177,7 +177,7 @@ function devDbImportPlugin() {
           req.on('end', async () => {
             const buffer = Buffer.concat(chunks)
             cleanDbRamBuffer = buffer; // Store 100% in RAM memory
-            const dbPath = path.resolve(__dirname, 'database/temp/clean_template.db')
+            const dbPath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
             const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`
             try {
               await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
@@ -212,7 +212,7 @@ const isCI = !!process.env.GITHUB_ACTIONS;
 /** Read the version already committed to public/version.json (used in CI). */
 function readCommittedVersion(): string {
   try {
-    const verPath = path.resolve(__dirname, 'public', 'version.json');
+    const verPath = path.resolve(import.meta.dirname, 'public', 'version.json');
     const parsed: unknown = JSON.parse(fs.readFileSync(verPath, 'utf-8'));
     if (parsed && typeof parsed === 'object' && 'version' in parsed && typeof (parsed as Record<string, unknown>).version === 'string') {
       return (parsed as { version: string }).version;
@@ -230,7 +230,7 @@ function computeLocalVersion(): string {
   else if (process.env.TZ) tz = process.env.TZ;
   else {
     try {
-      const envContent = fs.readFileSync(path.resolve(__dirname, '.env'), 'utf-8');
+      const envContent = fs.readFileSync(path.resolve(import.meta.dirname, '.env'), 'utf-8');
       const m = envContent.match(/^VITE_TIMEZONE\s*=\s*(.+)$/m);
       if (m?.[1]) tz = m[1].trim();
     } catch (_e) {
@@ -264,7 +264,7 @@ function versionPlugin() {
         return;
       }
       try {
-        const publicDir = path.resolve(__dirname, 'public');
+        const publicDir = path.resolve(import.meta.dirname, 'public');
         if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
         fs.writeFileSync(
           path.resolve(publicDir, 'version.json'),
@@ -408,7 +408,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   worker: {

@@ -12,7 +12,7 @@ import type { DayPhase } from '@/logic/utils/timeUtils'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { toPokemonType } from '@/data/battle/types'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
-import RouteSpawnsTable, { type SpawnItem, type ArchaeologyRewardItem } from './RouteSpawnsTable.vue'
+import RouteSpawnsTable from './RouteSpawnsTable.vue'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 
 interface Props {
@@ -520,7 +520,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         :weather-emoji="weatherEmoji"
         :weather-label="weatherLabel"
         :get-status-tooltip="getStatusTooltip"
-        :get-tooltip-data="(getWildSpawnTooltip as unknown as (item: SpawnItem | ArchaeologyRewardItem) => Record<string, unknown>)"
+        :get-spawn-tooltip="getWildSpawnTooltip"
         @select-pokemon="openPokemonDetail"
       />
 
@@ -536,7 +536,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         :weather-emoji="weatherEmoji"
         :weather-label="weatherLabel"
         :get-status-tooltip="getStatusTooltip"
-        :get-tooltip-data="(getFishingSpawnTooltip as unknown as (item: SpawnItem | ArchaeologyRewardItem) => Record<string, unknown>)"
+        :get-spawn-tooltip="getFishingSpawnTooltip"
         @select-pokemon="openPokemonDetail"
       />
 
@@ -552,7 +552,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         :weather-emoji="weatherEmoji"
         :weather-label="weatherLabel"
         :get-category-tooltip="getCategoryTooltip"
-        :get-tooltip-data="(getArchaeologySpawnTooltip as unknown as (item: SpawnItem | ArchaeologyRewardItem) => Record<string, unknown>)"
+        :get-item-tooltip="getArchaeologySpawnTooltip"
       />
 
       <!-- NPC / Special Encounters List -->
@@ -561,12 +561,11 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         title="👥 ENCUENTROS ESPECIALES Y NPCS"
         :probability="0"
         :base-probability="0"
-        :items="(typedNpcSpawns as unknown as SpawnItem[])"
+        :items="typedNpcSpawns"
         mode="npc"
         prob-class="info"
         weather-emoji=""
         weather-label=""
-        :get-tooltip-data="() => ({})"
       />
     </div>
   </BaseModal>

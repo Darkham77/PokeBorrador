@@ -6,7 +6,7 @@
  */
 import { toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import type { WeatherId } from '../weather/weatherRegistry.ts';
+import { isWeatherId, type WeatherId } from '../weather/weatherRegistry.ts';
 
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
@@ -51,7 +51,7 @@ export interface EscapeOptions {
 // ── Bridge Helpers ──────────────────────────────────────────────────────────
 
 function toPurePoke(p: Pokemon): PurePokemon {
-  return p as unknown as PurePokemon; // Structurally compatible
+  return p as PurePokemon; // domain-ok
 }
 
 function toPureMove(m: Partial<Move>): PureMove {
@@ -119,7 +119,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
   if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
 
-  const wType = activeWeather?.type ? activeWeather.type as WeatherId : 'clear';
+  const wType = isWeatherId(activeWeather?.type) ? activeWeather.type : 'clear';
   const pTypes = [pokemon.type, pokemon.type2];
   
   const WEATHER_MAP: Record<string, string> = {

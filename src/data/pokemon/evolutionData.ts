@@ -19,7 +19,7 @@ function isLevelEvolutionSpeciesId(id: string): id is LevelEvolutionSpeciesId {
   return Object.hasOwn(EVOLUTION_TABLE, id);
 }
 
-function isStoneEvolutionKey(id: string): id is StoneEvolutionKey {
+export function isStoneEvolutionKey(id: string): id is StoneEvolutionKey {
   return Object.hasOwn(STONE_EVOLUTIONS, id);
 }
 

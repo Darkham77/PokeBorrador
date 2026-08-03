@@ -43,9 +43,9 @@ export const useErrorStore = defineStore('error', () => {
       return
     }
 
-    ;(console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__ = true
+    Reflect.set(console, '__BYPASS_INTERCEPTOR__', true)
     logger.error('CRITICAL', `Critical Game Error: ${errorMessage}`, context)
-    ;(console as unknown as { __BYPASS_INTERCEPTOR__?: boolean }).__BYPASS_INTERCEPTOR__ = false
+    Reflect.set(console, '__BYPASS_INTERCEPTOR__', false)
 
     const lastError = errors.value[errors.value.length - 1]
     if (lastError && lastError.message === errorMessage) {

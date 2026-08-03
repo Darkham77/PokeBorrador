@@ -3,6 +3,8 @@ import type { BattleStages } from '../../../types/battle/battle.ts'
 import type { BattleContext } from '../../../types/battle/battleContext.ts'
 import type { CombatAI } from './combatAI.ts'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
+import { ShowdownBattleRunner } from '../helpers/showdownBattleRunner.ts'
+import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 
 
 export class ScriptedAI implements CombatAI {
@@ -76,77 +78,39 @@ export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<
   if (typeof window === 'undefined' || !window.__VITE_DEBUG__?.isScriptedReplayMode) return false
 
   const debugObj = window.__VITE_DEBUG__
-  const p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0
-  const playerChoices = debugObj.playerChoices as string[] | undefined
-
-  if (!playerChoices || playerChoices.length === 0) {
-    console.warn(`[E2E-SCRIPTED-AI] No playerChoices array in window.__VITE_DEBUG__. Falling back to default action.`);
-    const { useBattleStore } = await import('../../../stores/battle/battle');
-    const battleStore = useBattleStore();
-    const active = battleStore.state;
-    if (!active) return false;
-
-    const subState = battleStore.currentSubState;
-    const activePoke = active.player;
-
-    if (subState === 'SWITCH_MENU' || subState === 'PLAYER_FAINT_SEQ' || !activePoke || activePoke.hp <= 0) {
-      const { useGameStore } = await import('../../../stores/game');
-      const gameStore = useGameStore();
-      const team = gameStore.state.team;
-      const targetIdx = team.findIndex(p => p && p.hp > 0 && p.uid !== activePoke?.uid);
-      if (targetIdx !== -1) {
-        console.debug(`[E2E-SCRIPTED-AI-FALLBACK] Auto-switching to pokemon at index ${targetIdx}`);
-        await battleStore.executeSwitch(targetIdx, true);
-        return true;
-      }
-      return false;
-    }
-
-    console.debug(`[E2E-SCRIPTED-AI-FALLBACK] Auto-executing first move`);
-    await battleStore.executeMove(0);
-    return true;
-  }
 
   const { useBattleStore } = await import('../../../stores/battle/battle')
   const battleStore = useBattleStore()
   const active = battleStore.state
   if (!active) return false
-  const bState = active as unknown as Record<string, unknown>
-  const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
-  const runner = new ShowdownBattleRunner(playerChoices, (debugObj.enemyChoices as string[]) || [])
-  runner.p1ChoiceIdx = p1ChoiceIdx
-  runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0
 
-  const choiceStr = runner.resolveAndConsumeNextChoice('p1', active.playerRequest)
+  const p1HistoryChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
+  const p2HistoryChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+  if (p1HistoryChoice === '' && p2HistoryChoice !== '') {
+
+    const { executeTurnInWorker, syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+    const { filterShowdownLogs, parseShowdownLogLine } = await import('../showdownBridge.ts')
+    const result = await executeTurnInWorker('', p2HistoryChoice, true, false)
+    active.playerRequest = result.p1Request
+    active.enemyRequest = result.p2Request
+    const logs = filterShowdownLogs(result.logs)
+    for (const log of logs) await parseShowdownLogLine(_ctx, log, logs)
+    await syncTeamsFromLastWorkerState()
+    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(debugObj)
+    console.debug(`[E2E-SCRIPTED-AI] Executed certified P2-only history step "${p2HistoryChoice}".`)
+    return true
+  }
+
+  const choiceStr = p1HistoryChoice
 
   if (choiceStr === 'pass') {
-    debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
     console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Replay completed or player requires no action.`);
     return true;
   }
 
   const clean = choiceStr.trim().toLowerCase()
 
-  if (clean.startsWith('move ')) {
-    const subState = battleStore.currentSubState;
-    const activePoke = active.player;
-    const hasPendingSwitch = !!bState?.switchingToPlayer;
-    if (subState !== 'WAIT_INPUT' || hasPendingSwitch || !activePoke || activePoke.hp <= 0) {
-      console.warn(`[E2E-SCRIPTED-AI] Postponing move action "${clean}" because FSM/activePoke is not ready (subState: ${subState}, pendingSwitch: ${hasPendingSwitch}, activePoke HP: ${activePoke?.hp ?? 0}).`);
-      return false;
-    }
-  }
-
-  if (clean.startsWith('switch ')) {
-    const subState = battleStore.currentSubState;
-    if (subState !== 'WAIT_INPUT' && subState !== 'SWITCH_MENU' && subState !== 'PLAYER_FAINT_SEQ') {
-      console.warn(`[E2E-SCRIPTED-AI] Postponing switch action "${clean}" because FSM subState is not ready (${subState}).`);
-      return false;
-    }
-  }
-
-  debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
-  console.debug(`[E2E-SCRIPTED-AI] Resolved choice for player choice index #${p1ChoiceIdx} -> next #${runner.p1ChoiceIdx}: "${choiceStr}"`)
+  console.debug(`[E2E-SCRIPTED-AI] Resolved certified player history choice: "${choiceStr}"`)
 
   if (clean === 'struggle') {
     await battleStore.executeStruggle()
@@ -181,11 +145,14 @@ export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<
     }
 
     const req = active.playerRequest
+    const isRevivingTarget = isRevivingForceSwitchRequest(req)
     const isForced = !!(
-      (req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x)))) ||
-      battleStore.currentSubState === 'SWITCH_MENU' ||
-      battleStore.currentSubState === 'PLAYER_FAINT_SEQ' ||
-      (active.player && active.player.hp <= 0)
+      !isRevivingTarget && (
+        (req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x)))) ||
+        battleStore.currentSubState === 'SWITCH_MENU' ||
+        battleStore.currentSubState === 'PLAYER_FAINT_SEQ' ||
+        (active.player && active.player.hp <= 0)
+      )
     )
 
     console.debug(`[E2E-SCRIPTED-AI] Switching to ${targetPoke.name} (teamIndex: ${teamIndex}, isForced: ${isForced})`)

@@ -114,6 +114,47 @@ const patterns = [
     contractOnly: true,
   },
   {
+    label: 'Double type assertion `as unknown as T` used to bypass domain contracts — use typed boundary guards or Window augmentations',
+    severity: 'ERROR',
+    regex: /\bas\s+unknown\s+as\b/g,
+  },
+  {
+    label: 'Type assertion `as any` used to bypass TypeScript checks — strictly forbidden by Zero-Any policy',
+    severity: 'ERROR',
+    regex: /\bas\s+any\b/g,
+    filter: (_match, line) => !line.includes('// any-ok') && !line.includes('eslint-disable'),
+  },
+  {
+    label: 'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard',
+    severity: 'ERROR',
+    regex: /\bas\s+(?:readonly\s+)?string\[\]/g,
+    filter: (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line),
+  },
+  {
+    label: 'Inline type assertion `as DomainId` used to force dynamic string into domain type — use boundary guard `isDomainId()` or `requireDomainId()`',
+    severity: 'ERROR',
+    regex: /\bas\s+(?:[A-Z]\w*Id|keyof\s+typeof\s+[A-Z_a-z]\w*)\b/g,
+    filter: (_match, line) => !/\bfunction\s+(?:is|require)[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line) && !line.includes('// domain-ok'),
+  },
+  {
+    label: 'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard',
+    severity: 'ERROR',
+    regex: /\bas\s+Record\s*<\s*string\s*,/g,
+    filter: (_match, line) => !line.includes('// open-record') && !line.includes('// no-domain'),
+  },
+  {
+    label: 'Type assertion `as any[]` or `as unknown[]` erases element domain types — define explicit interface or discriminated union',
+    severity: 'ERROR',
+    regex: /\bas\s+(?:any|unknown)\[\]/g,
+    filter: (_match, line) => !line.includes('// any-ok') && !line.includes('// no-domain'),
+  },
+  {
+    label: 'Type assertion on `Object.keys(...)` or `Object.entries(...)` to `as DomainId[]` — use typed helper or `isDomainId` filtering',
+    severity: 'ERROR',
+    regex: /\bObject\.(?:keys|entries)\s*\([^)]+\)\s+as\s+(?:\([|\w\s]+\)|[A-Za-z]\w*)\[\]/g,
+    filter: (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !line.includes('// domain-ok'),
+  },
+  {
     label: 'String literal array without `as const` — potential untyped domain (MUST use `as const satisfies readonly DomainType[]` or mark `// no-domain`)',
     severity: 'ERROR',
     regex: /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>))?\s*=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g,

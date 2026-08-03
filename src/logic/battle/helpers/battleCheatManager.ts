@@ -2,6 +2,7 @@ import type { Battle, Side, Pokemon } from '@pkmn/sim';
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 
 interface HistoryEntry {
+  turnCount?: number;
   battleTurn: number;
   p1Heal?: true;
   p2Heal?: true;
@@ -10,13 +11,14 @@ interface HistoryEntry {
 export type FuzzerCheat = { turn: number; side: 'p1' | 'p2'; type: 'heal' } | HistoryEntry;
 
 export class BattleCheatManager {
-  /** Derived from history: maps battleTurn → which sides need healing on that turn. */
+  /** Certified heals are keyed by the atomic submission ordinal, never by a
+   * Showdown turn because forced switches may share a battle turn. */
   private readonly healMap = new Map<number, { p1: boolean; p2: boolean }>();
   private readonly applied = new Set<string>();
 
   constructor(history?: FuzzerCheat[]) {
     for (const h of history ?? []) {
-      const turnNum = 'turn' in h ? h.turn : h.battleTurn;
+      const turnNum = 'turn' in h ? h.turn : (h.turnCount ?? h.battleTurn);
       const isP1 = 'side' in h ? h.side === 'p1' : !!h.p1Heal;
       const isP2 = 'side' in h ? h.side === 'p2' : !!h.p2Heal;
 
@@ -42,7 +44,7 @@ export class BattleCheatManager {
       side.pokemon.forEach((p: Pokemon) => {
         if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`);
       });
-      syncRequestConditionsWithSimulator(side as unknown as Parameters<typeof syncRequestConditionsWithSimulator>[0]);
+      syncRequestConditionsWithSimulator(side as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
       this.applied.add(key);
       console.debug(`[CheatManager-${phase}] Applied heal for ${side.id} at battle.turn=${battle.turn}`); // text-ok
     } catch (err: unknown) {
@@ -53,7 +55,7 @@ export class BattleCheatManager {
 
   /** Pre-turn: heal fainted Pokémon before choices are submitted. */
   public applyPreTurnCheats(battle: Battle, isFuzzerSimulation = true): void {
-    if (!isFuzzerSimulation) return;
+    if (!isFuzzerSimulation || battle.ended) return;
     const entry = this.healMap.get(battle.turn);
     if (!entry) return;
     for (const [sideId, needs] of [['p1', entry.p1], ['p2', entry.p2]] as const) {
@@ -68,8 +70,9 @@ export class BattleCheatManager {
   }
 
   /** Post-turn: heal Pokémon whose HP dropped critically after choices resolved using unified processIPBHeals. */
-  public applyPostTurnCheats(battle: Battle, turnOverride?: number): void {
-    const targetTurn = turnOverride !== undefined ? turnOverride : battle.turn;
+  public applyPostTurnCheats(battle: Battle, historyStep?: number): void {
+    if (battle.ended) return;
+    const targetTurn = historyStep !== undefined ? historyStep : battle.turn;
     const entry = this.healMap.get(targetTurn);
     if (!entry) return;
     const key = `post-${targetTurn}`;
@@ -80,11 +83,11 @@ export class BattleCheatManager {
       if (entry.p2) applyHealCheatToSide(battle.p2);
       if (entry.p1) {
         battle.p1.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
-        syncRequestConditionsWithSimulator(battle.p1 as unknown as Parameters<typeof syncRequestConditionsWithSimulator>[0]);
+        syncRequestConditionsWithSimulator(battle.p1 as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
       }
       if (entry.p2) {
         battle.p2.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
-        syncRequestConditionsWithSimulator(battle.p2 as unknown as Parameters<typeof syncRequestConditionsWithSimulator>[0]);
+        syncRequestConditionsWithSimulator(battle.p2 as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
       }
       this.applied.add(key);
     }

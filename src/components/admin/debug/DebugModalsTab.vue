@@ -11,14 +11,14 @@ const isTesting = ref(false)
 async function startTest() {
   if (isTesting.value) return
   isTesting.value = true
-  const win = window as unknown as { __VITE_DEBUG__: { testModalStack: (count: number) => Promise<void> } }
-  await win.__VITE_DEBUG__.testModalStack(modalCount.value)
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { testModalStack: (count: number) => Promise<void> } | undefined // domain-ok
+  await bridge?.testModalStack(modalCount.value)
   isTesting.value = false
 }
 
 function triggerSampleError() {
-  const win = window as unknown as { __VITE_DEBUG__: { triggerTestError: () => void } }
-  win.__VITE_DEBUG__.triggerTestError()
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { triggerTestError: () => void } | undefined // domain-ok
+  bridge?.triggerTestError()
 }
 </script>
 

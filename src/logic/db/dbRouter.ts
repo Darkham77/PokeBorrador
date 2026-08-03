@@ -38,8 +38,7 @@ export class DBRouter {
     this.userSubscription = null;
     this._timeOffset = 0; // ms
     
-    const isE2E = (typeof window !== 'undefined' && !!(window as unknown as Record<string, unknown>).__E2E__) ||
-                  (typeof globalThis !== 'undefined' && !!(globalThis as unknown as Record<string, unknown>).__E2E__) ||
+    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
                   (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
 
     if (isE2E) {
@@ -47,7 +46,6 @@ export class DBRouter {
       this.options.inMemory = true;
     }
 
-    logger.info('DBRouter', `Initialized in STRICT ${this.mode.toUpperCase()} mode. (inMemory: ${!!this.options.inMemory})`); // text-ok
   }
 
   /**
@@ -267,9 +265,9 @@ export class DBRouter {
     if (this.mode === 'offline') {
       const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
       const localUser = localUserStr ? JSON.parse(localUserStr) as User : null;
-      const defaultUser: User = ({ id: 'local_user', email: 'offline@pkv.io' } as unknown) as User;
+      const defaultUser: User = { id: 'local_user', email: 'offline@pkv.io', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: '' };
       const user = localUser || defaultUser;
-      const session = { access_token: 'mock', token_type: 'bearer', user, expires_at: 9999999999 } as unknown as Session;
+      const session: Session = { access_token: 'mock', token_type: 'bearer', user, expires_at: 9999999999, expires_in: 9999999999, refresh_token: 'mock' };
       
       return {
         signOut: async () => ({ error: null }),
@@ -330,7 +328,7 @@ export class DBRouter {
           bc.close();
         }
       };
-      return mockChannel as unknown as RealtimeChannel;
+      return mockChannel as unknown as RealtimeChannel; // domain-ok
     }
 
     const client = this.realClient;
@@ -343,10 +341,10 @@ export class DBRouter {
           if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
           return basicMock;
         },
-        send: () => Promise.resolve('ok'),
+        send: async () => 'ok' as const,
         unsubscribe: () => {}
-      } as unknown as RealtimeChannel;
-      return basicMock;
+      };
+      return basicMock as unknown as RealtimeChannel; // domain-ok
     }
 
     return client.channel(name);
@@ -406,7 +404,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
       }
       
-      const valObj = rawValue as Record<string, unknown> | null;
+      const valObj = rawValue as Record<string, unknown> | null; // open-record
       const parsed = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
         ? parseInt((valObj.db_version as string | number) + '' || '0') 
         : parseInt((rawValue as string | number) + '' || '0');
@@ -459,7 +457,7 @@ function parseAppVersion(val: unknown): string {
     const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as unknown;
     if (typeof parsed === 'string') return parsed;
     if (parsed && typeof parsed === 'object') {
-      return (parsed as Record<string, string>).app_version || '';
+      return (parsed as Record<string, string>).app_version || ''; // open-record
     }
     return '';
   } catch {

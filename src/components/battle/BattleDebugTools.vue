@@ -9,7 +9,7 @@ const isOpen = ref(false)
 const isEffectsOpen = ref(false)
 const isTimeOpen = ref(false)
 
-const isDebug = computed(() => typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__)
+const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
 </script>
 
 <template>

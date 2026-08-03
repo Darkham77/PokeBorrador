@@ -23,12 +23,10 @@ const currentZoom = computed(() => {
 
 const updateZoom = (val: number) => {
   const zoomVal = val / 100
-  uiStore.setZoom(zoomVal)
-  
-  const win = window as unknown as { updateZoom?: (v: number) => void }
-  if (typeof win.updateZoom === 'function') {
-    win.updateZoom(val)
-  }
+  const fn = Reflect.get(uiStore, 'setZoom') as ((v: number) => void) | undefined
+  if (typeof fn === 'function') fn(zoomVal)
+  const winFn = Reflect.get(window, 'updateZoom') as ((v: number) => void) | undefined
+  if (typeof winFn === 'function') winFn(val)
 }
 
 const handleZoomInput = (e: Event) => {

@@ -58,7 +58,8 @@ export function executeCloneFossil(
     oldamber: 'aerodactyl'
   } satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
   
-  const speciesId = FOSSIL_SPECIES_MAP[fossilId as ItemId];
+  const validFossilId = requireItemId(fossilId);
+  const speciesId = FOSSIL_SPECIES_MAP[validFossilId];
   if (!speciesId) {
     uiStore.notify('Fósil no reconocido para clonar.', '❌');
     return false;
@@ -110,7 +111,7 @@ export function executeCloneFossil(
   warehouseEggs.value.push(egg);
   saveWarehouseEggs();
 
-  uiStore.notify(`¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId as keyof typeof POKEMON_DB]?.name} creado.`, '🥚');
+  uiStore.notify(`¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId]?.name} creado.`, '🥚');
   gameStore.scheduleSave();
   return true;
 }

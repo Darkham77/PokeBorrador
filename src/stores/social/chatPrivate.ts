@@ -76,14 +76,14 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
 
   // Initialize existing chats
   if (gameStore.state.chats) {
-    Object.assign(privateChats, getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true))
+    Object.assign(privateChats, getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true)) // open-record
   }
   isInitialized = true
 
   // Sync chats with game state updates
   watch(() => gameStore.state.chats, (newChats) => {
     if (newChats) {
-      const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false)
+      const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false) // open-record
       for (const key in privateChats) {
         if (!sanitized[key]) {
           delete privateChats[key]
@@ -131,8 +131,8 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
 
     if (data && Array.isArray(data)) {
-      const lastSaveTime = ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0
-      const initialLastInteractions: Record<string, number> = {}
+      const lastSaveTime = ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0 // open-record
+      const initialLastInteractions: Record<string, number> = {} // open-record
 
       data.forEach((row: Record<string, unknown>) => {
         const senderId = (row.senderId as string) || (row.senderid as string) || ''
@@ -216,7 +216,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
         .limit(1000)
 
       if (data && Array.isArray(data) && data.length === 1000) {
-        const thresholdDate = ((data as unknown[])[999] as Record<string, unknown>)?.created_at as string
+        const thresholdDate = (data as Array<{ created_at: string }>)[999]?.created_at
         if (thresholdDate) {
           await gameStore.db.from('chat_messages')
             .delete()

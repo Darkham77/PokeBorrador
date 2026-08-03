@@ -198,7 +198,7 @@ export function registerPokeTools(debug: DebugSystem) {
 
       if (!target) {
         // 1. Buscar en tabla de nivel
-        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id]
+        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id] // open-record
         if (levelEvo) {
           target = levelEvo.to
         } else {
@@ -209,7 +209,7 @@ export function registerPokeTools(debug: DebugSystem) {
             item = stoneEvo.stone
           } else {
             // 3. Buscar en tabla de intercambio
-            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id]
+            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id] // open-record
             if (tradeEvo) {
               target = tradeEvo
             }
@@ -234,7 +234,7 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'debugEggs',
     category: 'pokes',
     action: () => {
-      const db = POKEMON_DB as Record<string, { name: string }>
+      const db = POKEMON_DB
       
       const warehouse = breedingStore.warehouseEggs.map(e => ({
         id: e.id,
@@ -286,7 +286,7 @@ export function registerPokeTools(debug: DebugSystem) {
     command: 'scanEgg',
     category: 'pokes',
     action: (idOrAll?: string) => {
-      const db = POKEMON_DB as Record<string, { name: string }>
+      const db = POKEMON_DB
       let scannedCount = 0
 
       const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all' // text-ok

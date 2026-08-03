@@ -122,7 +122,7 @@ export const useAuthStore = defineStore('auth', () => {
         
         let sessionValid = true
         if (data?.session?.user) {
-          const rawUser = data.session.user as unknown as AuthUser
+          const rawUser = data.session.user as unknown as AuthUser // domain-ok
           const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_')
           
           let dbVersion = 1
@@ -247,7 +247,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (error) throw error
       
       session.value = data.session
-      user.value = data.user as unknown as AuthUser
+      user.value = data.user as unknown as AuthUser // domain-ok
       sessionMode.value = 'online'
       safeStorage.setItem('pokevicio_session_mode', 'online')
       if (supabase && typeof supabase.setMode === 'function') {

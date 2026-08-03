@@ -16,7 +16,7 @@ const npcEggs = computed(() => eggs.value.filter(e => e.isNpc))
 const getEggName = (egg: PokemonEgg) => {
   if (egg.scanned || egg.predictedInfo) {
     const speciesId = egg.pokemonId || egg.id
-    return (POKEMON_DB as Record<string, { name: string }>)[speciesId]?.name || 'Huevo Pokémon'
+    return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon'
   }
   return 'Huevo Pokémon'
 }

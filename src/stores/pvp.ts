@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui.ts'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
+import { requireItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 
@@ -92,8 +93,8 @@ export const usePvPStore = defineStore('pvp', () => {
     }
 
     // Sync maxElo from game state for rewards
-    maxElo.value = (gameStore.state.rankedMaxElo as number) || elo.value
-    rewardsClaimed.value = (gameStore.state.rankedRewardsClaimed as string[]) || []
+    maxElo.value = typeof gameStore.state.rankedMaxElo === 'number' ? gameStore.state.rankedMaxElo : elo.value
+    rewardsClaimed.value = Array.isArray(gameStore.state.rankedRewardsClaimed) ? gameStore.state.rankedRewardsClaimed : []
 
     const { data: passive } = await gameStore.db.from('passive_teams')
       .select('is_active')
@@ -174,9 +175,8 @@ export const usePvPStore = defineStore('pvp', () => {
     }
 
     // Add items to inventory
-    const inventory = gameStore.state.inventory as Record<string, number>
-    Object.entries(milestone.rewards).forEach(([itemName, qty]) => {
-      inventory[itemName] = (inventory[itemName] || 0) + (qty as number)
+    Object.entries(milestone.rewards).forEach(([itemId, qty]) => {
+      gameStore.addItemToInventory(requireItemId(itemId), qty);
     })
 
     rewardsClaimed.value.push(milestoneId)

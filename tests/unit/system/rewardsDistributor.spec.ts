@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { calculateBattleRewards } from '@/logic/battle/rewardsDistributor'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import type { BattleContext } from '@/types/battle/battleContext'
 
 vi.mock('@/logic/utils/gsapHelpers', () => ({
@@ -52,6 +53,7 @@ interface MockContext {
   warStore: { addPoints: ReturnType<typeof vi.fn>; mapDominance: Record<string, unknown> };
   eventStore: { globalMultipliers: { exp: number; money: number; bc: number }; submitCompetitionEntry: ReturnType<typeof vi.fn> };
   classStore: { getModifier: ReturnType<typeof vi.fn> };
+  inventoryStore: { addItem: ReturnType<typeof vi.fn> };
   addLog: ReturnType<typeof vi.fn>;
   uiStore: { notify: ReturnType<typeof vi.fn> };
 }
@@ -99,6 +101,11 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
         },
         save: vi.fn().mockResolvedValue(true),
         addTrainerExp: vi.fn()
+      },
+      inventoryStore: {
+        addItem: vi.fn((id: string, qty: number = 1) => {
+          incrementRecordKey(mockCtx.gs.state.inventory, id, qty)
+        })
       },
       warStore: {
         addPoints: vi.fn().mockResolvedValue(true),

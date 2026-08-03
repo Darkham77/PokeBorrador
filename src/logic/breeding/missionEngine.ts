@@ -216,7 +216,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     includeTitle: true
   });
 
-  const targetName = (POKEMON_DB as Record<string, { name: string } | undefined>)[targetId]?.name || targetId;
+  const targetName = POKEMON_DB[targetId]?.name || targetId;
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
   const template = templates[Math.floor(Math.random() * templates.length)] || '...';
   const dialogue = template.replace('${pokemon}', targetName).replace('${req}', reqText);

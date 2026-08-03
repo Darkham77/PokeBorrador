@@ -11,6 +11,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { requirePokemonType, TYPE_COLORS } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -61,7 +62,7 @@ function getPokemonFX(p: Pokemon | null) {
   const primaryType = data?.type || 'normal'
   
   return {
-    typeColor: TYPE_COLORS[primaryType as keyof typeof TYPE_COLORS] || '#A8A878',
+    typeColor: TYPE_COLORS[requirePokemonType(primaryType)] || '#A8A878',
     isShiny: p.isShiny,
     isLegendary: tier.tier === 'S+' || tier.tier === 'S',
     tierColor: tier.color
@@ -242,16 +243,15 @@ onMounted(() => {
       handleHeal()
     })
   }
+})
 
-  const win = window as unknown as { showHealEffect?: (active: boolean) => void }
-  win.showHealEffect = (active: boolean) => {
+  Reflect.set(window, 'showHealEffect', (active: boolean) => {
     if (active) {
       const modalStore = useModalStore()
       modalStore.open('HealOverlay')
       gsap.delayedCall(0.1, handleHeal)
     }
-  }
-})
+  })
 
 onUnmounted(() => {
   gsap.killTweensOf(handleHeal)

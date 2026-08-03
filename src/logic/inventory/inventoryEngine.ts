@@ -11,7 +11,7 @@ import type { Inventory } from '@/types/inventory/items';
  * Calculates the sell price of an item (usually 50% of buying price).
  */
 export function getSellPrice(itemName: string): number {
-  const item = (SHOP_ITEMS as unknown as { name: string, price: number, showInNormalShop?: boolean }[]).find(i => i.name === itemName);
+  const item = (SHOP_ITEMS as readonly { name: string; price: number; showInNormalShop?: boolean }[]).find(i => i.name === itemName); // domain-ok
   if (!item) return 0;
   if (item.showInNormalShop === false && (!item.price || item.price <= 0)) return 0;
   

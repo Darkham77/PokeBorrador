@@ -19,7 +19,7 @@ export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: nu
     team.forEach(pkmn => {
       if (pkmn && pkmn.hp > 0 && pkmn.ability) {
         const abilityKey = pkmn.ability
-        const passive = ADVENTURE_PASSIVES[abilityKey as keyof typeof ADVENTURE_PASSIVES]
+        const passive = ADVENTURE_PASSIVES[abilityKey]
         if (passive) {
           if (passive.id === 'speed_bonus') {
             speedBonus = Math.max(speedBonus, passive.value)

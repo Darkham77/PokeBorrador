@@ -1,4 +1,5 @@
 import type { SBCtx } from './showdownBridgeCtx';
+import { modifyStatStage } from '@/logic/pokemon/statsMath';
 
 /** 
  * NATIVE SHOWDOWN STAT STAGE KEYS
@@ -30,7 +31,7 @@ export function handleStageEvents(ctx: SBCtx): boolean {
           if (type === '-setboost') {
             stages[key] = Math.max(-6, Math.min(6, amount));
           } else {
-            stages[key] = Math.max(-6, Math.min(6, (stages[key] || 0) + amount));
+            modifyStatStage(stages, key, amount);
           }
           const msg = amount === 6
             ? `¡El ${key.toUpperCase()} de ${target.name} se maximizó!` // text-ok

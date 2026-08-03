@@ -35,3 +35,7 @@ export const TRAINER_TYPES = {
 } as const;
 
 export type TrainerTypeKey = keyof typeof TRAINER_TYPES;
+
+export function isTrainerTypeKey(raw: string): raw is TrainerTypeKey {
+  return (Object.keys(TRAINER_TYPES) as readonly string[]).includes(raw); // domain-ok
+}

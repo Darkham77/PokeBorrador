@@ -93,7 +93,7 @@ export function classifyNpcArchetype(spriteIdOrName: string): NpcArchetype {
 
 export function getSpritesForArchetype(archetype: NpcArchetype): readonly string[] {
   const sprites = ARCHETYPE_SPRITES[archetype];
-  if (!sprites || (sprites as readonly string[]).length === 0) {
+  if (!sprites || sprites.length === 0) {
     throw new Error(`[npcSpriteRouter] No sprites found in catalog for archetype: ${archetype}`);
   }
   return sprites;

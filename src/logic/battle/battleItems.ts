@@ -12,7 +12,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { EventStore, AudioStore, BattleStore } from '@/types/system/stores'
 import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { getItemName } from '@/data/inventory/items'
+import { getItemName, requireItemId, type ItemId } from '@/data/inventory/items'
 
 interface ItemUsageOptions {
   eventStore: EventStore;
@@ -24,7 +24,7 @@ interface ItemUsageOptions {
   itemId?: string;
 }
 
-import type { ItemId } from '@/data/inventory/items';
+
 
 export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
   const { 
@@ -34,7 +34,7 @@ export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: 
   } = options
 
   const displayName = getItemName(itemName)
-  const nameLower = itemName as ItemId
+  const nameLower = requireItemId(itemName)
   const isBall = nameLower.includes('ball') || nameLower.includes('bola')
 
   if (isBall) {

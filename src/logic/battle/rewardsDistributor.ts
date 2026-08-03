@@ -4,7 +4,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemById, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
+import { getItemById, requireItemId, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -95,17 +95,11 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     if (isFirstTimeGym) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
       if (active.rewardTM) { 
-        const tm = active.rewardTM
-        let itemObj = null
-        try {
-          itemObj = getItemById(tm as ItemId)
-        } catch {
-          itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tm.toLowerCase()) || null // text-ok
-        }
-        const tmId = itemObj ? itemObj.id : (tm as ItemId)
-        ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
-        ctx.addLog(`¡Recibiste la ${itemObj?.name || tm}!`, 'log-info', tmId) 
-        ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tm}!`, '🎒')
+        const tmId = requireItemId(active.rewardTM)
+        const itemObj = getItemById(tmId)
+        ctx.inventoryStore.addItem(tmId, 1)
+        ctx.addLog(`¡Recibiste la ${itemObj.name}!`, 'log-info', tmId) 
+        ctx.uiStore.notify(`¡Obtuviste ${itemObj.name}!`, '🎒')
       }
       ctx.uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
     } else {
@@ -114,23 +108,17 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       const gymsStore = useGymsStore()
       const gym = gymsStore.gyms.find(g => g.id === gid)
       if (gym && gym.rewardTM) {
-        const tmReward = gym.rewardTM
         const key = diff as 'easy' | 'normal' | 'hard'
         let tmChance = 0
         if (key === 'normal') tmChance = 0.03
         else if (key === 'hard') tmChance = 0.05
         
         if (tmChance > 0 && Math.random() < tmChance) {
-          let itemObj = null
-          try {
-            itemObj = getItemById(tmReward as ItemId)
-          } catch {
-            itemObj = SHOP_ITEMS.find(i => i.name.toLowerCase() === tmReward.toLowerCase()) || null // text-ok
-          }
-          const tmId = itemObj ? itemObj.id : (tmReward as ItemId)
-          ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
-          ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)
-          ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tmReward}!`, '🎒')
+          const tmId = requireItemId(gym.rewardTM)
+          const itemObj = getItemById(tmId)
+          ctx.inventoryStore.addItem(tmId, 1)
+          ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj.name}!`, 'log-success', tmId)
+          ctx.uiStore.notify(`¡Obtuviste ${itemObj.name}!`, '🎒')
         }
       }
     }

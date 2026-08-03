@@ -1,11 +1,11 @@
 // fallow-ignore-file security-sink
 import { test, type Page } from '@playwright/test';
-import { generateTestBatches } from '../fuzzer/generators/fuzzer_team_generator.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
 import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
+import { requireCertifiedBattleCaseDocument } from '../fuzzer/core/certifiedBattleCase.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string, logBuffer?: string[]) {
@@ -25,18 +25,14 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
     } catch (_e: unknown) { /* expected empty */ }
   });
 
-  let allBatches: CertifiedTestBatch[] = [];
   const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-  if (fs.existsSync(consolidatorPath)) {
-    try {
-      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as { battle?: CertifiedTestBatch[] };
-      if (content.battle) {
-        allBatches = content.battle;
-      }
-    } catch (_e: unknown) { /* expected empty */ }
+  if (!fs.existsSync(consolidatorPath)) {
+    throw new Error(`[E2E-CERTIFICATION] Missing fuzzer-certified cases at ${consolidatorPath}. Run npm run sim:fuzzer before Playwright replay.`);
   }
+  const rawCases: unknown = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8'));
+  const allBatches: CertifiedTestBatch[] = requireCertifiedBattleCaseDocument(rawCases, consolidatorPath).battle;
   if (allBatches.length === 0) {
-    allBatches = generateTestBatches(6) as CertifiedTestBatch[];
+    throw new Error(`[E2E-CERTIFICATION] ${consolidatorPath} contains no certified battle cases. The fuzzer must produce terminal cases before replay.`);
   }
 
   const batchFilter = process.env.TEST_BATCH;
@@ -94,7 +90,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
   if (batches.length > 0) {
     batches.forEach(({ b: batch, idx: index }) => {
-      test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
+      test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }, testInfo) => {
         test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
@@ -105,7 +101,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
 
         try {
           await sim.setupFuzzerScenario(batch);
-          await sim.playBattle(index, 0, batch.playerChoices, batch.cheats, batch.finalState);
+          await sim.playBattle(batch.finalState);
           reportProgress(index, false);
         } catch (error: unknown) {
           reportProgress(index, true);
@@ -134,12 +130,16 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
           }
           throw new Error(`[Fallo en Lote ${caseId}]: ${errMessage}`);
         } finally {
-          // Output the entire buffered trace sequentially
-          console.log(`\n==================================================`);
-          console.log(`📋 CONCURRENT LOGS FOR TEST BATCH #${index + 1} (${batch.id})`);
-          console.log(`==================================================`);
-          console.log(logBuffer.join('\n'));
-          console.log(`==================================================\n`);
+          const statusStr = testInfo.status ?? 'unknown';
+          const isFailed = statusStr !== 'passed';
+          if (isFailed || process.env.DEBUG_E2E === 'true') {
+            // Output the entire buffered trace sequentially to console only on failure to avoid cluttering the terminal
+            console.log(`\n==================================================`);
+            console.log(`📋 CONCURRENT LOGS FOR TEST BATCH #${index + 1} (${batch.id}) [STATUS: ${statusStr.toUpperCase()}]`);
+            console.log(`==================================================`);
+            console.log(logBuffer.join('\n'));
+            console.log(`==================================================\n`);
+          }
           
           try {
             const logsDir = path.resolve(process.cwd(), 'scratch/e2e_logs');

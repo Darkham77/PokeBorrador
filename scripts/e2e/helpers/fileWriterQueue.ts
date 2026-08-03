@@ -58,15 +58,12 @@ class FileWriterQueue {
 
         task.resolve();
       } catch (err: unknown) {
-        // Fallback atomic direct write if rename fails cross-device
-        try {
-          const fileName = path.basename(task.filePath);
-          const targetPath = path.resolve(projectRoot, 'scripts', 'e2e', 'results', fileName);
-          await fs.writeFile(targetPath, task.data, 'utf8');
-          task.resolve();
-        } catch (fallbackErr: unknown) {
-          task.reject(fallbackErr);
-        }
+        const failure = err instanceof Error ? err : new Error(String(err));
+        task.reject(new Error(
+          `[FileWriterQueue] Atomic publication failed for "${task.filePath}". ` +
+          `The previous certified artifact was preserved and no direct-write fallback was attempted. ` +
+          `cause=${failure.name}: ${failure.message}`
+        ));
       }
     }
 

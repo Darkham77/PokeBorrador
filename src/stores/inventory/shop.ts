@@ -37,11 +37,11 @@ export const useShopStore = defineStore('shop', () => {
     const playerClass = gameStore.state.playerClass
     if (!playerClass) return 1.0
     
-    const classDef = (PLAYER_CLASSES as Record<string, { modifiers?: Record<string, number> }>)[playerClass || '']
+    const classDef = PLAYER_CLASSES[playerClass]
     if (!classDef || !classDef.modifiers) return 1.0
     
     // For regular shop, we use the recargo penalty if member of Rocket
-    if ((playerClass as string) === 'rocket') return 1.20 
+    if (playerClass === 'rocket') return 1.20 
     return 1.0
   }
 
@@ -208,9 +208,9 @@ export const useShopStore = defineStore('shop', () => {
       const shuffled = [...possibleItems].sort(() => 0.5 - Math.random())
       const bmd = gameStore.state.classData?.blackMarketDaily
       if (bmd) {
-        bmd.items = shuffled.slice(0, 3).map(i => (i.id || '') as string)
-        if (bmd) bmd.date = today
-        bmd.purchased = [] as string[]
+        bmd.items = shuffled.slice(0, 3).map(i => i.id)
+        bmd.date = today
+        bmd.purchased = []
       }
       gameStore.scheduleSave()
     }

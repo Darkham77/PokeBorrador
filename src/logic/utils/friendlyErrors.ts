@@ -9,7 +9,7 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     message = error.message;
   } else if (typeof error === 'object' && error !== null && 'message' in error) {
-    message = String((error as Record<string, unknown>).message);
+    message = String(Reflect.get(error, 'message'));
   } else {
     message = String(error);
   }

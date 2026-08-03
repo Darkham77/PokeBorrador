@@ -37,8 +37,8 @@ the source of truth. `src/` must conform to them, never the reverse.
 4. **Mandatory Generic Root-Cause Verification & Absolute Zero-Fallback Protocol**:
    - BEFORE making or proposing any edits to `src/`, the agent MUST isolate and output the un-truncated trace or exact log line causing the error.
    - **MANDATORY PRE-FIX FALLBACK AUDIT**: Whenever investigating a bug or simulation failure, the agent MUST FIRST verify: *Are there any masking fallbacks (`||`, `??`, default assignments, or property derivations) in the execution path hiding the real root cause?* If any exist, the agent MUST REMOVE THEM FIRST so the system fails loudly with an explicit, traceable stack trace showing the true origin of the bug.
-   - **ABSOLUTE PROHIBITION ON FALLBACKS**: It is STRICTLY FORBIDDEN to introduce compatibility adapters, silent fallbacks, default assignments (`||`, `??`), or property derivations (e.g. deriving `species` from `name`/`id` or assigning dummy/default values) to make tests pass quickly.
-   - **FALLBACKS ARE BUGS**: Any missing property, undefined value, missing choice, or unregistered constant is an empirical indicator of a missing implementation or data initialization bug upstream. It MUST NOT be "healed" or patched with fallbacks.
+   - **ABSOLUTE PROHIBITION ON FALLBACKS & AUTO-CHOICE ADAPTERS**: It is STRICTLY FORBIDDEN to introduce compatibility adapters, silent fallbacks, default assignments (`||`, `??`), or property derivations (e.g. deriving `species` from `name`/`id` or assigning dummy/default values) to make tests pass quickly. In particular, it is STRICTLY PROHIBITED to modify `src/` to intercept invalid/disabled move choices or choice rejections and substitute them with fallback choices or automated agent calls.
+   - **FALLBACKS ARE BUGS**: Any missing property, undefined value, missing choice, or unregistered constant is an empirical indicator of a missing implementation or data initialization bug upstream. It MUST NOT be "healed" or patched with fallbacks. If a fuzzer or test choice is rejected, the test script or choice generator is wrong and MUST be fixed at the source, while `src/` MUST fail fast and loudly (`throw new Error(...)`).
    - All error handling and data lookups MUST fail loudly with explicit descriptive errors (`throw new Error(...)`) when data or state is missing/corrupted, forcing the fix to be applied at the upstream source.
 
 5. **Natural Battle Execution & Temporary Cheats Deactivation Law**:
@@ -77,6 +77,16 @@ the source of truth. `src/` must conform to them, never the reverse.
    }
    const species = target.species;
    ```
+
+6. **Absolute Prohibition on Hasty Fallbacks, Rushed Patches, Synthetic Choice Injectors & Fake Report Overrides**:
+   - **No Hasty Fixes or Fake Metrics Mandate**: It is **STRICTLY FORBIDDEN** to apply hasty patches, ad-hoc fallback choices (such as forcing `'move 1'`), silent recovery blocks, synthetic choice overrides, or artificial status mutations (e.g. forcing `UNTESTED` to `PASS` or altering report counts in memory) in core modules or reporting scripts. All coverage reports and simulation outputs MUST reflect 100% true, raw, and un-mutated empirical execution data. An E2E failure or `UNTESTED` item is an empirical indicator of a real codebase/coverage defect; hiding or bypassing it invalidates the entire purpose of simulations.
+   - **Mandatory Holistic Diagnosis Workflow**: Whenever a simulation failure occurs, the agent MUST follow a calm 4-step analysis protocol BEFORE writing any code:
+     1. **Analyze Full Log Trace**: Read un-truncated stack traces, FSM logs, and active combatant states without jumping to conclusions.
+     2. **Review DOX & Architecture**: Inspect `AGENTS.md` and module architecture to understand the intended design and contracts.
+     3. **Reproduce via Unit Test**: Create or update a minimal Node unit test reproducing the exact issue.
+     4. **Fix at Upstream Root Cause**: Apply the fix cleanly at the origin in `src/` without compatibility adapters or silent fallbacks.
+   - **Manual Scenarios vs. Fuzzer Replays**: Manual E2E scenario tests (e.g. `battle_manual_scenarios.simulation.ts`) test specific UI/FSM workflows (such as item usage from inventory or manual team switches) without pre-recorded fuzzer choice streams (`playerChoices` empty). They MUST execute standard game AI logic (`CombatAI` / `ScriptedAI`), NEVER synthesized or hardcoded fallback choices.
+   - Core runner classes (`ShowdownBattleRunner`) MUST retain their clean single-responsibility contracts: resolving choice stream indices for certified fuzzer batches, while delegating readiness checking internally without cluttering call sites.
 
 ---
 

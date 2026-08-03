@@ -142,9 +142,9 @@ export async function emulateAcceptTrade(
 
   // Parse columns since SQLite stores objects as strings/JSON strings
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null;
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record
   const requestPokeObj = trade.request_pokemon ? (JSON.parse(trade.request_pokemon) as Pokemon) : null;
-  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null;
+  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null; // open-record
 
   // 1. Validar y Quitar lo que el receptor ofrece (request del trade)
   // 1a. Pokémon
@@ -173,7 +173,7 @@ export async function emulateAcceptTrade(
   // 1c. Items
   if (requestItemsObj) {
     receiverSave.inventory = receiverSave.inventory || {};
-    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) {
+    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record
       const currentQty = receiverSave.inventory[itemName] || 0;
       if (currentQty < qty) {
         return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
@@ -208,7 +208,7 @@ export async function emulateAcceptTrade(
     );
   }
   if (offerItemsObj) {
-    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) {
+    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(
@@ -235,7 +235,7 @@ export async function emulateAcceptTrade(
     );
   }
   if (requestItemsObj) {
-    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) {
+    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(
@@ -285,7 +285,7 @@ export async function emulateRejectTrade(
 
   // Devolver activos al emisor (trade.sender_id) en su claim_queue
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null;
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record
 
   if (offerPokeObj) {
     const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
@@ -302,7 +302,7 @@ export async function emulateRejectTrade(
     );
   }
   if (offerItemsObj) {
-    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) {
+    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(

@@ -2,6 +2,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 class GymProgressionSimulation extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -17,7 +18,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
       const mewtwo = pokemonDebugService.generate({
         id: 'mewtwo',
         level: 100,
-        moves: ['psychic']
+        moves: ['psychic', 'shadowball', 'solarbeam', 'surf']
       });
 
       gameStore.updateState({ team: [mewtwo], starterChosen: true });
@@ -52,6 +53,7 @@ test.describe('Gym Progression & Badges Challenge Simulation', () => {
   });
 
   test('should challenge Pewter Gym, defeat Brock, and earn the Rock Badge', async ({ page }) => {
+    test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
     const testUser = `TEST_GYM_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const sim = new GymProgressionSimulation(page, testUser);
 

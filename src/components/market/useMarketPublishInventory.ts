@@ -2,6 +2,7 @@ import { computed, type Ref } from 'vue'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { useGameStore } from '@/stores/game'
 import type { useGTSStore } from '@/stores/gts'
+import type { MarketListing } from '@/logic/economy/market'
 
 export interface InventoryItem {
   id: string
@@ -20,7 +21,7 @@ export function useMarketPublishInventory(
   itemSortOrder: Ref<'asc' | 'desc'>
 ) {
   const inventory = computed<InventoryItem[]>(() => {
-    return Object.entries(game.state.inventory as Record<string, number>)
+    return Object.entries(game.state.inventory as Record<string, number>) // open-record
       .filter(([_name, qty]) => qty > 0)
       .map(([name, qty]) => {
         const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
@@ -37,7 +38,8 @@ export function useMarketPublishInventory(
 
   const gtsStatsMap = computed(() => {
     const map: Record<string, { min: number; max: number; avg: number }> = {}
-    const itemListings = gtsStore.listings.filter(l => l.listing_type === 'item' && l.data)
+    type ItemListing = Extract<MarketListing, { listing_type: 'item' }>
+    const itemListings = gtsStore.listings.filter((l): l is ItemListing => l.listing_type === 'item')
 
     const grouped: Record<string, number[]> = {}
     for (const listing of itemListings) {

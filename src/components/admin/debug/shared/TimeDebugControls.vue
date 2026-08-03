@@ -26,7 +26,7 @@ interface GameDB {
   getTimeOffset?: () => number
 }
 
-const getDB = () => game.db as unknown as GameDB
+const getDB = () => game.db as GameDB // domain-ok
 const timeOffsetLabel = ref(`${getDB()?.getTimeOffset?.() || 0}ms`)
 
 interface ViteDebugBridge {
@@ -38,7 +38,7 @@ interface ViteDebugBridge {
   setCycle: (c: string | null) => void;
 }
 
-const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
 
 function updateMockTime() {
   getDebugBridge().setMockTime(debugDate.value)

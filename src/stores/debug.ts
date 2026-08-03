@@ -101,21 +101,22 @@ export const useDebugStore = defineStore('debug', () => {
     if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
 
     // Bind reactive state directly to the window object so static logic can access them
-    const debugObj = window.__VITE_DEBUG__ as unknown as Record<string, unknown>
-    debugObj.trainerChance50 = trainerChance50.value
-    debugObj.forceRival = forceRival.value
-    debugObj.forceGuardian80 = forceGuardian80.value
-    debugObj.forceShiny100 = forceShiny100.value
-    debugObj.multipliers = debugMultipliers.value
+    if (window.__VITE_DEBUG__) {
+      Reflect.set(window.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value)
+      Reflect.set(window.__VITE_DEBUG__, 'forceRival', forceRival.value)
+      Reflect.set(window.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value)
+      Reflect.set(window.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value)
+      Reflect.set(window.__VITE_DEBUG__, 'multipliers', debugMultipliers.value)
+    }
 
     // Exponer stores y utilidades de depuración requeridas por las simulaciones E2E
-    debugObj.useBattleStore = useBattleStore
-    debugObj.useGameStore = useGameStore
-    debugObj.useMapStore = useMapStore
-    debugObj.testResetShowdownWorker = () => {
+    Reflect.set(window.__VITE_DEBUG__, 'useBattleStore', useBattleStore)
+    Reflect.set(window.__VITE_DEBUG__, 'useGameStore', useGameStore)
+    Reflect.set(window.__VITE_DEBUG__, 'useMapStore', useMapStore)
+    Reflect.set(window.__VITE_DEBUG__, 'testResetShowdownWorker', () => {
       import('@/logic/battle/showdownWorkerClient').then(m => m.testResetShowdownWorker?.())
-    }
-    debugObj.pokemonDebugService = pokemonDebugService
+    })
+    Reflect.set(window.__VITE_DEBUG__, 'pokemonDebugService', pokemonDebugService)
 
     tools.value.forEach(tool => {
       window.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {

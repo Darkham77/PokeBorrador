@@ -231,7 +231,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
       const newPos = parseInt(parts[3] || '0', 10);
       if (target) {
         if (!isNaN(newPos)) {
-          (target as unknown as { position?: number; slotIndex?: number }).position = newPos;
+          Reflect.set(target, 'position', newPos)
           target.slotIndex = newPos;
         }
         store.addLog(`¡${target.name} cambió de posición!`, 'log-info', target);
@@ -397,12 +397,12 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           const sub = store.fsm?.currentSubState;
           const subName = String(sub?.value || sub || '');
           const isFsmAnimActive = Boolean(store.isIntroAnimating?.value) || ['POKEMON_RECALL', 'POKEMON_CALL', 'ENEMY_REPLACEMENT_SEQ', 'ENTRY_ANIM', 'PARALLEL_JUMP'].includes(subName);
-          const bState = store.activeBattle.value as unknown as Record<string, unknown>;
+          const bState = store.activeBattle.value;
           if (side === 'player') {
             if (!isFsmAnimActive) {
               store.activeBattle.value.player = target;
             } else {
-              bState.switchingToPlayer = target;
+              Reflect.set(bState, 'switchingToPlayer', target);
             }
             const team = store.activeBattle.value.playerTeam || [];
             const idx = team.findIndex(p => p && p.uid === target.uid);
@@ -413,7 +413,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
             if (!isFsmAnimActive) {
               store.activeBattle.value.enemy = target;
             } else {
-              bState.switchingToEnemy = target;
+              Reflect.set(bState, 'switchingToEnemy', target);
             }
             const team = store.activeBattle.value.enemyTeam || [];
             const idx = team.findIndex(p => p && p.uid === target.uid);
@@ -502,10 +502,9 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
           const turnNum = parseInt(parts[2] || '1', 10);
           store.activeBattle.value.turnCount = turnNum;
         }
-        const b = store.activeBattle.value as unknown as Record<string, unknown>;
         const seatKeys = ['player', 'playerB', 'enemy', 'enemyB', 'p1', 'p2', 'p3', 'p4'] as const;
         seatKeys.forEach(k => {
-          const mon = b[k] as { volatileCounters?: Record<string, number> } | null | undefined;
+          const mon = Reflect.get(store.activeBattle.value!, k) as { volatileCounters?: Record<string, number> } | null | undefined;
           if (mon && mon.volatileCounters) {
             delete mon.volatileCounters['protect'];
             delete mon.volatileCounters['flinch'];

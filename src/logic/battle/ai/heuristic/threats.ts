@@ -10,12 +10,12 @@ import type { InferenceEngine } from './inferenceEngine.ts';
 const SETUP_MOVES = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear',
-] as const;
+] as const satisfies readonly string[]; // no-domain
 
 const PRIORITY_MOVES = [
   'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
   'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
-] as const;
+] as const satisfies readonly string[]; // no-domain
 
 const THREAT_WEIGHTS = {
   speedThreat: 0.25,
@@ -67,8 +67,8 @@ export function evaluateThreats(
     const damageThreat = Math.min(1.0, (avgDmg / 100) * 0.7 + (totalKOs / Math.max(myAlive.length, 1)) * 0.3);
 
     // Setup potential
-    const hasSetup = moveList.some(m => (SETUP_MOVES as readonly string[]).includes(m));
-    const hasPriority = moveList.some(m => (PRIORITY_MOVES as readonly string[]).includes(m));
+    const hasSetup = moveList.some(m => SETUP_MOVES.includes(m));
+    const hasPriority = moveList.some(m => PRIORITY_MOVES.includes(m));
     const alreadyBoosted = opp.boosts.atk > 0 || opp.boosts.spa > 0 || opp.boosts.spe > 0;
     const setupPotential = Math.min(1.0,
       (hasSetup ? 0.5 : 0) + (alreadyBoosted ? 0.4 : 0) + (hasPriority ? 0.1 : 0),

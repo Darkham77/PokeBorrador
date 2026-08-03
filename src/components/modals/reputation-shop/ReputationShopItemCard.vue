@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 
@@ -54,15 +55,8 @@ const buy = async () => {
   }
   gameStore.state.classData.reputation = reputation.value - props.item.repCost
 
-  if (!gameStore.state.inventory) {
-    gameStore.state.inventory = {}
-  }
-  gameStore.state.inventory[props.item.givesId] = (gameStore.state.inventory[props.item.givesId] || 0) + props.item.givesQty
-
-  // Extra handling for Poke Balls
-  if (props.item.givesId === 'ultraball') {
-    gameStore.state.balls = (gameStore.state.balls || 0) + props.item.givesQty
-  }
+  const inventoryStore = useInventoryStore()
+  inventoryStore.addItem(props.item.givesId, props.item.givesQty)
 
   // Chiptune/audio notification
   try {

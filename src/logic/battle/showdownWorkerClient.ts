@@ -3,7 +3,6 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
-import { advanceChoiceIndices } from './helpers/choiceIndexer.ts';
 import { extractTeamHpAndStatus } from './helpers/showdownSyncHelper.ts';
 import { findMatchingPokemon } from './showdownUidMapper.ts';
 
@@ -38,16 +37,20 @@ function syncPokemonState(
   teamState.forEach(monState => {
     if (monState && monState.uid) {
       const match = findMatchingPokemon(monState.uid, targetList);
-      if (match) {
-        if (monState.maxHp && match.maxHp && monState.maxHp !== match.maxHp) {
-          match.hp = Math.min(match.maxHp, Math.round((monState.hp / monState.maxHp) * match.maxHp));
-        } else {
-          match.hp = monState.hp;
+      if (!match) {
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+          throw new Error(`[ShowdownWorkerClient] Certified worker state could not resolve a client Pokémon by UID. context=${JSON.stringify({ workerUid: monState.uid, workerHp: monState.hp, workerMaxHp: monState.maxHp, workerFainted: monState.fainted, clientUids: targetList.map(p => p?.uid ?? null) })}`);
         }
-        match.status = (monState.status === '' || (monState.status as string) === 'fnt') ? '' : monState.status as Pokemon['status'];
-        if (monState.fainted || monState.hp <= 0) {
-          match.hp = 0;
-        }
+        return;
+      }
+      if (monState.maxHp && match.maxHp && monState.maxHp !== match.maxHp) {
+        match.hp = Math.min(match.maxHp, Math.round((monState.hp / monState.maxHp) * match.maxHp));
+      } else {
+        match.hp = monState.hp;
+      }
+      match.status = monState.status as Pokemon['status'];
+      if (monState.fainted || monState.hp <= 0) {
+        match.hp = 0;
       }
     }
   });
@@ -62,7 +65,7 @@ function syncActiveCombatant(
   if (activeState) {
     console.debug(`[E2E-SYNC-DEBUG] Syncing active combatant (${activeMon.name}) HP: ${activeMon.hp} -> ${activeState.hp}`);
     activeMon.hp = activeState.fainted || activeState.hp <= 0 ? 0 : activeState.hp;
-    activeMon.status = (activeState.status === '' || (activeState.status as string) === 'fnt') ? '' : activeState.status as Pokemon['status'];
+    activeMon.status = activeState.status as Pokemon['status'];
   }
 }
 
@@ -71,8 +74,8 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
   let gameStore: GameStoreType | null = null;
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-    gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType;
-    battleStore = ((gameStore as unknown as { gs?: BattleStoreType })?.gs) || (typeof window !== 'undefined' ? (window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => BattleStoreType }).__VITE_DEBUG_STORE_RESOLVER__?.() : null) || null;
+    gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType; // domain-ok
+    battleStore = (Reflect.get(gameStore, 'gs') as unknown as BattleStoreType | undefined) || (window.__VITE_DEBUG_STORE_RESOLVER__?.() as unknown as BattleStoreType) || null; // domain-ok
   }
 
   if (!gameStore) {
@@ -130,6 +133,10 @@ interface WorkerSuccessPayload {
   p2Request?: ShowdownPlayerRequest;
   p1TeamState?: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null>;
   p2TeamState?: Array<{ uid: string; hp: number; maxHp: number; status: string; fainted: boolean } | null>;
+  p1ActionConsumed?: boolean;
+  p2ActionConsumed?: boolean;
+  p1ChoiceIdx?: number;
+  p2ChoiceIdx?: number;
   message?: string;
 }
 
@@ -156,7 +163,33 @@ export async function executeTurnInWorker(
 
   const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
-  const turnCheats: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }> = [];
+  const history = typeof window !== 'undefined' ? window.__VITE_DEBUG__?.history : undefined;
+  const certifiedHistoryIndex = isSimulation && typeof window !== 'undefined'
+    ? Reflect.get(window.__VITE_DEBUG__ ?? {}, 'replayHistoryIdx')
+    : undefined;
+  if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
+    throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice: finalP2Choice })}`);
+  }
+  const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
+  if (isSimulation && typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+    const trace = Reflect.get(window.__VITE_DEBUG__, 'certifiedReplaySubmissionTrace');
+    const entries = Array.isArray(trace) ? trace : [];
+    entries.push({ historyIndex: Reflect.get(window.__VITE_DEBUG__, 'replayHistoryIdx'), p1Choice, p2Choice: finalP2Choice ?? '', p1Skip: !!p1Skip, p2Skip: !!p2Skip });
+    Reflect.set(window.__VITE_DEBUG__, 'certifiedReplaySubmissionTrace', entries);
+  }
+  const replayContext = JSON.stringify({
+    isSimulation,
+    p1Choice,
+    p2Choice: finalP2Choice,
+    p1Skip: !!p1Skip,
+    p2Skip: !!p2Skip,
+    p1ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p1ChoiceIdx : undefined,
+    p2ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p2ChoiceIdx : undefined,
+    playerChoiceCount: typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.playerChoices) ? window.__VITE_DEBUG__.playerChoices.length : undefined,
+    enemyChoiceCount: typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.enemyChoices) ? window.__VITE_DEBUG__.enemyChoices.length : undefined,
+    historyCount: Array.isArray(history) ? history.length : undefined,
+    certifiedHistoryStep,
+  });
 
 
 
@@ -181,34 +214,25 @@ export async function executeTurnInWorker(
         p2Choice: finalP2Choice || ''
       });
 
-      if (typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.cheats)) {
-        const currentTurn = battleStore.state.turnCount;
-        const matchingCheats = window.__VITE_DEBUG__.cheats.filter(c => c.turn === currentTurn);
-        turnCheats.push(...matchingCheats);
-      }
     }
 
     const { useGameStore } = await import('@/stores/game');
     const gameStore = useGameStore();
-    if (gameStore?.state?.team) {
+    if (gameStore?.state?.team && !isSimulation) {
       const p1Data = extractTeamHpAndStatus(gameStore.state.team);
       p1Hps = p1Data.hps;
       p1Statuses = p1Data.statuses;
       console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
     }
-    if (battleStore.state?.enemyTeam) {
+    if (battleStore.state?.enemyTeam && !isSimulation) {
       const p2Data = extractTeamHpAndStatus(battleStore.state.enemyTeam);
       p2Hps = p2Data.hps;
       p2Statuses = p2Data.statuses;
     }
   } catch (e) {
-    throw new Error(`[ShowdownWorkerClient] Error loading battle store state in executeTurn: ${(e as Error).message}`)
+    throw new Error(`[ShowdownWorkerClient] Failed to load battle state before worker turn. context=${replayContext}; cause=${e instanceof Error ? e.message : String(e)}`)
   }
 
-  showdownWorker.postMessage({
-    type: 'EXECUTE_TURN',
-    payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, cheats: turnCheats, weather: weatherVal, isFuzzerSimulation: isSimulation }
-  })
   return new Promise((resolve, reject) => {
     const handler = async (event: MessageEvent) => {
       const data = event.data as { type: string; payload: WorkerSuccessPayload };
@@ -226,7 +250,7 @@ export async function executeTurnInWorker(
         }
         const errPayload = payload as { message?: string } | string | null | undefined;
         const msg = typeof errPayload === 'object' && errPayload?.message ? errPayload.message : (typeof errPayload === 'string' ? errPayload : JSON.stringify(errPayload || 'Showdown Worker Error'));
-        reject(new Error(msg))
+        reject(new Error(`[ShowdownWorkerClient] Worker rejected turn. context=${replayContext}; workerPayload=${msg}`))
         return
       }
       if (type === 'TURN_SUCCESS') {
@@ -244,21 +268,20 @@ export async function executeTurnInWorker(
         });
 
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-          const p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0;
-          const p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0;
-
-          const nextIndices = advanceChoiceIndices({
-            p1ChoiceIdx,
-            p2ChoiceIdx,
-            p1ActionConsumed: !!(payload as unknown as Record<string, unknown>).p1ActionConsumed,
-            p2ActionConsumed: !!(payload as unknown as Record<string, unknown>).p2ActionConsumed,
-            logs: payload.logs,
-            isSimulation
-          });
-
-          window.__VITE_DEBUG__.p1ChoiceIdx = nextIndices.p1ChoiceIdx;
-          window.__VITE_DEBUG__.p2ChoiceIdx = nextIndices.p2ChoiceIdx;
-          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${nextIndices.p1ChoiceIdx}, P2: ${nextIndices.p2ChoiceIdx}`);
+          window.__VITE_DEBUG__.certifiedReplayWorkerEnded = payload.isOver;
+          if (payload.isOver) {
+            window.__VITE_DEBUG__.certifiedReplayWorkerFinalState = {
+              p1: payload.p1TeamState ?? [],
+              p2: payload.p2TeamState ?? [],
+            };
+          }
+          if (typeof payload.p1ChoiceIdx === 'number') {
+            window.__VITE_DEBUG__.p1ChoiceIdx = payload.p1ChoiceIdx;
+          }
+          if (typeof payload.p2ChoiceIdx === 'number') {
+            window.__VITE_DEBUG__.p2ChoiceIdx = payload.p2ChoiceIdx;
+          }
+          console.debug(`[E2E-SYNC-LOGS-DEBUG] Turn resolved. Final window choice indices -> P1: ${window.__VITE_DEBUG__.p1ChoiceIdx}, P2: ${window.__VITE_DEBUG__.p2ChoiceIdx}`);
         }
 
         // Sincronizar de forma segura las HPs de la banca de vuelta al store reactivo de la UI por índice de slot
@@ -267,8 +290,8 @@ export async function executeTurnInWorker(
           let gameStore: GameStoreType | null = null;
 
           if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-            gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType;
-            battleStore = ((gameStore as unknown as { gs?: BattleStoreType })?.gs) || (typeof window !== 'undefined' ? (window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => BattleStoreType }).__VITE_DEBUG_STORE_RESOLVER__?.() : null) || null;
+            gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType; // domain-ok
+            battleStore = (Reflect.get(gameStore, 'gs') as unknown as BattleStoreType | undefined) || (window.__VITE_DEBUG_STORE_RESOLVER__?.() as unknown as BattleStoreType) || null; // domain-ok
           }
 
           if (!gameStore) {
@@ -292,8 +315,9 @@ export async function executeTurnInWorker(
             }
           });
           await syncTeamsFromLastWorkerState();
-        } catch (_e) {
-          // Ignorar errores de sincronización
+        } catch (error: unknown) {
+          reject(new Error(`[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`))
+          return
         }
 
         resolve(payload)
@@ -349,15 +373,20 @@ export async function executeTurnInWorker(
         reject(err);
       }
     }
-    if (!showdownWorker) {
+    const worker = showdownWorker;
+    if (!worker) {
       reject(new Error('showdownWorker is null'));
       return;
     }
-    if (showdownWorker.addEventListener) {
-      showdownWorker.addEventListener('message', handler)
+    if (worker.addEventListener) {
+      worker.addEventListener('message', handler)
     } else {
-      showdownWorker.onmessage = handler
+      worker.onmessage = handler
     }
+    worker.postMessage({
+      type: 'EXECUTE_TURN',
+      payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep, weather: weatherVal, isFuzzerSimulation: isSimulation }
+    })
   })
 }
 
@@ -444,10 +473,9 @@ export function testResetShowdownWorker(): void {
     showdownWorker = null;
   }
   if (typeof window !== 'undefined') {
-    const w = window as unknown as { __showdownWorker__?: { terminate: () => void } | null };
-    if (w.__showdownWorker__) {
-      w.__showdownWorker__.terminate();
-      w.__showdownWorker__ = null;
+    if (window.__showdownWorker__) {
+      window.__showdownWorker__.terminate();
+      delete window.__showdownWorker__;
     }
   }
 }

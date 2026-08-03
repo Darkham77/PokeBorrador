@@ -71,6 +71,7 @@ These reference manuals (imported from canonical sources) document standard game
 
 
 ### 3. Event-Driven Simulation Sync (No Timers)
+- **Event-Driven Architecture & Zero-Timer Mandate**: Application design, state transitions, save flows, and component orchestration MUST be 100% event-driven (using promises, GSAP timelines, custom events, or store state changes). It is STRICTLY FORBIDDEN to use `setTimeout`, `setInterval`, numeric timers, or race timeouts (e.g. `Promise.race` with a timer) to control application logic, state transitions, or save loading. Timers and timeouts are ONLY permitted in E2E test suites or simulations as a maximum fail-safe cap (max failure timeout) to terminate a stuck test run.
 - **Timer Prohibition**: It is STRICTLY FORBIDDEN to use arbitrary timeouts, manual delays, or sleep functions (e.g. `setTimeout`, `page.waitForTimeout`, `sleep`) to synchronize operations during E2E simulations. All synchronization MUST be event-driven:
   - **E2E Database Isolation**: E2E Playwright simulations must run on isolated in-memory SQLite databases in the browser. Database state persistence to the host disk is disabled.
   - **Clean Template Cache (clean_template.db)**: To avoid running schemas and migrations redundantly for each concurrent test, a pre-migrated empty template database is fetched from `/api/dev-clean-db`. If not present, the first client builds it and uploads it to `/api/dev-export-clean-db`. All subsequent tests download this template to initialize instantly in memory.

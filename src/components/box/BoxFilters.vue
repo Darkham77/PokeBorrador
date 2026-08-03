@@ -80,7 +80,7 @@ const onSearchInput = (e: Event) => {
 
 const onRangeInput = (key: keyof BoxFilters, e: Event) => {
   const val = Number((e.target as HTMLInputElement).value)
-  updateFilter(key, val as unknown as BoxFilters[keyof BoxFilters])
+  updateFilter(key, val as BoxFilters[keyof BoxFilters]) // domain-ok
 }
 
 // Colores de estadísticas estandarizados (Corregidos con Hexadecimales)

@@ -316,7 +316,7 @@ export function useRouteSpawnsCalculation(
   }
 
   const npcSpawns = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
     const mapIds = maps.map(m => m.id)
     return getNpcEncounterChances(props.map.id, gameStore.state, {}, mapIds)
   })

@@ -18,7 +18,7 @@ const gameStore = useGameStore();
 const isCriador = computed(() => gameStore.state.playerClass === 'criador');
 const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= 20);
 
-const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo';
+const getPokemonName = (id: string) => POKEMON_DB[id]?.name || 'Huevo';
 
 const getEggTierInfo = (egg: DaycareEgg) => {
   if (!egg.ivs) return null;

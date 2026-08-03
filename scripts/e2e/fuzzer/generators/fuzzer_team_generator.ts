@@ -20,16 +20,90 @@ export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unk
     .substring(0, 12);
 }
 
-export interface FuzzerPokemonSet extends PokemonSet {
+import type { PersistedPokemonGender } from '../../../../src/logic/auth/saveService.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import type { ItemId } from '../../../../src/data/inventory/items.ts';
+import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
+
+import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';
+
+export interface FuzzerPokemonSet extends Omit<PokemonSet, 'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'> {
+  species: PokemonSpeciesId;
+  gender: PersistedPokemonGender;
+  item: ItemId;
+  ability: AbilityId;
+  nature: NatureId;
+  moves: PokemonMoveId[];
   uid?: string;
-  stats?: Record<string, number>;
+  stats?: CalculatedStats | Record<string, number>;
+}
+
+export const CERTIFIED_BATTLE_WINNERS = ['p1', 'p2', 'tie'] as const;
+export type CertifiedBattleWinner = (typeof CERTIFIED_BATTLE_WINNERS)[number];
+
+export interface CertifiedPokemonFinalState {
+  name: string;
+  hp: number;
+  maxHp: number;
+  fainted: boolean;
+}
+
+export interface CertifiedBattleFinalState {
+  isOver: true;
+  winner: CertifiedBattleWinner;
+  p1: CertifiedPokemonFinalState[];
+  p2: CertifiedPokemonFinalState[];
+}
+
+export interface CertifiedBattleHistoryEntry {
+  turnCount: number;
+  p1Choice: string;
+  p2Choice: string;
+  battleTurn: number;
+  p1Heal?: true;
+  p2Heal?: true;
+}
+
+/**
+ * Immutable replay contract shared by the fuzzer, the Node replayer, and
+ * Playwright. A case exists only after the originating Showdown battle ended.
+ */
+export interface CertifiedBattleCase {
+  id: string;
+  idx: number;
+  formatId?: string;
+  playerTeam: FuzzerPokemonSet[];
+  enemyTeam: FuzzerPokemonSet[];
+  movesToTest: PokemonMoveId[];
+  abilitiesToTest: AbilityId[];
+  seed: number[];
+  playerChoices: string[];
+  enemyChoices: string[];
+  history: CertifiedBattleHistoryEntry[];
+  steps: string[];
+  ended: true;
+  winner: CertifiedBattleWinner;
+  finalState: CertifiedBattleFinalState;
+}
+
+export interface CertifiedBattleCaseDocument {
+  battle: CertifiedBattleCase[];
+}
+
+export interface FuzzerWorkerData {
+  batch: TestBatch;
+  roundNum: number;
+  totalRounds?: number;
 }
 
 export interface TestBatch {
+  formatId?: string;
   playerTeam: FuzzerPokemonSet[];
   enemyTeam: FuzzerPokemonSet[];
-  movesToTest: string[];
-  abilitiesToTest: string[];
+  movesToTest: PokemonMoveId[];
+  abilitiesToTest: AbilityId[];
   /** Populated by run-tester: RNG seed for deterministic battle reproduction */
   seed?: number[];
   /** Populated by run-tester: ordered P1 choices for E2E replay */
@@ -37,11 +111,13 @@ export interface TestBatch {
   /** Populated by run-tester: ordered P2 choices for E2E determinism */
   enemyChoices?: string[];
   /** Populated by run-tester: history terna array for E2E replay and cheat tracking */
-  history?: Array<{ turnCount: number; p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: boolean; p2Heal?: boolean }>;
+  history?: CertifiedBattleHistoryEntry[];
   /** Populated by run-tester: per-turn damage/HP snapshots */
   steps?: string[];
-  /** Final state snapshot for validation */
-  finalState?: { isOver?: boolean; winner?: string; turns?: number };
+  /** Populated only after Showdown ends the same battle that produced the choice streams. */
+  ended?: boolean;
+  winner?: CertifiedBattleWinner;
+  finalState?: CertifiedBattleFinalState;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,7 +286,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
   const allMoves = dexGen.moves.all()
-    .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle' && m.id !== 'nobleroar' && m.id !== 'orderup');
+    .filter(m => m.exists && !m.isNonstandard && m.id !== 'struggle');
 
   // Obtener todas las habilidades probadas en escenarios scriptados para excluirlas del pool dinámico
   const scriptedAbilities = new Set(
@@ -229,10 +305,10 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   let abilityIdx = 0;
 
   while (moveIdx < movePool.length || abilityIdx < abilityPool.length) {
-    const playerTeam: PokemonSet[] = [];
-    const enemyTeam:  PokemonSet[] = [];
-    const batchMoves:     string[] = [];
-    const batchAbilities: string[] = [];
+    const playerTeam: FuzzerPokemonSet[] = [];
+    const enemyTeam:  FuzzerPokemonSet[] = [];
+    const batchMoves:     PokemonMoveId[] = [];
+    const batchAbilities: AbilityId[] = [];
 
     for (let p = 0; p < batchSize; p++) {
       if (moveIdx >= movePool.length && abilityIdx >= abilityPool.length) break;
@@ -242,7 +318,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         if (moveIdx < movePool.length) {
           const moveName = movePool[moveIdx]!;
           pMoves.push(moveName);
-          batchMoves.push(toID(moveName));
+          batchMoves.push(toID(moveName) as PokemonMoveId);
           moveIdx++;
         }
       }
@@ -250,7 +326,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       let abilityName = 'illuminate';
       if (abilityIdx < abilityPool.length) {
         abilityName = abilityPool[abilityIdx]!;
-        batchAbilities.push(toID(abilityName));
+        batchAbilities.push(toID(abilityName) as AbilityId);
         abilityIdx++;
       }
 
@@ -287,15 +363,15 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         species,
         level:   100,
         gender:  'M',
-        item,
-        ability: abilityName,
-        nature:  'Serious',
+        item: item as ItemId,
+        ability: abilityName as AbilityId,
+        nature:  'serious',
         evs: pEvs,
         ivs: pIvs,
-        moves: pMoves.length > 0 ? pMoves : ['tackle'],
+        moves: (pMoves.length > 0 ? pMoves : ['tackle']) as PokemonMoveId[],
         uid: pUid,
         stats: pStats,
-      } as unknown as PokemonSet);
+      });
     }
 
     // Equipo enemigo con al menos 2 Pokémon para permitir switches.
@@ -308,9 +384,9 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       // El NPC siempre tiene disponibles: eléctrico, agua, fuego y contacto.
       // If player has focuspunch, NPC must not attack so concentration isn't broken.
       // 'splash' does nothing — no healing, no damage — so Blissey can still faint naturally.
-      const eMoves: string[] = hasFocusPunch
+      const eMoves: PokemonMoveId[] = (hasFocusPunch
         ? ['splash', 'sunnyday', 'raindance', 'sandstorm']
-        : [...ENEMY_TRIGGER_MOVES];
+        : [...ENEMY_TRIGGER_MOVES]) as PokemonMoveId[];
 
       const eUid = crypto.randomUUID();
       const eNickname = getShowdownNickname(eUid);
@@ -323,7 +399,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         name:    eNickname,
         species: 'blissey',
         level:   100,
-        gender:  'M',
+        gender:  'F',
         item:    '',
         ability: 'naturalcure',
         nature:  'serious',
@@ -332,7 +408,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         moves: eMoves,
         uid: eUid,
         stats: eStats,
-      } as unknown as PokemonSet);
+      });
     }
 
     if (playerTeam.length > 0) {

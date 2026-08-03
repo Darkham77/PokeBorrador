@@ -171,6 +171,7 @@ const {
   catchSparkles,
   isIntroInProgress, initListeners, cleanupListeners,
   trainerAnimState, isTrainerVisible, isGlobalFadeActive,
+  isWildEntryAnimation, wildRevealActive, isEmerging, upcomingIsEmerging, isCaptureSequenceActive,
   resetAll,
   getPokemonAnimState,
   getPokemonBallId,
@@ -347,7 +348,20 @@ watch(
 )
 
 
-watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { immediate: true })
+watch(isIntroInProgress, (val) => {
+  battleStore.isIntroAnimating = val
+  if (window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    window.__VITE_DEBUG__.certifiedReplayIntroDiagnostics = {
+      isIntroInProgress: val,
+      isWildEntryAnimation: isWildEntryAnimation.value,
+      wildRevealActive: wildRevealActive.value,
+      isEmerging: isEmerging.value,
+      upcomingIsEmerging: upcomingIsEmerging.value,
+      trainerAnimState: trainerAnimState.value,
+      isCaptureSequenceActive: isCaptureSequenceActive.value,
+    }
+  }
+}, { immediate: true })
 
 const triggerPreloadCoords = () => preloadCombatCoords(
   battle.value?.player || null,
@@ -377,7 +391,7 @@ onUnmounted(() => {
 watch(trainerAnimState, async (newState) => {
   if (!newState) return
   await nextTick()
-  const el = trainerRef.value && '$el' in trainerRef.value ? (trainerRef.value as unknown as { $el: HTMLElement }).$el : (trainerRef.value as HTMLElement | null)
+  const el = trainerRef.value && '$el' in trainerRef.value ? (Reflect.get(trainerRef.value, '$el') as HTMLElement | undefined) : (trainerRef.value as HTMLElement | null)
   if (!el) return
   gsap.killTweensOf(el)
   if (newState === 'entering') {
@@ -417,10 +431,19 @@ watch(trainerAnimState, async (newState) => {
       // Slide in trainer with delay
       gsap.fromTo(el, 
         { x: '150%', scale: 0.8, opacity: 0 }, 
-        { x: '0%', scale: 1, opacity: 1, delay: 1.2, duration: 0.8, ease: 'back.out(1.2)' }
+        {
+          x: '0%', scale: 1, opacity: 1, delay: 1.2, duration: 0.8, ease: 'back.out(1.2)',
+          onComplete: () => { trainerAnimState.value = 'idle' }
+        }
       )
     } else {
-      gsap.fromTo(el, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
+      gsap.fromTo(el,
+        { x: '150%', scale: 0.8, opacity: 0 },
+        {
+          x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)',
+          onComplete: () => { trainerAnimState.value = 'idle' }
+        }
+      )
     }
   } else if (newState === 'retreating') {
     // 1. Transición de Intro -> Posición fija de combate (manteniendo opacidad 1)

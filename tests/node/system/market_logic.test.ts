@@ -7,6 +7,29 @@ import {
 } from '../../../src/logic/economy/market.ts';
 import type { MarketListing, MarketFilters } from '../../../src/logic/economy/market.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+
+const mockPokemon: Pokemon = {
+  uid: 'test-uid-pikachu',
+  id: 'pikachu',
+  name: 'Pikachu',
+  species: 'pikachu',
+  level: 10,
+  exp: 0,
+  expNeeded: 100,
+  hp: 35,
+  maxHp: 35,
+  atk: 55,
+  def: 40,
+  spa: 50,
+  spd: 50,
+  spe: 90,
+  type: 'electric',
+  status: '',
+  moves: [],
+  ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
+  nature: 'hardy'
+};
 
 const mockListing: MarketListing = {
   id: 'uuid-1',
@@ -15,12 +38,7 @@ const mockListing: MarketListing = {
   seller_id: 'seller-1',
   created_at: '2026-05-13T10:00:00Z',
   status: 'active',
-  data: {
-    name: 'Pikachu',
-    level: 10,
-    type: 'electric',
-    ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
-  }
+  data: mockPokemon
 };
 
 const defaultFilters: MarketFilters = {
@@ -61,8 +79,12 @@ describe('Market Logic', () => {
     assert.strictEqual(buildMarketSaleLabel(mockListing), 'tu Pokémon Pikachu');
     
     const itemListing: MarketListing = {
-      ...mockListing,
+      id: 'uuid-2',
       listing_type: 'item',
+      price: 200,
+      seller_id: 'seller-1',
+      created_at: '2026-05-13T10:00:00Z',
+      status: 'active',
       data: { name: 'Poke Ball', qty: 5 }
     };
     assert.strictEqual(buildMarketSaleLabel(itemListing), 'tu objeto Poke Ball x5');

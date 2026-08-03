@@ -4,7 +4,6 @@ import { computed } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import { formatCurrency } from '@/logic/utils/formatters'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useUIStore } from '@/stores/ui'
@@ -67,11 +66,11 @@ const formatTime = formatDisplayDate
           <template v-if="item.listing_type === 'pokemon'">
             <PokemonSelectionItem
               :item="{
-                pokemon: item.data as unknown as Pokemon,
+                pokemon: item.data,
                 _source: 'market',
                 index: 0
               }"
-              :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
+              :total="getPokemonTotalPower(item.data)"
               auto-confirm
               class="listing-card-override"
             />

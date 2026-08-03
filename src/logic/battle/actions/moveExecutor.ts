@@ -254,6 +254,7 @@ export async function executeMoveAction(
       'log-error',
       attacker
     )
+    throw err
   } finally {
     if (store.animations?.awaitTween) {
       await store.animations.awaitTween(side === 'player' ? 'attack-player' : 'attack-enemy')

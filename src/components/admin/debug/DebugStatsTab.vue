@@ -44,7 +44,7 @@ const resetAllBadges = () => {
 }
 
 
-const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
 
 // Call console commands directly (they handle securityCheck internally)
 const addMoney = () => {

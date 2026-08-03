@@ -60,9 +60,13 @@ export function requireFeetPoints(value: string): FeetPoints {
 const POKEMON_CRIES_DATABASE = PACKED_DATA.c;
 export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
 
+export function isPokemonCryId(raw: string): raw is PokemonCryId {
+  return raw in POKEMON_CRIES_DATABASE;
+}
+
 export function getPokemonCryFilename(speciesId: string): string {
-  if (speciesId in POKEMON_CRIES_DATABASE) {
-    return POKEMON_CRIES_DATABASE[speciesId as PokemonCryId];
+  if (isPokemonCryId(speciesId)) {
+    return POKEMON_CRIES_DATABASE[speciesId];
   }
   return speciesId;
 }

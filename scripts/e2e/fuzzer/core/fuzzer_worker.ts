@@ -2,9 +2,12 @@
 import { parentPort, workerData } from 'node:worker_threads';
 import { runStandaloneBatch } from './fuzzer_engine.ts';
 
+import type { FuzzerWorkerData } from '../generators/fuzzer_team_generator.ts';
+
 async function run() {
   if (!parentPort) return;
-  const { batch, roundNum, totalRounds } = workerData;
+  const data = workerData as FuzzerWorkerData;
+  const { batch, roundNum, totalRounds } = data;
   try {
     const result = await runStandaloneBatch(batch, roundNum, totalRounds || 29);
     parentPort.postMessage({ status: 'SUCCESS', result });

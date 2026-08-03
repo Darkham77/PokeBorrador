@@ -309,7 +309,7 @@ export function useBattleCombatantAnims(
       
       const moveIdLookup = move.id || ''
       const cleanMoveId = moveIdLookup
-      if ((VOICE_MOVE_IDS as readonly string[]).includes(cleanMoveId) && props.pokemon) {
+      if ((VOICE_MOVE_IDS as readonly string[]).includes(cleanMoveId) && props.pokemon) { // domain-ok
         tl.add(() => {
           gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name })
         })

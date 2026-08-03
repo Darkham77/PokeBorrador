@@ -3,6 +3,7 @@
 declare const __APP_VERSION__: string
 
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { usePWA } from '@/composables/system/usePWA'
@@ -22,6 +23,7 @@ import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue'
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 const authTab = ref('login') // 'login' | 'signup'
 const serverMode = ref('online') // 'online' | 'local'
@@ -71,7 +73,7 @@ const handleLogin = async () => {
   error.value = null
   try {
     await authStore.login(email.value, password.value)
-    window.location.replace(import.meta.env.BASE_URL)
+    await router.replace('/')
   } catch (err: unknown) {
     error.value = getFriendlyErrorMessage(err)
   } finally {
@@ -83,6 +85,12 @@ const handleLogin = async () => {
  * Verifica si el servidor seleccionado responde (Ping)
  */
 const checkServerHealth = async () => {
+  if (typeof window !== 'undefined' && (window as typeof window & { __E2E__?: boolean }).__E2E__) {
+    serverStatus.value = 'offline'
+    serverStatusDetail.value = 'Offline E2E session'
+    return
+  }
+
   if (!isOnline.value) {
     serverStatus.value = 'offline'
     return
@@ -140,9 +148,7 @@ const handleLocalLogin = async () => {
   try {
     // Login: el género se carga desde la partida guardada en el store
     await authStore.localLogin(username.value)
-    gsap.delayedCall(0.8, () => {
-      window.location.replace(import.meta.env.BASE_URL)
-    })
+    await router.replace('/')
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
   } finally {
@@ -160,9 +166,7 @@ const handleLocalSignup = async () => {
   try {
     // Signup: se crea una nueva partida con el género elegido
     await authStore.localLogin(username.value, gender.value)
-    gsap.delayedCall(0.8, () => {
-      window.location.replace(import.meta.env.BASE_URL)
-    })
+    window.location.replace(import.meta.env.BASE_URL)
   } catch (_err) {
     error.value = 'Error al crear partida local'
   } finally {
@@ -190,6 +194,12 @@ onMounted(() => {
   if (authStore.user) {
     logger.warn('Login', 'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
     authStore.logout()
+  }
+
+  if (typeof window !== 'undefined' && window.__E2E__) {
+    // Skip intro animations in E2E to prevent elements from staying at opacity:0
+    // under high CPU congestion when requestAnimationFrame is throttled by Chromium.
+    return
   }
 
   gsap.from('.login-header-logo', {

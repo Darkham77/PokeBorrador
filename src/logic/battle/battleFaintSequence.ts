@@ -66,18 +66,24 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
   
   let nextEnemy: Pokemon | null = null
+  let certifiedEnemySwitchChoice: string | null = null
   if (active.enemyTeam) {
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
       const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
       const { isMatchingUid } = await import('./showdownUidMapper.ts')
       const debugObj = window.__VITE_DEBUG__
-      const enemyChoices = (debugObj?.enemyChoices as string[]) || [];
-      const runner = new ShowdownBattleRunner(debugObj.playerChoices || [], enemyChoices)
-      runner.p1ChoiceIdx = debugObj.p1ChoiceIdx || 0
-      runner.p2ChoiceIdx = debugObj.p2ChoiceIdx || 0
-      const rawChoice = runner.resolveAndConsumeNextChoice('p2', active.enemyRequest)
-      debugObj.p1ChoiceIdx = runner.p1ChoiceIdx
-      debugObj.p2ChoiceIdx = runner.p2ChoiceIdx
+      const pendingEntry = ShowdownBattleRunner.requirePendingHistoryEntry(debugObj)
+      if (!pendingEntry) {
+        // The final submitted turn already ended in Showdown. There is no
+        // replacement request to replay, so the normal terminal path below
+        // must close the visual battle without inventing a choice.
+        certifiedEnemySwitchChoice = null
+      } else {
+        const { p1Choice: rawP1Choice, p2Choice: rawChoice } = pendingEntry
+      if (rawP1Choice !== '') {
+        throw new Error(`[battleFaintSequence] Certified enemy replacement must be P2-only. context=${JSON.stringify({ p1Choice: rawP1Choice, p2Choice: rawChoice })}`)
+      }
+      certifiedEnemySwitchChoice = rawChoice
       if (rawChoice.startsWith('switch ')) {
         const slotIdx = parseInt(rawChoice.replace('switch ', '').trim(), 10) - 1
         const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
@@ -87,8 +93,12 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
           nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid && isMatchingUid(p.uid, candidateUid)) || null
         }
       }
+      }
     }
-    if (!nextEnemy) {
+    if (!nextEnemy && typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode && window.__VITE_DEBUG__.certifiedReplayWorkerEnded !== true) {
+      throw new Error(`[battleFaintSequence] Certified enemy replacement does not resolve to a live Pokémon. context=${JSON.stringify({ choice: certifiedEnemySwitchChoice })}`)
+    }
+    if (!nextEnemy && !(typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode)) {
       const activePlayer = active.player || active.enemyTeam[0]
       if (activePlayer) {
         const bestIdx = findBestSwitchIndex(
@@ -133,9 +143,9 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     
     const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
     if (showdownWorker && active.enemyTeam) {
-      const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
       active.switchingToEnemy = nextEnemy
-      const result = await executeTurnInWorker('', `switch ${slot}`)
+      const p2Choice = certifiedEnemySwitchChoice ?? `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
+      const result = await executeTurnInWorker('', p2Choice, true, false)
       if (result) {
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
@@ -145,6 +155,10 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
         const filteredLogs = filterShowdownLogs(result.logs)
         for (const logLine of filteredLogs) {
           await parseShowdownLogLine(ctx, logLine, filteredLogs)
+        }
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+          ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
         }
       }
       delete active.switchingToEnemy

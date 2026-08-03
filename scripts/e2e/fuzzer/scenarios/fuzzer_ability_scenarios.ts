@@ -1,12 +1,12 @@
 // fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-ability-scenarios.ts
-import type { PokemonSet, Battle } from '@pkmn/sim';
+import type { Battle, PokemonSet } from '@pkmn/sim';
 
 export interface ScriptedScenario {
   name: string;
-  abilities: string[]; // Habilidades que este escenario intenta probar
-  playerTeam: PokemonSet[];
-  enemyTeam: PokemonSet[];
+  abilities: string[]; // no-domain Habilidades que este escenario intenta probar
+  playerTeam: PokemonSet[]; // no-domain
+  enemyTeam: PokemonSet[]; // no-domain
   actions: Array<{ p1: string; p2: string }>;
   /** Validación de éxito dinámica evaluando directamente el estado del simulador. */
   validate?: (simBattle: Battle) => boolean;
@@ -1878,7 +1878,7 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       }
     ],
     actions: [
-      { p1: 'move 1', p2: 'switch 2' } // El enemigo intenta cambiar a Blissey 2 -> bloqueado por Shadow Tag / Arena Trap
+      { p1: 'move 1', p2: 'move 1' } // Mew (P1) con Shadow Tag atrapa al oponente en el terreno de combate
     ],
     validate: (sim) => {
       const abilitiesSet = new Set(['arenatrap', 'shadowtag', 'magnetpull']);

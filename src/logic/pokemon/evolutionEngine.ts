@@ -15,11 +15,11 @@ export function getSpeciesHistory(id: string): string[] {
   
   const findPreEvo = (speciesId: string): string | null => {
     // 1. Level Evolutions
-    for (const [from, data] of Object.entries(EVOLUTION_TABLE as Record<string, { to: string }>)) {
+    for (const [from, data] of Object.entries(EVOLUTION_TABLE as Record<string, { to: string }>)) { // open-record
       if (data.to === speciesId) return from;
     }
     // 2. Stone Evolutions
-    for (const [from, data] of Object.entries(STONE_EVOLUTIONS as Record<string, { to: string }>)) {
+    for (const [from, data] of Object.entries(STONE_EVOLUTIONS as Record<string, { to: string }>)) { // open-record
       if (data.to === speciesId) {
         // Limpiar sufijos como _alola o _hisui para obtener el ID base de origen si no es Eevee
         if (from.startsWith('eevee_')) return 'eevee';

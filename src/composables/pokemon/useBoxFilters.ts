@@ -3,6 +3,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { calculateTotalIVs, calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
 import { hasPokemonTag } from '@/logic/constants/tags'
 
 interface FilterState {
@@ -86,32 +87,30 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
     list = list.filter(({ p }: { p: Pokemon | null }) => {
       if (!p) return false // Skip empty slots
       const f = filters.value
-      const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-      const totalIv = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) +
-                     (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+      const totalIv = calculateTotalIVs(p.ivs)
       
       if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
       if (f.type !== 'all' && p.type !== f.type) return false
       if (p.level < f.levelMin || p.level > f.levelMax) return false
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
-      if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
+      if (f.ivAny31 && !Object.values(p.ivs || {}).some(v => v === 31)) return false
       
       // Individual IV Range (All stats must be within range)
-      const allIvValues = [ivs.hp||0, ivs.atk||0, ivs.def||0, ivs.spa||0, ivs.spd||0, ivs.spe||0]
+      const allIvValues = [p.ivs?.hp||0, p.ivs?.atk||0, p.ivs?.def||0, p.ivs?.spa||0, p.ivs?.spd||0, p.ivs?.spe||0]
       if (allIvValues.some(v => v < f.ivMin || v > f.ivMax)) return false
 
       // Individual IV Filters (Specific stats)
-      if ((ivs.hp || 0) < f.ivHP) return false
-      if ((ivs.atk || 0) < f.ivATK) return false
-      if ((ivs.def || 0) < f.ivDEF) return false
-      if ((ivs.spa || 0) < f.ivSPA) return false
-      if ((ivs.spd || 0) < f.ivSPD) return false
-      if ((ivs.spe || 0) < f.ivSPE) return false
+      if ((p.ivs?.hp || 0) < f.ivHP) return false
+      if ((p.ivs?.atk || 0) < f.ivATK) return false
+      if ((p.ivs?.def || 0) < f.ivDEF) return false
+      if ((p.ivs?.spa || 0) < f.ivSPA) return false
+      if ((p.ivs?.spd || 0) < f.ivSPD) return false
+      if ((p.ivs?.spe || 0) < f.ivSPE) return false
 
       // Tags filter
       if (f.tags && f.tags.length > 0) {
         if (!f.tags.every(t => {
-          if (t === 'team') return false // 'team' tag filter is handled outside in box lists if needed, or we check if it is part of active team. But wait! Box filters only filter box pokemons. Let's keep existing tag behavior for normal tags or check hasPokemonTag.
+          if (t === 'team') return false // 'team' tag filter is handled outside in box lists if needed, or we check if it is part of active team. Let's keep existing tag behavior for normal tags or check hasPokemonTag.
           return hasPokemonTag(p, t)
         })) return false
       }
@@ -119,8 +118,7 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
       // TOTAL Filter (Species Base Stats + IVs)
       const species = pokemonDataProvider.getPokemonData(p.id)
       if (species) {
-        const bst = (species.hp || 0) + (species.atk || 0) + (species.def || 0) +
-                    (species.spa || 0) + (species.spd || 0) + (species.spe || 0)
+        const bst = calculateTotalBaseStats(species)
         const totalPower = bst + totalIv
         if (totalPower < f.bstMin || totalPower > f.bstMax) return false
       }
@@ -147,8 +145,8 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
         else if (sortMode.value === 'bst') {
           const specA = pokemonDataProvider.getPokemonData(pA.id);
           const specB = pokemonDataProvider.getPokemonData(pB.id);
-          const bstA = specA ? ((specA.hp || 0) + (specA.atk || 0) + (specA.def || 0) + (specA.spa || 0) + (specA.spd || 0) + (specA.spe || 0)) : 0;
-          const bstB = specB ? ((specB.hp || 0) + (specB.atk || 0) + (specB.def || 0) + (specB.spa || 0) + (specB.spd || 0) + (specB.spe || 0)) : 0;
+          const bstA = calculateTotalBaseStats(specA);
+          const bstB = calculateTotalBaseStats(specB);
           
           const ivsA = pA.ivs;
           const totalIvsA = Object.values(ivsA).reduce((s: number, v) => s + (Number(v) || 0), 0);

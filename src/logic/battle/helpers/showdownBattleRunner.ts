@@ -1,6 +1,14 @@
-// src/logic/battle/helpers/showdownBattleRunner.ts
-import { requiresAction } from './requestHelper.ts';
-import { isActionConsumed } from './choiceIndexer.ts';
+import { ChoiceRequest, requiresAction } from './requestHelper.ts';
+import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
+
+export const REPLAY_SEATS = ['p1', 'p2', 'p3', 'p4'] as const;
+export type ReplaySeat = (typeof REPLAY_SEATS)[number];
+
+export interface CertifiedReplayHistoryEntry {
+  p1Choice: string;
+  p2Choice: string;
+  battleTurn?: number;
+}
 
 /**
  * Orchestrates choice simulation flow for both in-memory fuzzer replay runs
@@ -15,6 +23,67 @@ export class ShowdownBattleRunner {
     this.choicesBySeat.set('p2', enemyChoices || []);
     this.indicesBySeat.set('p1', 0);
     this.indicesBySeat.set('p2', 0);
+  }
+
+  /**
+   * The certified history is the atomic replay source: one entry represents
+   * one Showdown submission, including P2-only forced replacements.
+   */
+  static requireHistoryChoice(debug: object, seat: ReplaySeat): string {
+    if (seat !== 'p1' && seat !== 'p2') {
+      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current singles simulator request. context=${JSON.stringify({ seat })}`);
+    }
+    const history = Reflect.get(debug, 'history') as CertifiedReplayHistoryEntry[];
+    const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
+    if (!Array.isArray(history) || typeof historyIndex !== 'number') {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ seat, historyIndex, hasHistory: Array.isArray(history) })}`);
+    }
+    return this.requireHistoryEntry(history, historyIndex)[`${seat}Choice`];
+  }
+
+  /**
+   * Returns the next atomic submission only while Showdown still awaits one.
+   * A terminal response must consume the whole certified history and cannot
+   * manufacture a replacement action after the battle is already over.
+   */
+  static requirePendingHistoryEntry(debug: object): CertifiedReplayHistoryEntry | null {
+    const history = Reflect.get(debug, 'history') as CertifiedReplayHistoryEntry[];
+    const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
+    if (!Array.isArray(history) || typeof historyIndex !== 'number') {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ historyIndex, hasHistory: Array.isArray(history) })}`);
+    }
+
+    const workerEnded = Reflect.get(debug, 'certifiedReplayWorkerEnded') === true;
+    if (workerEnded) {
+      if (historyIndex !== history.length) {
+        throw new Error(`[ShowdownBattleRunner] Certified worker ended with unconsumed history entries. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
+      }
+      return null;
+    }
+
+    return this.requireHistoryEntry(history, historyIndex);
+  }
+
+  static requireHistoryEntry(history: unknown[], historyIndex: number): CertifiedReplayHistoryEntry {
+    const step = history[historyIndex];
+    if (!step || typeof step !== 'object') {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
+    }
+    const p1Choice = Reflect.get(step, 'p1Choice') as string | undefined;
+    const p2Choice = Reflect.get(step, 'p2Choice') as string | undefined;
+    const battleTurn = Reflect.get(step, 'battleTurn') as number | undefined;
+    if (typeof p1Choice !== 'string' || typeof p2Choice !== 'string' || (battleTurn !== undefined && typeof battleTurn !== 'number')) {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn })}`);
+    }
+    return { p1Choice, p2Choice, battleTurn };
+  }
+
+  static advanceHistoryAfterAcceptedTurn(debug: object): void {
+    const historyIndex = Reflect.get(debug, 'replayHistoryIdx') as number | undefined;
+    if (typeof historyIndex !== 'number') {
+      throw new Error('[ShowdownBattleRunner] Certified replay cursor is missing after an accepted Showdown turn.');
+    }
+    Reflect.set(debug, 'replayHistoryIdx', historyIndex + 1);
   }
 
   get p1ChoiceIdx(): number {
@@ -41,41 +110,93 @@ export class ShowdownBattleRunner {
   }
 
   /**
+   * Reads a certified choice for visual preparation without advancing its
+   * stream. Only the code path that submits the choice to Showdown may consume
+   * it; previews must never alter replay state.
+   */
+  peekNextChoice(player: ReplaySeat, activeRequest: unknown): string {
+    if (!requiresAction(activeRequest)) return 'pass';
+    if (!REPLAY_SEATS.includes(player)) {
+      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
+    }
+    const index = this.indicesBySeat.get(player) ?? 0;
+    const choices = this.choicesBySeat.get(player) ?? [];
+    const choice = choices[index];
+    if (!choice || choice.trim().length === 0) {
+      throw new Error(`[ShowdownBattleRunner] Required certified preview choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
+    }
+    return choice;
+  }
+
+  /**
    * Resolves the next choice for the given side from the certified case choices
    * based on the active simulator request. If action is consumed, advances the choice index.
    */
   resolveAndConsumeNextChoice(
-    player: 'p1' | 'p2' | 'p3' | 'p4',
-    activeRequest: unknown
+    player: ReplaySeat,
+    activeRequest: ChoiceRequest | null | undefined,
+    readiness?: {
+      subState?: string;
+      isProcessing?: boolean;
+      activePokeHp?: number;
+      hasPendingSwitch?: boolean;
+    }
   ): string {
     const needsAction = requiresAction(activeRequest);
     if (!needsAction) {
       return 'pass';
     }
 
-    const idx = this.indicesBySeat.get(player) || 0;
-    const list = this.choicesBySeat.get(player) || [];
-
-    // Special case: team preview selection
-    if (activeRequest && typeof activeRequest === 'object' && (activeRequest as Record<string, unknown>).teamPreview) {
-      return 'team 1';
+    // Verify UI FSM readiness inside runner if context provided
+    if (readiness) {
+      const { subState, isProcessing, activePokeHp, hasPendingSwitch } = readiness;
+      const replayContext = JSON.stringify({
+        seat: player,
+        subState,
+        isProcessing,
+        activePokeHp,
+        hasPendingSwitch,
+        p1ChoiceIdx: this.p1ChoiceIdx,
+        p1ChoiceCount: this.choicesBySeat.get('p1')?.length,
+        p2ChoiceIdx: this.p2ChoiceIdx,
+        p2ChoiceCount: this.choicesBySeat.get('p2')?.length,
+        activeRequest
+      });
+      if (isProcessing) throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute while the battle is processing. context=${replayContext}`);
+      if (subState && subState !== 'WAIT_INPUT' && subState !== 'SWITCH_MENU' && subState !== 'PLAYER_FAINT_SEQ') {
+        throw new Error(`[ShowdownBattleRunner] Required certified choice cannot execute from its FSM substate. context=${replayContext}`);
+      }
+      if (hasPendingSwitch || (activePokeHp !== undefined && activePokeHp <= 0)) {
+        if (subState !== 'SWITCH_MENU' && subState !== 'PLAYER_FAINT_SEQ') {
+          throw new Error(`[ShowdownBattleRunner] Required certified switch choice arrived before the switch FSM state. context=${replayContext}`);
+        }
+      }
     }
 
-    const targetIdx = idx;
-
-    if (targetIdx >= list.length || !list[targetIdx]) {
-      return 'pass';
+    const engine = new ShowdownBattleEngine({
+      mode: 'replayer',
+      playerChoices: this.choicesBySeat.get('p1'),
+      enemyChoices: this.choicesBySeat.get('p2')
+    });
+    for (const [seatId, choices] of this.choicesBySeat.entries()) {
+      engine.setSeatChoices(seatId, choices);
+    }
+    // Sync all seat indices from the runner's tracked state into the transient engine
+    for (const [seatId, idx] of Array.from(this.choicesBySeat.keys(), id => [id, this.indicesBySeat.get(id) ?? 0] as const)) {
+      engine.choiceIdx.set(seatId, idx);
     }
 
-    const rawChoice = list[targetIdx] as string;
+    if (!REPLAY_SEATS.includes(player)) {
+      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
+    }
+    const seatId = player;
+    const choice = engine.resolveNextChoice(seatId, activeRequest);
 
-    const skip = rawChoice.trim().toLowerCase() === 'pass';
-    const consumed = isActionConsumed(needsAction, rawChoice, skip);
-
-    if (consumed) {
-      this.indicesBySeat.set(player, targetIdx + 1);
+    // Sync back all updated seat indices from the transient engine to the runner
+    for (const [sid, idx] of engine.choiceIdx.entries()) {
+      this.indicesBySeat.set(sid, idx);
     }
 
-    return rawChoice;
+    return choice;
   }
 }

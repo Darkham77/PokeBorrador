@@ -67,11 +67,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
   const classXPNeeded = computed(() => getXPNeededForClassLevel(classLevel.value))
-  const classData = computed<ClassData>(() => (gameStore.state.classData as unknown as ClassData) || {})
+  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {}) // domain-ok
   
   const currentClassDef = computed<ClassDefinition | null>(() => {
     if (!playerClass.value) return null
-    return (PLAYER_CLASSES as unknown as Record<string, ClassDefinition>)[playerClass.value] || null
+    return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as unknown as ClassDefinition) || null // domain-ok
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
@@ -114,7 +114,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    */
   async function selectClass(classId: string) {
     const resolvedClassId = requirePlayerClassId(classId)
-    const cls = (PLAYER_CLASSES as unknown as Record<string, ClassDefinition>)[resolvedClassId]
+    const cls = PLAYER_CLASSES[resolvedClassId as keyof typeof PLAYER_CLASSES] as unknown as ClassDefinition | undefined // domain-ok
     if (!cls) return { success: false, msg: 'Clase no válida' }
 
     const isChange = !!playerClass.value
@@ -285,7 +285,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
 
     const now = await db.getServerTime()
-    const currentData = gameStore.state.classData as unknown as ClassData
+    const currentData = gameStore.state.classData as ClassData // domain-ok
 
     currentData.activeMission = {
       id: missionId,

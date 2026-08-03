@@ -9,24 +9,24 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import { Battle } from '@pkmn/sim';
 import type { PokemonSet } from '@pkmn/sim';
+import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
 
 import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
 import { BattleAgent, type ChoiceRequest } from './fuzzer_agent.ts';
 import { ActiveSlotRequest } from '../../../../src/logic/battle/helpers/showdownBattleAgent.ts';
 import { createLocalPoke } from './fuzzer_engine.ts';
-import { getShowdownFormatId, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
+import { patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
 import { MAX_POKEMON_LEVEL, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
 import type { FuzzerResult } from './fuzzer_runner.ts';
+import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 
 patchShowdownSpreadModify(() => false);
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 const AI_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_ai_coverage_report.json');
-const CERTIFIED_CASES_FILE = path.join(RESULTS_DIR, 'fuzzer_certified_cases.json');
 
 // ---------------------------------------------------------------------------
 // HeuristicAgent: BattleAgent subclass that uses HeuristicAI for move decisions.
@@ -53,8 +53,8 @@ class HeuristicAgent extends BattleAgent {
     const projectSet: PokemonSet = {
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
-      moves: activePoke.moves,
-      ability: activePoke.ability,
+      moves: activePoke.moves ?? [],
+      ability: activePoke.ability ?? '',
       item: '',
       name: activePoke.ident.split(': ')[1] ?? activePoke.ident,
       gender: 'M',
@@ -158,27 +158,27 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
       const agentP1 = new HeuristicAgent('p1');
       const agentP2 = new HeuristicAgent('p2');
 
-      const simBattle = new Battle({ formatid: getShowdownFormatId() });
+      const engine = new ShowdownBattleEngine({
+        mode: 'fuzzer'
+      });
+      const simBattle = engine.battle;
       simBattle.setPlayer('p1', { name: 'Rival-A', team: batch.p1Team });
       simBattle.setPlayer('p2', { name: 'Rival-B', team: batch.p2Team });
 
       let lastLogCount = 0;
-      let stallGuard = 0; // counts cycles where turn didn't advance AND both passed
-
-      while (!simBattle.ended && simBattle.turn < MAX_BATTLE_TURNS) {
+      while (!simBattle.ended) {
+        if (simBattle.turn >= MAX_BATTLE_TURNS) {
+          throw new Error(`[AI_FUZZER_STALL] Battle ${batch.id} exceeded ${MAX_BATTLE_TURNS} turns without ending.`);
+        }
         const prevTurn = simBattle.turn;
 
-        const p1Choice = agentP1.decide(simBattle.p1.activeRequest as unknown as ChoiceRequest);
-        const p2Choice = agentP2.decide(simBattle.p2.activeRequest as unknown as ChoiceRequest);
+        const { p1AcceptedChoice, p2AcceptedChoice } = engine.executeTurn({
+          p1Agent: agentP1 as unknown as { decide(req: unknown): string },
+          p2Agent: agentP2 as unknown as { decide(req: unknown): string }
+        });
 
-        if (p1Choice !== 'pass') p1Choices.push(p1Choice);
-        if (p2Choice !== 'pass') p2Choices.push(p2Choice);
-
-        const p1Ok = simBattle.choose('p1', p1Choice);
-        const p2Ok = simBattle.choose('p2', p2Choice);
-
-        if (!p1Ok) simBattle.choose('p1', 'move 1');
-        if (!p2Ok) simBattle.choose('p2', 'move 1');
+        if (p1AcceptedChoice && p1AcceptedChoice !== 'pass') p1Choices.push(p1AcceptedChoice);
+        if (p2AcceptedChoice && p2AcceptedChoice !== 'pass') p2Choices.push(p2AcceptedChoice);
 
         // Collect readable step logs (only new ones)
         const newLogs = simBattle.log.slice(lastLogCount);
@@ -195,34 +195,19 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
           }
         }
 
-        // If the turn didn't advance and both sent pass, increment stall guard
         const turnAdvanced = simBattle.turn > prevTurn;
-        if (!turnAdvanced && p1Choice === 'pass' && p2Choice === 'pass') {
-          stallGuard++;
-          if (stallGuard >= 50) break; // genuinely stuck — no more requests available
-        } else if (turnAdvanced) {
-          stallGuard = 0; // reset on real progress
+        if (!turnAdvanced && !simBattle.ended) {
+          throw new Error(`[AI_FUZZER_STALL] Battle ${batch.id} did not advance after P1="${p1AcceptedChoice}" P2="${p2AcceptedChoice}".`);
         }
       }
       battleTurns = simBattle.turn;
 
       ended = simBattle.ended;
-      // If the battle stalled with forceSwitch but no living Pokémon on either side,
-      // determine winner by who has more Pokémon left (pokemonLeft counter in Showdown).
-      if (!ended && stallGuard >= 8) {
-        const p1Left = simBattle.p1.pokemonLeft;
-        const p2Left = simBattle.p2.pokemonLeft;
-        ended = true; // Treat as ended to avoid false positives in sanity check
-        winner = p1Left > p2Left ? 'p1' : p2Left > p1Left ? 'p2' : null;
-      } else {
-        winner = simBattle.ended
-          ? (simBattle.winner === 'Rival-A' ? 'p1' : 'p2')
-          : null;
-      }
+      winner = simBattle.winner === 'Rival-A' ? 'p1' : simBattle.winner === 'Rival-B' ? 'p2' : null;
 
 
       passed++;
-      const result = ended ? `Ganó ${winner}` : (stallGuard >= 8 ? 'Stalled' : 'Max turnos');
+      const result = `Ganó ${winner}`;
       console.log(`    ✅ ${result} en ${battleTurns} turnos`);
 
     } catch (err: unknown) {
@@ -247,47 +232,8 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
     },
     battles: results.map(r => ({ id: r.id, ended: r.ended, winner: r.winner, turns: r.turns, error: r.error })),
   };
-  await fs.writeFile(AI_REPORT_FILE, JSON.stringify(report, null, 2), 'utf-8');
+  await fileWriterQueue.safeWriteFile(AI_REPORT_FILE, JSON.stringify(report, null, 2));
   console.log(`\n💾 Reporte IA guardado en: ${AI_REPORT_FILE}`);
-
-  // Inject into fuzzer_certified_cases.json under "ai_vs_ai"
-  let consolidatedData: Record<string, unknown> = {};
-  let shouldWrite = true;
-  try {
-    const existing = await fs.readFile(CERTIFIED_CASES_FILE, 'utf8');
-    consolidatedData = JSON.parse(existing) as Record<string, unknown>;
-    if (process.env.SKIP_REGENERATE === 'true' && consolidatedData.ai_vs_ai) {
-      shouldWrite = false;
-      console.log('⚠️  Conservando casos IA vs. IA certificados.');
-    }
-  } catch (_e) { /* file doesn't exist yet */ }
-
-  if (shouldWrite) {
-    consolidatedData.ai_vs_ai = results.map((r, i) => ({
-      id: `case-ai-${r.id}`,
-      idx: i + 1,
-      p1Team: r.p1Team,
-      p2Team: r.p2Team,
-      p1Choices: r.p1Choices,
-      p2Choices: r.p2Choices,
-      cheats: [],
-      steps: r.steps,
-      ended: r.ended,
-      winner: r.winner,
-      turns: r.turns,
-      error: r.error,
-    }));
-
-    try {
-      const freshContent = await fs.readFile(CERTIFIED_CASES_FILE, 'utf8');
-      const freshData = JSON.parse(freshContent) as Record<string, unknown>;
-      consolidatedData = { ...freshData, ai_vs_ai: consolidatedData.ai_vs_ai };
-    } catch (_e) { /* new file */ }
-
-    await fs.mkdir(path.dirname(CERTIFIED_CASES_FILE), { recursive: true });
-    await fs.writeFile(CERTIFIED_CASES_FILE, JSON.stringify(consolidatedData, null, 2), 'utf-8');
-    console.log(`💾 Casos IA vs. IA consolidados en: ${CERTIFIED_CASES_FILE}`);
-  }
 
   const completedNaturally = results.filter(r => r.ended).length;
   const maxTurns = results.filter(r => !r.ended && !r.error).length;

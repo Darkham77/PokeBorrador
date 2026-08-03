@@ -2,9 +2,9 @@
 import type { PokemonSet } from '@pkmn/sim';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { TestBatch } from '../generators/fuzzer_team_generator.ts';
+import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
+import { requireCertifiedBattleCaseDocument } from '../core/certifiedBattleCase.ts';
 import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
-import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
@@ -42,7 +42,7 @@ if (!caseId && !seedStr) {
 let seed: number[] = [];
 let playerTeam: PokemonSet[] = [];
 let enemyTeam: PokemonSet[] = [];
-let match: TestBatch | null = null;
+let match: CertifiedBattleCase | null = null;
 
 if (caseId) {
   const casesPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
@@ -51,23 +51,17 @@ if (caseId) {
     process.exit(1);
   }
   const fileContent = fs.readFileSync(casesPath, 'utf8');
-  const allCases = JSON.parse(fileContent) as { battle?: TestBatch[]; abilities?: TestBatch[]; items?: TestBatch[]; items_consumption?: TestBatch[]; scenarios?: TestBatch[] };
-  const casesList = [
-    ...(allCases.battle || []),
-    ...(allCases.abilities || []),
-    ...(allCases.items || []),
-    ...(allCases.items_consumption || []),
-    ...(allCases.scenarios || [])
-  ];
+  const rawCases: unknown = JSON.parse(fileContent);
+  const casesList = requireCertifiedBattleCaseDocument(rawCases, casesPath).battle;
   match = casesList.find((c) => 
     (c.seed && c.seed.join(',') === caseId) || 
-    ((c as unknown as { id: string }).id === caseId)
+    c.id === caseId
   ) || null;
   if (!match) {
     console.error(`Error: Case "${caseId}" not found in certified fuzzer cases.`);
     process.exit(1);
   }
-  seed = match.seed || [];
+  seed = match.seed;
   playerTeam = match.playerTeam;
   enemyTeam = match.enemyTeam;
   console.log(`Running certified case: ${caseId}`);
@@ -104,30 +98,26 @@ enemyTeam.forEach((e, idx: number) => {
 
 ShowdownLogEnricher.enrichRetroactiveLeads(battle);
 
-if (!match || !match.playerChoices || !match.enemyChoices) {
+if (!match) {
   console.error('Error: Replay mode requires a certified fuzzer case with playerChoices and enemyChoices.');
   process.exit(1);
 }
 
-// Replay choices directly from the certified case
-let p1ChoiceIdx = 0;
-let p2ChoiceIdx = 0;
-
 console.log('--- STARTING EXACT CERTIFIED CHOICES REPLAY ---');
 
 let turn = 0;
-const runner = new ShowdownBattleRunner(match.playerChoices, match.enemyChoices);
 
-while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runner.p2ChoiceIdx < match.enemyChoices.length)) {
+for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) {
+  const step = ShowdownBattleRunner.requireHistoryEntry(match.history, historyIndex);
+  if (battle.ended) {
+    throw new Error(`[REPLAY-CERTIFICATION] Certified history contains a submission after the battle ended. context=${JSON.stringify({ turn, historyLength: match.history.length })}`);
+  }
   turn++;
-  p1ChoiceIdx = runner.p1ChoiceIdx;
-  p2ChoiceIdx = runner.p2ChoiceIdx;
   
   const p1Req = battle.p1.activeRequest;
-  const p2Req = battle.p2.activeRequest;
 
-  const p1Choice = runner.resolveAndConsumeNextChoice('p1', p1Req);
-  const p2Choice = runner.resolveAndConsumeNextChoice('p2', p2Req);
+  const p1Choice = step.p1Choice;
+  const p2Choice = step.p2Choice;
 
   const prevLogLen = battle.log.length;
 
@@ -143,39 +133,22 @@ while (!battle.ended && (runner.p1ChoiceIdx < match.playerChoices.length || runn
     battle,
     p1Choice,
     p2Choice,
-    cheatManager: null,
-    isFuzzerSimulation: true,
+    history: match.history,
     currentStep: turn
   });
-
-  p1ChoiceIdx = runner.p1ChoiceIdx;
-  p2ChoiceIdx = runner.p2ChoiceIdx;
 
   const newLogs = battle.log.slice(prevLogLen);
 
   const p1ActiveMon = battle.p1.active[0] as unknown as ExtendedPokemon | undefined;
   const p2ActiveMon = battle.p2.active[0] as unknown as ExtendedPokemon | undefined;
 
-  console.log(`[Turn ${turn}] P1 Choice Index: ${p1ChoiceIdx - 1} | Choice: "${p1Choice}"`);
-  console.log(`[Turn ${turn}] P2 Choice Index: ${p2ChoiceIdx - 1} | Choice: "${p2Choice}"`);
+  console.log(`[Turn ${turn}] Certified history choice: ${JSON.stringify({ p1Choice, p2Choice, battleTurn: step.battleTurn })}`);
   console.log(`[Turn ${turn}] P1 Active: ${p1ActiveMon?.name} (UID: ${p1ActiveMon?.uid})`);
   console.log(`[Turn ${turn}] P2 Active: ${p2ActiveMon?.name} (UID: ${p2ActiveMon?.uid})`);
 
   console.log('  Logs:');
   newLogs.forEach(line => console.log(`    ${line}`));
 
-  // Check and apply HP restoration (Infinite Punching Bag) matching history flags
-  const histEntry = match.history?.[turn - 1];
-  if (histEntry?.p1Heal && p1ActiveMon) {
-    applyHealCheatToSide(battle.p1);
-    syncRequestConditionsWithSimulator(battle.p1);
-    console.log(`  [IPB CHEAT] Restored P1 Active HP to max (${p1ActiveMon.name})`);
-  }
-  if (histEntry?.p2Heal && p2ActiveMon) {
-    applyHealCheatToSide(battle.p2);
-    syncRequestConditionsWithSimulator(battle.p2);
-    console.log(`  [IPB CHEAT] Restored P2 Active HP to max (${p2ActiveMon.name})`);
-  }
 }
 
 console.log(`\n========================================`);
@@ -184,7 +157,7 @@ console.log(`[REPLAY COMPLETE] Total turns executed: ${turn}`);
 console.log(`========================================\n`);
 
 if (match.finalState) {
-  const finalState = match.finalState as Record<string, unknown>;
+  const finalState = match.finalState;
   const actualEnded = battle.ended;
   if (finalState.isOver !== undefined && actualEnded !== finalState.isOver) {
     throw new Error(`[REPLAY-PARITY-FAILURE] Mismatch in battle end state! Expected isOver=${finalState.isOver}, but replay actual ended=${actualEnded}`);

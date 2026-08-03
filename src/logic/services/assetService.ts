@@ -86,7 +86,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       const stringId = String(id).toLowerCase(); // text-ok
       if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok
 
-      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId];
+      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId]; // open-record
       if (num === undefined) {
         const species = Dex.species.get(stringId);
         num = (species && species.exists) ? species.num : id;

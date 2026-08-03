@@ -106,13 +106,13 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       return { ...evo, isSeen, isCaught }
     }
 
-    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined>
+    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined> // open-record
     if (evoTable[id]) {
       const ev = evoTable[id]!
       list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
     }
     
-    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined>
+    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined> // open-record
     Object.keys(stoneTable).forEach(key => {
       if (key === id || key.startsWith(`${id}_`)) {
         const ev = stoneTable[key]!
@@ -120,7 +120,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       }
     })
 
-    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined>
+    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined> // open-record
     if (tradeTable[id]) {
       list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }))
     }
@@ -139,8 +139,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       spe: 'Rgba(250, 146, 178, 1)' 
     }
     return Object.keys(species.value.stats).map(key => {
-      const base = (species.value?.stats as Record<string, number>)[key] || 0
-      const current = isInstance.value ? (((targetPokemon.value as unknown as Record<string, number>)[key]) || base) : base
+      const base = (species.value?.stats as Record<string, number>)[key] || 0 // open-record
+      const current = isInstance.value && targetPokemon.value ? ((Reflect.get(targetPokemon.value, key) as number | undefined) || base) : base
       return {
         id: key,
         label: labels[key] || key.toUpperCase(), // text-ok
@@ -148,8 +148,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         baseValue: base,
         max: 255,
         color: colors[key] || '#888',
-        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0,
-        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0
+        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0, // open-record
+        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0 // open-record
       }
     })
   })

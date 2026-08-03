@@ -1,4 +1,3 @@
-import gsap from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 
 interface RegisterTweenDetail {
@@ -10,17 +9,18 @@ export function useBattleTweenRegistry() {
   const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()
   // Pending resolvers: set when awaitTween is called before the component has mounted.
   // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
-  const pendingTweenResolvers = new Map<string, () => void>()
+  const pendingTweenResolvers = new Map<string, { resolve: () => void; reject: (err: Error) => void }>()
 
   const onRegisterTween = (e: Event) => {
     const data = (e as CustomEvent<RegisterTweenDetail>).detail
     if (data && typeof data.key === 'string' && data.tween) {
       activeTweens.set(data.key, data.tween)
+      console.debug(`[TweenRegistry] Registered animation tween. context=${JSON.stringify({ key: data.key, pendingKeys: [...pendingTweenResolvers.keys()] })}`)
       // Unblock any awaitTween call that was already waiting for this key
-      const resolver = pendingTweenResolvers.get(data.key)
-      if (resolver) {
+      const pending = pendingTweenResolvers.get(data.key)
+      if (pending) {
         pendingTweenResolvers.delete(data.key)
-        resolver()
+        pending.resolve()
       }
     }
   }
@@ -33,16 +33,21 @@ export function useBattleTweenRegistry() {
   const cleanupTweenRegistryListeners = () => {
     gameBus.off('REGISTER_TWEEN', onRegisterTween)
     activeTweens.clear()
+    // Fail-fast: any pending awaiter whose component never fired REGISTER_TWEEN must crash loud.
+    for (const [key, { reject }] of pendingTweenResolvers) {
+      reject(new Error(`[TweenRegistry] Component never registered tween "${key}". FSM would have hung forever.`))
+    }
     pendingTweenResolvers.clear()
   }
 
   /**
    * Awaits a GSAP tween registered by BattleCombatant via REGISTER_TWEEN.
    *
-   * - If the tween is already registered (component was mounted): awaits it directly.
-   * - If not yet registered (component just mounting): blocks on an event-driven Promise
-   *   that resolves the instant the component fires REGISTER_TWEEN — no polling.
-   * - GSAP delayedCall acts as a 2-second safety fallback (not setTimeout).
+   * - Fast path: tween already registered (component mounted first) → awaits it directly.
+   * - Slow path: blocks on an event-driven Promise resolved the instant the component fires
+   *   REGISTER_TWEEN. No polling, no timers.
+   * - Fail-fast: if the registry is cleaned up while still waiting, the Promise rejects loudly
+   *   so the FSM crashes immediately instead of hanging forever.
    */
   const awaitTween = async (animKey: string): Promise<void> => {
     // Fast path: tween already registered
@@ -53,19 +58,11 @@ export function useBattleTweenRegistry() {
       return
     }
 
-    // Slow path: wait for the component to fire REGISTER_TWEEN
-    const fallback = { timer: null as ReturnType<typeof gsap.delayedCall> | null }
-    await new Promise<void>(resolve => {
-      pendingTweenResolvers.set(animKey, resolve)
-      // Safety: if component never mounts or has no sprite, unblock after 2s via GSAP (not setTimeout)
-      fallback.timer = gsap.delayedCall(2, () => {
-        if (pendingTweenResolvers.has(animKey)) {
-          pendingTweenResolvers.delete(animKey)
-          resolve()
-        }
-      })
+    // Slow path: event-driven wait — rejects loudly if the registry is torn down first.
+    console.debug(`[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`)
+    await new Promise<void>((resolve, reject) => {
+      pendingTweenResolvers.set(animKey, { resolve, reject })
     })
-    fallback.timer?.kill()
 
     // Now await the actual GSAP tween (native GSAP coordination)
     const tween = activeTweens.get(animKey)

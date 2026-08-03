@@ -111,13 +111,11 @@ const MAP_BIOME_KEYS = [
   'isCoastal', 'isForest', 'isPlains'
 ] as const satisfies readonly (keyof MapLocation)[];
 
-export function getActiveBushesForMap(
-  locationId: string,
-  layer: 'front' | 'back',
-  sessionSeed: number,
-  baseBushes: Array<{ id: number; cls: string; scale: number; tx: number; ty: number; ad: string; ay: string }>
-): ResolvedBushConfig[] {
-  // 1. Encontrar mapa y resolver bioma activo según jerarquía
+export function isBushFamily(val: string): val is BushFamily {
+  return (Object.keys(BUSH_FAMILIES) as readonly string[]).includes(val); // domain-ok
+}
+
+export function getBiomeConfigForMap(locationId: string): BiomeBushWeights {
   const map = FIRE_RED_MAPS.find(m => m.id === locationId);
   let activeBiomeKey = 'isPlains';
 
@@ -131,7 +129,20 @@ export function getActiveBushesForMap(
   }
 
   const defaultWeights: BiomeBushWeights = { weights: { bush: 80, rock: 20 } };
-  const biomeConfig = BIOME_BUSH_CONFIG[activeBiomeKey] ?? BIOME_BUSH_CONFIG['isPlains'] ?? defaultWeights;
+  return BIOME_BUSH_CONFIG[activeBiomeKey] ?? BIOME_BUSH_CONFIG['isPlains'] ?? defaultWeights;
+}
+
+/**
+ * Normaliza las propiedades de un arbusto aplicando la doble tirada de dados
+ * determinista basada en sessionSeed y layer.
+ */
+export function resolveBushesForLayer(
+  baseBushes: Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>,
+  sessionSeed: number,
+  layer: 'front' | 'back',
+  mapId: string
+): ResolvedBushConfig[] {
+  const biomeConfig = getBiomeConfigForMap(mapId);
 
   // 2. Iterar sobre los arbustos base y realizar la doble tirada de dados
   return baseBushes.map(b => {
@@ -141,9 +152,7 @@ export function getActiveBushesForMap(
 
     // Tirada 1: Elegir familia dinámica según los pesos del bioma actual
     const activeWeights = biomeConfig.weights;
-    const availableFamilies = (Object.keys(activeWeights) as BushFamily[]).filter(
-      fam => BUSH_FAMILIES[fam] !== undefined
-    );
+    const availableFamilies = Object.keys(activeWeights).filter(isBushFamily);
 
     let selectedFamily: BushFamily = 'bush'; // Fallback por defecto
 
@@ -164,7 +173,7 @@ export function getActiveBushesForMap(
       }
     } else {
       // Fallback: Elegir cualquier familia que exista en el catálogo
-      const allFamilies = Object.keys(BUSH_FAMILIES) as BushFamily[];
+      const allFamilies = Object.keys(BUSH_FAMILIES).filter(isBushFamily);
       selectedFamily = allFamilies[Math.floor(prng() * allFamilies.length)] ?? 'bush';
     }
 
@@ -198,4 +207,13 @@ export function getActiveBushesForMap(
       offsetX
     };
   });
+}
+
+export function getActiveBushesForMap(
+  locationId: string,
+  layer: 'front' | 'back',
+  sessionSeed: number,
+  baseBushes: Array<{ id: number; cls: string; scale?: number; tx?: number; ty?: number; ad?: string; ay?: string }>
+): ResolvedBushConfig[] {
+  return resolveBushesForLayer(baseBushes as Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>, sessionSeed, layer, locationId);
 }

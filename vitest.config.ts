@@ -22,6 +22,7 @@ export default defineConfig({
     projects: [
       {
         extends: './vite.config.ts',
+        cacheDir: '.vitest-cache/unit',
         test: {
           name: 'unit',
           globals: true,
@@ -33,18 +34,17 @@ export default defineConfig({
           ],
           setupFiles: ['./tests/vitest.setup.ts'],
           testTimeout: 60000,
-          cache: { dir: '.vitest-cache/unit' },
         },
       },
       {
         extends: './vitest.node.config.ts',
+        cacheDir: '.vitest-cache/node',
         test: {
           name: 'node',
           globals: true,
           environment: 'node',
           include: ['tests/node/**/*.test.ts'],
           testTimeout: 60000,
-          cache: { dir: '.vitest-cache/node' },
         },
       },
     ],

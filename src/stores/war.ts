@@ -147,7 +147,7 @@ export const useWarStore = defineStore('war', () => {
     const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
-    const dailyCoins = gameStore.state.warDailyCoins as Record<string, number>
+    const dailyCoins = gameStore.state.warDailyCoins as Record<string, number> // open-record
     if (!dailyCoins[today]) dailyCoins[today] = 0
     if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
 

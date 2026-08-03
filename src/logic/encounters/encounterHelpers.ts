@@ -37,7 +37,7 @@ function requireWeatherFamilyId(weather: WeatherId): WeatherId {
  * Incorporates active events.
  */
 export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: WeatherId = 'clear', activeEvents: GameEvent[]) {
-  if (!loc || !loc.wild) return { pool: [] as PokemonSpeciesId[], rates: [] as number[] };
+  if (!loc || !loc.wild) return { pool: Array<PokemonSpeciesId>(), rates: Array<number>() };
   
   const pool = [...(loc.wild[cycle] || loc.wild.day || [])];
   const rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
@@ -175,7 +175,7 @@ export function checkSpecialEncounters(
           nature: 'hardy',
           ability: 'swiftswim',
           isShiny: false
-        } as unknown as Pokemon
+        } as unknown as Pokemon // domain-ok
       };
     }
     if (debug.forceEncounterType === 'archaeology') {
@@ -197,7 +197,7 @@ export function checkSpecialEncounters(
           nature: 'hardy',
           ability: 'battlearmor',
           isShiny: false
-        } as unknown as Pokemon
+        } as unknown as Pokemon // domain-ok
       };
     }
     if (debug.forceEncounterType === 'trainer') {
@@ -220,12 +220,12 @@ export function checkSpecialEncounters(
           stats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
           maxStats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
           exp: 0,
-          nextLevelExp: 100,
-          gender: 'm',
+          nextLevelExp: 50,
+          gender: 'f',
           nature: 'hardy',
-          ability: 'keeneye',
+          ability: 'tangledfeet',
           isShiny: false
-        } as unknown as Pokemon
+        } as unknown as Pokemon // domain-ok
       };
     }
   }

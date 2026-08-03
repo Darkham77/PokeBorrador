@@ -29,11 +29,13 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
-import type { WeatherId } from '../weather/weatherRegistry.ts';
+import { isWeatherId, type WeatherId } from '../weather/weatherRegistry.ts';
+import { isPokemonType } from '../../data/battle/types.ts';
 
-function getMechWeather(type: WeatherId | string | null | undefined): string {
+function getMechWeather(type: string | null | undefined): string {
   if (!type) return 'clear';
-  const lower = type as WeatherId;
+  const lower = isWeatherId(type) ? type : null;
+  if (!lower) return 'clear';
   if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun';
   if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain';
   if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
@@ -45,10 +47,11 @@ function getMechWeather(type: WeatherId | string | null | undefined): string {
 }
 
 
-function getTypeEff(moveType: PokemonType | string | undefined, defType: PokemonType | string | undefined, scrapy = false): number {
+function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
   if (!moveType || !defType) return 1;
-  const mType = moveType as PokemonType;
-  const dType = defType as PokemonType;
+  const mType = isPokemonType(moveType) ? moveType : null;
+  const dType = isPokemonType(defType) ? defType : null;
+  if (!mType || !dType) return 1;
 
   if (scrapy && dType === 'ghost' && (mType === 'normal' || mType === 'fighting')) {
     return 1;
@@ -149,7 +152,7 @@ export function getEffectiveStatPure(
     }
   }
 
-  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0;
+  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0; // open-record
   const stage = Math.max(-6, Math.min(6, rawStage));
   const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
   let val = Math.floor(baseVal * stageMult);

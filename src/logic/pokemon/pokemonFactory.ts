@@ -115,7 +115,7 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   stats.forEach(s => {
     const val = p[s] as number;
     if (isNaN(val) || val === undefined) {
-      (p as unknown as Record<string, unknown>)[s as string] = 10;
+      Reflect.set(p, s, 10);
     }
   });
 
@@ -380,8 +380,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const eventStore = useEventStore();
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
-    const isDebugShiny = typeof window !== 'undefined' && 
-      (window as unknown as { __VITE_DEBUG__?: { forceShiny100?: boolean } }).__VITE_DEBUG__?.forceShiny100;
+    const isDebugShiny = typeof window !== 'undefined' && window.__VITE_DEBUG__?.forceShiny100;
     
     if (isDebugShiny) {
       isShiny = true;

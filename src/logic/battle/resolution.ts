@@ -398,7 +398,8 @@ export async function validateAndInterceptFaintedPlayer(ctx: BattleContext): Pro
   const p = active.player
   if (!p) return false
 
-  const isP1Forced = active.playerRequest?.forceSwitch?.some((x: unknown) => !!x);
+  const { isRevivingForceSwitchRequest } = await import('./helpers/requestHelper.ts')
+  const isP1Forced = active.playerRequest?.forceSwitch?.some((x: unknown) => !!x) && !isRevivingForceSwitchRequest(active.playerRequest);
   if (p.hp <= 0 || isP1Forced) {
     if (p.hp <= 0) {
       console.warn(`[validateAndIntercept] Player Pokemon ${p.name} is fainted. Triggering processFaint sequence.`);
@@ -447,7 +448,7 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
     // Determine which Pokémon is currently active according to Showdown's request (source of truth).
     // active.enemy?.uid can be stale after mid-battle switches, so we read the active flag from
     // the Showdown request to guarantee we exclude the correct combatant from nextEnemy selection.
-    const activeUidPerShowdown = (active.enemyRequest?.side?.pokemon as unknown as Array<{ active?: boolean; uid?: string } | null | undefined>)
+    const activeUidPerShowdown = active.enemyRequest?.side?.pokemon
       ?.find((p) => p?.active)?.uid
     const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
 
@@ -489,13 +490,12 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
           const debugObj = window.__VITE_DEBUG__;
           const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-          const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
-          runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
-          runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
-          p2Choice = runner.resolveAndConsumeNextChoice('p2', active.enemyRequest);
-          debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
-          debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
-          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved forceSwitch enemy choice via ShowdownBattleRunner: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+          const p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
+          p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
+          if (p1Choice !== '') {
+            throw new Error(`[resolution] Certified enemy force switch must be P2-only. context=${JSON.stringify({ p1Choice, p2Choice })}`);
+          }
+          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved forceSwitch enemy choice from the certified history: "${p2Choice}".`);
         } else {
           const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
           p2Choice = `switch ${slot}`
@@ -509,6 +509,10 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
         const filteredLogs = filterShowdownLogs(result.logs)
         for (const logLine of filteredLogs) {
           await parseShowdownLogLine(ctx, logLine, filteredLogs)
+        }
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+          ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
         }
       }
 

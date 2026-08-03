@@ -10,7 +10,6 @@ import { formatDisplayDate } from '@/logic/utils/timeUtils'
 import { getItemById } from '@/data/inventory/items'
 
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
@@ -107,11 +106,11 @@ function getTierColor(tier?: string) {
           <template v-if="item.listing_type === 'pokemon'">
             <PokemonSelectionItem
               :item="{
-                pokemon: item.data as unknown as Pokemon,
+                pokemon: item.data,
                 _source: 'market',
                 index: 0
               }"
-              :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
+              :total="getPokemonTotalPower(item.data)"
               auto-confirm
               class="listing-card-override"
             />

@@ -1,47 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { toPokemonType } from '@/data/battle/types'
+import type { NpcChanceInfo } from '@/logic/weather/weatherUtils'
+import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers'
+import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology'
 
-export interface SpawnItem {
-  id: string
-  name: string
-  sprite: string
-  types: string[]
-  spawnType: string
-  statusClass: string
-  multiplier: number
-  percentage: number
-  basePercentage: number
-  diff: number
-  totalStats: number
-  isSeen: boolean
-  isCaught: boolean
-}
-
-export interface ArchaeologyRewardItem {
-  name: string
-  sprite: string
-  type: string
-  statusClass: string
-  description?: string
-  percentage: number
-  basePercentage: number
-}
-interface NpcSpawnItem {
-  type: string
-  name: string
-  active: boolean
-  details?: string
-  chance: number
-}
-
+type SpawnTableItem = RouteSpawnMappedItem | NpcChanceInfo | ArchaeologyRewardData
 
 interface Props {
   title: string
   probability: number
   baseProbability: number
-  items: Array<SpawnItem | ArchaeologyRewardItem | Record<string, unknown>>
+  items: SpawnTableItem[]
   mode: 'pokemon' | 'item' | 'fishing' | 'npc'
 
   probClass: string
@@ -49,15 +21,30 @@ interface Props {
   weatherLabel: string
   getStatusTooltip?: (spawnType: string) => { title: string; desc: string }
   getCategoryTooltip?: (type: string) => { title: string; desc: string }
-  getTooltipData: (item: SpawnItem | ArchaeologyRewardItem) => Record<string, unknown>
+  getSpawnTooltip?: (item: RouteSpawnMappedItem) => Record<string, unknown>
+  getItemTooltip?: (item: ArchaeologyRewardData) => Record<string, unknown>
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  probClass: 'info',
+  weatherEmoji: '',
+  weatherLabel: '',
+  getStatusTooltip: () => ({ title: '', desc: '' }),
+  getCategoryTooltip: () => ({ title: '', desc: '' }),
+  getSpawnTooltip: () => ({}),
+  getItemTooltip: () => ({})
+})
+
+// Type-safe narrowing: each type has a unique discriminant field
+const spawnItems = computed(() => props.items.filter((i): i is RouteSpawnMappedItem => 'isSeen' in i))
+const npcItems = computed(() => props.items.filter((i): i is NpcChanceInfo => 'active' in i && 'chance' in i && !('isSeen' in i)))
+const archaeologyItems = computed(() => props.items.filter((i): i is ArchaeologyRewardData => 'sprite' in i && !('isSeen' in i) && !('active' in i)))
 
 defineEmits<{
   (e: 'select-pokemon', id: string, isSeen: boolean): void
 }>()
 </script>
+
 
 <template>
   <div class="spawns-section">
@@ -103,7 +90,7 @@ defineEmits<{
         <!-- Pokémon Mode -->
         <template v-if="mode === 'pokemon'">
           <div
-            v-for="poke in (items as SpawnItem[])"
+            v-for="poke in spawnItems"
             :key="poke.id"
             class="report-row"
             :class="[poke.statusClass, { 'is-unseen': !poke.isSeen }]"
@@ -185,7 +172,7 @@ defineEmits<{
             <!-- Probability -->
             <div class="col-prob row-cell flex-align">
               <PVTooltip
-                v-bind="getTooltipData(poke)"
+                v-bind="getSpawnTooltip(poke)"
                 tag="div"
                 style="width: 100%;"
               >
@@ -258,7 +245,7 @@ defineEmits<{
         <!-- NPC Mode -->
         <template v-else-if="mode === 'npc'">
           <div
-            v-for="npc in (items as unknown as NpcSpawnItem[])"
+            v-for="npc in npcItems"
             :key="npc.type"
             class="report-row"
             :class="{ 'gray-text': !npc.active }"
@@ -327,7 +314,7 @@ defineEmits<{
         <!-- Item Mode (Archaeology) -->
         <template v-else>
           <div
-            v-for="reward in (items as ArchaeologyRewardItem[])"
+            v-for="reward in archaeologyItems"
             :key="reward.name"
             class="report-row"
             :class="reward.statusClass"
@@ -379,7 +366,7 @@ defineEmits<{
             <!-- Probability -->
             <div class="col-prob row-cell flex-align">
               <PVTooltip
-                v-bind="getTooltipData(reward)"
+                v-bind="getItemTooltip(reward)"
                 tag="div"
                 style="width: 100%;"
               >

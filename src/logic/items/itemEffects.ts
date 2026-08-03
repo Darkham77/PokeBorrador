@@ -5,27 +5,12 @@ import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
-import { getItemById } from '../../data/inventory/items.ts';
-
-
-interface TMData {
-  id: string
-  name: string
-  moveId: PokemonMoveId
-}
-
-/**
- * Item Effects Core Logic
- * Stateless functions to apply items to Pokémon.
- * Returns { success: boolean, message: string, resultType?: string }
- */
-
-import type { ItemId } from '@/data/inventory/items';
+import { getItemById, requireItemId, type ItemId } from '../../data/inventory/items.ts';
 
 export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
-  const resolvedId = itemId as ItemId;
+  const resolvedId = requireItemId(itemId);
 
   // Ensure the item ID exists in SHOP_ITEMS (or is a valid TM)
   const isTM = resolvedId.startsWith('tm') || resolvedId.startsWith('mt');
@@ -42,18 +27,17 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemId}`);
   }
 
-  const effect = (itemEffects as Record<string, (p: Pokemon | GameState) => ItemEffectResult>)[resolvedId] || ((p: Pokemon) => getDynamicItemEffect(resolvedId, p));
+  const effect = itemEffects[resolvedId] || ((p: Pokemon) => getDynamicItemEffect(resolvedId, p));
   if (typeof effect !== 'function') return false;
 
-  // Clone to avoid mutation during check
-  const pClone: Pokemon = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => m ? ({ ...m }) : null) : [] } as unknown as Pokemon;
-  const result = effect(pClone);
+  const pClone: Pokemon = structuredClone(pokemon);
+  const result = (effect as (p: Pokemon) => ItemEffectResult)(pClone);
   return !!(result && result.success);
 };
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);
 const stateEffect = (fn: (s: GameState) => ItemEffectResult) => (p: unknown) => fn(p as GameState);
 
-export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
+export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { // open-record
   // --- Healing & Status ---
   'potion': pokeEffect((p) => healHp(p, 20)),
   'superpotion': pokeEffect((p) => healHp(p, 50)),
@@ -177,7 +161,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
   if (tmMatch) {
     const tmId = `TM${tmMatch[2]}`;
     const species = p.id;
-    const compatList = (TM_COMPAT as Record<string, string[]>)[species] || [];
+    const compatList = (TM_COMPAT as Record<string, string[]>)[species] || []; // open-record
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }

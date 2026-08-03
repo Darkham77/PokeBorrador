@@ -7,7 +7,7 @@
 import { normalizeZonedDateTime } from '../utils/timeUtils.ts'
 
 
-export const WAR_PTS_TABLE: Record<string, { win: number; lose: number }> = {
+export const WAR_PTS_TABLE = {
   CAPTURE: { win: 5, lose: 1 },
   TRAINER_WIN: { win: 8, lose: 2 },
   WILD_WIN: { win: 1, lose: 0 },
@@ -15,6 +15,12 @@ export const WAR_PTS_TABLE: Record<string, { win: number; lose: number }> = {
   SHINY_CAPTURE: { win: 40, lose: 10 },
   EVENT: { win: 20, lose: 5 },
   GUARDIAN: { win: 150, lose: 10 }
+} as const;
+
+export type WarEventType = keyof typeof WAR_PTS_TABLE;
+
+export function isWarEventType(val: string): val is WarEventType {
+  return val in WAR_PTS_TABLE;
 }
 
 export const DAILY_MAP_CAP = 300
@@ -79,7 +85,7 @@ export function isDisputePhase(date: Temporal.ZonedDateTime | Temporal.Instant =
   return (day >= 1 && day <= 5)
 }
 
-export type WarEventType = 'WILD_WIN' | 'TRAINER_WIN' | 'BOSS_WIN' | 'PVP_WIN';
+
 
 /**
  * Gets the raw point reward for an event.
@@ -87,13 +93,14 @@ export type WarEventType = 'WILD_WIN' | 'TRAINER_WIN' | 'BOSS_WIN' | 'PVP_WIN';
  * @param {boolean} success 
  * @returns {number}
  */
-export function getPointReward(eventType: WarEventType | string, success: boolean): number {
-  const record = WAR_PTS_TABLE[eventType as keyof typeof WAR_PTS_TABLE] || { win: 1, lose: 0 }
+export function getPointReward(eventType: string, success: boolean): number {
+  const validEvent = isWarEventType(eventType) ? eventType : null;
+  const record = validEvent ? WAR_PTS_TABLE[validEvent] : { win: 1, lose: 0 };
   
   // Special rule for wild win balance
-  if (eventType === 'WILD_WIN') return 1
+  if (eventType === 'WILD_WIN') return 1;
   
-  return success ? record.win : record.lose
+  return success ? record.win : record.lose;
 }
 
 /**

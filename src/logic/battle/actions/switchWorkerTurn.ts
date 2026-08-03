@@ -48,7 +48,22 @@ export async function processNonForcedSwitchWorkerTurn(
   let p1Skip = side !== 'player'
   let p2Skip = false
 
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
+  if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const debugObj = window.__VITE_DEBUG__
+    const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+    const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
+    const certifiedP2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+    if (side === 'player' && !certifiedP1Choice.startsWith('switch ')) {
+      throw new Error(`[switchWorkerTurn] Certified player switch is missing. context=${JSON.stringify({ side, p1Choice: certifiedP1Choice, p2Choice: certifiedP2Choice })}`)
+    }
+    if (side === 'enemy' && !certifiedP2Choice.startsWith('switch ')) {
+      throw new Error(`[switchWorkerTurn] Certified enemy switch is missing. context=${JSON.stringify({ side, p1Choice: certifiedP1Choice, p2Choice: certifiedP2Choice })}`)
+    }
+    p1Choice = certifiedP1Choice
+    p2Choice = certifiedP2Choice
+    p1Skip = p1Choice === ''
+    p2Skip = p2Choice === ''
+  } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice
       console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice in switchAction: ${p2Choice}`)
@@ -73,6 +88,10 @@ export async function processNonForcedSwitchWorkerTurn(
   try {
     console.debug('[switchAction] calling executeTurnInWorker...', { p1Choice, p2Choice, p1Skip, p2Skip })
     result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip)
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
+      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+    }
     console.debug(`[E2E-DEBUG-SWITCH-RESULT] logs: ${JSON.stringify(result.logs)}`)
   } catch (error) {
     console.error('[switchAction] executeTurnInWorker thrown:', error)
@@ -96,14 +115,14 @@ export async function processNonForcedSwitchWorkerTurn(
   active.playerRequest = result.p1Request
   active.enemyRequest = result.p2Request
 
-  ;(active as unknown as Record<string, unknown>)[side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy'] = newPoke
+  Reflect.set(active, side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy', newPoke)
   const filteredLogs = filterShowdownLogs(result.logs)
   for (const logLine of filteredLogs) {
     await parseShowdownLogLine(ctx, logLine, filteredLogs)
   }
 
   await syncTeamsFromLastWorkerState()
-  delete (active as unknown as Record<string, unknown>)[side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy']
+  Reflect.deleteProperty(active, side === 'player' ? 'switchingToPlayer' : 'switchingToEnemy')
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 

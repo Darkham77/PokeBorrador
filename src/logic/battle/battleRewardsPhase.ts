@@ -2,31 +2,27 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import { calculateBattleRewards } from './rewardsDistributor.ts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 function handleStolenResources(ctx: BattleContext, active: NonNullable<BattleContext['activeBattle']['value']>, uiStore: ReturnType<typeof useUIStore>) {
   if (!active.stolenResources) return
   const stolen = active.stolenResources
   if (stolen.money && stolen.money > 0) {
-    ctx.gs.state.money = (ctx.gs.state.money || 0) + stolen.money
+    incrementRecordKey(ctx.gs.state, 'money', stolen.money)
     ctx.addLog(`¡Recuperaste tu dinero robado! +₽${stolen.money}`, 'log-success', 'player')
     uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰')
   }
   if (stolen.items) {
-    import('@/data/inventory/items').then(({ getItemById }) => {
+    import('@/data/inventory/items').then(({ getItemById, requireItemId }) => {
       for (const [itemId, qty] of Object.entries(stolen.items || {})) {
         if (qty && (qty as number) > 0) {
           if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {}
-          ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + (qty as number)
+          incrementRecordKey(ctx.gs.state.inventory, itemId, qty as number)
           
-          let itemDef = null
-          try {
-            itemDef = getItemById(itemId)
-          } catch {
-            // fallback
-          }
-          const displayName = itemDef?.name || itemId
-          ctx.addLog(`¡Recuperaste tu objeto robado: ${displayName}!`, 'log-success', 'player')
-          uiStore.notify(`¡Recuperaste ${qty}x ${displayName}!`, '🎒')
+          const validId = requireItemId(itemId)
+          const itemDef = getItemById(validId)
+          ctx.addLog(`¡Recuperaste tu objeto robado: ${itemDef.name}!`, 'log-success', 'player')
+          uiStore.notify(`¡Recuperaste ${qty}x ${itemDef.name}!`, '🎒')
         }
       }
     }).catch(() => {})

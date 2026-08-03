@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
@@ -26,11 +26,8 @@ const getHpClass = (pct: number) => {
 
 const getNatureInfo = (nature: string) => {
   if (!nature) return { name: 'Seria', up: null, down: null, desc: 'Sin datos de naturaleza.' }
-  const data = NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>
   const cleanId = nature.toLowerCase().trim()
-  
-  // Buscar exclusivamente por ID en inglés (clave del objeto)
-  const entry = data[cleanId]
+  const entry = isNatureId(cleanId) ? NATURE_DATA[cleanId] : undefined
   return entry || { name: nature, up: null, down: null, desc: 'Naturaleza desconocida.' }
 }
 

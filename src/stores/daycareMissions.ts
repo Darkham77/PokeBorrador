@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
+import { requireItemId } from '@/data/inventory/items';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -109,8 +110,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     }
 
     mission.completed = true;
-    const inv = gameStore.state.inventory as Record<string, number>;
-    inv[mission.reward.id] = (inv[mission.reward.id] || 0) + mission.reward.qty;
+    gameStore.addItemToInventory(requireItemId(mission.reward.id), mission.reward.qty);
     
     uiStore.notify(`¡Misión completada! Recibiste ${mission.reward.name} x${mission.reward.qty}`, mission.reward.icon);
     gameStore.scheduleSave();

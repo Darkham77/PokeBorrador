@@ -52,7 +52,7 @@ const forgottenMoves = computed(() => {
   // Trace back evolution chain to gather all potential moves
   while (currentId && !processedIds.has(currentId)) {
     processedIds.add(currentId)
-    const dbEntry = (POKEMON_DB as Record<string, { learnset?: LearnsetEntry[] }>)[currentId]
+    const dbEntry = (POKEMON_DB as Record<string, { learnset?: LearnsetEntry[] }>)[currentId] // open-record
     
     if (dbEntry && dbEntry.learnset) {
       dbEntry.learnset.forEach(m => {
@@ -99,7 +99,7 @@ const handleRelearn = (move: LearnsetEntry) => {
   if (!p) return
   
   const itemId = 'move_relearner'
-  const inventory = gameStore.state.inventory as Record<string, number>
+  const inventory = gameStore.state.inventory as Record<string, number> // open-record
   
   if (!inventory[itemId]) {
     uiStore.notify('No tienes Recordadores de Movimientos.', '⚠️')
@@ -136,7 +136,7 @@ const handleClose = () => {
 }
 
 const consumeItem = (id: string) => {
-  const inventory = gameStore.state.inventory as Record<string, number>
+  const inventory = gameStore.state.inventory as Record<string, number> // open-record
   if (inventory[id]) inventory[id]--
   if (inventory[id] !== undefined && inventory[id] <= 0) delete inventory[id]
   gameStore.save()

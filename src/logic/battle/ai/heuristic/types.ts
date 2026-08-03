@@ -6,7 +6,7 @@
 import type { BattleConditionKey } from '@/types/battle/battle';
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
 
-const HEURISTIC_VOLATILE_KEYS = [
+export const HEURISTIC_VOLATILE_KEYS = [
   'choicelock',
   'confusion',
   'encore',
@@ -15,6 +15,7 @@ const HEURISTIC_VOLATILE_KEYS = [
   'leechseed',
   'mustrecharge',
   'protect',
+  'rollout',
   'substitute',
   'taunt',
   'trapped',

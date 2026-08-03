@@ -3,12 +3,20 @@ import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle/battle'
 import type { SeatState } from '@/composables/battle/useBattleSeats'
 
+const _TRAINER_ANIMATION_STATES = ['entering', 'retreating', 'idle'] as const
+
+export type TrainerAnimationState = (typeof _TRAINER_ANIMATION_STATES)[number]
+
+export function isTrainerTransitionActive(state: TrainerAnimationState | null): boolean {
+  return state === 'entering' || state === 'retreating'
+}
+
 export function useBattleTrainerAnimations(
   seats: Ref<Record<string, SeatState>>,
   battleStore: ReturnType<typeof useBattleStore>
 ) {
   // Trainer visual states
-  const trainerAnimState = ref<string | null>(null) // 'entering' | 'retreating' | 'idle'
+  const trainerAnimState = ref<TrainerAnimationState | null>(null)
   const isTrainerVisible = ref(false)
 
   const triggerTrainerEntry = (): Promise<void> => {
@@ -19,6 +27,7 @@ export function useBattleTrainerAnimations(
     const isRival = battleStore.state?.isRival || false
     const duration = isRival ? 2.5 : 1.0
     tl.to({}, { duration })
+    tl.add(() => { trainerAnimState.value = 'idle' })
     return awaitAnimation(tl)
   }
 
@@ -34,6 +43,10 @@ export function useBattleTrainerAnimations(
     const tl = createTimeline()
     tl.to({}, {
       duration: 0.8
+    })
+    tl.add(() => {
+      trainerAnimState.value = null
+      isTrainerVisible.value = false
     })
     return awaitAnimation(tl)
   }

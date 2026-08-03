@@ -71,20 +71,17 @@ const statColor = computed(() => {
 })
 
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { calculateTotalIVs, calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
 
 const totalIvs = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
-  const ivs = props.pokemon.ivs || {}
-  return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
-         (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+  return calculateTotalIVs(props.pokemon.ivs)
 })
 
 const bst = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
   const baseData = pokemonDataProvider.getPokemonData(props.pokemon.id)
-  if (!baseData) return 0
-  return (baseData.hp || 0) + (baseData.atk || 0) + (baseData.def || 0) + 
-         (baseData.spa || 0) + (baseData.spd || 0) + (baseData.spe || 0)
+  return calculateTotalBaseStats(baseData)
 })
 
 const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))

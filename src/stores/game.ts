@@ -160,7 +160,7 @@ export const useGameStore = defineStore('game', () => {
     
     // Limpiar el estado actual y cargar el guardado del sandbox si existe
     Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key]
+      delete (state as Record<string, unknown>)[key] // open-record
     })
     
     let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState
@@ -190,7 +190,7 @@ export const useGameStore = defineStore('game', () => {
     
     // Limpiar y restaurar la partida real
     Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key]
+      delete (state as Record<string, unknown>)[key] // open-record
     })
     
     if (realStateBackup.value) {

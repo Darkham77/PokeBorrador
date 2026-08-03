@@ -1,6 +1,5 @@
 import type { Pokemon, PokemonIVs, PokemonMoveId } from '@/types/pokemon/pokemon'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { ItemId } from '@/data/inventory/items'
 import type { NatureId } from '@/data/battle/natures'
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
@@ -46,7 +45,7 @@ export interface DaycareMission {
   };
   reqText: string; // domain-ok
   reward: {
-    id: ItemId | PokemonSpeciesId;
+    id: string; // domain-ok
     name: string; // domain-ok
     qty: number;
     icon: string; // domain-ok

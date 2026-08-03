@@ -35,13 +35,13 @@ export async function runFuzzerSuite(config: FuzzerSuiteConfig): Promise<void> {
         ? styleText('yellow', `${result.untested} UNTESTED`)
         : `0 UNTESTED`;
       const detail = result.detail ? `  ${result.detail}` : '';
-      console.log(`  ${result.label.padEnd(labelWidth)} : ${String(result.passed).padStart(4)} PASS / ${failStr} / ${untestedStr}${detail}`);
+      console.log(`  ${result.label.padEnd(labelWidth)} : Total: ${String(result.total).padStart(4)} | ${String(result.passed).padStart(4)} PASS / ${failStr} / ${untestedStr}${detail}`);
       if (result.failed > 0) anyFailed = true;
       if (result.untested > 0) anyUntested = true;
     }
 
     if (!anyFailed && !anyUntested) {
-      console.log(styleText('green', '  ✅ PASS'));
+      console.log(styleText('green', '  ✅ PASS (100% Cobertura Probada)'));
     }
 
     if (anyFailed) {

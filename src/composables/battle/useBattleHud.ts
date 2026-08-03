@@ -30,8 +30,8 @@ const SILHOUETTE_FSM_SUBSTATES = [
 ] as const satisfies readonly BattleSubStateName[]
 
 function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
-  if (state && (INIT_FSM_STATES as readonly string[]).includes(state)) return true
-  return !!subState && (SILHOUETTE_FSM_SUBSTATES as readonly string[]).includes(subState)
+  if (state && (INIT_FSM_STATES as readonly string[]).includes(state)) return true // domain-ok
+  return !!subState && (SILHOUETTE_FSM_SUBSTATES as readonly string[]).includes(subState) // domain-ok
 }
 
 const TECHNICAL_FSM_SUBSTATES = ['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN'] as const satisfies readonly BattleSubStateName[]
@@ -44,10 +44,10 @@ function checkEnemyTechnicalHidden(subState: string | null | undefined, state: s
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true
   
   if (state === 'SEARCH_PHASE') {
-    if (subState && (TECHNICAL_FSM_SUBSTATES as readonly string[]).includes(subState)) return true
+    if (subState && (TECHNICAL_FSM_SUBSTATES as readonly string[]).includes(subState)) return true // domain-ok
   }
 
-  return isTrainer && !!subState && (TRAINER_VISIBLE_FSM_SUBSTATES as readonly string[]).includes(subState)
+  return isTrainer && !!subState && (TRAINER_VISIBLE_FSM_SUBSTATES as readonly string[]).includes(subState) // domain-ok
 }
 
 function checkFloatingState(p: { id?: string | number; ability?: string } | Pokemon | undefined | null): boolean {

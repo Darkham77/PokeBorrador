@@ -147,6 +147,12 @@ export class HeuristicAI implements CombatAI {
 
     if (!snapshot) return false;
 
+    // A trapped or locked active Pokemon cannot make a voluntary switch
+    const isTrapped = !!(snapshot.mySide.activePokemon?.volatiles.has('trapped')
+      || snapshot.mySide.activePokemon?.volatiles.has('ingrain')
+      || snapshot.mySide.activePokemon?.volatiles.has('rollout'));
+    if (isTrapped) return false;
+
     const activeMoves = snapshot.mySide.activePokemon?.moves.map((id: string) => ({ id, pp: 1, disabled: false })) ?? [];
     const matchup = this.calc.calcMatchup(snapshot, activeMoves);
     const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;

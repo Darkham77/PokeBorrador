@@ -15,7 +15,7 @@ const gameStore = useGameStore()
 const ui = useUIStore()
 const chatStore = useChatStore()
 
-const battle = computed(() => livePvP.battleState as unknown as PvPBattleState & { 
+const battle = computed(() => livePvP.battleState as PvPBattleState & { // domain-ok 
   active: boolean, 
   opponentId: string | null,
   opponentAvatar?: string, 
@@ -31,7 +31,7 @@ const opponentCosmetics = computed(() => {
 // Local animations/visual state
 const playerAvatarId = computed(() => {
   const pClass = (gameStore.state.playerClass || 'novato') as string
-  return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[pClass]?.avatarSpriteId || 'red-lgpe'
+  return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[pClass]?.avatarSpriteId || 'red-lgpe' // open-record
 })
 
 const opponentClassId = computed(() => {
@@ -40,7 +40,7 @@ const opponentClassId = computed(() => {
 
 const opponentAvatarId = computed(() => {
   if (opponentClassId.value) {
-    return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[opponentClassId.value]?.avatarSpriteId || opponentClassId.value
+    return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[opponentClassId.value]?.avatarSpriteId || opponentClassId.value // open-record
   }
   return battle.value.opponentAvatar || 'blue-gen3'
 })

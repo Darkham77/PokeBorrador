@@ -1,6 +1,7 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
+import { isMatchingUid } from './showdownUidMapper.ts'
 
 export function parseCondition(cond: string): { hp: number; status: Pokemon['status'] } {
   let hp = 0
@@ -32,8 +33,8 @@ export function syncTeamHP(ctx: BattleContext) {
   if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
     active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
       if (reqPoke && reqPoke.uid) {
-        const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.uid === reqPoke.uid)
-        const battlePoke = active.playerTeam?.find((p: Pokemon) => p && p.uid === reqPoke.uid)
+        const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
+        const battlePoke = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
 
         const { hp, status } = parseCondition(reqPoke.condition || '')
 
@@ -58,42 +59,34 @@ export function syncTeamHP(ctx: BattleContext) {
   if (active.enemyRequest?.side?.pokemon && enemyTeam) {
     active.enemyRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
       if (reqPoke && reqPoke.uid) {
-        const battlePoke = enemyTeam.find((p: Pokemon) => p && p.uid === reqPoke.uid)
+        const enemyPoke = enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
 
-        const { hp, status } = parseCondition(reqPoke.condition || '')
-
-        if (battlePoke) {
-          const old = battlePoke.hp
-          battlePoke.hp = hp
-          battlePoke.status = status
-          console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
+        if (enemyPoke) {
+          const { hp, status } = parseCondition(reqPoke.condition || '')
+          const old = enemyPoke.hp
+          enemyPoke.hp = hp
+          enemyPoke.status = status
+          console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${enemyPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
         }
       }
     })
   }
 
-  if (active.player && active.playerRequest?.side?.pokemon) {
-    const activeReqPoke = active.playerRequest.side.pokemon.find((p: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => p && p.uid === active.player?.uid)
-    if (activeReqPoke) {
-      const { hp, status } = parseCondition(activeReqPoke.condition || '')
-      active.player.hp = hp
-      active.player.status = status
+  if (active.player && ctx.gs.state.team) {
+    const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, active.player?.uid))
+    if (teamPoke) {
+      active.player.hp = teamPoke.hp
+      active.player.status = teamPoke.status
     }
   }
 
-  // Sincronizar el HP/estado del enemigo activo con su equipo (Entrenador/Gimnasio/PvP)
-  if (active.isTrainer || active.isGym || active.isPvP) {
-    if (active.enemy && active.enemyTeam) {
-      const enemyIdx = active.enemyTeam.findIndex((p: Pokemon) => p && p.uid === active.enemy?.uid)
-      if (enemyIdx !== -1) {
-        const teamPoke = active.enemyTeam[enemyIdx]
-        if (teamPoke) {
-          teamPoke.hp = active.enemy.hp
-          teamPoke.status = active.enemy.status
-        }
-      }
-      active.enemyTeam = [...active.enemyTeam]
+  if (active.enemy && active.enemyTeam) {
+    const enemyPoke = active.enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, active.enemy?.uid))
+    if (enemyPoke) {
+      active.enemy.hp = enemyPoke.hp
+      active.enemy.status = enemyPoke.status
     }
+    active.enemyTeam = [...active.enemyTeam]
   }
 }
 

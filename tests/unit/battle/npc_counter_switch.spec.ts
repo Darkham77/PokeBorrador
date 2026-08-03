@@ -113,6 +113,6 @@ describe('NPC Counter Switching & Showdown Sync', () => {
     expect(mockResolveShowdownSlot).toHaveBeenCalledWith(activeBattle.value.enemyRequest, nextEnemy2.uid)
 
     // 4. Should have sent the switch command to Showdown worker
-    expect(mockExecuteTurn).toHaveBeenCalledWith('', 'switch 3')
+    expect(mockExecuteTurn).toHaveBeenCalledWith('', 'switch 3', true, false)
   })
 })

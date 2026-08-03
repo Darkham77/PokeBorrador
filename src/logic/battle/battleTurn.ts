@@ -114,6 +114,10 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       p2Skip = true;
     }
     const result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip)
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+    }
     logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
 
     if (active) {
@@ -241,15 +245,19 @@ export async function runEnemyAction(store: BattleContext) {
     }
     // Interceptar elección de enemigo si está en modo de reproducción de test determinista
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const debugObj = window.__VITE_DEBUG__;
-      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-      const runner = new ShowdownBattleRunner((debugObj.playerChoices as string[]) || [], (debugObj.enemyChoices as string[]) || []);
-      runner.p1ChoiceIdx = debugObj.p1ChoiceIdx ?? 0;
-      runner.p2ChoiceIdx = debugObj.p2ChoiceIdx ?? 0;
-      p2Choice = runner.resolveAndConsumeNextChoice('p2', enemyRequest);
-      debugObj.p1ChoiceIdx = runner.p1ChoiceIdx;
-      debugObj.p2ChoiceIdx = runner.p2ChoiceIdx;
-      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice via ShowdownBattleRunner: "${p2Choice}" (p2Idx: ${debugObj.p2ChoiceIdx})`);
+      if (p2Skip) {
+        p2Choice = 'pass';
+        console.debug('[E2E-MOCK-CENTRAL-DEBUG] Preserved the certified history cursor because runEnemyAction skipped P2.');
+      } else {
+        const debugObj = window.__VITE_DEBUG__;
+        const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
+        const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
+        p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
+        if (certifiedP1Choice !== '') {
+          throw new Error(`[BattleTurn] Enemy-only action does not match the certified history. context=${JSON.stringify({ p1Choice: certifiedP1Choice, p2Choice })}`);
+        }
+        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${p2Choice}".`);
+      }
     } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
       console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
@@ -263,6 +271,10 @@ export async function runEnemyAction(store: BattleContext) {
     console.debug(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
 
     const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip)
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+    }
     if (active) {
       active.playerRequest = result.p1Request;
       active.enemyRequest = result.p2Request;
@@ -274,13 +286,13 @@ export async function runEnemyAction(store: BattleContext) {
     await syncTeamsFromLastWorkerState();
 
     const { handleForceSwitch } = await import('./resolution.ts')
+    const { isRevivingForceSwitchRequest } = await import('./helpers/requestHelper.ts')
     
     // Las sustituciones forzadas por movimientos pivot (U-turn, Chilly Reception, etc.)
     // ocurren durante el turno y tienen prioridad sobre los debilitados de fin de turno.
-    const p1Force = !!result.p1Request?.forceSwitch?.some((x: boolean) => !!x)
-    const p2Force = !!result.p2Request?.forceSwitch?.some((x: boolean) => !!x)
+    const p1Force = !!result.p1Request?.forceSwitch?.some((x: boolean) => !!x) && !isRevivingForceSwitchRequest(result.p1Request)
+    const p2Force = !!result.p2Request?.forceSwitch?.some((x: boolean) => !!x) && !isRevivingForceSwitchRequest(result.p2Request)
     if (p1Force && p2Force) {
-      await handleForceSwitch(store, 'enemy')
       await handleForceSwitch(store, 'player')
       return
     }
@@ -373,17 +385,17 @@ async function resolvePostTurnSwitchesAndFaints(
   result: { p1Request?: { forceSwitch?: unknown[] }; p2Request?: { forceSwitch?: unknown[] }; isOver?: boolean }
 ) {
   const { handleForceSwitch } = await import('./resolution.ts')
+  const { isRevivingForceSwitchRequest } = await import('./helpers/requestHelper.ts')
   const fsm = store.fsm
   const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
   const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0
   const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0
 
-  const p1Force = !!result.p1Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !playerFainted
-  const p2Force = !!result.p2Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !enemyFainted
+  const p1Force = !!result.p1Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !playerFainted && !isRevivingForceSwitchRequest(result.p1Request)
+  const p2Force = !!result.p2Request?.forceSwitch?.some((x: unknown) => Boolean(x)) && !enemyFainted && !isRevivingForceSwitchRequest(result.p2Request)
 
   if (p1Force && p2Force) {
-    await handleForceSwitch(store, 'enemy')
     await handleForceSwitch(store, 'player')
     return true
   }
@@ -398,10 +410,6 @@ async function resolvePostTurnSwitchesAndFaints(
 
   if (playerFainted || enemyFainted) {
     if (playerFainted && enemyFainted) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-      await store.handleFaint('enemy')
-      if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return true
-      
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
       await store.handleFaint('player')
     } else if (playerFainted) {

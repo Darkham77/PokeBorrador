@@ -1,7 +1,6 @@
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner'
 import { useUIStore } from '@/stores/ui'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { UIStore } from '@/types/system/stores'
 import { generateSearchLoopEncounter } from './searchLoopEncounterHelper.ts'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -15,7 +14,7 @@ import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'map') {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
-  const uiStore = useUIStore() as unknown as UIStore
+  const uiStore = useUIStore()
 
   if (option === 'search' && ctx.activeBattle.value) {
     ctx.isProcessing.value = true
@@ -137,7 +136,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
     
     const isTrainer = ctx.activeBattle.value?.isTrainer || ctx.activeBattle.value?.isGym || false
-    const uiStore = useUIStore() as unknown as UIStore
+    const uiStore = useUIStore()
     const autoBattle = uiStore.autoBattle && !isTrainer
 
     if (!autoBattle) {

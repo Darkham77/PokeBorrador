@@ -49,10 +49,14 @@ export const TYPE_TRANSLATIONS: Record<PokemonType, string> = {
   fairy: 'Hada'
 } as const;
 
+export function isPokemonType(raw: string): raw is PokemonType {
+  return (POKEMON_TYPES as readonly string[]).includes(raw.toLowerCase()); // domain-ok
+}
+
 /** Boundary adapter for data coming from Showdown or external sources. Throws if invalid. */
 export function toPokemonType(raw: string): PokemonType {
   const clean = raw.toLowerCase(); // text-ok
-  if (POKEMON_TYPES.includes(clean as PokemonType)) return clean as PokemonType;
+  if (isPokemonType(clean)) return clean;
   throw new Error(`[types] Invalid PokemonType from external source: '${raw}'`);
 }
 

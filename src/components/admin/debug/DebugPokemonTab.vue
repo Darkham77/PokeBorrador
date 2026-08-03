@@ -15,7 +15,7 @@ interface ViteDebug {
   walkEggs: () => void
 }
 
-const getDebug = () => (window as unknown as { __VITE_DEBUG__: ViteDebug }).__VITE_DEBUG__
+const getDebug = () => window.__VITE_DEBUG__ as unknown as ViteDebug // domain-ok
 
 // Direct store manipulation (avoids stale proxy closures from HMR)
 async function setDebugPokedex(mode: string) {

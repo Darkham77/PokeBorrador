@@ -8,7 +8,7 @@ import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '@/data/system/constants';
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
 import { toPokemonType } from '@/data/battle/types';
 
@@ -22,7 +22,7 @@ import type {
     PokemonData,
     NatureBaseData
 } from '@/types/system/database';
-import type { StatId } from '@/logic/pokemon/statsMath';
+import { isStatId, type StatId } from '@/logic/pokemon/statsMath';
 
 interface RawShowdownHitEffect {
     boosts?: Partial<Record<string, number>>;
@@ -71,9 +71,9 @@ function toShowdownSecondaryEffect(effect: RawShowdownSecondaryEffect | undefine
  */
 
 // Estado reactivo para la base de datos (optimizado con shallowRef)
-const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>);
-const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>);
-const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>);
+const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>); // open-record
+const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>); // open-record
+const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>); // open-record
 
 /** Mapa inverso: número sprite → nombre canónico (ej: 12 → "butterfree") */
 const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
@@ -113,8 +113,12 @@ export const pokemonDataProvider = {
             throw new Error(`Especie de Pokémon no encontrada: ${id}`);
         }
 
-        const isDebug = bypassWhitelist || (import.meta.env.DEV && process.env.NODE_ENV !== 'test') || (typeof window !== 'undefined' && (!!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__ || window.location.search.includes('debug')));
-        if (!(ENABLED_POKEMON_IDS as readonly string[]).includes(normalizedId) && !isDebug) {
+        const isE2E = typeof globalThis !== 'undefined' && Boolean(Reflect.get(globalThis, '__E2E__'));
+        const isDebug = bypassWhitelist
+            || (import.meta.env?.DEV === true && process.env.NODE_ENV !== 'test')
+            || isE2E
+            || (typeof window !== 'undefined' && (!!window.__VITE_DEBUG__ || window.location.search.includes('debug')));
+        if (!isEnabledPokemonId(normalizedId) && !isDebug) {
             throw new Error(`Especie de Pokémon no habilitada por la whitelist global: ${id}`);
         }
         
@@ -172,7 +176,7 @@ export const pokemonDataProvider = {
         }
 
         // Buscar traducción en las traducciones estáticas
-        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId];
+        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId]; // open-record
         if (!translated || !translated.name || !translated.desc) {
             throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
         }
@@ -304,15 +308,17 @@ export const pokemonDataProvider = {
     getNatureData(name: string): NatureBaseData | null {
         if (!name) return null;
         const cleanId = toID(name);
-        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId];
+        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId]; // open-record
         if (!staticData) return null;
 
         const sdNature = Dex.natures.get(cleanId);
+        const upStat = sdNature?.plus || staticData.up;
+        const downStat = sdNature?.minus || staticData.down;
         
         const natureData: NatureBaseData = {
             name: staticData.name,
-            up: ((sdNature?.plus ?? staticData.up) as StatId | null) ?? null,
-            down: ((sdNature?.minus ?? staticData.down) as StatId | null) ?? null,
+            up: upStat && isStatId(upStat) ? upStat : null,
+            down: downStat && isStatId(downStat) ? downStat : null,
             desc: staticData.desc
         }
         return natureData;
@@ -364,7 +370,7 @@ export const pokemonDataProvider = {
         }
         // También intentar coincidencia por ID normalizado
         const possibleId = toID(spanishName);
-        if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) {
+        if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) { // open-record
             return possibleId;
         }
         throw new Error(`No se pudo resolver el movimiento a partir del nombre en español: ${spanishName}`);

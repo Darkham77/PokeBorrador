@@ -14,7 +14,7 @@ const game = useGameStore()
 const debugClassLevel = ref(game.state.classLevel || 1)
 const debugReputation = ref(game.state.classData?.reputation || 0)
 
-const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
 
 const setClassLevel = () => getDebugBridge().setClassLevel(debugClassLevel.value)
 const setReputation = () => getDebugBridge().setReputation(debugReputation.value)

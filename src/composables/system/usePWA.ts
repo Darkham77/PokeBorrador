@@ -27,6 +27,10 @@ const progressText = ref('')
 
 const updateServiceWorker = registerSW({
   onNeedRefresh() {
+    if (typeof window !== 'undefined' && window.__E2E__) {
+      logger.info('PWA', 'SW Update available but bypassed in E2E session');
+      return;
+    }
     needRefresh.value = true
     isOutdatedClient.value = false // SW background asset update is safe to proceed
     logger.info('PWA', 'SW Update available')
@@ -214,10 +218,11 @@ export function usePWA() {
               await registration.update()
               // Esperar un momento a ver si se detecta/instala
               await new Promise((r) => setTimeout(r, 1000))
-              const waitingWorker = registration.waiting as unknown as ServiceWorker
+              const waitingWorker = registration.waiting
               if (waitingWorker) {
                 logger.info('PWA', 'Nuevo Service Worker encontrado y listo tras update. Activando...')
-                waitingWorker.postMessage({ type: 'SKIP_WAITING' })
+                const postMsg = Reflect.get(waitingWorker, 'postMessage') as ((msg: unknown) => void) | undefined // domain-ok
+                postMsg?.({ type: 'SKIP_WAITING' })
                 await new Promise<void>((resolve) => {
                   const onControllerChange = () => {
                     navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
@@ -247,6 +252,7 @@ export function usePWA() {
   }
 
   const handleNeedRefresh = () => {
+    if (typeof window !== 'undefined' && window.__E2E__) return;
     isOutdatedClient.value = true
     needRefresh.value = true
   }

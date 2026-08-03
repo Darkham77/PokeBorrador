@@ -5,7 +5,7 @@ import { logger } from '@/logic/utils/logger'
 import type { useBattleStore } from '@/stores/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations'
-import { useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations'
+import { isTrainerTransitionActive, useBattleTrainerAnimations } from '@/composables/battle/useBattleTrainerAnimations'
 import { useBattleWildAnimations } from '@/composables/battle/useBattleWildAnimations'
 
 export function useBattleAnimations(
@@ -90,7 +90,7 @@ export function useBattleAnimations(
            wildRevealActive.value || 
            isEmerging.value || 
            upcomingIsEmerging.value || 
-           trainerAnimState.value !== null ||
+           isTrainerTransitionActive(trainerAnimState.value) ||
            isCaptureSequenceActive.value
   })
 
@@ -189,6 +189,16 @@ export function useBattleAnimations(
          case 'RETREAT_AND_FADEOUT':
            trainerAnimState.value = 'retreating'
            break
+
+        case 'WAIT_INPUT':
+          isWildEntryAnimation.value = false
+          wildRevealActive.value = false
+          isEmerging.value = false
+          upcomingIsEmerging.value = false
+          if (isTrainerTransitionActive(trainerAnimState.value)) {
+            trainerAnimState.value = 'idle'
+          }
+          break
 
         case 'EMPTY_WAIT':
           isEmerging.value = false

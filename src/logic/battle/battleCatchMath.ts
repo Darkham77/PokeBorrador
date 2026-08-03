@@ -1,12 +1,13 @@
 import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import { getEffectiveStatPure } from './battleMath.ts'
 
-import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
 
-function getMechWeather(type: WeatherId | string | null | undefined): string {
+function getMechWeather(type: string | null | undefined): string {
   if (!type) return 'clear'
-  const lower = type as WeatherId
+  const lower = isWeatherId(type) ? type : null
+  if (!lower) return 'clear'
   if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun'
   if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain'
   if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm'
