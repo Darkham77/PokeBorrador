@@ -1,6 +1,7 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
+
 import type { BattleState } from '@/types/battle/battle'
 
 export async function processRocketStealMechanics(
@@ -50,7 +51,6 @@ export async function processRocketStealMechanics(
               delete enemyInv[itemId]
             }
 
-            if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {}
             incrementRecordKey(ctx.gs.state.inventory, itemId, qtyToSteal)
 
             stolenTotalCost += qtyToSteal * itemPrice
@@ -102,7 +102,22 @@ export async function processRocketStealMechanics(
         const stolenItems: Record<string, number> = {}
 
         if (availableItems.length > 0) {
-          applyRocketStolenItems(ctx, playerInventory, [...availableItems].sort(() => Math.random() - 0.5), stolenItems, itemsLimit)
+          let stolenTotalCost = 0
+          for (const itemId of [...availableItems].sort(() => Math.random() - 0.5)) {
+            if (stolenTotalCost >= itemsLimit) break
+            const itemDef = getItemById(itemId)
+            const itemPrice = itemDef?.price || 100
+            const availableQty = playerInventory[itemId] || 0
+            if (availableQty > 0 && itemPrice <= (itemsLimit - stolenTotalCost)) {
+              const maxQtyAllowed = Math.min(availableQty, Math.floor((itemsLimit - stolenTotalCost) / itemPrice))
+              if (maxQtyAllowed >= 1) {
+                const qtyToSteal = Math.floor(Math.random() * maxQtyAllowed) + 1
+                playerInventory[itemId] = availableQty - qtyToSteal
+                incrementRecordKey(stolenItems, itemId, qtyToSteal)
+                stolenTotalCost += qtyToSteal * itemPrice
+              }
+            }
+          }
         }
 
         let stolenTotalCost = Object.entries(stolenItems).reduce((acc, [id, qty]) => acc + (getItemById(id)?.price || 100) * qty, 0)

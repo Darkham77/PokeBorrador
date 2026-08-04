@@ -8,17 +8,17 @@ import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const SETUP_MOVES = [
+const SETUP_MOVES: readonly string[] = [ // no-domain
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'irondefense', 'bellydrum', 'coil',
   'shiftgear', 'workup', 'agility', 'autotomize', 'tailglow',
-] as const satisfies readonly string[]; // no-domain
+];
 
-const PRIORITY_MOVES = [
+const PRIORITY_MOVES: readonly string[] = [ // no-domain
   'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
   'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
   'fakeout', 'firstimpression', 'accelerock',
-] as const satisfies readonly string[]; // no-domain
+];
 
 export function evaluateWinConditions(
   snapshot: HeuristicBattleSnapshot,

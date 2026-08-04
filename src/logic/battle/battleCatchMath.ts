@@ -1,7 +1,7 @@
 import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import { getEffectiveStatPure } from './battleMath.ts'
 
-import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import { isWeatherId } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
 
 function getMechWeather(type: string | null | undefined): string {

@@ -3,7 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, isEnabledPokemonId } from '@/data/system/constants'
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
 

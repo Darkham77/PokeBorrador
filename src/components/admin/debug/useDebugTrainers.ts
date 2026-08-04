@@ -12,7 +12,7 @@ import { GYMS } from '@/data/world/gyms'
 import { TRAINER_TYPES, isTrainerTypeKey } from '@/data/player/trainerTypes'
 import { generateNpcName } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
 

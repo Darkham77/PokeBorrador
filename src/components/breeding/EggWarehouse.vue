@@ -3,6 +3,7 @@ import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import EggSprite from '@/components/common/EggSprite.vue';
@@ -18,7 +19,10 @@ const gameStore = useGameStore();
 const isCriador = computed(() => gameStore.state.playerClass === 'criador');
 const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= 20);
 
-const getPokemonName = (id: string) => POKEMON_DB[id]?.name || 'Huevo';
+const getPokemonName = (id: string) => {
+  const specId = requirePokemonSpeciesId(id)
+  return POKEMON_DB[specId]?.name || 'Huevo'
+}
 
 const getEggTierInfo = (egg: DaycareEgg) => {
   if (!egg.ivs) return null;

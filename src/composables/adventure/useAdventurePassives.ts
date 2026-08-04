@@ -1,12 +1,12 @@
 import { computed, type Ref } from 'vue'
 import type { AbilityId } from '@/data/battle/abilities'
 
-const ADVENTURE_PASSIVES = {
+const ADVENTURE_PASSIVES: Partial<Record<AbilityId, { id: string; label: string; desc: string; value: number }>> = {
   flamebody: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: '+15% Vel. Viaje', value: 0.15 },
   magmaarmor: { id: 'speed_bonus', label: 'Escudo Magma', desc: '+15% Vel. Viaje', value: 0.15 },
   pickup: { id: 'loot_bonus', label: 'Recogida', desc: '+20% Prob. Botín', value: 0.20 },
   synchronize: { id: 'nature_sync', label: 'Sincronía', desc: 'Sincronizar Naturaleza', value: 0.50 }
-} satisfies Partial<Record<AbilityId, { id: string; label: string; desc: string; value: number }>>
+}
 
 export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: number; ability?: AbilityId } | null> } }) {
   const activeTeamPassives = computed(() => {
@@ -18,8 +18,7 @@ export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: nu
 
     team.forEach(pkmn => {
       if (pkmn && pkmn.hp > 0 && pkmn.ability) {
-        const abilityKey = pkmn.ability
-        const passive = ADVENTURE_PASSIVES[abilityKey]
+        const passive = ADVENTURE_PASSIVES[pkmn.ability]
         if (passive) {
           if (passive.id === 'speed_bonus') {
             speedBonus = Math.max(speedBonus, passive.value)

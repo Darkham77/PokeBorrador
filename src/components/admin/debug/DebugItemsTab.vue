@@ -33,11 +33,11 @@ async function addItem(item: ShopItem, qty = 10) {
 }
 
 function addTenOfEach() {
-  const inventory = { ...gameStore.state.inventory }
+  const inventory: Partial<Record<string, number>> = { ...gameStore.state.inventory }
   ;(SHOP_ITEMS as ShopItem[]).forEach(item => {
     incrementRecordKey(inventory, item.id, 10)
   })
-  gameStore.state.inventory = inventory
+  gameStore.state.inventory = inventory as typeof gameStore.state.inventory
   gameStore.save(false)
   uiStore.notify('Agregados 10 de cada objeto', '🎒')
 }

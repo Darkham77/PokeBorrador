@@ -6,7 +6,7 @@
  */
 import { toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { isWeatherId, type WeatherId } from '../weather/weatherRegistry.ts';
+import { isWeatherId } from '../weather/weatherRegistry.ts';
 
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
@@ -119,7 +119,8 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
   if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
 
-  const wType = isWeatherId(activeWeather?.type) ? activeWeather.type : 'clear';
+  const rawType = activeWeather?.type;
+  const wType = (rawType && isWeatherId(rawType)) ? rawType : 'clear';
   const pTypes = [pokemon.type, pokemon.type2];
   
   const WEATHER_MAP: Record<string, string> = {

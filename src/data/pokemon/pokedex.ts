@@ -471,3 +471,5 @@ export function isBabyPokemonSpeciesId(value: string): value is BabyPokemonSpeci
 export function isFossilPokemonSpeciesId(value: string): value is FossilPokemonSpeciesId {
   return FOSSIL_POKEMON.some(id => id === value);
 }
+
+export type TMData = (typeof GAME_TMS)[number];

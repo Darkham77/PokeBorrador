@@ -272,14 +272,14 @@ Repairs can introduce new warnings. This re-run confirms the loop's output is cl
 **If any errors or new warnings** → the repair cycle introduced regressions. Record them in `task.md`, return to Step 3.4.
 **If 0 errors, 0 new warnings** → update `task.md` with `post-repair audit: ✅`. Proceed to Step 3.5e.
 
-### Step 3.5e — `npx fallow health --score`
+### Step 3.5e — `npm run fallow:health` (or `node ./node_modules/fallow/bin/fallow health --score`)
 
 1. Run the command and wait for completion.
 2. Read the score.
 
 The score MUST be **≥ `BASELINE_HEALTH`** (recorded in Step 1.4) AND **≥ 85**.
 
-**If below 85 or regressed** → run `npx fallow health --targets --hotspots`, record a refactoring sub-plan in `task.md`, perform the refactors, restart from Step 3.5a.
+**If below 85 or regressed** → run `npm run fallow -- health --targets --hotspots`, record a refactoring sub-plan in `task.md`, perform the refactors, restart from Step 3.5a.
 **If valid** → update `task.md` with `health: ✅ score=<N>`.
 
 **✅ Loop exited.** Mark Phase 3 `[x]` in `task.md` with all sub-scores recorded. Show snippet. Only then proceed to Phase 4.

@@ -29,7 +29,7 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
-import { isWeatherId, type WeatherId } from '../weather/weatherRegistry.ts';
+import { isWeatherId } from '../weather/weatherRegistry.ts';
 import { isPokemonType } from '../../data/battle/types.ts';
 
 function getMechWeather(type: string | null | undefined): string {

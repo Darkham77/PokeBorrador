@@ -18,7 +18,9 @@ Use this skill to run and interpret Fallow commands to audit the workspace, find
 Runs dead code, duplication, and health analyses together:
 
 ```bash
-npx fallow
+npm run fallow
+# Or cross-platform direct Node execution:
+node ./node_modules/fallow/bin/fallow
 ```
 
 To run only specific analyses:
@@ -154,7 +156,7 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 
 ## Node 26+ Programmatic & Configuration Practices
 
-- **Programmatic Sandbox Spawning**: When running Fallow programmatically from scripts under Node.js 26+ restricted permission flags (`--permission`), execute Fallow via the local binary `node ./node_modules/fallow/bin/fallow --format json` instead of `npx` to prevent access errors to global directories. Always configure a large buffer size (`maxBuffer: 10 * 1024 * 1024` or more) when capturing the stdout to avoid `ENOBUFS` buffer overflow errors on large codebases.
+- **Programmatic Sandbox Spawning & Direct Binary Execution**: All programmatic calls to Fallow or internal CLIs MUST use `node ./node_modules/fallow/bin/fallow --format json` instead of `spawnSync('npx', ...)` or `npx fallow`. Invoking `npx` under Windows 11 triggers OS SmartScreen/App Control alerts due to `cmd.exe` subshell path resolution. Always configure a large buffer size (`maxBuffer: 10 * 1024 * 1024` or more) when capturing stdout to avoid `ENOBUFS` buffer overflow errors on large codebases.
 - **Dependency & Export Ignores**: Backend/test libraries (like `postgres` or `@pkmn/sim`) not imported in client bundles but declared in `package.json` must be added to `"ignoreDependencies"` in `.fallowrc.json`. Legitimate unused exports (for public APIs, dynamic loading, or shared data structures) MUST be added surgically one by one in `.fallowrc.json` under `"ignoreExports"`. **The use of wildcards (`*`) to ignore entire files is strictly prohibited** to ensure Fallow continues auditing code health in those modules.
 
 ---

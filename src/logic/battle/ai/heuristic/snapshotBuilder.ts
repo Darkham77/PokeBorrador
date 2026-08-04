@@ -28,8 +28,8 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
   const enemyStages = store.enemyStages.value;
   const turn = battle.turnCount ?? 0;
 
-  const mySide = buildSide('p2', enemyTeam, enemyStages, battle.enemy, battle.enemySideConditions, enemyRequest);
-  const opponentSide = buildSide('p1', playerTeam, playerStages, battle.player, battle.playerSideConditions, playerRequest);
+  const mySide = buildSide('p2', enemyTeam, enemyStages, battle.enemy, battle.enemySideConditions);
+  const opponentSide = buildSide('p1', playerTeam, playerStages, battle.player, battle.playerSideConditions);
 
   const field = buildField(battle);
 
@@ -46,14 +46,13 @@ function buildSide(
   stages: BattleStages,
   activePoke: Pokemon | null | undefined,
   sideConditionsRaw: Partial<Record<(typeof BATTLE_CONDITION_KEYS)[number], BattleTimedCondition>> | undefined,
-  request?: { active?: Array<{ trapped?: boolean }> } | null,
 ): HeuristicSideState {
   const sideConditions = buildSideConditions(sideConditionsRaw);
   const activeName = activePoke?.name ?? '';
 
   const pokemon: HeuristicPokemonState[] = team
     .filter((p): p is Pokemon => !!p)
-    .map(p => buildPokemonState(p, p.name === activeName, stages, request));
+    .map(p => buildPokemonState(p, p.name === activeName, stages));
 
   const activePokemon = pokemon.find(p => p.active) ?? null;
 
@@ -72,12 +71,7 @@ function buildSideConditions(
   return map;
 }
 
-function buildPokemonState(
-  p: Pokemon,
-  active: boolean,
-  stages: BattleStages,
-  request?: { active?: Array<{ trapped?: boolean }> } | null,
-): HeuristicPokemonState {
+function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): HeuristicPokemonState {
   // AI-1 Fix: Check explicit fainted flag or hp === 0 when maxHp > 0.
   // Unrevealed enemy Pokemon with maxHp === 0 should NOT be marked as fainted!
   const fainted = p.fainted || (p.maxHp > 0 && p.hp <= 0);
@@ -128,14 +122,11 @@ function buildPokemonState(
       accuracy: active ? (stages.acc ?? 0) : 0,
       evasion: active ? (stages.eva ?? 0) : 0,
     },
-    volatiles: buildVolatiles(p, active ? request : null),
+    volatiles: buildVolatiles(p),
   };
 }
 
-function buildVolatiles(
-  p: Pokemon,
-  request?: { active?: Array<{ trapped?: boolean }> } | null,
-): Set<HeuristicVolatileKey> {
+function buildVolatiles(p: Pokemon): Set<HeuristicVolatileKey> {
   const v = new Set<HeuristicVolatileKey>();
   if (p.confused) v.add('confusion');
   if (p.substitute) v.add('substitute');
@@ -146,10 +137,8 @@ function buildVolatiles(
   if (p.mustRecharge) v.add('mustrecharge');
   if (p.tauntTurns) v.add('taunt');
   if (p.encoreTurns) v.add('encore');
-  // AI-4 Fix: check trapped, maybeTrapped, or active request trapped flag
-  if (p.trapped || p.volatileCounters?.['maybetrapped'] || p.volatileCounters?.['trapped'] || request?.active?.[0]?.trapped) {
-    v.add('trapped');
-  }
+  // AI-4 Fix: check trapped and maybeTrapped
+  if (p.trapped || p.volatileCounters?.['maybetrapped'] || p.volatileCounters?.['trapped']) v.add('trapped');
   // AI-9 Fix: only mark choicelock if explicitly tracked in volatileCounters from move execution
   if (p.volatileCounters?.['choicelock']) {
     v.add('choicelock');

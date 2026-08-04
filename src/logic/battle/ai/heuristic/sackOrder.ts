@@ -7,14 +7,14 @@ import { toID } from '@pkmn/sim';
 import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 
-const HAZARD_REMOVAL_MOVES = [
+const HAZARD_REMOVAL_MOVES: readonly string[] = [ // no-domain
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
-] as const satisfies readonly string[]; // no-domain
+];
 
-const SPEED_CONTROL_MOVES = [
+const SPEED_CONTROL_MOVES: readonly string[] = [ // no-domain
   'thunderwave', 'glaciate', 'icywind', 'stickyweb', 'tailwind',
   'trickroom', 'electroweb',
-] as const satisfies readonly string[]; // no-domain
+];
 
 export function calculateSackOrder(
   snapshot: HeuristicBattleSnapshot,

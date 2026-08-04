@@ -16,16 +16,16 @@ import type {
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const HAZARD_REMOVAL_MOVES = ['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin'] as const satisfies readonly string[]; // no-domain
+const HAZARD_REMOVAL_MOVES: readonly string[] = ['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin']; // no-domain
 
-const SETUP_MOVES = [
+const SETUP_MOVES: readonly string[] = [ // no-domain
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
-] as const satisfies readonly string[]; // no-domain
+];
 
-const HAZARD_MOVES = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const satisfies readonly string[]; // no-domain
+const HAZARD_MOVES: readonly string[] = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb']; // no-domain
 
-const PIVOT_MOVES = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport'] as const satisfies readonly string[]; // no-domain
+const PIVOT_MOVES: readonly string[] = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport']; // no-domain
 
 /** Full 9-layer heuristic decision. Returns null if no layer fires confidently. */
 export function heuristicDecision(

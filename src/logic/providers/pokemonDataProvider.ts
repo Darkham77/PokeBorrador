@@ -8,7 +8,7 @@ import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, isEnabledPokemonId } from '@/data/system/constants';
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
 import { toPokemonType } from '@/data/battle/types';
 
@@ -22,7 +22,7 @@ import type {
     PokemonData,
     NatureBaseData
 } from '@/types/system/database';
-import { isStatId, type StatId } from '@/logic/pokemon/statsMath';
+import { isStatId } from '@/logic/pokemon/statsMath';
 
 interface RawShowdownHitEffect {
     boosts?: Partial<Record<string, number>>;

@@ -1,7 +1,7 @@
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useInventoryStore } from '@/stores/inventory/inventory.ts';
-import type { ItemId } from '@/data/inventory/items';
+import { requireItemId, type ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';

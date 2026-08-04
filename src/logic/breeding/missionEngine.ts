@@ -4,7 +4,7 @@
  * Logic for generating and validating Daycare Daily Missions.
  */
 
-import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
 import { TRAINER_TYPES } from '@/data/player/trainerTypes';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
@@ -216,7 +216,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     includeTitle: true
   });
 
-  const targetName = POKEMON_DB[targetId]?.name || targetId;
+  const targetName = (isPokemonDbSpeciesId(targetId) ? POKEMON_DB[targetId]?.name : undefined) ?? targetId;
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
   const template = templates[Math.floor(Math.random() * templates.length)] || '...';
   const dialogue = template.replace('${pokemon}', targetName).replace('${req}', reqText);

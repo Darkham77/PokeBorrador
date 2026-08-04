@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
-import { toPokemonType, TYPE_COLORS } from '@/data/battle/types'
+import { toPokemonType } from '@/data/battle/types'
+import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 
 interface Props {
   show?: boolean

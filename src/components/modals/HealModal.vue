@@ -11,7 +11,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { requirePokemonType, TYPE_COLORS } from '@/data/battle/types'
+import { toPokemonType } from '@/data/battle/types'
 
 interface Props {
   show?: boolean
@@ -62,7 +62,7 @@ function getPokemonFX(p: Pokemon | null) {
   const primaryType = data?.type || 'normal'
   
   return {
-    typeColor: TYPE_COLORS[requirePokemonType(primaryType)] || '#A8A878',
+    typeColor: TYPE_COLORS[toPokemonType(primaryType)] || '#A8A878',
     isShiny: p.isShiny,
     isLegendary: tier.tier === 'S+' || tier.tier === 'S',
     tierColor: tier.color

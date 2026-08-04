@@ -24,7 +24,7 @@ type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
 
 const db: { [K in PokemonDbSpeciesId]?: PokemonBaseData } = {};
 
-function isPokemonDbSpeciesId(id: string): id is PokemonDbSpeciesId {
+export function isPokemonDbSpeciesId(id: string): id is PokemonDbSpeciesId {
   return Object.hasOwn(SPECIES_METADATA, id);
 }
 

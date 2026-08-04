@@ -263,7 +263,7 @@ async function runTypeChecking(): Promise<Violation[]> {
 async function runFallowDupes(): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const dupesProc = spawnSync('npx', ['fallow', 'dupes', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+    const dupesProc = spawnSync('node', ['./node_modules/fallow/bin/fallow', 'dupes', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
     const output = dupesProc.stdout ? dupesProc.stdout.trim() : '';
     if (!output) return [];
 
@@ -302,7 +302,7 @@ async function runFallowDupes(): Promise<Violation[]> {
 async function runFallowSecurity(): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const secProc = spawnSync('npx', ['fallow', 'security', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+    const secProc = spawnSync('node', ['./node_modules/fallow/bin/fallow', 'security', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
     const output = secProc.stdout ? secProc.stdout.trim() : '';
     if (!output) return [];
 

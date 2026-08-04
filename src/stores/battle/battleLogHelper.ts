@@ -13,7 +13,7 @@ export function createBattleLoggerHelper(
   playerStages: { value: unknown },
   enemyStages: { value: unknown },
   activeMove: { value: unknown },
-  initialStages: unknown
+  initialStages: Record<string, number>
 ) {
   const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: 'player' | 'enemy' | null = null) => {
     const ctx = {

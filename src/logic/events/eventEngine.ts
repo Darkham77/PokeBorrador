@@ -150,7 +150,7 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
   return multipliers
 }
 
-import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * Checks if a specific species has active boosts.

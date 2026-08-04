@@ -9,9 +9,9 @@ import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/
 import type { BattleStages } from '@/types/battle/battle'
 import { requireBattleConditionKey } from '@/types/battle/battle'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
-import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness'
+import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
-export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness'
+export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
 interface BattleReadyDetail {
   subState: string

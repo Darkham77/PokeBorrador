@@ -4,7 +4,8 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemById, requireItemId, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
+import { getItemById, requireItemId } from '@/data/inventory/items'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -97,7 +98,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       if (active.rewardTM) { 
         const tmId = requireItemId(active.rewardTM)
         const itemObj = getItemById(tmId)
-        ctx.inventoryStore.addItem(tmId, 1)
+        incrementRecordKey(ctx.gs.state.inventory, tmId, 1)
         ctx.addLog(`¡Recibiste la ${itemObj.name}!`, 'log-info', tmId) 
         ctx.uiStore.notify(`¡Obtuviste ${itemObj.name}!`, '🎒')
       }
@@ -116,7 +117,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         if (tmChance > 0 && Math.random() < tmChance) {
           const tmId = requireItemId(gym.rewardTM)
           const itemObj = getItemById(tmId)
-          ctx.inventoryStore.addItem(tmId, 1)
+          incrementRecordKey(ctx.gs.state.inventory, tmId, 1)
           ctx.addLog(`¡Bono de Gimnasio (Rematch): Recibiste la ${itemObj.name}!`, 'log-success', tmId)
           ctx.uiStore.notify(`¡Obtuviste ${itemObj.name}!`, '🎒')
         }

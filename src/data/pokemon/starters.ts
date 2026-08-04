@@ -1,5 +1,5 @@
 import { STARTER_POKEMON_IDS, type StarterPokemonId } from '../system/constants.ts'
-import { requirePokemonSpeciesId } from './pokedex.ts'
+
 
 export interface StarterPokemonConfig {
   id: StarterPokemonId

@@ -1,7 +1,6 @@
-import { TM_COMPAT, GAME_TMS } from '../../data/pokemon/pokedex.ts';
+import { TM_COMPAT, GAME_TMS, type TMData } from '../../data/pokemon/pokedex.ts';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';

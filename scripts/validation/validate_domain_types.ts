@@ -19,7 +19,6 @@
  *
  * Usage:
  *   npm run validate:domain-types
- *   npm run validate:domain-types -- --errors-only
  *   npm run validate:domain-types -- --summary
  *   npm run validate:domain-types -- --output=scratch/domain_types_report.txt
  */
@@ -34,14 +33,12 @@ enableCompileCache();
 // ─── CLI Args ────────────────────────────────────────────────────────────────
 const { values: args } = parseArgs({
   options: {
-    'errors-only': { type: 'boolean', default: false },
     summary: { type: 'boolean', short: 's', default: false },
     output: { type: 'string' },
   },
   strict: false,
 });
 
-const errorsOnly = Boolean(args['errors-only']);
 const summaryOnly = Boolean(args.summary);
 const outputFile = typeof args.output === 'string' ? args.output : undefined;
 
@@ -414,7 +411,7 @@ for (const scanRoot of SCAN_ROOTS) {
   }
 }
 
-const visibleFindings = errorsOnly ? allFindings.filter(finding => finding.severity === 'ERROR') : allFindings;
+const visibleFindings = allFindings;
 const errors = allFindings.filter(finding => finding.severity === 'ERROR');
 const warnings = allFindings.filter(finding => finding.severity === 'WARN');
 

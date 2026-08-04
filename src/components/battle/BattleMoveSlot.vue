@@ -6,9 +6,9 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
-import { PDEX_TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
-import { toPokemonType, TYPE_COLORS } from '@/data/battle/types'
+import { toPokemonType } from '@/data/battle/types'
+import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -57,7 +57,7 @@ const hexColorRgb = computed(() => {
   if (!hex) return '255, 255, 255'
   let h = hex.replace('#', '')
   if (h.length === 3) {
-    h = h.split('').map(c => c + c).join('')
+    h = h.split('').map((c: string) => c + c).join('')
   }
   const r = parseInt(h.slice(0, 2), 16)
   const g = parseInt(h.slice(2, 4), 16)

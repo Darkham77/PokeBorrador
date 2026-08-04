@@ -145,7 +145,7 @@ export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<
     }
 
     const req = active.playerRequest
-    const isRevivingTarget = isRevivingForceSwitchRequest(req)
+    const isRevivingTarget = isRevivingForceSwitchRequest(req as Parameters<typeof isRevivingForceSwitchRequest>[0])
     const isForced = !!(
       !isRevivingTarget && (
         (req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x)))) ||

@@ -14,6 +14,8 @@ export const BATTLE_STATES = {
   EXIT_BATTLE: 'EXIT_BATTLE'
 } as const;
 
+export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
+
 export function isBattleStateName(val: string): val is BattleStateName {
   return (Object.values(BATTLE_STATES) as readonly string[]).includes(val); // domain-ok
 }

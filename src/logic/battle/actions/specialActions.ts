@@ -3,7 +3,7 @@ import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import { getItemById } from '@/data/inventory/items';
-import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils';
 import { callPokemonToBattle } from './specialActionsHelper.ts';
 
 /**
@@ -350,7 +350,6 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         const isPlayerTgt = (tgt.uid === b.player?.uid);
         
         if (isPlayerSrc) {
-          if (!battleCtx.gs.state.inventory) battleCtx.gs.state.inventory = {};
           incrementRecordKey(battleCtx.gs.state.inventory, stolenItem, 1);
           
           const itemDef = getItemById(stolenItem);
@@ -370,7 +369,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       const isPlayerSrc = (src.uid === b.player?.uid);
       if (isPlayerSrc) {
         const amount = (src.level || 5) * 5;
-        incrementRecordKey(battleCtx.gs.state, 'money', amount);
+        addToField(battleCtx.gs.state, 'money', amount);
         addLogFn(`¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`, 'log-success', src);
         
         import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(() => {});

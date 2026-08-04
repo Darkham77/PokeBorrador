@@ -7,15 +7,15 @@ import type { HeuristicBattleSnapshot, ThreatAssessment } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const SETUP_MOVES = [
+const SETUP_MOVES: readonly string[] = [ // no-domain
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear',
-] as const satisfies readonly string[]; // no-domain
+];
 
-const PRIORITY_MOVES = [
+const PRIORITY_MOVES: readonly string[] = [ // no-domain
   'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
   'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
-] as const satisfies readonly string[]; // no-domain
+];
 
 const THREAT_WEIGHTS = {
   speedThreat: 0.25,

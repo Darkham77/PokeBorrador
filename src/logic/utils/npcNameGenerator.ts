@@ -1,3 +1,6 @@
+import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+
 export type NpcGender = 'M' | 'F';
 
 export const MALE_NAMES = [
@@ -20,31 +23,25 @@ export const FEMALE_NAMES = [
 ] as const;
 
 
-const KNOWN_FEMALE_SPRITES = [
+const KNOWN_FEMALE_SPRITES: readonly string[] = [ // no-domain
   'nurse', 'nurseryaide', 'battlegirl', 'beauty', 'lass', 'aromalady', 'lady', 'skyla',
   'erika', 'misty', 'sabrina', 'sonia', 'sonia-professor', 'juniper', 'sada', 'sada-ai',
   'briar', 'miriam', 'raifort', 'kahili', 'winona', 'katy', 'bea', 'whitney', 'flannery',
   'fantina', 'candice', 'iris', 'roxie', 'korrina', 'valerie', 'olympia', 'acerola',
   'mina', 'nessa', 'marnie', 'allister', 'klara', 'iono', 'tulip', 'geeta', 'lillie',
   'lusamine', 'mallow', 'lanacu', 'marley', 'cheryl', 'cynthia', 'daisy', 'yellow',
-  'doctorf', 'scientistf', 'skytrainerf', 'pokemonrangerf',
-  'whitney', 'flannery', 'winona', 'candice', 'iris', 'eleesa', 'korrina', 'nessa',
-  'bea', 'marnie', 'acerola', 'kahili', 'mallow', 'lana', 'lusamine', 'lillie',
-  'cynthia', 'diantha', 'nemona', 'penny', 'geeta', 'mira', 'turo-ai', 'parasollady',
-  'picnicker', 'hexmaniac', 'channeler', 'medium', 'swimmerf', 'swimmerf-gen4',
-  'swimmerf-gen5', 'tuberf', 'teacher', 'interviewers', 'kimonogirl', 'cowgirl',
-  'dancer', 'idol', 'nurse-gen4', 'nurse-gen5', 'nurseryaide-gen5'
-] as const satisfies readonly string[]; // no-domain
+  'doctorf', 'scientistf', 'skytrainerf', 'pokemonrangerf'
+];
 
-const KNOWN_MALE_SPRITES = [
-  'youngster', 'bugcatcher', 'camper', 'picnicker-m', 'hiker', 'fisherman',
-  'birdkeeper', 'blackbelt', 'cueball', 'gambler', 'rocker', 'tamer', 'engineer',
-  'juggler', 'gentleman', 'biker', 'sailor', 'swimmerm', 'swimmerm-gen4',
-  'psychic-m', 'schoolboy', 'supernerd', 'red', 'blue', 'green', 'oak',
-  'lance', 'steven', 'wallace', 'alder', 'cheren', 'n', 'ghetsis', 'colress',
-  'zygard', 'volkner', 'roark', 'byron', 'fantina', 'clay', 'brycen', 'drayden',
-  'scientist', 'doctor'
-] as const satisfies readonly string[]; // no-domain
+const KNOWN_MALE_SPRITES: readonly string[] = [ // no-domain
+  'oak', 'elm', 'rowan', 'kukui', 'sycamore', 'birch', 'blaine', 'brock', 'lt-surge',
+  'koga', 'giovanni', 'falkner', 'bugsy', 'morty', 'chuck', 'pryce', 'clair',
+  'roark', 'byron', 'volkner', 'cilan', 'chili', 'cress', 'burgh', 'clay', 'drayden',
+  'cheren', 'rood', 'zinzolin', 'ghetsis', 'colress', 'hugh', 'milo', 'kabu',
+  'gordie', 'piers', 'raihan', 'blackbelt', 'hiker', 'bugcatcher', 'gentleman',
+  'biker', 'fisherman', 'birdkeeper', 'scientist', 'youngster', 'supernerd',
+  'psychic', 'tamer', 'policeman', 'doctor'
+];
 
 const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
   caza_bichos: { M: 'Caza Bichos', F: 'Caza Bichos' },
@@ -69,8 +66,8 @@ const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
 };
 
 export interface NpcNameOptions {
-  spriteId?: string;
-  archetype?: string;
+  spriteId?: NpcSpriteId | string;
+  archetype?: NpcArchetype | string;
   gender?: NpcGender;
   includeTitle?: boolean;
 }
