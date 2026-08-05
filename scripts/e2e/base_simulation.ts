@@ -1,28 +1,54 @@
-// fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
+import path from 'node:path';
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
 
 export abstract class BaseE2ESimulation {
   protected page: Page;
   protected username: string;
+  protected sqliteKey: string;
   protected logBuffer: string[];
   protected startTime: number = Temporal.Now.instant().epochMilliseconds;
 
-  constructor(page: Page, username: string, logBuffer?: string[]) {
+  constructor(page: Page, username: string, logBuffer?: string[], sqliteKey?: string) {
     this.page = page;
     this.username = username;
+    this.sqliteKey = sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`;
     this.logBuffer = logBuffer || [];
   }
+
+  /**
+   * Obtiene la clave única de base de datos SQLite de esta simulación
+   */
+  public getSqliteKey(): string {
+    return this.sqliteKey;
+  }
+
+  /**
+   * Obtiene la ruta física absoluta de la base de datos de esta simulación
+   */
+  public getDbPath(): string {
+    return path.resolve(`database/temp/imported_${this.sqliteKey}.db`);
+  }
+
+  /**
+   * Sincroniza deterministamente un Buffer binario de SQLite hacia la memoria RAM del Vite Dev Server
+   */
+  public async syncDevDb(request: unknown, dbBuffer: Buffer): Promise<void> {
+    const playwrightRequest = request as { post: (url: string, opts: unknown) => Promise<unknown> };
+    await playwrightRequest.post(`/api/dev-export-db?db_key=${encodeURIComponent(this.sqliteKey)}`, {
+      headers: { 'Content-Type': 'application/octet-stream' },
+      data: dbBuffer
+    });
+  }
+
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
     this.startTime = Temporal.Now.instant().epochMilliseconds;
     await this.page.setViewportSize({ width: 1600, height: 900 });
-    await loginE2ETestUser(this.page, this.username, this.logBuffer);
+    await loginE2ETestUser(this.page, this.username, this.logBuffer, this.sqliteKey);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
-    // loginE2ETestUser only waits for mapaBtn to be attached — the Vue router
-    // may still be mid-transition, causing "Execution context was destroyed".
     await waitForStoreReady(this.page);
   }
 

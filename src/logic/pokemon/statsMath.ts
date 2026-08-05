@@ -36,7 +36,7 @@ export interface IVs {
   spe: number;
 }
 
-export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type StatId = (typeof STAT_IDS)[number];
 
 export interface NatureData {

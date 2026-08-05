@@ -13,7 +13,7 @@ Frontend Developers / Systems Engineers.
 - **showdownBridge Architecture**: The Showdown log parser is split into focused modules. The main `showdownBridge.ts` is a dispatcher (< 100 lines). Add new handlers in the appropriate sub-module:
   - `showdownBridgeCore.ts` — battle start, turn, request, player setup
   - `showdownBridgeStages.ts` — stat stage changes (-boost, +boost)
-  - `showdownBridgeField.ts` — weather, terrain, side conditions (reflect, light screen, aurora veil, tailwind, spikes, stealth rock)
+  - `showdownBridgeField.ts` — weather, terrain, side conditions (reflect, light screen, aurora veil, tailwind, spikes, stealth rock); split into modular sub-helpers (`handleWeatherEvent`, `handleStartVolatileEvent`, `handleEndVolatileEvent`, `handleSideConditionEvent`, `handleFieldConditionEvent`) to keep cognitive complexity low (< 15).
   - `showdownBridgeMisc.ts` — misc events (miss, crit, can't, faint, etc.)
   - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.)
 - **smogonAdapter.ts**: Shared `@smogon/calc` wrapper for the move damage tooltip. Injects actual game stats into `rawStats` (bypassing the EV/IV formula) to ensure accuracy with the adventure-mode custom stat system. Exposes `calculateDamageForTooltip()` with a 512-entry LRU cache. Field conditions (terrain, screens) flow from the bridge into `BattleState` and are consumed here to produce accurate damage ranges, KO probabilities, recovery, and recoil.

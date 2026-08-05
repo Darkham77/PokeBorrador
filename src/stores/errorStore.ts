@@ -29,13 +29,11 @@ export const useErrorStore = defineStore('error', () => {
     const errorMessage = error instanceof Error ? error.message : String(error)
     
     const isUpdateOrNetwork = 
-      context.type !== 'Vue Render Error' && (
-        errorMessage.includes('Failed to fetch dynamically imported module') ||
-        errorMessage.includes('Unable to preload CSS') ||
-        errorMessage.includes('chunk') ||
-        errorMessage.includes('Load chunk') ||
-        errorMessage.includes('error loading dynamically imported module')
-      )
+      errorMessage.includes('Failed to fetch dynamically imported module') ||
+      errorMessage.includes('Unable to preload CSS') ||
+      errorMessage.includes('chunk') ||
+      errorMessage.includes('Load chunk') ||
+      errorMessage.includes('error loading dynamically imported module')
 
     if (isUpdateOrNetwork) {
       logger.warn('errorStore', 'Fallo de conexión o actualización detectado, activando pantalla de PWA/Relogin.', context)

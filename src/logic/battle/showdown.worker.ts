@@ -16,7 +16,7 @@ export interface ExtendedPokemon extends Pokemon {
 }
 
 
-export type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
+type ExtendedSide = Omit<Side, 'activeRequest' | 'pokemon'> & {
   pokemon: ExtendedPokemon[];
   activeRequest?: ShowdownRequest;
 };

@@ -57,90 +57,112 @@ function devDbImportPlugin() {
     name: 'dev-db-import',
     configureServer(server: ViteDevServer) {
       let cleanDbRamBuffer: Buffer | null = null;
-      let importedDbRamBuffer: Buffer | null = null;
+      const importedDbRamBuffers = new Map<string, Buffer>();
+
+      const getDbKey = (urlStr?: string): string => {
+        if (!urlStr) return 'default';
+        try {
+          const parsed = new URL(urlStr, 'http://localhost');
+          const key = parsed.searchParams.get('db_key');
+          return key && /^[a-zA-Z0-9_-]+$/.test(key) ? key : 'default';
+        } catch {
+          return 'default';
+        }
+      };
+
+      const getDbPath = (key: string): string => {
+        const filename = key === 'default' ? 'imported.db' : `imported_${key}.db`;
+        return path.resolve(import.meta.dirname, 'database/temp', filename);
+      };
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-import-db-check')) {
-          if (importedDbRamBuffer) {
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ exists: true }))
+          const dbKey = getDbKey(req.url);
+          if (importedDbRamBuffers.has(dbKey)) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ exists: true }));
             return;
           }
-          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
+          const dbPath = getDbPath(dbKey);
           try {
-            await fsPromises.access(dbPath)
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ exists: true }))
+            await fsPromises.access(dbPath);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ exists: true }));
           } catch {
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ exists: false }))
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ exists: false }));
           }
           return;
         }
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
-          importedDbRamBuffer = null;
-          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
+          const dbKey = getDbKey(req.url);
+          importedDbRamBuffers.delete(dbKey);
+          const dbPath = getDbPath(dbKey);
           try {
-            await fsPromises.unlink(dbPath)
-            console.log(' 📦 [DevDB] Temporary imported.db cleaned up from RAM & disk.')
-            res.writeHead(200, { 'Content-Type': 'text/plain' })
-            res.end('Cleaned up')
+            await fsPromises.unlink(dbPath);
+            console.log(` 📦 [DevDB] Temporary ${path.basename(dbPath)} cleaned up from RAM & disk.`);
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Cleaned up');
           } catch {
-            res.writeHead(200, { 'Content-Type': 'text/plain' })
-            res.end('Already cleaned up')
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('Already cleaned up');
           }
           return;
         }
 
         if (req.url?.startsWith('/api/dev-import-db')) {
-          if (importedDbRamBuffer) {
+          const dbKey = getDbKey(req.url);
+          const ramBuf = importedDbRamBuffers.get(dbKey);
+          if (ramBuf) {
             res.writeHead(200, {
               'Content-Type': 'application/octet-stream',
               'Cache-Control': 'no-store'
-            })
-            res.end(importedDbRamBuffer)
-            console.debug('📦 [DevDB] Temporary imported.db sent to client from RAM memory.')
+            });
+            res.end(ramBuf);
+            console.debug(`📦 [DevDB] Temporary ${dbKey} sent to client from RAM memory.`);
             return;
           }
-          const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
+          const dbPath = getDbPath(dbKey);
           try {
-            await fsPromises.access(dbPath)
-            const binary = await fsPromises.readFile(dbPath)
-            importedDbRamBuffer = binary;
+            await fsPromises.access(dbPath);
+            const binary = await fsPromises.readFile(dbPath);
+            importedDbRamBuffers.set(dbKey, binary);
             res.writeHead(200, {
               'Content-Type': 'application/octet-stream',
               'Cache-Control': 'no-store'
-            })
-            res.end(binary)
-            console.debug('📦 [DevDB] Temporary imported.db sent to client from RAM.')
+            });
+            res.end(binary);
+            console.debug(`📦 [DevDB] Temporary ${path.basename(dbPath)} sent to client from disk.`);
           } catch {
-            res.writeHead(404, { 'Content-Type': 'text/plain' })
-            res.end('No imported database found')
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('No imported database found');
           }
           return;
         }
+
         if (req.url?.startsWith('/api/dev-export-db') && req.method === 'POST') {
-          const chunks: Buffer[] = []
-          req.on('data', chunk => chunks.push(chunk as Buffer))
+          const dbKey = getDbKey(req.url);
+          const chunks: Buffer[] = [];
+          req.on('data', chunk => chunks.push(chunk as Buffer));
           req.on('end', async () => {
-            const buffer = Buffer.concat(chunks)
-            importedDbRamBuffer = buffer; // Store 100% in RAM memory
-            const dbPath = path.resolve(import.meta.dirname, 'database/temp/imported.db')
-            const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`
+            const buffer = Buffer.concat(chunks);
+            importedDbRamBuffers.set(dbKey, buffer);
+            const dbPath = getDbPath(dbKey);
+            const tmpPath = `${dbPath}.${Math.random().toString(36).substring(2, 8)}.tmp`;
             try {
-              await fsPromises.mkdir(path.dirname(dbPath), { recursive: true })
-              await fsPromises.writeFile(tmpPath, buffer)
-              await fsPromises.rename(tmpPath, dbPath)
-              console.debug('📥 [DevDB] Temporary imported.db updated 100% in RAM and atomic file sync.')
-              res.writeHead(200, { 'Content-Type': 'text/plain' })
-              res.end('Saved')
+              await fsPromises.mkdir(path.dirname(dbPath), { recursive: true });
+              await fsPromises.writeFile(tmpPath, buffer);
+              await fsPromises.rename(tmpPath, dbPath);
+              console.debug(`📥 [DevDB] Temporary ${path.basename(dbPath)} updated 100% in RAM and atomic file sync.`);
+              res.writeHead(200, { 'Content-Type': 'text/plain' });
+              res.end('Saved');
             } catch (_err: unknown) {
-              await fsPromises.unlink(tmpPath).catch(() => {})
-              res.writeHead(200, { 'Content-Type': 'text/plain' })
-              res.end('Saved')
+              await fsPromises.unlink(tmpPath).catch(() => {});
+              res.writeHead(200, { 'Content-Type': 'text/plain' });
+              res.end('Saved');
             }
-          })
+          });
           return;
         }
 

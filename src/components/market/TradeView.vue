@@ -166,7 +166,7 @@ watch(() => props.show, async (newVal) => {
 
 // Summary helpers
 const offerSummary = computed(() => {
-  const lines: string[] = []
+  const lines: string[] = [] // text-ok
   if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name)
   Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => {
     const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
@@ -178,7 +178,7 @@ const offerSummary = computed(() => {
 
 const requestSummary = computed(() => {
   if (isGift.value) return '🎁 REGALO'
-  const lines: string[] = []
+  const lines: string[] = [] // text-ok
   if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name)
   Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => {
     const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)

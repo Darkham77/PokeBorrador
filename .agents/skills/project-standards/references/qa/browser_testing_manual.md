@@ -171,4 +171,6 @@ When writing unit tests or specs that verify items or item effects, you MUST alw
 
 ### 8. Medicine Target Checks in Simulations
 
+| `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st failure) |
+
 When writing tests or configuring battle cheats, do not trigger healing or reanimation items on invalid targets. Any test or simulation script attempting to apply a potion to a Full HP Pokemon or a revive to a living Pokemon MUST fail, matching official game mechanics where it has no effect and does not consume the item.

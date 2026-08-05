@@ -16,11 +16,11 @@ export const BATTLE_STATES = {
 
 export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
 
-export function isBattleStateName(val: string): val is BattleStateName {
+function isBattleStateName(val: string): val is BattleStateName {
   return (Object.values(BATTLE_STATES) as readonly string[]).includes(val); // domain-ok
 }
 
-export function isBattleSubStateName(val: string): val is BattleSubStateName {
+function isBattleSubStateName(val: string): val is BattleSubStateName {
   return (Object.values(BATTLE_SUBSTATES) as readonly string[]).includes(val); // domain-ok
 }
 

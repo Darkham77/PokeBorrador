@@ -1,4 +1,4 @@
-export const TOOLTIP_STAGE_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva', 'all'] as const;
+const TOOLTIP_STAGE_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva', 'all'] as const;
 export type TooltipStageStatId = (typeof TOOLTIP_STAGE_STAT_IDS)[number];
 export type TooltipStageStatName =
   | 'Ataque'

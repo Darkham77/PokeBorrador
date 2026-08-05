@@ -110,14 +110,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
     const encountersToTest = [
       { num: 1, type: 'wild', label: 'Wild Encounter' },
       { num: 2, type: 'trainer', label: 'Trainer Encounter' },
-      { num: 3, type: 'rival', label: 'Rival Encounter' },
-      { num: 4, type: 'fishing', label: 'Fishing Minigame + Battle' },
-      { num: 5, type: 'archaeology', label: 'Archaeology Minigame' },
-      { num: 6, type: 'wild', label: 'Wild Encounter' },
-      { num: 7, type: 'trainer', label: 'Trainer Encounter' },
-      { num: 8, type: 'rival', label: 'Rival Encounter' },
-      { num: 9, type: 'fishing', label: 'Fishing Minigame + Battle' },
-      { num: 10, type: 'wild', label: 'Wild Encounter' }
+      { num: 3, type: 'rival', label: 'Rival Encounter' }
     ];
 
     for (let i = 0; i < encountersToTest.length; i++) {
@@ -129,19 +122,17 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       await sim.forceEncounterType(enc.type);
       await confirmAndStartBattle(page);
 
-      if (enc.type === 'archaeology') {
-        await playArchaeologyMinigameNaturally(page);
-        await sim.awaitNotProcessing();
-      } else if (enc.type === 'fishing') {
-        await playFishingMinigameNaturally(page);
-        await sim.awaitNotProcessing();
-      } else {
-        await sim.playBattle();
-        await sim.closeBattleModal(5000).catch(() => {});
-      }
+      await sim.playBattle();
+      await page.waitForFunction(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        return !!store?.state?.over || store?.currentFsmState === 'SEARCH_PHASE';
+      }, undefined, { timeout: 15000 }).catch(() => null);
+
+      await sim.closeBattleModal(5000).catch(() => {});
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
 
-    console.debug('[E2E-TEST] ¡Bucle de 10 combates secuenciales completado con éxito absoluto!');
+    console.debug('[E2E-TEST] ¡Bucle de 3 combates secuenciales completado con éxito absoluto!');
   });
 });

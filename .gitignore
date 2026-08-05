@@ -23,7 +23,8 @@ dev-dist/
 supabase/docker/
 supabase/generated/
 supabase/temp_supabase/
-database/temp/
+database/temp/*
+!database/temp/.gitkeep
 .fallow/
 scratch/
 .eslintcache

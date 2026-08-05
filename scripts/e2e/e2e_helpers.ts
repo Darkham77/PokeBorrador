@@ -134,7 +134,7 @@ export type WindowWithResolver = Window;
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
  */
-export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise<void> {
+export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKey?: string): Promise<void> {
   const activeBuffer = logBuffer || [];
   (page as E2EPage)._e2eLogBuffer = activeBuffer;
 
@@ -164,12 +164,15 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
     throw new Error(`[CRITICAL-E2E-PAGE-ERROR] ${err.message}`);
   });
 
-  await page.addInitScript(() => {
+  await page.addInitScript((key?: string) => {
     (window as WindowWithResolver).__E2E__ = true;
     try {
       localStorage.setItem('pwa_permissions_accepted', 'true');
       localStorage.setItem('auto-battle', 'false');
       localStorage.setItem('pokevicio_session_mode', 'offline');
+      if (key) {
+        localStorage.setItem('pokevicio_sqlite_key', key);
+      }
     } catch (_e) {
       void 0;
     }
@@ -183,11 +186,11 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
         get() { return 'granted'; }
       });
     }
-  });
+  }, sqliteKey);
 }
 
-export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', logBuffer?: string[]): Promise<void> {
-  await setupE2ESession(page, logBuffer);
+export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', logBuffer?: string[], sqliteKey?: string): Promise<void> {
+  await setupE2ESession(page, logBuffer, sqliteKey);
   await loginTestUser(page, username);
 }
 

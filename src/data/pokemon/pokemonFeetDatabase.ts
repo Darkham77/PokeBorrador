@@ -62,7 +62,7 @@ export function requireFeetPoints(value: string): FeetPoints {
 const POKEMON_CRIES_DATABASE = ((PACKED_DATA as Record<string, Record<string, string>>).c ?? {}) as Record<string, string>; // open-record
 export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
 
-export function isPokemonCryId(raw: string): raw is PokemonCryId {
+function isPokemonCryId(raw: string): raw is PokemonCryId {
   return raw in POKEMON_CRIES_DATABASE;
 }
 

@@ -22,7 +22,7 @@ QA / Automation Engineers.
 
 ## Work Guidance
 
-- Run the simulation suite locally using `npm run sim:e2e`.
+- Run the simulation suite locally using `npm run sim:e2e` (which dynamically discovers every `*.simulation.ts` file under `scripts/e2e/` and executes them one by one in strict sequential order).
 - For detailed instructions on executing simulations, resolving failures, and following the debugging protocol, refer to the [Validation Manual](../../.agents/skills/project-standards/references/qa/validation_manual.md).
 - Ensure the local Vite development server is configured (default is `http://localhost:5173`) before running the simulations. Playwright will automatically start the dev server if it is not already running.
 - **Concurrency Limit and Timeouts**: When running heavy parallel simulations in the browser, set a reasonable maximum number of concurrent processes (e.g. `workers: 4`) and an elevated simulation timeout (`test.setTimeout(120000)`) to prevent false failures caused by CPU congestion on the local development server.

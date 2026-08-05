@@ -1,95 +1,57 @@
-/**
- * @vitest-environment jsdom
- */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useBattleStore } from '@/stores/battle/battle'
-import { useGameStore } from '@/stores/game'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleState } from '@/types/battle/battle'
+import { describe, it, expect } from 'vitest'
+import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness'
 
-// Mock de assetService para evitar errores de red
-vi.mock('@/logic/services/assetService', () => ({
-  getAssetUrl: vi.fn((type, id) => `mock-url-${type}-${id}`),
-  ASSET_TYPES: {
-    POKEMON: 'pokemon',
-    TRAINER: 'trainer',
-    ITEM: 'item'
-  }
-}))
-
-interface DebugWindow {
-  __VITE_DEBUG__?: {
-    battle: {
-      fullHeal: () => void
-      killEnemy: () => Promise<void>
-    }
-  }
-}
-
-describe('Battle Debug Commands', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-    delete (window as unknown as DebugWindow).__VITE_DEBUG__
+describe('battleDebug - Scripted Replay Readiness', () => {
+  it('should return true when in WAIT_INPUT subState and ready', () => {
+    const ready = canExecuteScriptedReplayAction({
+      isActiveBattle: true,
+      subState: 'WAIT_INPUT',
+      isProcessing: false,
+      isIntroAnimating: false,
+      hasPendingSwitch: false,
+    })
+    expect(ready).toBe(true)
   })
 
-  it('should initialize and register debug commands on window', () => {
-    useBattleStore()
-
-    const win = window as unknown as DebugWindow
-    expect(win.__VITE_DEBUG__).toBeDefined()
-    expect(win.__VITE_DEBUG__?.battle).toBeDefined()
-    expect(win.__VITE_DEBUG__?.battle.fullHeal).toBeTypeOf('function')
-    expect(win.__VITE_DEBUG__?.battle.killEnemy).toBeTypeOf('function')
+  it('should return true when in SWITCH_MENU even during intro or pending switch', () => {
+    const ready = canExecuteScriptedReplayAction({
+      isActiveBattle: true,
+      subState: 'SWITCH_MENU',
+      isProcessing: false,
+      isIntroAnimating: true,
+      hasPendingSwitch: true,
+    })
+    expect(ready).toBe(true)
   })
 
-  it('should fullHeal player and sync with game team HP reactively', () => {
-    const gs = useGameStore()
-    const battleStore = useBattleStore()
-
-    // 1. Configurar un Pokémon dañado en el equipo
-    const p1 = { uid: 'p1', name: 'Pikachu', hp: 10, maxHp: 100, status: 'par' } as unknown as Pokemon
-    gs.state.team = [p1]
-
-    // 2. Configurar la batalla activa
-    battleStore.state = {
-      player: { ...p1 },
-      enemy: { uid: 'e1', name: 'Rattata', hp: 50, maxHp: 50 } as unknown as Pokemon,
-      playerTeamIndex: 0,
-      over: false
-    } as unknown as BattleState
-
-    // 3. Ejecutar fullHeal desde el window registrado por useBattleStore()
-    const win = window as unknown as DebugWindow
-    win.__VITE_DEBUG__?.battle.fullHeal()
-
-    // 4. Comprobar que el Pokémon en batalla se curó
-    expect(battleStore.state.player!.hp).toBe(100)
-    expect(battleStore.state.player!.status).toBe('')
-
-    // 5. Comprobar que el HP en el equipo de gameStore se sincronizó
-    expect(gs.state.team[0]!.hp).toBe(100)
-    expect(gs.state.team[0]!.status).toBe('')
+  it('should return false when isProcessing is true', () => {
+    const ready = canExecuteScriptedReplayAction({
+      isActiveBattle: true,
+      subState: 'WAIT_INPUT',
+      isProcessing: true,
+      isIntroAnimating: false,
+      hasPendingSwitch: false,
+    })
+    expect(ready).toBe(false)
   })
 
-  it('should set enemy HP to 0 and trigger faint sequence in killEnemy', async () => {
-    const battleStore = useBattleStore()
-    const enemy = { uid: 'e1', name: 'Rattata', hp: 50, maxHp: 50 } as unknown as Pokemon
+  it('should return false when subState is invalid or intro animating during WAIT_INPUT', () => {
+    const notReadySubState = canExecuteScriptedReplayAction({
+      isActiveBattle: true,
+      subState: 'FIRST_INTRO',
+      isProcessing: false,
+      isIntroAnimating: false,
+      hasPendingSwitch: false,
+    })
+    expect(notReadySubState).toBe(false)
 
-    // Configurar la batalla activa
-    battleStore.state = {
-      locationId: 'route1',
-      player: { uid: 'p1', name: 'Pikachu', hp: 100, maxHp: 100 } as unknown as Pokemon,
-      enemy,
-      over: false,
-      participants: ['p1']
-    } as unknown as BattleState
-
-    // Ejecutar killEnemy desde el window registrado por useBattleStore()
-    const win = window as unknown as DebugWindow
-    await win.__VITE_DEBUG__?.battle.killEnemy()
-
-    // Comprobar que el enemigo original fue vaciado antes de la secuencia de faint.
-    expect(enemy.hp).toBe(0)
+    const notReadyIntro = canExecuteScriptedReplayAction({
+      isActiveBattle: true,
+      subState: 'WAIT_INPUT',
+      isProcessing: false,
+      isIntroAnimating: true,
+      hasPendingSwitch: false,
+    })
+    expect(notReadyIntro).toBe(false)
   })
 })

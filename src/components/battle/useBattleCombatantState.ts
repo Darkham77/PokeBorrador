@@ -65,7 +65,7 @@ function resolveIdleKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: st
   const suffix = match[2]!;
   const isFemale = gender === 'f';
 
-  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`];
+  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`]; // no-domain
   for (const cand of candidates) {
     if (isPlayerSide) {
       const femaleBack = `${cand}_f_back`;

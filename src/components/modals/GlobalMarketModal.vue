@@ -18,7 +18,7 @@ interface Props {
   show?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false
 })
 
@@ -32,6 +32,18 @@ const gtsStore = useGTSStore()
 
 const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
 
+watch(() => props.show, async (isVisible) => {
+  if (isVisible) {
+    activeTab.value = 'explore'
+    const { initSQLite } = await import('@/logic/db/sqliteEngine')
+    await initSQLite({ forceReload: true })
+    await Promise.all([
+      gtsStore.fetchListings(),
+      gtsStore.fetchUserData()
+    ])
+  }
+})
+
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
@@ -42,6 +54,8 @@ const TABS = [
 ]
 
 onMounted(async () => {
+  const { initSQLite } = await import('@/logic/db/sqliteEngine')
+  await initSQLite()
   await Promise.all([
     gtsStore.fetchListings(),
     gtsStore.fetchUserData()
@@ -97,6 +111,12 @@ const animateGrid = () => {
 }
 
 // Watch active tab or listings change to animate items grid
+watch(activeTab, (newTab) => {
+  if (newTab === 'explore') {
+    gtsStore.fetchListings()
+  }
+})
+
 watch([activeTab, () => gtsStore.listings, () => gtsStore.myListings], () => {
   animateGrid()
 })

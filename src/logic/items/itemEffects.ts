@@ -203,37 +203,8 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'incensepsychic': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; })
 };
 
-/**
- * Gets effect for TMs and other dynamic items not in the main list
- */
-export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectResult | null => {
-  const tmMatch = itemName.match(/([Tt][Mm]|[Mm][Tt])(\d+)/);
-  if (tmMatch) {
-    const tmId = `TM${tmMatch[2]}`;
-    const species = p.id;
-    const compatList = (TM_COMPAT as Record<string, string[]>)[species] || []; // open-record
-    if (!compatList.includes(tmId)) {
-      return { success: false, message: 'Incompatible.' };
-    }
-    const tmData: TMData | undefined = GAME_TMS.find(t => t.id === tmId);
-    if (!tmData) return { success: false, message: 'MT inválida.' };
-    
-    // Check if pokemon already knows the move
-    if (p.moves.some(m => m && m.name === tmData.name)) {
-      return { success: false, message: 'Ya conoce este movimiento.' };
-    }
+import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from './itemEffectHandlers.ts';
+import { getDynamicItemEffect } from './helpers/itemEffectsHelpers.ts';
 
-    return { 
-      success: true, 
-      message: `aprenderá ${tmData.name}`, 
-      deferred: true, 
-      resultType: 'learn_move', 
-      moveName: tmData.moveId 
-    };
-  }
-  return null;
-}
+export { healHp, clearStatus, curaTotal, restorePP, handleStone, getDynamicItemEffect };
 
-import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from './itemEffectHandlers.ts'
-
-export { healHp, clearStatus, curaTotal, restorePP, handleStone }

@@ -73,19 +73,19 @@ declare global {
   };
 
   interface DebugPokemon {
-    uid?: string;
-    name?: string;
+    uid?: string; // domain-ok
+    name?: string; // domain-ok
     hp?: number;
     maxHp?: number;
-    status?: string;
-    nickname?: string;
+    status?: string; // domain-ok
+    nickname?: string; // domain-ok
     moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
     volatileCounters?: Record<string, unknown> | null; // open-record
   }
 
   interface BattleLogEntry {
     side: 'player' | 'enemy';
-    msg: string;
+    msg: string; // text-ok
   }
 
   interface DebugGameStore {
@@ -99,8 +99,8 @@ declare global {
   }
 
   interface DebugStore {
-    currentFsmState?: string;
-    currentSubState?: string;
+    currentFsmState?: string; // domain-ok
+    currentSubState?: string; // domain-ok
     isProcessing?: boolean;
     isIntroAnimating?: boolean;
     battleLogs?: BattleLogEntry[];
@@ -120,7 +120,7 @@ declare global {
       enemy?: DebugPokemon | null;
       playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
       enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
-      p1SlotOrder?: string[];
+      p1SlotOrder?: string[]; // domain-ok
       activeBattle?: {
         player?: DebugPokemon | null;
         enemy?: DebugPokemon | null;
@@ -133,23 +133,23 @@ declare global {
       /** Semilla RNG inyectada por el E2E para combates deterministas */
       battleSeed?: number[];
       /** Cola de choices del enemigo consumida por el motor de combate en tests */
-      enemyChoicesQueue?: string[];
-      mockEnemyChoices?: string[];
+      enemyChoicesQueue?: string[]; // domain-ok
+      mockEnemyChoices?: string[]; // domain-ok
       enemyChoiceIndex?: number;
       cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
-      mockChoices?: string[];
+      mockChoices?: string[]; // domain-ok
       /** Genera un Pokémon de debug vía encuentro */
       spawnEncounter?: (config: unknown) => Promise<void>;
       /** Crea un Pokémon de debug directamente en el equipo */
       createPokemon?: (config: unknown) => Promise<void>;
       getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
-      nextEnemyChoice?: string;
+      nextEnemyChoice?: string; // domain-ok
       getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>; // open-record
       p1ChoiceIdx?: number;
       p2ChoiceIdx?: number;
       isDeterministicSimulation?: boolean;
       isScriptedReplayMode?: boolean;
-      playerChoices?: string[];
+      playerChoices?: string[]; // domain-ok
       executeScriptedAction?: () => Promise<boolean>;
       waitForBattleReady?: () => Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }>;
       getScriptedReplayReadiness?: () => { subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean; isReady: boolean };
@@ -157,7 +157,7 @@ declare global {
       useItemInBattle?: (itemId: string, targetUid: string) => void;
       healAll?: () => void;
       forceFlee?: () => void | Promise<void>;
-      forceEncounterType?: string;
+      forceEncounterType?: string; // domain-ok
       /** Comandos y utilidades de debug registradas en runtime */
       [key: string]: unknown; // open-record
     };

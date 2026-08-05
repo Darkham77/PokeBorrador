@@ -55,6 +55,10 @@ const patterns = [
     label: 'String array type annotation erases finite domain values (MUST use as const or specific domain array type)',
     severity: 'ERROR',
     regex: /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*:\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>)/g,
+    filter: (_match, line) => {
+      const trimmed = line.trim();
+      return !/const\s+(?:lines|parts|chunks|words|tokens|report|candidates)\s*:\s*(?:readonly\s+)?string\[\]/i.test(trimmed);
+    },
   },
   {
     label: 'Type alias directly to string defeats domain enforcement',

@@ -101,7 +101,7 @@ const totalPower = computed(() => calculateTotalPower(props.pokemon))
 const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
 
 const cardClasses = computed(() => {
-  const classes = ['pokemon-display-card']
+  const classes = ['pokemon-display-card'] // no-domain
   if (props.pokemon.onMission) classes.push('on-mission')
   if (hasBadges.value) classes.push('with-badges')
   if (hasManyBadges.value) classes.push('many-badges')

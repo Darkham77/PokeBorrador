@@ -53,7 +53,12 @@ function getWorker(): Worker | null {
       };
       
       spriteWorker.onerror = (err) => {
-        console.error('[SpriteOutliner] Web Worker error occurred:', err);
+        // Resolve all pending jobs with their originalUrl so callers do not hang
+        for (const [, job] of pendingJobs) {
+          job.resolve(job.originalUrl);
+        }
+        pendingJobs.clear();
+        err.preventDefault();
       };
     } catch (err) {
       console.warn('[SpriteOutliner] Failed to initialize Web Worker, falling back:', err);

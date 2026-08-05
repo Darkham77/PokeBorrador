@@ -30,13 +30,54 @@
   "ignoreDependencies": [
     "postgres",
     "@pkmn/sim",
-    "eslint-formatter-codeframe"
+    "eslint-formatter-codeframe",
+    "css-checker-kit"
   ],
   "rules": {
     "unused-dependencies": "warn",
     "unresolved-imports": "off"
   },
   "ignoreExports": [
+    {
+      "file": "src/logic/auth/saveService.ts",
+      "exports": ["PersistedPokemonGender"]
+    },
+    {
+      "file": "src/data/world/gyms.ts",
+      "exports": ["Gym", "GymDifficulty"]
+    },
+    {
+      "file": "src/logic/gym/gymEngine.ts",
+      "exports": ["Gym"]
+    },
+    {
+      "file": "src/types/gym/gym.ts",
+      "exports": ["Gym", "GymDifficulty"]
+    },
+    {
+      "file": "src/data/battle/volatileStatusMap.ts",
+      "exports": ["VolatileStatusKey"]
+    },
+    {
+      "file": "src/types/pokemon/pokemon.ts",
+      "exports": ["VolatileStatusKey"]
+    },
+    {
+      "file": "src/data/player/trainerTypes.ts",
+      "exports": ["requireNpcArchetype"]
+    },
+    {
+      "file": "src/logic/utils/npcSpriteRouter.ts",
+      "exports": ["requireNpcArchetype"]
+    },
+    {
+      "file": "src/logic/utils/timeUtils.ts",
+      "exports": ["DayPhase"]
+    },
+    {
+      "file": "src/logic/weather/weatherMath.ts",
+      "exports": ["DayPhase"]
+    },
     {
       "file": "src/logic/battle/actions/specialActionsHelper.ts",
       "exports": ["callPokemonToBattle"]

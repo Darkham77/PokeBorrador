@@ -72,14 +72,14 @@ export async function persistSQLite(): Promise<void> {
 
     if (import.meta.env.DEV && typeof window !== 'undefined' && window.__E2E__) {
       try {
-        await fetch('/api/dev-export-db', {
+        await fetch(`/api/dev-export-db?db_key=${encodeURIComponent(_sqliteKey)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: binary as BodyInit
         })
         logger.success('SQLite', 'Dev DB synced to Vite server.')
       } catch (err) {
-        throw new Error(`[sqliteEngine] Failed to sync Dev DB to server: ${String(err)}`)
+        logger.warn('SQLite', `Dev DB sync skipped during teardown: ${(err as Error).message}`)
       }
     }
   } catch (e: unknown) {
@@ -87,32 +87,52 @@ export async function persistSQLite(): Promise<void> {
   }
 }
 
-export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean } = {}): Promise<SQLiteDatabase | null> {
+export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean, forceReload?: boolean } = {}): Promise<SQLiteDatabase | null> {
   const isE2E = typeof window !== 'undefined' && window.__E2E__ === true;
   if (options.inMemory === true || isE2E) {
     _isInMemory = true;
   }
-  if (_initPromise) return _initPromise
-  _initPromise = (async () => {
-    if (options.sqliteKey) _sqliteKey = options.sqliteKey
+  let targetKey = _sqliteKey;
+  if (options.sqliteKey) {
+    targetKey = options.sqliteKey;
+  } else if (typeof window !== 'undefined') {
+    const storedKey = localStorage.getItem('pokevicio_sqlite_key');
+    if (storedKey) targetKey = storedKey;
+  }
 
+  if (targetKey !== _sqliteKey || options.forceReload) {
+    _sqliteDb = null;
+    _initPromise = null;
+  }
+  _sqliteKey = targetKey;
+
+  if (_initPromise) return _initPromise;
+  _initPromise = (async () => {
     const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
 
     if (_isInMemory) {
       if (import.meta.env.DEV) {
         try {
-          const importCheck = await fetch('/api/dev-import-db-check', { cache: 'no-store' })
+          const importCheck = await fetch(`/api/dev-import-db-check?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
           if (importCheck.ok) {
             const { exists } = await importCheck.json() as { exists: boolean }
             if (exists) {
-              const response = await fetch('/api/dev-import-db', { cache: 'no-store' })
+              const response = await fetch(`/api/dev-import-db?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
               if (response.ok) {
                 logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
                 const arrayBuffer = await response.arrayBuffer()
-                _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as SQLiteDatabase // domain-ok
+                const binary = new Uint8Array(arrayBuffer)
+                _sqliteDb = new SQL.Database(binary) as SQLiteDatabase // domain-ok
                 try {
                   await ensureSchemaIntegrity(_sqliteDb)
                   await runMigrations()
+                  await setToIDB(_sqliteKey, binary)
+                  await setToIDB(_sqliteKey + '_backup', binary)
+                  try {
+                    await fetch(`/api/dev-import-db-cleanup?db_key=${encodeURIComponent(_sqliteKey)}`, { method: 'POST' })
+                  } catch (_e) {
+                    void 0;
+                  }
                   return _sqliteDb
                 } catch (schemaErr) {
                   logger.warn('SQLite', `Imported DB integrity check failed (${(schemaErr as Error).message}). Falling back to clean DB template...`)
@@ -121,8 +141,16 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
             }
           }
         } catch (err) {
-          logger.warn('SQLite', `Failed to load imported db: ${(err as Error).message}. Falling back to clean DB template...`)
+          logger.warn('SQLite', `Failed to load imported db: ${(err as Error).message}. Falling back to IDB or clean DB template...`)
         }
+      }
+
+      const localBinary = await getFromIDB(_sqliteKey)
+      if (localBinary) {
+        _sqliteDb = new SQL.Database(new Uint8Array(localBinary)) as SQLiteDatabase // domain-ok
+        await ensureSchemaIntegrity(_sqliteDb)
+        await runMigrations()
+        return _sqliteDb
       }
 
       try {
@@ -162,11 +190,11 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     const alreadyImported = typeof localStorage !== 'undefined' && localStorage.getItem('pokevicio_db_imported') === 'true';
     if (import.meta.env.DEV && !alreadyImported) {
       try {
-        const checkRes = await fetch('/api/dev-import-db-check', { cache: 'no-store' })
+        const checkRes = await fetch(`/api/dev-import-db-check?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
         if (checkRes.ok) {
           const { exists } = await checkRes.json() as { exists: boolean }
           if (exists) {
-            const response = await fetch('/api/dev-import-db', { cache: 'no-store' })
+            const response = await fetch(`/api/dev-import-db?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
             if (response.ok) {
               logger.info('SQLite', 'Pending import found! Downloading dev_imported.db...')
               
@@ -191,7 +219,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               
               // Trigger file cleanup on the dev server
               try {
-                await fetch('/api/dev-import-db-cleanup', { method: 'POST' })
+                await fetch(`/api/dev-import-db-cleanup?db_key=${encodeURIComponent(_sqliteKey)}`, { method: 'POST' })
               } catch (e) {
                 throw new Error(`[sqliteEngine] Failed to cleanup dev import DB file: ${String(e)}`)
               }

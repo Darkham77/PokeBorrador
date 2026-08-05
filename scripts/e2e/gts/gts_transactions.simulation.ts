@@ -5,9 +5,8 @@ import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 
-function seedMockListings(count: number) {
-  const dbPath = path.resolve('database/temp/imported.db');
-  using db = new DatabaseSync(dbPath);
+function seedMockListings(dbPath: string, count: number) {
+  using db = new DatabaseSync(dbPath, { readOnly: false });
   try {
     const insertStmt = db.prepare(`
       INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at)
@@ -65,8 +64,8 @@ function seedMockListings(count: number) {
 }
 
 class GTSSimulationWrapper extends BaseE2ESimulation {
-  constructor(page: Page, username: string) {
-    super(page, username);
+  constructor(page: Page, username: string, sqliteKey?: string) {
+    super(page, username, undefined, sqliteKey);
   }
 
   public async setupUserInventory(money: number, pokemonCount: number): Promise<void> {
@@ -96,8 +95,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       await game.saveGame();
     }, { money, pokemonCount });
 
-    await this.page.reload();
-    await this.page.locator('#nav-map-btn').filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await this.reloadAndSync();
   }
 
   public async openGTS(): Promise<void> {
@@ -110,16 +108,22 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gts = useGTSStore();
       const game = useGameStore();
+      // MANDATORY: Ensure initial game save exists in SQLite game_saves table before RPC calls
+      await game.save(false);
 
       const toPublish = [...game.state.box].slice(0, 9);
       for (const p of toPublish) {
         await gts.publishListing('pokemon', p, 1000);
       }
 
-      // Force-refresh myListings directly from DB, bypassing auth.user guard
+      // Force-refresh myListings directly from DB for this active seller
+      const { useAuthStore } = await import('../../../src/stores/auth.ts');
+      const auth = useAuthStore();
+      const currentUserId = auth.user?.id || ('local_' + gts.sellerName?.toLowerCase().replace(/\s+/g, '_'));
       const { data } = await game.db
         .from('market_listings')
         .select('*')
+        .eq('seller_id', currentUserId)
         .neq('status', 'sold')
         .order('created_at', { ascending: false }) as { data: typeof gts.myListings | null };
       if (data) gts.myListings = data;
@@ -227,15 +231,12 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await seller.saveGameAndAwaitExport();
 
     // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
-    seedMockListings(50);
+    seedMockListings(seller.getDbPath(), 50);
 
     // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
     const fs = await import('node:fs');
-    const updatedDbBuffer = fs.readFileSync(path.resolve('database/temp/imported.db'));
-    await request.post('/api/dev-export-db', {
-      headers: { 'Content-Type': 'application/octet-stream' },
-      data: updatedDbBuffer
-    });
+    const updatedDbBuffer = fs.readFileSync(seller.getDbPath());
+    await seller.syncDevDb(request, updatedDbBuffer);
 
     // 6. Setup Comprador (Logear e inyectar inventario inicial, lo cual descargará la DB con los mocks)
     const buyerContext = await browser.newContext();
@@ -244,11 +245,12 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
       window.__GTS_SIMULATION__ = true;
     });
     const buyerName = `BUYER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const buyer = new GTSSimulationWrapper(pageBuyer, buyerName);
+    const buyer = new GTSSimulationWrapper(pageBuyer, buyerName, seller.getSqliteKey());
 
     await buyer.setup();
     await waitForStoreReady(pageBuyer);
     await buyer.setupUserInventory(10000, 1);
+    await buyer.reloadAndSync();
 
     // Comprador abre GTS
     await buyer.openGTS();
@@ -257,6 +259,14 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     const explorarBtn = pageBuyer.locator('#gts-tab-explore').filter({ visible: true }).first();
     await explorarBtn.waitFor({ state: 'visible', timeout: 5000 });
     await clickResilient(explorarBtn);
+
+    // Explicitly fetch listings in buyer store to load updated market mocks
+    await pageBuyer.evaluate(async () => {
+      const { initSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+      await initSQLite({ forceReload: true });
+      const { useGTSStore } = await import('../../../src/stores/gts.ts');
+      await useGTSStore().fetchListings();
+    });
 
     // Verificar paginación por ID único
     const pagination = pageBuyer.locator('#gts-explorer-pagination').first();

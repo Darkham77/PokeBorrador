@@ -544,14 +544,23 @@ export const useBattleStore = defineStore('battle', () => {
 
   return {
     state: activeBattle, isBattleActive, awardDebugExp, isFinishing, isProcessing,
-    isSearching, player, enemy, playerUsedMoves, isIntroAnimating, isPvP,
+    isSearching, player, enemy,
+    // fallow-ignore-next-line unused-store-member
+    playerUsedMoves, isIntroAnimating,
+    // fallow-ignore-next-line unused-store-member
+    isPvP,
     playerStages, enemyStages, battleLogs, debugLoopPokemon, debugBinoculars,
     debugShowGuides, debugShowFxRadius, debugShowPokeRadius, debugZoom,
     attackerSide, activeMove, exitingPlayer, exitingEnemy, animations,
     trainerAnimState, isSilhouetteMode, fsm, currentFsmState, currentSubState,
-    isReadyToExit, restoreBattle, addLog, clearLogs, executeMove, executeStruggle,
+    isReadyToExit, restoreBattle, addLog,
+    // fallow-ignore-next-line unused-store-member
+    clearLogs, executeMove, executeStruggle,
+    // fallow-ignore-next-line unused-store-member
     persistBattle, useItemInBattle, endBattle, handleFaint, applyEndTurnEffects,
-    startBattle, _startBattle: startBattle, initBattle, executeSwitch: _executeSwitch,
+    startBattle, _startBattle: startBattle,
+    // fallow-ignore-next-line unused-store-member
+    initBattle, executeSwitch: _executeSwitch,
     flee: async () => {
       try {
         await executeFlee(getContext())
@@ -561,9 +570,12 @@ export const useBattleStore = defineStore('battle', () => {
       }
     },
     completeBattleFlow: (option?: string) => completeBattleFlow(option),
+    // fallow-ignore-next-line unused-store-member
     triggerSearchEncounter,
+    // fallow-ignore-next-line unused-store-member
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
     startEncounter: async () => await startEncounter(getContext()),
+    // fallow-ignore-next-line unused-store-member
     getContext
   }
 })

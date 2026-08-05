@@ -47,9 +47,9 @@ the source of truth. `src/` must conform to them, never the reverse.
      2. **Phase 2 (Natural Unassisted Combat Completion)**: As soon as all moves/abilities in the batch have been certified (`hasUntestedItemsAfterTurn === false`), IPB cheats MUST be completely deactivated. The battle MUST continue executing naturally turn-by-turn until the battle ends organically (`simBattle.ended === true`).
    - It is STRICTLY FORBIDDEN to introduce artificial loop breaks, early returns, or synthetic truncations when testing finishes. Battles must always complete naturally to generate a clean, un-truncated choice stream for Playwright E2E replays.
 
-6. **Sequential Suite Execution Law (Prohibition of Cross-Suite Parallel Blending)**:
-   - It is STRICTLY FORBIDDEN to execute multiple E2E simulation suite directories or files concurrently in a single parallel Playwright command when suites contain multi-account transactions, database resets, or internal multi-worker sessions. Doing so causes cross-test database state collisions and memory snapshot wipes on the dev server.
-   - All E2E domain simulation suites MUST ALWAYS be executed strictly suite-by-suite in sequential order using their dedicated canonical npm scripts (`npm run sim:e2e:gyms`, `npm run sim:e2e:gts`, `npm run sim:e2e:breeding`, `npm run sim:e2e:missions`, `npm run sim:e2e:save`, `npm run sim:e2e:ai`).
+6. **Sequential Suite Execution Law (Dynamic File-by-File Orchestration)**:
+   - It is STRICTLY FORBIDDEN to execute multiple E2E simulation suite directories or files concurrently in a single parallel Playwright command when suites contain multi-account transactions, database resets, or internal multi-worker sessions.
+   - All E2E domain simulations MUST ALWAYS be executed strictly file-by-file in sequential order using `npm run sim:e2e` (which dynamically discovers every `*.simulation.ts` under `scripts/e2e/` via `scripts/e2e/run_sequential_simulations.ts` and runs them one by one, halting immediately if any single simulation fails) or their dedicated canonical npm scripts (`npm run sim:e2e:gyms`, `npm run sim:e2e:gts`, `npm run sim:e2e:breeding`, etc.).
 
    **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
 
@@ -121,6 +121,7 @@ Resumed at: <step name> (only when resuming)
 - [ ] sim:e2e:missions (daycare missions) — PENDING
 - [ ] sim:e2e:save (save shield restrictions) — PENDING
 - [ ] sim:e2e:ai (heuristic AI simulation) — PENDING
+- [ ] sim:e2e:search (sequential search loop encounters) — PENDING
 - [ ] sim:e2e:combat (battle FSM sync & manual scenarios) — PENDING (ALWAYS LAST)
 - [ ] sim:e2e (full E2E cross-domain regression pass) — PENDING
 
@@ -262,7 +263,7 @@ Restorations are saved directly as boolean flags (`p1Heal: true`, `p2Heal: true`
 | `test:node` | All `tests/node/**/*.test.ts` via native `node:test` |
 | `test` | All unit + integration via Vitest |
 | `sim:fuzzer` | Coverage fuzzer + item fuzzer (generates fuzzer_certified_cases.json) |
-| `sim:e2e` | All Playwright scenario simulations |
+| `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st error) |
 | `sim:e2e:battle` | Only `scripts/e2e/battle/` |
 | `sim:e2e:combat` | ensure_fuzzer_cases + `battle_fsm_sync.sim.ts` |
 | `sim:e2e:combat:report` | Same, output redirected to `scripts/e2e/results/e2e_simulation_failures.json` |
@@ -357,6 +358,8 @@ This command installs the required browsers along with all system dependencies (
 | Single failing simulation | env var filter or `npm run sim:e2e -- -g "<name>"` |
 
 **Fuzzer rule:** The fuzzer (`sim:fuzzer`) ALWAYS performs a clean wipe of all previously generated fuzzer artifacts (`fuzzer_*.json`, `fuzzer_*.txt`, `fuzzer_certified_cases.json`) in `scripts/e2e/results/` before starting, ensuring execution starts 100% clean from scratch by default. `ensure_fuzzer_cases.ts` handles this clean wipe and triggers `npm run sim:fuzzer`.
+
+**Mandatory Temporary Files Cleanup Mandate:** Before launching a full simulation run from scratch, the agent MUST explicitly execute a clean wipe of all temporary database and test artifact files (`rm -rf database/temp/imported.db scratch/test-results/ scratch/playwright_*.log`). This guarantees zero state corruption from stale databases or interrupted server reloads.
 
 **Important Fuzzer Regeneration Rule:** Whenever the fuzzer runs and regenerates certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated and deleted inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all newly generated cases to identify any new regressions or bugs.
 

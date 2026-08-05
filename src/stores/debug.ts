@@ -158,12 +158,14 @@ export const useDebugStore = defineStore('debug', () => {
     isAdminOrOffline,
     securityCheck,
     register,
+    // fallow-ignore-next-line unused-store-member
     unregister,
     updateGlobalProxy,
     trainerChance50,
     forceRival,
     forceGuardian80,
     forceShiny100,
+    // fallow-ignore-next-line unused-store-member
     debugMultipliers
   }
 })

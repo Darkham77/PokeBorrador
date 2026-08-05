@@ -10,6 +10,7 @@ Frontend Developers / Systems Engineers.
 
 - Follow standard repository modularity guidelines.
 - **itemEffectHandlers.ts**: Pure stateless handlers for consumable items (potions, revives, status cures, PP restorers, evolution stones).
+- **itemEffectsHelpers.ts**: Pure stateless helpers for dynamic TM learning and item effect compatibility.
 - **itemEffects.ts**: Main registry mapping item IDs to dynamic effects or handlers.
 
 ## Work Guidance
@@ -22,4 +23,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [helpers](helpers/AGENTS.md) — Pure stateless helpers for item effects and TM learning compatibility.

@@ -8,7 +8,7 @@ const tradeStore = useTradeStore()
 const gameStore = useGameStore()
 
 const getOfferSummary = (t: TradeOffer) => {
-  const parts: string[] = []
+  const parts: string[] = [] // text-ok
   if (t.offer_pokemon) parts.push(t.offer_pokemon.name)
   if (t.offer_items) {
     Object.entries(t.offer_items).forEach(([name, qty]) => {
@@ -20,7 +20,7 @@ const getOfferSummary = (t: TradeOffer) => {
 }
 
 const getRequestSummary = (t: TradeOffer) => {
-  const parts: string[] = []
+  const parts: string[] = [] // text-ok
   if (t.request_pokemon) parts.push(t.request_pokemon.name)
   if (t.request_items) {
     Object.entries(t.request_items).forEach(([name, qty]) => {

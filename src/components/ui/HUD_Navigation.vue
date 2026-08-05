@@ -104,7 +104,7 @@ const materialItems = computed(() => {
 })
 
 const mochilaTooltipDescription = computed(() => {
-  const lines: string[] = []
+  const lines: string[] = [] // text-ok
   
   // Section 1: Poké Balls first
   lines.push('🔴 POKÉ BALLS')
@@ -175,7 +175,7 @@ const eggsBreakdown = computed(() => {
   const incubating = gameStore.state.eggs || []
   const warehouse = breedingStore.warehouseEggs || []
   
-  const lines: string[] = []
+  const lines: string[] = [] // text-ok
   
   if (incubating.length === 0 && warehouse.length === 0) {
     return 'No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!'

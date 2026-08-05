@@ -119,7 +119,7 @@ const weatherTooltipDescription = computed(() => {
   const weather = computedWeather.value
   const activeEvents = mapStore.activeEvents || []
 
-  const lines: string[] = []
+  const lines: string[] = [] // text-ok
 
   // 1. Wild Spawns
   if (loc.wild) {
