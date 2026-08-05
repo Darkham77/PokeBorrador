@@ -1,6 +1,9 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 
+export const GTS_ITEMS_PER_PAGE = 50 as const;
+export const GTS_MAX_ACTIVE_LISTINGS = 10 as const;
+
 export interface MarketItemData {
   id?: string | number;
   name?: string;

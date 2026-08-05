@@ -4,6 +4,7 @@ import { toID } from '@pkmn/sim';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
+import { requireItemId } from '../../data/inventory/items.ts';
 
 
 /**
@@ -187,12 +188,16 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-ability': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const ability = parts[3] || '';
+      const rawAbility = parts[3];
+      if (!rawAbility) {
+        throw new Error(`[ShowdownBridge] Log line |-ability| is missing ability parameter: "${line}"`);
+      }
       const fromClause = parts.find(p => p.startsWith('[from]'));
-      if (target && ability) {
-        target.ability = requireAbilityId(toID(ability));
+      if (target) {
+        const canonicalAbility = requireAbilityId(toID(rawAbility));
+        target.ability = canonicalAbility;
         const fromText = fromClause ? ` (${fromClause.replace('[from]', '').trim()})` : '';
-        store.addLog(`¡Habilidad: ${ability} de ${target.name}!${fromText}`, 'log-info', target);
+        store.addLog(`¡Habilidad: ${rawAbility} de ${target.name}!${fromText}`, 'log-info', target);
       }
       return true;
     }
@@ -200,27 +205,37 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
     case '-enditem': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const item = parts[3] || '';
-      if (target) {
-        if (item || target.item) target.lastItem = item || target.item;
-        target.heldItem = '';
-        target.item = '';
-        const verb = line.includes('[eat]') ? 'comió su' : 'perdió su';
-        store.addLog(`¡${target.name} ${verb} ${item || 'objeto'}!`, 'log-info', target);
+      if (!target) {
+        throw new Error(`[ShowdownBridge] Target pokemon not found for -enditem line: "${line}"`);
       }
+      const rawItem = parts[3];
+      if (!rawItem) {
+        throw new Error(`[ShowdownBridge] Log line |-enditem| is missing item parameter: "${line}"`);
+      }
+      const canonicalItem = requireItemId(toID(rawItem));
+      target.lastItem = canonicalItem;
+      target.heldItem = '';
+      target.item = '';
+      const verb = line.includes('[eat]') ? 'comió su' : 'perdió su';
+      store.addLog(`¡${target.name} ${verb} ${rawItem}!`, 'log-info', target);
       return true;
     }
 
     case '-item': {
       if (line.includes('[silent]')) return true;
       const target = getPoke(parts[2] || '');
-      const item = parts[3] || '';
-      if (target && item) {
-        target.heldItem = item;
-        target.item = item;
-        target.lastItem = '';
-        store.addLog(`¡${target.name} tiene ${item}!`, 'log-info', target);
+      if (!target) {
+        throw new Error(`[ShowdownBridge] Target pokemon not found for -item line: "${line}"`);
       }
+      const rawItem = parts[3];
+      if (!rawItem) {
+        throw new Error(`[ShowdownBridge] Log line |-item| is missing item parameter: "${line}"`);
+      }
+      const canonicalItem = requireItemId(toID(rawItem));
+      target.heldItem = canonicalItem;
+      target.item = canonicalItem;
+      target.lastItem = '';
+      store.addLog(`¡${target.name} tiene ${rawItem}!`, 'log-info', target);
       return true;
     }
 

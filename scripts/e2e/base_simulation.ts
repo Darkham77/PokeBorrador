@@ -1,27 +1,55 @@
 // fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
-import { loginE2ETestUser, waitForStoreReady } from './e2e_helpers.ts';
+import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
 
 export abstract class BaseE2ESimulation {
   protected page: Page;
   protected username: string;
-  protected logBuffer?: string[];
+  protected logBuffer: string[];
+  protected startTime: number = Temporal.Now.instant().epochMilliseconds;
 
   constructor(page: Page, username: string, logBuffer?: string[]) {
     this.page = page;
     this.username = username;
-    this.logBuffer = logBuffer;
+    this.logBuffer = logBuffer || [];
   }
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
+    this.startTime = Temporal.Now.instant().epochMilliseconds;
     await this.page.setViewportSize({ width: 1600, height: 900 });
     await loginE2ETestUser(this.page, this.username, this.logBuffer);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
     // loginE2ETestUser only waits for mapaBtn to be attached — the Vue router
     // may still be mid-transition, causing "Execution context was destroyed".
     await waitForStoreReady(this.page);
+  }
+
+  /**
+   * Finaliza la simulación volcando el logBuffer acumulado en RAM al archivo de log
+   * y emitiendo una línea limpia de progreso explícito en el terminal.
+   */
+  public finish(testName: string, status: 'passed' | 'failed' = 'passed'): void {
+    const durationMs = Temporal.Now.instant().epochMilliseconds - this.startTime;
+    flushE2ELogs(this.logBuffer, testName, status, durationMs);
+  }
+
+  /**
+   * Ejecuta saveGame y espera deterministamente a que el dev-export-db responda antes de continuar
+   */
+  public async saveGameAndAwaitExport(): Promise<void> {
+    const exportPromise = this.page.waitForResponse(
+      res => res.url().includes('/api/dev-export-db') && res.status() === 200,
+      { timeout: 10000 }
+    ).catch(() => null);
+
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      await useGameStore().saveGame();
+    });
+
+    await exportPromise;
   }
 
   /**

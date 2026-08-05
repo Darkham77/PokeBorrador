@@ -37,6 +37,7 @@ export class DBRouter {
     this.currentSessionId = null;
     this.userSubscription = null;
     this._timeOffset = 0; // ms
+    this.getTimeOffset = this.getTimeOffset.bind(this);
     
     const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
                   (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');

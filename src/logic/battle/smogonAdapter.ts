@@ -18,6 +18,8 @@ import type { BattleStages } from '@/types/battle/battle';
 import type { Move } from '@/types/pokemon/pokemon';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { toID } from '@pkmn/sim';
+import { requireAbilityId } from '@/data/battle/abilities';
+import { requireItemId } from '@/data/inventory/items';
 
 const GEN = Generations.get(ACTIVE_GENERATION as GenerationNum);
 
@@ -121,8 +123,8 @@ function buildSmogonPokemon(
   try {
     pkmn = new SmogonPokemon(GEN, speciesName, {
       level: p.level,
-      ability: GEN.abilities.get(toID(p.ability ?? ''))?.name,
-      item: GEN.items.get(toID(p.heldItem ?? p.item ?? ''))?.name,
+      ability: p.ability ? GEN.abilities.get(toID(requireAbilityId(p.ability)))?.name : undefined,
+      item: (p.heldItem || p.item) ? GEN.items.get(toID(requireItemId(p.heldItem || p.item!)))?.name : undefined,
       status: toSmogonStatus(p.status),
       boosts: {
         atk: stages.atk ?? 0,
@@ -251,18 +253,19 @@ function getEffectiveSpeed(
   
   // 4. Weather speed abilities
   const weather = field.weather;
-  const ability = p.ability?.toLowerCase() || '';
+  const abilityId = p.ability ? requireAbilityId(toID(p.ability)) : '';
   if (
-    (weather === 'Rain' && ability === 'swift swim') ||
-    (weather === 'Sun' && ability === 'chlorophyll') ||
-    (weather === 'Sand' && ability === 'sand rush') ||
-    ((weather === 'Snow' || weather === 'Hail') && ability === 'slush rush')
+    (weather === 'Rain' && abilityId === 'swiftswim') ||
+    (weather === 'Sun' && abilityId === 'chlorophyll') ||
+    (weather === 'Sand' && abilityId === 'sandrush') ||
+    ((weather === 'Snow' || weather === 'Hail') && abilityId === 'slushrush')
   ) {
     spd *= 2;
   }
   
   // 5. Choice Scarf
-  if (p.item === 'Choice Scarf') {
+  const itemId = p.item ? toID(p.item) : '';
+  if (itemId === 'choicescarf') {
     spd = Math.floor(spd * 1.5);
   }
   
@@ -358,9 +361,9 @@ export function calculateDamageForTooltip(
       const normTerrain = state.terrain.toLowerCase(); // text-ok
       const normMoveType = (move.type ?? '').toLowerCase(); // text-ok
       const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
-      const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'Air Balloon';
+      const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'airballoon' && defPkmn.item !== 'Air Balloon';
       const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
-      const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'Air Balloon';
+      const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'airballoon' && atkPkmn.item !== 'Air Balloon';
 
       if (isDefGrounded && normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
         terrainReductions.push('Daño de Terremoto/Terratemblor/Magnitud reducido a la mitad por Terreno de Hierba');

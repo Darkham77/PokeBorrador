@@ -69,11 +69,17 @@ export class BattleAgent extends ShowdownBattleAgent {
       }
     }
 
+    const isAvailable = (m: { disabled?: boolean | string; pp?: number }) => {
+      if (m.disabled) return false;
+      if (m.pp !== undefined && m.pp <= 0) return false;
+      return true;
+    };
+
     // Trigger slot override
     if (this.abilityTriggerMoveSlot !== null) {
       const triggerIdx = this.abilityTriggerMoveSlot - 1;
       const trigger = moves[triggerIdx];
-      if (trigger && !trigger.disabled && (trigger.pp ?? 0) > 0) {
+      if (trigger && isAvailable(trigger)) {
         return `move ${this.abilityTriggerMoveSlot}${targetLocation ? ` ${targetLocation}` : ''}`;
       }
     }
@@ -81,7 +87,7 @@ export class BattleAgent extends ShowdownBattleAgent {
     // Prioritize pending moves to test
     for (let i = 0; i < moves.length; i++) {
       const m = moves[i]!;
-      if (!m.disabled && (m.pp ?? 0) > 0) {
+      if (isAvailable(m)) {
         const id = toCleanId(m.id);
         if (this.movesToTest.has(id)) {
           this.movesToTest.delete(id);
@@ -93,8 +99,8 @@ export class BattleAgent extends ShowdownBattleAgent {
     // All objectives dispatched — pick the first non-disabled move deterministically.
     // Prefer non-self-switching moves to avoid infinite Shed Tail / Baton Pass switch loops.
     const SELF_SWITCHING_MOVES = new Set(['shedtail', 'batonpass', 'uturn', 'voltswitch', 'teleport', 'partingshot', 'chillyreception', 'flipturn']);
-    const nonSwitchingIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0) && !SELF_SWITCHING_MOVES.has(toCleanId(m.id)));
-    const firstValidIndex = moves.findIndex(m => !m.disabled && (m.pp === undefined || m.pp > 0));
+    const nonSwitchingIndex = moves.findIndex(m => isAvailable(m) && !SELF_SWITCHING_MOVES.has(toCleanId(m.id)));
+    const firstValidIndex = moves.findIndex(m => isAvailable(m));
     if (firstValidIndex !== -1) {
       const chosenIdx = nonSwitchingIndex !== -1 ? nonSwitchingIndex : firstValidIndex;
       return `move ${chosenIdx + 1}${targetLocation ? ` ${targetLocation}` : ''}`;

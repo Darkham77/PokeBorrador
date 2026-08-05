@@ -293,7 +293,7 @@ export const pokemonDebugService = {
   /**
    * Starts a custom encounter.
    */
-  async triggerEncounter(p: Pokemon, mapId: string = 'plains'): Promise<void> {
+  async triggerEncounter(p: Pokemon, mapId: MapRouteId): Promise<void> {
     const routeId = requireMapRouteId(mapId);
     const battleStore = useBattleStore();
     // const _ui = useUIStore();

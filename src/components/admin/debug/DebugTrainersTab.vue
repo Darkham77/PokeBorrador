@@ -61,6 +61,7 @@ onMounted(() => {
       style="margin-bottom: -6px;"
     >
       <button 
+        id="debug-battle-start-btn"
         class="battle-start-btn-debug"
         style="width: 100%; height: 36px; font-weight: bold;"
         @click.stop="startCombat"

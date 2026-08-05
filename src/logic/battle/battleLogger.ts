@@ -28,6 +28,8 @@ interface LogContext {
 
 // Re-use exported types
 
+let nextLogSequenceId = 0;
+
 /**
  * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.
  * @param {string} msg Mensaje
@@ -93,7 +95,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
   }
 
   return {
-    id: Temporal.Now.instant().epochMilliseconds + Math.random(),
+    id: `${Temporal.Now.instant().epochMilliseconds}-${++nextLogSequenceId}`,
     msg,
     type,
     side,

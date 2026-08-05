@@ -88,7 +88,13 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
   // 1. Build reverse map to find base form
   const PRE_EVO: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = {};
   for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
-    PRE_EVO[requirePokemonSpeciesId(data.to)] = requirePokemonSpeciesId(from);
+    if (!data) continue;
+    const targets = Array.isArray(data) ? data : [data];
+    for (const target of targets) {
+      if (target && target.to) {
+        PRE_EVO[requirePokemonSpeciesId(target.to)] = requirePokemonSpeciesId(from);
+      }
+    }
   }
   for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
     const to = requirePokemonSpeciesId(data.to);

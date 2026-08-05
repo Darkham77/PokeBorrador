@@ -6,6 +6,8 @@ import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getItemById, requireItemId, type ItemId } from '../../data/inventory/items.ts';
 
+import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from './itemMath.ts';
+
 export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
@@ -26,12 +28,61 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemId}`);
   }
 
-  const effect = itemEffects[resolvedId] || ((p: Pokemon) => getDynamicItemEffect(resolvedId, p));
-  if (typeof effect !== 'function') return false;
+  // 1. Curaciones / HP
+  if (['potion', 'superpotion', 'hyperpotion', 'maxpotion', 'sodapop', 'freshwater', 'lemonade'].includes(resolvedId)) {
+    return canHeal(pokemon);
+  }
 
-  const pClone: Pokemon = structuredClone(pokemon);
-  const result = (effect as (p: Pokemon) => ItemEffectResult)(pClone);
-  return !!(result && result.success);
+  // 2. Revivir
+  if (['revive', 'revivemax'].includes(resolvedId)) {
+    return canRevive(pokemon);
+  }
+
+  // 3. Cura de estados específicos
+  if (resolvedId === 'antidote') return canClearStatus(pokemon, 'psn');
+  if (resolvedId === 'burnheal') return canClearStatus(pokemon, 'brn');
+  if (resolvedId === 'paralyzeheal') return canClearStatus(pokemon, 'par');
+  if (resolvedId === 'awakening') return canClearStatus(pokemon, 'slp');
+  if (resolvedId === 'iceheal') return canClearStatus(pokemon, 'frz');
+  if (resolvedId === 'fullheal') return canClearStatus(pokemon, 'any');
+
+  // 4. Cura Total / Restauración Completa (HP o Estado)
+  if (['fullrestore'].includes(resolvedId)) {
+    return canFullRestore(pokemon);
+  }
+
+  // 5. PP (Restauración de PP)
+  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) {
+    return canRestorePP(pokemon);
+  }
+
+  // 6. Piedras Evolutivas y Objetos de Evolución
+  if (['firestone', 'thunderstone', 'waterstone', 'leafstone', 'moonstone', 'sunstone', 'dawnstone', 'duskstone', 'icestone', 'shinystone', 'ovalstone', 'linkcable', 'whippeddream', 'sachet', 'deepseascale', 'deepseatooth'].includes(resolvedId)) {
+    const res = handleStone(pokemon, resolvedId);
+    return res.success;
+  }
+
+  // 7. Caramelos y Consumibles de Atributos
+  if (resolvedId === 'rarecandy') {
+    return pokemon.level < MAX_POKEMON_LEVEL;
+  }
+  if (resolvedId === 'vigorcandy' || resolvedId === 'vigorrestorer') {
+    return Number(pokemon.vigor || 0) < 10;
+  }
+
+  // 8. Objetos Diferidos (Menús / Selección)
+  if (['moverelearner', 'naturepatch', 'abilitypill', 'ppup', 'ppmax'].includes(resolvedId)) {
+    return true;
+  }
+
+  // 9. TMs / MTs dinámicas
+  if (isTM) {
+    const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
+    return !!(dynamicRes && dynamicRes.success);
+  }
+
+  // Si no coincide con ninguna categoría anterior, no es aplicable a un Pokémon objetivo
+  return false;
 };
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);
 const stateEffect = (fn: (s: GameState) => ItemEffectResult) => (p: unknown) => fn(p as GameState);

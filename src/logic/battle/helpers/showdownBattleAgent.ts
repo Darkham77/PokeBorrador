@@ -45,14 +45,26 @@ export abstract class ShowdownBattleAgent {
   protected decideSingleSlot(
     slotReq: ActiveSlotRequest,
     _slotIdx: number,
-    _fullRequest: ChoiceRequest,
+    fullRequest: ChoiceRequest,
     targetLocation?: number
   ): string {
     // 2. Otherwise pick a random valid move
     if (slotReq.moves && slotReq.moves.length > 0) {
       const validMoves = slotReq.moves.filter(m => !m.disabled && (m.pp === undefined || m.pp > 0));
-      const pool = validMoves.length > 0 ? validMoves : slotReq.moves;
-      const move = pool[Math.floor(Math.random() * pool.length)];
+      if (validMoves.length === 0) {
+        // All moves are disabled/out of PP: try switching if allowed and bench candidates exist
+        const team = fullRequest.side?.pokemon ?? [];
+        const isTrapped = this.isTrapped(slotReq);
+        if (!isTrapped && team.length > 1) {
+          const switchTarget = this.findBenchCandidate(team);
+          if (switchTarget !== null) {
+            return `switch ${switchTarget}`;
+          }
+        }
+        return 'pass';
+      }
+
+      const move = validMoves[Math.floor(Math.random() * validMoves.length)];
       const moveIdx = move ? slotReq.moves.indexOf(move) + 1 : 1;
       
       // Showdown accepts at most ONE event modifier per move choice (mega, terastallize, zmove, ultra, etc.)

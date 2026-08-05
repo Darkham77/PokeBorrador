@@ -15,17 +15,19 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
       
       const gameStore = useGameStore();
 
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+
       // Caterpie frágil (no cumplirá nivel alto si se requiere)
-      const babyCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: 1 });
+      const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 1 });
       babyCaterpie.nickname = 'BABY_CATERPIE';
 
       // Caterpie experto
-      const masterCaterpie = pokemonDebugService.generate({ id: 'caterpie', level: 50 });
+      const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 50 });
       masterCaterpie.nickname = 'MASTER_CATERPIE';
 
       // Para evitar que el Save Shield bloquee el guardado:
       gameStore.state.starterChosen = true;
-      gameStore.state.team = [pokemonDebugService.generate({ id: 'caterpie', level: 5 })];
+      gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 5 })];
 
       // Agregar ambos a la caja
       gameStore.state.box = [babyCaterpie, masterCaterpie];
@@ -62,9 +64,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
       await gameStore.saveGame();
     });
 
-    await this.page.reload();
-    await waitForStoreReady(this.page);
-    const mapaBtn = this.page.locator('button.map-btn').filter({ visible: true }).first();
+    const mapaBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
     await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
   }
 
@@ -108,11 +108,11 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
     await sim.openDaycareMissions();
 
     // 4. Confirmar que la misión está listada
-    const missionCard = page.locator('.mission-card, [id^="mission-card-"]').first();
+    const missionCard = page.locator('[id^="mission-card-"]').first();
     await expect(missionCard).toBeVisible();
 
     // Intentar entregar el Pokémon para la misión
-    const entregarBtn = missionCard.locator('button.btn-deliver, [id^="deliver-btn-"]').first();
+    const entregarBtn = missionCard.locator('[id^="deliver-btn-"]').first();
     await clickResilient(entregarBtn);
 
     // Seleccionamos al Caterpie de nivel 50 (MASTER_CATERPIE) mediante su UID
@@ -120,12 +120,15 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
       const allPkmn = [...(store.team || []), ...(store.box || [])];
-      const caterpie = allPkmn.find((p: { name?: string; nickname?: string | null; level?: number }) => (p?.nickname as string) === 'MASTER_CATERPIE' || (p?.name === 'Caterpie' && ((p?.level as number) || 0) >= 30));
-      return caterpie?.uid || '';
+      const caterpie = allPkmn.find((p: { id?: string; nickname?: string | null; level?: number; uid?: string }) => (p?.nickname as string) === 'MASTER_CATERPIE' || (p?.id === 'caterpie' && ((p?.level as number) || 0) >= 30));
+      if (!caterpie || !caterpie.uid) {
+        throw new Error('[daycare_missions] MASTER_CATERPIE missing from team and box state');
+      }
+      return caterpie.uid;
     });
 
-    await page.locator('.list-item').first().waitFor({ state: 'attached', timeout: 5000 });
-    const masterOption = page.locator(`.list-item[data-pokemon-uid="${caterpieUid}"]`).first();
+    const masterOption = page.locator(`[data-pokemon-uid="${caterpieUid}"]`).first();
+    await masterOption.waitFor({ state: 'visible', timeout: 5000 });
     await clickResilient(masterOption);
 
     await page.waitForFunction(async () => {

@@ -5,7 +5,8 @@
  */
 
 import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
-import { TRAINER_TYPES } from '@/data/player/trainerTypes';
+import { TRAINER_TYPES, requireNpcArchetype } from '@/data/player/trainerTypes';
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
@@ -211,8 +212,8 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   }
 
   const trainerName = generateNpcName({
-    spriteId: chosenSprite,
-    archetype: tKey,
+    spriteId: requireNpcSpriteId(chosenSprite),
+    archetype: requireNpcArchetype(tKey),
     includeTitle: true
   });
 

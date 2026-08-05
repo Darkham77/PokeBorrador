@@ -16,10 +16,10 @@ const DB = new Map<string, RandomBattleSetEntry[]>();
 
 // Carga síncrona local del JSON desde src/data/ai mediante import estático
 // Esto evita la asincronía y asegura disponibilidad en los tests de Node.
-import rawSets from '@/data/ai/random-sets.json' with { type: 'json' };
+import { RANDOM_SETS_DATA } from '../../../../data/ai/randomSetsData.ts';
 
 // Poblar la base de datos estática al cargar el módulo
-const entries = rawSets as RawEntry[];
+const entries = RANDOM_SETS_DATA as RawEntry[];
 for (const entry of entries) {
   DB.set(toID(entry.pokemon), entry.sets);
 }

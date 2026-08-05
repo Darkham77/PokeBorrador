@@ -34,7 +34,7 @@ const scrollToBottom = async (isInstant = false) => {
   }
 }
 
-const lastLogId = ref<number | null>(null)
+const lastLogId = ref<string | number | null>(null)
 
 watch(logs, (newVal) => {
   scrollToBottom()
@@ -89,8 +89,8 @@ onMounted(() => {
       class="log-scroll-inner"
     >
       <div 
-        v-for="log in logs" 
-        :key="log.id" 
+        v-for="(log, idx) in logs" 
+        :key="log.id ? `${log.id}-${idx}` : idx" 
         class="log-entry"
         :class="[log.type, `side-${log.side}`]"
       >

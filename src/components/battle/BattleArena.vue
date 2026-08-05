@@ -336,6 +336,7 @@ const handleClose = () => {
 
 <template>
   <BaseModal
+    id="battle-arena-modal"
     :show="battleStore.isBattleActive"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : '1600px'"

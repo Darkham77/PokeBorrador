@@ -36,7 +36,8 @@ function onLeave(el: Element, done: () => void) {
       >
         <div 
           v-for="n in uiStore.notifications" 
-          :key="n.id" 
+          :id="'toast-item-' + n.id" 
+          :key="n.id"
           class="toast-item"
         >
           <img 

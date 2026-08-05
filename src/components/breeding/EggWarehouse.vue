@@ -264,7 +264,8 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
     >
       <div 
         v-for="egg in breedingStore.warehouseEggs" 
-        :key="egg.id" 
+        :id="'egg-card-' + egg.id" 
+        :key="egg.id"
         class="egg-card"
         @click.stop="handleClaim(egg)"
         @mouseenter="handleCardMouseEnter"

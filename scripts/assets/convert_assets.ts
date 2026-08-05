@@ -688,14 +688,14 @@ export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
  * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite,
  * así como el catálogo de mapeos de gritos (cries) de Pokémon.
  */
-import packedData from './pokemonFeetDatabase.json' with { type: 'json' };
+import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
 
 export interface FeetPoints {
   readonly feetY: number;
   readonly feetX: number;
 }
 
-const PACKED_DATA = packedData;
+const PACKED_DATA = FEET_COORDINATES_DATA;
 
 type FeetSpriteGroupKey = 'p' | 'n' | 't';
 type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';

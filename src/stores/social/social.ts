@@ -204,14 +204,14 @@ export const useSocialStore = defineStore('social', () => {
           { data: GameSaveRow[] | null; error: unknown }
         ]
 
-        const profilesMap = requesterIds.reduce((acc, reqId) => {
-          const p = (profRes.data || []).find((prof: ProfileRow) => prof.id === reqId)
-          const saveRow = (saveRes.data || []).find((s: GameSaveRow) => s.user_id === reqId)
-          const emptyState: Partial<GameState> = {}
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : emptyState
-          
-          const fallbackName = reqId.startsWith('local_') ? reqId.replace('local_', '') : 'Entrenador'
-          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+        const profilesData = profRes.data || []
+        const savesData = saveRes.data || []
+
+        const initialMap: Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }> = {}
+        const profilesMap = (profilesData || []).reduce((acc, p) => {
+          const reqId = p.id
+          const save = ((savesData || []).find((s) => s.user_id === reqId)?.save_data || {}) as Record<string, unknown> // open-record
+          const capitalizedFallback = reqId.slice(0, 8).toUpperCase()
           const username = (save.trainer as string) || p?.username || capitalizedFallback
 
           acc[reqId] = {
@@ -223,7 +223,7 @@ export const useSocialStore = defineStore('social', () => {
             gender: (save.gender as string) || p?.gender || 'h'
           }
           return acc
-        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>) // open-record
+        }, initialMap)
 
         pending.forEach((r: PendingRequest) => {
           const profInfo = profilesMap[r.requester_id]

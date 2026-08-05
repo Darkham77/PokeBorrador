@@ -31,9 +31,11 @@ const selectedCategory = ref('stats')
 <template>
   <div
     v-if="canAccess"
+    id="debug-trigger"
     class="debug-trigger"
   >
     <button
+      id="debug-trigger-btn"
       class="trigger-btn"
       :class="{ active: isOpen }"
       @click.stop="isOpen = true"
@@ -43,6 +45,7 @@ const selectedCategory = ref('stats')
     </button>
 
     <BaseModal
+      id="debug-panel-modal"
       :show="isOpen"
       title="ADMIN DEBUG TOOLS"
       type="side-left"
@@ -78,7 +81,10 @@ const selectedCategory = ref('stats')
           </span>
         </div>
 
-        <nav class="debug-nav">
+        <nav
+          id="debug-nav"
+          class="debug-nav"
+        >
           <PVTooltip
             v-for="cat in [
               { id: 'stats', label: 'STATS', desc: 'Atributos del jugador, dinero, elo y facción.' },

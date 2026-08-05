@@ -157,6 +157,7 @@ watch(() => props.icon, (newIcon) => {
 
 <template>
   <div
+    id="pv-loading-overlay"
     :class="[
       absolute ? 'loading-overlay-absolute' : 'loading-overlay-fixed',
       { 'is-critical': critical }

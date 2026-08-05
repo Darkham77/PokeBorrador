@@ -78,6 +78,7 @@
               
               <button
                 v-if="showCloseButton"
+                :id="id ? `${id}-close-btn` : undefined"
                 class="modal-close-btn"
                 :class="{ 
                   'is-solid': closeButtonVariant === 'solid',
@@ -115,6 +116,7 @@
             <!-- Floating Close Button -->
             <button
               v-if="hideHeader && showCloseButton"
+              :id="id ? `${id}-close-btn` : undefined"
               class="modal-close-btn-floating"
               :class="{ 
                 'is-solid': closeButtonVariant === 'solid',

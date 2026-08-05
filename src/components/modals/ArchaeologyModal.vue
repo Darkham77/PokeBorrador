@@ -328,6 +328,7 @@ const handleCloseModal = () => {
 
 <template>
   <BaseModal
+    id="archaeology-modal"
     :show="show"
     title="EXCAVACIÓN ARQUEOLÓGICA"
     title-color="#eab308"
@@ -364,6 +365,7 @@ const handleCloseModal = () => {
       </div>
 
       <div
+        id="archaeology-grid"
         class="archaeology-grid"
         :style="{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, gridTemplateRows: `repeat(${gridSize}, 1fr)` }"
       >

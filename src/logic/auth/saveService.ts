@@ -12,6 +12,7 @@ import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
+import { requireAbilityId } from '@/data/battle/abilities';
 
 export interface SaveResult {
   success?: boolean;
@@ -227,7 +228,9 @@ export function serializeState(state: GameState): SaveData {
               spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
               status: p.status || null, isShiny: p.isShiny || false,
               gender: p.gender || null, ivs: p.ivs, nature: p.nature,
-              ability: p.ability || '', exp: p.exp || 0, expNeeded: p.expNeeded || 100,
+              ability: p.ability ? requireAbilityId(p.ability) : '', // text-ok
+              exp: p.exp || 0,
+              expNeeded: p.expNeeded || 1,
               friendship: p.friendship || 70,
               _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
               _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,

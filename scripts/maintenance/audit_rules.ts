@@ -106,6 +106,19 @@ export const hardcodedTimezone: AuditRule = {
   fixable: false
 };
 
+export const noDomainIdFallbacks: AuditRule = {
+  regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]/g,
+  message: "FALLBACK SILENCIOSO EN ID DE DOMINIO DETECTADO. Queda estrictamente prohibido usar fallbacks silenciosos (|| '', ?? '', condition ? id : '') para identificadores de dominio (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId). Debe usarse una función de validación estricta (requireItemId, requirePokemonSpeciesId, etc.) que lance un error explícito (Fail Loud) si el ID falta o es inválido.",
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const normPath = filePath.toLowerCase();
+    // Auditar src/ y scripts/
+    return normPath.includes('src/') || normPath.includes('scripts/');
+  },
+  fixable: false
+};
+
 export const nodePrefix: AuditRule = {
   regex: /import .* from ['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/g,
   message: "Import de Node sin prefijo 'node:'.",
@@ -393,5 +406,5 @@ export const forbiddenTypeCasts: AuditRule = {
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks
 };

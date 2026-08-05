@@ -36,6 +36,21 @@ export function canClearStatus(p: Pokemon, type: string): boolean {
   return p.status === type;
 }
 
+export function canRevive(p: Pokemon): boolean {
+  return Number(p.hp ?? 0) === 0;
+}
+
+export function canFullRestore(p: Pokemon): boolean {
+  const hp = Number(p.hp ?? 0);
+  const maxHp = Number(p.maxHp ?? 0);
+  return hp > 0 && (hp < maxHp || p.status !== null);
+}
+
+export function canRestorePP(p: Pokemon): boolean {
+  if (Number(p.hp ?? 0) <= 0) return false;
+  return (p.moves || []).some(m => m && m.pp < (m.maxPP || 35));
+}
+
 // ── Pure Item Effect Helpers ──────────────────────────────────────────────────
 
 /**

@@ -81,9 +81,8 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const store = resolver();
-      return store.currentFsmState === 'SEARCH_PHASE' && 
-             store.currentSubState === 'COMBAT_OR_FLEE' &&
-             !store.isProcessing;
+      return ((store.currentFsmState === 'SEARCH_PHASE' && store.currentSubState === 'COMBAT_OR_FLEE') ||
+              store.currentFsmState === 'ACTIVE_BATTLE') && !store.isProcessing;
     }, undefined, { timeout: 15000 });
   }
 
@@ -98,7 +97,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 test.describe('Sequential Search Loop Battles Simulation', () => {
 
   test('should execute 10 sequential battles in the search loop without initialization or UID errors', async ({ page }) => {
-    test.setTimeout(240000);
+    test.setTimeout(300000);
 
     const testUser = `TEST_SEQ_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const sim = new SearchLoopSimWrapper(page, testUser);

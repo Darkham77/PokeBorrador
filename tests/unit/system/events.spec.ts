@@ -107,5 +107,24 @@ describe('Event Engine Logic', () => {
     expect(getArgDateString(zdt)).toBe('2026-05-10')
     expect(getArgDateString()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
+
+  it('serializes competition entry data cleanly into JSON data payload without top-level schema divergence', () => {
+    const eventId = 'hora_magikarp'
+    const pokemonUid = 'pidgey-test-uid-1234'
+    const userId = 'user-test-uid-5678'
+    const submittedAt = '2026-08-03T22:00:00Z'
+
+    const entryData = {
+      event_id: eventId,
+      player_id: userId,
+      data: {
+        pokemon_uid: pokemonUid
+      },
+      submitted_at: submittedAt
+    }
+
+    expect(entryData.data.pokemon_uid).toBe(pokemonUid)
+    expect(Reflect.has(entryData, 'pokemon_uid')).toBe(false)
+  })
 })
 

@@ -6,7 +6,7 @@ import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
-import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen } from '@/logic/economy/market'
+import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing } from '@/logic/economy/market'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
@@ -48,7 +48,7 @@ export const useGTSStore = defineStore('gts', () => {
 
   // Constants
   const MARKET_FEE = 0.05
-  const MAX_LISTINGS = 10
+  const MAX_LISTINGS = GTS_MAX_ACTIVE_LISTINGS
 
   let salesChannel: RealtimeChannel | null = null
 

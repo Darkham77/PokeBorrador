@@ -150,6 +150,7 @@ function hatchEgg(egg: PokemonEgg): void {
     <div class="eggs-row">
       <div
         v-for="egg in eggs"
+        :id="'egg-hud-card-' + egg.uid"
         :key="egg.uid"
         :data-egg-uid="egg.uid"
         class="egg-hud-card"

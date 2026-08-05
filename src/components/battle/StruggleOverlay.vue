@@ -44,6 +44,7 @@ const struggleMoveData = computed<Move>(() => {
 <template>
   <div
     v-if="isStruggleMode && !battleStore.isProcessing"
+    id="struggle-overlay"
     class="struggle-overlay"
   >
     <BattleMoveSlot

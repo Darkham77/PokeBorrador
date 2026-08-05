@@ -1,7 +1,5 @@
-
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getDayCycle, getSeason, getServerTime } from '@/logic/utils/timeUtils'
@@ -34,13 +32,16 @@ export const useMapStore = defineStore('map', () => {
   const forcedSeason = ref<Season | null>(null)
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
 
-  // Sync epoch hour every second for real-time feeling
+  // Reactive Epoch Hour computation on demand & time-sync-update events (Zero-Timer Event-Driven Architecture)
+  const updateEpochHour = () => {
+    currentEpochHour.value = Math.floor(getServerTime() / 3600000);
+  };
+
   if (typeof window !== 'undefined') {
-    const updateEpoch = () => {
-      currentEpochHour.value = Math.floor(getServerTime() / 3600000)
-      gsap.delayedCall(1, updateEpoch)
-    }
-    gsap.delayedCall(1, updateEpoch)
+    window.addEventListener('time-sync-update', () => {
+      logger.info('MapStore', 'Time sync detected');
+      updateEpochHour();
+    });
   }
 
   const currentCycle = computed(() => {
@@ -57,13 +58,6 @@ export const useMapStore = defineStore('map', () => {
     if (globalWeather.value) return globalWeather.value
     return getRouteWeather(currentMap.value, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
   })
-  
-  if (typeof window !== 'undefined') {
-    window.addEventListener('time-sync-update', () => {
-      logger.info('MapStore', 'Time sync detected');
-      currentEpochHour.value = Math.floor(getServerTime() / 3600000);
-    });
-  }
 
   // Sync time on store init (safer than onMounted in a store)
   // syncServerTime() -- DEFERRED to game initialization

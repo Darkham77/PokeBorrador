@@ -1,246 +1,986 @@
 [
   {
-    "pokemon": "Dragonite",
+    "pokemon": "dragonite",
     "sets": [
-      { "moves": ["dragondance","extremespeed","earthquake","outrage"], "ability": "Multiscale", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" },
-      { "moves": ["dragondance","dualwingbeat","earthquake","extremespeed"], "ability": "Multiscale", "item": "Lum Berry", "role": "Setup Sweeper" },
-      { "moves": ["hurricane","fireblast","roost","thunderwave"], "ability": "Multiscale", "item": "Heavy-Duty Boots", "role": "Bulky Attacker" }
+      {
+        "moves": [
+          "dragondance",
+          "extremespeed",
+          "earthquake",
+          "outrage"
+        ],
+        "ability": "Multiscale",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "dragondance",
+          "dualwingbeat",
+          "earthquake",
+          "extremespeed"
+        ],
+        "ability": "Multiscale",
+        "item": "lumberry",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "hurricane",
+          "fireblast",
+          "roost",
+          "thunderwave"
+        ],
+        "ability": "Multiscale",
+        "item": "heavydutyboots",
+        "role": "Bulky Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Garchomp",
+    "pokemon": "garchomp",
     "sets": [
-      { "moves": ["earthquake","stoneedge","swordsdance","scalechot"], "ability": "Rough Skin", "item": "Life Orb", "role": "Setup Sweeper" },
-      { "moves": ["earthquake","stoneedge","firefang","stealthrock"], "ability": "Rough Skin", "item": "Rocky Helmet", "role": "Bulky Support" },
-      { "moves": ["earthquake","outrage","swordsdance","firefang"], "ability": "Rough Skin", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "earthquake",
+          "stoneedge",
+          "swordsdance",
+          "scalechot"
+        ],
+        "ability": "Rough Skin",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "stoneedge",
+          "firefang",
+          "stealthrock"
+        ],
+        "ability": "Rough Skin",
+        "item": "rockyhelmet",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "outrage",
+          "swordsdance",
+          "firefang"
+        ],
+        "ability": "Rough Skin",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Iron Valiant",
+    "pokemon": "ironvaliant",
     "sets": [
-      { "moves": ["moonblast","closecombat","knockoff","swordsdance"], "ability": "Quark Drive", "item": "Booster Energy", "role": "Setup Sweeper" },
-      { "moves": ["moonblast","aurasphere","thunderbolt","psychic"], "ability": "Quark Drive", "item": "Booster Energy", "role": "Special Attacker" },
-      { "moves": ["closecombat","knockoff","spiritbreak","swordsdance"], "ability": "Quark Drive", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "moonblast",
+          "closecombat",
+          "knockoff",
+          "swordsdance"
+        ],
+        "ability": "Quark Drive",
+        "item": "boosterenergy",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "moonblast",
+          "aurasphere",
+          "thunderbolt",
+          "psychic"
+        ],
+        "ability": "Quark Drive",
+        "item": "boosterenergy",
+        "role": "Special Attacker"
+      },
+      {
+        "moves": [
+          "closecombat",
+          "knockoff",
+          "spiritbreak",
+          "swordsdance"
+        ],
+        "ability": "Quark Drive",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Toxapex",
+    "pokemon": "toxapex",
     "sets": [
-      { "moves": ["scald","recover","haze","toxicspikes"], "ability": "Regenerator", "item": "Rocky Helmet", "role": "Bulky Support" },
-      { "moves": ["scald","recover","toxic","haze"], "ability": "Regenerator", "item": "Black Sludge", "role": "Bulky Support" }
+      {
+        "moves": [
+          "scald",
+          "recover",
+          "haze",
+          "toxicspikes"
+        ],
+        "ability": "Regenerator",
+        "item": "rockyhelmet",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "scald",
+          "recover",
+          "toxic",
+          "haze"
+        ],
+        "ability": "Regenerator",
+        "item": "blacksludge",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Landorus-Therian",
+    "pokemon": "landorustherian",
     "sets": [
-      { "moves": ["earthquake","uturn","stealthrock","stoneedge"], "ability": "Intimidate", "item": "Leftovers", "role": "Bulky Support" },
-      { "moves": ["earthquake","uturn","knockoff","stealthrock"], "ability": "Intimidate", "item": "Rocky Helmet", "role": "Bulky Support" },
-      { "moves": ["earthquake","swordsdance","stoneedge","knockoff"], "ability": "Intimidate", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "earthquake",
+          "uturn",
+          "stealthrock",
+          "stoneedge"
+        ],
+        "ability": "Intimidate",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "uturn",
+          "knockoff",
+          "stealthrock"
+        ],
+        "ability": "Intimidate",
+        "item": "rockyhelmet",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "swordsdance",
+          "stoneedge",
+          "knockoff"
+        ],
+        "ability": "Intimidate",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Zapdos",
+    "pokemon": "zapdos",
     "sets": [
-      { "moves": ["hurricane","thunderbolt","roost","heatwave"], "ability": "Static", "item": "Heavy-Duty Boots", "role": "Bulky Attacker" },
-      { "moves": ["discharge","hurricane","roost","defog"], "ability": "Static", "item": "Heavy-Duty Boots", "role": "Bulky Support" }
+      {
+        "moves": [
+          "hurricane",
+          "thunderbolt",
+          "roost",
+          "heatwave"
+        ],
+        "ability": "Static",
+        "item": "heavydutyboots",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "discharge",
+          "hurricane",
+          "roost",
+          "defog"
+        ],
+        "ability": "Static",
+        "item": "heavydutyboots",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Excadrill",
+    "pokemon": "excadrill",
     "sets": [
-      { "moves": ["earthquake","ironhead","rapidspin","swordsdance"], "ability": "Mold Breaker", "item": "Focus Sash", "role": "Setup Sweeper" },
-      { "moves": ["earthquake","ironhead","rapidspin","rockslide"], "ability": "Mold Breaker", "item": "Leftovers", "role": "Bulky Attacker" },
-      { "moves": ["earthquake","ironhead","swordsdance","rockslide"], "ability": "Sand Rush", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "earthquake",
+          "ironhead",
+          "rapidspin",
+          "swordsdance"
+        ],
+        "ability": "Mold Breaker",
+        "item": "focussash",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "ironhead",
+          "rapidspin",
+          "rockslide"
+        ],
+        "ability": "Mold Breaker",
+        "item": "leftovers",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "ironhead",
+          "swordsdance",
+          "rockslide"
+        ],
+        "ability": "Sand Rush",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Rotom-Wash",
+    "pokemon": "rotomwash",
     "sets": [
-      { "moves": ["hydropump","voltswitch","willowisp","trick"], "ability": "Levitate", "item": "Choice Scarf", "role": "Fast Attacker" },
-      { "moves": ["hydropump","voltswitch","willowisp","painsplit"], "ability": "Levitate", "item": "Leftovers", "role": "Bulky Support" }
+      {
+        "moves": [
+          "hydropump",
+          "voltswitch",
+          "willowisp",
+          "trick"
+        ],
+        "ability": "Levitate",
+        "item": "choicescarf",
+        "role": "Fast Attacker"
+      },
+      {
+        "moves": [
+          "hydropump",
+          "voltswitch",
+          "willowisp",
+          "painsplit"
+        ],
+        "ability": "Levitate",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Heatran",
+    "pokemon": "heatran",
     "sets": [
-      { "moves": ["magmastorm","earthpower","flashcannon","stealthrock"], "ability": "Flash Fire", "item": "Leftovers", "role": "Bulky Attacker" },
-      { "moves": ["lavaplume","earthpower","flashcannon","stealthrock"], "ability": "Flash Fire", "item": "Air Balloon", "role": "Bulky Attacker" },
-      { "moves": ["eruption","flashcannon","earthpower","stealthrock"], "ability": "Flash Fire", "item": "Choice Specs", "role": "Special Attacker" }
+      {
+        "moves": [
+          "magmastorm",
+          "earthpower",
+          "flashcannon",
+          "stealthrock"
+        ],
+        "ability": "Flash Fire",
+        "item": "leftovers",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "lavaplume",
+          "earthpower",
+          "flashcannon",
+          "stealthrock"
+        ],
+        "ability": "Flash Fire",
+        "item": "airballoon",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "eruption",
+          "flashcannon",
+          "earthpower",
+          "stealthrock"
+        ],
+        "ability": "Flash Fire",
+        "item": "choicespecs",
+        "role": "Special Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Ferrothorn",
+    "pokemon": "ferrothorn",
     "sets": [
-      { "moves": ["gyroball","leechseed","stealthrock","spikes"], "ability": "Iron Barbs", "item": "Leftovers", "role": "Bulky Support" },
-      { "moves": ["powerwhip","gyroball","leechseed","stealthrock"], "ability": "Iron Barbs", "item": "Rocky Helmet", "role": "Bulky Support" }
+      {
+        "moves": [
+          "gyroball",
+          "leechseed",
+          "stealthrock",
+          "spikes"
+        ],
+        "ability": "Iron Barbs",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "powerwhip",
+          "gyroball",
+          "leechseed",
+          "stealthrock"
+        ],
+        "ability": "Iron Barbs",
+        "item": "rockyhelmet",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Corviknight",
+    "pokemon": "corviknight",
     "sets": [
-      { "moves": ["bravebird","defog","roost","uturn"], "ability": "Pressure", "item": "Heavy-Duty Boots", "role": "Bulky Support" },
-      { "moves": ["bravebird","bodypress","roost","defog"], "ability": "Mirror Armor", "item": "Leftovers", "role": "Bulky Support" }
+      {
+        "moves": [
+          "bravebird",
+          "defog",
+          "roost",
+          "uturn"
+        ],
+        "ability": "Pressure",
+        "item": "heavydutyboots",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "bravebird",
+          "bodypress",
+          "roost",
+          "defog"
+        ],
+        "ability": "Mirror Armor",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Clefable",
+    "pokemon": "clefable",
     "sets": [
-      { "moves": ["moonblast","softboiled","stealthrock","thunderwave"], "ability": "Magic Guard", "item": "Leftovers", "role": "Bulky Support" },
-      { "moves": ["moonblast","flamethrower","softboiled","calmmind"], "ability": "Magic Guard", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "moonblast",
+          "softboiled",
+          "stealthrock",
+          "thunderwave"
+        ],
+        "ability": "Magic Guard",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "moonblast",
+          "flamethrower",
+          "softboiled",
+          "calmmind"
+        ],
+        "ability": "Magic Guard",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Weavile",
+    "pokemon": "weavile",
     "sets": [
-      { "moves": ["tripleaxel","knockoff","iceshard","swordsdance"], "ability": "Pressure", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" },
-      { "moves": ["tripleaxel","knockoff","iceshard","lowkick"], "ability": "Pressure", "item": "Choice Band", "role": "Fast Attacker" }
+      {
+        "moves": [
+          "tripleaxel",
+          "knockoff",
+          "iceshard",
+          "swordsdance"
+        ],
+        "ability": "Pressure",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "tripleaxel",
+          "knockoff",
+          "iceshard",
+          "lowkick"
+        ],
+        "ability": "Pressure",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Volcarona",
+    "pokemon": "volcarona",
     "sets": [
-      { "moves": ["quiverdance","fierydance","bugbuzz","roost"], "ability": "Flame Body", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" },
-      { "moves": ["quiverdance","flamethrower","gigadrain","psychic"], "ability": "Flame Body", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "quiverdance",
+          "fierydance",
+          "bugbuzz",
+          "roost"
+        ],
+        "ability": "Flame Body",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "quiverdance",
+          "flamethrower",
+          "gigadrain",
+          "psychic"
+        ],
+        "ability": "Flame Body",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Great Tusk",
+    "pokemon": "greattusk",
     "sets": [
-      { "moves": ["headlongrush","closecombat","knockoff","rapidspin"], "ability": "Protosynthesis", "item": "Booster Energy", "role": "Bulky Attacker" },
-      { "moves": ["headlongrush","icespinner","rapidspin","stealthrock"], "ability": "Protosynthesis", "item": "Heavy-Duty Boots", "role": "Bulky Support" }
+      {
+        "moves": [
+          "headlongrush",
+          "closecombat",
+          "knockoff",
+          "rapidspin"
+        ],
+        "ability": "Protosynthesis",
+        "item": "boosterenergy",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "headlongrush",
+          "icespinner",
+          "rapidspin",
+          "stealthrock"
+        ],
+        "ability": "Protosynthesis",
+        "item": "heavydutyboots",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Iron Moth",
+    "pokemon": "ironmoth",
     "sets": [
-      { "moves": ["fierydance","energyball","psychic","sludgewave"], "ability": "Quark Drive", "item": "Booster Energy", "role": "Special Attacker" },
-      { "moves": ["fierydance","energyball","toxicspikes","uturn"], "ability": "Quark Drive", "item": "Heavy-Duty Boots", "role": "Bulky Attacker" }
+      {
+        "moves": [
+          "fierydance",
+          "energyball",
+          "psychic",
+          "sludgewave"
+        ],
+        "ability": "Quark Drive",
+        "item": "boosterenergy",
+        "role": "Special Attacker"
+      },
+      {
+        "moves": [
+          "fierydance",
+          "energyball",
+          "toxicspikes",
+          "uturn"
+        ],
+        "ability": "Quark Drive",
+        "item": "heavydutyboots",
+        "role": "Bulky Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Kingambit",
+    "pokemon": "kingambit",
     "sets": [
-      { "moves": ["suckerpunch","kowtowcleave","ironhead","swordsdance"], "ability": "Supreme Overlord", "item": "Leftovers", "role": "Setup Sweeper" },
-      { "moves": ["suckerpunch","kowtowcleave","ironhead","thunderwave"], "ability": "Supreme Overlord", "item": "Air Balloon", "role": "Bulky Attacker" }
+      {
+        "moves": [
+          "suckerpunch",
+          "kowtowcleave",
+          "ironhead",
+          "swordsdance"
+        ],
+        "ability": "Supreme Overlord",
+        "item": "leftovers",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "suckerpunch",
+          "kowtowcleave",
+          "ironhead",
+          "thunderwave"
+        ],
+        "ability": "Supreme Overlord",
+        "item": "airballoon",
+        "role": "Bulky Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Gholdengo",
+    "pokemon": "gholdengo",
     "sets": [
-      { "moves": ["makeitrain","shadowball","recover","thunderbolt"], "ability": "Good as Gold", "item": "Air Balloon", "role": "Bulky Attacker" },
-      { "moves": ["makeitrain","shadowball","nastyplot","recover"], "ability": "Good as Gold", "item": "Leftovers", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "makeitrain",
+          "shadowball",
+          "recover",
+          "thunderbolt"
+        ],
+        "ability": "Good as Gold",
+        "item": "airballoon",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "makeitrain",
+          "shadowball",
+          "nastyplot",
+          "recover"
+        ],
+        "ability": "Good as Gold",
+        "item": "leftovers",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Skeledirge",
+    "pokemon": "skeledirge",
     "sets": [
-      { "moves": ["torchsong","shadowball","earthpower","slackoff"], "ability": "Unaware", "item": "Heavy-Duty Boots", "role": "Bulky Attacker" },
-      { "moves": ["torchsong","hex","willowisp","slackoff"], "ability": "Unaware", "item": "Leftovers", "role": "Bulky Support" }
+      {
+        "moves": [
+          "torchsong",
+          "shadowball",
+          "earthpower",
+          "slackoff"
+        ],
+        "ability": "Unaware",
+        "item": "heavydutyboots",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "torchsong",
+          "hex",
+          "willowisp",
+          "slackoff"
+        ],
+        "ability": "Unaware",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Dragapult",
+    "pokemon": "dragapult",
     "sets": [
-      { "moves": ["dracometeor","shadowball","fireblast","uturn"], "ability": "Infiltrator", "item": "Choice Specs", "role": "Special Attacker" },
-      { "moves": ["dragondarts","phantomforce","suckerpunch","dragondance"], "ability": "Clear Body", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "dracometeor",
+          "shadowball",
+          "fireblast",
+          "uturn"
+        ],
+        "ability": "Infiltrator",
+        "item": "choicespecs",
+        "role": "Special Attacker"
+      },
+      {
+        "moves": [
+          "dragondarts",
+          "phantomforce",
+          "suckerpunch",
+          "dragondance"
+        ],
+        "ability": "Clear Body",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Cinderace",
+    "pokemon": "cinderace",
     "sets": [
-      { "moves": ["pyroball","highjumpkick","uturn","suckerpunch"], "ability": "Libero", "item": "Heavy-Duty Boots", "role": "Fast Attacker" },
-      { "moves": ["pyroball","highjumpkick","gunkshot","courtchange"], "ability": "Libero", "item": "Life Orb", "role": "Fast Attacker" }
+      {
+        "moves": [
+          "pyroball",
+          "highjumpkick",
+          "uturn",
+          "suckerpunch"
+        ],
+        "ability": "Libero",
+        "item": "heavydutyboots",
+        "role": "Fast Attacker"
+      },
+      {
+        "moves": [
+          "pyroball",
+          "highjumpkick",
+          "gunkshot",
+          "courtchange"
+        ],
+        "ability": "Libero",
+        "item": "lifeorb",
+        "role": "Fast Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Azumarill",
+    "pokemon": "azumarill",
     "sets": [
-      { "moves": ["liquidation","playrough","aquajet","bellydrum"], "ability": "Huge Power", "item": "Sitrus Berry", "role": "Setup Sweeper" },
-      { "moves": ["liquidation","playrough","aquajet","knockoff"], "ability": "Huge Power", "item": "Choice Band", "role": "Fast Attacker" }
+      {
+        "moves": [
+          "liquidation",
+          "playrough",
+          "aquajet",
+          "bellydrum"
+        ],
+        "ability": "Huge Power",
+        "item": "sitrusberry",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "liquidation",
+          "playrough",
+          "aquajet",
+          "knockoff"
+        ],
+        "ability": "Huge Power",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Scizor",
+    "pokemon": "scizor",
     "sets": [
-      { "moves": ["bulletpunch","uturn","knockoff","swordsdance"], "ability": "Technician", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" },
-      { "moves": ["bulletpunch","uturn","superpower","knockoff"], "ability": "Technician", "item": "Choice Band", "role": "Fast Attacker" }
+      {
+        "moves": [
+          "bulletpunch",
+          "uturn",
+          "knockoff",
+          "swordsdance"
+        ],
+        "ability": "Technician",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "bulletpunch",
+          "uturn",
+          "superpower",
+          "knockoff"
+        ],
+        "ability": "Technician",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Slowking-Galar",
+    "pokemon": "slowkinggalar",
     "sets": [
-      { "moves": ["futuresight","sludgebomb","flamethrower","slackoff"], "ability": "Regenerator", "item": "Heavy-Duty Boots", "role": "Bulky Attacker" },
-      { "moves": ["futuresight","sludgebomb","trick","slackoff"], "ability": "Regenerator", "item": "Choice Specs", "role": "Special Attacker" }
+      {
+        "moves": [
+          "futuresight",
+          "sludgebomb",
+          "flamethrower",
+          "slackoff"
+        ],
+        "ability": "Regenerator",
+        "item": "heavydutyboots",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "futuresight",
+          "sludgebomb",
+          "trick",
+          "slackoff"
+        ],
+        "ability": "Regenerator",
+        "item": "choicespecs",
+        "role": "Special Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Rillaboom",
+    "pokemon": "rillaboom",
     "sets": [
-      { "moves": ["grassyglide","knockoff","uturn","swordsdance"], "ability": "Grassy Surge", "item": "Life Orb", "role": "Setup Sweeper" },
-      { "moves": ["grassyglide","woodhammer","knockoff","uturn"], "ability": "Grassy Surge", "item": "Choice Band", "role": "Fast Attacker" }
+      {
+        "moves": [
+          "grassyglide",
+          "knockoff",
+          "uturn",
+          "swordsdance"
+        ],
+        "ability": "Grassy Surge",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "grassyglide",
+          "woodhammer",
+          "knockoff",
+          "uturn"
+        ],
+        "ability": "Grassy Surge",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Gliscor",
+    "pokemon": "gliscor",
     "sets": [
-      { "moves": ["earthquake","toxic","protect","roost"], "ability": "Poison Heal", "item": "Toxic Orb", "role": "Bulky Support" },
-      { "moves": ["earthquake","knockoff","stealthrock","roost"], "ability": "Poison Heal", "item": "Toxic Orb", "role": "Bulky Support" }
+      {
+        "moves": [
+          "earthquake",
+          "toxic",
+          "protect",
+          "roost"
+        ],
+        "ability": "Poison Heal",
+        "item": "toxicorb",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "knockoff",
+          "stealthrock",
+          "roost"
+        ],
+        "ability": "Poison Heal",
+        "item": "toxicorb",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Tyranitar",
+    "pokemon": "tyranitar",
     "sets": [
-      { "moves": ["stoneedge","crunch","earthquake","stealthrock"], "ability": "Sand Stream", "item": "Leftovers", "role": "Bulky Attacker" },
-      { "moves": ["stoneedge","crunch","icepunch","dragondance"], "ability": "Sand Stream", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "stoneedge",
+          "crunch",
+          "earthquake",
+          "stealthrock"
+        ],
+        "ability": "Sand Stream",
+        "item": "leftovers",
+        "role": "Bulky Attacker"
+      },
+      {
+        "moves": [
+          "stoneedge",
+          "crunch",
+          "icepunch",
+          "dragondance"
+        ],
+        "ability": "Sand Stream",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Blissey",
+    "pokemon": "blissey",
     "sets": [
-      { "moves": ["seismictoss","softboiled","stealthrock","thunderwave"], "ability": "Natural Cure", "item": "Heavy-Duty Boots", "role": "Bulky Support" },
-      { "moves": ["seismictoss","softboiled","toxic","healbell"], "ability": "Natural Cure", "item": "Leftovers", "role": "Bulky Support" }
+      {
+        "moves": [
+          "seismictoss",
+          "softboiled",
+          "stealthrock",
+          "thunderwave"
+        ],
+        "ability": "Natural Cure",
+        "item": "heavydutyboots",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "seismictoss",
+          "softboiled",
+          "toxic",
+          "healbell"
+        ],
+        "ability": "Natural Cure",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Roaring Moon",
+    "pokemon": "roaringmoon",
     "sets": [
-      { "moves": ["knockoff","acrobatics","earthquake","dragondance"], "ability": "Protosynthesis", "item": "Booster Energy", "role": "Setup Sweeper" },
-      { "moves": ["knockoff","jawlock","earthquake","dragondance"], "ability": "Protosynthesis", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "knockoff",
+          "acrobatics",
+          "earthquake",
+          "dragondance"
+        ],
+        "ability": "Protosynthesis",
+        "item": "boosterenergy",
+        "role": "Setup Sweeper"
+      },
+      {
+        "moves": [
+          "knockoff",
+          "jawlock",
+          "earthquake",
+          "dragondance"
+        ],
+        "ability": "Protosynthesis",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Iron Treads",
+    "pokemon": "irontreads",
     "sets": [
-      { "moves": ["earthquake","ironhead","rapidspin","voltswitch"], "ability": "Quark Drive", "item": "Booster Energy", "role": "Bulky Support" },
-      { "moves": ["earthquake","ironhead","knockoff","stealthrock"], "ability": "Quark Drive", "item": "Leftovers", "role": "Bulky Attacker" }
+      {
+        "moves": [
+          "earthquake",
+          "ironhead",
+          "rapidspin",
+          "voltswitch"
+        ],
+        "ability": "Quark Drive",
+        "item": "boosterenergy",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "earthquake",
+          "ironhead",
+          "knockoff",
+          "stealthrock"
+        ],
+        "ability": "Quark Drive",
+        "item": "leftovers",
+        "role": "Bulky Attacker"
+      }
     ]
   },
   {
-    "pokemon": "Amoonguss",
+    "pokemon": "amoonguss",
     "sets": [
-      { "moves": ["spore","gigadrain","sludgebomb","clearsmog"], "ability": "Regenerator", "item": "Rocky Helmet", "role": "Bulky Support" },
-      { "moves": ["spore","gigadrain","stunspore","foulplay"], "ability": "Regenerator", "item": "Black Sludge", "role": "Bulky Support" }
+      {
+        "moves": [
+          "spore",
+          "gigadrain",
+          "sludgebomb",
+          "clearsmog"
+        ],
+        "ability": "Regenerator",
+        "item": "rockyhelmet",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "spore",
+          "gigadrain",
+          "stunspore",
+          "foulplay"
+        ],
+        "ability": "Regenerator",
+        "item": "blacksludge",
+        "role": "Bulky Support"
+      }
     ]
   },
   {
-    "pokemon": "Urshifu",
+    "pokemon": "urshifu",
     "sets": [
-      { "moves": ["wickedblow","closecombat","suckerpunch","uturn"], "ability": "Unseen Fist", "item": "Choice Band", "role": "Fast Attacker" },
-      { "moves": ["wickedblow","closecombat","suckerpunch","swordsdance"], "ability": "Unseen Fist", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "wickedblow",
+          "closecombat",
+          "suckerpunch",
+          "uturn"
+        ],
+        "ability": "Unseen Fist",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      },
+      {
+        "moves": [
+          "wickedblow",
+          "closecombat",
+          "suckerpunch",
+          "swordsdance"
+        ],
+        "ability": "Unseen Fist",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Urshifu-Rapid-Strike",
+    "pokemon": "urshifurapidstrike",
     "sets": [
-      { "moves": ["surgingstrikes","closecombat","aquajet","uturn"], "ability": "Unseen Fist", "item": "Choice Band", "role": "Fast Attacker" },
-      { "moves": ["surgingstrikes","closecombat","aquajet","swordsdance"], "ability": "Unseen Fist", "item": "Heavy-Duty Boots", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "surgingstrikes",
+          "closecombat",
+          "aquajet",
+          "uturn"
+        ],
+        "ability": "Unseen Fist",
+        "item": "choiceband",
+        "role": "Fast Attacker"
+      },
+      {
+        "moves": [
+          "surgingstrikes",
+          "closecombat",
+          "aquajet",
+          "swordsdance"
+        ],
+        "ability": "Unseen Fist",
+        "item": "heavydutyboots",
+        "role": "Setup Sweeper"
+      }
     ]
   },
   {
-    "pokemon": "Tinkaton",
+    "pokemon": "tinkaton",
     "sets": [
-      { "moves": ["gigaton hammer","knockoff","stealthrock","thunderwave"], "ability": "Mold Breaker", "item": "Leftovers", "role": "Bulky Support" },
-      { "moves": ["gigaton hammer","playrough","knockoff","swordsdance"], "ability": "Mold Breaker", "item": "Life Orb", "role": "Setup Sweeper" }
+      {
+        "moves": [
+          "gigaton hammer",
+          "knockoff",
+          "stealthrock",
+          "thunderwave"
+        ],
+        "ability": "Mold Breaker",
+        "item": "leftovers",
+        "role": "Bulky Support"
+      },
+      {
+        "moves": [
+          "gigaton hammer",
+          "playrough",
+          "knockoff",
+          "swordsdance"
+        ],
+        "ability": "Mold Breaker",
+        "item": "lifeorb",
+        "role": "Setup Sweeper"
+      }
     ]
   }
 ]

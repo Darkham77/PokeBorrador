@@ -223,6 +223,7 @@ const handleCloseModal = () => {
 
 <template>
   <BaseModal
+    id="fishing-modal"
     :show="show"
     title="RITMO DE PESCA"
     title-color="var(--yellow)"
@@ -239,7 +240,10 @@ const handleCloseModal = () => {
         style="display: inline-block;"
       >🎣</span>&nbsp;
     </template>
-    <div class="rhythm-container">
+    <div
+      id="rhythm-container"
+      class="rhythm-container"
+    >
       <!-- Background / Hint -->
       <div class="fishing-hint">
         <div class="fishing-text">

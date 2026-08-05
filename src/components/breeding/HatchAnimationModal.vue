@@ -361,6 +361,7 @@ onUnmounted(() => {
 
       <!-- Contenedor Interactivo Principal -->
       <div
+        id="hatch-container"
         class="hatch-container"
         :style="auraStyles"
         @click.stop="stage === 'egg' ? handleEggClick() : null"

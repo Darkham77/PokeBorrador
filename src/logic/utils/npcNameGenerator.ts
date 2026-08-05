@@ -66,8 +66,8 @@ const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
 };
 
 export interface NpcNameOptions {
-  spriteId?: NpcSpriteId | string;
-  archetype?: NpcArchetype | string;
+  spriteId?: NpcSpriteId;
+  archetype?: NpcArchetype;
   gender?: NpcGender;
   includeTitle?: boolean;
 }

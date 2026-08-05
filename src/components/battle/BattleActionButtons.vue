@@ -37,6 +37,7 @@ const isLocked = computed(() => {
   >
     <div class="action-row-complex">
       <button
+        id="battle-switch-btn"
         class="action-btn switch-btn"
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked"
         @click.stop="emit('switch')"
@@ -52,6 +53,7 @@ const isLocked = computed(() => {
       />
 
       <button
+        id="battle-bag-btn"
         class="action-btn bag-btn"
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
         @click.stop="emit('bag')"

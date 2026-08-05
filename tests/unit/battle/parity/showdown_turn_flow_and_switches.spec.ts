@@ -436,7 +436,7 @@ describe('Audit Parity - BUG-055: -enditem sets lastItem', () => {
 
     handleMiscEvents(ctx as any);
     expect(target.item).toBe('');
-    expect(target.lastItem).toBe('Sitrus Berry');
+    expect(target.lastItem).toBe('sitrusberry');
   });
 });
 
@@ -453,7 +453,7 @@ describe('Audit Parity - BUG-056: -item resets lastItem', () => {
       getSide: () => 'player'
     };
     handleMiscEvents(ctx as any);
-    expect(target.item).toBe('Leftovers');
+    expect(target.item).toBe('leftovers');
     expect(target.lastItem).toBe('');
   });
 });

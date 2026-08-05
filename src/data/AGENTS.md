@@ -22,6 +22,7 @@ Game Designers / Data Maintainers.
 
 ## Child DOX Index
 
+- [ai/](./ai/AGENTS.md): Domain module documentation for ai.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.

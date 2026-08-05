@@ -76,7 +76,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       return;
     }
 
-    const cambiarBtn = this.page.locator('button.switch-btn:not([disabled])').first();
+    const cambiarBtn = this.page.locator('#battle-switch-btn:not([disabled])').first();
     await clickResilient(cambiarBtn);
 
     const targetBtn = this.page.locator(`.selection-container [data-pokemon-uid="${pokemonUid}"]`).first();
@@ -332,7 +332,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Cierra el modal de finalización de batalla usando los selectores unificados
    */
   public async closeBattleModal(timeout = 15000): Promise<void> {
-    await this.clickElement('button.modal-close-btn, button.modal-close-btn-floating', timeout);
+    await this.clickElement('#battle-arena-modal-close-btn', timeout);
   }
 
   /**

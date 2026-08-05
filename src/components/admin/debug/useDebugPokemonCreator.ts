@@ -4,6 +4,7 @@ import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { requireAbilityId } from '@/data/battle/abilities'
 
 interface PokemonConfig {
   id: string
@@ -109,7 +110,7 @@ export function useDebugPokemonCreator() {
     config.value.id = p.id
     const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
     if (abilities.length > 0) {
-      config.value.ability = abilities[0] || ''
+      config.value.ability = abilities[0] ? requireAbilityId(abilities[0]) : '' // text-ok
     }
     autoFillMoves()
   }

@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS public.competition_entries (
     player_id UUID REFERENCES auth.users(id),
     player_name TEXT NOT NULL,
     player_email TEXT NOT NULL,
+    pokemon_uid TEXT,
     data JSONB NOT NULL,
     submitted_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(event_id, player_id)

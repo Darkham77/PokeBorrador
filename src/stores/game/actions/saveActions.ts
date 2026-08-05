@@ -158,7 +158,7 @@ export function useSaveActions(
     const pokemonCount = (state.team?.length || 0) + (state.box?.length || 0);
     const isGtsSimulation = typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true;
     if (!isGtsSimulation && (pokemonCount === 0 || !state.starterChosen)) {
-      logger.warn('SAVE', `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`);
+      logger.debug('SAVE', `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`);
       return { success: false, error: 'Cannot save with 0 Pokémon or unchosen starter' };
     }
 

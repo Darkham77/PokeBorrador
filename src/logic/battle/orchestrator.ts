@@ -69,7 +69,7 @@ export interface BattleOptions {
  */
 export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon, options: BattleOptions = {}) {
   const { 
-    isGym = false, gymId = undefined, locationId = 'plains', 
+    isGym = false, gymId = undefined, locationId = 'route1', 
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
@@ -141,7 +141,6 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     enemy: null, 
     player: null, 
     _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
-    _initialPlayer: structuredClone(toRaw(playerPoke)),
     _rewardCombatants: [],
     isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM,
     enemyInventory,
@@ -264,7 +263,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
   // Leemos TODA la configuración del combate estrictamente del estado inyectado en CONTEXT_SETUP
   const battleState = ctx.activeBattle.value
-  const locationId = battleState?.locationId || 'plains'
+  const locationId = battleState?.locationId || 'route1'
   const isTrainer = !!battleState?.isTrainer
   const isGym = !!battleState?.isGym
   const wasSearching = !!battleState?.wasSearching

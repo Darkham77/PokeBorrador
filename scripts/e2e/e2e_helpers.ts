@@ -4,6 +4,62 @@ import { toID } from '@pkmn/sim';
 import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
 import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
+import fs from 'node:fs';
+import path from 'node:path';
+import { sanitizePath } from '../lib/safePath.ts';
+
+/**
+ * Flush buffered logs accumulated in RAM during test execution to worker-isolated log files
+ * and log a clean, explicit progress line to stdout.
+ */
+export function flushE2ELogs(
+  logBuffer: string[],
+  testName: string,
+  status: 'passed' | 'failed' | 'skipped' = 'passed',
+  durationMs?: number
+): void {
+  const workerId = process.env.TEST_WORKER_INDEX || '0';
+  const logDir = path.resolve('scripts/e2e/results/logs');
+  
+  try {
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFilePath = path.join(logDir, sanitizePath(`worker_${workerId}.log`));
+    const timeStr = new Date().toISOString();
+    const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / 1000).toFixed(1) + 's' : '0s'}) ---\n`;
+    fs.appendFileSync(logFilePath, header + logBuffer.join('\n') + '\n');
+  } catch (err: unknown) {
+    console.debug('[E2E-LOGGER-WARN] Failed to write log file:', err instanceof Error ? err.message : String(err));
+  }
+
+  const durationStr = durationMs ? ` (${(durationMs / 1000).toFixed(1)}s)` : '';
+
+  if (status === 'passed') {
+    console.log(`[E2E-PROGRESS] ✅ ${testName}${durationStr}`);
+  } else if (status === 'failed') {
+    console.error(`\n==================================================`);
+    console.error(`❌ [E2E-FAILURE-TRACE] ${testName}${durationStr}`);
+    console.error(`==================================================`);
+    if (logBuffer.length > 0) {
+      console.error(logBuffer.join('\n'));
+    } else {
+      console.error(`(No buffered browser logs captured)`);
+    }
+    console.error(`==================================================\n`);
+  }
+}
+
+export interface E2EPage extends Page {
+  _e2eLogBuffer?: string[];
+}
+
+export function logE2EDebug(page: Page | undefined, msg: string): void {
+  const e2ePage = page as E2EPage | undefined;
+  if (e2ePage?._e2eLogBuffer) {
+    e2ePage._e2eLogBuffer.push(`[E2E-TRACE] ${msg}`);
+  }
+}
 
 export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
   const cleanOptions = { ...options };
@@ -25,19 +81,19 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
       const msg = err instanceof Error ? (err as Error).message : String(err);
       
       if (msg.includes('detached')) {
-        console.debug('[E2E-CLICK-SUCCESS] Click triggered element detachment successfully.');
+        logE2EDebug(locator.page(), '[E2E-CLICK-SUCCESS] Click triggered element detachment successfully.');
         return;
       }
       if (msg.includes('visible') || msg.includes('stable') || msg.includes('intercepts pointer events')) {
         // Fallback: If standard click is intercepted (e.g. by a PVTooltip overlay),
         // try focusing the element and triggering via Enter key to bypass pointer-events.
         try {
-          console.debug('[E2E-CLICK-FALLBACK] Click intercepted or unstable. Trying focus + Enter key...');
+          logE2EDebug(locator.page(), '[E2E-CLICK-FALLBACK] Click intercepted or unstable. Trying focus + Enter key...');
           await locator.focus({ timeout: 1000 });
           await locator.page().keyboard.press('Enter');
           return;
         } catch (fallbackErr) {
-          console.debug(`[E2E-CLICK-FALLBACK-FAILED] Focus + Enter failed: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`);
+          logE2EDebug(locator.page(), `[E2E-CLICK-FALLBACK-FAILED] Focus + Enter failed: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`);
         }
 
         const postClickState = await locator.page().evaluate(() => {
@@ -48,11 +104,11 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         }).catch(() => null);
 
         if (!preClickState || !postClickState || preClickState.fsm !== postClickState.fsm || preClickState.sub !== postClickState.sub) {
-          console.debug('[E2E-CLICK-SUCCESS] Click triggered a state transition successfully.');
+          logE2EDebug(locator.page(), '[E2E-CLICK-SUCCESS] Click triggered a state transition successfully.');
           return;
         }
 
-        console.debug(`[E2E-RETRY] Element transitioning, retrying click (${i + 1}/5)...`);
+        logE2EDebug(locator.page(), `[E2E-RETRY] Element transitioning, retrying click (${i + 1}/5)...`);
         await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: 1000 }).catch(() => null);
         continue;
       }
@@ -79,6 +135,9 @@ export type WindowWithResolver = Window;
  * Configura los permisos iniciales mockeados en localstorage y globales
  */
 export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise<void> {
+  const activeBuffer = logBuffer || [];
+  (page as E2EPage)._e2eLogBuffer = activeBuffer;
+
   page.on('console', msg => {
     const text = msg.text();
     let formatted = '';
@@ -90,17 +149,8 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
       formatted = `[BROWSER-LOG] ${text}`;
     }
     
-    if (logBuffer) {
-      logBuffer.push(formatted);
-    } else {
-      if (msg.type() === 'error') {
-        console.error(formatted);
-      } else if (msg.type() === 'warning') {
-        console.warn(formatted);
-      } else {
-        console.log(formatted);
-      }
-    }
+    // Always push to RAM buffer, NEVER write directly to stdout during execution
+    activeBuffer.push(formatted);
 
     if (msg.type() === 'error' && (text.includes('[CRITICAL]') || text.includes('ReferenceError') || text.includes('TypeError'))) {
       throw new Error(`[CRITICAL-CONSOLE-ERROR] ${text}`);
@@ -109,26 +159,25 @@ export async function setupE2ESession(page: Page, logBuffer?: string[]): Promise
 
   page.on('pageerror', err => {
     const formatted = `[BROWSER-PAGEERROR] ${err.message}\nStack: ${err.stack}`;
-    if (logBuffer) {
-      logBuffer.push(formatted);
-    }
+    activeBuffer.push(formatted);
     console.error(formatted);
     throw new Error(`[CRITICAL-E2E-PAGE-ERROR] ${err.message}`);
   });
 
   await page.addInitScript(() => {
-    (window as unknown as Record<string, unknown>).__E2E__ = true;
-    localStorage.setItem('pwa_permissions_accepted', 'true');
-    localStorage.setItem('auto-battle', 'false');
-    // Pre-initialize session mode to offline so authStore.checkSession()
-    // does not perform slow Supabase connection health checks and retries
-    // which time out and block Vue mounting under high test concurrency.
-    localStorage.setItem('pokevicio_session_mode', 'offline');
-    // Clear stale logout reason so LoginView does not render the "session expired"
-    // panel (v-if="sessionExpired") instead of the actual login form (v-else).
-    // Without this, a previous failed run can leave 'session_invalidated' in
-    // sessionStorage, hiding #server-tab-local for the entire test.
-    sessionStorage.removeItem('pokevicio_logout_reason');
+    (window as WindowWithResolver).__E2E__ = true;
+    try {
+      localStorage.setItem('pwa_permissions_accepted', 'true');
+      localStorage.setItem('auto-battle', 'false');
+      localStorage.setItem('pokevicio_session_mode', 'offline');
+    } catch (_e) {
+      void 0;
+    }
+    try {
+      sessionStorage.removeItem('pokevicio_logout_reason');
+    } catch (_e) {
+      void 0;
+    }
     if ('Notification' in window) {
       Object.defineProperty(Notification, 'permission', {
         get() { return 'granted'; }
@@ -153,18 +202,20 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   // router resolution, and authStore checks can take several seconds.
   // Wait explicitly for Vue to mount and initial loader overlays to disappear.
   await page.waitForFunction(() => {
-    return (window as unknown as Record<string, unknown>).pwa_app_mounted === true &&
+    const win = window as WindowWithResolver;
+    return win.pwa_app_mounted === true &&
+           typeof win.initSqlJs === 'function' &&
            !document.querySelector('.loading-overlay') &&
            !document.querySelector('.auth-loading-text');
   }, undefined, { timeout: 15000 }).catch(() => {});
 
   // The local form does not exist until its server tab has rendered.
   const localTab = page.locator('#server-tab-local').first();
-  await localTab.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await localTab.waitFor({ state: 'visible', timeout: 15000 });
   await localTab.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   const userInput = page.locator('#local-username-input').first();
-  await userInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await userInput.waitFor({ state: 'visible', timeout: 15000 });
   await userInput.fill(testUser);
 
   const jugarBtn = page.locator('#local-login-btn').first();
@@ -184,8 +235,8 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   }
 }
 
-export async function resolveTargetUidForSlot(page: Page, slotNum: number, label: string): Promise<string | null> {
-  return await page.evaluate(async ({ slotNum, label }) => {
+export async function resolveTargetUidForSlot(page: Page, slotNum: number, _label: string): Promise<string | null> {
+  return await page.evaluate(async ({ slotNum }) => {
     try {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return null;
@@ -200,15 +251,13 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, label
       const team = gameStore?.state?.team || [];
       const pokemon = ShowdownTeamResolver.getPokemonByShowdownSlot(team, state.playerRequest, slotNum);
       if (pokemon && pokemon.uid) {
-        console.log(`[E2E-DEBUG-${label}] Dynamic slotNum: ${slotNum} -> Resolved via ShowdownTeamResolver: ${pokemon.uid}`);
         return pokemon.uid;
       }
       return null;
-    } catch (err: unknown) {
-      console.log(`[E2E-DEBUG-${label}] Error resolving slotNum ${slotNum} via ShowdownTeamResolver:`, (err as Error).message);
+    } catch (_err: unknown) {
       return null;
     }
-  }, { slotNum, label });
+  }, { slotNum });
 }
 
 /**
@@ -227,7 +276,7 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
       await clickResilient(fightModalBtn, { timeout: 3000 });
     }
   } catch (_e) {
-    console.debug('[confirmAndStartBattle] Start/Combat button not found or battle already active. Proceeding...');
+    logE2EDebug(page, '[confirmAndStartBattle] Start/Combat button not found or battle already active. Proceeding...');
   }
 }
 
@@ -273,13 +322,11 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   });
 
   if (isProcessing) {
-    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: isProcessing is true`);
     return false;
   }
 
-  const isUiLocked = await page.locator('.battle-controls-layout.is-ui-locked').count() > 0;
+  const isUiLocked = await page.locator('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked').count() > 0;
   if (isUiLocked) {
-    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: .is-ui-locked overlay is present in the DOM`);
     return false;
   }
 
@@ -303,7 +350,6 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   });
 
   if (isModalOpen && subState === 'WAIT_INPUT') {
-    console.debug(`[E2E-INPUT-DEBUG] cannot proceed: a blocking base modal is open while in WAIT_INPUT`);
     return false;
   }
 
@@ -323,7 +369,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
       } else {
         // Fallback posicional si no se pudo resolver el UID
         const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
-        const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+        const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
         await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
         await allBenchCards.nth(switchIdx).click({ timeout: 5000 });
       }
@@ -331,7 +377,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     }
     // Choice no es un switch (es el move del turno siguiente): manejar con el primer disponible
     // sin consumir el choice — el loop externo reintentará con el mismo turnCount.
-    const activeSwitchBtn = page.locator('.quick-card-override:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
+    const activeSwitchBtn = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
     const isVisible = await activeSwitchBtn.isVisible().catch(() => false);
     if (isVisible) {
       await activeSwitchBtn.click({ timeout: 5000 });
@@ -341,7 +387,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   }
 
   if (!choice) {
-    const firstMoveBtn = page.locator('.move-card-vicio').first();
+    const firstMoveBtn = page.locator('[id^="move-btn-"]:not([disabled])').first();
     const isVisible = await firstMoveBtn.isVisible().catch(() => false);
     if (isVisible) {
       const isDisabled = await firstMoveBtn.isDisabled().catch(() => true);
@@ -364,13 +410,13 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         if (moveToken === 'recharge') return true;
 
         const moveIdx = parseInt(moveToken || '1', 10) - 1;
-        const struggleOverlay = page.locator('.struggle-overlay');
+        const struggleOverlay = page.locator('#struggle-overlay');
         const isStruggleActive = await struggleOverlay.isVisible().catch(() => false);
 
         let moveBtn;
         if (isStruggleActive) {
           // Click the struggle button inside the overlay
-          moveBtn = struggleOverlay.locator('.move-card-vicio');
+          moveBtn = struggleOverlay.locator('[id^="move-btn-"]');
         } else {
           // Intentar mapear el índice lógico de Showdown al índice físico real del botón en el DOM
           const resolvedVisualIdx = await page.evaluate((idx: number): number => {
@@ -404,18 +450,12 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
             return vIdx !== -1 ? vIdx : idx;
           }, moveIdx);
 
-          moveBtn = page.locator('#move-panel .move-card-vicio').nth(resolvedVisualIdx);
+          moveBtn = page.locator('#move-panel [id^="move-btn-"]').nth(resolvedVisualIdx);
         }
 
         await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
-        const btnHtml = await moveBtn.evaluate((el) => el.outerHTML);
-        console.debug(`[E2E-INPUT-DEBUG] Target move button outerHTML: ${btnHtml}`);
-        const isDisabled = await moveBtn.isDisabled().catch((err: Error) => {
-          console.debug(`[E2E-INPUT-DEBUG] isDisabled check threw error: ${err.message}`);
-          return true;
-        });
+        const isDisabled = await moveBtn.isDisabled().catch(() => true);
         if (isDisabled) {
-          console.debug(`[E2E-INPUT-DEBUG] cannot proceed: move button is disabled`);
           return false;
         }
         await clickResilient(moveBtn, { timeout: 5000 });
@@ -433,7 +473,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           await clickResilient(cardBtn, { timeout: 5000 });
         } else {
           const switchIdx = switchSlot - 2;
-          const allBenchCards = page.locator('.quick-card-override:not(.is-active)');
+          const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
           await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
           await clickResilient(allBenchCards.nth(switchIdx), { timeout: 5000 });
         }
@@ -461,7 +501,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           await clickResilient(quickCard, { timeout: 5000 });
         } else {
           // Si no está en la bolsa rápida (ej. Revivir), abrir la mochila completa
-          const bagBtn = page.locator('.bag-btn');
+          const bagBtn = page.locator('#battle-bag-btn');
           await bagBtn.waitFor({ state: 'visible', timeout: 5000 });
           await clickResilient(bagBtn, { timeout: 5000 });
 
@@ -485,9 +525,9 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           }
         }, targetIdx);
 
-        let targetBtn = page.locator('.list-item').nth(targetIdx);
+        let targetBtn = page.locator('[id^="pokemon-select-"]').nth(targetIdx);
         if (targetUid) {
-          targetBtn = page.locator(`[data-pokemon-uid="${targetUid}"].list-item`).first();
+          targetBtn = page.locator(`#pokemon-select-${targetUid}`).first();
         }
 
         await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
@@ -516,7 +556,6 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
       const req = battle.playerRequest;
 
       if (req?.wait) {
-        console.log(`[E2E-INVALID-CHECK] wait request is active (wait: true) -> choice "${ch}" is invalid/skipped`);
         return true;
       }
 
@@ -526,24 +565,20 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
         const move = battle.player?.moves?.[moveIdx];
         const reqMove = req?.active?.[0]?.moves?.[moveIdx];
         const isInvalid = !move || (reqMove && reqMove.disabled);
-        console.log(`[E2E-INVALID-CHECK] ch: ${ch}, move exists: ${!!move}, reqMove disabled: ${reqMove?.disabled} -> isInvalid: ${isInvalid}`);
         return !!isInvalid;
       } else if (clean.startsWith('switch ')) {
         const slotNum = parseInt(clean.split(' ')[1] || '2', 10);
         const slotOrder = req?.side?.pokemon || [];
         const targetPoke = slotOrder[slotNum - 1];
         if (!targetPoke) {
-          console.log(`[E2E-INVALID-CHECK] ch: ${ch}, no targetPoke at slot ${slotNum} -> isInvalid: true`);
           return true;
         }
         const isFnt = targetPoke.condition.endsWith(' fnt') || targetPoke.condition.startsWith('0/');
         const isInvalid = !!targetPoke.active || isFnt;
-        console.log(`[E2E-INVALID-CHECK] ch: ${ch}, targetPoke active: ${targetPoke.active}, condition: ${targetPoke.condition} -> isInvalid: ${isInvalid}`);
         return !!isInvalid;
       }
       return false;
-    } catch (e: unknown) {
-      console.error(`[E2E-INVALID-CHECK] Error:`, (e as Error).message);
+    } catch (_e: unknown) {
       return false;
     }
   }, choice);
@@ -577,7 +612,7 @@ export async function verifyHpParity(page: Page) {
       const enemyMaxHp = store.state?.enemy?.maxHp ?? 1;
 
       // Check backend Showdown engine HP parity if activeBattle runner is present
-      const simBattle = (window as unknown as { __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } } }).__SIMULATOR_BATTLE__;
+      const simBattle = (window as WindowWithResolver).__SIMULATOR_BATTLE__;
       if (simBattle) {
         const simP1Hp = simBattle.p1?.active?.[0]?.hp;
         const simP2Hp = simBattle.p2?.active?.[0]?.hp;
@@ -861,9 +896,9 @@ export async function waitForStoreReady(page: Page): Promise<void> {
 }
 
 export async function openDebugTab(page: Page, category: string): Promise<void> {
-  const isNavOpen = await page.locator('.debug-nav').isVisible().catch(() => false);
+  const isNavOpen = await page.locator('#debug-nav').isVisible().catch(() => false);
   if (!isNavOpen) {
-    const trigger = page.locator('.debug-trigger .trigger-btn, .debug-trigger, button.trigger-btn').first();
+    const trigger = page.locator('#debug-trigger-btn, #debug-trigger').first();
     const isTriggerVisible = await trigger.isVisible().catch(() => false);
     if (isTriggerVisible) {
       await clickResilient(trigger);
@@ -887,10 +922,10 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
 }
 
 export async function playFishingMinigameNaturally(page: Page): Promise<void> {
-  const modalContainer = page.locator('.rhythm-container').first();
+  const modalContainer = page.locator('#rhythm-container').first();
   const isVisible = await modalContainer.isVisible({ timeout: 2000 }).catch(() => false);
   if (isVisible) {
-    const closeBtn = page.locator('.modal-close-btn, .modal-close-btn-floating').first();
+    const closeBtn = page.locator('#fishing-modal-close-btn, .modal-close-btn').first();
     const isCloseVisible = await closeBtn.isVisible().catch(() => false);
     if (isCloseVisible) {
       await clickResilient(closeBtn).catch(() => {});
@@ -900,11 +935,11 @@ export async function playFishingMinigameNaturally(page: Page): Promise<void> {
 }
 
 export async function playArchaeologyMinigameNaturally(page: Page): Promise<void> {
-  const grid = page.locator('.archaeology-grid').first();
+  const grid = page.locator('#archaeology-grid').first();
   const isVisible = await grid.isVisible({ timeout: 2000 }).catch(() => false);
   if (isVisible) {
     // Cierra/abandona la arqueología de forma natural por UI usando el botón de cerrar modal
-    const closeBtn = page.locator('.modal-close-btn, .modal-close-btn-floating').first();
+    const closeBtn = page.locator('#archaeology-modal-close-btn, .modal-close-btn').first();
     const isCloseVisible = await closeBtn.isVisible().catch(() => false);
     if (isCloseVisible) {
       await clickResilient(closeBtn).catch(() => {});

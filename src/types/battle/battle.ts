@@ -115,7 +115,6 @@ export interface BattleState {
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
-  _initialPlayer?: Pokemon | null;
   _rewardCombatants?: Pokemon[];
   isFishing?: boolean;
   isArchaeology?: boolean;
@@ -163,7 +162,7 @@ export interface BattleState {
 export type BattleSource = Pokemon | string;
 
 export interface BattleLog {
-  id: number;
+  id: string; // domain-ok
   msg: string; // domain-ok
   type: string; // domain-ok
   side: BattleSide | null;

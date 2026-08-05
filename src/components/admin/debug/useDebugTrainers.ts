@@ -9,8 +9,9 @@ import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS } from '@/data/world/gyms'
-import { TRAINER_TYPES, isTrainerTypeKey } from '@/data/player/trainerTypes'
-import { generateNpcName } from '@/logic/utils/npcNameGenerator'
+import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype } from '@/data/player/trainerTypes'
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
@@ -58,9 +59,9 @@ export function useDebugTrainers() {
   const debugStore = useDebugStore()
 
   const trainerName = ref('Entrenador Vicio')
-  const trainerSprite = ref('youngster')
+  const trainerSprite = ref<NpcSpriteId>('youngster')
   const enemyTeam = ref<Pokemon[]>([])
-  const trainerArchetype = ref<string | undefined>(undefined)
+  const trainerArchetype = ref<NpcArchetype | undefined>(undefined)
   const selectedPokeIndex = ref<number | null>(null)
   const selectedPreset = ref('random')
 
@@ -109,7 +110,8 @@ export function useDebugTrainers() {
     return enemyTeam.value[selectedPokeIndex.value] || null
   })
 
-  function generateThemedTrainerName(archetype: string): string {
+  function generateThemedTrainerName(archetypeKey: string): string {
+    const archetype = requireNpcArchetype(archetypeKey)
     return generateNpcName({
       spriteId: trainerSprite.value,
       archetype,
@@ -123,21 +125,31 @@ export function useDebugTrainers() {
   }
 
   function randomizeTrainerName() {
-    trainerName.value = generateNpcName({
+    const opts: NpcNameOptions = {
       spriteId: trainerSprite.value,
-      archetype: trainerArchetype.value,
       includeTitle: true
-    })
+    }
+    if (trainerArchetype.value) {
+      opts.archetype = trainerArchetype.value
+    }
+    trainerName.value = generateNpcName(opts)
   }
 
   function randomizeTrainerSprite() {
     if (selectedPreset.value !== 'random') {
-      // Use the full archetype catalog for the selected archetype
-      const sprites = getSpritesForArchetype(selectedPreset.value as NpcArchetype)
-      trainerSprite.value = sprites[Math.floor(Math.random() * sprites.length)] || 'youngster'
+      const archetype = requireNpcArchetype(selectedPreset.value)
+      const sprites = getSpritesForArchetype(archetype)
+      const randomSprite = sprites[Math.floor(Math.random() * sprites.length)]
+      if (!randomSprite) {
+        throw new Error(`[useDebugTrainers] No sprites found for archetype ${selectedPreset.value}`)
+      }
+      trainerSprite.value = requireNpcSpriteId(randomSprite)
     } else {
-      // Pick from ALL sprites across all archetypes
-      trainerSprite.value = ALL_CATALOG_SPRITES[Math.floor(Math.random() * ALL_CATALOG_SPRITES.length)] || 'youngster'
+      const randomSprite = ALL_CATALOG_SPRITES[Math.floor(Math.random() * ALL_CATALOG_SPRITES.length)]
+      if (!randomSprite) {
+        throw new Error('[useDebugTrainers] ALL_CATALOG_SPRITES is empty')
+      }
+      trainerSprite.value = requireNpcSpriteId(randomSprite)
     }
   }
 
@@ -164,12 +176,17 @@ export function useDebugTrainers() {
         }
       }
     } else {
-      const archetype = selectedPreset.value
-      trainerArchetype.value = isTrainerTypeKey(archetype) ? TRAINER_TYPES[archetype].archetype : archetype
-      trainerName.value = generateThemedTrainerName(archetype)
+      const archetypeKey = selectedPreset.value
+      const archetype = requireNpcArchetype(archetypeKey)
+      trainerArchetype.value = archetype
+      trainerName.value = generateThemedTrainerName(archetypeKey)
 
-      const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
-      trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'youngster'
+      const availableSprites = getSpritesForArchetype(archetype)
+      const randomSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
+      if (!randomSprite) {
+        throw new Error(`[useDebugTrainers] No sprites found for archetype: ${archetypeKey}`)
+      }
+      trainerSprite.value = requireNpcSpriteId(randomSprite)
 
       const pool: readonly PokemonSpeciesId[] = isTrainerTypeKey(archetype) ? TRAINER_TYPES[archetype].pool : ['rattata']
       for (let i = 0; i < size; i++) {
@@ -194,7 +211,7 @@ export function useDebugTrainers() {
 
   function loadPolicePreset() {
     trainerName.value = 'Oficial de Policía'
-    trainerSprite.value = 'tamer'
+    trainerSprite.value = 'policeman'
     trainerArchetype.value = 'policeman'
     combatLocationType.value = 'map'
 

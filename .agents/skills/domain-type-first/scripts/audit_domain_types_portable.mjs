@@ -59,7 +59,12 @@ const patterns = [
   {
     label: 'Type alias directly to string defeats domain enforcement',
     severity: 'ERROR',
-    regex: /\b(?:export\s+)?type\s+\w+\s*=\s*string\s*;/g,
+    regex: /\btype\s+[A-Z]\w*\s*=\s*string\b/g,
+  },
+  {
+    label: 'Silent domain ID fallback assignment (|| \'\', ?? \'\', condition ? id : \'\') prohibited; must use strict boundary validator (e.g. requireItemId)',
+    severity: 'ERROR',
+    regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]/g,
   },
   {
     label: 'Enum-like union ends with | string; compiler cannot reject invalid values',
@@ -169,6 +174,7 @@ const patterns = [
     severity: 'ERROR',
     regex: /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*:\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>)/g,
     filter: (_match, line) => {
+      if (!line) return false;
       const trimmed = line.trim();
       return !/const\s+(?:lines|parts|chunks|words|tokens|report|candidates)\s*:\s*(?:readonly\s+)?string\[\]/i.test(trimmed);
     },
@@ -178,7 +184,7 @@ const patterns = [
     severity: 'ERROR',
     regex: /\b\w+\.(?:toLowerCase|toUpperCase)\s*\(\s*\)\s*(?:as\s+\w+|satisfies\s+\w+)?/g,
     filter: (_match, line) => {
-      if (line.includes('// text-ok') || line.includes('// no-domain') || line.includes('// domain-ok')) return false;
+      if (!line || line.includes('// text-ok') || line.includes('// no-domain') || line.includes('// domain-ok')) return false;
       if (/\.(?:includes|startsWith|endsWith|indexOf)\s*\(/.test(line) || /\b(?:search|query|filter|input)\b/i.test(line)) return false;
       if (/`[^`]*\$\{[^}]*\.(?:toLowerCase|toUpperCase)\(\)\}[^`]*`/.test(line)) return false;
       if (/\b(?:title|label|name|text|description|rewardLabel|rewardVal|statusText|unequipped|captureDateFormatted|requiredClass|requiredFaction|stat|nature|heldItem|weather|slotId|phase|genderVal|current|activeRegion|mech|leader|cat|nat|typeFocus|c|d|p|t|clean|to|sessionMode|moRequired|value|choiceMove|faction)\.(?:toLowerCase|toUpperCase)\(\)/.test(line)) return false;
@@ -250,7 +256,7 @@ function findMatches(content, file, pattern) {
     const line = lines[lineNum - 1] ?? '';
 
     if (isCommentLine(line) || isTestFile(file) || (!pattern.overrideEscapeHatch && hasEscapeHatch(line))) continue;
-    if (pattern.filter && !pattern.filter(match)) continue;
+    if (pattern.filter && !pattern.filter(match, line)) continue;
 
     findings.push({
       file,

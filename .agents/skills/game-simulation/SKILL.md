@@ -47,6 +47,10 @@ the source of truth. `src/` must conform to them, never the reverse.
      2. **Phase 2 (Natural Unassisted Combat Completion)**: As soon as all moves/abilities in the batch have been certified (`hasUntestedItemsAfterTurn === false`), IPB cheats MUST be completely deactivated. The battle MUST continue executing naturally turn-by-turn until the battle ends organically (`simBattle.ended === true`).
    - It is STRICTLY FORBIDDEN to introduce artificial loop breaks, early returns, or synthetic truncations when testing finishes. Battles must always complete naturally to generate a clean, un-truncated choice stream for Playwright E2E replays.
 
+6. **Sequential Suite Execution Law (Prohibition of Cross-Suite Parallel Blending)**:
+   - It is STRICTLY FORBIDDEN to execute multiple E2E simulation suite directories or files concurrently in a single parallel Playwright command when suites contain multi-account transactions, database resets, or internal multi-worker sessions. Doing so causes cross-test database state collisions and memory snapshot wipes on the dev server.
+   - All E2E domain simulation suites MUST ALWAYS be executed strictly suite-by-suite in sequential order using their dedicated canonical npm scripts (`npm run sim:e2e:gyms`, `npm run sim:e2e:gts`, `npm run sim:e2e:breeding`, `npm run sim:e2e:missions`, `npm run sim:e2e:save`, `npm run sim:e2e:ai`).
+
    **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
 
    *❌ Forbidden (Silent Fallback Assignment):*
@@ -111,13 +115,13 @@ Resumed at: <step name> (only when resuming)
 ## Simulation Queue
 <!-- checked = done, unchecked = pending, ⚠ = failed/needs fix -->
 - [ ] sim:fuzzer (fuzzer cases regeneration) — PENDING
-- [ ] sim:e2e:combat (battle FSM sync & manual scenarios) — PENDING
-- [ ] sim:e2e:ai (heuristic AI simulation) — PENDING
 - [ ] sim:e2e:gyms (gym progression) — PENDING
 - [ ] sim:e2e:gts (GTS transactions) — PENDING
 - [ ] sim:e2e:breeding (breeding lifecycle) — PENDING
 - [ ] sim:e2e:missions (daycare missions) — PENDING
 - [ ] sim:e2e:save (save shield restrictions) — PENDING
+- [ ] sim:e2e:ai (heuristic AI simulation) — PENDING
+- [ ] sim:e2e:combat (battle FSM sync & manual scenarios) — PENDING (ALWAYS LAST)
 - [ ] sim:e2e (full E2E cross-domain regression pass) — PENDING
 
 ## Active Fix — <simulation name>
@@ -340,6 +344,9 @@ This command installs the required browsers along with all system dependencies (
 > [!IMPORTANT]
 > **Mandatory State Synchronization:** Before running any scope determination or executing commands, the agent MUST inspect the repository's `scripts/e2e/results/` folder for the most recent `simulation_progress_log_<YYYYMMDD>.md` file. The agent MUST parse this physical file, recreate the internal `simulation_progress.md` artifact in the brain, and resume exactly from the last pending or in-progress simulation queue item. This synchronization is critical to preserve the simulation state across agent swaps or active branches.
 
+> [!IMPORTANT]
+> **Combat Simulation Execution Order Mandate (Save Combat for Last):** Because `sim:e2e:combat` is the longest, heaviest, and most time-consuming simulation suite, all non-combat domain suites (`gyms`, `gts`, `breeding`, `missions`, `save`, `ai`) MUST ALWAYS be executed first in the queue. `sim:e2e:combat` MUST be saved for the very end of the domain run right before the final cross-domain regression pass.
+
 ### Step 1 — Determine scope
 
 | User intent | Command |
@@ -405,6 +412,10 @@ RE-RUN only simulation X (use TEST_CASE filter or domain script).
   +-- PASS -> continue with remaining simulations from where execution stopped
   +-- FAIL -> repeat fix loop (no retry limit for simple bugs)
 ```
+
+> [!CAUTION]
+> **MANDATORY: Verify the Fix in Isolation BEFORE Advancing or Re-Running the Full Suite.**
+> After applying a fix to a failing simulation (e.g. `sim:e2e:gts`), you MUST re-run ONLY that specific domain simulation (`npm run sim:e2e:gts`) to confirm it passes in isolation. **It is STRICTLY FORBIDDEN to skip straight to `npm run sim:e2e` or the next domain suite without first confirming the fixed simulation passes on its own.** Re-running the full suite before individual validation is a waste of resources and masks whether the fix actually worked. The single-domain re-run is cheap; the full suite takes 25+ minutes. Always validate cheap first.
 
 > [!WARNING]
 > **THE COLLECTIVE SUCCESS RULE (ONE TEST PASSING DOES NOT MAKE A SUITE):**

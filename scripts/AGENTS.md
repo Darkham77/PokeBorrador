@@ -44,4 +44,5 @@ DevOps / Tooling Engineers.
 - [database/](./database/AGENTS.md): Domain module documentation for database.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
+- [tools/](./tools/AGENTS.md): Domain module documentation for tools.
 - [validation/](./validation/AGENTS.md): Domain module documentation for validation.

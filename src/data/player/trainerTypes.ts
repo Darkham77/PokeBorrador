@@ -39,3 +39,10 @@ export type TrainerTypeKey = keyof typeof TRAINER_TYPES;
 export function isTrainerTypeKey(raw: string): raw is TrainerTypeKey {
   return (Object.keys(TRAINER_TYPES) as readonly string[]).includes(raw); // domain-ok
 }
+
+export function requireNpcArchetype(raw: string): NpcArchetype {
+  if (isTrainerTypeKey(raw)) {
+    return TRAINER_TYPES[raw].archetype;
+  }
+  throw new Error(`[trainerTypes] Invalid NPC archetype: ${raw}`);
+}

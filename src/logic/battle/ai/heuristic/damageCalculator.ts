@@ -5,6 +5,8 @@
 
 import { Generations, Pokemon, Move, Field, calculate, type Result, type GenerationNum } from '@smogon/calc';
 import { toID } from '@pkmn/sim';
+import { requireItemId } from '../../../../data/inventory/items.ts';
+import { requireAbilityId } from '../../../../data/battle/abilities.ts';
 import type { HeuristicPokemonState, HeuristicFieldState, DamageResult, DamageMatchup, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
 
 // Priority moves (positive = priority, negative = delayed, protection = high positive)
@@ -127,12 +129,20 @@ export class HeuristicDamageCalculator {
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
     };
 
-    // Held item — always use knownItem first, fall back to item (mapped from pokemon.heldItem)
-    const item = p.knownItem || (p.itemConsumed ? '' : p.item);
-    if (item) opts['item'] = item;
+    // Held item — validate strictly with requireItemId if present and map to Smogon name
+    if (!p.itemConsumed) {
+      const rawItem = p.knownItem || p.item;
+      if (rawItem) {
+        const canonicalId = requireItemId(rawItem);
+        opts['item'] = this.gen.items.get(toID(canonicalId))?.name;
+      }
+    }
 
-    if (p.knownAbility) opts['ability'] = p.knownAbility;
-    else if (p.ability) opts['ability'] = p.ability;
+    const rawAbility = p.knownAbility || p.ability;
+    if (rawAbility) {
+      const canonicalId = requireAbilityId(rawAbility);
+      opts['ability'] = this.gen.abilities.get(toID(canonicalId))?.name;
+    }
 
     if (p.status) opts['status'] = p.status;
 

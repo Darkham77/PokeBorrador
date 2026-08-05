@@ -28,7 +28,7 @@ export interface LoadingStore {
 
 declare global {
   interface Window {
-    initSqlJs: (o: unknown) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
+    initSqlJs?: (o?: unknown) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
   }
 }
 

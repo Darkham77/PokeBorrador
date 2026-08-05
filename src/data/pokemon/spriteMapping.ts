@@ -3,9 +3,9 @@
  *
  * Wrapper to export static sprite mapping database loaded from JSON.
  */
-import spriteIds from './spriteMapping.json' with { type: 'json' };
+import { SPRITE_MAPPING_DATA } from './spriteMappingData.ts';
 
-export const POKEMON_SPRITE_IDS = spriteIds;
+export const POKEMON_SPRITE_IDS = SPRITE_MAPPING_DATA;
 export type PokemonSpriteId = keyof typeof POKEMON_SPRITE_IDS;
 export type PokemonSpriteValue = (typeof POKEMON_SPRITE_IDS)[PokemonSpriteId];
 

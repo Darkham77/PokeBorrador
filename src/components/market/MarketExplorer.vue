@@ -4,7 +4,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import type { MarketListing } from '@/logic/economy/market'
+import { type MarketListing, GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
 import { getItemById } from '@/data/inventory/items'
@@ -20,7 +20,7 @@ const auth = useAuthStore()
 const listings = computed(() => gtsStore.filteredListings)
 
 const currentPage = ref(1)
-const itemsPerPage = 50
+const itemsPerPage = GTS_ITEMS_PER_PAGE
 
 const totalPages = computed(() => Math.ceil(listings.value.length / itemsPerPage))
 
@@ -90,6 +90,7 @@ function getTierColor(tier?: string) {
       <div class="listings-grid-unified custom-scrollbar">
         <div 
           v-for="item in paginatedListings" 
+          :id="'market-item-wrapper-' + item.id"
           :key="item.id"
           class="market-item-wrapper"
           :class="[
@@ -165,17 +166,23 @@ function getTierColor(tier?: string) {
       <!-- Pagination controls -->
       <div
         v-if="totalPages > 1"
+        id="gts-explorer-pagination"
         class="gts-pagination"
       >
         <button 
+          id="gts-explorer-prev-btn"
           class="btn-vicio-secondary btn-vicio-xs prev-page-btn" 
           :disabled="currentPage === 1" 
           @click="currentPage--"
         >
           ANTERIOR
         </button>
-        <span class="page-info">PÁGINA {{ currentPage }} DE {{ totalPages }}</span>
+        <span
+          id="gts-explorer-page-info"
+          class="page-info"
+        >PÁGINA {{ currentPage }} DE {{ totalPages }}</span>
         <button 
+          id="gts-explorer-next-btn"
           class="btn-vicio-secondary btn-vicio-xs next-page-btn" 
           :disabled="currentPage === totalPages" 
           @click="currentPage++"

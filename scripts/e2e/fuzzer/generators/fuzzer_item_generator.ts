@@ -101,7 +101,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         nature: 'serious',
         evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        moves: ['softboiled', 'seismictoss', 'tackle', 'substitute'],
+        moves: ['seismictoss', 'tackle', 'softboiled', 'substitute'],
         uid: eUid,
       });
     }

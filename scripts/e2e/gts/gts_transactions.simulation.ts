@@ -97,7 +97,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
     }, { money, pokemonCount });
 
     await this.page.reload();
-    await this.page.locator('button.map-btn').filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+    await this.page.locator('#nav-map-btn').filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 15000 });
   }
 
   public async openGTS(): Promise<void> {
@@ -115,10 +115,18 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       for (const p of toPublish) {
         await gts.publishListing('pokemon', p, 1000);
       }
+
+      // Force-refresh myListings directly from DB, bypassing auth.user guard
+      const { data } = await game.db
+        .from('market_listings')
+        .select('*')
+        .neq('status', 'sold')
+        .order('created_at', { ascending: false }) as { data: typeof gts.myListings | null };
+      if (data) gts.myListings = data;
     });
   }
 
-  public async saveGameAndAwaitExport(): Promise<void> {
+  public override async saveGameAndAwaitExport(): Promise<void> {
     const exportPromise = this.page.waitForResponse(response => 
       response.url().includes('/api/dev-export-db') && response.status() === 200
     );
@@ -146,10 +154,10 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     const sellerName = `SELLER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const seller = new GTSSimulationWrapper(pageSeller, sellerName);
 
-    // 1. Login y Setup Vendedor (15 Pokémon en banca)
+    // 1. Login y Setup Vendedor (12 Pokémon en banca: 9 se publican directo, 1 via UI, quedan 2 disponibles para el intento del 11º)
     await seller.setup();
     await waitForStoreReady(pageSeller);
-    await seller.setupUserInventory(100, 15);
+    await seller.setupUserInventory(100, 12);
 
     // 2. Abrir GTS
     await seller.openGTS();
@@ -166,7 +174,16 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     }, undefined, { timeout: 5000 }).catch(() => {});
 
     // Esperar a que el loading overlay desaparezca
-    await pageSeller.locator('.loading-overlay-fixed').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await pageSeller.locator('#pv-loading-overlay').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+
+    // Verificar que las 9 publicaciones directas se registraron antes de continuar
+    const activeListingsCount = await pageSeller.evaluate(async () => {
+      const { useGTSStore } = await import('../../../src/stores/gts.ts');
+      return useGTSStore().activeMyListings.length;
+    });
+    if (activeListingsCount < 9) {
+      throw new Error(`[GTS TEST] publishNineDirectly sólo registró ${activeListingsCount}/9 publicaciones. El loop de publicación falló.`);
+    }
 
     // Cambiar a pestaña PUBLICAR
     const publicarBtn = pageSeller.locator('#gts-tab-publish').filter({ visible: true }).first();
@@ -174,11 +191,11 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(publicarBtn);
 
     // Publicar el 10º Pokémon por UI para alcanzar el límite
-    const selectionItem = pageSeller.locator('.selection-list .list-item').first();
+    const selectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
     await selectionItem.waitFor({ state: 'visible', timeout: 5000 });
     await clickResilient(selectionItem);
 
-    const priceInput = pageSeller.locator('input.price-input[type="number"]').first();
+    const priceInput = pageSeller.locator('#gts-price-input').first();
     await priceInput.waitFor({ state: 'visible', timeout: 5000 });
     await priceInput.fill('1000');
 
@@ -186,16 +203,23 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(publishBtn);
 
     // Esperar que se limpie la selección (10/10 alcanzados)
-    await expect(pageSeller.locator('.selection-hint')).toBeVisible({ timeout: 5000 });
+    await expect(pageSeller.locator('#gts-selection-hint')).toBeVisible({ timeout: 5000 });
 
     // 4. Intentar publicar el 11º y verificar Toast de rechazo
-    const nextSelectionItem = pageSeller.locator('.selection-list .list-item').first();
-    await nextSelectionItem.waitFor({ state: 'visible', timeout: 5000 });
+    // Esperar que el store deje de procesar y la lista reactiva se repopule
+    await pageSeller.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      return resolver && !resolver.isProcessing;
+    }, undefined, { timeout: 5000 }).catch(() => { void 0; });
+
+    const nextSelectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
+    await nextSelectionItem.waitFor({ state: 'visible', timeout: 10000 });
+    await nextSelectionItem.scrollIntoViewIfNeeded();
     await clickResilient(nextSelectionItem);
     await priceInput.fill('1000');
     await clickResilient(publishBtn);
 
-    const toast = pageSeller.locator('.toast-item').first();
+    const toast = pageSeller.locator('[id^="toast-item-"]').first();
     await toast.waitFor({ state: 'visible', timeout: 5000 });
     await expect(toast).toContainText('Límite de publicaciones alcanzado (10)');
 
@@ -234,15 +258,15 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await explorarBtn.waitFor({ state: 'visible', timeout: 5000 });
     await clickResilient(explorarBtn);
 
-    // Verificar paginación
-    const pagination = pageBuyer.locator('.gts-pagination').first();
-    await pagination.waitFor({ state: 'visible', timeout: 10000 });
+    // Verificar paginación por ID único
+    const pagination = pageBuyer.locator('#gts-explorer-pagination').first();
+    await pagination.waitFor({ state: 'visible', timeout: 15000 });
     await expect(pagination).toContainText('PÁGINA 1 DE 2');
 
-    const nextBtn = pagination.locator('.next-page-btn');
+    const nextBtn = pageBuyer.locator('#gts-explorer-next-btn').first();
     await expect(nextBtn).toBeEnabled();
     
-    const prevBtn = pagination.locator('.prev-page-btn');
+    const prevBtn = pageBuyer.locator('#gts-explorer-prev-btn').first();
     await expect(prevBtn).toBeDisabled();
 
     await clickResilient(nextBtn);
@@ -254,8 +278,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await expect(pagination).toContainText('PÁGINA 1 DE 2');
 
     // Comprar el primer Pokémon disponible
-    const targetListing = pageBuyer.locator('.market-item-wrapper').first();
-    const buyBtn = targetListing.locator('.gts-buy-btn, [id^="gts-buy-btn-"]').first();
+    const targetListing = pageBuyer.locator('[id^="market-item-wrapper-"]').first();
+    const buyBtn = targetListing.locator('[id^="gts-buy-btn-"]').first();
     await clickResilient(buyBtn);
 
     // Esperar a procesar compra (saldos actualizados)
@@ -268,6 +292,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
       return (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money;
     });
     expect(buyerMoney).toBe(9000);
+
+    seller.finish('GTS Multi-Account Transactions Simulation');
 
     // Cleanup
     await sellerContext.close();

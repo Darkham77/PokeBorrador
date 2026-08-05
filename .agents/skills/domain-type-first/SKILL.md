@@ -20,15 +20,13 @@ Apply this workflow when the task involves any of these:
 - Validation logic for values that come from JSON, assets, saves, workers, APIs, or external payloads.
 - Review/audit findings from `npm run validate:domain-types`.
 
-## First Question
-
-Before editing, identify whether the value is:
-
-- **Finite domain**: known set of valid values. It needs a strict TypeScript type.
-- **Open text**: user/display text, URL, free-form message, raw external payload, timestamp string, or unbounded content. It may remain `string`, but should not be confused with a domain.
-- **Boundary input**: raw value entering from outside TypeScript. It needs explicit validation that converts `unknown`/`string` into the strict domain type or fails loudly.
-
 If it is finite, design the domain type first.
+
+## Absolute Prohibition on Silent Domain ID Fallbacks (`noDomainIdFallbacks`)
+
+- **Zero-Fallback Mandate**: It is STRICTLY FORBIDDEN to use silent fallbacks (`|| ''`, `?? ''`, `condition ? id : ''`) when resolving or assigning domain identifiers (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).
+- **Fail-Fast Boundary Validation**: Any lookup or resolution MUST use an explicit validator function (`requireItemId`, `requirePokemonSpeciesId`, etc.) that throws an explicit Error (`throw new Error(...)`) if the ID is missing or invalid.
+- **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit:warnings-diff` and will fail the commit if any domain ID fallback is introduced.
 
 ## Canonical Patterns
 

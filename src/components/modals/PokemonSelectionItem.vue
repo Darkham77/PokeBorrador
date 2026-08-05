@@ -89,6 +89,7 @@ function handleClick() {
 
 <template>
   <div 
+    :id="'pokemon-select-' + item.pokemon.uid"
     class="list-item"
     :data-pokemon-uid="item.pokemon.uid"
     :class="{ 

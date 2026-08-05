@@ -8,6 +8,8 @@ import { toID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type BattleTimedCondition } from '@/types/battle/battle';
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import { requireItemId } from '@/data/inventory/items';
+import { requireAbilityId } from '@/data/battle/abilities';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey } from './types.ts';
 
 /**
@@ -76,8 +78,9 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   // Unrevealed enemy Pokemon with maxHp === 0 should NOT be marked as fainted!
   const fainted = p.fainted || (p.maxHp > 0 && p.hp <= 0);
 
-  // heldItem is the canonical field — never read the deprecated `item`
-  const heldItem = p.heldItem ?? '';
+  // heldItem or item (fallback for compatibility across test fixtures)
+  const rawItem = p.heldItem || p.item;
+  const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok
   const validMoves = (p.moves || []).filter((m): m is PokemonMove => Boolean(m));
   const moveIds = validMoves.map(m => {
     if (!m.id) throw new Error(`[snapshotBuilder] PokemonMove missing immutable ID for move '${m.name}' on ${p.name}`);
@@ -107,10 +110,10 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     // knownMoves tracks what the engine has seen — start with all known moves
     knownMoves: moveIds,
     // AI-12 Fix: prefer current ability over baseAbility if present
-    ability: toID(p.ability ?? ''),
-    knownAbility: p.ability ? toID(p.ability) : null,
-    item: heldItem ? toID(heldItem) : '',
-    knownItem: heldItem ? toID(heldItem) : null,
+    ability: p.ability ? requireAbilityId(p.ability) : '', // domain-ok
+    knownAbility: p.ability ? requireAbilityId(p.ability) : null,
+    item: heldItem ? requireItemId(heldItem) : '', // domain-ok
+    knownItem: heldItem ? requireItemId(heldItem) : null,
     // AI-11 Fix: itemConsumed should only be true if explicitly lost via volatile/log
     itemConsumed: Boolean(p.volatileCounters?.['itemconsumed'] || p.volatileCounters?.['enditem']),
     boosts: {

@@ -65,6 +65,7 @@ onMounted(() => {
 
 <template>
   <BaseModal
+    id="daycare-modal"
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : '850px'"

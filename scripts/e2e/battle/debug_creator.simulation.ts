@@ -53,9 +53,8 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'POKES');
 
     // 2. Select Species: Charmander
-    const speciesContainer = page.locator('#debug-select-especie');
-    await speciesContainer.locator('.search-input').fill('charmander');
-    const charmanderOption = speciesContainer.locator('#option-charmander').first();
+    await page.locator('#debug-input-especie').fill('charmander');
+    const charmanderOption = page.locator('#option-charmander').first();
     await charmanderOption.waitFor({ state: 'visible', timeout: 5000 });
     await charmanderOption.click();
 
@@ -64,16 +63,14 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await levelInput.fill('42');
 
     // 4. Set Nature: Modest
-    const natureContainer = page.locator('#debug-select-naturaleza');
-    await natureContainer.locator('.search-input').fill('modest');
-    const modestOption = natureContainer.locator('#option-modest').first();
+    await page.locator('#debug-input-naturaleza').fill('modest');
+    const modestOption = page.locator('#option-modest').first();
     await modestOption.waitFor({ state: 'visible', timeout: 5000 });
     await modestOption.click();
 
     // 5. Set Ability: Blaze
-    const abilityContainer = page.locator('#debug-select-habilidad');
-    await abilityContainer.locator('.search-input').fill('blaze');
-    const blazeOption = abilityContainer.locator('#option-blaze').first();
+    await page.locator('#debug-input-habilidad').fill('blaze');
+    const blazeOption = page.locator('#option-blaze').first();
     await blazeOption.waitFor({ state: 'visible', timeout: 5000 });
     await blazeOption.click();
 
@@ -94,7 +91,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await page.locator('#debug-btn-catch').click();
 
     // 10. Close debug modal
-    const closeBtn = page.locator('.modal-close-btn').first();
+    const closeBtn = page.locator('#debug-panel-modal-close-btn');
     await closeBtn.waitFor({ state: 'visible', timeout: 5000 });
     await closeBtn.click();
 
@@ -167,9 +164,8 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await openDebugTab(page, 'POKES');
 
     // 2. Select Species: Bulbasaur
-    const speciesContainer = page.locator('#debug-select-especie');
-    await speciesContainer.locator('.search-input').fill('bulbasaur');
-    const bulbasaurOption = speciesContainer.locator('#option-bulbasaur').first();
+    await page.locator('#debug-input-especie').fill('bulbasaur');
+    const bulbasaurOption = page.locator('#option-bulbasaur').first();
     await bulbasaurOption.waitFor({ state: 'visible', timeout: 5000 });
     await bulbasaurOption.click();
 
@@ -216,7 +212,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await nameInput.fill('BROCK_TEST');
 
     // 5. Iniciar Combate (uses 'map' location type by default, which preserves name)
-    await page.locator('.battle-start-btn-debug').first().click();
+    await page.locator('#debug-battle-start-btn').click();
 
     // 6. Wait and start combat
     await confirmAndStartBattle(page);
@@ -246,7 +242,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await sandstormBtn.click();
 
     // 3. Close debug modal using the close button
-    const closeBtn = page.locator('.modal-close-btn').first();
+    const closeBtn = page.locator('#debug-panel-modal-close-btn');
     await closeBtn.waitFor({ state: 'visible', timeout: 5000 });
     await closeBtn.click();
 

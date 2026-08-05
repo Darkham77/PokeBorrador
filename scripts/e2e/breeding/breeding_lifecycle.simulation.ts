@@ -12,21 +12,22 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const gameStore = useGameStore();
 
-      const ditto = pokemonDebugService.generate({ id: 'ditto', level: 50 });
+      const ditto = pokemonDebugService.generate({ id: requirePokemonSpeciesId('ditto'), level: 50 });
       ditto.vigor = 10;
       ditto.maxVigor = 10;
       
-      const bulbasaur = pokemonDebugService.generate({ id: 'bulbasaur', level: 50 });
+      const bulbasaur = pokemonDebugService.generate({ id: requirePokemonSpeciesId('bulbasaur'), level: 50 });
       bulbasaur.vigor = 10;
       bulbasaur.maxVigor = 10;
 
       gameStore.state.starterChosen = true;
-      gameStore.state.team = [ditto];
-      gameStore.state.box = [bulbasaur];
+      gameStore.state.team = [ditto, bulbasaur];
+      gameStore.state.box = [];
       gameStore.state.money = 20000;
-      
+
       await gameStore.saveGame();
     });
   }
@@ -38,8 +39,8 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
       const gameStore = useGameStore();
       const breedingStore = useBreedingStore();
 
-      const p1 = gameStore.state.team[0];
-      const p2 = gameStore.state.box[0];
+      const p1 = gameStore.state.team.find((p) => p && p.id === 'ditto') || gameStore.state.team[0];
+      const p2 = gameStore.state.team.find((p) => p && p.id === 'bulbasaur') || gameStore.state.team[1] || gameStore.state.box[0];
       if (!p1 || !p2) throw new Error('Parents not found');
 
       p1.inDaycare = true;
@@ -74,7 +75,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     });
 
     await this.clickElement('#nav-crianza-btn');
-    await this.clickElement('div.egg-card');
+    await this.clickElement('[id^="egg-card-"]');
     await this.clickElement('#confirm-modal-btn');
   }
 
@@ -103,20 +104,23 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
   }
 
   public async performHatchingSequence(): Promise<void> {
-    await this.clickElement('.modal-close-btn, .modal-close-btn-floating');
-    await this.clickElement('.egg-hud-card.is-ready');
+    await this.page.evaluate(async () => {
+      const { useModalStore } = await import('../../../src/stores/modals.ts');
+      useModalStore().closeAll();
+    });
+    await this.clickElement('[id^="egg-hud-card-"].is-ready');
 
-    const hatchContainer = this.page.locator('.hatch-container');
+    const hatchContainer = this.page.locator('#hatch-container');
     await hatchContainer.waitFor({ state: 'visible', timeout: 5000 });
     await hatchContainer.click();
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('.hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('.hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
     await hatchContainer.click();
 
     await this.clickElement('#hatch-continue-btn', 15000);
-    const mapBtn = this.page.locator('button.map-btn').filter({ visible: true }).first();
+    const mapBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
     await expect(mapBtn).toBeVisible({ timeout: 15000 });
   }
 
@@ -165,6 +169,7 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
 
     // 5. Validar que el Bulbasaur nacido esté registrado
     const success = await sim.verifyNewbornInBox();
+    sim.finish('Breeding & Hatching Lifecycle Simulation');
     expect(success).toBe(true);
   });
 });

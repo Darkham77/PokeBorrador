@@ -1,17 +1,1 @@
-[
-  {
-    "id": "case-0f8acfd277aa",
-    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-    "timestamp": "2026-08-03T16:04:58.668Z"
-  },
-  {
-    "id": "case-8f93c900d190",
-    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-    "timestamp": "2026-08-03T16:04:58.624Z"
-  },
-  {
-    "id": "case-ee4c72373125",
-    "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation.",
-    "timestamp": "2026-08-03T16:04:58.668Z"
-  }
-]
+[]

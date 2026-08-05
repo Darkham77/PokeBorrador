@@ -5,8 +5,9 @@
  */
 import dbJson from './evolutionData.json' with { type: 'json' };
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
+import { EVOLUTION_TABLE } from './evolutionDataWrapper.ts';
 
-export const EVOLUTION_TABLE = dbJson.EVOLUTION_TABLE;
+export { EVOLUTION_TABLE };
 export type LevelEvolutionSpeciesId = keyof typeof EVOLUTION_TABLE;
 
 export const STONE_EVOLUTIONS = dbJson.STONE_EVOLUTIONS;
@@ -29,7 +30,10 @@ function isTradeEvolutionSpeciesId(id: string): id is TradeEvolutionSpeciesId {
 
 export function getLevelEvolution(id: string): { level: number; to: PokemonSpeciesId } | null {
   if (!isLevelEvolutionSpeciesId(id)) return null;
-  const evolution = EVOLUTION_TABLE[id];
+  const evolution = EVOLUTION_TABLE[id as keyof typeof EVOLUTION_TABLE]; // domain-ok
+  if (!evolution || Array.isArray(evolution) || !('level' in evolution) || typeof evolution.level !== 'number') {
+    return null;
+  }
   return {
     level: evolution.level,
     to: requirePokemonSpeciesId(evolution.to),
@@ -38,28 +42,23 @@ export function getLevelEvolution(id: string): { level: number; to: PokemonSpeci
 
 export function getTradeEvolution(id: string): PokemonSpeciesId | null {
   if (!isTradeEvolutionSpeciesId(id)) return null;
-  return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id]);
+  return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id as keyof typeof TRADE_EVOLUTIONS]); // domain-ok
 }
 
 /**
  * Looks up a stone evolution entry for a given species ID.
- *
- * Keys in STONE_EVOLUTIONS follow two patterns:
- *   - Exact: "pikachu" → "raichu"
- *   - Disambiguated: "eevee_water" / "slowpokegalar_cuff" (one entry per stone variant)
- *
- * An exact lookup `STONE_EVOLUTIONS[id]` misses multi-stone species entirely.
- * This helper tries exact first, then falls back to the first prefix match.
- * Returns `null` when the species has no stone evolution at all.
  */
 export function getStoneEvolution(id: string): { stone: string; to: PokemonSpeciesId } | null {
   if (isStoneEvolutionKey(id)) {
-    const evolution = STONE_EVOLUTIONS[id];
+    const evolution = STONE_EVOLUTIONS[id as keyof typeof STONE_EVOLUTIONS]; // domain-ok
     return { stone: evolution.stone, to: requirePokemonSpeciesId(evolution.to) };
   }
   const prefix = `${id}_`;
   for (const [key, val] of Object.entries(STONE_EVOLUTIONS)) {
-    if (key.startsWith(prefix)) return { stone: val.stone, to: requirePokemonSpeciesId(val.to) };
+    if (key.startsWith(prefix)) {
+      const entry = val as { stone: string; to: string };
+      return { stone: entry.stone, to: requirePokemonSpeciesId(entry.to) };
+    }
   }
   return null;
 }

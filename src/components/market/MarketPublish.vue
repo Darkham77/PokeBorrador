@@ -8,6 +8,8 @@ import MarketItemFilters from './MarketItemFilters.vue'
 import MarketItemCard from './MarketItemCard.vue'
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
+import { GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
+
 const game = useGameStore()
 const gtsStore = useGTSStore()
 
@@ -45,7 +47,7 @@ const { gtsStatsMap, filteredAndSortedInventory } = useMarketPublishInventory(
   itemSortOrder
 )
 
-const itemsPerPage = 50
+const itemsPerPage = GTS_ITEMS_PER_PAGE
 
 // Pokémon Pagination
 const pokemonPage = ref(1)
@@ -242,6 +244,7 @@ const {
           <div class="input-group">
             <label>PRECIO DE VENTA (₱)</label>
             <input 
+              id="gts-price-input"
               v-model.number="price" 
               type="number" 
               min="1"
@@ -272,6 +275,7 @@ const {
         </div>
         <div
           v-else
+          id="gts-selection-hint"
           class="selection-hint"
         >
           <div class="hint-icon">

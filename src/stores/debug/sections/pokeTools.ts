@@ -9,6 +9,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requireItemId } from '@/data/inventory/items'
+import { requireMapRouteId } from '@/data/world/map-assets'
 
 export function registerPokeTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -92,8 +94,11 @@ export function registerPokeTools(debug: DebugSystem) {
     category: 'pokes',
     action: async (params: Record<string, unknown> = {}) => {
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
+      const { requireMapRouteId } = await import('@/data/world/map-assets')
+      const rawMapId = typeof params.mapId === 'string' && params.mapId ? params.mapId : 'route1'
+      const routeId = requireMapRouteId(rawMapId)
       const p = pokemonDebugService.generate(params)
-      await pokemonDebugService.triggerEncounter(p, (params.mapId as string) || 'plains')
+      await pokemonDebugService.triggerEncounter(p, routeId)
     },
     description: 'Inicia un combate contra un pokemon personalizado en la ruta especificada.'
   })
@@ -108,15 +113,25 @@ export function registerPokeTools(debug: DebugSystem) {
       
       if (id === 'wild') {
         const { generateEncounter } = await import('@/logic/encounters/encounters')
-        const encounter = await generateEncounter(mapStore.currentMap || 'plains', game.state)
+        const { requireMapRouteId } = await import('@/data/world/map-assets')
+        const activeMap = mapStore.currentMap
+        if (!activeMap) {
+          throw new Error('[pokeTools] Cannot trigger random encounter: mapStore.currentMap is null or empty')
+        }
+        const routeId = requireMapRouteId(activeMap)
+        const encounter = await generateEncounter(routeId, game.state)
         if (encounter && (encounter as { pokemon: Pokemon }).pokemon) {
-          await pokemonDebugService.triggerEncounter((encounter as { pokemon: Pokemon }).pokemon)
+          await pokemonDebugService.triggerEncounter((encounter as { pokemon: Pokemon }).pokemon, routeId)
         }
         return
       }
 
+      if (!mapStore.currentMap) {
+        throw new Error('[pokeTools] Cannot trigger encounter: mapStore.currentMap is null or empty')
+      }
+      const routeId = requireMapRouteId(mapStore.currentMap)
       const p = pokemonDebugService.generate({ id, level, isShiny: shiny })
-      await pokemonDebugService.triggerEncounter(p)
+      await pokemonDebugService.triggerEncounter(p, routeId)
     },
     description: 'Inicia un combate rápido contra un pokemon específico.'
   })
@@ -194,7 +209,7 @@ export function registerPokeTools(debug: DebugSystem) {
       }
 
       let target = targetSpeciesId
-      let item = itemName || ''
+      let item = itemName ? requireItemId(itemName) : '' // text-ok
 
       if (!target) {
         // 1. Buscar en tabla de nivel

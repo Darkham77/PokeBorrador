@@ -234,6 +234,7 @@ export class ShowdownBattleEngine {
       }
 
       acceptedChoices.set(seat.id, seat.choice);
+
       if (battle.ended) break;
     }
 
