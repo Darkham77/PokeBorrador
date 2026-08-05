@@ -1,7 +1,7 @@
 // fallow-ignore-file security-sink
 import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForStoreReady, confirmAndStartBattle, playFishingMinigameNaturally, playArchaeologyMinigameNaturally, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForStoreReady, confirmAndStartBattle, type WindowWithResolver } from '../e2e_helpers.ts';
 
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {

@@ -95,8 +95,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
   let targetKey = _sqliteKey;
   if (options.sqliteKey) {
     targetKey = options.sqliteKey;
-  } else if (typeof window !== 'undefined') {
-    const storedKey = localStorage.getItem('pokevicio_sqlite_key');
+  } else if (typeof window !== 'undefined' && window.localStorage) {
+    const storedKey = window.localStorage.getItem('pokevicio_sqlite_key');
     if (storedKey) targetKey = storedKey;
   }
 

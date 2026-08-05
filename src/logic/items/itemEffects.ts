@@ -1,4 +1,3 @@
-import { TM_COMPAT, GAME_TMS, type TMData } from '../../data/pokemon/pokedex.ts';
 import { useBuffsStore } from '@/stores/battle/buffs';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';

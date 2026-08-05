@@ -3,7 +3,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
 import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
 
 function seedMockListings(dbPath: string, count: number) {
   using db = new DatabaseSync(dbPath, { readOnly: false });
@@ -119,7 +118,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       // Force-refresh myListings directly from DB for this active seller
       const { useAuthStore } = await import('../../../src/stores/auth.ts');
       const auth = useAuthStore();
-      const currentUserId = auth.user?.id || ('local_' + gts.sellerName?.toLowerCase().replace(/\s+/g, '_'));
+      const currentUserId = auth.user?.id || 'local_seller';
       const { data } = await game.db
         .from('market_listings')
         .select('*')
