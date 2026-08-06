@@ -1,14 +1,9 @@
+import { safeResolve } from '../lib/safePath.ts';
 import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '../../');
-
-function parseSemver(verStr: string): { major: number; minor: number; patch: number } {
-  const clean = verStr.replace(/[^0-9.]/g, '');
-  const parts = clean.split('.').map(n => Number(n) || 0);
+function parseSemver(v: string): { major: number; minor: number; patch: number } {
+  const clean = v.replace(/[^0-9.]/g, '');
+  const parts = clean.split('.').map(n => parseInt(n, 10) || 0);
   return {
     major: parts[0] ?? 0,
     minor: parts[1] ?? 0,
@@ -25,8 +20,11 @@ function compareVersions(current: { major: number; minor: number; patch: number 
 }
 
 try {
-  const pkgPath = path.join(rootDir, 'package.json');
-  const pkgData = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { engines?: { node?: string; npm?: string } };
+  const pkgPath = safeResolve('package.json');
+  if (!pkgPath.endsWith('package.json')) {
+    throw new Error('Security Violation: package.json path invalid');
+  }
+  const pkgData = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { engines?: { node?: string; npm?: string } };
   
   const nodeReqStr = pkgData.engines?.node || '>=26.7.0';
   const npmReqStr = pkgData.engines?.npm || '>=12.0.0';
@@ -52,7 +50,7 @@ try {
       hasNvm = !!process.env.NVM_HOME || !!process.env.NVM_SYMLINK;
     } else {
       const homeDir = process.env.HOME || '';
-      hasNvm = !!process.env.NVM_DIR || (homeDir !== '' && fs.existsSync(path.join(homeDir, '.nvm')));
+      hasNvm = !!process.env.NVM_DIR || (homeDir !== '' && safeResolve('package.json') !== '');
     }
 
     console.error('\n\x1b[31m\x1b[1m❌ ERROR DE ENTORNO EN POKÉ VICIO:\x1b[0m');

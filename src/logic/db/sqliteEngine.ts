@@ -59,6 +59,16 @@ export async function queryLocal(sql: string, params: unknown[] = []): Promise<R
   })
 }
 
+async function devFetch(endpoint: '/api/dev-export-db' | '/api/dev-import-db-check' | '/api/dev-import-db' | '/api/dev-import-db-cleanup' | '/api/dev-clean-db' | '/api/dev-export-clean-db', dbKey?: string, init?: RequestInit): Promise<Response> {
+  const cleanKey = dbKey ? dbKey.replace(/[^a-zA-Z0-9_-]/g, '') : '';
+  if (endpoint === '/api/dev-export-db') return fetch('/api/dev-export-db', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
+  if (endpoint === '/api/dev-import-db-check') return fetch('/api/dev-import-db-check', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
+  if (endpoint === '/api/dev-import-db') return fetch('/api/dev-import-db', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
+  if (endpoint === '/api/dev-import-db-cleanup') return fetch('/api/dev-import-db-cleanup', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
+  if (endpoint === '/api/dev-clean-db') return fetch('/api/dev-clean-db', init);
+  return fetch('/api/dev-export-clean-db', init);
+}
+
 export async function persistSQLite(): Promise<void> {
   if (!_sqliteDb) return
   try {
@@ -72,7 +82,7 @@ export async function persistSQLite(): Promise<void> {
 
     if (import.meta.env.DEV && typeof window !== 'undefined' && window.__E2E__) {
       try {
-        await fetch(`/api/dev-export-db?db_key=${encodeURIComponent(_sqliteKey)}`, {
+        await devFetch('/api/dev-export-db', _sqliteKey, {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: binary as BodyInit
@@ -113,11 +123,11 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     if (_isInMemory) {
       if (import.meta.env.DEV) {
         try {
-          const importCheck = await fetch(`/api/dev-import-db-check?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
+          const importCheck = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
           if (importCheck.ok) {
             const { exists } = await importCheck.json() as { exists: boolean }
             if (exists) {
-              const response = await fetch(`/api/dev-import-db?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
+              const response = await devFetch('/api/dev-import-db', _sqliteKey, { cache: 'no-store' })
               if (response.ok) {
                 logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
                 const arrayBuffer = await response.arrayBuffer()
@@ -129,7 +139,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                   await setToIDB(_sqliteKey, binary)
                   await setToIDB(_sqliteKey + '_backup', binary)
                   try {
-                    await fetch(`/api/dev-import-db-cleanup?db_key=${encodeURIComponent(_sqliteKey)}`, { method: 'POST' })
+                    await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
                   } catch (_e) {
                     void 0;
                   }
@@ -154,7 +164,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       }
 
       try {
-        const checkRes = await fetch('/api/dev-clean-db', { cache: 'no-store' })
+        const checkRes = await devFetch('/api/dev-clean-db', undefined, { cache: 'no-store' })
         if (checkRes.ok) {
           logger.info('SQLite', 'Clean DB template found. Initializing database instantly from template...')
           const arrayBuffer = await checkRes.arrayBuffer()
@@ -174,7 +184,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
 
       try {
         const binary = _sqliteDb.export()
-        await fetch('/api/dev-export-clean-db', {
+        await devFetch('/api/dev-export-clean-db', undefined, {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
           body: binary as BodyInit // domain-ok
@@ -190,11 +200,11 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     const alreadyImported = typeof localStorage !== 'undefined' && localStorage.getItem('pokevicio_db_imported') === 'true';
     if (import.meta.env.DEV && !alreadyImported) {
       try {
-        const checkRes = await fetch(`/api/dev-import-db-check?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
+        const checkRes = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
         if (checkRes.ok) {
           const { exists } = await checkRes.json() as { exists: boolean }
           if (exists) {
-            const response = await fetch(`/api/dev-import-db?db_key=${encodeURIComponent(_sqliteKey)}`, { cache: 'no-store' })
+            const response = await devFetch('/api/dev-import-db', _sqliteKey, { cache: 'no-store' })
             if (response.ok) {
               logger.info('SQLite', 'Pending import found! Downloading dev_imported.db...')
               
@@ -219,7 +229,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               
               // Trigger file cleanup on the dev server
               try {
-                await fetch(`/api/dev-import-db-cleanup?db_key=${encodeURIComponent(_sqliteKey)}`, { method: 'POST' })
+                await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
               } catch (e) {
                 throw new Error(`[sqliteEngine] Failed to cleanup dev import DB file: ${String(e)}`)
               }

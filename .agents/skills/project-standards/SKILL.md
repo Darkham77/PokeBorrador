@@ -21,6 +21,7 @@ Consult these global and cross-functional manuals for project-wide standards (do
 | **Domain Type First**    | [.agents/skills/domain-type-first/SKILL.md](../../.agents/skills/domain-type-first/SKILL.md) |
 | **Markdown & Docs**      | [markdown_standards.md](./references/technical/markdown_standards.md)                     |
 | **Validation & Quality** | [validation_manual.md](./references/qa/validation_manual.md)                              |
+| **Environment Setup & Node**| [setup-windows.ps1](../../../setup-windows.ps1) & [setup-linux.sh](../../../setup-linux.sh) |
 | **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
 | **Save & Persistence**   | [save_system_manual.md](./references/technical/save_system_manual.md)                     |
 | **Showdown Bridge Guide**| [BRIDGE-GUIDE.md](./references/battle/showdown/BRIDGE-GUIDE.md)                           |
@@ -105,6 +106,16 @@ Any simulation loop must treat `handleBattleInput` returning `false` as a hard e
 
 ### 5. Mandatory ID-Based UI Selection Mandate
 Whenever locating UI components (buttons, modals, cards, inputs, windows) in Playwright tests or E2E simulations, you MUST strictly use unique HTML `id` attributes (`#start-encounter-btn`, `#confirm-battle-btn`, `#modal-close-btn`, etc.). It is **STRICTLY FORBIDDEN** to locate elements by text content, regex labels, or button text (e.g. `has-text(...)`, `:has-text(...)`, text matching). All interactive UI components in Vue templates MUST have unique, descriptive `id` attributes.
+
+---
+
+## 🚀 Environment Setup & Dynamic Versioning Governance
+
+1. **Root Setup Scripts SSoT**: Initial environment configuration, Node version updates, and NVM fixes MUST be executed exclusively via the root setup scripts:
+   - Windows: [`setup-windows.ps1`](../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`)
+   - Linux / macOS: [`setup-linux.sh`](../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh`)
+2. **Zero-Hardcode Versioning Policy**: It is STRICTLY FORBIDDEN to hardcode Node.js or npm version numbers inside environment setup scripts, maintenance tools, or documentation tutorials. All scripts MUST dynamically parse the required version from the `"engines"` field in `package.json` (`pkgContent.engines.node`).
+3. **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, the agent MUST instruct the user to run the appropriate root setup script.
 
 ---
 

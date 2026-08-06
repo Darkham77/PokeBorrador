@@ -10,66 +10,81 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.7.0 o superior)*
 
 ### 🌐 Instalación y Actualización de Node.js y npm
 
-#### 🐧 Linux (Ubuntu / Debian)
+#### ⚡ Método Automático Recomendado (Desde la Raíz del Proyecto)
 
-1. **Actualizar Node.js (v26.7+)**:
+- **En Windows (PowerShell como Administrador)**:
+
+  ```powershell
+  PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1
+  ```
+
+- **En Linux / macOS (Terminal)**:
+
+  ```bash
+  chmod +x ./setup-linux.sh && ./setup-linux.sh
+  ```
+
+---
+
+#### 🛠️ Método Manual (Paso a Paso)
+
+##### 🐧 Linux / macOS (usando NVM)
+
+1. **Instalar NVM**:
+
    ```bash
-   curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
-   sudo apt install -y nodejs
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
    ```
 
-2. **Actualizar npm a la última versión (v12+)**:
+   *Reinicia la terminal o ejecuta `source ~/.bashrc` / `source ~/.zshrc`.*
+
+2. **Instalar y activar Node.js 26.7+ y npm**:
+
    ```bash
-   sudo npm install -g npm@latest
+   nvm install 26.7.0
+   nvm use 26.7.0
+   nvm alias default 26.7.0
+   npm install -g npm@latest
    ```
 
-#### 🪟 Windows (PowerShell / CMD como Administrador)
+##### 🪟 Windows (PowerShell como Administrador)
 
 > [!CAUTION]
 > **IMPORTANTE**: Antes de instalar NVM en Windows, debes **desinstalar completamente cualquier versión previa de Node.js** instalada manualmente desde el Panel de Control / Configuración de Windows. Si mantienes una instalación manual previa, NVM no podrá gestionar los symlinks y fallará.
 
 1. **Instalar NVM via `winget`**:
+
    ```powershell
    winget install CoreyButler.NVMforWindows
    ```
-2. **Instalar y activar Node 26.7+**:
-   Abre PowerShell como Administrador:
+
+2. **Crear directorio del Symlink de NVM**:
+
+   ```powershell
+   New-Item -ItemType Directory -Path "C:\nvm4w" -Force
+   ```
+
+3. **Instalar y activar Node 26.7+ y npm**:
+
    ```powershell
    nvm install 26.7.0
    nvm use 26.7.0
    npm install -g npm@latest
    ```
+
    > 📌 *En Windows (`nvm-windows`), `nvm use <versión>` ya establece la versión activa globalmente (el comando `nvm alias` no existe en Windows).*
 
-3. **Instalación Directa alternativa (sin NVM)**:
+4. **Instalación Directa alternativa (sin NVM)**:
+
    ```powershell
    winget install OpenJS.NodeJS
    ```
 
-> 🚨 **Solución si `npm` no se reconoce tras ejecutar `nvm use` en Windows**:
-> 1. **Permisos de Administrador**: Abre una nueva consola PowerShell como Administrador. NVM for Windows necesita crear un *symlink* en `C:\Program Files\nodejs`.
-> 2. **Refrescar variables de entorno**: Ejecuta nuevamente:
->    ```powershell
->    nvm use 26.7.0
->    ```
-> 3. **Limpiar residuales antiguos**: Si existían archivos de una versión previa instalada manualmente en `%APPDATA%\npm` o `%APPDATA%\npm-cache`, elimina esas carpetas y vuelve a ejecutar `nvm use 26.7.0`.
-
-#### 💡 Usando NVM (Linux / macOS / Windows nvm-windows)
-
-1. **Instalar NVM**:
-   - **Linux/macOS**:
-     ```bash
-     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-     ```
-   - **Windows**: Descarga e instala [nvm-windows](https://github.com/coreybutler/nvm-windows/releases).
-
-2. **Instalar y activar Node 26 + npm latest**:
-   ```bash
-   nvm install 26
-   nvm use 26
-   nvm alias default 26
-   npm install -g npm@latest
-   ```
+> 🚨 **Solución si `npm` o `node` no se reconoce tras ejecutar `nvm use` en Windows**:
+>
+> 1. **Crear directorio del Symlink de NVM**: En PowerShell como Administrador, ejecuta `New-Item -ItemType Directory -Path "C:\nvm4w" -Force` y luego `nvm use 26.7.0`. NVM necesita este directorio destino para asociar el symlink en la variable `%NVM_SYMLINK%`.
+> 2. **Permisos de Administrador**: Asegúrate de abrir PowerShell como Administrador.
+> 3. **Limpiar residuales antiguos**: Si existían archivos de una versión previa instalada manualmente en `%APPDATA%\npm` o `%APPDATA%\npm-cache`, elimina esas carpetas (`Remove-Item -Recurse -Force "$env:APPDATA\npm"`) y vuelve a ejecutar `nvm use 26.7.0`.
 
 ## 🛠️ Entorno de Desarrollo
 

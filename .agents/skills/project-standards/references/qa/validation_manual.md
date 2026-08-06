@@ -72,7 +72,7 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 19. **Scratch Folder Mandate**: Any temporary reports, logs, audit outputs, or validation reports MUST be saved exclusively in the `scratch/` directory at the project root to maintain repository cleanliness.
 21. **Mermaid Diagram Layout Standards**: To prevent Mermaid from rendering broken, extremely long vertical lines (due to layout engine routing bugs), do NOT draw transition arrows between a nested sub-state inside container A and a nested sub-state inside container B (or sibling top-level container). Keep all related sequential transitions completely contained within the same parent state block, or flatten the diagram blocks entirely. Additionally, avoid redundant sub-nesting of identical state names across multiple sub-state boxes to prevent arrow crossovers (spaghetti layout).
 22. **Surgical Fallow Exclusions Policy**: To preserve the capabilities of the Fallow static analysis engine, it is strictly forbidden to use wildcard `*` exclusions (e.g., `"exports": ["*"]`) in `.fallowrc.json`. To prevent automatic fixes (`npx fallow fix`) from stripping legitimate exports required for dynamic resolution or public APIs, such exports must be added surgically, variable by variable, to the `"ignoreExports"` array in `.fallowrc.json`.
-23. **Fallow Security Bypass for Safe Local Fetching**: When local static assets (such as audio files in `src/stores/audio.ts`) are fetched dynamically, Fallow's security engine may trigger a false-positive CWE-918 (Server-Side Request Forgery) medium vulnerability. If the fetch target is strictly internal and input is cleaned, this can be bypassed by placing the `// fallow-ignore-file security-sink` comment at the very top of the affected file.
+23. **Strict Prohibition of Security Bypass Comments**: Using inline comments (such as `// fallow-ignore-file security-sink` or `// fallow-ignore`) to suppress security vulnerabilities (CWE path traversals, SSRF, untrusted inputs) is STRICTLY PROHIBITED. All security findings MUST be resolved directly in code via input sanitization, path boundary checks, or URL origin allowlisting.
 24. **Robust Absolute Symbol Centering**: When positioning text symbols or icons (e.g., clear buttons containing '×') inside absolute elements, avoid relying solely on `line-height: 1` as browser font rendering engines vary and will result in vertical misalignment. ALWAYS use Flexbox centering with explicit size dimensions: `display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; top: 50%; transform: translateY(-50%);`.
 
 ---
@@ -80,6 +80,12 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 ## 📊 NPM Diagnostic & Maintenance Scripts Reference
 
 Use these scripts to verify project standards, manage servers, and run audits:
+
+### ⚙️ Environment Setup & Node Version Management
+
+- `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`: Automated environment setup for Windows (creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, and syncs Node version dynamically from `package.json`).
+- `./setup-linux.sh`: Automated environment setup for Linux/macOS (installs NVM, activates and aliases default Node version dynamically from `package.json`).
+- `node --experimental-strip-types scripts/maintenance/check_environment.ts`: Environment sanity check script (runs automatically during `preinstall` to validate runtime engine constraints).
 
 ### 🛡️ Core Validation
 

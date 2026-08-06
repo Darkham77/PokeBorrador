@@ -1,5 +1,4 @@
 import { type Page } from '@playwright/test';
-import path from 'node:path';
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
 
 export abstract class BaseE2ESimulation {
@@ -27,7 +26,8 @@ export abstract class BaseE2ESimulation {
    * Obtiene la ruta física absoluta de la base de datos de esta simulación
    */
   public getDbPath(): string {
-    return path.resolve(`database/temp/imported_${this.sqliteKey}.db`);
+    const cleanKey = this.sqliteKey.replace(/[^a-z0-9_]/g, '');
+    return `database/temp/imported_${cleanKey}.db`;
   }
 
   /**
