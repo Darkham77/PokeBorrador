@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=26.6.0"
+    "node": ">=26.7.0",
+    "npm": ">=12.0.0"
   },
   "scripts": {
-    "preinstall": "node -e \"if(parseInt(process.versions.node.split('.')[0]) < 26) console.warn('\\n\\x1b[33m\\x1b[1m⚠️ ATENCIÓN: Se recomienda Node.js v26 o superior para este proyecto.\\n🔗 Descárgalo aquí: https://nodejs.org/es/download/current\\nTu versión es v' + process.versions.node + '\\x1b[0m\\n')\"",
+    "preinstall": "node --experimental-strip-types scripts/maintenance/check_environment.ts",
     "postinstall": "cd node_modules/css-checker-kit && npm run postinstall",
     "dev": "node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
     "build": "npm run validate:types && npm run audit:full && vite build",

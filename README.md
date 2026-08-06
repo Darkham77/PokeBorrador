@@ -4,59 +4,72 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** en tu sistema.
+Antes de comenzar, asegúrate de tener instalado **Node.js (v26.7.0 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm ci` (o `npm install`) lanzará una advertencia sugiriendo la actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.7.0** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
 
-### 🌐 Instalación de Node.js y NPM
+### 🌐 Instalación y Actualización de Node.js y npm
 
-#### Opción A: Usando NVM (Recomendado)
+#### 🐧 Linux (Ubuntu / Debian)
 
-[NVM (Node Version Manager)](https://github.com/nvm-sh/nvm) permite gestionar múltiples versiones de Node.js y es la forma más limpia de mantener el entorno actualizado sin conflictos de permisos.
+1. **Actualizar Node.js (v26.7+)**:
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
+   sudo apt install -y nodejs
+   ```
+
+2. **Actualizar npm a la última versión (v12+)**:
+   ```bash
+   sudo npm install -g npm@latest
+   ```
+
+#### 🪟 Windows (PowerShell / CMD como Administrador)
+
+> [!CAUTION]
+> **IMPORTANTE**: Antes de instalar NVM en Windows, debes **desinstalar completamente cualquier versión previa de Node.js** instalada manualmente desde el Panel de Control / Configuración de Windows. Si mantienes una instalación manual previa, NVM no podrá gestionar los symlinks y fallará.
+
+1. **Instalar NVM via `winget`**:
+   ```powershell
+   winget install CoreyButler.NVMforWindows
+   ```
+2. **Instalar y activar Node 26.7+**:
+   Abre PowerShell como Administrador:
+   ```powershell
+   nvm install 26.7.0
+   nvm use 26.7.0
+   npm install -g npm@latest
+   ```
+   > 📌 *En Windows (`nvm-windows`), `nvm use <versión>` ya establece la versión activa globalmente (el comando `nvm alias` no existe en Windows).*
+
+3. **Instalación Directa alternativa (sin NVM)**:
+   ```powershell
+   winget install OpenJS.NodeJS
+   ```
+
+> 🚨 **Solución si `npm` no se reconoce tras ejecutar `nvm use` en Windows**:
+> 1. **Permisos de Administrador**: Abre una nueva consola PowerShell como Administrador. NVM for Windows necesita crear un *symlink* en `C:\Program Files\nodejs`.
+> 2. **Refrescar variables de entorno**: Ejecuta nuevamente:
+>    ```powershell
+>    nvm use 26.7.0
+>    ```
+> 3. **Limpiar residuales antiguos**: Si existían archivos de una versión previa instalada manualmente en `%APPDATA%\npm` o `%APPDATA%\npm-cache`, elimina esas carpetas y vuelve a ejecutar `nvm use 26.7.0`.
+
+#### 💡 Usando NVM (Linux / macOS / Windows nvm-windows)
 
 1. **Instalar NVM**:
    - **Linux/macOS**:
-
      ```bash
      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
      ```
-
    - **Windows**: Descarga e instala [nvm-windows](https://github.com/coreybutler/nvm-windows/releases).
 
-2. **Instalar y usar Node 26**:
-
+2. **Instalar y activar Node 26 + npm latest**:
    ```bash
    nvm install 26
    nvm use 26
    nvm alias default 26
+   npm install -g npm@latest
    ```
-
-3. **Actualizar Node.js**: Para actualizar a la última versión de la rama 26 y migrar tus paquetes globales:
-
-   ```bash
-   nvm install 26 --reinstall-packages-from=current
-   ```
-
-#### Opción B: Instalación Directa
-
-- **Windows (Terminal/PowerShell)**:
-
-  ```bash
-  winget install OpenJS.NodeJS
-  ```
-
-- **Linux (Ubuntu/Debian)**: Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
-
-  ```bash
-  curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
-  sudo apt install -y nodejs
-  ```
-
-- **Actualizar NPM** (Opcional):
-
-  ```bash
-  npm install -g npm@latest
-  ```
 
 ## 🛠️ Entorno de Desarrollo
 
