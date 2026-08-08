@@ -51,24 +51,30 @@ function renderLoop() {
   }
 
   // Draw player (Mock representation)
+  const PLAYER_GLOW_SHADOW_BLUR_PX = 10;
+  const PLAYER_MOCK_RADIUS_PX = 16;
+  const LABEL_OFFSET_X_PX = 50;
+  const LABEL_OFFSET_Y_PX = 24;
+  const ENTITY_MOCK_RADIUS_PX = 12;
+
   context.fillStyle = '#4299e1'; // Premium blue
-  context.shadowBlur = 10;
+  context.shadowBlur = PLAYER_GLOW_SHADOW_BLUR_PX;
   context.shadowColor = '#4299e1';
   context.beginPath();
-  context.arc(state.player.x, state.player.y, 16, 0, Math.PI * 2);
+  context.arc(state.player.x, state.player.y, PLAYER_MOCK_RADIUS_PX, 0, Math.PI * 2);
   context.fill();
   context.shadowBlur = 0;
 
   // Draw simple label
   context.fillStyle = '#ffffff';
   context.font = '12px Courier New';
-  context.fillText('Player (Offscreen)', state.player.x - 50, state.player.y - 24);
+  context.fillText('Player (Offscreen)', state.player.x - LABEL_OFFSET_X_PX, state.player.y - LABEL_OFFSET_Y_PX);
 
   // Draw mock entities
   state.entities.forEach(ent => {
     context.fillStyle = '#ed64a6'; // Pink
     context.beginPath();
-    context.arc(ent.x, ent.y, 12, 0, Math.PI * 2);
+    context.arc(ent.x, ent.y, ENTITY_MOCK_RADIUS_PX, 0, Math.PI * 2);
     context.fill();
   });
 

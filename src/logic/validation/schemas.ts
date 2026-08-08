@@ -27,18 +27,27 @@ import {
   unknown
 } from 'valibot';
 
+import { DEFAULT_FRIENDSHIP_VALUE, DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay'
+
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 20;
+const MIN_TRAINER_LEVEL = 1;
+const MAX_TRAINER_LEVEL = 100;
+const MIN_TRAINER_NAME_LENGTH = 3;
+const MAX_TRAINER_NAME_LENGTH = 15;
+
 // User Profile validation schema
 export const userProfileSchema = object({
   id: string(),
   username: pipe(
     string(),
-    minLength(3, 'Username must be at least 3 characters long'),
-    maxLength(20, 'Username cannot exceed 20 characters')
+    minLength(MIN_USERNAME_LENGTH, `Username must be at least ${MIN_USERNAME_LENGTH} characters long`),
+    maxLength(MAX_USERNAME_LENGTH, `Username cannot exceed ${MAX_USERNAME_LENGTH} characters`)
   ),
   level: pipe(
     number(),
-    minValue(1, 'Level must be at least 1'),
-    maxValue(100, 'Level cannot exceed 100')
+    minValue(MIN_TRAINER_LEVEL, `Level must be at least ${MIN_TRAINER_LEVEL}`),
+    maxValue(MAX_TRAINER_LEVEL, `Level cannot exceed ${MAX_TRAINER_LEVEL}`)
   ),
   is_banned: boolean(),
   coins: pipe(
@@ -57,8 +66,8 @@ export const networkActionSchema = object({
 // Trainer Name Schema (used in RenameModal)
 export const trainerNameSchema = pipe(
   string(),
-  minLength(3, 'El nombre debe tener al menos 3 caracteres'),
-  maxLength(15, 'El nombre no puede superar los 15 caracteres')
+  minLength(MIN_TRAINER_NAME_LENGTH, `El nombre debe tener al menos ${MIN_TRAINER_NAME_LENGTH} caracteres`),
+  maxLength(MAX_TRAINER_NAME_LENGTH, `El nombre no puede superar los ${MAX_TRAINER_NAME_LENGTH} caracteres`)
 );
 
 // Inferred TypeScript Types
@@ -184,6 +193,8 @@ const moveSchema = object({
   sound: optional(boolean()),
 });
 
+const DEFAULT_SCHEMA_FALLBACK_HP = 10;
+
 // Pokemon validation schema
 const pokemonSchema = object({
   uid: fallback(string(), ''),
@@ -193,8 +204,8 @@ const pokemonSchema = object({
   level: fallback(pipe(number(), minValue(1), maxValue(100)), 5),
   exp: fallback(number(), 0),
   expNeeded: fallback(number(), 100),
-  hp: fallback(number(), 10),
-  maxHp: fallback(number(), 10),
+  hp: fallback(number(), DEFAULT_SCHEMA_FALLBACK_HP),
+  maxHp: fallback(number(), DEFAULT_SCHEMA_FALLBACK_HP),
   atk: fallback(number(), 5),
   def: fallback(number(), 5),
   spa: fallback(number(), 5),
@@ -240,7 +251,7 @@ const pokemonSchema = object({
   nature: fallback(string(), 'hardy'),
   heldItem: fallback(nullable(string()), null),
   item: fallback(nullable(string()), null),
-  friendship: fallback(number(), 70),
+  friendship: fallback(number(), DEFAULT_FRIENDSHIP_VALUE),
   vigor: optional(number()),
   maxVigor: optional(number()),
   catchRate: optional(number()),
@@ -372,13 +383,13 @@ const saveDataSchema = object({
   nick_style: fallback(nullable(string()), null),
   avatar_style: fallback(nullable(string()), null),
   stats: fallback(record(string(), unknown()), {}),
-  eloRating: fallback(number(), 1000),
+  eloRating: fallback(number(), DEFAULT_INITIAL_ELO),
   pvpStats: fallback(object({
     wins: fallback(number(), 0),
     losses: fallback(number(), 0),
     draws: fallback(number(), 0)
   }), { wins: 0, losses: 0, draws: 0 }),
-  rankedMaxElo: fallback(number(), 1000),
+  rankedMaxElo: fallback(number(), DEFAULT_INITIAL_ELO),
   rankedRewardsClaimed: optional(array(string())),
   passiveTeamUids: optional(array(string())),
   passiveTeamActive: fallback(boolean(), false),

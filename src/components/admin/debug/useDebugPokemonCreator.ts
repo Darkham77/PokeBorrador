@@ -6,6 +6,16 @@ import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
 
+const DEBUG_CREATOR_SHINY_PROB = 0.05
+const DEBUG_CREATOR_GUARDIAN_PROB = 0.01
+const MAX_FRIENDSHIP_VAL = 255
+const MAX_MOVE_SLOTS_COUNT = 4
+const HALF_SPLIT_THRESHOLD = 0.5
+const NICKNAME_PROB_THRESHOLD = 0.3
+const INITIAL_DEBUG_POKEMON_LEVEL = 5
+const INITIAL_FRIENDSHIP_VAL = 70
+const PERFECT_IV_VAL = 31
+
 interface PokemonConfig {
   id: string
   level: number
@@ -39,17 +49,17 @@ import { getSelectableSpecies, getSelectableNatures, getSelectableAbilities } fr
 export function useDebugPokemonCreator() {
   const config = ref<PokemonConfig>({
     id: 'bulbasaur',
-    level: 5,
+    level: INITIAL_DEBUG_POKEMON_LEVEL,
     isShiny: false,
     isGuardian: false,
     nature: 'adamant',
     ability: 'overgrow',
     gender: 'm',
     nickname: '',
-    friendship: 70,
+    friendship: INITIAL_FRIENDSHIP_VAL,
     heldItem: '',
     mapId: 'route_1',
-    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+    ivs: { hp: PERFECT_IV_VAL, atk: PERFECT_IV_VAL, def: PERFECT_IV_VAL, spa: PERFECT_IV_VAL, spd: PERFECT_IV_VAL, spe: PERFECT_IV_VAL },
     moves: [],
     protocol: 'catch'
   })
@@ -128,9 +138,9 @@ export function useDebugPokemonCreator() {
       .sort((a, b) => b.lv - a.lv)
       .map(m => m.id)
     
-    const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
+    const uniqueMoves = [...new Set(learnedMoves)].slice(0, MAX_MOVE_SLOTS_COUNT)
     const finalMoves: (string | null)[] = [...uniqueMoves]
-    while (finalMoves.length < 4) finalMoves.push(null)
+    while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null)
     
     config.value.moves = finalMoves as (string | null)[]
   }
@@ -140,10 +150,10 @@ export function useDebugPokemonCreator() {
     if (!data?.learnset || data.learnset.length === 0) return
 
     const allLearnsetMoves = [...new Set(data.learnset.map(m => m.id))]
-    const shuffled = allLearnsetMoves.sort(() => 0.5 - Math.random())
-    const selected = shuffled.slice(0, 4)
+    const shuffled = allLearnsetMoves.sort(() => HALF_SPLIT_THRESHOLD - Math.random())
+    const selected = shuffled.slice(0, MAX_MOVE_SLOTS_COUNT)
     const finalMoves: (string | null)[] = [...selected]
-    while (finalMoves.length < 4) finalMoves.push(null)
+    while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null)
     
     config.value.moves = finalMoves
   }
@@ -185,11 +195,11 @@ export function useDebugPokemonCreator() {
 
   function randomizeNickname() {
     const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE'] as const
-    config.value.nickname = Math.random() > 0.3 ? names[Math.floor(Math.random() * names.length)] || '' : ''
+    config.value.nickname = Math.random() > NICKNAME_PROB_THRESHOLD ? names[Math.floor(Math.random() * names.length)] || '' : ''
   }
 
   function randomizeMinigame() {
-    selectedMinigame.value = Math.random() > 0.5 ? 'fishing' : 'archaeology'
+    selectedMinigame.value = Math.random() > HALF_SPLIT_THRESHOLD ? 'fishing' : 'archaeology'
   }
 
   function randomizeOrigin() {
@@ -211,16 +221,16 @@ export function useDebugPokemonCreator() {
   }
 
   function randomizeVisuals() {
-    config.value.isShiny = Math.random() < 0.05
-    config.value.isGuardian = Math.random() < 0.01
-    config.value.gender = Math.random() > 0.5 ? 'm' : 'f'
+    config.value.isShiny = Math.random() < DEBUG_CREATOR_SHINY_PROB
+    config.value.isGuardian = Math.random() < DEBUG_CREATOR_GUARDIAN_PROB
+    config.value.gender = Math.random() > HALF_SPLIT_THRESHOLD ? 'm' : 'f'
   }
 
   function randomizeExtras() {
     randomizeNickname()
     randomizeMinigame()
     randomizeOrigin()
-    config.value.friendship = Math.floor(Math.random() * 256)
+    config.value.friendship = Math.floor(Math.random() * (MAX_FRIENDSHIP_VAL + 1))
   }
 
   function handleRandomize() {

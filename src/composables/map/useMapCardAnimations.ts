@@ -1,5 +1,25 @@
 import { watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue'
 import { gsap } from 'gsap'
+import {
+  FULL_ROTATION_DEG,
+  MAP_WEATHER_DRIFT_OFFSET_PX,
+  MAP_WEATHER_SHAKE_ANGLE_DEG,
+  MAP_FACTION_UNION_ANGLE_DEG,
+  MAP_FACTION_UNION_MAX_SCALE,
+  MAP_FACTION_PODER_MAX_SCALE,
+  MAP_CARD_ANIMATIONS
+} from '@/logic/constants/animations'
+
+const ANIMATION_DELAY_NORMAL_SEC = 0.1
+const ANIMATION_DELAY_FAST_SEC = 0.05
+const MAP_WEATHER_GLOW_DURATION_SEC = 1.5
+const MAP_WEATHER_DRIFT_DURATION_SEC = 2.0
+const MAP_WEATHER_SHAKE_HALF_DUR_SEC = 0.125
+const MAP_WEATHER_SHAKE_FULL_DUR_SEC = 0.25
+const MAP_FACTION_UNION_DURATION_SEC = 2.5
+const MAP_FACTION_PODER_PULSE_DUR_SEC = 0.3
+const MAP_FACTION_PODER_PAUSE_DURATION_SEC = 1.4
+const ARCHAEOLOGY_TOOL_TRANSFORM_ORIGIN = '80% 80%'
 
 export function useMapCardAnimations(options: {
   cardRef: Ref<HTMLElement | null>
@@ -50,7 +70,7 @@ export function useMapCardAnimations(options: {
             {
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
               filter: 'brightness(1.2)',
-              duration: 1.5,
+              duration: MAP_WEATHER_GLOW_DURATION_SEC,
               yoyo: true,
               repeat: -1,
               ease: 'sine.inOut'
@@ -59,8 +79,8 @@ export function useMapCardAnimations(options: {
           tl.progress(seed)
         } else if (type === 'drift') {
           const tl = gsap.to(weatherEl, {
-            x: 3,
-            duration: 2.0,
+            x: MAP_WEATHER_DRIFT_OFFSET_PX,
+            duration: MAP_WEATHER_DRIFT_DURATION_SEC,
             yoyo: true,
             repeat: -1,
             ease: 'power1.inOut'
@@ -68,9 +88,9 @@ export function useMapCardAnimations(options: {
           tl.progress(seed)
         } else if (type === 'shake') {
           const tl = gsap.timeline({ repeat: -1 })
-          tl.to(weatherEl, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
-            .to(weatherEl, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
-            .to(weatherEl, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
+          tl.to(weatherEl, { rotation: MAP_WEATHER_SHAKE_ANGLE_DEG, duration: MAP_WEATHER_SHAKE_HALF_DUR_SEC, ease: 'power1.inOut' })
+            .to(weatherEl, { rotation: -MAP_WEATHER_SHAKE_ANGLE_DEG, duration: MAP_WEATHER_SHAKE_FULL_DUR_SEC, ease: 'power1.inOut' })
+            .to(weatherEl, { rotation: 0, duration: MAP_WEATHER_SHAKE_HALF_DUR_SEC, ease: 'power1.inOut' })
           tl.progress(seed)
         }
       }
@@ -83,10 +103,10 @@ export function useMapCardAnimations(options: {
           const tl = gsap.fromTo(factionEl,
             { rotation: 0, scale: 1, filter: 'brightness(1.0)' },
             {
-              rotation: 10,
-              scale: 1.05,
+              rotation: MAP_FACTION_UNION_ANGLE_DEG,
+              scale: MAP_FACTION_UNION_MAX_SCALE,
               filter: 'brightness(1.3)',
-              duration: 2.5,
+              duration: MAP_FACTION_UNION_DURATION_SEC,
               yoyo: true,
               repeat: -1,
               ease: 'sine.inOut'
@@ -97,10 +117,10 @@ export function useMapCardAnimations(options: {
           const tl = gsap.timeline({ repeat: -1 })
           tl.fromTo(factionEl,
             { scale: 1.0 },
-            { scale: 1.15, duration: 0.3, ease: 'power1.inOut' }
+            { scale: MAP_FACTION_PODER_MAX_SCALE, duration: MAP_FACTION_PODER_PULSE_DUR_SEC, ease: 'power1.inOut' }
           )
-          .to(factionEl, { scale: 1.0, duration: 0.3, ease: 'power1.inOut' })
-          .to(factionEl, { scale: 1.0, duration: 1.4 })
+          .to(factionEl, { scale: 1.0, duration: MAP_FACTION_PODER_PULSE_DUR_SEC, ease: 'power1.inOut' })
+          .to(factionEl, { scale: 1.0, duration: MAP_FACTION_PODER_PAUSE_DURATION_SEC })
           tl.progress(seed)
         }
       }
@@ -109,9 +129,9 @@ export function useMapCardAnimations(options: {
       const fishingEl = options.cardRef.value?.querySelector('.fishing-pill') as HTMLElement | null | undefined
       if (fishingEl) {
         const tl = gsap.timeline({ repeat: -1 })
-        tl.to(fishingEl, { y: -8, rotation: 5, duration: 1.32, ease: 'sine.inOut' })
-          .to(fishingEl, { y: 2, rotation: -3, duration: 1.32, ease: 'sine.inOut' })
-          .to(fishingEl, { y: 0, rotation: 0, duration: 1.36, ease: 'sine.inOut' })
+        tl.to(fishingEl, { y: MAP_CARD_ANIMATIONS.FISHING_BOB_UP_Y, rotation: MAP_CARD_ANIMATIONS.FISHING_ROTATION_UP, duration: MAP_CARD_ANIMATIONS.FISHING_PHASE_DURATION_SEC, ease: 'sine.inOut' })
+          .to(fishingEl, { y: MAP_CARD_ANIMATIONS.FISHING_BOB_DOWN_Y, rotation: MAP_CARD_ANIMATIONS.FISHING_ROTATION_DOWN, duration: MAP_CARD_ANIMATIONS.FISHING_PHASE_DURATION_SEC, ease: 'sine.inOut' })
+          .to(fishingEl, { y: 0, rotation: 0, duration: MAP_CARD_ANIMATIONS.FISHING_RETURN_DURATION_SEC, ease: 'sine.inOut' })
         tl.progress(seed)
       }
 
@@ -120,11 +140,11 @@ export function useMapCardAnimations(options: {
       if (archaeologyEl) {
         const pickEl = archaeologyEl.querySelector('.pill-icon')
         if (pickEl) {
-          gsap.set(pickEl, { transformOrigin: '80% 80%', display: 'inline-block' })
+          gsap.set(pickEl, { transformOrigin: ARCHAEOLOGY_TOOL_TRANSFORM_ORIGIN, display: 'inline-block' })
           const swingTl = gsap.timeline({ repeat: -1 })
-          swingTl.to(pickEl, { rotation: 25, duration: 0.8, ease: 'power1.out' })
-                 .to(pickEl, { rotation: -15, duration: 0.15, ease: 'power2.in' })
-                 .to(pickEl, { rotation: 0, duration: 0.35, ease: 'sine.out' })
+          swingTl.to(pickEl, { rotation: MAP_CARD_ANIMATIONS.ARCHAEOLOGY_SWING_ANGLE_START, duration: MAP_CARD_ANIMATIONS.ARCHAEOLOGY_SWING_UP_DURATION_SEC, ease: 'power1.out' })
+                 .to(pickEl, { rotation: MAP_CARD_ANIMATIONS.ARCHAEOLOGY_SWING_ANGLE_END, duration: MAP_CARD_ANIMATIONS.ARCHAEOLOGY_SWING_DOWN_DURATION_SEC, ease: 'power2.in' })
+                 .to(pickEl, { rotation: 0, duration: MAP_CARD_ANIMATIONS.ARCHAEOLOGY_SWING_RESET_DURATION_SEC, ease: 'sine.out' })
           swingTl.progress(seed)
         }
       }
@@ -135,18 +155,18 @@ export function useMapCardAnimations(options: {
         const shineEl = crownEl.querySelector('.crown-shine-aura') as HTMLElement | undefined
         if (shineEl) {
           gsap.to(shineEl, {
-            rotation: 360,
-            duration: 10,
+            rotation: FULL_ROTATION_DEG,
+            duration: MAP_CARD_ANIMATIONS.CROWN_SHINE_ROTATION_DURATION_SEC,
             repeat: -1,
             ease: 'none'
           })
 
           const breatheTl = gsap.fromTo(shineEl,
-            { scale: 0.8, opacity: 0.35 },
+            { scale: MAP_CARD_ANIMATIONS.CROWN_SHINE_SCALE_MIN, opacity: MAP_CARD_ANIMATIONS.CROWN_SHINE_OPACITY_MIN },
             {
-              scale: 1.5,
-              opacity: 0.8,
-              duration: 1.8,
+              scale: MAP_CARD_ANIMATIONS.CROWN_SHINE_SCALE_MAX,
+              opacity: MAP_CARD_ANIMATIONS.CROWN_SHINE_OPACITY_MAX,
+              duration: MAP_CARD_ANIMATIONS.CROWN_SHINE_BREATHE_DURATION_SEC,
               yoyo: true,
               repeat: -1,
               ease: 'sine.inOut'
@@ -163,7 +183,7 @@ export function useMapCardAnimations(options: {
     if (!options.spawnGridRef.value || !options.isVisible.value) return
 
     auraContext = gsap.context(() => {
-      const AURA_CYCLE = 2.0
+      const AURA_CYCLE = MAP_CARD_ANIMATIONS.AURA_CYCLE_PERIOD_SEC
       const wrappers = gsap.utils.toArray('.sprite-wrapper', options.spawnGridRef.value || undefined) as HTMLElement[]
 
       wrappers.forEach((el) => {
@@ -178,10 +198,10 @@ export function useMapCardAnimations(options: {
         const baseDelay = (seed % 1) * AURA_CYCLE
 
         if (!options.isLowPowerActive.value) {
-          const scaleMax = isAtmos ? 1.08 : 1.05
+          const scaleMax = isAtmos ? MAP_CARD_ANIMATIONS.ATMOS_SPAWN_SCALE_MAX : MAP_CARD_ANIMATIONS.RARE_SPAWN_SCALE_MAX
           const tl = gsap.timeline({ repeat: -1, delay: baseDelay })
-          tl.to(el, { scale: scaleMax, duration: 0.4, ease: 'power2.out' })
-            .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
+          tl.to(el, { scale: scaleMax, duration: MAP_CARD_ANIMATIONS.SPAWN_SCALE_UP_DURATION_SEC, ease: 'power2.out' })
+            .to(el, { scale: 1, duration: MAP_CARD_ANIMATIONS.SPAWN_SCALE_DOWN_DURATION_SEC, ease: 'sine.inOut' })
         }
 
         const rareAura = el.parentElement?.querySelector('.rare-aura')
@@ -196,8 +216,8 @@ export function useMapCardAnimations(options: {
           const duration = AURA_CYCLE / 2
 
           if (options.isLowPowerActive.value) {
-            if (rareAura) gsap.set(rareAura, { scale: 2.2, rotation: 0 })
-            if (atmosAura) gsap.set(atmosAura, { scale: 2.2, rotation: 0 })
+            if (rareAura) gsap.set(rareAura, { scale: MAP_CARD_ANIMATIONS.LOW_POWER_AURA_SCALE, rotation: 0 })
+            if (atmosAura) gsap.set(atmosAura, { scale: MAP_CARD_ANIMATIONS.LOW_POWER_AURA_SCALE, rotation: 0 })
 
             if (rareAura && atmosAura) {
               gsap.set(rareAura, { opacity: 0 })
@@ -221,82 +241,82 @@ export function useMapCardAnimations(options: {
             }
           } else {
             if (rareAura && atmosAura) {
-              gsap.set(rareAura, { scale: 0.1, opacity: 0 })
-              gsap.set(atmosAura, { scale: 3.375, opacity: 0.9 })
+              gsap.set(rareAura, { scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN, opacity: 0 })
+              gsap.set(atmosAura, { scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MAX, opacity: 0.9 })
 
               auraTl.call(() => {
-                gsap.set(rareAura, { rotation: Math.random() * 360 })
+                gsap.set(rareAura, { rotation: Math.random() * MAP_CARD_ANIMATIONS.AURA_FULL_CIRCLE_DEG })
               }, [], 0)
 
               auraTl.to(rareAura, {
-                scale: 3.375,
+                scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MAX,
                 opacity: 1,
                 duration: duration,
                 ease: 'sine.inOut'
               }, 0)
 
               auraTl.to(atmosAura, {
-                scale: 0.1,
+                scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN,
                 opacity: 0,
                 duration: duration,
                 ease: 'sine.inOut'
               }, 0)
 
               auraTl.call(() => {
-                gsap.set(atmosAura, { rotation: Math.random() * 360 })
+                gsap.set(atmosAura, { rotation: Math.random() * MAP_CARD_ANIMATIONS.AURA_FULL_CIRCLE_DEG })
               }, [], duration)
 
               auraTl.to(rareAura, {
-                scale: 0.1,
+                scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN,
                 opacity: 0,
                 duration: duration,
                 ease: 'sine.inOut'
               }, duration)
 
               auraTl.to(atmosAura, {
-                scale: 3.375,
+                scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MAX,
                 opacity: 0.9,
                 duration: duration,
                 ease: 'sine.inOut'
               }, duration)
             } else {
               if (rareAura) {
-                gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+                gsap.set(rareAura, { scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN, opacity: 0 })
 
                 auraTl.call(() => {
-                  gsap.set(rareAura, { rotation: Math.random() * 360 })
+                  gsap.set(rareAura, { rotation: Math.random() * MAP_CARD_ANIMATIONS.AURA_FULL_CIRCLE_DEG })
                 }, [], 0)
 
                 auraTl.to(rareAura, {
-                  scale: 3.375,
+                  scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MAX,
                   opacity: 1,
                   duration: duration,
                   ease: 'sine.inOut'
                 }, 0)
 
                 auraTl.to(rareAura, {
-                  scale: 0.1,
+                  scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN,
                   opacity: 0,
                   duration: duration,
                   ease: 'sine.inOut'
                 }, duration)
               }
               if (atmosAura) {
-                gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
+                gsap.set(atmosAura, { scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN, opacity: 0 })
 
                 auraTl.call(() => {
-                  gsap.set(atmosAura, { rotation: Math.random() * 360 })
+                  gsap.set(atmosAura, { rotation: Math.random() * MAP_CARD_ANIMATIONS.AURA_FULL_CIRCLE_DEG })
                 }, [], 0)
 
                 auraTl.to(atmosAura, {
-                  scale: 3.375,
+                  scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MAX,
                   opacity: 0.9,
                   duration: duration,
                   ease: 'sine.inOut'
                 }, 0)
 
                 auraTl.to(atmosAura, {
-                  scale: 0.1,
+                  scale: MAP_CARD_ANIMATIONS.STANDARD_AURA_SCALE_MIN,
                   opacity: 0,
                   duration: duration,
                   ease: 'sine.inOut'
@@ -335,7 +355,7 @@ export function useMapCardAnimations(options: {
     (visible) => {
       if (visible) {
         gsap.killTweensOf(initAuraAnimations)
-        gsap.delayedCall(0.1, initAuraAnimations)
+        gsap.delayedCall(ANIMATION_DELAY_NORMAL_SEC, initAuraAnimations)
       } else {
         gsap.killTweensOf(initAuraAnimations)
         if (auraContext) {
@@ -355,7 +375,7 @@ export function useMapCardAnimations(options: {
       }
       if (options.isVisible.value) {
         gsap.killTweensOf(initAuraAnimations)
-        gsap.delayedCall(0.05, initAuraAnimations)
+        gsap.delayedCall(ANIMATION_DELAY_FAST_SEC, initAuraAnimations)
       }
     },
     { deep: false }
@@ -365,7 +385,7 @@ export function useMapCardAnimations(options: {
   watch(options.spawnGridRef, (newRef) => {
     if (newRef && options.isVisible.value) {
       gsap.killTweensOf(initAuraAnimations)
-      gsap.delayedCall(0.05, initAuraAnimations)
+      gsap.delayedCall(ANIMATION_DELAY_FAST_SEC, initAuraAnimations)
     } else if (!newRef) {
       if (auraContext) {
         auraContext.revert()

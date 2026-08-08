@@ -17,6 +17,15 @@ import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/p
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
 
+const MIN_TEAM_SIZE = 1
+const MAX_TEAM_SIZE = 6
+const MIN_POKEMON_LEVEL_BOUND = 1
+const MAX_POKEMON_LEVEL_BOUND = 100
+const SHINY_DEBUG_PROBABILITY = 0.05
+const POLICE_PRESET_AVG_LEVEL_BASE = 30
+const POLICE_PRESET_LEVEL_BOOST = 2
+const POLICE_PRESET_IV_VAL = 20
+
 interface ExtendedPokemon extends Pokemon {
   _revealed?: boolean
 }
@@ -154,7 +163,7 @@ export function useDebugTrainers() {
   }
 
   function generateRandomTeam() {
-    const size = Math.max(1, Math.min(6, genTeamSize.value))
+    const size = Math.max(MIN_TEAM_SIZE, Math.min(MAX_TEAM_SIZE, genTeamSize.value))
     const team: Pokemon[] = []
 
     if (selectedPreset.value === 'random') {
@@ -164,10 +173,10 @@ export function useDebugTrainers() {
       for (let i = 0; i < size; i++) {
         const randomSpecies = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
-        const isShiny = genForceShiny.value || Math.random() < 0.05
+        const isShiny = genForceShiny.value || Math.random() < SHINY_DEBUG_PROBABILITY
         const p = pokemonDebugService.generate({
           id: requirePokemonSpeciesId(randomSpecies),
-          level: Math.max(1, Math.min(100, level)),
+          level: Math.max(MIN_POKEMON_LEVEL_BOUND, Math.min(MAX_POKEMON_LEVEL_BOUND, level)),
           isShiny
         })
         if (p) {
@@ -192,10 +201,10 @@ export function useDebugTrainers() {
       for (let i = 0; i < size; i++) {
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
-        const isShiny = genForceShiny.value || Math.random() < 0.05
+        const isShiny = genForceShiny.value || Math.random() < SHINY_DEBUG_PROBABILITY
         const p = pokemonDebugService.generate({
           id: randomSpecies,
-          level: Math.max(1, Math.min(100, level)),
+          level: Math.max(MIN_POKEMON_LEVEL_BOUND, Math.min(MAX_POKEMON_LEVEL_BOUND, level)),
           isShiny
         })
         if (p) {
@@ -219,15 +228,15 @@ export function useDebugTrainers() {
     const team: Pokemon[] = []
     
     const teamAlive = gameStore.state.team.filter((p: Pokemon | null) => p && p.hp > 0)
-    const averagePlayerLevel = teamAlive.length === 0 ? 30 : Math.floor(teamAlive.reduce((acc: number, cur: Pokemon | null) => acc + (cur?.level || 0), 0) / teamAlive.length)
+    const averagePlayerLevel = teamAlive.length === 0 ? POLICE_PRESET_AVG_LEVEL_BASE : Math.floor(teamAlive.reduce((acc: number, cur: Pokemon | null) => acc + (cur?.level || 0), 0) / teamAlive.length)
 
-    const lvl = Math.max(10, averagePlayerLevel + 2)
+    const lvl = Math.max(10, averagePlayerLevel + POLICE_PRESET_LEVEL_BOOST)
 
     pool.forEach(id => {
       const p = pokemonDebugService.generate({
         id,
         level: lvl,
-        ivs: { hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 }
+        ivs: { hp: POLICE_PRESET_IV_VAL, atk: POLICE_PRESET_IV_VAL, def: POLICE_PRESET_IV_VAL, spa: POLICE_PRESET_IV_VAL, spd: POLICE_PRESET_IV_VAL, spe: POLICE_PRESET_IV_VAL }
       })
       if (p) team.push(p)
     })

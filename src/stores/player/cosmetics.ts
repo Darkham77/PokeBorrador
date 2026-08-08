@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useAuthStore } from '@/stores/auth.ts'
 import { NICK_STYLES, AVATAR_STYLES } from '@/data/player/cosmeticsData'
+import { COSMETIC_UNLOCK_CLASS_LEVEL } from '@/logic/player/classMath'
 
 export const useCosmeticsStore = defineStore('cosmetics', () => {
   const gameStore = useGameStore()
@@ -60,7 +61,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
           shouldReset = true
         }
         if (nickDef.requiredClass) {
-          const isEligible = nickDef.requiredClass === userClass && currentLevel >= 25
+          const isEligible = nickDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
           if (!isEligible) {
             shouldReset = true
           }
@@ -82,7 +83,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
           shouldReset = true
         }
         if (avatarDef.requiredClass) {
-          const isEligible = avatarDef.requiredClass === userClass && currentLevel >= 25
+          const isEligible = avatarDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
           if (!isEligible) {
             shouldReset = true
           }
@@ -109,9 +110,9 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
           throw new Error('No tienes permiso para equipar este estilo de nick')
         }
         if (styleDef.requiredClass) {
-          const isEligible = styleDef.requiredClass === userClass && currentLevel >= 25
+          const isEligible = styleDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
           if (!isEligible) {
-            throw new Error('Este estilo de nick requiere la profesión activa y nivel 25')
+            throw new Error(`Este estilo de nick requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
           }
         }
       }
@@ -146,9 +147,9 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
           throw new Error('No tienes permiso para equipar este marco de avatar')
         }
         if (styleDef.requiredClass) {
-          const isEligible = styleDef.requiredClass === userClass && currentLevel >= 25
+          const isEligible = styleDef.requiredClass === userClass && currentLevel >= COSMETIC_UNLOCK_CLASS_LEVEL
           if (!isEligible) {
-            throw new Error('Este marco de avatar requiere la profesión activa y nivel 25')
+            throw new Error(`Este marco de avatar requiere la profesión activa y nivel ${COSMETIC_UNLOCK_CLASS_LEVEL}`)
           }
         }
       }

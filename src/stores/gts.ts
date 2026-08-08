@@ -6,11 +6,12 @@ import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
-import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS } from '@/logic/economy/market'
+import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing } from '@/logic/economy/market'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts'
 
 export const useGTSStore = defineStore('gts', () => {
   const auth = useAuthStore()
@@ -35,19 +36,19 @@ export const useGTSStore = defineStore('gts', () => {
     mode: 'pokemon',
     search: '',
     priceMin: 0,
-    priceMax: 1000000,
+    priceMax: GTS_MAX_PRICE_FILTER,
     tier: 'all',
     type: 'all',
     levelMin: 1,
     levelMax: 100,
     ivTotalMin: 0,
-    ivTotalMax: 186,
+    ivTotalMax: MAX_TOTAL_IVS_STAT_SUM,
     ivAny31: false,
     itemCat: 'all'
   })
 
   // Constants
-  const MARKET_FEE = 0.05
+  const MARKET_FEE = GTS_MARKET_FEE
   const MAX_LISTINGS = GTS_MAX_ACTIVE_LISTINGS
 
   let salesChannel: RealtimeChannel | null = null
@@ -71,7 +72,7 @@ export const useGTSStore = defineStore('gts', () => {
         .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(100) as { data: MarketListing[] | null, error: { message: string } | null }
+        .limit(GTS_EXPLORE_LISTINGS_LIMIT) as { data: MarketListing[] | null, error: { message: string } | null }
       
       if (!error) listings.value = data || []
     } finally {
@@ -92,7 +93,7 @@ export const useGTSStore = defineStore('gts', () => {
       .eq('seller_id', auth.user.id)
       .eq('status', 'sold')
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(GTS_SALES_HISTORY_LIMIT);
 
     const mineListings = mineRes.data as MarketListing[] | null; // domain-ok
     const histListings = histRes.data as MarketListing[] | null; // domain-ok

@@ -9,6 +9,7 @@ import { requireDayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 const BUG_ATTRACT_SPECIES: readonly PokemonSpeciesId[] = ['scyther', 'pinsir'];
+const CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE = 0.005;
 
 export async function generateSearchLoopEncounter(ctx: BattleContext, locId: string) {
   const routeId = requireMapRouteId(locId)
@@ -31,7 +32,7 @@ export async function generateSearchLoopEncounter(ctx: BattleContext, locId: str
 
   let encounter = null
 
-  if (ctx.gs.state.playerClass === 'cazabichos' && Math.random() < 0.005) {
+  if (ctx.gs.state.playerClass === 'cazabichos' && Math.random() < CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE) {
     const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
     const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
     const mapsList = pokemonDataProvider.getMaps()

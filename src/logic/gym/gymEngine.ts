@@ -14,9 +14,13 @@ export interface Gym {
   level?: number;
 }
 
+const GYM_REMATCH_TM_RATE_NORMAL = 0.03;
+const GYM_REMATCH_TM_RATE_HARD = 0.05;
+const GYM_REMATCH_EXTRA_COINS_PER_DIFF_LEVEL = 150;
+
 export const GYM_RATIOS = {
-  rematchTMRateNormal: 0.03,
-  rematchTMRateHard: 0.05
+  rematchTMRateNormal: GYM_REMATCH_TM_RATE_NORMAL,
+  rematchTMRateHard: GYM_REMATCH_TM_RATE_HARD
 };
 
 export interface GymVictoryResult {
@@ -51,7 +55,7 @@ export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'har
     newProgress = Math.max(newProgress, diffValue);
   } else {
     // Rematch logic
-    extraCoins = diffValue * 150;
+    extraCoins = diffValue * GYM_REMATCH_EXTRA_COINS_PER_DIFF_LEVEL;
     
     let tmChance = 0;
     if (difficulty === 'normal') tmChance = GYM_RATIOS.rematchTMRateNormal;

@@ -18,6 +18,9 @@ const gymsStore = useGymsStore()
 const isGymDefeated = computed(() => gymsStore.isGymDefeated(props.gym.id))
 const isDifficultyDefeated = computed(() => gymsStore.isDifficultyDefeated(props.gym.id, props.difficulty))
 
+const GYM_REWARD_BASE_MONEY_FACTOR = 30
+const GYM_REWARD_BASE_EXP_FACTOR = 180
+
 const estimatedRewards = computed(() => {
   if (!props.gym?.difficulties) return { money: 0, exp: 0 }
   
@@ -31,8 +34,8 @@ const estimatedRewards = computed(() => {
   const mult = mults[props.difficulty]
   
   return {
-    money: Math.floor(avgLevel * 30 * mult),
-    exp: Math.floor(avgLevel * 180 * mult)
+    money: Math.floor(avgLevel * GYM_REWARD_BASE_MONEY_FACTOR * mult),
+    exp: Math.floor(avgLevel * GYM_REWARD_BASE_EXP_FACTOR * mult)
   }
 })
 

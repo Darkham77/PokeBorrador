@@ -29,9 +29,11 @@ const emit = defineEmits<{
   (e: 'reorder-moves', fromIndex: number, toIndex: number): void
 }>()
 
-const isSmallScreen = ref(typeof window !== 'undefined' ? window.innerWidth <= 600 : false)
+const MOBILE_VIEWPORT_MAX_WIDTH_PX = 600
+
+const isSmallScreen = ref(typeof window !== 'undefined' ? window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX : false)
 const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= 600
+  isSmallScreen.value = window.innerWidth <= MOBILE_VIEWPORT_MAX_WIDTH_PX
 }
 useWindowListener('resize', handleResize)
 

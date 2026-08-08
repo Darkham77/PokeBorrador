@@ -13,6 +13,11 @@ export { syncAndPersist } from './battleStateSync.ts'
 
 
 
+const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300;
+const DEFEAT_SCREEN_DELAY_MS = 1500;
+const POLICE_STEAL_CHANCE_PERCENT = 0.05;
+const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000;
+
 /**
  * Handles the fainting of a Pokémon.
  */
@@ -34,10 +39,12 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
   const pokemon = isPlayer ? active.player : active.enemy
   const opponent = isPlayer ? active.enemy : active.player
   
+const DESTINY_BOND_SLEEP_DELAY_MS = 500;
+
   if (pokemon?.destinyBond && opponent && opponent.hp > 0) {
     ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
     opponent.hp = 0
-    await sleep(500)
+    await sleep(DESTINY_BOND_SLEEP_DELAY_MS)
     await processFaint(ctx, isPlayer ? 'enemy' : 'player')
   }
 
@@ -52,7 +59,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     if (ctx.animations?.handleFaintAnim) {
       await ctx.animations.handleFaintAnim({ side: 'player', isFaint: true })
     } else {
-      await sleep(1300)
+      await sleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
     }
     
     // Sincronizamos antes de vaciar el asiento para no perder la referencia
@@ -73,7 +80,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
       active.over = true
       ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
-      await sleep(1500)
+      await sleep(DEFEAT_SCREEN_DELAY_MS)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
       await terminateBattle(ctx, false)
     } else {
@@ -164,7 +171,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
         }
       } else if (win && !fled) {
         // Al ganarle al Oficial, 5% de chance de robar uno de sus Pokémon
-        if (Math.random() < 0.05) {
+        if (Math.random() < POLICE_STEAL_CHANCE_PERCENT) {
           const pool = active.enemyTeam || [];
           if (pool.length > 0) {
             const stolen = pool[Math.floor(Math.random() * pool.length)];
@@ -218,7 +225,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
             : Promise.resolve()
         } else {
           gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
-          enemyExited = sleep(1000)
+          enemyExited = sleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
         }
       }
     }
@@ -267,6 +274,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   if (fled) {
     if (active) active._initialEnemy = null
+    ctx.clearLogs?.()
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
     await ctx.waitForLogs()
     
@@ -375,7 +383,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
-  if (active.wasSearching !== false) {
+  if (active.wasSearching === true) {
     await ctx.completeBattleFlow('search')
   } else {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)

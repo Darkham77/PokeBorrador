@@ -30,7 +30,11 @@ export async function computeP2Choice(
   let p2Choice = 'struggle'
   const active = store.activeBattle.value
   const enemyTeam = store.activeBattle.value?.enemyTeam
-  const wantSwitch = !isWild && shouldEnemySwitch(e, p, enemyTeam, store)
+  const isP2Trapped = !!(
+    active?.enemyRequest?.active?.[0]?.trapped ||
+    active?.enemyRequest?.active?.[0]?.maybeTrapped
+  )
+  const wantSwitch = !isWild && !isP2Trapped && shouldEnemySwitch(e, p, enemyTeam, store)
 
   if (wantSwitch) {
     const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store)

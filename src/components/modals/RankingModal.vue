@@ -6,6 +6,17 @@ import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import { gsap } from 'gsap'
 
+const RANK_CARD_HOVER_X_OFFSET = 4
+const RANK_LIST_ANIM_X_OFFSET = -15
+const RANK_LIST_ANIM_SCALE_MIN = 0.97
+const RANK_LIST_ANIM_DURATION_SEC = 0.4
+const RANK_LIST_ANIM_STAGGER_SEC = 0.05
+const RANK_LIST_EASE_STRING = 'back.out(1.15)'
+const RANK_SPINNER_ROTATION_DEG = 360
+const RANK_ANIM_FAST_DURATION_SEC = 0.2
+const RANK_SPINNER_DURATION_SEC = 1.5
+const RANK_BTN_Y_OFFSET = -1
+
 interface Props {
   show?: boolean
 }
@@ -65,10 +76,10 @@ const openTrainerProfile = (userId: string) => {
 const handleCardEnter = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement
   gsap.to(el, {
-    x: 4,
+    x: RANK_CARD_HOVER_X_OFFSET,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(251, 191, 36, 0.25)',
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out'
   })
 }
@@ -93,7 +104,7 @@ const handleCardLeave = (e: MouseEvent) => {
     x: 0,
     background: baseBackground,
     borderColor: baseBorderColor,
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out',
     clearProps: 'x,background,borderColor'
   })
@@ -101,10 +112,10 @@ const handleCardLeave = (e: MouseEvent) => {
 
 const handleButtonEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
-    y: -1,
+    y: RANK_BTN_Y_OFFSET,
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out'
   })
 }
@@ -114,7 +125,7 @@ const handleButtonLeave = (e: MouseEvent) => {
     y: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out',
     clearProps: 'y,backgroundColor,borderColor'
   })
@@ -126,7 +137,7 @@ const handleTabEnter = (e: MouseEvent) => {
   gsap.to(el, {
     color: '#ffffff',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out'
   })
 }
@@ -137,7 +148,7 @@ const handleTabLeave = (e: MouseEvent) => {
   gsap.to(el, {
     color: 'rgba(255, 255, 255, 0.5)',
     backgroundColor: 'transparent',
-    duration: 0.2,
+    duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out',
     clearProps: 'color,backgroundColor'
   })
@@ -158,11 +169,11 @@ const animateList = () => {
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
-        x: -15,
-        scale: 0.97,
-        duration: 0.4,
-        stagger: 0.05,
-        ease: 'back.out(1.15)',
+        x: RANK_LIST_ANIM_X_OFFSET,
+        scale: RANK_LIST_ANIM_SCALE_MIN,
+        duration: RANK_LIST_ANIM_DURATION_SEC,
+        stagger: RANK_LIST_ANIM_STAGGER_SEC,
+        ease: RANK_LIST_EASE_STRING,
         clearProps: 'all',
         onComplete: () => {
           listRef.value?.classList.remove('list-animating')
@@ -197,8 +208,8 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
       const spinner = document.querySelector('.retro-spinner')
       if (spinner) {
         gsap.to(spinner, {
-          rotation: 360,
-          duration: 1.5,
+          rotation: RANK_SPINNER_ROTATION_DEG,
+          duration: RANK_SPINNER_DURATION_SEC,
           repeat: -1,
           ease: 'none'
         })

@@ -13,6 +13,28 @@ import PVAuraFX from './PVAuraFX.vue'
 import { resolveEffectSettings } from '@/data/battle/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
+const MAX_PERSISTENT_FX_RETRIES = 3
+const PERSISTENT_FX_RETRY_DELAY_SEC = 0.1
+
+const CURSED_FX_DURATION_SEC = 1.25
+const CONFUSED_FX_DURATION_SEC = 0.15
+const TAUNTED_FX_DURATION_SEC = 0.4
+const FLINCHED_FX_DURATION_SEC = 0.05
+const DISABLED_FX_DURATION_SEC = 1
+const ENCORED_FX_DURATION_SEC = 0.8
+const FOCUS_ENERGY_FX_DURATION_SEC = 0.75
+const ENDURING_FX_DURATION_SEC = 1.5
+const BURN_FX_DURATION_SEC = 1
+const POISON_FX_DURATION_SEC = 2
+const PARALYZE_FX_DURATION_SEC = 0.04
+const SLEEP_FX_DURATION_SEC = 2
+const GUARDIAN_FX_DURATION_SEC = 2
+
+const FLINCHED_FX_REPEATS = 10
+const GUARDIAN_DELAY_MULTIPLIER = -2
+const DEFAULT_SPARKLE_COUNT = 5
+const DEFAULT_RADIUS_PX = 40
+
 interface FXData {
   type: string;
   emoji: string;
@@ -47,11 +69,11 @@ const props = defineProps({
   hasMist: { type: Boolean, default: false },
   hasSpikes: { type: Boolean, default: false },
   isIngrained: { type: Boolean, default: false },
-  sparkleCount: { type: Number, default: 5 },
+  sparkleCount: { type: Number, default: DEFAULT_SPARKLE_COUNT },
   enabled: { type: Boolean, default: true },
   vibrant: { type: Boolean, default: false },
   isSilhouette: { type: Boolean, default: false },
-  radius: { type: Number, default: 40 },
+  radius: { type: Number, default: DEFAULT_RADIUS_PX },
   spriteScale: { type: Number, default: 1 },
   animState: { type: String, default: null },
   isBattle: { type: Boolean, default: false }
@@ -134,8 +156,8 @@ const refreshPersistentFX = (retryCount = 0) => {
   const statusWrapper = spriteLayerRef.value.querySelector('.pokemon-sprite-status-wrapper') as HTMLElement
   const img = spriteLayerRef.value.querySelector('img') as HTMLElement
   const target = statusWrapper || img
-  if (!target && retryCount < 3) {
-    const t = gsap.delayedCall(0.1, () => refreshPersistentFX(retryCount + 1))
+  if (!target && retryCount < MAX_PERSISTENT_FX_RETRIES) {
+    const t = gsap.delayedCall(PERSISTENT_FX_RETRY_DELAY_SEC, () => refreshPersistentFX(retryCount + 1))
     activeTweens.push(t)
     return
   }
@@ -151,44 +173,47 @@ const refreshPersistentFX = (retryCount = 0) => {
   if (props.isCursed) {
     activeTweens.push(gsap.to(target, {
       filter: 'Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5)',
-      duration: 1.25, yoyo: true, repeat: -1, ease: 'sine.inOut'
+      duration: CURSED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut'
     }))
   }
   if (props.isConfused && !isImmobilized) {
-    activeTweens.push(gsap.to(target, { x: 2, rotation: 1, duration: 0.15, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { x: 2, rotation: 1, duration: CONFUSED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isTaunted) {
-    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 12px Rgba(255, 0, 0, 0.9)) Brightness(1.2)', duration: 0.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 12px Rgba(255, 0, 0, 0.9)) Brightness(1.2)', duration: TAUNTED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isFlinched && !isImmobilized) {
-    activeTweens.push(gsap.to(target, { x: 4, duration: 0.05, yoyo: true, repeat: 10, ease: 'none' }))
+    activeTweens.push(gsap.to(target, { x: 4, duration: FLINCHED_FX_DURATION_SEC, yoyo: true, repeat: FLINCHED_FX_REPEATS, ease: 'none' }))
   }
   if (props.isDisabled) {
-    activeTweens.push(gsap.to(target, { filter: 'Grayscale(0.8) Brightness(0.7) Drop-Shadow(0 0 8px Rgba(100, 100, 100, 0.8))', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { filter: 'Grayscale(0.8) Brightness(0.7) Drop-Shadow(0 0 8px Rgba(100, 100, 100, 0.8))', duration: DISABLED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isEncored) {
-    activeTweens.push(gsap.to(target, { filter: 'Hue-Rotate(90deg) Drop-Shadow(0 0 10px Rgba(0, 255, 255, 0.8))', duration: 0.8, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { filter: 'Hue-Rotate(90deg) Drop-Shadow(0 0 10px Rgba(0, 255, 255, 0.8))', duration: ENCORED_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isFocusEnergy) {
-    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)', duration: 0.75, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)', duration: FOCUS_ENERGY_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isEnduring || props.isSeeded) {
-    activeTweens.push(gsap.to(target, { y: -3, duration: 1.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.to(target, { y: -3, duration: ENDURING_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.status === 'brn') {
     activeTweens.push(gsap.fromTo(target, 
       { filter: 'Drop-Shadow(0 0 25px #ff4500) Brightness(1) Saturate(1.2)' },
-      { filter: 'Drop-Shadow(0 0 40px #ff8c00) Brightness(1.4) Saturate(2.2)', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+      { filter: 'Drop-Shadow(0 0 40px #ff8c00) Brightness(1.4) Saturate(2.2)', duration: BURN_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     ))
   }
   if (props.status === 'psn' || props.status === 'tox') {
     activeTweens.push(gsap.fromTo(target, 
       { filter: 'Drop-Shadow(0 0 2px #9400d3) Brightness(1) Saturate(1)' },
-      { filter: 'Drop-Shadow(0 0 12px #9400d3) Brightness(0.8) Saturate(1.4) hue-rotate(10deg)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+      { filter: 'Drop-Shadow(0 0 12px #9400d3) Brightness(0.8) Saturate(1.4) hue-rotate(10deg)', duration: POISON_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     ))
   }
+const GSAP_PARALYZE_X_OFFSET_PX = 3
+const DEBUG_OVERLAY_Z_INDEX = '99'
+
   if ((props.status === 'par') && !isImmobilized) {
-    activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -3 }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: 3, duration: 0.04, yoyo: true, repeat: -1, ease: 'none' }))
+    activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -GSAP_PARALYZE_X_OFFSET_PX }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: GSAP_PARALYZE_X_OFFSET_PX, duration: PARALYZE_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'none' }))
   }
   if (props.status === 'frz') {
     activeTweens.push(gsap.set(target, { 
@@ -196,13 +221,13 @@ const refreshPersistentFX = (retryCount = 0) => {
     }))
   }
   if (props.status === 'sleep') {
-    activeTweens.push(gsap.fromTo(target, { filter: 'Brightness(1) Saturate(1)' }, { filter: 'Brightness(0.5) contrast(0.8) Saturate(0.5)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+    activeTweens.push(gsap.fromTo(target, { filter: 'Brightness(1) Saturate(1)' }, { filter: 'Brightness(0.5) contrast(0.8) Saturate(0.5)', duration: SLEEP_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
   }
   if (props.isGuardian && !props.status) {
     const isVibrant = props.vibrant
     const baseFilter = isVibrant ? 'Drop-Shadow(0 0 15px white) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))' : 'Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))'
     const pulseFilter = isVibrant ? 'Drop-Shadow(0 0 40px white) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))' : 'Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8))'
-    activeTweens.push(gsap.fromTo(spriteLayerRef.value, { filter: baseFilter }, { filter: pulseFilter, duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: animSeed * -2 }))
+    activeTweens.push(gsap.fromTo(spriteLayerRef.value, { filter: baseFilter }, { filter: pulseFilter, duration: GUARDIAN_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: animSeed * GUARDIAN_DELAY_MULTIPLIER }))
   }
 }
 
@@ -222,17 +247,21 @@ const allActiveFXDebug = computed(() => {
     const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale })
     const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; 
     const area = settings.area as { x: [number, number], y?: [number, number] }
+const BORDER_RADIUS_CIRCLE_PERCENT = '50%'
+const DEBUG_OVERLAY_TRANSLATE_PERCENT = -50
+
     const style: Record<string, string> = { 
       position: 'absolute', 
       border: '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'), 
       pointerEvents: 'none', 
-      zIndex: '99', 
-      borderRadius: shape === 'circle' ? '50%' : '2px' 
+      zIndex: DEBUG_OVERLAY_Z_INDEX, 
+      borderRadius: shape === 'circle' ? BORDER_RADIUS_CIRCLE_PERCENT : '2px' 
     }
+
     if (shape === 'circle') {
-      const radius = area.x[1]; style.width = `${radius * 2}%`; style.height = `${radius * 2}%`; style.top = `${50 + offset.y}%`; style.left = `${50 + offset.x}%`; style.transform = 'translate(-50%, -50%)'
+      const radius = area.x[1]; style.width = `${radius * 2}%`; style.height = `${radius * 2}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + offset.y}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + offset.x}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
     } else {
-      const xRange = area.x; const yRange = area.y || [-10, 10]; style.width = `${xRange[1] - xRange[0]}%`; style.height = `${yRange[1] - yRange[0]}%`; style.left = `${50 + (xRange[0] + xRange[1]) / 2 + offset.x}%`; style.top = `${50 + (yRange[0] + yRange[1]) / 2 + offset.y}%`; style.transform = 'translate(-50%, -50%)'
+      const xRange = area.x; const yRange = area.y || [-10, 10]; style.width = `${xRange[1] - xRange[0]}%`; style.height = `${yRange[1] - yRange[0]}%`; style.left = `${DEBUG_CENTER_OFFSET_PERCENT + (xRange[0] + xRange[1]) / 2 + offset.x}%`; style.top = `${DEBUG_CENTER_OFFSET_PERCENT + (yRange[0] + yRange[1]) / 2 + offset.y}%`; style.transform = `translate(${DEBUG_OVERLAY_TRANSLATE_PERCENT}%, ${DEBUG_OVERLAY_TRANSLATE_PERCENT}%)`
     }
     return { id: fx.type, style, label: `${fx.type.toUpperCase()} (${shape})` }
   })

@@ -22,6 +22,12 @@ import {
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
 
+import { DEFAULT_EXCLUSIVE_SPAWN_WEIGHT } from '@/logic/constants/encounters'
+
+const DEFAULT_FISHING_RATE_WEIGHT = 10;
+const ROD_GOOD_BONUS_POINTS = 500;
+const ROD_SUPER_BONUS_POINTS = 1000;
+
 export function useRouteSpawnsFishing(
   props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
 ) {
@@ -34,7 +40,7 @@ export function useRouteSpawnsFishing(
 
     const pool: PokemonSpeciesId[] = [...props.map.fishing.pool]
     const rates = [...props.map.fishing.rates]
-    while (rates.length < pool.length) rates.push(10)
+    while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_10)
 
     const weatherCfg = props.map.weather?.[props.weather]
     if (props.weather && props.weather !== 'clear' && weatherCfg) {
@@ -43,7 +49,7 @@ export function useRouteSpawnsFishing(
         exclusives.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            rates.push(weight ?? 5)
+            rates.push(weight ?? DEFAULT_EXCLUSIVE_WEIGHT_5)
           }
         })
       }
@@ -52,7 +58,7 @@ export function useRouteSpawnsFishing(
         visitors.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            rates.push(weight !== undefined ? -weight : -10)
+            rates.push(weight !== undefined ? -weight : -DEFAULT_FISHING_RATE_10)
           }
         })
       }
@@ -78,7 +84,7 @@ export function useRouteSpawnsFishing(
       let baseRate = 0
       let basePercentage = 0
       if (baseIndex !== -1) {
-        baseRate = props.map.fishing!.rates[baseIndex] !== undefined ? props.map.fishing!.rates[baseIndex] : 10
+        baseRate = props.map.fishing!.rates[baseIndex] !== undefined ? props.map.fishing!.rates[baseIndex] : DEFAULT_FISHING_RATE_WEIGHT
         const totalBase = props.map.fishing!.rates.reduce((sum, r) => sum + r, 0)
         basePercentage = totalBase > 0 ? (baseRate / totalBase) * 100 : 0
       }
@@ -130,9 +136,9 @@ export function useRouteSpawnsFishing(
       const names: Record<string, string> = { standard: 'Caña de pescar', good: 'Caña Buena', super: 'Supercaña' }
       const rodName = names[rodType] || 'Caña de pescar'
       if (rodType === 'good') {
-        lines.push(`• ${rodName} activa: +500 pts distribuidos (más peso a comunes/raros)`)
+        lines.push(`• ${rodName} activa: +${ROD_GOOD_BONUS_POINTS} pts distribuidos (más peso a comunes/raros)`)
       } else if (rodType === 'super') {
-        lines.push(`• ${rodName} activa: +1000 pts distribuidos (más peso a comunes/raros) y aumenta la chance de Shiny x1.5`)
+        lines.push(`• ${rodName} activa: +${ROD_SUPER_BONUS_POINTS} pts distribuidos (más peso a comunes/raros) y aumenta la chance de Shiny x1.5`)
       } else {
         lines.push(`• ${rodName} activa.`)
       }
@@ -140,7 +146,7 @@ export function useRouteSpawnsFishing(
     const weather = props.weather || 'clear'
     const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
     if (isRainy) {
-      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`)
+      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`) // no-magic
     }
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1

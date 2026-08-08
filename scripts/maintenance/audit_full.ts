@@ -24,7 +24,7 @@ interface AuditTask {
   shell?: boolean;
 }
 
-const TASKS: AuditTask[] = [
+const FULL_AUDIT_TASKS: AuditTask[] = [
   { 
     name: 'Node.js Tests (Vitest)', 
     command: 'npm',
@@ -95,10 +95,10 @@ function runAllAudits() {
   console.log(styleText('bold', '======================================================================\n'));
 
   const results: { name: string; success: boolean; exitCode: number | null }[] = [];
-  const totalTasks = TASKS.length;
+  const totalTasks = FULL_AUDIT_TASKS.length;
 
   for (let i = 0; i < totalTasks; i++) {
-    const task = TASKS[i]!;
+    const task = FULL_AUDIT_TASKS[i]!;
     const stepNum = i + 1;
     const pct = Math.round((stepNum / totalTasks) * 100);
 

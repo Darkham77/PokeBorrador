@@ -2,6 +2,14 @@
 // [PureVue-Ignore-Length]
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
+
+const DIG_TILE_SCALE_IN = 0.9;
+const DIG_TILE_ENTRY_DURATION_SEC = 0.15;
+const DIG_FOSSIL_COUNTER_SCALE = 1.2;
+const DIG_FOSSIL_COUNTER_DURATION_SEC = 0.3;
+const DIG_FOSSIL_TILE_FLASH_DURATION_SEC = 0.2;
+const DIG_OUTCOME_ANIM_DURATION_SEC = 0.5;
+const DIG_PARTICLE_BASE_SCALE_OUT = 0.5;
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -69,6 +77,14 @@ const gameActive = ref(true)
 const feedback = ref('¡Excavá las rocas con cuidado!')
 const isFailed = ref(false)
 
+const ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT = 10
+const ARCHAEOLOGY_RARE_DIFFICULTY_MEDIUM_PCT = 35
+const ARCHAEOLOGY_RARE_DIFFICULTY_HARD_PCT = 75
+
+const ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT = 40
+const ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT = 70
+const ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT = 90
+
 // Initialize Game
 function initGame() {
   // Determine difficulty automatically based on weighted probabilities & Pokemon rarity
@@ -77,14 +93,14 @@ function initGame() {
   let diff: DifficultyKey = 'easy'
   
   if (isRare) {
-    if (randRoll < 10) diff = 'easy'
-    else if (randRoll < 35) diff = 'medium'
-    else if (randRoll < 75) diff = 'hard'
+    if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT) diff = 'easy'
+    else if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_MEDIUM_PCT) diff = 'medium'
+    else if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_HARD_PCT) diff = 'hard'
     else diff = 'expert'
   } else {
-    if (randRoll < 40) diff = 'easy'
-    else if (randRoll < 70) diff = 'medium'
-    else if (randRoll < 90) diff = 'hard'
+    if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT) diff = 'easy'
+    else if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT) diff = 'medium'
+    else if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT) diff = 'hard'
     else diff = 'expert'
   }
   
@@ -171,9 +187,11 @@ function initGame() {
   feedback.value = '¡Excavá las rocas con cuidado!'
 }
 
+const MANHATTAN_MAX_INITIAL_DISTANCE = 999;
+
 // Calculate Manhattan distance to nearest hidden fossil
 function getDistanceToNearestFossil(r: number, c: number): number {
-  let minDistance = 999
+  let minDistance = MANHATTAN_MAX_INITIAL_DISTANCE
   grid.value.forEach(tile => {
     if (tile.isFossil && !tile.isDug) {
       const dist = Math.abs(tile.r - r) + Math.abs(tile.c - c)
@@ -194,27 +212,29 @@ function handleTileClick(tile: Tile) {
     energy.value--
   }
 
+  const GRID_SHAKE_OFFSET_PX = 3
+
   // Click Animation: Shake Grid slightly
   gsap.fromTo('.archaeology-grid', 
-    { x: -3 }, 
-    { x: 3, duration: 0.05, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
+    { x: -GRID_SHAKE_OFFSET_PX }, // magic-ok
+    { x: GRID_SHAKE_OFFSET_PX, duration: 0.05, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } } // magic-ok
   )
 
   // Dig Animation on tile
   const tileEl = document.querySelector(`.tile[data-coord="${tile.r},${tile.c}"]`)
   if (tileEl) {
-    gsap.fromTo(tileEl, { scale: 0.9 }, { scale: 1, duration: 0.15, ease: 'power1.out' })
+    gsap.fromTo(tileEl, { scale: DIG_TILE_SCALE_IN }, { scale: 1, duration: DIG_TILE_ENTRY_DURATION_SEC, ease: 'power1.out' })
     createDustParticles(tileEl)
   }
 
   if (tile.isFossil) {
     fossilsFound.value++
     feedback.value = '¡Encontraste una pieza de fósil!'
-    gsap.fromTo('.energy-counter', { scale: 1.2 }, { scale: 1, duration: 0.3 })
+    gsap.fromTo('.energy-counter', { scale: DIG_FOSSIL_COUNTER_SCALE }, { scale: 1, duration: DIG_FOSSIL_COUNTER_DURATION_SEC })
     
     // Sparkle Animation on hit
     if (tileEl) {
-      gsap.to(tileEl, { backgroundColor: '#fef08a', duration: 0.2, yoyo: true, repeat: 1 })
+      gsap.to(tileEl, { backgroundColor: '#fef08a', duration: DIG_FOSSIL_TILE_FLASH_DURATION_SEC, yoyo: true, repeat: 1 })
     }
 
     if (fossilsFound.value >= totalFossilParts.value) {
@@ -247,7 +267,7 @@ function win() {
   // Confetti / glow animation
   gsap.to('.archaeology-grid', {
     boxShadow: '0 0 40px rgba(234, 179, 8, 0.8)',
-    duration: 0.5
+    duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
   gsap.delayedCall(1.2, () => {
@@ -266,7 +286,7 @@ function fail() {
   gsap.to('.archaeology-grid', {
     opacity: 0.5,
     filter: 'grayscale(1)',
-    duration: 0.5
+    duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
   gsap.delayedCall(1.2, () => {
@@ -282,6 +302,8 @@ function createDustParticles(target: Element) {
   if (!parent) return
 
   for (let i = 0; i < 6; i++) {
+const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
+
     const particle = document.createElement('div')
     particle.className = 'dust-particle'
     particle.style.cssText = `
@@ -289,7 +311,7 @@ function createDustParticles(target: Element) {
       width: 4px;
       height: 4px;
       background: #ca8a04;
-      border-radius: 50%;
+      border-radius: ${DUST_PARTICLE_BORDER_RADIUS_PERCENT}%;
       pointer-events: none;
       left: ${rect.left - parent.getBoundingClientRect().left + rect.width / 2}px;
       top: ${rect.top - parent.getBoundingClientRect().top + rect.height / 2}px;
@@ -297,15 +319,18 @@ function createDustParticles(target: Element) {
     `
     parent.appendChild(particle)
 
+    const DUST_VELOCITY_BASE = 20
+    const DUST_VELOCITY_VARIANCE = 40
+    const DUST_PARTICLE_TOP_OFFSET_PX = 20
     const angle = Math.random() * Math.PI * 2
-    const velocity = 20 + Math.random() * 40
+    const velocity = DUST_VELOCITY_BASE + Math.random() * DUST_VELOCITY_VARIANCE
     
     gsap.to(particle, {
       x: Math.cos(angle) * velocity,
-      y: Math.sin(angle) * velocity - 20, // push up slightly
+      y: Math.sin(angle) * velocity - DUST_PARTICLE_TOP_OFFSET_PX, // push up slightly
       opacity: 0,
-      scale: 0.5,
-      duration: 0.5 + Math.random() * 0.3,
+      scale: DIG_PARTICLE_BASE_SCALE_OUT,
+      duration: DIG_OUTCOME_ANIM_DURATION_SEC + Math.random() * 0.3,
       ease: 'power2.out',
       onComplete: () => particle.remove()
     })

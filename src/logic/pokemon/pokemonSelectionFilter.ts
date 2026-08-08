@@ -81,8 +81,9 @@ export function filterAndSortPokemon(
       valA = pA.obtainedMethod === 'egg' ? 1 : 0
       valB = pB.obtainedMethod === 'egg' ? 1 : 0
     } else {
-      valA = pA.obtainedAt || ((a._source === 'box' ? 1000 : 0) + a.index)
-      valB = pB.obtainedAt || ((b._source === 'box' ? 1000 : 0) + b.index)
+      const BOX_SORT_INDEX_OFFSET = 1000;
+      valA = pA.obtainedAt || ((a._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + a.index)
+      valB = pB.obtainedAt || ((b._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + b.index)
     }
 
     if (valA === valB) {

@@ -10,8 +10,10 @@ import { getPokemonTier } from '../pokemon/tierEngine.ts';
  * Multipliers based on Pokemon Tier (IV sum).
  * High-tier weapons of war cost more to maintain.
  */
+const HEAL_MULTIPLIER_TIER_S_PLUS = 10;
+
 export const HEAL_COST_TIER_MULTIPLIERS: Record<string, number> = {
-  'S+': 10,
+  'S+': HEAL_MULTIPLIER_TIER_S_PLUS,
   'S': 6,
   'A': 4,
   'B': 2.5,

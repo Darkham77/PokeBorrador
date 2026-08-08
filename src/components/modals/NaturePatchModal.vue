@@ -39,11 +39,13 @@ const handleApplyNature = (nature: NatureId) => {
 }
 
 
+const HOVER_SCALE_BTN_ENTER = 1.02
+
 const onBtnEnter = (event: MouseEvent) => {
   const el = event.currentTarget as HTMLElement
   gsap.to(el, {
     y: -4,
-    scale: 1.02,
+    scale: HOVER_SCALE_BTN_ENTER,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderColor: 'rgba(255, 255, 255, 0.25)',
     duration: 0.2,

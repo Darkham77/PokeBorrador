@@ -117,6 +117,10 @@ export const useBuffsStore = defineStore('buffs', () => {
   const activeBuffs = computed(() => {
     const s = gameStore.state
     const list = []
+    const BUFF_DURATION_MIN = 20
+    const LUCKY_EGG_EXP_BOOST_PCT = 50
+    const BUFF_DURATION_30_MIN_MIN = 30
+
     if (s.repelSecs > 0) list.push({ id: 'repel', secs: s.repelSecs, name: 'Repelente', desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'repel') })
     if (s.fishingRodSecs > 0) {
       const type = s.fishingRodType || 'standard'
@@ -125,7 +129,7 @@ export const useBuffsStore = defineStore('buffs', () => {
       const fName = names[type] || 'Caña de pescar'
       const fBudget = budgets[type] || 0
       const descText = type === 'standard' 
-        ? 'Sube mucho la pesca por 20 min. Ver % exacto en el mapa.'
+        ? `Sube mucho la pesca por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
         : `Sube la pesca y bonifica a los Pokémon raros (+${fBudget} pts).` + (type === 'super' ? ' Aumenta chance de Shiny x1.5.' : '')
       list.push({ 
         id: 'fishing-rod', 
@@ -143,7 +147,7 @@ export const useBuffsStore = defineStore('buffs', () => {
       const pName = names[type] || 'Pico de excavación'
       const pBudget = budgets[type] || 0
       const descText = type === 'standard'
-        ? 'Sube la arqueología por 20 min. Ver % exacto en el mapa.'
+        ? `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
         : `Sube la arqueología y bonifica minerales y gemas (+${pBudget} pts).`
       list.push({ 
         id: 'pickaxe', 
@@ -161,7 +165,7 @@ export const useBuffsStore = defineStore('buffs', () => {
       const bName = names[type] || 'Pincel de excavación'
       const bBudget = budgets[type] || 0
       const descText = type === 'standard'
-        ? 'Sube la arqueología por 20 min. Ver % exacto en el mapa.'
+        ? `Sube la arqueología por ${BUFF_DURATION_MIN} min. Ver % exacto en el mapa.`
         : `Sube la arqueología y bonifica fósiles (+${bBudget} pts).`
       list.push({ 
         id: 'brush', 
@@ -174,7 +178,7 @@ export const useBuffsStore = defineStore('buffs', () => {
     }
     if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
     if (s.amuletCoinSecs > 0) list.push({ id: 'amulet', secs: s.amuletCoinSecs, name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'amulet_coin') })
-    if (s.luckyEggSecs > 0) list.push({ id: 'lucky-egg', secs: s.luckyEggSecs, name: '🥚 Huevo Suerte Pequeño', desc: 'Aumenta la EXP ganada en un 50% durante 30 minutos.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'lucky_egg') })
+    if (s.luckyEggSecs > 0) list.push({ id: 'lucky-egg', secs: s.luckyEggSecs, name: '🥚 Huevo Suerte Pequeño', desc: `Aumenta la EXP ganada en un ${LUCKY_EGG_EXP_BOOST_PCT}% durante ${BUFF_DURATION_30_MIN_MIN} minutos.`, icon: getAssetUrl(ASSET_TYPES.ITEM, 'lucky_egg') })
     if (s.safariTicketSecs > 0) list.push({ id: 'safari', secs: s.safariTicketSecs, name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
     if (s.ceruleanTicketSecs > 0) list.push({ id: 'cerulean', secs: s.ceruleanTicketSecs, name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
     if (s.articunoTicketSecs > 0) list.push({ id: 'articuno', secs: s.articunoTicketSecs, name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })

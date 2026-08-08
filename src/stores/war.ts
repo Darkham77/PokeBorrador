@@ -5,7 +5,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
+import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, DAILY_COIN_CAP, WAR_POINTS_PER_COIN, GUARDIAN_DEFEAT_POINTS_MULTIPLIER, FACTION_VICTORY_BONUS_COINS } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
 import type { DominanceInfo } from '@/types/system/stores'
@@ -151,12 +151,11 @@ export const useWarStore = defineStore('war', () => {
     if (!dailyCoins[today]) dailyCoins[today] = 0
     if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
 
-    const DAILY_COIN_CAP = 50 
     if ((dailyCoins[today] ?? 0) >= DAILY_COIN_CAP) return
 
     gameStore.state.warPointsAccumulator += pts
-    if (gameStore.state.warPointsAccumulator >= 10) {
-      const newCoins = Math.floor(gameStore.state.warPointsAccumulator / 10)
+    if (gameStore.state.warPointsAccumulator >= WAR_POINTS_PER_COIN) {
+      const newCoins = Math.floor(gameStore.state.warPointsAccumulator / WAR_POINTS_PER_COIN)
       const allowedCoins = Math.min(newCoins, DAILY_COIN_CAP - (dailyCoins[today] ?? 0))
       
       if (allowedCoins > 0) {
@@ -165,7 +164,7 @@ export const useWarStore = defineStore('war', () => {
         dailyCoins[today] = (dailyCoins[today] ?? 0) + allowedCoins
         uiStore.notify(`¡Ganaste ${allowedCoins} Moneda${allowedCoins > 1 ? 's' : ''} de Guerra!`, '⚡')
       }
-      gameStore.state.warPointsAccumulator %= 10
+      gameStore.state.warPointsAccumulator %= WAR_POINTS_PER_COIN
     }
   }
 
@@ -229,7 +228,7 @@ export const useWarStore = defineStore('war', () => {
     const guardian = getGuardianData(routeId, []) // In real use we pass map list
     if (!guardian) return
 
-    const ptsAwarded = isDefeat ? Math.floor(guardian.pts * 0.7) : guardian.pts
+    const ptsAwarded = isDefeat ? Math.floor(guardian.pts * GUARDIAN_DEFEAT_POINTS_MULTIPLIER) : guardian.pts
 
     const { error } = await gameStore.db.from('guardian_captures').insert({
       capture_date: today,
@@ -388,7 +387,7 @@ export const useWarStore = defineStore('war', () => {
 
       const winningFaction = unionWins > poderWins ? 'union' : poderWins > unionWins ? 'poder' : null
       if (winningFaction && winningFaction === faction.value) {
-        victoryBonus = 50
+        victoryBonus = FACTION_VICTORY_BONUS_COINS
       }
     }
 
@@ -400,7 +399,7 @@ export const useWarStore = defineStore('war', () => {
       await gameStore.save()
 
       uiStore.notify(
-        `¡Recompensa semanal recibida! ⚡+${totalReward} Monedas de Guerra (${milestoneCoins} por hitos${victoryBonus > 0 ? ' + 50 por victoria de facción' : ''}).`,
+        `¡Recompensa semanal recibida! ⚡+${totalReward} Monedas de Guerra (${milestoneCoins} por hitos${victoryBonus > 0 ? ` + ${FACTION_VICTORY_BONUS_COINS} por victoria de facción` : ''}).`,
         '🎁'
       )
     }

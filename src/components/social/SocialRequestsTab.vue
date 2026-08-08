@@ -5,6 +5,12 @@ import { useUIStore } from '@/stores/ui'
 import TrainerCard from './TrainerCard.vue'
 import { gsap } from 'gsap'
 
+const REQUEST_CARD_INITIAL_OPACITY = 0;
+const REQUEST_CARD_INITIAL_X_OFFSET = -20;
+const REQUEST_CARD_INITIAL_SCALE = 0.95;
+const REQUEST_CARD_ANIM_DURATION_SEC = 0.45;
+const REQUEST_CARD_ANIM_STAGGER_SEC = 0.06;
+
 const socialStore = useSocialStore()
 const uiStore = useUIStore()
 const listRef = ref<HTMLElement | null>(null)
@@ -35,13 +41,13 @@ function animateCards() {
       listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
       gsap.from(cards, {
-        opacity: 0,
-        x: -20,
-        scale: 0.95,
-        duration: 0.45,
-        stagger: 0.06,
+        opacity: REQUEST_CARD_INITIAL_OPACITY,
+        x: REQUEST_CARD_INITIAL_X_OFFSET,
+        scale: REQUEST_CARD_INITIAL_SCALE,
+        duration: REQUEST_CARD_ANIM_DURATION_SEC,
+        stagger: REQUEST_CARD_ANIM_STAGGER_SEC,
         ease: 'back.out(1.2)',
-        clearProps: 'all',
+        clearProps: 'opacity,x,scale',
         onComplete: () => {
           listRef.value?.classList.remove('tab-mounting')
         }

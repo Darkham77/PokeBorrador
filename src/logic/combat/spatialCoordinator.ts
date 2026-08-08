@@ -4,39 +4,58 @@
  * Source of truth for all virtual units, scaling, and positioning logic.
  */
 
+const SAFE_ZONE_HEIGHT_PX = 666;
+const VISIBLE_UNITS_Y_PX = 766;
+const MAX_ASPECT_RATIO = 3.0;
+const MIN_ASPECT_RATIO = 0.33;
+
+const VIRTUAL_MAP_WIDTH = 3000;
+const VIRTUAL_MAP_HEIGHT = 3000;
+const SAFE_ZONE_WIDTH_PX = 1000;
+const ACTION_TARGET_X_PX = 1500;
+const VISIBLE_UNITS_X_PX = 1000;
+
+const BASE_ENTITY_SIZE_PX = 300;
+const BASE_ENTITY_SIZE_PLAYER_PX = 300;
+const BASE_ENTITY_SIZE_ENEMY_PX = 200;
+const BASE_BUSH_SIZE_PX = 60;
+const BASE_PREVIEW_SIZE_PX = 120;
+const SHADOW_WIDTH_PX = 10;
+const SHADOW_HEIGHT_PX = 7;
+
 export const WORLD_CONSTANTS = {
   // Virtual World Dimensions
-  MAP_WIDTH: 3000,
-  MAP_HEIGHT: 3000,
+  MAP_WIDTH: VIRTUAL_MAP_WIDTH,
+  MAP_HEIGHT: VIRTUAL_MAP_HEIGHT,
 
   // Action/Safe Zone (Center of the world)
-  SAFE_ZONE_WIDTH: 1000,
-  SAFE_ZONE_HEIGHT: 666,
-  get SAFE_ZONE_X(): number { return (this.MAP_WIDTH - this.SAFE_ZONE_WIDTH) / 2 }, // 1000
-  get SAFE_ZONE_Y(): number { return (this.MAP_HEIGHT - this.SAFE_ZONE_HEIGHT) / 2 }, // 1167
+  SAFE_ZONE_WIDTH: SAFE_ZONE_WIDTH_PX,
+  SAFE_ZONE_HEIGHT: SAFE_ZONE_HEIGHT_PX,
+  get SAFE_ZONE_X(): number { return (this.MAP_WIDTH - this.SAFE_ZONE_WIDTH) / 2 },
+  get SAFE_ZONE_Y(): number { return (this.MAP_HEIGHT - this.SAFE_ZONE_HEIGHT) / 2 },
 
   // Action focus point
-  TARGET_X: 1500,
+  TARGET_X: ACTION_TARGET_X_PX,
   get TARGET_Y(): number {
     // Aligned to bottom: The bottom of the safe zone coincides with the bottom of the visible units
     return (this.SAFE_ZONE_Y + this.SAFE_ZONE_HEIGHT) - (this.VISIBLE_UNITS_Y / 2)
   },
 
   // Camera Constraints
-  VISIBLE_UNITS_X: 1000,
-  VISIBLE_UNITS_Y: 766, // Safe zone height + 100u padding top
-  RATIO_MAX: 3.0,
-  RATIO_MIN: 0.33,
+  VISIBLE_UNITS_X: VISIBLE_UNITS_X_PX,
+  VISIBLE_UNITS_Y: VISIBLE_UNITS_Y_PX,
+  RATIO_MAX: MAX_ASPECT_RATIO,
+  RATIO_MIN: MIN_ASPECT_RATIO,
 
   // Object Scaling Standards
   OBJECT_SCALE: 2,
-  BASE_ENTITY_SIZE: 300,
-  BASE_ENTITY_SIZE_PLAYER: 300,
-  BASE_ENTITY_SIZE_ENEMY: 200,
-  BASE_BUSH_SIZE: 60,
-  BASE_PREVIEW_SIZE: 120,
-  SHADOW_WIDTH: 10,
-  SHADOW_HEIGHT: 7,
+  BASE_ENTITY_SIZE: BASE_ENTITY_SIZE_PX,
+  BASE_ENTITY_SIZE_PLAYER: BASE_ENTITY_SIZE_PLAYER_PX,
+  BASE_ENTITY_SIZE_ENEMY: BASE_ENTITY_SIZE_ENEMY_PX,
+  BASE_BUSH_SIZE: BASE_BUSH_SIZE_PX,
+  BASE_PREVIEW_SIZE: BASE_PREVIEW_SIZE_PX,
+  SHADOW_WIDTH: SHADOW_WIDTH_PX,
+  SHADOW_HEIGHT: SHADOW_HEIGHT_PX,
   
   /** 
    * Default entity size (400px by default) 

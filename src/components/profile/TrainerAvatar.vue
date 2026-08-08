@@ -1,8 +1,28 @@
 <script setup lang="ts">
+/**
+ * TrainerAvatar.vue
+ */
+const GHOST_MIN_OPACITY = 0.78
+const BLINK_RED_PULSE_DUR_SEC = 0.75
+const GHOST_FADE_DURATION_SEC = 1
+const CONTAINER_BORDER_WIDTH_PX = 2
+const INTERSECTION_OBSERVER_THRESHOLD_PCT = 0.05
+const AVATAR_BOX_SHADOW_DIVISOR = 4
+const AVATAR_FONT_SIZE_DIVISOR = 2
+const FACE_WRAPPER_Z_INDEX = 2
+const BORDER_WHITE_OPACITY_LOW = 0.25
+const SHADOW_WHITE_OPACITY_SUBTLE = 0.08
+const SQUARE_FRAME_BORDER_RADIUS_PX = 6
+const GHOST_FADE_INITIAL_OPACITY = 1
+const BORDER_RADIUS_CIRCLE_PCT = '50%'
+const REVERSE_ROTATION_DEG = -360
+const HEX_ALPHA_OPAQUE_SUFFIX = '44';
+const HEX_PARSING_RADIX = 16;
 import { computed, type CSSProperties, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import gsap from 'gsap';
+import { DEFAULT_AVATAR_SIZE_PX, AVATAR_CLASS_SPIN_DURATIONS_SEC, AVATAR_TYPE_SPIN_DURATIONS_SEC, AVATAR_SHADOW_DURATIONS_SEC, FULL_ROTATION_DEG } from '@/logic/constants/animations';
 
 interface Props {
   playerClass?: string | null
@@ -25,7 +45,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   playerClass: null,
   level: 1,
-  size: 40,
+  size: DEFAULT_AVATAR_SIZE_PX,
   avatarStyle: '',
   borderOverride: null,
   gender: 'h',
@@ -78,12 +98,12 @@ const cls = computed(() => {
 
 const borderColor = computed(() => {
   if (props.borderOverride) return props.borderOverride;
-  return 'rgba(255, 255, 255, 0.25)';
+  return `rgba(255, 255, 255, ${BORDER_WHITE_OPACITY_LOW})`;
 });
 
 const shadowColor = computed(() => {
-  if (props.borderOverride) return `${props.borderOverride}44`;
-  return 'rgba(255, 255, 255, 0.08)';
+  if (props.borderOverride) return `${props.borderOverride}${HEX_ALPHA_OPAQUE_SUFFIX}`;
+  return `rgba(255, 255, 255, ${SHADOW_WHITE_OPACITY_SUBTLE})`;
 });
 
 const avatarClass = computed(() => {
@@ -132,12 +152,12 @@ const containerStyles = computed((): CSSProperties => {
     flexShrink: 0,
     boxSizing: 'border-box',
     borderStyle: 'solid',
-    borderWidth: '2px',
+    borderWidth: `${CONTAINER_BORDER_WIDTH_PX}px`,
     background: 'transparent',
     ...(hasFrame.value ? {} : {
-      borderRadius: '50%',
+      borderRadius: BORDER_RADIUS_CIRCLE_PCT,
       borderColor: bColor,
-      boxShadow: `0 0 ${sizePx / 4}px ${sColor}`
+      boxShadow: `0 0 ${sizePx / AVATAR_BOX_SHADOW_DIVISOR}px ${sColor}`
     })
   };
 });
@@ -145,7 +165,7 @@ const containerStyles = computed((): CSSProperties => {
 // Inner face wrapper styles
 const faceStyles = computed((): CSSProperties => {
   const sizePx = props.size;
-  const rad = isSquare.value ? '6px' : '50%';
+  const rad = isSquare.value ? `${SQUARE_FRAME_BORDER_RADIUS_PX}px` : BORDER_RADIUS_CIRCLE_PCT;
   
   const baseStyles: CSSProperties = {
     width: '100%',
@@ -155,8 +175,8 @@ const faceStyles = computed((): CSSProperties => {
     justifyContent: 'center',
     boxSizing: 'border-box',
     borderRadius: rad,
-    zIndex: 2,
-    fontSize: `${sizePx / 2}px`
+    zIndex: FACE_WRAPPER_Z_INDEX,
+    fontSize: `${sizePx / AVATAR_FONT_SIZE_DIVISOR}px`
   };
 
   if (!cls.value) {
@@ -218,30 +238,26 @@ interface SpinConfig {
 }
 
 const SPIN_CONFIGS: Record<string, SpinConfig> = {
-  fire: { duration: 2 },
-  water: { duration: 4 },
-  electric: { duration: 0.4 },
-  psychic: { duration: 3, rotationDir: -360 },
-  dark: { duration: 5 },
-  ghost: { duration: 4 },
-  ice: { duration: 6, rotationDir: -360 },
-  dragon: { duration: 1.8 },
-  legend: { duration: 2 },
-  master: { duration: 5 },
-  cazabichos: { duration: 3 },
-  criador: { duration: 2.5 },
-  rocket: { duration: 1.5 },
-  entrenador: { duration: 2 },
-  union: { duration: 2.5 },
-  poder: { duration: 2.2 },
-  admin: { duration: 1.0 }
+  fire: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.fire! },
+  water: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.water! },
+  electric: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.electric! },
+  psychic: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.psychic!, rotationDir: REVERSE_ROTATION_DEG },
+  dark: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.dark! },
+  ghost: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.ghost! },
+  ice: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.ice!, rotationDir: REVERSE_ROTATION_DEG },
+  dragon: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.dragon! },
+  legend: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.legend! },
+  master: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.master! },
+  cazabichos: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos! },
+  criador: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.criador! },
+  rocket: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.rocket! },
+  entrenador: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.entrenador! },
+  union: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.union! },
+  poder: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.poder! },
+  admin: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.admin! }
 };
 
-const TYPE_SPIN_DURATIONS: Record<string, number> = {
-  normal: 3.5, steel: 3.5, fire: 1.8, water: 2.2, grass: 3.0, electric: 1.2,
-  ice: 2.5, fighting: 2.0, poison: 2.4, ground: 3.5, flying: 2.8, psychic: 1.5,
-  bug: 2.2, rock: 4.0, ghost: 3.2, dragon: 1.6, dark: 2.0, fairy: 2.1
-};
+const TYPE_SPIN_DURATIONS: Record<string, number> = AVATAR_TYPE_SPIN_DURATIONS_SEC;
 
 interface ShadowConfig {
   from: string;
@@ -254,96 +270,92 @@ const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
   fire: {
     from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
     to: '0 0 0 3px #ff8800, 0 0 24px rgba(255, 68, 0, 0.8), inset 0 0 12px rgba(255, 68, 0, 0.4)',
-    duration: 1
+    duration: AVATAR_SHADOW_DURATIONS_SEC.fire!
   },
   water: {
     from: '0 0 0 3px #0088ff, 0 0 10px rgba(0, 136, 255, 0.35), inset 0 0 5px rgba(0, 136, 255, 0.15)',
     to: '0 0 0 3px #44eeff, 0 0 20px rgba(0, 136, 255, 0.7), inset 0 0 10px rgba(0, 136, 255, 0.3)',
-    duration: 1.5
+    duration: AVATAR_SHADOW_DURATIONS_SEC.water!
   },
   electric: {
     from: '0 0 0 3px #ffe040, 0 0 14px rgba(255, 204, 0, 0.5)',
     to: '0 0 0 3px #ffffff, 0 0 20px rgba(255, 238, 0, 0.58)',
-    duration: 0.1,
+    duration: AVATAR_SHADOW_DURATIONS_SEC.electric!,
     steps: true
   },
   psychic: {
     from: '0 0 0 3px #cc00ff, 0 0 10px rgba(204, 0, 255, 0.35), inset 0 0 5px rgba(204, 0, 255, 0.15)',
     to: '0 0 0 3px #ff44ff, 0 0 22px rgba(204, 0, 255, 0.7), inset 0 0 10px rgba(204, 0, 255, 0.3)',
-    duration: 1.25
+    duration: AVATAR_SHADOW_DURATIONS_SEC.psychic!
   },
   dark: {
     from: '0 0 0 3px #7700bb, 0 0 10px rgba(119, 0, 187, 0.35), inset 0 0 5px rgba(119, 0, 187, 0.15)',
     to: '0 0 0 3px #9900cc, 0 0 22px rgba(119, 0, 187, 0.7), inset 0 0 10px rgba(119, 0, 187, 0.3)',
-    duration: 2
+    duration: AVATAR_SHADOW_DURATIONS_SEC.dark!
   },
   ghost: {
     from: '0 0 0 3px #8855ff, 0 0 10px rgba(136, 85, 255, 0.35), inset 0 0 5px rgba(136, 85, 255, 0.15)',
     to: '0 0 0 3px #cc88ff, 0 0 22px rgba(136, 85, 255, 0.7), inset 0 0 10px rgba(136, 85, 255, 0.3)',
-    duration: 1.25
+    duration: AVATAR_SHADOW_DURATIONS_SEC.ghost!
   },
   ice: {
     from: '0 0 0 3px #88eeff, 0 0 10px rgba(136, 238, 255, 0.35), inset 0 0 5px rgba(136, 238, 255, 0.15)',
     to: '0 0 0 3px #ffffff, 0 0 20px rgba(136, 238, 255, 0.75), inset 0 0 10px rgba(136, 238, 255, 0.3)',
-    duration: 1.5
+    duration: AVATAR_SHADOW_DURATIONS_SEC.ice!
   },
   dragon: {
     from: '0 0 0 3px #4466ff, 0 0 10px rgba(68, 102, 255, 0.35), inset 0 0 5px rgba(68, 102, 255, 0.15)',
     to: '0 0 0 3px #ff4400, 0 0 22px rgba(68, 102, 255, 0.7), inset 0 0 10px rgba(68, 102, 255, 0.3)',
-    duration: 1
+    duration: AVATAR_SHADOW_DURATIONS_SEC.dragon!
   },
   legend: {
     from: '0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5)',
     to: '0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px rgba(255, 136, 0, 0.25)',
-    duration: 1
+    duration: AVATAR_SHADOW_DURATIONS_SEC.legend!
   },
   master: {
     from: '0 0 0 3px #aaaaaa, 0 0 10px rgba(170, 170, 170, 0.3), inset 0 0 5px rgba(170, 170, 170, 0.15)',
     to: '0 0 0 3px #ffffff, 0 0 22px rgba(255, 255, 255, 0.65), inset 0 0 10px rgba(255, 255, 255, 0.3)',
-    duration: 1.5
+    duration: AVATAR_SHADOW_DURATIONS_SEC.master!
   },
   cazabichos: {
     from: '0 0 0 3px #22c55e, 0 0 10px rgba(34, 197, 94, 0.35), inset 0 0 5px rgba(34, 197, 94, 0.15)',
     to: '0 0 0 3px #4ade80, 0 0 22px rgba(34, 197, 94, 0.7), inset 0 0 10px rgba(34, 197, 94, 0.3)',
-    duration: 1.5
+    duration: AVATAR_SHADOW_DURATIONS_SEC.cazabichos!
   },
   criador: {
     from: '0 0 0 3px #a855f7, 0 0 10px rgba(168, 85, 247, 0.35), inset 0 0 5px rgba(168, 85, 247, 0.15)',
     to: '0 0 0 3px #c084fc, 0 0 22px rgba(168, 85, 247, 0.7), inset 0 0 10px rgba(168, 85, 247, 0.3)',
-    duration: 1.25
+    duration: AVATAR_SHADOW_DURATIONS_SEC.criador!
   },
   rocket: {
     from: '0 0 0 3px #ef4444, 0 0 10px rgba(239, 68, 68, 0.35), inset 0 0 5px rgba(239, 68, 68, 0.15)',
     to: '0 0 0 3px #b91c1c, 0 0 22px rgba(239, 68, 68, 0.7), inset 0 0 10px rgba(239, 68, 68, 0.3)',
-    duration: 0.75
+    duration: AVATAR_SHADOW_DURATIONS_SEC.rocket!
   },
   entrenador: {
     from: '0 0 0 3px #3b82f6, 0 0 10px rgba(59, 130, 246, 0.35), inset 0 0 5px rgba(59, 130, 246, 0.15)',
     to: '0 0 0 3px #60a5fa, 0 0 22px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(59, 130, 246, 0.3)',
-    duration: 1
+    duration: AVATAR_SHADOW_DURATIONS_SEC.entrenador!
   },
   union: {
     from: '0 0 0 3px #1e40af, 0 0 10px rgba(30, 64, 175, 0.35), inset 0 0 5px rgba(30, 64, 175, 0.15)',
     to: '0 0 0 3px #fbbf24, 0 0 22px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.25)',
-    duration: 1.25
+    duration: AVATAR_SHADOW_DURATIONS_SEC.union!
   },
   poder: {
     from: '0 0 0 3px #991b1b, 0 0 10px rgba(153, 27, 27, 0.35), inset 0 0 5px rgba(153, 27, 27, 0.15)',
     to: '0 0 0 3px #f97316, 0 0 22px rgba(249, 115, 22, 0.6), inset 0 0 10px rgba(249, 115, 22, 0.25)',
-    duration: 1.1
+    duration: AVATAR_SHADOW_DURATIONS_SEC.poder!
   },
   admin: {
     from: '0 0 0 3px #ef4444, 0 0 12px rgba(239, 68, 68, 0.45), inset 0 0 6px rgba(239, 68, 68, 0.2)',
     to: '0 0 0 3px #facc15, 0 0 28px rgba(239, 68, 68, 0.85), inset 0 0 14px rgba(239, 68, 68, 0.4)',
-    duration: 0.75
+    duration: AVATAR_SHADOW_DURATIONS_SEC.admin!
   }
 };
 
-const TYPE_SHADOW_DURATIONS: Record<string, number> = {
-  normal: 1.75, steel: 1.75, fire: 0.9, water: 1.1, grass: 1.5, electric: 0.6,
-  ice: 1.25, fighting: 1.0, poison: 1.2, ground: 1.75, flying: 1.4, psychic: 0.75,
-  bug: 1.1, rock: 2.0, ghost: 1.6, dragon: 0.8, dark: 1.0, fairy: 1.05
-};
+const TYPE_SHADOW_DURATIONS: Record<string, number> = AVATAR_SHADOW_DURATIONS_SEC;
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -355,7 +367,7 @@ const observer = new IntersectionObserver((entries) => {
       }
     }
   });
-}, { threshold: 0.05 });
+}, { threshold: INTERSECTION_OBSERVER_THRESHOLD_PCT });
 
 function cleanAnimations() {
   if (containerRef.value) {
@@ -391,8 +403,8 @@ function initAnimations() {
 
   // 1. Frame Background Rotation (for Rounds, squares do not spin or pulse frame elements)
   if (frameRef.value && !isSquare.value) {
-    let spinDuration = 3;
-    let rotationDir = 360;
+    let spinDuration = AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!;
+    let rotationDir = FULL_ROTATION_DEG;
 
     const matchedSpinKey = Object.keys(SPIN_CONFIGS).find(k => cleanStyle.includes(k));
     if (matchedSpinKey) {
@@ -438,8 +450,8 @@ function initAnimations() {
 
   if (cleanStyle.includes('ghost')) {
     activeTimeline.fromTo(containerRef.value,
-      { opacity: 1 },
-      { opacity: 0.78, duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+      { opacity: GHOST_FADE_INITIAL_OPACITY },
+      { opacity: GHOST_MIN_OPACITY, duration: GHOST_FADE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' },
       0
     );
   }
@@ -448,11 +460,11 @@ function initAnimations() {
     shadowAnim = {
       from: '0 0 5px var(--red)',
       to: '0 0 15px var(--red)',
-      duration: 0.75
+      duration: BLINK_RED_PULSE_DUR_SEC
     };
     activeTimeline.fromTo(containerRef.value,
       { borderColor: 'var(--red)' },
-      { borderColor: 'var(--red-light)', duration: 0.75, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+      { borderColor: 'var(--red-light)', duration: BLINK_RED_PULSE_DUR_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' },
       0
     );
   }
@@ -467,13 +479,15 @@ function initAnimations() {
   }
 }
 
+const DEFAULT_WHITE_RGB_STRING = '255, 255, 255';
+
 function hexToRgb(hex: string): string {
   const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
   const fullHex = hex.replace(shorthandRegex, (_, r: string, g: string, b: string) => r + r + g + g + b + b);
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
   return result ? 
-    `${parseInt(result[1]!, 16)}, ${parseInt(result[2]!, 16)}, ${parseInt(result[3]!, 16)}` : 
-    '255, 255, 255';
+    `${parseInt(result[1]!, HEX_PARSING_RADIX)}, ${parseInt(result[2]!, HEX_PARSING_RADIX)}, ${parseInt(result[3]!, HEX_PARSING_RADIX)}` : 
+    DEFAULT_WHITE_RGB_STRING;
 }
 
 onMounted(() => {

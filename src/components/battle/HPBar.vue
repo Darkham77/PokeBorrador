@@ -8,14 +8,16 @@ interface Props {
   hp: number
   maxHp: number
   level: number
-  exp: number
-  expNeeded: number
+  exp?: number
+  expNeeded?: number
   isPlayer?: boolean
   isScrambled?: boolean
   pokemonUid?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  exp: 0,
+  expNeeded: 100,
   isPlayer: false,
   isScrambled: false,
   pokemonUid: null
@@ -68,10 +70,13 @@ watch(() => props.exp, (newExp) => {
   })
 })
 
+const HP_PCT_GREEN_THRESHOLD = 50
+const HP_PCT_YELLOW_THRESHOLD = 25
+
 const getHpPct = (cur: number, max: number) => (cur / max) * 100
 const getHpClass = (pct: number) => {
-  if (pct > 50) return 'hp-high'
-  if (pct > 25) return 'hp-mid'
+  if (pct > HP_PCT_GREEN_THRESHOLD) return 'hp-high'
+  if (pct > HP_PCT_YELLOW_THRESHOLD) return 'hp-mid'
   return 'hp-low'
 }
 </script>

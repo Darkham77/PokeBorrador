@@ -6,6 +6,8 @@ import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 
 import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
 
+const SWITCH_PAUSE_DELAY_MS = 400;
+
 let isExecutingSwitch = false
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
@@ -88,7 +90,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   playerStages.value = resetPlayerStages(playerStages.value)
   
   addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-  await sleep(400)
+  await sleep(SWITCH_PAUSE_DELAY_MS)
 
   applyEntryHazards(newPoke, playerStages.value, addLog)
   

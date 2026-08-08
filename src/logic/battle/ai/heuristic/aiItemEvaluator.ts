@@ -1,6 +1,12 @@
 import type { Pokemon } from '../../../../types/pokemon/pokemon.ts'
 import type { BattleContext } from '../../../../types/battle/battleContext.ts'
 
+const REVIVE_MIN_HEALTH_RATIO = 0.5
+const AI_HEAL_TRIGGER_HP_RATIO = 0.25
+const HYPER_POTION_HEAL_AMOUNT = 200
+const SUPER_POTION_HEAL_AMOUNT = 50
+const POTION_HEAL_AMOUNT = 20
+
 export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promise<boolean> {
   const battleState = ctx.activeBattle.value
   if (!battleState?.enemyInventory) return false
@@ -27,7 +33,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
 
   // 1. Revive check
   const fainted = (battleState.enemyTeam ?? []).filter((poke): poke is Pokemon => !!poke && poke.hp <= 0)
-  if (fainted.length > 0 && e.hp >= e.maxHp * 0.5) {
+  if (fainted.length > 0 && e.hp >= e.maxHp * REVIVE_MIN_HEALTH_RATIO) {
     if (enemyInventory['revivemax'] && enemyInventory['revivemax'] > 0) {
       const target = fainted[0]!
       target.hp = target.maxHp
@@ -40,7 +46,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
     }
     if (enemyInventory['revive'] && enemyInventory['revive'] > 0) {
       const target = fainted[0]!
-      target.hp = Math.floor(target.maxHp * 0.5)
+      target.hp = Math.floor(target.maxHp * REVIVE_MIN_HEALTH_RATIO)
       target.status = ''
       if (--enemyInventory['revive'] <= 0) delete enemyInventory['revive']
       ctx.addLog(`¡${npcName} usó Revivir en ${target.name}!`, 'log-enemy', 'enemy_trainer')
@@ -86,14 +92,14 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
   }
 
   // 3. HP check
-  if (e.hp < e.maxHp * 0.25) {
+  if (e.hp < e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) {
     type HealItem = [string, string, number | 'full']
     const healItems: HealItem[] = [
       ['fullrestore', 'Restaurar Todo', 'full'],
       ['maxpotion', 'Poción Máxima', 'full'],
-      ['hyperpotion', 'Hiper Poción', 200],
-      ['superpotion', 'Súper Poción', 50],
-      ['potion', 'Poción', 20]
+      ['hyperpotion', 'Hiper Poción', HYPER_POTION_HEAL_AMOUNT],
+      ['superpotion', 'Súper Poción', SUPER_POTION_HEAL_AMOUNT],
+      ['potion', 'Poción', POTION_HEAL_AMOUNT]
     ]
     for (const [itemId, itemName, amount] of healItems) {
       if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue

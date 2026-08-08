@@ -23,6 +23,18 @@ const needRefresh = ref(false)
 const isUpdating = ref(false)
 const isOutdatedClient = ref(false)
 const progress = ref(0)
+
+const PROGRESS_STAGE_START_PERCENT = 10;
+const PROGRESS_STAGE_LOGOUT_PERCENT = 40;
+const PROGRESS_STAGE_APPLY_PERCENT = 80;
+
+const UPDATE_PROGRESS_STAGES = {
+  START: PROGRESS_STAGE_START_PERCENT,
+  LOGOUT: PROGRESS_STAGE_LOGOUT_PERCENT,
+  APPLY: PROGRESS_STAGE_APPLY_PERCENT
+} as const;
+const UPDATE_CHECK_TIMEOUT_MS = 1000;
+const PROGRESS_COMPLETE_PERCENT = 100;
 const progressText = ref('')
 
 const updateServiceWorker = registerSW({
@@ -93,12 +105,12 @@ export function usePWA() {
   const handleUpdate = async (options?: { forceNoSave?: boolean }) => {
     if (isUpdating.value) return
     isUpdating.value = true
-    progress.value = 10
+    progress.value = UPDATE_PROGRESS_STAGES.START
     progressText.value = 'Iniciando...'
 
     // If the game is loaded and ready, we trigger a safe logout to clean session state before reload.
     if (authStore.user && gameStore.isReady && !options?.forceNoSave) {
-      progress.value = 40
+      progress.value = UPDATE_PROGRESS_STAGES.LOGOUT
       progressText.value = 'Cerrando sesión de forma segura...'
       try {
         if (authStore.logout) {
@@ -109,7 +121,7 @@ export function usePWA() {
       }
     }
 
-    progress.value = 80
+    progress.value = UPDATE_PROGRESS_STAGES.APPLY
     progressText.value = 'Aplicando actualización...'
 
     const forceCacheBustingReload = async () => {
@@ -156,8 +168,10 @@ export function usePWA() {
       }
     }
 
+const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
+
     // Fail-safe: force physical reload if SW doesn't reload the page in 3.5 seconds
-    gsap.delayedCall(3.5, () => {
+    gsap.delayedCall(SW_UPDATE_FAILSAFE_TIMEOUT_SEC, () => {
       logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
       forceCacheBustingReload()
     })
@@ -217,7 +231,7 @@ export function usePWA() {
             try {
               await registration.update()
               // Esperar un momento a ver si se detecta/instala
-              await new Promise((r) => setTimeout(r, 1000))
+              await new Promise((r) => setTimeout(r, UPDATE_CHECK_TIMEOUT_MS))
               const waitingWorker = registration.waiting
               if (waitingWorker) {
                 logger.info('PWA', 'Nuevo Service Worker encontrado y listo tras update. Activando...')
@@ -242,7 +256,7 @@ export function usePWA() {
         }
       }
 
-      progress.value = 100
+      progress.value = PROGRESS_COMPLETE_PERCENT_100
       progressText.value = 'Reiniciando...'
       await forceCacheBustingReload()
     } catch (e) {

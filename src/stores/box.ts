@@ -3,8 +3,8 @@ import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
+import { BLACK_MARKET_CRIMINALITY_PER_SALE, BOX_BASE_BUY_COST, BOX_ADVANCED_BUY_COST } from '@/logic/constants/gameplay'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
@@ -122,7 +122,7 @@ export const useBoxStore = defineStore('box', () => {
 
     const classStore = usePlayerClassStore()
     if (soldCount > 0) {
-      classStore.addCriminality(soldCount * 10)
+      classStore.addCriminality(soldCount * BLACK_MARKET_CRIMINALITY_PER_SALE)
     }
     
     boxRocketMode.value = false
@@ -203,10 +203,10 @@ export const useBoxStore = defineStore('box', () => {
 
   function getBoxBuyCost() {
     const count = gameStore.state.boxCount || 4
-    if (count < 4) return 500000
-    if (count === 4) return 500000
-    if (count === 5) return 1000000
-    return 1000000 * Math.pow(2, count - 5)
+    if (count < 4) return BOX_BASE_BUY_COST
+    if (count === 4) return BOX_BASE_BUY_COST
+    if (count === 5) return BOX_ADVANCED_BUY_COST
+    return BOX_ADVANCED_BUY_COST * Math.pow(2, count - 5)
   }
 
   function buyNewBox() {

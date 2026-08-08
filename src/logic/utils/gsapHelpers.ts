@@ -36,7 +36,8 @@ export const createTimeline = (vars?: gsap.TimelineVars) => {
  * Responds to gsap.globalTimeline.timeScale().
  */
 export const gsapSleep = (ms: number): Promise<void> => {
+  const MS_PER_SECOND = 1000
   return new Promise((resolve) => {
-    gsap.delayedCall(ms / 1000, resolve)
+    gsap.delayedCall(ms / MS_PER_SECOND, resolve)
   })
 }

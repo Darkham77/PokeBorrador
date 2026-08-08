@@ -1,10 +1,46 @@
 
+const MIST_ACCURACY_PENALTY_PCT = 0.8
+const FOG_ACCURACY_PENALTY_PCT = 0.6
+const WEATHER_PENALIZED_ACCURACY_TEXT = 'Penalizado por Clima Soleado (Precisión 50%)'
+const WEATHER_ADVERSE_PENALTY_TEXT = 'Penalizado por clima adverso (0.5x y requiere carga)'
+const WEATHER_BALL_BOOST_TEXT = 'Tipo y potencia adaptados al clima (100 BP).'
+const WEATHER_RAIN_PENALTY_TEXT = 'Penalizado por Lluvia (0.5x)'
+const WEATHER_SUN_BOOST_TEXT = 'Potenciado por Sol (1.5x)'
+const WEATHER_SUN_PENALTY_TEXT = 'Penalizado por Sol (0.5x)'
+const WEATHER_RAIN_BOOST_TEXT = 'Potenciado por Lluvia (1.5x)'
+const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2
+const SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER = 0.5
+const STAGE_MATH_BASE_ACCURACY = 3
+const STAGE_MATH_BASE_REGULAR = 2
+/** Pokémon Showdown acc/eva stage base multiplier (shared for net stage calc) */
+const STAGE_MATH_BASE = 3
+/** Pokémon Showdown stat stage bounds: stages range from -6 to +6 */
+const STAGE_MIN_BOUND = -6
+const STAGE_MAX_BOUND = 6
+const THICK_FAT_REDUCTION_MULTIPLIER = 0.5
+const STAGE_PRECISION_LIMIT = 100
+const STAGE_PRECISION_FULL = 1000
+const LOW_HP_THIRD_DIVISOR = 3
+const BASE_POWER_MINIMAL_BOUND = 1
+const DEFAULT_WEATHER_NEUTRAL_MULTIPLIER = 1
+const STAGE_PRECISION_SUN_PENALTY = 50
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry';
 import { type PurePokemon, type PureMove } from '@/logic/battle/battleMath';
 import { SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
 import type { Move, MoveEffectBoosts, ShowdownBoostStatKey, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { ParsedStatusEffectInfo, TooltipStageStatId, TooltipStageStatName } from '@/types/battle/tooltip';
 import type { PokemonType } from '@/data/battle/types';
+import {
+  STAB_STANDARD_MULTIPLIER,
+  STAB_ADAPTABILITY_MULTIPLIER,
+  LOW_HP_ABILITY_MULTIPLIER,
+  TECHNICIAN_POWER_CAP,
+  SAND_FORCE_MULTIPLIER,
+  DEFAULT_CRIT_RATE,
+  SCOPE_LENS_CRIT_RATE,
+  FOCUS_ENERGY_CRIT_RATE,
+  DEFAULT_ACCURACY_BASE_STAT
+} from '@/logic/constants/gameplay';
 
 /**
  * Gets modifier info for a move based on weather and cycle.
@@ -25,7 +61,7 @@ export function calculateMoveModifierInfo(
 
   if (moveId === 'thunder' || moveId === 'hurricane') {
     const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
-    if (isSunny) return { type: 'penalized', text: 'Penalizado por Clima Soleado (Precisión 50%)' };
+    if (isSunny) return { type: 'penalized', text: WEATHER_PENALIZED_ACCURACY_TEXT };
     if (isRaining || isThunderstorm) return { type: 'boosted', text: `Potenciado por ${isThunderstorm ? 'Tormenta Eléctrica' : 'Lluvia'} (¡No falla!)` };
   }
 
@@ -36,32 +72,32 @@ export function calculateMoveModifierInfo(
   // Charging Moves
   if (moveId === 'solarbeam' || moveId === 'solarblade') {
     if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x y requiere carga)' };
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
   }
 
   // Weather Ball
   if (moveId === 'weatherball') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Tipo y potencia adaptados al clima (100 BP).' };
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: WEATHER_BALL_BOOST_TEXT };
   }
 
   // General Accuracy Warning (Fog)
   if (mechWeather === WEATHER_MECHANICAL.FOG) {
     const isMist = weather?.toLowerCase() === 'mist';
     const label = isMist ? 'Bruma' : 'Niebla';
-    const penalty = isMist ? '80%' : '60%' ;
-    return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` };
+    const penalty = isMist ? '80%' : '60%' ; // no-magic
+    return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` }; // no-magic
   }
 
   if (m.cat === 'status') return null;
 
   // Elemental Multipliers
   if (m.type === 'fire') {
-    if (isRaining) return { type: 'penalized', text: 'Penalizado por Lluvia (0.5x)' };
-    if (isSunny) return { type: 'boosted', text: 'Potenciado por Sol (1.5x)' };
+    if (isRaining) return { type: 'penalized', text: WEATHER_RAIN_PENALTY_TEXT };
+    if (isSunny) return { type: 'boosted', text: WEATHER_SUN_BOOST_TEXT };
   }
   if (m.type === 'water') {
-    if (isSunny) return { type: 'penalized', text: 'Penalizado por Sol (0.5x)' };
-    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia (1.5x)' };
+    if (isSunny) return { type: 'penalized', text: WEATHER_SUN_PENALTY_TEXT };
+    if (isRaining) return { type: 'boosted', text: WEATHER_RAIN_BOOST_TEXT };
   }
   return null;
 }
@@ -85,23 +121,23 @@ export function calculateMovePower(
   if (basePower > 0) {
     // STAB
     if (moveType === attacker.type?.toLowerCase() || moveType === attacker.type2?.toLowerCase()) {
-      const stab = attacker.ability === 'adaptability' ? 2.0 : 1.5;
+      const stab = attacker.ability === 'adaptability' ? STAB_ADAPTABILITY_MULTIPLIER : STAB_STANDARD_MULTIPLIER;
       powerList.push({ label: `STAB (${move.type})`, mult: stab });
       currentPower *= stab;
     }
 
     // Weather
     if (weather && weather.turns !== 0) {
-      let weatherMult = 1;
+      let weatherMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
       if (mechWeather === WEATHER_MECHANICAL.SUN) {
-        if (moveType === 'fire') weatherMult = 1.5;
-        if (moveType === 'water') weatherMult = 0.5;
+        if (moveType === 'fire') weatherMult = STAB_STANDARD_MULTIPLIER;
+        if (moveType === 'water') weatherMult = SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
       } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
-        if (moveType === 'water') weatherMult = 1.5;
-        if (moveType === 'fire') weatherMult = 0.5;
+        if (moveType === 'water') weatherMult = STAB_STANDARD_MULTIPLIER;
+        if (moveType === 'fire') weatherMult = SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
       }
 
-      if (weatherMult !== 1) {
+      if (weatherMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
         powerList.push({ label: `Clima (${weather.type})`, mult: weatherMult });
         currentPower *= weatherMult;
       }
@@ -112,38 +148,38 @@ export function calculateMovePower(
       const isSun = mechWeather === WEATHER_MECHANICAL.SUN;
       const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR;
       if (!isSun && !isClear) {
-        powerList.push({ label: 'Rayo Solar Clima', mult: 0.5 });
-        currentPower *= 0.5;
+        powerList.push({ label: 'Rayo Solar Clima', mult: SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER });
+        currentPower *= SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
       }
     }
 
 
     // Attacker Ability
-    let abilMult = 1;
-    const isLowHp = (attacker.hp ?? 0) <= ((attacker.maxHp ?? 1) / 3);
+    let abilMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
+    const isLowHp = (attacker.hp ?? 0) <= ((attacker.maxHp ?? 1) / LOW_HP_THIRD_DIVISOR);
     if (isLowHp) {
-      if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = 1.5;
-      if (attacker.ability === 'torrent' && moveType === 'water') abilMult = 1.5;
-      if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = 1.5;
-      if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = 1.5;
+      if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = LOW_HP_ABILITY_MULTIPLIER;
+      if (attacker.ability === 'torrent' && moveType === 'water') abilMult = LOW_HP_ABILITY_MULTIPLIER;
+      if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = LOW_HP_ABILITY_MULTIPLIER;
+      if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = LOW_HP_ABILITY_MULTIPLIER;
     }
-    if (attacker.ability === 'technician' && basePower <= 60) {
-      abilMult *= 1.5;
+    if (attacker.ability === 'technician' && basePower <= TECHNICIAN_POWER_CAP) {
+      abilMult *= LOW_HP_ABILITY_MULTIPLIER;
     }
     if (weather && weather.turns !== 0 && attacker.ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
       if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
-        abilMult *= 1.3;
+        abilMult *= SAND_FORCE_MULTIPLIER;
       }
     }
-    if (abilMult !== 1) {
+    if (abilMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
       powerList.push({ label: `Habilidad (${attacker.ability})`, mult: abilMult });
       currentPower *= abilMult;
     }
 
     // Defender Ability
     if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
-      powerList.push({ label: 'Habilidad Rival (Sebo)', mult: 0.5 });
-      currentPower *= 0.5;
+      powerList.push({ label: 'Habilidad Rival (Sebo)', mult: THICK_FAT_REDUCTION_MULTIPLIER });
+      currentPower *= THICK_FAT_REDUCTION_MULTIPLIER;
     }
 
     // Held Item
@@ -160,25 +196,25 @@ export function calculateMovePower(
         silver_powder: 'bug',
         poison_barb: 'poison'
       };
-      let itemMult = 1;
-      if (typeBoosters[h] === moveType) itemMult = 1.2;
+      let itemMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
+      if (typeBoosters[h] === moveType) itemMult = HELD_ITEM_TYPE_BOOST_MULTIPLIER;
       
       if (h === 'choiceband') {
         if (move.cat === 'physical') {
-          itemMult = 1.5;
+          itemMult = STAB_STANDARD_MULTIPLIER;
         } else {
-          powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: 1.0 });
+          powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
         }
       }
 
-      if (itemMult !== 1) {
+      if (itemMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
         powerList.push({ label: `Objeto (${h})`, mult: itemMult });
         currentPower *= itemMult;
       }
     }
   }
 
-  const finalPower = Math.max(1, Math.round(currentPower));
+  const finalPower = Math.max(BASE_POWER_MINIMAL_BOUND, Math.round(currentPower));
   return {
     base: basePower,
     final: finalPower,
@@ -202,48 +238,51 @@ export function calculateMoveAccuracy(
   let currentAcc = baseAcc;
   const accList: { label: string; mult: number | string }[] = [];
 
-  if (baseAcc > 0 && baseAcc < 1000) {
+  if (baseAcc > 0 && baseAcc < STAGE_PRECISION_FULL) {
     const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN;
     const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN;
     const isThunderstorm = weather?.type === 'thunderstorm';
 
     if ((isRainActive || isThunderstorm) && (move.id === 'thunder' || move.id === 'hurricane')) {
-      currentAcc = 100;
+      currentAcc = STAGE_PRECISION_LIMIT;
       accList.push({ label: 'Lluvia (¡No falla!)', mult: '100%' });
     } else if (isSunActive && (move.id === 'thunder' || move.id === 'hurricane')) {
-      currentAcc = 50;
-      accList.push({ label: 'Sol (Precisión 50%)', mult: '0.5' });
+      currentAcc = STAGE_PRECISION_SUN_PENALTY;
+      accList.push({ label: 'Sol (Precisión 50%)', mult: '0.5' }); // no-magic
     } else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && move.id === 'blizzard') {
-      currentAcc = 100;
+      currentAcc = STAGE_PRECISION_LIMIT;
       accList.push({ label: 'Nieve (¡No falla!)', mult: '100%' });
     } else if (mechWeather === WEATHER_MECHANICAL.FOG) {
       const isMist = weather?.type === "mist" || weather?.type === "mist_visual";
-      const factor = isMist ? 0.8 : 0.6;
+      const factor = isMist ? MIST_ACCURACY_PENALTY_PCT : FOG_ACCURACY_PENALTY_PCT;
       currentAcc = Math.floor(baseAcc * factor);
       accList.push({ label: `Niebla/Bruma`, mult: factor });
     }
 
-    const netStage = Math.max(-6, Math.min(6, accStage - evaStage));
+    const netStage = Math.max(STAGE_MIN_BOUND, Math.min(STAGE_MAX_BOUND, accStage - evaStage));
     if (netStage !== 0) {
-      let factor = 1;
+      let factor = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
       if (netStage >= 0) {
-        factor = (3 + netStage) / 3;
+        factor = (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE;
       } else {
-        factor = 3 / (3 - netStage);
+        factor = STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
       }
       accList.push({ label: `Modificador Rango (${netStage > 0 ? '+' : ''}${netStage})`, mult: Number(factor.toFixed(3)) });
       currentAcc *= factor;
     }
   }
 
-  const finalAccuracy = Math.max(0, Math.min(100, Math.round(currentAcc)));
+  const finalAccuracy = Math.max(0, Math.min(STAGE_PRECISION_LIMIT, Math.round(currentAcc)));
   return {
     base: baseAcc,
-    final: baseAcc === 1000 ? 1000 : finalAccuracy,
+    final: baseAcc === STAGE_PRECISION_FULL ? STAGE_PRECISION_FULL : finalAccuracy,
     list: accList,
-    class: baseAcc === 1000 ? '' : (finalAccuracy > baseAcc ? 'boosted' : (finalAccuracy < baseAcc ? 'penalized' : ''))
+    class: baseAcc === STAGE_PRECISION_FULL ? '' : (finalAccuracy > baseAcc ? 'boosted' : (finalAccuracy < baseAcc ? 'penalized' : ''))
   };
 }
+
+const CRIT_REDUCTION_ZERO = 0;
+const CRIT_PERCENT_SCALE = 100;
 
 /**
  * Calculates crit chance.
@@ -252,15 +291,15 @@ export function calculateCritChance(
   attacker: PurePokemon,
   defender: PurePokemon | null
 ): { value: string; class: string } {
-  let critRate = 0.0625;
-  if (attacker.heldItem === 'scopelens') critRate = 0.12;
-  if (attacker.focusEnergy) critRate = 0.25;
+  let critRate = DEFAULT_CRIT_RATE;
+  if (attacker.heldItem === 'scopelens') critRate = SCOPE_LENS_CRIT_RATE;
+  if (attacker.focusEnergy) critRate = FOCUS_ENERGY_CRIT_RATE;
   if (defender && (defender.ability === 'shellarmor' || defender.ability === 'battlearmor')) {
-    critRate = 0;
+    critRate = CRIT_REDUCTION_ZERO;
   }
 
-  const critVal = (critRate * 100).toFixed(2).replace('.00', '');
-  const critClass = critRate > 0.0625 ? 'boosted' : (critRate === 0 ? 'penalized' : 'neutral');
+  const critVal = (critRate * CRIT_PERCENT_SCALE).toFixed(2).replace('.00', '');
+  const critClass = critRate > DEFAULT_CRIT_RATE ? 'boosted' : (critRate === CRIT_REDUCTION_ZERO ? 'penalized' : 'neutral');
 
   return {
     value: critVal,
@@ -315,7 +354,7 @@ const TOOLTIP_STAGE_STAT_NAMES = {
   all: 'Todos los Stats',
 } as const satisfies Record<TooltipStageStatId, TooltipStageStatName>;
 
-const TOOLTIP_CONDITION_DETAILS = {
+const TOOLTIP_CONDITION_DETAILS = { // no-magic
   psn: {
     label: 'Envenenamiento',
     effect: 'Estado Alterado (PSN)',
@@ -380,17 +419,17 @@ function toTooltipStageStatId(stat: ShowdownBoostStatKey): TooltipStageStatId {
 }
 
 function getPokemonStageBaseStat(pokemon: PurePokemon, stat: TooltipStageStatId): number {
-  if (stat === 'acc' || stat === 'eva' || stat === 'all') return 100;
-  return pokemon[stat] || 100;
+  if (stat === 'acc' || stat === 'eva' || stat === 'all') return DEFAULT_ACCURACY_BASE_STAT;
+  return pokemon[stat] || DEFAULT_ACCURACY_BASE_STAT;
 }
 
 function getStageMultiplier(stat: TooltipStageStatId, stage: number): number {
   if (stat === 'acc' || stat === 'eva') {
-    if (stage >= 0) return (3 + stage) / 3;
-    return 3 / (3 - stage);
+    if (stage >= 0) return (STAGE_MATH_BASE_ACCURACY + stage) / STAGE_MATH_BASE_ACCURACY;
+    return STAGE_MATH_BASE_ACCURACY / (STAGE_MATH_BASE_ACCURACY - stage);
   }
-  if (stage >= 0) return (2 + stage) / 2;
-  return 2 / (2 - stage);
+  if (stage >= 0) return (STAGE_MATH_BASE_REGULAR + stage) / STAGE_MATH_BASE_REGULAR;
+  return STAGE_MATH_BASE_REGULAR / (STAGE_MATH_BASE_REGULAR - stage);
 }
 
 function firstBoostEntry(effect: { boosts?: MoveEffectBoosts } | undefined): [ShowdownBoostStatKey, number] | null {

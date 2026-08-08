@@ -3,6 +3,9 @@ import type { GameState } from '@/types/system/game';
 
 export const GTS_ITEMS_PER_PAGE = 50 as const;
 export const GTS_MAX_ACTIVE_LISTINGS = 10 as const;
+export const GTS_MARKET_FEE = 0.05 as const;
+export const GTS_EXPLORE_LISTINGS_LIMIT = 100 as const;
+export const GTS_SALES_HISTORY_LIMIT = 20 as const;
 
 export interface MarketItemData {
   id?: string | number;
@@ -39,12 +42,16 @@ export interface MarketFilters {
   itemCat: string;
 }
 
+import { MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay';
+
+const MAX_MARKET_SOLD_SEEN_HISTORY = 250;
+
 export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
   state.marketSoldSeenIds = [...new Set(
     (state.marketSoldSeenIds)
       .filter((id: string) => typeof id === 'string' && id.trim().length > 0 && !id.includes('invalid'))
-  )].slice(-250);
+  )].slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
   return state.marketSoldSeenIds;
 }
 
@@ -58,7 +65,7 @@ export function markMarketSoldSeen(listingId: string, state: GameState): void {
   const seen = ensureMarketSoldSeenState(state);
   if (seen.includes(listingId)) return;
   seen.push(listingId);
-  state.marketSoldSeenIds = seen.slice(-250);
+  state.marketSoldSeenIds = seen.slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
 }
 
 export function buildMarketSaleLabel(listing: MarketListing): string {
@@ -117,7 +124,7 @@ export function applyMarketFilters(
       const ivs = poke.ivs;
       const total = (Number(ivs?.hp)||0)+(Number(ivs?.atk)||0)+(Number(ivs?.def)||0)+(Number(ivs?.spa)||0)+(Number(ivs?.spd)||0)+(Number(ivs?.spe)||0);
       if (total < filters.ivTotalMin || total > filters.ivTotalMax) return false;
-      if (filters.ivAny31 && !Object.values(ivs ?? {}).some(v => v === 31)) return false;
+      if (filters.ivAny31 && !Object.values(ivs ?? {}).some(v => v === MAX_SINGLE_STAT_IV)) return false;
     } else {
       const itemData = item.data;
 

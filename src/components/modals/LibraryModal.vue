@@ -31,11 +31,13 @@ const currentContent = computed(() => {
   return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record
 })
 
+const TAB_SWITCH_FADE_DELAY_SEC = 0.15
+
 const selectTab = (tabId: string) => {
   if (selectedTab.value === tabId) return
   
   contentFade.value = false
-  gsap.delayedCall(0.15, () => {
+  gsap.delayedCall(TAB_SWITCH_FADE_DELAY_SEC, () => {
     selectedTab.value = tabId
     contentFade.value = true
   })

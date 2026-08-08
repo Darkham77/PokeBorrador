@@ -1,4 +1,22 @@
 
+import {
+  AUDIO_FREQUENCIES_HZ,
+  AUDIO_DEFAULT_NOTE_VOLUME,
+  AUDIO_DEFAULT_NOISE_VOLUME,
+  AUDIO_DEFAULT_NOISE_FILTER_FREQ_HZ,
+  AUDIO_ENVELOPE_ATTACK_SEC,
+  AUDIO_ENVELOPE_RELEASE_OFFSET_SEC,
+  AUDIO_NOISE_RAMP_FACTOR,
+  AUDIO_NOISE_BIAS,
+  AUDIO_FILTER_DEFAULT_Q,
+  AUDIO_ENVELOPE_MIN_GAIN,
+  AUDIO_INITIAL_LEAD_TIME_SEC,
+  AUDIO_NOISE_FILTERS_HZ,
+  EVOLUTION_SOUND_STEPS,
+  MONEY_SOUND_STEPS,
+  AUDIO_SOUND_PARAMS
+} from '@/logic/constants/audio';
+
 /**
  * ===== 8-BIT AUDIO ENGINE (Synthesized) =====
  * Centralized logic for generating chiptune sounds using Web Audio API.
@@ -7,7 +25,7 @@
 /**
  * Play a single 8-bit beep note.
  */
-function playNote(ctx: AudioContext, dest: AudioNode | null, freq: number, start: number, dur: number, vol: number = 0.35, type: OscillatorType = 'square') {
+function playNote(ctx: AudioContext, dest: AudioNode | null, freq: number, start: number, dur: number, vol: number = AUDIO_DEFAULT_NOTE_VOLUME, type: OscillatorType = 'square') {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -15,8 +33,8 @@ function playNote(ctx: AudioContext, dest: AudioNode | null, freq: number, start
   osc.frequency.setValueAtTime(freq, start);
 
   gain.gain.setValueAtTime(0, start);
-  gain.gain.linearRampToValueAtTime(vol, start + 0.01);
-  gain.gain.setValueAtTime(vol, start + dur - 0.02);
+  gain.gain.linearRampToValueAtTime(vol, start + AUDIO_ENVELOPE_ATTACK_SEC);
+  gain.gain.setValueAtTime(vol, start + dur - AUDIO_ENVELOPE_RELEASE_OFFSET_SEC);
   gain.gain.linearRampToValueAtTime(0, start + dur);
 
   osc.connect(gain);
@@ -29,7 +47,7 @@ function playNote(ctx: AudioContext, dest: AudioNode | null, freq: number, start
 /**
  * Glide between two frequencies.
  */
-function playGlide(ctx: AudioContext, dest: AudioNode | null, freqStart: number, freqEnd: number, start: number, dur: number, vol: number = 0.35, type: OscillatorType = 'square') {
+function playGlide(ctx: AudioContext, dest: AudioNode | null, freqStart: number, freqEnd: number, start: number, dur: number, vol: number = AUDIO_DEFAULT_NOTE_VOLUME, type: OscillatorType = 'square') {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -38,8 +56,8 @@ function playGlide(ctx: AudioContext, dest: AudioNode | null, freqStart: number,
   osc.frequency.exponentialRampToValueAtTime(freqEnd, start + dur);
 
   gain.gain.setValueAtTime(0, start);
-  gain.gain.linearRampToValueAtTime(vol, start + 0.01);
-  gain.gain.setValueAtTime(vol, start + dur - 0.02);
+  gain.gain.linearRampToValueAtTime(vol, start + AUDIO_ENVELOPE_ATTACK_SEC);
+  gain.gain.setValueAtTime(vol, start + dur - AUDIO_ENVELOPE_RELEASE_OFFSET_SEC);
   gain.gain.linearRampToValueAtTime(0, start + dur);
 
   osc.connect(gain);
@@ -52,11 +70,11 @@ function playGlide(ctx: AudioContext, dest: AudioNode | null, freqStart: number,
 /**
  * Noise burst.
  */
-function playNoise(ctx: AudioContext, dest: AudioNode | null, start: number, dur: number, vol: number = 0.15, filterFreq: number = 2000) {
+function playNoise(ctx: AudioContext, dest: AudioNode | null, start: number, dur: number, vol: number = AUDIO_DEFAULT_NOISE_VOLUME, filterFreq: number = AUDIO_DEFAULT_NOISE_FILTER_FREQ_HZ) {
   const bufferSize = ctx.sampleRate * dur;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * AUDIO_NOISE_RAMP_FACTOR - AUDIO_NOISE_BIAS;
 
   const source = ctx.createBufferSource();
   source.buffer = buffer;
@@ -64,11 +82,11 @@ function playNoise(ctx: AudioContext, dest: AudioNode | null, start: number, dur
   const filter = ctx.createBiquadFilter();
   filter.type = 'bandpass';
   filter.frequency.value = filterFreq;
-  filter.Q.value = 1;
+  filter.Q.value = AUDIO_FILTER_DEFAULT_Q;
 
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(vol, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  gain.gain.exponentialRampToValueAtTime(AUDIO_ENVELOPE_MIN_GAIN, start + dur);
 
   source.connect(filter);
   filter.connect(gain);
@@ -82,40 +100,53 @@ function playNoise(ctx: AudioContext, dest: AudioNode | null, start: number, dur
  * SHINY SOUND
  */
 export function playShinySound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  const arpNotes = [523.25, 659.25, 783.99, 880.00, 1046.50];
-  const arpGap = 0.10;
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const arpNotes = [
+    AUDIO_FREQUENCIES_HZ.C5,
+    AUDIO_FREQUENCIES_HZ.E5,
+    AUDIO_FREQUENCIES_HZ.G5,
+    AUDIO_FREQUENCIES_HZ.A5,
+    AUDIO_FREQUENCIES_HZ.C6
+  ];
+  const { ARP_GAP_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, SPARKLE_GLIDE_DURATION_SEC, SPARKLE_GLIDE_VOLUME, SPARKLE_NOISE_DURATION_SEC, SPARKLE_NOISE_VOLUME } = AUDIO_SOUND_PARAMS.SHINY;
 
   arpNotes.forEach((freq, i) => {
-    playNote(ctx, dest, freq, t + i * arpGap, 0.11, 0.28, 'triangle');
+    playNote(ctx, dest, freq, t + i * ARP_GAP_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'triangle');
   });
 
-  const sparkleStart = t + arpNotes.length * arpGap + 0.05;
-  playGlide(ctx, dest, 880, 2093, sparkleStart, 0.25, 0.18, 'triangle');
-  playNoise(ctx, dest, sparkleStart, 0.08, 0.08, 3500);
+  const sparkleStart = t + arpNotes.length * ARP_GAP_SEC + AUDIO_INITIAL_LEAD_TIME_SEC;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A5, AUDIO_FREQUENCIES_HZ.HIGH_GLIDE_END, sparkleStart, SPARKLE_GLIDE_DURATION_SEC, SPARKLE_GLIDE_VOLUME, 'triangle');
+  playNoise(ctx, dest, sparkleStart, SPARKLE_NOISE_DURATION_SEC, SPARKLE_NOISE_VOLUME, AUDIO_NOISE_FILTERS_HZ.SHINY_SPARKLE);
 }
 
 /**
  * RIVAL ENCOUNTER SOUND
  */
 export function playRivalEncounterSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playGlide(ctx, dest, 80, 40, t, 0.22, 0.55, 'sawtooth');
-  playNoise(ctx, dest, t, 0.18, 0.40, 180);
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE_DURATION_SEC, GLIDE_VOLUME, NOISE_DURATION_SEC, NOISE_VOLUME, STINGER_OFFSET_SEC, E2_DURATION_SEC, E2_VOLUME, B2_OFFSET_SEC, B2_DURATION_SEC, B2_VOLUME } = AUDIO_SOUND_PARAMS.RIVAL;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.RIVAL_GLIDE_START, AUDIO_FREQUENCIES_HZ.RIVAL_GLIDE_END, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'sawtooth');
+  playNoise(ctx, dest, t, NOISE_DURATION_SEC, NOISE_VOLUME, AUDIO_NOISE_FILTERS_HZ.RIVAL_ENCOUNTER);
 
-  const stingerT = t + 0.18;
-  playNote(ctx, dest, 82.41, stingerT, 0.55, 0.40, 'square');
-  playNote(ctx, dest, 123.47, stingerT + 0.02, 0.50, 0.30, 'square');
+  const stingerT = t + STINGER_OFFSET_SEC;
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.E2, stingerT, E2_DURATION_SEC, E2_VOLUME, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.B2, stingerT + B2_OFFSET_SEC, B2_DURATION_SEC, B2_VOLUME, 'square');
 }
 
 /**
  * LEVEL UP SOUND
  */
 export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  const notes = [392.00, 493.88, 587.33, 783.99];
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const notes = [
+    AUDIO_FREQUENCIES_HZ.G4,
+    AUDIO_FREQUENCIES_HZ.B4,
+    AUDIO_FREQUENCIES_HZ.D5,
+    AUDIO_FREQUENCIES_HZ.G5
+  ];
+  const { STEP_GAP_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.LEVEL_UP;
   notes.forEach((freq, i) => {
-    playNote(ctx, dest, freq, t + i * 0.1, 0.1, 0.3, 'square');
+    playNote(ctx, dest, freq, t + i * STEP_GAP_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   });
 }
 
@@ -123,45 +154,50 @@ export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null) {
  * CAPTURE SUCCESS
  */
 export function playCaptureSuccessSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 392.00, t, 0.12, 0.12, 'square');
-  playNote(ctx, dest, 369.99, t + 0.12, 0.12, 0.12, 'square');
-  playNote(ctx, dest, 392.00, t + 0.24, 0.12, 0.12, 'square');
-  playNote(ctx, dest, 493.88, t + 0.36, 0.40, 0.15, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { NOTE_DURATION_SEC, NOTE_VOLUME, FINAL_DURATION_SEC, FINAL_VOLUME } = AUDIO_SOUND_PARAMS.CAPTURE_SUCCESS;
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.G4, t, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.FSHARP4, t + NOTE_DURATION_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.G4, t + NOTE_DURATION_SEC * 2, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.B4, t + NOTE_DURATION_SEC * 3, FINAL_DURATION_SEC, FINAL_VOLUME, 'square');
 }
 
 /**
  * POKEBALL HIT/HIT ENERGY
  */
 export function playBallHitSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNoise(ctx, dest, t, 0.1, 0.25, 1200);
-  playGlide(ctx, dest, 880, 440, t, 0.15, 0.2, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { NOISE_DURATION_SEC, NOISE_VOLUME, GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.BALL_HIT;
+  playNoise(ctx, dest, t, NOISE_DURATION_SEC, NOISE_VOLUME, AUDIO_NOISE_FILTERS_HZ.POKEBALL_HIT);
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A5, AUDIO_FREQUENCIES_HZ.A4, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'square');
 }
 
 /**
  * POKEBALL WOBBLE SOUND
  */
 export function playWobbleSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 220.00, t, 0.06, 0.20, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.WOBBLE;
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.A3, t, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
 }
 
 /**
  * FAINT SOUND
  */
 export function playFaintSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playGlide(ctx, dest, 330, 110, t, 0.6, 0.4, 'sawtooth');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.FAINT;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.E4, AUDIO_FREQUENCIES_HZ.A2, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'sawtooth');
 }
 
 /**
  * EVOLUTION SOUND
  */
 export function playEvolutionSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  for (let i = 0; i < 8; i++) {
-    playGlide(ctx, dest, 220, 880, t + i * 0.1, 0.1, 0.2, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.EVOLUTION;
+  for (let i = 0; i < EVOLUTION_SOUND_STEPS; i++) {
+    playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A3, AUDIO_FREQUENCIES_HZ.A5, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   }
 }
 
@@ -169,10 +205,17 @@ export function playEvolutionSound(ctx: AudioContext, dest: AudioNode | null) {
  * HEAL SOUND
  */
 export function playHealSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  const notes = [392.00, 392.00, 493.88, 392.00, 659.25];
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const notes = [
+    AUDIO_FREQUENCIES_HZ.G4,
+    AUDIO_FREQUENCIES_HZ.G4,
+    AUDIO_FREQUENCIES_HZ.B4,
+    AUDIO_FREQUENCIES_HZ.G4,
+    AUDIO_FREQUENCIES_HZ.E5
+  ];
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.HEAL;
   notes.forEach((freq, i) => {
-    playNote(ctx, dest, freq, t + i * 0.15, 0.12, 0.25, 'square');
+    playNote(ctx, dest, freq, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   });
 }
 
@@ -180,98 +223,115 @@ export function playHealSound(ctx: AudioContext, dest: AudioNode | null) {
  * FLEE SOUND
  */
 export function playFleeSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playGlide(ctx, dest, 880, 110, t, 0.3, 0.4, 'sine');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.FLEE;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A5, AUDIO_FREQUENCIES_HZ.A2, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'sine');
 }
 
 /**
  * ITEM PICKUP SOUND
  */
 export function playItemSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playGlide(ctx, dest, 987.77, 1318.51, t, 0.1, 0.3, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.ITEM;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.B5, AUDIO_FREQUENCIES_HZ.E6, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'square');
 }
 
 /**
  * MESSAGE RECEIVED
  */
 export function playMessageReceivedSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 1318.51, t, 0.05, 0.15, 'square');
-  playNote(ctx, dest, 1567.98, t + 0.08, 0.06, 0.12, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { E6_DURATION_SEC, E6_VOLUME, G6_OFFSET_SEC, G6_DURATION_SEC, G6_VOLUME } = AUDIO_SOUND_PARAMS.MESSAGE_RECEIVED;
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.E6, t, E6_DURATION_SEC, E6_VOLUME, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.G6, t + G6_OFFSET_SEC, G6_DURATION_SEC, G6_VOLUME, 'square');
 }
 
 /**
  * MESSAGE SENT
  */
 export function playMessageSentSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 1174.66, t, 0.04, 0.10, 'sine');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.MESSAGE_SENT;
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.D6, t, NOTE_DURATION_SEC, NOTE_VOLUME, 'sine');
 }
 
 /**
  * MONEY SOUND
  */
 export function playMoneySound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  for (let i = 0; i < 3; i++) {
-    playNote(ctx, dest, 1975.53, t + i * 0.06, 0.05, 0.2, 'square');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.MONEY;
+  for (let i = 0; i < MONEY_SOUND_STEPS; i++) {
+    playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.B6, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   }
 }
 /**
  * STATUS DAMAGE SOUND (8-bit impact)
  */
 export function playStatusDamageSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  playNoise(ctx, dest, t, 0.12, 0.25, 400); // Ruido sordo para el impacto
-  playGlide(ctx, dest, 110, 55, t, 0.15, 0.2, 'square'); // Pulso bajo descendente
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { NOISE_DURATION_SEC, NOISE_VOLUME, GLIDE_DURATION_SEC, GLIDE_VOLUME } = AUDIO_SOUND_PARAMS.STATUS_DAMAGE;
+  playNoise(ctx, dest, t, NOISE_DURATION_SEC, NOISE_VOLUME, AUDIO_DEFAULT_NOISE_FILTER_FREQ_HZ);
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A2, AUDIO_FREQUENCIES_HZ.A1, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'square');
 }
 
 /**
  * VICTORY TRAINER SOUND
  */
 export function playVictoryTrainerSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  const notes = [392.00, 523.25, 659.25, 783.99];
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const notes = [
+    AUDIO_FREQUENCIES_HZ.G4,
+    AUDIO_FREQUENCIES_HZ.C5,
+    AUDIO_FREQUENCIES_HZ.E5,
+    AUDIO_FREQUENCIES_HZ.G5
+  ];
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, FINAL_OFFSET_SEC, FINAL_DURATION_SEC } = AUDIO_SOUND_PARAMS.VICTORY_TRAINER;
   notes.forEach((freq, i) => {
-    playNote(ctx, dest, freq, t + i * 0.08, 0.08, 0.25, 'square');
+    playNote(ctx, dest, freq, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   });
-  playNote(ctx, dest, 1046.50, t + 0.32, 0.40, 0.25, 'square');
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.C6, t + FINAL_OFFSET_SEC, FINAL_DURATION_SEC, NOTE_VOLUME, 'square');
 }
 
 /**
  * DEFEAT SOUND
  */
 export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  const notes = [523.25, 415.30, 392.00];
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const notes = [
+    AUDIO_FREQUENCIES_HZ.C5,
+    AUDIO_FREQUENCIES_HZ.GSHARP4,
+    AUDIO_FREQUENCIES_HZ.G4
+  ];
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, GLIDE_OFFSET_SEC, GLIDE_DURATION_SEC, GLIDE_VOLUME, NOISE_OFFSET_SEC, NOISE_DURATION_SEC, NOISE_VOLUME } = AUDIO_SOUND_PARAMS.DEFEAT;
   notes.forEach((freq, i) => {
-    playNote(ctx, dest, freq, t + i * 0.15, 0.12, 0.25, 'square');
+    playNote(ctx, dest, freq, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
   });
-  playGlide(ctx, dest, 369.99, 185.00, t + 0.45, 0.50, 0.25, 'sawtooth');
-  playNoise(ctx, dest, t + 0.45, 0.30, 0.15, 400);
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.FSHARP4, AUDIO_FREQUENCIES_HZ.FSHARP3, t + GLIDE_OFFSET_SEC, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'sawtooth');
+  playNoise(ctx, dest, t + NOISE_OFFSET_SEC, NOISE_DURATION_SEC, NOISE_VOLUME, AUDIO_DEFAULT_NOISE_FILTER_FREQ_HZ);
 }
 
 /**
  * STEAL SOUND (Retro cartoon sliding/gliding frequency)
  */
 export function playStealSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  // Two swift rising slide sweeps to sound sneaky
-  playGlide(ctx, dest, 440, 880, t, 0.12, 0.25, 'triangle');
-  playGlide(ctx, dest, 554, 1109, t + 0.08, 0.12, 0.25, 'triangle');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE1_DURATION_SEC, GLIDE1_VOLUME, GLIDE2_OFFSET_SEC, GLIDE2_DURATION_SEC, GLIDE2_VOLUME } = AUDIO_SOUND_PARAMS.STEAL;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.A4, AUDIO_FREQUENCIES_HZ.A5, t, GLIDE1_DURATION_SEC, GLIDE1_VOLUME, 'triangle');
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.CSHARP5, AUDIO_FREQUENCIES_HZ.CSHARP6, t + GLIDE2_OFFSET_SEC, GLIDE2_DURATION_SEC, GLIDE2_VOLUME, 'triangle');
 }
 
 /**
  * SIREN SOUND (Police sirens alternating pitch)
  */
 export function playSirenSound(ctx: AudioContext, dest: AudioNode | null) {
-  const t = ctx.currentTime + 0.05;
-  // Alternating high and low slides (siren wail)
-  playGlide(ctx, dest, 600, 900, t, 0.25, 0.2, 'sawtooth');
-  playGlide(ctx, dest, 900, 600, t + 0.25, 0.25, 0.2, 'sawtooth');
-  playGlide(ctx, dest, 600, 900, t + 0.5, 0.25, 0.2, 'sawtooth');
-  playGlide(ctx, dest, 900, 600, t + 0.75, 0.25, 0.2, 'sawtooth');
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { SEGMENT_DURATION_SEC, VOLUME } = AUDIO_SOUND_PARAMS.SIREN;
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.SIREN_LOW, AUDIO_FREQUENCIES_HZ.SIREN_HIGH, t, SEGMENT_DURATION_SEC, VOLUME, 'sawtooth');
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.SIREN_HIGH, AUDIO_FREQUENCIES_HZ.SIREN_LOW, t + SEGMENT_DURATION_SEC, SEGMENT_DURATION_SEC, VOLUME, 'sawtooth');
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.SIREN_LOW, AUDIO_FREQUENCIES_HZ.SIREN_HIGH, t + SEGMENT_DURATION_SEC * 2, SEGMENT_DURATION_SEC, VOLUME, 'sawtooth');
+  playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.SIREN_HIGH, AUDIO_FREQUENCIES_HZ.SIREN_LOW, t + SEGMENT_DURATION_SEC * 3, SEGMENT_DURATION_SEC, VOLUME, 'sawtooth');
 }
 
 

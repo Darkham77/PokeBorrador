@@ -18,6 +18,7 @@ import type { MapLocation } from '@/types/pokemon/encounters';
 
 import type { DominanceInfo } from '@/types/system/stores';
 import type { Event } from '@/logic/events/eventEngine';
+import { NAVIGATE_THROTTLE_MS, PITY_TIMER_INCREMENT_THRESHOLD_MS, TRAINER_CHANCE_MAX_PERCENT, TRAINER_CHANCE_INCREMENT_STEP, TRAINER_CHANCE_DEFAULT_PERCENT } from '@/logic/constants/gameplay.ts';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { DayPhase } from '@/logic/utils/timeUtils';
@@ -49,7 +50,7 @@ export async function executeNavigation(
   const eventStore = useEventStore();
 
   const now = Temporal.Now.instant().epochMilliseconds;
-  if (now - state.lastNavigateTime < 400) {
+  if (now - state.lastNavigateTime < NAVIGATE_THROTTLE_MS) {
     logger.warn('MapStore', 'Navigate throttled');
     return;
   }
@@ -58,9 +59,9 @@ export async function executeNavigation(
 
   // Pity timer logic
   const elapsedPity = now - state.lastTrainerChanceIncrementAt;
-  if (elapsedPity >= 120000) {
-    const increments = Math.floor(elapsedPity / 120000);
-    gs.state.trainerChance = Math.min(20, (gs.state.trainerChance || 5) + increments * 5);
+  if (elapsedPity >= PITY_TIMER_INCREMENT_THRESHOLD_MS) {
+    const increments = Math.floor(elapsedPity / PITY_TIMER_INCREMENT_THRESHOLD_MS);
+    gs.state.trainerChance = Math.min(TRAINER_CHANCE_MAX_PERCENT, (gs.state.trainerChance || TRAINER_CHANCE_DEFAULT_PERCENT) + increments * TRAINER_CHANCE_INCREMENT_STEP);
     callbacks.setLastTrainerChanceIncrementAt(now);
     logger.info('MapStore', `PITY: Trainer chance increased to ${gs.state.trainerChance}%`);
   }

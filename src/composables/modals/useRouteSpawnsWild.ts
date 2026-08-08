@@ -20,6 +20,8 @@ import {
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
 
+const DEFAULT_WILD_SPAWN_RATE_WEIGHT = 10;
+
 export function useRouteSpawnsWild(
   props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
 ) {
@@ -78,7 +80,7 @@ export function useRouteSpawnsWild(
       let baseRate = 0
       let basePercentage = 0
       if (originalIdx !== -1) {
-        baseRate = baseRates[originalIdx] !== undefined ? baseRates[originalIdx] : 10
+        baseRate = baseRates[originalIdx] !== undefined ? baseRates[originalIdx] : DEFAULT_WILD_SPAWN_RATE_WEIGHT
         basePercentage = totalBaseRate > 0 ? (baseRate / totalBaseRate) * 100 : 0
       }
 

@@ -434,8 +434,10 @@ export const useBattleStore = defineStore('battle', () => {
         logger.info('BattleStore', 'Forced recharge detected, waiting for isProcessing to clear...')
         await nextTick()
         let retries = 0
-        while (isProcessing.value && retries < 20) {
-          await sleep(20)
+        const MAX_PROCESSING_WAIT_RETRIES = 20
+        const PROCESSING_WAIT_SLEEP_MS = 20
+        while (isProcessing.value && retries < MAX_PROCESSING_WAIT_RETRIES) {
+          await sleep(PROCESSING_WAIT_SLEEP_MS)
           retries++
         }
         logger.info('BattleStore', 'Auto-submitting executeMove(0) for forced recharge.')

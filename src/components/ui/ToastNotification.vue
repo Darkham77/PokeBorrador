@@ -4,18 +4,23 @@ import { gsap } from 'gsap'
 
 const uiStore = useUIStore()
 
+const TOAST_ENTER_X_OFFSET = 50;
+const TOAST_LEAVE_X_OFFSET = 30;
+const TOAST_LEAVE_SCALE = 0.9;
+const TOAST_EASE_OVERSHOOT = 1.72;
+
 function onEnter(el: Element, done: () => void) {
   gsap.fromTo(el,
-    { opacity: 0, x: 50 },
-    { opacity: 1, x: 0, duration: 0.3, ease: 'back.out(1.72)', onComplete: done }
+    { opacity: 0, x: TOAST_ENTER_X_OFFSET },
+    { opacity: 1, x: 0, duration: 0.3, ease: `back.out(${TOAST_EASE_OVERSHOOT})`, onComplete: done }
   )
 }
 
 function onLeave(el: Element, done: () => void) {
   gsap.to(el, {
     opacity: 0,
-    x: 30,
-    scale: 0.9,
+    x: TOAST_LEAVE_X_OFFSET,
+    scale: TOAST_LEAVE_SCALE,
     duration: 0.3,
     onComplete: done
   })

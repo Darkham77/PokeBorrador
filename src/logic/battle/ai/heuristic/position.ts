@@ -8,7 +8,7 @@ import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition } from '
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { BattleConditionKey } from '@/types/battle/battle';
 
-const POSITION_WEIGHTS = {
+const POSITION_WEIGHTS = { // no-magic
   pokemonAdvantage: 0.20,
   hpAdvantage: 0.15,
   hazardAdvantage: 0.10,
@@ -16,13 +16,23 @@ const POSITION_WEIGHTS = {
   typeMatchupAdvantage: 0.15,
   statusAdvantage: 0.10,
   winConditionViability: 0.15,
+  MAX_HAZARD_LAYERS_NORMALIZER: 5,
+  MIDPOINT_OFFSET_HALF: 0.5,
+  RANGE_EXPANDER_DOUBLE: 2,
+  MAX_STATUS_PENALTY_COUNT: 3,
+  PERCENTAGE_FULL_SCALE: 100,
+  POSITION_BOUND_MIN: -1.0,
+  POSITION_BOUND_MAX: 1.0,
+  POSITION_MIN_DEFAULT_SCORE: 0 as number
 } as const;
 
+const HAZARD_DEFAULT_LAYER_COUNT = 0;
+
 function countHazardLayers(conditions: Map<BattleConditionKey, number>): number {
-  return (conditions.get('stealthrock') ?? 0) +
-    (conditions.get('spikes') ?? 0) +
-    (conditions.get('toxicspikes') ?? 0) +
-    (conditions.get('stickyweb') ?? 0);
+  return (conditions.get('stealthrock') ?? HAZARD_DEFAULT_LAYER_COUNT) +
+    (conditions.get('spikes') ?? HAZARD_DEFAULT_LAYER_COUNT) +
+    (conditions.get('toxicspikes') ?? HAZARD_DEFAULT_LAYER_COUNT) +
+    (conditions.get('stickyweb') ?? HAZARD_DEFAULT_LAYER_COUNT);
 }
 
 export function evaluatePosition(
@@ -37,21 +47,21 @@ export function evaluatePosition(
 
   // 1. Pokémon count advantage
   const total = myAlive.length + oppAlive.length;
-  const pokemonAdvantage = total > 0 ? (myAlive.length - oppAlive.length) / total : 0;
+  const pokemonAdvantage = total > 0 ? (myAlive.length - oppAlive.length) / total : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
 
   // 2. HP advantage
   const myAvgHp = myAlive.length > 0 ? myAlive.reduce((s, p) => s + p.hpPercent, 0) / myAlive.length : 0;
   const oppAvgHp = oppAlive.length > 0 ? oppAlive.reduce((s, p) => s + p.hpPercent, 0) / oppAlive.length : 0;
-  const hpAdvantage = (myAvgHp - oppAvgHp) / 100;
+  const hpAdvantage = (myAvgHp - oppAvgHp) / POSITION_WEIGHTS.PERCENTAGE_FULL_SCALE;
 
   // 3. Hazard advantage
-  const hazardAdvantage = Math.max(-1, Math.min(1,
+  const hazardAdvantage = Math.max(w.POSITION_BOUND_MIN, Math.min(w.POSITION_BOUND_MAX,
     (countHazardLayers(snapshot.opponentSide.sideConditions) -
-     countHazardLayers(snapshot.mySide.sideConditions)) / 5,
+     countHazardLayers(snapshot.mySide.sideConditions)) / POSITION_WEIGHTS.MAX_HAZARD_LAYERS_NORMALIZER,
   ));
 
   // 4. Speed advantage
-  let speedWins = 0, speedTotal = 0;
+  let speedWins = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE, speedTotal = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
   for (const my of myAlive) {
     for (const opp of oppAlive) {
       speedTotal++;
@@ -59,33 +69,33 @@ export function evaluatePosition(
           calc.getEffectiveSpeed(opp, snapshot.field, oppSide)) speedWins++;
     }
   }
-  const speedAdvantage = speedTotal > 0 ? (speedWins / speedTotal - 0.5) * 2 : 0;
+  const speedAdvantage = speedTotal > 0 ? (speedWins / speedTotal - POSITION_WEIGHTS.MIDPOINT_OFFSET_HALF) * POSITION_WEIGHTS.RANGE_EXPANDER_DOUBLE : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
 
   // 5. Type matchup advantage (active vs active)
-  let typeMatchupAdvantage = 0;
+  let typeMatchupAdvantage = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
   const myActive = snapshot.mySide.activePokemon;
   const oppActive = snapshot.opponentSide.activePokemon;
   if (myActive && oppActive) {
-    let ourBest = 0, theirBest = 0;
+    let ourBest = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE, theirBest = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
     for (const mv of myActive.moves) {
       try { ourBest = Math.max(ourBest, calc.calcDamage(myActive, oppActive, mv, snapshot.field).maxPercent); } catch { /* skip */ }
     }
     for (const mv of oppActive.knownMoves) {
       try { theirBest = Math.max(theirBest, calc.calcDamage(oppActive, myActive, mv, snapshot.field).maxPercent); } catch { /* skip */ }
     }
-    typeMatchupAdvantage = Math.max(-1, Math.min(1, (ourBest - theirBest) / 100));
+    typeMatchupAdvantage = Math.max(w.POSITION_BOUND_MIN, Math.min(w.POSITION_BOUND_MAX, (ourBest - theirBest) / POSITION_WEIGHTS.PERCENTAGE_FULL_SCALE));
   }
 
   // 6. Status advantage
   const myStatused = myAlive.filter(p => p.status !== null).length;
   const oppStatused = oppAlive.filter(p => p.status !== null).length;
-  const statusAdvantage = Math.max(-1, Math.min(1, (oppStatused - myStatused) / 3));
+  const statusAdvantage = Math.max(w.POSITION_BOUND_MIN, Math.min(w.POSITION_BOUND_MAX, (oppStatused - myStatused) / POSITION_WEIGHTS.MAX_STATUS_PENALTY_COUNT));
 
   // 7. Win condition viability
-  const bestWC = winConditions.length > 0 ? (winConditions[0]?.score ?? 0) : 0;
-  const winConditionViability = (bestWC - 0.5) * 2;
+  const bestWC = winConditions.length > 0 ? (winConditions[0]?.score ?? POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE) : POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
+  const winConditionViability = (bestWC - POSITION_WEIGHTS.MIDPOINT_OFFSET_HALF) * POSITION_WEIGHTS.RANGE_EXPANDER_DOUBLE;
 
-  const score = Math.max(-1.0, Math.min(1.0,
+  const score = Math.max(w.POSITION_BOUND_MIN, Math.min(w.POSITION_BOUND_MAX,
     pokemonAdvantage * w.pokemonAdvantage +
     hpAdvantage * w.hpAdvantage +
     hazardAdvantage * w.hazardAdvantage +

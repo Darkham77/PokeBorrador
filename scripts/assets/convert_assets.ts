@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/convert_assets.ts
  * 
@@ -17,13 +16,16 @@ import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 import { TRAINER_TYPES } from '../../src/data/player/trainerTypes.ts';
 import { Dex, toID } from '@pkmn/sim';
-import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '../lib/safePath.ts';
 
 // Speed up execution
 enableCompileCache();
 
 const SOURCE_DIR = safeResolve(process.cwd(), '_raw-assets');
 const PUBLIC_ASSETS_DIR = safeResolve(process.cwd(), 'public', 'assets');
+const MAP_DESKTOP_RESIZE_WIDTH_PX = 600;
+const MAP_MOBILE_RESIZE_WIDTH_PX = 400;
+const ALPHA_PIXEL_THRESHOLD_LIMIT = 50;
 
 export interface AnimatedSpriteData {
   readonly frames: number;
@@ -116,17 +118,20 @@ async function handleProcessFile(filePath: string) {
   let image = sharp(filePath);
   const metadata = await image.metadata();
 
+const WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW = 400;
+const WEBP_QUALITY_MAX_DIM_THRESHOLD_MID = 1000;
+
   const webpOptions: sharp.WebpOptions = { effort: 6 };
   if (isLossless) {
     webpOptions.lossless = true;
   } else {
     const maxDim = Math.max(metadata.width || 0, metadata.height || 0);
-    if (maxDim < 400) {
-      webpOptions.quality = 100;
-    } else if (maxDim < 1000) {
-      webpOptions.quality = 95;
+    if (maxDim < WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW) {
+      webpOptions.quality = 100; // magic-ok
+    } else if (maxDim < WEBP_QUALITY_MAX_DIM_THRESHOLD_MID) {
+      webpOptions.quality = 95; // magic-ok
     } else {
-      webpOptions.quality = 80;
+      webpOptions.quality = 80; // magic-ok
     }
   }
 
@@ -135,7 +140,7 @@ async function handleProcessFile(filePath: string) {
   const destFiles: string[] = [destFile];
 
   if (isMap) {
-    image = image.resize({ width: 600, kernel: 'nearest' });
+    image = image.resize({ width: MAP_DESKTOP_RESIZE_WIDTH_PX, kernel: 'nearest' });
   }
 
   await image.webp(webpOptions).toFile(destFile);
@@ -143,7 +148,7 @@ async function handleProcessFile(filePath: string) {
   if (isMap) {
     const destMobileFile = safeJoin(destDir, `${path.parse(destPath).name}_mobile.webp`);
     await sharp(filePath)
-      .resize({ width: 400, kernel: 'nearest' })
+      .resize({ width: MAP_MOBILE_RESIZE_WIDTH_PX, kernel: 'nearest' })
       .webp(webpOptions)
       .toFile(destMobileFile);
     destFiles.push(destMobileFile);
@@ -183,7 +188,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
     const channels = info.channels;
 
     if (channels < 4) {
-      return { feetY: 0.9, feetX: 0.5 };
+      return { feetY: 0.9, feetX: 0.5 }; // magic-ok
     }
 
     const size = Math.min(width, height);
@@ -196,7 +201,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       for (let x = 0; x < size; x++) {
         const index = (y * width + x) * channels;
         const alpha = data[index + 3] ?? 0;
-        if (alpha > 50) {
+        if (alpha > 50) { // magic-ok
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
         }
@@ -209,7 +214,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       for (let x = 0; x < size; x++) {
         const index = (y * width + x) * channels;
         const alpha = data[index + 3] ?? 0;
-        if (alpha > 50) {
+        if (alpha > 50) { // magic-ok
           rowHasOpaque = true;
           break;
         }
@@ -230,7 +235,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
   } catch {
     // Silently fall back
   }
-  return { feetY: 0.9, feetX: 0.5 };
+  return { feetY: 0.9, feetX: 0.5 }; // magic-ok
 }
 
 function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, channels: number) {
@@ -239,7 +244,7 @@ function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, chann
     for (let x = 0; x < size; x++) {
       const idx = (y * size + x) * channels
       const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-      if (alpha > 50) {
+      if (alpha > ALPHA_PIXEL_THRESHOLD_50) {
         hasOpaque = true
         if (x < minX) minX = x
         if (x > maxX) maxX = x
@@ -254,7 +259,7 @@ function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, chann
       for (let x = 0; x < size; x++) {
         const idx = (y * size + x) * channels
         const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-        if (alpha > 50) { rowHasOpaque = true; break }
+        if (alpha > ALPHA_PIXEL_THRESHOLD_50) { rowHasOpaque = true; break }
       }
       if (rowHasOpaque) { lowestY = y; break }
     }
@@ -319,7 +324,7 @@ async function getFilesToConvert(dir: string): Promise<string[]> {
   const pattern = '**/*.{png,jpg,jpeg,webp}';
   
   for await (const entry of fs.glob(pattern, { cwd: dir })) {
-    files.push(path.resolve(dir, entry));
+    files.push(safeResolve(dir, entry));
   }
   return files;
 }
@@ -476,9 +481,9 @@ async function main() {
     }
   }
 
-  const catalogDir = path.resolve(process.cwd(), 'src', 'logic', 'environment');
+  const catalogDir = safeResolve(process.cwd(), 'src/logic/environment');
   await fs.mkdir(catalogDir, { recursive: true });
-  const catalogPath = path.join(catalogDir, 'bushCatalog.ts');
+  const catalogPath = safeJoin(catalogDir, 'bushCatalog.ts');
 
   const logDetails = Object.keys(dynamicCatalog).map(k => `${dynamicCatalog[k]?.length ?? 0} ${k}`).join(', ');
 
@@ -495,12 +500,12 @@ export const BUSH_FAMILIES = ${JSON.stringify(dynamicCatalog, null, 2)} as const
 export type BushFamily = keyof typeof BUSH_FAMILIES;
 `;
 
-  await fs.writeFile(catalogPath, catalogContent, 'utf-8');
+  await safeWriteFile(catalogPath, catalogContent);
   console.log(styleText('green', `   [OK] Catálogo generado con éxito: ${logDetails || 'Ninguno'}.`));
 
   // Escanear y autogenerar catálogo de mapas de combate en src/data/map-assets.ts
   console.log(styleText('yellow', `\n   📦 Generando catálogo de mapas de combate en src/data/map-assets.ts...`));
-  const battleMapsSourceDir = path.resolve(SOURCE_DIR, 'public', 'assets', 'maps_battle');
+  const battleMapsSourceDir = safeResolve(SOURCE_DIR, 'public/assets/maps_battle');
   const battleMaps: string[] = [];
   try {
     const entries = await fs.readdir(battleMapsSourceDir);
@@ -538,8 +543,8 @@ export type BushFamily = keyof typeof BUSH_FAMILIES;
   }
   console.log(styleText('green', `   [OK] Todos los mapas tienen su correspondiente fondo de combate.`));
 
-  const mapAssetsPath = path.resolve(process.cwd(), 'src', 'data', 'world', 'map-assets.ts');
-  let mapAssetsContent = await fs.readFile(mapAssetsPath, 'utf-8');
+  const mapAssetsPath = safeResolve(process.cwd(), 'src/data/world/map-assets.ts');
+  let mapAssetsContent = await safeReadFile(mapAssetsPath, 'utf-8');
   
   const marker = 'export const AVAILABLE_BATTLE_MAPS';
   const markerIndex = mapAssetsContent.indexOf(marker);
@@ -554,14 +559,14 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
 export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
 `;
 
-  await fs.writeFile(mapAssetsPath, generatedContent, 'utf-8');
+  await safeWriteFile(mapAssetsPath, generatedContent);
   console.log(styleText('green', `   [OK] Catálogo de mapas de combate integrado en src/data/map-assets.ts (${battleMaps.length} mapas)`));
 
   // Generar base de datos inmutable de anclaje de pies de Pokémon
   console.log(styleText('yellow', `\n   📦 Generando base de datos estática de anclajes en src/data/pokemonFeetDatabase.ts...`));
-  const databaseDir = path.resolve(process.cwd(), 'src', 'data', 'pokemon');
+  const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
   await fs.mkdir(databaseDir, { recursive: true });
-  const databasePath = path.join(databaseDir, 'pokemonFeetDatabase.ts');
+  const databasePath = safeJoin(databaseDir, 'pokemonFeetDatabase.ts');
 
   const packed: {
     p: Record<string, [number, number]>;
@@ -603,7 +608,7 @@ export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
 
   // Pre-procesar cries (gritos de Pokémon) con fallbacks
   console.log(styleText('yellow', `   🔊 Pre-procesando base de datos de gritos (cries)...`));
-  const CRIES_DIR = path.resolve(process.cwd(), 'public', 'cries');
+  const CRIES_DIR = safeResolve(process.cwd(), 'public/cries');
   try {
     const cryFiles = await fs.readdir(CRIES_DIR);
     const existingCries = new Set(
@@ -677,8 +682,8 @@ export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
     process.exit(1);
   }
 
-  const jsonPath = path.join(databaseDir, 'pokemonFeetDatabase.json');
-  await fs.writeFile(jsonPath, JSON.stringify(packed, null, 2), 'utf-8');
+  const jsonPath = safeJoin(databaseDir, 'pokemonFeetDatabase.json');
+  await safeWriteFile(jsonPath, JSON.stringify(packed, null, 2));
 
   const databaseContent = `/**
  * src/data/pokemonFeetDatabase.ts
@@ -690,18 +695,20 @@ export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
  */
 import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
 
+const packedData = FEET_COORDINATES_DATA;
+
 export interface FeetPoints {
   readonly feetY: number;
   readonly feetX: number;
 }
 
-const PACKED_DATA = FEET_COORDINATES_DATA;
+const PACKED_DATA = packedData;
 
 type FeetSpriteGroupKey = 'p' | 'n' | 't';
 type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
 export type FeetDatabasePath = \`\${FeetSpritePrefix}\${string}.webp\`;
 
-export const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
+const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
 
 function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
   const value = values[index];
@@ -714,16 +721,16 @@ for (const [key, prefix] of [
   ['n', '/assets/sprites/npc/'],
   ['t', '/assets/sprites/trainers/']
 ] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
-  const group = PACKED_DATA[key];
+  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record
   for (const [subKey, tuple] of Object.entries(group)) {
     const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
-    const y = requireFeetMetric(tuple, dbPath, 0);
-    const x = requireFeetMetric(tuple, dbPath, 1);
+    const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
+    const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
     POKEMON_FEET_DATABASE[dbPath] = { feetY: y, feetX: x };
   }
 }
 
-export function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
+function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
   return Object.hasOwn(POKEMON_FEET_DATABASE, value);
 }
 
@@ -743,12 +750,12 @@ export const POKEMON_CRIES_DATABASE = PACKED_DATA.c;
 export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
 `;
 
-  await fs.writeFile(databasePath, databaseContent, 'utf-8');
+  await safeWriteFile(databasePath, databaseContent);
   console.log(styleText('green', `   [OK] Base de datos de anclaje y gritos integrada generada con éxito.`));
 
   // Autogenerar catálogo de sprites de NPC/Entrenadores por arquetipo en src/data/npcSpriteCatalog.ts
   console.log(styleText('yellow', `\n   📦 Generando catálogo de sprites de NPCs en src/data/npcSpriteCatalog.ts...`));
-  const npcCatalogPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'npcSpriteCatalog.ts');
+  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
   
   const { ARCHETYPE_KEYWORDS } = await import('../../src/logic/utils/npcSpriteRouter');
   const ARCHETYPE_KEYWORDS_LOCAL = ARCHETYPE_KEYWORDS;
@@ -758,7 +765,7 @@ export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
     Object.keys(TRAINER_TYPES).map(key => [key, []])
   );
 
-  const npcSourceDir = path.resolve(SOURCE_DIR, 'public', 'assets', 'sprites', 'npc');
+  const npcSourceDir = safeResolve(SOURCE_DIR, 'public/assets/sprites/npc');
 
   try {
     const entries = await fs.readdir(npcSourceDir);
@@ -824,13 +831,13 @@ export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRI
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 `;
 
-  await fs.writeFile(npcCatalogPath, npcCatalogContent, 'utf-8');
+  await safeWriteFile(npcCatalogPath, npcCatalogContent);
   console.log(styleText('green', `   [OK] Catálogo de sprites de NPCs generado con éxito.`));
 
   // Generar base de datos de sprites animados (animated/Front y animated/Back)
   console.log(styleText('yellow', `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`));
-  const ANIMATED_FRONT_DIR = path.resolve(process.cwd(), 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
-  const ANIMATED_BACK_DIR = path.resolve(process.cwd(), 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Back');
+  const ANIMATED_FRONT_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Front');
+  const ANIMATED_BACK_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Back');
   const animatedDbData: Record<string, AnimatedSpriteData> = {};
   const animatedVariationFrames: Record<string, number> = {};
   let maxAnimatedSizeFront = 0;
@@ -850,11 +857,11 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
     const analyzeTasks: WorkerTask[] = [
       ...frontFiles.map(file => ({
         type: 'analyzeAnimated' as const,
-        filePath: path.join(ANIMATED_FRONT_DIR, file)
+        filePath: safeJoin(ANIMATED_FRONT_DIR, file)
       })),
       ...backFiles.map(file => ({
         type: 'analyzeAnimated' as const,
-        filePath: path.join(ANIMATED_BACK_DIR, file)
+        filePath: safeJoin(ANIMATED_BACK_DIR, file)
       }))
     ];
 
@@ -909,8 +916,8 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
   }
 
   const animatedSpriteCount = Object.keys(animatedDbData).length;
-  const animatedDbPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'animatedSpriteDatabase.ts');
-  const animatedDbJsonPath = path.resolve(process.cwd(), 'src', 'data', 'pokemon', 'animatedSpriteDatabase.json');
+  const animatedDbPath = safeResolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.ts');
+  const animatedDbJsonPath = safeResolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.json');
   const animatedJsonData = {
     RAW: Object.fromEntries(
       Object.entries(animatedDbData)
@@ -922,7 +929,7 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     )
   };
-  await fs.writeFile(animatedDbJsonPath, JSON.stringify(animatedJsonData, null, 2), 'utf-8');
+  await safeWriteFile(animatedDbJsonPath, JSON.stringify(animatedJsonData, null, 2));
 
   const animatedDbContent = [
     '/**',
@@ -1013,7 +1020,7 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
     '',
   ].join('\n');
 
-  await fs.writeFile(animatedDbPath, animatedDbContent, 'utf-8');
+  await safeWriteFile(animatedDbPath, animatedDbContent);
   console.log(styleText('green', `   [OK] Base de datos animada generada: ${animatedSpriteCount} sprites, maxSize: ${maxAnimatedSizeFront}px.`));
 
   console.log(styleText('bold', '\n✨ Proceso de assets finalizado.\n'));

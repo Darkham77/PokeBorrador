@@ -40,6 +40,12 @@ export interface DaycareMission {
   dialogue: string;
 }
 
+const TRAINER_LEVEL_APPRENTICE_THRESHOLD = 10;
+const TRAINER_LEVEL_VETERAN_THRESHOLD = 25;
+const TRAINER_LEVEL_MASTER_THRESHOLD = 40;
+const TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD = 15;
+const MAX_PERFECT_IV_VAL = 31;
+
 const POOLS: Record<string, string[]> = {
   novice: ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'zubat', 'geodude', 'sandshrew', 'nidoranf', 'nidoranm', 'magikarp', 'ekans', 'paras'],
   apprentice: ['pikachu', 'abra', 'gastly', 'drowzee', 'machop', 'bellsprout', 'oddish', 'venonat', 'psyduck', 'poliwag', 'meowth', 'mankey', 'vulpix', 'clefairy', 'jigglypuff', 'pidgeotto', 'raticate', 'fearow', 'golbat', 'graveler', 'kakuna', 'metapod'],
@@ -146,13 +152,13 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
  */
 export function generateMission(trainerLevel: number, dateStr: string): DaycareMission {
   let possibleTargets = [...(POOLS['novice'] || [])];
-  if (trainerLevel >= 10) possibleTargets = possibleTargets.concat(POOLS['apprentice'] || []);
-  if (trainerLevel >= 25) possibleTargets = possibleTargets.concat(POOLS['veteran'] || []);
-  if (trainerLevel >= 40) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
+  if (trainerLevel >= TRAINER_LEVEL_APPRENTICE_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['apprentice'] || []);
+  if (trainerLevel >= TRAINER_LEVEL_VETERAN_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['veteran'] || []);
+  if (trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
 
   const targetId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
   const missionTypes: Array<MissionRequirement['type']> = ['level', 'nature', 'iv_total'];
-  if (trainerLevel >= 15) missionTypes.push('iv_31');
+  if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) missionTypes.push('iv_31');
 
   const type = missionTypes[Math.floor(Math.random() * missionTypes.length)] || 'level';
   const requirement: MissionRequirement = { type };
@@ -177,11 +183,11 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     const statLabels: Record<string, string> = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad' };
     const targetStat = stats[Math.floor(Math.random() * stats.length)] || 'hp';
     requirement.stat31 = targetStat;
-    reqText = `IV 31 en ${statLabels[targetStat] || 'PS'}`;
+    reqText = `IV ${MAX_PERFECT_IV_VAL} en ${statLabels[targetStat] || 'PS'}`;
   }
 
   // Rewards
-  const rewardQty = trainerLevel >= 40 ? 4 : (trainerLevel >= 20 ? 3 : 2);
+  const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD ? 4 : (trainerLevel >= 20 ? 3 : 2);
   const possibleRewards: MissionReward[] = [
     { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' },
     { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' },
@@ -189,7 +195,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' }
   ];
 
-  if (trainerLevel >= 15) {
+  if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
     const powerItems: MissionReward[] = [
       { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
       { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
@@ -254,7 +260,7 @@ export function validateMissionPokemon(pokemon: Pokemon, mission: DaycareMission
   } else if (req.type === 'nature') {
     return pokemon.nature === req.nature;
   } else if (req.type === 'iv_31') {
-    return (Number(pokemon.ivs[req.stat31!]) || 0) === 31;
+    return (Number(pokemon.ivs[req.stat31!]) || 0) === MAX_PERFECT_IV_VAL;
   }
   
   return false;

@@ -53,7 +53,9 @@ export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
  * @param {Object} pokemon
  * @returns {boolean}
  */
+import { MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay.ts'
+
 export function hasPerfectIV(pokemon: Partial<Pokemon> | null): boolean {
   if (!pokemon || !pokemon.ivs) return false;
-  return Object.values(pokemon.ivs).some(v => v === 31);
+  return Object.values(pokemon.ivs).some(v => v === MAX_SINGLE_STAT_IV);
 }

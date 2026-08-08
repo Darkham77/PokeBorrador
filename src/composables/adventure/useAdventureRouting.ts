@@ -11,6 +11,12 @@ import { useShopStore } from '@/stores/inventory/shop'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useBuffsStore } from '@/stores/battle/buffs'
 import {
+  TRAVEL_BUFF_REPEL_DURATION_SEC,
+  TRAVEL_BUFF_SUPER_REPEL_DURATION_SEC,
+  TRAVEL_BUFF_MAX_REPEL_DURATION_SEC,
+  TRAVEL_BUFF_LONG_DURATION_SEC,
+} from '@/logic/constants/gameplay'
+import {
   TRAVEL_INCENSE_TYPES,
   isTravelBuffItemId,
   isTravelIncenseItemId,
@@ -192,14 +198,14 @@ export function useAdventureRouting(options: {
       options.travelLog.value.push(`🎒 Consumido: -1x ${itemId} de tu mochila real.`)
       
       const buffsStore = useBuffsStore()
-      if (itemId === 'repel') buffsStore.addBuff('repel', 5 * 60)
-      else if (itemId === 'superrepel') buffsStore.addBuff('repel', 15 * 60)
-      else if (itemId === 'maxrepel') buffsStore.addBuff('repel', 30 * 60)
-      else if (itemId === 'luckyegg') buffsStore.addBuff('lucky-egg', 30 * 60)
-      else if (itemId === 'amuletcoin') buffsStore.addBuff('amulet', 60 * 60)
-      else if (itemId === 'ticketshiny') buffsStore.addBuff('shiny', 60 * 60)
+      if (itemId === 'repel') buffsStore.addBuff('repel', TRAVEL_BUFF_REPEL_DURATION_SEC)
+      else if (itemId === 'superrepel') buffsStore.addBuff('repel', TRAVEL_BUFF_SUPER_REPEL_DURATION_SEC)
+      else if (itemId === 'maxrepel') buffsStore.addBuff('repel', TRAVEL_BUFF_MAX_REPEL_DURATION_SEC)
+      else if (itemId === 'luckyegg') buffsStore.addBuff('lucky-egg', TRAVEL_BUFF_MAX_REPEL_DURATION_SEC)
+      else if (itemId === 'amuletcoin') buffsStore.addBuff('amulet', TRAVEL_BUFF_LONG_DURATION_SEC)
+      else if (itemId === 'ticketshiny') buffsStore.addBuff('shiny', TRAVEL_BUFF_LONG_DURATION_SEC)
       else if (isTravelIncenseItemId(itemId)) {
-        buffsStore.addBuff('incense', 30 * 60, TRAVEL_INCENSE_TYPES[itemId])
+        buffsStore.addBuff('incense', TRAVEL_BUFF_MAX_REPEL_DURATION_SEC, TRAVEL_INCENSE_TYPES[itemId])
       }
     })
 

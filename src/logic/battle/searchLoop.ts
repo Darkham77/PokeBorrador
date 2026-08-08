@@ -16,7 +16,28 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   const fsm = ctx.fsm
   const uiStore = useUIStore()
 
-  if (option === 'search' && ctx.activeBattle.value) {
+  if (option === 'map' && !ctx.activeBattle.value) {
+    return
+  }
+
+  if (option === 'search' && !ctx.activeBattle.value) {
+    const defaultLoc = requireMapRouteId(ctx.gs.state.locationId || 'route1')
+    ctx.activeBattle.value = {
+      locationId: defaultLoc,
+      wasSearching: true,
+      over: false,
+      fled: false,
+      playerFled: false,
+      isTrainer: false,
+      isGym: false,
+      isFishing: false,
+      isArchaeology: false,
+      rewardsProcessed: false,
+      _rewardCombatants: []
+    }
+  }
+
+  if (ctx.activeBattle.value) {
     ctx.isProcessing.value = true
     
     // 1. Limpiar el enemigo anterior y restaurar estados de animación
@@ -168,7 +189,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
   const isGym = ctx.activeBattle.value?.isGym || false
 
-  fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
   ctx.activeBattle.value = null
   ctx.isProcessing.value = false
   ctx.clearLogs() 
@@ -211,6 +232,10 @@ export async function triggerNextEncounter(ctx: BattleContext) {
 export async function startEncounter(ctx: BattleContext) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
+
+  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE) {
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  }
 
   const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
   const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy

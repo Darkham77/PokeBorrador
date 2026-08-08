@@ -8,6 +8,8 @@ import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 
+const SECONDS_TO_MS_CONVERSION_FACTOR = 1000
+
 interface Props {
   rivalEventActive?: boolean
   rivalEventText?: string
@@ -43,9 +45,9 @@ const updateCooldown = () => {
   const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
   if (cooldownSecs > 0 && lastHeal > 0) {
     const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHeal
-    const remainingMs = (cooldownSecs * 1000) - elapsedMs
+    const remainingMs = (cooldownSecs * SECONDS_TO_MS_CONVERSION_FACTOR) - elapsedMs
     if (remainingMs > 0) {
-      cooldownSecondsLeft.value = Math.ceil(remainingMs / 1000)
+      cooldownSecondsLeft.value = Math.ceil(remainingMs / SECONDS_TO_MS_CONVERSION_FACTOR)
       return
     }
   }

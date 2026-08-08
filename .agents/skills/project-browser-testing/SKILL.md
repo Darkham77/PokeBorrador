@@ -10,7 +10,7 @@ description: E2E test orchestrator. Delegates environment and simulation protoco
 
 ## Execution Flow
 
-1. **Local Server**: Ensure that `http://localhost:5173` is active.
+1. **Local Server**: Ensure that `http://localhost:5174` is active for automated E2E simulations (or `http://localhost:5173` for manual browser debugging).
 2. **ASH Login**: Log in as the standard test user.
 3. **Simulation Commands**: Use `window.__VITE_DEBUG__` to teleport to the views you want to test.
 

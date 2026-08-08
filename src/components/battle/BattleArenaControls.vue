@@ -90,6 +90,8 @@ const execShowBattleBag = () => {
   })
 }
 
+const BATTLE_SWITCH_RECHECK_DELAY_SEC = 0.1
+
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
     if (typeof window !== 'undefined' && (window as typeof window & { __E2E__?: boolean }).__E2E__) {
@@ -101,10 +103,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
         if (!battleStore.isProcessing) {
           execShowBattleSwitch()
         } else {
-          gsap.delayedCall(0.1, checkReady)
+          gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady)
         }
       }
-      gsap.delayedCall(0.1, checkReady)
+      gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady)
     } else {
       execShowBattleSwitch()
     }
@@ -166,10 +168,13 @@ const encounterBtnText = computed(() => {
   return '¡COMBATIR!'
 })
 
+const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30
+const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95
+
 // GSAP Transition Hooks
 const onEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el, 
-    { opacity: 0, y: 30, scale: 0.95 },
+    { opacity: 0, y: GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX, scale: GSAP_ARENA_CONTROLS_INITIAL_SCALE },
     { 
       opacity: 1, 
       y: 0, 
@@ -250,6 +255,7 @@ const onEnter = (el: Element, done: () => void) => {
         </button>
         <button
           v-if="(battleStore.isReadyToExit || isRewardsWait) || (battleStore.isSearching && battleStore.state?.wasSearching !== false && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.cannotEscape)"
+          id="exit-battle-btn"
           class="continue-btn-final map-btn"
           @click.stop="battleStore.completeBattleFlow('map')"
         >

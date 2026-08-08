@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social/social'
 import { gsap } from 'gsap'
+import { VIEW_TAB_FADE_OUT_DURATION_SEC, VIEW_TAB_FADE_IN_DURATION_SEC } from '@/logic/constants/animations.ts'
 
 // Components
 import SocialFriendsTab from '@/components/social/SocialFriendsTab.vue'
@@ -20,14 +21,14 @@ function selectTab(tab: string) {
   gsap.to('.social-view-content', {
     opacity: 0,
     y: 8,
-    duration: 0.15,
+    duration: VIEW_TAB_FADE_OUT_DURATION_SEC,
     ease: 'power2.inOut',
     onComplete: () => {
       activeTab.value = tab
       gsap.to('.social-view-content', {
         opacity: 1,
         y: 0,
-        duration: 0.25,
+        duration: VIEW_TAB_FADE_IN_DURATION_SEC,
         ease: 'power2.out'
       })
     }

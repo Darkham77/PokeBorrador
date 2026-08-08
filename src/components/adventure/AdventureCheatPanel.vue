@@ -40,11 +40,13 @@ const adjustItem = (itemId: string, amount: number) => {
   }
 }
 
+const MAX_INVENTORY_CLEAR_QTY = 999
+
 const clearTestItems = () => {
   const inv = gameStore.state.inventory || {}
   props.injectedItems.forEach(itemId => {
     if (inv[itemId]) {
-      inventoryStore.removeItem(itemId, 999)
+      inventoryStore.removeItem(itemId, MAX_INVENTORY_CLEAR_QTY)
     }
   })
   emit('update:injectedItems', new Set())

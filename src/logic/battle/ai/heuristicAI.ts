@@ -17,6 +17,8 @@ import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
 import { heuristicDecision, pickBestSwitch } from './heuristic/heuristicEngine.ts';
 import { useBattleStore } from '@/stores/battle/battle';
 
+const LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT = 30;
+
 function resolveConfig(battle: { isWild?: boolean; isGym?: boolean; isRival?: boolean; trainerArchetype?: string } | null): AIConfig {
   if (!battle) return AI_CONFIG_PRESETS.npc;
   if (battle.isWild) return AI_CONFIG_PRESETS.wild;
@@ -154,7 +156,7 @@ export class HeuristicAI implements CombatAI {
 
     // Scale switch threshold by aggressiveness
     const switchThreshold = 50 - config.switchAggressiveness * 25; // 0.4 → 40, 0.7 → 32.5, 0.9 → 27.5
-    return bestOppDmg > switchThreshold && bestMyDmg < 30 && Math.random() < config.switchAggressiveness;
+    return bestOppDmg > switchThreshold && bestMyDmg < LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT && Math.random() < config.switchAggressiveness;
   }
 
   findBestSwitchIndex(enemyTeam: Pokemon[], _player: Pokemon, currentEnemyUid: string, store?: BattleContext): number {

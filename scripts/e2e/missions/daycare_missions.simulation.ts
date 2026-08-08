@@ -1,7 +1,15 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady, clickResilient } from '../e2e_helpers.ts';
+
+const SIMULATION_BABY_LEVEL = 1;
+const SIMULATION_MASTER_LEVEL = 50;
+const SIMULATION_ACTIVE_LEVEL = 5;
+const SIMULATION_MIN_LEVEL_REQ = 30;
+const SIMULATION_REWARD_CANDY_QTY = 1;
+const SIMULATION_NAV_TIMEOUT_MS = 15000;
+const SIMULATION_SELECTION_TIMEOUT_MS = 5000;
+const SIMULATION_COMPLETION_TIMEOUT_MS = 10000;
 
 class DaycareMissionsSimulation extends BaseE2ESimulation {
   constructor(page: Page, username: string) {
@@ -18,16 +26,16 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       // Caterpie frágil (no cumplirá nivel alto si se requiere)
-      const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 1 });
+      const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_BABY_LEVEL });
       babyCaterpie.nickname = 'BABY_CATERPIE';
 
       // Caterpie experto
-      const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 50 });
+      const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_MASTER_LEVEL });
       masterCaterpie.nickname = 'MASTER_CATERPIE';
 
       // Para evitar que el Save Shield bloquee el guardado:
       gameStore.state.starterChosen = true;
-      gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: 5 })];
+      gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_ACTIVE_LEVEL })];
 
       // Agregar ambos a la caja
       gameStore.state.box = [babyCaterpie, masterCaterpie];
@@ -44,20 +52,20 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
           targetId: 'caterpie',
           requirement: {
             type: 'level',
-            minLevel: 30
+            minLevel: SIMULATION_MIN_LEVEL_REQ
           },
-          reqText: 'Caterpie con nivel superior a 30',
+          reqText: `Caterpie con nivel superior a ${SIMULATION_MIN_LEVEL_REQ}`,
           reward: {
             id: 'rarecandy',
             name: 'Caramelo Raro',
-            qty: 1,
+            qty: SIMULATION_REWARD_CANDY_QTY_1,
             icon: '🍬'
           },
           completed: false,
           trainerType: 'cazabichos',
           trainerName: 'Juan',
           trainerSprite: 'bugcatcher',
-          dialogue: 'Se busca un Caterpie con nivel superior a 30.'
+          dialogue: `Se busca un Caterpie con nivel superior a ${SIMULATION_MIN_LEVEL_REQ}.`
         }
       ];
 
@@ -65,7 +73,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
     });
 
     const mapaBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
-    await mapaBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await mapaBtn.waitFor({ state: 'visible', timeout: SIMULATION_NAV_TIMEOUT_MS_15000 });
   }
 
   public async openDaycareMissions(): Promise<void> {
@@ -128,14 +136,14 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
     });
 
     const masterOption = page.locator(`[data-pokemon-uid="${caterpieUid}"]`).first();
-    await masterOption.waitFor({ state: 'visible', timeout: 5000 });
+    await masterOption.waitFor({ state: 'visible', timeout: SIMULATION_SELECTION_TIMEOUT_MS });
     await clickResilient(masterOption);
 
     await page.waitForFunction(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gameStore = useGameStore();
       return gameStore.state.daycare_missions[0]?.completed === true;
-    }, undefined, { timeout: 10000 });
+    }, undefined, { timeout: SIMULATION_COMPLETION_TIMEOUT_MS });
 
     const stateCheck = await sim.getInventoryState();
 

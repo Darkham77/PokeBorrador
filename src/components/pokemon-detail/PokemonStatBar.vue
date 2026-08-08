@@ -10,8 +10,10 @@ interface Props {
   mode?: 'full' | 'stat' | 'iv'
 }
 
+const DEFAULT_MAX_BASE_STAT = 255
+
 withDefaults(defineProps<Props>(), {
-  max: 255,
+  max: DEFAULT_MAX_BASE_STAT,
   color: '$white',
   iv: null,
   mode: 'full'

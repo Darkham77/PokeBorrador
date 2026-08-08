@@ -8,6 +8,14 @@ import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
+const DEFAULT_SEARCH_ITEMS_LIMIT = 10
+const FILTERED_SEARCH_ITEMS_LIMIT = 15
+const DEFAULT_ADD_ITEM_QTY = 10
+const GSAP_HOVER_Y_PX = -2
+const GSAP_HOVER_DURATION_SEC = 0.2
+const GSAP_LEAVE_DURATION_SEC = 0.15
+const GSAP_PRESS_DURATION_SEC = 0.1
+
 interface ShopItem {
   id: string
   name: string
@@ -17,39 +25,39 @@ interface ShopItem {
 const searchQuery = ref('')
 const filteredItems = computed(() => {
   const items = SHOP_ITEMS as ShopItem[]
-  if (!searchQuery.value) return items.slice(0, 10)
+  if (!searchQuery.value) return items.slice(0, DEFAULT_SEARCH_ITEMS_LIMIT)
   return items.filter(i => 
     i.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     i.id.toLowerCase().includes(searchQuery.value.toLowerCase())
-  ).slice(0, 15)
+  ).slice(0, FILTERED_SEARCH_ITEMS_LIMIT)
 })
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const inventoryStore = useInventoryStore()
 
-async function addItem(item: ShopItem, qty = 10) {
+async function addItem(item: ShopItem, qty = DEFAULT_ADD_ITEM_QTY) {
   inventoryStore.addItem(item.id, qty)
 }
 
 function addTenOfEach() {
   const inventory: Partial<Record<string, number>> = { ...gameStore.state.inventory }
   ;(SHOP_ITEMS as ShopItem[]).forEach(item => {
-    incrementRecordKey(inventory, item.id, 10)
+    incrementRecordKey(inventory, item.id, DEFAULT_ADD_ITEM_QTY)
   })
   gameStore.state.inventory = inventory as typeof gameStore.state.inventory
   gameStore.save(false)
-  uiStore.notify('Agregados 10 de cada objeto', '🎒')
+  uiStore.notify(`Agregados ${DEFAULT_ADD_ITEM_QTY} de cada objeto`, '🎒')
 }
 
 function onBtnEnter(e: Event) {
-  gsap.to(e.currentTarget as HTMLElement, { y: -2, duration: 0.2, ease: 'power2.out' })
+  gsap.to(e.currentTarget as HTMLElement, { y: GSAP_HOVER_Y_PX, duration: GSAP_HOVER_DURATION_SEC, ease: 'power2.out' })
 }
 function onBtnLeave(e: Event) {
-  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: 0.15, ease: 'power2.in' })
+  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: GSAP_LEAVE_DURATION_SEC, ease: 'power2.in' })
 }
 function onBtnDown(e: Event) {
-  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: 0.1, ease: 'power2.in' })
+  gsap.to(e.currentTarget as HTMLElement, { y: 0, duration: GSAP_PRESS_DURATION_SEC, ease: 'power2.in' })
 }
 </script>
 

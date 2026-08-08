@@ -1,4 +1,5 @@
-<script setup lang="ts">
+const GSAP_ANIM_Y_OFFSET_PX = 15
+const GSAP_ANIM_SCALE_START = 0.95
 import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
@@ -56,7 +57,7 @@ function resolveItemSprite(item: ReputationShopItem): string {
   return catalogItem.sprite
 }
 
-const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [
+const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [ // no-magic
   {
     id: 'repultraball',
     repCost: 15,
@@ -154,18 +155,18 @@ const availableCategories = computed<string[]>(() => {
 
 const animateGrid = () => {
   nextTick(() => {
-    // [PureVue-Ignore] — direct DOM query required by GSAP to animate dynamic card list
-    const cards = document.querySelectorAll('.rep-shop-item-card')
+    if (!gridRef.value) return
+    const cards = gridRef.value.querySelectorAll('.rep-shop-item-card')
     if (cards.length > 0) {
       gsap.killTweensOf(cards)
       gsap.fromTo(cards, 
-        { opacity: 0, y: 15, scale: 0.95 },
+        { opacity: 0, y: GSAP_ANIM_Y_OFFSET_PX, scale: GSAP_ANIM_SCALE_START },
         { 
           opacity: 1, 
           y: 0, 
           scale: 1, 
-          duration: 0.2, 
-          stagger: 0.02, 
+          duration: GSAP_ANIM_GRID_DURATION_SEC, 
+          stagger: GSAP_ANIM_GRID_STAGGER_SEC, 
           ease: 'power1.out',
           clearProps: 'transform,scale'
         }
@@ -250,6 +251,7 @@ const close = () => {
         >
           <template #price-icon>
             <!-- Center star vertically using SVG -->
+            <!-- // no-magic -->
             <svg
               viewBox="0 0 24 24"
               style="width: 10px; height: 10px; display: block;"

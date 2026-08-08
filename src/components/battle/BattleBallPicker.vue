@@ -75,6 +75,11 @@ const toggleBallMenu = () => {
   }
 }
 
+const BALL_MENU_ANIM_Y_OFFSET_PX = 40
+const BALL_MENU_CLOSE_Y_OFFSET_PX = 20
+const BALL_MENU_OPEN_DURATION_SEC = 0.25
+const BALL_MENU_CLOSE_DURATION_SEC = 0.15
+
 const openMenu = () => {
   if (!menuRef.value) return
   
@@ -83,7 +88,7 @@ const openMenu = () => {
   gsap.set(menuRef.value, {
     scale: 0.2,
     opacity: 0,
-    y: 40,
+    y: BALL_MENU_ANIM_Y_OFFSET_PX,
     transformOrigin: 'bottom center'
   })
 
@@ -96,7 +101,7 @@ const openMenu = () => {
     scale: 1,
     opacity: 1,
     y: 0,
-    duration: 0.25, // Double speed (from 0.5)
+    duration: BALL_MENU_OPEN_DURATION_SEC, // Double speed (from 0.5)
     ease: 'back.out(1.7)',
     onStart: () => {
       if (container) {
@@ -115,8 +120,8 @@ const closeMenu = () => {
   gsap.to(menuRef.value, {
     scale: 0.5,
     opacity: 0,
-    y: 20,
-    duration: 0.15, // Ultra-fast close
+    y: BALL_MENU_CLOSE_Y_OFFSET_PX,
+    duration: BALL_MENU_CLOSE_DURATION_SEC, // Ultra-fast close
     ease: 'power2.in',
     onComplete: () => {
       isBallMenuOpen.value = false
@@ -199,7 +204,7 @@ onUnmounted(() => {
     </div>
 
     <button
-      v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
+      v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }" <!-- number-ok -->
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"
       :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.state?.isTrainer"

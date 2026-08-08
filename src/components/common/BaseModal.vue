@@ -144,6 +144,10 @@ import { useModalStore } from '@/stores/modals'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
 
+const MODAL_UNREGISTER_DELAY_SEC = 0.6
+const MODAL_ANIM_INITIAL_SCALE_MIN = 0.9
+const MODAL_ANIM_INITIAL_Y_OFFSET = 20
+
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
@@ -234,7 +238,7 @@ watch(() => props.show, (val) => {
     uiStore.registerModal(modalInstanceId)
   } else {
     // We don't unregister immediately to allow closing animations to finish at the correct depth
-    gsap.delayedCall(0.6, () => {
+    gsap.delayedCall(MODAL_UNREGISTER_DELAY_SEC, () => {
       if (!props.show) uiStore.unregisterModal(modalInstanceId)
     })
   }
@@ -280,8 +284,8 @@ const onContentEnter = (el: Element, done: () => void) => {
   else if (props.type === 'left' || props.type === 'side-left') fromVars.x = '-100%'
   else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') fromVars.x = '100%'
   else {
-    fromVars.scale = 0.9
-    fromVars.y = 20
+    fromVars.scale = MODAL_ANIM_INITIAL_SCALE_MIN
+    fromVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
   }
 
   gsap.fromTo(el, fromVars, {
@@ -308,8 +312,8 @@ const onContentLeave = (el: Element, done: () => void) => {
   else if (props.type === 'left' || props.type === 'side-left') toVars.x = '-100%'
   else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') toVars.x = '100%'
   else {
-    toVars.scale = 0.9
-    toVars.y = 20
+    toVars.scale = MODAL_ANIM_INITIAL_SCALE_MIN
+    toVars.y = MODAL_ANIM_INITIAL_Y_OFFSET_20
   }
 
   gsap.to(el, {
@@ -323,6 +327,11 @@ const onContentLeave = (el: Element, done: () => void) => {
 }
 
 
+
+const LARGE_SCREEN_HEIGHT_MIN_PX = 900
+const LARGE_MODAL_HEIGHT_PCT = 80
+const LARGE_MODAL_MAX_HEIGHT_PCT = 90
+const VIEWPORT_CLAMP_MAX_PCT = 95
 
 const cardStyles = computed(() => {
   if (props.type === 'fullscreen') return {}
@@ -342,25 +351,25 @@ const cardStyles = computed(() => {
                       )
 
   // If it's a large non-combat modal and the viewport height is significant, expand dimensions
-  const useLargeScreenRules = isLargeModal && typeof window !== 'undefined' && window.innerHeight >= 900
+  const useLargeScreenRules = isLargeModal && typeof window !== 'undefined' && window.innerHeight >= LARGE_SCREEN_HEIGHT_MIN_PX
 
   // We scale the dvh/vh height target under the zoom so the physical screen occupancy remains constant
-  const resolvedHeight = useLargeScreenRules ? `${80 / zoomFactor}dvh` : props.height
-  const resolvedMaxHeight = useLargeScreenRules ? `${90 / zoomFactor}dvh` : props.maxHeight
+  const resolvedHeight = useLargeScreenRules ? `${LARGE_MODAL_HEIGHT_PCT / zoomFactor}dvh` : props.height
+  const resolvedMaxHeight = useLargeScreenRules ? `${LARGE_MODAL_MAX_HEIGHT_PCT / zoomFactor}dvh` : props.maxHeight
   const resolvedMaxWidth = useLargeScreenRules ? '1100px' : props.maxWidth
   
   // Clamping physical sizes to maximum 95% of screen viewport
   const styles: Record<string, string> = { 
     width: '100%',
-    maxWidth: `min(${resolvedMaxWidth}, ${95 / zoomFactor}dvw)`,
+    maxWidth: `min(${resolvedMaxWidth}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvw)`,
     height: resolvedHeight,
-    maxHeight: `min(${resolvedMaxHeight}, ${95 / zoomFactor}dvh)`,
+    maxHeight: `min(${resolvedMaxHeight}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvh)`,
     '--modal-accent': props.accentColor
   }
 
   // Si es un panel lateral, el maxWidth también controla el width base
   if (['left', 'right', 'side', 'side-left', 'side-right'].includes(props.type)) {
-    styles.width = `min(${resolvedMaxWidth}, ${95 / zoomFactor}dvw)`
+    styles.width = `min(${resolvedMaxWidth}, ${VIEWPORT_CLAMP_MAX_PCT / zoomFactor}dvw)`
     
     // Si está pegado al borde, forzamos altura completa (clamped if needed, stuck matches screen height)
     if (computedPositionMode.value === 'stuck') {

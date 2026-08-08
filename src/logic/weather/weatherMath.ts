@@ -20,10 +20,22 @@ export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
  * Deterministically maps an epoch-millisecond timestamp to a day phase.
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
+
+const DAY_CYCLE_TOTAL_HOURS = 8;
+const SECONDS_PER_HOUR = 3600;
+export const PROBABILITY_PERCENT_SCALE = 100;
+const DEFAULT_WEATHER_SESSION_SEED = 500;
+const WEATHER_SESSION_SEED_RANGE = 1000;
+
+/**
+ * Deterministically maps an epoch-millisecond timestamp to a day phase.
+ * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
+ */
 export function getDayCyclePure(nowMs: number): DayPhase {
   const instant = Temporal.Instant.fromEpochMilliseconds(nowMs);
-  const totalHours = Math.floor(Number(instant.epochNanoseconds / BigInt(1e9)) / 3600);
-  const phase = totalHours % 8;
+  const totalHours = Math.floor(Number(instant.epochNanoseconds / BigInt(1e9)) / SECONDS_PER_HOUR);
+  const phase = totalHours % DAY_CYCLE_TOTAL_HOURS;
 
   if (phase < 2) return 'morning';
   if (phase < 4) return 'day';
@@ -68,7 +80,7 @@ export function getRouteWeatherPure(
   const routeTables = tables[mapId];
   if (!routeTables || !routeTables[seasonId]) return 'clear';
 
-  const cycle = getDayCyclePure(epochHour * 3600000);
+  const cycle = getDayCyclePure(epochHour * ONE_HOUR_MS);
   const seasonTable = routeTables[seasonId]!;
   const table = seasonTable[cycle] ?? seasonTable;
 
@@ -77,7 +89,7 @@ export function getRouteWeatherPure(
 
   const prng = mulberry32(seed);
   prng(); prng(); prng(); // discard correlated seeds
-  const randNum = prng() * 100;
+  const randNum = prng() * PROBABILITY_PERCENT_SCALE;
 
   let cumulative = 0;
   for (const [weather, prob] of Object.entries(table as Record<string, number>)) { // open-record
@@ -92,14 +104,14 @@ export function getRouteWeatherPure(
 
 import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 
-let sessionWeatherSeed = 500;
+let sessionWeatherSeed = DEFAULT_WEATHER_SESSION_SEED;
 if (typeof window !== 'undefined') {
   if (window.__WEATHER_SESSION_SEED__ === undefined) {
-    window.__WEATHER_SESSION_SEED__ = Math.random() * 1000;
+    window.__WEATHER_SESSION_SEED__ = Math.random() * WEATHER_SESSION_SEED_RANGE;
   }
   sessionWeatherSeed = window.__WEATHER_SESSION_SEED__;
 } else {
-  sessionWeatherSeed = Math.random() * 1000;
+  sessionWeatherSeed = Math.random() * WEATHER_SESSION_SEED_RANGE;
 }
 
 /**
@@ -113,12 +125,14 @@ export function getSessionWeatherSeed(): number {
  * Deterministically computes the weather animation seed (0 to 1) for a map,
  * matching both map view and battle view.
  */
+const WEATHER_SEED_MODULO_SCALE = 1000;
+
 export function getWeatherAnimSeed(mapId: string): number {
   const mapData = FIRE_RED_MAPS.find(m => m.id === mapId);
   const keyString = mapData?.name || mapId;
   const charSum = keyString.split('').reduce((acc, char, i) => {
     return acc + (char.charCodeAt(0) * (i + 1));
   }, 0);
-  return Math.abs((charSum + sessionWeatherSeed) % 1000) / 1000;
+  return Math.abs((charSum + sessionWeatherSeed) % WEATHER_SEED_MODULO_SCALE) / WEATHER_SEED_MODULO_SCALE;
 }
 

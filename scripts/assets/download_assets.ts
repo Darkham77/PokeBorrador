@@ -23,6 +23,9 @@ if (process.permission && !process.permission.has('fs.read', process.cwd())) {
   process.exit(1);
 }
 
+const DOWNLOAD_BATCH_CHUNK_SIZE = 40;
+const DOWNLOAD_CONCURRENCY_LIMIT = 50;
+
 const OUTPUT_DIR = path.resolve(process.cwd(), 'external_assets');
 const POKEAPI_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
 const POKEAPI_ITEM_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/';
@@ -183,7 +186,7 @@ async function main() {
       downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}back/${i}.png`, path.join(pokeFolder, 'back'), `${i}.png`));
       downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}back/shiny/${i}.png`, path.join(pokeFolder, 'back', 'shiny'), `${i}.png`));
       
-      if (downloadPromises.length >= 40) {
+      if (downloadPromises.length >= DOWNLOAD_BATCH_CHUNK_SIZE) {
         await Promise.all(downloadPromises);
         downloadPromises = [];
         process.stdout.write(styleText('gray', '.'));
@@ -236,7 +239,7 @@ async function main() {
     }
 
     console.log(styleText('gray', `   ${pokemonIds.length} Pokémon found across all generations.`));
-    await downloadAllSprites(pokemonIds, 5, 50);
+    await downloadAllSprites(pokemonIds, 5, DOWNLOAD_CONCURRENCY_LIMIT);
     console.log(styleText('green', '✅ Showdown sprites complete.'));
   }
 

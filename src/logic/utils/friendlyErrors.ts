@@ -38,7 +38,8 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
   }
 
   // 4. Errores de Mantenimiento / 503
-  if (message.includes('503') || message.includes('Service Unavailable')) {
+  const HTTP_SERVICE_UNAVAILABLE_STATUS_CODE = '503'
+  if (message.includes(HTTP_SERVICE_UNAVAILABLE_STATUS_CODE) || message.includes('Service Unavailable')) {
     return 'Estamos curando a los Pokémon del servidor (Mantenimiento) 🚧';
   }
 

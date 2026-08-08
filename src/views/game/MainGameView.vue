@@ -12,6 +12,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
 import { useMainLayout } from '@/composables/ui/useMainLayout'
 import { logger } from '@/logic/utils/logger'
+import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts'
 
 // Sub-components
 import TitleScreen from '@/components/game/TitleScreen.vue'
@@ -71,7 +72,7 @@ onMounted(() => {
   
   // Initial height calculation
   updateHudHeight()
-  gsap.delayedCall(0.1, updateHudHeight) 
+  gsap.delayedCall(HUD_HEIGHT_UPDATE_DELAY_SEC, updateHudHeight) 
 
   // Load essential game data
   warStore.loadWarData()
@@ -96,8 +97,9 @@ watch(() => gs.value.starterChosen, (val) => {
     nextTick(() => {
       const el = document.getElementById('game-screen')
       if (el) {
+        const MAIN_GAME_TRANSITION_Y_PX = 10
         gsap.fromTo(el,
-          { opacity: 0, y: 10 },
+          { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },
           { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
         )
       }

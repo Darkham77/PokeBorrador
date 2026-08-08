@@ -6,6 +6,8 @@
 import { requireVolatileStatusKey, type Pokemon, type PokemonStatus } from '@/types/pokemon/pokemon'
 import type { BattleContext } from '@/types/battle/battleContext'
 
+const BAD_POISON_DENOMINATOR = 16;
+
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
   const icons: Record<string, string> = {
@@ -157,7 +159,7 @@ export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'pl
     case 'tox': {
       let dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
       if (pokemon.status === 'tox' && pokemon.badPoison) {
-        dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / 16));
+        dmg = Math.max(1, Math.floor((pokemon.maxHp * pokemon.badPoison) / BAD_POISON_DENOMINATOR));
         pokemon.badPoison++;
       }
       pokemon.hp = Math.max(0, pokemon.hp - dmg);

@@ -18,6 +18,15 @@ import { generatePixelShadow } from '@/logic/combat/shadowHelpers'
 
 const shadowUrl = generatePixelShadow(SHADOW_WIDTH, SHADOW_HEIGHT)
 
+const DEFAULT_SHADOW_WIDTH_PERCENT = 70
+const SHADOW_HEIGHT_RATIO = 0.08
+const FLYING_SHADOW_OPACITY = 0.6
+const CENTER_FEET_X_OFFSET = 0.5
+const FLYING_SHADOW_Y_OFFSET_PX = 15
+const FLYING_SHADOW_SCALE = 0.8
+
+const SHADOW_TRANSLATE_PERCENT = -50
+
 const shadowStyle = computed(() => {
   if (!shadow.value) return { opacity: 0 }
   
@@ -25,20 +34,22 @@ const shadowStyle = computed(() => {
   const size = props.spriteSize || entitySize
   
   // Dimensions: Relative to the active sprite size
-  const widthPercent = parseFloat(shadow.value.width) || 70
+  const widthPercent = parseFloat(shadow.value.width) || DEFAULT_SHADOW_WIDTH_PERCENT
   const widthPx = (widthPercent / 100) * size
-  const heightPx = size * 0.08
+  const heightPx = size * SHADOW_HEIGHT_RATIO
   
   // Desfase horizontal relativo al centro (50%)
-  const offsetX = (feetX - 0.5) * size
+  const offsetX = (feetX - CENTER_FEET_X_OFFSET) * size
+
+const SHADOW_LEFT_CENTER_PERCENT = 50
 
   return {
     backgroundImage: `url(${shadowUrl})`,
-    left: `calc(50% + ${offsetX}px)`,
+    left: `calc(${SHADOW_LEFT_CENTER_PERCENT}% + ${offsetX}px)`,
     width: `${widthPx}px`,
     height: `${heightPx}px`,
-    opacity: (visible && !isFlying) ? 1 : (visible && isFlying) ? 0.6 : 0,
-    transform: `translate(-50%, -50%) ${isFlying ? 'translateY(15px) scale(0.8)' : 'scale(1)'}`
+    opacity: (visible && !isFlying) ? 1 : (visible && isFlying) ? FLYING_SHADOW_OPACITY : 0,
+    transform: `translate(${SHADOW_TRANSLATE_PERCENT}%, ${SHADOW_TRANSLATE_PERCENT}%) ${isFlying ? `translateY(${FLYING_SHADOW_Y_OFFSET_PX}px) scale(${FLYING_SHADOW_SCALE})` : 'scale(1)'}`
   }
 })
 </script>

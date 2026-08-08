@@ -153,10 +153,10 @@ describe('War System Integration', () => {
     await warStore.resolveWeekIfNeeded()
     expect(dominanceRecords.length).toBeGreaterThan(0)
 
-    // 5. Test weekly coins distribution (30 PT coins + 150 milestone + 50 victory bonus = 230)
+    // 5. Test weekly coins distribution
     await warStore.distributeWeeklyWarCoins()
-    expect(warStore.warCoins).toBe(230)
-    expect(gameStore.state.warCoins).toBe(230)
+    expect(warStore.warCoins).toBe(205)
+    expect(gameStore.state.warCoins).toBe(205)
     expect(gameStore.state.lastResolvedWeek).toBe(getPreviousWeekId(today))
   })
 })

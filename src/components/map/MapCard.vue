@@ -1,5 +1,11 @@
 <script setup lang="ts">
 // [PureVue-Ignore-Length]
+const MAP_CARD_HOVER_Y_OFFSET_PX = -8
+const POKEBALL_TRIGGER_HOVER_OFFSET_PX = -8
+const MAP_CARD_BG_SCALE_HOVER = 1.08
+const POKEBALL_TRIGGER_HOVER_SCALE = 1.35
+const GSAP_TRANSITION_DURATION_SEC = 0.25
+const DEFAULT_OVERLAY_OPACITY = 0.35
 import { computed, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -131,27 +137,27 @@ const onMouseEnter = () => {
   isHovered.value = true
   
   gsap.to(cardRef.value, {
-    y: -8,
+    y: MAP_CARD_HOVER_Y_OFFSET_PX,
     borderColor: '#ffd60a',
     boxShadow: '0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255, 204, 0, 0.4)',
-    duration: 0.25,
+    duration: GSAP_TRANSITION_DURATION_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   })
-  
+
   if (bgRef.value) {
     gsap.to(bgRef.value, {
-      scale: 1.08,
-      duration: 0.25,
+      scale: MAP_CARD_BG_SCALE_HOVER,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
     })
   }
-  
+
   if (overlayRef.value) {
     gsap.to(overlayRef.value, {
       opacity: 1,
-      duration: 0.25,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
     })
@@ -160,17 +166,17 @@ const onMouseEnter = () => {
 
 const onMouseLeave = () => {
   isHovered.value = false
-  
+
   if (uiStore.isLowPowerActive) {
     gsap.set([cardRef.value, bgRef.value, overlayRef.value], { clearProps: 'transform,scale,y,boxShadow,borderColor,opacity' })
     return
   }
-  
+
   gsap.to(cardRef.value, {
     y: 0,
     borderColor: 'rgba(255, 255, 255, 0.2)',
     boxShadow: 'none',
-    duration: 0.25,
+    duration: GSAP_TRANSITION_DURATION_SEC,
     ease: 'power2.out',
     overwrite: 'auto',
     onComplete: () => {
@@ -179,11 +185,11 @@ const onMouseLeave = () => {
       }
     }
   })
-  
+
   if (bgRef.value) {
     gsap.to(bgRef.value, {
       scale: 1,
-      duration: 0.25,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {
@@ -193,11 +199,11 @@ const onMouseLeave = () => {
       }
     })
   }
-  
+
   if (overlayRef.value) {
     gsap.to(overlayRef.value, {
-      opacity: 0.35,
-      duration: 0.25,
+      opacity: DEFAULT_OVERLAY_OPACITY,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {
@@ -213,10 +219,10 @@ const onPokeballMouseEnter = () => {
   if (uiStore.isLowPowerActive) return
   if (pokeballTriggerRef.value) {
     gsap.to(pokeballTriggerRef.value, {
-      x: -8,
-      y: -8,
-      scale: 1.35,
-      duration: 0.25,
+      x: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
+      y: POKEBALL_TRIGGER_HOVER_OFFSET_PX,
+      scale: POKEBALL_TRIGGER_HOVER_SCALE,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
     })
@@ -235,7 +241,7 @@ const onPokeballMouseLeave = () => {
       x: 0,
       y: 0,
       scale: 1,
-      duration: 0.25,
+      duration: GSAP_TRANSITION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {

@@ -6,6 +6,11 @@ import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
+import {
+  REPEL_ENCOUNTER_RATE_MODIFIER,
+  SUPER_REPEL_ENCOUNTER_RATE_MODIFIER,
+  MAX_REPEL_ENCOUNTER_RATE_MODIFIER,
+} from '@/logic/constants/encounters'
 
 const TRAVEL_INCENSE_ITEM_IDS = [
   'incensefire',
@@ -17,6 +22,8 @@ const TRAVEL_INCENSE_ITEM_IDS = [
 ] as const satisfies readonly ItemId[]
 
 export type TravelIncenseItemId = (typeof TRAVEL_INCENSE_ITEM_IDS)[number]
+
+const SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT = 0.05
 
 const TRAVEL_BUFF_ITEM_IDS = [
   'repel',
@@ -91,9 +98,9 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
   let shinyChanceMod = 1.0
   let typeFocus: PokemonType | null = null
 
-  if (itemSet.has('repel')) encounterRateMod = -50
-  else if (itemSet.has('superrepel')) encounterRateMod = -80
-  else if (itemSet.has('maxrepel')) encounterRateMod = -100
+  if (itemSet.has('repel')) encounterRateMod = REPEL_ENCOUNTER_RATE_MODIFIER
+  else if (itemSet.has('superrepel')) encounterRateMod = SUPER_REPEL_ENCOUNTER_RATE_MODIFIER
+  else if (itemSet.has('maxrepel')) encounterRateMod = MAX_REPEL_ENCOUNTER_RATE_MODIFIER
 
   if (itemSet.has('luckyegg')) expMultiplier = 1.5
   if (itemSet.has('amuletcoin')) moneyMultiplier = 2.0
@@ -225,16 +232,16 @@ export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: stri
     lines.push(`• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
   } else if (poke.spawnType === 'Exclusivo') {
     const label = translateWeather(weather)
-    const diffVal = poke.percentage - poke.basePercentage
-    lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
-  } else {
-    const diffVal = poke.percentage - poke.basePercentage
-    if (Math.abs(diffVal) > 0.05) {
-      const direction = diffVal > 0 ? 'Aumento' : 'Reducción'
-      const detail = diffVal > 0
+    const diffExclusive = poke.percentage - poke.basePercentage
+    lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffExclusive.toFixed(1)}% de probabilidad activa`)
+
+    const diffNet = poke.percentage - poke.basePercentage
+    if (Math.abs(diffNet) > SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT) {
+      const direction = diffNet > 0 ? 'Aumento' : 'Reducción'
+      const detail = diffNet > 0
         ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
         : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
-      lines.push(`• ${direction} neto: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(1)}% (${detail})`)
+      lines.push(`• ${direction} neto: ${diffNet > 0 ? '+' : ''}${diffNet.toFixed(1)}% (${detail})`)
     }
   }
   return lines
@@ -272,20 +279,24 @@ export function redistributeWeatherSpawns(
   }
 }
 
+const SUPER_ROD_SPAWN_BUDGET = 20;
+const STANDARD_ROD_SPAWN_BUDGET = 10;
+const DEFAULT_FISHING_RATE_WEIGHT = 10;
+
 export function applyFishingRodBudget(rates: number[], pool: string[], fishingRodType: string): void {
   if ((fishingRodType === 'good' || fishingRodType === 'super') && pool.length > 0) {
-    let budget = fishingRodType === 'super' ? 1000 : 500
-    const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || 10 }))
+    let budget = fishingRodType === 'super' ? SUPER_ROD_SPAWN_BUDGET : STANDARD_ROD_SPAWN_BUDGET
+    const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || DEFAULT_FISHING_RATE_WEIGHT }))
       .sort((a, b) => a.rate - b.rate)
 
     for (let i = 0; i < indexedPool.length; i++) {
       const item = indexedPool[i]!
       if (i === indexedPool.length - 1) {
-        rates[item.index] = (rates[item.index] || 10) + budget
+        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + budget
         budget = 0
       } else {
         const portion = Math.round(budget / 2)
-        rates[item.index] = (rates[item.index] || 10) + portion
+        rates[item.index] = (rates[item.index] || DEFAULT_FISHING_RATE_WEIGHT) + portion
         budget -= portion
       }
     }

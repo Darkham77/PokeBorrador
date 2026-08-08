@@ -2,6 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const MAX_REPORT_ERRORS_PER_FILE_LIMIT = 10;
+
 function run(): void {
   const reportPath = path.join(process.cwd(), 'scratch/lint_report.txt');
   if (!fs.existsSync(reportPath)) {
@@ -59,12 +61,12 @@ function run(): void {
     md += `| Línea | Regla | Mensaje |\n`;
     md += `| :--- | :--- | :--- |\n`;
     // Show top 10 errors per file to keep report clean
-    const visibleErrors = errors.slice(0, 10);
+    const visibleErrors = errors.slice(0, MAX_REPORT_ERRORS_PER_FILE_LIMIT);
     for (const err of visibleErrors) {
       md += `| ${err.line}:${err.col} | \`${err.rule}\` | ${err.message.replace(/\|/g, '\\|')} |\n`;
     }
-    if (errors.length > 10) {
-      md += `| ... | ... | *(y ${errors.length - 10} errores más)* |\n`;
+    if (errors.length > MAX_REPORT_ERRORS_PER_FILE_LIMIT) {
+      md += `| ... | ... | *(y ${errors.length - MAX_REPORT_ERRORS_PER_FILE_LIMIT} errores más)* |\n`;
     }
     md += `\n`;
   }

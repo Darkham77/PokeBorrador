@@ -11,6 +11,16 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 
+const GSAP_ANIM_DURATION_SEC = 0.3
+const GSAP_FAST_DURATION_SEC = 0.2
+const GSAP_PRESS_DURATION_SEC = 0.1
+const SCALE_HOVER_PLUS = 1.1
+const SCALE_HOVER_SPRITE = 1.05
+const SCALE_HOVER_ITEM = 1.02
+const SCALE_PRESS_ITEM = 0.98
+const VIGOR_CRITICAL_THRESHOLD = 2
+const PERCENTAGE_FULL_MULTIPLIER = 100
+
 interface Props {
   slotId: string
   pokemon?: Pokemon | null
@@ -47,7 +57,7 @@ const handleSlotMouseEnter = () => {
     if (slotRef.value) {
       slotBorderTween = gsap.to(slotRef.value, {
         borderColor: '#ffd700',
-        duration: 0.3,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
@@ -56,9 +66,9 @@ const handleSlotMouseEnter = () => {
     if (plusIcon) {
       if (plusIconTween) plusIconTween.kill()
       plusIconTween = gsap.to(plusIcon, {
-        scale: 1.1,
+        scale: SCALE_HOVER_PLUS,
         color: '#ffd700',
-        duration: 0.3,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
@@ -67,7 +77,7 @@ const handleSlotMouseEnter = () => {
     if (slotRef.value) {
       slotBorderTween = gsap.to(slotRef.value, {
         borderColor: 'rgba(255, 255, 255, 0.15)',
-        duration: 0.3,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
@@ -76,8 +86,8 @@ const handleSlotMouseEnter = () => {
     if (spriteBox) {
       if (spriteBoxTween) spriteBoxTween.kill()
       spriteBoxTween = gsap.to(spriteBox, {
-        scale: 1.05,
-        duration: 0.3,
+        scale: SCALE_HOVER_SPRITE,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
@@ -89,7 +99,7 @@ const handleSlotMouseLeave = () => {
   if (slotRef.value) {
     slotBorderTween = gsap.to(slotRef.value, {
       borderColor: 'rgba(255, 255, 255, 0.06)',
-      duration: 0.3,
+      duration: GSAP_ANIM_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -101,7 +111,7 @@ const handleSlotMouseLeave = () => {
       plusIconTween = gsap.to(plusIcon, {
         scale: 1,
         color: 'rgba(51, 65, 85, 1)',
-        duration: 0.3,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
@@ -111,21 +121,23 @@ const handleSlotMouseLeave = () => {
       if (spriteBoxTween) spriteBoxTween.kill()
       spriteBoxTween = gsap.to(spriteBox, {
         scale: 1,
-        duration: 0.3,
+        duration: GSAP_ANIM_DURATION_SEC,
         ease: 'power2.out'
       })
     }
   }
 }
 
+const GSAP_HOVER_BRIGHTNESS_BOOST_PERCENT = 1.15
+
 const handleItemMouseEnter = () => {
   isHoveringItem.value = true
   if (itemTween) itemTween.kill()
   if (itemStatusRef.value) {
     itemTween = gsap.to(itemStatusRef.value, {
-      scale: 1.02,
-      filter: 'brightness(1.15)',
-      duration: 0.2,
+      scale: SCALE_HOVER_ITEM,
+      filter: `brightness(${GSAP_HOVER_BRIGHTNESS_BOOST_PERCENT})`,
+      duration: GSAP_FAST_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -138,7 +150,7 @@ const handleItemMouseLeave = () => {
     itemTween = gsap.to(itemStatusRef.value, {
       scale: 1,
       filter: 'brightness(1)',
-      duration: 0.2,
+      duration: GSAP_FAST_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -148,9 +160,9 @@ const handleItemMouseDown = () => {
   if (itemTween) itemTween.kill()
   if (itemStatusRef.value) {
     itemTween = gsap.to(itemStatusRef.value, {
-      scale: 0.98,
-      filter: 'brightness(1.15)',
-      duration: 0.1,
+      scale: SCALE_PRESS_ITEM,
+      filter: `brightness(${GSAP_HOVER_BRIGHTNESS_BOOST_PERCENT})`,
+      duration: GSAP_PRESS_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -160,9 +172,9 @@ const handleItemMouseUp = () => {
   if (itemTween) itemTween.kill()
   if (itemStatusRef.value) {
     itemTween = gsap.to(itemStatusRef.value, {
-      scale: isHoveringItem.value ? 1.02 : 1,
-      filter: isHoveringItem.value ? 'brightness(1.15)' : 'brightness(1)',
-      duration: 0.1,
+      scale: isHoveringItem.value ? SCALE_HOVER_ITEM : 1,
+      filter: isHoveringItem.value ? `brightness(${GSAP_HOVER_BRIGHTNESS_BOOST_PERCENT})` : 'brightness(1)',
+      duration: GSAP_PRESS_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -349,8 +361,8 @@ const heldItemSprite = computed(() => {
           <div
             class="vigor-fill"
             :style="{ 
-              width: getMaxVigor(pokemon) === 0 ? '0%' : ((getVigor(pokemon) / getMaxVigor(pokemon)) * 100) + '%', 
-              background: getVigor(pokemon) <= 2 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)' 
+              width: getMaxVigor(pokemon) === 0 ? '0%' : ((getVigor(pokemon) / getMaxVigor(pokemon)) * PERCENTAGE_FULL_MULTIPLIER) + '%', 
+              background: getVigor(pokemon) <= VIGOR_CRITICAL_THRESHOLD ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)' 
             }"
           />
         </div>

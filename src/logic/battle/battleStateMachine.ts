@@ -2,6 +2,8 @@ import { ref } from 'vue';
 import { gsap } from 'gsap';
 import { logger } from '../utils/logger.ts';
 
+const MS_PER_SECOND = 1000;
+
 export const BATTLE_STATES = {
   CONTEXT_SETUP: 'CONTEXT_SETUP',
   INITIALIZING: 'INITIALIZING',
@@ -205,7 +207,7 @@ export function createBattleStateMachine() {
       };
 
       if (delayMs > 0) {
-        transitionCall = gsap.delayedCall(delayMs / 1000, executeTransition);
+        transitionCall = gsap.delayedCall(delayMs / MS_PER_SECOND, executeTransition);
       } else {
         executeTransition();
       }

@@ -15,6 +15,10 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
 import { logger } from '@/logic/utils/logger'
 
+const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
+const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
+const DEFAULT_STABLE_GROUND_Y_PCT = '75%';
+
 function resolveAnimatedKey(
   pokemonId: string | number | null | undefined,
   isBack = false,
@@ -101,8 +105,8 @@ function getShadowWidth(pokemon: { id: string | number; form?: string; gender?: 
   const spriteId = getEffectiveSpriteId(pokemon)
   const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
   const meta = animKey ? requireAnimatedSpriteData(animKey) : null
-  const bodyRadius = meta?.bodyRadius ?? 0.4
-  return `${bodyRadius * 250}%`
+  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
+  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
 }
 
 export function useBattleShadows() {
@@ -117,8 +121,8 @@ export function useBattleShadows() {
   const lastPlayerShadowId = ref<string | null>(null)
 
   // Coordenadas de "suelo" persistentes para evitar saltos
-  const stableEnemyGroundY = ref('75%')
-  const stablePlayerGroundY = ref('75%')
+  const stableEnemyGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
+  const stablePlayerGroundY = ref(DEFAULT_STABLE_GROUND_Y_PCT)
 
   const enemyGroundY = computed(() => stableEnemyGroundY.value)
   const playerGroundY = computed(() => stablePlayerGroundY.value)
@@ -141,7 +145,7 @@ export function useBattleShadows() {
     if (data) {
       const url = getFinalSpriteUrl(data, !!data.isShiny, false)
       getPokemonFeetCoords(url)
-      stableEnemyGroundY.value = '75%'
+      stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
 
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
@@ -180,7 +184,7 @@ export function useBattleShadows() {
     if (pokemon) {
       const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true)
       getPokemonFeetCoords(url)
-      stablePlayerGroundY.value = '75%'
+      stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
     }
 
     // Limpieza de sombras huérfanas
@@ -214,10 +218,10 @@ export function useBattleShadows() {
   // Ground line is fixed at 75% — watchers based on shadow.feetY were removed because
   // feetY represents the foot position WITHIN the sprite, not the ground line in the entity box.
   watch(currentEnemyShadowKey, (val) => {
-    if (!val) stableEnemyGroundY.value = '75%'
+    if (!val) stableEnemyGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
   })
   watch(currentPlayerShadowKey, (val) => {
-    if (!val) stablePlayerGroundY.value = '75%'
+    if (!val) stablePlayerGroundY.value = DEFAULT_STABLE_GROUND_Y_PCT
   })
 
   const preloadTeamFeet = async (team: Pokemon[], side: string) => {

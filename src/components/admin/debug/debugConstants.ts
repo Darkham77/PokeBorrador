@@ -117,6 +117,8 @@ export const DEBUG_FIELD_EFFECTS: DebugItem[] = [
   { id: 'toxicspikes', label: 'PÚAS TÓXICAS', icon: '☠️' }
 ]
 
+const SANDSTORM_HAIL_CHIP_DAMAGE_FRACTION_TEXT = '1/16'
+
 export const DEBUG_WEATHER_EFFECTS = [
   { id: 'clear', label: 'DESPEJADO', icon: '🌈', desc: 'Sin efectos atmosféricos.' },
   { id: 'sun', label: 'SOL', icon: '☀️', desc: 'Fuego x1.5, Agua x0.5. Rayo Solar sin turno de carga. Sintesis/Sol de Mañana cura 2/3.' },
@@ -127,10 +129,10 @@ export const DEBUG_WEATHER_EFFECTS = [
   { id: 'storm', label: 'TORMENTA', icon: '⛈️', desc: 'Lluvia intensa con tormenta eléctrica.' },
   { id: 'thunderstorm', label: 'T. ELÉCTRICA', icon: '🌩️', desc: 'Lluvia y actividad eléctrica extrema.' },
   { id: 'snow', label: 'NIEVE', icon: '❄️', desc: 'Aumenta la Defensa x1.5 a Pokémon tipo Hielo (Gen 9). Ventisca 100% precisión.' },
-  { id: 'hail', label: 'GRANIZO', icon: '🌨️', desc: 'Daño 1/16 HP a no-Hielo por turno. Ventisca 100% precisión.' },
+  { id: 'hail', label: 'GRANIZO', icon: '🌨️', desc: `Daño ${SANDSTORM_HAIL_CHIP_DAMAGE_FRACTION_TEXT} HP a no-Hielo por turno. Ventisca 100% precisión.` },
   { id: 'blizzard', label: 'VENTISCA', icon: '🌬️', desc: 'Granizo y tormenta de nieve.' },
   { id: 'fog', label: 'NIEBLA', icon: '🌫️', desc: 'Reduce la precisión de todos los movimientos a x0.6.' },
-  { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: 'Daño 1/16 HP a no-Tierra/Roca/Acero. Aumenta Defensa Especial x1.5 a tipo Roca.' },
+  { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: `Daño ${SANDSTORM_HAIL_CHIP_DAMAGE_FRACTION_TEXT} HP a no-Tierra/Roca/Acero. Aumenta Defensa Especial x1.5 a tipo Roca.` },
   { id: 'dust_storm', label: 'T. POLVO', icon: '🌪️', desc: 'Tormenta de arena y polvo.' },
   { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Corrientes de aire ambiental.' },
   { id: 'strong_winds', label: 'V. FUERTES (DELTA STREAM)', icon: '🌀', desc: 'Elimina las debilidades del tipo Volador.' }

@@ -1,7 +1,11 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
+
+const INITIAL_STARTER_HP_LOW = 5;
+const INITIAL_STARTER_HP_MID = 10;
 
 class HealingSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -20,10 +24,10 @@ class HealingSimWrapper extends BaseBattleSimulation {
       gameStore.state.inventory = { potion: 2, superpotion: 2 };
 
       const bulbasaur = debugService.generate({ id: 'bulbasaur', level: 5 });
-      bulbasaur.hp = 5;
+      bulbasaur.hp = INITIAL_STARTER_HP_LOW;
 
       const charmander = debugService.generate({ id: 'charmander', level: 5 });
-      charmander.hp = 10;
+      charmander.hp = INITIAL_STARTER_HP_MID;
 
       gameStore.state.team = [bulbasaur, charmander];
       gameStore.state.starterChosen = true;
@@ -115,14 +119,14 @@ test.describe('Regresión de Curación en Combate (Playwright)', () => {
 
     // Curar banca (Charmander) con Súper Poción
     const charmanderBefore = stateAfter?.playerTeam.find(p => p.name === 'Charmander');
-    expect(charmanderBefore?.hp).toBe(10);
+    expect(charmanderBefore?.hp).toBe(INITIAL_STARTER_HP_MID);
 
     await sim.forceEnemyChoice('move tackle');
     await sim.useItemOnPokemon('superpotion', charmanderBefore?.uid || '');
 
     const stateAfterBench = await sim.getBattleStoreState();
     const charmanderAfter = stateAfterBench?.playerTeam.find(p => p.name === 'Charmander');
-    expect(charmanderAfter?.hp).toBeGreaterThan(10);
+    expect(charmanderAfter?.hp).toBeGreaterThan(INITIAL_STARTER_HP_MID);
     expect(stateAfterBench?.playerHp).toBeGreaterThan(0);
   });
 
@@ -179,7 +183,7 @@ test.describe('Regresión de Curación en Combate (Playwright)', () => {
     await page.waitForFunction((uid) => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return resolver?.()?.state?.player?.uid === uid;
-    }, charmanderAfter?.uid, { timeout: 5000 });
+    }, charmanderAfter?.uid, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const stateAfterSwitch = await sim.getBattleStoreState();
     expect(stateAfterSwitch?.activePlayerUid).toBe(charmanderAfter?.uid);

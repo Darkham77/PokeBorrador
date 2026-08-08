@@ -1,5 +1,6 @@
 import { type Page } from '@playwright/test';
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 
 export abstract class BaseE2ESimulation {
   protected page: Page;
@@ -41,12 +42,16 @@ export abstract class BaseE2ESimulation {
     });
   }
 
+const SIMULATION_VIEWPORT_WIDTH_PX = 1600;
+const SIMULATION_VIEWPORT_HEIGHT_PX = 900;
+const DEFAULT_CLICK_TIMEOUT_MS = 5000;
+
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
     this.startTime = Temporal.Now.instant().epochMilliseconds;
-    await this.page.setViewportSize({ width: 1600, height: 900 });
+    await this.page.setViewportSize({ width: SIMULATION_VIEWPORT_WIDTH_PX, height: SIMULATION_VIEWPORT_HEIGHT_PX });
     await loginE2ETestUser(this.page, this.username, this.logBuffer, this.sqliteKey);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
     await waitForStoreReady(this.page);
@@ -67,7 +72,7 @@ export abstract class BaseE2ESimulation {
   public async saveGameAndAwaitExport(): Promise<void> {
     const exportPromise = this.page.waitForResponse(
       res => res.url().includes('/api/dev-export-db') && res.status() === 200,
-      { timeout: 10000 }
+      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
     ).catch(() => null);
 
     await this.page.evaluate(async () => {
@@ -89,7 +94,7 @@ export abstract class BaseE2ESimulation {
   /**
    * Espera a que un selector del DOM esté visible y realiza click resilientemente
    */
-  protected async clickElement(selector: string, timeout = 5000): Promise<void> {
+  protected async clickElement(selector: string, timeout = DEFAULT_CLICK_TIMEOUT_MS): Promise<void> {
     const locator = this.page.locator(selector).filter({ visible: true }).first();
     await locator.waitFor({ state: 'visible', timeout });
     await locator.click();

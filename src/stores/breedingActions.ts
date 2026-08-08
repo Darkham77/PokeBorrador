@@ -10,17 +10,19 @@ import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding/breeding';
+import { BREEDING_COST_LOWEST_TIER, BREEDING_COST_MID_LOW_TIER, BREEDING_COST_MID_HIGH_TIER, BREEDING_COST_MAXIMUM_TIER, BREEDING_TIER_1_MAX_PERFECT_IVS, BREEDING_TIER_2_MAX_PERFECT_IVS, BREEDING_TIER_3_MAX_PERFECT_IVS, EGG_WAREHOUSE_MAX_CAPACITY, FOSSIL_CLONE_BASE_SUCCESS_CHANCE, MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay.ts';
 
 export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
+  const NEAR_PERFECT_IV_MIN = MAX_SINGLE_STAT_IV - 1
   const countPerfect = (p: Pokemon) => {
     if (!p.ivs) return 0;
-    return Object.values(p.ivs).filter(val => val === 30 || val === 31).length;
+    return Object.values(p.ivs).filter(val => val >= NEAR_PERFECT_IV_MIN).length;
   };
   const totalPerfect = countPerfect(pA) + countPerfect(pB);
-  if (totalPerfect <= 2) return 2000;
-  if (totalPerfect <= 5) return 5000;
-  if (totalPerfect <= 8) return 12000;
-  return 25000;
+  if (totalPerfect <= BREEDING_TIER_1_MAX_PERFECT_IVS) return BREEDING_COST_LOWEST_TIER;
+  if (totalPerfect <= BREEDING_TIER_2_MAX_PERFECT_IVS) return BREEDING_COST_MID_LOW_TIER;
+  if (totalPerfect <= BREEDING_TIER_3_MAX_PERFECT_IVS) return BREEDING_COST_MID_HIGH_TIER;
+  return BREEDING_COST_MAXIMUM_TIER;
 }
 
 export function executeCloneFossil(
@@ -33,7 +35,7 @@ export function executeCloneFossil(
   const uiStore = useUIStore();
   const inventoryStore = useInventoryStore();
 
-  if (warehouseEggs.value.length >= 30) {
+  if (warehouseEggs.value.length >= EGG_WAREHOUSE_MAX_CAPACITY) {
     uiStore.notify('El almacén de huevos está lleno.', '❌');
     return false;
   }
@@ -70,7 +72,7 @@ export function executeCloneFossil(
   gameStore.state.money -= totalCost;
 
   // Roll success (5% per fossil consumed)
-  const successChance = 0.05 * requiredFossils;
+  const successChance = FOSSIL_CLONE_BASE_SUCCESS_CHANCE * requiredFossils;
   const isSuccess = Math.random() < successChance;
 
   if (!isSuccess) {

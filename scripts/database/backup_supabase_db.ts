@@ -24,6 +24,8 @@ import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
+const BACKUP_TARGET_NODE_VERSION_LABEL = '26';
+
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 
 export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
@@ -46,7 +48,7 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
 }
 
 export async function backupSupabaseDb() {
-  console.log(styleText('bold', '\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js 26+) ---'))
+  console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${TARGET_NODE_VERSION_LABEL_TEXT}+) ---`))
 
   const serverConfigs = await readAndParseEnv()
   const baseProfiles = Object.keys(serverConfigs)

@@ -13,6 +13,20 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { toPokemonType } from '@/data/battle/types'
 
+const GSAP_SCALE_SELECTED = 1.1
+const GSAP_SCALE_AURA = 1.2
+const GSAP_SCALE_SPRITE = 1.15
+const GSAP_ROTATION_SPRITE_DEG = 3
+const GSAP_DURATION_SLOT_SEC = 0.5
+const GSAP_DURATION_AURA_SEC = 0.75
+const GSAP_DURATION_SPRITE_SEC = 0.6
+const GSAP_DURATION_BADGE_POP_SEC = 0.28
+const GSAP_DURATION_BADGE_SETTLE_SEC = 0.12
+const GSAP_DURATION_HEAL_PROGRESS_SEC = 2.0
+const GSAP_DELAY_CLOSE_SEC = 0.8
+const GSAP_DELAY_AUTO_HEAL_SEC = 0.6
+const PERCENTAGE_MAX_SCALE_FACTOR = 100
+
 interface Props {
   show?: boolean
 }
@@ -106,11 +120,11 @@ function startSlotAnimations(index: number) {
   const tweens: gsap.core.Tween[] = []
 
   tweens.push(gsap.to(slot, {
-    scale: 1.1,
+    scale: GSAP_SCALE_SELECTED,
     backgroundColor: 'rgba(34, 197, 94, 0.08)',
     borderColor: 'rgba(34, 197, 94, 0.4)',
     boxShadow: '0 0 20px rgba(34, 197, 94, 0.2)',
-    duration: 0.5,
+    duration: GSAP_DURATION_SLOT_SEC,
     ease: 'power3.out',
     force3D: false
   }))
@@ -118,9 +132,9 @@ function startSlotAnimations(index: number) {
   if (aura) {
     gsap.set(aura, { opacity: 0.6 })
     tweens.push(gsap.to(aura, {
-      scale: 1.2,
+      scale: GSAP_SCALE_AURA,
       opacity: 0.7,
-      duration: 0.75,
+      duration: GSAP_DURATION_AURA_SEC,
       yoyo: true,
       repeat: -1,
       ease: 'sine.inOut',
@@ -133,9 +147,9 @@ function startSlotAnimations(index: number) {
       filter: 'brightness(1.2)'
     })
     tweens.push(gsap.to(sprite, {
-      scale: 1.15,
-      rotation: 3,
-      duration: 0.6,
+      scale: GSAP_SCALE_SPRITE,
+      rotation: GSAP_ROTATION_SPRITE_DEG,
+      duration: GSAP_DURATION_SPRITE_SEC,
       yoyo: true,
       repeat: -1,
       ease: 'sine.inOut',
@@ -164,15 +178,18 @@ watch([isHealing, healedCount], ([newIsHealing, newHealedCount]) => {
   }
 }, { immediate: true })
 
+const GSAP_BADGE_INITIAL_ROTATION_DEG = -20
+const GSAP_BADGE_MID_ROTATION_DEG = 10
+
 function onBadgeEnter(el: Element, done: () => void) {
   const tl = gsap.timeline({ onComplete: done })
   tl.fromTo(el, 
-    { scale: 0, rotation: -20 }, 
-    { scale: 1.2, rotation: 10, duration: 0.28, ease: 'power1.out' }
+    { scale: 0, rotation: GSAP_BADGE_INITIAL_ROTATION_DEG }, 
+    { scale: GSAP_SCALE_AURA, rotation: GSAP_BADGE_MID_ROTATION_DEG, duration: GSAP_DURATION_BADGE_POP_SEC, ease: 'power1.out' }
   ).to(el, {
     scale: 1,
     rotation: 0,
-    duration: 0.12,
+    duration: GSAP_DURATION_BADGE_SETTLE_SEC,
     ease: 'power1.inOut'
   })
 }
@@ -199,7 +216,7 @@ async function handleHeal() {
   const tl = gsap.timeline({
     onUpdate: () => {
       // Sincronizar el conteo de curados con el progreso
-      const targetCount = Math.floor((progress.value / 100) * team.value.length)
+      const targetCount = Math.floor((progress.value / PERCENTAGE_FULL_100) * team.value.length)
       if (targetCount > healedCount.value) {
         healedCount.value = targetCount
       }
@@ -207,7 +224,7 @@ async function handleHeal() {
     onComplete: () => {
       const success = shopStore.healAllPokemon(cost.value)
       if (success) {
-        gsap.delayedCall(0.8, () => {
+        gsap.delayedCall(GSAP_DELAY_CLOSE_SEC, () => {
           isHealing.value = false
           emit('close')
         })
@@ -218,8 +235,8 @@ async function handleHeal() {
   })
 
   tl.to(progress, {
-    value: 100,
-    duration: 2.0,
+    value: PERCENTAGE_MAX_SCALE_FACTOR,
+    duration: GSAP_DURATION_HEAL_PROGRESS_SEC,
     ease: 'none'
   })
 }
@@ -239,17 +256,19 @@ onMounted(() => {
       return
     }
     
-    gsap.delayedCall(0.6, () => {
+    gsap.delayedCall(GSAP_DELAY_AUTO_HEAL_SEC, () => {
       handleHeal()
     })
   }
 })
 
+const GSAP_OVERLAY_HEAL_DELAY_SEC = 0.1
+
   Reflect.set(window, 'showHealEffect', (active: boolean) => {
     if (active) {
       const modalStore = useModalStore()
       modalStore.open('HealOverlay')
-      gsap.delayedCall(0.1, handleHeal)
+      gsap.delayedCall(GSAP_OVERLAY_HEAL_DELAY_SEC, handleHeal)
     }
   })
 
@@ -336,8 +355,11 @@ onUnmounted(() => {
             </PVSpriteFX>
           </div>
           
+const SHINY_SPARKLE_COUNT_HEAL_MODAL = 8
+const MAX_TEAM_POKEMON_COUNT = 6
+
           <div 
-            v-for="i in Math.max(0, 6 - team.length)" 
+            v-for="i in Math.max(0, MAX_TEAM_POKEMON_COUNT - team.length)" 
             :key="'empty-' + i"
             class="slot empty"
           >

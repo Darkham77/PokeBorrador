@@ -243,8 +243,10 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`)
               }
 
+const IMPORT_RELOAD_DELAY_MS = 1500;
+
               // Small delay so user sees the message
-              await new Promise(resolve => setTimeout(resolve, 1500))
+              await new Promise(resolve => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS))
               
               // Force page reload to initialize the game state with the new database
               window.location.reload()

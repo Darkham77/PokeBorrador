@@ -92,12 +92,8 @@ export const EGG_GROUPS: Record<string, string[]> = {
   zubat: ['flying'],
 };
 
-export const COMPAT_TEXT: Record<number, { label: string; color: string }> = {
-  0: { label: '❌ Incompatible', color: '#ff5252' },
-  1: { label: '😐 Baja', color: '#ffb142' },
-  2: { label: '🙂 Buena', color: '#33d9b2' },
-  3: { label: '❤️ Excelente', color: '#ff793f' },
-};
+import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
+export { COMPAT_TEXT }
 
 export const EGG_GROUP_TRANSLATIONS: Record<string, string> = {
   'monster': 'Monstruo',
@@ -138,8 +134,12 @@ export const BREEDING_CONSTANTS = {
   IV_INHERIT_DESTINY_KNOT: 5,
 };
 
+const SECONDS_PER_MINUTE = 60
+const MINUTES_PER_HOUR = 60
+const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+
 export const EGG_SPAWN_INTERVAL_MS: Record<number, number> = {
-  1: 1000 * 60 * 60 * 8, // Poco interés: 8h
-  2: 1000 * 60 * 60 * 4, // Compatibles: 4h
-  3: 1000 * 60 * 60 * 2, // Muy compatibles: 2h
+  1: MILLISECONDS_PER_HOUR * 8, // Poco interés: 8h
+  2: MILLISECONDS_PER_HOUR * 4, // Compatibles: 4h
+  3: MILLISECONDS_PER_HOUR * 2, // Muy compatibles: 2h
 };

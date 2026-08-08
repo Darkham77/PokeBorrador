@@ -1,6 +1,16 @@
 import type { Directive } from 'vue';
 import gsap from 'gsap';
 
+const DEFAULT_HOVER_DURATION_SEC = 0.2;
+const DEFAULT_HOVER_PRESS_DURATION_SEC = 0.08;
+const DEFAULT_HOVER_PRESS_SCALE = 0.95;
+const DEFAULT_HOVER_CARD_SCALE = 1.08;
+const DEFAULT_HOVER_CARD_Y_OFFSET_PX = -4;
+const DEFAULT_HOVER_BUTTON_SCALE = 1.03;
+const DEFAULT_HOVER_BUTTON_Y_OFFSET_PX = -1;
+const DEFAULT_HOVER_PILL_SCALE = 1.05;
+const DEFAULT_HOVER_PILL_Y_OFFSET_PX = -1.5;
+
 // Map to track active tweens/timelines for cleanup
 const activeTweens = new Map<HTMLElement, gsap.core.Tween>();
 
@@ -42,7 +52,7 @@ export const gsapHover: Directive = {
       cleanupTween(el);
       
       const targetVars: gsap.TweenVars = {
-        duration: options.duration ?? 0.2,
+        duration: options.duration ?? DEFAULT_HOVER_DURATION_SEC,
         ease: options.ease ?? 'power1.out',
         overwrite: 'auto'
       };
@@ -72,7 +82,7 @@ export const gsapHover: Directive = {
         y: 0,
         rotation: 0,
         opacity: 1,
-        duration: options.duration ?? 0.2,
+        duration: options.duration ?? DEFAULT_HOVER_DURATION_SEC,
         ease: options.ease ?? 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
@@ -89,8 +99,8 @@ export const gsapHover: Directive = {
       if (options.pressEffect === false) return;
       cleanupTween(el);
       const tween = gsap.to(el, {
-        scale: options.pressScale ?? 0.95,
-        duration: 0.08,
+        scale: options.pressScale ?? DEFAULT_HOVER_PRESS_SCALE,
+        duration: DEFAULT_HOVER_PRESS_DURATION_SEC,
         ease: 'power1.out',
         overwrite: 'auto'
       });
@@ -140,25 +150,27 @@ function cleanupTween(el: HTMLElement) {
   }
 }
 
+const DEFAULT_HOVER_TWEEN_DURATION_SEC = 0.15;
+
 function getOptions(value: string | GsapHoverOptions | undefined): GsapHoverOptions {
   const defaults: GsapHoverOptions = {
-    scale: 1.05,
+    scale: DEFAULT_HOVER_PILL_SCALE,
     y: -2,
-    duration: 0.15,
+    duration: DEFAULT_HOVER_TWEEN_DURATION_SEC,
     ease: 'power1.out',
     pressEffect: true,
-    pressScale: 0.95
+    pressScale: DEFAULT_HOVER_PRESS_SCALE
   };
 
   if (!value) return defaults;
   if (typeof value === 'string') {
     switch (value) {
       case 'card':
-        return { ...defaults, scale: 1.08, y: -4 };
+        return { ...defaults, scale: DEFAULT_HOVER_CARD_SCALE, y: DEFAULT_HOVER_CARD_Y_OFFSET_PX };
       case 'button':
-        return { ...defaults, scale: 1.03, y: -1 };
+        return { ...defaults, scale: DEFAULT_HOVER_BUTTON_SCALE, y: DEFAULT_HOVER_BUTTON_Y_OFFSET_PX };
       case 'pill':
-        return { ...defaults, scale: 1.05, y: -1.5 };
+        return { ...defaults, scale: DEFAULT_HOVER_PILL_SCALE, y: DEFAULT_HOVER_PILL_Y_OFFSET_PX };
       default:
         return defaults;
     }

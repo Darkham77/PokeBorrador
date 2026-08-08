@@ -1,6 +1,24 @@
-// fallow-ignore-file security-sink
 import { test, expect } from '@playwright/test';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, openDebugTab } from '../e2e_helpers.ts';
+
+const CHARMANDER_EXPECTED_HP = 97;
+const CHARMANDER_EXPECTED_ATK = 46;
+const CHARMANDER_EXPECTED_DEF = 47;
+const CHARMANDER_EXPECTED_SPA = 74;
+const CHARMANDER_EXPECTED_SPD = 55;
+const CHARMANDER_EXPECTED_SPE = 72;
+const E2E_CHARMANDER_LEVEL = 42;
+const E2E_BULBASAUR_LEVEL = 33;
+const E2E_WILD_CATERPIE_LEVEL = 5;
+const E2E_WILD_BULBASAUR_LEVEL = 50;
+const E2E_FULL_MOVESET_COUNT = 4;
+const E2E_TEST_IV_HP_MAX = 31;
+const E2E_TEST_IV_ATK_CUSTOM = 10;
+const E2E_TEST_IV_DEF_CUSTOM = 15;
+const E2E_TEST_IV_SPA_MAX = 31;
+const E2E_TEST_IV_SPD_CUSTOM = 20;
+const E2E_TEST_IV_SPE_MAX = 31;
 
 interface E2EWindow {
   __VITE_DEBUG_STORE_RESOLVER__?: () => {
@@ -55,23 +73,23 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     // 2. Select Species: Charmander
     await page.locator('#debug-input-especie').fill('charmander');
     const charmanderOption = page.locator('#option-charmander').first();
-    await charmanderOption.waitFor({ state: 'visible', timeout: 5000 });
+    await charmanderOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await charmanderOption.click();
 
     // 3. Set Level: 42
     const levelInput = page.locator('#debug-input-level');
-    await levelInput.fill('42');
+    await levelInput.fill(E2E_CHARMANDER_LEVEL.toString());
 
     // 4. Set Nature: Modest
     await page.locator('#debug-input-naturaleza').fill('modest');
     const modestOption = page.locator('#option-modest').first();
-    await modestOption.waitFor({ state: 'visible', timeout: 5000 });
+    await modestOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await modestOption.click();
 
     // 5. Set Ability: Blaze
     await page.locator('#debug-input-habilidad').fill('blaze');
     const blazeOption = page.locator('#option-blaze').first();
-    await blazeOption.waitFor({ state: 'visible', timeout: 5000 });
+    await blazeOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await blazeOption.click();
 
     // 6. Set IVs: HP 31, ATK 10, DEF 15, SPA 31, SPD 20, SPE 31
@@ -92,20 +110,20 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     // 10. Close debug modal
     const closeBtn = page.locator('#debug-panel-modal-close-btn');
-    await closeBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await closeBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await closeBtn.click();
 
     // 11. Start a wild encounter combat to inspect player pokemon state
-    await page.evaluate(async () => {
+    await page.evaluate(async (lvl) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const caterpie = pokemonDebugService.generate({
         id: 'caterpie',
-        level: 5,
+        level: lvl,
         moves: ['tackle']
       });
       await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
-    });
+    }, E2E_WILD_CATERPIE_LEVEL_5);
 
     await confirmAndStartBattle(page);
     await waitForWaitInput(page);
@@ -134,26 +152,26 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     });
 
     expect(activePokemonState.id).toBe('charmander');
-    expect(activePokemonState.level).toBe(42);
+    expect(activePokemonState.level).toBe(E2E_CHARMANDER_LEVEL);
     expect(activePokemonState.nature).toBe('modest');
     expect(activePokemonState.ability).toBe('blaze');
     expect(activePokemonState.nickname).toBe('FUEGUITO');
-    expect(activePokemonState.ivs.hp).toBe(31);
-    expect(activePokemonState.ivs.atk).toBe(10);
-    expect(activePokemonState.ivs.def).toBe(15);
-    expect(activePokemonState.ivs.spa).toBe(31);
-    expect(activePokemonState.ivs.spd).toBe(20);
-    expect(activePokemonState.ivs.spe).toBe(31);
+    expect(activePokemonState.ivs.hp).toBe(E2E_TEST_IV_HP_MAX);
+    expect(activePokemonState.ivs.atk).toBe(E2E_TEST_IV_ATK_CUSTOM);
+    expect(activePokemonState.ivs.def).toBe(E2E_TEST_IV_DEF_CUSTOM);
+    expect(activePokemonState.ivs.spa).toBe(E2E_TEST_IV_SPA_MAX);
+    expect(activePokemonState.ivs.spd).toBe(E2E_TEST_IV_SPD_CUSTOM);
+    expect(activePokemonState.ivs.spe).toBe(E2E_TEST_IV_SPE_MAX);
     
     // exact stat assertions based on base stats, level 42, nature modest, and custom IVs
-    expect(activePokemonState.maxHp).toBe(97);
-    expect(activePokemonState.atk).toBe(46);
-    expect(activePokemonState.def).toBe(47);
-    expect(activePokemonState.spa).toBe(74);
-    expect(activePokemonState.spd).toBe(55);
-    expect(activePokemonState.spe).toBe(72);
+    expect(activePokemonState.maxHp).toBe(CHARMANDER_EXPECTED_HP);
+    expect(activePokemonState.atk).toBe(CHARMANDER_EXPECTED_ATK);
+    expect(activePokemonState.def).toBe(CHARMANDER_EXPECTED_DEF);
+    expect(activePokemonState.spa).toBe(CHARMANDER_EXPECTED_SPA);
+    expect(activePokemonState.spd).toBe(CHARMANDER_EXPECTED_SPD);
+    expect(activePokemonState.spe).toBe(CHARMANDER_EXPECTED_SPE);
 
-    expect(activePokemonState.moves.length).toBe(4);
+    expect(activePokemonState.moves.length).toBe(E2E_FULL_MOVESET_COUNT);
     for (const mId of activePokemonState.moves) {
       expect(mId).not.toBe('');
     }
@@ -166,12 +184,12 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     // 2. Select Species: Bulbasaur
     await page.locator('#debug-input-especie').fill('bulbasaur');
     const bulbasaurOption = page.locator('#option-bulbasaur').first();
-    await bulbasaurOption.waitFor({ state: 'visible', timeout: 5000 });
+    await bulbasaurOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await bulbasaurOption.click();
 
     // 3. Set Level: 33
     const levelInput = page.locator('#debug-input-level');
-    await levelInput.fill('33');
+    await levelInput.fill(E2E_BULBASAUR_LEVEL.toString());
 
     // 4. Click "ENCONTRAR"
     await page.locator('#debug-btn-encounter').click();
@@ -192,7 +210,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     });
 
     expect(enemyState.id).toBe('bulbasaur');
-    expect(enemyState.level).toBe(33);
+    expect(enemyState.level).toBe(E2E_BULBASAUR_LEVEL);
   });
 
   test('should configure and start trainer combat from ENTREN tab', async ({ page }) => {
@@ -208,7 +226,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     // 4. Fill trainer properties (do this after generation to override)
     const nameInput = page.locator('#debug-input-trainer-name');
-    await nameInput.waitFor({ state: 'visible', timeout: 5000 });
+    await nameInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await nameInput.fill('BROCK_TEST');
 
     // 5. Iniciar Combate (uses 'map' location type by default, which preserves name)
@@ -238,25 +256,25 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     // 2. Set sandstorm weather
     const sandstormBtn = page.locator('#debug-weather-btn-sandstorm').first();
-    await sandstormBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await sandstormBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await sandstormBtn.click();
 
     // 3. Close debug modal using the close button
     const closeBtn = page.locator('#debug-panel-modal-close-btn');
-    await closeBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await closeBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await closeBtn.click();
 
     // 4. Start quick battle
-    await page.evaluate(async () => {
+    await page.evaluate(async (lvl) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const bulbasaur = pokemonDebugService.generate({
         id: 'bulbasaur',
-        level: 50,
+        level: lvl,
         moves: ['splash']
       });
       await useBattleStore().startBattle(bulbasaur, { locationId: 'route1' });
-    });
+    }, E2E_WILD_BULBASAUR_LEVEL_50);
 
     await confirmAndStartBattle(page);
     await waitForWaitInput(page);

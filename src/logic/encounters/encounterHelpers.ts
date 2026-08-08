@@ -1,3 +1,6 @@
+const ENCOUNTER_INITIAL_CUMULATIVE_RATE = 0;
+const FIRST_POOL_INDEX = 0;
+
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getActivePinia } from 'pinia';
@@ -15,6 +18,36 @@ import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils';
 import { requireGymId, type GymId } from '@/data/world/gyms';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import {
+  DEFAULT_FISHING_RATE_WEIGHT,
+  DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
+  DEFAULT_VISITOR_SPAWN_WEIGHT,
+  DEBUG_TRAINER_CHANCE_PERCENT,
+  DEBUG_GUARDIAN_CHANCE_PERCENT,
+  PERCENTAGE_MULTIPLIER_FACTOR,
+  ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL,
+  ENTRENADOR_RIVAL_CHANCE_MULTIPLIER,
+  DEFENDER_ENCOUNTER_CHANCE,
+  REPELLENT_MAX_ATTEMPTS,
+  DEFAULT_WILD_MIN_LEVEL,
+  DEFAULT_WILD_MAX_LEVEL,
+  DEFAULT_ARCHAEOLOGY_MIN_LEVEL,
+  DEFAULT_ARCHAEOLOGY_MAX_LEVEL,
+  RAINY_WEATHER_FISHING_MULTIPLIER,
+  GROUND_ENCOUNTER_BASE_WEIGHT,
+  FISHING_WEIGHT_SCALE,
+  EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT,
+  CAVE_ARCHAEOLOGY_WEIGHT,
+  MOUNTAIN_ARCHAEOLOGY_WEIGHT,
+  LEGENDARY_RATE_CAP_DENOMINATOR,
+  VISITOR_WEIGHT_REPLACEMENT_VALUE,
+  DEFAULT_SPAWN_RATE_WEIGHT,
+  DEFAULT_WEATHER_MULTIPLIER_NORMAL,
+  DEBUG_MOCK_MAGIKARP_STATS,
+  DEBUG_MOCK_KABUTO_STATS,
+  DEBUG_MOCK_PIDGEY_STATS,
+  DEBUG_MOVE_BASE_POWER
+} from '@/logic/constants/encounters';
 
 type WeightedSpeciesSource = PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
 
@@ -43,7 +76,7 @@ export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: Wea
   const rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
   
   // Ensure rates match pool length before transformations
-  while (rates.length < pool.length) rates.push(10);
+  while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_WEIGHT);
  
   // 1. Inyección por Clima (Visitantes y Exclusivos)
   let wConfig = loc.weather?.[weather];
@@ -67,7 +100,7 @@ export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: Wea
         }
         if (!pool.includes(id)) {
           pool.push(id);
-          rates.push(weight ?? 5); 
+          rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT); 
         }
       });
     }
@@ -82,7 +115,7 @@ export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: Wea
         }
         if (!pool.includes(id)) {
           pool.push(id);
-          rates.push(weight !== undefined ? -weight : -10); 
+          rates.push(weight !== undefined ? -weight : -DEFAULT_VISITOR_SPAWN_WEIGHT); 
         }
       });
     }
@@ -105,7 +138,7 @@ export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: Wea
             if (idx !== -1) {
               pool.push(spId);
               const originalRates = loc.rates?.[c] || [];
-              rates.push(originalRates[idx] || 10);
+              rates.push(originalRates[idx] || DEFAULT_VISITOR_SPAWN_WEIGHT);
               break;
             }
           }
@@ -123,16 +156,16 @@ export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: Wea
  */
 export function selectFromPool<T extends string>(pool: readonly T[], rates: number[]): T {
   if (!pool.length) throw new Error('[encounterHelpers] Cannot select from an empty encounter pool');
-  const totalRate = rates.reduce((a, b) => a + b, 0);
+  const totalRate = rates.reduce((a, b) => a + b, ENCOUNTER_INITIAL_CUMULATIVE_RATE);
   const rand = Math.random() * totalRate;
-  let cumulative = 0;
+  let cumulative = ENCOUNTER_INITIAL_CUMULATIVE_RATE;
   
-  for (let i = 0; i < pool.length; i++) {
-    cumulative += rates[i] || 0;
+  for (let i = FIRST_POOL_INDEX; i < pool.length; i++) {
+    cumulative += rates[i] || ENCOUNTER_INITIAL_CUMULATIVE_RATE;
     const selected = pool[i];
     if (selected && rand <= cumulative) return selected;
   }
-  const first = pool[0];
+  const first = pool[FIRST_POOL_INDEX];
   if (!first) throw new Error('[encounterHelpers] Encounter pool became empty during selection');
   return first;
 }
@@ -155,22 +188,40 @@ export function checkSpecialEncounters(
   }) | null;
   const debug = win?.__VITE_DEBUG__;
   
+const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
+const SPLASH_MAX_PP = 40;
+const ARCHAEOLOGY_SCRATCH_MAX_PP = 35;
+
   if (debug?.forceEncounterType) {
     if (debug.forceEncounterType === 'fishing') {
       return {
         type: 'fishing',
         pokemon: {
           id: 'magikarp',
-          uid: 'magikarp-fishing-1234',
+          uid: DEBUG_MOCK_MAGIKARP_UID,
           name: 'Magikarp',
-          level: 10,
-          hp: 30,
-          maxHp: 30,
-          moves: [{ id: 'splash', name: 'Salpicadura', type: 'water', cat: 'status', pp: 40, maxPP: 40, priority: 0, power: null, acc: null, effect: '', target: 'normal' }],
-          stats: { hp: 30, atk: 10, def: 10, spa: 15, spd: 15, spe: 20 },
-          maxStats: { hp: 30, atk: 10, def: 10, spa: 15, spd: 15, spe: 20 },
-          exp: 0,
-          nextLevelExp: 100,
+          level: DEBUG_MOCK_MAGIKARP_STATS.LEVEL,
+          hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
+          maxHp: DEBUG_MOCK_MAGIKARP_STATS.HP,
+          moves: [{ id: 'splash', name: 'Salpicadura', type: 'water', cat: 'status', pp: SPLASH_MAX_PP, maxPP: SPLASH_MAX_PP, priority: 0, power: null, acc: null, effect: '', target: 'normal' }],
+          stats: {
+            hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
+            atk: DEBUG_MOCK_MAGIKARP_STATS.ATK,
+            def: DEBUG_MOCK_MAGIKARP_STATS.DEF,
+            spa: DEBUG_MOCK_MAGIKARP_STATS.SPA,
+            spd: DEBUG_MOCK_MAGIKARP_STATS.SPD,
+            spe: DEBUG_MOCK_MAGIKARP_STATS.SPE
+          },
+          maxStats: {
+            hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
+            atk: DEBUG_MOCK_MAGIKARP_STATS.ATK,
+            def: DEBUG_MOCK_MAGIKARP_STATS.DEF,
+            spa: DEBUG_MOCK_MAGIKARP_STATS.SPA,
+            spd: DEBUG_MOCK_MAGIKARP_STATS.SPD,
+            spe: DEBUG_MOCK_MAGIKARP_STATS.SPE
+          },
+          exp: DEBUG_MOCK_MAGIKARP_STATS.EXP,
+          nextLevelExp: DEBUG_MOCK_MAGIKARP_STATS.NEXT_LEVEL_EXP,
           gender: 'm',
           nature: 'hardy',
           ability: 'swiftswim',
@@ -183,16 +234,30 @@ export function checkSpecialEncounters(
         type: 'archaeology',
         pokemon: {
           id: 'kabuto',
-          uid: 'kabuto-archaeology-1234',
+          uid: 'kabuto-archaeology-1234', // no-magic
           name: 'Kabuto',
-          level: 10,
-          hp: 35,
-          maxHp: 35,
-          moves: [{ id: 'scratch', name: 'Arañazo', type: 'normal', cat: 'physical', pp: 35, maxPP: 35, priority: 0, power: 40, acc: 100, effect: '', target: 'normal' }],
-          stats: { hp: 35, atk: 15, def: 20, spa: 15, spd: 15, spe: 15 },
-          maxStats: { hp: 35, atk: 15, def: 20, spa: 15, spd: 15, spe: 15 },
-          exp: 0,
-          nextLevelExp: 100,
+          level: DEBUG_MOCK_KABUTO_STATS.LEVEL,
+          hp: DEBUG_MOCK_KABUTO_STATS.HP,
+          maxHp: DEBUG_MOCK_KABUTO_STATS.HP,
+          moves: [{ id: 'scratch', name: 'Arañazo', type: 'normal', cat: 'physical', pp: ARCHAEOLOGY_SCRATCH_MAX_PP, maxPP: ARCHAEOLOGY_SCRATCH_MAX_PP, priority: 0, power: DEBUG_MOVE_BASE_POWER, acc: 100, effect: '', target: 'normal' }],
+          stats: {
+            hp: DEBUG_MOCK_KABUTO_STATS.HP,
+            atk: DEBUG_MOCK_KABUTO_STATS.ATK,
+            def: DEBUG_MOCK_KABUTO_STATS.DEF,
+            spa: DEBUG_MOCK_KABUTO_STATS.SPA,
+            spd: DEBUG_MOCK_KABUTO_STATS.SPD,
+            spe: DEBUG_MOCK_KABUTO_STATS.SPE
+          },
+          maxStats: {
+            hp: DEBUG_MOCK_KABUTO_STATS.HP,
+            atk: DEBUG_MOCK_KABUTO_STATS.ATK,
+            def: DEBUG_MOCK_KABUTO_STATS.DEF,
+            spa: DEBUG_MOCK_KABUTO_STATS.SPA,
+            spd: DEBUG_MOCK_KABUTO_STATS.SPD,
+            spe: DEBUG_MOCK_KABUTO_STATS.SPE
+          },
+          exp: DEBUG_MOCK_KABUTO_STATS.EXP,
+          nextLevelExp: DEBUG_MOCK_KABUTO_STATS.NEXT_LEVEL_EXP,
           gender: 'm',
           nature: 'hardy',
           ability: 'battlearmor',
@@ -211,16 +276,30 @@ export function checkSpecialEncounters(
         type: 'wild',
         pokemon: {
           id: 'pidgey',
-          uid: 'pidgey-wild-1234',
+          uid: 'pidgey-wild-1234', // no-magic
           name: 'Pidgey',
-          level: 5,
-          hp: 20,
-          maxHp: 20,
-          moves: [{ id: 'tackle', name: 'Placaje', type: 'normal', cat: 'physical', pp: 35, maxPP: 35, priority: 0, power: 40, acc: 100, effect: '', target: 'normal' }],
-          stats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-          maxStats: { hp: 20, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-          exp: 0,
-          nextLevelExp: 50,
+          level: DEBUG_MOCK_PIDGEY_STATS.LEVEL,
+          hp: DEBUG_MOCK_PIDGEY_STATS.HP,
+          maxHp: DEBUG_MOCK_PIDGEY_STATS.HP,
+          moves: [{ id: 'tackle', name: 'Placaje', type: 'normal', cat: 'physical', pp: ARCHAEOLOGY_SCRATCH_MAX_PP, maxPP: ARCHAEOLOGY_SCRATCH_MAX_PP, priority: 0, power: DEBUG_MOVE_BASE_POWER, acc: 100, effect: '', target: 'normal' }],
+          stats: {
+            hp: DEBUG_MOCK_PIDGEY_STATS.HP,
+            atk: DEBUG_MOCK_PIDGEY_STATS.ATK,
+            def: DEBUG_MOCK_PIDGEY_STATS.DEF,
+            spa: DEBUG_MOCK_PIDGEY_STATS.SPA,
+            spd: DEBUG_MOCK_PIDGEY_STATS.SPD,
+            spe: DEBUG_MOCK_PIDGEY_STATS.SPE
+          },
+          maxStats: {
+            hp: DEBUG_MOCK_PIDGEY_STATS.HP,
+            atk: DEBUG_MOCK_PIDGEY_STATS.ATK,
+            def: DEBUG_MOCK_PIDGEY_STATS.DEF,
+            spa: DEBUG_MOCK_PIDGEY_STATS.SPA,
+            spd: DEBUG_MOCK_PIDGEY_STATS.SPD,
+            spe: DEBUG_MOCK_PIDGEY_STATS.SPE
+          },
+          exp: DEBUG_MOCK_PIDGEY_STATS.EXP,
+          nextLevelExp: DEBUG_MOCK_PIDGEY_STATS.NEXT_LEVEL_EXP,
           gender: 'f',
           nature: 'hardy',
           ability: 'tangledfeet',
@@ -235,7 +314,7 @@ export function checkSpecialEncounters(
   }
 
   if (!options.forceEncounter && debug?.trainerChance50) {
-    if (Math.random() < 0.50) {
+    if (Math.random() < (DEBUG_TRAINER_CHANCE_PERCENT / 100)) {
       return { type: 'trainer' };
     }
   }
@@ -243,7 +322,7 @@ export function checkSpecialEncounters(
   if (!options.forceEncounter && debug?.forceGuardian80) {
     const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
     const capturedToday = (dailyCaptures || []).includes(locId);
-    if (!capturedToday && Math.random() < 0.80) {
+    if (!capturedToday && Math.random() < (DEBUG_GUARDIAN_CHANCE_PERCENT / 100)) {
       const guardian = getGuardianData(locId, allMapIds);
       if (guardian) {
         return { 
@@ -261,11 +340,11 @@ export function checkSpecialEncounters(
     const eventRivalBonus = options.eventRivalBonus || 1;
     rivalChance *= eventRivalBonus;
 
-    if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
+    if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL) {
       const gymIds = (['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const satisfies readonly GymId[]).map(requireGymId);
       const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
       if (allGymsHard) {
-        rivalChance *= 2;
+        rivalChance *= ENTRENADOR_RIVAL_CHANCE_MULTIPLIER;
       }
     }
 
@@ -276,7 +355,7 @@ export function checkSpecialEncounters(
   
   // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
   if (!isDisputePhase() && !options.forceEncounter) {
-    if (Math.random() < 0.20 && state.faction) {
+    if (Math.random() < DEFENDER_ENCOUNTER_CHANCE && state.faction) {
       const dominance = (options.dominanceData || {})[requireMapRouteId(locId)];
       const winner = dominance?.winner || null;
       if (winner && winner !== state.faction) {
@@ -318,15 +397,15 @@ export function handleRepellentEncounter(
   
   const weather = options.weather || 'clear';
   const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents);
-  const rates = rawRates.map(r => r === -1 ? 5 : r); 
+  const rates = rawRates.map(r => r === -1 ? VISITOR_WEIGHT_REPLACEMENT_VALUE : r); 
   clampLegendaryRates(pool, rates); 
 
   const firstPokemon = state.team?.[0];
 
-  for (let attempt = 0; attempt < 10; attempt++) {
+  for (let attempt = 0; attempt < REPELLENT_MAX_ATTEMPTS; attempt++) {
     const selectedId = selectFromPool(pool, rates);
-    const minLv = loc.lv[0] || 2;
-    const maxLv = loc.lv[1] || 5;
+    const minLv = loc.lv[0] || DEFAULT_WILD_MIN_LEVEL;
+    const maxLv = loc.lv[1] || DEFAULT_WILD_MAX_LEVEL;
     const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
 
     if (!firstPokemon || level >= firstPokemon.level) {
@@ -350,13 +429,13 @@ export function generateArchaeologyEncounter(
   const archPool = loc.archaeology.pool;
   const archRates = loc.archaeology.rates;
   const selectedId = selectFromPool(archPool, archRates);
-  const minLv = loc.archaeology.lv[0] || 15;
-  const maxLv = loc.archaeology.lv[1] || 25;
+  const minLv = loc.archaeology.lv[0] || DEFAULT_ARCHAEOLOGY_MIN_LEVEL;
+  const maxLv = loc.archaeology.lv[1] || DEFAULT_ARCHAEOLOGY_MAX_LEVEL;
   const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
   const totalRate = archRates.reduce((a: number, b: number) => a + b, 0);
   const rateIdx = archPool.indexOf(selectedId);
   const rateVal = archRates[rateIdx];
-  const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100;
+  const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * PERCENTAGE_MULTIPLIER_FACTOR;
   
   return {
     type: 'archaeology',
@@ -377,16 +456,16 @@ export function calculateEncounterTypeWeights(
   options: EncounterOptions
 ): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
   const isRainy = RAINY_WEATHERS.includes(weather);
-  const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
+  const climateFishingMultiplier = isRainy ? RAINY_WEATHER_FISHING_MULTIPLIER : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
 
-  const groundWeight = 100;
+  const groundWeight = GROUND_ENCOUNTER_BASE_WEIGHT;
 
   let fishingWeight = 0;
   if (loc.fishing) {
-    fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus;
+    fishingWeight = GAME_RATIOS.encounters.fishing * FISHING_WEIGHT_SCALE * fishingBonus;
     if ((state.fishingRodSecs || 0) > 0) {
-      fishingWeight += 600;
+      fishingWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
     }
   }
 
@@ -394,9 +473,9 @@ export function calculateEncounterTypeWeights(
   if (loc.archaeology) {
     const isCave = !!loc.isCave;
     const isMountain = !!loc.isMountain;
-    archWeight = isCave ? 10 : (isMountain ? 5 : 0);
+    archWeight = isCave ? CAVE_ARCHAEOLOGY_WEIGHT : (isMountain ? MOUNTAIN_ARCHAEOLOGY_WEIGHT : 0);
     if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
-      archWeight += 600;
+      archWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
     }
   }
 
@@ -434,8 +513,8 @@ export function clampLegendaryRates(pool: PokemonSpeciesId[], rates: number[]): 
   // To guarantee final probability <= 1% for each legendary:
   // rate(L) / (sumOtherRates + sum_legendary_rates) <= 0.01
   // We can solve for a capped rate for each legendary.
-  // Set cap = sumOtherRates / 99.
-  const cap = sumOtherRates / 99;
+  // Set cap = sumOtherRates / LEGENDARY_RATE_CAP_DENOMINATOR.
+  const cap = sumOtherRates / LEGENDARY_RATE_CAP_DENOMINATOR;
 
   legendaryIndices.forEach(idx => {
     if ((rates[idx] || 0) > cap) {
@@ -491,8 +570,8 @@ export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weath
     exclusives.includes(selectedId)
   ));
   const multiplier = getWeatherMultiplier(selectedId, weather);
-  const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
-  const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
+  const isBuffed = !isVisitor && !isExclusive && multiplier > DEFAULT_WEATHER_MULTIPLIER_NORMAL;
+  const isDebuffed = !isVisitor && !isExclusive && multiplier < DEFAULT_WEATHER_MULTIPLIER_NORMAL && multiplier > 0;
   
   if (isVisitor || isExclusive || isBuffed || isDebuffed) {
     pokemon.isAtmospheric = true;
@@ -525,7 +604,7 @@ export function getMapSpawnPoolData(
   const ratesMap: Partial<Record<PokemonSpeciesId, number>> = {}
 
   pool.forEach((id: PokemonSpeciesId, index: number) => {
-    ratesMap[id] = rates[index] || 10
+    ratesMap[id] = rates[index] || DEFAULT_SPAWN_RATE_WEIGHT
     if (baseWild.includes(id)) {
       generic.push(id)
     } else {
@@ -537,7 +616,7 @@ export function getMapSpawnPoolData(
     loc.fishing.pool.forEach((id: PokemonSpeciesId, index: number) => {
       if (!generic.includes(id) && !specific.includes(id)) {
         generic.push(id)
-        ratesMap[id] = loc.fishing!.rates[index] || 10
+        ratesMap[id] = loc.fishing!.rates[index] || DEFAULT_SPAWN_RATE_WEIGHT
       }
     })
   }

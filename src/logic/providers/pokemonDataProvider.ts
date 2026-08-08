@@ -209,7 +209,8 @@ export const pokemonDataProvider = {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
         
-
+        const PERFECT_ACCURACY_FLAG = 1000;
+        const DRAGON_RAGE_FIXED_DMG = 40;
 
         let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
         if (!move || !move.exists) {
@@ -222,7 +223,7 @@ export const pokemonDataProvider = {
                 id: moveId,
                 name: translated.name || 'Recargando',
                 power: 0,
-                acc: 1000,
+                acc: PERFECT_ACCURACY_FLAG,
                 type: 'normal',
                 cat: 'status',
                 pp: 0,
@@ -241,7 +242,7 @@ export const pokemonDataProvider = {
             id: moveId,
             name: espName,
             power: move.basePower,
-            acc: move.accuracy === true ? 1000 : move.accuracy,
+            acc: move.accuracy === true ? PERFECT_ACCURACY_FLAG : move.accuracy,
             type: toPokemonType(move.type.toLowerCase()), // text-ok
             cat: requireMoveCategory(move.category),
             pp: move.pp,
@@ -281,7 +282,7 @@ export const pokemonDataProvider = {
         if (cleanId === 'super_fang') moveData.halfHP = true;
         if (cleanId === 'endeavor') moveData.endeavor = true;
         if (cleanId === 'counter') moveData.counter = true;
-        if (cleanId === 'dragon_rage') moveData.fixedDmg = 40;
+        if (cleanId === 'dragon_rage') moveData.fixedDmg = DRAGON_RAGE_FIXED_DMG;
         if (move.flags && move.flags.sound) moveData.sound = true;
 
         return moveData;

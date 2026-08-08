@@ -1,4 +1,5 @@
 import { gameBus } from '@/logic/events/gameBus'
+const ESCAPE_ANIMATION_FALLBACK_DELAY_MS = 800
 import type { BattleContext } from '@/types/battle/battleContext'
 
 export async function executeFlee(ctx: BattleContext) {
@@ -72,7 +73,7 @@ export async function executeFlee(ctx: BattleContext) {
           await ctx.animations.awaitTween(`player-${p.uid}`)
         } else {
           const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
-          await gsapSleep(800)
+          await gsapSleep(ESCAPE_ANIMATION_FALLBACK_DELAY_MS)
         }
         
         ctx.activeBattle.value.playerFled = true
@@ -125,7 +126,7 @@ export async function executeFlee(ctx: BattleContext) {
               await ctx.animations.awaitTween('escape-enemy')
             } else {
               const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
-              await gsapSleep(800)
+              await gsapSleep(ESCAPE_ANIMATION_FALLBACK_DELAY_MS)
             }
             await ctx.endBattle(false, true)
           }

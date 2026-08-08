@@ -15,6 +15,9 @@ interface Props {
   show?: boolean
 }
 
+const TRADE_HEADER_ANIM_OFFSET_Y = -30;
+const TRADE_SIDE_ANIM_OFFSET_X = 50;
+
 const props = withDefaults(defineProps<Props>(), {
   show: false
 })
@@ -139,20 +142,18 @@ const handleSend = async () => {
 const animateEntry = () => {
   if (document.querySelector('.trade-summary-bar')) {
     gsap.fromTo('.trade-summary-bar', 
-      { y: -30, opacity: 0 }, 
+      { y: TRADE_HEADER_ANIM_OFFSET_Y, opacity: 0 }, 
       { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' }
     )
   }
   if (document.querySelector('.trade-grid .offer-side')) {
     gsap.fromTo('.trade-grid .offer-side', 
-      { x: -50, opacity: 0 }, 
-      { x: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.1 }
+      { x: -TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
     )
-  }
-  if (document.querySelector('.trade-grid .request-side')) {
     gsap.fromTo('.trade-grid .request-side', 
-      { x: 50, opacity: 0 }, 
-      { x: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.1 }
+      { x: TRADE_SIDE_ANIM_OFFSET_X, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }
     )
   }
 }

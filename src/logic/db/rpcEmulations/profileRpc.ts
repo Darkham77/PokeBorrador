@@ -2,6 +2,10 @@ import { queryLocal } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 15;
+const RENAME_COOLDOWN_DAYS = 30;
+
 export async function emulateChangeUsername(
   _sqliteDb: SQLiteDatabase,
   params: Record<string, unknown>,
@@ -11,8 +15,8 @@ export async function emulateChangeUsername(
   const { userId } = context;
 
   // 1. Length validation (3 to 15 characters)
-  if (!new_username || new_username.trim().length < 3 || new_username.trim().length > 15) {
-    return { data: null, error: 'El nombre de entrenador debe tener entre 3 y 15 caracteres.' };
+  if (!new_username || new_username.trim().length < MIN_USERNAME_LENGTH || new_username.trim().length > MAX_USERNAME_LENGTH) {
+    return { data: null, error: `El nombre de entrenador debe tener entre ${MIN_USERNAME_LENGTH} y ${MAX_USERNAME_LENGTH} caracteres.` };
   }
 
   // 2. Query current profile data for validations
@@ -27,9 +31,9 @@ export async function emulateChangeUsername(
     // 4. Cooldown validation (30 days)
     if (current[0]!.last_renamed_at) {
       const lastRename = Temporal.Instant.from(current[0]!.last_renamed_at as string);
-      const thirtyDaysAgo = Temporal.Now.instant().subtract({ hours: 24 * 30 });
+      const thirtyDaysAgo = Temporal.Now.instant().subtract({ hours: 24 * RENAME_COOLDOWN_DAYS });
       if (Temporal.Instant.compare(lastRename, thirtyDaysAgo) > 0) {
-        return { data: null, error: 'Solo puedes cambiar tu nombre una vez cada 30 días. Debes esperar al menos 30 días.' };
+        return { data: null, error: `Solo puedes cambiar tu nombre una vez cada ${RENAME_COOLDOWN_DAYS} días. Debes esperar al menos ${RENAME_COOLDOWN_DAYS} días.` };
       }
     }
   }

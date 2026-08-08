@@ -8,8 +8,11 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { getXPNeededForClassLevel } from '@/logic/player/classMath'
+import { getXPNeededForClassLevel, MAX_PLAYER_CLASS_LEVEL, CLASS_CHANGE_COST_BATTLE_COINS, MAX_CRIMINALITY_LEVEL } from '@/logic/player/classMath'
 import { requireFactionId } from '@/types/system/game'
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
+import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts'
+import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts'
 
 
 import { AVATAR_STYLES } from '@/data/player/cosmeticsData'
@@ -119,12 +122,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     const isChange = !!playerClass.value
     if (isChange) {
-      const cost = 10000
-      if ((gameStore.state.battleCoins || 0) < cost) {
-        uiStore.notify(`Necesitas ${cost.toLocaleString()} Battle Coins para cambiar.`, '❌')
-        return { success: false, msg: `Necesitas ${cost.toLocaleString()} Battle Coins para cambiar.` }
+      if ((gameStore.state.battleCoins || 0) < CLASS_CHANGE_COST_BATTLE_COINS) {
+        uiStore.notify(`Necesitas ${CLASS_CHANGE_COST_BATTLE_COINS.toLocaleString()} Battle Coins para cambiar.`, '❌')
+        return { success: false, msg: `Necesitas ${CLASS_CHANGE_COST_BATTLE_COINS.toLocaleString()} Battle Coins para cambiar.` }
       }
-      gameStore.state.battleCoins -= cost
+      gameStore.state.battleCoins -= CLASS_CHANGE_COST_BATTLE_COINS
     }
 
     // Reset de datos específicos y liberación de Pokémon en misión
@@ -190,13 +192,12 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     // Costo de cambio (si ya tenía uno)
     if (currentFaction) {
-      const cost = 25000
-      if ((gameStore.state.money || 0) < cost) {
-        uiStore.notify(`Necesitas 🪙 ${cost.toLocaleString()} para cambiar de bando.`, '❌')
+      if ((gameStore.state.money || 0) < FACTION_CHANGE_COST) {
+        uiStore.notify(`Necesitas 🪙 ${FACTION_CHANGE_COST.toLocaleString()} para cambiar de bando.`, '❌')
         return { success: false }
       }
-      gameStore.state.money -= cost
-      uiStore.notify(`Cambiaste de bando por 🪙 ${cost.toLocaleString()}`, '💸')
+      gameStore.state.money -= FACTION_CHANGE_COST
+      uiStore.notify(`Cambiaste de bando por 🪙 ${FACTION_CHANGE_COST.toLocaleString()}`, '💸')
     }
 
     gameStore.state.faction = resolvedFactionId
@@ -212,10 +213,9 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     if (!playerClass.value || amount <= 0) return
     
     gameStore.state.classXP = (gameStore.state.classXP || 0) + amount
-    const MAX_CLASS_LEVEL = 30
     
     let xpNeeded = getXPNeededForClassLevel(gameStore.state.classLevel)
-    while (gameStore.state.classXP >= xpNeeded && gameStore.state.classLevel < MAX_CLASS_LEVEL) {
+    while (gameStore.state.classXP >= xpNeeded && gameStore.state.classLevel < MAX_PLAYER_CLASS_LEVEL) {
       gameStore.state.classXP -= xpNeeded
       gameStore.state.classLevel = (gameStore.state.classLevel || 1) + 1
       uiStore.notify(`¡Tu clase ${currentClassDef.value?.name || ''} subió al Nivel ${gameStore.state.classLevel}!`, '🎓')
@@ -232,7 +232,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const prev = currentData.criminality || 0
     currentData.criminality = prev + amount
     
-    if (prev < 100 && currentData.criminality >= 100) {
+    if (prev < MAX_CRIMINALITY_LEVEL && currentData.criminality >= MAX_CRIMINALITY_LEVEL) {
       uiStore.notify("¡Nivel de criminalidad máximo! La policía te busca.", "🚔")
     }
   }
@@ -290,7 +290,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     currentData.activeMission = {
       id: missionId,
       startedAt: now as number,
-      endsAt: (now as number) + (m.durationHs * 3600 * 1000),
+      endsAt: (now as number) + (m.durationHs * ONE_HOUR_MS),
       ...extraData
     }
     
@@ -353,7 +353,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
           p.expNeeded = Infinity;
           msg += `¡${p.name} ya está en su nivel máximo! 🏅`
         } else {
-          const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
+          const TRAINER_EXP_BLOCK_MS = 6 * ONE_HOUR_MS
+          const blocks = (mission.endsAt - mission.startedAt) / TRAINER_EXP_BLOCK_MS // bloques de 6h
           const expGain = (25000 + (p.level || 1) * 1000) * blocks;
           p.exp = (p.exp || 0) + expGain;
           msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
@@ -369,8 +370,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
           const gain = Math.floor(Math.random() * 3) + 1;
           if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
           const curVal = p.ivs[stat] || 0;
-          p.ivs[stat] = Math.min(31, curVal + gain);
-          p.vigor = Math.max(0, (p.vigor || 20) - 5);
+          p.ivs[stat] = Math.min(MAX_SINGLE_STAT_IV, curVal + gain);
+          p.vigor = Math.max(0, (p.vigor || MAX_POKEMON_VIGOR) - 5);
           p.onMission = false;
           msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
         }

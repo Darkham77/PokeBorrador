@@ -59,10 +59,18 @@ function devDbImportPlugin() {
       let cleanDbRamBuffer: Buffer | null = null;
       const importedDbRamBuffers = new Map<string, Buffer>();
 
-      const getDbKey = (urlStr?: string): string => {
-        if (!urlStr) return 'default';
+      const getDbKey = (req: IncomingMessage): string => {
+        const headerKey = req.headers['x-db-key'];
+        const cleanHeaderKey = typeof headerKey === 'string'
+          ? headerKey.replace(/[^a-zA-Z0-9_-]/g, '')
+          : Array.isArray(headerKey) && headerKey[0]
+            ? headerKey[0].replace(/[^a-zA-Z0-9_-]/g, '')
+            : '';
+        if (cleanHeaderKey) return cleanHeaderKey;
+
+        if (!req.url) return 'default';
         try {
-          const parsed = new URL(urlStr, 'http://localhost');
+          const parsed = new URL(req.url, 'http://localhost');
           const key = parsed.searchParams.get('db_key');
           return key && /^[a-zA-Z0-9_-]+$/.test(key) ? key : 'default';
         } catch {
@@ -77,7 +85,7 @@ function devDbImportPlugin() {
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-import-db-check')) {
-          const dbKey = getDbKey(req.url);
+          const dbKey = getDbKey(req);
           if (importedDbRamBuffers.has(dbKey)) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ exists: true }));
@@ -96,7 +104,7 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
-          const dbKey = getDbKey(req.url);
+          const dbKey = getDbKey(req);
           importedDbRamBuffers.delete(dbKey);
           const dbPath = getDbPath(dbKey);
           try {
@@ -112,7 +120,7 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db')) {
-          const dbKey = getDbKey(req.url);
+          const dbKey = getDbKey(req);
           const ramBuf = importedDbRamBuffers.get(dbKey);
           if (ramBuf) {
             res.writeHead(200, {
@@ -142,7 +150,7 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-export-db') && req.method === 'POST') {
-          const dbKey = getDbKey(req.url);
+          const dbKey = getDbKey(req);
           const chunks: Buffer[] = [];
           req.on('data', chunk => chunks.push(chunk as Buffer));
           req.on('end', async () => {

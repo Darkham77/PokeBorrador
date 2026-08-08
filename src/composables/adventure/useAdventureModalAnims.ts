@@ -1,5 +1,14 @@
 import { gsap } from 'gsap'
 
+const MODIAL_ANIM_INITIAL_SCALE = 0.8;
+const MODAL_ANIM_FULL_SCALE = 1;
+const MODAL_ANIM_INVISIBLE_OPACITY = 0;
+const MODAL_ANIM_FULL_OPACITY = 1;
+const MODAL_ANIM_BACKDROP_ENTER_DURATION_SEC = 0.25;
+const MODAL_ANIM_CARD_ENTER_DURATION_SEC = 0.35;
+const MODAL_ANIM_CARD_LEAVE_DURATION_SEC = 0.25;
+const MODAL_ANIM_BACKDROP_LEAVE_DURATION_SEC = 0.15;
+
 export function useAdventureModalAnims() {
   const onModalEnter = (el: Element, done: () => void) => {
     const backdrop = el as HTMLElement
@@ -8,11 +17,11 @@ export function useAdventureModalAnims() {
       done()
       return
     }
-    gsap.set(backdrop, { opacity: 0 })
-    gsap.set(card, { scale: 0.8, opacity: 0 })
+    gsap.set(backdrop, { opacity: MODAL_ANIM_INVISIBLE_OPACITY })
+    gsap.set(card, { scale: MODIAL_ANIM_INITIAL_SCALE, opacity: MODAL_ANIM_INVISIBLE_OPACITY })
     const tl = gsap.timeline({ onComplete: done })
-    tl.to(backdrop, { opacity: 1, duration: 0.25, ease: 'power2.out' })
-      .to(card, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(1.5)' }, '-=0.1')
+    tl.to(backdrop, { opacity: MODAL_ANIM_FULL_OPACITY, duration: MODAL_ANIM_BACKDROP_ENTER_DURATION_SEC, ease: 'power2.out' })
+      .to(card, { scale: MODAL_ANIM_FULL_SCALE, opacity: MODAL_ANIM_FULL_OPACITY, duration: MODAL_ANIM_CARD_ENTER_DURATION_SEC, ease: 'back.out(1.5)' }, '-=0.1')
   }
 
   const onModalLeave = (el: Element, done: () => void) => {
@@ -23,8 +32,8 @@ export function useAdventureModalAnims() {
       return
     }
     const tl = gsap.timeline({ onComplete: done })
-    tl.to(card, { scale: 0.8, opacity: 0, duration: 0.25, ease: 'power2.in' })
-      .to(backdrop, { opacity: 0, duration: 0.15, ease: 'power2.in' }, '-=0.1')
+    tl.to(card, { scale: MODIAL_ANIM_INITIAL_SCALE, opacity: MODAL_ANIM_INVISIBLE_OPACITY, duration: MODAL_ANIM_CARD_LEAVE_DURATION_SEC, ease: 'power2.in' })
+      .to(backdrop, { opacity: MODAL_ANIM_INVISIBLE_OPACITY, duration: MODAL_ANIM_BACKDROP_LEAVE_DURATION_SEC, ease: 'power2.in' }, '-=0.1')
   }
 
   return {

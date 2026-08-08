@@ -1,6 +1,9 @@
 import { toValue, type MaybeRefOrGetter } from 'vue'
 import { gsap } from 'gsap'
 
+const ENTRY_OFFSET_Y_PX = 10;
+const ENTER_DURATION_SEC = 0.25;
+
 /**
  * Composable para orquestar transiciones fluidas de grids o listas utilizando GSAP.
  * Cumple con el estándar de animaciones deterministicas y la directiva de no usar timers.
@@ -14,7 +17,7 @@ export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>)
     gsap.set(item, {
       opacity: 0,
       scale: 0.9,
-      y: 10
+      y: ENTRY_OFFSET_Y_PX
     })
   }
 
@@ -28,7 +31,7 @@ export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>)
       opacity: 1,
       scale: 1,
       y: 0,
-      duration: 0.25,
+      duration: ENTER_DURATION_SEC,
       ease: 'power2.out',
       onComplete: done
     })

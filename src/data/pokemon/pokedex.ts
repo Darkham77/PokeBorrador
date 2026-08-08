@@ -97,12 +97,8 @@ export const GEN2_PDEX_ORDER = [
 export type Gen2PokemonSpeciesId = (typeof GEN2_PDEX_ORDER)[number];
 export type PokedexOrderSpeciesId = Gen1PokemonSpeciesId | Gen2PokemonSpeciesId;
 
-export const PDEX_TYPE_COLORS = {
-  normal:'#aaa', fire:'#FF6B35', water:'#3B8BFF', grass:'#6BCB77',
-  electric:'#FFD93D', ice:'#7DF9FF', fighting:'#FF3B3B', poison:'#C77DFF',
-  ground:'#c8a060', flying:'#89CFF0', psychic:'#FF6EFF', bug:'#8BC34A',
-  rock:'#c8a060', ghost:'#7B2FBE', dragon:'#5C16C5', dark:'#555', steel:'#9E9E9E'
-};
+import { PDEX_TYPE_COLORS } from '../../logic/constants/pokedexConstants.ts'
+export { PDEX_TYPE_COLORS }
 
 export const POKEMON_AESTHETICS = {
   // Floating species (visually not on the ground, regardless of type)

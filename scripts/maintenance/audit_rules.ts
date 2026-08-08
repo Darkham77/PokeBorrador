@@ -44,13 +44,15 @@ export const viewport: AuditRule = {
   fix: (match: string) => `d${match.toLowerCase().slice(-2)}`
 };
 
+const CONTEXT_WINDOW_SPAN_CHARS = 500;
+
 export const gpuGaps: AuditRule = {
   regex: /(backdrop-filter|filter):/gi,
   message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
   severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
-    const start = Math.max(0, match.index - 500);
-    const end = Math.min(content.length, match.index + 500);
+    const start = Math.max(0, match.index - CONTEXT_WINDOW_SPAN_CHARS);
+    const end = Math.min(content.length, match.index + CONTEXT_WINDOW_SPAN_CHARS);
     const context = content.substring(start, end);
 
     if (/audit-disable\s+gpu-gaps|will-change:\s*(skip|ignore|false)/i.test(context)) {
@@ -125,9 +127,11 @@ export const nodePrefix: AuditRule = {
   fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
 };
 
+const RULES_TARGET_NODE_VERSION_LABEL = '26';
+
 export const esmExtensions: AuditRule = {
   regex: /import\s+[\s\S]*?\s+from\s+['"](\.\.?[^'"]+)['"]/g,
-  message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js 26+ nativo las extensiones son obligatorias.`,
+  message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js ${RULES_TARGET_NODE_VERSION_LABEL}+ nativo las extensiones son obligatorias.`,
   severity: 'error',
   fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(?<!\.json)(['"])/g, '$1$2.ts$3'),
   check: (_content: string, match: RegExpExecArray, filePath?: string) => {
@@ -146,6 +150,19 @@ export const tsIgnore: AuditRule = {
   fixable: true
 };
 
+export const noAliasConstants: AuditRule = {
+  regex: /^\s*export\s+const\s+([A-Z0-9_]{3,})\s*(?::\s*[^=]+)?=\s*([A-Z0-9_]{3,})\s*(?:as\s+[^;]+)?;?/gm,
+  message: (match: string) => `Alias de constante detectado: '${match.trim()}'. Está PROHIBIDO inicializar una constante top-level con otra constante existente para crear un alias duplicado. Debes unificarlas y usar la constante canónica de forma directa en todos los sitios de consumo.`,
+  severity: 'error',
+  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || filePath.includes('node_modules') || filePath.includes('external')) return false;
+    const constA = match[1];
+    const constB = match[2];
+    if (!constA || !constB || constA === constB) return false;
+    return true;
+  }
+};
+
 export const timersPromises: AuditRule = {
   regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
   message: "Uso de setTimeout manual en script Node. Considera 'import { setTimeout } from \"node:timers/promises\"'.",
@@ -155,7 +172,7 @@ export const timersPromises: AuditRule = {
 
 export const explicitResource: AuditRule = {
   regex: /const (\w+) = (new DatabaseSync|fs\.openSync)/g,
-  message: "Recurso detectado sin 'using'. Usa Explicit Resource Management (Node 26+).",
+  message: `Recurso detectado sin 'using'. Usa Explicit Resource Management (Node ${RULES_TARGET_NODE_VERSION_LABEL}+).`,
   fix: (match: string) => match.replace('const', 'using'),
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => !!filePath && filePath.includes('scripts' + path.sep)
 };
@@ -242,7 +259,8 @@ export const fileLength: AuditRule = {
 };
 
 export const zIndexAudit: AuditRule = {
-  regex: /z-index\s*:\s*(-?\d+)\b/gi,
+  // Matches both CSS `z-index: N` and JS inline-style `zIndex: N`
+  regex: /(?:z-index|zIndex)\s*:\s*(-?\d+)\b/gi,
   message: (match: string) => {
     const val = parseInt(match.match(/-?\d+/)![0]!);
     
@@ -253,7 +271,7 @@ export const zIndexAudit: AuditRule = {
     }
 
     let nearestKey = '';
-    let minDiff = 11;
+    let minDiff = 11; // magic-ok
     for (const [key, zVal] of Z_SORTED_ENTRIES) {
       const diff = Math.abs(val - zVal);
       if (diff < minDiff) {
@@ -284,7 +302,7 @@ export const zIndexAudit: AuditRule = {
     }
 
     let nearestKey = '';
-    let minDiff = 11;
+    let minDiff = 11; // magic-ok
     for (const [key, zVal] of Z_SORTED_ENTRIES) {
       const diff = Math.abs(val - zVal);
       if (diff < minDiff) {
@@ -405,6 +423,97 @@ export const forbiddenTypeCasts: AuditRule = {
   fixable: false
 };
 
+/** Standard numeric identity values and HTTP status codes exempt from magic number audit */
+export const EXEMPT_AUDIT_NUMERIC_LITERALS: ReadonlySet<number> = new Set([0, 1, 100, 200, 404, 500]); // runtime-set
+
+export const magicNumbers: AuditRule = {
+  regex: /([^A-Z0-9_\w#$])(\d{2,})(\b)/g,
+  message: (match: string) => `Número mágico inline detectado: '${match.trim()}'. Viola el Absolute Prohibition on Magic Numbers (Named Constants Mandate). Declara la constante nominada descriptiva (readonly / as const) o impórtala desde un módulo de constantes.`,
+  severity: 'error',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const lowerPath = filePath.toLowerCase();
+    
+    // STRICT SCOPE: Only audit files in src/ and scripts/
+    const isTargetDir = lowerPath.includes('src/') || lowerPath.includes('src\\') || lowerPath.includes('scripts/') || lowerPath.includes('scripts\\');
+    if (!isTargetDir) return false;
+
+    // Ignore data files, constants definition modules, DB migrations fixtures, tests, specs, fuzzers, and CSS/SCSS files
+    if (
+      lowerPath.includes('src/data/') || lowerPath.includes('src\\data\\') ||
+      lowerPath.includes('/constants/') || lowerPath.includes('\\constants\\') || lowerPath.endsWith('config.ts') ||
+      lowerPath.includes('migrations_data.ts') || lowerPath.includes('db/migrations') ||
+      lowerPath.includes('test') || lowerPath.includes('spec') || lowerPath.includes('fuzzer') ||
+      lowerPath.endsWith('.scss') || lowerPath.endsWith('.css')
+    ) {
+      return false;
+    }
+
+    const lineIndex = content.substring(0, match.index).split('\n').length - 1;
+    const line = content.split('\n')[lineIndex] || '';
+    const trimmed = line.trim();
+
+    // Ignore comments and escape hatches
+    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return false;
+    if (line.includes('// magic-ok') || line.includes('// number-ok') || line.includes('// no-magic') || line.includes('// no-domain') || line.includes('// runtime-set') || line.includes('<!-- number-ok') || line.includes('<!-- no-magic')) return false;
+
+    // Check if within a multi-line block marked with // no-magic on its opening line
+    const linesBefore = content.substring(0, match.index).split('\n');
+    let blockHasNoMagic = false;
+    for (let i = linesBefore.length - 1; i >= 0 && i >= linesBefore.length - 100; i--) {
+      const prevLine = linesBefore[i];
+      if (!prevLine) continue;
+      if (prevLine.includes('// no-magic') || prevLine.includes('// magic-ok') || prevLine.includes('// no-domain')) {
+        blockHasNoMagic = true;
+        break;
+      }
+      if (prevLine.includes('const ') || prevLine.includes('let ') || prevLine.includes('var ')) {
+        break; // Reached declaration line without comment
+      }
+    }
+    if (blockHasNoMagic) return false;
+
+    // Ignore declarations and imports where constants/types/enums are being defined
+    if (trimmed.includes('const ') || trimmed.includes('readonly ') || trimmed.includes('import ') || trimmed.includes('enum ') || trimmed.includes('type ') || trimmed.includes('interface ')) return false;
+
+    // Ignore CSS colors, properties, SVG paths, SQL definitions, hex literals, URLs, and <style> block contents
+    if (/rgba?\s*\(|hsl\s*\(|#[0-9a-fA-F]{3,8}\b|0x[0-9a-fA-F]+/i.test(line)) return false;
+    if (/<svg|<path|<rect|<circle|<g\b|viewBox=|d=["']M/i.test(line)) return false;
+    if (/\b(?:VARCHAR|CHAR|INT|TIMESTAMP|DECIMAL)\s*\(\s*\d+/i.test(line)) return false;
+    if (/https?:\/\/|localhost|127\.0\.0\.1|utf-8/i.test(line)) return false;
+
+    // Check if line is inside a <style> block in .vue files
+    if (filePath.endsWith('.vue')) {
+      const styleOpenIndex = content.lastIndexOf('<style', match.index);
+      const styleCloseIndex = content.lastIndexOf('</style>', match.index);
+      if (styleOpenIndex !== -1 && styleOpenIndex > styleCloseIndex) {
+        return false; // Inside <style> section of Vue component
+      }
+    }
+
+    const num = parseInt(match[2] || '', 10);
+    if (isNaN(num) || EXEMPT_AUDIT_NUMERIC_LITERALS.has(num)) return false;
+
+    return true;
+  },
+  fixable: false
+};
+
+export const badConstantNames: AuditRule = {
+  regex: /\bconst\s+([A-Z0-9_]*?_\d+)\b/g,
+  message: (match: string) => `Nombre de constante antipatrón detectado: '${match.trim()}'. No se debe incluir el valor numérico en el nombre de la constante (ej: usa ARCHAEOLOGY_CAVE_BASE_WEIGHT en lugar de ARCHAEOLOGY_CAVE_BASE_WEIGHT_10). Describe el propósito semántico o la intención de dominio.`,
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const lowerPath = filePath.toLowerCase();
+    const isTargetDir = lowerPath.includes('src/') || lowerPath.includes('src\\') || lowerPath.includes('scripts/') || lowerPath.includes('scripts\\');
+    if (!isTargetDir) return false;
+    if (lowerPath.includes('test') || lowerPath.includes('spec') || lowerPath.includes('fuzzer')) return false;
+    return true;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames
 };

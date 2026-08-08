@@ -24,6 +24,8 @@ import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/d
 // Speed up execution on subsequent runs
 enableCompileCache();
 
+const TARGET_NODE_VERSION_LABEL_TEXT = '26';
+
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 
 function executeMigrationFile(
@@ -79,7 +81,7 @@ async function validateMigrations() {
     }
   });
 
-  console.log(styleText('bold', '\n--- 🛡️  SQL MIGRATION VALIDATOR (Node.js 26) ---'));
+  console.log(styleText('bold', `\n--- 🛡️  SQL MIGRATION VALIDATOR (Node.js ${TARGET_NODE_VERSION_LABEL_TEXT}) ---`));
   
   try {
     await fs.access(MIGRATIONS_DIR);
@@ -127,14 +129,16 @@ async function validateMigrations() {
     await writeMigrationReport(values.output as string, files.length, achievements, errors);
   }
 
+const MAX_ACHIEVEMENTS_PREVIEW_COUNT = 30;
+
   if (!values.summary) {
     if (achievements.length > 0) {
       console.log(styleText('green', `🌟 MIGRACIONES VÁLIDAS (${achievements.length}):`));
-      achievements.slice(0, 30).forEach(a => console.log(`   ✅ ${a}`));
+      achievements.slice(0, MAX_ACHIEVEMENTS_PREVIEW_COUNT).forEach(a => console.log(`   ✅ ${a}`));
     }
     if (errors.length > 0) {
       console.log(styleText('red', `❌ ERRORES DE INTEGRIDAD DETECTADOS (${errors.length}):`));
-      errors.slice(0, 30).forEach(e => console.log(`   🚨 ${e}`));
+      errors.slice(0, MAX_ACHIEVEMENTS_PREVIEW_COUNT).forEach(e => console.log(`   🚨 ${e}`));
     } else {
       console.log(styleText('green', '✨ TODAS LAS MIGRACIONES SON VÁLIDAS PARA SQLITE.'));
     }

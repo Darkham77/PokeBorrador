@@ -30,7 +30,7 @@ const globalScore = computed(() => {
 })
 
 const nextReward = computed(() => {
-  const milestones = WEEKLY_REWARD_MILESTONES as Milestone[]
+  const milestones = (WEEKLY_REWARD_MILESTONES as unknown) as Milestone[]
   return milestones.find(m => warStore.weeklyPoints < m.pt) || 
          milestones[milestones.length - 1]
 })

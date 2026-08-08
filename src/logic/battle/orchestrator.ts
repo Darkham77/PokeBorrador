@@ -1,3 +1,6 @@
+const INITIAL_RATE_CUMULATIVE_SUM = 0;
+
+import { PERCENTAGE_SCALE_FACTOR } from '@/logic/constants/encounters'
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { toRaw } from 'vue'
 import { handleEntryAbilities } from './battleFlow.ts'
@@ -28,6 +31,11 @@ import {
   isPlayerTrappedInWorker,
   testResetShowdownWorker
 } from './showdownWorkerClient.ts';
+
+const DEFAULT_RARITY_WEIGHT_BASE = 50;
+const WAIT_ANIMATIONS_MAX_POLL_ATTEMPTS = 40;
+const WAIT_WORKER_REQUEST_MAX_POLL_ATTEMPTS = 100;
+const POLL_INTERVAL_SLEEP_MS = 50;
 
 export {
   showdownWorker,
@@ -124,7 +132,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   ctx.clearVolatileStatus(startingEnemyPoke)
 
   // Initial context values
-  let rarity = 50
+  let rarity = DEFAULT_RARITY_WEIGHT_BASE
 
   const maxEnemyLv = Math.max(...finalEnemyTeam.map(p => p?.level || 1))
   const npcInvResult = (isTrainer || isGym)
@@ -216,9 +224,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
       const enemySpeciesId = requirePokemonSpeciesId(finalEnemyPoke.id)
       const idx = pool.indexOf(enemySpeciesId)
       if (idx !== -1) {
-        const totalRate = rates.reduce((a, b) => a + b, 0)
+        const totalRate = rates.reduce((a, b) => a + b, INITIAL_RATE_CUMULATIVE_SUM)
         const rateVal = rates[idx]
-        rarity = ((rateVal !== undefined ? rateVal : 0) / totalRate) * 100
+        rarity = ((rateVal !== undefined ? rateVal : INITIAL_RATE_CUMULATIVE_SUM) / totalRate) * PERCENTAGE_SCALE_FACTOR
       }
     }
   }
@@ -293,9 +301,9 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   }
 
   // Esperar a que la vista (BattleArenaView) se monte y registre las funciones de animación
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < WAIT_ANIMATIONS_MAX_POLL_ATTEMPTS; i++) {
     if (ctx.animations) break
-    await sleep(50)
+    await sleep(POLL_INTERVAL_SLEEP_MS)
   }
 
   const currentPlayer = ctx.activeBattle.value?.player
@@ -424,8 +432,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   await processRocketStealMechanics(ctx, isTrainer, isGym, trainerName || '', battleState)
 
   // Esperar a que el worker inicialice y asigne el request inicial con elecciones válidas (máximo 5 segundos)
-  for (let i = 0; i < 100 && !(ctx.activeBattle.value?.playerRequest?.active || ctx.activeBattle.value?.playerRequest?.forceSwitch); i++) {
-    await sleep(50);
+  for (let i = 0; i < WAIT_WORKER_REQUEST_MAX_POLL_ATTEMPTS && !(ctx.activeBattle.value?.playerRequest?.active || ctx.activeBattle.value?.playerRequest?.forceSwitch); i++) {
+    await sleep(POLL_INTERVAL_SLEEP_MS);
   }
 
   ctx.isIntroAnimating.value = false

@@ -174,7 +174,7 @@ function buildSmogonPokemon(
   return pkmn;
 }
 
-const WEATHER_MAP: Record<string, State.Field['weather']> = {
+const SHOWDOWN_CALC_WEATHER_MAP: Record<string, State.Field['weather']> = {
   sun:           'Sun',
   rain:          'Rain',
   sandstorm:     'Sand',
@@ -215,7 +215,7 @@ function buildField(state: TooltipStateCtx): Field {
 
   const weather = state.isGym
     ? undefined
-    : WEATHER_MAP[state.weather?.type ?? ''];
+    : SHOWDOWN_CALC_WEATHER_MAP[state.weather?.type ?? ''];
 
   const terrain = state.terrain
     ? TERRAIN_MAP[state.terrain]

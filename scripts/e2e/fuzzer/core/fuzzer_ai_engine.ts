@@ -25,8 +25,8 @@ import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 
 patchShowdownSpreadModify(() => false);
 
-const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
-const AI_REPORT_FILE = path.join(RESULTS_DIR, 'fuzzer_ai_coverage_report.json');
+const AI_RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
+const AI_REPORT_FILE = path.join(AI_RESULTS_DIR, 'fuzzer_ai_coverage_report.json');
 
 // ---------------------------------------------------------------------------
 // HeuristicAgent: BattleAgent subclass that uses HeuristicAI for move decisions.

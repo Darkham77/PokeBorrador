@@ -73,11 +73,14 @@ const isPerformanceActive = computed(() => {
   }
 })
 
+const HP_HIGH_THRESHOLD_RATIO = 0.5
+const HP_MID_THRESHOLD_RATIO = 0.25
+
 const hpPct = computed(() => props.pokemon.hp / props.pokemon.maxHp)
 
 const getHpClass = (pct: number) => {
-  if (pct > 0.5) return 'hp-high'
-  if (pct > 0.25) return 'hp-mid'
+  if (pct > HP_HIGH_THRESHOLD_RATIO) return 'hp-high'
+  if (pct > HP_MID_THRESHOLD_RATIO) return 'hp-mid'
   return 'hp-low'
 }
 

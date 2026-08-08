@@ -10,7 +10,18 @@
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
 import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 import { mulberry32 } from '../utils/math.ts';
-import type { MapLocation } from '@/types/pokemon/encounters';
+import {
+  BUSH_SEED_MULTIPLIER,
+  BUSH_BASE_SCALE,
+  BUSH_VAR_SCALE,
+  BUSH_ID_SCALE_STEP,
+  BUSH_OFFSET_X_RANGE,
+  BUSH_OFFSET_X_BIAS,
+  DEFAULT_PLAINS_BUSH_WEIGHT,
+  DEFAULT_PLAINS_ROCK_WEIGHT,
+  FLIP_CHANCE_PERCENT,
+  BIOME_WEIGHT_PRESETS
+} from '@/logic/constants/visuals';
 
 export { BUSH_FAMILIES, type BushFamily };
 
@@ -66,50 +77,45 @@ interface BiomeBushWeights {
 export const BIOME_BUSH_CONFIG: Record<string, BiomeBushWeights> = {
   isCrystalCave: {
     weights: {
-      rock: 90,
-      crystalblack: 1,
-      crystalblue: 1,
-      crystaldarkred: 1,
-      crystalgreen: 1,
-      crystalpink: 1,
-      crystalred: 1,
-      crystalviolet: 1,
-      crystalwhite: 1,
-      crystalyellow: 1,
-      crystalyellowgreen: 1
+      rock: BIOME_WEIGHT_PRESETS.DOMINANT,
+      crystalblack: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalblue: BIOME_WEIGHT_PRESETS.TRACE,
+      crystaldarkred: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalgreen: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalpink: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalred: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalviolet: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalwhite: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalyellow: BIOME_WEIGHT_PRESETS.TRACE,
+      crystalyellowgreen: BIOME_WEIGHT_PRESETS.TRACE
     },
     tint: { class: 'tint-cave', families: ['rock'] }
   },
   isCave:     { 
-    weights: { rock: 100 }, 
+    weights: { rock: BIOME_WEIGHT_PRESETS.GUARANTEED }, 
     tint: { class: 'tint-cave', families: ['rock'] } 
   },
-  isVolcanic: { weights: { rock: 100 } },
-  isUrban:    { weights: { box: 100 } },
-  isIndoors:  { weights: { box: 100 } },
+  isVolcanic: { weights: { rock: BIOME_WEIGHT_PRESETS.GUARANTEED } },
+  isUrban:    { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
+  isIndoors:  { weights: { box: BIOME_WEIGHT_PRESETS.GUARANTEED } },
   isArctic:   { 
-    weights: { rock: 90, bushsnow: 10 }, 
+    weights: { rock: BIOME_WEIGHT_PRESETS.DOMINANT, bushsnow: BIOME_WEIGHT_PRESETS.RARE }, 
     tint: { class: 'tint-arctic', families: ['rock'] } 
   },
   isDesert:   { 
-    weights: { rock: 70, cactus: 25, grass: 5 }, 
+    weights: { rock: BIOME_WEIGHT_PRESETS.MAJORITY, cactus: BIOME_WEIGHT_PRESETS.REGULAR, grass: BIOME_WEIGHT_PRESETS.VERY_RARE }, 
     tint: { class: 'tint-desert', families: ['rock'] } 
   },
   isSwamp:    { 
-    weights: { bush: 35, fern: 35, grass: 5, grassflower: 15, treebroken: 10 }, 
+    weights: { bush: BIOME_WEIGHT_PRESETS.MEDIUM, fern: BIOME_WEIGHT_PRESETS.MEDIUM, grass: BIOME_WEIGHT_PRESETS.VERY_RARE, grassflower: BIOME_WEIGHT_PRESETS.OCCASIONAL, treebroken: BIOME_WEIGHT_PRESETS.RARE }, 
     tint: { class: 'tint-swamp' } 
   },
-  isMountain: { weights: { rock: 60, treebroken: 10, grass: 15, bush: 15 } },
-  isCoastal:  { weights: { rock: 50, bush: 30, grass: 10 , grassflower: 10} },
-  isForest:   { weights: { bush: 40, bushflower: 15, grassflower: 5, grass: 10, fern: 20, rock: 10, treebroken: 10 } },
-  isPlains:   { weights: { bush: 30, bushflower: 5, grassflower: 5, grass: 35, fern: 15, rock: 10 } }
+  isMountain: { weights: { rock: BIOME_WEIGHT_PRESETS.HIGH, treebroken: BIOME_WEIGHT_PRESETS.RARE, grass: BIOME_WEIGHT_PRESETS.OCCASIONAL, bush: BIOME_WEIGHT_PRESETS.OCCASIONAL } },
+  isCoastal:  { weights: { rock: BIOME_WEIGHT_PRESETS.BALANCED, bush: BIOME_WEIGHT_PRESETS.COMMON, grass: BIOME_WEIGHT_PRESETS.RARE , grassflower: BIOME_WEIGHT_PRESETS.RARE} },
+  isForest:   { weights: { bush: BIOME_WEIGHT_PRESETS.MODERATE, bushflower: BIOME_WEIGHT_PRESETS.OCCASIONAL, grassflower: BIOME_WEIGHT_PRESETS.VERY_RARE, grass: BIOME_WEIGHT_PRESETS.RARE, fern: BIOME_WEIGHT_PRESETS.UNCOMMON, rock: BIOME_WEIGHT_PRESETS.RARE, treebroken: BIOME_WEIGHT_PRESETS.RARE } },
 };
 
-const MAP_BIOME_KEYS = [
-  'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-  'isDesert', 'isSwamp', 'isMountain',
-  'isCoastal', 'isForest', 'isPlains'
-] as const satisfies readonly (keyof MapLocation)[];
+import { MAP_BIOME_KEYS } from '@/logic/constants/encounters'
 
 export function isBushFamily(val: string): val is BushFamily {
   return (Object.keys(BUSH_FAMILIES) as readonly string[]).includes(val); // domain-ok
@@ -128,9 +134,15 @@ export function getBiomeConfigForMap(locationId: string): BiomeBushWeights {
     }
   }
 
-  const defaultWeights: BiomeBushWeights = { weights: { bush: 80, rock: 20 } };
+  const defaultWeights: BiomeBushWeights = { weights: { bush: DEFAULT_PLAINS_BUSH_WEIGHT, rock: DEFAULT_PLAINS_ROCK_WEIGHT } };
   return BIOME_BUSH_CONFIG[activeBiomeKey] ?? BIOME_BUSH_CONFIG['isPlains'] ?? defaultWeights;
 }
+
+/** Seed offset applied to front layer PRNG calculations. */
+export const FRONT_LAYER_SEED_OFFSET = 1000;
+
+/** Seed offset applied to back layer PRNG calculations. */
+export const BACK_LAYER_SEED_OFFSET = 2000;
 
 /**
  * Normaliza las propiedades de un arbusto aplicando la doble tirada de dados
@@ -147,8 +159,8 @@ export function resolveBushesForLayer(
   // 2. Iterar sobre los arbustos base y realizar la doble tirada de dados
   return baseBushes.map(b => {
     // Semilla combinada única por arbusto y capa
-    const layerOffset = layer === 'front' ? 1000 : 2000;
-    const prng = mulberry32(sessionSeed ^ (b.id * 1313) ^ layerOffset);
+    const layerOffset = layer === 'front' ? FRONT_LAYER_SEED_OFFSET : BACK_LAYER_SEED_OFFSET;
+    const prng = mulberry32(sessionSeed ^ (b.id * BUSH_SEED_MULTIPLIER) ^ layerOffset);
 
     // Tirada 1: Elegir familia dinámica según los pesos del bioma actual
     const activeWeights = biomeConfig.weights;
@@ -192,9 +204,9 @@ export function resolveBushesForLayer(
     }
 
     // Transformaciones aleatorias deterministas
-    const scaleFactor = 0.7 + (prng() * 0.6) + (b.id * 0.05);
-    const flip = prng() < 0.5 ? -1 : 1;
-    const offsetX = Math.floor(prng() * 20) - 10;
+    const scaleFactor = BUSH_BASE_SCALE + (prng() * BUSH_VAR_SCALE) + (b.id * BUSH_ID_SCALE_STEP);
+    const flip = prng() < (FLIP_CHANCE_PERCENT / 100) ? -1 : 1;
+    const offsetX = Math.floor(prng() * BUSH_OFFSET_X_RANGE) - BUSH_OFFSET_X_BIAS;
 
     return {
       ...b,

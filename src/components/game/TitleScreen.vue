@@ -7,9 +7,20 @@ import { STARTER_POKEMON } from '@/data/pokemon/starters.ts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { gsap } from 'gsap'
 
+const STARTER_SEED_OFFSET = 0.1
+const STARTER_SEED_MULTIPLIER = 0.4
+const GSAP_HOVER_Y_PX = -12
+const GSAP_HOVER_SCALE = 1.03
+const GSAP_HOVER_DURATION_SEC = 0.35
+const GSAP_LEAVE_DURATION_SEC = 0.3
+
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const gs = computed(() => gameStore.state)
+
+const STARTER_BASE_HP_FALLBACK = 45
+const STARTER_BASE_ATK_FALLBACK = 49
+const STARTER_BASE_DEF_FALLBACK = 49
 
 const starterList = computed(() => {
   return STARTER_POKEMON.map((config, index) => {
@@ -21,11 +32,11 @@ const starterList = computed(() => {
       name: data.name || config.id,
       type: primaryType,
       typeLabel,
-      seed: 0.1 + index * 0.4,
+      seed: STARTER_SEED_OFFSET + index * STARTER_SEED_MULTIPLIER,
       stats: {
-        hp: data.hp || 45,
-        attack: data.atk || 49,
-        defense: data.def || 49
+        hp: data.hp || STARTER_BASE_HP_FALLBACK,
+        attack: data.atk || STARTER_BASE_ATK_FALLBACK,
+        defense: data.def || STARTER_BASE_DEF_FALLBACK
       }
     }
   })
@@ -66,13 +77,13 @@ const handleMouseEnter = (event: MouseEvent, type: string) => {
   const config = getStarterConfig(type)
   
   gsap.to(el, {
-    y: -12,
-    scale: 1.03,
+    y: GSAP_HOVER_Y_PX,
+    scale: GSAP_HOVER_SCALE,
     borderColor: config.color,
     backgroundColor: config.bg,
     boxShadow: config.shadow,
     '--glow-opacity': 1,
-    duration: 0.35,
+    duration: GSAP_HOVER_DURATION_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   })
@@ -88,7 +99,7 @@ const handleMouseLeave = (event: MouseEvent) => {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     boxShadow: 'none',
     '--glow-opacity': 0,
-    duration: 0.3,
+    duration: GSAP_LEAVE_DURATION_SEC,
     ease: 'power2.inOut',
     overwrite: 'auto'
   })

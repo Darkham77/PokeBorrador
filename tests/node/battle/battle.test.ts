@@ -11,6 +11,7 @@
 
 import { describe, it, vi } from 'vitest';
 import assert from 'node:assert/strict';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 import {
   calculateDamagePure,
@@ -18,7 +19,6 @@ import {
   getAbilityMultiplierPure as getAbilityMultiplier,
   getMoveCategory,
   STAGE_MULTIPLIERS_STAT,
-  ACTIVE_RULE_SET,
   type PurePokemon,
   type PureMove,
   type PureBattleWeather,
@@ -36,8 +36,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
       assert.strictEqual(getMoveCategory({ type: 'normal', cat: 'physical' }), 'physical');
     });
 
-    it('should return category based on ACTIVE_RULE_SET for Electric/Fire type', () => {
-      if (ACTIVE_RULE_SET > 3) {
+    it('should return category based on ACTIVE_GENERATION for Electric/Fire type', () => {
+      if (ACTIVE_GENERATION > 3) {
         assert.strictEqual(getMoveCategory({ type: 'electric', cat: 'physical' }), 'physical');
         assert.strictEqual(getMoveCategory({ type: 'fire', cat: 'physical' }), 'physical');
       } else {
@@ -191,8 +191,8 @@ describe('Battle Engine – Pure Math (Native Node.js 26+)', () => {
   // ── Constants ────────────────────────────────────────────────────────────────
 
   describe('Constants', () => {
-    it('ACTIVE_RULE_SET should match the configured generation', () => {
-      assert.strictEqual(ACTIVE_RULE_SET, 9);
+    it('ACTIVE_GENERATION should match the configured generation', () => {
+      assert.strictEqual(ACTIVE_GENERATION, 9);
     });
   });
 });

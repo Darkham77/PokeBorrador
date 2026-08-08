@@ -62,10 +62,13 @@ export function initGlobalHoverSystem() {
       const isRetro = !!el.closest('.variant-retro') && !Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
       const is3D = isConfirm || (isCancel && isRetro)
 
+      const PRESS_ANIMATION_DURATION_SEC = 0.08
+      const CLICK_SCALE_FACTOR = 0.96
+
       if (isCloseBtn) {
         gsap.to(el, {
           scale: 0.9,
-          duration: 0.08,
+          duration: PRESS_ANIMATION_DURATION_SEC,
           ease: 'power1.out',
           overwrite: 'auto'
         })
@@ -76,7 +79,7 @@ export function initGlobalHoverSystem() {
             x: 0,
             y: 0,
             boxShadow: `2px 2px 1.5px ${shadowInfo.color}`,
-            duration: 0.08,
+            duration: PRESS_ANIMATION_DURATION_SEC,
             ease: 'power1.out',
             overwrite: 'auto'
           })
@@ -85,15 +88,15 @@ export function initGlobalHoverSystem() {
           gsap.to(el, {
             y: 2,
             boxShadow: `0 ${targetDepth}px 1.5px ${shadowInfo.color}`,
-            duration: 0.08,
+            duration: PRESS_ANIMATION_DURATION_SEC,
             ease: 'power1.out',
             overwrite: 'auto'
           })
         }
       } else {
         gsap.to(el, {
-          scale: 0.96,
-          duration: 0.08,
+          scale: CLICK_SCALE_FACTOR,
+          duration: PRESS_ANIMATION_DURATION_SEC,
           ease: 'power1.out',
           overwrite: 'auto'
         })

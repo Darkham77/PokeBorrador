@@ -1,5 +1,6 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
+import { CRIMINALITY_GAINED_ON_STEAL } from '@/logic/constants/gameplay'
 
 
 import type { BattleState } from '@/types/battle/battle'
@@ -36,7 +37,9 @@ export async function processRocketStealMechanics(
           } catch {
             continue
           }
-          const itemPrice = itemDef?.price || 100
+const DEFAULT_ITEM_PRICE_FALLBACK = 100
+
+          const itemPrice = itemDef?.price || DEFAULT_ITEM_PRICE_FALLBACK
           const availableQty = enemyInv[itemId] || 0
 
           const remainingBudget = maxLimit - stolenTotalCost
@@ -59,11 +62,11 @@ export async function processRocketStealMechanics(
         }
 
         if (stolenItemsList.length > 0) {
-          ctx.classStore.addCriminality(10)
+          ctx.classStore.addCriminality(CRIMINALITY_GAINED_ON_STEAL)
 
           const itemsText = stolenItemsList.map(item => `${item.name} x${item.qty}`).join(', ')
           ctx.addLog(`¡Robo Rápido exitoso! Le robaste ${itemsText} a tu oponente.`, 'log-success', 'player')
-          ctx.uiStore.notify(`¡Robaste ${itemsText}! (+10 criminalidad)`, '🏴‍☠️')
+          ctx.uiStore.notify(`¡Robaste ${itemsText}! (+${CRIMINALITY_GAINED_ON_STEAL} criminalidad)`, '🏴‍☠️')
           ctx.audio.play('steal')
         }
       }

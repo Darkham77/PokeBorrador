@@ -1,6 +1,15 @@
 import { gsap } from 'gsap'
 import { is3DButton, getElementShadowColorAndDepth, resolveCssColor, parseToRgba } from './hoverHelpers.ts'
 import { getHoverEnterStrategy } from './hoverStrategies.ts'
+import { GLOW_GRADIENT_STOP_PERCENT } from '@/logic/constants/visuals.ts'
+
+const DEFAULT_HOVER_ENTER_SCALE = 1.03;
+const DEFAULT_HOVER_ENTER_DURATION_SEC = 0.15;
+const CLOSE_BTN_ROTATE_DEG = 180;
+const BUTTON_HOVER_DURATION_SEC = 0.12;
+const GLOW_GRADIENT_ALPHA = 0.35;
+const SHOP_ITEM_HOVER_SCALE = 1.25;
+const SHOP_ITEM_GLOW_HOVER_SCALE = 1.35;
 
 export function triggerEnter(el: HTMLElement) {
   if (el.dataset.gsapHover || el.dataset.gsapCustomHover) return
@@ -13,11 +22,11 @@ export function triggerEnter(el: HTMLElement) {
   ) return
   if (el.matches(':disabled') || el.classList.contains('disabled') || el.hasAttribute('disabled')) return
 
-  let scale = 1.03
+  let scale = DEFAULT_HOVER_ENTER_SCALE
   let y = -1.5
   let x = 0
   let rotation = 0
-  let duration = 0.15
+  let duration = DEFAULT_HOVER_ENTER_DURATION_SEC
   let ease = 'power1.out'
   let borderColor: string | null = null
   let boxShadow: string | null = null
@@ -54,7 +63,7 @@ export function triggerEnter(el: HTMLElement) {
         }
         
         const tweenVars: gsap.TweenVars = {
-          rotation: 180,
+          rotation: CLOSE_BTN_ROTATE_DEG,
           duration: 0.2,
           ease: 'power2.out',
           overwrite: 'auto'
@@ -73,7 +82,7 @@ export function triggerEnter(el: HTMLElement) {
         x = -2
         y = -2
         scale = 1
-        duration = 0.15
+        duration = DEFAULT_HOVER_ENTER_DURATION_SEC
         ease = 'power1.out'
         if (isConfirm) {
           boxShadow = `6px 6px 1.5px ${shadowInfo.color}`
@@ -82,7 +91,7 @@ export function triggerEnter(el: HTMLElement) {
         x = 0
         y = -1
         scale = 1
-        duration = 0.15
+        duration = DEFAULT_HOVER_ENTER_DURATION_SEC
         ease = 'power1.out'
         
         if (isConfirm && !el.classList.contains('is-danger')) {
@@ -93,9 +102,9 @@ export function triggerEnter(el: HTMLElement) {
         }
       }
     } else {
-      scale = 1.03
+      scale = DEFAULT_HOVER_ENTER_SCALE
       y = -1
-      duration = 0.12
+      duration = BUTTON_HOVER_DURATION_SEC
       ease = 'power1.out'
     }
   } else {
@@ -166,10 +175,10 @@ export function triggerEnter(el: HTMLElement) {
     if (glow) {
       const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)';
       const resolvedColor = resolveCssColor(color, el);
-      const hoverGlowColor = parseToRgba(resolvedColor, 0.35, el);
+      const hoverGlowColor = parseToRgba(resolvedColor, GLOW_GRADIENT_ALPHA, el);
       gsap.to(glow, {
-        backgroundImage: `radial-gradient(circle, ${hoverGlowColor} 0%, transparent 70%)`,
-        scale: 1.35,
+        backgroundImage: `radial-gradient(circle, ${hoverGlowColor} 0%, transparent ${GLOW_GRADIENT_STOP_PERCENT}%)`,
+        scale: SHOP_ITEM_GLOW_HOVER_SCALE,
         opacity: 1,
         duration: 0.2,
         ease: 'power2.out',
@@ -180,7 +189,7 @@ export function triggerEnter(el: HTMLElement) {
     const img = el.querySelector('.item-visual-box img')
     if (img) {
       gsap.to(img, {
-        scale: 1.25,
+        scale: SHOP_ITEM_HOVER_SCALE,
         y: -4,
         duration: 0.3,
         ease: 'back.out(1.7)',

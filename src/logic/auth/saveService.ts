@@ -9,10 +9,15 @@ import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
-import type { DBRouter } from '@/logic/db/dbRouter';
 import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
+import type { DBRouter } from '@/logic/db/dbRouter';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { requireAbilityId } from '@/data/battle/abilities';
+
+const ELO_RATING_DEFAULT_SCORE = 1000;
+const DEFAULT_BOX_COUNT = 4;
+const DAYCARE_REFRESHES_DEFAULT_COUNT = 3;
+const DEFAULT_POKEMON_FRIENDSHIP_FALLBACK = 70;
 
 export interface SaveResult {
   success?: boolean;
@@ -231,7 +236,7 @@ export function serializeState(state: GameState): SaveData {
               ability: p.ability ? requireAbilityId(p.ability) : '', // text-ok
               exp: p.exp || 0,
               expNeeded: p.expNeeded || 1,
-              friendship: p.friendship || 70,
+              friendship: p.friendship || DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
               _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
               _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,
               _gymBadge: (p as Pokemon & { _gymBadge?: string })._gymBadge || null,
@@ -273,15 +278,15 @@ export function serializeState(state: GameState): SaveData {
     nick_style: state.nick_style || null,
     avatar_style: state.avatar_style || null,
     stats: state.stats || {},
-    eloRating: Number.isFinite(Number(state.eloRating)) ? Number(state.eloRating) : 1000,
+    eloRating: Number.isFinite(Number(state.eloRating)) ? Number(state.eloRating) : ELO_RATING_DEFAULT_SCORE,
     pvpStats: {
       wins: Number(state.pvpStats?.wins) || 0,
       losses: Number(state.pvpStats?.losses) || 0,
       draws: Number(state.pvpStats?.draws) || 0
     },
     rankedMaxElo: Number.isFinite(Number(state.rankedMaxElo))
-      ? Math.max(1000, Math.floor(Number(state.rankedMaxElo)))
-      : Math.max(1000, Number(state.eloRating) || 1000),
+      ? Math.max(ELO_RATING_DEFAULT_SCORE, Math.floor(Number(state.rankedMaxElo)))
+      : Math.max(ELO_RATING_DEFAULT_SCORE, Number(state.eloRating) || ELO_RATING_DEFAULT_SCORE),
     rankedRewardsClaimed: Array.isArray(state.rankedRewardsClaimed)
       ? Array.from(new Set(state.rankedRewardsClaimed.map((id) => String(id))))
       : [],
@@ -289,7 +294,7 @@ export function serializeState(state: GameState): SaveData {
     passiveTeamActive: state.passiveTeamActive,
     activeBattle,
     daycare_missions: state.daycare_missions || [],
-    daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : 3,
+    daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : DAYCARE_REFRESHES_DEFAULT_COUNT,
     safariTicketSecs: state.safariTicketSecs || 0,
     ceruleanTicketSecs: state.ceruleanTicketSecs || 0,
     articunoTicketSecs: state.articunoTicketSecs || 0,
@@ -308,7 +313,7 @@ export function serializeState(state: GameState): SaveData {
     incenseSecs: state.incenseSecs || 0,
     incenseType: state.incenseType || null,
     daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
-    boxCount: state.boxCount || 4,
+    boxCount: state.boxCount || DEFAULT_BOX_COUNT,
     chats: state.chats || {},
     playerClass: state.playerClass || null,
     classLevel: state.classLevel || 1,
@@ -613,7 +618,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             gender: save_data.gender || 'h',
             playtime: save_data.playtime || 0,
             last_played_at: Temporal.Now.instant().toString(),
-            ranked_max_elo: save_data.rankedMaxElo || 1000,
+            ranked_max_elo: save_data.rankedMaxElo || ELO_RATING_DEFAULT_SCORE,
             class_level: save_data.classLevel || 1,
             box_count: (save_data.box || []).length,
             pvp_draws: save_data.pvpStats?.draws || 0,
@@ -641,7 +646,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             playtime: save_data.playtime || 0,
             created_at: Temporal.Now.instant().toString(),
             last_played_at: Temporal.Now.instant().toString(),
-            ranked_max_elo: save_data.rankedMaxElo || 1000,
+            ranked_max_elo: save_data.rankedMaxElo || ELO_RATING_DEFAULT_SCORE,
             class_level: save_data.classLevel || 1,
             box_count: (save_data.box || []).length,
             pvp_draws: save_data.pvpStats?.draws || 0,

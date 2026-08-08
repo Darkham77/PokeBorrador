@@ -19,7 +19,7 @@ interface Task {
   args: string[];
 }
 
-const TASKS: Task[] = [
+const FSM_VALIDATION_TASKS: Task[] = [
   { name: 'FSM Diagrams', args: ['scripts/validation/validate_fsm_diagrams.ts'] },
   { name: 'FSM Implementation', args: ['scripts/validation/validate_fsm_implementation.ts'] },
   { name: 'FSM Flow Parity', args: ['scripts/validation/validate_fsm_flow_parity.ts'] }
@@ -28,7 +28,7 @@ const TASKS: Task[] = [
 function runFsmValidation() {
   let anyFailed = false;
 
-  for (const task of TASKS) {
+  for (const task of FSM_VALIDATION_TASKS) {
     console.log(styleText('bold', `\n--- 🤖 Ejecutando: ${task.name} ---`));
     const proc = spawnSync('node', [
       '--permission',

@@ -127,8 +127,10 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       }
     }
 
+const ADVENTURE_EVENT_PROBABILITY_THRESHOLD = 0.70;
+
     let chosenType: 'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing' = 'combat'
-    if (Math.random() > 0.70 && eventTypes.length > 1) {
+    if (Math.random() > ADVENTURE_EVENT_PROBABILITY_THRESHOLD && eventTypes.length > 1) {
       const nonCombatTypes = eventTypes.filter(t => t !== 'combat')
       chosenType = nonCombatTypes[Math.floor(Math.random() * nonCombatTypes.length)]!
     }
@@ -176,7 +178,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     let trainerData: { trainerName: string; trainerSprite: NpcSpriteId; enemyTeam: Pokemon[]; quote: string } | null = null
 
     if (chosenType === 'combat') {
-      if (Math.random() < 0.35) {
+      if (Math.random() < ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY) {
         isTrainer = true
         trainerData = await generateTrainerEncounter(mapData)
         trainerName = trainerData.trainerName
@@ -339,7 +341,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       return
     }
 
-    if (Math.random() < 0.35) {
+    if (Math.random() < ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY) {
       const trainerData = await generateTrainerEncounter(mapData)
       activeEvent.value = {
         type: 'combat',

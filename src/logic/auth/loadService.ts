@@ -19,6 +19,9 @@ import { logger } from '@/logic/utils/logger';
 import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
 
+const REQUIRED_DB_VERSION = 3;
+const LOCAL_SAVE_NEWER_THRESHOLD_MS = 3000;
+
 export interface LoadResult {
   data: GameState | null;
   issues: string[];
@@ -42,15 +45,15 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     }
   }
 
-  if ((user.db_version || 1) < 3) {
+  if ((user.db_version || 1) < REQUIRED_DB_VERSION) {
     if (db.mode === 'offline' || isLocalUser) {
-      logger.info('LOAD', `Auto-migrando usuario offline/local a v3 (actual: ${user.db_version || 1})`);
-      user.db_version = 3;
+      logger.info('LOAD', `Auto-migrando usuario offline/local a v${REQUIRED_DB_VERSION} (actual: ${user.db_version || 1})`);
+      user.db_version = REQUIRED_DB_VERSION;
       if (isLocalUser && typeof localStorage !== 'undefined') {
         localStorage.setItem('pokevicio_local_user', JSON.stringify(user));
       } else if (!isLocalUser) {
         try {
-          await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
+          await db.from('profiles').update({ db_version: REQUIRED_DB_VERSION }).eq('id', user.id);
         } catch (e) {
           throw new Error(`[loadService] Error al actualizar db_version en profiles: ${(e as Error).message}`);
         }
@@ -188,7 +191,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         const localTime = (Reflect.get(localData, '_last_updated') as number | undefined) || 0;
 
         // Legacy Rule: If local is at least 3s newer, prioritize it.
-        if (localTime > cloudTime + 3000) {
+        if (localTime > cloudTime + LOCAL_SAVE_NEWER_THRESHOLD_MS) {
           logger.info('LOAD', 'Local save is newer. Prioritizing Local.');
           finalSaveData = localData;
           isNewerThanCloud = true;
@@ -259,7 +262,7 @@ function normalizeData(state: GameState): GameState {
   // Data fix: ensure UID and Gender for all Pokemon
   const fixPoke = (p: Pokemon): Pokemon | null => {
     if (!p) return null;
-    if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Temporal.Now.instant().epochMilliseconds.toString(36);
+    if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Temporal.Now.instant().epochMilliseconds.toString(36); // no-magic
     
     if (Object.is(p.gender, 'M')) p.gender = 'm';
     if (Object.is(p.gender, 'F')) p.gender = 'f';

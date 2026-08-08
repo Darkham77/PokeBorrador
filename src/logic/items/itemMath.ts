@@ -46,9 +46,11 @@ export function canFullRestore(p: Pokemon): boolean {
   return hp > 0 && (hp < maxHp || p.status !== null);
 }
 
+import { DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
+
 export function canRestorePP(p: Pokemon): boolean {
   if (Number(p.hp ?? 0) <= 0) return false;
-  return (p.moves || []).some(m => m && m.pp < (m.maxPP || 35));
+  return (p.moves || []).some(m => m && m.pp < (m.maxPP || DEFAULT_MOVE_PP));
 }
 
 // ── Pure Item Effect Helpers ──────────────────────────────────────────────────
@@ -142,6 +144,13 @@ export function calcTotalPower(
   return bst + totalIvs;
 }
 
+import {
+  ROCKET_SELL_LEVEL_MULTIPLIER,
+  MAX_TOTAL_IVS_STAT_SUM,
+  ROCKET_SELL_IV_BONUS_CAP,
+  ROCKET_SELL_CUT_MULTIPLIER
+} from '../constants/gameplay.ts';
+
 /**
  * Calculates the sell price to Team Rocket (Black Market).
  */
@@ -150,5 +159,5 @@ export function calcRocketSellPrice(
   ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number },
 ): number {
   const totalIvs = ivs.hp + ivs.atk + ivs.def + ivs.spa + ivs.spd + ivs.spe;
-  return Math.floor((level * 50 + (totalIvs / 186) * 500) * 0.8);
+  return Math.floor((level * ROCKET_SELL_LEVEL_MULTIPLIER + (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) * ROCKET_SELL_CUT_MULTIPLIER);
 }

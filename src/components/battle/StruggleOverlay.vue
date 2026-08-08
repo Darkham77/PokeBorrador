@@ -19,6 +19,9 @@ const isStruggleMode = computed(() => {
   return p.moves.every(m => !m || m.pp <= 0)
 })
 
+const STRUGGLE_BASE_POWER = 50
+const STRUGGLE_RECOIL_RATIO = 0.25
+
 /** Objeto Move de Struggle construido con datos reales de Showdown. */
 const struggleMoveData = computed<Move>(() => {
   const raw = pokemonDataProvider.getMoveData('struggle') as { type?: string; power?: number; acc?: number; cat?: string } | null
@@ -30,12 +33,12 @@ const struggleMoveData = computed<Move>(() => {
     id: 'struggle',
     name: 'Forcejeo',
     type: toPokemonType(raw?.type ?? 'normal'),
-    power: raw?.power ?? 50,
+    power: raw?.power ?? STRUGGLE_BASE_POWER,
     acc: undefined, // Struggle never misses
     cat: cat ?? 'physical',
     pp: 1,
     maxPP: 1,
-    recoil: 0.25,
+    recoil: STRUGGLE_RECOIL_RATIO,
     desc: 'Sin PP disponibles. Ataque sin tipo que hace rebotar al usuario.',
   }
 })

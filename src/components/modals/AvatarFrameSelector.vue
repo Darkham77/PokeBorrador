@@ -48,6 +48,8 @@ const isAdmin = computed(() => {
   return authStore.user?.role === 'admin' || isLocal.value
 })
 
+const UNLOCK_MIN_CLASS_LEVEL = 25
+
 const isAvatarLocked = (style: AvatarStyle) => {
   if (style.requiredRole === 'admin' && !isAdmin.value) {
     return true
@@ -57,7 +59,7 @@ const isAvatarLocked = (style: AvatarStyle) => {
       return true
     }
     const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
-    if (currentLevel < 25) {
+    if (currentLevel < UNLOCK_MIN_CLASS_LEVEL) {
       return true
     }
   }
@@ -73,10 +75,12 @@ const selectAvatar = (style: AvatarStyle) => {
       uiStore.notify('Este marco es exclusivo para Administradores', '🔒')
     } else if (style.requiredClass) {
       const className = style.requiredClass.toUpperCase()
+const FRAME_REQUIRED_CLASS_LEVEL = 25
+
       if (gameStore.state.playerClass !== style.requiredClass) {
         uiStore.notify(`Este marco es exclusivo para la profesión ${className}`, '🔒')
       } else {
-        uiStore.notify(`Este marco requiere profesión ${className} Nivel 25`, '🔒')
+        uiStore.notify(`Este marco requiere profesión ${className} Nivel ${FRAME_REQUIRED_CLASS_LEVEL}`, '🔒')
       }
     } else if (style.requiredFaction) {
       const factionName = style.requiredFaction === 'union' ? 'UNIÓN' : 'PODER'

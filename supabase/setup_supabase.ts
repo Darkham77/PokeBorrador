@@ -199,7 +199,7 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
 
 function getServerNames(envVars: Record<string, string>): string[] {
   const names = new Set<string>();
-  const KNOWN_SUFFIXES = [
+  const SETUP_ENV_SUFFIXES = [
     'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
     'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
     'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
@@ -212,7 +212,7 @@ function getServerNames(envVars: Record<string, string>): string[] {
   for (const key of Object.keys(envVars)) {
     if (key.startsWith('SERVER_')) {
       const withoutPrefix = key.substring(7);
-      const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+      const matchedSuffix = SETUP_ENV_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
       if (matchedSuffix !== undefined) {
         const profile = withoutPrefix.substring(0, withoutPrefix.length - matchedSuffix.length - 1);
         if (profile) {

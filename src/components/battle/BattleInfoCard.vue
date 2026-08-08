@@ -70,6 +70,9 @@ import BattleInfoCardHeader from './BattleInfoCardHeader.vue'
 // --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
 const isLevelingUp = ref(false)
 
+const GSAP_LEVEL_UP_CARD_SCALE_BOOST = 1.05
+const GSAP_LEVEL_UP_FLASH_DURATION_SEC = 0.15
+
 watch(() => p.value.level, (newLevel, oldLevel) => {
   if (oldLevel && newLevel > oldLevel) {
     // 1. Efecto de Destello (Flash) con GSAP
@@ -78,8 +81,8 @@ watch(() => p.value.level, (newLevel, oldLevel) => {
         { filter: 'Brightness(1) contrast(1)', scale: 1 },
         { 
           filter: 'Brightness(2) contrast(1.2)', 
-          scale: 1.05, 
-          duration: 0.15, 
+          scale: GSAP_LEVEL_UP_CARD_SCALE_BOOST, 
+          duration: GSAP_LEVEL_UP_FLASH_DURATION_SEC, 
           yoyo: true, 
           repeat: 3, 
           ease: 'power2.inOut',
@@ -127,6 +130,8 @@ const showTeamBalls = computed(() => {
   return battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP
 })
 
+const MAX_TEAM_CAPACITY = 6
+
 const teamBallsStatus = computed(() => {
   if (!battleStore.state) return []
   const team = props.isPlayer 
@@ -134,7 +139,7 @@ const teamBallsStatus = computed(() => {
     : (battleStore.state.enemyTeam || [])
   
   const statuses: ('active' | 'fainted' | 'empty')[] = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < MAX_TEAM_CAPACITY; i++) {
     if (i < team.length) {
       const poke = team[i]
       if (poke && poke.hp > 0) {
@@ -223,8 +228,8 @@ const teamBallsStatus = computed(() => {
         :hp="p.hp"
         :max-hp="p.maxHp"
         :level="p.level"
-        :exp="p.exp"
-        :exp-needed="p.expNeeded"
+        :exp="p.exp || 0"
+        :exp-needed="p.expNeeded || 100"
         :is-player="isPlayer"
         :is-scrambled="isScrambled"
         :pokemon-uid="p.uid"

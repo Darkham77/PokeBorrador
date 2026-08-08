@@ -4,7 +4,7 @@ declare global {
   // FileSystem API (OPFS)
   interface FileSystemHandle {
     kind: 'file' | 'directory';
-    name: string;
+    name: string; // string-ok
   }
   interface FileSystemFileHandle extends FileSystemHandle {
     createWritable(): Promise<FileSystemWritableFileStream>;
@@ -85,7 +85,7 @@ declare global {
 
   interface BattleLogEntry {
     side: 'player' | 'enemy';
-    msg: string; // text-ok
+    msg: string; // string-ok
   }
 
   interface DebugGameStore {
@@ -170,7 +170,7 @@ declare global {
     __showdownWorker__?: Worker;
     __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } };
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
-    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // text-ok // string-ok // open-record
+    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok // string-ok // open-record
     __WEATHER_SESSION_SEED__?: number;
   }
 }

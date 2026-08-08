@@ -1,4 +1,14 @@
 <script setup lang="ts">
+/**
+ * EggWarehouse.vue
+ */
+const CARD_HOVER_OFFSET_Y_PX = -4
+const CRIADOR_CLASS_MIN_LEVEL = 20
+const MAX_INVENTORY_EGGS_LIMIT = 6
+const MAX_WAREHOUSE_EGGS_CAPACITY = 30
+const GSAP_CARD_TRANSITION_DUR_SEC = 0.25
+const GSAP_TRASH_TRANSITION_DUR_SEC = 0.2
+const GSAP_TRASH_HOVER_SCALE = 1.1
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
@@ -17,7 +27,7 @@ const uiStore = useUIStore();
 const gameStore = useGameStore();
 
 const isCriador = computed(() => gameStore.state.playerClass === 'criador');
-const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= 20);
+const isLevelAdequate = computed(() => (gameStore.state.classLevel || 1) >= CRIADOR_CLASS_MIN_LEVEL);
 
 const getPokemonName = (id: string) => {
   const specId = requirePokemonSpeciesId(id)
@@ -63,8 +73,10 @@ const checkCooldown = () => {
 
   cooldownText.value = `ESCANER IV EN COOLDOWN: ${hours}:${minutes}:${seconds}`;
 
+const GSAP_COOLDOWN_TICKER_DELAY_SEC = 1;
+
   // Schedule next update using GSAP delayedCall recursively
-  cooldownTicker = gsap.delayedCall(1, checkCooldown);
+  cooldownTicker = gsap.delayedCall(GSAP_COOLDOWN_TICKER_DELAY_SEC, checkCooldown);
 };
 
 watch(
@@ -86,7 +98,7 @@ onUnmounted(() => {
 const handleClaim = (egg: DaycareEgg) => {
   // Early slot guard — show toast immediately without opening any dialog
   const regularEggs = (gameStore.state.eggs || []).filter(e => !e.isNpc);
-  if (regularEggs.length >= 6) {
+  if (regularEggs.length >= MAX_INVENTORY_EGGS_LIMIT) {
     uiStore.notify('Tu incubadora está llena. Puedes llevar un máximo de 6 huevos.', '🥚');
     return;
   }
@@ -149,9 +161,9 @@ const handleCardMouseEnter = (e: MouseEvent) => {
   gsap.to(el, {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(244, 63, 94, 0.5)',
-    y: -4,
+    y: CARD_HOVER_OFFSET_Y_PX,
     boxShadow: '0 8px 24px rgba(244, 63, 94, 0.15)',
-    duration: 0.25,
+    duration: GSAP_CARD_TRANSITION_DUR_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   });
@@ -160,16 +172,20 @@ const handleCardMouseEnter = (e: MouseEvent) => {
   const info = el.querySelector('.egg-info');
   const action = el.querySelector('.egg-hover-action');
   
+const GSAP_EGG_CARD_HOVER_MIN_SCALE = 0.95
+
   if (visual) {
-    gsap.to(visual, { opacity: 0, y: -8, scale: 0.95, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(visual, { opacity: 0, y: -8, scale: GSAP_EGG_CARD_HOVER_MIN_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
   if (info) {
-    gsap.to(info, { opacity: 0, y: -8, scale: 0.95, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(info, { opacity: 0, y: -8, scale: GSAP_EGG_CARD_HOVER_MIN_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
   if (action) {
-    gsap.to(action, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(action, { opacity: 1, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
 };
+
+const GSAP_EGG_CARD_UNSCANNED_HOVER_SCALE = 0.85
 
 const handleCardMouseLeave = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement;
@@ -178,7 +194,7 @@ const handleCardMouseLeave = (e: MouseEvent) => {
     borderColor: 'rgba(255, 255, 255, 0.08)',
     y: 0,
     boxShadow: 'none',
-    duration: 0.25,
+    duration: GSAP_CARD_TRANSITION_DUR_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   });
@@ -188,13 +204,13 @@ const handleCardMouseLeave = (e: MouseEvent) => {
   const action = el.querySelector('.egg-hover-action');
   
   if (visual) {
-    gsap.to(visual, { opacity: 1, y: 0, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(visual, { opacity: 1, y: 0, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
   if (info) {
-    gsap.to(info, { opacity: 1, y: 0, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(info, { opacity: 1, y: 0, scale: 1, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
   if (action) {
-    gsap.to(action, { opacity: 0, scale: 0.85, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(action, { opacity: 0, scale: GSAP_EGG_CARD_UNSCANNED_HOVER_SCALE, duration: GSAP_CARD_TRANSITION_DUR_SEC, ease: 'power2.out', overwrite: 'auto' });
   }
 };
 
@@ -203,8 +219,8 @@ const handleTrashMouseEnter = (e: MouseEvent) => {
   gsap.to(el, {
     backgroundColor: 'rgba(239, 68, 68, 0.4)',
     color: '#ffffff',
-    scale: 1.1,
-    duration: 0.2,
+    scale: GSAP_TRASH_HOVER_SCALE,
+    duration: GSAP_TRASH_TRANSITION_DUR_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   });
@@ -216,7 +232,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
     color: '#f87171',
     scale: 1.0,
-    duration: 0.2,
+    duration: GSAP_TRASH_TRANSITION_DUR_SEC,
     ease: 'power2.out',
     overwrite: 'auto'
   });
@@ -240,7 +256,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
         class="count-badge"
         :class="{ empty: breedingStore.warehouseEggs.length === 0 }"
       >
-        {{ breedingStore.warehouseEggs.length }} / 30
+        {{ breedingStore.warehouseEggs.length }} / {{ MAX_WAREHOUSE_EGGS_CAPACITY }}
       </div>
     </header>
 

@@ -1,7 +1,10 @@
 import { gsap } from 'gsap'
 import { requireFeetDatabasePath, requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
-export function generatePixelShadow(w = 10, h = 7): string {
+const DEFAULT_SHADOW_WIDTH = 10;
+const DEFAULT_SHADOW_HEIGHT = 7;
+
+export function generatePixelShadow(w = DEFAULT_SHADOW_WIDTH, h = DEFAULT_SHADOW_HEIGHT): string {
   if (typeof document === 'undefined') return ''
   const canvas = document.createElement('canvas')
   canvas.width = w
@@ -32,10 +35,16 @@ export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY:
 /**
  * Animación de entrada y oscilación para efectos en el suelo (Púas/Drenadoras)
  */
+const SPIKES_ENTRY_Y = 10
+const OTHER_GROUND_ENTRY_Y = 20
+const SPIKES_ENTRY_ROTATION = -10
+const SPIKES_LEAVING_Y = -10
+const ROOT_ITEM_HOVER_SCALE = 1.03
+
 export const onGroundPopEnter = (el: Element, done: () => void) => {
   const isSpikes = el.classList.contains('spikes')
   gsap.fromTo(el,
-    { scale: 0, y: isSpikes ? 10 : 20, rotation: isSpikes ? -10 : 0, opacity: 0 },
+    { scale: 0, y: isSpikes ? SPIKES_ENTRY_Y : OTHER_GROUND_ENTRY_Y, rotation: isSpikes ? SPIKES_ENTRY_ROTATION : 0, opacity: 0 },
     { 
       scale: 1, 
       y: isSpikes ? 0 : 5, 
@@ -47,7 +56,7 @@ export const onGroundPopEnter = (el: Element, done: () => void) => {
         done()
         if (isSpikes) {
           gsap.to(el.querySelectorAll('.spike-item'), {
-            y: -10,
+            y: SPIKES_LEAVING_Y,
             scaleY: 1.1,
             scaleX: 0.9,
             duration: 0.8,
@@ -59,7 +68,7 @@ export const onGroundPopEnter = (el: Element, done: () => void) => {
         } else {
           gsap.to(el.querySelectorAll('.root-item'), {
             y: 2,
-            scale: 1.03,
+            scale: ROOT_ITEM_HOVER_SCALE,
             filter: 'brightness(1.2)',
             duration: 1.5,
             yoyo: true,

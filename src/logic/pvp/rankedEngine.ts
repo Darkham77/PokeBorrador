@@ -19,19 +19,26 @@ export interface RankedRules {
   bannedPokemonIds: string[];
 }
 
-export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
+import { RANKED_TIER_ORDER } from '@/data/system/rankedData.ts'
+export { RANKED_TIER_ORDER }
 export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
 export type RankedTierId = 'bronce' | 'plata' | 'oro' | 'platino' | 'diamante' | 'maestro';
 type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
 const RANKED_MAX_TIER_GAP = 1;
 
+const ELO_THRESHOLD_PLATA = 1200;
+const ELO_THRESHOLD_ORO = 1600;
+const ELO_THRESHOLD_PLATINO = 2100;
+const ELO_THRESHOLD_DIAMANTE = 2700;
+const ELO_THRESHOLD_MAESTRO = 3400;
+
 const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
-  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,    color: '#c8a060', icon: '🥉' },
-  PLATA:    { id: 'plata',    name: 'Plata',    minElo: 1200, color: '#9E9E9E', icon: '🥈' },
-  ORO:      { id: 'oro',      name: 'Oro',      minElo: 1600, color: '#FFB800', icon: '🥇' },
-  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: 2100, color: '#E5C100', icon: '🔶' },
-  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: 2700, color: '#89CFF0', icon: '💎' },
-  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: 3400, color: '#FFD700', icon: '👑' }
+  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,                      color: '#c8a060', icon: '🥉' },
+  PLATA:    { id: 'plata',    name: 'Plata',    minElo: ELO_THRESHOLD_PLATA,    color: '#9E9E9E', icon: '🥈' },
+  ORO:      { id: 'oro',      name: 'Oro',      minElo: ELO_THRESHOLD_ORO,      color: '#FFB800', icon: '🥇' },
+  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: ELO_THRESHOLD_PLATINO,  color: '#E5C100', icon: '🔶' },
+  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: '#89CFF0', icon: '💎' },
+  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: ELO_THRESHOLD_MAESTRO,  color: '#FFD700', icon: '👑' }
 };
 
 /**
@@ -39,11 +46,11 @@ const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
  */
 export function getEloTier(elo: number | string): EloTier {
   const e = Number(elo) || 0;
-  if (e >= (RANKED_TIERS.MAESTRO?.minElo || 3400)) return RANKED_TIERS.MAESTRO || { id: 'maestro', name: 'Maestro', minElo: 3400, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || 2700)) return RANKED_TIERS.DIAMANTE || { id: 'diamante', name: 'Diamante', minElo: 2700, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATINO?.minElo || 2100)) return RANKED_TIERS.PLATINO || { id: 'platino', name: 'Platino', minElo: 2100, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.ORO?.minElo || 1600)) return RANKED_TIERS.ORO || { id: 'oro', name: 'Oro', minElo: 1600, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATA?.minElo || 1200)) return RANKED_TIERS.PLATA || { id: 'plata', name: 'Plata', minElo: 1200, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.MAESTRO?.minElo || ELO_THRESHOLD_MAESTRO)) return RANKED_TIERS.MAESTRO || { id: 'maestro', name: 'Maestro', minElo: ELO_THRESHOLD_MAESTRO, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || ELO_THRESHOLD_DIAMANTE)) return RANKED_TIERS.DIAMANTE || { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATINO?.minElo || ELO_THRESHOLD_PLATINO)) return RANKED_TIERS.PLATINO || { id: 'platino', name: 'Platino', minElo: ELO_THRESHOLD_PLATINO, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.ORO?.minElo || ELO_THRESHOLD_ORO)) return RANKED_TIERS.ORO || { id: 'oro', name: 'Oro', minElo: ELO_THRESHOLD_ORO, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATA?.minElo || ELO_THRESHOLD_PLATA)) return RANKED_TIERS.PLATA || { id: 'plata', name: 'Plata', minElo: ELO_THRESHOLD_PLATA, color: '', icon: '' };
   return RANKED_TIERS.BRONCE || { id: 'bronce', name: 'Bronce', minElo: 0, color: '', icon: '' };
 }
 
@@ -68,11 +75,16 @@ export function isAllowedRankGap(myElo: number | string, opponentElo: number | s
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
+const MIN_TEAM_MEMBERS = 1;
+const MAX_TEAM_MEMBERS = 6;
+const MIN_RANKED_POKEMON_LEVEL = 1;
+const MAX_RANKED_POKEMON_LEVEL = 100;
+
 export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName: string = 'TEMPORADA ACTUAL'): RankedRules {
   return {
     seasonName: seasonName || 'TEMPORADA ACTUAL',
-    maxPokemon: Math.max(1, Math.min(6, Number(raw.maxPokemon) || 6)),
-    levelCap: Math.max(1, Math.min(100, Number(raw.levelCap) || 100)),
+    maxPokemon: Math.max(MIN_TEAM_MEMBERS, Math.min(MAX_TEAM_MEMBERS, Number(raw.maxPokemon) || MAX_TEAM_MEMBERS)),
+    levelCap: Math.max(MIN_RANKED_POKEMON_LEVEL, Math.min(MAX_RANKED_POKEMON_LEVEL, Number(raw.levelCap) || MAX_RANKED_POKEMON_LEVEL)),
     allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase()).filter((t): t is PokemonType => isPokemonType(t)) : [],
     bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase()).filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id)) : []
   };

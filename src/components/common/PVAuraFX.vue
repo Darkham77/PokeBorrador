@@ -16,6 +16,10 @@ const props = defineProps({
 
 const rootRef = ref<HTMLElement | null>(null)
 
+const GSAP_SCREEN_AURA_DURATION_SEC = 2
+const SCALE_MIN_AURA = 0.95
+const SCALE_MAX_AURA = 1.05
+
 const initScreenAuraFX = () => {
   const container = rootRef.value?.closest('.pv-fx-wrapper')
   if (!container) return
@@ -23,8 +27,8 @@ const initScreenAuraFX = () => {
   screens.forEach(el => {
     gsap.killTweensOf(el)
     gsap.fromTo(el, 
-      { scale: 0.95, opacity: 0.4 }, 
-      { scale: 1.05, opacity: 0.7, duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+      { scale: SCALE_MIN_AURA, opacity: 0.4 }, 
+      { scale: SCALE_MAX_AURA, opacity: 0.7, duration: GSAP_SCREEN_AURA_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     )
   })
 }

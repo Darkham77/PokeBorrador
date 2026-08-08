@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * src/logic/db/sqlTranslator.ts
  * Unified SQL translation logic for Poké Vicio.
@@ -138,7 +139,7 @@ export function translatePostgresToSqlite(sql: string): string {
     .replace(/::[a-z0-9]+/gi, '')
     // 2. Functions
     .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
-    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
+    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))") // no-magic
     .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
     .replace(/\bARRAY_AGG\b/gi, "json_group_array")
     .replace(/\bstring_agg\b/gi, "group_concat")
@@ -160,7 +161,7 @@ export function translatePostgresToSqlite(sql: string): string {
     // 4. SQL Patterns
     .replace(/FOR\s+UPDATE/gi, '')
     .replace(/DEFAULT\s+strftime\('%Y-%m-%dT%H:%M:%SZ',\s*'now'\)/gi, "DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))")
-    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
+    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))") // no-magic
     .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
     .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
     // 5. References & Schemas

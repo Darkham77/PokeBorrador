@@ -103,6 +103,11 @@ export interface WeatherDefinition {
   }
 }
 
+const WEATHER_BOOST_MULT_LABEL = 1.5;
+const WEATHER_DEBUFF_MULT_LABEL = 0.5;
+const WEATHER_CHIP_HP_FRACTION_LABEL = '1/16';
+const FOG_ACCURACY_MULT_LABEL = 0.6;
+
 /**
  * THE SINGLE SOURCE OF TRUTH FOR WEATHER
  */
@@ -141,7 +146,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL',
     icon: '☀️',
     visual: 'sun',
-    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
+    description: `Potencia Fuego (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Agua (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Rayo Solar sin carga`,
     modifiers: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] }
   },
   'heatwave': {
@@ -150,7 +155,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA CALOR',
     icon: '🔥',
     visual: 'heatwave',
-    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
+    description: `Potencia Fuego (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Agua (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Rayo Solar sin carga`,
     modifiers: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] }
   },
   'intense_sun': {
@@ -159,7 +164,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL INTENSO',
     icon: '🔆',
     visual: 'intense_sun',
-    description: 'Potencia Fuego (x1.5)\nDebilita Agua (x0.5)\nEfecto: Rayo Solar sin carga',
+    description: `Potencia Fuego (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Agua (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Rayo Solar sin carga`,
     modifiers: { boost: ['grass', 'fire'], block: ['water', 'ice'] }
   },
 
@@ -170,7 +175,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA',
     icon: '🌧️',
     visual: 'rain',
-    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
+    description: `Potencia Agua (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Fuego (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Trueno 100% precisión`,
     modifiers: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] }
   },
   'storm': {
@@ -179,7 +184,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'TORMENTA',
     icon: '⛈️',
     visual: 'storm',
-    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
+    description: `Potencia Agua (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Fuego (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Trueno 100% precisión`,
     modifiers: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] }
   },
   'thunderstorm': {
@@ -197,7 +202,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA FUERTE',
     icon: '☔',
     visual: 'heavy_rain',
-    description: 'Potencia Agua (x1.5)\nDebilita Fuego (x0.5)\nEfecto: Trueno 100% precisión',
+    description: `Potencia Agua (x${WEATHER_BOOST_MULT_LABEL})\nDebilita Fuego (x${WEATHER_DEBUFF_MULT_LABEL})\nEfecto: Trueno 100% precisión`,
     modifiers: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] }
   },
 
@@ -208,7 +213,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ARENA',
     icon: '🏜️',
     visual: 'sandstorm',
-    description: 'Debilita no Tierra/Roca/Acero (1/16 HP por turno)',
+    description: `Debilita no Tierra/Roca/Acero (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)`,
     modifiers: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] }
   },
   'dust_storm': {
@@ -217,7 +222,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. POLVO',
     icon: '🌪️',
     visual: 'dust_storm',
-    description: 'Debilita no Tierra/Roca/Acero (1/16 HP por turno)',
+    description: `Debilita no Tierra/Roca/Acero (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)`,
     modifiers: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
   },
 
@@ -228,7 +233,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEVE',
     icon: '❄️',
     visual: 'snow',
-    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
+    description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] }
   },
   'cold': {
@@ -237,7 +242,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'FRÍO',
     icon: '❄️',
     visual: 'cold',
-    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
+    description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], debuff: ['grass', 'bug'] }
   },
   'hail': {
@@ -246,7 +251,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'GRANIZO',
     icon: '🌨️',
     visual: 'hail',
-    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
+    description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },
   'blizzard': {
@@ -255,7 +260,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VENTISCA',
     icon: '🌬️',
     visual: 'blizzard',
-    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
+    description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] }
   },
   'coldwave': {
@@ -264,7 +269,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA FRÍO',
     icon: '🥶',
     visual: 'coldwave',
-    description: 'Debilita no Hielo (1/16 HP por turno)\nEfecto: Ventisca 100% precisión',
+    description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
     modifiers: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] }
   },
 
@@ -275,7 +280,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEBLA',
     icon: '🌫️',
     visual: 'fog',
-    description: 'Reduce la precisión en Gen 4+ (x0.6).',
+    description: `Reduce la precisión en Gen 4+ (x${FOG_ACCURACY_MULT_LABEL}).`,
     modifiers: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] }
   },
   'mist': {
@@ -284,7 +289,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'BRUMA',
     icon: '💨',
     visual: 'mist',
-    description: 'Reduce la precisión en Gen 4+ (x0.6).',
+    description: `Reduce la precisión en Gen 4+ (x${FOG_ACCURACY_MULT_LABEL}).`,
     modifiers: { boost: ['fairy', 'water'], debuff: ['fire'] }
   },
 

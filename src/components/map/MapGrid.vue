@@ -15,6 +15,9 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 import type { MapLocation } from '@/types/pokemon/encounters'
 
+const ROCKET_EXTORT_DURATION_MS = 24 * 3600 * 1000
+const TRAINER_OFFICIAL_DURATION_MS = 30 * 60 * 1000
+
 
 
 interface Props {
@@ -107,11 +110,11 @@ const isRocketExtorted = (loc: MapLocation): boolean => {
   const now = Temporal.Now.instant().epochMilliseconds
   if (props.playerClass === 'rocket' && props.classData.extortedRouteId === loc.id) {
     const timestamp = Number(props.classData.extortedRouteTimestamp || 0)
-    return (now - timestamp) <= 24 * 3600 * 1000
+    return (now - timestamp) <= ROCKET_EXTORT_DURATION_MS
   }
   if (props.playerClass === 'entrenador' && props.classData.officialRouteId === loc.id) {
     const timestamp = Number(props.classData.officialRouteTimestamp || 0)
-    return (now - timestamp) <= 30 * 60 * 1000
+    return (now - timestamp) <= TRAINER_OFFICIAL_DURATION_MS
   }
   return false
 }

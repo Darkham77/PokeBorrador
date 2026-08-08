@@ -9,6 +9,7 @@ import { usePvPStore } from '@/stores/pvp.ts'
 import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnResult, type PvPAction } from '@/logic/pvp/pvpEngine'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { DEFAULT_INITIAL_ELO, PVP_INVITE_EXPIRY_MS } from '@/logic/constants/gameplay.ts'
 
 
 interface BattleInvite {
@@ -47,7 +48,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     active: false, 
     ch: null,
     isHost: false, isRanked: false,
-    opponentId: null, opponentName: 'Rival', opponentElo: 1000,
+    opponentId: null, opponentName: 'Rival', opponentElo: DEFAULT_INITIAL_ELO,
     phase: 'sync', myTeam: [], enemyTeam: [],
     myActiveIdx: 0, enemyActiveIdx: 0, myHp: [], enemyHp: [],
     myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
@@ -88,7 +89,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       if (data && data.length > 0 && gameStore.db) {
         const inv = data[0]
         if (!inv) return
-        if (Temporal.Now.instant().epochMilliseconds - Temporal.Instant.from(inv.created_at).epochMilliseconds > 60000) return
+        if (Temporal.Now.instant().epochMilliseconds - Temporal.Instant.from(inv.created_at).epochMilliseconds > PVP_INVITE_EXPIRY_MS) return
         if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
         else activeInvite.value = inv
       }
@@ -101,7 +102,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   async function startSearch() {
     if (!authStore.user || !gameStore.db) return
     isSearching.value = true
-    await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: Temporal.Now.instant().toString() })
+    await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO, looking_since: Temporal.Now.instant().toString() })
     uiStore.notify('Buscando oponente...', '🔍')
     if (matchmakingPoller) matchmakingPoller.kill()
     

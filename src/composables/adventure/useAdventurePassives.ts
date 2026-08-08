@@ -1,11 +1,15 @@
 import { computed, type Ref } from 'vue'
 import type { AbilityId } from '@/data/battle/abilities'
 
+const PASSIVE_BONUS_SPEED_PCT = 0.15
+const PASSIVE_BONUS_LOOT_PCT = 0.20
+const PASSIVE_SYNC_CHANCE_PCT = 0.50
+
 const ADVENTURE_PASSIVES: Partial<Record<AbilityId, { id: string; label: string; desc: string; value: number }>> = {
-  flamebody: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: '+15% Vel. Viaje', value: 0.15 },
-  magmaarmor: { id: 'speed_bonus', label: 'Escudo Magma', desc: '+15% Vel. Viaje', value: 0.15 },
-  pickup: { id: 'loot_bonus', label: 'Recogida', desc: '+20% Prob. Botín', value: 0.20 },
-  synchronize: { id: 'nature_sync', label: 'Sincronía', desc: 'Sincronizar Naturaleza', value: 0.50 }
+  flamebody: { id: 'speed_bonus', label: 'Cuerpo Llama', desc: `+${Math.round(PASSIVE_BONUS_SPEED_PCT * 100)}% Vel. Viaje`, value: PASSIVE_BONUS_SPEED_PCT },
+  magmaarmor: { id: 'speed_bonus', label: 'Escudo Magma', desc: `+${Math.round(PASSIVE_BONUS_SPEED_PCT * 100)}% Vel. Viaje`, value: PASSIVE_BONUS_SPEED_PCT },
+  pickup: { id: 'loot_bonus', label: 'Recogida', desc: `+${Math.round(PASSIVE_BONUS_LOOT_PCT * 100)}% Prob. Botín`, value: PASSIVE_BONUS_LOOT_PCT },
+  synchronize: { id: 'nature_sync', label: 'Sincronía', desc: 'Sincronizar Naturaleza', value: PASSIVE_SYNC_CHANCE_PCT }
 }
 
 export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: number; ability?: AbilityId } | null> } }) {

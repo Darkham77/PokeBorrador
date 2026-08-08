@@ -20,15 +20,17 @@ export function useAdventureMinigames(config: MinigameConfig) {
   const showFishing = ref(false)
   const minigamePokemon = ref<Pokemon | null>(null)
 
+const MINIGAME_SPAWN_LEVEL = 20
+
   const startMinigame = (type: 'archaeology' | 'fishing') => {
     if (type === 'archaeology') {
       const fossilId = FOSSIL_POKEMON_IDS[Math.floor(Math.random() * FOSSIL_POKEMON_IDS.length)]!
-      minigamePokemon.value = makePokemon(fossilId, 20) as Pokemon
+      minigamePokemon.value = makePokemon(fossilId, MINIGAME_SPAWN_LEVEL) as Pokemon
       showArchaeology.value = true
       config.travelLog.value.push('⛏️ ¡Usas Golpe Roca y encuentras restos fósiles! Comienza la excavación...')
     } else {
       const fishId = FISH_POKEMON_IDS[Math.floor(Math.random() * FISH_POKEMON_IDS.length)]!
-      minigamePokemon.value = makePokemon(fishId, 20) as Pokemon
+      minigamePokemon.value = makePokemon(fishId, MINIGAME_SPAWN_LEVEL) as Pokemon
       showFishing.value = true
       config.travelLog.value.push('🎣 ¡Lanzas la caña! Comienza el minijuego de pesca...')
     }

@@ -1,7 +1,16 @@
 // fallow-ignore-file security-sink
 import { type Page, type Locator, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
-import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
+import {
+  MAX_PER_ACTION_TIMEOUT_MS,
+  MAX_E2E_CLICK_RETRIES,
+  E2E_CLICK_TIMEOUT_MS,
+  E2E_FALLBACK_TIMEOUT_MS,
+  MAX_UI_SETTLE_TIMEOUT_MS,
+  MS_TO_SECONDS_DIVISOR,
+  SWITCH_SLOT_OFFSET_2
+} from './simulation_config.ts';
+export { MAX_PER_ACTION_TIMEOUT_MS };
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
 import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
 import fs from 'node:fs';
@@ -27,13 +36,13 @@ export function flushE2ELogs(
     }
     const logFilePath = path.join(logDir, sanitizePath(`worker_${workerId}.log`));
     const timeStr = new Date().toISOString();
-    const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / 1000).toFixed(1) + 's' : '0s'}) ---\n`;
+    const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1) + 's' : '0s'}) ---\n`;
     fs.appendFileSync(logFilePath, header + logBuffer.join('\n') + '\n');
   } catch (err: unknown) {
     console.debug('[E2E-LOGGER-WARN] Failed to write log file:', err instanceof Error ? err.message : String(err));
   }
 
-  const durationStr = durationMs ? ` (${(durationMs / 1000).toFixed(1)}s)` : '';
+  const durationStr = durationMs ? ` (${(durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1)}s)` : '';
 
   if (status === 'passed') {
     console.log(`[E2E-PROGRESS] ✅ ${testName}${durationStr}`);
@@ -73,9 +82,9 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
     return { fsm: store.currentFsmState, sub: store.currentSubState };
   }).catch(() => null);
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < MAX_E2E_CLICK_RETRIES; i++) {
     try {
-      await locator.click({ timeout: 1500, ...cleanOptions });
+      await locator.click({ timeout: E2E_CLICK_TIMEOUT_MS, ...cleanOptions });
       return;
     } catch (err: unknown) {
       const msg = err instanceof Error ? (err as Error).message : String(err);
@@ -89,7 +98,7 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
         // try focusing the element and triggering via Enter key to bypass pointer-events.
         try {
           logE2EDebug(locator.page(), '[E2E-CLICK-FALLBACK] Click intercepted or unstable. Trying focus + Enter key...');
-          await locator.focus({ timeout: 1000 });
+          await locator.focus({ timeout: E2E_FALLBACK_TIMEOUT_MS });
           await locator.page().keyboard.press('Enter');
           return;
         } catch (fallbackErr) {
@@ -108,14 +117,14 @@ export async function clickResilient(locator: Locator, options: { force?: boolea
           return;
         }
 
-        logE2EDebug(locator.page(), `[E2E-RETRY] Element transitioning, retrying click (${i + 1}/5)...`);
-        await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: 1000 }).catch(() => null);
+        logE2EDebug(locator.page(), `[E2E-RETRY] Element transitioning, retrying click (${i + 1}/${MAX_E2E_CLICK_RETRIES})...`);
+        await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: E2E_FALLBACK_TIMEOUT_MS }).catch(() => null);
         continue;
       }
       throw err; // Re-throw other unexpected errors (e.g. syntax, timeout of non-visible elements)
     }
   }
-  throw new Error(`[E2E-CLICK-FAILED] Click failed after 5 retries on locator without force bypass.`);
+  throw new Error(`[E2E-CLICK-FAILED] Click failed after ${MAX_E2E_CLICK_RETRIES} retries on locator without force bypass.`);
 }
 
 export interface BattleLogEntry {
@@ -210,15 +219,15 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
            typeof win.initSqlJs === 'function' &&
            !document.querySelector('.loading-overlay') &&
            !document.querySelector('.auth-loading-text');
-  }, undefined, { timeout: 15000 }).catch(() => {});
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
 
   // The local form does not exist until its server tab has rendered.
   const localTab = page.locator('#server-tab-local').first();
-  await localTab.waitFor({ state: 'visible', timeout: 15000 });
+  await localTab.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await localTab.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   const userInput = page.locator('#local-username-input').first();
-  await userInput.waitFor({ state: 'visible', timeout: 15000 });
+  await userInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await userInput.fill(testUser);
 
   const jugarBtn = page.locator('#local-login-btn').first();
@@ -268,18 +277,14 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, _labe
  */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
   const startBtn = page.locator('#start-encounter-btn').first();
-  try {
-    await startBtn.waitFor({ state: 'visible', timeout: 3000 });
-    await clickResilient(startBtn, { timeout: 3000 });
-
-    // If clicking SEARCH opens a trainer/rival dialogue modal with a fight button, confirm it
-    const fightModalBtn = page.locator('#confirm-battle-btn').first();
-    const isModalVisible = await fightModalBtn.isVisible().catch(() => false);
-    if (isModalVisible) {
-      await clickResilient(fightModalBtn, { timeout: 3000 });
-    }
-  } catch (_e) {
-    logE2EDebug(page, '[confirmAndStartBattle] Start/Combat button not found or battle already active. Proceeding...');
+  const isStartVisible = await startBtn.isVisible().catch(() => false);
+  if (isStartVisible) {
+    await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  } else {
+    await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      await useBattleStore().startEncounter();
+    });
   }
 }
 
@@ -291,12 +296,13 @@ export async function waitForWaitInput(page: Page): Promise<void> {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return false;
     const store = resolver();
+    if (!store || !store.state) return false;
     return !store.isProcessing && (
       (store.currentFsmState === 'ACTIVE_BATTLE' && 
        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-      !store.state || store.state.over
+      store.state.over
     );
-  }, undefined, { timeout: 15000 });
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 /**
@@ -312,7 +318,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     return !resolver().isProcessing;
-  }, undefined, { timeout: 2000 });
+  }, undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS });
 
   const isProcessing = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -367,14 +373,14 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
 
       if (targetUid) {
         const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
-        await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await cardBtn.click({ timeout: 5000 });
+        await cardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        await cardBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       } else {
         // Fallback posicional si no se pudo resolver el UID
-        const switchIdx = switchSlot - 2; // slot 1 = activo, slot 2 = índice 0 de banca
+        const switchIdx = switchSlot - SWITCH_SLOT_OFFSET_2; // slot 1 = activo, slot 2 = índice 0 de banca
         const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
-        await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-        await allBenchCards.nth(switchIdx).click({ timeout: 5000 });
+        await allBenchCards.first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        await allBenchCards.nth(switchIdx).click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       }
       return true;
     }
@@ -383,7 +389,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     const activeSwitchBtn = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
     const isVisible = await activeSwitchBtn.isVisible().catch(() => false);
     if (isVisible) {
-      await activeSwitchBtn.click({ timeout: 5000 });
+      await activeSwitchBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       return !choice;
     }
     return false;
@@ -395,7 +401,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     if (isVisible) {
       const isDisabled = await firstMoveBtn.isDisabled().catch(() => true);
       if (!isDisabled) {
-        await firstMoveBtn.click({ timeout: 5000 });
+        await firstMoveBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
         return true;
       }
     }
@@ -456,29 +462,29 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           moveBtn = page.locator('#move-panel [id^="move-btn-"]').nth(resolvedVisualIdx);
         }
 
-        await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
+        await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
         const isDisabled = await moveBtn.isDisabled().catch(() => true);
         if (isDisabled) {
           return false;
         }
-        await clickResilient(moveBtn, { timeout: 5000 });
+        await clickResilient(moveBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         return true;
       } else if (cleanChoice.startsWith('switch ')) {
         // En Showdown, slot 1 es el activo, y slots 2-6 son la banca (sana o completa según la fase).
         // Por ende, switch N corresponds al índice N-2 de los elementos disponibles en la banca de la UI.
-        const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
+        const switchSlot = parseInt(cleanChoice.split(' ')[1] || String(SWITCH_SLOT_OFFSET_2), 10);
         
         const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH');
 
         if (targetUid) {
           const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
-          await cardBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(cardBtn, { timeout: 5000 });
+          await cardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+          await clickResilient(cardBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         } else {
-          const switchIdx = switchSlot - 2;
+          const switchIdx = switchSlot - SWITCH_SLOT_OFFSET_2;
           const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
-          await allBenchCards.first().waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(allBenchCards.nth(switchIdx), { timeout: 5000 });
+          await allBenchCards.first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+          await clickResilient(allBenchCards.nth(switchIdx), { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         }
         return true;
       } else if (cleanChoice.startsWith('useitem:')) {
@@ -501,17 +507,17 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         const isQuickVisible = await quickCard.isVisible().catch(() => false);
 
         if (isQuickVisible) {
-          await clickResilient(quickCard, { timeout: 5000 });
+          await clickResilient(quickCard, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         } else {
           // Si no está en la bolsa rápida (ej. Revivir), abrir la mochila completa
           const bagBtn = page.locator('#battle-bag-btn');
-          await bagBtn.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(bagBtn, { timeout: 5000 });
+          await bagBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+          await clickResilient(bagBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
           // Esperar a que aparezca la tarjeta en el modal de la mochila mediante ID estricto de ítem
           const backpackItem = page.locator(`#inventory-item-${toID(translatedName)}, .inventory-item-card`).first();
-          await backpackItem.waitFor({ state: 'visible', timeout: 5000 });
-          await clickResilient(backpackItem, { timeout: 5000 });
+          await backpackItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+          await clickResilient(backpackItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         }
 
         const targetUid = await page.evaluate((idx) => {
@@ -533,8 +539,8 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           targetBtn = page.locator(`#pokemon-select-${targetUid}`).first();
         }
 
-        await targetBtn.waitFor({ state: 'visible', timeout: 5000 });
-        await clickResilient(targetBtn, { timeout: 5000 });
+        await targetBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        await clickResilient(targetBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         return true;
       } else {
         return true;
@@ -634,7 +640,7 @@ export async function verifyHpParity(page: Page) {
         if (!text.includes(`${enemyHp}/${enemyMaxHp}`)) return false;
       }
       return true;
-    }, undefined, { timeout: 15000 });
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   } catch (err) {
     const diagnosis = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -665,7 +671,7 @@ export async function executeAutoBattle(
   await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     return !!resolver?.().state;
-  }, undefined, { timeout: 10000 });
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   let over = false;
   while (!over) {
@@ -895,7 +901,7 @@ export async function waitForStoreReady(page: Page): Promise<void> {
     if (!debug || !debug.getGameStore) return false;
     const store = debug.getGameStore();
     return !!store && !!store.state && store.isReady === true;
-  }, undefined, { timeout: 30000 });
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 export async function openDebugTab(page: Page, category: string): Promise<void> {
@@ -920,26 +926,26 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
   };
   const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase();
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
-  await navBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-  await clickResilient(navBtn, { timeout: 5000 });
+  await navBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+  await clickResilient(navBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 export async function playFishingMinigameNaturally(page: Page): Promise<void> {
   const modalContainer = page.locator('#rhythm-container').first();
-  const isVisible = await modalContainer.isVisible({ timeout: 2000 }).catch(() => false);
+  const isVisible = await modalContainer.isVisible({ timeout: E2E_CLICK_TIMEOUT_MS }).catch(() => false);
   if (isVisible) {
     const closeBtn = page.locator('#fishing-modal-close-btn, .modal-close-btn').first();
     const isCloseVisible = await closeBtn.isVisible().catch(() => false);
     if (isCloseVisible) {
       await clickResilient(closeBtn).catch(() => {});
     }
-    await modalContainer.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
   }
 }
 
 export async function playArchaeologyMinigameNaturally(page: Page): Promise<void> {
   const grid = page.locator('#archaeology-grid').first();
-  const isVisible = await grid.isVisible({ timeout: 2000 }).catch(() => false);
+  const isVisible = await grid.isVisible({ timeout: E2E_CLICK_TIMEOUT_MS }).catch(() => false);
   if (isVisible) {
     // Cierra/abandona la arqueología de forma natural por UI usando el botón de cerrar modal
     const closeBtn = page.locator('#archaeology-modal-close-btn, .modal-close-btn').first();
@@ -947,6 +953,6 @@ export async function playArchaeologyMinigameNaturally(page: Page): Promise<void
     if (isCloseVisible) {
       await clickResilient(closeBtn).catch(() => {});
     }
-    await grid.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await grid.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
   }
 }

@@ -6,6 +6,8 @@ import { tickStatus, tickLeechSeed } from './battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { PokemonType } from '@/data/battle/types'
 
+const PARALYSIS_FULL_PARALYZE_CHANCE = 0.25;
+
 export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherType: string | undefined, addLog: LogFn) {
   if (!pokemon) return;
   if (pokemon.id !== 'castform') return;
@@ -100,7 +102,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
     }
   }
   if (pokemon.status === 'par') {
-    if (Math.random() < 0.25) {
+    if (Math.random() < PARALYSIS_FULL_PARALYZE_CHANCE) {
       addLog(`¡${pokemon.name} está paralizado! ¡No puede moverse!`, 'log-info', pokemon)
       return false
     }

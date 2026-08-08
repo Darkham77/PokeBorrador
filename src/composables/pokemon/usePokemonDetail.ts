@@ -14,6 +14,8 @@ import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { toPokemonType } from '@/data/battle/types'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 
+const MAX_BASE_STAT_VALUE = 255;
+
 function requireMoveCategory(value: string | undefined): 'physical' | 'special' | 'status' {
   if (value === undefined) return 'physical'
   if (value === 'physical' || value === 'special' || value === 'status') return value
@@ -146,7 +148,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
         label: labels[key] || key.toUpperCase(), // text-ok
         value: current,
         baseValue: base,
-        max: 255,
+        max: MAX_BASE_STAT_VALUE,
         color: colors[key] || '#888',
         iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0, // open-record
         ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0 // open-record

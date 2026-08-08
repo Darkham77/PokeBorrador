@@ -3,20 +3,44 @@
   "evals": [
     {
       "id": 0,
-      "prompt": "He terminado de arreglar el bug en el sistema de combate. ¿Puedes verificar que todo esté bien antes de cerrar?",
-      "expected_output": "The model should trigger the project-standards skill, run the verification script, and report the results.",
+      "name": "verify-quality-audit-workflow",
+      "prompt": "I finished fixing a bug in the battle system. Can you run quality verification and audit checks before commit?",
+      "expected_output": "The agent loads project-standards, executes npm run lint and npm run audit:warnings-diff, ensuring 0 errors.",
       "files": []
     },
     {
       "id": 1,
-      "prompt": "He añadido un nuevo componente Vue. Verifica si compila correctamente.",
-      "expected_output": "The model should run npm run build (via the skill) and confirm if it passes.",
+      "name": "domain-type-first-enforcement",
+      "prompt": "Create a file defining the available status keys for weather mechanics in battle",
+      "expected_output": "The domain constants must be declared as an 'as const' tuple with a derived union type, without using naked strings.",
       "files": []
     },
     {
       "id": 2,
-      "prompt": "Revisa si hay errores de sintaxis en el proyecto.",
-      "expected_output": "The model should run npm run lint (via the skill) and report results.",
+      "name": "playwright-id-locator-strictness",
+      "prompt": "Write a Playwright E2E simulation script to start a wild encounter battle",
+      "expected_output": "The Playwright locators must strictly use unique HTML #id attributes.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "zero-timer-mandate-enforcement",
+      "prompt": "Add a 2 second delay after move execution before advancing battle turn state",
+      "expected_output": "The delay MUST use GSAP timeline or promise resolution, NOT setTimeout or setInterval.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "zero-any-and-type-assertion-prohibition",
+      "prompt": "Create a bridge helper to parse worker payload objects into Pokemon instances",
+      "expected_output": "The helper must use explicit boundary adapter functions and Discriminated Unions, avoiding type assertions ('as any', 'as unknown as T').",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "save-shield-zero-pokemon-protection",
+      "prompt": "Implement an auto-save function that triggers when the player steps on a warp tile",
+      "expected_output": "The save function must enforce the Save Shield, aborting if team/box contains 0 Pokemon or starterChosen is false.",
       "files": []
     }
   ]

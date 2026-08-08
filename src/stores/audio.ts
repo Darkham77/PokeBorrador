@@ -6,6 +6,7 @@ import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
 import { getPokemonCryFilename } from '@/data/pokemon/pokemonFeetDatabase';
 import { toID } from '@pkmn/sim';
+import { AUDIO_MASTER_GAIN_VOLUME } from '@/logic/constants/audio';
 
 /**
  * AudioStore
@@ -28,7 +29,7 @@ export const useAudioStore = defineStore('audio', () => {
       const ctx = new AudioContextClass();
       context.value = ctx;
       const gain = ctx.createGain();
-      gain.gain.value = 0.15; // Global volume
+      gain.gain.value = AUDIO_MASTER_GAIN_VOLUME; // Global volume
       gain.connect(ctx.destination);
       masterGain.value = gain;
       isInitialized.value = true;

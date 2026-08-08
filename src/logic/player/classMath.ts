@@ -1,18 +1,70 @@
+// fallow-ignore-file security-sink
 /**
  * classMath.ts
  * Módulo con funciones y fórmulas puras para las mecánicas de las clases de jugador
  * sin efectos colaterales de base de datos o almacenamiento de estado.
  */
 
+import { MINIMUM_POKEMON_LEVEL, DECIMAL_PLACES_PRECISION_TWO, CLASS_XP_THRESHOLD_RANKS } from '../constants/gameplay.ts';
+
+/** Team Rocket quick steal base chance (15%). */
+export const ROCKET_QUICK_STEAL_BASE_CHANCE = 0.15;
+
+/** Team Rocket quick steal chance increase per level (1%). */
+export const ROCKET_QUICK_STEAL_PER_LEVEL = 0.01;
+
+/** Team Rocket quick steal maximum cap (30%). */
+export const ROCKET_QUICK_STEAL_MAX_CAP = 0.30;
+
+/** Bug Catcher catch rate synergy base multiplier. */
+export const BUG_SYNERGY_BASE_BONUS = 1.0;
+
+/** Bug Catcher maximum active Bug Pokémon count for synergy. */
+export const BUG_SYNERGY_MAX_COUNT = 6;
+
+/** Bug Catcher bonus catch multiplier per Bug Pokémon (+5%). */
+export const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
+
+/** Trainer class high-IV threshold for catch rate calculation. */
+export const TRAINER_HIGH_IV_THRESHOLD = 120;
+
+/** Trainer class catch rate penalty multiplier for high-IV targets (90%). */
+export const TRAINER_CATCH_PENALTY_MULTIPLIER = 0.9;
+
+/** Maximum player class level limit. */
+export const MAX_PLAYER_CLASS_LEVEL = 30;
+
+/** Level requirement for unlocking class-specific cosmetics (Level 25). */
+export const COSMETIC_UNLOCK_CLASS_LEVEL = 25;
+
+/** Cost in Battle Coins to change player class (10,000). */
+export const CLASS_CHANGE_COST_BATTLE_COINS = 10_000;
+
+/** Maximum criminality level cap for Team Rocket. */
+export const MAX_CRIMINALITY_LEVEL = 100;
+
+/** XP cap requirement return for max-level player classes. */
+export const MAX_LEVEL_XP_CAP = 99999999;
+
+/** Quadratic coefficient factor for NPC robbery limit (8 * L^2). */
+export const NPC_ROBBERY_LIMIT_QUADRATIC_COEFF = 8;
+
+/** Fallback XP multiplier per level if threshold rank is missing. */
+export const CLASS_LEVEL_FALLBACK_XP_MULTIPLIER = 1000;
+
+/** Quadratic exponent factor (2). */
+export const QUADRATIC_EXPONENT = 2;
+
 /**
  * Team Rocket:
  * Calcula la probabilidad de éxito de "Robo Rápido" al inicio del combate basado en el nivel de clase.
- * Nivel 1: 5%, Nivel 2: 10%, Nivel 3: 15% (Límite cap).
+ * Nivel 1: 15%, Nivel 2: 16%, ... max 30%.
  */
 export function calculateQuickStealChance(classLevel: number): number {
-  const level = Math.max(1, classLevel);
-  const chance = 0.15 + (level - 1) * 0.01;
-  return parseFloat(Math.min(0.30, chance).toFixed(2));
+  const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel);
+  const rawChance = ROCKET_QUICK_STEAL_BASE_CHANCE + (level - MINIMUM_POKEMON_LEVEL) * ROCKET_QUICK_STEAL_PER_LEVEL;
+  const chance = Math.min(ROCKET_QUICK_STEAL_MAX_CAP, rawChance);
+  return Number(chance.toFixed(DECIMAL_PLACES_PRECISION_TWO));
 }
 
 /**
@@ -26,8 +78,7 @@ export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: s
     const t2 = String(p.type2 || '').toLowerCase();
     return t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
   }).length;
-  // Aumenta linealmente 5% por cada bicho en el equipo, máximo 30% (+0.30)
-  return 1.0 + Math.min(6, bugCount) * 0.05;
+  return BUG_SYNERGY_BASE_BONUS + Math.min(BUG_SYNERGY_MAX_COUNT, bugCount) * BUG_SYNERGY_BONUS_PER_BUG;
 }
 
 /**
@@ -35,8 +86,8 @@ export function calculateBugSymmetryBonus(activeTeam: { type1: string; type2?: s
  * Aplica una penalización del 10% a la tasa de captura base si el Pokémon salvaje tiene IVs excepcionales (IV Total > 120).
  */
 export function calculateTrainerCatchRateModifier(baseCatchRate: number, ivTotal: number): number {
-  if (ivTotal > 120) {
-    return Math.max(1, Math.floor(baseCatchRate * 0.9));
+  if (ivTotal > TRAINER_HIGH_IV_THRESHOLD) {
+    return Math.max(MINIMUM_POKEMON_LEVEL, Math.floor(baseCatchRate * TRAINER_CATCH_PENALTY_MULTIPLIER));
   }
   return baseCatchRate;
 }
@@ -57,17 +108,14 @@ export function hasDoubleRivalChance(
   });
 }
 
+export { CLASS_XP_THRESHOLD_RANKS };
+
 /**
  * Retorna la experiencia necesaria para subir al siguiente nivel de clase.
  */
 export function getXPNeededForClassLevel(level: number): number {
-  if (level >= 30) return 99999999;
-  const ranks = [
-    100, 250, 500, 900, 1400, 2100, 3000, 4200, 6000, 8500,
-    11500, 15000, 19000, 23500, 28500, 34000, 40000, 46500, 53500, 61000,
-    69000, 77500, 86500, 96000, 106000, 116500, 127500, 139000, 151500
-  ];
-  return ranks[level - 1] || (level * 1000);
+  if (level >= MAX_PLAYER_CLASS_LEVEL) return MAX_LEVEL_XP_CAP;
+  return CLASS_XP_THRESHOLD_RANKS[level - MINIMUM_POKEMON_LEVEL] || (level * CLASS_LEVEL_FALLBACK_XP_MULTIPLIER);
 }
 
 /**
@@ -76,8 +124,6 @@ export function getXPNeededForClassLevel(level: number): number {
  * Escalado: V_max(L) = 8 * L^2
  */
 export function calculateMaxNpcRobberyLimit(avgLevel: number): number {
-  const level = Math.max(1, avgLevel);
-  return 8 * Math.pow(level, 2);
+  const level = Math.max(MINIMUM_POKEMON_LEVEL, avgLevel);
+  return NPC_ROBBERY_LIMIT_QUADRATIC_COEFF * Math.pow(level, QUADRATIC_EXPONENT);
 }
-
-

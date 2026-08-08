@@ -29,9 +29,12 @@ const newUsername = ref('')
 const isRenaming = ref(false)
 const selectedGender = ref<'h' | 'm'>('h')
 
+const SCALE_GENDER_CLICK = 0.85
+const RENAME_COOLDOWN_DAYS = 30
+
 const setGender = (newGender: 'h' | 'm', event: MouseEvent) => {
   gsap.fromTo(event.currentTarget, 
-    { scale: 0.85 },
+    { scale: SCALE_GENDER_CLICK },
     { scale: 1, duration: 0.3, ease: 'back.out(2)' }
   )
   selectedGender.value = newGender
@@ -50,7 +53,7 @@ const daysUntilRename = computed(() => {
     const now = Temporal.Now.instant()
     const diff = now.since(lastRename, { largestUnit: 'hours' })
     const daysPassed = Math.floor(diff.hours / 24)
-    return Math.max(0, 30 - daysPassed)
+    return Math.max(0, RENAME_COOLDOWN_DAYS - daysPassed)
   } catch (_e) {
     return 0
   }

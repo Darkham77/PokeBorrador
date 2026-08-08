@@ -30,6 +30,11 @@ const getTextWidth = (text: string, fontSpec: string): number => {
   return ctx.measureText(text).width;
 };
 
+const PILL_PADDING_SAFETY_PX = 8
+const MIN_FONT_SIZE_PX = 4
+const MAX_FIT_ATTEMPTS = 20
+const DEFAULT_PILL_FONT_SIZE_PX = 14
+
 /**
  * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
  * utilizando mediciones en CPU sin forzar recalculaciones geométricas del DOM.
@@ -42,7 +47,7 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!parent) return
   
   // Margen de seguridad para el icono y padding (pills tienen ~65px total)
-  const maxW = parent.clientWidth - 8 
+  const maxW = parent.clientWidth - PILL_PADDING_SAFETY_PX 
   
   const text = el.textContent || el.innerText || '';
   const fontFamily = '"Pokemon FireRed LeafGreen", monospace';
@@ -50,7 +55,7 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   
   // Realizamos las mediciones en CPU (Canvas virtual)
   let attempts = 0
-  while (size > 4 && attempts < 20) {
+  while (size > MIN_FONT_SIZE_PX && attempts < MAX_FIT_ATTEMPTS) {
     const fontSpec = `bold ${size}px ${fontFamily}`;
     const width = getTextWidth(text, fontSpec);
     if (width <= maxW) {
@@ -65,9 +70,9 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
 }
 
 const fitAllPills = () => {
-  fitText(moneyRef.value, 14)
-  fitText(bcRef.value, 14)
-  fitText(warRef.value, 14)
+  fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX)
+  fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX)
+  fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX)
 }
 
 // Observador para cambios de tamaño (mobile resize / orientation)

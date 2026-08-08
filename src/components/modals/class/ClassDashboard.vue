@@ -41,11 +41,13 @@ const handleImageError = (e: Event) => {
   }
 }
 
+const GSAP_TRAINER_CARD_HOVER_SCALE_BOOST = 1.05
+
 // GSAP Hover Interactions
 const onTrainerMouseEnter = (event: MouseEvent) => {
   const target = event.currentTarget as HTMLElement
   gsap.to(target, {
-    scale: 1.05,
+    scale: GSAP_TRAINER_CARD_HOVER_SCALE_BOOST,
     duration: 0.3,
     ease: 'power2.out',
     overwrite: 'auto'

@@ -71,9 +71,11 @@ const toggleReleaseMode = () => {
 
 const getBoxBuyCost = () => boxStore.getBoxBuyCost()
 
+const MAX_PURCHASABLE_BOXES_LIMIT = 10
+
 const buyNewBox = () => {
   const cost = getBoxBuyCost()
-  if (gs.value.boxCount >= 10) return
+  if (gs.value.boxCount >= MAX_PURCHASABLE_BOXES_LIMIT) return
   
   uiStore.openConfirm({
     title: 'COMPRAR CAJA',

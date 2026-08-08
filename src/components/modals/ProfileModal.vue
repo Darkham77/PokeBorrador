@@ -135,9 +135,11 @@ const handleEditProfile = () => {
   uiStore.open('Cosmetics')
 }
 
+const GSAP_AVATAR_HOVER_SCALE_BOOST = 1.05
+
 const handleAvatarEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
-    scale: 1.05,
+    scale: GSAP_AVATAR_HOVER_SCALE_BOOST,
     duration: 0.2,
     ease: 'power2.out'
   })

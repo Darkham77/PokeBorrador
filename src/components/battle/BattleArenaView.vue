@@ -23,6 +23,47 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GYMS } from '@/data/world/gyms.ts'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 import { getPokemonFeetCoords, generatePixelShadow } from '@/logic/combat/shadowHelpers'
+import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay'
+import {
+  MAX_PRNG_SEED_RANGE,
+  TRAINER_SHADOW_RADIUS_X,
+  TRAINER_SHADOW_RADIUS_Y,
+  TRAINER_SHADOW_WIDTH_RATIO,
+  TRAINER_SHADOW_HEIGHT_RATIO
+} from '@/logic/constants/visuals'
+import {
+  GSAP_FAST_DURATION_SEC,
+  ARENA_INITIAL_LOAD_DELAY_SEC,
+  RIVAL_ALERT_FLICKER_DURATION_SEC,
+  RIVAL_ALERT_FLICKER_REPEAT_COUNT,
+  RIVAL_EXCLAMATION_POP_SCALE,
+  RIVAL_EXCLAMATION_POP_DURATION_SEC,
+  RIVAL_EXCLAMATION_WOBBLE_Y_OFFSET,
+  RIVAL_EXCLAMATION_WOBBLE_DURATION_SEC,
+  RIVAL_EXCLAMATION_WOBBLE_REPEAT_COUNT,
+  RIVAL_EXCLAMATION_FADE_DURATION_SEC,
+  TRAINER_ENTER_DURATION_SEC,
+  TRAINER_RETREAT_X_OFFSET_PX,
+  TRAINER_RETREAT_Y_OFFSET_PX,
+  HUD_TRANSITION_X_OFFSET_PX,
+  HUD_TRANSITION_INITIAL_SCALE,
+  HUD_TRANSITION_DURATION_SEC,
+  DIALOG_ENTER_Y_OFFSET_PX,
+  DIALOG_LEAVE_Y_OFFSET_PX,
+  DIALOG_LEAVE_DURATION_SEC
+} from '@/logic/constants/animations'
+
+const RIVAL_EXCLAMATION_FADE_OUT_SCALE = 0.5;
+const RIVAL_TRAINER_SLIDE_DELAY_SEC = 1.2;
+const RIVAL_ALERT_INITIAL_POP_DELAY_SEC = 0.1;
+const RIVAL_TRAINER_SLIDE_SCALE = 0.8;
+const RIVAL_ALERT_OPACITY_PEAK = 0.8;
+import { OPACITY_ZERO } from '@/logic/constants/visuals';
+const PLAYER_TRAINER_ASPECT_WIDTH_PX = 65;
+const PLAYER_TRAINER_ASPECT_HEIGHT_PX = 165;
+const ENEMY_TRAINER_OFFSET_X_PX = 340;
+const ENEMY_TRAINER_OFFSET_Y_PX = -25;
+const RIVAL_SLIDE_INITIAL_X_PERCENT = '150%';
 
 // Composables
 import { useBattleShadows } from '@/composables/battle/useBattleShadows'
@@ -70,23 +111,23 @@ const p2Pos = computed(() => getCombatantPosition('enemy'))
 
 // Semilla única por encuentro: se regenera al inicio de cada combate para que
 // los arbustos (CombatGrass) sean visualmente distintos en cada batalla.
-const grassSeed = ref(Math.floor(Math.random() * 1000000))
+const grassSeed = ref(Math.floor(Math.random() * MAX_PRNG_SEED_RANGE))
 watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
   if (newUid && newUid !== oldUid) {
-    grassSeed.value = Math.floor(Math.random() * 1000000)
+    grassSeed.value = Math.floor(Math.random() * MAX_PRNG_SEED_RANGE)
   }
 })
 
 const trainerShadowUrl = ref('')
 onMounted(() => {
-  trainerShadowUrl.value = generatePixelShadow(10, 7)
+  trainerShadowUrl.value = generatePixelShadow(TRAINER_SHADOW_RADIUS_X, TRAINER_SHADOW_RADIUS_Y)
 })
 
 const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
   const cached = getPokemonFeetCoords(spriteUrl)
   
-  const widthPx = 0.7 * entitySize
-  const heightPx = entitySize * 0.08
+  const widthPx = TRAINER_SHADOW_WIDTH_RATIO * entitySize
+  const heightPx = entitySize * TRAINER_SHADOW_HEIGHT_RATIO
   const offsetX = (cached.feetX - 0.5) * entitySize
 
   return {
@@ -94,11 +135,11 @@ const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
     backgroundImage: `url(${trainerShadowUrl.value})`,
     backgroundSize: '100% 100%',
     backgroundRepeat: 'no-repeat',
-    left: `calc(50% + ${offsetX}px)`,
+    left: `calc(50% + ${offsetX}px)`, // no-magic
     top: `${cached.feetY * 100}%`,
     width: `${widthPx}px`,
     height: `${heightPx}px`,
-    transform: 'translate(-50%, -75%)', // Shadow shifted 25% up
+    transform: 'translate(-50%, -75%)', // no-magic
     zIndex: -1,
     pointerEvents: 'none' as const
   }
@@ -328,7 +369,7 @@ watch(
       if (battleStore.state?.isFishing) {
         modalStore.open('Fishing', {
           pokemon: enemy.value,
-          rarity: battle.value?.rarity || 50,
+          rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
           onWin: handleFishingSuccess,
           onFail: handleFishingFail,
           onCloseCallback: handleMinigameCancel
@@ -336,7 +377,7 @@ watch(
       } else if (battleStore.state?.isArchaeology) {
         modalStore.open('Archaeology', {
           pokemon: enemy.value,
-          rarity: battle.value?.rarity || 50,
+          rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
           onWin: handleArchaeologySuccess,
           onFail: handleArchaeologyFail,
           onCloseCallback: handleMinigameCancel
@@ -376,7 +417,7 @@ onMounted(async () => {
   initListeners()
   await triggerPreloadCoords()
   const tl = gsap.timeline()
-  tl.to({}, { duration: 0.5 })
+  tl.to({}, { duration: ARENA_INITIAL_LOAD_DELAY_SEC })
   tl.add(() => { isInitialLoad.value = false })
 })
 
@@ -409,45 +450,45 @@ watch(trainerAnimState, async (newState) => {
 
       if (rivalFlickerRef.value) {
         tlAlert.fromTo(rivalFlickerRef.value, 
-          { opacity: 0 }, 
-          { opacity: 0.8, duration: 0.05, repeat: 7, yoyo: true, ease: 'none' }
+          { opacity: OPACITY_ZERO }, 
+          { opacity: RIVAL_ALERT_OPACITY_PEAK, duration: RIVAL_ALERT_FLICKER_DURATION_SEC, repeat: RIVAL_ALERT_FLICKER_REPEAT_COUNT, yoyo: true, ease: 'none' }
         )
       }
 
       if (rivalExclamationRef.value) {
         tlAlert.fromTo(rivalExclamationRef.value,
           { scale: 0, opacity: 0 },
-          { scale: 1.5, opacity: 1, duration: 0.25, ease: 'back.out(1.7)' },
-          0.1
+          { scale: RIVAL_EXCLAMATION_POP_SCALE, opacity: 1, duration: RIVAL_EXCLAMATION_POP_DURATION_SEC, ease: 'back.out(1.7)' },
+          RIVAL_ALERT_INITIAL_POP_DELAY_SEC
         )
         tlAlert.to(rivalExclamationRef.value, {
-          y: '-=10', duration: 0.1, repeat: 5, yoyo: true, ease: 'sine.inOut'
+          y: `-=${Math.abs(RIVAL_EXCLAMATION_WOBBLE_Y_OFFSET)}`, duration: RIVAL_EXCLAMATION_WOBBLE_DURATION_SEC, repeat: RIVAL_EXCLAMATION_WOBBLE_REPEAT_COUNT, yoyo: true, ease: 'sine.inOut'
         })
         tlAlert.to(rivalExclamationRef.value, {
-          opacity: 0, scale: 0.5, duration: 0.3, ease: 'power2.in'
-        }, '+=0.4')
+          opacity: 0, scale: RIVAL_EXCLAMATION_FADE_OUT_SCALE, duration: RIVAL_EXCLAMATION_FADE_DURATION_SEC, ease: 'power2.in'
+        }, `+=${RIVAL_EXCLAMATION_FADE_DURATION_SEC}`)
       }
 
       // Slide in trainer with delay
       gsap.fromTo(el, 
-        { x: '150%', scale: 0.8, opacity: 0 }, 
+        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, scale: RIVAL_TRAINER_SLIDE_SCALE, opacity: 0 }, 
         {
-          x: '0%', scale: 1, opacity: 1, delay: 1.2, duration: 0.8, ease: 'back.out(1.2)',
+          x: '0%', scale: 1, opacity: 1, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)',
           onComplete: () => { trainerAnimState.value = 'idle' }
         }
       )
     } else {
       gsap.fromTo(el,
-        { x: '150%', scale: 0.8, opacity: 0 },
+        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, scale: RIVAL_TRAINER_SLIDE_SCALE, opacity: 0 },
         {
-          x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)',
+          x: '0%', scale: 1, opacity: 1, duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)',
           onComplete: () => { trainerAnimState.value = 'idle' }
         }
       )
     }
   } else if (newState === 'retreating') {
     // 1. Transición de Intro -> Posición fija de combate (manteniendo opacidad 1)
-    gsap.to(el, { x: 340, y: -25, scale: 0.8, opacity: 1, duration: 0.8, ease: 'power2.inOut' })
+    gsap.to(el, { x: TRAINER_RETREAT_X_OFFSET_PX, y: TRAINER_RETREAT_Y_OFFSET_PX, scale: RIVAL_TRAINER_SLIDE_SCALE, opacity: 1, duration: TRAINER_ENTER_DURATION_SEC, ease: 'power2.inOut' })
   }
 })
 
@@ -466,7 +507,7 @@ watch(() => battleStore.currentSubState, async (sub) => {
 watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
     const tl = gsap.timeline()
-    tl.to({}, { duration: 0.1 })
+    tl.to({}, { duration: GSAP_FAST_DURATION_SEC })
     tl.add(() => {
       if (arenaRef.value) {
         window.dispatchEvent(new Event('resize'))
@@ -479,39 +520,39 @@ watch(() => battleStore.isBattleActive, (active) => {
 // @before-enter: sets initial state synchronously before the first rendered frame
 // to prevent the 1-2 frame flash at opacity:1 (CSS default) before GSAP takes over.
 const onHudEnemyBeforeEnter = (el: Element) => {
-  gsap.set(el, { opacity: 0, x: -20, scale: 0.98 })
+  gsap.set(el, { opacity: 0, x: -HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE })
 }
 
 const onHudEnemyEnter = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power2.out", onComplete: done })
+  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: HUD_TRANSITION_DURATION_SEC, ease: "power2.out", onComplete: done })
 }
 
 const onHudEnemyLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, x: -20, scale: 0.98, duration: 0.4, ease: "power2.in", onComplete: done })
+  gsap.to(el, { opacity: 0, x: -HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE, duration: HUD_TRANSITION_DURATION_SEC, ease: "power2.in", onComplete: done })
 }
 
 const onHudPlayerBeforeEnter = (el: Element) => {
-  gsap.set(el, { opacity: 0, x: 20, scale: 0.98 })
+  gsap.set(el, { opacity: 0, x: HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE })
 }
 
 const onHudPlayerEnter = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power2.out", onComplete: done })
+  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: HUD_TRANSITION_DURATION_SEC, ease: "power2.out", onComplete: done })
 }
 
 const onHudPlayerLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, x: 20, scale: 0.98, duration: 0.4, ease: "power2.in", onComplete: done })
+  gsap.to(el, { opacity: 0, x: HUD_TRANSITION_X_OFFSET_PX, scale: HUD_TRANSITION_INITIAL_SCALE, duration: HUD_TRANSITION_DURATION_SEC, ease: "power2.in", onComplete: done })
 }
 
 const onDialogBeforeEnter = (el: Element) => {
-  gsap.set(el, { opacity: 0, y: 15 })
+  gsap.set(el, { opacity: 0, y: DIALOG_ENTER_Y_OFFSET_PX })
 }
 
 const onDialogEnter = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", onComplete: done })
+  gsap.to(el, { opacity: 1, y: 0, duration: HUD_TRANSITION_DURATION_SEC, ease: "power2.out", onComplete: done })
 }
 
 const onDialogLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, y: 10, duration: 0.3, ease: "power2.in", onComplete: done })
+  gsap.to(el, { opacity: 0, y: DIALOG_LEAVE_Y_OFFSET_PX, duration: DIALOG_LEAVE_DURATION_SEC, ease: "power2.in", onComplete: done })
 }
 
 // Zoom controls are now managed by CameraZoomControls component
@@ -603,8 +644,8 @@ const onDialogLeave = (el: Element, done: () => void) => {
           <!-- Standing Enemy Trainer (During active combat) -->
           <VirtualEntity
             v-if="showStandingTrainers && (battle?.isTrainer || battle?.isGym || battle?.isPvP)"
-            :x="p2Pos.x + 340"
-            :y="p2Pos.y - 25"
+            :x="p2Pos.x + ENEMY_TRAINER_OFFSET_X_PX"
+            :y="p2Pos.y + ENEMY_TRAINER_OFFSET_Y_PX"
             :w="BASE_ENTITY_SIZE_ENEMY * 0.8"
             :h="BASE_ENTITY_SIZE_ENEMY * 0.8"
             class="standing-trainer enemy-trainer"
@@ -635,11 +676,11 @@ const onDialogLeave = (el: Element, done: () => void) => {
             </div>
           </VirtualEntity>
 
-          <!-- Standing Player Trainer (_back) - Siempre visible. Escalado al tamaño del juego usando BASE_ENTITY_SIZE_PLAYER como referencia de altura, proporción 65:165. -->
+          <!-- Standing Player Trainer (_back) - Siempre visible. Escalado al tamaño del juego usando BASE_ENTITY_SIZE_PLAYER como referencia de altura, proporción PLAYER_TRAINER_ASPECT_WIDTH_PX:PLAYER_TRAINER_ASPECT_HEIGHT_PX. -->
           <VirtualEntity
-            :x="WORLD_CONSTANTS.SAFE_ZONE_X - Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE"
+            :x="WORLD_CONSTANTS.SAFE_ZONE_X - Math.round(BASE_ENTITY_SIZE_PLAYER * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * OBJECT_SCALE"
             :y="WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - BASE_ENTITY_SIZE_PLAYER"
-            :w="Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165)"
+            :w="Math.round(BASE_ENTITY_SIZE_PLAYER * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX)"
             :h="BASE_ENTITY_SIZE_PLAYER"
             class="standing-trainer player-trainer"
           >
@@ -650,22 +691,23 @@ const onDialogLeave = (el: Element, done: () => void) => {
               >
                 <img 
                   :src="playerBackSpriteUrl"
-                  class="trainer-image player-trainer-image"
-                  @error="(e: Event) => { (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: gameStore.state.gender || 'h' }) }"
-                >
+                  class="trainer-sprite shadow-pixelated"
+                  alt="Player Trainer"
+                />
               </div>
             </div>
-            <!-- Floor Shadow: CENTER del sprite de sombra anclado en (feetX, feetY) del sprite -->
+
+            <!-- Custom Pixel Shadow underneath standing player trainer -->
             <div 
-              class="trainer-shadow"
-              :style="getTrainerShadowStyle(playerBackSpriteUrl, Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE * 2.5)"
+              class="trainer-custom-shadow"
+              :style="getTrainerShadowStyle(playerBackSpriteUrl, Math.round(BASE_ENTITY_SIZE_PLAYER * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * OBJECT_SCALE * 2.5)"
             />
             <!-- Cyan box overlay when guides are active -->
             <div
               v-if="showGuides"
               class="debug-trainer-guide"
             >
-              <span>{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE }}x{{ BASE_ENTITY_SIZE_PLAYER * OBJECT_SCALE }}</span>
+              <span>{{ Math.round(BASE_ENTITY_SIZE_PLAYER * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * OBJECT_SCALE }}x{{ BASE_ENTITY_SIZE_PLAYER * OBJECT_SCALE }}</span>
             </div>
           </VirtualEntity>
 
@@ -810,7 +852,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
       :cycle="mapStore.currentCycle"
       :season="currentWeatherSeason"
       :is-performance-mode="uiStore.isPerformanceMode"
-      :z-index="'calc(var(--z-base) + 20)'"
+      :z-index="'calc(var(--z-base) + 20)'" <!-- // no-magic -->
       :anim-seed="atmosphereSeed"
       :is-visible="true"
     />

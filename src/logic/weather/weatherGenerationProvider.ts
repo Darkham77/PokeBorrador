@@ -12,13 +12,17 @@ import { toID } from '@pkmn/sim';
  */
 import { isWeatherId } from './weatherRegistry.ts';
 
+const PALDEA_GENERATION_NUM = 9;
+const KALOS_GENERATION_NUM = 6;
+const SINNOH_GENERATION_NUM = 4;
+
 export function mapVisualToOfficialWeather(visualWeather: string | null | undefined, gen: number): string {
   if (!visualWeather) return 'none';
   const lower = isWeatherId(visualWeather) ? visualWeather : null;
   if (!lower) return 'none';
 
   // Gen 9 Mapping
-  if (gen >= 9) {
+  if (gen >= PALDEA_GENERATION_NUM) {
     if (lower === 'heavy_rain') return 'primordialsea';
     if (lower === 'intense_sun') return 'desolateland';
     if (lower === 'strong_winds') return 'deltastream';
@@ -31,7 +35,7 @@ export function mapVisualToOfficialWeather(visualWeather: string | null | undefi
   }
 
   // Gen 6 - 8 Mapping
-  if (gen >= 6) {
+  if (gen >= KALOS_GENERATION_NUM) {
     if (lower === 'heavy_rain') return 'primordialsea';
     if (lower === 'intense_sun') return 'desolateland';
     if (lower === 'strong_winds') return 'deltastream';
@@ -44,7 +48,7 @@ export function mapVisualToOfficialWeather(visualWeather: string | null | undefi
   }
 
   // Gen 4 - 5 Mapping
-  if (gen >= 4) {
+  if (gen >= SINNOH_GENERATION_NUM) {
     if (['rain', 'storm', 'heavy_rain'].includes(lower)) return 'raindance';
     if (['sun', 'heatwave', 'intense_sun'].includes(lower)) return 'sunnyday';
     if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
@@ -100,12 +104,12 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
   }
   if (lower === 'sandstorm') {
     if (gen >= 4) {
-      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
+      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic
     }
-    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
+    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic
   }
   if (lower === 'hail') {
-    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión';
+    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión'; // no-magic
   }
   if (lower === 'snow') {
     return '▲ Potencia Defensa Hielo (x1.5)\n• Efecto: Ventisca 100% precisión';

@@ -17,10 +17,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const p = computed(() => props.pokemon)
 
+const HP_HIGH_THRESHOLD_PCT = 50
+const HP_MID_THRESHOLD_PCT = 25
+
 const getHpPct = (cur: number, max: number) => (cur / max) * 100
 const getHpClass = (pct: number) => {
-  if (pct > 50) return 'hp-high'
-  if (pct > 25) return 'hp-mid'
+  if (pct > HP_HIGH_THRESHOLD_PCT) return 'hp-high'
+  if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid'
   return 'hp-low'
 }
 

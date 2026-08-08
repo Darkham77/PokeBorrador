@@ -9,6 +9,7 @@ import { safeStorage } from '@/logic/utils/storage'
 import { SESSION_ID } from '@/logic/auth/sessionId'
 import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth'
 import type { Session } from '@supabase/supabase-js'
+import { AUTH_RETRY_DELAY_MS, HTTP_STATUS_UNAUTHORIZED } from '@/logic/constants/gameplay'
 
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
@@ -113,7 +114,7 @@ export const useAuthStore = defineStore('auth', () => {
             if (attempt < maxAttempts) {
               attempt++
               // Esperar un breve delay antes del reintento para que el servidor termine de levantar
-              await new Promise(resolve => setTimeout(resolve, 1500))
+              await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_DELAY_MS))
             } else {
               throw e // Si se agotaron los intentos, propagar error
             }
@@ -139,7 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
               const updateError = updateRes?.error
               if (updateError) {
                 logger.error('Auth', `Session ID update failed: ${updateError.message} (${updateError.status})`)
-                if (updateError.status === 401 || updateError.code === 'PGRST301' || updateError.message?.toLowerCase().includes('jwt') || updateError.message?.toLowerCase().includes('invalid')) {
+                if (updateError.status === HTTP_STATUS_UNAUTHORIZED || updateError.code === 'PGRST301' || updateError.message?.toLowerCase().includes('jwt') || updateError.message?.toLowerCase().includes('invalid')) {
                   sessionValid = false
                 }
               }
@@ -158,7 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
               
               if (profileError) {
                 logger.error('Auth', `Profile fetch failed: ${profileError.message} (${profileError.status})`)
-                if (profileError.status === 401 || profileError.code === 'PGRST301' || profileError.message?.toLowerCase().includes('jwt') || profileError.message?.toLowerCase().includes('invalid')) {
+                if (profileError.status === HTTP_STATUS_UNAUTHORIZED || profileError.code === 'PGRST301' || profileError.message?.toLowerCase().includes('jwt') || profileError.message?.toLowerCase().includes('invalid')) {
                   sessionValid = false
                 }
               } else if (profile) {

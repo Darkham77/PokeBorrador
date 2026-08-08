@@ -81,9 +81,14 @@ export function triggerLeave(el: HTMLElement) {
     targetBoxShadow = strategy.targetBoxShadow
   }
 
+const ACTIVE_ELEMENT_HOVER_LEAVE_SCALE = 0.98;
+const DEFAULT_HOVER_LEAVE_DURATION_SEC = 0.15;
+const FAST_HOVER_LEAVE_DURATION_SEC = 0.12;
+const GLOW_GRADIENT_STOP_PERCENT = 70;
+
   let targetScale = 1
   if (el.classList.contains('is-active')) {
-    targetScale = 0.98
+    targetScale = ACTIVE_ELEMENT_HOVER_LEAVE_SCALE
   }
 
   const clearVars: gsap.TweenVars = {
@@ -103,7 +108,7 @@ export function triggerLeave(el: HTMLElement) {
 
   if (el.classList.contains('btn-catch-ball')) {
     clearVars.rotation = 0
-    clearVars.duration = 0.15
+    clearVars.duration = DEFAULT_HOVER_LEAVE_DURATION_SEC
     clearVars.ease = 'power2.out'
   }
 
@@ -111,7 +116,7 @@ export function triggerLeave(el: HTMLElement) {
   if (targetBoxShadow) clearVars.boxShadow = targetBoxShadow
 
   if (HOVER_DURATION_200MS_CLASSES.some(cls => el.classList.contains(cls))) {
-    clearVars.duration = 0.12
+    clearVars.duration = FAST_HOVER_LEAVE_DURATION_SEC
   }
 
   gsap.to(el, clearVars)
@@ -122,7 +127,7 @@ export function triggerLeave(el: HTMLElement) {
       gsap.to(eggIcon, {
         scale: 1,
         rotation: 0,
-        duration: 0.15,
+        duration: DEFAULT_HOVER_LEAVE_DURATION_SEC,
         ease: 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
@@ -136,7 +141,7 @@ export function triggerLeave(el: HTMLElement) {
       gsap.to(eggTarget, {
         scale: 1,
         rotation: 0,
-        duration: 0.15,
+        duration: DEFAULT_HOVER_LEAVE_DURATION_SEC,
         ease: 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
@@ -149,7 +154,7 @@ export function triggerLeave(el: HTMLElement) {
     if (sprite) {
       gsap.to(sprite, {
         scale: 1,
-        duration: 0.15,
+        duration: DEFAULT_HOVER_LEAVE_DURATION_SEC,
         ease: 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
@@ -163,7 +168,7 @@ export function triggerLeave(el: HTMLElement) {
       const resolvedColor = resolveCssColor(color, el);
       const baseGlowColor = parseToRgba(resolvedColor, 0.18, el);
       gsap.to(glow, {
-        backgroundImage: `radial-gradient(circle, ${baseGlowColor} 0%, transparent 70%)`,
+        backgroundImage: `radial-gradient(circle, ${baseGlowColor} 0%, transparent ${GLOW_GRADIENT_STOP_PERCENT}%)`,
         scale: 0.8,
         opacity: 0.7,
         duration: 0.2,
@@ -177,7 +182,7 @@ export function triggerLeave(el: HTMLElement) {
       gsap.to(img, {
         scale: 1,
         y: 0,
-        duration: 0.15,
+        duration: DEFAULT_HOVER_LEAVE_DURATION_SEC,
         ease: 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
@@ -188,7 +193,7 @@ export function triggerLeave(el: HTMLElement) {
   } else if (el.classList.contains('edit-nick-btn')) {
     gsap.to(el, {
       opacity: 0.6,
-      duration: 0.15,
+      duration: DEFAULT_HOVER_LEAVE_DURATION_SEC,
       ease: 'power1.out',
       overwrite: 'auto',
       onComplete: () => {

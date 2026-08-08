@@ -9,6 +9,9 @@ const BAD_HEAL_WEATHERS: readonly WeatherMechanical[] = [
   WEATHER_MECHANICAL.FOG
 ];
 
+const HEAL_WEATHER_SUN_PCT = 0.66;
+const HEAL_WEATHER_BAD_PCT = 0.25;
+
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.hp >= src.maxHp) {
@@ -29,9 +32,9 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
 
     // Prioridad 1: Clima (Mecánicas oficiales)
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
-      healPct = 0.66;
+      healPct = HEAL_WEATHER_SUN_PCT;
     } else if (BAD_HEAL_WEATHERS.includes(mechWeather as WeatherMechanical)) {
-      healPct = 0.25;
+      healPct = HEAL_WEATHER_BAD_PCT;
     } else {
       // Clear weather (Default)
       healPct = 0.5;

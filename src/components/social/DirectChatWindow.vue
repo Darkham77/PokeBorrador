@@ -70,10 +70,12 @@ watch(() => chat.value?.isCollapsed, (collapsed) => {
   }
 }, { immediate: true });
 
+import { MESSAGE_ANIM_DURATION_SEC, MESSAGE_ANIM_OVERSHOOT } from '@/logic/constants/visuals';
+
 const onMessageEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el,
     { scale: 0.9, opacity: 0 },
-    { scale: 1.0, opacity: 1, duration: 0.25, ease: 'back.out(1.7)', onComplete: done }
+    { scale: 1.0, opacity: 1, duration: MESSAGE_ANIM_DURATION_SEC, ease: `back.out(${MESSAGE_ANIM_OVERSHOOT})`, onComplete: done }
   )
 }
 

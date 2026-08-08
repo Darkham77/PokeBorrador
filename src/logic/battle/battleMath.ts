@@ -1,3 +1,16 @@
+const TECHNICIAN_MAX_POWER_LIMIT = 60;
+const GUTS_STATUS_ATK_MULTIPLIER = 1.5;
+const BURN_STATUS_ATK_MULTIPLIER = 0.5;
+const MARVEL_SCALE_DEF_MULTIPLIER = 1.5;
+const SOLAR_POWER_SPA_MULTIPLIER = 1.5;
+const CHOICE_SCARF_SPE_MULTIPLIER = 1.5;
+const PARALYSIS_SPEED_MULTIPLIER_GEN6_PLUS = 0.5;
+const PARALYSIS_SPEED_MULTIPLIER_LEGACY = 0.25;
+const DEFAULT_STAT_FALLBACK_VAL = 10;
+const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24;
+const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
+const DAMAGE_ROLL_MIN_INT = 85;
+const DAMAGE_ROLL_RANGE_INT = 16;
 import { Dex, toID } from '@pkmn/sim';
 import type {
   PurePokemon,
@@ -8,20 +21,18 @@ import type {
   PureDamageResult
 } from './battleMathTypes.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { BATTLE_STAGE_STAT_MULTIPLIERS, BATTLE_STAGE_ACC_MULTIPLIERS } from '@/logic/constants/gameplay';
 
 export * from './battleMathTypes.ts';
 
-export const CURRENT_GENERATION = ACTIVE_GENERATION;
-export const ACTIVE_RULE_SET = ACTIVE_GENERATION;
-
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
-  '-6': 2 / 8, '-5': 2 / 7, '-4': 1 / 3, '-3': 0.40, '-2': 0.50, '-1': 2 / 3,
-  '0': 1.0, '1': 1.5, '2': 2.0, '3': 2.5, '4': 3.0, '5': 3.5, '6': 4.0
+  '-6': 2 / 8, '-5': 2 / 7, '-4': 2 / 6, '-3': 2 / 5, '-2': 2 / 4, '-1': 2 / 3,
+  '0': 1.0, '1': 3 / 2, '2': 4 / 2, '3': 5 / 2, '4': 6 / 2, '5': 7 / 2, '6': 8 / 2
 };
 
 export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
-  '-6': 0.33, '-5': 0.37, '-4': 0.43, '-3': 0.50, '-2': 0.60, '-1': 0.75,
-  '0': 1.0, '1': 1.33, '2': 1.66, '3': 2.0, '4': 2.33, '5': 2.66, '6': 3.0
+  '-6': 3 / 9, '-5': 3 / 8, '-4': 3 / 7, '-3': 3 / 6, '-2': 3 / 5, '-1': 3 / 4,
+  '0': 1.0, '1': 4 / 3, '2': 5 / 3, '3': 6 / 3, '4': 7 / 3, '5': 8 / 3, '6': 9 / 3
 };
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
@@ -106,12 +117,12 @@ export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, 
     if (ab === 'swarm'   && moveType === 'bug')   { mult *= 1.5; triggeredAbility = ab; }
   }
   if (ab === 'guts' && attacker.status && getMoveCategory(move) === 'physical') {
+    mult *= GUTS_STATUS_ATK_MULTIPLIER; triggeredAbility = ab;
+  }
+  if (ab === 'technician' && power > 0 && power <= TECHNICIAN_MAX_POWER_LIMIT) {
     mult *= 1.5; triggeredAbility = ab;
   }
-  if (ab === 'technician' && power > 0 && power <= 60) {
-    mult *= 1.5; triggeredAbility = ab;
-  }
-  
+
   if (weather && weather.turns !== 0) {
     const mech = getMechWeather(weather.type);
     if (ab === 'sandforce' && mech === WEATHER_KEYS.SANDSTORM) {
@@ -135,11 +146,11 @@ export function getEffectiveStatPure(
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
   const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechWeather(weather?.type);
 
-  let baseVal = (pokemon[statKey] as number) || 10;
-  if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk ?? 10;
-  if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def ?? 10;
-  if (statKey === 'atk' && !pokemon.atk) baseVal = pokemon.spa ?? 10;
-  if (statKey === 'def' && !pokemon.def) baseVal = pokemon.spd ?? 10;
+  let baseVal = (pokemon[statKey] as number) || DEFAULT_STAT_FALLBACK_VAL;
+  if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk ?? DEFAULT_STAT_FALLBACK_VAL;
+  if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def ?? DEFAULT_STAT_FALLBACK_VAL;
+  if (statKey === 'atk' && !pokemon.atk) baseVal = pokemon.spa ?? DEFAULT_STAT_FALLBACK_VAL;
+  if (statKey === 'def' && !pokemon.def) baseVal = pokemon.spd ?? DEFAULT_STAT_FALLBACK_VAL;
 
   if (statKey === 'def') {
     if ((mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL) && (pokemon.type === 'ice' || pokemon.type2 === 'ice')) {
@@ -161,19 +172,18 @@ export function getEffectiveStatPure(
   const isRain = (!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.RAIN;
   const ab = (pokemon.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-
   if (statKey === 'atk') {
     let abilMult = 1;
     if (ab === 'hugepower' || ab === 'purepower') abilMult *= 2;
-    if (ab === 'guts' && pokemon.status) abilMult *= 1.5;
+    if (ab === 'guts' && pokemon.status) abilMult *= GUTS_STATUS_ATK_MULTIPLIER;
     val = Math.floor(val * abilMult);
-    if ((pokemon.status === 'burn' || pokemon.status === 'brn') && ab !== 'guts') val = Math.floor(val * 0.5);
+    if ((pokemon.status === 'burn' || pokemon.status === 'brn') && ab !== 'guts') val = Math.floor(val * BURN_STATUS_ATK_MULTIPLIER);
   }
   if (statKey === 'def') {
-    if (ab === 'marvelscale' && pokemon.status) val = Math.floor(val * 1.5);
+    if (ab === 'marvelscale' && pokemon.status) val = Math.floor(val * MARVEL_SCALE_DEF_MULTIPLIER);
   }
   if (statKey === 'spa') {
-    if (ab === 'solarpower' && isSun) val = Math.floor(val * 1.5);
+    if (ab === 'solarpower' && isSun) val = Math.floor(val * SOLAR_POWER_SPA_MULTIPLIER);
   }
   if (statKey === 'spe') {
     let abilMult = 1;
@@ -181,10 +191,10 @@ export function getEffectiveStatPure(
     if (ab === 'swiftswim' && isRain) abilMult *= 2;
     if (ab === 'sandrush' && mechWeather === WEATHER_KEYS.SANDSTORM) abilMult *= 2;
     if (ab === 'slushrush'  && (mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL)) abilMult *= 2;
-    if (pokemon.heldItem === 'choicescarf') abilMult *= 1.5;
+    if (pokemon.heldItem === 'choicescarf') abilMult *= CHOICE_SCARF_SPE_MULTIPLIER;
     val = Math.floor(val * abilMult);
     if (pokemon.status === 'par') {
-      const mult = ACTIVE_GENERATION <= 6 ? 0.25 : 0.5;
+      const mult = ACTIVE_GENERATION <= 6 ? PARALYSIS_SPEED_MULTIPLIER_LEGACY : PARALYSIS_SPEED_MULTIPLIER_GEN6_PLUS;
       val = Math.floor(val * mult);
     }
   }
@@ -234,17 +244,17 @@ export function calculateDamagePure(
   let critStage = 0;
   if (attacker.heldItem === 'scopelens' || attacker.heldItem === 'razorclaw') critStage += 1;
   if (attacker.focusEnergy) critStage += 2;
-  const gen = ACTIVE_RULE_SET as number;
+  const gen = ACTIVE_GENERATION as number;
   let critRate: number;
   if (gen >= 6) {
-    const rates = [1/24, 1/8, 1/2, 1, 1];
-    critRate = rates[Math.min(critStage, 4)] ?? 1/24;
+    const rates = [1/CRIT_ROLL_DENOMINATOR_GEN6_BASE, 1/8, 1/2, 1, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1/CRIT_ROLL_DENOMINATOR_GEN6_BASE;
   } else if (gen === 5) {
-    const rates = [1/16, 1/8, 1/4, 1/3, 1];
-    critRate = rates[Math.min(critStage, 4)] ?? 1/16;
+    const rates = [1/CRIT_ROLL_DENOMINATOR_GEN5_BASE, 1/8, 1/4, 1/3, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1/CRIT_ROLL_DENOMINATOR_GEN5_BASE;
   } else {
     // Gen 1-4: 1/16 base, doubles per stage up to always
-    critRate = Math.min(1, (1/16) * Math.pow(2, critStage));
+    critRate = Math.min(1, (1/CRIT_ROLL_DENOMINATOR_GEN5_BASE) * Math.pow(2, critStage));
   }
   let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
   if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
@@ -372,7 +382,7 @@ export function calculateDamagePure(
   // Clamp to 100 to guard against mocked Math.random() === 1.0 producing 101
   const randomInt = randomFactor !== undefined
     ? Math.min(100, Math.round(randomFactor * 100))
-    : Math.min(100, 85 + Math.floor(Math.random() * 16)); // 85 to 100 inclusive
+    : Math.min(100, DAMAGE_ROLL_MIN_INT + Math.floor(Math.random() * DAMAGE_ROLL_RANGE_INT)); // 85 to 100 inclusive
 
   // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
   let finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)

@@ -28,6 +28,7 @@ import {
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
+import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL, EGG_POLLER_INTERVAL_SEC, MAX_CARRIED_EGGS } from '@/logic/constants/gameplay';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -258,7 +259,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       nature: inheritNature(pA, pB, itemA, itemB) || 'serious',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
       abilityIndex: abilityIndex,
-      isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),
+      isShiny: Math.random() < calculateShinyChance(pA, pB, 1/BASE_SHINY_DENOMINATOR, eventStore.globalMultipliers?.shiny || 1),
       cost: breedingCost
     });
 
@@ -297,8 +298,8 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     // Slot limit: max 6 regular eggs. Slot 7 is reserved for NPC quest eggs only.
     const regularEggs = gameStore.state.eggs.filter(e => !e.isNpc);
-    if (regularEggs.length >= 6) {
-      uiStore.notify('Tu incubadora está llena. Puedes llevar un máximo de 6 huevos.', '🥚');
+    if (regularEggs.length >= MAX_CARRIED_EGGS) {
+      uiStore.notify(`Tu incubadora está llena. Puedes llevar un máximo de ${MAX_CARRIED_EGGS} huevos.`, '🥚');
       return;
     }
 
@@ -332,8 +333,8 @@ export const useBreedingStore = defineStore('breeding', () => {
       uiStore.notify('Solo los Criadores pueden escanear huevos.', '🔒');
       return;
     }
-    if ((gameStore.state.classLevel || 1) < 20) {
-      uiStore.notify('Necesitas nivel 20 de Criador para usar el escáner.', '🔒');
+    if ((gameStore.state.classLevel || 1) < EGG_SCANNER_MIN_CLASS_LEVEL) {
+      uiStore.notify(`Necesitas nivel ${EGG_SCANNER_MIN_CLASS_LEVEL} de Criador para usar el escáner.`, '🔒');
       return;
     }
     
@@ -438,9 +439,9 @@ export const useBreedingStore = defineStore('breeding', () => {
           await checkAndGenerateEgg();
         }
       }
-      bgPoller = gsap.delayedCall(10, poll);
+      bgPoller = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, poll);
     };
-    bgPoller = gsap.delayedCall(10, poll);
+    bgPoller = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, poll);
   }
 
   function cleanupBackgroundPoller() {

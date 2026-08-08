@@ -15,6 +15,8 @@ const BASE_URLS = {
   cries: 'https://play.pokemonshowdown.com/audio/cries/',
 };
 
+const DEFAULT_FETCH_DELAY_MS = 50;
+
 // Rutas locales de almacenamiento dentro de external_assets/showdown
 const OUTPUT_DIRS = {
   front: path.resolve('external_assets/showdown/front'),
@@ -132,7 +134,7 @@ export async function ensureDirsExist() {
 export async function downloadAllSprites(
   pokemonIds: string[],
   concurrencyLimit = 5,
-  delayMs = 50
+  delayMs = DEFAULT_FETCH_DELAY_MS
 ): Promise<Record<string, {
   front: string;
   frontAnimated: boolean;

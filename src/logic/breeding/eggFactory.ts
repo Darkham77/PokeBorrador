@@ -1,3 +1,5 @@
+const EGG_HATCH_STEPS_BASE = 250
+const EGG_HATCH_STEPS_VARIANCE = 51
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import type { PokemonEgg, PokemonIVs } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
@@ -52,7 +54,7 @@ export const eggFactory = {
       name: 'Huevo Pokémon',
       level: 1,
       isEgg: true,
-      steps: params.steps ?? (Math.floor(Math.random() * 51) + 250),
+      steps: params.steps ?? (Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE),
       mother_id: params.motherId || '',
       deposited_at: Temporal.Now.instant().toString(),
       ivs: params.ivs,
@@ -77,7 +79,7 @@ export const eggFactory = {
     const speciesId = requirePokemonSpeciesId(params.species);
     const timestamp = Temporal.Now.instant().epochMilliseconds;
     const eggUid = params.uid || `${speciesId}-${timestamp}`;
-    const steps = params.steps ?? (Math.floor(Math.random() * 51) + 250);
+    const steps = params.steps ?? (Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE);
 
     return {
       uid: eggUid,

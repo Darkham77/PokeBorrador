@@ -2,6 +2,8 @@
 import { watch, nextTick, computed } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
+const SPINNER_FULL_ROTATION_DEG = 360
 import { formatCurrency } from '@/logic/utils/formatters'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { useModalStore } from '@/stores/modals'
@@ -141,7 +143,7 @@ watch(loading, (newVal) => {
       const spinner = document.querySelector('.loader-spinner')
       if (spinner) {
         gsap.to(spinner, {
-          rotation: 360,
+          rotation: SPINNER_FULL_ROTATION_DEG,
           duration: 1.5,
           repeat: -1,
           ease: 'none'

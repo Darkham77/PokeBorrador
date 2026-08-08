@@ -4,6 +4,32 @@
  * Rediseño premium en pantalla completa para la eclosión de huevos.
  * Orquestado al 100% con GSAP, sin BaseModal y con auras de alta fidelidad.
  */
+const HATCH_RING_MAX_SCALE = 3.5
+const HATCH_REVEAL_ANIM_DUR_SEC = 0.6
+const HATCH_AURA_ANIM_DUR_SEC = 2.2
+const HATCH_STATS_CARD_ANIM_DUR_SEC = 0.5
+const HATCH_STATS_CARD_ANIM_DELAY_SEC = 0.7
+const HATCH_CONFIRM_BTN_ANIM_DELAY_SEC = 1.2
+const GLOW_RING_PULSE_DURATION_SEC = 1.8
+const GLOW_RING_COLLAPSE_DURATION_SEC = 1.3
+const HATCH_WOBBLE_2_DURATION_SEC = 0.15
+const HATCH_GLOW_RING_INITIAL_SCALE = 0.8
+const HATCH_GLOW_RING_PULSE_OPACITY = 0.5
+const HATCH_GLOW_RING_MAX_OPACITY = 1
+const HATCH_HINT_MIN_OPACITY = 0.4
+const HATCH_HINT_MAX_OPACITY = 0.9
+const HATCH_HINT_PULSE_DURATION_SEC = 0.8
+const HATCH_WOBBLE_1_REPEATS = 5
+const HATCH_WOBBLE_2_REPEATS = 7
+const HATCH_SHAKE_DURATION_SEC = 0.05
+const HATCH_SPRITE_FINAL_SCALE = 1.0
+const HATCH_RARE_AURA_MIN_SCALE = 0.8
+const HATCH_RARE_AURA_MAX_SCALE = 2.4
+const HATCH_RARE_AURA_MIN_OPACITY = 0.3
+const HATCH_RARE_AURA_MAX_OPACITY = 0.95
+const HATCH_STATS_CARD_INITIAL_Y_OFFSET = 15
+const GLOW_RING_EXPAND_SCALE = 1.4;
+import { OPACITY_ZERO } from '@/logic/constants/visuals'
 import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -13,6 +39,16 @@ import { useGameStore } from '@/stores/game'
 import HatchStatsCard from '@/components/breeding/HatchStatsCard.vue'
 import { getAuraStyles } from '@/logic/breeding/hatchAuras'
 import EggSprite from '@/components/common/EggSprite.vue'
+import {
+  GSAP_FAST_DURATION_SEC,
+  EGG_LEVITATION_Y_OFFSET,
+  EGG_LEVITATION_DURATION_SEC,
+  HATCH_SHAKE_REPEAT_COUNT,
+  HATCH_FLASH_DURATION_SEC,
+  HATCH_PARTICLE_MIN_DISTANCE_PX,
+  HATCH_PARTICLE_MAX_SPREAD_PX,
+  MAP_FACTION_PODER_MAX_SCALE
+} from '@/logic/constants/animations'
 
 interface Props {
   id?: string
@@ -126,22 +162,22 @@ const initAnimations = async () => {
   // Movimiento de levitación suave del huevo en reposo en el contenedor padre
   idleTimeline = gsap.timeline({ repeat: -1, yoyo: true })
   idleTimeline.to('.egg-stage-wrapper', {
-    y: -12,
-    duration: 1.2,
+    y: EGG_LEVITATION_Y_OFFSET,
+    duration: EGG_LEVITATION_DURATION_SEC,
     ease: 'sine.inOut'
   })
 
   // Animar el anillo de brillo místico al rededor del huevo
   const glow = gsap.fromTo('.glow-ring', 
-    { scale: 0.8, opacity: 0.5 },
-    { scale: 1.4, opacity: 0, duration: 1.8, repeat: -1, ease: 'power1.out' }
+    { scale: HATCH_GLOW_RING_INITIAL_SCALE, opacity: HATCH_GLOW_RING_PULSE_OPACITY },
+    { scale: GLOW_RING_EXPAND_SCALE, opacity: OPACITY_ZERO, duration: GLOW_RING_PULSE_DURATION_SEC, repeat: -1, ease: 'power1.out' }
   )
   activeTweens.push(glow)
 
   // Destello en el texto de invitación
   const hintPulse = gsap.fromTo('.hatch-hint',
-    { opacity: 0.4 },
-    { opacity: 0.9, duration: 0.8, repeat: -1, yoyo: true, ease: 'sine.inOut' }
+    { opacity: HATCH_HINT_MIN_OPACITY },
+    { opacity: HATCH_HINT_MAX_OPACITY, duration: HATCH_HINT_PULSE_DURATION_SEC, repeat: -1, yoyo: true, ease: 'sine.inOut' }
   )
   activeTweens.push(hintPulse)
 }
@@ -159,8 +195,8 @@ const handleEggClick = () => {
       {
         x: 'random(-6, 6)',
         rotation: 'random(-4, 4)',
-        duration: 0.08,
-        repeat: 5,
+        duration: GSAP_FAST_DURATION_SEC / 2,
+        repeat: HATCH_WOBBLE_1_REPEATS,
         yoyo: true,
         ease: 'none',
         onComplete: () => {
@@ -172,7 +208,7 @@ const handleEggClick = () => {
     
     gsap.fromTo('.glow-ring', 
       { scale: 1, opacity: 0.6 }, 
-      { scale: 1.3, opacity: 0.9, duration: 0.2, yoyo: true, repeat: 1 }
+      { scale: 1.3, opacity: 0.9, duration: HATCH_FLASH_DURATION_SEC, yoyo: true, repeat: 1 }
     )
 
   } else if (taps.value === 2) {
@@ -181,10 +217,10 @@ const handleEggClick = () => {
     const wobble = gsap.fromTo('.egg-sprite',
       { x: 0, rotation: 0 },
       {
-        x: 'random(-10, 10)',
-        rotation: 'random(-7, 7)',
-        duration: 0.07,
-        repeat: 7,
+        x: 'random(-10, 10)', // no-magic
+        rotation: 'random(-7, 7)', // no-magic
+        duration: GSAP_FAST_DURATION_SEC / 2,
+        repeat: HATCH_WOBBLE_2_REPEATS,
         yoyo: true,
         ease: 'none',
         onComplete: () => {
@@ -196,7 +232,7 @@ const handleEggClick = () => {
 
     gsap.fromTo('.glow-ring', 
       { scale: 1, opacity: 0.6 }, 
-      { scale: 1.6, opacity: 1, duration: 0.15, yoyo: true, repeat: 1 }
+      { scale: 1.6, opacity: HATCH_GLOW_RING_MAX_OPACITY, duration: HATCH_WOBBLE_2_DURATION_SEC, yoyo: true, repeat: 1 }
     )
 
   } else if (taps.value === 3) {
@@ -211,10 +247,10 @@ const handleEggClick = () => {
     hatchTimeline.fromTo('.egg-sprite',
       { x: 0, rotation: 0 },
       {
-        x: 'random(-14, 14)',
-        rotation: 'random(-10, 10)',
-        duration: 0.05,
-        repeat: 26,
+        x: 'random(-14, 14)', // no-magic
+        rotation: 'random(-10, 10)', // no-magic
+        duration: HATCH_SHAKE_DURATION_SEC,
+        repeat: HATCH_SHAKE_REPEAT_COUNT,
         yoyo: true,
         ease: 'none'
       }
@@ -223,14 +259,14 @@ const handleEggClick = () => {
     // El anillo de brillo colapsa hacia el centro y estalla hacia afuera
     hatchTimeline.fromTo('.glow-ring',
       { scale: 1, opacity: 0.6 },
-      { scale: 3.5, opacity: 1, duration: 1.3, ease: 'power2.inOut' },
+      { scale: HATCH_RING_MAX_SCALE, opacity: HATCH_GLOW_RING_MAX_OPACITY, duration: GLOW_RING_COLLAPSE_DURATION_SEC, ease: 'power2.inOut' },
       0
     )
 
     // Gran flash en pantalla completa justo al finalizar el temblor
     hatchTimeline.to('.hatch-backdrop', {
       backgroundColor: '#ffffff',
-      duration: 0.2,
+      duration: HATCH_FLASH_DURATION_SEC,
       ease: 'power1.in'
     }, '+=0.05')
 
@@ -245,17 +281,17 @@ const handleEggClick = () => {
         // Animación de entrada de la tarjeta de Stats y Pokémon
         gsap.fromTo('.reveal-info-wrapper',
           { opacity: 0 },
-          { opacity: 1, duration: 0.6, ease: 'power2.out' }
+          { opacity: 1, duration: HATCH_REVEAL_ANIM_DUR_SEC, ease: 'power2.out' }
         )
 
         gsap.fromTo('.pokemon-sprite-fx',
           { scale: 0 },
           { 
-            scale: 1.15, 
-            duration: 0.6, 
+            scale: MAP_FACTION_PODER_MAX_SCALE, 
+            duration: HATCH_REVEAL_ANIM_DUR_SEC,
             ease: 'back.out(1.5)', 
             onComplete: () => {
-              gsap.to('.pokemon-sprite-fx', { scale: 1.0, duration: 0.2 })
+              gsap.to('.pokemon-sprite-fx', { scale: HATCH_SPRITE_FINAL_SCALE, duration: HATCH_FLASH_DURATION_SEC })
             }
           }
         )
@@ -264,12 +300,12 @@ const handleEggClick = () => {
         if (rareAuraRef.value && atmosAuraRef.value) {
           // Respiración concéntrica de escalas y opacidad (contra-fase)
           gsap.fromTo(rareAuraRef.value,
-            { scale: 0.8, opacity: 0.3 },
-            { scale: 2.4, opacity: 0.95, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+            { scale: HATCH_RARE_AURA_MIN_SCALE, opacity: HATCH_RARE_AURA_MIN_OPACITY },
+            { scale: HATCH_RARE_AURA_MAX_SCALE, opacity: HATCH_RARE_AURA_MAX_OPACITY, duration: HATCH_AURA_ANIM_DUR_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
           )
           gsap.fromTo(atmosAuraRef.value,
-            { scale: 2.4, opacity: 0.95 },
-            { scale: 0.8, opacity: 0.3, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+            { scale: HATCH_RARE_AURA_MAX_SCALE, opacity: HATCH_RARE_AURA_MAX_OPACITY },
+            { scale: HATCH_RARE_AURA_MIN_SCALE, opacity: HATCH_RARE_AURA_MIN_OPACITY, duration: HATCH_AURA_ANIM_DUR_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
           )
         }
 
@@ -277,7 +313,7 @@ const handleEggClick = () => {
         particlesRef.value.forEach((el) => {
           if (!el) return
           const angle = Math.random() * Math.PI * 2
-          const distance = 80 + Math.random() * 140
+          const distance = HATCH_PARTICLE_MIN_DISTANCE_PX + Math.random() * HATCH_PARTICLE_MAX_SPREAD_PX
           const tx = Math.cos(angle) * distance
           const ty = Math.sin(angle) * distance
           
@@ -288,8 +324,8 @@ const handleEggClick = () => {
               y: ty,
               opacity: 0,
               scale: 0,
-              duration: 'random(1.2, 2.0)',
-              delay: 'random(0, 0.25)',
+              duration: 'random(1.2, 2.0)', // no-magic
+              delay: 'random(0, 0.25)', // no-magic
               ease: 'power2.out'
             }
           )
@@ -297,13 +333,13 @@ const handleEggClick = () => {
 
         // Entrada suave de los stats
         gsap.fromTo('.stats-card',
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.5, delay: 0.7, ease: 'power2.out' }
+          { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+          { opacity: 1, y: 0, duration: HATCH_STATS_CARD_ANIM_DUR_SEC, delay: HATCH_STATS_CARD_ANIM_DELAY_SEC, ease: 'power2.out' }
         )
 
         gsap.fromTo('.btn-confirm',
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.5, delay: 1.2, ease: 'power2.out' }
+          { opacity: 0, y: HATCH_STATS_CARD_INITIAL_Y_OFFSET },
+          { opacity: 1, y: 0, duration: HATCH_STATS_CARD_ANIM_DUR_SEC, delay: HATCH_CONFIRM_BTN_ANIM_DELAY_SEC, ease: 'power2.out' }
         )
       })
     })
@@ -311,7 +347,7 @@ const handleEggClick = () => {
     // Desvanecer el flash blanco mientras se revela la nueva criatura
     hatchTimeline.to('.hatch-backdrop', {
       backgroundColor: '',
-      duration: 0.6,
+      duration: HATCH_REVEAL_ANIM_DUR_SEC,
       ease: 'power2.out'
     })
 

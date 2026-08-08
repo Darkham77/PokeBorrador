@@ -3,13 +3,16 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import { isMatchingUid } from './showdownUidMapper.ts'
 
+const RADIX_DECIMAL = 10;
+const RECENT_BATTLE_LOGS_MAX_KEEP = 10;
+
 export function parseCondition(cond: string): { hp: number; status: Pokemon['status'] } {
   let hp = 0
   let status: Pokemon['status'] = ''
   if (!cond.includes('fnt')) {
     const slashIdx = cond.indexOf('/')
     if (slashIdx !== -1) {
-      hp = parseInt(cond.substring(0, slashIdx), 10) || 0
+      hp = parseInt(cond.substring(0, slashIdx), RADIX_DECIMAL) || 0
     }
     const spaceIdx = cond.indexOf(' ')
     if (spaceIdx !== -1) {
@@ -101,7 +104,7 @@ export function syncAndPersist(ctx: BattleContext) {
     ...active,
     playerStages: ctx.playerStages.value,
     enemyStages: ctx.enemyStages.value,
-    battleLogs: ctx.battleLogs.value.slice(-10)
+    battleLogs: ctx.battleLogs.value.slice(-RECENT_BATTLE_LOGS_MAX_KEEP)
   }
   ctx.gs.save(false)
 }

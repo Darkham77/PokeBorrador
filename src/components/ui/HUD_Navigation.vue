@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const NAV_ENTER_ANIM_DURATION_SEC = 0.2
+const NAV_LEAVE_ANIM_DURATION_SEC = 0.15
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
@@ -304,14 +306,21 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
+const HUD_NAV_ENTER_Y_OFFSET_PX = 20
+const HUD_NAV_LEAVE_Y_OFFSET_PX = 15
+const HUD_NAV_INITIAL_SCALE = 0.8
+const HUD_NAV_LEAVE_SCALE = 0.85
+const HUD_NAV_CENTERING_X_PERCENT = -50
+const HUD_NAV_TRANSFORM_ORIGIN_CENTER = '50% 50%'
+
 // GSAP Animations
 const beforeEnter = (el: Element) => {
   gsap.set(el, { 
     opacity: 0, 
-    xPercent: -50,
-    y: props.position === 'top' ? -20 : 20,
-    scale: 0.8,
-    transformOrigin: '50% 50%'
+    xPercent: HUD_NAV_CENTERING_X_PERCENT,
+    y: props.position === 'top' ? -HUD_NAV_ENTER_Y_OFFSET_PX : HUD_NAV_ENTER_Y_OFFSET_PX,
+    scale: HUD_NAV_INITIAL_SCALE,
+    transformOrigin: HUD_NAV_TRANSFORM_ORIGIN_CENTER
   })
 }
 
@@ -320,7 +329,7 @@ const enter = (el: Element, done: () => void) => {
     opacity: 1,
     y: 0,
     scale: 1,
-    duration: 0.2,
+    duration: NAV_ENTER_ANIM_DURATION_SEC,
     ease: 'back.out(1.2)',
     onComplete: done
   })
@@ -329,9 +338,9 @@ const enter = (el: Element, done: () => void) => {
 const leave = (el: Element, done: () => void) => {
   gsap.to(el, {
     opacity: 0,
-    y: props.position === 'top' ? -15 : 15,
-    scale: 0.85,
-    duration: 0.15,
+    y: props.position === 'top' ? -HUD_NAV_LEAVE_Y_OFFSET_PX : HUD_NAV_LEAVE_Y_OFFSET_PX,
+    scale: HUD_NAV_LEAVE_SCALE,
+    duration: NAV_LEAVE_ANIM_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done
   })

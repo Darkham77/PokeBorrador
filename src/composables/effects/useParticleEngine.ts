@@ -1,6 +1,14 @@
 import { onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 
+const PARTICLE_CENTER_PERCENT = 50
+const RECT_DEFAULT_Y_RANGE: [number, number] = [-10, 10]
+const REPEAT_VISIBILITY_PROBABILITY_60_PCT = 0.4
+const CIRCLE_DEFAULT_MAX_RADIUS = 40
+const RECT_DEFAULT_MIN_AREA_PERCENT = 10
+const RECT_DEFAULT_MAX_AREA_PERCENT = 90
+const RANDOM_DELAY_MAX_SECS_LIMIT = 2
+
 /**
  * useParticleEngine.ts
  * Motor modular para efectos de partículas alrededor de sprites.
@@ -56,8 +64,8 @@ export function useParticleEngine() {
     shape: 'rect' | 'circle' = 'circle',
     offset?: { x: number; y: number }
   ) => {
-    let baseLeft = 50
-    let baseTop = 50
+    let baseLeft = PARTICLE_CENTER_PERCENT
+    let baseTop = PARTICLE_CENTER_PERCENT
 
     if (shape === 'circle') {
       // Distribución circular uniforme utilizando coordenadas polares
@@ -68,14 +76,14 @@ export function useParticleEngine() {
       // sqrt para asegurar distribución uniforme del área
       const r = Math.sqrt(Math.random() * (rMax * rMax - rMin * rMin) + rMin * rMin)
       
-      baseLeft = 50 + r * Math.cos(angle)
-      baseTop = 50 + r * Math.sin(angle)
+      baseLeft = PARTICLE_CENTER_PERCENT + r * Math.cos(angle)
+      baseTop = PARTICLE_CENTER_PERCENT + r * Math.sin(angle)
     } else {
       // Distribución rectangular centrada en el 50%
       const xRange = area.x
-      const yRange = area.y || [-10, 10]
-      baseLeft = 50 + xRange[0] + (Math.random() * (xRange[1] - xRange[0]))
-      baseTop = 50 + yRange[0] + (Math.random() * (yRange[1] - yRange[0]))
+      const yRange = area.y || RECT_DEFAULT_Y_RANGE
+      baseLeft = PARTICLE_CENTER_PERCENT + xRange[0] + (Math.random() * (xRange[1] - xRange[0]))
+      baseTop = PARTICLE_CENTER_PERCENT + yRange[0] + (Math.random() * (yRange[1] - yRange[0]))
     }
     
     // Aplicamos el offset de forma absoluta
@@ -103,7 +111,7 @@ export function useParticleEngine() {
 
     const {
       shape = 'circle',
-      area = (shape === 'circle' ? { x: [0, 40] } : { x: [10, 90], y: [10, 90] }) as { x: [number, number]; y?: [number, number] },
+      area = (shape === 'circle' ? { x: [0, CIRCLE_DEFAULT_MAX_RADIUS] } : { x: [RECT_DEFAULT_MIN_AREA_PERCENT, RECT_DEFAULT_MAX_AREA_PERCENT], y: [RECT_DEFAULT_MIN_AREA_PERCENT, RECT_DEFAULT_MAX_AREA_PERCENT] }) as { x: [number, number]; y?: [number, number] },
       onInit,
       onRepeat,
       createTweens
@@ -146,7 +154,7 @@ export function useParticleEngine() {
       if (onInit) onInit(el, i)
 
       // 3. Delay azaroso para desincronizar el "nacimiento"
-      const randomDelay = Math.random() * 2
+      const randomDelay = Math.random() * RANDOM_DELAY_MAX_SECS_LIMIT
 
       // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       const wrappedOnRepeat = () => {
@@ -161,7 +169,7 @@ export function useParticleEngine() {
           } else if (activeCount < min) {
             shouldBeVisible = true
           } else {
-            shouldBeVisible = Math.random() > 0.4
+            shouldBeVisible = Math.random() > REPEAT_VISIBILITY_PROBABILITY_60_PCT
           }
           
           const wasHidden = el.style.visibility === 'hidden'

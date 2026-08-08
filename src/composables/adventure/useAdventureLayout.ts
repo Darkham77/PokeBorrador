@@ -55,6 +55,9 @@ export function useAdventureLayout(options: {
 
   const worldOverlayScale = computed(() => 1 / Math.max(options.cameraScale.value, 0.25))
 
+const OVERLAY_X_OFFSET_RIGHT = 20
+const OVERLAY_Y_OFFSET_TOP = 18
+
   const pokemonCenterOverlays = computed(() => {
     return validNodeIds.value.flatMap(nodeId => {
       if (!isPokemonCenterNodeId(nodeId)) return []
@@ -63,8 +66,8 @@ export function useAdventureLayout(options: {
       return [{
         id: nodeId,
         label: options.mapLocationsById.value[nodeId]?.name || KANTO_NODE_POSITIONS[nodeId].label,
-        x: position.x + CARD_W - 20,
-        y: position.y + 18
+        x: position.x + CARD_W - OVERLAY_X_OFFSET_RIGHT,
+        y: position.y + OVERLAY_Y_OFFSET_TOP
       }]
     })
   })

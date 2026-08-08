@@ -11,6 +11,7 @@ export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
+import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
 
 
 export const RANKED_REWARD_TIER_MARKS = [
@@ -49,9 +50,9 @@ export const usePvPStore = defineStore('pvp', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
 
-  const elo = ref(1000)
+  const elo = ref(DEFAULT_INITIAL_ELO)
   const stats = ref<PvPStats>({ wins: 0, losses: 0, draws: 0 })
-  const maxElo = ref(1000)
+  const maxElo = ref(DEFAULT_INITIAL_ELO)
   const rewardsClaimed = ref<string[]>([])
   const passiveTeamActive = ref(false)
   const currentSeasonRules = ref<SeasonRules | null>(null)
@@ -79,7 +80,7 @@ export const usePvPStore = defineStore('pvp', () => {
       .single() as { data: ProfileRow | null }
 
     if (profile) {
-      elo.value = profile.elo_rating || 1000
+      elo.value = profile.elo_rating || DEFAULT_INITIAL_ELO
       stats.value = { 
         wins: profile.pvp_wins || 0, 
         losses: profile.pvp_losses || 0, 
@@ -139,7 +140,7 @@ export const usePvPStore = defineStore('pvp', () => {
         spa: p.spa,
         spd: p.spd,
         spe: p.spe,
-        moves: p.moves.filter(m => !!m).map((m) => ({ name: m!.name, pp: m!.maxPP || 20 })),
+        moves: p.moves.filter(m => !!m).map((m) => ({ name: m!.name, pp: m!.maxPP || DEFAULT_MOVE_PP })),
         heldItem: p.heldItem,
         isShiny: p.isShiny
       }))
@@ -191,7 +192,7 @@ export const usePvPStore = defineStore('pvp', () => {
     
     const start = parseZonedTime(rules.startDate || rules.seasonStartDate, '2026-04-01T00:00:00')
     
-    const defaultEndStr = start.add({ months: 3 }).toString()
+    const defaultEndStr = start.add({ months: SEASON_DURATION_MONTHS }).toString()
     const end = parseZonedTime(rules.endDate || rules.seasonEndDate, defaultEndStr)
     
     const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)

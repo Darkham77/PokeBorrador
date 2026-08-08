@@ -51,8 +51,10 @@ watch(logs, (newVal) => {
           if (entries && entries.length > 0) {
             const lastEntry = entries[entries.length - 1] as HTMLElement
             gsap.killTweensOf(lastEntry)
+const GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX = -20
+
             gsap.fromTo(lastEntry, 
-              { opacity: 0, x: -20, filter: 'Blur(4px)' }, 
+              { opacity: 0, x: GSAP_LOG_ENTRY_INITIAL_X_OFFSET_PX, filter: 'Blur(4px)' }, 
               { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
             )
           }

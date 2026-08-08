@@ -1,3 +1,5 @@
+const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
+const WITHDRAW_ANIMATION_FALLBACK_DELAY_MS = 800
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
@@ -32,7 +34,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     if (ctx.animations?.handleFaintAnim) {
       await ctx.animations.handleFaintAnim({ side: 'enemy' })
     } else {
-      await sleep(1300)
+      await sleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
     }
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
   } else {
@@ -42,7 +44,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       await ctx.animations.handleWithdrawRequest({ side: 'enemy', pokemon })
     } else {
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      await sleep(800)
+      await sleep(WITHDRAW_ANIMATION_FALLBACK_DELAY_MS)
     }
   }
 

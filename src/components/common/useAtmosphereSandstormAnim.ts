@@ -40,8 +40,10 @@ export function useAtmosphereSandstormAnim(
           gsap.set(dustLayer2Ref.value, { backgroundSize: '256px 256px' })
         }
 
+const DUST_LAYER_TWO_DRIFT_X_PX = -1024
+
         const moveY2 = isDiagonal ? 512 : 0
-        applyParallaxLayer(dustLayer2Ref.value, s2X, s2Y, -1024, moveY2, speed2)
+        applyParallaxLayer(dustLayer2Ref.value, s2X, s2Y, DUST_LAYER_TWO_DRIFT_X_PX, moveY2, speed2)
       }
     }
   }

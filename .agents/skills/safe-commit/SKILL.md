@@ -186,6 +186,16 @@ This is the primary gatekeeper. It reports all project-wide errors and new warni
 **If errors found** → skip 3.2 and 3.3, go directly to Step 3.4.
 **If clean** → proceed to Step 3.2.
 
+> [!TIP]
+> The audit engine supports powerful CLI flags (passed after `--`) to triage failures efficiently:
+> - `--rule="<partial-name>"` — filter to a single rule (e.g. `--rule="mágico"` for magic-number errors only).
+> - `--summary` — show a compact rule-count + top-files table instead of the full listing. **Always use this first to avoid terminal floods.**
+> - `--top=N` / `-t N` — control the number of offending files shown (default 15; use `--top=30` for broader sweeps).
+> - `--json` / `-j` — emit structured JSON output, pipeable into scripts or `jq` for programmatic processing.
+> - `--errors-only` — suppress warnings; print only hard errors.
+>
+> **Quick investigation recipe:** `npm run audit -- --rule="<rule>" --summary --top=30`
+
 ### Step 3.2 — `npm run audit:fix`
 
 Auto-repairs easy fixes (viewport tags, `node:` prefixes, ESM extensions).

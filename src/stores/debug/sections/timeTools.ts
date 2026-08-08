@@ -2,6 +2,8 @@ import type { DebugSystem } from '@/stores/debug'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { ONE_HOUR_MS, ONE_DAY_MS } from '@/logic/constants/items.ts'
+
 export function registerTimeTools(debug: DebugSystem) {
   const game = useGameStore()
   const ui = useUIStore()
@@ -31,7 +33,7 @@ export function registerTimeTools(debug: DebugSystem) {
     category: 'time',
     action: (h: number) => {
       const current = game.db.getTimeOffset()
-      game.db.setTimeOffset(current + (h * 3600 * 1000))
+      game.db.setTimeOffset(current + (h * ONE_HOUR_MS))
       ui.notify(`Debug: +${h} horas añadidas`, '⏩')
       window.dispatchEvent(new CustomEvent('time-sync-update'))
     },
@@ -45,8 +47,8 @@ export function registerTimeTools(debug: DebugSystem) {
     category: 'time',
     action: (w: number) => {
       const current = game.db.getTimeOffset()
-      // 1 week = 7 days * 24 hours * 3600 seconds * 1000 ms
-      game.db.setTimeOffset(current + (w * 7 * 24 * 3600 * 1000))
+      const ONE_WEEK_MS = 7 * ONE_DAY_MS
+      game.db.setTimeOffset(current + (w * ONE_WEEK_MS))
       ui.notify(`Debug: +${w} semanas añadidas`, '⏩')
       window.dispatchEvent(new CustomEvent('time-sync-update'))
     },

@@ -9,6 +9,7 @@ import { useNotificationStore } from '@/stores/notifications.ts'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay.ts'
 
 
 interface EvolutionData {
@@ -49,7 +50,7 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   const isSmallScreen = computed(() => {
-    return (windowWidth.value / appZoom.value) <= 950
+    return (windowWidth.value / appZoom.value) <= SMALL_SCREEN_BREAKPOINT_PX
   })
 
   // Low Power Mode
@@ -65,7 +66,7 @@ export const useUIStore = defineStore('ui', () => {
     
     if (isAnyBlockingModalOpen.value) return true // Force low power mode when a modal is open to pause background renders
     if (lowPowerMode.value === 'disabled') return false
-    return windowWidth.value < 768
+    return windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX
   })
   function setLowPowerMode(mode: 'auto' | 'enabled' | 'disabled') {
     lowPowerMode.value = mode

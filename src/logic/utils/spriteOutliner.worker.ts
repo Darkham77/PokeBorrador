@@ -15,6 +15,8 @@ async function getFromCache(cacheKey: string): Promise<Blob | null> {
   return null;
 }
 
+const ONE_YEAR_CACHE_MAX_AGE_SEC = 31536000;
+
 async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
   try {
     const cache = await caches.open(CACHE_NAME);
@@ -23,7 +25,7 @@ async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
       new Response(blob, {
         headers: {
           'Content-Type': 'image/png',
-          'Cache-Control': 'public, max-age=31536000, immutable'
+          'Cache-Control': `public, max-age=${ONE_YEAR_CACHE_MAX_AGE_SEC}, immutable`
         }
       })
     );

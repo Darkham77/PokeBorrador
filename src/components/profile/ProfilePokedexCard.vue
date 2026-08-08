@@ -8,13 +8,15 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const GEN_1_POKEDEX_TOTAL = 151;
+
 const completionPct = computed(() => {
   if (props.pokedexCaught <= 0) return 0
-  return Math.round((props.pokedexCaught / 151) * 100)
+  return Math.round((props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100)
 })
 
 const barWidthPct = computed(() => {
-  return Math.min(100, (props.pokedexCaught / 151) * 100)
+  return Math.min(100, (props.pokedexCaught / GEN_1_POKEDEX_TOTAL) * 100)
 })
 </script>
 
@@ -40,7 +42,7 @@ const barWidthPct = computed(() => {
       />
     </div>
     <div class="pokedex-footer">
-      <span>Gen I Total: 151</span>
+      <span>Gen I Total: {{ GEN_1_POKEDEX_TOTAL }}</span>
       <span>{{ completionPct }}% Completado</span>
     </div>
   </div>

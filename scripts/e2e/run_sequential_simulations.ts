@@ -13,6 +13,40 @@ interface SimulationTarget {
   name: string;
   command: string;
   relativePath: string;
+  fullPath: string;
+  caseCount: number;
+}
+
+function countSimulationCases(fullPath: string): number {
+  try {
+    const content = fs.readFileSync(fullPath, 'utf-8');
+    
+    // Detectar si el test lee un JSON de casos/lotes (ej. fuzzer_certified_cases.json)
+    const jsonMatches = content.matchAll(/['"]([^'"]+\.json)['"]/g);
+    for (const match of jsonMatches) {
+      if (match[1] && !match[1].includes('package.json') && !match[1].includes('tsconfig')) {
+        const candidatePath = match[1].startsWith('/')
+          ? match[1]
+          : path.resolve(process.cwd(), match[1]);
+        if (fs.existsSync(candidatePath)) {
+          const parsed = JSON.parse(fs.readFileSync(candidatePath, 'utf-8'));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.length;
+          } else if (typeof parsed === 'object' && parsed !== null) {
+            const list = (parsed.battle || parsed.cases || parsed.batches || parsed.tests || Object.values(parsed).find(Array.isArray)) as unknown[];
+            if (Array.isArray(list) && list.length > 0) {
+              return list.length;
+            }
+          }
+        }
+      }
+    }
+    
+    const matches = content.match(/\btest\s*\(/g);
+    return matches ? matches.length : 1;
+  } catch {
+    return 1;
+  }
 }
 
 function findSimulationFiles(dir: string, fileList: string[] = []): string[] {
@@ -42,20 +76,28 @@ const targets: SimulationTarget[] = allSimFiles
   .map((fullPath) => {
     const relativePath = path.relative(process.cwd(), fullPath);
     const basename = path.basename(fullPath);
+    const caseCount = countSimulationCases(fullPath);
     return {
       name: basename,
       command: `npx playwright test ${relativePath}`,
-      relativePath
+      relativePath,
+      fullPath,
+      caseCount
     };
   })
-  .sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+  .sort((a, b) => {
+    if (a.caseCount !== b.caseCount) {
+      return a.caseCount - b.caseCount;
+    }
+    return a.relativePath.localeCompare(b.relativePath);
+  });
 
 console.log('\n==================================================');
 console.log('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
 console.log('==================================================');
-console.log(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E:`);
+console.log(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
 targets.forEach((target, index) => {
-  console.log(`  ${index + 1}. [${target.name}] -> ${target.command}`);
+  console.log(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
 });
 console.log('==================================================\n');
 

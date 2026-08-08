@@ -10,9 +10,12 @@
  * @param threshold El umbral a partir del cual se simplifica (defecto 9.999.999)
  * @returns String formateado (ej: "10M", "1.234.567")
  */
-export const formatCurrency = (val: number, threshold: number = 999999): string => {
+const DEFAULT_CURRENCY_FORMAT_THRESHOLD = 999999
+const ONE_MILLION_SCALE = 1000000
+
+export const formatCurrency = (val: number, threshold: number = DEFAULT_CURRENCY_FORMAT_THRESHOLD): string => {
   if (val > threshold) {
-    return `${Math.floor(val / 1000000)}M`
+    return `${Math.floor(val / ONE_MILLION_SCALE)}M`
   }
   return (val || 0).toLocaleString()
 }

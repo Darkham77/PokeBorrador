@@ -4,6 +4,9 @@ import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
 import type { DominanceInfo } from '@/types/system/stores'
 
+const DOMINANCE_MIN_IV_BOOST = 15
+const DOMINANCE_MONEY_BOOST_MULT = 1.2
+
 /**
  * Applies map dominance bonuses to a generated Pokémon.
  * @param {Pokemon} pokemon 
@@ -30,7 +33,7 @@ export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: 
   if (isDominant && bonuses.ivBoost > 0) {
     const ivKeys: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     ivKeys.forEach(stat => {
-      pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, 15) // Boost to at least 15
+      pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, DOMINANCE_MIN_IV_BOOST) // Boost to at least 15
     })
     
     // CRITICAL: Recalculate stats after IV changes
@@ -56,6 +59,6 @@ export function getBattleRewardModifiers(mapId: string, faction: string | null, 
 
   return {
     expMult: bonuses.expMult,
-    moneyMult: isDominant ? 1.2 : 1 // Legacy rule: 20% extra money
+    moneyMult: isDominant ? DOMINANCE_MONEY_BOOST_MULT : 1 // Legacy rule: 20% extra money
   }
 }

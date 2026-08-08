@@ -8,8 +8,9 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from '../lib/validationBase.ts';
 
-const SRC_ROOT = path.resolve(process.cwd(), 'src');
-const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const PARITY_SRC_ROOT = path.resolve(process.cwd(), 'src');
+const PARITY_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const MAX_SEQUENCE_PREVIEW_LIMIT = 10;
 
 interface TransitionStep {
   from: string;
@@ -21,7 +22,7 @@ interface TransitionStep {
 import { walkSourceFiles as walk } from './fsmParityParser.ts';
 
 async function getExecutionSequence(): Promise<string[]> {
-  const allFiles = await walk(SRC_ROOT);
+  const allFiles = await walk(PARITY_SRC_ROOT);
   const sequence: { file: string, state: string, index: number }[] = [];
 
   for (const file of allFiles) {
@@ -71,17 +72,17 @@ function parseMermaidSequences(content: string) {
 async function main() {
   const validator = setupValidation({
     title: 'FSM FLOW PARITY VALIDATOR',
-    requiredFiles: [MANUAL_PATH]
+    requiredFiles: [PARITY_MANUAL_PATH]
   });
 
   await validator.checkFiles();
 
-  const manual = await fs.readFile(MANUAL_PATH, 'utf-8');
+  const manual = await fs.readFile(PARITY_MANUAL_PATH, 'utf-8');
   const executionSequence = await getExecutionSequence();
   const mermaidSeqs = parseMermaidSequences(manual);
 
   console.log(styleText('cyan', `\nSecuencia detectada en el código (${executionSequence.length} pasos):`));
-  console.log(executionSequence.slice(0, 10).join(' -> ') + (executionSequence.length > 10 ? ' ...' : ''));
+  console.log(executionSequence.slice(0, MAX_SEQUENCE_PREVIEW_LIMIT).join(' -> ') + (executionSequence.length > MAX_SEQUENCE_PREVIEW_LIMIT ? ' ...' : ''));
 
   const errors: string[] = [];
   const warnings: string[] = [];

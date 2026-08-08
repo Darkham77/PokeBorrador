@@ -10,6 +10,7 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 
 const ENV_FILE = path.resolve(process.cwd(), '.env');
+const DEFAULT_POSTGRES_PORT_TEXT = '5432';
 
 export interface ServerConfig {
   SUPABASE_PUBLIC_URL?: string;
@@ -119,14 +120,14 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
       try {
         const u = new URL(rawPubUrl);
         let host = u.hostname;
-        let port = '5432';
+        let port = DEFAULT_POSTGRES_PORT_TEXT;
         if (host.endsWith('.supabase.co')) {
           const ref = conf.TENANT_ID || conf.POOLER_TENANT_ID || host.split('.')[0] || 'postgres';
           host = `db.${host.split('.')[0]}.supabase.co`;
           console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${canonicalName}]: ${ref}`));
           dbUrl = `postgres://postgres:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         } else {
-          port = conf.POSTGRES_PORT || conf.DB_PORT || '5432';
+          port = conf.POSTGRES_PORT || conf.DB_PORT || DEFAULT_POSTGRES_PORT_TEXT;
           const tenant = conf.TENANT_ID || conf.POOLER_TENANT_ID || 'your-tenant-id';
           console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${canonicalName}]: ${tenant}`));
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;

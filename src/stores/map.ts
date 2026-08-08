@@ -13,6 +13,7 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { requireMapRouteId } from '@/data/world/map-assets';
 import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import type { DominanceInfo } from '@/types/system/stores';
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
 export interface PendingAward {
   id: string;
@@ -30,11 +31,11 @@ export const useMapStore = defineStore('map', () => {
   const globalWeather = ref<WeatherId | null>(null) // Si está forzado anula el determinístico
   const forcedCycle = ref<DayPhase | null>(null)
   const forcedSeason = ref<Season | null>(null)
-  const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
+  const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / ONE_HOUR_MS))
 
   // Reactive Epoch Hour computation on demand & time-sync-update events (Zero-Timer Event-Driven Architecture)
   const updateEpochHour = () => {
-    currentEpochHour.value = Math.floor(getServerTime() / 3600000);
+    currentEpochHour.value = Math.floor(getServerTime() / ONE_HOUR_MS);
   };
 
   if (typeof window !== 'undefined') {
@@ -46,12 +47,12 @@ export const useMapStore = defineStore('map', () => {
 
   const currentCycle = computed(() => {
     if (forcedCycle.value) return forcedCycle.value
-    return getDayCycle(currentEpochHour.value * 3600000)
+    return getDayCycle(currentEpochHour.value * ONE_HOUR_MS)
   })
   
   const currentSeason = computed(() => {
     if (forcedSeason.value) return forcedSeason.value
-    return getSeason(currentEpochHour.value * 3600000)
+    return getSeason(currentEpochHour.value * ONE_HOUR_MS)
   })
   
   const currentWeather = computed<WeatherId>(() => {

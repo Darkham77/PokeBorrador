@@ -28,6 +28,13 @@ If it is finite, design the domain type first.
 - **Fail-Fast Boundary Validation**: Any lookup or resolution MUST use an explicit validator function (`requireItemId`, `requirePokemonSpeciesId`, etc.) that throws an explicit Error (`throw new Error(...)`) if the ID is missing or invalid.
 - **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit:warnings-diff` and will fail the commit if any domain ID fallback is introduced.
 
+## Absolute Prohibition on Value-Hardcoding in Constant Names (`badConstantNames`)
+
+- **Semantic Naming Mandate**: Constant names MUST describe their domain purpose or semantic role, NEVER hardcode their current numeric or string value into the identifier.
+- **Forbidden Pattern**: `const ARCHAEOLOGY_CAVE_BASE_WEIGHT_10 = 10;`, `const DEFAULT_DEBUG_FRIENDSHIP_70 = 70;` (WRONG — hardcodes value in variable name).
+- **Canonical Pattern**: `const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;`, `const DEFAULT_DEBUG_FRIENDSHIP = 70;` (CORRECT — semantic & generic).
+- **Audit Rule**: The rule `badConstantNames` automatically flags any `const CONST_NAME_123` containing numeric value suffixes in `src/` and `scripts/`.
+
 ## Canonical Patterns
 
 Use one of these patterns as the source of truth.

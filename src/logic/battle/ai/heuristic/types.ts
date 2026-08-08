@@ -188,15 +188,18 @@ export interface AIConfig {
   useInference: boolean;
 }
 
+const AI_PRESET_ERROR_RATE_WILD = 0.50;
+const AI_PRESET_ERROR_RATE_NPC = 0.05;
+
 export const AI_CONFIG_PRESETS = {
   wild: {
-    errorRate: 0.50,
+    errorRate: AI_PRESET_ERROR_RATE_WILD,
     switchAggressiveness: 0.0,
     useStrategicEval: false,
     useInference: false,
   },
   npc: {
-    errorRate: 0.05,
+    errorRate: AI_PRESET_ERROR_RATE_NPC,
     switchAggressiveness: 0.4,
     useStrategicEval: true,
     useInference: true,

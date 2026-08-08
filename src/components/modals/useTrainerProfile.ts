@@ -1,3 +1,6 @@
+const DEFAULT_ELO_RATING_BASE = 1000;
+const SECONDS_PER_HOUR_FACTOR = 3600;
+
 import { ref, computed, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
@@ -287,7 +290,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const eloRating = computed(() => {
-    return profile.value?.elo_rating ?? saveState.value?.eloRating ?? 1000
+    return profile.value?.elo_rating ?? saveState.value?.eloRating ?? DEFAULT_ELO_RATING_BASE
   })
 
   const warCoins = computed(() => {
@@ -323,7 +326,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
 
   const playtimeHours = computed(() => {
     const secs = profile.value?.playtime ?? saveState.value?.playtime ?? 0
-    return Math.floor(secs / 3600)
+    return Math.floor(secs / SECONDS_PER_HOUR_FACTOR)
   })
 
   const createdAt = computed(() => {
@@ -335,7 +338,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const rankedMaxElo = computed(() => {
-    return profile.value?.ranked_max_elo ?? saveState.value?.rankedMaxElo ?? 1000
+    return profile.value?.ranked_max_elo ?? saveState.value?.rankedMaxElo ?? DEFAULT_ELO_RATING_BASE
   })
 
   const classLevel = computed(() => {

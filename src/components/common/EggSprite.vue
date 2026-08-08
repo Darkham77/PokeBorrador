@@ -7,9 +7,11 @@ interface Props {
   size?: number | string
 }
 
+const DEFAULT_EGG_SPRITE_SIZE_PX = 48
+
 const props = withDefaults(defineProps<Props>(), {
   tint: '',
-  size: 48
+  size: DEFAULT_EGG_SPRITE_SIZE_PX
 })
 
 const eggUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, 'egg'))

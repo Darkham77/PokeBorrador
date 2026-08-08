@@ -10,6 +10,12 @@ import type { ClaimItem } from '@/types/system/game';
 
 type SubTab = 'received' | 'sent' | 'claims';
 
+const TRADE_CARD_INITIAL_OPACITY = 0;
+const TRADE_CARD_INITIAL_X_OFFSET = -20;
+const TRADE_CARD_INITIAL_SCALE = 0.95;
+const TRADE_CARD_ANIM_DURATION_SEC = 0.4;
+const TRADE_CARD_ANIM_STAGGER_SEC = 0.05;
+
 const tradeStore = useTradeStore();
 const gameStore = useGameStore();
 
@@ -60,11 +66,11 @@ function animateCards() {
     listRef.value.classList.add('tab-mounting');
     gsap.killTweensOf(cards);
     gsap.from(cards, {
-      opacity: 0,
-      x: -20,
-      scale: 0.95,
-      duration: 0.4,
-      stagger: 0.05,
+      opacity: TRADE_CARD_INITIAL_OPACITY,
+      x: TRADE_CARD_INITIAL_X_OFFSET,
+      scale: TRADE_CARD_INITIAL_SCALE,
+      duration: TRADE_CARD_ANIM_DURATION_SEC,
+      stagger: TRADE_CARD_ANIM_STAGGER_SEC,
       ease: 'back.out(1.2)',
       clearProps: 'all',
       onComplete: () => listRef.value?.classList.remove('tab-mounting'),

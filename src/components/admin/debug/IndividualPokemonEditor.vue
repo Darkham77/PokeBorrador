@@ -198,8 +198,10 @@ function randomFillActiveMoves() {
   activePokeMoves.value = shuffled.slice(0, 4)
 }
 
+const MAX_STAT_IV_LIMIT = 31
+
 function updateActiveIV(stat: PokemonStatKey, val: number) {
-  activePoke.value.ivs[stat] = Math.max(0, Math.min(31, val))
+  activePoke.value.ivs[stat] = Math.max(0, Math.min(MAX_STAT_IV_LIMIT, val))
   recalcPokemonStats(activePoke.value)
 }
 

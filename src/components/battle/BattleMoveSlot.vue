@@ -9,6 +9,7 @@ import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
 import { toPokemonType } from '@/data/battle/types'
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -32,6 +33,19 @@ const props = withDefaults(defineProps<Props>(), {
 import { useBattleStore } from '@/stores/battle/battle'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 
+const MOVE_TOOLTIP_DELAY_MS = 400;
+const GLOW_PULSE_DURATION_SEC = 0.8;
+const COLOR_HEX_SHORT_LENGTH = 3;
+const HEX_BYTE_SLICE_TWO = 2;
+const HEX_BYTE_SLICE_FOUR = 4;
+const HEX_BYTE_SLICE_SIX = 6;
+const HOVER_SCALED_MULT = 1.08;
+import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
+const HOVER_ANIM_DURATION_SEC = 0.3;
+// Relative z-index within the moves grid local stacking context
+const HOVER_Z_INDEX_ELEVATED = Z_LAYERS.BASE + 10; // no-magic
+const HOVER_Z_INDEX_NORMAL = Z_LAYERS.BASE + 1;   // no-magic
+
 const emit = defineEmits<{
   (e: 'use-move', index: number): void
 }>()
@@ -52,16 +66,18 @@ const moveColor = computed(() => {
 
 const moveType = computed(() => toPokemonType(moveData.value?.type || 'normal'))
 
+const DEFAULT_WHITE_RGB = '255, 255, 255'
+
 const hexColorRgb = computed(() => {
   const hex = moveColor.value
-  if (!hex) return '255, 255, 255'
+  if (!hex) return DEFAULT_WHITE_RGB
   let h = hex.replace('#', '')
-  if (h.length === 3) {
+  if (h.length === COLOR_HEX_SHORT_LENGTH) {
     h = h.split('').map((c: string) => c + c).join('')
   }
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
+  const r = parseInt(h.slice(0, HEX_BYTE_SLICE_TWO), 16)
+  const g = parseInt(h.slice(HEX_BYTE_SLICE_TWO, HEX_BYTE_SLICE_FOUR), 16)
+  const b = parseInt(h.slice(HEX_BYTE_SLICE_FOUR, HEX_BYTE_SLICE_SIX), 16)
   return `${r}, ${g}, ${b}`
 })
 
@@ -180,7 +196,7 @@ const updateGlow = () => {
       {
         boxShadow: '0 0 16px rgba(255, 215, 0, 0.95)',
         borderColor: 'rgba(255, 215, 0, 1)',
-        duration: 0.8,
+        duration: GLOW_PULSE_DURATION_SEC,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut'
@@ -195,7 +211,7 @@ const updateGlow = () => {
       {
         boxShadow: '0 0 16px rgba(239, 68, 68, 0.95)',
         borderColor: 'rgba(239, 68, 68, 1)',
-        duration: 0.8,
+        duration: GLOW_PULSE_DURATION_SEC,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut'
@@ -213,18 +229,18 @@ const onHover = (isEntering: boolean) => {
   if (isEntering) {
     const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 768
     gsap.to(el, { 
-      scale: isSmallScreen ? 1 : 1.08, 
+      scale: isSmallScreen ? SCALE_NORMAL_1 : HOVER_SCALED_MULT, 
       filter: 'Brightness(1.1)',
-      zIndex: 10,
-      duration: 0.3, 
+      zIndex: HOVER_Z_INDEX_ELEVATED,
+      duration: HOVER_ANIM_DURATION_SEC, 
       ease: 'power2.out' 
     })
   } else {
     gsap.to(el, { 
-      scale: 1, 
+      scale: SCALE_DEFAULT_BASE_FACTOR, 
       filter: 'Brightness(1)',
-      zIndex: 1,
-      duration: 0.3, 
+      zIndex: HOVER_Z_INDEX_NORMAL,
+      duration: HOVER_ANIM_DURATION_SEC, 
       ease: 'power2.out',
       onComplete: () => {
         if (el) gsap.set(el, { clearProps: 'zIndex' })
@@ -294,7 +310,7 @@ const formatMoveName = (name: string) => {
     <template v-if="move">
       <PVTooltip
         :title="move.name"
-        :delay="400" 
+        :delay="MOVE_TOOLTIP_DELAY_MS" 
         position="top"
         hide-on-click
         touch-instant

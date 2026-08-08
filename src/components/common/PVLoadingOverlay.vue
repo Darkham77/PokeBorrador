@@ -35,11 +35,15 @@ let spinnerTween: gsap.core.Tween | null = null
 let glowTween: gsap.core.Tween | null = null
 let pulseTween: gsap.core.Tween | null = null
 
+const FULL_SPINNER_ROTATION_DEG = 360;
+const OVERLAY_PULSE_SCALE_BOOST = 1.08;
+const OVERLAY_PULSE_OPACITY_MIN = 0.75;
+
 const startRotation = () => {
   if (spinnerTween) spinnerTween.kill()
   if (spinnerRef.value) {
     spinnerTween = gsap.to(spinnerRef.value, {
-      rotation: 360,
+      rotation: FULL_SPINNER_ROTATION_DEG,
       duration: 1.2,
       repeat: -1,
       ease: 'none'
@@ -97,8 +101,8 @@ const startPulse = () => {
     pulseTween = gsap.fromTo(iconRef.value,
       { scale: 1, opacity: 1 },
       {
-        scale: 1.08,
-        opacity: 0.75,
+        scale: OVERLAY_PULSE_SCALE_BOOST,
+        opacity: OVERLAY_PULSE_OPACITY_MIN,
         duration: 1,
         yoyo: true,
         repeat: -1,

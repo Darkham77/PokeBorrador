@@ -34,10 +34,12 @@ const isUnlocked = computed(() => {
   return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
 })
 
+const ROCKET_PRICE_SURCHARGE_MULTIPLIER = 1.20
+
 // Calculate the price modifier locally (reproducing the store logic accurately)
 const priceModifier = computed(() => {
   const playerClass = gameStore.state.playerClass
-  if (playerClass === 'rocket') return 1.20
+  if (playerClass === 'rocket') return ROCKET_PRICE_SURCHARGE_MULTIPLIER
   return 1.0
 })
 

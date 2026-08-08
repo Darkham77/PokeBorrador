@@ -1,3 +1,17 @@
+const RIVAL_DROP_PROB_MASTERBALL = 20
+const RIVAL_DROP_PROB_SHINY_TICKET = 40
+const RIVAL_DROP_PROB_SAFARI_TICKET = 60
+const RIVAL_DROP_PROB_CERULEAN_TICKET = 80
+const RIVAL_DROP_PROB_ARTICUNO_TICKET = 95
+const REMATCH_TM_CHANCE_NORMAL = 0.03
+const REMATCH_TM_CHANCE_HARD = 0.05
+const GYM_REWARD_BASE_EXP_FACTOR = 180
+const GYM_REWARD_BASE_MONEY_FACTOR = 30
+const ROCKET_EXTORTION_WINDOW_MS = 24 * 3600 * 1000
+const GYM_EXP_FACTOR_PER_LEVEL = 5
+const TRAINER_EXP_FACTOR_PER_LEVEL = 2
+const BATTLE_COINS_PER_LEVEL_FACTOR = 2
+const AMULET_COIN_MONEY_MULTIPLIER = 2
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards.ts'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
@@ -6,6 +20,7 @@ import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { getItemById, requireItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
+import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items'
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -60,19 +75,21 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
   }
 
+const RIVAL_DROP_PROB_MAX_PERCENT = 100;
+
   // Rival special rewards (drop ticket/masterball)
   if (active.isRival) {
-    const randRec = Math.random() * 100
+    const randRec = Math.random() * RIVAL_DROP_PROB_MAX_PERCENT
     let rewardedItemKey = ''
-    if (randRec < 20) {
+    if (randRec < RIVAL_DROP_PROB_MASTERBALL) {
       rewardedItemKey = 'masterball'
-    } else if (randRec < 40) {
+    } else if (randRec < RIVAL_DROP_PROB_SHINY_TICKET) {
       rewardedItemKey = 'ticketshiny'
-    } else if (randRec < 60) {
+    } else if (randRec < RIVAL_DROP_PROB_SAFARI_TICKET) {
       rewardedItemKey = 'ticketsafari'
-    } else if (randRec < 80) {
+    } else if (randRec < RIVAL_DROP_PROB_CERULEAN_TICKET) {
       rewardedItemKey = 'ticketcerulean'
-    } else if (randRec < 95) {
+    } else if (randRec < RIVAL_DROP_PROB_ARTICUNO_TICKET) {
       rewardedItemKey = 'ticketarticuno'
     } else {
       rewardedItemKey = 'ticketmewtwo'
@@ -111,8 +128,8 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       if (gym && gym.rewardTM) {
         const key = diff as 'easy' | 'normal' | 'hard'
         let tmChance = 0
-        if (key === 'normal') tmChance = 0.03
-        else if (key === 'hard') tmChance = 0.05
+        if (key === 'normal') tmChance = REMATCH_TM_CHANCE_NORMAL
+        else if (key === 'hard') tmChance = REMATCH_TM_CHANCE_HARD
         
         if (tmChance > 0 && Math.random() < tmChance) {
           const tmId = requireItemId(gym.rewardTM)
@@ -133,7 +150,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       const key = diff as 'easy' | 'normal' | 'hard'
       if (!prog[key]) {
         prog[key] = true
-        ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆') // text-ok
+        ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆')
         
         // Award Gym Difficulty-Specific rewards dynamically (Bulk Money and EXP only, NO unconditional TM)
         const { useGymsStore } = await import('@/stores/gyms')
@@ -147,8 +164,8 @@ export async function calculateBattleRewards(ctx: BattleContext) {
             const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
             const mult = mults[key] || 1
             
-            const expReward = Math.floor(avgLevel * 180 * mult)
-            const moneyReward = Math.floor(avgLevel * 30 * mult)
+            const expReward = Math.floor(avgLevel * GYM_REWARD_BASE_EXP_FACTOR * mult)
+            const moneyReward = Math.floor(avgLevel * GYM_REWARD_BASE_MONEY_FACTOR * mult)
 
             // 1. Award Money
             ctx.gs.state.money += moneyReward
@@ -255,13 +272,13 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     })
     
     if ((ctx.gs.state.amuletCoinSecs || 0) > 0) {
-      moneyGained *= 2
+      moneyGained *= AMULET_COIN_MONEY_MULTIPLIER
     }
     
     totalMoneyGained += moneyGained
 
     if ((active.isTrainer || active.isGym) && !isGymRematch) {
-      let coins = Math.floor(e.level * 2)
+      let coins = Math.floor(e.level * BATTLE_COINS_PER_LEVEL_FACTOR)
       const bcMult = ctx.classStore.getModifier('bcMult', { isGym: active.isGym })
       coins = Math.floor(coins * bcMult)
       const eventMult = ctx.eventStore.globalMultipliers?.bc || 1
@@ -270,18 +287,22 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     }
 
     // Trainer experience formula: isGym ? level * 5 : level * 2
-    const trainerExpGain = active.isGym ? (e.level * 5) : (e.level * 2)
+    const trainerExpGain = active.isGym ? (e.level * GYM_EXP_FACTOR_PER_LEVEL) : (e.level * TRAINER_EXP_FACTOR_PER_LEVEL)
     totalTrainerExpGained += trainerExpGain
   }
+
+const ROCKET_EXTORTION_BONUS_PCT_TEXT = '50%'
+const AMULET_COIN_DOUBLE_MONEY_NOTIFY_THRESHOLD = 1000
+const LUCKY_EGG_EXP_BONUS_PCT_TEXT = '50%'
 
   // Multiplicador de extorsión del Team Rocket (x1.5 ₽ en ruta extorsionada)
   if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData?.extortedRouteId === active.locationId) {
     const extTimestamp = Number(ctx.gs.state.classData?.extortedRouteTimestamp || 0)
     const now = Temporal.Now.instant().epochMilliseconds
-    if (now - extTimestamp <= 24 * 3600 * 1000) {
+    if (now - extTimestamp <= ROCKET_EXTORTION_WINDOW_MS) {
       const bonusMoney = Math.floor(totalMoneyGained * 0.5)
       totalMoneyGained += bonusMoney
-      ctx.addLog(`¡Extorsión activa (+50% ₽)! +₽${bonusMoney}`, 'log-info', 'player')
+      ctx.addLog(`¡Extorsión activa (+${ROCKET_EXTORTION_BONUS_PCT_TEXT} ₽)! +₽${bonusMoney}`, 'log-info', 'player')
     }
   }
 
@@ -289,7 +310,9 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   if (ctx.gs.state.playerClass === 'entrenador' && ctx.gs.state.classData?.officialRouteId === active.locationId) {
     const offTimestamp = Number(ctx.gs.state.classData?.officialRouteTimestamp || 0)
     const now = Temporal.Now.instant().epochMilliseconds
-    if (now - offTimestamp <= 30 * 60 * 1000) {
+const SECONDS_TO_MS_MULTIPLIER = 1000
+
+    if (now - offTimestamp <= BUFF_DURATION_30_MIN_SEC * SECONDS_TO_MS_MULTIPLIER) {
       if (!ctx.gs.state.classData) {
         ctx.gs.state.classData = {
           captureStreak: 0,
@@ -311,7 +334,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     ctx.addLog('¡Moneda Amuleto duplicó el dinero obtenido!', 'log-success', 'player')
   }
   if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
-    ctx.addLog('¡Huevo Suerte aumentó un 50% la EXP obtenida!', 'log-success', 'player')
+    ctx.addLog(`¡Huevo Suerte aumentó un ${LUCKY_EGG_EXP_BONUS_PCT_TEXT} la EXP obtenida!`, 'log-success', 'player')
   }
   ctx.addLog(`¡Ganaste ₽${totalMoneyGained} en total!`, 'log-info', 'player')
 

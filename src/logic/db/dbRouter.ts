@@ -75,9 +75,12 @@ export class DBRouter {
       this._realClient = createClient(url, key, {
         realtime: {
           reconnectAfterMs: (tries) => {
-            // Evitar spam constante en la consola si el servidor no soporta WebSockets
-            if (tries > 3) return 300000; // Intentar cada 5 minutos en lugar de cada pocos segundos
-            return [1000, 2000, 5000][tries - 1] || 5000;
+const MAX_RECONNECT_INTERVAL_MS = 300000;
+const INITIAL_RECONNECT_BACKOFF_MS = [1000, 2000, 5000] as const;
+const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
+
+            if (tries > 3) return MAX_RECONNECT_INTERVAL_MS; // Intentar cada 5 minutos en lugar de cada pocos segundos
+            return INITIAL_RECONNECT_BACKOFF_MS[tries - 1] || DEFAULT_RECONNECT_BACKOFF_MS;
           }
         }
       });

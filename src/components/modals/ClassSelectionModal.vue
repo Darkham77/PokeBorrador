@@ -35,6 +35,12 @@ const emit = defineEmits<{
 
 defineOptions({ inheritAttrs: false });
 
+const CLASS_CARD_HOVER_Y_OFFSET_PX = -10
+const CLASS_HOVER_ROTATE_X_DEG = 2
+const CLASS_HOVER_SPRITE_SCALE = 1.1
+const GSAP_CARD_HOVER_DURATION_SEC = 0.25
+const GLOW_ACTIVE_OPACITY = 0.2
+const GLOW_BASE_OPACITY = 0.05
 const classStore = usePlayerClassStore();
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
@@ -87,25 +93,25 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 
   if (isEntering) {
     gsap.to(card, {
-      y: -10,
-      rotateX: 2,
+      y: CLASS_CARD_HOVER_Y_OFFSET_PX,
+      rotateX: CLASS_HOVER_ROTATE_X_DEG,
       borderColor: 'var(--yellow)',
-      duration: 0.25,
+      duration: GSAP_CARD_HOVER_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
     });
     if (glow) {
       gsap.to(glow, {
-        opacity: 0.2,
-        duration: 0.25,
+        opacity: GLOW_ACTIVE_OPACITY,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
         ease: 'power2.out',
         overwrite: 'auto'
       });
     }
     if (sprite) {
       gsap.to(sprite, {
-        scale: 1.1,
-        duration: 0.25,
+        scale: CLASS_HOVER_SPRITE_SCALE,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
         ease: 'power2.out',
         overwrite: 'auto'
       });
@@ -115,15 +121,15 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       y: 0,
       rotateX: 0,
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      duration: 0.25,
+      duration: GSAP_CARD_HOVER_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
       clearProps: 'transform,borderColor'
     });
     if (glow) {
       gsap.to(glow, {
-        opacity: 0.05,
-        duration: 0.25,
+        opacity: GLOW_BASE_OPACITY,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
         ease: 'power2.out',
         overwrite: 'auto',
         clearProps: 'opacity'
@@ -132,7 +138,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
     if (sprite) {
       gsap.to(sprite, {
         scale: 1,
-        duration: 0.25,
+        duration: GSAP_CARD_HOVER_DURATION_SEC,
         ease: 'power2.out',
         overwrite: 'auto',
         clearProps: 'transform'

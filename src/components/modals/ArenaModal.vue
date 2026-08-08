@@ -9,6 +9,13 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import ArenaMilestoneTrack from '@/components/modals/ArenaMilestoneTrack.vue'
 import { gsap } from 'gsap'
+
+const TIER_ICON_FLOAT_Y = -6;
+const TIER_ICON_FLOAT_DURATION_SEC = 2;
+const EMOJI_HOVER_SCALE = 1.15;
+const EMOJI_HOVER_ROTATE_DEG = 5;
+const EMOJI_HOVER_DURATION_SEC = 0.3;
+const TOGGLE_BTN_HOVER_DURATION_SEC = 0.25;
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
@@ -45,8 +52,8 @@ onMounted(async () => {
   
   if (tierIconRef.value) {
     gsap.to(tierIconRef.value, {
-      y: -6,
-      duration: 2,
+      y: TIER_ICON_FLOAT_Y,
+      duration: TIER_ICON_FLOAT_DURATION_SEC,
       yoyo: true,
       repeat: -1,
       ease: 'power1.inOut'
@@ -56,7 +63,7 @@ onMounted(async () => {
 
 const offlineTransitionHooks = useGsapTransition({
   type: 'fade',
-  duration: 0.3
+  duration: EMOJI_HOVER_DURATION_SEC
 })
 
 const allowedTypes = computed<PokemonType[]>(() => (pvp.currentSeasonRules?.allowedTypes || []).map(toPokemonType))
@@ -88,14 +95,16 @@ function startSearch() {
 // Per ui_ux_standards.md (GSAP Hover Clash rule), btn-vicio manages
 // its own hover via native CSS transitions. No GSAP handlers needed.
 
+const EMOJI_OVERSHOOT_EASE = 1.275;
+
 function handleEmojiEnter(e: MouseEvent) {
   const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji')
   if (emoji) {
     gsap.to(emoji, {
-      scale: 1.15,
-      rotate: 5,
-      duration: 0.3,
-      ease: 'back.out(1.275)'
+      scale: EMOJI_HOVER_SCALE,
+      rotate: EMOJI_HOVER_ROTATE_DEG,
+      duration: EMOJI_HOVER_DURATION_SEC,
+      ease: `back.out(${EMOJI_OVERSHOOT_EASE})`
     })
   }
 }
@@ -106,7 +115,7 @@ function handleEmojiLeave(e: MouseEvent) {
     gsap.to(emoji, {
       scale: 1,
       rotate: 0,
-      duration: 0.3,
+      duration: EMOJI_HOVER_DURATION_SEC,
       ease: 'power2.out'
     })
   }
@@ -117,7 +126,7 @@ function handleToggleBtnEnter(e: MouseEvent) {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     color: 'var(--white)',
     borderColor: 'rgba(255, 255, 255, 0.15)',
-    duration: 0.25,
+    duration: TOGGLE_BTN_HOVER_DURATION_SEC,
     ease: 'power2.out'
   })
 }
@@ -127,7 +136,7 @@ function handleToggleBtnLeave(e: MouseEvent) {
     backgroundColor: '',
     color: '',
     borderColor: '',
-    duration: 0.25,
+    duration: TOGGLE_BTN_HOVER_DURATION_SEC,
     ease: 'power2.out'
   })
 }

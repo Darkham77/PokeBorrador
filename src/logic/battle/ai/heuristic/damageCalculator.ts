@@ -28,6 +28,16 @@ const PRIORITY_MAP: Record<string, number> = {
 };
 
 const CACHE_MAX_SIZE = 2048;
+const INFERRED_MOVE_MIN_PROBABILITY = 0.3;
+const DEFAULT_BASE_SPEED_STAT = 100;
+const PARALYSIS_SPEED_PENALTY_MULT = 0.5;
+const TAILWIND_SPEED_BOOST_MULT = 2;
+const DEFAULT_HEURISTIC_POKEMON_LEVEL = 50;
+const PERCENTAGE_MAX_SCALE_FACTOR = 100;
+const ESTIMATED_HP_PER_PERCENT = 3;
+const STAGE_BASE_FACTOR_DIVISOR = 2;
+const MAX_PERFECT_IV_STAT = 31;
+const MIN_HP_BOUND_FLOOR = 1;
 
 import { ACTIVE_GENERATION } from '../../../../data/system/constants.ts';
 
@@ -84,7 +94,7 @@ export class HeuristicDamageCalculator {
     const oppMoves = new Set<string>(opp.knownMoves);
     if (inferredOpponentMoves) {
       for (const [mv, prob] of inferredOpponentMoves) {
-        if (prob >= 0.3) oppMoves.add(mv);
+        if (prob >= INFERRED_MOVE_MIN_PROBABILITY) oppMoves.add(mv);
       }
     }
 
@@ -99,12 +109,12 @@ export class HeuristicDamageCalculator {
   }
 
   getEffectiveSpeed(pokemon: HeuristicPokemonState, field: HeuristicFieldState, side: 'p1' | 'p2'): number {
-    let spd = pokemon.stats.spe || 100;
+    let spd = pokemon.stats.spe || DEFAULT_BASE_SPEED_STAT;
     const boost = pokemon.boosts.spe;
-    if (boost > 0) spd = Math.floor(spd * (2 + boost) / 2);
-    else if (boost < 0) spd = Math.floor(spd * 2 / (2 - boost));
-    if (pokemon.status === 'par') spd = Math.floor(spd * 0.5);
-    if (field.tailwind[side] > 0) spd *= 2;
+    if (boost > 0) spd = Math.floor(spd * (STAGE_BASE_FACTOR_DIVISOR + boost) / STAGE_BASE_FACTOR_DIVISOR);
+    else if (boost < 0) spd = Math.floor(spd * STAGE_BASE_FACTOR_DIVISOR / (STAGE_BASE_FACTOR_DIVISOR - boost));
+    if (pokemon.status === 'par') spd = Math.floor(spd * PARALYSIS_SPEED_PENALTY_MULT);
+    if (field.tailwind[side] > 0) spd *= TAILWIND_SPEED_BOOST_MULT;
     if (field.trickRoom) spd = -spd;
     return spd;
   }
@@ -122,11 +132,11 @@ export class HeuristicDamageCalculator {
     const species = this.resolveSpecies(p.species);
 
     const opts: Record<string, unknown> = {
-      level: p.level || 50,
-      curHP: p.hp > 0 ? p.hp : Math.max(1, Math.round(p.hpPercent * 3)),
+      level: p.level || DEFAULT_HEURISTIC_POKEMON_LEVEL,
+      curHP: p.hp > 0 ? p.hp : Math.max(MIN_HP_BOUND_FLOOR, Math.round(p.hpPercent * ESTIMATED_HP_PER_PERCENT)),
       boosts: { atk: p.boosts.atk, def: p.boosts.def, spa: p.boosts.spa, spd: p.boosts.spd, spe: p.boosts.spe },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      ivs: { hp: MAX_PERFECT_IV_STAT, atk: MAX_PERFECT_IV_STAT, def: MAX_PERFECT_IV_STAT, spa: MAX_PERFECT_IV_STAT, spd: MAX_PERFECT_IV_STAT, spe: MAX_PERFECT_IV_STAT },
     };
 
     // Held item — validate strictly with requireItemId if present and map to Smogon name
@@ -149,7 +159,7 @@ export class HeuristicDamageCalculator {
     try {
       return new Pokemon(this.gen, species, opts);
     } catch {
-      return new Pokemon(this.gen, species, { level: p.level || 50 });
+      return new Pokemon(this.gen, species, { level: p.level || DEFAULT_HEURISTIC_POKEMON_LEVEL });
     }
   }
 
@@ -203,9 +213,9 @@ export class HeuristicDamageCalculator {
     }
 
     const defMaxHp = result.defender.originalCurHP || result.defender.maxHP();
-    const minPct = defMaxHp > 0 ? (min / defMaxHp) * 100 : 0;
-    const maxPct = defMaxHp > 0 ? (max / defMaxHp) * 100 : 0;
-    const curPct = defMaxHp > 0 ? (result.defender.curHP() / defMaxHp) * 100 : 100;
+    const minPct = defMaxHp > 0 ? (min / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : 0;
+    const maxPct = defMaxHp > 0 ? (max / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : 0;
+    const curPct = defMaxHp > 0 ? (result.defender.curHP() / defMaxHp) * PERCENTAGE_MAX_SCALE_FACTOR : PERCENTAGE_MAX_SCALE_FACTOR;
 
     return {
       move: moveId,
@@ -231,7 +241,8 @@ export class HeuristicDamageCalculator {
 
   private addToCache(key: string, result: DamageResult): void {
     if (this.cache.size >= CACHE_MAX_SIZE) {
-      const toRemove = this.cacheOrder.splice(0, Math.floor(CACHE_MAX_SIZE * 0.25));
+      const CACHE_EVICTION_RATIO = 0.25;
+      const toRemove = this.cacheOrder.splice(0, Math.floor(CACHE_MAX_SIZE * CACHE_EVICTION_RATIO));
       for (const k of toRemove) this.cache.delete(k);
     }
     this.cache.set(key, result);

@@ -26,9 +26,10 @@ import { safeResolve, safeJoin } from '../lib/safePath.ts';
 enableCompileCache();
 
 const BACKUPS_DIR = safeResolve(process.cwd(), 'database/backups');
+const RESTORE_TARGET_NODE_VERSION_LABEL = '26';
 
 export async function restoreSupabaseDb() {
-  console.log(styleText('bold', '\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js 26+) ---'));
+  console.log(styleText('bold', `\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js ${RESTORE_TARGET_NODE_VERSION_LABEL}+) ---`));
 
   const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
@@ -207,11 +208,13 @@ export async function restoreSupabaseDb() {
 
     // Recolectar todos los user_ids del respaldo para asegurar su existencia en auth.users
     const backupUserIds = new Map<string, string>();
+const UUID_STRING_LENGTH_EXPECTED = 36;
+
     const profileRows = backupData['profiles'] || [];
     for (const r of profileRows) {
       const userId = String(r.id || r.user_id || '');
       const email = String(r.email || `user_${userId}@test.com`);
-      if (userId && userId.length === 36) {
+      if (userId && userId.length === UUID_STRING_LENGTH_36) {
         backupUserIds.set(userId, email);
       }
     }
@@ -223,7 +226,7 @@ export async function restoreSupabaseDb() {
       for (const r of rows) {
         for (const key of userIdKeys) {
           const val = String(r[key] || '');
-          if (val && val.length === 36 && !backupUserIds.has(val)) {
+          if (val && val.length === UUID_STRING_LENGTH_36 && !backupUserIds.has(val)) {
             backupUserIds.set(val, `user_${val}@test.com`);
           }
         }

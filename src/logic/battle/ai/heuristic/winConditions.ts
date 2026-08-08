@@ -2,23 +2,19 @@
 // Win Conditions Evaluator
 // Adapted from external/pokemon-showdown-ai/src/strategy/win-conditions.ts
 // ============================================================
+const WIN_COND_SPEED_ADVANTAGE_WEIGHT = 0.20
+const WIN_COND_KO_COUNT_WEIGHT = 0.30
+const WIN_COND_COVERAGE_WEIGHT = 0.10
+const WIN_COND_SETUP_WEIGHT = 0.15
+const WIN_COND_PRIORITY_WEIGHT = 0.10
+const WIN_COND_HP_WEIGHT = 0.15
 
 import { toID } from '@pkmn/sim';
 import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
 
-const SETUP_MOVES: readonly string[] = [ // no-domain
-  'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
-  'shellsmash', 'bulkup', 'irondefense', 'bellydrum', 'coil',
-  'shiftgear', 'workup', 'agility', 'autotomize', 'tailglow',
-];
-
-const PRIORITY_MOVES: readonly string[] = [ // no-domain
-  'extremespeed', 'aquajet', 'bulletpunch', 'iceshard', 'machpunch',
-  'quickattack', 'shadowsneak', 'suckerpunch', 'grassyglide', 'jetpunch',
-  'fakeout', 'firstimpression', 'accelerock',
-];
+import { SETUP_MOVES, PRIORITY_MOVES } from '@/logic/constants/encounters';
 
 export function evaluateWinConditions(
   snapshot: HeuristicBattleSnapshot,
@@ -65,17 +61,19 @@ export function evaluateWinConditions(
       const bestOppDmg = oppMoves.reduce((mx, m) => {
         try { return Math.max(mx, calc.calcDamage(opp, pokemon, m, snapshot.field).maxPercent); } catch { return mx; }
       }, 0);
-      if (bestOppDmg < 40) defensiveScore += 0.2;
+const LOW_OPPONENT_DAMAGE_THRESHOLD_PCT = 40
+
+      if (bestOppDmg < LOW_OPPONENT_DAMAGE_THRESHOLD_PCT) defensiveScore += 0.2;
     }
 
     const n = Math.max(oppAlive.length, 1);
     const score = Math.min(1.0,
-      (speedAdvantageCount / n * 0.20) +
-      (canKOCount / n * 0.30) +
-      (coverageScore / n * 0.10) +
-      (hasSetup ? 0.15 : 0) +
-      (hasPriority ? 0.10 : 0) +
-      (pokemon.hpPercent / 100 * 0.15) +
+      (speedAdvantageCount / n * WIN_COND_SPEED_ADVANTAGE_WEIGHT) +
+      (canKOCount / n * WIN_COND_KO_COUNT_WEIGHT) +
+      (coverageScore / n * WIN_COND_COVERAGE_WEIGHT) +
+      (hasSetup ? WIN_COND_SETUP_WEIGHT : 0) +
+      (hasPriority ? WIN_COND_PRIORITY_WEIGHT : 0) +
+      (pokemon.hpPercent / 100 * WIN_COND_HP_WEIGHT) +
       Math.min(defensiveScore, 0.2),
     );
 

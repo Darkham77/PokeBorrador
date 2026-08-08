@@ -16,6 +16,12 @@ const uiStore = useUIStore()
 const warStore = useWarStore()
 const gameStore = useGameStore()
 
+const WAR_SHOP_CARD_INITIAL_OPACITY = 0;
+const WAR_SHOP_CARD_INITIAL_Y_OFFSET = 15;
+const WAR_SHOP_CARD_INITIAL_SCALE = 0.95;
+
+const WAR_SHOP_GRID_ANIM_STAGGER_SEC = 0.02
+
 const isOpen = computed({
   get: () => uiStore.isWarShopOpen,
   set: (val: boolean) => { uiStore.isWarShopOpen = val }
@@ -88,13 +94,13 @@ const animateGrid = () => {
     if (cards.length > 0) {
       gsap.killTweensOf(cards)
       gsap.fromTo(cards, 
-        { opacity: 0, y: 15, scale: 0.95 },
+        { opacity: WAR_SHOP_CARD_INITIAL_OPACITY, y: WAR_SHOP_CARD_INITIAL_Y_OFFSET, scale: WAR_SHOP_CARD_INITIAL_SCALE },
         { 
           opacity: 1, 
           y: 0, 
           scale: 1, 
           duration: 0.2, 
-          stagger: 0.02, 
+          stagger: WAR_SHOP_GRID_ANIM_STAGGER_SEC, 
           ease: 'power1.out',
           clearProps: 'transform,scale'
         }

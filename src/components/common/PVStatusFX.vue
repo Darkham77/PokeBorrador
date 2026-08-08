@@ -4,12 +4,22 @@
  * Gestiona las partículas de estados alterados (Emoji particles).
  * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
  */
+const STATUS_PARTICLE_MIN_SCALE = 0.05
+const DEFAULT_RANDOM_SCALE_MIN = 0.6
+const DEFAULT_RANDOM_SCALE_MAX = 1.3
+const STATUS_PARTICLE_COUNT_PER_EFFECT = 24
+const STATUS_GROW_DUR_RATIO = 0.8
+const DEFAULT_PARTICLE_DURATION_SEC = 0.8
+const STATUS_GROW_MAX_SCALE_MULT = 1.2
+const PARTICLE_HALF_DURATION_DIVISOR = 2
+const OFFSET_PERCENT_MARGIN = '10%';
+const CENTER_PERCENT_OFFSET = -50;
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useParticleEngine, type ParticleSystemOptions } from '@/composables/effects/useParticleEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { resolveEffectSettings } from '@/data/battle/fx-configs'
-import { Z_LAYERS } from '@/logic/constants/visuals'
+import { Z_LAYERS, OPACITY_ZERO } from '@/logic/constants/visuals'
 
 interface FXData {
   type: string;
@@ -61,25 +71,25 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
     ...settings,
     disableRandomizeOnRepeat: false,
     createTweens: (el: HTMLElement, index: number, delay: number) => {
-      const finalDelay = delay + (settings.stagger ? (index * settings.stagger) : 0)
+      const finalDelay = delay + (settings.stagger ? (index * settings.stagger) : STAGGER_INITIAL_DELAY_NONE)
       const tl = gsap.timeline({ repeat: -1, delay: finalDelay, repeatRefresh: true })
       
-      const totalDur = settings.duration || 0.8
-      const baseGrowDur = settings.growDuration || (totalDur / 2)
+      const totalDur = settings.duration || DEFAULT_PARTICLE_DURATION_SEC
+      const baseGrowDur = settings.growDuration || (totalDur / PARTICLE_HALF_DURATION_DIVISOR)
       const baseShrinkDur = totalDur - baseGrowDur
 
-      const growDur = settings.randomizeVars ? () => gsap.utils.random(baseGrowDur * 0.8, baseGrowDur * 1.2) : baseGrowDur
-      const shrinkDur = settings.randomizeVars ? () => gsap.utils.random(baseShrinkDur * 0.8, baseShrinkDur * 1.2) : baseShrinkDur
+      const growDur = settings.randomizeVars ? () => gsap.utils.random(baseGrowDur * STATUS_GROW_DUR_RATIO, baseGrowDur * STATUS_GROW_MAX_SCALE_MULT) : baseGrowDur
+      const shrinkDur = settings.randomizeVars ? () => gsap.utils.random(baseShrinkDur * STATUS_GROW_DUR_RATIO, baseShrinkDur * STATUS_GROW_MAX_SCALE_MULT) : baseShrinkDur
       
       const maxScale = props.spriteScale * settings.mult
 
       // Initial state
       gsap.set(el, { 
-        opacity: settings.useFade ? 0 : settings.targetOpacity, 
-        y: '10%', 
-        scale: 0.05, 
-        xPercent: -50, 
-        yPercent: -50, 
+        opacity: settings.useFade ? OPACITY_ZERO : settings.targetOpacity, 
+        y: OFFSET_PERCENT_MARGIN, 
+        scale: STATUS_PARTICLE_MIN_SCALE,
+        xPercent: CENTER_PERCENT_OFFSET, 
+        yPercent: CENTER_PERCENT_OFFSET, 
         x: 0,
         rotation: 0,
         imageRendering: 'auto',
@@ -89,7 +99,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
 
       const growScale = settings.randomizeVars 
         ? () => {
-            const range = typeof settings.randomizeVars === 'object' ? settings.randomizeVars : { min: 0.6, max: 1.3 }
+            const range = typeof settings.randomizeVars === 'object' ? settings.randomizeVars : { min: DEFAULT_RANDOM_SCALE_MIN, max: DEFAULT_RANDOM_SCALE_MAX }
             return (maxScale * gsap.utils.random(range.min, range.max))
           } 
         : maxScale
@@ -101,11 +111,11 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
 
       // Explicit reset at the start of each loop
       const resetProps: gsap.TweenVars = { 
-        scale: 0.05, 
-        opacity: settings.useFade ? 0 : settings.targetOpacity,
-        xPercent: -50,
-        yPercent: -50,
-        y: '10%'
+        scale: STATUS_PARTICLE_MIN_SCALE, 
+        opacity: settings.useFade ? OPACITY_ZERO : settings.targetOpacity,
+        xPercent: CENTER_PERCENT_OFFSET,
+        yPercent: CENTER_PERCENT_OFFSET,
+        y: OFFSET_PERCENT_MARGIN
       }
       if (!settings.wobble) resetProps.rotation = 0
       tl.set(el, resetProps)
@@ -119,7 +129,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
       })
       
       tl.to(el, {
-        scale: 0.05,
+        scale: STATUS_PARTICLE_MIN_SCALE,
         opacity: settings.useFade ? 0 : settings.targetOpacity,
         duration: shrinkDurVal,
         ease: shrinkEase,
@@ -133,8 +143,8 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
         
         if (isYoyo) {
           gsap.fromTo(el,
-            { xPercent: -50 - w.x, rotation: -w.rotation },
-            { xPercent: -50 + w.x, rotation: w.rotation, duration: w.duration, repeat: -1, yoyo: true, ease }
+            { xPercent: CENTER_PERCENT_OFFSET - w.x, rotation: -w.rotation },
+            { xPercent: CENTER_PERCENT_OFFSET + w.x, rotation: w.rotation, duration: w.duration, repeat: -1, yoyo: true, ease }
           )
         } else {
           gsap.to(el, {
@@ -243,7 +253,7 @@ onUnmounted(() => {
       :data-fx-type="fx.type"
     >
       <span
-        v-for="n in 24"
+        v-for="n in STATUS_PARTICLE_COUNT_PER_EFFECT"
         :key="n"
         class="status-particle"
       >{{ fx.emoji }}</span>

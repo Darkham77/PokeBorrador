@@ -1,6 +1,5 @@
 import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
-
-
+import { HOVER_STRATEGIES } from '@/logic/constants/animations';
 
 export interface HoverValues {
   scale?: number;
@@ -23,8 +22,8 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     return {
       scale: 1,
       y: 0,
-      x: 6,
-      duration: 0.1,
+      x: HOVER_STRATEGIES.SUBMENU_X_OFFSET,
+      duration: HOVER_STRATEGIES.SUBMENU_DURATION_SEC,
       ease: 'power1.out',
       borderColor: resolvedColor,
       boxShadow: `0 0 0 2px ${resolvedColor}, 0 0 15px ${parseToRgba(resolvedColor, 0.3, el)}`
@@ -34,9 +33,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
   if (el.classList.contains('hud-nav-btn')) {
     const yellowResolved = resolveCssColor('var(--yellow)', el);
     return {
-      scale: 1.03,
-      y: -1.5,
-      duration: 0.1,
+      scale: HOVER_STRATEGIES.HUD_NAV_SCALE,
+      y: HOVER_STRATEGIES.HUD_NAV_Y_OFFSET,
+      duration: HOVER_STRATEGIES.HUD_NAV_DURATION_SEC,
       borderColor: yellowResolved,
       boxShadow: `0 0 0 2px ${yellowResolved}, 0 0 15px ${parseToRgba(yellowResolved, 0.4, el)}`
     };
@@ -47,9 +46,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow20 = parseToRgba(yellowResolved, 0.2, el);
     const glow30 = parseToRgba(yellowResolved, 0.3, el);
     return {
-      scale: 1.05,
-      y: -2,
-      duration: 0.1,
+      scale: HOVER_STRATEGIES.HUD_SQ_SCALE,
+      y: HOVER_STRATEGIES.HUD_SQ_Y_OFFSET,
+      duration: HOVER_STRATEGIES.HUD_SQ_DURATION_SEC,
       ease: 'power1.out',
       borderColor: yellowResolved,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
@@ -57,14 +56,14 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
   }
 
   if (el.classList.contains('pokecenter-banner')) {
-    if (el.classList.contains('on-cooldown')) return { scale: 1, y: 0, duration: 0.1 };
+    if (el.classList.contains('on-cooldown')) return { scale: 1, y: 0, duration: HOVER_STRATEGIES.HUD_NAV_DURATION_SEC };
     const yellowResolved = resolveCssColor('var(--yellow)', el);
     const glow20 = parseToRgba(yellowResolved, 0.2, el);
     const glow30 = parseToRgba(yellowResolved, 0.3, el);
     return {
-      scale: 1.02,
-      y: -6,
-      duration: 0.15,
+      scale: HOVER_STRATEGIES.POKECENTER_BANNER_SCALE,
+      y: HOVER_STRATEGIES.POKECENTER_BANNER_Y_OFFSET,
+      duration: HOVER_STRATEGIES.POKECENTER_BANNER_DURATION_SEC,
       ease: 'power2.out',
       borderColor: yellowResolved,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
@@ -76,9 +75,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow20 = parseToRgba(yellowResolved, 0.2, el);
     const glow30 = parseToRgba(yellowResolved, 0.3, el);
     return {
-      scale: 1.02,
-      y: -4,
-      duration: 0.12,
+      scale: HOVER_STRATEGIES.PC_BANNER_SCALE,
+      y: HOVER_STRATEGIES.PC_BANNER_Y_OFFSET,
+      duration: HOVER_STRATEGIES.PC_BANNER_DURATION_SEC,
       ease: 'power2.out',
       borderColor: yellowResolved,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
@@ -95,9 +94,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow80 = parseToRgba(resolvedColor, 0.2, el);
     const glow70 = parseToRgba(resolvedColor, 0.3, el);
     return {
-      scale: 1.02,
-      y: -4,
-      duration: 0.12,
+      scale: HOVER_STRATEGIES.PC_BANNER_SCALE,
+      y: HOVER_STRATEGIES.PC_BANNER_Y_OFFSET,
+      duration: HOVER_STRATEGIES.PC_BANNER_DURATION_SEC,
       ease: 'power2.out',
       borderColor: resolvedColor,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
@@ -106,10 +105,10 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
 
   if (el.classList.contains('btn-catch-ball')) {
     return {
-      scale: 1.1,
-      rotation: 5,
+      scale: HOVER_STRATEGIES.CATCH_BALL_SCALE,
+      rotation: HOVER_STRATEGIES.CATCH_BALL_ROTATION_DEG,
       y: 0,
-      duration: 0.25,
+      duration: HOVER_STRATEGIES.CATCH_BALL_DURATION_SEC,
       ease: 'back.out(1.7)'
     };
   }
@@ -120,9 +119,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow80 = parseToRgba(resolvedColor, 0.2, el);
     const glow70 = parseToRgba(resolvedColor, 0.35, el);
     return {
-      scale: 1.08,
-      y: -7,
-      duration: 0.12,
+      scale: HOVER_STRATEGIES.INVENTORY_ITEM_SCALE,
+      y: HOVER_STRATEGIES.INVENTORY_ITEM_Y_OFFSET,
+      duration: HOVER_STRATEGIES.INVENTORY_ITEM_DURATION_SEC,
       ease: 'power2.out',
       borderColor: resolvedColor,
       boxShadow: `0 0 16px ${glow70}, inset 0 0 0 1px ${resolvedColor}, inset 0 0 10px ${glow80}`
@@ -145,9 +144,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow80 = parseToRgba(resolvedColor, 0.2, el);
     const glow70 = parseToRgba(resolvedColor, 0.3, el);
     return {
-      scale: 1.02,
-      y: -3,
-      duration: 0.12,
+      scale: HOVER_STRATEGIES.CARD_SCALE,
+      y: HOVER_STRATEGIES.CARD_Y_OFFSET,
+      duration: HOVER_STRATEGIES.CARD_DURATION_SEC,
       ease: 'power2.out',
       borderColor: resolvedColor,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
@@ -169,9 +168,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const glow80 = parseToRgba(resolvedColor, 0.2, el);
     const glow70 = parseToRgba(resolvedColor, 0.3, el);
     return {
-      scale: 1.02,
-      y: -6,
-      duration: 0.15,
+      scale: HOVER_STRATEGIES.SHOP_CARD_SCALE,
+      y: HOVER_STRATEGIES.SHOP_CARD_Y_OFFSET,
+      duration: HOVER_STRATEGIES.SHOP_CARD_DURATION_SEC,
       ease: 'power2.out',
       borderColor: resolvedColor,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
@@ -181,32 +180,32 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
   if (el.classList.contains('trainer-card') || el.classList.contains('friend-card') || el.classList.contains('map-row')) {
     const isPending = el.classList.contains('pending');
     const border = isPending ? 'rgba(157, 78, 221, 0.45)' : 'rgba(255, 255, 255, 0.3)';
-    return { scale: 1, y: 0, x: 4, duration: 0.2, ease: 'power2.out', borderColor: border };
+    return { scale: 1, y: 0, x: HOVER_STRATEGIES.ROW_X_OFFSET, duration: HOVER_STRATEGIES.ROW_DURATION_SEC, ease: 'power2.out', borderColor: border };
   }
 
   if (el.classList.contains('hud-pill')) {
-    return { scale: 1.03, y: -1.5, duration: 0.15 };
+    return { scale: HOVER_STRATEGIES.HUD_PILL_SCALE, y: HOVER_STRATEGIES.HUD_PILL_Y_OFFSET, duration: HOVER_STRATEGIES.HUD_PILL_DURATION_SEC };
   }
 
   if (el.classList.contains('trainer-avatar-container')) {
-    return { scale: 1.1, y: -2, duration: 0.2, ease: 'power2.out' };
+    return { scale: HOVER_STRATEGIES.AVATAR_CONTAINER_SCALE, y: HOVER_STRATEGIES.AVATAR_CONTAINER_Y_OFFSET, duration: HOVER_STRATEGIES.AVATAR_CONTAINER_DURATION_SEC, ease: 'power2.out' };
   }
 
   if (el.classList.contains('badge-icon')) {
-    return { scale: 1.3, y: 0, duration: 0.12, ease: 'power1.out' };
+    return { scale: HOVER_STRATEGIES.BADGE_ICON_SCALE, y: 0, duration: HOVER_STRATEGIES.BADGE_ICON_DURATION_SEC, ease: 'power1.out' };
   }
 
   if (el.classList.contains('main-sprite')) {
-    return { scale: 1.05, y: -5, duration: 0.2, ease: 'power2.out' };
+    return { scale: HOVER_STRATEGIES.MAIN_SPRITE_SCALE, y: HOVER_STRATEGIES.MAIN_SPRITE_Y_OFFSET, duration: HOVER_STRATEGIES.MAIN_SPRITE_DURATION_SEC, ease: 'power2.out' };
   }
 
   if (el.classList.contains('edit-nick-btn')) {
-    return { scale: 1.2, y: 0, duration: 0.12, ease: 'power1.out' };
+    return { scale: HOVER_STRATEGIES.EDIT_NICK_SCALE, y: 0, duration: HOVER_STRATEGIES.EDIT_NICK_DURATION_SEC, ease: 'power1.out' };
   }
 
   if (el.classList.contains('upd-tab-btn')) {
     if (el.classList.contains('active')) return {};
-    return { scale: 1, y: -1.5, duration: 0.12, ease: 'power1.out' };
+    return { scale: 1, y: HOVER_STRATEGIES.HUD_NAV_Y_OFFSET, duration: HOVER_STRATEGIES.EDIT_NICK_DURATION_SEC, ease: 'power1.out' };
   }
 
   if (el.classList.contains('info-item')) {
@@ -214,9 +213,9 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     const resolvedColor = resolveCssColor(typeColor, el);
     const glowColor = parseToRgba(resolvedColor, 0.25, el);
     return {
-      scale: 1.02,
-      y: -2.5,
-      duration: 0.15,
+      scale: HOVER_STRATEGIES.INFO_ITEM_SCALE,
+      y: HOVER_STRATEGIES.INFO_ITEM_Y_OFFSET,
+      duration: HOVER_STRATEGIES.INFO_ITEM_DURATION_SEC,
       ease: 'power1.out',
       borderColor: resolvedColor,
       boxShadow: `0 10px 20px rgba(0, 0, 0, 0.3), 0 0 12px ${glowColor}`

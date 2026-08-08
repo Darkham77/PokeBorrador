@@ -3,6 +3,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import gsap from 'gsap';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
+import { COMBATANT_FAINT_Y_OFFSET, DEFAULT_AVATAR_SIZE_PX } from '@/logic/constants/animations';
 import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
@@ -20,6 +21,39 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { BattleCombatantProps } from '@/types/battle/battle';
+import {
+  COMBATANT_DISPLAY_SIZE_ENEMY_MULT,
+  COMBATANT_DISPLAY_SIZE_PLAYER_MULT,
+  POKEBALL_SHADOW_CANVAS_WIDTH_PX,
+  POKEBALL_SHADOW_CANVAS_HEIGHT_PX,
+  SMOKE_PARTICLE_BURST_COUNT,
+  SMOKE_PARTICLE_FADE_RATE,
+  SMOKE_PARTICLE_EXPANSION_RATE,
+  FLEE_SLIDE_DISTANCE_PX
+} from '@/logic/constants/animations';
+
+const DEFAULT_FEET_X_RATIO = 0.5;
+const DEFAULT_FEET_Y_RATIO = 0.9;
+const DEFAULT_FRAME_SIZE_PX = 96;
+
+const SMOKE_BASE_SPEED = 1.5;
+const SMOKE_SPEED_VARIANCE = 3;
+const SMOKE_INITIAL_Y_OFFSET_PX = -10;
+const SMOKE_VY_UPWARD_BIAS = 1.5;
+const SMOKE_BASE_SCALE = 1.0;
+const SMOKE_SCALE_VARIANCE = 1.5;
+const SMOKE_INITIAL_OPACITY = 0.9;
+const COMBATANT_SCALE_FACTOR_BASE = 1.0;
+const SINGLE_FRAME_FALLBACK = 1;
+const PATH_SLICE_OFFSET = 1;
+const POKEBALL_SHADOW_CENTER_X_RATIO = 0.5;
+const POKEBALL_SHADOW_CENTER_Y_RATIO = 0.5;
+const POKEBALL_SHADOW_RADIUS_X_RATIO = 0.45;
+const POKEBALL_SHADOW_RADIUS_Y_RATIO = 0.3;
+const DEFAULT_FX_RADIUS_PX = 25;
+const FX_RADIUS_BOUND_MIN = 10;
+const FX_RADIUS_BOUND_MAX = 80;
+const FLEE_SLIDE_DURATION_SEC = 0.45;
 
 
 interface SmokeParticle {
@@ -157,16 +191,16 @@ export function useBattleCombatantState(
     };
   });
 
-  const frames = computed(() => animatedMeta.value?.frames ?? 1);
-  const frameSize = computed(() => animatedMeta.value?.size ?? 96);
+  const frames = computed(() => animatedMeta.value?.frames ?? SINGLE_FRAME_FALLBACK);
+  const frameSize = computed(() => animatedMeta.value?.size ?? DEFAULT_FRAME_SIZE_PX);
   const scaleFactor = computed(() => {
-    if (!animatedMeta.value) return 1.0;
+    if (!animatedMeta.value) return COMBATANT_SCALE_FACTOR_BASE;
     const maxSize = isPlayer.value ? MAX_ANIMATED_SPRITE_SIZE_BACK : MAX_ANIMATED_SPRITE_SIZE_FRONT;
     return animatedMeta.value.size / maxSize;
   });
 
   const displaySize = computed(() => {
-    const sideMultiplier = props.side === 'enemy' ? 2 : 1.5;
+    const sideMultiplier = props.side === 'enemy' ? COMBATANT_DISPLAY_SIZE_ENEMY_MULT : COMBATANT_DISPLAY_SIZE_PLAYER_MULT;
     return Math.round(props.baseSize * scaleFactor.value * sideMultiplier);
   });
 
@@ -182,21 +216,21 @@ export function useBattleCombatantState(
 
   const feetPoints = computed(() => {
     if (isFloating.value) {
-      return { feetX: 0.5, feetY: 0.9 };
+      return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO };
     }
     if (isAnimated.value && animatedMeta.value) {
       return {
-        feetX: animatedMeta.value.feetX ?? 0.5,
-        feetY: animatedMeta.value.feetY ?? 0.9
+        feetX: animatedMeta.value.feetX ?? DEFAULT_FEET_X_RATIO,
+        feetY: animatedMeta.value.feetY ?? DEFAULT_FEET_Y_RATIO
       };
     }
     const url = imageUrl.value;
-    if (!url) return { feetX: 0.5, feetY: 0.9 };
+    if (!url) return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO };
     
     let key = url;
     const base = import.meta.env.BASE_URL || '/';
     if (base !== '/' && url.startsWith(base)) {
-      key = url.slice(base.length - 1);
+      key = url.slice(base.length - PATH_SLICE_OFFSET);
     }
     try {
       key = decodeURIComponent(key);
@@ -223,8 +257,8 @@ export function useBattleCombatantState(
 
   const pokeballShadowUrl = computed(() => {
     if (typeof document === 'undefined') return '';
-    const w = 10,
-      h = 7;
+    const w = POKEBALL_SHADOW_CANVAS_WIDTH_PX,
+      h = POKEBALL_SHADOW_CANVAS_HEIGHT_PX;
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
@@ -245,16 +279,18 @@ export function useBattleCombatantState(
     // Ground line is fixed at 75% from top (= 25% from bottom of the entity box).
     // feetY from the DB is only used to ALIGN the sprite vertically (offset in the top calc).
     // It must NOT define where the ground line itself lives inside the entity box.
+const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
+
     const cached = pokeballCoordsCache.get(cacheKey.value);
     if (cached) return cached.top;
-    return props.groundY || '75%';
+    return props.groundY || DEFAULT_GROUND_LINE_FALLBACK_PERCENT;
   });
 
   const fxScale = computed(() => props.baseSize / 100);
 
   const fxRadius = computed(() => {
     if (!animatedMeta.value) {
-      return 25;
+      return DEFAULT_FX_RADIUS_PX;
     }
     if (animatedMeta.value.bodyRadius === undefined) {
       throw new Error(`[useBattleCombatantState] bodyRadius is not defined in animated database for: ${props.pokemon?.id}`);
@@ -262,7 +298,7 @@ export function useBattleCombatantState(
     // bodyRadius [0-1] = half the body occupancy relative to the sprite frame.
     // The pokemon-atmosphere-wrapper has size displaySize * 2 px.
     // Radius as % of the wrapper = bodyRadius * 100 (so diameter = bodyRadius * 200%).
-    return Math.max(10, Math.min(80, animatedMeta.value.bodyRadius * 100));
+    return Math.max(FX_RADIUS_BOUND_MIN, Math.min(FX_RADIUS_BOUND_MAX, animatedMeta.value.bodyRadius * 100));
   });
 
   // Exposed so the BattleCombatant template can show/hide the inline poke-radius debug guide
@@ -272,7 +308,7 @@ export function useBattleCombatantState(
   const stickyCoords = computed(() => {
     const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
     const entitySize = props.baseSize * scale;
-    const offsetX = (feetPoints.value.feetX - 0.5) * entitySize;
+    const offsetX = (feetPoints.value.feetX - DEFAULT_FEET_X_RATIO) * entitySize;
     const left = `calc(50% + ${offsetX}px)`;
     const top = localGroundY.value;
     return { top, left };
@@ -295,16 +331,21 @@ export function useBattleCombatantState(
     const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
     const entitySize = props.baseSize * scale;
     const feetX = feetPoints.value.feetX;
-    const offsetX = (feetX - 0.5) * entitySize;
+    const offsetX = (feetX - DEFAULT_FEET_X_RATIO) * entitySize;
 
     let floatOffset = 0;
     if (isFloating.value) {
       const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690;
-      floatOffset = isMobile ? 18 : 40;
+      floatOffset = isMobile ? COMBATANT_FAINT_Y_OFFSET / 3 : DEFAULT_AVATAR_SIZE_PX;
     }
 
-    return `calc(50% + ${offsetX}px) calc(${localGroundY.value} - ${floatOffset}px)`;
+const FEET_ORIGIN_CENTER_X_PERCENT = 50;
+
+    return `calc(${FEET_ORIGIN_CENTER_X_PERCENT}% + ${offsetX}px) calc(${localGroundY.value} - ${floatOffset}px)`;
   };
+
+const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
+const BALL_TARGET_X_CENTER_OFFSET = 0.5;
 
   const getBallTargetCoords = () => {
     const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
@@ -313,15 +354,15 @@ export function useBattleCombatantState(
     let floatOffset = 0;
     if (isFloating.value) {
       const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690;
-      floatOffset = isMobile ? 18 : 40;
+      floatOffset = isMobile ? COMBATANT_FAINT_Y_OFFSET / 3 : DEFAULT_AVATAR_SIZE_PX;
     }
 
-    const ballHeight = 40 * scale;
+    const ballHeight = DEFAULT_AVATAR_SIZE_PX * scale;
     const groundPct = parseFloat(localGroundY.value) / 100;
     const groundOffsetFromBottom = containerHeight * (groundPct - 1);
 
-    const targetX = (feetPoints.value.feetX - 0.5) * (props.baseSize * scale);
-    const targetY = groundOffsetFromBottom - ballHeight * 0.35 + floatOffset;
+    const targetX = (feetPoints.value.feetX - BALL_TARGET_X_CENTER_OFFSET) * (props.baseSize * scale);
+    const targetY = groundOffsetFromBottom - ballHeight * BALL_TARGET_Y_OFFSET_RATIO + floatOffset;
 
     return { x: targetX, y: targetY };
   };
@@ -365,13 +406,16 @@ export function useBattleCombatantState(
   const runEscapeAnimation = (type: 'teleport' | 'flee') => {
     if (!spriteRef.value) return;
 
+const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
+const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
+
     if (type === 'teleport') {
       gameBus.emit('PLAY_SOUND', 'flee');
 
       const tl = gsap.timeline();
       const tween = tl.to(spriteRef.value, {
-        scaleY: 2.0,
-        scaleX: 0.1,
+        scaleY: GSAP_TELEPORT_SCALEY_TARGET,
+        scaleX: GSAP_TELEPORT_SCALEX_TARGET,
         opacity: 0,
         filter: 'brightness(3) contrast(1.5)',
         duration: 0.4,
@@ -387,19 +431,19 @@ export function useBattleCombatantState(
     } else {
       gameBus.emit('PLAY_SOUND', 'flee');
 
-      const count = 15;
+      const count = SMOKE_PARTICLE_BURST_COUNT;
       const list: SmokeParticle[] = [];
       for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 1.5 + Math.random() * 3;
+        const speed = SMOKE_BASE_SPEED + Math.random() * SMOKE_SPEED_VARIANCE;
         list.push({
           id: `smoke-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
           x: 0,
-          y: -10,
+          y: SMOKE_INITIAL_Y_OFFSET_PX,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 1.5,
-          scale: 1.0 + Math.random() * 1.5,
-          opacity: 0.9,
+          vy: Math.sin(angle) * speed - SMOKE_VY_UPWARD_BIAS,
+          scale: SMOKE_BASE_SCALE + Math.random() * SMOKE_SCALE_VARIANCE,
+          opacity: SMOKE_INITIAL_OPACITY,
         });
       }
       smokeParticles.value = list;
@@ -409,8 +453,8 @@ export function useBattleCombatantState(
         smokeParticles.value.forEach((p) => {
           p.x += p.vx;
           p.y += p.vy;
-          p.opacity -= 0.03;
-          p.scale += 0.02;
+          p.opacity -= SMOKE_PARTICLE_FADE_RATE;
+          p.scale += SMOKE_PARTICLE_EXPANSION_RATE;
           if (p.opacity > 0) active = true;
         });
 
@@ -423,10 +467,10 @@ export function useBattleCombatantState(
       requestAnimationFrame(updateTicker);
 
       const tween = gsap.to(spriteRef.value, {
-        x: 400,
+        x: FLEE_SLIDE_DISTANCE_PX,
         opacity: 0,
         scale: 0.7,
-        duration: 0.45,
+        duration: FLEE_SLIDE_DURATION_SEC,
         ease: 'power2.in',
         onComplete: () => {
           if (spriteRef.value) {

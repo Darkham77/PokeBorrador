@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -21,6 +22,20 @@ const props = withDefaults(defineProps<Props>(), {
   isDraggingAny: false,
   isTouchOver: false
 })
+
+const TOUCH_LONG_PRESS_DELAY_SEC = 0.35
+const TOUCH_MOVE_CANCEL_THRESHOLD_PX = 15
+const TOUCH_VIBRATE_DURATION_MS = 50
+const SLOT_HOVER_LIFT_Y_PX = -4;
+const SLOT_HOVER_SCALE_ACTIVE = 1.02;
+const SLOT_HOVER_DURATION_FAST_SEC = 0.3;
+const SLOT_HOVER_ICON_SCALE = 1.2;
+const SLOT_HOVER_ICON_ROTATION_DEG = 90;
+const SLOT_HOVER_DURATION_SLOW_SEC = 0.4;
+const DRAG_OVERLAY_BORDER_ACTIVE_PX = 3;
+const DRAG_OVERLAY_BORDER_IDLE_PX = 2;
+const DRAG_OVERLAY_NUM_SCALE = 1.2;
+const DRAG_OVERLAY_DURATION_SEC = 0.2;
 
 const emit = defineEmits<{
   select: [index: number]
@@ -47,7 +62,7 @@ const touchDragStyle = computed(() => {
   if (!isTouchDragging.value) return {}
   return {
     transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
-    zIndex: 9999,
+    zIndex: Z_LAYERS.OVERLAY,
     pointerEvents: 'none' as const,
     position: 'relative' as const
   }
@@ -99,11 +114,13 @@ function handleTouchStart(e: TouchEvent) {
     el.addEventListener('touchcancel', handleTouchEndNonPassive)
   }
   
-  touchTimer.value = gsap.delayedCall(0.35, () => {
+const TOUCH_VIBRATE_DURATION_MS = 50
+
+  touchTimer.value = gsap.delayedCall(TOUCH_LONG_PRESS_DELAY_SEC, () => {
     isTouchDragging.value = true
     if (el) el.style.touchAction = 'none'
     emit('drag-start', props.index)
-    if ('vibrate' in navigator) navigator.vibrate(50)
+    if ('vibrate' in navigator) navigator.vibrate(TOUCH_VIBRATE_DURATION_MS)
   }) // Long press threshold
 }
 
@@ -155,7 +172,7 @@ function handleTouchMove(e: TouchEvent) {
   } else {
     const deltaX = Math.abs(touch.clientX - touchStartX.value)
     const deltaY = Math.abs(touch.clientY - touchStartY.value)
-    if (deltaX > 15 || deltaY > 15) {
+    if (deltaX > TOUCH_MOVE_CANCEL_THRESHOLD_PX || deltaY > TOUCH_MOVE_CANCEL_THRESHOLD_PX) {
       if (touchTimer.value) touchTimer.value.kill()
     }
   }
@@ -211,23 +228,23 @@ function handlePlaceholderEnter(e: MouseEvent) {
   const shadowColor = isPvpSlot.value ? 'Rgba(199, 125, 255, 0.2)' : 'Rgba(10, 132, 255, 0.2)'
   
   gsap.to(el, {
-    y: -4,
-    scale: 1.02,
+    y: SLOT_HOVER_LIFT_Y_PX,
+    scale: SLOT_HOVER_SCALE_ACTIVE,
     borderColor: accentColor,
     boxShadow: `0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px ${shadowColor}`,
     backgroundColor: 'Rgba(255, 255, 255, 0.04)',
-    duration: 0.3,
+    duration: SLOT_HOVER_DURATION_FAST_SEC,
     ease: 'power2.out'
   })
 
   const plus = el.querySelector('.plus-icon')
   if (plus) {
     gsap.to(plus, {
-      scale: 1.2,
-      rotation: 90,
+      scale: SLOT_HOVER_ICON_SCALE,
+      rotation: SLOT_HOVER_ICON_ROTATION_DEG,
       filter: `Drop-Shadow(0 0 15px ${accentColor})`,
       color: 'var(--white)',
-      duration: 0.4,
+      duration: SLOT_HOVER_DURATION_SLOW_SEC,
       ease: 'back.out(1.7)'
     })
   }
@@ -236,7 +253,7 @@ function handlePlaceholderEnter(e: MouseEvent) {
   if (label) {
     gsap.to(label, {
       color: accentColor,
-      duration: 0.3,
+      duration: SLOT_HOVER_DURATION_FAST_SEC,
       ease: 'power2.out'
     })
   }
@@ -254,7 +271,7 @@ function handlePlaceholderLeave(e: MouseEvent) {
     borderColor: baseBorderColor,
     boxShadow: 'none',
     backgroundColor: 'Rgba(255, 255, 255, 0.02)',
-    duration: 0.3,
+    duration: SLOT_HOVER_DURATION_FAST_SEC,
     ease: 'power2.out'
   })
 
@@ -265,7 +282,7 @@ function handlePlaceholderLeave(e: MouseEvent) {
       rotation: 0,
       filter: 'none',
       color: 'Rgba(255, 255, 255, 0.3)',
-      duration: 0.4,
+      duration: SLOT_HOVER_DURATION_SLOW_SEC,
       ease: 'power2.out'
     })
   }
@@ -274,7 +291,7 @@ function handlePlaceholderLeave(e: MouseEvent) {
   if (label) {
     gsap.to(label, {
       color: 'var(--gray)',
-      duration: 0.3,
+      duration: SLOT_HOVER_DURATION_FAST_SEC,
       ease: 'power2.out'
     })
   }
@@ -292,29 +309,29 @@ watch(isOver, (newVal) => {
   if (newVal) {
     gsap.to(overlay, {
       backgroundColor: 'Rgba(10, 132, 255, 0.15)',
-      borderWidth: 3,
+      borderWidth: DRAG_OVERLAY_BORDER_ACTIVE_PX,
       borderStyle: 'solid',
-      duration: 0.2,
+      duration: DRAG_OVERLAY_DURATION_SEC,
       ease: 'power2.out'
     })
     gsap.to(num, {
       opacity: 1,
-      scale: 1.2,
-      duration: 0.2,
+      scale: DRAG_OVERLAY_NUM_SCALE,
+      duration: DRAG_OVERLAY_DURATION_SEC,
       ease: 'back.out(1.5)'
     })
   } else {
     gsap.to(overlay, {
       backgroundColor: 'Rgba(0, 0, 0, 0.85)',
-      borderWidth: 2,
+      borderWidth: DRAG_OVERLAY_BORDER_IDLE_PX,
       borderStyle: 'dashed',
-      duration: 0.2,
+      duration: DRAG_OVERLAY_DURATION_SEC,
       ease: 'power2.out'
     })
     gsap.to(num, {
       opacity: 0.8,
       scale: 1,
-      duration: 0.2,
+      duration: DRAG_OVERLAY_DURATION_SEC,
       ease: 'power2.out'
     })
   }

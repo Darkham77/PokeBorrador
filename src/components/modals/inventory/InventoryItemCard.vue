@@ -93,13 +93,15 @@ const getBaseColors = () => {
   return { baseBorderColor, baseBoxShadow, baseGlow }
 }
 
+const CARD_SCALE_SELECTED = 0.98
+
 watch(() => props.isSelected, (newVal) => {
   if (!cardRef.value) return
   const checkBox = cardRef.value.querySelector('.check-box')
   
   if (newVal) {
     gsap.to(cardRef.value, {
-      scale: 0.98,
+      scale: CARD_SCALE_SELECTED,
       y: 0,
       borderColor: 'var(--blue)',
       boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)',
@@ -150,7 +152,7 @@ onMounted(() => {
     
     if (props.isSelected) {
       gsap.set(cardRef.value, {
-        scale: 0.98,
+        scale: CARD_SCALE_SELECTED,
         borderColor: 'var(--blue)',
         boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px rgba(10, 132, 255, 0.4)'
       })

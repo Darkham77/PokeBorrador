@@ -95,23 +95,32 @@ const STAT_COLORS: Record<string, string> = {
   TOTAL: '#fbbf24'
 }
 
+const MAX_INDIVIDUAL_IV_STAT = 31
+const MAX_POKEMON_BASE_STAT_TOTAL = 1000
+const PERCENTAGE_SCALE_FACTOR = 100;
+
 const getSliderStyle = (val: number, max: number, color: string) => {
-  const percentage = (val / max) * 100
+  const percentage = (val / max) * PERCENTAGE_SCALE_FACTOR
   return {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
   }
 }
+
+const PERFECT_IV_LABEL_TEXT = '31'
 
 const AVAILABLE_TAGS = [
   { id: 'fav', label: 'FAV', icon: '⭐' },
   { id: 'breed', label: 'GEN', icon: '🧬' },
   { id: 'comp', label: 'COMP', icon: '🏆' },
   { id: 'trade', label: 'TRADE', icon: '🔄' },
-  { id: 'iv31', label: 'IV', icon: '31' },
+  { id: 'iv31', label: 'IV', icon: PERFECT_IV_LABEL_TEXT },
   { id: 'shy', label: 'SHY', icon: '✨' },
   { id: 'team', label: 'TEAM', icon: '👥' },
   { id: 'hatched', label: 'CRÍA', icon: '🥚' }
 ]
+
+const BOX_FILTERS_ENTER_DURATION_SEC = 0.35
+const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25
 
 const beforeEnter = (el: Element) => {
   gsap.set(el, { 
@@ -127,7 +136,7 @@ const enter = (el: Element, done: () => void) => {
     { 
       height: 'auto', 
       opacity: 1, 
-      duration: 0.35, 
+      duration: BOX_FILTERS_ENTER_DURATION_SEC, 
       ease: 'power2.out',
       onComplete: () => {
         gsap.set(el, { clearProps: 'height,overflow' })
@@ -141,7 +150,7 @@ const leave = (el: Element, done: () => void) => {
   gsap.to(el, { 
     height: 0, 
     opacity: 0, 
-    duration: 0.25, 
+    duration: BOX_FILTERS_LEAVE_DURATION_SEC, 
     ease: 'power2.in',
     onComplete: done 
   })
@@ -386,8 +395,8 @@ const leave = (el: Element, done: () => void) => {
                     :value="filters.ivMin"
                     type="range"
                     min="0"
-                    max="31"
-                    :style="[getSliderStyle(filters.ivMin, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
+                    :max="MAX_INDIVIDUAL_IV_STAT"
+                    :style="[getSliderStyle(filters.ivMin, MAX_INDIVIDUAL_IV_STAT, '#4ade80'), { '--stat-color': '#4ade80' }]"
                     @input="onRangeInput('ivMin', $event)"
                   >
                   <span class="val">{{ filters.ivMin }}</span>
@@ -398,8 +407,8 @@ const leave = (el: Element, done: () => void) => {
                     :value="filters.ivMax"
                     type="range"
                     min="0"
-                    max="31"
-                    :style="[getSliderStyle(filters.ivMax, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
+                    :max="MAX_INDIVIDUAL_IV_STAT"
+                    :style="[getSliderStyle(filters.ivMax, MAX_INDIVIDUAL_IV_STAT, '#4ade80'), { '--stat-color': '#4ade80' }]"
                     @input="onRangeInput('ivMax', $event)"
                   >
                   <span class="val">{{ filters.ivMax }}</span>
@@ -410,9 +419,9 @@ const leave = (el: Element, done: () => void) => {
                     :value="filters.bstMin"
                     type="range"
                     min="0"
-                    max="1000"
+                    :max="MAX_POKEMON_BASE_STAT_TOTAL"
                     step="10"
-                    :style="[getSliderStyle(filters.bstMin, 1000, '#fbbf24'), { '--stat-color': '#fbbf24' }]"
+                    :style="[getSliderStyle(filters.bstMin, MAX_POKEMON_BASE_STAT_TOTAL, '#fbbf24'), { '--stat-color': '#fbbf24' }]"
                     @input="onRangeInput('bstMin', $event)"
                   >
                   <span class="val">{{ filters.bstMin }}</span>
@@ -438,8 +447,8 @@ const leave = (el: Element, done: () => void) => {
                     :value="filters[('iv' + stat) as keyof BoxFilters]"
                     type="range"
                     min="0"
-                    max="31"
-                    :style="[getSliderStyle(filters[('iv' + stat) as keyof BoxFilters] as number, 31, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
+                    :max="MAX_INDIVIDUAL_IV_STAT"
+                    :style="[getSliderStyle(filters[('iv' + stat) as keyof BoxFilters] as number, MAX_INDIVIDUAL_IV_STAT, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
                     @input="onRangeInput(('iv' + stat) as keyof BoxFilters, $event)"
                   >
                   <span

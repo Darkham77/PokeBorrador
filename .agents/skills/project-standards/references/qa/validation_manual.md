@@ -47,6 +47,34 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 - **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters).
 - **Full Chain**: `npm run audit:full`. Runs the complete verification chain (Lint + Audit + FSM + Items + Abilities + Moves + SQL).
 
+### 🎛️ Audit CLI Flags (pass after `--`)
+
+The audit engine accepts extra flags via `npm run audit -- [flags]`:
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--rule="<name>"` | | Filter results to a single rule by name (partial match, case-insensitive). Useful for focusing on one category of violations, e.g. `--rule="mágico"` to see only magic-number errors. |
+| `--summary` | | Print a structured summary (rule counts + top-N offending files) instead of the full per-violation listing. Always prefer this flag to avoid terminal floods. |
+| `--errors-only` | | Suppress warnings; print only hard errors. Combine with `--summary` for a minimal signal-to-noise output. |
+| `--json` | `-j` | Output the summary (or full listing when `--summary` is omitted) as machine-readable JSON. Pipe into scripts or APIs for automated processing. |
+| `--top=N` | `-t N` | Control how many files appear in the "top offenders" table. Defaults to 15. Use `--top=30` or `--top=50` for broader sweeps. |
+
+**Common recipes:**
+
+```bash
+# Quick health-check: rule-filtered summary with top 30 offenders
+npm run audit -- --rule="mágico" --summary --top=30
+
+# Machine-readable JSON report for a specific rule (pipe to jq, scripts, etc.)
+npm run audit -- --rule="mágico" --summary --json | jq '.topFiles'
+
+# Errors-only sweep before committing (fast, no noise)
+npm run audit -- --errors-only --summary
+
+# Full top-50 offenders for broad refactoring planning
+npm run audit -- --summary --top=50
+```
+
 ---
 
 ## 🚨 Non-Negotiable Quality Rules
@@ -103,9 +131,9 @@ Use these scripts to verify project standards, manage servers, and run audits:
 - `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.
 - `npm run validate:sandbox:summary`: Runs sandbox validation in summary mode.
 - `npm run validate:sandbox:report`: Runs sandbox validation and saves detailed output to `sandbox_report.txt`.
-- `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters).
+- `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters). Accepts extra flags after `--` (see 🎛️ Audit CLI Flags section above).
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
-- `npm run audit:summary`: Runs project audit in summary mode.
+- `npm run audit:summary`: Runs project audit in summary mode (equivalent to `npm run audit -- --summary`).
 - `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
 - `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
 - `npm run lint`: Style and syntax verification (includes type-check).

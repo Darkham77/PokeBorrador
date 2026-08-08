@@ -4,6 +4,27 @@ import type { ItemEffectResult } from '@/types/inventory/items';
 import type { GameState } from '@/types/system/game';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getItemById, requireItemId, type ItemId } from '../../data/inventory/items.ts';
+import {
+  POTION_HEAL_HP,
+  SUPER_POTION_HEAL_HP,
+  HYPER_POTION_HEAL_HP,
+  FRESHWATER_HEAL_HP,
+  SODAPOP_HEAL_HP,
+  LEMONADE_HEAL_HP,
+  REVIVE_HALF_DIVISOR,
+  ETHER_PP_RESTORE,
+  MAX_PP_RESTORE_CAP,
+  BUFF_DURATION_5_MIN_SEC,
+  BUFF_DURATION_15_MIN_SEC,
+  BUFF_DURATION_20_MIN_SEC,
+  BUFF_DURATION_30_MIN_SEC,
+  BUFF_DURATION_40_MIN_SEC,
+  BUFF_DURATION_60_MIN_SEC,
+  MIN_VIGOR_VAL,
+  SINGLE_VIGOR_RESTORE,
+  SINGLE_LEVEL_GAIN
+} from '@/logic/constants/items';
+import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
 
 import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from './itemMath.ts';
 
@@ -66,7 +87,7 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     return pokemon.level < MAX_POKEMON_LEVEL;
   }
   if (resolvedId === 'vigorcandy' || resolvedId === 'vigorrestorer') {
-    return Number(pokemon.vigor || 0) < 10;
+    return Number(pokemon.vigor || 0) < DEFAULT_MAX_VIGOR;
   }
 
   // 8. Objetos Diferidos (Menús / Selección)
@@ -88,11 +109,11 @@ const stateEffect = (fn: (s: GameState) => ItemEffectResult) => (p: unknown) => 
 
 export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { // open-record
   // --- Healing & Status ---
-  'potion': pokeEffect((p) => healHp(p, 20)),
-  'superpotion': pokeEffect((p) => healHp(p, 50)),
-  'hyperpotion': pokeEffect((p) => healHp(p, 200)),
+  'potion': pokeEffect((p) => healHp(p, POTION_HEAL_HP)),
+  'superpotion': pokeEffect((p) => healHp(p, SUPER_POTION_HEAL_HP)),
+  'hyperpotion': pokeEffect((p) => healHp(p, HYPER_POTION_HEAL_HP)),
   'maxpotion': pokeEffect((p) => healHp(p, p.maxHp)),
-  'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / 2))),
+  'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / REVIVE_HALF_DIVISOR))),
   'revivemax': pokeEffect((p) => revive(p, p.maxHp)),
   'antidote': pokeEffect((p) => clearStatus(p, 'psn')),
   'burnheal': pokeEffect((p) => clearStatus(p, 'brn')),
@@ -100,9 +121,9 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'awakening': pokeEffect((p) => clearStatus(p, 'slp')),
   'iceheal': pokeEffect((p) => clearStatus(p, 'frz')),
   'fullheal': pokeEffect((p) => curaTotal(p)),
-  'sodapop': pokeEffect((p) => healHp(p, 60)),
-  'freshwater': pokeEffect((p) => healHp(p, 30)),
-  'lemonade': pokeEffect((p) => healHp(p, 80)),
+  'sodapop': pokeEffect((p) => healHp(p, SODAPOP_HEAL_HP)),
+  'freshwater': pokeEffect((p) => healHp(p, FRESHWATER_HEAL_HP)),
+  'lemonade': pokeEffect((p) => healHp(p, LEMONADE_HEAL_HP)),
 
   // --- Evolutions ---
   'firestone': pokeEffect((p) => handleStone(p, 'firestone')),
@@ -125,26 +146,26 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'deepseatooth': pokeEffect((p) => handleStone(p, 'deepseatooth')),
 
   // --- PP & Stats ---
-  'ether': pokeEffect((p) => restorePP(p, 10)),
-  'elixir': pokeEffect((p) => restorePP(p, 10)),
-  'elixirmax': pokeEffect((p) => restorePP(p, 999)),
+  'ether': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)),
+  'elixir': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)),
+  'elixirmax': pokeEffect((p) => restorePP(p, MAX_PP_RESTORE_CAP)),
   
   // --- Buffs / Special ---
   'rarecandy': pokeEffect((p) => {
     if (p.level >= MAX_POKEMON_LEVEL) return { success: false, message: 'Ya tiene el nivel máximo.' };
     p.exp = p.expNeeded;
-    return { success: true, message: `subió al nivel ${p.level + 1}`, resultType: 'levelup' };
+    return { success: true, message: `subió al nivel ${p.level + SINGLE_LEVEL_GAIN}`, resultType: 'levelup' };
   }),
   'vigorcandy': pokeEffect((p) => {
-    const maxVigor = 10;
-    const currentVigor = Number(p.vigor || 0);
+    const maxVigor = DEFAULT_MAX_VIGOR;
+    const currentVigor = Number(p.vigor || MIN_VIGOR_VAL);
     if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
-    p.vigor = currentVigor + 1;
-    return { success: true, message: `recuperó 1 de vigor (${p.vigor}/${maxVigor})` };
+    p.vigor = currentVigor + SINGLE_VIGOR_RESTORE;
+    return { success: true, message: `recuperó ${SINGLE_VIGOR_RESTORE} de vigor (${p.vigor}/${maxVigor})` };
   }),
   'vigorrestorer': pokeEffect((p) => {
-    const maxVigor = 10;
-    const currentVigor = Number(p.vigor || 0);
+    const maxVigor = DEFAULT_MAX_VIGOR;
+    const currentVigor = Number(p.vigor || MIN_VIGOR_VAL);
     if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
     p.vigor = maxVigor;
     return { success: true, message: `recuperó todo su vigor (${p.vigor}/${maxVigor})` };
@@ -174,32 +195,32 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   }),
 
   // --- Buffs Globales ---
-  'fishingrod': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 20 * 60, 'standard'); return { success: true, message: `activó una Caña de pescar (20 min)` }; }),
-  'fishingrodgood': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 40 * 60, 'good'); return { success: true, message: `activó una Caña Buena (40 min)` }; }),
-  'fishingrodsuper': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 60 * 60, 'super'); return { success: true, message: `activó la Supercaña (60 min)` }; }),
-  'pickaxe': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 20 * 60, 'standard'); return { success: true, message: `activó un Pico de excavación (20 min)` }; }),
-  'pickaxesilver': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 40 * 60, 'good'); return { success: true, message: `activó un Pico Bueno (40 min)` }; }),
-  'pickaxegold': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 60 * 60, 'super'); return { success: true, message: `activó el Superpico (60 min)` }; }),
-  'brush': stateEffect((_state) => { useBuffsStore().addBuff('brush', 20 * 60, 'standard'); return { success: true, message: `activó un Pincel de excavación (20 min)` }; }),
-  'brushgood': stateEffect((_state) => { useBuffsStore().addBuff('brush', 40 * 60, 'good'); return { success: true, message: `activó un Pincel Bueno (40 min)` }; }),
-  'brushsuper': stateEffect((_state) => { useBuffsStore().addBuff('brush', 60 * 60, 'super'); return { success: true, message: `activó el Superpincel (60 min)` }; }),
-  'repel': stateEffect((_state) => { useBuffsStore().addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; }),
-  'superrepel': stateEffect((_state) => { useBuffsStore().addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; }),
-  'maxrepel': stateEffect((_state) => { useBuffsStore().addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; }),
-  'ticketshiny': stateEffect((_state) => { useBuffsStore().addBuff('shiny', 60 * 60); return { success: true, message: `activó el Ticket Shiny (60 min)` }; }),
-  'amuletcoin': stateEffect((_state) => { useBuffsStore().addBuff('amulet', 60 * 60); return { success: true, message: `activó la Moneda Amuleto (60 min)` }; }),
-  'luckyegg': stateEffect((_state) => { useBuffsStore().addBuff('lucky-egg', 30 * 60); return { success: true, message: `activó un Huevo Suerte (30 min)` }; }),
-  'ticketsafari': stateEffect((_state) => { useBuffsStore().addBuff('safari', 30 * 60); return { success: true, message: `activó el Ticket Safari (30 min)` }; }),
-  'ticketcerulean': stateEffect((_state) => { useBuffsStore().addBuff('cerulean', 30 * 60); return { success: true, message: `activó el Ticket Cueva Celeste (30 min)` }; }),
-  'ticketarticuno': stateEffect((_state) => { useBuffsStore().addBuff('articuno', 30 * 60); return { success: true, message: `activó el Ticket Articuno (30 min)` }; }),
-  'ticketmewtwo': stateEffect((_state) => { useBuffsStore().addBuff('mewtwo', 30 * 60); return { success: true, message: `activó el Ticket Mewtwo (30 min)` }; }),
-  'ivscanner': stateEffect((_state) => { useBuffsStore().addBuff('iv-scanner', 60 * 60); return { success: true, message: `activó el Escáner de IVs (60 min)` }; }),
-  'incensefire': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'fire'); return { success: true, message: `activó el Incienso Fuego (30 min)` }; }),
-  'incensewater': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'water'); return { success: true, message: `activó el Incienso Agua (30 min)` }; }),
-  'incensegrass': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; }),
-  'incensenormal': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; }),
-  'incenseghost': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; }),
-  'incensepsychic': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; })
+  'fishingrod': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_20_MIN_SEC, 'standard'); return { success: true, message: `activó una Caña de pescar (20 min)` }; }), // magic-ok
+  'fishingrodgood': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_40_MIN_SEC, 'good'); return { success: true, message: `activó una Caña Buena (40 min)` }; }), // magic-ok
+  'fishingrodsuper': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_60_MIN_SEC, 'super'); return { success: true, message: `activó la Supercaña (60 min)` }; }), // magic-ok
+  'pickaxe': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', BUFF_DURATION_20_MIN_SEC, 'standard'); return { success: true, message: `activó un Pico de excavación (20 min)` }; }), // magic-ok
+  'pickaxesilver': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', BUFF_DURATION_40_MIN_SEC, 'good'); return { success: true, message: `activó un Pico Bueno (40 min)` }; }), // magic-ok
+  'pickaxegold': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', BUFF_DURATION_60_MIN_SEC, 'super'); return { success: true, message: `activó el Superpico (60 min)` }; }), // magic-ok
+  'brush': stateEffect((_state) => { useBuffsStore().addBuff('brush', BUFF_DURATION_20_MIN_SEC, 'standard'); return { success: true, message: `activó un Pincel de excavación (20 min)` }; }), // magic-ok
+  'brushgood': stateEffect((_state) => { useBuffsStore().addBuff('brush', BUFF_DURATION_40_MIN_SEC, 'good'); return { success: true, message: `activó un Pincel Bueno (40 min)` }; }), // magic-ok
+  'brushsuper': stateEffect((_state) => { useBuffsStore().addBuff('brush', BUFF_DURATION_60_MIN_SEC, 'super'); return { success: true, message: `activó el Superpincel (60 min)` }; }), // magic-ok
+  'repel': stateEffect((_state) => { useBuffsStore().addBuff('repel', BUFF_DURATION_5_MIN_SEC); return { success: true, message: `activó un Repelente (5 min)` }; }), // magic-ok
+  'superrepel': stateEffect((_state) => { useBuffsStore().addBuff('repel', BUFF_DURATION_15_MIN_SEC); return { success: true, message: `activó un Superrepelente (15 min)` }; }), // magic-ok
+  'maxrepel': stateEffect((_state) => { useBuffsStore().addBuff('repel', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó un Máximo Repelente (30 min)` }; }), // magic-ok
+  'ticketshiny': stateEffect((_state) => { useBuffsStore().addBuff('shiny', BUFF_DURATION_60_MIN_SEC); return { success: true, message: `activó el Ticket Shiny (60 min)` }; }), // magic-ok
+  'amuletcoin': stateEffect((_state) => { useBuffsStore().addBuff('amulet', BUFF_DURATION_60_MIN_SEC); return { success: true, message: `activó la Moneda Amuleto (60 min)` }; }), // magic-ok
+  'luckyegg': stateEffect((_state) => { useBuffsStore().addBuff('lucky-egg', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó un Huevo Suerte (30 min)` }; }), // magic-ok
+  'ticketsafari': stateEffect((_state) => { useBuffsStore().addBuff('safari', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó el Ticket Safari (30 min)` }; }), // magic-ok
+  'ticketcerulean': stateEffect((_state) => { useBuffsStore().addBuff('cerulean', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó el Ticket Cueva Celeste (30 min)` }; }), // magic-ok
+  'ticketarticuno': stateEffect((_state) => { useBuffsStore().addBuff('articuno', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó el Ticket Articuno (30 min)` }; }), // magic-ok
+  'ticketmewtwo': stateEffect((_state) => { useBuffsStore().addBuff('mewtwo', BUFF_DURATION_30_MIN_SEC); return { success: true, message: `activó el Ticket Mewtwo (30 min)` }; }), // magic-ok
+  'ivscanner': stateEffect((_state) => { useBuffsStore().addBuff('iv-scanner', BUFF_DURATION_60_MIN_SEC); return { success: true, message: `activó el Escáner de IVs (60 min)` }; }), // magic-ok
+  'incensefire': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'fire'); return { success: true, message: `activó el Incienso Fuego (30 min)` }; }), // magic-ok
+  'incensewater': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'water'); return { success: true, message: `activó el Incienso Agua (30 min)` }; }), // magic-ok
+  'incensegrass': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; }), // magic-ok
+  'incensenormal': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; }), // magic-ok
+  'incenseghost': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; }), // magic-ok
+  'incensepsychic': stateEffect((_state) => { useBuffsStore().addBuff('incense', BUFF_DURATION_30_MIN_SEC, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; }), // magic-ok
 };
 
 import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from './itemEffectHandlers.ts';

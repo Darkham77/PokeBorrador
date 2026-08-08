@@ -18,6 +18,8 @@ import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
 
+const ESLINT_STDIN_MAX_BUFFER_BYTES = 50 * 1024 * 1024;
+
 export interface Violation {
   file: string;
   line: number;
@@ -125,9 +127,11 @@ async function getModifiedFiles(): Promise<Set<string>> {
       if (trimmed) files.add(trimmed);
     });
 
+const GIT_STATUS_PREFIX_OFFSET = 3;
+
     statusOutput.split('\n').forEach(line => {
-      if (line.length > 3) {
-        const file = line.substring(3).trim();
+      if (line.length > GIT_STATUS_PREFIX_OFFSET) {
+        const file = line.substring(GIT_STATUS_PREFIX_OFFSET).trim();
         // Evitar archivos borrados
         if (line[0] !== 'D' && line[1] !== 'D') {
           files.add(file);
@@ -194,7 +198,7 @@ async function runOriginEslint(filePath: string, content: string): Promise<Viola
     const eslintProc = spawnSync('npx', ['eslint', '--stdin', '--stdin-filename', filePath, '--format', 'json'], {
       input: content,
       encoding: 'utf-8',
-      maxBuffer: 50 * 1024 * 1024
+      maxBuffer: ESLINT_STDIN_MAX_BUFFER_BYTES
     });
     const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
     if (!output) return [];

@@ -1,10 +1,13 @@
-
 import { Dex } from '@pkmn/sim'
 import { EGG_GROUPS, BABY_MAP, BREEDING_CONSTANTS } from './breedingData.ts'
 import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon/pokemon'
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { BASE_SHINY_DENOMINATOR } from '@/logic/constants/gameplay.ts'
+
+const BREEDING_IV_MAX_RANGE = 32
+const HIDDEN_ABILITY_HERITAGE_PCT = 60
 
 /**
  * breedingEngine.ts
@@ -93,8 +96,8 @@ export function checkCompatibility(pA: Pokemon, pB: Pokemon): BreedingCompatibil
 export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string, playerClass: string = ''): PokemonIVs {
   const STATS: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
   const ivs: PokemonIVs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  STATS.forEach(s => ivs[s] = Math.floor(Math.random() * 32))
-  
+  STATS.forEach(s => ivs[s] = Math.floor(Math.random() * BREEDING_IV_MAX_RANGE))
+
   const powerMap: Record<string, keyof PokemonIVs> = {
     power_weight: 'hp',
     powerweight: 'hp',
@@ -195,7 +198,7 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
  * Calcula la probabilidad de Shiny considerando el Método Masuda y eventos.
  * standardRate suele ser 1/8192 o 1/4096.
  */
-export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: number = 1/4096, eventShinyMult: number = 1): number {
+export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: number = (1 / BASE_SHINY_DENOMINATOR), eventShinyMult: number = 1): number {
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id // Simplificación Método Masuda
   const masudaBonus = isForeign ? (BREEDING_CONSTANTS.MASUDA_MULTIPLIER - 1) : 0
   const eventBonus = eventShinyMult - 1
@@ -253,6 +256,6 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
     masudaActive: isForeign,
     eggMovesCount: eggMovesDetected.length,
     shinyMultiplier: isForeign ? BREEDING_CONSTANTS.MASUDA_MULTIPLIER : 1,
-    hiddenAbilityChance: 60 // Porcentaje fijo
+    hiddenAbilityChance: HIDDEN_ABILITY_HERITAGE_PCT
   }
 }

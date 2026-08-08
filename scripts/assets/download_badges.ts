@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/download_badges.ts
  * 
@@ -10,15 +9,20 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
+import { safeResolve, safeWriteFile, safeFetch } from '../lib/safePath.ts';
+
 enableCompileCache();
+
+const FAILURE_EXIT_CODE = 1;
+const USER_AGENT_CHROME_VERSION = '120.0.0.0';
 
 // Permissions check (Node.js 26+)
 if (process.permission && !process.permission.has('fs.read', process.cwd())) {
   console.error(styleText('red', '\n❌ Error: Requirements read permissions. Run with --permission --allow-fs-read=.\n'));
-  process.exit(1);
+  process.exit(FAILURE_EXIT_CODE);
 }
 
-const DEST_DIR = path.resolve(process.cwd(), '_raw-assets', 'public', 'assets', 'sprites', 'badges');
+const DEST_DIR = safeResolve(process.cwd(), '_raw-assets/public/assets/sprites/badges');
 
 const BADGES = [
   { id: 'pewter', name: 'Boulder_Badge.png', url: 'https://archives.bulbagarden.net/media/upload/d/dd/Boulder_Badge.png' },
@@ -31,20 +35,22 @@ const BADGES = [
   { id: 'viridian', name: 'Earth_Badge.png', url: 'https://archives.bulbagarden.net/media/upload/7/78/Earth_Badge.png' }
 ];
 
-async function downloadFile(url: string, filepath: string) {
+async function downloadFile(rawUrl: string, filepath: string) {
   try {
-    const response = await fetch(url, {
+    const safeTargetFile = safeResolve(filepath);
+
+    const response = await safeFetch(rawUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${USER_AGENT_CHROME_VERSION} Safari/537.36`, // no-magic
         'Referer': 'https://bulbapedia.bulbagarden.net/'
       }
     });
     if (!response.ok) throw new Error(`Status ${response.status}`);
     const arrayBuffer = await response.arrayBuffer();
-    await fs.writeFile(filepath, Buffer.from(arrayBuffer));
-    console.log(styleText('green', `   ✅ Downloaded ${path.basename(filepath)}`));
+    await safeWriteFile(safeTargetFile, Buffer.from(arrayBuffer));
+    console.log(styleText('green', `   ✅ Downloaded ${path.basename(safeTargetFile)}`));
   } catch (e: unknown) {
-    console.error(styleText('red', `   ❌ Error downloading ${url}: ${(e as Error).message}`));
+    console.error(styleText('red', `   ❌ Error downloading ${rawUrl}: ${(e as Error).message}`));
   }
 }
 
@@ -55,7 +61,7 @@ async function main() {
 
   const promises = BADGES.map(badge => {
     // Save as [id].png (e.g. pewter.png, cerulean.png)
-    const filepath = path.join(DEST_DIR, `${badge.id}.png`);
+    const filepath = safeResolve(DEST_DIR, `${badge.id}.png`);
     return downloadFile(badge.url, filepath);
   });
 
@@ -65,5 +71,5 @@ async function main() {
 
 main().catch(err => {
   console.error(styleText('red', `\n💥 Fatal error: ${(err as Error).message}`));
-  process.exit(1);
+  process.exit(FAILURE_EXIT_CODE);
 });

@@ -8,9 +8,9 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from '../lib/validationBase.ts';
 
-const SRC_ROOT = path.resolve(process.cwd(), 'src');
-const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
-const FSM_PATH = path.join(SRC_ROOT, 'logic/battle/battleStateMachine.ts');
+const DIAGRAM_SRC_ROOT = path.resolve(process.cwd(), 'src');
+const DIAGRAM_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const DIAGRAM_FSM_PATH = path.join(DIAGRAM_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 
 function parseMermaid(manualCode: string) {
   const states = new Set<string>();
@@ -76,13 +76,13 @@ function parseJsFsm(fsmCode: string) {
 async function main() {
   const validator = setupValidation({
     title: 'FSM DIAGRAMS VALIDATOR',
-    requiredFiles: [MANUAL_PATH, FSM_PATH]
+    requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH]
   });
 
   await validator.checkFiles();
 
-  const manualCode = await fs.readFile(MANUAL_PATH, 'utf-8');
-  const fsmCode = await fs.readFile(FSM_PATH, 'utf-8');
+  const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
+  const fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
 
   const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
   const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);

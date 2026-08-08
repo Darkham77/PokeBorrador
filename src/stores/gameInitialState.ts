@@ -1,19 +1,20 @@
 // src/stores/gameInitialState.js
 // Data-only definition: the default state shape for the game store.
+import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT } from '@/logic/constants/gameplay.ts';
 
 export const INITIAL_STATE = {
   trainer: '',
   gender: 'h',
   badges: 0,
-  balls: 10,
-  money: 3000,
+  balls: INITIAL_BALLS_COUNT,
+  money: INITIAL_MONEY,
   battleCoins: 0,
   eggs: [],
   trainerChance: 1,
   trainerLevel: 1,
   trainerExp: 0,
   trainerExpNeeded: 100,
-  inventory: { potion: 3, pokeball: 10 },
+  inventory: { potion: 3, pokeball: INITIAL_POKEBALL_COUNT },
   map: {
     currentMap: 'route1',
     region: 'kanto',
@@ -34,9 +35,9 @@ export const INITIAL_STATE = {
   nick_style: null,
   avatar_style: null,
   stats: {},
-  eloRating: 1000,
+  eloRating: DEFAULT_INITIAL_ELO,
   pvpStats: { wins: 0, losses: 0, draws: 0 },
-  rankedMaxElo: 1000,
+  rankedMaxElo: DEFAULT_INITIAL_ELO,
   rankedRewardsClaimed: [],
   activeBattle: null,
   daycare_missions: [],

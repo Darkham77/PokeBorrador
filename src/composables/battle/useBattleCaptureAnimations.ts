@@ -8,6 +8,9 @@ import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegis
 import { useGameStore } from '@/stores/game'
 import { logger } from '@/logic/utils/logger'
 
+const CATCH_SPARKLE_DURATION_SEC = 1.5
+const CATCH_CELEBRATION_DURATION_SEC = 1.5
+
 interface CatchSparkle {
   id: string;
   side: string;
@@ -94,7 +97,7 @@ export function useBattleCaptureAnimations(
     const count = 12
     
     tl.to({}, {
-      duration: 1.5,
+      duration: CATCH_SPARKLE_DURATION_SEC,
       onStart: () => {
         for (let i = 0; i < count; i++) {
           const direction = i % 2 === 0 ? -1 : 1
@@ -254,6 +257,10 @@ export function useBattleCaptureAnimations(
     slot.isAnimatingCapture = false
   }
 
+const GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC = 0.60
+const GSAP_CAPTURE_SHAKE_REST_DUR_SEC = 0.40
+const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
+
   const handleShakeRequest = (detail: string | { side?: string }): Promise<void> => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
     const seat = getSeat(side)
@@ -261,12 +268,12 @@ export function useBattleCaptureAnimations(
       seat.entry.isShaking = true 
       seat.exit.isShaking = true 
       const tl = createTimeline()
-      tl.to({}, { duration: 0.60 })
+      tl.to({}, { duration: GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC })
       tl.add(() => { 
         seat.entry.isShaking = false 
         seat.exit.isShaking = false 
       })
-      tl.to({}, { duration: 0.40 })
+      tl.to({}, { duration: GSAP_CAPTURE_SHAKE_REST_DUR_SEC })
       return awaitAnimation(tl)
     }
     return Promise.resolve()
@@ -282,7 +289,7 @@ export function useBattleCaptureAnimations(
       tl.add(() => {
         gameBus.emit('PLAY_SOUND', 'statusDamage')
       })
-      tl.to({}, { duration: 0.48 })
+      tl.to({}, { duration: GSAP_CAPTURE_BLINK_DUR_SEC })
       tl.add(() => { 
         seat.entry.isBlinking = false 
         seat.exit.isBlinking = false 
@@ -366,9 +373,11 @@ export function useBattleCaptureAnimations(
           slot.animState = null
         }
       })
+const WILD_FAINT_ANIM_DURATION_SEC = 1.3;
+
     } else {
       tl.to({}, {
-        duration: 1.3,
+        duration: WILD_FAINT_ANIM_DURATION_SEC,
         onComplete: () => {
           isFaintInProgress.value = false 
           faintedPokemonSnapshot.value = null 
@@ -387,7 +396,7 @@ export function useBattleCaptureAnimations(
     }
     const tl = createTimeline()
     tl.to({}, {
-      duration: 1.5,
+      duration: CATCH_CELEBRATION_DURATION_SEC,
       onStart: () => {
         gameBus.emit('PLAY_SOUND', 'caught')
         triggerCatchSparkles(side)

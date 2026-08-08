@@ -4,6 +4,13 @@ import gsap from 'gsap';
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
 
+const GSAP_OBSERVER_THRESHOLD_PCT = 0.05;
+const SPINNER_FULL_ROTATION_DEG = 360;
+const SCALE_DEFAULT_BASE_FACTOR = 1;
+const OPACITY_DEFAULT_FULL_LEVEL = 1;
+const DEFAULT_PULSE_SCALE_BOOST = 1.05;
+const DEFAULT_BLINK_MIN_OPACITY = 0.75;
+
 // Global IntersectionObserver to optimize CPU/GPU overhead by pausing animations when off-screen
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -17,7 +24,7 @@ const observer = new IntersectionObserver((entries) => {
       }
     }
   });
-}, { threshold: 0.05 });
+}, { threshold: GSAP_OBSERVER_THRESHOLD_PCT });
 
 /**
  * Custom Vue Directive to handle premium real-time looping GSAP animations.
@@ -103,7 +110,7 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
   switch (effect) {
     case 'spin':
       anim = gsap.to(el, {
-        rotation: 360,
+        rotation: SPINNER_FULL_ROTATION_DEG,
         duration,
         ease,
         repeat: -1,
@@ -113,8 +120,8 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
 
     case 'pulse':
       anim = gsap.fromTo(el,
-        { scale: 1 },
-        { scale: optObj.scale || 1.05, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+        { scale: SCALE_DEFAULT_BASE_FACTOR },
+        { scale: optObj.scale || DEFAULT_PULSE_SCALE_BOOST, duration, yoyo: true, repeat: -1, ease, ...extraVars }
       );
       break;
 
@@ -137,8 +144,8 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
         );
       } else {
         anim = gsap.fromTo(el,
-          { opacity: 1 },
-          { opacity: optObj.opacity !== undefined ? optObj.opacity : 0.75, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+          { opacity: OPACITY_DEFAULT_FULL_LEVEL },
+          { opacity: optObj.opacity !== undefined ? optObj.opacity : DEFAULT_BLINK_MIN_OPACITY, duration, yoyo: true, repeat: -1, ease, ...extraVars }
         );
       }
       break;

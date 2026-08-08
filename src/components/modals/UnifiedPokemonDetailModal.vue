@@ -22,6 +22,10 @@ import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 
+const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
+const NATIONAL_ID_PADDING_LENGTH = 3;
+const HEX_RGB_SUBSTRING_OFFSET = 2;
+
 interface Props {
   show?: boolean
   speciesId?: string
@@ -94,7 +98,7 @@ const tabs = computed(() => {
   return base
 })
 
-const formatRange = (val: number | [number, number] | undefined, unit: string, factor = 0.15) => {
+const formatRange = (val: number | [number, number] | undefined, unit: string, factor = DEFAULT_SPECIES_RANGE_VARIATION_FACTOR) => {
   if (!val) return '—'
   if (Array.isArray(val)) return `${val[0]}${unit} - ${val[1]}${unit}`
   const min = (val * (1 - factor)).toFixed(1)
@@ -130,11 +134,15 @@ const handleEvolve = () => {
   uiStore.toggleInventory(finalContext.value as 'team' | 'box', finalIndex.value)
 }
 
+const HEX_RGB_HEX_START_INDEX = 1
+
+const DEFAULT_WHITE_RGB_FALLBACK = '255, 255, 255'
+
 const hexToRgb = (hex: string) => {
-  if (!hex) return '255, 255, 255'
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
+  if (!hex) return DEFAULT_WHITE_RGB_FALLBACK
+  const r = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET), 16)
+  const g = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 2), 16)
+  const b = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 2, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 3), 16)
   return `${r}, ${g}, ${b}`
 }
 
@@ -198,7 +206,7 @@ const handleReorderMoves = (from: number, to: number) => {
           class="poke-identity"
           :class="{ 'has-nickname': targetPokemon?.nickname }"
         >
-          <span class="p-id">#{{ species.nationalId.padStart(3, '0') }}</span>
+          <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH_3, '0') }}</span>
           <div
             class="name-with-edit"
             style="display: flex; align-items: center; gap: 8px;"

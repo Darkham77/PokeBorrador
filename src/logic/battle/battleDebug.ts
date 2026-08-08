@@ -13,6 +13,8 @@ import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadines
 
 export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
+const DEBUG_INDEFINITE_WEATHER_TURNS = 99;
+
 interface BattleReadyDetail {
   subState: string
   p1ChoiceIdx: number
@@ -128,7 +130,15 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.forceFlee = async () => {
     logger.warn('DEBUG', 'Forzando huida del combate...')
-    ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.FLEE_ATTEMPT)
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.playerFled = true
+    }
+    const currState = ctx.fsm.currentState.value || ctx.BATTLE_STATES.ACTIVE_BATTLE
+    if (currState === ctx.BATTLE_STATES.ACTIVE_BATTLE) {
+      ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.FLEE_ATTEMPT)
+    } else {
+      ctx.fsm.transition(currState, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
+    }
     await ctx.endBattle(false, true)
   }
 
@@ -250,7 +260,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       if (active) {
         const weatherId = requireWeatherId(w)
         const visual = weatherId === 'clear' || weatherId === 'null' ? 'clear' : weatherId
-        active.weather = { type: weatherId, turns: 99, visual }
+        active.weather = { type: weatherId, turns: DEBUG_INDEFINITE_WEATHER_TURNS, visual }
         logger.info('DEBUG', `Clima/Terreno cambiado a: ${weatherId}`)
       }
     },

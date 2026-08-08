@@ -41,7 +41,9 @@ export async function syncServerTime(): Promise<void> {
     _serverTimeOffsetNanoseconds = BigInt(serverInstant.epochNanoseconds) - BigInt(localInstant.epochNanoseconds);
     _timeSynced = true;
     
-    logger.info('TIME', `Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(1000000)}ms`);
+const NANOSECONDS_PER_MILLISECOND = 1000000;
+
+    logger.info('TIME', `Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(NANOSECONDS_PER_MILLISECOND)}ms`);
   } catch (_err) {
     if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') !== 'offline') {
       logger.warn('TIME', 'Failed to sync with server, using local time.');
@@ -128,15 +130,21 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
   return seasons[seasonIndex] || (seasons[0] as Season);
 }
 
+import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
+
 // Asynchronous pause tied to the GSAP clock for deterministic logic
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => gsap.delayedCall(ms / 1000, resolve));
+  return new Promise(resolve => gsap.delayedCall(ms / MILLISECONDS_PER_SECOND, resolve));
 }
 
 /**
  * Formats a date string or number for UI display in GMT-3.
  * Handles robust parsing of SQLite/Supabase/Legacy formats.
  */
+const ISO_DATETIME_CHAR_LENGTH = 19;
+const ISO_DATE_LENGTH = 10;
+const DEFAULT_FALLBACK_DATETIME_STRING = '2026-04-01T00:00:00';
+
 export function formatDisplayDate(ts: string | number | null | undefined): string {
   if (!ts) return '---';
   try {
@@ -145,7 +153,7 @@ export function formatDisplayDate(ts: string | number | null | undefined): strin
     // Fix for SQLite datetime('now') missing 'Z' and 'T'
     if (typeof cleanTs === 'string') {
       // If it looks like YYYY-MM-DDTHH:MM:SS but lacks timezone, assume UTC (standard for our DB)
-      if (cleanTs.length === 19 && !cleanTs.includes('Z') && !cleanTs.includes('+')) {
+      if (cleanTs.length === ISO_DATETIME_CHAR_LENGTH && !cleanTs.includes('Z') && !cleanTs.includes('+')) {
         cleanTs += 'Z';
       }
     }
@@ -181,7 +189,7 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
     } else if (typeof ts === 'number') {
       instant = Temporal.Instant.fromEpochMilliseconds(ts);
     } else {
-      const normalized = ts.includes('Z') || ts.includes('+') || ts.includes('-', 10)
+      const normalized = ts.includes('Z') || ts.includes('+') || ts.includes('-', ISO_DATE_LENGTH)
         ? ts
         : ts.replace(' ', 'T') + 'Z';
       instant = Temporal.Instant.from(normalized);
@@ -200,7 +208,7 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
  */
 export function parseZonedTime(
   ts: string | number | null | undefined,
-  fallback = '2026-04-01T00:00:00'
+  fallback = DEFAULT_FALLBACK_DATETIME_STRING
 ): Temporal.ZonedDateTime {
   if (!ts) {
     return Temporal.PlainDateTime.from(fallback).toZonedDateTime(GAME_TIMEZONE);

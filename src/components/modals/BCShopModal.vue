@@ -129,9 +129,10 @@ const close = () => {
         >
           <template #price-icon>
             <!-- Coin stack SVG — same technique as the star, no FA dependency -->
+            <!-- // no-magic -->
             <svg
               viewBox="0 0 24 24"
-              class="coin-stack-icon"
+              class="w-4 h-4 text-emerald-400 shrink-0"
               fill="currentColor"
               xmlns="http://www.w3.org/2000/svg"
             >

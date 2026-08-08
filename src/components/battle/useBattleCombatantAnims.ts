@@ -4,6 +4,118 @@ import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { BattleCombatantProps } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
+import {
+  GSAP_FAST_DURATION_SEC,
+  GSAP_STANDARD_DURATION_SEC,
+  COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT,
+  COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT,
+  COMBATANT_IDLE_FLOAT_BASE_ROTATION_DEG,
+  COMBATANT_IDLE_FLOAT_VAR_ROTATION_DEG,
+  COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC,
+  COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC,
+  COMBATANT_IDLE_GROUNDED_BASE_SCALE_X,
+  COMBATANT_IDLE_GROUNDED_VAR_SCALE_X,
+  COMBATANT_IDLE_GROUNDED_BASE_SCALE_Y,
+  COMBATANT_IDLE_GROUNDED_VAR_SCALE_Y,
+  COMBATANT_IDLE_GROUNDED_BASE_ROTATION_DEG,
+  COMBATANT_IDLE_GROUNDED_VAR_ROTATION_DEG,
+  COMBATANT_IDLE_GROUNDED_BASE_DURATION_SEC,
+  COMBATANT_IDLE_GROUNDED_VAR_DURATION_SEC,
+  POKEBALL_SHAKE_DISTANCE_PX,
+  SPARKLE_FULL_ROTATION_DEG,
+  SPARKLE_HORIZONTAL_DURATION_SEC,
+  SPARKLE_FOUNTAIN_UP_DURATION_SEC,
+  SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
+  COMBATANT_FAINT_Y_OFFSET,
+  COMBATANT_FAINT_DURATION_SEC,
+  ATTACK_DASH_DISTANCE_PX,
+  ATTACK_PREP_DISTANCE_PX,
+  POKEBALL_APPEAR_DURATION_SEC,
+  BALL_TRANSITION_DURATION_SEC,
+  RECOIL_HORIZONTAL_OFFSET_PX,
+  RECOIL_VERTICAL_OFFSET_PX,
+  RECOIL_PUSH_DURATION_SEC,
+  RECOIL_RECOVERY_DURATION_SEC,
+  COMBATANT_HEAL_Y_OFFSET_PX,
+  COMBATANT_HEAL_PHASE_DURATION_SEC,
+  EMERGE_SQUISH_Y_PX,
+  EMERGE_SQUISH_SCALE_X,
+  EMERGE_SQUISH_SCALE_Y,
+  EMERGE_SQUISH_DURATION_SEC,
+  EMERGE_JUMP_Y_PX,
+  EMERGE_JUMP_SCALE_X,
+  EMERGE_JUMP_SCALE_Y,
+  EMERGE_JUMP_DURATION_SEC,
+  EMERGE_LAND_SCALE_X,
+  EMERGE_LAND_SCALE_Y,
+  EMERGE_LAND_DURATION_SEC,
+  EMERGE_SETTLE_DURATION_SEC,
+  SELFKO_SHAKE_COUNT,
+  SELFKO_SHAKE_RANGE_PX,
+  SELFKO_SHAKE_DURATION_SEC,
+  SELFKO_EXPLODE_SCALE,
+  SELFKO_EXPLODE_BRIGHTNESS,
+  SELFKO_EXPLODE_SHADOW_PX,
+  SELFKO_EXPLODE_COLOR_1,
+  SELFKO_EXPLODE_UP_DURATION_SEC,
+  SELFKO_EXPLODE_BRIGHTNESS_2,
+  SELFKO_EXPLODE_SHADOW_PX_2,
+  SELFKO_EXPLODE_COLOR_2,
+  SELFKO_EXPLODE_DOWN_DURATION_SEC,
+  SELFKO_SETTLE_DURATION_SEC,
+  ATTACK_SPECIAL_PULSE_DISTANCE_PX,
+  ATTACK_SPECIAL_SCALE,
+  ATTACK_SPECIAL_BRIGHTNESS,
+  ATTACK_SPECIAL_DURATION_SEC,
+  ATTACK_STATUS_ROTATION_DEG,
+  ATTACK_STATUS_SCALE,
+  ATTACK_STATUS_BRIGHTNESS,
+  ATTACK_STATUS_DURATION_SEC,
+  ATTACK_DEFAULT_NY_PLAYER,
+  ATTACK_DEFAULT_NY_ENEMY,
+  STATUS_FLASH_SHADOW_PX,
+  STATUS_FLASH_DURATION_SEC,
+  STATUS_FLASH_REPEAT_COUNT,
+  STATUS_FLASH_BRIGHTNESS,
+  POKEBALL_WOBBLE_ANGLE_1_DEG,
+  POKEBALL_WOBBLE_ANGLE_2_DEG,
+  POKEBALL_WOBBLE_ANGLE_3_DEG,
+  POKEBALL_WOBBLE_ANGLE_4_DEG,
+  POKEBALL_WOBBLE_STEP1_SEC,
+  POKEBALL_WOBBLE_STEP2_SEC,
+  POKEBALL_WOBBLE_STEP34_SEC,
+  POKEBALL_BLINK_BRIGHTNESS,
+  POKEBALL_BLINK_HUE_ROTATE_DEG,
+  POKEBALL_BLINK_DURATION_SEC,
+  POKEBALL_SPRITE_SHAKE_REPEAT,
+  BALL_LEAVE_SCALE,
+  BALL_LEAVE_DURATION_SEC
+} from '@/logic/constants/animations'
+
+const RECOIL_EASE_BACK_OVERSHOOT = 1.7
+const POKEBALL_SEPIA_RATIO = 0.5
+const POKEBALL_SEPIA_SATURATE = 2
+const GSAP_CRY_PLAY_DELAY_SEC = 0.15
+const GSAP_RESULT_FADE_DURATION_SEC = 0.5
+const HEAL_SATURATION_FULL = 1
+const HEAL_BRIGHTNESS_FULL = 1
+const HEAL_SEPIA_NONE = 0
+const FAINT_BLINK_LAST_OPACITY = 0
+const RANDOM_DIRECTION_PROBABILITY_HALF = 0.5;
+const OPACITY_INVISIBLE = 0;
+const OPACITY_FULL = 1;
+const SCALE_ZERO = 0;
+const SCALE_FULL = 1;
+
+const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic
+  { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
+  { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
+  { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
+  { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
+  { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
+  { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
+  { t: 0.98, op: 0 }
+] as const
 
 const VOICE_MOVE_IDS = [
   'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',
@@ -24,9 +136,9 @@ function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: n
 
 function getIdleFloatingConfig(): gsap.TweenVars {
   return {
-    y: () => `-${10 + Math.random() * 6}%`,
-    rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
-    duration: () => 2 + Math.random() * 1,
+    y: () => `-${COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT + Math.random() * COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT}%`,
+    rotation: () => (Math.random() > RANDOM_DIRECTION_PROBABILITY_HALF ? 1 : -1) * (COMBATANT_IDLE_FLOAT_BASE_ROTATION_DEG + Math.random() * COMBATANT_IDLE_FLOAT_VAR_ROTATION_DEG),
+    duration: () => COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC + Math.random() * COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC,
     repeat: -1,
     yoyo: true,
     repeatRefresh: true,
@@ -36,10 +148,10 @@ function getIdleFloatingConfig(): gsap.TweenVars {
 
 function getIdleGroundedConfig(): gsap.TweenVars {
   return {
-    scaleX: () => 1.01 + Math.random() * 0.02,
-    scaleY: () => 0.97 + Math.random() * 0.02,
-    rotation: () => (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1),
-    duration: () => 1.5 + Math.random() * 0.5,
+    scaleX: () => COMBATANT_IDLE_GROUNDED_BASE_SCALE_X + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_SCALE_X,
+    scaleY: () => COMBATANT_IDLE_GROUNDED_BASE_SCALE_Y + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_SCALE_Y,
+    rotation: () => (Math.random() > RANDOM_DIRECTION_PROBABILITY_HALF ? 1 : -1) * (COMBATANT_IDLE_GROUNDED_BASE_ROTATION_DEG + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_ROTATION_DEG),
+    duration: () => COMBATANT_IDLE_GROUNDED_BASE_DURATION_SEC + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_DURATION_SEC,
     repeat: -1,
     yoyo: true,
     repeatRefresh: true,
@@ -120,21 +232,21 @@ export function useBattleCombatantAnims(
         transformOrigin: origin,
         x: 0,
         y: 0,
-        scale: 1,
-        opacity: 1,
+        scale: SCALE_FULL,
+        opacity: OPACITY_FULL,
         filter: "url(#pixel-energy-optimized)" 
       })
       
       const tween = gsap.to(spriteRef.value, {
         x: coords.x,
         y: coords.y,
-        scale: 0,
-        opacity: 0,
-        duration: 0.5,
+        scale: SCALE_ZERO,
+        opacity: OPACITY_INVISIBLE,
+        duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
           if (spriteRef.value) {
-            gsap.set(spriteRef.value, { x: 0, y: 0, scale: 0, opacity: 0, filter: "none", clearProps: "transformOrigin" })
+            gsap.set(spriteRef.value, { x: 0, y: 0, scale: SCALE_ZERO, opacity: OPACITY_INVISIBLE, filter: "none", clearProps: "transformOrigin" })
           }
         }
       })
@@ -159,17 +271,17 @@ export function useBattleCombatantAnims(
         transformOrigin: origin,
         x: coords.x, 
         y: coords.y, 
-        scale: 0, 
-        opacity: 0, 
+        scale: SCALE_ZERO, 
+        opacity: OPACITY_INVISIBLE, 
         filter: "url(#pixel-energy-optimized)" 
       })
       
       const tween = gsap.to(spriteRef.value, {
         x: 0,
         y: 0,
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
+        scale: SCALE_FULL,
+        opacity: OPACITY_FULL,
+        duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
           if (spriteRef.value) {
@@ -211,8 +323,8 @@ export function useBattleCombatantAnims(
           transformOrigin: origin,
           x: coords.x,
           y: coords.y,
-          scale: 0,
-          opacity: 0,
+          scale: SCALE_ZERO,
+          opacity: OPACITY_INVISIBLE,
           filter: 'url(#pixel-energy-optimized)'
         })
       } else if (val === 'catching') {
@@ -220,8 +332,8 @@ export function useBattleCombatantAnims(
           transformOrigin: origin,
           x: 0,
           y: 0,
-          scale: 1,
-          opacity: 1,
+          scale: SCALE_FULL,
+          opacity: OPACITY_FULL,
           filter: 'url(#pixel-energy-optimized)'
         })
       }
@@ -243,10 +355,10 @@ export function useBattleCombatantAnims(
           gsap.set(target, { clearProps: "transform" })
         }
       })
-      tl.to(target, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
-        .to(target, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
-        .to(target, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })
-        .to(target, { scaleX: 1, scaleY: 1, duration: 0.1 })
+      tl.to(target, { y: EMERGE_SQUISH_Y_PX, scaleX: EMERGE_SQUISH_SCALE_X, scaleY: EMERGE_SQUISH_SCALE_Y, duration: EMERGE_SQUISH_DURATION_SEC, ease: "power1.in" })
+        .to(target, { y: EMERGE_JUMP_Y_PX, scaleX: EMERGE_JUMP_SCALE_X, scaleY: EMERGE_JUMP_SCALE_Y, duration: EMERGE_JUMP_DURATION_SEC, ease: "power2.out" })
+        .to(target, { y: 0, scaleX: EMERGE_LAND_SCALE_X, scaleY: EMERGE_LAND_SCALE_Y, duration: EMERGE_LAND_DURATION_SEC, ease: "bounce.out" })
+        .to(target, { scaleX: 1, scaleY: 1, duration: EMERGE_SETTLE_DURATION_SEC })
     }
   })
 
@@ -270,22 +382,12 @@ export function useBattleCombatantAnims(
       tl.addLabel("fallStart")
 
       tl.to(spriteRef.value, { 
-        y: 60, 
-        duration: 1.0, 
+        y: COMBATANT_FAINT_Y_OFFSET, 
+        duration: COMBATANT_FAINT_DURATION_SEC, 
         ease: "power2.in" 
       }, "fallStart") 
       
-      const blinkPattern = [
-        { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
-        { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
-        { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
-        { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
-        { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
-        { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
-        { t: 0.98, op: 0 }
-      ]
-
-      blinkPattern.forEach(b => {
+      FAINT_BLINK_STEPS.forEach(b => {
         tl.set(spriteRef.value, { opacity: b.op }, `fallStart+=${b.t}`)
       })
     } else if (!val && spriteRef.value) {
@@ -316,7 +418,7 @@ export function useBattleCombatantAnims(
       }
       
       let nx = isPlayerSide ? 1 : -1
-      let ny = isPlayerSide ? -0.5 : 0.5
+      let ny = isPlayerSide ? ATTACK_DEFAULT_NY_PLAYER : ATTACK_DEFAULT_NY_ENEMY
       
       if (props.targetPosition) {
         const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
@@ -324,11 +426,13 @@ export function useBattleCombatantAnims(
         const targetBase = isPlayerSide ? (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_ENEMY: number }).BASE_ENTITY_SIZE_ENEMY : (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_PLAYER: number }).BASE_ENTITY_SIZE_PLAYER
         const targetSize = targetBase * scale
         
-        const myCenterX = props.position.x + (mySize / 2)
-        const myCenterY = props.position.y + (mySize / 2)
+const ENTITY_CENTER_HALF_FACTOR = 0.5;
+
+        const myCenterX = props.position.x + (mySize * ENTITY_CENTER_HALF_FACTOR)
+        const myCenterY = props.position.y + (mySize * ENTITY_CENTER_HALF_FACTOR)
         
-        const targetCenterX = props.targetPosition.x + (targetSize / 2)
-        const targetCenterY = props.targetPosition.y + (targetSize / 2)
+        const targetCenterX = props.targetPosition.x + (targetSize * ENTITY_CENTER_HALF_FACTOR)
+        const targetCenterY = props.targetPosition.y + (targetSize * ENTITY_CENTER_HALF_FACTOR)
 
         const dx = targetCenterX - myCenterX
         const dy = targetCenterY - myCenterY
@@ -341,13 +445,13 @@ export function useBattleCombatantAnims(
       
       if (move.selfKO || cat === 'selfKO') {
         const shakeTimeline = gsap.timeline()
-        for (let i = 0; i < 8; i++) {
-          const shakeX = (Math.random() - 0.5) * 30
-          const shakeY = (Math.random() - 0.5) * 30
+        for (let i = 0; i < SELFKO_SHAKE_COUNT; i++) {
+          const shakeX = (Math.random() - 0.5) * SELFKO_SHAKE_RANGE_PX
+          const shakeY = (Math.random() - 0.5) * SELFKO_SHAKE_RANGE_PX
           shakeTimeline.to(spriteRef.value, {
             x: shakeX,
             y: shakeY,
-            duration: 0.05,
+            duration: SELFKO_SHAKE_DURATION_SEC,
             ease: "none"
           })
         }
@@ -361,17 +465,17 @@ export function useBattleCombatantAnims(
 
 
         tl.to(spriteRef.value, {
-          scale: 1.6,
-          filter: "Brightness(1.8) Drop-Shadow(0 0 25px #ff4500)",
-          duration: 0.25,
+          scale: SELFKO_EXPLODE_SCALE,
+          filter: `Brightness(${SELFKO_EXPLODE_BRIGHTNESS}) Drop-Shadow(0 0 ${SELFKO_EXPLODE_SHADOW_PX}px ${SELFKO_EXPLODE_COLOR_1})`,
+          duration: SELFKO_EXPLODE_UP_DURATION_SEC,
           ease: "power2.out"
         })
         
         tl.to(spriteRef.value, {
           scale: 0,
           opacity: 0,
-          filter: "Brightness(3) Drop-Shadow(0 0 35px #ffffff)",
-          duration: 0.35,
+          filter: `Brightness(${SELFKO_EXPLODE_BRIGHTNESS_2}) Drop-Shadow(0 0 ${SELFKO_EXPLODE_SHADOW_PX_2}px ${SELFKO_EXPLODE_COLOR_2})`,
+          duration: SELFKO_EXPLODE_DOWN_DURATION_SEC,
           ease: "power2.in"
         })
 
@@ -382,39 +486,38 @@ export function useBattleCombatantAnims(
           opacity: 1,
           filter: "Brightness(1)",
           clearProps: "all",
-          duration: 0.01
+          duration: SELFKO_SETTLE_DURATION_SEC
         })
       } else if (cat === 'physical' || !cat) {
-        const dashDist = 60
-        const prepDist = -15
+        const dashDist = ATTACK_DASH_DISTANCE_PX
+        const prepDist = ATTACK_PREP_DISTANCE_PX
         
-        tl.to(spriteRef.value, { x: nx * prepDist, y: ny * prepDist, duration: 0.1 })
-          .to(spriteRef.value, { x: nx * dashDist, y: ny * dashDist, scale: 1.1, duration: 0.15, ease: "power2.out" })
-          .to(spriteRef.value, { x: 0, y: 0, scale: 1, duration: 0.15, ease: "power1.inOut" })
+        tl.to(spriteRef.value, { x: nx * prepDist, y: ny * prepDist, duration: GSAP_FAST_DURATION_SEC })
+          .to(spriteRef.value, { x: nx * dashDist, y: ny * dashDist, scale: ATTACK_SPECIAL_SCALE, duration: GSAP_STANDARD_DURATION_SEC, ease: "power2.out" })
+          .to(spriteRef.value, { x: 0, y: 0, scale: 1, duration: GSAP_STANDARD_DURATION_SEC, ease: "power1.inOut" })
       } else if (cat === 'special') {
-        const pulseDist = 15
         tl.fromTo(spriteRef.value, 
           { filter: "Brightness(1)", x: 0, y: 0, scale: 1 },
           { 
-            x: nx * pulseDist, 
-            y: ny * pulseDist, 
-            scale: 1.15, 
-            filter: "Brightness(1.4)", 
-            duration: 0.2, 
+            x: nx * ATTACK_SPECIAL_PULSE_DISTANCE_PX, 
+            y: ny * ATTACK_SPECIAL_PULSE_DISTANCE_PX, 
+            scale: ATTACK_SPECIAL_SCALE, 
+            filter: `Brightness(${ATTACK_SPECIAL_BRIGHTNESS})`, 
+            duration: ATTACK_SPECIAL_DURATION_SEC, 
             yoyo: true, 
             repeat: 1,
             ease: "power2.out"
           }
         )
       } else if (cat === 'status') {
-        const rot = isPlayerSide ? 12 : -12
+        const rot = isPlayerSide ? ATTACK_STATUS_ROTATION_DEG : -ATTACK_STATUS_ROTATION_DEG
         tl.fromTo(spriteRotationRef.value, 
           { filter: "Brightness(1)", rotation: 0, scale: 1 },
           { 
             rotation: rot, 
-            scale: 1.1, 
-            filter: "Brightness(1.2)", 
-            duration: 0.2, 
+            scale: ATTACK_STATUS_SCALE, 
+            filter: `Brightness(${ATTACK_STATUS_BRIGHTNESS})`, 
+            duration: ATTACK_STATUS_DURATION_SEC, 
             yoyo: true, 
             repeat: 1,
             ease: "power2.out"
@@ -446,10 +549,10 @@ export function useBattleCombatantAnims(
       gsap.fromTo(spriteRotationRef.value,
         { filter: `Drop-Shadow(0 0 0px ${color}) Brightness(1)` },
         { 
-          filter: `Drop-Shadow(0 0 20px ${color}) Brightness(2)`, 
-          duration: 0.25, 
+          filter: `Drop-Shadow(0 0 ${STATUS_FLASH_SHADOW_PX}px ${color}) Brightness(${STATUS_FLASH_BRIGHTNESS})`, 
+          duration: STATUS_FLASH_DURATION_SEC, 
           yoyo: true, 
-          repeat: 3, 
+          repeat: STATUS_FLASH_REPEAT_COUNT, 
           ease: "power1.inOut",
           onComplete: () => {
             if (spriteRotationRef.value) {
@@ -472,34 +575,34 @@ export function useBattleCombatantAnims(
         gameBus.emit('PLAY_SOUND', 'wobble')
         gsap.to(pokeballImgRef.value, {
           keyframes: [
-            { rotation: 18, duration: 0.08, ease: 'power1.out' },
-            { rotation: -18, duration: 0.16, ease: 'power1.inOut' },
-            { rotation: 12, duration: 0.14, ease: 'power1.inOut' },
-            { rotation: -12, duration: 0.14, ease: 'power1.inOut' },
-            { rotation: 0, duration: 0.08, ease: 'power1.in' }
+            { rotation: POKEBALL_WOBBLE_ANGLE_1_DEG, duration: POKEBALL_WOBBLE_STEP1_SEC, ease: 'power1.out' },
+            { rotation: POKEBALL_WOBBLE_ANGLE_2_DEG, duration: POKEBALL_WOBBLE_STEP2_SEC, ease: 'power1.inOut' },
+            { rotation: POKEBALL_WOBBLE_ANGLE_3_DEG, duration: POKEBALL_WOBBLE_STEP34_SEC, ease: 'power1.inOut' },
+            { rotation: POKEBALL_WOBBLE_ANGLE_4_DEG, duration: POKEBALL_WOBBLE_STEP34_SEC, ease: 'power1.inOut' },
+            { rotation: 0, duration: POKEBALL_WOBBLE_STEP1_SEC, ease: 'power1.in' }
           ]
         })
       }
     } 
     else if (!props.isCaptureSuccess) {
       if (shaking && spriteRef.value) {
-        const shakeDist = props.side === 'player' ? -10 : 10
+        const shakeDist = props.side === 'player' ? -POKEBALL_SHAKE_DISTANCE_PX : POKEBALL_SHAKE_DISTANCE_PX
         gsap.set(spriteRef.value, { transition: "none" })
         
         gsap.fromTo(spriteRef.value,
           { x: 0 },
           { 
             x: shakeDist, 
-            duration: 0.08, 
+            duration: POKEBALL_WOBBLE_STEP1_SEC, 
             yoyo: true, 
-            repeat: 5, 
+            repeat: POKEBALL_SPRITE_SHAKE_REPEAT, 
             ease: 'power1.inOut',
             onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,opacity,transition" }) }
           }
         )
 
         const tl = gsap.timeline()
-        const blinkPattern = [
+        const blinkPattern = [ // no-magic
           { t: 0.00, op: 0 }, { t: 0.08, op: 1 },
           { t: 0.16, op: 0 }, { t: 0.24, op: 1 },
           { t: 0.32, op: 0 }, { t: 0.40, op: 1 },
@@ -517,22 +620,22 @@ export function useBattleCombatantAnims(
       if (blinking) {
         gsap.fromTo(pokeballImgRef.value,
           { filter: 'Brightness(1)' },
-          { filter: 'Brightness(2) Hue-Rotate(10deg)', duration: 0.2, yoyo: true, repeat: 1, ease: 'power1.inOut' }
+          { filter: `Brightness(${STATUS_FLASH_BRIGHTNESS}) Hue-Rotate(10deg)`, duration: ATTACK_SPECIAL_DURATION_SEC, yoyo: true, repeat: 1, ease: 'power1.inOut' }
         )
       }
     } 
     else if (!props.isCaptureSuccess) {
       if (blinking && spriteRef.value) {
-        const shakeDist = props.side === 'player' ? -10 : 10
+        const shakeDist = props.side === 'player' ? -POKEBALL_SHAKE_DISTANCE_PX : POKEBALL_SHAKE_DISTANCE_PX
         gsap.set(spriteRef.value, { transition: "none" })
         gsap.fromTo(spriteRef.value,
           { x: 0, filter: 'Brightness(1)' },
           { 
             x: shakeDist,
-            filter: 'Brightness(2)', 
-            duration: 0.08, 
+            filter: `Brightness(${STATUS_FLASH_BRIGHTNESS})`, 
+            duration: POKEBALL_WOBBLE_STEP1_SEC, 
             yoyo: true, 
-            repeat: 5, 
+            repeat: POKEBALL_SPRITE_SHAKE_REPEAT, 
             ease: 'power1.inOut',
             onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,filter,transition" }) }
           }
@@ -546,17 +649,17 @@ export function useBattleCombatantAnims(
       gsap.set(spriteRotationRef.value, { transition: "none" })
       const tl = gsap.timeline()
       tl.to(spriteRotationRef.value, {
-        y: -15,
-        scale: 1.08,
-        filter: "brightness(1.4) sepia(0.8) hue-rotate(300deg) saturate(2)",
-        duration: 0.25,
+        y: COMBATANT_HEAL_Y_OFFSET_PX,
+        scale: ATTACK_SPECIAL_SCALE,
+        filter: `brightness(1.4) sepia(0.8) hue-rotate(300deg) saturate(${POKEBALL_SEPIA_SATURATE})`,
+        duration: COMBATANT_HEAL_PHASE_DURATION_SEC,
         ease: "power1.out"
       })
       .to(spriteRotationRef.value, {
         y: 0,
         scale: 1,
-        filter: "brightness(1) sepia(0) hue-rotate(0deg) saturate(1)",
-        duration: 0.25,
+        filter: `brightness(${HEAL_BRIGHTNESS_FULL}) sepia(${HEAL_SEPIA_NONE}) hue-rotate(0deg) saturate(${HEAL_SATURATION_FULL})`,
+        duration: COMBATANT_HEAL_PHASE_DURATION_SEC,
         ease: "power1.in",
         onComplete: () => {
           if (spriteRotationRef.value) {
@@ -575,7 +678,7 @@ export function useBattleCombatantAnims(
     if (success) {
       successBlinkTween = gsap.fromTo(pokeballImgRef.value,
         { filter: 'Brightness(1)' },
-        { filter: 'Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg)', duration: 0.25, yoyo: true, repeat: -1, ease: 'power1.inOut' }
+        { filter: `Brightness(${POKEBALL_BLINK_BRIGHTNESS}) Sepia(${POKEBALL_SEPIA_RATIO}) Hue-Rotate(${POKEBALL_BLINK_HUE_ROTATE_DEG}deg)`, duration: POKEBALL_BLINK_DURATION_SEC, yoyo: true, repeat: -1, ease: 'power1.inOut' }
       )
     } else {
       if (successBlinkTween) {
@@ -589,11 +692,11 @@ export function useBattleCombatantAnims(
     const data = (e as CustomEvent).detail as { side?: string } | undefined
     if (data?.side === props.side && spriteRef.value) {
       const isPlayerSide = props.side === 'player'
-      const backX = isPlayerSide ? -35 : 35
-      const backY = isPlayerSide ? 10 : -10
+      const backX = isPlayerSide ? -RECOIL_HORIZONTAL_OFFSET_PX : RECOIL_HORIZONTAL_OFFSET_PX
+      const backY = isPlayerSide ? RECOIL_VERTICAL_OFFSET_PX : -RECOIL_VERTICAL_OFFSET_PX
       gsap.timeline()
-        .to(spriteRef.value, { x: backX, y: backY, duration: 0.15, ease: 'power2.out' })
-        .to(spriteRef.value, { x: 0, y: 0, duration: 0.3, ease: 'back.out(1.7)' })
+        .to(spriteRef.value, { x: backX, y: backY, duration: RECOIL_PUSH_DURATION_SEC, ease: 'power2.out' })
+        .to(spriteRef.value, { x: 0, y: 0, duration: RECOIL_RECOVERY_DURATION_SEC, ease: `back.out(${RECOIL_EASE_BACK_OVERSHOOT})` })
     }
   }
 
@@ -614,12 +717,14 @@ export function onSparkleEnter(el: Element, done: () => void) {
   const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''))
   const scale = parseFloat(htmlEl.dataset.scale || '1')
 
+const SPARKLE_CENTER_OFFSET_PERCENT = -50
+
   // Reset inicial forzado para evitar flashes o estados quietos
   gsap.set(htmlEl, { 
     x: 0, 
     y: 0, 
-    xPercent: -50, 
-    yPercent: -50, 
+    xPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
+    yPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
     scale: 0, 
     opacity: 1,
     rotation: 0
@@ -628,8 +733,8 @@ export function onSparkleEnter(el: Element, done: () => void) {
   // Animación Horizontal y Rotación (Toda la duración)
   gsap.to(htmlEl, {
     x: tx,
-    rotation: 720,
-    duration: 0.8,
+    rotation: SPARKLE_FULL_ROTATION_DEG,
+    duration: SPARKLE_HORIZONTAL_DURATION_SEC,
     delay: delay,
     ease: 'power1.out'
   })
@@ -638,7 +743,7 @@ export function onSparkleEnter(el: Element, done: () => void) {
   gsap.to(htmlEl, {
     y: ty,
     scale: scale,
-    duration: 0.3,
+    duration: SPARKLE_FOUNTAIN_UP_DURATION_SEC,
     delay: delay,
     ease: 'power2.out',
     onComplete: () => {
@@ -646,7 +751,7 @@ export function onSparkleEnter(el: Element, done: () => void) {
       gsap.to(htmlEl, {
         y: tf,
         opacity: 0,
-        duration: 0.5,
+        duration: SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
         ease: 'power2.in',
         onComplete: done
       })
@@ -657,15 +762,15 @@ export function onSparkleEnter(el: Element, done: () => void) {
 export function onBallEnter(el: Element, done: () => void) {
   gsap.fromTo(el, 
     { opacity: 0, scale: 0.5 }, 
-    { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.7)', onComplete: done }
+    { opacity: 1, scale: 1, duration: POKEBALL_APPEAR_DURATION_SEC, ease: 'back.out(1.7)', onComplete: done }
   )
 }
 
 export function onBallLeave(el: Element, side: 'player' | 'enemy', done: () => void) {
   const tween = gsap.to(el, { 
     opacity: 0, 
-    scale: 0.8, 
-    duration: 0.3,
+    scale: BALL_LEAVE_SCALE, 
+    duration: BALL_LEAVE_DURATION_SEC,
     ease: 'power2.in', 
     onComplete: done 
   })

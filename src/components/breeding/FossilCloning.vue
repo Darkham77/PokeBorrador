@@ -128,13 +128,15 @@ const onCardMouseLeave = (e: MouseEvent) => {
   }
 }
 
+const GSAP_HOVER_ROW_DURATION_SEC = 0.15
+
 // GSAP Hover Handlers for Matrix Rows
 const onRowMouseEnter = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {
       backgroundColor: 'rgba(255, 255, 255, 0.03)',
-      duration: 0.15,
+      duration: GSAP_HOVER_ROW_DURATION_SEC,
       overwrite: 'auto'
     })
   }
@@ -145,7 +147,7 @@ const onRowMouseLeave = (e: MouseEvent) => {
   if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
     gsap.to(el, {
       backgroundColor: 'rgba(255, 255, 255, 0)',
-      duration: 0.15,
+      duration: GSAP_HOVER_ROW_DURATION_SEC,
       overwrite: 'auto'
     })
   }

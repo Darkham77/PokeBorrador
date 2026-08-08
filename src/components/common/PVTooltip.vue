@@ -8,6 +8,12 @@ import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import { useTooltipPosition } from '@/composables/ui/useTooltipPosition'
 
+const DEFAULT_TOOLTIP_DELAY_MS = 500
+const TOUCH_DRAG_THRESHOLD_PX = 15
+const BLOCK_CLICK_DURATION_SEC = 5
+const TOUCH_HOVER_COOLDOWN_MS = 1000
+const SECS_PER_MS_FACTOR = 1000
+
 const props = defineProps({
   title: { type: String, default: '' },
   description: { type: String, default: '' },
@@ -44,9 +50,9 @@ const show = (immediate = false) => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
   if (timeout) timeout.kill()
   
-  const actualDelay = (immediate || props.touchInstant) ? 0 : Math.max(500, props.delay)
+  const actualDelay = (immediate || props.touchInstant) ? 0 : Math.max(DEFAULT_TOOLTIP_DELAY_MS, props.delay)
   
-  timeout = gsap.delayedCall(actualDelay / 1000, async () => {
+  timeout = gsap.delayedCall(actualDelay / SECS_PER_MS_FACTOR, async () => {
     // Hide previous tooltip immediately before showing this one
     if (activeTooltipHide && activeTooltipHide !== hideInstanceLogic) {
       activeTooltipHide(true)
@@ -163,7 +169,7 @@ const handleTouchMove = (e: TouchEvent) => {
   const deltaX = Math.abs(touch.clientX - touchStartX)
   const deltaY = Math.abs(touch.clientY - touchStartY)
   
-  if (deltaX > 15 || deltaY > 15) {
+  if (deltaX > TOUCH_DRAG_THRESHOLD_PX || deltaY > TOUCH_DRAG_THRESHOLD_PX) {
     if (touchTimeout) {
       touchTimeout.kill()
       touchTimeout = null
@@ -182,7 +188,7 @@ const handleTriggerClick = (event: MouseEvent) => {
   isBlockedByClick.value = true
   
   if (clickBlockTimeout) clickBlockTimeout.kill()
-  clickBlockTimeout = gsap.delayedCall(5, () => {
+  clickBlockTimeout = gsap.delayedCall(BLOCK_CLICK_DURATION_SEC, () => {
     isBlockedByClick.value = false
   })
 }
@@ -227,7 +233,7 @@ const descriptionLines = computed(() => {
 })
 
 const handleMouseEnter = () => {
-  if (Temporal.Now.instant().epochMilliseconds - lastTouchTime < 1000) return
+  if (Temporal.Now.instant().epochMilliseconds - lastTouchTime < TOUCH_HOVER_COOLDOWN_MS) return
   if (window.matchMedia('(hover: hover)').matches) {
     show(false)
   }
@@ -260,6 +266,9 @@ const beforeEnter = (el: Element) => {
   })
 }
 
+const GSAP_TOOLTIP_ENTER_DURATION_SEC = 0.15
+const GSAP_TOOLTIP_LEAVE_DURATION_SEC = 0.08
+
 const enter = (el: Element, done: () => void) => {
   const wrapper = el.querySelector('.tooltip-animate-wrapper') as HTMLElement
   if (!wrapper) {
@@ -271,7 +280,7 @@ const enter = (el: Element, done: () => void) => {
     opacity: 1,
     y: 0,
     x: 0,
-    duration: 0.15,
+    duration: GSAP_TOOLTIP_ENTER_DURATION_SEC,
     ease: 'power2.out',
     onComplete: done
   })
@@ -301,7 +310,7 @@ const leave = (el: Element, done: () => void) => {
     opacity: 0,
     y: endY,
     x: endX,
-    duration: 0.08,
+    duration: GSAP_TOOLTIP_LEAVE_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done
   })

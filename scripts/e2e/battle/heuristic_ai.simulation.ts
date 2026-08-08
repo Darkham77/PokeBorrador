@@ -3,6 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS, MAX_UI_SETTLE_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
 
@@ -15,6 +16,7 @@ interface FailureRecord {
 const failures: FailureRecord[] = [];
 const FAILURES_DIR = path.resolve(process.cwd(), 'scratch/e2e_failures');
 const REPORT_PATH  = path.resolve(process.cwd(), 'scripts/e2e/results/heuristic_ai_failures.json');
+const HEURISTIC_AI_ERROR_PERCENTAGE_LABEL_TEXT = '50%';
 
 const TRAINER_FIXTURES = {
   npc: { name: 'NPC', sprite: 'youngster' },
@@ -161,7 +163,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         if (!resolver) return false;
         const store = resolver();
         return !!store.state?.over || store.state?.player?.hp === 0 || store.currentSubState === 'PLAYER_FAINT_SEQ';
-      }, undefined, { timeout: 15000 });
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       const fainted = await page.evaluate(() => {
         const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -175,7 +177,7 @@ test.describe('HeuristicAI E2E Verification', () => {
     }
   });
 
-  test('Escenario 3 - Wild (50% error): arranca y ejecuta turnos sin crash', async ({ page }) => {
+  test(`Escenario 3 - Wild (${HEURISTIC_AI_ERROR_PERCENTAGE_LABEL_TEXT} error): arranca y ejecuta turnos sin crash`, async ({ page }) => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_3_${Date.now()}`);
     try {
       await sim.setup();
@@ -276,7 +278,7 @@ test.describe('HeuristicAI E2E Verification', () => {
           return !store?.state || store.state.over ||
             store.currentSubState === 'WAIT_INPUT' ||
             store.currentSubState === 'PLAYER_FAINT_SEQ';
-        }, undefined, { timeout: 10000 }).catch(() => { /* expected */ });
+        }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => { /* expected */ });
 
         await page.evaluate(async () => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
@@ -285,7 +287,7 @@ test.describe('HeuristicAI E2E Verification', () => {
         await page.waitForFunction(async () => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
           return !useBattleStore().state;
-        }, undefined, { timeout: 2000 }).catch(() => { /* expected */ });
+        }, undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS }).catch(() => { /* expected */ });
 
         console.debug(`[AI Fuzzer] trainerType="${trainerType}" OK`);
       } catch (e) {

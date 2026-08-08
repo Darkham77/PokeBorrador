@@ -16,7 +16,10 @@ export function generateFishingEncounter(
   const pool = [...loc.fishing.pool]
   const rates = [...loc.fishing.rates]
 
-  while (rates.length < pool.length) rates.push(10)
+const DEFAULT_FISHING_POOL_WEIGHT = 10;
+const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
+
+  while (rates.length < pool.length) rates.push(DEFAULT_FISHING_POOL_WEIGHT)
 
   const fishingType = state.fishingRodType || 'standard'
   applyFishingRodBudget(rates, pool, fishingType)
@@ -37,7 +40,7 @@ export function generateFishingEncounter(
       visitors.forEach(({ id, weight }) => {
         if (!pool.includes(id)) {
           pool.push(id)
-          rates.push(weight !== undefined ? -weight : -10)
+          rates.push(weight !== undefined ? -weight : DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET)
         }
       })
     }

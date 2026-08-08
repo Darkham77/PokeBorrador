@@ -7,6 +7,7 @@
 import { toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { isWeatherId } from '../weather/weatherRegistry.ts';
+import { getDayCycle } from '@/logic/utils/timeUtils.ts';
 
 import { 
   getEffectiveStatPure as pureGetEffectiveStat,
@@ -20,7 +21,9 @@ import {
   calculateCatchRatePure as pureCalculateCatchRate,
   calculateEscapeChancePure as pureCalculateEscapeChance
 } from './battleCatchMath.ts';
-import { getDayCycle } from '../utils/timeUtils.ts';
+import { DEFAULT_FALLBACK_BASE_STAT } from '@/logic/constants/gameplay';
+const PARALYSIS_SPEED_PENALTY_GEN6_PLUS = 0.5
+const PARALYSIS_SPEED_PENALTY_LEGACY = 0.25
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle/battle';
 import type { DayPhase } from '@/logic/utils/timeUtils';
@@ -115,15 +118,15 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
 
   const final = getEffectiveStat(pokemon, statKey, stages, activeWeather);
   
-  let base = (pokemon[statKey] as number) || 10;
-  if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
-  if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
+  let base = (pokemon[statKey] as number) || DEFAULT_FALLBACK_BASE_STAT;
+  if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? DEFAULT_FALLBACK_BASE_STAT;
+  if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? DEFAULT_FALLBACK_BASE_STAT;
 
   const rawType = activeWeather?.type;
   const wType = (rawType && isWeatherId(rawType)) ? rawType : 'clear';
   const pTypes = [pokemon.type, pokemon.type2];
   
-  const WEATHER_MAP: Record<string, string> = {
+  const BATTLE_WEATHER_NORMALIZATION_MAP: Record<string, string> = {
     sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
     rain: 'rain', storm: 'rain', heavy_rain: 'rain',
     sandstorm: 'sandstorm', dust_storm: 'sandstorm',
@@ -132,7 +135,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
     wind: 'wind', strong_winds: 'wind',
     clear: 'clear', thunderstorm: 'clear'
   };
-  const mechWeather = WEATHER_MAP[wType] || 'clear';
+  const mechWeather = BATTLE_WEATHER_NORMALIZATION_MAP[wType] || 'clear';
 
   let weatherMult = 1;
   if (statKey === 'def') {
@@ -182,7 +185,7 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
   let statusMult = 1;
   if (statKey === 'spe' && pokemon.status === 'par') {
     // Parálisis en Gen 3 a 6 reduce a 1/4 (0.25). En Gen 7+ a 1/2 (0.5).
-    statusMult = ACTIVE_GENERATION <= 6 ? 0.25 : 0.5;
+    statusMult = ACTIVE_GENERATION <= 6 ? PARALYSIS_SPEED_PENALTY_LEGACY : PARALYSIS_SPEED_PENALTY_GEN6_PLUS;
   }
   if (statKey === 'atk' && pokemon.status === 'brn' && abId !== 'guts') {
     statusMult = 0.5;

@@ -1,3 +1,6 @@
+const LEAF_ANIM_FULL_ROTATION_DEG = 360;
+const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
+
 import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
@@ -49,7 +52,7 @@ export function useAtmosphereLeafAnim(
               y: 0,
               opacity: 0.9,
               scale: 0.9 + Math.random() * 1.2,
-              rotation: Math.random() * 360
+              rotation: Math.random() * LEAF_ANIM_FULL_ROTATION_DEG
             })
 
             const seedMod = 0.8 + (props.animSeed * 0.4)
@@ -61,7 +64,7 @@ export function useAtmosphereLeafAnim(
             gsap.to(el, {
               x: '-350cqw',
               y: '80cqh',
-              rotation: `+=1080`,
+              rotation: `+=${LEAF_ANIM_SPIN_ROTATION_DEG}`,
               duration: baseDuration + (Math.random() * speedVariation),
               ease: 'none',
               onComplete: () => {
@@ -85,11 +88,13 @@ export function useAtmosphereLeafAnim(
       })
     }
 
+const LEAF_NODES_RETRY_TIMEOUT_MS = 50
+
     const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
     if (!leafNodes || leafNodes.length === 0) {
       setTimeout(() => {
         if (!ctxVal.reverted) runLeafAnimation()
-      }, 50)
+      }, LEAF_NODES_RETRY_TIMEOUT_MS)
     } else {
       runLeafAnimation()
     }

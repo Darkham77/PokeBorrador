@@ -6,6 +6,8 @@ import { executeMoveAction } from './actions/moveExecutor.ts'
 import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
 
+const ESCAPE_FALLBACK_DELAY_MS = 800;
+
 
 
 
@@ -146,7 +148,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       if (store.animations?.awaitTween) {
         await store.animations.awaitTween('escape-enemy')
       } else {
-        await sleep(800)
+        await sleep(ESCAPE_FALLBACK_DELAY_MS)
       }
       await store.endBattle(false, true)
     }

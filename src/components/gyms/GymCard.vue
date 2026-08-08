@@ -8,6 +8,10 @@ import GymRewardPanel from './GymRewardPanel.vue'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
 import { GYM_DIFFICULTY_IDS, type Gym, type GymDifficultyId } from '@/data/world/gyms'
 
+const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05
+const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15
+const GYM_CARD_HOVER_BTN_SCALE_BOOST = 1.05
+
 interface Props {
   gym: Gym
   isDefeated?: boolean
@@ -25,10 +29,14 @@ const gymsStore = useGymsStore()
 const selectedDifficulty = defineModel<GymDifficultyId>('difficulty', { default: 'easy' })
 const cardRef = ref<HTMLElement | null>(null)
 
+const GYM_CARD_MOUNT_OFFSET_Y = 20;
+const GYM_CARD_HOVER_SCALE = 1.02;
+const GYM_CARD_HOVER_OFFSET_Y = -4;
+
 onMounted(() => {
   if (cardRef.value) {
     gsap.from(cardRef.value, {
-      y: 20,
+      y: GYM_CARD_MOUNT_OFFSET_Y,
       duration: 0.8,
       ease: 'back.out(1.2)',
       delay: Math.random() * 0.4
@@ -56,8 +64,8 @@ const leaderSpriteUrl = computed(() => {
 const handleMouseEnter = () => {
   if (props.isLocked || !cardRef.value) return
   gsap.to(cardRef.value, {
-    scale: 1.02,
-    y: -4,
+    scale: GYM_CARD_HOVER_SCALE_1_02,
+    y: GYM_CARD_HOVER_OFFSET_Y_MINUS_4,
     duration: 0.4,
     ease: 'back.out(1.7)',
     borderColor: props.gym.typeColor,
@@ -101,8 +109,8 @@ const handleMouseLeave = () => {
 
 const handleBtnEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
-    scale: 1.05,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    scale: GYM_CARD_HOVER_BTN_SCALE_BOOST,
+    backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT})`,
     duration: 0.3,
     ease: 'power2.out'
   })
@@ -111,7 +119,7 @@ const handleBtnEnter = (e: MouseEvent) => {
 const handleBtnLeave = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
     scale: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: `rgba(255, 255, 255, ${GYM_CARD_HOVER_BG_OPACITY_PERCENT})`,
     duration: 0.3,
     ease: 'power2.out'
   })

@@ -53,12 +53,16 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   return { pendingMoves, fromId, toId: targetSpeciesId };
 }
 
+const TYROGUE_EVO_MIN_LEVEL = 20;
+const WILD_STONE_EVO_MIN_LEVEL = 30;
+const WILD_TRADE_EVO_MIN_LEVEL = 32;
+
 /**
  * Comprueba si un Pokémon puede evolucionar por nivel.
  */
 export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   // Tyrogue special case
-  if (pokemon.id === 'tyrogue' && pokemon.level >= 20) {
+  if (pokemon.id === 'tyrogue' && pokemon.level >= TYROGUE_EVO_MIN_LEVEL) {
     const toId = pokemon.atk > pokemon.def ? 'hitmonlee' : 
                  (pokemon.def > pokemon.atk ? 'hitmonchan' : 'hitmontop');
     return requirePokemonSpeciesId(toId);
@@ -126,7 +130,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
     } 
     
     // Stone Evolution (50% chance if level >= 30)
-    if (!changed && level >= 30 && Math.random() < 0.5) {
+    if (!changed && level >= WILD_STONE_EVO_MIN_LEVEL && Math.random() < 0.5) {
       if (evolved === 'eevee') {
         const options = ['vaporeon', 'jolteon', 'flareon'] as const satisfies readonly PokemonSpeciesId[];
         evolved = options[Math.floor(Math.random() * options.length)] || evolved;
@@ -141,7 +145,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
     }
 
     // Trade Evolution (50% chance if level >= 32)
-    if (!changed && level >= 32 && Math.random() < 0.5) {
+    if (!changed && level >= WILD_TRADE_EVO_MIN_LEVEL && Math.random() < 0.5) {
       const tradeEvo = getTradeEvolution(evolved);
       if (tradeEvo) {
         evolved = tradeEvo;

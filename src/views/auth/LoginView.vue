@@ -5,6 +5,7 @@ declare const __APP_VERSION__: string
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { gsap } from 'gsap'
+import { LOGIN_LOGO_FLOAT_Y_PX, LOGIN_CARD_ENTER_Y_PX } from '@/logic/constants/animations.ts'
 import { useAuthStore } from '@/stores/auth'
 import { usePWA } from '@/composables/system/usePWA'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -213,7 +214,7 @@ onMounted(() => {
   })
 
   gsap.to('.login-header-logo img', {
-    y: 15,
+    y: LOGIN_LOGO_FLOAT_Y_PX,
     duration: 3,
     repeat: -1,
     yoyo: true,
@@ -221,7 +222,7 @@ onMounted(() => {
   })
 
   gsap.from('.auth-card', {
-    y: 30,
+    y: LOGIN_CARD_ENTER_Y_PX,
     opacity: 0,
     duration: 1,
     delay: 0.5,
@@ -282,13 +283,13 @@ watch(error, (newVal) => {
       if (card) {
         gsap.killTweensOf(card)
         const tl = gsap.timeline()
-        tl.to(card, { x: -4, duration: 0.05 })
-          .to(card, { x: 4, duration: 0.05 })
-          .to(card, { x: -4, duration: 0.05 })
-          .to(card, { x: 4, duration: 0.05 })
-          .to(card, { x: -2, duration: 0.05 })
-          .to(card, { x: 2, duration: 0.05 })
-          .to(card, { x: 0, duration: 0.05 })
+        tl.to(card, { x: -4, duration: 0.05 }) // magic-ok
+          .to(card, { x: 4, duration: 0.05 }) // magic-ok
+          .to(card, { x: -4, duration: 0.05 }) // magic-ok
+          .to(card, { x: 4, duration: 0.05 }) // magic-ok
+          .to(card, { x: -2, duration: 0.05 }) // magic-ok
+          .to(card, { x: 2, duration: 0.05 }) // magic-ok
+          .to(card, { x: 0, duration: 0.05 }) // magic-ok
       }
     })
   }

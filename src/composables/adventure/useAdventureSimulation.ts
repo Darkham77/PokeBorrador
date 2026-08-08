@@ -1,3 +1,9 @@
+const GLOW_MARKER_BASE_SCALE = 1;
+const GLOW_MARKER_BASE_OPACITY = 0.8;
+const GLOW_MARKER_PULSE_SCALE = 2;
+const GLOW_MARKER_PULSE_OPACITY = 0.1;
+const GLOW_MARKER_PULSE_DURATION_SEC = 0.8;
+
 import { ref, computed, onUnmounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { getGraphEdges, isAdventureNodeId } from '../../../test aventura/kantoGraph.ts'
@@ -47,6 +53,9 @@ const CANVAS_W = 6400
 const CANVAS_H = 4400
 const CARD_W = 320
 const CARD_H = 220
+const ENCOUNTER_STEP_CHECK_THRESHOLD_PCT = 95
+const BASE_WILD_ENCOUNTER_CHANCE = 0.15
+const SWEET_SCENT_EXTRA_ENCOUNTER_CHANCE = 0.50
 
 export function useAdventureSimulation() {
   const mapStore = useMapStore()
@@ -275,14 +284,14 @@ export function useAdventureSimulation() {
     if (visible) {
       await nextTick()
       if (glowMarkerRef.value) {
-        gsap.set(glowMarkerRef.value, { scale: 1, opacity: 0.8 })
+        gsap.set(glowMarkerRef.value, { scale: GLOW_MARKER_BASE_SCALE, opacity: GLOW_MARKER_BASE_OPACITY })
         glowPulseTween = gsap.to(glowMarkerRef.value, {
-          scale: 2,
-          opacity: 0.1,
-          duration: 0.8,
-          ease: 'sine.inOut',
+          scale: GLOW_MARKER_PULSE_SCALE,
+          opacity: GLOW_MARKER_PULSE_OPACITY,
+          duration: GLOW_MARKER_PULSE_DURATION_SEC,
+          repeat: -1,
           yoyo: true,
-          repeat: -1
+          ease: 'power1.inOut',
         })
       }
     }
@@ -380,18 +389,22 @@ export function useAdventureSimulation() {
         const segmentVal = stateObj.val - (currentSegmentIndex.value * segmentProgress)
         const currentSegmentPct = (segmentVal / segmentProgress) * 100
         const currentStepVal = Math.floor(currentSegmentPct / 5) * 5
+const ENCOUNTER_STEP_CHECK_THRESHOLD_PCT = 95
+const BASE_WILD_ENCOUNTER_CHANCE = 0.15
+const SWEET_SCENT_EXTRA_ENCOUNTER_CHANCE = 0.50
+
         if (currentStepVal > lastStepPct.value) {
           lastStepPct.value = currentStepVal
-          if (currentStepVal < 95) {
+          if (currentStepVal < ENCOUNTER_STEP_CHECK_THRESHOLD_PCT) {
             if (safeStepsRemaining.value > 0) {
               safeStepsRemaining.value--
             } else {
-              let chance = 0.15
+              let chance = BASE_WILD_ENCOUNTER_CHANCE
               if (activeTravelModifiers.value.encounterRateMod !== 0) {
                 chance = chance * (1 + (activeTravelModifiers.value.encounterRateMod / 100))
               }
               if (activeSweetScent.value) {
-                chance += 0.50
+                chance += SWEET_SCENT_EXTRA_ENCOUNTER_CHANCE
               }
               if (Math.random() < chance) {
                 safeStepsRemaining.value = 5

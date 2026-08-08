@@ -16,6 +16,8 @@ function requireItemTier(value: string | undefined): ItemTier | undefined {
   throw new Error(`Invalid item tier: ${value}`)
 }
 
+const DEFAULT_MAX_MONEY = 999999
+
 interface Props {
   title: string
   pokemon?: Pokemon | null
@@ -32,7 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
   inventory: () => ({}),
   selectedItems: () => ({}),
   money: 0,
-  maxMoney: 999999,
+  maxMoney: DEFAULT_MAX_MONEY,
   isGift: false,
   isFriendSide: false
 })

@@ -59,8 +59,10 @@ watch(() => categories.value, (newCats) => {
   }
 }, { immediate: true })
 
+const SIDEBAR_BORDER_COLOR_MIX_PERCENT = 15
+
 const sidebarBorderColor = computed(() => {
-  return `color-mix(in srgb, ${props.accentColor} 15%, transparent)`
+  return `color-mix(in srgb, ${props.accentColor} ${SIDEBAR_BORDER_COLOR_MIX_PERCENT}%, transparent)`
 })
 </script>
 

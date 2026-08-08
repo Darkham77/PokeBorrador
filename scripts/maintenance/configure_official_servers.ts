@@ -21,15 +21,16 @@ import { enableCompileCache } from 'node:module';
 // Optimizar ejecución en ejecuciones sucesivas
 enableCompileCache();
 
-const ENV_FILE = path.resolve(process.cwd(), '.env');
+const MASTER_ENV_FILE_PATH = path.resolve(process.cwd(), '.env');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/system/official_servers.ts');
+const CONFIGURATOR_TARGET_NODE_VERSION_LABEL = '26';
 
 export async function configureOfficialServers(): Promise<void> {
-  console.log(styleText('bold', '\n--- 🌐 OFFICIAL SERVERS CONFIGURATOR (Node.js 26+) ---'));
-  console.log(styleText('cyan', `📄 Leyendo archivo .env maestro: ${ENV_FILE}`));
+  console.log(styleText('bold', `\n--- 🌐 OFFICIAL SERVERS CONFIGURATOR (Node.js ${CONFIGURATOR_TARGET_NODE_VERSION_LABEL}+) ---`));
+  console.log(styleText('cyan', `📄 Leyendo archivo .env maestro: ${MASTER_ENV_FILE_PATH}`));
 
   try {
-    await fsPromises.access(ENV_FILE);
+    await fsPromises.access(MASTER_ENV_FILE_PATH);
   } catch {
     console.error(styleText('red', '❌ Error: Archivo .env maestro no encontrado.'));
     process.exit(1);

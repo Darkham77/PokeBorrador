@@ -1,6 +1,13 @@
 <script setup lang="ts">
 
 import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive } from 'vue'
+
+const PILL_GLOW_DURATION_SEC = 1.5;
+const PILL_DRIFT_X_PX = 3;
+const PILL_DRIFT_DURATION_SEC = 2.0;
+const PILL_SHAKE_ROTATION_DEG = 2;
+const PILL_SHAKE_HALF_DURATION_SEC = 0.125;
+const PILL_SHAKE_FULL_DURATION_SEC = 0.25;
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
@@ -32,9 +39,11 @@ const uiStore = useUIStore()
 const mapStore = useMapStore()
 const gameStore = useGameStore()
 
+const RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX = 950
+
 // Responsive logic
 const isSmallScreen = computed(() => {
-  return (uiStore.windowWidth / uiStore.appZoom) < 950
+  return (uiStore.windowWidth / uiStore.appZoom) < RESPONSIVE_SMALL_SCREEN_MAX_WIDTH_PX
 })
 
 
@@ -265,7 +274,7 @@ const initBattlePillAnimation = () => {
         {
           boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
           filter: 'brightness(1.2)',
-          duration: 1.5,
+          duration: PILL_GLOW_DURATION_SEC,
           yoyo: true,
           repeat: -1,
           ease: 'sine.inOut'
@@ -274,8 +283,8 @@ const initBattlePillAnimation = () => {
       tl.progress(seed)
     } else if (type === 'drift') {
       const tl = gsap.to(el, {
-        x: 3,
-        duration: 2.0,
+        x: PILL_DRIFT_X_PX,
+        duration: PILL_DRIFT_DURATION_SEC,
         yoyo: true,
         repeat: -1,
         ease: 'power1.inOut'
@@ -283,9 +292,9 @@ const initBattlePillAnimation = () => {
       tl.progress(seed)
     } else if (type === 'shake') {
       const tl = gsap.timeline({ repeat: -1 })
-      tl.to(el, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
-        .to(el, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
-        .to(el, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
+      tl.to(el, { rotation: PILL_SHAKE_ROTATION_DEG, duration: PILL_SHAKE_HALF_DURATION_SEC, ease: 'power1.inOut' })
+        .to(el, { rotation: -PILL_SHAKE_ROTATION_DEG, duration: PILL_SHAKE_FULL_DURATION_SEC, ease: 'power1.inOut' })
+        .to(el, { rotation: 0, duration: PILL_SHAKE_HALF_DURATION_SEC, ease: 'power1.inOut' })
       tl.progress(seed)
     }
   }, el)

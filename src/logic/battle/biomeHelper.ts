@@ -1,11 +1,6 @@
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import type { MapLocation } from '@/types/pokemon/encounters';
-
-const MAP_BIOME_KEYS = [
-  'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-  'isDesert', 'isSwamp', 'isMountain',
-  'isCoastal', 'isForest', 'isPlains'
-] as const satisfies readonly (keyof MapLocation)[];
+import { MAP_BIOME_KEYS } from '@/logic/constants/encounters';
 
 export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
 

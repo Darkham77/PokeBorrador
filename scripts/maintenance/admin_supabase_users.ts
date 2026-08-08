@@ -17,6 +17,8 @@
 
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+
+const ADMIN_TARGET_NODE_VERSION_LABEL = '26';
 import postgres from 'postgres';
 import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 
@@ -24,7 +26,7 @@ import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClie
 enableCompileCache();
 
 export async function adminSupabaseUsers(): Promise<void> {
-  console.log(styleText('bold', '\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js 26+) ---'));
+  console.log(styleText('bold', `\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js ${ADMIN_TARGET_NODE_VERSION_LABEL}+) ---`));
 
   const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 

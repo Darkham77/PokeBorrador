@@ -66,13 +66,15 @@ const debugCapture = async () => {
   
   const anims = battleStore.animations
 
+const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000
+
   // 1. Ball hit
   audio.play('ballHit')
   if (anims?.handleCatchRequest) {
     await anims.handleCatchRequest({ side: 'enemy', ballId })
   } else {
     gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId })
-    await sleep(1000)
+    await sleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
   }
 
   // 2. Shakes
@@ -82,7 +84,7 @@ const debugCapture = async () => {
       await anims.handleShakeRequest({ side: 'enemy' })
     } else {
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
-      await sleep(1000)
+      await sleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
     }
   }
 
@@ -93,18 +95,21 @@ const debugCapture = async () => {
   battleStore.state.isCapture = true
   gameStore.addPokemon(e, { notify: true })
   
+const DEBUG_CATCH_CELEBRATION_SLEEP_MS = 1500
+const DEBUG_CATCH_FADEOUT_SLEEP_MS = 2000
+
   // Fase de Festejo (Phase 3 de la captura)
   if (anims?.playCatchCelebration) {
     await anims.playCatchCelebration('enemy')
   } else {
-    await sleep(1500)
+    await sleep(DEBUG_CATCH_CELEBRATION_SLEEP_MS)
   }
 
   // Fase de Desvanecimiento (Phase 4 de la captura)
   if (anims?.playBallFadeOut) {
     await anims.playBallFadeOut('enemy')
   } else {
-    await sleep(2000)
+    await sleep(DEBUG_CATCH_FADEOUT_SLEEP_MS)
   }
   
   await battleStore.endBattle(true, false)
@@ -204,11 +209,13 @@ const updateVisualSwap = (side = 'enemy') => {
   }
 }
 
+const PARSE_INT_DECIMAL_RADIX = 10
+
 const incrementSwap = (side = 'enemy') => {
   const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
   const current = String(baseIdRef.value ?? '').trim()
   
-  let num = parseInt(current, 10)
+  let num = parseInt(current, PARSE_INT_DECIMAL_RADIX)
   if (isNaN(num)) {
     const speciesId = current.toLowerCase()
     const idx = isPokemonSpeciesId(speciesId) ? ALL_PDEX.indexOf(speciesId) : -1
@@ -223,7 +230,7 @@ const decrementSwap = (side = 'enemy') => {
   const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
   const current = String(baseIdRef.value ?? '').trim()
 
-  let num = parseInt(current, 10)
+  let num = parseInt(current, PARSE_INT_DECIMAL_RADIX)
   if (isNaN(num)) {
     const speciesId = current.toLowerCase()
     const idx = isPokemonSpeciesId(speciesId) ? ALL_PDEX.indexOf(speciesId) : -1

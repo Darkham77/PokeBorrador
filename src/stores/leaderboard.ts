@@ -5,6 +5,7 @@ import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { LeaderboardEntry } from '@/stores/social/social.ts'
 import type { ProfileRow, GameSaveRow } from '@/types/system/database'
+import { LEADERBOARD_LIMIT, ONLINE_PRESENCE_WINDOW_MS, DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts'
 
 
 
@@ -28,7 +29,7 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
         .from('profiles')
         .select('*')
         .order(sortBy, { ascending: false })
-        .limit(100) as { data: ProfileRow[] | null; error: unknown }
+        .limit(LEADERBOARD_LIMIT) as { data: ProfileRow[] | null; error: unknown }
 
       if (error) throw error
 
@@ -42,12 +43,12 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
           const saveRow = (saves as GameSaveRow[])?.find(s => s.user_id === p.id)
           const lastSeen = parseInstantSafe(saveRow?.updated_at)
-          const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000
+          const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS
 
           return {
             id: p.id,
             username: p.username,
-            elo: p.elo_rating || 1000,
+            elo: p.elo_rating || DEFAULT_INITIAL_ELO,
             level: p.trainer_level || 1,
             badges: p.badges || 0,
             playerClass: p.player_class || undefined,

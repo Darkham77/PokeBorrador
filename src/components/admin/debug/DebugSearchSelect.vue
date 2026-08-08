@@ -33,9 +33,11 @@ watch(() => props.modelValue, (newVal) => {
   search.value = matching ? matching.name.toUpperCase() : newVal.toUpperCase()
 }, { immediate: true })
 
+const MAX_SEARCH_SELECT_RESULTS_LIMIT = 50
+
 const filteredOptions = computed(() => {
   const s = search.value.toLowerCase()
-  return props.options.filter(o => o.id.includes(s) || o.name.toLowerCase().includes(s)).slice(0, 50)
+  return props.options.filter(o => o.id.includes(s) || o.name.toLowerCase().includes(s)).slice(0, MAX_SEARCH_SELECT_RESULTS_LIMIT)
 })
 
 function handleSelect(option: Option) {

@@ -18,10 +18,20 @@
  * @param rarity - The Pokemon's spawn percentage (1 to 100).
  * @returns The total number of notes to hit (integer between 5 and 22).
  */
+const MAX_FISHING_NOTES = 22;
+const MIN_FISHING_COLLAPSE_SPEED_MS = 380;
+const MAX_FISHING_COLLAPSE_SPEED_MS = 1100;
+const MAX_FISHING_HIT_WINDOW_MS = 190;
+const ARCHAEOLOGY_CAVE_ENCOUNTER_RATE = 0.10;
+const ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE = 0.05;
+const FOSSIL_CLONING_BASE_COST = 3000;
+const FOSSIL_CLONING_EXTRA_FOSSIL_COST = 1000;
+const BASE_SHINY_CHANCE_DENOMINATOR = 4096;
+
 export function calculateFishingTotalNotes(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = 101 - safeRarity;
-  return Math.min(22, 5 + Math.floor(diffFactor / 7));
+  return Math.min(MAX_FISHING_NOTES, 5 + Math.floor(diffFactor / 7));
 }
 
 /**
@@ -34,7 +44,7 @@ export function calculateFishingTotalNotes(rarity: number): number {
 export function calculateFishingSpeedBase(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = 101 - safeRarity;
-  return Math.round(Math.max(380, 1100 - (diffFactor * 7.5)) * 1.1);
+  return Math.round(Math.max(MIN_FISHING_COLLAPSE_SPEED_MS, MAX_FISHING_COLLAPSE_SPEED_MS - (diffFactor * 7.5)) * 1.1);
 }
 
 /**
@@ -47,7 +57,7 @@ export function calculateFishingSpeedBase(rarity: number): number {
 export function calculateFishingHitWindow(rarity: number): number {
   const safeRarity = Math.max(1, Math.min(100, rarity));
   const diffFactor = 101 - safeRarity;
-  return Math.max(100, 190 - (diffFactor / 1.3));
+  return Math.max(100, MAX_FISHING_HIT_WINDOW_MS - (diffFactor / 1.3));
 }
 
 /**
@@ -59,8 +69,8 @@ export function calculateFishingHitWindow(rarity: number): number {
  * @returns The encounter probability (0.0, 0.05, or 0.10).
  */
 export function calculateArchaeologyEncounterRate(isCave: boolean, isMountain: boolean): number {
-  if (isCave) return 0.10;
-  if (isMountain) return 0.05;
+  if (isCave) return ARCHAEOLOGY_CAVE_ENCOUNTER_RATE;
+  if (isMountain) return ARCHAEOLOGY_MOUNTAIN_ENCOUNTER_RATE;
   return 0.00;
 }
 
@@ -73,7 +83,7 @@ export function calculateArchaeologyEncounterRate(isCave: boolean, isMountain: b
  */
 export function calculateCloningCost(extraQty: number): number {
   const safeQty = Math.max(0, Math.min(6, extraQty));
-  return 3000 + 1000 * safeQty;
+  return FOSSIL_CLONING_BASE_COST + FOSSIL_CLONING_EXTRA_FOSSIL_COST * safeQty;
 }
 
 /**
@@ -106,5 +116,5 @@ export function calculateCloningRerolls(extraQty: number, randomSource: () => nu
 export function calculateCloningShinyChance(extraQty: number): number {
   const safeQty = Math.max(0, Math.min(6, extraQty));
   const multiplier = 1 + 0.25 * safeQty;
-  return multiplier / 4096;
+  return multiplier / BASE_SHINY_CHANCE_DENOMINATOR;
 }

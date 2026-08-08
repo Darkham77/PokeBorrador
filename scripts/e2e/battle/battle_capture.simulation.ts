@@ -1,8 +1,11 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
+
+const TEST_INVENTORY_MASTERBALL_QTY = 10;
 
 class CaptureSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -16,7 +19,7 @@ class CaptureSimWrapper extends BaseBattleSimulation {
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const battleStore = useBattleStore();
 
-      useGameStore().state.inventory = { masterball: 10 };
+      useGameStore().state.inventory = { masterball: TEST_INVENTORY_MASTERBALL_QTY };
       const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
       useGameStore().state.team = [charmander];
       useGameStore().state.starterChosen = true;
@@ -72,8 +75,10 @@ class CaptureSimWrapper extends BaseBattleSimulation {
     await this.page.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      return !store?.state || store.state.over || store.currentFsmState === 'REWARDS_PHASE';
-    }, undefined, { timeout: 15000 });
+      const bState = store?.state;
+      const fState = store?.currentFsmState;
+      return !bState || bState.over || fState === 'REWARDS_PHASE' || fState === 'SEARCH_PHASE' || fState === 'EXIT_BATTLE';
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 }
 
@@ -90,7 +95,6 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await waitForWaitInput(page);
 
     await sim.setupPidgeyScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     await sim.throwMasterBall();
@@ -114,7 +118,6 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await waitForWaitInput(page);
 
     await sim.setupDittoScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     // Esperar al primer turno (Ditto usará Transformación)
@@ -144,10 +147,9 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
 
     // --- COMBATE 1 ---
     await sim.setupMultiBattleScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
     await sim.throwMasterBall();
-    await sim.awaitReturnToMap();
+    await sim.awaitCaptureSequence();
 
     // --- COMBATE 2 ---
     await page.evaluate(async () => {
@@ -171,7 +173,6 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       await battleStore.startBattle(rattata, { locationId: 'route1', wasSearching: false });
     });
 
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     const activeMoves = await page.evaluate(() => {
@@ -183,7 +184,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     await handleBattleInput(page, 'move 1');
     await waitForWaitInput(page);
     await sim.throwMasterBall();
-    await sim.awaitReturnToMap();
+    await sim.awaitCaptureSequence();
 
     // --- COMBATE 3 ---
     await page.evaluate(async () => {
@@ -206,7 +207,6 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
       await battleStore.startBattle(caterpie, { locationId: 'route1', wasSearching: false });
     });
 
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     const rattataMoves = await page.evaluate(() => {

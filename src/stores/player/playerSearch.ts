@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game.ts'
 import type { SearchResult } from '@/stores/social/social.ts'
 import { GameState } from '@/types/system/game'
 import type { ProfileRow, GameSaveRow } from '@/types/system/database'
+import { PLAYER_SEARCH_MAX_RESULTS } from '@/logic/constants/gameplay.ts'
 
 interface FriendshipRow {
   id: string
@@ -84,7 +85,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
           }
           
           return true
-        }).slice(0, 10)
+        }).slice(0, PLAYER_SEARCH_MAX_RESULTS)
       } else {
         let builder = db
           .from('profiles')
@@ -99,7 +100,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
           builder = builder.eq('faction', filters.faction)
         }
 
-        const { data } = await builder.limit(10) as { data: ProfileRow[] | null }
+        const { data } = await builder.limit(PLAYER_SEARCH_MAX_RESULTS) as { data: ProfileRow[] | null }
         profiles = data
 
         if (lastSearchQuery.value !== query) return

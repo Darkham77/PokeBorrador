@@ -12,6 +12,14 @@ import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { requirePokemonMoveId } from '@/data/battle/moves';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
+const DEFAULT_DEBUG_MOVE_PP = 35;
+const DEFAULT_DEBUG_MOVE_ACC = 100;
+const DEFAULT_DEBUG_FRIENDSHIP = 70;
+const FISHING_DEBUG_DIFFICULTY = 50;
+const ARCHAEOLOGY_DEBUG_DIFFICULTY = 50;
+const EGG_TICKET_BONUS_HOURS = 24;
+const SECS_PER_HOUR = 3600;
+
 interface DebugPokemon extends Pokemon {
   mapId?: MapRouteId | null
 }
@@ -66,7 +74,7 @@ export const pokemonDebugService = {
       gender = null,
       moves = null,
       nickname = null,
-      friendship = 70,
+      friendship = DEFAULT_DEBUG_FRIENDSHIP,
       heldItem = null,
       mapId = null,
       protocol = null,
@@ -118,11 +126,11 @@ export const pokemonDebugService = {
           return { 
             id: mData?.id || mName,
             name: mData?.name || mName, 
-            pp: mData?.pp || 35, 
-            maxPP: mData?.pp || 35,
+            pp: mData?.pp || DEFAULT_DEBUG_MOVE_PP, 
+            maxPP: mData?.pp || DEFAULT_DEBUG_MOVE_PP,
             type: mData?.type || 'normal',
             power: mData?.power || 0,
-            acc: mData?.acc || 100,
+            acc: mData?.acc || DEFAULT_DEBUG_MOVE_ACC,
             cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
           };
         }).slice(0, 4);
@@ -160,22 +168,10 @@ export const pokemonDebugService = {
       case 'hatch':
       case 'egg_silent': {
         // Protocol: Add UNHATCHED egg to inventory
-        const eggForInventory: Partial<PokemonEgg> = {
-          uid: `egg_${Temporal.Now.instant().epochMilliseconds}`,
-          id: requirePokemonSpeciesId(p.id),
-          steps: 1, // 1 step remaining for quick debug testing
-          ivs: p.ivs,
-          nature: p.nature,
-          movesAtBirth: requireMoveIdsForDebugEgg(p),
-          abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
-          isShiny: p.isShiny,
-          isGuardian: p.isGuardian
-        };
-        
         const state = game.state as Record<string, unknown>; // open-record
         const key = `${p.id}TicketSecs`;
         if (state[key] !== undefined) {
-          state[key] = (Number(state[key]) || 0) + 12 * 3600;
+          state[key] = (Number(state[key]) || 0) + EGG_TICKET_BONUS_HOURS * SECS_PER_HOUR;
         }
 
         if (!game.state.eggs) game.state.eggs = [];
@@ -183,13 +179,13 @@ export const pokemonDebugService = {
         const eggToPush: PokemonEgg = {
           uid: `${eggSpecies}-${Temporal.Now.instant().epochMilliseconds}`,
           id: eggSpecies,
-          steps: eggForInventory.steps ?? 1,
-          ivs: eggForInventory.ivs,
-          nature: eggForInventory.nature,
-          movesAtBirth: eggForInventory.movesAtBirth,
-          abilitySlot: eggForInventory.abilitySlot,
-          isShiny: eggForInventory.isShiny,
-          isGuardian: eggForInventory.isGuardian,
+          steps: 1,
+          ivs: p.ivs,
+          nature: p.nature,
+          movesAtBirth: requireMoveIdsForDebugEgg(p),
+          abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
+          isShiny: p.isShiny,
+          isGuardian: p.isGuardian,
           ready: false
         };
         game.state.eggs.push(eggToPush);
@@ -238,10 +234,10 @@ export const pokemonDebugService = {
       case 'fishing_minigame': {
         const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
-        showFishingIntro(p, 50, () => {
+        showFishingIntro(p, FISHING_DEBUG_DIFFICULTY, () => {
           startFishingMinigame(
             p,
-            50,
+            FISHING_DEBUG_DIFFICULTY,
             async () => {
               ui.notify(`¡Pesca exitosa! Iniciando combate...`, '🎣')
               await battleStore._startBattle(p, { 
@@ -263,10 +259,10 @@ export const pokemonDebugService = {
       case 'archaeology_minigame': {
         const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
-        showArchaeologyIntro(p, 50, () => {
+        showArchaeologyIntro(p, ARCHAEOLOGY_DEBUG_DIFFICULTY, () => {
           startArchaeologyMinigame(
             p,
-            50,
+            ARCHAEOLOGY_DEBUG_DIFFICULTY,
             async () => {
               ui.notify(`¡Excavación exitosa! Iniciando combate...`, '⛏️')
               await battleStore._startBattle(p, { 

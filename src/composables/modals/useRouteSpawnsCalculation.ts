@@ -16,6 +16,11 @@ import { useRouteSpawnsWild } from './useRouteSpawnsWild.ts'
 import { useRouteSpawnsFishing } from './useRouteSpawnsFishing.ts'
 import { useRouteSpawnsArchaeology } from './useRouteSpawnsArchaeology.ts'
 
+const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;
+const ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT = 5;
+const RAINY_FISHING_CLIMATE_MULTIPLIER = 1.20;
+const EQUIPPED_TOOL_WEIGHT_BONUS = 600;
+
 interface ExtendedMapLocation extends MapLocation {
   isVolcanic?: boolean
   isSwamp?: boolean
@@ -208,7 +213,7 @@ export function useRouteSpawnsCalculation(
   const activeWeights = computed(() => {
     const weather = props.weather || 'clear'
     const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
-    const climateFishingMultiplier = isRainy ? 1.20 : 1.0
+    const climateFishingMultiplier = isRainy ? RAINY_FISHING_CLIMATE_MULTIPLIER : 1.0
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
     const fishingBonus = eventFishingBonus * climateFishingMultiplier
 
@@ -218,7 +223,7 @@ export function useRouteSpawnsCalculation(
     if (props.map.fishing) {
       fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus
       if ((gameStore.state.fishingRodSecs || 0) > 0) {
-        fishingWeight += 600
+        fishingWeight += EQUIPPED_TOOL_WEIGHT_BONUS_600
       }
     }
 
@@ -226,9 +231,9 @@ export function useRouteSpawnsCalculation(
     if (props.map.archaeology) {
       const isCave = !!props.map.isCave
       const isMountain = !!props.map.isMountain
-      archWeight = isCave ? 10 : (isMountain ? 5 : 0)
+      archWeight = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0)
       if ((gameStore.state.pickaxeSecs || 0) > 0 || (gameStore.state.brushSecs || 0) > 0) {
-        archWeight += 600
+        archWeight += EQUIPPED_TOOL_WEIGHT_BONUS_600
       }
     }
 
@@ -242,7 +247,7 @@ export function useRouteSpawnsCalculation(
     if (props.map.archaeology) {
       const isCave = !!props.map.isCave
       const isMountain = !!props.map.isMountain
-      baseArchWeight = isCave ? 10 : (isMountain ? 5 : 0)
+      baseArchWeight = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0)
     }
     const baseTotalWeight = groundWeight + baseFishingWeight + baseArchWeight
 

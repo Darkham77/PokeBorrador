@@ -4,6 +4,9 @@ import { getDayCycle } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { isWeatherId, requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
 import { translateType, type PokemonType } from '@/data/battle/types';
+import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
+import { CRIMINALITY_DENOMINATOR_FACTOR } from '@/logic/constants/gameplay';
+import { DEBUG_TRAINER_CHANCE_PERCENT } from '@/logic/constants/encounters';
 import type { PokemonData } from '@/types/system/database';
 
 const WEATHER_BUFF_MULTIPLIER = 1.5;
@@ -16,6 +19,8 @@ import { mulberry32, hashString } from '../utils/math.ts';
 
 
 
+
+import { PROBABILITY_PERCENT_SCALE } from './weatherMath.ts';
 
 /**
  * Deterministically calculates the weather for a given route, season, and epoch hour.
@@ -41,7 +46,7 @@ export function getRouteWeather(
   const routeTables = ROUTE_WEATHER_TABLES[mapId];
   const seasonTable = routeTables[seasonId];
   
-  const cycle: WeatherCycleId = forcedCycle || getDayCycle(epochHour * 3600000);
+  const cycle: WeatherCycleId = forcedCycle || getDayCycle(epochHour * ONE_HOUR_MS);
   const table = seasonTable[cycle];
   
   // 2. Generate Deterministic Seed
@@ -54,7 +59,7 @@ export function getRouteWeather(
   prng();
   prng();
   prng();
-  const randNum = prng() * 100; // 0 to 99.999...
+  const randNum = prng() * PROBABILITY_PERCENT_SCALE; // 0 to 99.999...
   
   // 4. Iterate and accumulate probabilities
   let cumulative = 0;
@@ -159,7 +164,9 @@ export function getNpcEncounterChances(
   const eventRivalBonus = options.eventRivalBonus || 1;
   rivalChance *= eventRivalBonus;
 
-  if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
+  const CLASS_LEVEL_RIVAL_BOOST_MIN_LEVEL = 20;
+
+  if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= CLASS_LEVEL_RIVAL_BOOST_MIN_LEVEL) {
     const allGymsHard = GYM_IDS.every(id => state.gymProgress?.[id]?.hard === true);
     if (allGymsHard) {
       rivalChance *= 2;
@@ -188,9 +195,10 @@ export function getNpcEncounterChances(
       }
     }
   }
+  const FACTION_DEFENDER_ENCOUNTER_PCT = 20.0;
   result.push({
     name: 'Defensor de Facción',
-    chance: hasDefender ? 20.0 : 0.0,
+    chance: hasDefender ? FACTION_DEFENDER_ENCOUNTER_PCT : 0.0,
     type: 'defender',
     active: hasDefender
   });
@@ -206,7 +214,8 @@ export function getNpcEncounterChances(
     }
   }
   const isGuardianForced = hasGuardian && !!debug?.forceGuardian80;
-  const finalGuardianChance = isGuardianForced ? 80.0 : (hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0);
+  const DEBUG_FORCED_GUARDIAN_PCT = 80.0;
+  const finalGuardianChance = isGuardianForced ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0);
   result.push({
     name: 'Guardián (Alfa)',
     chance: finalGuardianChance,
@@ -225,10 +234,10 @@ export function getNpcEncounterChances(
   if (repelActive) {
     baseTrainerChance = GAME_RATIOS.encounters.trainerRepel * 100;
   } else if (debug?.trainerChance50) {
-    baseTrainerChance = 50.0;
+    baseTrainerChance = DEBUG_TRAINER_CHANCE_PERCENT;
   } else {
     baseTrainerChance = isRocketMaxCrim
-      ? (criminality / 10) * trainerBonus
+      ? (criminality / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus
       : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
   }
 

@@ -1,4 +1,9 @@
 
+import { ITEM_PRICES, INVENTORY_LEVEL_TIERS } from '../constants/items.ts';
+
+const POKEBALL_BUDGET_HALF_RATIO = 0.5;
+const CURE_PURCHASE_ROLL_THRESHOLD = 0.8;
+
 interface PurchaseCandidate {
   id: string;
   price: number;
@@ -29,30 +34,30 @@ export function generateNPCInventory(
   const candidates: PurchaseCandidate[] = [];
 
   // Nivel 1+: Poción común y curas de estado específicas
-  candidates.push({ id: 'potion', price: 200, type: 'heal' });
-  candidates.push({ id: 'antidote', price: 100, type: 'cure' });
-  candidates.push({ id: 'paralyzeheal', price: 200, type: 'cure' });
-  candidates.push({ id: 'burnheal', price: 250, type: 'cure' });
-  candidates.push({ id: 'awakening', price: 250, type: 'cure' });
-  candidates.push({ id: 'iceheal', price: 250, type: 'cure' });
+  candidates.push({ id: 'potion', price: ITEM_PRICES.potion!, type: 'heal' });
+  candidates.push({ id: 'antidote', price: ITEM_PRICES.antidote!, type: 'cure' });
+  candidates.push({ id: 'paralyzeheal', price: ITEM_PRICES.paralyzeheal!, type: 'cure' });
+  candidates.push({ id: 'burnheal', price: ITEM_PRICES.burnheal!, type: 'cure' });
+  candidates.push({ id: 'awakening', price: ITEM_PRICES.awakening!, type: 'cure' });
+  candidates.push({ id: 'iceheal', price: ITEM_PRICES.iceheal!, type: 'cure' });
 
   // Nivel 15+: Súper Poción y Cura Total
-  if (maxLevel >= 15) {
-    candidates.push({ id: 'superpotion', price: 600, type: 'heal' });
-    candidates.push({ id: 'fullheal', price: 600, type: 'cure' });
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
+    candidates.push({ id: 'superpotion', price: ITEM_PRICES.superpotion!, type: 'heal' });
+    candidates.push({ id: 'fullheal', price: ITEM_PRICES.fullheal!, type: 'cure' });
   }
 
   // Nivel 30+: Hiper Poción y Revivir
-  if (maxLevel >= 30) {
-    candidates.push({ id: 'hyperpotion', price: 1500, type: 'heal' });
-    candidates.push({ id: 'revive', price: 2000, type: 'revive' });
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.HYPER_TIER) {
+    candidates.push({ id: 'hyperpotion', price: ITEM_PRICES.hyperpotion!, type: 'heal' });
+    candidates.push({ id: 'revive', price: ITEM_PRICES.revive!, type: 'revive' });
   }
 
   // Nivel 50+: Poción Máxima, Restaurar Todo y Revivir Máximo
-  if (maxLevel >= 50) {
-    candidates.push({ id: 'maxpotion', price: 2500, type: 'heal' });
-    candidates.push({ id: 'fullrestore', price: 5000, type: 'heal' }); // actúa como heal/cure híbrido
-    candidates.push({ id: 'revivemax', price: 3000, type: 'revive' });
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.VETERAN_TIER) {
+    candidates.push({ id: 'maxpotion', price: ITEM_PRICES.maxpotion!, type: 'heal' });
+    candidates.push({ id: 'fullrestore', price: ITEM_PRICES.fullrestore!, type: 'heal' }); // actúa como heal/cure híbrido
+    candidates.push({ id: 'revivemax', price: ITEM_PRICES.revivemax!, type: 'revive' });
   }
 
   // 4. Realizar compras inteligentes iterativamente hasta agotar el presupuesto o alcanzar el límite de objetos
@@ -62,8 +67,8 @@ export function generateNPCInventory(
 
   let pokeballBudget = Math.floor(budget * 0.5);
   // Priorizar pokebolas si no alcanza para el mínimo (200)
-  if (pokeballBudget < 200 && budget >= 200) {
-    pokeballBudget = 200;
+  if (pokeballBudget < ITEM_PRICES.pokeball! && budget >= ITEM_PRICES.pokeball!) {
+    pokeballBudget = ITEM_PRICES.pokeball!;
   }
   const recoveryBudget = budget - pokeballBudget;
 
@@ -80,9 +85,9 @@ export function generateNPCInventory(
     const roll = Math.random();
     let selected: PurchaseCandidate | null = null;
 
-    if (roll < 0.5) {
+    if (roll < POKEBALL_BUDGET_HALF_RATIO) {
       selected = affordable.find(c => c.type === 'heal') || affordable[0] || null;
-    } else if (roll < 0.8) {
+    } else if (roll < CURE_PURCHASE_ROLL_THRESHOLD) {
       selected = affordable.find(c => c.type === 'cure') || affordable[0] || null;
     } else {
       selected = affordable.find(c => c.type === 'revive') || affordable[0] || null;
@@ -100,13 +105,13 @@ export function generateNPCInventory(
   // 5. Comprar Pokéballs usando la otra mitad del presupuesto
   let spentPokeball = 0;
   const pbCandidates: { id: string; price: number }[] = [
-    { id: 'pokeball', price: 200 }
+    { id: 'pokeball', price: ITEM_PRICES.pokeball! }
   ];
-  if (maxLevel >= 15) {
-    pbCandidates.push({ id: 'greatball', price: 500 });
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.SUPER_TIER) {
+    pbCandidates.push({ id: 'greatball', price: ITEM_PRICES.greatball! });
   }
-  if (maxLevel >= 35) {
-    pbCandidates.push({ id: 'ultraball', price: 1000 });
+  if (maxLevel >= INVENTORY_LEVEL_TIERS.ULTRA_BALL_TIER) {
+    pbCandidates.push({ id: 'ultraball', price: ITEM_PRICES.ultraball! });
   }
 
   const sortedPBs = pbCandidates.sort((a, b) => b.price - a.price);
@@ -124,17 +129,27 @@ export function generateNPCInventory(
 }
 
 
+export const NPC_BUDGET_CONFIG = { // no-magic
+  GYM_LEVEL_MULT: 100,
+  GYM_BASE_BONUS: 1000,
+  SPECIAL_LEVEL_MULT: 60,
+  SPECIAL_BASE_BONUS: 500,
+  STANDARD_LEVEL_MULT: 25,
+  STANDARD_BASE_BONUS: 200,
+  LEVEL_CAP_HIGH: 40
+} as const;
+
 /**
  * Calcula el presupuesto base de un NPC según su tipo y nivel.
  */
 export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpecial: boolean): number {
   if (isGym) {
-    return (maxLevel * 100 + 1000) * 2;
+    return (maxLevel * NPC_BUDGET_CONFIG.GYM_LEVEL_MULT + NPC_BUDGET_CONFIG.GYM_BASE_BONUS) * 2;
   }
   if (isSpecial) {
-    return (maxLevel * 60 + 500) * 2;
+    return (maxLevel * NPC_BUDGET_CONFIG.SPECIAL_LEVEL_MULT + NPC_BUDGET_CONFIG.SPECIAL_BASE_BONUS) * 2;
   }
-  return (maxLevel * 25 + 200) * 2;
+  return (maxLevel * NPC_BUDGET_CONFIG.STANDARD_LEVEL_MULT + NPC_BUDGET_CONFIG.STANDARD_BASE_BONUS) * 2;
 }
 
 /**
@@ -162,5 +177,5 @@ export function calculateNPCMaxItems(
   if (isSpecial) {
     return 6;
   }
-  return maxLevel > 40 ? 4 : 2;
+  return maxLevel > NPC_BUDGET_CONFIG.LEVEL_CAP_HIGH ? 4 : 2;
 }

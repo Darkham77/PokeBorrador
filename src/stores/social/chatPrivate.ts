@@ -7,6 +7,7 @@ import { useAudioStore } from '@/stores/audio.ts'
 import { useSocialStore } from '@/stores/social/social.ts'
 import { logger } from '@/logic/utils/logger'
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { CHAT_DEDUP_TIME_WINDOW_MS, PRIVATE_CHAT_MAX_MESSAGES, CHAT_PRUNE_MESSAGES_LIMIT, CHAT_THROTTLE_INTERVAL_MS, PRIVATE_CHAT_MAX_MESSAGE_LENGTH } from '@/logic/constants/gameplay.ts'
 
 export interface ChatMessage {
   id?: string | number;
@@ -180,12 +181,12 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
 
           const msgEpoch = parseInstantEpoch(createdAt)
           const isDup = chat.messages.some((m: ChatMessage) => {
-            return m.text === message && Math.abs(parseInstantEpoch(m.timestamp) - msgEpoch) < 2000
+            return m.text === message && Math.abs(parseInstantEpoch(m.timestamp) - msgEpoch) < CHAT_DEDUP_TIME_WINDOW_MS
           })
 
           if (!isDup) {
             chat.messages.push(msgObj)
-            if (chat.messages.length > 25) {
+            if (chat.messages.length > PRIVATE_CHAT_MAX_MESSAGES) {
               chat.messages.shift()
             }
             chat.lastInteraction = msgEpoch
@@ -213,10 +214,10 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
         .select('created_at')
         .eq('senderId', myId)
         .order('created_at', { ascending: false })
-        .limit(1000)
+        .limit(CHAT_PRUNE_MESSAGES_LIMIT)
 
-      if (data && Array.isArray(data) && data.length === 1000) {
-        const thresholdDate = (data as Array<{ created_at: string }>)[999]?.created_at
+      if (data && Array.isArray(data) && data.length === CHAT_PRUNE_MESSAGES_LIMIT) {
+        const thresholdDate = (data as Array<{ created_at: string }>)[CHAT_PRUNE_MESSAGES_LIMIT - 1]?.created_at
         if (thresholdDate) {
           await gameStore.db.from('chat_messages')
             .delete()
@@ -286,7 +287,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     chat.messages.push(payload as ChatMessage)
     chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
     
-    if (chat.messages.length > 25) chat.messages.shift()
+    if (chat.messages.length > PRIVATE_CHAT_MAX_MESSAGES) chat.messages.shift()
 
     if (activeChatId.value !== chatKey && payload.senderId !== authStore.user?.id) {
       chat.unreadCount++
@@ -300,7 +301,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     if (!authStore.user || !text.trim() || !privateChats[friendId] || !gameStore.db) return
 
     const now = Temporal.Now.instant().epochMilliseconds
-    if (now - lastMessageSentTimestamp < 1000) {
+    if (now - lastMessageSentTimestamp < CHAT_THROTTLE_INTERVAL_MS) {
       uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳')
       return
     }
@@ -309,7 +310,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     const payload = {
       senderId: authStore.user.id,
       senderName: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
-      text: text.slice(0, 250),
+      text: text.slice(0, PRIVATE_CHAT_MAX_MESSAGE_LENGTH),
       timestamp: Temporal.Now.instant().toString()
     }
 

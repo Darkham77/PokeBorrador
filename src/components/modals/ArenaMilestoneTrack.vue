@@ -1,4 +1,7 @@
-<script setup lang="ts">
+const MILESTONE_CARD_ENTER_X_PX = 4
+const MILESTONE_SPRITE_ENTER_Y_PX = -4
+const MILESTONE_SPRITE_ENTER_SCALE = 1.2
+const MILESTONE_PILL_ENTER_Y_PX = -1
 import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
@@ -35,6 +38,9 @@ function isClaimed(id: string | number) {
   return (pvp.rewardsClaimed || []).includes(id.toString())
 }
 
+const GSAP_EASE_OVERSHOOT_LIST = 1.15
+const GSAP_EASE_OVERSHOOT_SPRITE = 1.275
+
 // GSAP Stagger Entrance Animations for Milestone Cards
 const animateList = () => {
   nextTick(() => {
@@ -45,11 +51,11 @@ const animateList = () => {
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
-        x: -15,
-        scale: 0.97,
-        duration: 0.45,
-        stagger: 0.05,
-        ease: 'back.out(1.15)',
+        x: MILESTONE_LIST_ENTER_X_PX,
+        scale: MILESTONE_LIST_INITIAL_SCALE,
+        duration: MILESTONE_LIST_DURATION_SEC,
+        stagger: MILESTONE_LIST_STAGGER_SEC,
+        ease: `back.out(${GSAP_EASE_OVERSHOOT_LIST})`,
         clearProps: 'all',
         onComplete: () => {
           listRef.value?.classList.remove('list-animating')
@@ -64,33 +70,33 @@ const animateList = () => {
 function handleCardEnter(e: MouseEvent, isLocked: boolean) {
   if (isLocked) return
   gsap.to(e.currentTarget, {
-    x: 4,
+    x: MILESTONE_CARD_ENTER_X_PX,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderColor: 'rgba(59, 130, 246, 0.2)',
-    duration: 0.25,
+    duration: MILESTONE_HOVER_DURATION_SEC,
     ease: 'power2.out'
   })
 }
 
 function handleCardLeave(e: MouseEvent, isClaimed: boolean) {
-  const bg = isClaimed ? 'rgba(34, 197, 94, 0.03)' : 'rgba(255, 255, 255, 0.02)'
+  const bg = isClaimed ? 'rgba(34, 197, 94, 0.03)' : 'rgba(255, 255, 255, 0.04)'
   const border = isClaimed ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255, 255, 255, 0.04)'
   gsap.to(e.currentTarget, {
     x: 0,
     backgroundColor: bg,
     borderColor: border,
-    duration: 0.25,
+    duration: MILESTONE_HOVER_DURATION_SEC,
     ease: 'power2.out'
   })
 }
 
 function handleSpriteEnter(e: MouseEvent) {
   gsap.to(e.currentTarget, {
-    y: -4,
-    scale: 1.2,
+    y: MILESTONE_SPRITE_ENTER_Y_PX,
+    scale: MILESTONE_SPRITE_ENTER_SCALE,
     zIndex: Z_LAYERS.MAP_SPAWNS,
-    duration: 0.2,
-    ease: 'back.out(1.275)'
+    duration: MILESTONE_SPRITE_DURATION_SEC,
+    ease: `back.out(${GSAP_EASE_OVERSHOOT_SPRITE})`
   })
 }
 
@@ -99,14 +105,14 @@ function handleSpriteLeave(e: MouseEvent) {
     y: 0,
     scale: 1,
     zIndex: Z_LAYERS.MAP_FLOOR,
-    duration: 0.2,
+    duration: MILESTONE_SPRITE_DURATION_SEC,
     ease: 'power2.out'
   })
 }
 
 function handlePillEnter(e: MouseEvent) {
   gsap.to(e.currentTarget, {
-    y: -1,
+    y: MILESTONE_PILL_ENTER_Y_PX,
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
     borderColor: 'rgba(59, 130, 246, 0.3)',
     color: 'var(--white)',

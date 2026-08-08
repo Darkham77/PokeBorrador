@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { gsap } from 'gsap'
+import { NOTIFICATION_DISMISS_DELAY_SEC } from '@/logic/constants/animations.ts'
+import { MAX_NOTIFICATION_HISTORY_ITEMS } from '@/logic/constants/gameplay.ts'
 
 export interface UINotification {
   id: string | number;
@@ -32,7 +34,7 @@ export const useNotificationStore = defineStore('notifications', () => {
           read: false,
           meta: { icon }
         })
-        if (gameStore.state.notificationHistory.length > 10) {
+        if (gameStore.state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
           gameStore.state.notificationHistory.shift()
         }
         gameStore.scheduleSave()
@@ -41,7 +43,7 @@ export const useNotificationStore = defineStore('notifications', () => {
       throw new Error(`[notify] Failed to persist notification to history: ${String(err)}`)
     })
 
-    gsap.delayedCall(4.0, () => {
+    gsap.delayedCall(NOTIFICATION_DISMISS_DELAY_SEC, () => {
       notifications.value = notifications.value.filter(n => n.id !== id)
     })
   }

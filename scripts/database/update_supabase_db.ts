@@ -26,9 +26,11 @@ enableCompileCache();
 
 const MIGRATIONS_DIR = safeResolve(process.cwd(), 'database/migrations');
 const BASELINE_FILE = safeResolve(process.cwd(), 'database/migrations/20240416000000_baseline_schema.sql');
+const DEFAULT_POSTGRES_PORT_LABEL_TEXT = '5432';
+const UPDATE_TARGET_NODE_VERSION_LABEL = '26';
 
 export async function updateSupabaseDb(): Promise<void> {
-  console.log(styleText('bold', '\n--- 🛡️ SUPABASE DATABASE MANAGER & MIGRATOR (Node.js 26+) ---'));
+  console.log(styleText('bold', `\n--- 🛡️ SUPABASE DATABASE MANAGER & MIGRATOR (Node.js ${UPDATE_TARGET_NODE_VERSION_LABEL}+) ---`));
 
   const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
@@ -214,7 +216,7 @@ export async function updateSupabaseDb(): Promise<void> {
       }
       if (msg.toLowerCase().includes('tenant or user not found')) {
         console.error(styleText('yellow', `👉 Advertencia: El servidor proxy/pooler (Supavisor) rechazó la conexión por falta de Tenant ID.`));
-        console.error(styleText('yellow', `👉 Configura SERVER_${profile}_DATABASE_URL con la cadena de conexión directa (ej. puerto 5432 directo o usuario postgres.<tenant>) en .env`));
+        console.error(styleText('yellow', `👉 Configura SERVER_${profile}_DATABASE_URL con la cadena de conexión directa (ej. puerto ${DEFAULT_POSTGRES_PORT_LABEL_TEXT} directo o usuario postgres.<tenant>) en .env`));
       }
     } finally {
       await sql.end();

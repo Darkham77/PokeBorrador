@@ -46,18 +46,23 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
     })
   }
   
+const MAX_TOTAL_IVS = 186
+const MAX_BST_FILTER = 1000
+const MAX_SINGLE_IV = 31
+const MAX_POKEMON_LEVEL_CONST = 100
+
   const filters = ref<FilterState>({
     tier: 'all',
     type: 'all',
     levelMin: 1,
-    levelMax: 100,
+    levelMax: MAX_POKEMON_LEVEL_CONST,
     ivTotalMin: 0,
-    ivTotalMax: 186,
+    ivTotalMax: MAX_TOTAL_IVS,
     ivAny31: false,
     ivMin: 0,
-    ivMax: 31,
+    ivMax: MAX_SINGLE_IV,
     bstMin: 0,
-    bstMax: 1000,
+    bstMax: MAX_BST_FILTER,
     ivHP: 0,
     ivATK: 0,
     ivDEF: 0,
@@ -71,10 +76,10 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
 
   const hasActiveFilters = computed(() => {
     const f = filters.value
-    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
-           f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== '' ||
-           f.bstMin > 0 || f.bstMax < 1000 || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
-           f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < 31 ||
+    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < MAX_POKEMON_LEVEL_CONST ||
+           f.ivTotalMin > 0 || f.ivTotalMax < MAX_TOTAL_IVS || f.ivAny31 || f.search !== '' ||
+           f.bstMin > 0 || f.bstMax < MAX_BST_FILTER || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
+           f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < MAX_SINGLE_IV ||
            (f.tags && f.tags.length > 0)
   })
 
@@ -93,7 +98,7 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
       if (f.type !== 'all' && p.type !== f.type) return false
       if (p.level < f.levelMin || p.level > f.levelMax) return false
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
-      if (f.ivAny31 && !Object.values(p.ivs || {}).some(v => v === 31)) return false
+      if (f.ivAny31 && !Object.values(p.ivs || {}).some(v => v === MAX_SINGLE_IV)) return false
       
       // Individual IV Range (All stats must be within range)
       const allIvValues = [p.ivs?.hp||0, p.ivs?.atk||0, p.ivs?.def||0, p.ivs?.spa||0, p.ivs?.spd||0, p.ivs?.spe||0]
@@ -187,12 +192,12 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
       levelMin: 1,
       levelMax: 100,
       ivTotalMin: 0,
-      ivTotalMax: 186,
+      ivTotalMax: MAX_TOTAL_IVS,
       ivAny31: false,
       ivMin: 0,
-      ivMax: 31,
+      ivMax: MAX_SINGLE_IV,
       bstMin: 0,
-      bstMax: 1000,
+      bstMax: MAX_BST_FILTER,
       ivHP: 0,
       ivATK: 0,
       ivDEF: 0,

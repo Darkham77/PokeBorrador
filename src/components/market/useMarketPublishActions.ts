@@ -4,12 +4,15 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { InventoryItem } from './useMarketPublishInventory.ts'
 import type { useGTSStore } from '@/stores/gts'
 
+const DEFAULT_MARKET_LISTING_PRICE = 1000;
+const MARKET_SUGGESTED_PRICE_RATIO = 0.5;
+
 export function useMarketPublishActions(
   gtsStore: ReturnType<typeof useGTSStore>,
   activeMode: Ref<'pokemon' | 'item'>
 ) {
   const selection = ref<Pokemon | InventoryItem | null>(null)
-  const price = ref(1000)
+  const price = ref(DEFAULT_MARKET_LISTING_PRICE)
   const itemQty = ref(1)
 
   function updateSuggestedPrice() {
@@ -17,12 +20,12 @@ export function useMarketPublishActions(
       const nameStr = selection.value.id
       const shopItem = SHOP_ITEMS.find(i => i.id === nameStr || i.name === nameStr)
       if (shopItem && shopItem.price > 0) {
-        price.value = Math.floor(shopItem.price * 0.5) * itemQty.value
+        price.value = Math.floor(shopItem.price * MARKET_SUGGESTED_PRICE_RATIO) * itemQty.value
       } else {
-        price.value = 1000
+        price.value = DEFAULT_MARKET_LISTING_PRICE
       }
     } else {
-      price.value = 1000
+      price.value = DEFAULT_MARKET_LISTING_PRICE
     }
   }
 
@@ -48,7 +51,7 @@ export function useMarketPublishActions(
     const success = await gtsStore.publishListing(activeMode.value, publishData, price.value)
     if (success) {
       selection.value = null
-      price.value = 1000
+      price.value = DEFAULT_MARKET_LISTING_PRICE
       itemQty.value = 1
     }
   }

@@ -337,9 +337,12 @@ const { initSandstormAnim } = useAtmosphereSandstormAnim(dustLayer1Ref, dustLaye
 const { initSnowAnim } = useAtmosphereSnowAnim(layer1Ref, layer2Ref, applyParallaxLayer)
 const { initRainAnim, cleanUpLightning } = useAtmosphereRainAnim(layer1Ref, layer2Ref, lightningRef, flashRef, lightningPos)
 
+const LEAF_WEATHER_STORM_WIND_COUNT = 15
+const ATMOSPHERE_SEED_Y_MULTIPLIER = 300
+
 const leafCount = computed(() => {
   let count = 0
-  if (props.weather === 'storm' || props.weather === 'strong_winds') count = 15
+  if (props.weather === 'storm' || props.weather === 'strong_winds') count = LEAF_WEATHER_STORM_WIND_COUNT
   else if (props.weather === 'wind') count = 8
   
   if (props.isLowPower) {
@@ -362,7 +365,7 @@ const weatherOverlayStyles = computed(() => {
     '--card-speed': 0.6 + (animSeed.value * 1.0),
     '--atmo-dir': direction.value,
     '--seed-x': (animSeed.value * 100) % 100,
-    '--seed-y': (animSeed.value * 300) % 100
+    '--seed-y': (animSeed.value * ATMOSPHERE_SEED_Y_MULTIPLIER) % 100
   }
 })
 </script>

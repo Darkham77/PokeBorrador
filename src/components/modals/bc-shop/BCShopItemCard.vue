@@ -35,9 +35,11 @@ const isUnlocked = computed(() => {
   return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
 })
 
+const BATTLE_COINS_PRICE_CONVERSION_DIVISOR = 30
+
 const itemBCPrice = computed(() => {
   if (props.item.bcPrice !== undefined) return props.item.bcPrice
-  return props.item.price ? Math.ceil(props.item.price / 30) : 0
+  return props.item.price ? Math.ceil(props.item.price / BATTLE_COINS_PRICE_CONVERSION_DIVISOR) : 0
 })
 
 const hasEnoughBC = computed(() => {

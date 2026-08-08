@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
+import { GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations.ts'
+
+const GAME_VIEW_TRANSITION_Y_PX = 10
 
 const onBeforeEnter = (el: Element) => {
-  gsap.set(el, { opacity: 0, y: 10 })
+  gsap.set(el, { opacity: 0, y: GAME_VIEW_TRANSITION_Y_PX })
 }
 
 const onEnter = (el: Element, done: () => void) => {
   gsap.to(el, {
     opacity: 1,
     y: 0,
-    duration: 0.2,
+    duration: GSAP_FAST_DURATION_SEC,
     ease: 'power2.out',
     onComplete: done
   })
@@ -18,8 +21,8 @@ const onEnter = (el: Element, done: () => void) => {
 const onLeave = (el: Element, done: () => void) => {
   gsap.to(el, {
     opacity: 0,
-    y: 10,
-    duration: 0.2,
+    y: GAME_VIEW_TRANSITION_Y_PX,
+    duration: GSAP_FAST_DURATION_SEC,
     ease: 'power2.in',
     onComplete: done
   })
@@ -30,7 +33,7 @@ const onNavItemMouseEnter = (event: MouseEvent) => {
   gsap.to(target, {
     backgroundColor: 'Rgba(255, 255, 255, 0.05)',
     color: '#ffffff',
-    duration: 0.2,
+    duration: GSAP_FAST_DURATION_SEC,
     overwrite: 'auto'
   })
 }

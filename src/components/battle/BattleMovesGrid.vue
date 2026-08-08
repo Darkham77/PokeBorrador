@@ -2,6 +2,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 import { gsap } from 'gsap'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
@@ -57,7 +58,7 @@ const touchDragStyle = (index: number) => {
   if (!isTouchDragging.value || draggedIndex.value !== index) return {}
   return {
     transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
-    zIndex: 9999,
+    zIndex: Z_LAYERS.OVERLAY,
     pointerEvents: 'none' as const,
     position: 'relative' as const
   }
@@ -93,6 +94,10 @@ const onDragEnd = () => {
   dragOverIndex.value = null
 }
 
+const TOUCH_LONG_PRESS_DELAY_SEC = 0.3
+const TOUCH_VIBRATE_DURATION_MS = 50
+const TOUCH_MOVE_CANCEL_THRESHOLD_PX = 15
+
 function handleTouchStart(index: number, e: TouchEvent) {
   if (!props.canReorder || !fullMoves.value[index]) return
   
@@ -112,12 +117,12 @@ function handleTouchStart(index: number, e: TouchEvent) {
     el.addEventListener('touchcancel', handleTouchEndNonPassive)
   }
   
-  touchTimer.value = gsap.delayedCall(0.3, () => {
+  touchTimer.value = gsap.delayedCall(TOUCH_LONG_PRESS_DELAY_SEC, () => {
     isTouchDragging.value = true
     draggedIndex.value = index
     isDragging.value = true
     if (el) el.style.touchAction = 'none'
-    if ('vibrate' in navigator) navigator.vibrate(50)
+    if ('vibrate' in navigator) navigator.vibrate(TOUCH_VIBRATE_DURATION_MS)
   })
 }
 
@@ -170,7 +175,7 @@ function handleTouchMove(e: TouchEvent) {
   } else {
     const deltaX = Math.abs(touch.clientX - touchStartX.value)
     const deltaY = Math.abs(touch.clientY - touchStartY.value)
-    if (deltaX > 15 || deltaY > 15) {
+    if (deltaX > TOUCH_MOVE_CANCEL_THRESHOLD_PX || deltaY > TOUCH_MOVE_CANCEL_THRESHOLD_PX) {
       if (touchTimer.value) touchTimer.value.kill()
     }
   }

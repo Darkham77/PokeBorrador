@@ -7,6 +7,11 @@ import { useBreedingStore } from '@/stores/breeding'
 import { getItemById, requireItemId, SHOP_ITEMS } from '@/data/inventory/items'
 import type { Inventory } from '@/types/inventory/items';
 
+const DEBUG_DEFAULT_ITEM_QTY = 10
+const DEBUG_FILL_INVENTORY_QTY = 50
+const DEBUG_CLONING_TEST_MONEY = 100_000
+const DEBUG_CLONING_TEST_FOSSIL_QTY = 10
+
 export function registerItemTools(debug: DebugSystem) {
   const game = useGameStore()
   const ui = useUIStore()
@@ -17,7 +22,7 @@ export function registerItemTools(debug: DebugSystem) {
     label: 'AÑADIR ITEM',
     command: 'addItem',
     category: 'items',
-    action: (id: string, qty = 10) => {
+    action: (id: string, qty = DEBUG_DEFAULT_ITEM_QTY) => {
       const resolvedId = requireItemId(id)
       const item = getItemById(resolvedId)
       const itemName = item.name
@@ -35,7 +40,7 @@ export function registerItemTools(debug: DebugSystem) {
     label: 'LLENAR MOCHILA',
     command: 'fillInventory',
     category: 'items',
-    action: (qty = 50) => {
+    action: (qty = DEBUG_FILL_INVENTORY_QTY) => {
       const inventory: Inventory = { ...game.state.inventory }
       SHOP_ITEMS.forEach(item => {
         inventory[item.id] = qty
@@ -80,13 +85,13 @@ export function registerItemTools(debug: DebugSystem) {
     command: 'setupCloningTest',
     category: 'items',
     action: () => {
-      game.state.money = 100000
-      game.state.inventory['dome_fossil'] = 10
-      game.state.inventory['helix_fossil'] = 10
-      game.state.inventory['old_amber'] = 10
-      ui.notify('Debug: $100K y 10x de cada fósil añadidos', '🧪')
+      game.state.money = DEBUG_CLONING_TEST_MONEY
+      game.state.inventory['dome_fossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      game.state.inventory['helix_fossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      game.state.inventory['old_amber'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      ui.notify(`Debug: $${DEBUG_CLONING_TEST_MONEY.toLocaleString()} y ${DEBUG_CLONING_TEST_FOSSIL_QTY}x de cada fósil añadidos`, '🧪')
       game.saveGame(false)
     },
-    description: 'Añade $100K y 10 unidades de cada fósil para testear la clonación.'
+    description: `Añade $100K y ${DEBUG_CLONING_TEST_FOSSIL_QTY} unidades de cada fósil para testear la clonación.`
   })
 }

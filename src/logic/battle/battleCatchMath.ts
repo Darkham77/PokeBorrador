@@ -1,4 +1,6 @@
 import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
+const CATCH_MATH_65535_MAX = 65535
+const CATCH_MATH_256_MAX = 256
 import { getEffectiveStatPure } from './battleMath.ts'
 
 import { isWeatherId } from '@/logic/weather/weatherRegistry';
@@ -68,11 +70,11 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType: ItemId
   const totalMult = ballbonus
 
   const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)))
-  const b = Math.floor(65535 * Math.pow(finalRate / 255, 0.25))
+  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / 255, 0.25))
   
   let shakes = 0
   for (let i = 0; i < 4; i++) {
-    if (Math.random() * 65535 < b) shakes++
+    if (Math.random() * CATCH_MATH_65535_MAX < b) shakes++
     else break
   }
 
@@ -120,9 +122,9 @@ export function calculateEscapeChancePure(
   }
 
   const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts
-  if (f >= 256) {
+  if (f >= CATCH_MATH_256_MAX) {
     return true
   }
 
-  return Math.floor(Math.random() * 256) < f
+  return Math.floor(Math.random() * CATCH_MATH_256_MAX) < f
 }

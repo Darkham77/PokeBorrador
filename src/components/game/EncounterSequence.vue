@@ -27,6 +27,17 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const FLICKER_DURATION_SEC = 0.07
+const EXCLAMATION_DURATION_SEC = 0.2
+const RIVAL_AUTO_CLOSE_DELAY_SEC = 1.2
+const CARD_ENTRY_DURATION_SEC = 0.5
+const ICON_FLOAT_DURATION_SEC = 0.75
+const ICON_FLOAT_Y_PX = -20
+const EXCLAMATION_MIN_SCALE = 0.8
+const EXCLAMATION_MAX_SCALE = 1.2
+const CARD_ENTRY_SCALE = 0.8
+const CARD_ENTRY_Y_PX = 20
+
 // Template Refs
 const rivalFlicker = ref<HTMLElement | null>(null)
 const rivalExclamation = ref<HTMLElement | null>(null)
@@ -41,7 +52,7 @@ watch(() => props.show, async (newVal) => {
       if (rivalFlicker.value) {
         gsap.to(rivalFlicker.value, {
           opacity: 0.3,
-          duration: 0.07,
+          duration: FLICKER_DURATION_SEC,
           repeat: -1,
           yoyo: true,
           ease: 'none'
@@ -50,12 +61,12 @@ watch(() => props.show, async (newVal) => {
 
       if (rivalExclamation.value) {
         gsap.fromTo(rivalExclamation.value, 
-          { scale: 0.8 },
-          { scale: 1.2, duration: 0.2, repeat: -1, yoyo: true, ease: 'back.out(2)' }
+          { scale: EXCLAMATION_MIN_SCALE },
+          { scale: EXCLAMATION_MAX_SCALE, duration: EXCLAMATION_DURATION_SEC, repeat: -1, yoyo: true, ease: 'back.out(2)' }
         )
       }
 
-      gsap.delayedCall(1.2, () => {
+      gsap.delayedCall(RIVAL_AUTO_CLOSE_DELAY_SEC, () => {
         if (props.onComplete) props.onComplete()
         emit('close')
       })
@@ -64,17 +75,17 @@ watch(() => props.show, async (newVal) => {
     if (props.type === 'fishing' || props.type === 'archaeology') {
       if (fishingCard.value) {
         gsap.from(fishingCard.value, {
-          scale: 0.8,
-          y: 20,
-          duration: 0.5,
+          scale: CARD_ENTRY_SCALE,
+          y: CARD_ENTRY_Y_PX,
+          duration: CARD_ENTRY_DURATION_SEC,
           ease: 'back.out(1.7)'
         })
       }
 
       if (fishingIcon.value) {
         gsap.to(fishingIcon.value, {
-          y: -20,
-          duration: 0.75,
+          y: ICON_FLOAT_Y_PX,
+          duration: ICON_FLOAT_DURATION_SEC,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut'

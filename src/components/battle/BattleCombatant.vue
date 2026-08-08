@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onUnmounted } from 'vue'
+
+const SPRITE_SWAP_STRETCH_Y = 1.5;
+const SPRITE_SWAP_SQUEEZE_X = 0.15;
+const SPRITE_SWAP_IN_DURATION_SEC = 0.18;
+const SPRITE_SWAP_OUT_DURATION_SEC = 0.25;
 import gsap from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -17,9 +22,11 @@ const shadowWrapperRef = ref<HTMLElement | null>(null)
 const pokeballImgRef = ref<HTMLImageElement | null>(null)
 const idleWrapperRef = ref<HTMLElement | null>(null)
 
+const DEFAULT_GROUND_Y_PERCENT = '75%'
+
 const props = withDefaults(defineProps<BattleCombatantProps>(), {
   pokemon: null,
-  groundY: '75%',
+  groundY: DEFAULT_GROUND_Y_PERCENT,
   shadowKey: null,
   animState: null,
   ballId: 'pokeball',
@@ -126,17 +133,17 @@ watch(
       
       const tl = gsap.timeline()
       tl.to(el, {
-        scaleY: 1.5,
-        scaleX: 0.15,
+        scaleY: SPRITE_SWAP_STRETCH_Y,
+        scaleX: SPRITE_SWAP_SQUEEZE_X,
         filter: 'brightness(4) contrast(1.5)',
-        duration: 0.18,
+        duration: SPRITE_SWAP_IN_DURATION_SEC,
         ease: 'power2.in'
       })
       .to(el, {
         scaleY: 1,
         scaleX: 1,
         filter: 'brightness(1) contrast(1)',
-        duration: 0.25,
+        duration: SPRITE_SWAP_OUT_DURATION_SEC,
         ease: 'back.out(2)'
       })
     }

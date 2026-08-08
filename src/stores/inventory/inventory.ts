@@ -20,6 +20,7 @@ import {
 export type { Item }
 
 import type { ItemId } from '@/data/inventory/items'
+import { ITEM_SELL_REFUND_FACTOR } from '@/logic/constants/items.ts'
 
 const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
 type ValuableItemId = (typeof VALUABLE_ITEM_IDS)[number]
@@ -185,7 +186,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     let total = 0
     Object.entries(bagSellSelected.value).forEach(([name, q]) => {
       const itemInfo = getItemById(name)
-      if (itemInfo) total += Math.floor((itemInfo.price || 0) * 0.5) * q
+      if (itemInfo) total += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * q
     })
     return total
   }
@@ -218,7 +219,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     const actualKey = findInventoryKey(itemName)
     if (!actualKey || !inv[actualKey]) return
     
-    if (qty === 999) {
+    const REMOVE_ALL_ITEM_QTY_FLAG = 999
+    if (qty === REMOVE_ALL_ITEM_QTY_FLAG) {
       delete inv[actualKey]
     } else {
       inv[actualKey] -= qty
@@ -247,7 +249,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     const inventoryQty = gameStore.state.inventory[actualKey] || 0
     const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
     
-    const gain = Math.floor((itemInfo.price || 0) * 0.5) * sellQty
+    const gain = Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * sellQty
     
     removeItem(actualKey, sellQty)
     gameStore.state.money += gain
@@ -266,7 +268,7 @@ export const useInventoryStore = defineStore('inventory', () => {
       
       if (mode === 'sell') {
         const itemInfo = getItemById(name)
-        totalGain += Math.floor((itemInfo.price || 0) * 0.5) * actualQty
+        totalGain += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * actualQty
       }
 
       inventory[actualKey] -= actualQty

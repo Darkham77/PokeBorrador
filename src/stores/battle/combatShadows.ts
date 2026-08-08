@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
+
+const DEFAULT_COMBAT_SHADOW_ENTITY_SIZE_PX = 300
+const DEFAULT_COMBAT_SHADOW_WIDTH_PCT = '70%'
 import { requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
 /**
@@ -75,8 +78,8 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       side: options.side || 'generic',
       entityX: options.entityX ?? (existing?.entityX ?? 0),
       entityY: options.entityY ?? (existing?.entityY ?? 0),
-      entitySize: options.entitySize ?? (existing?.entitySize ?? 300),
-      width: options.width || (existing?.width ?? '70%'),
+      entitySize: options.entitySize ?? (existing?.entitySize ?? DEFAULT_COMBAT_SHADOW_ENTITY_SIZE_PX),
+      width: options.width || (existing?.width ?? DEFAULT_COMBAT_SHADOW_WIDTH_PCT),
       isFlying: options.isFlying || false,
       feetY,
       feetX,

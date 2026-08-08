@@ -1,7 +1,13 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS, MAX_UI_SETTLE_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
+
+const SIMULATION_POKEMON_LEVEL = 50;
+const SIMULATION_VIGOR_VAL = 10;
+const SIMULATION_INITIAL_MONEY_VAL = 20000;
+const SIMULATION_DAYCARE_HOURS_PAST = 24;
+const SIMULATION_ACTIVE_POKEMON_LEVEL = 5;
 
 class BreedingLifecycleSimulation extends BaseE2ESimulation {
   constructor(page: Page, username: string) {
@@ -15,18 +21,18 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const gameStore = useGameStore();
 
-      const ditto = pokemonDebugService.generate({ id: requirePokemonSpeciesId('ditto'), level: 50 });
-      ditto.vigor = 10;
-      ditto.maxVigor = 10;
+      const ditto = pokemonDebugService.generate({ id: requirePokemonSpeciesId('ditto'), level: SIMULATION_POKEMON_LEVEL });
+      ditto.vigor = SIMULATION_VIGOR_VAL;
+      ditto.maxVigor = SIMULATION_VIGOR_VAL;
       
-      const bulbasaur = pokemonDebugService.generate({ id: requirePokemonSpeciesId('bulbasaur'), level: 50 });
-      bulbasaur.vigor = 10;
-      bulbasaur.maxVigor = 10;
+      const bulbasaur = pokemonDebugService.generate({ id: requirePokemonSpeciesId('bulbasaur'), level: SIMULATION_POKEMON_LEVEL });
+      bulbasaur.vigor = SIMULATION_VIGOR_VAL;
+      bulbasaur.maxVigor = SIMULATION_VIGOR_VAL;
 
       gameStore.state.starterChosen = true;
       gameStore.state.team = [ditto, bulbasaur];
       gameStore.state.box = [];
-      gameStore.state.money = 20000;
+      gameStore.state.money = SIMULATION_INITIAL_MONEY_VAL;
 
       await gameStore.saveGame();
     });
@@ -45,7 +51,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
 
       p1.inDaycare = true;
       p1.daycareSlot = 0;
-      const past = Temporal.Now.instant().subtract({ hours: 24 }).toString();
+      const past = Temporal.Now.instant().subtract({ hours: SIMULATION_DAYCARE_HOURS_PAST }).toString();
       p1.daycareDepositedAt = past;
 
       p2.inDaycare = true;
@@ -56,7 +62,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
       breedingStore.slots[1] = { pokemon: p2, slotIndex: 1, deposited_at: past };
 
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: 5 });
+      const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: SIMULATION_ACTIVE_POKEMON_LEVEL_5 });
       gameStore.state.team = [activePoke];
       gameStore.state.box = [p1, p2];
 
@@ -111,17 +117,17 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     await this.clickElement('[id^="egg-hud-card-"].is-ready');
 
     const hatchContainer = this.page.locator('#hatch-container');
-    await hatchContainer.waitFor({ state: 'visible', timeout: 5000 });
+    await hatchContainer.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await hatchContainer.click();
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS }).catch(() => null);
     await hatchContainer.click();
-    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: 1000 }).catch(() => null);
+    await this.page.waitForFunction(() => document.querySelector('#hatch-container'), undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS }).catch(() => null);
     await hatchContainer.click();
 
-    await this.clickElement('#hatch-continue-btn', 15000);
+    await this.clickElement('#hatch-continue-btn', MAX_PER_ACTION_TIMEOUT_MS);
     const mapBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
-    await expect(mapBtn).toBeVisible({ timeout: 15000 });
+    await expect(mapBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   public async verifyNewbornInBox(): Promise<boolean> {
@@ -135,7 +141,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
         } catch {
           return false;
         }
-      }, undefined, { timeout: 10000 });
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
       return true;
     } catch {
       return false;
@@ -144,7 +150,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Breeding & Hatching Lifecycle Simulation', () => {
-  test.use({ viewport: { width: 1600, height: 900 } });
+  test.use({ viewport: { width: SIMULATION_VIEWPORT_WIDTH_PX, height: SIMULATION_VIEWPORT_HEIGHT_PX } });
 
   test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
     const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;

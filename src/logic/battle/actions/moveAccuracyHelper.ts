@@ -4,6 +4,10 @@ import type { BattleStages } from '@/types/battle/battle'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/utils/timeUtils'
 
+const REDUCED_SUNNY_ACCURACY_PERCENT = 50;
+const STAGE_MODIFIER_RATIO = 0.33;
+const MAX_RANDOM_ROLL_PERCENT = 100;
+
 export function checkMoveAccuracy(
   store: BattleContext,
   attacker: Pokemon,
@@ -28,15 +32,15 @@ export function checkMoveAccuracy(
 
   const isThunderstorm = weather === 'thunderstorm'
   if ((isRainActive || isThunderstorm) && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100
-  else if (isSunnyActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50
+  else if (isSunnyActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = REDUCED_SUNNY_ACCURACY_PERCENT
   else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100
   else if (mechWeather === WEATHER_MECHANICAL.FOG) {
     const isMist = weather === 'mist' || weather === 'mist_visual'
     finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6))
   }
 
-  finalAcc = finalAcc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage))
-  if (Math.random() * 100 > finalAcc) {
+  finalAcc = finalAcc * (1 + (STAGE_MODIFIER_RATIO * accStage)) * (1 - (STAGE_MODIFIER_RATIO * evaStage))
+  if (Math.random() * MAX_RANDOM_ROLL_PERCENT > finalAcc) {
     store.addLog(`¡El ataque de ${attacker.name} falló!`, 'log-info', attacker)
     return false
   }

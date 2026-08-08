@@ -1,5 +1,7 @@
 import { ref, type Ref } from 'vue'
 
+const MIN_TOOLTIP_MAX_HEIGHT_PX = 120;
+
 export function useTooltipPosition(
   trigger: Ref<HTMLElement | null>,
   tooltip: Ref<HTMLElement | null>,
@@ -98,9 +100,9 @@ export function useTooltipPosition(
     }
 
     if (pos === 'top') {
-      maxHeight.value = Math.max(120, Math.round(rect.top - padding - gap))
+      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(rect.top - padding - gap))
     } else if (pos === 'bottom') {
-      maxHeight.value = Math.max(120, Math.round(viewportHeight - rect.bottom - padding - gap))
+      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(viewportHeight - rect.bottom - padding - gap))
     } else {
       maxHeight.value = null
     }

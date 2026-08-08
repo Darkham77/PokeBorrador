@@ -9,6 +9,20 @@
 import { getArgDateString } from '../utils/timeUtils.ts'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import {
+  MAX_ACTIVE_WAR_ZONES,
+  ELITE_GUARDIAN_RARITY_THRESHOLD,
+  RARE_GUARDIAN_RARITY_THRESHOLD,
+  GUARDIAN_RANDOM_SCALE,
+  BASE_GUARDIAN_POINTS,
+  RARE_GUARDIAN_POINTS,
+  ELITE_GUARDIAN_POINTS,
+  LEGENDARY_GUARDIAN_POINTS,
+  LOCAL_DOMINANCE_MAX_POINTS,
+  HASH_SHIFT_BITS,
+  GUARDIAN_ENCOUNTER_CHANCE_PERCENT,
+  GUARDIAN_LEVELS
+} from '@/logic/constants/gameplay'
 
 export const GUARDIAN_TIERS = ['common', 'rare', 'elite'] as const
 type GuardianTier = (typeof GUARDIAN_TIERS)[number]
@@ -27,32 +41,33 @@ export interface GuardianData extends GuardianBase {
 
 const GUARDIAN_POOL: Record<GuardianTier, readonly GuardianBase[]> = {
   common: [
-    { id: 'arcanine',   lv: 45, pts: 150 }, { id: 'pidgeot',    lv: 42, pts: 150 },
-    { id: 'nidoking',   lv: 44, pts: 150 }, { id: 'nidoqueen',  lv: 44, pts: 150 },
-    { id: 'victreebel', lv: 43, pts: 150 }, { id: 'vileplume',  lv: 43, pts: 150 },
-    { id: 'sandslash',  lv: 41, pts: 150 }, { id: 'fearow',     lv: 42, pts: 150 },
-    { id: 'golem',      lv: 45, pts: 150 }, { id: 'raichu',     lv: 45, pts: 150 },
-    { id: 'weezing',    lv: 40, pts: 150 }, { id: 'muk',        lv: 40, pts: 150 },
-    { id: 'starmie',    lv: 44, pts: 150 }, { id: 'rapidash',   lv: 44, pts: 150 },
-    { id: 'hypno',      lv: 42, pts: 150 }
+    { id: 'arcanine',   lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS }, { id: 'pidgeot',    lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS },
+    { id: 'nidoking',   lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS }, { id: 'nidoqueen',  lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS },
+    { id: 'victreebel', lv: GUARDIAN_LEVELS.TIER_43, pts: BASE_GUARDIAN_POINTS }, { id: 'vileplume',  lv: GUARDIAN_LEVELS.TIER_43, pts: BASE_GUARDIAN_POINTS },
+    { id: 'sandslash',  lv: GUARDIAN_LEVELS.TIER_41, pts: BASE_GUARDIAN_POINTS }, { id: 'fearow',     lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS },
+    { id: 'golem',      lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS }, { id: 'raichu',     lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS },
+    { id: 'weezing',    lv: GUARDIAN_LEVELS.TIER_40, pts: BASE_GUARDIAN_POINTS }, { id: 'muk',        lv: GUARDIAN_LEVELS.TIER_40, pts: BASE_GUARDIAN_POINTS },
+    { id: 'starmie',    lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS }, { id: 'rapidash',   lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS },
+    { id: 'hypno',      lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS }
   ],
   rare: [
-    { id: 'gyarados',   lv: 50, pts: 300 }, { id: 'alakazam',   lv: 48, pts: 300 },
-    { id: 'machamp',    lv: 48, pts: 300 }, { id: 'gengar',     lv: 48, pts: 300 },
-    { id: 'exeggutor',  lv: 46, pts: 300 }, { id: 'pinsir',     lv: 47, pts: 300 },
-    { id: 'scyther',    lv: 47, pts: 300 }, { id: 'kangaskhan', lv: 45, pts: 300 },
-    { id: 'tauros',     lv: 45, pts: 300 }, { id: 'slowbro',    lv: 46, pts: 300 }, 
-    { id: 'jolteon',    lv: 48, pts: 300 }, { id: 'vaporeon',   lv: 48, pts: 300 }, 
-    { id: 'flareon',    lv: 48, pts: 300 }
+    { id: 'gyarados',   lv: GUARDIAN_LEVELS.TIER_50, pts: RARE_GUARDIAN_POINTS }, { id: 'alakazam',   lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS },
+    { id: 'machamp',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, { id: 'gengar',     lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS },
+    { id: 'exeggutor',  lv: GUARDIAN_LEVELS.TIER_46, pts: RARE_GUARDIAN_POINTS }, { id: 'pinsir',     lv: GUARDIAN_LEVELS.TIER_47, pts: RARE_GUARDIAN_POINTS },
+    { id: 'scyther',    lv: GUARDIAN_LEVELS.TIER_47, pts: RARE_GUARDIAN_POINTS }, { id: 'kangaskhan', lv: GUARDIAN_LEVELS.TIER_45, pts: RARE_GUARDIAN_POINTS },
+    { id: 'tauros',     lv: GUARDIAN_LEVELS.TIER_45, pts: RARE_GUARDIAN_POINTS }, { id: 'slowbro',    lv: GUARDIAN_LEVELS.TIER_46, pts: RARE_GUARDIAN_POINTS }, 
+    { id: 'jolteon',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, { id: 'vaporeon',   lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, 
+    { id: 'flareon',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }
   ],
   elite: [
-    { id: 'dragonite',  lv: 60, pts: 750 }, { id: 'snorlax',    lv: 55, pts: 750 },
-    { id: 'lapras',     lv: 55, pts: 750 }, { id: 'chansey',    lv: 50, pts: 750 },
-    { id: 'cloyster',   lv: 52, pts: 750 }
+    { id: 'dragonite',  lv: GUARDIAN_LEVELS.TIER_60, pts: LEGENDARY_GUARDIAN_POINTS }, { id: 'snorlax',    lv: GUARDIAN_LEVELS.TIER_55, pts: LEGENDARY_GUARDIAN_POINTS },
+    { id: 'lapras',     lv: GUARDIAN_LEVELS.TIER_55, pts: LEGENDARY_GUARDIAN_POINTS }, { id: 'chansey',    lv: GUARDIAN_LEVELS.TIER_50, pts: LEGENDARY_GUARDIAN_POINTS },
+    { id: 'cloyster',   lv: GUARDIAN_LEVELS.TIER_52, pts: LEGENDARY_GUARDIAN_POINTS }
   ]
 }
 
-export const GUARDIAN_CHANCE = 0.015
+/** Chance factor of encountering a guardian in war zones. */
+export const GUARDIAN_CHANCE = GUARDIAN_ENCOUNTER_CHANCE_PERCENT
 
 /**
  * Deterministic hash function for date-based seeds.
@@ -62,7 +77,7 @@ export const GUARDIAN_CHANCE = 0.015
 function hashString(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i)
+    hash = ((hash << HASH_SHIFT_BITS) - hash) + str.charCodeAt(i)
     hash |= 0
   }
   return Math.abs(hash)
@@ -83,7 +98,7 @@ export function getConflictZones(allMapIds: readonly MapRouteId[], date: Tempora
   const zones: MapRouteId[] = []
   let tempSeed = hashString(dateStr + "zones")
   
-  while (zones.length < 12 && zones.length < allMapIds.length) {
+  while (zones.length < MAX_ACTIVE_WAR_ZONES && zones.length < allMapIds.length) {
     const idx = Math.abs(tempSeed) % allMapIds.length
     const mId = allMapIds[idx]
     if (!mId) {
@@ -111,10 +126,10 @@ export function getGuardianData(mapId: MapRouteId, allMapIds: readonly MapRouteI
   const dateStr = getArgDateString(date)
   const seed = hashString(dateStr + mapId)
   
-  const rarityRand = (seed % 100)
+  const rarityRand = (seed % GUARDIAN_RANDOM_SCALE)
   let tier: GuardianTier = 'common'
-  if (rarityRand >= 90) tier = 'elite'
-  else if (rarityRand >= 60) tier = 'rare'
+  if (rarityRand >= ELITE_GUARDIAN_RARITY_THRESHOLD) tier = 'elite'
+  else if (rarityRand >= RARE_GUARDIAN_RARITY_THRESHOLD) tier = 'rare'
 
   const pool = GUARDIAN_POOL[tier];
   if (pool.length === 0) return null;
@@ -138,7 +153,7 @@ export function simulateLocalDominance(allMapIds: readonly MapRouteId[]): { mapI
   // Logic to be used in warStore for Local Instance
   return allMapIds.map(mapId => ({
     mapId,
-    union: Math.floor(Math.random() * 500),
-    poder: Math.floor(Math.random() * 500)
+    union: Math.floor(Math.random() * LOCAL_DOMINANCE_MAX_POINTS),
+    poder: Math.floor(Math.random() * LOCAL_DOMINANCE_MAX_POINTS)
   }))
 }

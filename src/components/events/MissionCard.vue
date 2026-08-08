@@ -54,12 +54,14 @@ const rewardTooltipDescription = computed(() => {
   return `Recompensa: ${props.rewardVal}`
 })
 
-const cardRef = ref<HTMLElement | null>(null)
+const GSAP_HOVER_SPRITE_SCALE = 1.15
+const GSAP_HOVER_SPRITE_Y_OFFSET_PX = -6
+const MISSION_CARD_HOVER_SCALE_BOOST = 1.02
 
 const handleMouseEnter = () => {
   if (!cardRef.value) return
   gsap.to(cardRef.value, {
-    scale: 1.02,
+    scale: MISSION_CARD_HOVER_SCALE_BOOST,
     y: -4,
     duration: 0.4,
     ease: 'back.out(1.7)',
@@ -70,8 +72,8 @@ const handleMouseEnter = () => {
   const sprite = cardRef.value.querySelector('.trainer-avatar img')
   if (sprite) {
     gsap.to(sprite, {
-      scale: 1.15,
-      y: -6,
+      scale: GSAP_HOVER_SPRITE_SCALE,
+      y: GSAP_HOVER_SPRITE_Y_OFFSET_PX,
       filter: 'drop-shadow(0 15px 15px rgba(0,0,0,0.6))',
       duration: 0.4,
       ease: 'back.out(1.7)'

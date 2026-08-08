@@ -16,11 +16,13 @@ import { Dex } from '@pkmn/sim';
 
 const STATIC_SPRITES_DIR = path.resolve(process.cwd(), 'public/assets/sprites/pokemon/static');
 
+const CASTFORM_NATIONAL_DEX_ID_TEXT = '351';
+
 const SPECIAL_FORMS = [
-  { id: 'castform', num: '351' },
-  { id: 'castform-sunny', num: '351_1' },
-  { id: 'castform-rainy', num: '351_2' },
-  { id: 'castform-snowy', num: '351_3' }
+  { id: 'castform', num: CASTFORM_NATIONAL_DEX_ID_TEXT },
+  { id: 'castform-sunny', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_1` },
+  { id: 'castform-rainy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_2` },
+  { id: 'castform-snowy', num: `${CASTFORM_NATIONAL_DEX_ID_TEXT}_3` }
 ];
 
 async function main() {

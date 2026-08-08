@@ -3,12 +3,17 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
+const PELIPPER_WEATHER_TEST_LEVEL = 50;
+
 class WeatherSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
   }
 
   public async setupRainScenario(): Promise<void> {
+    await this.disableAutoMode();
+    await this.closeBattleModal();
+    await this.awaitReturnToMap();
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -19,7 +24,7 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
       const pelipper = pokemonDebugService.generate({
         id: 'pelipper',
-        level: 50,
+        level: PELIPPER_WEATHER_TEST_LEVEL,
         ability: 'drizzle',
         moves: ['surf']
       });
@@ -31,11 +36,14 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
       useGameStore().state.team = [pelipper];
       useGameStore().state.starterChosen = true;
-      await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
+      await useBattleStore().startBattle(caterpie, { locationId: 'route1', wasSearching: false });
     });
   }
 
   public async setupSandstormScenario(): Promise<void> {
+    await this.disableAutoMode();
+    await this.closeBattleModal();
+    await this.awaitReturnToMap();
     await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -44,30 +52,18 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
       const bulbasaur = pokemonDebugService.generate({
         id: 'bulbasaur',
-        level: 50,
+        level: PELIPPER_WEATHER_TEST_LEVEL,
         moves: ['splash']
       });
       const enemyBulbasaur = pokemonDebugService.generate({
         id: 'bulbasaur',
-        level: 50,
+        level: PELIPPER_WEATHER_TEST_LEVEL,
         moves: ['splash']
       });
 
       useGameStore().state.team = [bulbasaur];
       useMapStore().setGlobalWeather('sandstorm');
-      await useBattleStore().startBattle(enemyBulbasaur, { locationId: 'route1', enemyTeam: [enemyBulbasaur] });
-    });
-  }
-
-  public async forceFleeDebugger(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const battleStore = resolver?.();
-      const bState = (battleStore?.state ?? null) as ({ playerFled?: boolean; over: boolean; turnCount: number } | null);
-      if (bState) {
-        bState.playerFled = true;
-      }
-      await (window as WindowWithResolver).__VITE_DEBUG__?.forceFlee?.();
+      await useBattleStore().startBattle(enemyBulbasaur, { locationId: 'route1', enemyTeam: [enemyBulbasaur], wasSearching: false });
     });
   }
 
@@ -84,24 +80,20 @@ test.describe('Weather Effects Verification Simulation', () => {
   test('should trigger rain weather with Drizzle and clean DOM after battle', async ({ page }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherRain');
     await sim.setup();
-    await waitForWaitInput(page);
     await sim.setupRainScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     const atmosphere = page.locator('.battle-arena .atmosphere-container, .battle-arena canvas').first();
     await expect(atmosphere).toBeAttached();
 
     await sim.forceFleeDebugger();
-    await expect(page.locator('.battle-arena')).not.toBeAttached();
+    await sim.awaitReturnToMap();
   });
 
   test('should apply sandstorm damage to non-immune pokemon at turn end', async ({ page }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherSand');
     await sim.setup();
-    await waitForWaitInput(page);
     await sim.setupSandstormScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     // Execute single turn

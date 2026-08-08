@@ -82,13 +82,15 @@ export function useShopLogic(options: {
     return Array.from(cats)
   })
 
+const MAX_GRID_ANIMATED_CARDS = 24
+
   const animateGrid = () => {
     nextTick(() => {
       const cards = document.querySelectorAll(options.cardSelector)
       if (cards.length > 0) {
         gsap.killTweensOf(cards)
 
-        const maxAnimate = Math.min(cards.length, 24)
+        const maxAnimate = Math.min(cards.length, MAX_GRID_ANIMATED_CARDS)
         const cardsToAnimate = Array.from(cards).slice(0, maxAnimate)
         const remainingCards = Array.from(cards).slice(maxAnimate)
 
@@ -96,8 +98,11 @@ export function useShopLogic(options: {
           gsap.set(remainingCards, { opacity: 1, y: 0, scale: 1 })
         }
 
+const GSAP_SHOP_CARD_Y_OFFSET_PX = 15
+const GSAP_SHOP_CARD_INITIAL_SCALE = 0.95
+
         gsap.fromTo(cardsToAnimate,
-          { opacity: 0, y: 15, scale: 0.95 },
+          { opacity: 0, y: GSAP_SHOP_CARD_Y_OFFSET_PX, scale: GSAP_SHOP_CARD_INITIAL_SCALE },
           {
             opacity: 1,
             y: 0,

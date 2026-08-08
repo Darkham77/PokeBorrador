@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.ts'
 import { supabase } from '@/logic/db/supabase'
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts'
 import type { GameState } from '@/types/system/game'
+import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts'
 
 
 // Actions Modules
@@ -118,7 +119,7 @@ export const useGameStore = defineStore('game', () => {
     //    El timestamp se limpia cuando pasan las 24h COMPLETAS (permite re-extorsionar).
     if (state.classData.extortedRouteTimestamp) {
       const timestamp = Number(state.classData.extortedRouteTimestamp)
-      if ((now - timestamp) > 24 * 3600 * 1000) {
+      if ((now - timestamp) > DURATION_24_HOURS_MS) {
         logger.info('CLASS', `Extortion cooldown fully expired. Clearing.`)
         state.classData.extortedRouteId = null
         state.classData.extortedRouteTimestamp = null
@@ -131,12 +132,12 @@ export const useGameStore = defineStore('game', () => {
     //    Cuando pasan las 24h COMPLETAS desde el timestamp, también limpiamos el timestamp.
     if (state.classData.officialRouteTimestamp) {
       const timestamp = Number(state.classData.officialRouteTimestamp)
-      if (state.classData.officialRouteId && (now - timestamp) > 30 * 60 * 1000) {
+      if (state.classData.officialRouteId && (now - timestamp) > BUFF_DURATION_30_MIN_MS) {
         logger.info('CLASS', `Official route patrol finished. Clearing active ID.`)
         state.classData.officialRouteId = null
         changed = true
       }
-      if ((now - timestamp) > 24 * 3600 * 1000) {
+      if ((now - timestamp) > DURATION_24_HOURS_MS) {
         // Cooldown completo de 24h: liberar el timestamp para permitir nuevo establecimiento
         state.classData.officialRouteTimestamp = null
         changed = true

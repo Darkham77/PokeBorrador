@@ -23,6 +23,27 @@ const fromSprite = ref('');
 const toSprite = ref('');
 
 const FLASH_COUNT = 16; // Más destellos rápidos
+const EVOLUTION_RESULT_TEXT_Y_OFFSET_PX = 10;
+const EVOLUTION_INTRO_DELAY_SEC = 1.5;
+const EVOLUTION_AURA_ROTATION_SEC = 15;
+const EVOLUTION_PARTICLE_DIST_BASE = 60;
+const EVOLUTION_PARTICLE_DIST_RANGE = 120;
+const EVOLUTION_PARTICLES_COUNT = 25;
+const GSAP_BURST_DURATION_SEC = 0.5;
+const GSAP_BURST_SCALE = 2;
+const GSAP_AURA_SCALE_DURATION_SEC = 2.2;
+const EVOLUTION_RESULT_TEXT_DURATION_SEC = 0.5;
+const EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD = 4;
+const EVOLUTION_FLASH_MIN_DELAY_SEC = 0.08;
+const EVOLUTION_FLASH_BASE_DELAY_SEC = 0.25;
+const EVOLUTION_FLASH_DECAY_RATE = 0.015;
+const EVOLUTION_TRANSFORMED_DELAY_SEC = 0.15;
+const EVOLUTION_BURST_EASE_OVERSHOOT = 2;
+const EVOLUTION_FLARE_INITIAL_SCALE = 0.8;
+const EVOLUTION_FLARE_INITIAL_OPACITY = 0.3;
+const EVOLUTION_FLARE_MAX_SCALE = 2.2;
+const EVOLUTION_FLARE_MAX_OPACITY = 0.95;
+const EVOLUTION_FINAL_WAIT_DURATION_SEC = 1.0;
 const particlesRef = ref<HTMLElement[]>([]);
 const flashesDone = ref(0);
 const currentShowingSprite = ref<'from' | 'to'>('from');
@@ -108,15 +129,15 @@ const startSequence = () => {
       step.value = 'final';
       nextTick(() => {
         gsap.fromTo('.result-text', 
-          { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+          { opacity: 0, y: EVOLUTION_RESULT_TEXT_Y_OFFSET_PX },
+          { opacity: 1, y: 0, duration: EVOLUTION_RESULT_TEXT_DURATION_SEC, ease: 'power2.out' }
         );
       });
     }
   });
 
   // 1. Intro Wait
-  timeline.to({}, { duration: 1.5 });
+  timeline.to({}, { duration: EVOLUTION_INTRO_DELAY_SEC });
 
   // 2. Flashing & Swapping Phase (Intercambio visual de sprites rápido en flashes)
   timeline.add(() => { step.value = 'flashing'; });
@@ -125,10 +146,10 @@ const startSequence = () => {
     timeline.add(() => { 
       flashesDone.value = i + 1; 
       // Intercambia el sprite mostrado: de forma alternada a medida que avanza el parpadeo
-      if (i > 4) {
+      if (i > EVOLUTION_FLASH_SPRITE_SWAP_THRESHOLD) {
         currentShowingSprite.value = currentShowingSprite.value === 'from' ? 'to' : 'from';
       }
-    }, `+=${Math.max(0.08, 0.25 - (i * 0.015))}`);
+    }, `+=${Math.max(EVOLUTION_FLASH_MIN_DELAY_SEC, EVOLUTION_FLASH_BASE_DELAY_SEC - (i * EVOLUTION_FLASH_DECAY_RATE))}`);
   }
 
   // 3. Transformation & Sound
@@ -141,12 +162,12 @@ const startSequence = () => {
     if (evolutionStore.targetId) {
       gameBus.emit('PLAY_CRY', { name: evolutionStore.targetId });
     }
-  }, '+=0.15');
+  }, `+=${EVOLUTION_TRANSFORMED_DELAY_SEC}`);
 
   // 4. Glow Burst, Scale & Aura Activation
   timeline.fromTo('.glow-bg', 
     { scale: 1, opacity: 0.2 },
-    { scale: 2, opacity: 0.8, duration: 0.5, ease: 'back.out(2)' },
+    { scale: GSAP_BURST_SCALE, opacity: 0.8, duration: GSAP_BURST_DURATION_SEC, ease: `back.out(${EVOLUTION_BURST_EASE_OVERSHOOT})` },
     'transformed'
   );
 
@@ -154,18 +175,18 @@ const startSequence = () => {
     nextTick(() => {
       if (flare1Ref.value && flare2Ref.value) {
         // Rotaciones continuas en contra-fase
-        const rot1 = gsap.to(flare1Ref.value, { rotation: 360, duration: 15, repeat: -1, ease: 'none' });
-        const rot2 = gsap.to(flare2Ref.value, { rotation: -360, duration: 15, repeat: -1, ease: 'none' });
+        const rot1 = gsap.to(flare1Ref.value, { rotation: 360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
+        const rot2 = gsap.to(flare2Ref.value, { rotation: -360, duration: EVOLUTION_AURA_ROTATION_SEC, repeat: -1, ease: 'none' });
         activeTweens.push(rot1, rot2);
 
         // Efecto respiración de escalas
         const scale1 = gsap.fromTo(flare1Ref.value,
-          { scale: 0.8, opacity: 0.3 },
-          { scale: 2.2, opacity: 0.95, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY },
+          { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
         );
         const scale2 = gsap.fromTo(flare2Ref.value,
-          { scale: 2.2, opacity: 0.95 },
-          { scale: 0.8, opacity: 0.3, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          { scale: EVOLUTION_FLARE_MAX_SCALE, opacity: EVOLUTION_FLARE_MAX_OPACITY },
+          { scale: EVOLUTION_FLARE_INITIAL_SCALE, opacity: EVOLUTION_FLARE_INITIAL_OPACITY, duration: GSAP_AURA_SCALE_DURATION_SEC, yoyo: true, repeat: -1, ease: 'sine.inOut' }
         );
         activeTweens.push(scale1, scale2);
       }
@@ -177,7 +198,7 @@ const startSequence = () => {
     particlesRef.value.forEach((el) => {
       if (!el) return;
       const angle = Math.random() * Math.PI * 2;
-      const distance = 60 + Math.random() * 120;
+      const distance = EVOLUTION_PARTICLE_DIST_BASE + Math.random() * EVOLUTION_PARTICLE_DIST_RANGE;
       const tx = Math.cos(angle) * distance;
       const ty = Math.sin(angle) * distance;
       
@@ -196,7 +217,7 @@ const startSequence = () => {
   }, 'transformed');
 
   // 6. Final Message Wait
-  timeline.to({}, { duration: 1.0 });
+  timeline.to({}, { duration: EVOLUTION_FINAL_WAIT_DURATION_SEC });
 };
 
 const cancelEvolution = () => {
@@ -240,7 +261,7 @@ const close = () => {
         <!-- Campo Dinámico de Partículas de Luz -->
         <div class="particles-field">
           <div
-            v-for="n in 25"
+            v-for="n in EVOLUTION_PARTICLES_COUNT"
             :key="n"
             ref="particlesRef"
             class="particle"

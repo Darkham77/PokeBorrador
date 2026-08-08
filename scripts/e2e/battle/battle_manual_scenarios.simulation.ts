@@ -1,6 +1,7 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForWaitInput } from '../e2e_helpers.ts';
 import type { WindowWithResolver } from '../e2e_helpers.ts';
 
@@ -59,7 +60,7 @@ test.describe('Battle Manual E2E Scenarios', () => {
       if (!resolver) return false;
       const store = resolver();
       return store.currentSubState === 'WAIT_INPUT' || !!(store.state && store.state.player && store.state.player.hp === 0);
-    }, undefined, { timeout: 10000 });
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
 

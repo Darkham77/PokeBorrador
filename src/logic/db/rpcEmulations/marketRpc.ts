@@ -23,12 +23,17 @@ export async function emulatePublishListing(
   const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: 'pokemon' | 'item', p_asset_data: Record<string, unknown>, p_price: number };
   const { userId, username } = context;
 
+const MAX_MARKET_LISTINGS_PER_USER = 10;
+const BASE_36_RADIX = 36;
+const RANDOM_STRING_SUBSTRING_START = 2;
+const RANDOM_STRING_SUBSTRING_END = 11;
+
   const activeListings = await queryLocal(
     "SELECT id FROM market_listings WHERE seller_id = ? AND status = 'active'",
     [userId]
   );
-  if (activeListings.length >= 10) {
-    return { data: null, error: { message: `Límite de publicaciones alcanzado (10)` } };
+  if (activeListings.length >= MAX_MARKET_LISTINGS_PER_USER) {
+    return { data: null, error: { message: `Límite de publicaciones alcanzado (${MAX_MARKET_LISTINGS_PER_USER})` } };
   }
 
   const saves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
@@ -71,7 +76,7 @@ export async function emulatePublishListing(
   );
 
   await persistSQLite();
-  return { data: 'list_' + Math.random().toString(36).substring(2, 11), error: null };
+  return { data: 'list_' + Math.random().toString(BASE_36_RADIX).substring(RANDOM_STRING_SUBSTRING_START, RANDOM_STRING_SUBSTRING_END), error: null };
 }
 
 export async function emulateBuyListing(

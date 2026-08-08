@@ -9,6 +9,25 @@ import {
   calculateFishingHitWindow,
 } from '@/logic/minigames/minigameMath'
 
+const MINIGAME_SPAWN_PADDING_PX = 60
+const MINIGAME_MIN_DISTANCE_PX = 85
+const MINIGAME_MAX_POSITION_ATTEMPTS = 15
+const MINIGAME_FAIL_TIMER_BUFFER_MS = 150
+const MINIGAME_CONTAINER_SIZE_PX = 380
+
+const SPAWN_INTERVAL_MULTIPLIER = 0.7
+const INITIAL_RING_SCALE = 3.0
+const RING_FADE_OUT_DURATION_SEC = 0.1
+const SUCCESS_SCALE_DURATION_SEC = 0.1
+const REMOVE_NOTE_DELAY_SEC = 0.1
+const FAIL_FEEDBACK_DELAY_SEC = 1
+const INITIAL_SPAWN_DELAY_SEC = 0.8
+const ICON_BOUNCE_Y_PX = -10
+const ICON_BOUNCE_DURATION_SEC = 1
+
+const DEFAULT_RARITY = 50
+const MS_PER_SECOND = 1000
+
 interface Props {
   show?: boolean
   pokemon: Pokemon
@@ -20,7 +39,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
-  rarity: 50,
+  rarity: DEFAULT_RARITY,
   onWin: null,
   onFail: null,
   onCloseCallback: null
@@ -40,7 +59,7 @@ let iconTween: gsap.core.Tween | null = null
 const totalNotes = calculateFishingTotalNotes(props.rarity)
 const speedBase = calculateFishingSpeedBase(props.rarity)
 const hitWindow = calculateFishingHitWindow(props.rarity)
-const spawnInterval = speedBase * 0.7
+const spawnInterval = speedBase * SPAWN_INTERVAL_MULTIPLIER
 
 interface Note {
   id: number
@@ -64,8 +83,8 @@ const spawnNext = () => {
   const noteId = spawnedNotesCount.value
   
   // Anti-overlapping logic in pixels (380x380 container)
-  const padding = 60
-  const minDistance = 85
+  const padding = MINIGAME_SPAWN_PADDING_PX
+  const minDistance = MINIGAME_MIN_DISTANCE_PX
   let x = 0
   let y = 0
   let tooClose = false
@@ -73,8 +92,8 @@ const spawnNext = () => {
 
   do {
     tooClose = false
-    x = padding + Math.random() * (380 - padding * 2)
-    y = padding + Math.random() * (380 - padding * 2)
+    x = padding + Math.random() * (MINIGAME_CONTAINER_SIZE_PX - padding * 2)
+    y = padding + Math.random() * (MINIGAME_CONTAINER_SIZE_PX - padding * 2)
 
     for (const pos of activePositions.value) {
       const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2))
@@ -84,7 +103,7 @@ const spawnNext = () => {
       }
     }
     attempts++
-  } while (tooClose && attempts < 15)
+  } while (tooClose && attempts < MINIGAME_MAX_POSITION_ATTEMPTS)
 
   const myPos = { x, y }
   activePositions.value.push(myPos)
@@ -100,7 +119,7 @@ const spawnNext = () => {
   activeNotes.value.push(note)
 
   // Fail timer if not clicked
-  const failCall = gsap.delayedCall((speedBase + 150) / 1000, () => {
+  const failCall = gsap.delayedCall((speedBase + MINIGAME_FAIL_TIMER_BUFFER_MS) / MS_PER_SECOND, () => {
     if (!note.clicked && gameActive.value) {
       activePositions.value = activePositions.value.filter(p => p !== myPos)
       failGame('¡Perdiste el ritmo!')
@@ -112,20 +131,20 @@ const spawnNext = () => {
     const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`)
     if (el) {
       const ringAnim = gsap.fromTo(el, 
-        { scale: 3.0, opacity: 0 },
+        { scale: INITIAL_RING_SCALE, opacity: 0 },
         { 
           scale: 1.0, 
           opacity: 1, 
-          duration: speedBase / 1000, 
+          duration: speedBase / MS_PER_SECOND, 
           ease: 'none',
-          onComplete: () => { gsap.to(el, { opacity: 0, duration: 0.1 }) }
+          onComplete: () => { gsap.to(el, { opacity: 0, duration: RING_FADE_OUT_DURATION_SEC }) }
         }
       )
       activeTweens.set(noteId, [failCall, ringAnim])
     }
   })
 
-  gameCall = gsap.delayedCall(spawnInterval / 1000, spawnNext)
+  gameCall = gsap.delayedCall(spawnInterval / MS_PER_SECOND, spawnNext)
 }
 
 const handleNoteClick = (note: Note) => {
@@ -156,10 +175,10 @@ const handleNoteClick = (note: Note) => {
     // Success animation
     const noteEl = document.querySelector(`.rhythm-note[data-note-id="${note.id}"]`)
     if (noteEl) {
-      gsap.to(noteEl, { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1 })
+      gsap.to(noteEl, { scale: 1.2, duration: SUCCESS_SCALE_DURATION_SEC, yoyo: true, repeat: 1 })
     }
 
-    gsap.delayedCall(0.1, () => {
+    gsap.delayedCall(REMOVE_NOTE_DELAY_SEC, () => {
       activeNotes.value = activeNotes.value.filter(n => n.id !== note.id)
       if (clickedNotesCount.value >= totalNotes) {
         finishGame(true)
@@ -174,7 +193,7 @@ const failGame = (msg: string) => {
   if (!gameActive.value) return
   gameActive.value = false
   feedback.value = msg
-  gsap.delayedCall(1, () => finishGame(false))
+  gsap.delayedCall(FAIL_FEEDBACK_DELAY_SEC, () => finishGame(false))
 }
 
 const finishGame = (success: boolean) => {
@@ -193,13 +212,13 @@ const finishGame = (success: boolean) => {
 }
 
 onMounted(() => {
-  gsap.delayedCall(0.8, spawnNext)
+  gsap.delayedCall(INITIAL_SPAWN_DELAY_SEC, spawnNext)
 
   nextTick(() => {
     if (fishingIconRef.value) {
       iconTween = gsap.to(fishingIconRef.value, {
-        y: -10,
-        duration: 1,
+        y: ICON_BOUNCE_Y_PX,
+        duration: ICON_BOUNCE_DURATION_SEC,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut'

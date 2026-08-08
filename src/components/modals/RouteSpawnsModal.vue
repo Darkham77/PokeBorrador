@@ -14,6 +14,7 @@ import { toPokemonType } from '@/data/battle/types'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
 import RouteSpawnsTable from './RouteSpawnsTable.vue'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
+import { BUFF_DURATION_30_MIN_MS, DURATION_24_HOURS_MS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@/logic/constants/items'
 
 interface Props {
   show?: boolean
@@ -43,7 +44,7 @@ const isOfficialRouteActive = computed(() => {
   if (classData.officialRouteId !== props.map.id) return false
   const now = Temporal.Now.instant().epochMilliseconds
   const timestamp = Number(classData.officialRouteTimestamp || 0)
-  return (now - timestamp) <= 30 * 60 * 1000
+  return (now - timestamp) <= BUFF_DURATION_30_MIN_MS
 })
 
 const isExtortedRouteActive = computed(() => {
@@ -53,7 +54,7 @@ const isExtortedRouteActive = computed(() => {
   if (classData.extortedRouteId !== props.map.id) return false
   const now = Temporal.Now.instant().epochMilliseconds
   const timestamp = Number(classData.extortedRouteTimestamp || 0)
-  return (now - timestamp) <= 24 * 3600 * 1000
+  return (now - timestamp) <= DURATION_24_HOURS_MS
 })
 
 const activeExtortedRouteId = computed(() => {
@@ -62,7 +63,7 @@ const activeExtortedRouteId = computed(() => {
   if (!classData.extortedRouteId) return null
   const now = Temporal.Now.instant().epochMilliseconds
   const timestamp = Number(classData.extortedRouteTimestamp || 0)
-  if ((now - timestamp) > 24 * 3600 * 1000) return null
+  if ((now - timestamp) > DURATION_24_HOURS_MS) return null
   return classData.extortedRouteId
 })
 
@@ -72,7 +73,7 @@ const isOfficialRouteOnCooldown = computed(() => {
   const timestamp = Number(classData.officialRouteTimestamp || 0)
   if (!timestamp) return false
   const now = Temporal.Now.instant().epochMilliseconds
-  return (now - timestamp) <= 24 * 3600 * 1000
+  return (now - timestamp) <= DURATION_24_HOURS_MS
 })
 
 const cooldownRemainingText = computed(() => {
@@ -80,10 +81,10 @@ const cooldownRemainingText = computed(() => {
   const classData = gameStore.state.classData || {}
   const timestamp = Number(classData.officialRouteTimestamp || 0)
   const now = Temporal.Now.instant().epochMilliseconds
-  const diff = (24 * 3600 * 1000) - (now - timestamp)
+  const diff = DURATION_24_HOURS_MS - (now - timestamp)
   if (diff <= 0) return ''
-  const hours = Math.floor(diff / (3600 * 1000))
-  const mins = Math.floor((diff % (3600 * 1000)) / (60 * 1000))
+  const hours = Math.floor(diff / ONE_HOUR_MS)
+  const mins = Math.floor((diff % ONE_HOUR_MS) / ONE_MINUTE_MS)
   return `${hours}h ${mins}m`
 })
 

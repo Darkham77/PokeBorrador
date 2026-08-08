@@ -20,23 +20,25 @@ const boxStore = useBoxStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 
-const currentBox = computed(() => Math.floor(props.boxIndex / 50))
+const currentBox = computed(() => Math.floor(props.boxIndex / BOX_CAPACITY_SLOTS))
+
+const BOX_CAPACITY_SLOTS = 50
 
 const boxesOccupation = computed(() => {
-  const result = []
+  const result: Array<{ index: number; number: number; count: number; isFull: boolean; isCurrent: boolean }> = []
   const boxArray = (gameStore.state.box || []) as (Pokemon | null)[]
   const totalBoxes = gameStore.state.boxCount || 4
   
   for (let i = 0; i < totalBoxes; i++) {
-    const start = i * 50
-    const end = start + 50
+    const start = i * BOX_CAPACITY_SLOTS
+    const end = start + BOX_CAPACITY_SLOTS
     const slice = boxArray.slice(start, end)
     const count = slice.filter((p) => p != null).length
     result.push({ 
       index: i, 
       number: i + 1, 
       count, 
-      isFull: count >= 50,
+      isFull: count >= BOX_CAPACITY_SLOTS,
       isCurrent: i === currentBox.value
     })
   }

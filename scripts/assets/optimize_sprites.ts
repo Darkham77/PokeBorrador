@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const RAW_ASSETS_DIR = safeResolve(process.cwd(), '_raw-assets');
 const FRONT_DIR = safeJoin(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
 const SCRATCH_DIR = safeResolve(process.cwd(), 'scratch');
+const DB_SYNC_BATCH_CHUNK_SIZE = 32;
 
 interface AnimationAnalysisResult {
   pokemonId: string;
@@ -605,7 +606,7 @@ if (isMainThread) {
             console.log(`   [OK - HILO] Procesado con éxito: ${file} (${completedCount + failedCount}/${filteredFiles.length})`);
             
             // Actualizar DB en tiempo real al superar bloques de 32, o al final de listas cortas
-            if (completedCount % 32 === 0 || filteredFiles.length < 32) {
+            if (completedCount % DB_SYNC_BATCH_CHUNK_SIZE === 0 || filteredFiles.length < DB_SYNC_BATCH_CHUNK_SIZE) {
               writeFinalReport().catch(() => {});
             }
           } else {

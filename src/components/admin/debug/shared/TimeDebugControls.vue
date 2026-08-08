@@ -46,10 +46,13 @@ function updateMockTime() {
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
+const TEMPORAL_DATETIME_SLICE_LENGTH = 16
+const DEBUG_INFINITE_WEATHER_TURNS = 99
+
 function resetTime() {
   getDebugBridge().resetTime()
   timeOffsetLabel.value = '0ms'
-  debugDate.value = Temporal.Now.instant().toString().slice(0, 16)
+  debugDate.value = Temporal.Now.instant().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
   mapStore.setGlobalCycle(null)
   mapStore.setGlobalSeason(null)
@@ -77,7 +80,7 @@ function toggleWeather(w: WeatherId | null) {
     const mech = getMechanicalWeather(visual);
     battleStore.state.weather = { 
       type: visual, 
-      turns: 99, // Larga duración para debug
+      turns: DEBUG_INFINITE_WEATHER_TURNS, // Larga duración para debug
       visual
     };
     battleStore.addLog(`DEBUG: Entorno sincronizado (${mech.toUpperCase()})`, 'log-info');

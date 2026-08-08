@@ -30,6 +30,12 @@ import {
 
 enableCompileCache();
 
+const AUDIT_PROGRESS_STEP_INTERVAL = 100;
+const SLOC_WARNING_THRESHOLD = 500;
+const SLOC_ERROR_THRESHOLD = 1000;
+const EXEC_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
+const EXEC_TIMEOUT_MS = 15000;
+
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external']);
 const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']);
 
@@ -70,7 +76,9 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
           config.jsonStringifyInWatch, 
           config.intersectionObserverRoot, 
           forbiddenFallbacks,
-          config.manualTimersFrontend
+          config.manualTimersFrontend,
+          config.magicNumbers,
+          config.badConstantNames
         ];
         let rules: AuditRule[] = allRules;
         
@@ -118,7 +126,9 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
         explicitResource, 
         config.jsonStringifyInWatch, 
         config.intersectionObserverRoot, 
-        forbiddenFallbacks
+        forbiddenFallbacks,
+        config.magicNumbers,
+        config.badConstantNames
       ];
       let rules: AuditRule[] = allRules;
       
@@ -209,20 +219,20 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       /export\s+const\s+[A-Z_]+\s*[:=]\s*(?:\[|\{)/.test(content)
     );
 
-    if (slocCount > 1000) {
+    if (slocCount > SLOC_ERROR_THRESHOLD) {
       violations.push({
         file: filePath,
-        line: slocCount,
-        message: `Mantenibilidad CRÍTICA: El archivo supera las 1000 líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las 1000 líneas es un ERROR que requiere modularización obligatoria.`,
-        context: `SLOC: ${slocCount}`,
+        rule: 'slocLimit',
+        message: `Mantenibilidad CRÍTICA: El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
         severity: 'error',
-        fixable: false
+        line: 1,
+        snippet: `SLOC: ${slocCount}`
       });
-    } else if (slocCount > 500 && !isAllowedIgnore) {
+    } else if (slocCount > SLOC_WARNING_THRESHOLD && !isAllowedIgnore) {
       violations.push({
         file: filePath,
-        line: slocCount,
-        message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las 500 líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
+        rule: 'slocLimit',
+        message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic
         context: `SLOC: ${slocCount}`,
         severity: 'warning',
         fixable: false
@@ -570,8 +580,8 @@ async function runCssChecker(targetDir: string = '.'): Promise<Violation[]> {
       stdout = execSync(`"${binCmd}" -path "${tmpDir}" -colors=false -long-line=false -sim=false`, {
         encoding: 'utf-8',
         stdio: ['ignore', 'pipe', 'ignore'],
-        maxBuffer: 10 * 1024 * 1024,
-        timeout: 15000,
+        maxBuffer: EXEC_MAX_BUFFER_BYTES,
+        timeout: EXEC_TIMEOUT_MS,
         killSignal: 'SIGKILL'
       });
     } catch (e: unknown) {
@@ -650,7 +660,8 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   let parsedSuccessfully = false;
   try {
     const args = ['--format', 'json', ...extraArgs];
-    const cmd = `node ./node_modules/fallow/bin/fallow ${command} ${args.join(' ')}`;
+    const fallowBin = path.resolve(process.cwd(), 'node_modules/fallow/bin/fallow');
+    const cmd = `node "${fallowBin}" ${command} ${args.join(' ')}`;
     const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024, timeout: 30000, killSignal: 'SIGKILL' });
     const jsonStart = stdout.indexOf('{');
     if (jsonStart !== -1) {
@@ -1021,7 +1032,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
           violations.push({
             file: agentsPath,
             line: i + 1,
-            message: `Enlace absoluto o ruta completa prohibida '${targetUrl}' detectada en '${label}'. Se exige el uso exclusivo de rutas relativas (RULE 10).`,
+            message: `Enlace absoluto o ruta completa prohibida '${targetUrl}' detectada en '${label}'. Se exige el uso exclusivo de rutas relativas (RULE 10).`, // no-magic
             context: targetUrl,
             severity: 'error',
             fixable: false
@@ -1059,6 +1070,124 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   return violations;
 }
 
+async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
+  const violations: Violation[] = [];
+  
+  const IGNORED_CONSTANT_NAMES = new Set([
+    'ID', 'NAME', 'TYPE', 'KEY', 'INDEX', 'COUNT', 'DEFAULT', 'SIZE', 'MAX', 'MIN',
+    'VAL', 'VALUE', 'ITEM', 'STATE', 'MODE', 'TAG', 'URL', 'PATH', 'ERR', 'ERROR',
+    'MSG', 'DATA', 'INFO', 'OPTIONS', 'CONFIG', 'RESULT', 'RES', 'REQ', 'STATUS',
+    'LEVEL', 'STEP', 'DELTA', 'WIDTH', 'HEIGHT', 'X', 'Y', 'Z', 'I', 'J', 'K',
+    'TEST', 'MOCK', 'STUB', 'DUMMY', 'VERSION', 'DESC', 'TITLE', 'LABEL', 'ICON',
+    'COLOR', 'THEME', 'STYLE', 'PROPS', 'EMITS', 'MAP', 'LIST', 'ITEMS', 'ACTIONS',
+    'TYPES', 'KEYS', 'VALUES', 'ROLES', 'MODALS', 'VIEWS', 'COMPONENTS', 'STORE',
+    'SCHEMA', 'KEY_CODES', 'REF', 'COMPOSABLE', 'PROVIDE', 'INJECT', 'SLOTS', 'SLOT'
+  ]);
+
+  interface ConstDecl {
+    file: string;
+    line: number;
+    valueStr: string;
+    isExported: boolean;
+  }
+  const declarations = new Map<string, ConstDecl[]>();
+
+  for (const filePath of files) {
+    const rel = path.relative(process.cwd(), filePath);
+    if (rel.includes('node_modules') || rel.includes('external') || rel.includes('tests') || rel.includes('scratch') || rel.includes('scripts') || rel.includes('.sim.ts') || rel.includes('npcSpriteCatalog.ts') || rel.includes('pokemonFeetDatabase.ts') || rel.includes('official_servers.ts')) {
+      continue;
+    }
+    
+    let content: string;
+    try {
+      content = await fs.readFile(filePath, 'utf-8');
+    } catch {
+      continue;
+    }
+
+    const lines = content.split('\n');
+    for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+      const line = lines[lineIdx]!.trim();
+      const isTopLevelDecl = line.startsWith('export const ') || line.startsWith('const ');
+      if (!isTopLevelDecl) continue;
+
+      const match = /^(export\s+)?const\s+([A-Z0-9_]{4,})\s*(?::\s*[^=]+)?=\s*([^;\n]+)/.exec(line);
+      if (!match) continue;
+
+      const isExported = !!match[1];
+      const constName = match[2]!;
+      const rawValue = match[3]!.trim();
+
+      if (IGNORED_CONSTANT_NAMES.has(constName)) continue;
+      if (!/^[A-Z0-9_]+$/.test(constName)) continue;
+
+      if (!declarations.has(constName)) {
+        declarations.set(constName, []);
+      }
+      declarations.get(constName)!.push({
+        file: filePath,
+        line: lineIdx + 1,
+        valueStr: rawValue,
+        isExported
+      });
+    }
+  }
+
+  for (const [constName, decls] of declarations.entries()) {
+    const uniqueFiles = Array.from(new Set(decls.map(d => d.file)));
+    if (uniqueFiles.length <= 1) continue;
+
+    // Check if files are importing or re-exporting the constant from each other
+    let isCrossImported = false;
+    for (let i = 0; i < uniqueFiles.length; i++) {
+      for (let j = i + 1; j < uniqueFiles.length; j++) {
+        const fileA = uniqueFiles[i]!;
+        const fileB = uniqueFiles[j]!;
+        const contentA = await fs.readFile(fileA, 'utf-8').catch(() => '');
+        const contentB = await fs.readFile(fileB, 'utf-8').catch(() => '');
+        
+        const importRegex = new RegExp(`import\\s+[^;]*\\b${constName}\\b`);
+        if (importRegex.test(contentA) || importRegex.test(contentB)) {
+          isCrossImported = true;
+          break;
+        }
+      }
+      if (isCrossImported) break;
+    }
+    const normalizedValueA = decls[0]!.valueStr.replace(/\s+/g, '');
+    const hasIdenticalValues = decls.every(d => d.valueStr.replace(/\s+/g, '') === normalizedValueA);
+    const fileList = uniqueFiles.map(f => path.relative(process.cwd(), f)).join(', ');
+
+    if (!isCrossImported) {
+      if (hasIdenticalValues) {
+        for (const decl of decls) {
+          violations.push({
+            file: decl.file,
+            line: decl.line,
+            message: `Constante duplicada '${constName}' con valor idéntico declarada en múltiples módulos (${fileList}). DEBE modularizarse obligatoriamente en src/logic/constants/ para su reutilización.`,
+            context: constName,
+            severity: 'error',
+            fixable: false
+          });
+        }
+      } else {
+        for (const decl of decls) {
+          violations.push({
+            file: decl.file,
+            line: decl.line,
+            message: `Constante '${constName}' declarada con valores diferentes en múltiples módulos (${fileList}). Revisa si es un posible bug o si se debe unificar/renombrar según su subdominio.`,
+            context: constName,
+            severity: 'warning',
+            fixable: false
+          });
+        }
+      }
+    }
+  }
+
+  return violations;
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -1066,9 +1195,12 @@ async function main() {
       path: { type: 'string', short: 'p', default: '.' },
       output: { type: 'string', short: 'o' },
       summary: { type: 'boolean', short: 's' },
+      json: { type: 'boolean', short: 'j' },
+      top: { type: 'string', short: 't' },
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
-      'css-only': { type: 'boolean' }
+      'css-only': { type: 'boolean' },
+      rule: { type: 'string', short: 'r' }
     }
   });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
@@ -1171,7 +1303,7 @@ async function main() {
     } else {
       console.log(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
       all = all.concat(runFallow('dupes'));
-      all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60']));
+      all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
       console.log(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
       all = all.concat(runFallow('security'));
       console.log(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
@@ -1183,11 +1315,24 @@ async function main() {
     // Integración de css-checker
     console.log(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
     all = all.concat(await runCssChecker(values.path as string));
+
+    // Integración de detector de constantes duplicadas
+    console.log(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
+    all = all.concat(await detectDuplicateConstants(files));
   }
 
   // Filtrar solo errores si la opción '--errors-only' está activa
   if (values['errors-only']) {
     all = all.filter(v => v.severity === 'error');
+  }
+
+  // Filtrar por regla específica si se especifica '--rule'
+  if (values.rule) {
+    const filterTerm = (values.rule as string).toLowerCase();
+    all = all.filter(v => 
+      v.message.toLowerCase().includes(filterTerm) || 
+      v.context.toLowerCase().includes(filterTerm)
+    );
   }
 
   // Priorizar mostrar siempre primero los errores, y luego los warnings
@@ -1197,6 +1342,37 @@ async function main() {
     return 0;
   });
 
+
+  if (values.json) {
+    const fileGroups: Record<string, number> = {};
+    for (const v of all) {
+      const rel = path.relative(process.cwd(), v.file);
+      fileGroups[rel] = (fileGroups[rel] || 0) + 1;
+    }
+    const topLimit = values.top ? parseInt(values.top as string, 10) : Object.keys(fileGroups).length;
+    const topFiles = Object.entries(fileGroups)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, topLimit)
+      .map(([file, count]) => ({ file, count }));
+
+    const outputObj = {
+      totalViolations: all.length,
+      errors: all.filter(v => v.severity === 'error').length,
+      warnings: all.filter(v => v.severity === 'warning').length,
+      topFiles,
+      violations: all.map(v => ({
+        file: path.relative(process.cwd(), v.file),
+        line: v.line,
+        severity: v.severity,
+        message: v.message,
+        context: v.context
+      }))
+    };
+    console.log(JSON.stringify(outputObj, null, 2));
+    if (values.fix) console.log(styleText('cyan', '✨ Correcciones aplicadas.'));
+    if (all.some(v => v.severity === 'error')) process.exit(1);
+    return;
+  }
 
   if (values.summary) {
     console.log(styleText('bold', '\n--- 📊 RESUMEN DE VIOLACIONES ---'));
@@ -1209,7 +1385,10 @@ async function main() {
       fileGroups[rel] = (fileGroups[rel] || 0) + 1;
 
       let type = 'Otros';
-      if (v.message.includes('Unidad legacy')) type = 'Viewport (dvh/dvw)';
+      if (v.message.includes('Número mágico') || v.message.includes('mágico')) type = 'Números mágicos sin constante';
+      else if (v.message.includes('Nombre de constante impropio') || v.message.includes('hardcodear el valor')) type = 'Nombres de constantes con valor numérico';
+      else if (v.message.includes('Domain ID fallback') || v.message.includes('noDomainIdFallbacks')) type = 'Fallback silencioso de Domain ID';
+      else if (v.message.includes('Unidad legacy')) type = 'Viewport (dvh/dvw)';
       else if (v.message.includes('will-change')) type = 'Falta will-change (GPU)';
       else if (v.message.includes('Temporal')) type = 'Uso de Date (Temporal)';
       else if (v.message.includes('prefijo')) type = 'Import de Node sin prefijo';
@@ -1228,6 +1407,7 @@ async function main() {
       else if (v.message.includes('Sugerencia de complejidad')) type = 'Fallow: Complejidad';
       else if (v.message.includes('AGENTS.md') || v.message.includes('DOX') || v.message.includes('Enlace')) type = 'DOX / AGENTS.md';
       else if (v.message.includes('css-checker') || v.message.includes('CSS/SCSS duplicado')) type = 'css-checker: SCSS/CSS duplicado';
+      else if (v.message.includes('Constante duplicada')) type = 'Constantes duplicadas entre módulos';
 
       typeGroups[type] = (typeGroups[type] || 0) + 1;
     }
@@ -1244,10 +1424,11 @@ async function main() {
 
     const filesList = Object.entries(fileGroups);
     if (filesList.length > 0) {
-      console.log('\nTop 15 archivos con más problemas:');
+      const topLimit = values.top ? parseInt(values.top as string, 10) : 15;
+      console.log(`\nTop ${topLimit} archivos con más problemas:`);
       filesList
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 15)
+        .slice(0, topLimit)
         .forEach(([file, count]) => {
           console.log(`  - ${file}: ${count} violaciones`);
         });

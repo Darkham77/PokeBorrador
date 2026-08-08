@@ -12,12 +12,20 @@ const filterClass = ref('')
 const filterFaction = ref('')
 const listRef = ref<HTMLElement | null>(null)
 
+const MIN_SEARCH_QUERY_LENGTH = 2
+const SEARCH_CARD_AVATAR_SIZE_PX = 40
+const LOADER_SPINNER_ROTATION_DEG = 360
+const CARD_ANIM_X_OFFSET = -20
+const CARD_ANIM_SCALE_MIN = 0.95
+const CARD_ANIM_DURATION_SEC = 0.45
+const CARD_ANIM_STAGGER_SEC = 0.06
+
 function openTrainerProfile(userId: string) {
   uiStore.open('TrainerProfile', { userId })
 }
 
 async function handleSearch() {
-  if (searchQuery.value.length < 2) {
+  if (searchQuery.value.length < MIN_SEARCH_QUERY_LENGTH) {
     socialStore.searchResults = []
     return
   }
@@ -36,10 +44,10 @@ function animateCards() {
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
-        x: -20,
-        scale: 0.95,
-        duration: 0.45,
-        stagger: 0.06,
+        x: CARD_ANIM_X_OFFSET,
+        scale: CARD_ANIM_SCALE_MIN,
+        duration: CARD_ANIM_DURATION_SEC,
+        stagger: CARD_ANIM_STAGGER_SEC,
         ease: 'back.out(1.2)',
         clearProps: 'all',
         onComplete: () => {
@@ -57,7 +65,7 @@ watch(() => socialStore.searchLoading, (loading) => {
     if (loading) {
       if (!loaderTween.value) {
         loaderTween.value = gsap.to('.loader-mini', {
-          rotation: 360,
+          rotation: LOADER_SPINNER_ROTATION_DEG,
           duration: 0.8,
           repeat: -1,
           ease: 'none'
@@ -152,7 +160,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
     </div>
 
     <div
-      v-if="socialStore.searchResults.length === 0 && searchQuery.length >= 2 && !socialStore.searchLoading"
+      v-if="socialStore.searchResults.length === 0 && searchQuery.length >= MIN_SEARCH_QUERY_LENGTH && !socialStore.searchLoading"
       class="no-results"
     >
       No se encontraron entrenadores.
@@ -167,7 +175,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
         v-for="player in socialStore.searchResults"
         :key="player.id"
         :profile="player"
-        :avatar-size="40"
+        :avatar-size="SEARCH_CARD_AVATAR_SIZE_PX"
         @click-profile="openTrainerProfile"
       >
         <template #actions>

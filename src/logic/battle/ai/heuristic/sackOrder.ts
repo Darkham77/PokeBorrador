@@ -7,6 +7,20 @@ import { toID } from '@pkmn/sim';
 import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 
+const SACK_WEIGHT_WIN_CONDITION = 0.35;
+const SACK_WEIGHT_DEFENSIVE_HP_QUALIFIER = 50;
+const SACK_WEIGHT_DEFENSIVE_HIGH_HP_BONUS = 0.05;
+const SACK_WEIGHT_DEFENSIVE_LOW_DAMAGE_THRESHOLD = 50;
+const SACK_WEIGHT_DEFENSIVE_LOW_DAMAGE_BONUS = 0.075;
+const SACK_WEIGHT_DEFENSIVE_MAX = 0.20;
+const SACK_WEIGHT_SPEED_OUTSPEED_BONUS = 0.10;
+const SACK_WEIGHT_SPEED_MOVE_BONUS = 0.05;
+const SACK_WEIGHT_HAZARD_ACTIVE_BONUS = 0.15;
+const SACK_WEIGHT_HAZARD_REMOVAL_BONUS = 0.05;
+const SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD = 30;
+const SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON = 0.05;
+const SACK_WEIGHT_MATCHUP_MAX = 0.15;
+
 const HAZARD_REMOVAL_MOVES: readonly string[] = [ // no-domain
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
 ];
@@ -34,10 +48,10 @@ export function calculateSackOrder(
     const moveIds = pokemon.moves.map(m => toID(m));
 
     // Win condition potential
-    const winScore = (winCondMap.get(pokemon.name) ?? 0) * 0.35;
+    const winScore = (winCondMap.get(pokemon.name) ?? 0) * SACK_WEIGHT_WIN_CONDITION;
 
     // Defensive utility
-    let defensiveUtil = pokemon.hpPercent > 50 ? 0.05 : 0;
+    let defensiveUtil = pokemon.hpPercent > SACK_WEIGHT_DEFENSIVE_HP_QUALIFIER ? SACK_WEIGHT_DEFENSIVE_HIGH_HP_BONUS : 0;
     for (const threat of threats.slice(0, 2)) {
       const oppMon = oppAlive.find(o => o.name === threat.pokemon);
       if (oppMon) {
@@ -45,32 +59,32 @@ export function calculateSackOrder(
         for (const mv of oppMon.knownMoves) {
           try { bestOppDmg = Math.max(bestOppDmg, calc.calcDamage(oppMon, pokemon, mv, snapshot.field).maxPercent); } catch { /* skip */ }
         }
-        if (bestOppDmg < 50) defensiveUtil += 0.075;
+        if (bestOppDmg < SACK_WEIGHT_DEFENSIVE_LOW_DAMAGE_THRESHOLD) defensiveUtil += SACK_WEIGHT_DEFENSIVE_LOW_DAMAGE_BONUS;
       }
     }
-    defensiveUtil = Math.min(0.20, defensiveUtil);
+    defensiveUtil = Math.min(SACK_WEIGHT_DEFENSIVE_MAX, defensiveUtil);
 
     // Speed control value
     const oppFirstPoke = oppAlive[0];
     const oppFirstSpeed = oppFirstPoke !== undefined && oppAlive.length > 0
       ? calc.getEffectiveSpeed(oppFirstPoke, snapshot.field, oppSide) : 0;
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
-    const speedControl = (mySpeed > oppFirstSpeed ? 0.10 : 0) + (moveIds.some((m: string) => SPEED_CONTROL_MOVES.includes(m)) ? 0.05 : 0);
+    const speedControl = (mySpeed > oppFirstSpeed ? SACK_WEIGHT_SPEED_OUTSPEED_BONUS : 0) + (moveIds.some((m: string) => SPEED_CONTROL_MOVES.includes(m)) ? SACK_WEIGHT_SPEED_MOVE_BONUS : 0);
 
     // Hazard removal value
     const hasHazardRemoval = moveIds.some((m: string) => HAZARD_REMOVAL_MOVES.includes(m));
-    const hazardValue = hasHazardRemoval && snapshot.mySide.sideConditions.size > 0 ? 0.15 : hasHazardRemoval ? 0.05 : 0;
+    const hazardValue = hasHazardRemoval && snapshot.mySide.sideConditions.size > 0 ? SACK_WEIGHT_HAZARD_ACTIVE_BONUS : hasHazardRemoval ? SACK_WEIGHT_HAZARD_REMOVAL_BONUS : 0;
 
     // Matchup usefulness
     let matchupScore = 0;
     for (const opp of oppAlive) {
       for (const mv of pokemon.moves) {
         try {
-          if (calc.calcDamage(pokemon, opp, mv, snapshot.field).maxPercent > 30) { matchupScore += 0.05; break; }
+          if (calc.calcDamage(pokemon, opp, mv, snapshot.field).maxPercent > SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD) { matchupScore += SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON; break; }
         } catch { /* skip */ }
       }
     }
-    matchupScore = Math.min(0.15, matchupScore);
+    matchupScore = Math.min(SACK_WEIGHT_MATCHUP_MAX, matchupScore);
 
     entries.push({ pokemon: pokemon.name, preservationScore: Math.min(1.0, winScore + defensiveUtil + speedControl + hazardValue + matchupScore) });
   }

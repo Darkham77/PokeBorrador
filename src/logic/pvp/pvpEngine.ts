@@ -141,7 +141,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
       effectLog.push(`¡${attacker.name} se despertó!`)
     }
 
-    if (attacker.status === 'par' && Math.random() < 0.25) {
+    if (attacker.status === 'par' && Math.random() < PARALYSIS_FULLY_PARALYZED_CHANCE) {
       return { type: 'move', moveName, actorIsHost, statusBlocked: 'par', effectLog }
     }
 
@@ -198,6 +198,10 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
   return result
 }
 
+const PARALYSIS_FULLY_PARALYZED_CHANCE = 0.25;
+const PVP_SWITCH_ANIM_DELAY_MS = 600;
+const PVP_ACTION_ANIM_DELAY_MS = 800;
+
 export async function applyPvPTurnResult(battleState: PvPBattleState, result: PvPTurnResult, endBattleCallback: (won: boolean, msg: string) => void): Promise<void> {
   battleState.phase = 'animating'
   const isHost = battleState.isHost
@@ -213,7 +217,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       if (targetPoke) {
         battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${targetPoke.name}!`)
       }
-      await sleep(600)
+      await sleep(PVP_SWITCH_ANIM_DELAY_MS)
       if (isMyAction) battleState.myActiveIdx = action.newIdx ?? 0
       else battleState.enemyActiveIdx = action.newIdx ?? 0
     } else {
@@ -231,7 +235,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       }
       action.effectLog?.forEach((m: string) => battleState.logs.push(m))
     }
-    await sleep(800)
+    await sleep(PVP_ACTION_ANIM_DELAY_MS)
   }
   
   // Post-turn checks

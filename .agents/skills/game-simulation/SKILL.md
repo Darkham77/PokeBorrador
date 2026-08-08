@@ -51,6 +51,10 @@ the source of truth. `src/` must conform to them, never the reverse.
    - It is STRICTLY FORBIDDEN to execute multiple E2E simulation suite directories or files concurrently in a single parallel Playwright command when suites contain multi-account transactions, database resets, or internal multi-worker sessions.
    - All E2E domain simulations MUST ALWAYS be executed strictly file-by-file in sequential order using `npm run sim:e2e` (which dynamically discovers every `*.simulation.ts` under `scripts/e2e/` via `scripts/e2e/run_sequential_simulations.ts` and runs them one by one, halting immediately if any single simulation fails) or their dedicated canonical npm scripts (`npm run sim:e2e:gyms`, `npm run sim:e2e:gts`, `npm run sim:e2e:breeding`, etc.).
 
+7. **Dedicated Simulation Port Law (Port 5174 Isolation)**:
+   - All E2E simulations and Playwright test runners MUST strictly use port `5174` (`http://localhost:5174`), leaving port `5173` strictly reserved for interactive developer use.
+   - When resetting ports before simulation runs, agents MUST execute `npx kill-port 5174` (it is STRICTLY FORBIDDEN to kill port `5173`).
+
    **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
 
    *❌ Forbidden (Silent Fallback Assignment):*

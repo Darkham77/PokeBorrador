@@ -70,10 +70,16 @@ export function calculateFinalPower(
   const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
   const cycle = getDayCycle()
 
+const BASE_STAB_MULT = 1.5;
+const LOW_HP_PINCH_RATIO_ONE_THIRD = 3;
+const TECHNICIAN_MAX_POWER_CAP = 60;
+const ADAPTABILITY_STAB_MULTIPLIER = 2;
+const DAY_CYCLE_BOOST_MULTIPLIER = 1.2;
+
   // 1. STAB
   const moveType = md.type as PokemonType;
-  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1
-  if (attacker.ability === 'adaptability' && stab > 1) stab = 2
+  let stab = (moveType === attacker.type || moveType === attacker.type2) ? BASE_STAB_MULT : 1
+  if (attacker.ability === 'adaptability' && stab > 1) stab = ADAPTABILITY_STAB_MULTIPLIER
   power *= stab
 
   // 2. Weather
@@ -81,13 +87,13 @@ export function calculateFinalPower(
   if (weather && weather.turns !== 0) {
     const wType = (weather.type || weather.visual || 'clear')
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
-      if (moveType === 'fire') weatherMult = 1.5
+      if (moveType === 'fire') weatherMult = BASE_STAB_MULT
       if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5
     } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
-      if (moveType === 'water') weatherMult = 1.5
+      if (moveType === 'water') weatherMult = BASE_STAB_MULT
       if (moveType === 'fire') weatherMult = (wType === 'storm' || wType === 'heavy_rain' || wType === 'raindance') ? 0.5 : 0.5
     } else if (wType === 'thunderstorm') {
-      if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5
+      if (moveType === 'electric' || moveType === 'dragon') weatherMult = BASE_STAB_MULT
     }
   }
 
@@ -102,23 +108,23 @@ export function calculateFinalPower(
 
   // Day cycle
   if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
-    if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') weatherMult = 1.2
-    if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') weatherMult = 1.2
+    if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') weatherMult = DAY_CYCLE_BOOST_MULTIPLIER
+    if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') weatherMult = DAY_CYCLE_BOOST_MULTIPLIER
   }
 
   power *= weatherMult
 
   // 3. Ability
   let abilMult = 1
-  const isLowHp = attacker.hp <= (attacker.maxHp / 3)
+  const isLowHp = attacker.hp <= (attacker.maxHp / LOW_HP_PINCH_RATIO_ONE_THIRD)
   if (isLowHp) {
-    if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = 1.5
-    if (attacker.ability === 'torrent' && moveType === 'water') abilMult = 1.5
-    if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = 1.5
-    if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = 1.5
+    if (attacker.ability === 'blaze' && moveType === 'fire') abilMult = BASE_STAB_MULT
+    if (attacker.ability === 'torrent' && moveType === 'water') abilMult = BASE_STAB_MULT
+    if (attacker.ability === 'overgrow' && moveType === 'grass') abilMult = BASE_STAB_MULT
+    if (attacker.ability === 'swarm' && moveType === 'bug') abilMult = BASE_STAB_MULT
   }
-  if (attacker.ability === 'technician' && md.power <= 60) {
-    abilMult *= 1.5
+  if (attacker.ability === 'technician' && md.power <= TECHNICIAN_MAX_POWER_CAP) {
+    abilMult *= BASE_STAB_MULT
   }
   if (weather && weather.turns !== 0 && attacker.ability === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
     if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
@@ -158,6 +164,9 @@ export function calculateFinalPower(
 /**
  * Calculates final move accuracy applying stages, weather, and specific move/environment rules.
  */
+const NEVER_MISS_ACCURACY_THRESHOLD = 1000
+const SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE = 50
+
 export function calculateFinalAccuracy(
   md: { id?: string; acc?: number } | null,
   attacker: Pokemon | null | undefined,
@@ -167,7 +176,7 @@ export function calculateFinalAccuracy(
   accStage: number,
   evaStage: number
 ): number {
-  if (!md || md.acc === undefined || md.acc === 1000) return md?.acc || 0
+  if (!md || md.acc === undefined || md.acc === NEVER_MISS_ACCURACY_THRESHOLD) return md?.acc || 0
   let acc = md.acc
 
   const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
@@ -181,7 +190,7 @@ export function calculateFinalAccuracy(
   if ((isRainActive || isThunderstorm) && (md.id === 'thunder' || md.id === 'hurricane')) {
     acc = 100
   } else if (isSunActive && (md.id === 'thunder' || md.id === 'hurricane')) {
-    acc = 50
+    acc = SUN_ACCURACY_PENALIZED_THUNDER_HURRICANE
   } else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && md.id === 'blizzard') {
     acc = 100
   } else if (mechWeather === WEATHER_MECHANICAL.FOG) {

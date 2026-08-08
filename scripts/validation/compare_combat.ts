@@ -3,6 +3,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Battle, Dex } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
+import {
+  MAXIMUM_POKEMON_LEVEL,
+  BATTLE_TOTAL_STAGES_COUNT,
+  BATTLE_MAX_STAGE_OFFSET,
+  SHOWDOWN_DAMAGE_VARIANCE_MIN,
+  SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE
+} from '../../src/logic/constants/gameplay.ts';
+import {
+  E2E_EV_BALANCED_VALUE,
+  E2E_MAX_IV_VALUE,
+  HIGH_SURVIVAL_HP_10000,
+  DEFAULT_WEATHER_TURNS_COUNT
+} from '../e2e/simulation_config.ts';
 import { toPokemonType } from '../../src/data/battle/types.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
 import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
@@ -70,7 +83,7 @@ const ABILITY_MAP_ES_TO_EN: Record<string, string> = {
   'Chorro Arena': 'sandstream'
 };
 
-const WEATHER_MAP: Record<string, string> = {
+const COMPARE_COMBAT_WEATHER_MAP: Record<string, string> = {
   'clear': 'clear',
   'sun': 'sunnyday',
   'rain': 'raindance',
@@ -130,7 +143,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const p1Spec = getRandomElement(allPokemon);
   const p2Spec = getRandomElement(allPokemon);
   const moveSpec = getRandomElement(allMoves);
-  const level = Math.floor(Math.random() * 100) + 1;
+  const level = Math.floor(Math.random() * MAXIMUM_POKEMON_LEVEL) + 1;
 
   // Modificadores condicionales
   const p1AbilityEs = options.enableAbilitiesAndItems ? getRandomElement(Object.keys(ABILITY_MAP_ES_TO_EN)) : null;
@@ -148,8 +161,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
     ? getRandomElement(['morning', 'day', 'dusk', 'night'] as const)
     : 'day'; 
 
-  const atkStages = options.enableStages ? Math.floor(Math.random() * 13) - 6 : 0;
-  const defStages = options.enableStages ? Math.floor(Math.random() * 13) - 6 : 0;
+  const atkStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
+  const defStages = options.enableStages ? Math.floor(Math.random() * BATTLE_TOTAL_STAGES_COUNT) - BATTLE_MAX_STAGE_OFFSET : 0;
 
   // Simulación en Showdown
   const battle = new Battle({ formatid: 'gen3customgame' as never });
@@ -162,7 +175,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
 
   const originalRandom = battle.prng.random;
   battle.prng.random = function(from, to) {
-    if (from === 85 && to === 101) return 100;
+    if (from === SHOWDOWN_DAMAGE_VARIANCE_MIN && to === SHOWDOWN_DAMAGE_VARIANCE_MAX_EXCLUSIVE) return MAXIMUM_POKEMON_LEVEL;
     return originalRandom.call(this, from, to);
   };
 
@@ -182,8 +195,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
       nature: '',
       gender: '',
       moves: [moveSpec.id],
-      evs: { hp: 0, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      evs: { hp: 0, atk: E2E_EV_BALANCED_VALUE, def: E2E_EV_BALANCED_VALUE, spa: E2E_EV_BALANCED_VALUE, spd: E2E_EV_BALANCED_VALUE, spe: E2E_EV_BALANCED_VALUE },
+      ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE }
     }]
   });
 
@@ -198,8 +211,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
       nature: '',
       gender: '',
       moves: ['splash'],
-      evs: { hp: 0, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
-      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+      evs: { hp: 0, atk: E2E_EV_BALANCED_VALUE, def: E2E_EV_BALANCED_VALUE, spa: E2E_EV_BALANCED_VALUE, spd: E2E_EV_BALANCED_VALUE, spe: E2E_EV_BALANCED_VALUE },
+      ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE }
     }]
   });
 
@@ -210,7 +223,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   }
 
   // Establecer clima en Showdown
-  const sdWeather = WEATHER_MAP[weatherType];
+  const sdWeather = COMPARE_COMBAT_WEATHER_MAP[weatherType];
   if (sdWeather && sdWeather !== 'clear') {
     battle.field.setWeather(sdWeather as never, act1);
   }
@@ -229,13 +242,13 @@ function executeComparison(options: RunOptions): ComparisonResult {
   }
 
   // Defender tiene suficiente HP
-  act2.maxhp = 10000;
-  act2.hp = 10000;
+  act2.maxhp = HIGH_SURVIVAL_HP_10000;
+  act2.hp = HIGH_SURVIVAL_HP_10000;
 
   battle.choose('p1', 'move 1');
   battle.choose('p2', 'move 1');
 
-  const showdownDamage = 10000 - act2.hp;
+  const showdownDamage = HIGH_SURVIVAL_HP_10000 - act2.hp;
 
   // Mapeamos los stats a nuestro formato PurePokemon
   const ourAttacker: PurePokemon = {
@@ -272,7 +285,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
     cat: getMoveCategory({ id: moveSpec.id, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower })
   };
 
-  const weatherObj: PureBattleWeather | null = weatherType !== 'clear' ? { type: weatherType, turns: 5 } : null;
+  const weatherObj: PureBattleWeather | null = weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
   const ctx: PureDamageOptions = {
     atkStages,
     defStages,
@@ -319,7 +332,13 @@ const PHASES = [
   }
 ];
 
-const iterations = 500;
+/** Total randomized comparison iterations per test phase. */
+export const COMPARISON_ITERATIONS_COUNT = 500;
+
+/** Maximum sample size of failed cases logged to reporting artifacts. */
+export const MAX_FAILURE_SAMPLES_COUNT = 10;
+
+const iterations = COMPARISON_ITERATIONS_COUNT;
 const reports: string[] = [];
 
 console.log('Iniciando comparación por fases...');
@@ -344,7 +363,7 @@ PHASES.forEach(phase => {
 
   if (fails.length > 0) {
     reports.push('### Muestra de Fallos:\n');
-    fails.slice(0, 10).forEach((f, idx) => {
+    fails.slice(0, MAX_FAILURE_SAMPLES_COUNT).forEach((f, idx) => {
       reports.push(`#### Fallo #${idx + 1} (Dif: ${f.ourDamage - f.showdownDamage})
 * **Nuestra estimación**: \`${f.ourDamage}\`
 * **Showdown**: \`${f.showdownDamage}\`

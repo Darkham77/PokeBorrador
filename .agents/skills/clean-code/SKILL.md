@@ -179,6 +179,8 @@ File to edit: UserService.ts
 | **test-engineer** | Playwright | `python .agents/skills/webapp-testing/scripts/playwright_runner.py <url>` |
 | **Any agent** | Lint & Types | `npm run lint` (includes type-check via `vue-tsc`) |
 | **Any agent** | Full Audit | `npm run audit:full` (SASS, GPU, FSM, SQL, Items, Moves) |
+| **Any agent** | Targeted Audit | `npm run audit -- --rule="<name>" --summary --top=30` — filter by rule, suppress noise |
+| **Any agent** | JSON Audit | `npm run audit -- --summary --json` — machine-readable output for scripting |
 
 > ❌ **WRONG:** `test-engineer` running `security_scan.py`
 > ✅ **CORRECT:** `security-auditor` running `security_scan.py`

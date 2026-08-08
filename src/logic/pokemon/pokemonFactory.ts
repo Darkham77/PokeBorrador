@@ -3,6 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES, toNatureId } from '@/data/battle/natures';
 
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
@@ -90,9 +91,9 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
       spe: p.ivs.spe
     },
     {
-      hp: base.hp || 10,
-      atk: base.atk || 10,
-      def: base.def || 10,
+      hp: base.hp || DEFAULT_FALLBACK_BASE_STAT,
+      atk: base.atk || DEFAULT_FALLBACK_BASE_STAT,
+      def: base.def || DEFAULT_FALLBACK_BASE_STAT,
       spa: base.spa,
       spd: base.spd,
       spe: base.spe
@@ -115,7 +116,7 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   stats.forEach(s => {
     const val = p[s] as number;
     if (isNaN(val) || val === undefined) {
-      Reflect.set(p, s, 10);
+      Reflect.set(p, s, DEFAULT_FALLBACK_BASE_STAT);
     }
   });
 
@@ -441,7 +442,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level, bypass) as PokemonMove[],
-    status: '', sleepTurns: 0, friendship: 70, vigor, maxVigor,
+    status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE, vigor, maxVigor,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],

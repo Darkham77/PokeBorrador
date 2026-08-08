@@ -3,6 +3,14 @@ import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
+const TOOL_BUDGET_GOOD = 500
+const TOOL_BUDGET_SUPER = 1000
+const BASE_CATEGORY_WEIGHT_FOSSIL = 45
+const BASE_CATEGORY_WEIGHT_STONE = 25
+const BASE_CATEGORY_WEIGHT_COMMON = 20
+const BASE_CATEGORY_WEIGHT_RARE = 10
+const PERCENTAGE_HALF_SPLIT_RATIO = 0.5
+
 export interface ArchaeologyRewardData {
   name: string
   type: string
@@ -32,10 +40,10 @@ export function useRouteSpawnsArchaeology(
     const totalRates = rates.reduce((sum, r) => sum + r, 0) || 1
 
     const baseCategoryWeights = {
-      fossil: 45,
-      stone: 25,
-      common: 20,
-      rare: 10
+      fossil: BASE_CATEGORY_WEIGHT_FOSSIL,
+      stone: BASE_CATEGORY_WEIGHT_STONE,
+      common: BASE_CATEGORY_WEIGHT_COMMON,
+      rare: BASE_CATEGORY_WEIGHT_RARE
     }
 
     const activeCategoryWeights = { ...baseCategoryWeights }
@@ -44,11 +52,11 @@ export function useRouteSpawnsArchaeology(
     const brushType = (gameStore.state.brushSecs || 0) > 0 ? (gameStore.state.brushType || 'standard') : null
 
     if (pickaxeType === 'good' || pickaxeType === 'super') {
-      const budget = pickaxeType === 'good' ? 500 : 1000
+      const budget = pickaxeType === 'good' ? TOOL_BUDGET_GOOD : TOOL_BUDGET_SUPER
       const affected = [
-        { key: 'rare', base: 10 },
-        { key: 'common', base: 20 },
-        { key: 'stone', base: 25 }
+        { key: 'rare', base: BASE_CATEGORY_WEIGHT_RARE },
+        { key: 'common', base: BASE_CATEGORY_WEIGHT_COMMON },
+        { key: 'stone', base: BASE_CATEGORY_WEIGHT_STONE }
       ]
       let remaining = budget
       for (let i = 0; i < affected.length; i++) {
@@ -57,7 +65,7 @@ export function useRouteSpawnsArchaeology(
         if (i === affected.length - 1) {
           added = remaining
         } else {
-          added = Math.round(remaining * 0.5)
+          added = Math.round(remaining * PERCENTAGE_HALF_SPLIT_RATIO)
         }
         activeCategoryWeights[item.key as 'rare' | 'common' | 'stone'] += added
         remaining -= added
@@ -65,7 +73,7 @@ export function useRouteSpawnsArchaeology(
     }
 
     if (brushType === 'good' || brushType === 'super') {
-      const budget = brushType === 'good' ? 500 : 1000
+      const budget = brushType === 'good' ? TOOL_BUDGET_GOOD : TOOL_BUDGET_SUPER
       activeCategoryWeights.fossil += budget
     }
 
@@ -204,7 +212,7 @@ export function useRouteSpawnsArchaeology(
       if (brushType) {
         const names: Record<string, string> = { standard: 'Pincel de excavación', good: 'Pincel Bueno', super: 'Superpincel' }
         const toolName = names[brushType] || 'Pincel de excavación'
-        const budget = brushType === 'good' ? 500 : (brushType === 'super' ? 1000 : 0)
+        const budget = brushType === 'good' ? TOOL_BUDGET_GOOD : (brushType === 'super' ? TOOL_BUDGET_SUPER : 0)
         if (budget > 0) {
           lines.push(`• ${toolName} activo: agrega +${budget} pts al peso total de Fósiles.`)
         } else {
@@ -215,9 +223,9 @@ export function useRouteSpawnsArchaeology(
       if (pickaxeType) {
         const names: Record<string, string> = { standard: 'Pico de excavación', good: 'Pico Bueno', super: 'Superpico' }
         const toolName = names[pickaxeType] || 'Pico de excavación'
-        const budget = pickaxeType === 'good' ? 500 : (pickaxeType === 'super' ? 1000 : 0)
+        const budget = pickaxeType === 'good' ? TOOL_BUDGET_GOOD : (pickaxeType === 'super' ? TOOL_BUDGET_SUPER : 0)
         if (budget > 0) {
-          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`)
+          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`) // no-magic
         } else {
           lines.push(`• ${toolName} activo.`)
         }

@@ -1,5 +1,6 @@
 
 import { computed, type MaybeRefOrGetter, toValue } from 'vue'
+import { WEATHER_ATMOSPHERE_FILTERS, MIN_NIGHT_BRIGHTNESS_CAP, WEATHER_EFFECT_PRESETS } from '@/logic/constants/visuals'
 
 export interface WeatherVisualOptions {
   weather: MaybeRefOrGetter<string>
@@ -32,9 +33,19 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
 
     // 1. Cycle base values (Ignored if weatherOnly is true)
     if (!weatherOnly) {
-      if (isNight) { brightness = 0.6; contrast = 1.1; saturate = 0.8; }
-      else if (isDusk) { brightness = 0.8; contrast = 1.2; hue = -10; }
-      else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
+      if (isNight) {
+        brightness = WEATHER_ATMOSPHERE_FILTERS.NIGHT_BRIGHTNESS;
+        contrast = WEATHER_ATMOSPHERE_FILTERS.NIGHT_CONTRAST;
+        saturate = WEATHER_ATMOSPHERE_FILTERS.NIGHT_SATURATE;
+      } else if (isDusk) {
+        brightness = WEATHER_ATMOSPHERE_FILTERS.DUSK_BRIGHTNESS;
+        contrast = WEATHER_ATMOSPHERE_FILTERS.DUSK_CONTRAST;
+        hue = WEATHER_ATMOSPHERE_FILTERS.DUSK_HUE;
+      } else if (isMorning) {
+        brightness = WEATHER_ATMOSPHERE_FILTERS.MORNING_BRIGHTNESS;
+        saturate = WEATHER_ATMOSPHERE_FILTERS.MORNING_SATURATE;
+        hue = WEATHER_ATMOSPHERE_FILTERS.MORNING_HUE;
+      }
     }
 
     // 2. Weather modifiers
@@ -46,76 +57,86 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     const cleanWeather = (weather || '').toLowerCase()
 
     if (cleanWeather === 'storm' || cleanWeather === 'thunderstorm') { 
-      const darknessFactor = isNight ? 1.0 : (isDusk ? 0.75 : 0.6)
-      wBrightness = cleanWeather === 'thunderstorm' ? (darknessFactor * 0.8) : darknessFactor; 
-      wSaturate = cleanWeather === 'thunderstorm' ? 0.4 : 0.6; 
-      wContrast = 1.3; 
+      const darknessFactor = isNight ? 1.0 : (isDusk ? WEATHER_EFFECT_PRESETS.STORM_DUSK_FACTOR : WEATHER_EFFECT_PRESETS.STORM_DAY_FACTOR)
+      wBrightness = cleanWeather === 'thunderstorm' ? (darknessFactor * WEATHER_EFFECT_PRESETS.STORM_THUNDER_BRIGHTNESS) : darknessFactor; 
+      wSaturate = cleanWeather === 'thunderstorm' ? WEATHER_EFFECT_PRESETS.STORM_THUNDER_SATURATE : WEATHER_EFFECT_PRESETS.STORM_STANDARD_SATURATE; 
+      wContrast = WEATHER_EFFECT_PRESETS.STORM_CONTRAST; 
     }
     else if (cleanWeather === 'snow' || cleanWeather === 'blizzard' || cleanWeather === 'hail' || cleanWeather === 'coldwave' || cleanWeather === 'cold') { 
-      wBrightness = cleanWeather === 'coldwave' ? 0.75 : 0.85; 
-      wSaturate = 0.5; 
-      wContrast = 1.2; 
+      wBrightness = cleanWeather === 'coldwave' ? WEATHER_EFFECT_PRESETS.COLDWAVE_BRIGHTNESS : WEATHER_EFFECT_PRESETS.SNOW_BRIGHTNESS; 
+      wSaturate = WEATHER_EFFECT_PRESETS.SNOW_SATURATE; 
+      wContrast = WEATHER_EFFECT_PRESETS.SNOW_CONTRAST; 
     }
     else if (cleanWeather === 'rain' || cleanWeather === 'heavy_rain' || cleanWeather === 'raindance') { 
-      wBrightness = cleanWeather === 'heavy_rain' ? 0.65 : 0.8; 
-      wSaturate = cleanWeather === 'heavy_rain' ? 0.5 : 0.7; 
-      wContrast = cleanWeather === 'heavy_rain' ? 1.2 : 1.0;
+      wBrightness = cleanWeather === 'heavy_rain' ? WEATHER_EFFECT_PRESETS.RAIN_HEAVY_BRIGHTNESS : WEATHER_EFFECT_PRESETS.RAIN_STANDARD_BRIGHTNESS; 
+      wSaturate = cleanWeather === 'heavy_rain' ? WEATHER_EFFECT_PRESETS.RAIN_HEAVY_SATURATE : WEATHER_EFFECT_PRESETS.RAIN_STANDARD_SATURATE; 
+      wContrast = cleanWeather === 'heavy_rain' ? WEATHER_EFFECT_PRESETS.RAIN_HEAVY_CONTRAST : WEATHER_EFFECT_PRESETS.RAIN_STANDARD_CONTRAST;
     }
     else if (cleanWeather === 'fog') { 
-      wBrightness = isNight ? 0.75 : 0.9; 
-      wContrast = 0.8; 
-      wSaturate = 0.15; 
+      wBrightness = isNight ? WEATHER_EFFECT_PRESETS.FOG_NIGHT_BRIGHTNESS : WEATHER_EFFECT_PRESETS.FOG_DAY_BRIGHTNESS; 
+      wContrast = WEATHER_EFFECT_PRESETS.FOG_CONTRAST; 
+      wSaturate = WEATHER_EFFECT_PRESETS.FOG_SATURATE; 
     }
     else if (cleanWeather === 'mist' || cleanWeather === 'mistyterrain') { 
-      wBrightness = isNight ? 0.8 : 0.95; 
-      wContrast = 0.9; 
-      wSaturate = 1.0; 
-      if (cleanWeather === 'mistyterrain') wHue = 310;
+      wBrightness = isNight ? WEATHER_EFFECT_PRESETS.MIST_NIGHT_BRIGHTNESS : WEATHER_EFFECT_PRESETS.MIST_DAY_BRIGHTNESS; 
+      wContrast = WEATHER_EFFECT_PRESETS.MIST_CONTRAST; 
+      wSaturate = WEATHER_EFFECT_PRESETS.MIST_SATURATE; 
+      if (cleanWeather === 'mistyterrain') wHue = WEATHER_EFFECT_PRESETS.MISTY_TERRAIN_HUE;
     }
     else if (cleanWeather === 'sandstorm' || cleanWeather === 'dust_storm') { 
-      wBrightness = cleanWeather === 'dust_storm' ? 0.8 : 0.85; 
-      wSaturate = cleanWeather === 'dust_storm' ? 1.1 : 1.2; 
-      wContrast = 1.1; 
+      wBrightness = cleanWeather === 'dust_storm' ? WEATHER_EFFECT_PRESETS.SANDSTORM_DUST_BRIGHTNESS : WEATHER_EFFECT_PRESETS.SANDSTORM_STANDARD_BRIGHTNESS; 
+      wSaturate = cleanWeather === 'dust_storm' ? WEATHER_EFFECT_PRESETS.SANDSTORM_DUST_SATURATE : WEATHER_EFFECT_PRESETS.SANDSTORM_STANDARD_SATURATE; 
+      wContrast = WEATHER_EFFECT_PRESETS.SANDSTORM_CONTRAST; 
     }
     else if (cleanWeather === 'heatwave' || cleanWeather === 'intense_sun' || cleanWeather === 'sun' || cleanWeather === 'sunnyday') { 
-      wBrightness = cleanWeather === 'intense_sun' ? 1.2 : 1.1; 
-      wSaturate = cleanWeather === 'intense_sun' ? 1.4 : 1.3; 
-      wContrast = 1.1; 
+      wBrightness = cleanWeather === 'intense_sun' ? WEATHER_EFFECT_PRESETS.INTENSE_SUN_BRIGHTNESS : WEATHER_EFFECT_PRESETS.SUN_STANDARD_BRIGHTNESS; 
+      wSaturate = cleanWeather === 'intense_sun' ? WEATHER_EFFECT_PRESETS.INTENSE_SUN_SATURATE : WEATHER_EFFECT_PRESETS.SUN_STANDARD_SATURATE; 
+      wContrast = WEATHER_EFFECT_PRESETS.SUN_CONTRAST; 
     }
     else if (cleanWeather === 'electricterrain') {
-      wBrightness = 1.1; wSaturate = 1.4; wContrast = 1.15; wHue = 45;
+      const p = WEATHER_EFFECT_PRESETS.ELECTRIC_TERRAIN;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'grassyterrain') {
-      wBrightness = 1.05; wSaturate = 1.35; wContrast = 1.05; wHue = 100;
+      const p = WEATHER_EFFECT_PRESETS.GRASSY_TERRAIN;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'psychicterrain') {
-      wBrightness = 1.1; wSaturate = 1.4; wContrast = 1.2; wHue = 280;
+      const p = WEATHER_EFFECT_PRESETS.PSYCHIC_TERRAIN;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'trickroom') {
-      wBrightness = 0.85; wSaturate = 1.3; wContrast = 1.25; wHue = 260;
+      const p = WEATHER_EFFECT_PRESETS.TRICK_ROOM;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'gravity') {
-      wBrightness = 0.8; wSaturate = 1.2; wContrast = 1.3; wHue = 210;
+      const p = WEATHER_EFFECT_PRESETS.GRAVITY;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'stealthrock') {
-      wBrightness = 0.95; wSaturate = 1.1; wContrast = 1.1; wHue = 30;
+      const p = WEATHER_EFFECT_PRESETS.STEALTH_ROCK;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'toxicspikes') {
-      wBrightness = 0.9; wSaturate = 1.25; wContrast = 1.15; wHue = 290;
+      const p = WEATHER_EFFECT_PRESETS.TOXIC_SPIKES;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'primal' || cleanWeather === 'desolateland' || cleanWeather === 'primordialsea') {
-      wBrightness = 1.15; wSaturate = 1.5; wContrast = 1.3; wHue = 15;
+      const p = WEATHER_EFFECT_PRESETS.PRIMAL;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'terastallize') {
-      wBrightness = 1.2; wSaturate = 1.6; wContrast = 1.2; wHue = 180;
+      const p = WEATHER_EFFECT_PRESETS.TERASTALLIZE;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
     else if (cleanWeather === 'dynamax') {
-      wBrightness = 0.85; wSaturate = 1.4; wContrast = 1.4; wHue = 340;
+      const p = WEATHER_EFFECT_PRESETS.DYNAMAX;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
 
     // 3. Final mix
     const finalBrightness = (!weatherOnly && isNight) 
-      ? Math.max(0.4, brightness * wBrightness) 
+      ? Math.max(MIN_NIGHT_BRIGHTNESS_CAP, brightness * wBrightness) 
       : (brightness * wBrightness)
     const finalSaturate = saturate * wSaturate
     const finalContrast = contrast * wContrast

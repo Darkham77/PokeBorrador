@@ -11,6 +11,7 @@ import { useChatPrivateStore, type ChatMessage } from '@/stores/social/chatPriva
 
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { validateChatMessage } from '@/logic/validation/schemas'
+import { CHAT_MAX_MESSAGES_HISTORY, CHAT_OPTIMISTIC_DEDUP_WINDOW_MS, CHAT_THROTTLE_INTERVAL_MS, CHAT_MAX_MESSAGE_LENGTH } from '@/logic/constants/gameplay.ts'
 
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore()
@@ -49,7 +50,7 @@ export const useChatStore = defineStore('chat', () => {
       .from('global_chat_messages')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50) as { data: ChatMessage[] | null, error: unknown }
+      .limit(CHAT_MAX_MESSAGES_HISTORY) as { data: ChatMessage[] | null, error: unknown }
 
     if (!error && data) {
       globalMessages.value = [...data].reverse()
@@ -87,7 +88,7 @@ export const useChatStore = defineStore('chat', () => {
             // Si el ID del optimista es un número temporal (epochMs) y no un UUID, es el push optimista
             if (typeof m.id === 'number') {
               const diff = Math.abs((m.id as number) - (Temporal.Instant.from(row.created_at as string).epochMilliseconds))
-              return diff < 3000
+              return diff < CHAT_OPTIMISTIC_DEDUP_WINDOW_MS
             }
             return false
           })
@@ -111,7 +112,7 @@ export const useChatStore = defineStore('chat', () => {
         }
 
         globalMessages.value.push(row as ChatMessage) // domain-ok
-        if (globalMessages.value.length > 50) globalMessages.value.shift()
+        if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
         
         const senderId = row.user_id as string
         const cached = profileCosmetics.value[senderId]
@@ -132,7 +133,7 @@ export const useChatStore = defineStore('chat', () => {
     if (!authStore.user || !text.trim() || !gameStore.db) return
 
     const now = Temporal.Now.instant().epochMilliseconds
-    if (now - lastMessageSentTimestamp < 1000) {
+    if (now - lastMessageSentTimestamp < CHAT_THROTTLE_INTERVAL_MS) {
       uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳')
       return
     }
@@ -141,7 +142,7 @@ export const useChatStore = defineStore('chat', () => {
     const payload = {
       user_id: authStore.user.id,
       username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
-      message: text.slice(0, 180),
+      message: text.slice(0, CHAT_MAX_MESSAGE_LENGTH),
       player_class: gameStore.state.playerClass,
       trainer_level: gameStore.state.trainerLevel || 1
     }
@@ -154,7 +155,7 @@ export const useChatStore = defineStore('chat', () => {
       created_at: Temporal.Now.instant().toString()
     }
     globalMessages.value.push(optimisticRow as ChatMessage) // domain-ok
-    if (globalMessages.value.length > 50) globalMessages.value.shift()
+    if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
     fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
 
     audioStore.play('sentMsg') // Sound on immediate send

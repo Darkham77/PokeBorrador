@@ -15,12 +15,14 @@ interface ProfileData {
   avatarDecor?: string | null
 }
 
+const DEFAULT_TRAINER_AVATAR_SIZE_PX = 40
+
 const props = withDefaults(defineProps<{
   profile: ProfileData
   avatarSize?: number
   variant?: 'normal' | 'pending'
 }>(), {
-  avatarSize: 40,
+  avatarSize: DEFAULT_TRAINER_AVATAR_SIZE_PX,
   variant: 'normal'
 })
 

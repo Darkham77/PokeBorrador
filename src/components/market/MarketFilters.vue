@@ -45,18 +45,21 @@ const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K
   gtsStore.filters[key] = value
 }
 
+const MARKET_FILTER_PRICE_MAX_LIMIT = 1000000
+const MARKET_FILTER_IV_TOTAL_MAX_LIMIT = 186
+
 const resetFilters = () => {
   gtsStore.filters = {
     mode: 'pokemon',
     search: '',
     priceMin: 0,
-    priceMax: 1000000,
+    priceMax: MARKET_FILTER_PRICE_MAX_LIMIT,
     tier: 'all',
     type: 'all',
     levelMin: 1,
     levelMax: 100,
     ivTotalMin: 0,
-    ivTotalMax: 186,
+    ivTotalMax: MARKET_FILTER_IV_TOTAL_MAX_LIMIT,
     ivAny31: false,
     itemCat: 'all'
   }

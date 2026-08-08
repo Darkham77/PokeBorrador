@@ -1,3 +1,12 @@
+const BASE_ARCHAEOLOGY_WEIGHT_FOSSIL = 45;
+const BASE_ARCHAEOLOGY_WEIGHT_STONE = 25;
+const BASE_ARCHAEOLOGY_WEIGHT_COMMON = 20;
+const BASE_ARCHAEOLOGY_WEIGHT_RARE = 10;
+
+const TOOL_BUDGET_GOOD_TIER = 500;
+const TOOL_BUDGET_SUPER_TIER = 1000;
+const SPLIT_REMAINING_FACTOR = 0.5;
+
 export interface ArchaeologyWeights {
   fossil: number;
   stone: number;
@@ -7,18 +16,18 @@ export interface ArchaeologyWeights {
 
 export function calculateArchaeologyWeights(pickaxeType: string | null, brushType: string | null): ArchaeologyWeights {
   const categoryWeights = {
-    fossil: 45,
-    stone: 25,
-    common: 20,
-    rare: 10
+    fossil: BASE_ARCHAEOLOGY_WEIGHT_FOSSIL,
+    stone: BASE_ARCHAEOLOGY_WEIGHT_STONE,
+    common: BASE_ARCHAEOLOGY_WEIGHT_COMMON,
+    rare: BASE_ARCHAEOLOGY_WEIGHT_RARE
   };
 
   if (pickaxeType === 'good' || pickaxeType === 'super') {
-    const budget = pickaxeType === 'good' ? 500 : 1000;
+    const budget = pickaxeType === 'good' ? TOOL_BUDGET_GOOD_TIER : TOOL_BUDGET_SUPER_TIER;
     const affected = [
-      { key: 'rare', base: 10 },
-      { key: 'common', base: 20 },
-      { key: 'stone', base: 25 }
+      { key: 'rare', base: BASE_ARCHAEOLOGY_WEIGHT_RARE },
+      { key: 'common', base: BASE_ARCHAEOLOGY_WEIGHT_COMMON },
+      { key: 'stone', base: BASE_ARCHAEOLOGY_WEIGHT_STONE }
     ];
     let remaining = budget;
     for (let i = 0; i < affected.length; i++) {
@@ -27,7 +36,7 @@ export function calculateArchaeologyWeights(pickaxeType: string | null, brushTyp
       if (i === affected.length - 1) {
         added = remaining;
       } else {
-        added = Math.round(remaining * 0.5);
+        added = Math.round(remaining * SPLIT_REMAINING_FACTOR);
       }
       categoryWeights[item.key as 'rare' | 'common' | 'stone'] += added;
       remaining -= added;
@@ -35,7 +44,7 @@ export function calculateArchaeologyWeights(pickaxeType: string | null, brushTyp
   }
 
   if (brushType === 'good' || brushType === 'super') {
-    const budget = brushType === 'good' ? 500 : 1000;
+    const budget = brushType === 'good' ? TOOL_BUDGET_GOOD_TIER : TOOL_BUDGET_SUPER_TIER;
     categoryWeights.fossil += budget;
   }
 

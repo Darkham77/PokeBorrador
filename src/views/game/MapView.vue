@@ -20,6 +20,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 import { requireMapRouteId } from '@/data/world/map-assets'
+import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -32,7 +33,7 @@ let expirationTicker: gsap.core.Tween | null = null
 
 const tickExpirations = () => {
   gameStore.checkRouteExpirations()
-  expirationTicker = gsap.delayedCall(10, tickExpirations)
+  expirationTicker = gsap.delayedCall(EGG_POLLER_INTERVAL_SEC, tickExpirations)
 }
 
 onMounted(() => {

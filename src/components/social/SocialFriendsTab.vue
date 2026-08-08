@@ -10,6 +10,12 @@ import { gsap } from 'gsap'
 
 import type { Friend } from '@/stores/social/social'
 
+const FRIEND_CARD_INITIAL_OPACITY = 0;
+const FRIEND_CARD_INITIAL_X_OFFSET = -20;
+const FRIEND_CARD_INITIAL_SCALE = 0.95;
+const FRIEND_CARD_ANIM_DURATION_SEC = 0.45;
+const FRIEND_CARD_ANIM_STAGGER_SEC = 0.06;
+
 const socialStore = useSocialStore()
 const chatStore = useChatStore()
 const tradeStore = useTradeStore()
@@ -59,13 +65,13 @@ function animateCards() {
     if (cards.length > 0) {
       gsap.killTweensOf(cards)
       gsap.from(cards, {
-        opacity: 0,
-        x: -20,
-        scale: 0.95,
-        duration: 0.45,
-        stagger: 0.06,
+        opacity: FRIEND_CARD_INITIAL_OPACITY,
+        x: FRIEND_CARD_INITIAL_X_OFFSET,
+        scale: FRIEND_CARD_INITIAL_SCALE,
+        duration: FRIEND_CARD_ANIM_DURATION_SEC,
+        stagger: FRIEND_CARD_ANIM_STAGGER_SEC,
         ease: 'back.out(1.2)',
-        clearProps: 'all'
+        clearProps: 'opacity,x,scale'
       })
     }
   })

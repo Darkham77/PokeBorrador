@@ -6,16 +6,20 @@ export function useBattleVisuals() {
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   const containerRef = ref<HTMLElement | null>(null)
 
+  const HP_HIGH_THRESHOLD_PCT = 50
+  const HP_MID_THRESHOLD_PCT = 25
+  const HP_WARN_THRESHOLD_PCT = 20
+
   const getHpPct = (cur: number, max: number) => (cur / max) * 100
   const getHpClass = (pct: number) => {
-    if (pct > 50) return 'hp-high'
-    if (pct > 25) return 'hp-mid'
+    if (pct > HP_HIGH_THRESHOLD_PCT) return 'hp-high'
+    if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid'
     return 'hp-low'
   }
 
   const getHpColor = (pct: number) => {
-    if (pct > 50) return '#4ade80'
-    if (pct > 20) return '#facc15'
+    if (pct > HP_HIGH_THRESHOLD_PCT) return '#4ade80'
+    if (pct > HP_WARN_THRESHOLD_PCT) return '#facc15'
     return '#f87171'
   }
 

@@ -152,6 +152,16 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 - **`npm run audit:fallow:summary`**: Runs a quick summary of Fallow diagnostics to avoid cluttering the terminal.
 - **`npm run audit:fallow:report`**: Exports the complete human-readable Fallow audit report to the safe directory `scratch/fallow_report.txt` for deeper study.
 
+> [!TIP]
+> The **native project auditor** (`npm run audit`) also supports powerful CLI flags for targeted triage. Pass them after `--`:
+> - `--rule="<partial-name>"` — filter to one rule (e.g. `--rule="mágico"` for magic-number errors).
+> - `--summary` — compact rule-count + top-files table. **Always use before a full listing to avoid terminal floods.**
+> - `--top=N` / `-t N` — control the top-offenders table size (default 15).
+> - `--json` / `-j` — machine-readable JSON output, pipeable into scripts or `jq`.
+> - `--errors-only` — suppress warnings, show only hard errors.
+>
+> **Quick recipe:** `npm run audit -- --rule="mágico" --summary --top=30`
+
 ---
 
 ## Node 26+ Programmatic & Configuration Practices

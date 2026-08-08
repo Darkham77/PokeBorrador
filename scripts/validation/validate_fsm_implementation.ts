@@ -7,15 +7,17 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from '../lib/validationBase.ts';
 
-const SRC_ROOT = path.resolve(process.cwd(), 'src');
-const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
-const FSM_PATH = path.join(SRC_ROOT, 'logic/battle/battleStateMachine.ts');
+const IMPL_SRC_ROOT = path.resolve(process.cwd(), 'src');
+const IMPL_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
+const IMPL_FSM_PATH = path.join(IMPL_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
+const FSM_AUDIT_CHECK_INDEX_TEN_LABEL_TEXT = 'CHECK 10';
+const LOG_PREVIEW_TRUNCATE_LENGTH = 60;
 
 // ─── Descubrimiento Dinámico de Archivos ──────────────────────────────────────
 import { walkSourceFiles as walk } from './fsmParityParser.ts';
 
 async function discoverFsmRelatedFiles() {
-  const allFiles = await walk(SRC_ROOT);
+  const allFiles = await walk(IMPL_SRC_ROOT);
   const relevant: { path: string, content: string }[] = [];
   for (const file of allFiles) {
     const content = await fs.readFile(file, 'utf-8');
@@ -74,13 +76,13 @@ function parseFsmConstants(fsmCode: string) {
 async function main() {
   const validator = setupValidation({
     title: 'FSM IMPLEMENTATION VALIDATOR',
-    requiredFiles: [MANUAL_PATH, FSM_PATH]
+    requiredFiles: [IMPL_MANUAL_PATH, IMPL_FSM_PATH]
   });
 
   await validator.checkFiles();
 
-  const manualCode = await fs.readFile(MANUAL_PATH, 'utf-8');
-  const fsmCode = await fs.readFile(FSM_PATH, 'utf-8');
+  const manualCode = await fs.readFile(IMPL_MANUAL_PATH, 'utf-8');
+  const fsmCode = await fs.readFile(IMPL_FSM_PATH, 'utf-8');
   const fileData = await discoverFsmRelatedFiles();
   
   const externalCode = fileData.filter(f => !f.path.includes('battleStateMachine.ts')).map(d => d.content).join('\n\n');
@@ -122,7 +124,7 @@ async function main() {
       if (!t.includes('setTimeout') || t.startsWith('//')) return;
       const isAtomic = t.includes('await new Promise') || t.startsWith('await') || t.includes('return new Promise') || t.includes('=>');
       if (!isAtomic) {
-        warnings.push(`[CHECK 4] setTimeout no atómico en ${path.basename(file.path)}:${idx + 1}: ${t.slice(0, 60)}`);
+        warnings.push(`[CHECK 4] setTimeout no atómico en ${path.basename(file.path)}:${idx + 1}: ${t.slice(0, LOG_PREVIEW_TRUNCATE_LENGTH)}`);
       }
     });
   });
@@ -132,9 +134,11 @@ async function main() {
     const usageRx = new RegExp(`(?:\\.|'|")(${sub})(?:'|")?`, 'g');
     let um: RegExpExecArray | null;
     let found = false; let unawaited = false;
+const FSM_CONTEXT_SLICE_CHARS = 300
+
     while ((um = usageRx.exec(allCode)) !== null) {
       const idx = um.index;
-      const context = allCode.slice(Math.max(0, idx - 300), idx);
+      const context = allCode.slice(Math.max(0, idx - FSM_CONTEXT_SLICE_CHARS), idx);
       if (context.includes(`${sub}:`) || context.includes('//')) continue;
       found = true;
       if (!context.includes('await')) unawaited = true;
@@ -176,7 +180,7 @@ async function main() {
       for (const match of explicitMatches) {
         const stateName = match[1];
         if (stateName && !allKeys.has(stateName)) {
-          errors.push(`[CHECK 10] Referencia explícita a estado inexistente en ${path.basename(file.path)}:${idx + 1}: BATTLE_(SUB)STATES.${stateName}`);
+          errors.push(`[${FSM_AUDIT_CHECK_INDEX_TEN_LABEL_TEXT}] Referencia explícita a estado inexistente en ${path.basename(file.path)}:${idx + 1}: BATTLE_(SUB)STATES.${stateName}`);
         }
       }
 
@@ -185,7 +189,7 @@ async function main() {
       for (const match of fsmCallMatches) {
         const stateName = match[1];
         if (stateName && !allKeys.has(stateName) && !['SINGLE', 'PLAYER', 'ENEMY', 'ACTIVE'].includes(stateName)) {
-          errors.push(`[CHECK 10] Literal de FSM inexistente referenciado en ${path.basename(file.path)}:${idx + 1}: '${stateName}'`);
+          errors.push(`[${FSM_AUDIT_CHECK_INDEX_TEN_LABEL_TEXT}] Literal de FSM inexistente referenciado en ${path.basename(file.path)}:${idx + 1}: '${stateName}'`);
         }
       }
     });

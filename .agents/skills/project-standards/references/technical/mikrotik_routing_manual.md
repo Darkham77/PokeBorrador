@@ -1,44 +1,44 @@
-# Manual de Ruteo y Redes MikroTik (Poké Vicio)
+# MikroTik Network Routing Manual (Poké Vicio)
 
-Este manual es la fuente de verdad definitiva para la configuración de infraestructura de red, balanceo de carga (Multi-WAN) y ruteo local (Hairpin NAT / Loopback) en routers MikroTik RouterOS para el proyecto Poké Vicio.
-
----
-
-## 🏛️ 1. Contexto de Red e Infraestructura
-
-El servidor del proyecto (hospedado en un QNAP NAS con Supabase y Docker) opera bajo un entorno de **Doble WAN (Redundancia de ISPs)**:
-
-- **ISP-1 (Franco-Net / Ether1)**: Proveedor principal por donde ingresa el tráfico de internet público y se publica el dominio dinámico de QNAP Cloud.
-- **ISP-2 (Omar / Ether2)**: Proveedor secundario utilizado para balanceo de carga general y tolerancia a fallos.
+This manual serves as the single source of truth for network infrastructure configuration, Multi-WAN load balancing, and local loopback routing (Hairpin NAT) on MikroTik RouterOS for Poké Vicio.
 
 ---
 
-## ⚠️ 2. El Problema: Ruteo Asimétrico en Loopback LAN
+## 🏛️ 1. Network & Infrastructure Context
 
-Cuando un dispositivo dentro de la red local (LAN) intenta conectarse al servidor utilizando el dominio público `https://francogp.myqnapcloud.com:50001/`:
+The project server (hosted on a QNAP NAS with Supabase and Docker) operates under a **Dual WAN (ISP Redundancy)** configuration:
 
-1. **Hairpin NAT (Loopback)**: El router redirige la petición de vuelta a la IP local del servidor (`192.168.88.250`) en lugar de sacarla a internet.
-2. **Colisión de Marcado Mangle (`routing-mark`)**: Si el MikroTik tiene una regla de marcado de ruteo genérica para balancear la carga, el tráfico de respuesta del servidor local puede ser erróneamente marcado y forzado a salir por la interfaz del **ISP-2**.
-3. **Consecuencia**: Se rompe la simetría de la conexión (ruteo asimétrico), lo que provoca desconexiones completas e imposibilidad de acceder al panel de administración o al juego desde dentro de la LAN usando la URL pública.
-
----
-
-## 🛠️ 3. La Solución Quirúrgica (RouterOS Mangle Connection-Mark)
-
-Para solucionar esto de manera permanente sin perder el marcado de ruteo para el tráfico legítimo de internet, debemos restringir la regla de marcado del MikroTik agregando un filtro específico de marcas de conexión (`connection-mark=ISP1-input`).
-
-### Lógica del Filtro
-
-- **Tráfico Externo**: El tráfico que entra desde internet a través de `ether1-ISP1-franco` es marcado con la conexión `ISP1-input`. Sus respuestas deben salir de forma obligatoria por `ISP-1`.
-- **Tráfico Interno (LAN)**: El tráfico local que accede por Hairpin NAT **no** tiene la marca `ISP1-input` (porque entra por la interfaz del puente local `bridge`, no por `ether1`). Por lo tanto, el router no altera su ruteo de regreso y la conexión LAN-to-LAN se realiza de manera directa y fluida a 1 Gbps.
+- **ISP-1 (Franco-Net / Ether1)**: Primary ISP handling public internet ingress traffic and publishing QNAP Cloud dynamic domain.
+- **ISP-2 (Omar / Ether2)**: Secondary ISP used for general load balancing and failover tolerance.
 
 ---
 
-## 💻 4. Comandos de Configuración en RouterOS (MikroTik CLI)
+## ⚠️ 2. Issue: Asymmetric Loopback LAN Routing
 
-Ejecuta las siguientes reglas de Mangle y NAT en la consola del MikroTik para implementar esta arquitectura segura:
+When a local device inside the LAN attempts to connect to the server using the public domain `https://francogp.myqnapcloud.com:50001/`:
 
-### Regla Mangle Corregida (Filtro Quirúrgico de Conexión)
+1. **Hairpin NAT (Loopback)**: The router redirects the request back to the server's local IP (`192.168.88.250`) instead of routing out to the internet.
+2. **Mangle Marking Collision (`routing-mark`)**: If MikroTik has a generic routing mark rule for load balancing, local server response traffic can be incorrectly marked and forced out via **ISP-2**.
+3. **Consequence**: Connection symmetry breaks (asymmetric routing), causing complete disconnections and preventing LAN devices from accessing the administration panel or game via the public URL.
+
+---
+
+## 🛠️ 3. Resolution (RouterOS Mangle Connection-Mark)
+
+To resolve this permanently without losing routing marks for external internet traffic, restrict MikroTik's marking rule by adding a specific connection-mark filter (`connection-mark=ISP1-input`).
+
+### Filter Logic
+
+- **External Traffic**: Traffic arriving from the internet via `ether1-ISP1-franco` is marked with connection mark `ISP1-input`. Responses MUST egress through `ISP-1`.
+- **Internal Traffic (LAN)**: Local traffic arriving via Hairpin NAT does **not** carry `ISP1-input` (since it enters via the local bridge interface, not `ether1`). Therefore, the router leaves response routing unaltered, allowing LAN-to-LAN connections at full 1 Gbps speed.
+
+---
+
+## 💻 4. RouterOS Configuration Commands (MikroTik CLI)
+
+Execute the following Mangle and NAT rules in the MikroTik console:
+
+### Mangle Rule (Connection Filter)
 
 ```routeros
 /ip firewall mangle
@@ -48,11 +48,11 @@ add chain=prerouting src-address=192.168.88.0/24 dst-address-list=!Local \
 ```
 
 > [!IMPORTANT]
-> El parámetro clave es `connection-mark=ISP1-input`. Al agregarlo, aseguramos que la regla de marcado de ruta `to-ISP1` **solo** aplique a las conexiones que fueron iniciadas originalmente desde fuera de la red.
+> The key parameter is `connection-mark=ISP1-input`. This ensures `to-ISP1` routing marks ONLY apply to connections originally initiated from outside the network.
 
-### Regla de Hairpin NAT (Loopback)
+### Hairpin NAT Rule
 
-Asegúrate de que la regla de Hairpin NAT esté correctamente definida para el puerto del servidor:
+Ensure Hairpin NAT is configured for the server port:
 
 ```routeros
 /ip firewall nat
@@ -63,12 +63,12 @@ add chain=srcnat src-address=192.168.88.0/24 dst-address=192.168.88.250 \
 
 ---
 
-## 🔍 5. Verificación del Estado
+## 🔍 5. Verification
 
-Para verificar que el tráfico local y externo esté perfectamente segregado, ejecuta en la consola de MikroTik:
+To verify that local and external traffic are properly segregated, run:
 
 ```routeros
 /ip firewall mangle print detail
 ```
 
-Busca las reglas de prerouting y asegúrate de que el tráfico que va al dominio de QNAP desde la LAN **no** incremente el contador de bytes en las reglas que fuerzan la salida por ISP-1/ISP-2 (a menos que provenga originalmente de una conexión externa ya establecida).
+Verify that local LAN traffic targeting the QNAP domain does **not** increment byte counters on rules forcing egress via ISP-1/ISP-2 (unless originating from an established external connection).

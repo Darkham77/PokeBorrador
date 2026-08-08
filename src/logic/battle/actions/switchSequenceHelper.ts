@@ -3,6 +3,8 @@ import { clearVolatileStatus } from '../battleStatus.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
+const RELEASE_FALLBACK_DELAY_MS = 800;
+
 export async function processSwitchSwapAnimations(
   ctx: BattleContext,
   oldPoke: Pokemon,
@@ -57,6 +59,6 @@ export async function processSwitchCallAnimations(
   if (animations?.handleReleaseRequest) {
     await animations.handleReleaseRequest({ side: 'player', pokemon: newPoke })
   } else {
-    await sleep(800)
+    await sleep(RELEASE_FALLBACK_DELAY_MS)
   }
 }

@@ -1,0 +1,75 @@
+{
+  "skill_name": "project-standards",
+  "evals": [
+    {
+      "id": 0,
+      "name": "verify-quality-audit-workflow",
+      "prompt": "I finished fixing a bug in the battle system. Can you run quality verification and audit checks before commit?",
+      "expected_output": "The agent loads project-standards, executes npm run lint and npm run audit:warnings-diff, ensuring 0 errors.",
+      "files": [],
+      "assertions": [
+        "Executes official npm script 'npm run lint' instead of raw eslint",
+        "Executes 'npm run audit:warnings-diff' before declaring ready for commit",
+        "Reports 0 errors and 0 new warnings"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "domain-type-first-enforcement",
+      "prompt": "Create a file defining the available status keys for weather mechanics in battle",
+      "expected_output": "The domain constants must be declared as an 'as const' tuple with a derived union type, without using naked strings.",
+      "files": [],
+      "assertions": [
+        "Does NOT declare fields or types as unconstrained 'string' or 'string[]'",
+        "Uses 'as const' tuple declaration for domain values",
+        "Derives domain type via (typeof ARRAY)[number]"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "playwright-id-locator-strictness",
+      "prompt": "Write a Playwright E2E simulation script to start a wild encounter battle",
+      "expected_output": "The Playwright locators must strictly use unique HTML #id attributes.",
+      "files": [],
+      "assertions": [
+        "Uses exact #id locator syntax (e.g. page.locator('#start-encounter-btn'))",
+        "Does NOT use text matching or has-text(...) selectors"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "zero-timer-mandate-enforcement",
+      "prompt": "Add a 2 second delay after move execution before advancing battle turn state",
+      "expected_output": "The delay MUST use GSAP timeline or promise resolution, NOT setTimeout or setInterval.",
+      "files": [],
+      "assertions": [
+        "Does NOT use setTimeout or setInterval in client or application logic",
+        "Uses GSAP timeline await or promise resolution"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "zero-any-and-type-assertion-prohibition",
+      "prompt": "Create a bridge helper to parse worker payload objects into Pokemon instances",
+      "expected_output": "The helper must use explicit boundary adapter functions and Discriminated Unions, avoiding type assertions ('as any', 'as unknown as T').",
+      "files": [],
+      "assertions": [
+        "Does NOT use 'any' or '@ts-ignore'",
+        "Does NOT use double type casts (as unknown as T) or unchecked type assertions",
+        "Uses explicit boundary adapter functions"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "save-shield-zero-pokemon-protection",
+      "prompt": "Implement an auto-save function that triggers when the player steps on a warp tile",
+      "expected_output": "The save function must enforce the Save Shield, aborting if team/box contains 0 Pokemon or starterChosen is false.",
+      "files": [],
+      "assertions": [
+        "Includes explicit check verifying team/box length > 0",
+        "Includes check verifying starterChosen is true",
+        "Aborts save transaction immediately if validation fails"
+      ]
+    }
+  ]
+}

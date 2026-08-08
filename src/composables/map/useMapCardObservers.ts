@@ -1,5 +1,7 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 
+const WIDE_CARD_BREAKPOINT_PX = 350;
+
 export function useMapCardObservers(
   cardRef: Ref<HTMLElement | null>,
   windowWidth: Ref<number>
@@ -16,7 +18,7 @@ export function useMapCardObservers(
         const entry = entries[0]
         if (!entry) return
         const width = entry.contentRect.width
-        if (width > 350) currentCols.value = 4
+        if (width > WIDE_CARD_BREAKPOINT_PX) currentCols.value = 4
         else if (width > 200) currentCols.value = 3
         else currentCols.value = 2
       })

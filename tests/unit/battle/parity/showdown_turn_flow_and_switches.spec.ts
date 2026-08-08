@@ -712,3 +712,27 @@ describe('Audit Parity - BUG-083: switch preserves active status', () => {
     expect(target.status).toBe('psn');
   });
 });
+
+// --- From test_bug084_trapped_enemy_switch.spec.ts ---
+describe('Audit Parity - BUG-084: trapped enemy choice helper validation', () => {
+  it('should not choose switch when enemy active request has trapped=true', async () => {
+    const { computeP2Choice } = await import('@/logic/battle/battleTurnChoiceHelper');
+    const store = {
+      activeBattle: {
+        value: {
+          enemyRequest: {
+            active: [{ trapped: true }]
+          },
+          enemyTeam: [
+            { uid: 'e-1', name: 'Charizard', hp: 100 },
+            { uid: 'e-2', name: 'Mew', hp: 100 }
+          ]
+        }
+      }
+    };
+    const p = { uid: 'p-1', name: 'Pikachu', hp: 100 } as any;
+    const e = { uid: 'e-1', name: 'Charizard', hp: 100 } as any;
+    const choice = await computeP2Choice(store as any, p, e, false, false, null);
+    expect(choice.startsWith('switch')).toBe(false);
+  });
+});

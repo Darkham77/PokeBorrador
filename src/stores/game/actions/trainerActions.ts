@@ -1,5 +1,6 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/player/trainer'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { OBEY_LEVEL_BY_BADGES } from '@/logic/constants/gameplay'
 import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
@@ -86,16 +87,8 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
   }
 
   function getMaxObeyLevel() {
-    const badges = state.defeatedGyms?.length || 0
-    if (badges >= 8) return 100
-    if (badges >= 7) return 75
-    if (badges >= 6) return 65
-    if (badges >= 5) return 55
-    if (badges >= 4) return 45
-    if (badges >= 3) return 35
-    if (badges >= 2) return 30
-    if (badges >= 1) return 25
-    return 20
+    const badgeCount = Math.min(8, Math.max(0, state.defeatedGyms?.length || 0))
+    return OBEY_LEVEL_BY_BADGES[badgeCount] ?? OBEY_LEVEL_BY_BADGES[0]
   }
 
   return { getTrainerRank, addTrainerExp, checkLevelUp, getMaxObeyLevel }

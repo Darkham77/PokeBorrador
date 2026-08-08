@@ -8,6 +8,13 @@ import { useGTSStore } from '@/stores/gts'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 
+const MARKET_ANIM_CARD_Y_OFFSET_PX = 12
+const MARKET_ANIM_MYCARD_X_OFFSET_PX = -15
+const MARKET_ANIM_CARD_DURATION_SEC = 0.25
+const MARKET_ANIM_CARD_STAGGER_SEC = 0.02
+const MARKET_ANIM_MYCARD_DURATION_SEC = 0.22
+const MARKET_ANIM_MYCARD_STAGGER_SEC = 0.03
+
 // Subcomponents
 import MarketExplorer from '../market/MarketExplorer.vue'
 import MarketFilters from '../market/MarketFilters.vue'
@@ -70,6 +77,8 @@ onUnmounted(() => {
   gtsStore.stopRealtime()
 })
 
+const MARKET_ANIM_CARD_SCALE_START = 0.98
+
 // GSAP Grid stagger animation
 const animateGrid = () => {
   nextTick(() => {
@@ -78,13 +87,13 @@ const animateGrid = () => {
     if (explorerCards.length > 0) {
       gsap.killTweensOf(explorerCards)
       gsap.fromTo(explorerCards,
-        { opacity: 0, y: 12, scale: 0.98 },
+        { opacity: 0, y: MARKET_ANIM_CARD_Y_OFFSET_PX, scale: MARKET_ANIM_CARD_SCALE_START },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 0.25,
-          stagger: 0.02,
+          duration: MARKET_ANIM_CARD_DURATION_SEC,
+          stagger: MARKET_ANIM_CARD_STAGGER_SEC,
           ease: 'power2.out',
           clearProps: 'transform,scale'
         }
@@ -96,12 +105,12 @@ const animateGrid = () => {
     if (myCards.length > 0) {
       gsap.killTweensOf(myCards)
       gsap.fromTo(myCards,
-        { opacity: 0, x: -15 },
+        { opacity: 0, x: MARKET_ANIM_MYCARD_X_OFFSET_PX },
         {
           opacity: 1,
           x: 0,
-          duration: 0.22,
-          stagger: 0.03,
+          duration: MARKET_ANIM_MYCARD_DURATION_SEC,
+          stagger: MARKET_ANIM_MYCARD_STAGGER_SEC,
           ease: 'power2.out',
           clearProps: 'transform'
         }

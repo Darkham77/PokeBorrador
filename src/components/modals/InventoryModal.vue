@@ -160,11 +160,14 @@ watch(() => props.battleMode
       isCategorySwitching.value = true
       gsap.killTweensOf(gridEl)
       
+const GSAP_CATEGORY_FADE_OUT_DURATION_SEC = 0.12
+const GSAP_CATEGORY_FADE_IN_DURATION_SEC = 0.18
+
       // Fade out the entire grid container
       await gsap.to(gridEl, {
         opacity: 0,
         y: 8,
-        duration: 0.12,
+        duration: GSAP_CATEGORY_FADE_OUT_DURATION_SEC,
         ease: 'power2.out'
       })
       
@@ -179,7 +182,7 @@ watch(() => props.battleMode
       await gsap.to(gridEl, {
         opacity: 1,
         y: 0,
-        duration: 0.18,
+        duration: GSAP_CATEGORY_FADE_IN_DURATION_SEC,
         ease: 'power2.out'
       })
       

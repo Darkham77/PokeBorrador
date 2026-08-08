@@ -13,6 +13,8 @@ import { logger } from '@/logic/utils/logger'
 import { parseInstantSafe } from '@/logic/utils/timeUtils'
 import type { GameState } from '@/types/system/game'
 import type { ProfileRow, GameSaveRow } from '@/types/system/database'
+import { ONLINE_PRESENCE_WINDOW_MS, MAX_FRIEND_REQUESTS_PER_MINUTE, BATTLE_INVITE_EXPIRY_SECONDS, ONLINE_PRESENCE_PING_INTERVAL_SEC } from '@/logic/constants/gameplay.ts'
+import { ONE_MINUTE_MS } from '@/logic/constants/items.ts'
 
 
 export interface Friend {
@@ -163,7 +165,7 @@ export const useSocialStore = defineStore('social', () => {
           const empty: Partial<GameState> = {}
           const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : empty
           const lastSeen = parseInstantSafe(saveRow?.updated_at)
-          const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
+          const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS)
 
           const fallbackName = fId.startsWith('local_') ? fId.replace('local_', '') : 'Entrenador'
           const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
@@ -258,10 +260,10 @@ export const useSocialStore = defineStore('social', () => {
     if (!gameStore.db || !authStore.user) return
 
     const now = Temporal.Now.instant().epochMilliseconds
-    sentRequestTimestamps.value = sentRequestTimestamps.value.filter(t => now - t < 60000)
+    sentRequestTimestamps.value = sentRequestTimestamps.value.filter(t => now - t < ONE_MINUTE_MS)
 
-    if (sentRequestTimestamps.value.length >= 10) {
-      uiStore.notify('Límite de solicitudes de amistad alcanzado (máx. 10 por minuto)', '⚠️')
+    if (sentRequestTimestamps.value.length >= MAX_FRIEND_REQUESTS_PER_MINUTE) {
+      uiStore.notify(`Límite de solicitudes de amistad alcanzado (máx. ${MAX_FRIEND_REQUESTS_PER_MINUTE} por minuto)`, '⚠️')
       return
     }
 
@@ -322,7 +324,7 @@ export const useSocialStore = defineStore('social', () => {
       db.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee_id', authStore.user?.id).eq('status', 'pending'),
       db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('receiver_id', authStore.user?.id).eq('status', 'pending'),
       db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('sender_id', authStore.user?.id).eq('status', 'accepted'),
-      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: 60 }).toString())
+      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: BATTLE_INVITE_EXPIRY_SECONDS }).toString())
     ])
 
     notifications.friends = res1.count || 0
@@ -353,7 +355,7 @@ export const useSocialStore = defineStore('social', () => {
         return {
           ...f,
           lastSeen,
-          isOnline: !!(lastSeen && (now - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
+          isOnline: !!(lastSeen && (now - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS)
         }
       })
     } catch (err) {
@@ -374,7 +376,7 @@ export const useSocialStore = defineStore('social', () => {
       // Refresh friends' presence on every ping cycle
       await refreshFriendsPresence()
 
-      presenceInterval = gsap.delayedCall(60, ping)
+      presenceInterval = gsap.delayedCall(ONLINE_PRESENCE_PING_INTERVAL_SEC, ping)
     }
     
     ping()

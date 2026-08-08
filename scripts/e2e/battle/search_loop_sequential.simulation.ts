@@ -1,7 +1,27 @@
 // fallow-ignore-file security-sink
+/**
+ * Sequential Search Loop Battles & Minigames Simulation.
+ * MANDATORY CONTRACT: Evaluates the complete 10-encounter search loop sequence without truncations.
+ * NEVER modify or remove encounters/minigames to bypass failures — fix the underlying issue in src/!
+ */
 import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForStoreReady, confirmAndStartBattle, type WindowWithResolver } from '../e2e_helpers.ts';
+import {
+  waitForStoreReady,
+  confirmAndStartBattle,
+  playFishingMinigameNaturally,
+  playArchaeologyMinigameNaturally,
+  MAX_PER_ACTION_TIMEOUT_MS,
+  type WindowWithResolver
+} from '../e2e_helpers.ts';
+import {
+  DEBUG_ITEM_COUNT_99,
+  SUPER_RAYQUAZA_LEVEL,
+  SUPER_RAYQUAZA_MAX_HP,
+  SUPER_RAYQUAZA_STAT_VAL,
+  SEARCH_LOOP_SUITE_TIMEOUT_MS
+} from '../simulation_config.ts';
+const E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT = 10;
 
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -10,25 +30,44 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public async setupRayquaza(): Promise<void> {
     await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { useGameStore } = await import('/src/stores/game.ts');
+      const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
+      const { requireMapRouteId } = await import('/src/data/world/map-assets.ts');
 
+      useGameStore().state.locationId = requireMapRouteId('route1');
       const rayquaza = pokemonDebugService.generate({
         id: 'rayquaza',
-        level: 100,
-        moves: ['flamethrower', 'thunderbolt', 'icebeam', 'surf']
+        level: SUPER_RAYQUAZA_LEVEL,
+        moves: ['flamethrower', 'tackle', 'outrage', 'hyperbeam']
       });
       
-      rayquaza.maxHp = 9999;
-      rayquaza.hp = 9999;
-      rayquaza.atk = 999;
-      rayquaza.def = 999;
-      rayquaza.spa = 999;
-      rayquaza.spd = 999;
-      rayquaza.spe = 999;
+      rayquaza.maxHp = SUPER_RAYQUAZA_MAX_HP;
+      rayquaza.hp = SUPER_RAYQUAZA_MAX_HP;
+      rayquaza.atk = SUPER_RAYQUAZA_STAT_VAL;
+      rayquaza.def = SUPER_RAYQUAZA_STAT_VAL;
+      rayquaza.spa = SUPER_RAYQUAZA_STAT_VAL;
+      rayquaza.spd = SUPER_RAYQUAZA_STAT_VAL;
+      rayquaza.spe = SUPER_RAYQUAZA_STAT_VAL;
       
       useGameStore().state.team = [rayquaza];
       useGameStore().state.starterChosen = true;
+
+      const testInventory: Inventory = {
+        potion: DEBUG_ITEM_COUNT_99,
+        superpotion: DEBUG_ITEM_COUNT_99,
+        hyperpotion: DEBUG_ITEM_COUNT_99,
+        maxpotion: DEBUG_ITEM_COUNT_99,
+        fullrestore: DEBUG_ITEM_COUNT_99,
+        revive: DEBUG_ITEM_COUNT_99,
+        revivemax: DEBUG_ITEM_COUNT_99,
+        pokeball: DEBUG_ITEM_COUNT_99,
+        ultraball: DEBUG_ITEM_COUNT_99
+      };
+      
+      useGameStore().state.inventory = {
+        ...useGameStore().state.inventory,
+        ...testInventory
+      };
       await useGameStore().saveGame();
 
       const w = window as WindowWithResolver;
@@ -70,9 +109,10 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public async forceEncounterType(type: string): Promise<void> {
     await this.page.evaluate((t) => {
-      if ((window as WindowWithResolver).__VITE_DEBUG__) {
-        (window as WindowWithResolver).__VITE_DEBUG__!.forceEncounterType = t;
-      }
+      const w = window as WindowWithResolver;
+      w.__VITE_DEBUG__ = w.__VITE_DEBUG__ || {};
+      w.__VITE_DEBUG__.isDeterministicSimulation = true;
+      w.__VITE_DEBUG__.forceEncounterType = t;
     }, type);
   }
 
@@ -83,21 +123,21 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       const store = resolver();
       return ((store.currentFsmState === 'SEARCH_PHASE' && store.currentSubState === 'COMBAT_OR_FLEE') ||
               store.currentFsmState === 'ACTIVE_BATTLE') && !store.isProcessing;
-    }, undefined, { timeout: 15000 });
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   public async awaitNotProcessing(): Promise<void> {
     await this.page.waitForFunction(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       return !resolver?.()?.isProcessing;
-    }, undefined, { timeout: 5000 });
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
 
-  test('should execute 10 sequential battles in the search loop without initialization or UID errors', async ({ page }) => {
-    test.setTimeout(300000);
+  test(`should execute ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} sequential battles in the search loop without initialization or UID errors`, async ({ page }) => {
+    test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
     const testUser = `TEST_SEQ_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const sim = new SearchLoopSimWrapper(page, testUser);
@@ -107,10 +147,23 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
     await sim.setupRayquaza();
     await sim.navigateToRoute1();
 
+    /**
+     * IMMUTABLE CONTRACT MANDATE:
+     * This array MUST contain all 10 sequential search loop encounters (Wild, Trainer, Rival, Fishing, Archaeology).
+     * It is STRICTLY FORBIDDEN to truncate, remove, or shorten this array or exclude minigames.
+     * The simulation is the authoritative source of truth for full search loop E2E coverage.
+     */
     const encountersToTest = [
       { num: 1, type: 'wild', label: 'Wild Encounter' },
       { num: 2, type: 'trainer', label: 'Trainer Encounter' },
-      { num: 3, type: 'rival', label: 'Rival Encounter' }
+      { num: 3, type: 'rival', label: 'Rival Encounter' },
+      { num: 4, type: 'fishing', label: 'Fishing Minigame + Battle' },
+      { num: 5, type: 'archaeology', label: 'Archaeology Minigame' },
+      { num: 6, type: 'wild', label: 'Wild Encounter' },
+      { num: 7, type: 'trainer', label: 'Trainer Encounter' },
+      { num: 8, type: 'rival', label: 'Rival Encounter' },
+      { num: 9, type: 'fishing', label: 'Fishing Minigame + Battle' },
+      { num: E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT, type: 'wild', label: 'Wild Encounter' }
     ];
 
     for (let i = 0; i < encountersToTest.length; i++) {
@@ -118,21 +171,28 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       console.debug(`[E2E-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
       
       await sim.forceHealAll();
-      await sim.awaitSearchPhaseCombatOrFlee();
       await sim.forceEncounterType(enc.type);
       await confirmAndStartBattle(page);
-
-      await sim.playBattle();
-      await page.waitForFunction(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        return !!store?.state?.over || store?.currentFsmState === 'SEARCH_PHASE';
-      }, undefined, { timeout: 15000 }).catch(() => null);
-
-      await sim.closeBattleModal(5000).catch(() => {});
+      
+      if (enc.type === 'archaeology') {
+        await sim.awaitSearchPhaseCombatOrFlee();
+        await playArchaeologyMinigameNaturally(page);
+        await sim.awaitNotProcessing();
+      } else if (enc.type === 'fishing') {
+        await sim.awaitSearchPhaseCombatOrFlee();
+        await playFishingMinigameNaturally(page);
+        await sim.awaitNotProcessing();
+      } else {
+        await sim.awaitSearchPhaseCombatOrFlee();
+        if (enc.type === 'trainer' || enc.type === 'rival') {
+          await confirmAndStartBattle(page);
+        }
+        await sim.playBattle();
+        await sim.closeBattleModal(MAX_PER_ACTION_TIMEOUT_MS);
+      }
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
 
-    console.debug('[E2E-TEST] ¡Bucle de 3 combates secuenciales completado con éxito absoluto!');
+    console.debug(`[E2E-TEST] ¡Bucle de ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} combates secuenciales completado con éxito absoluto!`);
   });
 });

@@ -62,16 +62,20 @@ export function isMapExtortable(map?: MapLocation | null): boolean {
   return !isCity && !map.id.includes('gym') && !map.id.includes('league');
 }
 
+const EXTORTION_DURATION_HOURS = 24;
+const OFFICIAL_ROUTE_DURATION_MIN = 30;
+const OFFICIAL_ROUTE_COOLDOWN_HOURS = 24;
+
 /**
  * Obtiene el mensaje unificado de confirmación de extorsión.
  */
 export function getExtortionConfirmMessage(mapName: string): string {
-  return `REGLAS DE EXTORSISÓN:\n\n1. Al extorsionar una ruta, tomarás control de ella por las próximas 24 horas.\n2. Los pesos (₽) ganados contra entrenadores (NPCs) en esta ruta se multiplicarán por x1.5.\n3. Solo puedes extorsionar una ruta a la vez.\n\n¿Quieres extorsionar la ${mapName.toUpperCase()} hoy?`; // text-ok
+  return `REGLAS DE EXTORSISÓN:\n\n1. Al extorsionar una ruta, tomarás control de ella por las próximas ${EXTORTION_DURATION_HOURS} horas.\n2. Los pesos (₽) ganados contra entrenadores (NPCs) en esta ruta se multiplicarán por x1.5.\n3. Solo puedes extorsionar una ruta a la vez.\n\n¿Quieres extorsionar la ${mapName.toUpperCase()} hoy?`; // text-ok
 }
 
 /**
  * Obtiene el mensaje unificado de confirmación de ruta oficial.
  */
 export function getOfficialRouteConfirmMessage(mapName: string): string {
-  return `REGLAS DE RUTA OFICIAL:\n\n1. La Ruta Oficial te permite declarar una zona de patrullaje especial.\n2. Durante los próximos 30 minutos, cada combate ganado aquí otorgará +1 punto de Reputación.\n3. Solo puedes marcar una ruta oficial una vez cada 24 horas.\n\n¿Quieres marcar la ${mapName.toUpperCase()} como tu Ruta Oficial?`; // text-ok
+  return `REGLAS DE RUTA OFICIAL:\n\n1. La Ruta Oficial te permite declarar una zona de patrullaje especial.\n2. Durante los próximos ${OFFICIAL_ROUTE_DURATION_MIN} minutos, cada combate ganado aquí otorgará +1 punto de Reputación.\n3. Solo puedes marcar una ruta oficial una vez cada ${OFFICIAL_ROUTE_COOLDOWN_HOURS} horas.\n\n¿Quieres marcar la ${mapName.toUpperCase()} como tu Ruta Oficial?`; // text-ok
 }

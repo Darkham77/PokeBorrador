@@ -83,7 +83,8 @@ export async function processUseItemInBattle(
       const t2 = String(cap.type2 || '').toLowerCase()
       const isBug = t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho'
 
-      if (isBug && Math.random() < 0.20) {
+      const CAZABICHOS_MASTER_NET_DUPLICATE_CHANCE = 0.20
+      if (isBug && Math.random() < CAZABICHOS_MASTER_NET_DUPLICATE_CHANCE) {
         const { makePokemon } = await import('@/logic/pokemon/pokemonFactory')
         const clone = makePokemon(cap.id, cap.level || 5)
         if (clone) {
@@ -124,7 +125,8 @@ export async function processUseItemInBattle(
           await ctx.animations.awaitTween('escape-enemy')
         } else {
           const { sleep } = await import('@/logic/utils/timeUtils')
-          await sleep(800)
+          const PLAY_ESCAPE_ANIMATION_FALLBACK_MS = 800
+          await sleep(PLAY_ESCAPE_ANIMATION_FALLBACK_MS)
         }
         await options.endBattle(false, true)
       }

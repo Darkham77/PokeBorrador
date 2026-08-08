@@ -10,6 +10,13 @@
  *  - GSAP Exclusive: all motion via gsap timelines / onComplete.
  *  - Zero-Any / Zero-Ignore TypeScript policy.
  */
+const EGG_WOBBLE_LARGE_DEG = 12
+const EGG_WOBBLE_SMALL_DEG = 8
+const EGG_WOBBLE_STEP_DUR_LONG_SEC = 0.14
+const EGG_WOBBLE_STEP_DUR_SHORT_SEC = 0.10
+const EGG_WOBBLE_REST_PAUSE_SEC = 0.55
+const EGG_PANEL_ENTRANCE_OFFSET_Y = -10
+const EGG_PANEL_ENTRANCE_DUR_SEC = 0.35
 import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
@@ -60,12 +67,12 @@ function startWiggle(uid: string): void {
 
   const selector = `[data-egg-uid="${uid}"] .egg-icon`
   const tl = gsap.timeline({ repeat: -1, yoyo: false })
-  tl.to(selector, { rotation: 12,  duration: 0.14, ease: 'power1.inOut' })
-    .to(selector, { rotation: -12, duration: 0.14, ease: 'power1.inOut' })
-    .to(selector, { rotation: 8,   duration: 0.10, ease: 'power1.inOut' })
-    .to(selector, { rotation: -8,  duration: 0.10, ease: 'power1.inOut' })
-    .to(selector, { rotation: 0,   duration: 0.10, ease: 'power1.out' })
-    .to(selector, { rotation: 0,   duration: 0.55, ease: 'none' }) // rest pause
+  tl.to(selector, { rotation: EGG_WOBBLE_LARGE_DEG,  duration: EGG_WOBBLE_STEP_DUR_LONG_SEC, ease: 'power1.inOut' })
+    .to(selector, { rotation: -EGG_WOBBLE_LARGE_DEG, duration: EGG_WOBBLE_STEP_DUR_LONG_SEC, ease: 'power1.inOut' })
+    .to(selector, { rotation: EGG_WOBBLE_SMALL_DEG,   duration: EGG_WOBBLE_STEP_DUR_SHORT_SEC, ease: 'power1.inOut' })
+    .to(selector, { rotation: -EGG_WOBBLE_SMALL_DEG,  duration: EGG_WOBBLE_STEP_DUR_SHORT_SEC, ease: 'power1.inOut' })
+    .to(selector, { rotation: 0,   duration: EGG_WOBBLE_STEP_DUR_SHORT_SEC, ease: 'power1.out' })
+    .to(selector, { rotation: 0,   duration: EGG_WOBBLE_REST_PAUSE_SEC, ease: 'none' }) // rest pause
 
   wiggleTimelines.set(uid, tl)
 }
@@ -104,8 +111,8 @@ function animateIn(): void {
   if (!panelRef.value) return
   gsap.fromTo(
     panelRef.value,
-    { opacity: 0, y: -10 },
-    { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }
+    { opacity: 0, y: EGG_PANEL_ENTRANCE_OFFSET_Y },
+    { opacity: 1, y: 0, duration: EGG_PANEL_ENTRANCE_DUR_SEC, ease: 'power2.out' }
   )
 }
 

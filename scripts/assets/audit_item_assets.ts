@@ -14,7 +14,7 @@ import path from 'node:path';
 import { styleText, parseArgs } from 'node:util';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
-const ITEM_MAPPING: Record<string, string> = {
+const AUDIT_ITEM_MAPPING: Record<string, string> = {
   'pocion': 'potion',
   'super_pocion': 'super-potion',
   'hiper_pocion': 'hyper-potion',
@@ -111,9 +111,9 @@ async function main() {
     if (!item.sprite) continue;
     
     const spriteId = item.sprite.replace(/\.(png|webp|jpg|jpeg|gif|bmp)$/i, '').toLowerCase();
-    const mappedId = ITEM_MAPPING[spriteId] || spriteId.replace(/_/g, '-');
+    const mappedId = AUDIT_ITEM_MAPPING[spriteId] || spriteId.replace(/_/g, '-');
     
-    const isPokeAPI = (ITEM_MAPPING[spriteId] !== undefined) || 
+    const isPokeAPI = (AUDIT_ITEM_MAPPING[spriteId] !== undefined) || 
                      !isNaN(Number(spriteId)) || 
                      spriteId.includes('-') || 
                      spriteId.includes('ball') || 

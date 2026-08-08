@@ -61,18 +61,20 @@ export function useAtmosphereSnowAnim(
           )
         }
       }
+const HAIL_VERTICAL_DRIFT_PX = 512;
+
     } else {
       if (layer1Ref.value) {
         const s1X = (seed1 * 1200) % 128
         const s1Y = (seed1 * 2200) % 128
-        applyParallaxLayer(layer1Ref.value, s1X, s1Y, 0, 512, 1.0 / speedVar)
+        applyParallaxLayer(layer1Ref.value, s1X, s1Y, 0, HAIL_VERTICAL_DRIFT_PX, 1.0 / speedVar)
       }
 
       if (layer2Ref.value && !isLowPower) {
         const speedVar2 = 0.9 + (animSeed * 0.2)
         const s2X = (seed2 * 2800) % 64
         const s2Y = (seed2 * 3800) % 64
-        applyParallaxLayer(layer2Ref.value, s2X, s2Y, 0, 512, 1.5 / speedVar2)
+        applyParallaxLayer(layer2Ref.value, s2X, s2Y, 0, HAIL_VERTICAL_DRIFT_PX, 1.5 / speedVar2)
       }
     }
   }

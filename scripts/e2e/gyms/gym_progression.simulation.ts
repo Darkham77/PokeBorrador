@@ -27,6 +27,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
   }
 
   public async challengeBrock(): Promise<void> {
+    await this.disableAutoMode();
     await this.page.evaluate(async () => {
       const { useGymsStore } = await import('../../../src/stores/gyms.ts');
       const gymsStore = useGymsStore();
@@ -35,6 +36,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
   }
 
   public async verifyBadgeEarned(): Promise<{ badgesCount: number; hasBadgeId: boolean }> {
+    await waitForStoreReady(this.page);
     return await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const gameStore = useGameStore();
@@ -68,8 +70,7 @@ test.describe('Gym Progression & Badges Challenge Simulation', () => {
     await sim.enableE2EWorkerFlag();
     await sim.challengeBrock();
 
-    // 4. Iniciar y jugar el combate
-    await sim.startBattle();
+    // 4. Jugar el combate
     await sim.playBattle();
 
     // 5. Cerrar combate y retornar al mapa

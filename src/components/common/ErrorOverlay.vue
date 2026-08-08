@@ -60,9 +60,11 @@ const closeError = () => {
   uiStore.closeAll() // Restore background block by clearing the stack
 }
 
+const ERROR_OVERLAY_TRANSITION_Y_OFFSET_PX = 10
+
 const transitionHooks = useGsapTransition({
   type: 'slide-up',
-  yOffset: 10,
+  yOffset: ERROR_OVERLAY_TRANSITION_Y_OFFSET_PX,
   duration: 0.3
 })
 </script>

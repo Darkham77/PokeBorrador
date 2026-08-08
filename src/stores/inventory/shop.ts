@@ -8,6 +8,7 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
+import { MAX_ITEM_PURCHASE_QTY, ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER, GREAT_BALL_INVENTORY_COUNT_MULT, ULTRA_BALL_INVENTORY_COUNT_MULT, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
 
 import { clearVolatileStatus } from '@/logic/battle/battleStatus'
 
@@ -26,7 +27,7 @@ export const useShopStore = defineStore('shop', () => {
   function setQuantity(itemId: string, val: string | number) {
     let q = parseInt(String(val))
     if (isNaN(q) || q < 1) q = 1
-    if (q > 999) q = 999
+    if (q > MAX_ITEM_PURCHASE_QTY) q = MAX_ITEM_PURCHASE_QTY
     quantities.value[itemId] = q
   }
 
@@ -41,7 +42,7 @@ export const useShopStore = defineStore('shop', () => {
     if (!classDef || !classDef.modifiers) return 1.0
     
     // For regular shop, we use the recargo penalty if member of Rocket
-    if (playerClass === 'rocket') return 1.20 
+    if (playerClass === 'rocket') return ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER 
     return 1.0
   }
 
@@ -71,7 +72,7 @@ export const useShopStore = defineStore('shop', () => {
     
     // Process special category effects (like balls count)
     if (item.cat === 'pokeballs') {
-       const mult = item.id === 'greatball' ? 1.5 : (item.id === 'ultraball' ? 2 : 1)
+       const mult = item.id === 'greatball' ? GREAT_BALL_INVENTORY_COUNT_MULT : (item.id === 'ultraball' ? ULTRA_BALL_INVENTORY_COUNT_MULT : 1)
        gameStore.state.balls = (gameStore.state.balls || 0) + Math.floor(qty * mult)
     }
 
@@ -166,7 +167,7 @@ export const useShopStore = defineStore('shop', () => {
       clearVolatileStatus(p);
       if (p.moves) {
         p.moves.forEach((m: Move | null) => {
-          if (m) m.pp = m.maxPP || 20;
+          if (m) m.pp = m.maxPP || DEFAULT_MOVE_PP;
         });
       }
     });

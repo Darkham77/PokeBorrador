@@ -96,7 +96,8 @@ export function calcStatsPure(
     spd = Math.floor(spd * 1.5);
   }
 
-  let spe = getStat(base.spe ?? 45, ivs.spe, speEv, level, 'spe');
+  const DEFAULT_BASE_SPEED = 45;
+  let spe = getStat(base.spe ?? DEFAULT_BASE_SPEED, ivs.spe, speEv, level, 'spe');
   if (isDittoQuickPowder) {
     spe = Math.floor(spe * 2);
   }
