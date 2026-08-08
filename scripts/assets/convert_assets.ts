@@ -244,7 +244,7 @@ function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, chann
     for (let x = 0; x < size; x++) {
       const idx = (y * size + x) * channels
       const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-      if (alpha > ALPHA_PIXEL_THRESHOLD_50) {
+      if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
         hasOpaque = true
         if (x < minX) minX = x
         if (x > maxX) maxX = x
@@ -259,7 +259,7 @@ function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, chann
       for (let x = 0; x < size; x++) {
         const idx = (y * size + x) * channels
         const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-        if (alpha > ALPHA_PIXEL_THRESHOLD_50) { rowHasOpaque = true; break }
+        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) { rowHasOpaque = true; break }
       }
       if (rowHasOpaque) { lowestY = y; break }
     }

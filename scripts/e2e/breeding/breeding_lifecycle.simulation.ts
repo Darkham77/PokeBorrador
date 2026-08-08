@@ -62,7 +62,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
       breedingStore.slots[1] = { pokemon: p2, slotIndex: 1, deposited_at: past };
 
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: SIMULATION_ACTIVE_POKEMON_LEVEL_5 });
+      const activePoke = pokemonDebugService.generate({ id: 'caterpie', level: SIMULATION_ACTIVE_POKEMON_LEVEL });
       gameStore.state.team = [activePoke];
       gameStore.state.box = [p1, p2];
 
@@ -150,7 +150,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
 }
 
 test.describe('Breeding & Hatching Lifecycle Simulation', () => {
-  test.use({ viewport: { width: SIMULATION_VIEWPORT_WIDTH_PX, height: SIMULATION_VIEWPORT_HEIGHT_PX } });
+  test.use({ viewport: { width: 1280, height: 720 } });
 
   test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
     const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;

@@ -40,7 +40,7 @@ export function useRouteSpawnsFishing(
 
     const pool: PokemonSpeciesId[] = [...props.map.fishing.pool]
     const rates = [...props.map.fishing.rates]
-    while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_10)
+    while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_WEIGHT)
 
     const weatherCfg = props.map.weather?.[props.weather]
     if (props.weather && props.weather !== 'clear' && weatherCfg) {
@@ -49,7 +49,7 @@ export function useRouteSpawnsFishing(
         exclusives.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            rates.push(weight ?? DEFAULT_EXCLUSIVE_WEIGHT_5)
+            rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT)
           }
         })
       }
@@ -58,7 +58,7 @@ export function useRouteSpawnsFishing(
         visitors.forEach(({ id, weight }) => {
           if (!pool.includes(id)) {
             pool.push(id)
-            rates.push(weight !== undefined ? -weight : -DEFAULT_FISHING_RATE_10)
+            rates.push(weight !== undefined ? -weight : -DEFAULT_FISHING_RATE_WEIGHT)
           }
         })
       }

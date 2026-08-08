@@ -11,7 +11,7 @@ const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 describe('Local Ash DB Diagnostics', () => {
   it('should run all SQLite migrations on poke_local_ash.db and validate all saves', async () => {
     console.log('Opening database:', DB_PATH);
-    const db = new DatabaseSync(DB_PATH);
+    using db = new DatabaseSync(DB_PATH);
     
     // 1. Run migrations first
     const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');

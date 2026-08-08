@@ -142,7 +142,8 @@ const GIT_STATUS_PREFIX_OFFSET = 3;
     const filteredFiles = new Set<string>();
     for (const f of files) {
       const ext = path.extname(f).toLowerCase();
-      if (AUDIT_EXTENSIONS.has(ext) && !f.includes('node_modules') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/')) {
+      const isConfigFile = /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(f)) || path.basename(f).startsWith('vitest.');
+      if (AUDIT_EXTENSIONS.has(ext) && !isConfigFile && !f.includes('node_modules') && !f.startsWith('external/') && !f.startsWith('external\\') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/')) {
         filteredFiles.add(f);
       }
     }

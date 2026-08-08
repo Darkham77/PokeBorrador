@@ -58,7 +58,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
           reward: {
             id: 'rarecandy',
             name: 'Caramelo Raro',
-            qty: SIMULATION_REWARD_CANDY_QTY_1,
+            qty: SIMULATION_REWARD_CANDY_QTY,
             icon: '🍬'
           },
           completed: false,
@@ -73,7 +73,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
     });
 
     const mapaBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
-    await mapaBtn.waitFor({ state: 'visible', timeout: SIMULATION_NAV_TIMEOUT_MS_15000 });
+    await mapaBtn.waitFor({ state: 'visible', timeout: SIMULATION_NAV_TIMEOUT_MS });
   }
 
   public async openDaycareMissions(): Promise<void> {

@@ -8,7 +8,7 @@ import {
   E2E_FALLBACK_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
   MS_TO_SECONDS_DIVISOR,
-  SWITCH_SLOT_OFFSET_2
+  SWITCH_SLOT_INDEX_OFFSET
 } from './simulation_config.ts';
 export { MAX_PER_ACTION_TIMEOUT_MS };
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
@@ -377,7 +377,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         await cardBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       } else {
         // Fallback posicional si no se pudo resolver el UID
-        const switchIdx = switchSlot - SWITCH_SLOT_OFFSET_2; // slot 1 = activo, slot 2 = índice 0 de banca
+        const switchIdx = switchSlot - SWITCH_SLOT_INDEX_OFFSET; // slot 1 = activo, slot 2 = índice 0 de banca
         const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
         await allBenchCards.first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
         await allBenchCards.nth(switchIdx).click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -472,7 +472,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
       } else if (cleanChoice.startsWith('switch ')) {
         // En Showdown, slot 1 es el activo, y slots 2-6 son la banca (sana o completa según la fase).
         // Por ende, switch N corresponds al índice N-2 de los elementos disponibles en la banca de la UI.
-        const switchSlot = parseInt(cleanChoice.split(' ')[1] || String(SWITCH_SLOT_OFFSET_2), 10);
+        const switchSlot = parseInt(cleanChoice.split(' ')[1] || String(SWITCH_SLOT_INDEX_OFFSET), 10);
         
         const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH');
 
@@ -481,7 +481,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
           await cardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
           await clickResilient(cardBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         } else {
-          const switchIdx = switchSlot - SWITCH_SLOT_OFFSET_2;
+          const switchIdx = switchSlot - SWITCH_SLOT_INDEX_OFFSET;
           const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
           await allBenchCards.first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
           await clickResilient(allBenchCards.nth(switchIdx), { timeout: MAX_PER_ACTION_TIMEOUT_MS });

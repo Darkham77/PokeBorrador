@@ -16,6 +16,9 @@ export const GLOW_GRADIENT_STOP_PERCENT = 40;
 /** Absolute zero opacity level (0). */
 export const OPACITY_ZERO = 0;
 
+/** Default base scale factor (1.0). */
+export const SCALE_DEFAULT_BASE_FACTOR = 1;
+
 /** Chat message entry animation duration in seconds. */
 export const MESSAGE_ANIM_DURATION_SEC = 0.25;
 

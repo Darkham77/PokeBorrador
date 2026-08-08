@@ -2,6 +2,10 @@ import { type Page } from '@playwright/test';
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 
+const SIMULATION_VIEWPORT_WIDTH_PX = 1600;
+const SIMULATION_VIEWPORT_HEIGHT_PX = 900;
+const DEFAULT_CLICK_TIMEOUT_MS = 5000;
+
 export abstract class BaseE2ESimulation {
   protected page: Page;
   protected username: string;
@@ -41,10 +45,6 @@ export abstract class BaseE2ESimulation {
       data: dbBuffer
     });
   }
-
-const SIMULATION_VIEWPORT_WIDTH_PX = 1600;
-const SIMULATION_VIEWPORT_HEIGHT_PX = 900;
-const DEFAULT_CLICK_TIMEOUT_MS = 5000;
 
   /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático

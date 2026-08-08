@@ -20,14 +20,22 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     return
   }
 
+  const isGym = ctx.activeBattle.value?.isGym ?? false
+
   if (option === 'search' && !ctx.activeBattle.value) {
-    const defaultLoc = requireMapRouteId(ctx.gs.state.locationId || 'route1')
+    const defaultLoc = requireMapRouteId(ctx.gs.state.map.currentMap)
     ctx.activeBattle.value = {
+      player: null,
+      enemy: null,
+      playerTeamIndex: 0,
+      enemyTeamIndex: 0,
+      participants: [],
       locationId: defaultLoc,
-      wasSearching: true,
+      weather: { type: 'clear', turns: -1 },
+      turnCount: 0,
+      escapeAttempts: 0,
       over: false,
       fled: false,
-      playerFled: false,
       isTrainer: false,
       isGym: false,
       isFishing: false,
@@ -186,8 +194,6 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     
     return
   }
-
-  const isGym = ctx.activeBattle.value?.isGym || false
 
   await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
   ctx.activeBattle.value = null

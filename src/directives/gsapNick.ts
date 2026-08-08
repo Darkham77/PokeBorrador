@@ -3,6 +3,7 @@ import gsap from 'gsap';
 
 const INTERSECTION_THRESHOLD_RATIO = 0.05;
 const OPACITY_SPARK_MIN_LEVEL = 0.7;
+const SPARK_ANIM_DURATION_SEC = 0.25;
 
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
@@ -20,7 +21,7 @@ const observer = new IntersectionObserver((entries) => {
       }
     }
   });
-}, { threshold: INTERSECTION_THRESHOLD_0_05 });
+}, { threshold: INTERSECTION_THRESHOLD_RATIO });
 
 /**
  * Custom Vue Directive to handle premium real-time GSAP animations
@@ -86,8 +87,6 @@ function applyAnimation(el: HTMLElement, styleClass: unknown) {
         { y: -2, duration: 1.5, yoyo: true, repeat: -1, ease: 'power1.inOut' }
       );
       break;
-
-const SPARK_ANIM_DURATION_SEC = 0.25;
 
     case 'spark':
       anim = gsap.fromTo(el,

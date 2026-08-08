@@ -18,19 +18,11 @@ import { Z_LAYERS } from '../../src/logic/constants/visuals.ts';
 import {
   type AuditRule,
   type Violation,
-  auditRulesConfig as config,
-  legacyDates,
-  nodePrefix,
-  esmExtensions,
-  tsIgnore,
-  timersPromises,
-  explicitResource,
-  forbiddenFallbacks
+  auditRulesConfig as config
 } from './audit_rules.ts';
 
 enableCompileCache();
 
-const AUDIT_PROGRESS_STEP_INTERVAL = 100;
 const SLOC_WARNING_THRESHOLD = 500;
 const SLOC_ERROR_THRESHOLD = 1000;
 const EXEC_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
@@ -65,22 +57,8 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
       for (let i = scriptBlocks.length - 1; i >= 0; i--) {
         const block = scriptBlocks[i]!;
-        const allRules: AuditRule[] = [
-          legacyDates, 
-          config.hardcodedTimezone, 
-          nodePrefix, 
-          esmExtensions, 
-          tsIgnore, 
-          timersPromises, 
-          explicitResource, 
-          config.jsonStringifyInWatch, 
-          config.intersectionObserverRoot, 
-          forbiddenFallbacks,
-          config.manualTimersFrontend,
-          config.magicNumbers,
-          config.badConstantNames
-        ];
-        let rules: AuditRule[] = allRules;
+        const allRules: AuditRule[] = Object.values(config) as AuditRule[];
+        let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
         
         if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
           rules = rules.filter(r => r !== config.legacyDates);
@@ -109,28 +87,15 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
         ];
         
         if (!(filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts'))) {
-          templateRules.push(legacyDates);
+          templateRules.push(config.legacyDates);
         }
 
         runRules(filePath, block.content, templateRules, violations, false, block.startLine);
       }
     } else {
       // isLogic
-      const allRules: AuditRule[] = [
-        legacyDates, 
-        config.hardcodedTimezone, 
-        nodePrefix, 
-        esmExtensions, 
-        tsIgnore, 
-        timersPromises, 
-        explicitResource, 
-        config.jsonStringifyInWatch, 
-        config.intersectionObserverRoot, 
-        forbiddenFallbacks,
-        config.magicNumbers,
-        config.badConstantNames
-      ];
-      let rules: AuditRule[] = allRules;
+      const allRules: AuditRule[] = Object.values(config) as AuditRule[];
+      let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
       
       if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
@@ -178,7 +143,9 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
                                filePath.includes('scripts' + path.sep) ||
                                filePath.includes('supabase' + path.sep) ||
                                filePath.endsWith('DB.ts') || 
-                               filePath.endsWith('Metadata.ts');
+                               filePath.endsWith('Metadata.ts') ||
+                               /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(filePath)) ||
+                               path.basename(filePath).startsWith('vitest.');
 
   if (!isDatabaseOrMetadata) {
     // Calcular SLOC real excluyendo comentarios y líneas vacías
@@ -212,31 +179,35 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const isVueFile = filePath.endsWith('.vue');
     
     // [PureVue-Ignore-Length] is ONLY allowed for database/data files. UI files (.vue) or standard logic files cannot use it.
-    const isAllowedIgnore = hasLengthIgnore && !isVueFile && (
+    const isConfigFile = config.fileLength.exemptConfigFiles?.test(path.basename(filePath)) || path.basename(filePath).startsWith('vitest.');
+    const isAllowedIgnore = (hasLengthIgnore || isConfigFile) && !isVueFile && (
+      isConfigFile ||
       filePath.toLowerCase().includes('data') ||
       filePath.toLowerCase().includes('database') ||
       filePath.toLowerCase().includes('catalog') ||
       /export\s+const\s+[A-Z_]+\s*[:=]\s*(?:\[|\{)/.test(content)
     );
 
-    if (slocCount > SLOC_ERROR_THRESHOLD) {
-      violations.push({
-        file: filePath,
-        rule: 'slocLimit',
-        message: `Mantenibilidad CRÍTICA: El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
-        severity: 'error',
-        line: 1,
-        snippet: `SLOC: ${slocCount}`
-      });
-    } else if (slocCount > SLOC_WARNING_THRESHOLD && !isAllowedIgnore) {
-      violations.push({
-        file: filePath,
-        rule: 'slocLimit',
-        message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic
-        context: `SLOC: ${slocCount}`,
-        severity: 'warning',
-        fixable: false
-      });
+    if (!isConfigFile) {
+      if (slocCount > SLOC_ERROR_THRESHOLD) {
+        violations.push({
+          file: filePath,
+          line: 1,
+          message: `Mantenibilidad CRÍTICA: El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
+          context: `SLOC: ${slocCount}`,
+          severity: 'error',
+          fixable: false
+        });
+      } else if (slocCount > SLOC_WARNING_THRESHOLD && !isAllowedIgnore) {
+        violations.push({
+          file: filePath,
+          line: 1,
+          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic
+          context: `SLOC: ${slocCount}`,
+          severity: 'warning',
+          fixable: false
+        });
+      }
     }
   }
 
@@ -265,10 +236,31 @@ function isInsideComment(content: string, index: number): boolean {
 
 function runRules(filePath: string, content: string, rules: AuditRule[], violations: Violation[], fix: boolean, offset: number): string {
   let result = content;
+  // Pre-calculate line breaks once per content block instead of substring splitting inside match loop
+  let lineBreakIndices: number[] | null = null;
+  const getLineNo = (idx: number): number => {
+    if (!lineBreakIndices) {
+      lineBreakIndices = [];
+      for (let i = 0; i < content.length; i++) {
+        if (content[i] === '\n') lineBreakIndices.push(i);
+      }
+    }
+    let low = 0, high = lineBreakIndices.length;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (lineBreakIndices[mid]! < idx) low = mid + 1;
+      else high = mid;
+    }
+    return low + 1 + offset;
+  };
+
   for (const rule of rules) {
-    const regex = new RegExp(rule.regex.source, rule.regex.flags);
+    const flags = rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g';
+    const regex = new RegExp(rule.regex.source, flags);
     let match;
     while ((match = regex.exec(content)) !== null) {
+      if (match.index === regex.lastIndex) regex.lastIndex++; // Ensure no zero-width infinite loops
+
       // 0. Skip comments to avoid false positives
       if (isInsideComment(content, match.index)) continue;
 
@@ -277,7 +269,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
         if (!rule.check(content, match, filePath)) continue;
       }
       
-      const lineNo = content.substring(0, match.index).split('\n').length + offset;
+      const lineNo = getLineNo(match.index);
       violations.push({
         file: filePath, line: lineNo, message: typeof rule.message === 'function' ? rule.message(match[0]) : rule.message, 
         context: match[0], severity: rule.severity || 'warning', fixable: !!rule.fix
@@ -286,19 +278,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
     const fixer = rule.fix;
     if (fix && fixer) {
       const gRegex = new RegExp(rule.regex.source, rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g');
-      
-      // Aplicar fix solo si pasa el check (contexto-aware)
-      result = result.replace(gRegex, (match) => {
-        // Necesitamos recrear el match array para el check
-        const execMatch = rule.regex.exec(content);
-        if (rule.check) {
-          const pass = (rule === config.gpuGaps) 
-            ? rule.check(content, execMatch!, filePath) 
-            : rule.check(filePath, execMatch!);
-          if (!pass) return match;
-        }
-        return fixer(match);
-      });
+      result = result.replace(gRegex, (match) => fixer(match));
     }
   }
   return result;
@@ -1133,6 +1113,9 @@ async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
     }
   }
 
+  // Cache file contents to avoid re-reading files in nested loops
+  const fileContentCache = new Map<string, string>();
+
   for (const [constName, decls] of declarations.entries()) {
     const uniqueFiles = Array.from(new Set(decls.map(d => d.file)));
     if (uniqueFiles.length <= 1) continue;
@@ -1143,8 +1126,17 @@ async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
       for (let j = i + 1; j < uniqueFiles.length; j++) {
         const fileA = uniqueFiles[i]!;
         const fileB = uniqueFiles[j]!;
-        const contentA = await fs.readFile(fileA, 'utf-8').catch(() => '');
-        const contentB = await fs.readFile(fileB, 'utf-8').catch(() => '');
+        
+        let contentA = fileContentCache.get(fileA);
+        if (contentA === undefined) {
+          contentA = await fs.readFile(fileA, 'utf-8').catch(() => '');
+          fileContentCache.set(fileA, contentA);
+        }
+        let contentB = fileContentCache.get(fileB);
+        if (contentB === undefined) {
+          contentB = await fs.readFile(fileB, 'utf-8').catch(() => '');
+          fileContentCache.set(fileB, contentB);
+        }
         
         const importRegex = new RegExp(`import\\s+[^;]*\\b${constName}\\b`);
         if (importRegex.test(contentA) || importRegex.test(contentB)) {

@@ -23,9 +23,11 @@ const GSAP_DURATION_SPRITE_SEC = 0.6
 const GSAP_DURATION_BADGE_POP_SEC = 0.28
 const GSAP_DURATION_BADGE_SETTLE_SEC = 0.12
 const GSAP_DURATION_HEAL_PROGRESS_SEC = 2.0
+const PERCENTAGE_FULL = 100
 const GSAP_DELAY_CLOSE_SEC = 0.8
 const GSAP_DELAY_AUTO_HEAL_SEC = 0.6
 const PERCENTAGE_MAX_SCALE_FACTOR = 100
+const MAX_TEAM_POKEMON_COUNT = 6
 
 interface Props {
   show?: boolean
@@ -216,7 +218,7 @@ async function handleHeal() {
   const tl = gsap.timeline({
     onUpdate: () => {
       // Sincronizar el conteo de curados con el progreso
-      const targetCount = Math.floor((progress.value / PERCENTAGE_FULL_100) * team.value.length)
+      const targetCount = Math.floor((progress.value / PERCENTAGE_FULL) * team.value.length)
       if (targetCount > healedCount.value) {
         healedCount.value = targetCount
       }
@@ -355,9 +357,6 @@ onUnmounted(() => {
             </PVSpriteFX>
           </div>
           
-const SHINY_SPARKLE_COUNT_HEAL_MODAL = 8
-const MAX_TEAM_POKEMON_COUNT = 6
-
           <div 
             v-for="i in Math.max(0, MAX_TEAM_POKEMON_COUNT - team.length)" 
             :key="'empty-' + i"

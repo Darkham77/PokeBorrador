@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
 const SNOW_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['snow', 'blizzard', 'hail']
+const HAIL_VERTICAL_DRIFT_PX = 512
 
 export function useAtmosphereSnowAnim(
   layer1Ref: Ref<HTMLElement | null>,
@@ -61,7 +62,6 @@ export function useAtmosphereSnowAnim(
           )
         }
       }
-const HAIL_VERTICAL_DRIFT_PX = 512;
 
     } else {
       if (layer1Ref.value) {

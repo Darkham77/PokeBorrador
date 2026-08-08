@@ -210,8 +210,6 @@ const refreshPersistentFX = (retryCount = 0) => {
     ))
   }
 const GSAP_PARALYZE_X_OFFSET_PX = 3
-const DEBUG_OVERLAY_Z_INDEX = '99'
-
   if ((props.status === 'par') && !isImmobilized) {
     activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -GSAP_PARALYZE_X_OFFSET_PX }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: GSAP_PARALYZE_X_OFFSET_PX, duration: PARALYZE_FX_DURATION_SEC, yoyo: true, repeat: -1, ease: 'none' }))
   }
@@ -249,12 +247,13 @@ const allActiveFXDebug = computed(() => {
     const area = settings.area as { x: [number, number], y?: [number, number] }
 const BORDER_RADIUS_CIRCLE_PERCENT = '50%'
 const DEBUG_OVERLAY_TRANSLATE_PERCENT = -50
+const DEBUG_CENTER_OFFSET_PERCENT = 50
 
     const style: Record<string, string> = { 
       position: 'absolute', 
       border: '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'), 
       pointerEvents: 'none', 
-      zIndex: DEBUG_OVERLAY_Z_INDEX, 
+      zIndex: String(Z_LAYERS.HUD), 
       borderRadius: shape === 'circle' ? BORDER_RADIUS_CIRCLE_PERCENT : '2px' 
     }
 

@@ -150,6 +150,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside)
 })
+
+defineExpose({
+  toggleBallMenu
+})
 </script>
 
 <template>

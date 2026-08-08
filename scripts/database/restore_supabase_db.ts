@@ -214,7 +214,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
     for (const r of profileRows) {
       const userId = String(r.id || r.user_id || '');
       const email = String(r.email || `user_${userId}@test.com`);
-      if (userId && userId.length === UUID_STRING_LENGTH_36) {
+      if (userId && userId.length === UUID_STRING_LENGTH_EXPECTED) {
         backupUserIds.set(userId, email);
       }
     }
@@ -226,7 +226,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
       for (const r of rows) {
         for (const key of userIdKeys) {
           const val = String(r[key] || '');
-          if (val && val.length === UUID_STRING_LENGTH_36 && !backupUserIds.has(val)) {
+          if (val && val.length === UUID_STRING_LENGTH_EXPECTED && !backupUserIds.has(val)) {
             backupUserIds.set(val, `user_${val}@test.com`);
           }
         }

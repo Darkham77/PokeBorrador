@@ -7,7 +7,7 @@ import PokemonMovePicker from './PokemonMovePicker.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
-import { useDebugPokemonCreator } from './useDebugPokemonCreator'
+import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const {

@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES, POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
 import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
-import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers'
+import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers.ts'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const {

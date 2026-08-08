@@ -292,7 +292,6 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
   }
 
 const ROCKET_EXTORTION_BONUS_PCT_TEXT = '50%'
-const AMULET_COIN_DOUBLE_MONEY_NOTIFY_THRESHOLD = 1000
 const LUCKY_EGG_EXP_BONUS_PCT_TEXT = '50%'
 
   // Multiplicador de extorsión del Team Rocket (x1.5 ₽ en ruta extorsionada)

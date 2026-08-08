@@ -249,15 +249,21 @@ Fix each issue from the Technical Debt Report one at a time:
 1. Run the command and wait for completion.
 2. Read the full output.
 
-**If TypeScript errors exist** → record them in `task.md`, return to Step 3.4. Do NOT proceed to 3.5b.
-**If clean** → update `task.md` with `types: ✅`. Proceed to Step 3.5b.
+> [!CAUTION]
+> **STRICT SUB-STEP GATE**: If TypeScript errors exist, you MUST STOP immediately and fix the TypeScript errors in the source code right now. Re-run `npm run validate:types` until it passes cleanly. **Do NOT proceed to Step 3.5b (tests) while TypeScript errors exist.**
+
+**If TypeScript errors exist** → record them in `task.md`, fix them, and re-run Step 3.5a.
+**If clean (0 errors)** → update `task.md` with `types: ✅`. Proceed to Step 3.5b.
 
 ### Step 3.5b — `npm run test`
 
 1. Run the command and wait for completion.
 2. Read the full output.
 
-**If any test fails** → record the failing tests in `task.md`, return to Step 3.4. Do NOT proceed to 3.5c.
+> [!CAUTION]
+> **STRICT SUB-STEP GATE**: If any unit/node/integration test fails, you MUST STOP immediately and fix the failing tests in the source code right now. Re-run `npm run test` until all tests pass cleanly. **Do NOT proceed to Step 3.5c (build) while test failures exist.**
+
+**If any test fails** → record the failing tests in `task.md`, fix them, and re-run Step 3.5b.
 **If all pass** → update `task.md` with `tests: ✅`. Proceed to Step 3.5c.
 
 ### Step 3.5c — `npm run build` ← THE BUILD GATE 🔒
@@ -269,7 +275,10 @@ Fix each issue from the Technical Debt Report one at a time:
 2. Wait for it to fully complete — do NOT issue any other tool call in the meantime.
 3. Read the exit code and full output.
 
-**If exit code ≠ 0 or build errors exist** → record under "Build failures" in `task.md`, return to Step 3.4. You are still inside the loop. Do NOT proceed to 3.5d.
+> [!CAUTION]
+> **STRICT SUB-STEP GATE**: If exit code ≠ 0 or build errors exist, you MUST STOP immediately, fix the build/compilation errors in the source code right now, and re-run `npm run validate:types` and `npm run build`. **Do NOT proceed to Step 3.5d while build errors exist.**
+
+**If exit code ≠ 0 or build errors exist** → record under "Build failures" in `task.md`, fix the errors, and re-run validation. You are still inside the loop. Do NOT proceed to 3.5d.
 **If exit code = 0 and no errors** → update `task.md` with `build: ✅ (exit 0)`. Proceed to Step 3.5d.
 
 ### Step 3.5d — `npm run audit:warnings-diff` (re-validation)

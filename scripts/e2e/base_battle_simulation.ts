@@ -5,12 +5,14 @@ import {
   MAX_PER_ACTION_TIMEOUT_MS,
   SIMULATION_GSAP_TIME_SCALE,
   DEFAULT_SEED_VAL,
-  PRIME_MODULO_2147483647,
-  SEED_SCALE_10000,
+  PRIME_MODULO_BASE,
+  SEED_SCALE_MULTIPLIER,
   MAX_IV_VAL,
-  DEBUG_ITEM_COUNT_99
+  DEBUG_ITEM_MAX_QUANTITY
 } from './simulation_config.ts';
 import { confirmAndStartBattle, executeAutoBattle, executeNativeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
+
+
 
 /** Shape of a single Pokémon entry inside a fuzzer-certified batch team list. */
 interface FuzzerTeamSet {
@@ -185,10 +187,10 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       // 1. Sobrescribir Math.random con una función determinista basada en la semilla real del lote
       let seedVal = DEFAULT_SEED_VAL;
       if (Array.isArray(batchData.seed) && batchData.seed.length > 0) {
-        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % PRIME_MODULO_2147483647, 0) || DEFAULT_SEED_VAL;
+        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % PRIME_MODULO_BASE, 0) || DEFAULT_SEED_VAL;
       }
       Math.random = () => {
-        const x = Math.sin(seedVal++) * SEED_SCALE_10000;
+        const x = Math.sin(seedVal++) * SEED_SCALE_MULTIPLIER;
         return x - Math.floor(x);
       };
 
@@ -235,13 +237,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         return debug.pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
-          level: set.level ?? SUPER_RAYQUAZA_LEVEL,
+          level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
           heldItem: set.item,
           nickname: set.name,
           nature: set.nature,
-          ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE, ...set.ivs },
+          ivs: { hp: MAX_IV_VAL, atk: MAX_IV_VAL, def: MAX_IV_VAL, spa: MAX_IV_VAL, spd: MAX_IV_VAL, spe: MAX_IV_VAL, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
           gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
           isShiny: set.shiny ?? false
@@ -253,13 +255,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         return debug.pokemonDebugService.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
-          level: set.level ?? SUPER_RAYQUAZA_LEVEL,
+          level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
           heldItem: set.item,
           nickname: set.name,
           nature: set.nature,
-          ivs: { hp: E2E_MAX_IV_VALUE, atk: E2E_MAX_IV_VALUE, def: E2E_MAX_IV_VALUE, spa: E2E_MAX_IV_VALUE, spd: E2E_MAX_IV_VALUE, spe: E2E_MAX_IV_VALUE, ...set.ivs },
+          ivs: { hp: MAX_IV_VAL, atk: MAX_IV_VAL, def: MAX_IV_VAL, spa: MAX_IV_VAL, spd: MAX_IV_VAL, spe: MAX_IV_VAL, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
           gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
           isShiny: set.shiny ?? false
@@ -271,12 +273,12 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       // Inyectar un inventario completo de prueba para asegurar disponibilidad de objetos
       gameStore.state.inventory = {
-        potion: DEBUG_ITEM_COUNT_99,
-        superpotion: DEBUG_ITEM_COUNT_99,
-        hyperpotion: DEBUG_ITEM_COUNT_99,
-        maxpotion: DEBUG_ITEM_COUNT_99,
-        revive: DEBUG_ITEM_COUNT_99,
-        revivemax: DEBUG_ITEM_COUNT_99
+        potion: DEBUG_ITEM_MAX_QUANTITY,
+        superpotion: DEBUG_ITEM_MAX_QUANTITY,
+        hyperpotion: DEBUG_ITEM_MAX_QUANTITY,
+        maxpotion: DEBUG_ITEM_MAX_QUANTITY,
+        revive: DEBUG_ITEM_MAX_QUANTITY,
+        revivemax: DEBUG_ITEM_MAX_QUANTITY
       };
 
       // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
@@ -396,8 +398,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const battleStore = useBattleStore();
       uiStore.setAutoBattle(false);
       
-      if (!battleStore.activeBattle && battleStore.fsm) {
-        battleStore.fsm.currentState.value = 'EXIT_BATTLE';
+      if (!battleStore.isBattleActive && battleStore.fsm) {
+        battleStore.fsm.currentState = 'EXIT_BATTLE';
       }
     });
   }

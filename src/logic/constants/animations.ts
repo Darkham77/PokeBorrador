@@ -519,12 +519,8 @@ export const HOVER_STRATEGIES = {
   INFO_ITEM_DURATION_SEC: 0.15
 } as const;
 
-// --- View & Route Transition Animation Constants ---
-/** Route transition Y offset for enter/leave animations in pixels. */
-export const VIEW_ROUTE_TRANSITION_Y_PX = 10;
+/** Modal initial scale factor for open animation. */
+export const MODAL_ANIM_INITIAL_SCALE_MIN = 0.8;
 
-/** Login card enter animation delay in seconds. */
-export const LOGIN_CARD_ENTER_DELAY_SEC = 0.5;
-
-/** Map view transition Y offset for panning in pixels. */
-export const MAP_VIEW_TRANSITION_Y_PX = 10;
+/** Modal initial Y offset in pixels for open animation. */
+export const MODAL_ANIM_INITIAL_Y_OFFSET = 20;

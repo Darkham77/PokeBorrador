@@ -27,7 +27,7 @@ const itemSearchQuery = ref('')
 const itemSortKey = ref<'name' | 'price' | 'rarity'>('name')
 const itemSortOrder = ref<'asc' | 'desc'>('asc')
 
-import { useMarketPublishPokemon } from './useMarketPublishPokemon'
+import { useMarketPublishPokemon } from './useMarketPublishPokemon.ts'
 
 const { filteredAndSortedPokemon } = useMarketPublishPokemon(
   game,
@@ -37,7 +37,7 @@ const { filteredAndSortedPokemon } = useMarketPublishPokemon(
   activeTags
 )
 
-import { useMarketPublishInventory } from './useMarketPublishInventory'
+import { useMarketPublishInventory } from './useMarketPublishInventory.ts'
 
 const { gtsStatsMap, filteredAndSortedInventory } = useMarketPublishInventory(
   game,
@@ -79,7 +79,7 @@ watch(activeMode, () => {
   itemPage.value = 1
 })
 
-import { useMarketPublishActions } from './useMarketPublishActions'
+import { useMarketPublishActions } from './useMarketPublishActions.ts'
 
 const {
   selection,

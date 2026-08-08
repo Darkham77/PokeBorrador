@@ -4,6 +4,8 @@ import { gsap } from 'gsap'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
+const cardRef = ref<HTMLElement | null>(null)
+
 const props = defineProps<{
   id?: string
   avatar: string

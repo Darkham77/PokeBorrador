@@ -27,7 +27,7 @@ const enemyBaseId = ref('1')
 const enemyVariant = ref('')
 const enemyGender = ref('')
 
-import { deconstructPokemonId, constructPokemonId } from './debugActionPanelHelpers'
+import { deconstructPokemonId, constructPokemonId } from './debugActionPanelHelpers.ts'
 
 // Sincronizar inputs bidireccionalmente con los pokemones en combate
 watch(() => battleStore.state?.player?.id, (newId) => {

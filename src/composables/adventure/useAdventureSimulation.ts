@@ -53,9 +53,6 @@ const CANVAS_W = 6400
 const CANVAS_H = 4400
 const CARD_W = 320
 const CARD_H = 220
-const ENCOUNTER_STEP_CHECK_THRESHOLD_PCT = 95
-const BASE_WILD_ENCOUNTER_CHANCE = 0.15
-const SWEET_SCENT_EXTRA_ENCOUNTER_CHANCE = 0.50
 
 export function useAdventureSimulation() {
   const mapStore = useMapStore()

@@ -313,7 +313,7 @@ const onContentLeave = (el: Element, done: () => void) => {
   else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') toVars.x = '100%'
   else {
     toVars.scale = MODAL_ANIM_INITIAL_SCALE_MIN
-    toVars.y = MODAL_ANIM_INITIAL_Y_OFFSET_20
+    toVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
   }
 
   gsap.to(el, {

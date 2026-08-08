@@ -14,6 +14,7 @@ const STATUS_GROW_MAX_SCALE_MULT = 1.2
 const PARTICLE_HALF_DURATION_DIVISOR = 2
 const OFFSET_PERCENT_MARGIN = '10%';
 const CENTER_PERCENT_OFFSET = -50;
+const STAGGER_INITIAL_DELAY_NONE = 0;
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useParticleEngine, type ParticleSystemOptions } from '@/composables/effects/useParticleEngine'

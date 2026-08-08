@@ -13,7 +13,7 @@ import {
 import {
   E2E_EV_BALANCED_VALUE,
   E2E_MAX_IV_VALUE,
-  HIGH_SURVIVAL_HP_10000,
+  HIGH_SURVIVAL_HP_CAP,
   DEFAULT_WEATHER_TURNS_COUNT
 } from '../e2e/simulation_config.ts';
 import { toPokemonType } from '../../src/data/battle/types.ts';
@@ -242,13 +242,13 @@ function executeComparison(options: RunOptions): ComparisonResult {
   }
 
   // Defender tiene suficiente HP
-  act2.maxhp = HIGH_SURVIVAL_HP_10000;
-  act2.hp = HIGH_SURVIVAL_HP_10000;
+  act2.maxhp = HIGH_SURVIVAL_HP_CAP;
+  act2.hp = HIGH_SURVIVAL_HP_CAP;
 
   battle.choose('p1', 'move 1');
   battle.choose('p2', 'move 1');
 
-  const showdownDamage = HIGH_SURVIVAL_HP_10000 - act2.hp;
+  const showdownDamage = HIGH_SURVIVAL_HP_CAP - act2.hp;
 
   // Mapeamos los stats a nuestro formato PurePokemon
   const ourAttacker: PurePokemon = {

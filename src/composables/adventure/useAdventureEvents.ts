@@ -18,6 +18,8 @@ import { TRAINER_TYPES } from '@/data/player/trainerTypes'
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases'
 import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
+const ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY = 0.3
+
 interface AdventureEventsConfig {
   isTraveling: Ref<boolean>
   isPaused: Ref<boolean>

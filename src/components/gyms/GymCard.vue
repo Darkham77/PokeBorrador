@@ -64,8 +64,8 @@ const leaderSpriteUrl = computed(() => {
 const handleMouseEnter = () => {
   if (props.isLocked || !cardRef.value) return
   gsap.to(cardRef.value, {
-    scale: GYM_CARD_HOVER_SCALE_1_02,
-    y: GYM_CARD_HOVER_OFFSET_Y_MINUS_4,
+    scale: GYM_CARD_HOVER_SCALE,
+    y: GYM_CARD_HOVER_OFFSET_Y,
     duration: 0.4,
     ease: 'back.out(1.7)',
     borderColor: props.gym.typeColor,

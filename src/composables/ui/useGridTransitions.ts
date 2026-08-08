@@ -57,14 +57,14 @@ export function useGridTransitions(suppressAnimation: MaybeRefOrGetter<boolean>)
         top: `${top}px`,
         width: rect.width,
         height: rect.height,
-        zIndex: 0
+        zIndex: 'var(--z-base)'
       })
     } else {
       gsap.set(item, {
         position: 'absolute',
         width: rect.width,
         height: rect.height,
-        zIndex: 0
+        zIndex: 'var(--z-base)'
       })
     }
     

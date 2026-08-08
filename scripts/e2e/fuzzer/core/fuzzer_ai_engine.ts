@@ -23,6 +23,8 @@ import { MAX_POKEMON_LEVEL, MAX_BATTLE_TURNS } from '../../../../src/data/system
 import type { FuzzerResult } from './fuzzer_runner.ts';
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 
+const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
+
 patchShowdownSpreadModify(() => false);
 
 const AI_RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');

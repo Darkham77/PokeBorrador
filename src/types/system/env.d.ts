@@ -107,11 +107,15 @@ declare global {
     player?: DebugPokemon | null;
     enemy?: DebugPokemon | null;
     _p?: DebugPinia;
+    activeBattle?: unknown;
+    clearLogs?: () => void;
+    completeBattleFlow?: (option?: string) => Promise<void>;
     fsm?: {
       currentState?: { value?: string };
       currentSubState?: { value?: string };
     };
     state?: {
+      wasSearching?: boolean;
       over?: boolean;
       turnCount?: number;
       playerRequest?: ShowdownPlayerRequest;

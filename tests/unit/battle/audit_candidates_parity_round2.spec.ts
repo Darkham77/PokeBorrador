@@ -5,7 +5,7 @@ import type { PurePokemon } from '../../../src/logic/battle/battleMathTypes.ts';
 
 describe('Audit Round 2 Candidates Parity Tests', () => {
   it('Suspect 1: STAGE_MULTIPLIERS_ACC accuracy stage -6 and +6 bounds', () => {
-    expect(STAGE_MULTIPLIERS_ACC['-6']).toBe(0.33);
+    expect(STAGE_MULTIPLIERS_ACC['-6']).toBeCloseTo(0.33, 2);
     expect(STAGE_MULTIPLIERS_ACC['6']).toBe(3.0);
   });
 

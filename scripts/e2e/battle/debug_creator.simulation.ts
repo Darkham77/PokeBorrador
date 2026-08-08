@@ -123,7 +123,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
         moves: ['tackle']
       });
       await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
-    }, E2E_WILD_CATERPIE_LEVEL_5);
+    }, E2E_WILD_CATERPIE_LEVEL);
 
     await confirmAndStartBattle(page);
     await waitForWaitInput(page);
@@ -274,7 +274,7 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
         moves: ['splash']
       });
       await useBattleStore().startBattle(bulbasaur, { locationId: 'route1' });
-    }, E2E_WILD_BULBASAUR_LEVEL_50);
+    }, E2E_WILD_BULBASAUR_LEVEL);
 
     await confirmAndStartBattle(page);
     await waitForWaitInput(page);

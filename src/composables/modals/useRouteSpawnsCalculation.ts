@@ -223,7 +223,7 @@ export function useRouteSpawnsCalculation(
     if (props.map.fishing) {
       fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus
       if ((gameStore.state.fishingRodSecs || 0) > 0) {
-        fishingWeight += EQUIPPED_TOOL_WEIGHT_BONUS_600
+        fishingWeight += EQUIPPED_TOOL_WEIGHT_BONUS
       }
     }
 
@@ -233,7 +233,7 @@ export function useRouteSpawnsCalculation(
       const isMountain = !!props.map.isMountain
       archWeight = isCave ? ARCHAEOLOGY_CAVE_BASE_WEIGHT : (isMountain ? ARCHAEOLOGY_MOUNTAIN_BASE_WEIGHT : 0)
       if ((gameStore.state.pickaxeSecs || 0) > 0 || (gameStore.state.brushSecs || 0) > 0) {
-        archWeight += EQUIPPED_TOOL_WEIGHT_BONUS_600
+        archWeight += EQUIPPED_TOOL_WEIGHT_BONUS
       }
     }
 

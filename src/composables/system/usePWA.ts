@@ -256,7 +256,7 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
         }
       }
 
-      progress.value = PROGRESS_COMPLETE_PERCENT_100
+      progress.value = PROGRESS_COMPLETE_PERCENT
       progressText.value = 'Reiniciando...'
       await forceCacheBustingReload()
     } catch (e) {

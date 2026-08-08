@@ -17,7 +17,7 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupLeftoversScenario(): Promise<void> {
-    await this.page.evaluate(async (snrLvl, catLvl) => {
+    await this.page.evaluate(async ({ snrLvl, catLvl }: { snrLvl: number; catLvl: number }) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
@@ -37,11 +37,11 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
 
       useGameStore().state.team = [snorlax];
       await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
-    }, E2E_SNORLAX_LEVEL, E2E_CATERPIE_LEVEL);
+    }, { snrLvl: E2E_SNORLAX_LEVEL, catLvl: E2E_CATERPIE_LEVEL });
   }
 
   public async setupLifeOrbScenario(): Promise<void> {
-    await this.page.evaluate(async (lvl) => {
+    await this.page.evaluate(async (lvl: number) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
@@ -64,7 +64,7 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupFocusSashScenario(): Promise<void> {
-    await this.page.evaluate(async (sunkernLvl, mewtwoLvl) => {
+    await this.page.evaluate(async ({ sunkernLvl, mewtwoLvl }: { sunkernLvl: number; mewtwoLvl: number }) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useMapStore } = await import('../../../src/stores/map.ts');
@@ -87,7 +87,7 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
 
       useGameStore().state.team = [sunkern];
       await useBattleStore().startBattle(mewtwo, { locationId: 'route1' });
-    }, E2E_CATERPIE_LEVEL, E2E_MEWTWO_LEVEL);
+    }, { sunkernLvl: E2E_CATERPIE_LEVEL, mewtwoLvl: E2E_MEWTWO_LEVEL });
   }
 
   public async getPlayerHp(): Promise<number> {
@@ -152,7 +152,7 @@ test.describe('E2E Held Items Verification', () => {
     // Execute turn
     await sim.selectMove(0);
 
-    expect(await sim.getPlayerHp()).toBe(E2E_SASH_SURVIVAL_HP_1);
+    expect(await sim.getPlayerHp()).toBe(E2E_SASH_SURVIVAL_HP);
   });
 
   // Cargar y ejecutar lotes fuzzer

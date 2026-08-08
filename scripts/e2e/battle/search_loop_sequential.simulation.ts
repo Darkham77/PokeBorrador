@@ -15,7 +15,7 @@ import {
   type WindowWithResolver
 } from '../e2e_helpers.ts';
 import {
-  DEBUG_ITEM_COUNT_99,
+  DEBUG_ITEM_MAX_QUANTITY,
   SUPER_RAYQUAZA_LEVEL,
   SUPER_RAYQUAZA_MAX_HP,
   SUPER_RAYQUAZA_STAT_VAL,
@@ -30,11 +30,11 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 
   public async setupRayquaza(): Promise<void> {
     await this.page.evaluate(async () => {
-      const { useGameStore } = await import('/src/stores/game.ts');
-      const { pokemonDebugService } = await import('/src/logic/debug/pokemonDebugService.ts');
-      const { requireMapRouteId } = await import('/src/data/world/map-assets.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
 
-      useGameStore().state.locationId = requireMapRouteId('route1');
+      useGameStore().state.map.currentMap = requireMapRouteId('route1');
       const rayquaza = pokemonDebugService.generate({
         id: 'rayquaza',
         level: SUPER_RAYQUAZA_LEVEL,
@@ -52,16 +52,16 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       useGameStore().state.team = [rayquaza];
       useGameStore().state.starterChosen = true;
 
-      const testInventory: Inventory = {
-        potion: DEBUG_ITEM_COUNT_99,
-        superpotion: DEBUG_ITEM_COUNT_99,
-        hyperpotion: DEBUG_ITEM_COUNT_99,
-        maxpotion: DEBUG_ITEM_COUNT_99,
-        fullrestore: DEBUG_ITEM_COUNT_99,
-        revive: DEBUG_ITEM_COUNT_99,
-        revivemax: DEBUG_ITEM_COUNT_99,
-        pokeball: DEBUG_ITEM_COUNT_99,
-        ultraball: DEBUG_ITEM_COUNT_99
+      const testInventory = {
+        potion: DEBUG_ITEM_MAX_QUANTITY,
+        superpotion: DEBUG_ITEM_MAX_QUANTITY,
+        hyperpotion: DEBUG_ITEM_MAX_QUANTITY,
+        maxpotion: DEBUG_ITEM_MAX_QUANTITY,
+        fullrestore: DEBUG_ITEM_MAX_QUANTITY,
+        revive: DEBUG_ITEM_MAX_QUANTITY,
+        revivemax: DEBUG_ITEM_MAX_QUANTITY,
+        pokeball: DEBUG_ITEM_MAX_QUANTITY,
+        ultraball: DEBUG_ITEM_MAX_QUANTITY
       };
       
       useGameStore().state.inventory = {

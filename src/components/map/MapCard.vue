@@ -28,7 +28,7 @@ import { useMapCardObservers } from '@/composables/map/useMapCardObservers'
 import { useMapCardSprites } from '@/composables/map/useMapCardSprites'
 import { useMapCardAnimations } from '@/composables/map/useMapCardAnimations'
 import { useWeatherVisuals } from '@/composables/effects/useWeatherVisuals'
-import { useMapCardState } from './useMapCardState'
+import { useMapCardState } from './useMapCardState.ts'
 
 // Flare URLs for spawn auras
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')

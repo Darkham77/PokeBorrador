@@ -48,7 +48,7 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
 }
 
 export async function backupSupabaseDb() {
-  console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${TARGET_NODE_VERSION_LABEL_TEXT}+) ---`))
+  console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${BACKUP_TARGET_NODE_VERSION_LABEL}+) ---`))
 
   const serverConfigs = await readAndParseEnv()
   const baseProfiles = Object.keys(serverConfigs)

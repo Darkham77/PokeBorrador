@@ -1,5 +1,4 @@
 import { FIRE_RED_MAPS } from '@/data/world/maps';
-import type { MapLocation } from '@/types/pokemon/encounters';
 import { MAP_BIOME_KEYS } from '@/logic/constants/encounters';
 
 export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];

@@ -19,7 +19,7 @@ import {
 // Weather effects removed
   DEBUG_UI_ANIMS,
   DEBUG_SPECIAL_MODES
-} from './debugConstants'
+} from './debugConstants.ts'
 
 interface ViteDebugBridge {
   setStatStage: (side: string, stat: string, val: number) => void;

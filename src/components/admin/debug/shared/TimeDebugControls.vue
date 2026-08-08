@@ -12,7 +12,7 @@ import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { useBattleStore } from '@/stores/battle/battle'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
-import { DEBUG_WEATHER_EFFECTS } from '../debugConstants'
+import { DEBUG_WEATHER_EFFECTS } from '../debugConstants.ts'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const game = useGameStore()

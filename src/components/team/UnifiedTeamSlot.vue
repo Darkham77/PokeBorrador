@@ -25,7 +25,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 const TOUCH_LONG_PRESS_DELAY_SEC = 0.35
 const TOUCH_MOVE_CANCEL_THRESHOLD_PX = 15
-const TOUCH_VIBRATE_DURATION_MS = 50
 const SLOT_HOVER_LIFT_Y_PX = -4;
 const SLOT_HOVER_SCALE_ACTIVE = 1.02;
 const SLOT_HOVER_DURATION_FAST_SEC = 0.3;

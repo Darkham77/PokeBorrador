@@ -21,8 +21,6 @@ import type {
   PureDamageResult
 } from './battleMathTypes.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
-import { BATTLE_STAGE_STAT_MULTIPLIERS, BATTLE_STAGE_ACC_MULTIPLIERS } from '@/logic/constants/gameplay';
-
 export * from './battleMathTypes.ts';
 
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {

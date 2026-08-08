@@ -6,8 +6,8 @@ import AdventureInventoryModal from './AdventureInventoryModal.vue'
 import AdventureDebugModal from './AdventureDebugModal.vue'
 
 // Import Kanto Map Data
-import { rawNodes, connections, officialMapIdMap, type MapNode, type DijkstraPath } from './mapData'
-import { getAdjacentNodes, getAlternativePaths } from './adventurePathfinding'
+import { rawNodes, connections, officialMapIdMap, type MapNode, type DijkstraPath } from './mapData.ts'
+import { getAdjacentNodes, getAlternativePaths } from './adventurePathfinding.ts'
 
 // Import Poké Vicio Stores and Data
 import { useMapStore } from '@/stores/map'

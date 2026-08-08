@@ -11,8 +11,8 @@ import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { BattleCombatantProps } from '@/types/battle/battle'
-import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims'
-import { useBattleCombatantState } from './useBattleCombatantState'
+import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims.ts'
+import { useBattleCombatantState } from './useBattleCombatantState.ts'
 import { onGroundPopEnter } from '@/logic/combat/shadowHelpers'
 
 // Referencias DOM

@@ -19,6 +19,7 @@ export interface AuditRule {
   addImport?: string;
   maxLines?: number;
   ignorePattern?: RegExp;
+  exemptConfigFiles?: RegExp;
 }
 
 export interface Violation {
@@ -159,6 +160,21 @@ export const noAliasConstants: AuditRule = {
     const constA = match[1];
     const constB = match[2];
     if (!constA || !constB || constA === constB) return false;
+    // Do not flag if the right-hand side value is purely numeric digits
+    if (/^\d+$/.test(constB)) return false;
+    return true;
+  }
+};
+
+export const noLiteralSuffixInConstantName: AuditRule = {
+  regex: /\b([A-Z0-9_]+_(\d{2,}))\b/g,
+  message: (match: string) => `Constante con sufijo numérico crudo detectada: '${match}'. Está PROHIBIDO incluir literales numéricos al final de los nombres de constantes (ej: _100, _600, _10000). Usa nombres semánticos descriptivos.`,
+  severity: 'error',
+  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || filePath.includes('node_modules') || filePath.includes('external') || filePath.includes('.spec.') || filePath.includes('.test.')) return false;
+    const constName = match[1] || '';
+    // Ignorar excepciones conocidas legítimas como Gen1, Gen2, RGB, HTTP, 2D, 3D, W3C, ISO, etc.
+    if (/(?:GEN_\d|ISO_\d|UTF_8|BASE_64|RGB_|RGBA_|WASM_|HTML_5|CSS_3|HTTP_\d)/i.test(constName)) return false;
     return true;
   }
 };
@@ -255,7 +271,8 @@ export const fileLength: AuditRule = {
   regex: /[\s\S]*/,
   message: () => `Archivo demasiado largo.`,
   maxLines: 500,
-  ignorePattern: /\[PureVue-Ignore-Length\]/
+  ignorePattern: /\[PureVue-Ignore-Length\]/,
+  exemptConfigFiles: /^(vite|vitest|playwright|eslint)\.config\./i
 };
 
 export const zIndexAudit: AuditRule = {
@@ -294,11 +311,14 @@ export const zIndexAudit: AuditRule = {
     const valMatch = match.match(/-?\d+/);
     if (!valMatch) return match;
     const val = parseInt(valMatch[0]);
-    
+
     const entry = Z_VALUE_MAP[val];
+    const isJsProp = match.startsWith('zIndex');
+    const propName = isJsProp ? 'zIndex' : 'z-index';
     if (entry) {
       const key = entry.toLowerCase().replace(/_/g, '-');
-      return `z-index: var(--z-${key})`;
+      const valStr = `var(--z-${key})`;
+      return isJsProp ? `${propName}: '${valStr}'` : `${propName}: ${valStr}`;
     }
 
     let nearestKey = '';
@@ -315,12 +335,25 @@ export const zIndexAudit: AuditRule = {
       const key = nearestKey.toLowerCase().replace(/_/g, '-');
       const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS];
       const sign = offset >= 0 ? '+' : '-';
-      return `z-index: calc(var(--z-${key}) ${sign} ${Math.abs(offset)})`;
+      const valStr = `calc(var(--z-${key}) ${sign} ${Math.abs(offset)})`;
+      return isJsProp ? `${propName}: '${valStr}'` : `${propName}: ${valStr}`;
     }
 
     return match;
   },
   fixable: true
+};
+
+export const zIndexConstantDeclaration: AuditRule = {
+  regex: /const\s+([A-Z0-9_]*Z_INDEX[A-Z0-9_]*)\s*=\s*(?:'[^']+'|"[^"]+"|\d+)/gi,
+  message: (match: string) => `Declaración de constante de Z-Index aislada detectada: '${match}'. Está PROHIBIDO declarar constantes de Z-Index fuera de 'src/logic/constants/visuals.ts' (Z_LAYERS). Registra la capa en Z_LAYERS o consume 'Z_LAYERS.<CAPA>'.`,
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const lowerPath = filePath.toLowerCase();
+    return !lowerPath.includes('src/logic/constants/visuals.ts') && !lowerPath.includes('src\\logic\\constants\\visuals.ts') && !lowerPath.includes('node_modules') && !lowerPath.includes('external');
+  },
+  fixable: false
 };
 
 export const forbiddenFallbacks: AuditRule = {
@@ -500,20 +533,18 @@ export const magicNumbers: AuditRule = {
 };
 
 export const badConstantNames: AuditRule = {
-  regex: /\bconst\s+([A-Z0-9_]*?_\d+)\b/g,
-  message: (match: string) => `Nombre de constante antipatrón detectado: '${match.trim()}'. No se debe incluir el valor numérico en el nombre de la constante (ej: usa ARCHAEOLOGY_CAVE_BASE_WEIGHT en lugar de ARCHAEOLOGY_CAVE_BASE_WEIGHT_10). Describe el propósito semántico o la intención de dominio.`,
+  regex: /^\s*(?:export\s+)?const\s+([A-Z0-9_]+?_\d+)\b/gm,
+  message: (match: string) => `Nombre de constante antipatrón detectado en declaración: '${match.trim()}'. Está PROHIBIDO incluir el valor numérico en el nombre de la constante (ej: usa ARCHAEOLOGY_CAVE_BASE_WEIGHT en lugar de ARCHAEOLOGY_CAVE_BASE_WEIGHT_10). Describe el propósito semántico o la intención de dominio.`,
   severity: 'error',
-  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
-    if (!filePath) return false;
-    const lowerPath = filePath.toLowerCase();
-    const isTargetDir = lowerPath.includes('src/') || lowerPath.includes('src\\') || lowerPath.includes('scripts/') || lowerPath.includes('scripts\\');
-    if (!isTargetDir) return false;
-    if (lowerPath.includes('test') || lowerPath.includes('spec') || lowerPath.includes('fuzzer')) return false;
+  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || filePath.includes('node_modules') || filePath.includes('external') || filePath.includes('.spec.') || filePath.includes('.test.')) return false;
+    const constName = match[1] || '';
+    if (/(?:GEN_\d|ISO_\d|UTF_8|BASE_64|RGB_|RGBA_|WASM_|HTML_5|CSS_3|HTTP_\d|D3_|GEN1_|GEN2_|GEN3_|GEN4_|GEN5_|GEN6_|GEN7_|GEN8_|GEN9_)/i.test(constName)) return false;
     return true;
   },
   fixable: false
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants
 };

@@ -206,7 +206,7 @@ const handleReorderMoves = (from: number, to: number) => {
           class="poke-identity"
           :class="{ 'has-nickname': targetPokemon?.nickname }"
         >
-          <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH_3, '0') }}</span>
+          <span class="p-id">#{{ species.nationalId.padStart(NATIONAL_ID_PADDING_LENGTH, '0') }}</span>
           <div
             class="name-with-edit"
             style="display: flex; align-items: center; gap: 8px;"

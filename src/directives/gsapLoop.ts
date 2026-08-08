@@ -1,12 +1,13 @@
 import type { Directive } from 'vue';
 import gsap from 'gsap';
 
+import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
+
 // Map to keep track of animations for cleanup
 const activeAnimations = new Map<HTMLElement, gsap.core.Tween | gsap.core.Timeline>();
 
 const GSAP_OBSERVER_THRESHOLD_PCT = 0.05;
 const SPINNER_FULL_ROTATION_DEG = 360;
-const SCALE_DEFAULT_BASE_FACTOR = 1;
 const OPACITY_DEFAULT_FULL_LEVEL = 1;
 const DEFAULT_PULSE_SCALE_BOOST = 1.05;
 const DEFAULT_BLINK_MIN_OPACITY = 0.75;

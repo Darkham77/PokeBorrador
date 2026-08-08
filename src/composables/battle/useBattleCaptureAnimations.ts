@@ -10,6 +10,7 @@ import { logger } from '@/logic/utils/logger'
 
 const CATCH_SPARKLE_DURATION_SEC = 1.5
 const CATCH_CELEBRATION_DURATION_SEC = 1.5
+const WILD_FAINT_ANIM_DURATION_SEC = 1.3
 
 interface CatchSparkle {
   id: string;
@@ -373,8 +374,6 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
           slot.animState = null
         }
       })
-const WILD_FAINT_ANIM_DURATION_SEC = 1.3;
-
     } else {
       tl.to({}, {
         duration: WILD_FAINT_ANIM_DURATION_SEC,

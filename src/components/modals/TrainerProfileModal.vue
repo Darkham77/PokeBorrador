@@ -15,7 +15,7 @@ import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
-import { useTrainerProfile } from './useTrainerProfile'
+import { useTrainerProfile } from './useTrainerProfile.ts'
 import { useStatHover } from '@/composables/ui/useStatHover'
 
 interface Props {

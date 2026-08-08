@@ -229,7 +229,7 @@ const onHover = (isEntering: boolean) => {
   if (isEntering) {
     const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 768
     gsap.to(el, { 
-      scale: isSmallScreen ? SCALE_NORMAL_1 : HOVER_SCALED_MULT, 
+      scale: isSmallScreen ? SCALE_DEFAULT_BASE_FACTOR : HOVER_SCALED_MULT, 
       filter: 'Brightness(1.1)',
       zIndex: HOVER_Z_INDEX_ELEVATED,
       duration: HOVER_ANIM_DURATION_SEC, 

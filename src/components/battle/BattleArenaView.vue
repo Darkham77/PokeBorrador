@@ -14,7 +14,6 @@ import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistr
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireDayPhase } from '@/logic/utils/timeUtils'
-import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -140,7 +139,7 @@ const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
     width: `${widthPx}px`,
     height: `${heightPx}px`,
     transform: 'translate(-50%, -75%)', // no-magic
-    zIndex: -1,
+    zIndex: 'calc(var(--z-base) - 1)',
     pointerEvents: 'none' as const
   }
 }
@@ -300,10 +299,6 @@ const computedWeather = computed<WeatherId>(() => {
     mapStore.currentEpochHour,
     requireDayPhase(mapStore.currentCycle)
   )
-})
-
-const atmosphereSeed = computed(() => {
-  return getWeatherAnimSeed(battle.value?.locationId || 'route1')
 })
 
 const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({

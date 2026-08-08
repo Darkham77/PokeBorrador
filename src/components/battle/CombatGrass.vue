@@ -88,7 +88,7 @@ const bushes: Record<'front' | 'back', BushConfig[]> = { // no-magic
 // La semilla viene del padre (generada al iniciar cada combate) para garantizar
 // que los arbustos varíen entre encuentros. Fallback a un valor estable si no se provee.
 const activeBushes = computed<ResolvedBushConfig[]>(() => {
-  const seed = props.seed ?? BUSH_DEFAULT_SEED_FALLBACK_0
+  const seed = props.seed ?? BUSH_DEFAULT_SEED_FALLBACK
   return getActiveBushesForMap(props.locationId, props.layer, seed, bushes[props.layer])
 })
 

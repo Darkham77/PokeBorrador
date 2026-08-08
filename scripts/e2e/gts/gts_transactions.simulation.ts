@@ -7,18 +7,17 @@ import {
   MOCK_POKEMON_HP,
   MOCK_POKEMON_STAT,
   DEFAULT_MOCK_LISTING_PRICE,
-  GTS_BATCH_PUBLISH_COUNT_9,
+  GTS_BATCH_PUBLISH_LIMIT,
   GTS_SUITE_TIMEOUT_MS,
   INITIAL_SELLER_MONEY,
-  SELLER_POKEMON_COUNT_12,
-  MOCK_LISTINGS_COUNT_50,
+  SELLER_POKEMON_BATCH_COUNT,
+  MOCK_LISTINGS_POOL_SIZE,
   INITIAL_BUYER_MONEY,
   EXPECTED_BUYER_MONEY_AFTER_PURCHASE
 } from '../simulation_config.ts';
 import { DatabaseSync } from 'node:sqlite';
 
 const SIMULATION_SETUP_POKEMON_LEVEL = 5;
-const SIMULATION_ACTIVE_LISTINGS_MIN_COUNT = 9;
 const E2E_EXPLORE_TAB_TIMEOUT_MS = 5000;
 const E2E_PAGINATION_TIMEOUT_MS = 15000;
 const E2E_MONEY_PURCHASE_TIMEOUT_MS = 20000;
@@ -101,7 +100,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
       for (let k = 0; k < pokemonCount; k++) {
         const sp = species[k % species.length]!;
-        const pkmn = pokemonDebugService.generate({ id: sp, level: SIMULATION_SETUP_POKEMON_LEVEL_5 });
+        const pkmn = pokemonDebugService.generate({ id: sp, level: SIMULATION_SETUP_POKEMON_LEVEL });
         pkmn.nickname = `GTS_TEST_${sp.toUpperCase()}_${k}`;
         if (k === 0) {
           team.push(pkmn);
@@ -131,7 +130,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
       // MANDATORY: Ensure initial game save exists in SQLite game_saves table before RPC calls
       await game.save(false);
 
-      const toPublish = [...game.state.box].slice(0, GTS_BATCH_PUBLISH_COUNT_9);
+      const toPublish = [...game.state.box].slice(0, GTS_BATCH_PUBLISH_LIMIT);
       for (const p of toPublish) {
         await gts.publishListing('pokemon', p, DEFAULT_MOCK_LISTING_PRICE);
       }
@@ -181,7 +180,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // 1. Login y Setup Vendedor (12 Pokémon en banca: 9 se publican directo, 1 via UI, quedan 2 disponibles para el intento del 11º)
     await seller.setup();
     await waitForStoreReady(pageSeller);
-    await seller.setupUserInventory(INITIAL_SELLER_MONEY, SELLER_POKEMON_COUNT_12);
+    await seller.setupUserInventory(INITIAL_SELLER_MONEY, SELLER_POKEMON_BATCH_COUNT);
 
     // 2. Abrir GTS
     await seller.openGTS();
@@ -205,8 +204,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
       const { useGTSStore } = await import('../../../src/stores/gts.ts');
       return useGTSStore().activeMyListings.length;
     });
-    if (activeListingsCount < GTS_BATCH_PUBLISH_COUNT_9) {
-      throw new Error(`[GTS TEST] publishNineDirectly sólo registró ${activeListingsCount}/${GTS_BATCH_PUBLISH_COUNT_9} publicaciones. El loop de publicación falló.`);
+    if (activeListingsCount < GTS_BATCH_PUBLISH_LIMIT) {
+      throw new Error(`[GTS TEST] publishNineDirectly sólo registró ${activeListingsCount}/${GTS_BATCH_PUBLISH_LIMIT} publicaciones. El loop de publicación falló.`);
     }
 
     // Cambiar a pestaña PUBLICAR
@@ -237,7 +236,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => { void 0; });
 
     const nextSelectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
-    await nextSelectionItem.waitFor({ state: 'visible', timeout: E2E_SEARCH_LONG_TIMEOUT_MS });
+    await nextSelectionItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await nextSelectionItem.scrollIntoViewIfNeeded();
     await clickResilient(nextSelectionItem);
     await priceInput.fill(String(DEFAULT_MOCK_LISTING_PRICE));
@@ -251,7 +250,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await seller.saveGameAndAwaitExport();
 
     // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
-    seedMockListings(seller.getDbPath(), MOCK_LISTINGS_COUNT_50);
+    seedMockListings(seller.getDbPath(), MOCK_LISTINGS_POOL_SIZE);
 
     // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
     const fs = await import('node:fs');
