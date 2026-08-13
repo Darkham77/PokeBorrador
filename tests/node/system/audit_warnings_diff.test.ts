@@ -31,7 +31,7 @@ describe('Warnings Diff Logic (audit_warnings_diff.ts)', () => {
     assert.strictEqual(result[0]?.isNew, true);
   });
 
-  it('debe marcar una advertencia como heredada (isNew: false) si ya existía en origin/main para ESLint', () => {
+  it('debe marcar una advertencia como heredada (isNew: boolean) si ya existía en origin/main para ESLint', () => {
     const localWarnings: Violation[] = [
       {
         file: filePath,
@@ -59,7 +59,7 @@ describe('Warnings Diff Logic (audit_warnings_diff.ts)', () => {
     assert.strictEqual(result[0]?.isNew, false);
   });
 
-  it('debe marcar una advertencia como nueva (isNew: true) si no existía en origin/main para ESLint', () => {
+  it('debe marcar una advertencia como nueva (isNew: boolean) si no existía en origin/main para ESLint', () => {
     const localWarnings: Violation[] = [
       {
         file: filePath,

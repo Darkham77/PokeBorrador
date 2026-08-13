@@ -7,6 +7,7 @@ import type { ItemId } from '../../../src/data/inventory/items.ts';
 import type { CertifiedTestBatch } from '../e2e_helpers.ts';
 import { requireCertifiedBattleCaseDocument } from '../fuzzer/core/certifiedBattleCase.ts';
 
+import { certifyBattleCase } from '../fuzzer/core/certifiedBattleCase.ts';
 import { getMedicineCase } from '../fuzzer/core/fuzzer_medicine_cases.ts';
 
 const CERTIFIED_CASES_PATH = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
@@ -31,7 +32,7 @@ function requireCertifiedMedicineCase(itemId: ItemId): CertifiedTestBatch {
     }
   }
 
-  return getMedicineCase(itemId);
+  return certifyBattleCase(getMedicineCase(itemId), 1);
 }
 
 test.describe('Certified Battle Medicine Replay (Playwright)', () => {

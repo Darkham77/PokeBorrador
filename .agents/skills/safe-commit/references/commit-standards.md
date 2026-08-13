@@ -61,6 +61,7 @@ refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD
 
 - Single-word messages (`commit`, `update`, `fix`).
 - Messages without a bulleted list for changes involving 2+ files.
+- Aggregated ranges of IDs (e.g., "FIX-01 to FIX-121", "fixes 1 to 80") without explicit technical bullets detailing the actual changes made.
 - Vague descriptions like "minor changes" or "various fixes" without specifying the technical "what".
 - Commit messages written from memory instead of reviewing the actual `git diff`.
 

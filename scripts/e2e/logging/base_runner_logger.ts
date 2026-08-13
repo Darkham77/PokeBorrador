@@ -137,4 +137,8 @@ export abstract class BaseRunnerLogger {
     }
     this.flushBlock(blockHeader);
   }
+
+  public stopIntercepting(blockHeader?: string): void {
+    this.close(blockHeader);
+  }
 }

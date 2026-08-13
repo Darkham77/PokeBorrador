@@ -343,10 +343,10 @@ onUnmounted(() => {
 defineExpose({})
 
 // Weather Animations
-import { useAtmosphereLeafAnim } from './useAtmosphereLeafAnim'
-import { useAtmosphereSandstormAnim } from './useAtmosphereSandstormAnim'
-import { useAtmosphereSnowAnim } from './useAtmosphereSnowAnim'
-import { useAtmosphereRainAnim } from './useAtmosphereRainAnim'
+import { useAtmosphereLeafAnim } from './useAtmosphereLeafAnim.ts'
+import { useAtmosphereSandstormAnim } from './useAtmosphereSandstormAnim.ts'
+import { useAtmosphereSnowAnim } from './useAtmosphereSnowAnim.ts'
+import { useAtmosphereRainAnim } from './useAtmosphereRainAnim.ts'
 
 const { isLeafWeatherId, initLeafAnim: initLeafAnimFn } = useAtmosphereLeafAnim(containerRef, props)
 const { initSandstormAnim } = useAtmosphereSandstormAnim(dustLayer1Ref, dustLayer2Ref, applyParallaxLayer)

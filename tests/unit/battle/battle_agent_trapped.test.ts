@@ -33,7 +33,7 @@ test('BattleAgent should not choose voluntary switches when active pokemon is tr
     }
   ];
 
-  // Caso 1: Turno 4, el agente quiere rotar (periodicSwitchEvery = 4), pero el Pokémon está atrapado (trapped: true)
+  // Caso 1: Turno 4, el agente quiere rotar (periodicSwitchEvery = 4), pero el Pokémon está atrapado (trapped: boolean)
   const reqTrapped: ChoiceRequest = {
     active: [
       {
@@ -64,7 +64,7 @@ test('BattleAgent should not choose voluntary switches when active pokemon is tr
   expect(choiceTrapped).not.toContain('switch');
   expect(choiceTrapped).toContain('move');
 
-  // Caso 2: Mismo escenario de turno 4, pero el Pokémon NO está atrapado (trapped: false)
+  // Caso 2: Mismo escenario de turno 4, pero el Pokémon NO está atrapado (trapped: boolean)
   const agentFree = new BattleAgent(
     'p2',
     movesToTest,
